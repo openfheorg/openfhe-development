@@ -30,7 +30,7 @@
 #include "math/matrix.h"
 #include "math/nbtheory.cpp"
 #include "math/ternaryuniformgenerator.cpp"
-#include "math/transfrm.cpp"
+#include "math/transform.h"
 
 namespace lbcrypto {
 
@@ -38,8 +38,6 @@ template class DiscreteGaussianGeneratorImpl<NativeVector>;
 template class BinaryUniformGeneratorImpl<NativeVector>;
 template class TernaryUniformGeneratorImpl<NativeVector>;
 template class DiscreteUniformGeneratorImpl<NativeVector>;
-template class ChineseRemainderTransformFTT<NativeVector>;
-template class ChineseRemainderTransformArb<NativeVector>;
 
 template NativeInteger RootOfUnity<NativeInteger>(usint m,
                                                   const NativeInteger &modulo);

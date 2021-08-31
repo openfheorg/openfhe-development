@@ -73,7 +73,7 @@ static void GenerateNativeParms(shared_ptr<ILNativeParams> &parmArray) {
   NativeInteger modulo = PreviousPrime<NativeInteger>(firstInteger, m);
   NativeInteger root = RootOfUnity<NativeInteger>(m, modulo);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(root, m, modulo);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(root, m, modulo);
   parmArray = shared_ptr<ILNativeParams>(new ILNativeParams(m, modulo, root));
 }
 
@@ -93,7 +93,7 @@ static void GenerateDCRTParms(map<usint, shared_ptr<M2DCRTParams>> &parmArray) {
       roots[i] = RootOfUnity<NativeInteger>(m, moduli[i]);
     }
 
-    ChineseRemainderTransformFTT<NativeVector>::PreCompute(roots, m, moduli);
+    ChineseRemainderTransformFTT<NativeVector>().PreCompute(roots, m, moduli);
 
     parmArray[t] = shared_ptr<M2DCRTParams>(new M2DCRTParams(m, moduli, roots));
   }

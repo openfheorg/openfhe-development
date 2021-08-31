@@ -23,6 +23,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "encoding/packedencoding.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 
@@ -333,13 +334,11 @@ void PackedEncoding::Pack(P *ring, const PlaintextModulus &modulus) const {
       for (usint i = 0; i < phim; i++) {
         permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
       }
-      ChineseRemainderTransformFTT<
-          NativeVector>::InverseTransformFromBitReverse(permutedSlots,
+      ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(permutedSlots,
                                                         m_initRoot[modulusM], m,
                                                         &slotValues);
     } else {
-      ChineseRemainderTransformFTT<
-          NativeVector>::InverseTransformFromBitReverse(slotValues,
+    	ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(slotValues,
                                                         m_initRoot[modulusM], m,
                                                         &slotValues);
     }
@@ -355,7 +354,7 @@ void PackedEncoding::Pack(P *ring, const PlaintextModulus &modulus) const {
     DEBUG("m_bigModulus[modulusM] " << m_bigModulus[modulusM]);
     DEBUG("m_bigRoot[modulusM] " << m_bigRoot[modulusM]);
 
-    slotValues = ChineseRemainderTransformArb<NativeVector>::InverseTransform(
+    slotValues = ChineseRemainderTransformArb<NativeVector>().InverseTransform(
         permutedSlots, m_initRoot[modulusM], m_bigModulus[modulusM],
         m_bigRoot[modulusM], m);
   }
@@ -401,11 +400,11 @@ void PackedEncoding::Unpack(P *ring, const PlaintextModulus &modulus) const {
   // Transform Coeff to Eval
   NativeVector permutedSlots(phim, modulusNI);
   if (IsPowerOfTwo(m)) {
-    ChineseRemainderTransformFTT<NativeVector>::ForwardTransformToBitReverse(
+	  ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(
         packedVector, m_initRoot[modulusM], m, &permutedSlots);
   } else {  // Arbitrary cyclotomic
     permutedSlots =
-        ChineseRemainderTransformArb<NativeVector>::ForwardTransform(
+    		ChineseRemainderTransformArb<NativeVector>().ForwardTransform(
             packedVector, m_initRoot[modulusM], m_bigModulus[modulusM],
             m_bigRoot[modulusM], m);
   }

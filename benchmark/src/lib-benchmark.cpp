@@ -124,12 +124,11 @@ void NTTTransform1024(benchmark::State &state) {
   NativeVector x = dug.GenerateVector(phim);
   NativeVector X(phim);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
-                                                         modulusQ);
+  ChineseRemainderTransformFTT<NativeVector> crtFTT;
+  crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
   while (state.KeepRunning()) {
-    ChineseRemainderTransformFTT<NativeVector>::ForwardTransformToBitReverse(
-        x, rootOfUnity, m, &X);
+	  crtFTT.ForwardTransformToBitReverse( x, rootOfUnity, m, &X);
   }
 }
 
@@ -147,12 +146,11 @@ void INTTTransform1024(benchmark::State &state) {
   NativeVector x = dug.GenerateVector(phim);
   NativeVector X(phim);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
-                                                         modulusQ);
+  ChineseRemainderTransformFTT<NativeVector> crtFTT;
+  crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
   while (state.KeepRunning()) {
-    ChineseRemainderTransformFTT<NativeVector>::InverseTransformFromBitReverse(
-        x, rootOfUnity, m, &X);
+	  crtFTT.InverseTransformFromBitReverse( x, rootOfUnity, m, &X);
   }
 }
 
@@ -170,12 +168,11 @@ void NTTTransform4096(benchmark::State &state) {
   NativeVector x = dug.GenerateVector(phim);
   NativeVector X(phim);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
-                                                         modulusQ);
+  ChineseRemainderTransformFTT<NativeVector> crtFTT;
+  crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
   while (state.KeepRunning()) {
-    ChineseRemainderTransformFTT<NativeVector>::ForwardTransformToBitReverse(
-        x, rootOfUnity, m, &X);
+	  crtFTT.ForwardTransformToBitReverse( x, rootOfUnity, m, &X);
   }
 }
 
@@ -193,12 +190,11 @@ void INTTTransform4096(benchmark::State &state) {
   NativeVector x = dug.GenerateVector(phim);
   NativeVector X(phim);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
-                                                         modulusQ);
+  ChineseRemainderTransformFTT<NativeVector> crtFTT;
+  crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
   while (state.KeepRunning()) {
-    ChineseRemainderTransformFTT<NativeVector>::InverseTransformFromBitReverse(
-        x, rootOfUnity, m, &X);
+	  crtFTT.InverseTransformFromBitReverse(x, rootOfUnity, m, &X);
   }
 }
 
@@ -215,12 +211,11 @@ void NTTTransformInPlace1024(benchmark::State &state) {
   dug.SetModulus(modulusQ);
   NativeVector x = dug.GenerateVector(phim);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
-                                                         modulusQ);
+  ChineseRemainderTransformFTT<NativeVector> crtFTT;
+  crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
   while (state.KeepRunning()) {
-    ChineseRemainderTransformFTT<
-        NativeVector>::ForwardTransformToBitReverseInPlace(rootOfUnity, m, &x);
+	  crtFTT.ForwardTransformToBitReverseInPlace(rootOfUnity, m, &x);
   }
 }
 
@@ -237,13 +232,11 @@ void INTTTransformInPlace1024(benchmark::State &state) {
   dug.SetModulus(modulusQ);
   NativeVector x = dug.GenerateVector(phim);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
-                                                         modulusQ);
+  ChineseRemainderTransformFTT<NativeVector> crtFTT;
+  crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
   while (state.KeepRunning()) {
-    ChineseRemainderTransformFTT<
-        NativeVector>::InverseTransformFromBitReverseInPlace(rootOfUnity, m,
-                                                             &x);
+	  crtFTT.InverseTransformFromBitReverseInPlace(rootOfUnity, m, &x);
   }
 }
 
@@ -260,12 +253,11 @@ void NTTTransformInPlace4096(benchmark::State &state) {
   dug.SetModulus(modulusQ);
   NativeVector x = dug.GenerateVector(phim);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
-                                                         modulusQ);
+  ChineseRemainderTransformFTT<NativeVector> crtFTT;
+  crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
   while (state.KeepRunning()) {
-    ChineseRemainderTransformFTT<
-        NativeVector>::ForwardTransformToBitReverseInPlace(rootOfUnity, m, &x);
+	  crtFTT.ForwardTransformToBitReverseInPlace(rootOfUnity, m, &x);
   }
 }
 
@@ -283,13 +275,11 @@ void INTTTransformInPlace4096(benchmark::State &state) {
   NativeVector x = dug.GenerateVector(phim);
   NativeVector X(phim);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
-                                                         modulusQ);
+  ChineseRemainderTransformFTT<NativeVector> crtFTT;
+  crtFTT.PreCompute(rootOfUnity, m, modulusQ);
 
   while (state.KeepRunning()) {
-    ChineseRemainderTransformFTT<
-        NativeVector>::InverseTransformFromBitReverseInPlace(rootOfUnity, m,
-                                                             &x);
+	  crtFTT.InverseTransformFromBitReverseInPlace(rootOfUnity, m, &x);
   }
 }
 

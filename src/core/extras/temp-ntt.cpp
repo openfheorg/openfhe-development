@@ -180,7 +180,7 @@ void NTTSmall() {
   y[2] = 1;
   y[3] = 1;
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootOfUnity, m,
                                                          modulusQ);
 
   std::cout << "-----------------------" << std::endl;
@@ -190,10 +190,10 @@ void NTTSmall() {
   std::cout << std::endl;
   std::cout << "-----------------------" << std::endl;
 
-  ChineseRemainderTransformFTT<NativeVector>::ForwardTransformToBitReverse(
+  ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(
       x, rootOfUnity, m, &xx);
 
-  ChineseRemainderTransformFTT<NativeVector>::ForwardTransformToBitReverse(
+  ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(
       y, rootOfUnity, m, &yy);
 
   std::cout << "-----------------------" << std::endl;
@@ -204,7 +204,7 @@ void NTTSmall() {
   std::cout << std::endl;
   std::cout << "-----------------------" << std::endl;
 
-  ChineseRemainderTransformFTT<NativeVector>::InverseTransformFromBitReverse(
+  ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
       xx, rootOfUnity, m, &x);
 
   std::cout << "-----------------------" << std::endl;
@@ -231,19 +231,19 @@ void NTTLarge() {
   NativeVector z_ntt(phim, modulusQ);
   NativeVector z(phim, modulusQ);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootOfUnity, m,
                                                          modulusQ);
 
-  ChineseRemainderTransformFTT<NativeVector>::ForwardTransformToBitReverse(
+  ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(
       x, rootOfUnity, m, &x_ntt);
-  ChineseRemainderTransformFTT<NativeVector>::ForwardTransformToBitReverse(
+  ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(
       y, rootOfUnity, m, &y_ntt);
 
   for (usint i = 0; i < phim; ++i) {
     z_ntt[i] = x_ntt[i].ModMulFast(y_ntt[i], modulusQ, mu);
   }
 
-  ChineseRemainderTransformFTT<NativeVector>::InverseTransformFromBitReverse(
+  ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
       z_ntt, rootOfUnity, m, &z);
 }
 
@@ -265,13 +265,13 @@ void NTTBenchmark() {
   NativeVector x = dug.GenerateVector(phim);
   NativeVector x_ntt(phim);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, m,
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootOfUnity, m,
                                                          modulusQ);
 
   for (usint i = 0; i < counter; ++i) {
-    ChineseRemainderTransformFTT<NativeVector>::ForwardTransformToBitReverse(
+    ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(
         x, rootOfUnity, m, &x_ntt);
-    ChineseRemainderTransformFTT<NativeVector>::InverseTransformFromBitReverse(
+    ChineseRemainderTransformFTT<NativeVector>().InverseTransformFromBitReverse(
         x_ntt, rootOfUnity, m, &x);
   }
 

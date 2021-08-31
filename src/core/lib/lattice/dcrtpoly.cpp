@@ -31,6 +31,7 @@
 
 #include "lattice/dcrtpoly.h"
 #include "utils/debug.h"
+#include "utils/utilities.h"
 
 using std::shared_ptr;
 using std::string;

@@ -1,4 +1,4 @@
-// @file dftransfrm.h This file contains the discrete fourier transform
+// @file dftransform.h This file contains the discrete fourier transform
 // definitions
 // @author TPOC: contact@palisade-crypto.org
 //
@@ -22,8 +22,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef LBCRYPTO_MATH_DFTRANSFRM_H
-#define LBCRYPTO_MATH_DFTRANSFRM_H
+#ifndef LBCRYPTO_MATH_DFTRANSFORM_H
+#define LBCRYPTO_MATH_DFTRANSFORM_H
 
 #include <time.h>
 #include <chrono>
@@ -44,7 +44,7 @@
 namespace lbcrypto {
 
 /**
- * @brief Discrete Fourier Transform FFT implemetation.
+ * @brief Discrete Fourier Transform FFT implementation.
  */
 class DiscreteFourierTransform {
  public:

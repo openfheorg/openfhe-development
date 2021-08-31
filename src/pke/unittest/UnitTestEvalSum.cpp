@@ -93,8 +93,8 @@ int64_t ArbBFVEvalSumPackedArray(std::vector<int64_t> &clearVector,
   BigInteger bigroot("77936753846653065954043047918387");
 
   auto cycloPoly = GetCyclotomicPolynomial<BigVector>(m, modulusQ);
-  ChineseRemainderTransformArb<BigVector>::SetCylotomicPolynomial(cycloPoly,
-                                                                  modulusQ);
+  ChineseRemainderTransformArb<BigVector>().SetCylotomicPolynomial(cycloPoly,
+                                                                    modulusQ);
 
   float stdDev = 4;
 

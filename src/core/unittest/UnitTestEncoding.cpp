@@ -74,7 +74,7 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding) {
   BigInteger bigroot("77936753846653065954043047918387");
 
   auto cycloPoly = GetCyclotomicPolynomial<BigVector>(m, modulusQ);
-  ChineseRemainderTransformArb<BigVector>::SetCylotomicPolynomial(cycloPoly,
+  ChineseRemainderTransformArb<BigVector>().SetCylotomicPolynomial(cycloPoly,
                                                                   modulusQ);
 
   auto lp = std::make_shared<ILParams>(m, modulusQ, squareRootOfRoot,
@@ -99,7 +99,7 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding_negative) {
   BigInteger bigroot("77936753846653065954043047918387");
 
   auto cycloPoly = GetCyclotomicPolynomial<BigVector>(m, modulusQ);
-  ChineseRemainderTransformArb<BigVector>::SetCylotomicPolynomial(cycloPoly,
+  ChineseRemainderTransformArb<BigVector>().SetCylotomicPolynomial(cycloPoly,
                                                                   modulusQ);
 
   auto lp = std::make_shared<ILParams>(m, modulusQ, squareRootOfRoot,

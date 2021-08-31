@@ -627,8 +627,7 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatricesDCRT) {
 
   auto params =
       std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduli, roots);
-
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(roots, 2 * n, moduli);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(roots, 2 * n, moduli);
 
   double sigma = SIGMA;
 

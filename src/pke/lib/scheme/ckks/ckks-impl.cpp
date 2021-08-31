@@ -121,8 +121,8 @@ bool LPCryptoParametersCKKS<DCRTPoly>::PrecomputeCRTTables(
 
   // Pre-compute CRT::FFT values for Q
   DiscreteFourierTransform::Initialize(n * 2, n / 2);
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootsQ, 2 * n,
-                                                         moduliQ);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * n,
+                                                           moduliQ);
 
   // Pre-compute omega values for rescaling in RNS
   // modulusQ holds Q^(l) = \prod_{i=0}^{i=l}(q_i).
@@ -289,8 +289,8 @@ bool LPCryptoParametersCKKS<DCRTPoly>::PrecomputeCRTTables(
         2 * n, moduliExpanded, rootsExpanded);
 
     // Pre-compute CRT::FFT values for P
-    ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootsP, 2 * n,
-                                                           moduliP);
+    ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsP, 2 * n,
+                                                               moduliP);
 
     // Pre-compute values [P]_{q_i}
     m_PModq.resize(sizeQ);

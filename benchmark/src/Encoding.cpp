@@ -77,8 +77,8 @@ void BM_encoding_PackedIntPlaintext(benchmark::State &state) {
   BigInteger bigroot("77936753846653065954043047918387");
 
   auto cycloPoly = GetCyclotomicPolynomial<BigVector>(m, modulusQ);
-  ChineseRemainderTransformArb<BigVector>::SetCylotomicPolynomial(cycloPoly,
-                                                                  modulusQ);
+  ChineseRemainderTransformArb<BigVector>().SetCylotomicPolynomial(cycloPoly,
+                                                                    modulusQ);
 
   lp.reset(new ILParams(m, modulusQ, squareRootOfRoot, bigmodulus, bigroot));
   ep.reset(new EncodingParamsImpl(p, 8));
@@ -110,8 +110,8 @@ void BM_encoding_PackedIntPlaintext_SetParams(benchmark::State &state) {
     BigInteger bigroot("77936753846653065954043047918387");
 
     auto cycloPoly = GetCyclotomicPolynomial<BigVector>(m, modulusQ);
-    ChineseRemainderTransformArb<BigVector>::SetCylotomicPolynomial(cycloPoly,
-                                                                    modulusQ);
+    ChineseRemainderTransformArb<BigVector>().SetCylotomicPolynomial(cycloPoly,
+                                                                        modulusQ);
 
     lp.reset(new ILParams(m, modulusQ, squareRootOfRoot, bigmodulus, bigroot));
     ep.reset(new EncodingParamsImpl(p, 8));

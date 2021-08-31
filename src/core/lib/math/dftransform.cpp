@@ -1,4 +1,4 @@
-// @file dftransfrm.cpp This file contains the discrete fourier transform
+// @file dftransform.cpp This file contains the discrete fourier transform
 // implementation.
 // @author TPOC: contact@palisade-crypto.org
 //
@@ -22,7 +22,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "math/dftransfrm.h"
+#include "math/dftransform.h"
 
 namespace lbcrypto {
 

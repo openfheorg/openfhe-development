@@ -41,7 +41,7 @@ using std::shared_ptr;
 #include "math/backend.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
-#include "math/transfrm.h"
+#include "math/transform.h"
 #include "utils/inttypes.h"
 #include "utils/memory.h"
 

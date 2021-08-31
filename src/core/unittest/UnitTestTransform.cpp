@@ -58,7 +58,8 @@ void CRT_polynomial_mult(const string& msg) {
 
   typename V::Integer primitiveRootOfUnity =
       lbcrypto::RootOfUnity(cycloOrder, primeModulus);
-  ChineseRemainderTransformFTT<V>::PreCompute(primitiveRootOfUnity, cycloOrder,
+
+  ChineseRemainderTransformFTT<V>().PreCompute(primitiveRootOfUnity, cycloOrder,
                                               primeModulus);
 
   V a(n, primeModulus);
@@ -69,16 +70,16 @@ void CRT_polynomial_mult(const string& msg) {
   V b(a);
 
   V A(cycloOrder / 2);
-  ChineseRemainderTransformFTT<V>::ForwardTransformToBitReverse(
+  ChineseRemainderTransformFTT<V>().ForwardTransformToBitReverse(
       a, primitiveRootOfUnity, cycloOrder, &A);
   V B(cycloOrder / 2);
-  ChineseRemainderTransformFTT<V>::ForwardTransformToBitReverse(
+  ChineseRemainderTransformFTT<V>().ForwardTransformToBitReverse(
       b, primitiveRootOfUnity, cycloOrder, &B);
 
   V AB = A * B;
 
   V InverseFFTAB(cycloOrder / 2);
-  ChineseRemainderTransformFTT<V>::InverseTransformFromBitReverse(
+  ChineseRemainderTransformFTT<V>().InverseTransformFromBitReverse(
       AB, primitiveRootOfUnity, cycloOrder, &InverseFFTAB);
 
   V expectedResult(n, primeModulus);
@@ -113,24 +114,24 @@ void CRT_polynomial_mult_small(const string& msg) {
   DEBUG("2 " << cycloPoly);
 
   // ChineseRemainderTransformArb<V>::PreCompute(m, modulus);
-  ChineseRemainderTransformArb<V>::SetCylotomicPolynomial(cycloPoly, modulus);
+  ChineseRemainderTransformArb<V>().SetCylotomicPolynomial(cycloPoly, modulus);
   DEBUG("3");
 
   V a(n, modulus);
   a = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  auto A = ChineseRemainderTransformArb<V>::ForwardTransform(
+  auto A = ChineseRemainderTransformArb<V>().ForwardTransform(
       a, squareRootOfRoot, bigModulus, bigRoot, m);
   DEBUG("4 " << A);
 
   V b(n, modulus);
   b = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
-  auto B = ChineseRemainderTransformArb<V>::ForwardTransform(
+  auto B = ChineseRemainderTransformArb<V>().ForwardTransform(
       b, squareRootOfRoot, bigModulus, bigRoot, m);
   DEBUG("5 " << B);
   auto C = A * B;
   DEBUG("6 " << C);
 
-  auto c = ChineseRemainderTransformArb<V>::InverseTransform(
+  auto c = ChineseRemainderTransformArb<V>().InverseTransform(
       C, squareRootOfRoot, bigModulus, bigRoot, m);
 
   DEBUG("7 " << c);
@@ -162,22 +163,22 @@ void CRT_polynomial_mult_big_ring(const string& msg) {
   usint n = GetTotient(m);
   auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
-  ChineseRemainderTransformArb<V>::PreCompute(m, modulus);
-  ChineseRemainderTransformArb<V>::SetCylotomicPolynomial(cycloPoly, modulus);
+  ChineseRemainderTransformArb<V>().PreCompute(m, modulus);
+  ChineseRemainderTransformArb<V>().SetCylotomicPolynomial(cycloPoly, modulus);
 
   V a(n, modulus);
   a = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  auto A = ChineseRemainderTransformArb<V>::ForwardTransform(
+  auto A = ChineseRemainderTransformArb<V>().ForwardTransform(
       a, squareRootOfRoot, bigModulus, bigRoot, m);
 
   V b(n, modulus);
   b = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
-  auto B = ChineseRemainderTransformArb<V>::ForwardTransform(
+  auto B = ChineseRemainderTransformArb<V>().ForwardTransform(
       b, squareRootOfRoot, bigModulus, bigRoot, m);
 
   auto C = A * B;
 
-  auto c = ChineseRemainderTransformArb<V>::InverseTransform(
+  auto c = ChineseRemainderTransformArb<V>().InverseTransform(
       C, squareRootOfRoot, bigModulus, bigRoot, m);
 
   auto cCheck = PolynomialMultiplication(a, b);
@@ -205,23 +206,23 @@ void CRT_polynomial_mult_big_ring_prime_cyclotomics(const string& msg) {
   usint n = GetTotient(m);
   auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
-  ChineseRemainderTransformArb<V>::PreCompute(m, modulus);
-  ChineseRemainderTransformArb<V>::SetCylotomicPolynomial(cycloPoly, modulus);
+  ChineseRemainderTransformArb<V>().PreCompute(m, modulus);
+  ChineseRemainderTransformArb<V>().SetCylotomicPolynomial(cycloPoly, modulus);
 
   V a(n, modulus);
   a = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-  auto A = ChineseRemainderTransformArb<V>::ForwardTransform(
+  auto A = ChineseRemainderTransformArb<V>().ForwardTransform(
       a, squareRootOfRoot, bigModulus, bigRoot, m);
 
   V b(n, modulus);
   b = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
-  auto B = ChineseRemainderTransformArb<V>::ForwardTransform(
+  auto B = ChineseRemainderTransformArb<V>().ForwardTransform(
       b, squareRootOfRoot, bigModulus, bigRoot, m);
 
   auto C = A * B;
 
-  auto c = ChineseRemainderTransformArb<V>::InverseTransform(
+  auto c = ChineseRemainderTransformArb<V>().InverseTransform(
       C, squareRootOfRoot, bigModulus, bigRoot, m);
 
   auto cCheck = PolynomialMultiplication(a, b);
@@ -253,14 +254,14 @@ void CRT_CHECK_small_ring(const string& msg) {
   auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
   // ChineseRemainderTransformArb<V>::PreCompute(m, modulus);
-  ChineseRemainderTransformArb<V>::SetCylotomicPolynomial(cycloPoly, modulus);
+  ChineseRemainderTransformArb<V>().SetCylotomicPolynomial(cycloPoly, modulus);
 
   V input(n, modulus);
   input = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  auto INPUT = ChineseRemainderTransformArb<V>::ForwardTransform(
+  auto INPUT = ChineseRemainderTransformArb<V>().ForwardTransform(
       input, squareRootOfRoot, bigModulus, bigRoot, m);
 
-  auto inputCheck = ChineseRemainderTransformArb<V>::InverseTransform(
+  auto inputCheck = ChineseRemainderTransformArb<V>().InverseTransform(
       INPUT, squareRootOfRoot, bigModulus, bigRoot, m);
 
   for (usint i = 0; i < n; i++) {
@@ -288,7 +289,7 @@ void CRT_CHECK_big_ring(const string& msg) {
   auto cycloPoly = GetCyclotomicPolynomial<V>(m, modulus);
 
   // ChineseRemainderTransformArb<V>::PreCompute(m, modulus);
-  ChineseRemainderTransformArb<V>::SetCylotomicPolynomial(cycloPoly, modulus);
+  ChineseRemainderTransformArb<V>().SetCylotomicPolynomial(cycloPoly, modulus);
 
   V input(n, modulus);
   PRNG gen(1);
@@ -298,10 +299,10 @@ void CRT_CHECK_big_ring(const string& msg) {
     input.at(i) = typename V::Integer(dis(gen));
   }
 
-  auto output = ChineseRemainderTransformArb<V>::ForwardTransform(
+  auto output = ChineseRemainderTransformArb<V>().ForwardTransform(
       input, squareRootOfRoot, bigModulus, bigRoot, m);
 
-  auto recOut = ChineseRemainderTransformArb<V>::InverseTransform(
+  auto recOut = ChineseRemainderTransformArb<V>().InverseTransform(
       output, squareRootOfRoot, bigModulus, bigRoot, m);
 
   for (usint i = 0; i < n; i++) {
@@ -327,15 +328,15 @@ void CRT_CHECK_small_ring_precomputed(const string& msg) {
   // ChineseRemainderTransformArb<V>::PreCompute(m, modulus);
   // ChineseRemainderTransformArb<V>::SetPreComputedNTTModulus(m, modulus,
   // nttmodulus, nttroot);
-  ChineseRemainderTransformArb<V>::SetCylotomicPolynomial(cycloPoly, modulus);
+  ChineseRemainderTransformArb<V>().SetCylotomicPolynomial(cycloPoly, modulus);
 
   V input(n, modulus);
   input = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-  auto INPUT = ChineseRemainderTransformArb<V>::ForwardTransform(
+  auto INPUT = ChineseRemainderTransformArb<V>().ForwardTransform(
       input, squareRootOfRoot, nttmodulus, nttroot, m);
 
-  auto inputCheck = ChineseRemainderTransformArb<V>::InverseTransform(
+  auto inputCheck = ChineseRemainderTransformArb<V>().InverseTransform(
       INPUT, squareRootOfRoot, nttmodulus, nttroot, m);
 
   for (usint i = 0; i < n; i++) {
@@ -370,16 +371,17 @@ void CRT_CHECK_very_big_ring_precomputed(const string& msg) {
   // ChineseRemainderTransformArb<V>::PreCompute(m, modulus);
   // ChineseRemainderTransformArb<V>::SetPreComputedNTTModulus(m, modulus,
   // nttmodulus, nttroot);
+
   DEBUG("2");
-  ChineseRemainderTransformArb<V>::SetCylotomicPolynomial(cycloPoly, modulus);
+  ChineseRemainderTransformArb<V>().SetCylotomicPolynomial(cycloPoly, modulus);
   DEBUG("3");
   V input(n, modulus);
   input = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   DEBUG("4");
-  auto INPUT = ChineseRemainderTransformArb<V>::ForwardTransform(
+  auto INPUT = ChineseRemainderTransformArb<V>().ForwardTransform(
       input, squareRootOfRoot, nttmodulus, nttroot, m);
   DEBUG("5");
-  auto inputCheck = ChineseRemainderTransformArb<V>::InverseTransform(
+  auto inputCheck = ChineseRemainderTransformArb<V>().InverseTransform(
       INPUT, squareRootOfRoot, nttmodulus, nttroot, m);
   DEBUG("6");
   for (usint i = 0; i < n; i++) {

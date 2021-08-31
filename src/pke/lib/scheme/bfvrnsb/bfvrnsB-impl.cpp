@@ -381,8 +381,8 @@ bool LPCryptoParametersBFVrnsB<DCRTPoly>::PrecomputeCRTTables() {
     memcpy(&m_modqBarrettMu[i], val, sizeof(DoubleNativeInt));
   }
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootsQ, 2 * ringDim,
-                                                         moduliQ);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * ringDim,
+                                                           moduliQ);
 
   // Compute Bajard's et al. RNS variant lookup tables
 
@@ -437,8 +437,8 @@ bool LPCryptoParametersBFVrnsB<DCRTPoly>::PrecomputeCRTTables() {
   m_paramsBsk = std::make_shared<ILDCRTParams<BigInteger>>(
       2 * ringDim, m_moduliBsk, m_rootsBsk);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(
-      m_rootsBsk, 2 * ringDim, m_moduliBsk);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(
+        m_rootsBsk, 2 * ringDim, m_moduliBsk);
 
   // populate Barrett constant for m_BskModuli
   m_modbskBarrettMu.resize(m_moduliBsk.size());
@@ -890,8 +890,8 @@ bool LPAlgorithmParamsGenBFVrnsB<DCRTPoly>::ParamsGen(
   auto params =
       std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQ, rootsQ);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootsQ, 2 * n,
-                                                         moduliQ);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * n,
+                                                           moduliQ);
 
   cryptoParamsBFVrnsB->SetElementParams(params);
 

@@ -92,8 +92,8 @@ bool LPCryptoParametersBGVrns<DCRTPoly>::PrecomputeCRTTables(
   BigInteger modulusQ = GetElementParams()->GetModulus();
 
   // Pre-compute CRT::FFT values for Q
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootsQ, 2 * n,
-                                                         moduliQ);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * n,
+                                                           moduliQ);
 
   if (m_ksTechnique == HYBRID) {
     // Compute alpha = ceil(sizeQ / numPartQ)
@@ -255,8 +255,8 @@ bool LPCryptoParametersBGVrns<DCRTPoly>::PrecomputeCRTTables(
         std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQP, rootsQP);
 
     // Pre-compute CRT::FFT values for P
-    ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootsP, 2 * n,
-                                                           moduliP);
+    ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsP, 2 * n,
+                                                               moduliP);
 
     NativeInteger t(GetPlaintextModulus());
 
@@ -633,8 +633,8 @@ bool LPAlgorithmParamsGenBGVrns<DCRTPoly>::ParamsGen(
   auto paramsDCRT =
       std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootsQ, cyclOrder,
-                                                         moduliQ);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, cyclOrder,
+                                                           moduliQ);
 
   cryptoParamsBGVrns->SetElementParams(paramsDCRT);
 

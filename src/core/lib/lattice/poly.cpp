@@ -820,6 +820,7 @@ void PolyImpl<VecType>::SwitchModulus(const Integer &modulus,
 
 template <typename VecType>
 void PolyImpl<VecType>::SwitchFormat() {
+
   DEBUG_FLAG(false);
   if (m_values == nullptr) {
     std::string errMsg = "Poly switch format to empty values";
@@ -836,7 +837,7 @@ void PolyImpl<VecType>::SwitchFormat() {
 
     DEBUG("transform to Format::EVALUATION m_values was" << *m_values);
 
-    ChineseRemainderTransformFTT<VecType>::ForwardTransformToBitReverseInPlace(
+    ChineseRemainderTransformFTT<VecType>().ForwardTransformToBitReverseInPlace(
         m_params->GetRootOfUnity(), m_params->GetCyclotomicOrder(),
         &(*m_values));
     DEBUG("m_values now in Format::COEFFICIENT " << *m_values);
@@ -845,7 +846,7 @@ void PolyImpl<VecType>::SwitchFormat() {
     m_format = Format::COEFFICIENT;
     DEBUG("transform to Format::COEFFICIENT m_values was" << *m_values);
 
-    ChineseRemainderTransformFTT<VecType>::
+    ChineseRemainderTransformFTT<VecType>().
         InverseTransformFromBitReverseInPlace(m_params->GetRootOfUnity(),
                                               m_params->GetCyclotomicOrder(),
                                               &(*m_values));
@@ -856,6 +857,7 @@ void PolyImpl<VecType>::SwitchFormat() {
 template <typename VecType>
 void PolyImpl<VecType>::ArbitrarySwitchFormat() {
   DEBUG_FLAG(false);
+
   if (m_values == nullptr) {
     std::string errMsg = "Poly switch format to empty values";
     PALISADE_THROW(not_available_error, errMsg);
@@ -867,7 +869,7 @@ void PolyImpl<VecType>::ArbitrarySwitchFormat() {
     DEBUG("transform to Format::EVALUATION m_values was" << *m_values);
 
     m_values = make_unique<VecType>(
-        ChineseRemainderTransformArb<VecType>::ForwardTransform(
+	ChineseRemainderTransformArb<VecType>().ForwardTransform(
             *m_values, m_params->GetRootOfUnity(), m_params->GetBigModulus(),
             m_params->GetBigRootOfUnity(), m_params->GetCyclotomicOrder()));
     DEBUG("m_values now " << *m_values);
@@ -876,7 +878,7 @@ void PolyImpl<VecType>::ArbitrarySwitchFormat() {
     DEBUG("transform to Format::COEFFICIENT m_values was" << *m_values);
 
     m_values = make_unique<VecType>(
-        ChineseRemainderTransformArb<VecType>::InverseTransform(
+	ChineseRemainderTransformArb<VecType>().InverseTransform(
             *m_values, m_params->GetRootOfUnity(), m_params->GetBigModulus(),
             m_params->GetBigRootOfUnity(), m_params->GetCyclotomicOrder()));
     DEBUG("m_values now " << *m_values);

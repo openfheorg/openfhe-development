@@ -57,9 +57,10 @@ TEST_F(UTBFVBATCHING, Poly_EVALMULT_Arb) {
   BigInteger bigroot("76686504597021638023705542");
 
   auto cycloPoly = GetCyclotomicPolynomial<BigVector>(m, modulusQ);
-  // ChineseRemainderTransformArb<BigVector>::PreCompute(m, modulusQ);
-  ChineseRemainderTransformArb<BigVector>::SetCylotomicPolynomial(cycloPoly,
-                                                                  modulusQ);
+
+  ChineseRemainderTransformArb<BigVector>().PreCompute(m, modulusQ);
+  ChineseRemainderTransformArb<BigVector>().SetCylotomicPolynomial(cycloPoly,
+                                                                    modulusQ);
 
   float stdDev = 4;
 
@@ -74,13 +75,15 @@ TEST_F(UTBFVBATCHING, Poly_EVALMULT_Arb) {
       "570268124029534407621996591794583635795426001824");
 
   auto cycloPolyBig = GetCyclotomicPolynomial<BigVector>(m, bigEvalMultModulus);
-  ChineseRemainderTransformArb<BigVector>::SetCylotomicPolynomial(
-      cycloPolyBig, bigEvalMultModulus);
+  ChineseRemainderTransformArb<BigVector>().SetCylotomicPolynomial(
+        cycloPolyBig, bigEvalMultModulus);
+
 
   usint batchSize = 8;
 
   EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(
       p, batchSize, PackedEncoding::GetAutomorphismGenerator(m)));
+
 
   PackedEncoding::SetParams(m, encodingParams);
 

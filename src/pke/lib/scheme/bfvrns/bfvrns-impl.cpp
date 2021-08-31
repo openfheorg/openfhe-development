@@ -311,8 +311,8 @@ bool LPCryptoParametersBFVrns<DCRTPoly>::PrecomputeCRTTables() {
     rootsQ[i] = GetElementParams()->GetParams()[i]->GetRootOfUnity();
   }
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootsQ, 2 * ringDim,
-                                                         moduliQ);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * ringDim,
+                                                           moduliQ);
 
   // computes the auxiliary CRT basis {P} = {p_1,p_2,...,p_k}
   // used in homomorphic multiplication
@@ -333,8 +333,8 @@ bool LPCryptoParametersBFVrns<DCRTPoly>::PrecomputeCRTTables() {
   m_paramsP =
       std::make_shared<ILDCRTParams<BigInteger>>(2 * ringDim, moduliP, rootsP);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootsP, 2 * ringDim,
-                                                         moduliP);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsP, 2 * ringDim,
+                                                           moduliP);
 
   // stores the parameters for the auxiliary expanded CRT basis
   // {Q,P} = {q_1,...,q_l,p_1,...p_k}
@@ -836,8 +836,8 @@ bool LPAlgorithmParamsGenBFVrns<DCRTPoly>::ParamsGen(
   auto params =
       std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQ, rootsQ);
 
-  ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootsQ, 2 * n,
-                                                         moduliQ);
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * n,
+                                                           moduliQ);
 
   cryptoParamsBFVrns->SetElementParams(params);
 

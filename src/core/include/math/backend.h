@@ -161,6 +161,7 @@ inline const std::string& GetMathBackendParameters() {
 
 #include "bigintfxd/mubintvecfxd.h"
 #include "bigintfxd/ubintfxd.h"
+#include "bigintfxd/transformfxd.h"
 static_assert(bigintfxd::DataTypeChecker<integral_dtype>::value,
               "Data type provided is not supported in BigInteger");
 
@@ -183,6 +184,7 @@ typedef uint64_t expdtype;
 
 #include "bigintdyn/mubintvecdyn.h"  // rings of ubints
 #include "bigintdyn/ubintdyn.h"  // dynamically sized unsigned big integers or ubints
+#include "bigintdyn/transformdyn.h"
 
 namespace bigintdyn {
 /** Define the mapping for ExpBigInteger (experimental) */
@@ -190,19 +192,16 @@ typedef ubint<expdtype> xubint;
 
 /** Define the mapping for modulo Big Integer Vector */
 typedef mubintvec<xubint> xmubintvec;
+
+
+
 }  // namespace bigintdyn
 
 #ifdef WITH_NTL
 
 #include "bigintntl/mubintvecntl.h"  // rings of such
 #include "bigintntl/ubintntl.h"      // experimental gmp unsigned big ints
-
-namespace bigintntl {
-typedef NTL::myZZ ubint;
-}
-
-using M6Integer = NTL::myZZ;
-using M6Vector = NTL::myVecP<M6Integer>;
+#include "bigintntl/transformntl.h"
 
 #endif
 
@@ -211,6 +210,12 @@ using M2Integer = bigintfxd::BigInteger<integral_dtype, BigIntegerBitLength>;
 using M2Vector = bigintfxd::BigVectorImpl<M2Integer>;
 using M4Integer = bigintdyn::xubint;
 using M4Vector = bigintdyn::xmubintvec;
+
+#ifdef WITH_NTL
+	using M6Integer = NTL::myZZ;
+	using M6Vector = NTL::myVecP<M6Integer>;
+#endif
+
 
 /**
  * @namespace lbcrypto
@@ -287,5 +292,108 @@ typedef NativeVector64 NativeVector;
 typedef NativeInteger32 NativeInteger;
 typedef NativeVector32 NativeVector;
 #endif
+
+#include "bigintnat/transformnat.h"
+
+template class bigintnat::ChineseRemainderTransformFTTNat<NativeVector>;
+template class bigintnat::ChineseRemainderTransformArbNat<NativeVector>;
+
+
+template<typename VecType>
+using NatChineseRemainderTransformFTT = bigintnat::ChineseRemainderTransformFTTNat<VecType>;
+
+template<typename VecType>
+using NatChineseRemainderTransformArb = bigintnat::ChineseRemainderTransformArbNat<VecType>;
+
+template class bigintfxd::ChineseRemainderTransformFTTFxd<M2Vector>;
+template class bigintfxd::ChineseRemainderTransformArbFxd<M2Vector>;
+template class bigintdyn::ChineseRemainderTransformFTTDyn<M4Vector>;
+template class bigintdyn::ChineseRemainderTransformArbDyn<M4Vector>;
+
+#ifdef WITH_NTL
+template class NTL::ChineseRemainderTransformFTTNtl<M6Vector>;
+template class NTL::ChineseRemainderTransformArbNtl<M6Vector>;
+#endif
+
+//==============================================================================================
+
+// TODO it might be possible to remove the template argument in the concrete class for each backend - needs further investigation
+
+// A the main template, but should never be called
+// Not assuming default back-end
+template<typename VecType>
+struct FTTTypedef
+{
+	typedef	void type;
+};
+
+template<>
+struct FTTTypedef<NativeVector>
+{
+    typedef NatChineseRemainderTransformFTT<NativeVector> type;
+};
+
+template<>
+struct FTTTypedef<M4Vector>
+{
+    typedef bigintdyn::ChineseRemainderTransformFTTDyn<M4Vector> type;
+};
+
+template<>
+struct FTTTypedef<M2Vector>
+{
+    typedef bigintfxd::ChineseRemainderTransformFTTFxd<M2Vector> type;
+};
+
+#ifdef WITH_NTL
+template<>
+struct FTTTypedef<M6Vector>
+{
+    typedef NTL::ChineseRemainderTransformFTTNtl<M6Vector> type;
+};
+#endif
+
+
+template<typename VecType>
+using ChineseRemainderTransformFTT = typename FTTTypedef<VecType>::type;
+
+//==============================================================================================
+
+// A the main template, but should never be called
+// Not assuming default back-end
+template<typename VecType>
+struct ArbTypedef
+{
+	typedef	void type;
+};
+
+template<>
+struct ArbTypedef<NativeVector>
+{
+    typedef NatChineseRemainderTransformArb<NativeVector> type;
+};
+
+template<>
+struct ArbTypedef<M4Vector>
+{
+	typedef bigintdyn::ChineseRemainderTransformArbDyn<M4Vector> type;
+};
+
+template<>
+struct ArbTypedef<M2Vector>
+{
+	typedef bigintfxd::ChineseRemainderTransformArbFxd<M2Vector> type;
+};
+
+#ifdef WITH_NTL
+template<>
+struct ArbTypedef<M6Vector>
+{
+	typedef NTL::ChineseRemainderTransformArbNtl<M6Vector> type;
+};
+#endif
+
+template<typename VecType>
+using ChineseRemainderTransformArb = typename ArbTypedef<VecType>::type;
 
 #endif

@@ -22,7 +22,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "encoding/ckkspackedencoding.h"
-#include "math/dftransfrm.h"
+
+#include "math/dftransform.h"
 
 namespace lbcrypto {
 

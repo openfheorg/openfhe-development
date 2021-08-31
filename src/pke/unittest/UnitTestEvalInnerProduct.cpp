@@ -93,8 +93,8 @@ int64_t ArbBFVInnerProductPackedArray(std::vector<int64_t> &input1,
   BigInteger bigroot("13201431150704581233041184864526870950");
 
   auto cycloPoly = GetCyclotomicPolynomial<BigVector>(m, modulusQ);
-  ChineseRemainderTransformArb<BigVector>::SetCylotomicPolynomial(cycloPoly,
-                                                                  modulusQ);
+  ChineseRemainderTransformArb<BigVector>().SetCylotomicPolynomial(cycloPoly,
+                                                                    modulusQ);
 
   float stdDev = 4;
   auto params =
@@ -110,8 +110,8 @@ int64_t ArbBFVInnerProductPackedArray(std::vector<int64_t> &input1,
       "62085");
 
   auto cycloPolyBig = GetCyclotomicPolynomial<BigVector>(m, bigEvalMultModulus);
-  ChineseRemainderTransformArb<BigVector>::SetCylotomicPolynomial(
-      cycloPolyBig, bigEvalMultModulus);
+  ChineseRemainderTransformArb<BigVector>().SetCylotomicPolynomial(
+        cycloPolyBig, bigEvalMultModulus);
 
   usint batchSize = 8;
 

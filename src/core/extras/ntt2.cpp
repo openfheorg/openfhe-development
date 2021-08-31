@@ -198,11 +198,11 @@ void test_NTT(const usint level, const usint nloop) {
 
   // Precomputations for FTT
   TIC(t_setup);
-  ChineseRemainderTransformFTT<BigVector>::PreCompute(rootOfUnity1, m, q1);
-  ChineseRemainderTransformFTT<BigVector>::PreCompute(rootOfUnity2, m, q2);
+  ChineseRemainderTransformFTT<BigVector>().PreCompute(rootOfUnity1, m, q1);
+  ChineseRemainderTransformFTT<BigVector>().PreCompute(rootOfUnity2, m, q2);
   cout << "CRT 2 setup time " << TOC_US(t_setup) << " usec" << endl;
   TIC(t_setup);
-  ChineseRemainderTransformFTT<BigVector>::PreCompute(rootOfUnity3, m, q3);
+  ChineseRemainderTransformFTT<BigVector>().PreCompute(rootOfUnity3, m, q3);
   cout << "CRT 3 setup time " << TOC_US(t_setup) << " usec" << endl;
 
   time1af = 0.0;

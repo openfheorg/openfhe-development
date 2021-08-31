@@ -29,13 +29,14 @@
 #include <utility>
 #include <vector>
 
+#include "math/transform.h"
 #include "lattice/backend.h"
 #include "lwecore.h"
 #include "math/backend.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
-#include "math/transfrm.h"
 #include "utils/serializable.h"
+#include "utils/utilities.h"
 
 namespace lbcrypto {
 
@@ -90,7 +91,7 @@ class RingGSWCryptoParams : public Serializable {
     NativeInteger rootOfUnity = RootOfUnity<NativeInteger>(2 * N, Q);
 
     // Precomputes the table with twiddle factors to support fast NTT
-    ChineseRemainderTransformFTT<NativeVector>::PreCompute(rootOfUnity, 2 * N,
+    ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootOfUnity, 2 * N,
                                                            Q);
 
     // Precomputes a polynomial for MSB extraction

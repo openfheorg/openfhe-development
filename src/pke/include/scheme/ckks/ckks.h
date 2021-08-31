@@ -34,7 +34,7 @@
 #include <utility>
 #include <vector>
 
-#include "math/dftransfrm.h"
+#include "math/dftransform.h"
 #include "palisade.h"
 #include "utils/caller_info.h"
 
