@@ -7,7 +7,7 @@ option(INTEL_HEXL_PREBUILT OFF) # Set to ON/OFF to use prebuilt installation
 message(STATUS "INTEL_HEXL_PREBUILT ${INTEL_HEXL_PREBUILT}")
 
 if (INTEL_HEXL_PREBUILT)  # Skip download from gitlab
-  find_package(HEXL 1.2.0
+  find_package(HEXL 1.2.1
         HINTS ${INTEL_HEXL_HINT_DIR}
         REQUIRED)
   if (NOT TARGET HEXL::hexl)
@@ -31,7 +31,7 @@ else()
     # Download and install Intel HEXL ...
     # ------------------------------------------------------------------------------
     set(INTEL_HEXL_GIT_REPO_URL https://github.com/intel/hexl)
-    set(INTEL_HEXL_GIT_LABEL 1.2.0)
+    set(INTEL_HEXL_GIT_LABEL 1.2.1)
 
     set(INTEL_HEXL_DEBUG OFF) # Set to ON/OFF to toggle debugging
     set(INTEL_HEXL_SHARED_LIB ${BUILD_SHARED}) # Set to ON/OFF to toggle shared library build
@@ -66,10 +66,10 @@ else()
       add_library(HEXL::hexl SHARED IMPORTED)
       if (INTEL_HEXL_DEBUG)
         set_property(TARGET HEXL::hexl PROPERTY
-          IMPORTED_LOCATION ${CMAKE_INSTALL_PREFIX}/lib/libhexl_debug.so)
+          IMPORTED_LOCATION ${CMAKE_INSTALL_PREFIX}/lib/libhexl_debug${CMAKE_SHARED_LIBRARY_SUFFIX})
       else()
         set_property(TARGET HEXL::hexl PROPERTY
-          IMPORTED_LOCATION ${CMAKE_INSTALL_PREFIX}/lib/libhexl.so)
+          IMPORTED_LOCATION ${CMAKE_INSTALL_PREFIX}/lib/libhexl${CMAKE_SHARED_LIBRARY_SUFFIX})
       endif()
     else()
       add_library(HEXL::hexl STATIC IMPORTED)
