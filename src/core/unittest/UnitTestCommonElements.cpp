@@ -501,7 +501,7 @@ void common_other_methods(const string& msg) {
     expected = {"3", "2", "4", "3"};
     EXPECT_EQ(expected, ilv) << msg << " Failure: AddILElementOne()";
   }
-
+  
   DEBUG("ModByTwo");
   {
     Element ilv(ilvector2n);
@@ -549,10 +549,6 @@ void common_other_methods(const string& msg) {
 // Instantiations of common_other_methods()
 TEST(UTPoly, common_other_methods) {
   RUN_ALL_POLYS(common_other_methods, "common_other_methods");
-}
-
-TEST(UTDCRTPoly, common_other_methods) {
-  RUN_BIG_DCRTPOLYS(common_other_methods, "DCRT common_other_methods");
 }
 
 template <typename Element>

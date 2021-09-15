@@ -73,6 +73,14 @@
     }                                                               \
   } while (0)
 
+// debugging macro prints location in codex on cerr
+#define DEBUGHERE()                                                 \
+  do {                                                               \
+    if (dbg_flag) {                                                  \
+      std::cerr << __FILE__ << ":" << __LINE__ << ": " << std::endl; \
+    }                                                                \
+  } while (0)
+
 #if defined(PROFILE)  // Profiler works
 
 #define PROFILELOG(x)              \
@@ -125,6 +133,7 @@
 #define DEBUG(x)
 #define DEBUGEXP(x)
 #define DEBUGWHERE(x)
+#define DEBUGHERE()
 
 #define PROFILELOG(x)
 #define PROFILELOGEXP(x)
@@ -143,6 +152,7 @@
 #define DEBUG(x)
 #define DEBUGEXP(x)
 #define DEBUGWHERE(x)
+#define DEBUGHERE()
 
 #define PROFILELOG(x)              \
   do {                             \
