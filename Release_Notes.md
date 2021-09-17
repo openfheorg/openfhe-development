@@ -1,3 +1,8 @@
+09/17/2021: PALISADE v1.11.5 (stable) is released in the palisade-release repo
+* Fixes a bug affecting Intel HEXL builds
+* Upgrades HEXL to 1.2.1 (improves performance of AVX-512 acceleration)
+* Fixes a bug affecting some scenarios of distributed decryption in BGVrns
+
 08/22/2021: PALISADE v1.11.4 (stable) is released in the palisade-release repo
 * Fixes WebAssembly compilation for new versions of Emscripten (2.0.23+)
 * Integrates HEXL v1.2.0 improvements (additional acceleration)
