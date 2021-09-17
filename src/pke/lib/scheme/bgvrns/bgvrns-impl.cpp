@@ -3312,7 +3312,13 @@ Ciphertext<DCRTPoly> LPAlgorithmMultipartyBGVrns<DCRTPoly>::MultipartyDecryptLea
   const auto t = cryptoParams->GetPlaintextModulus();
 
   const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
-  const DCRTPoly &s = privateKey->GetPrivateElement();
+
+  // drop extra towers from the secret key
+  auto s(privateKey->GetPrivateElement());
+  size_t sizeQ = s.GetParams()->GetParams().size();
+  size_t sizeQl = cv[0].GetParams()->GetParams().size();
+  size_t diffQl = sizeQ - sizeQl;
+  s.DropLastElements(diffQl);
 
   DggType dgg(MP_SD);
   DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
@@ -3335,7 +3341,13 @@ Ciphertext<DCRTPoly> LPAlgorithmMultipartyBGVrns<DCRTPoly>::MultipartyDecryptMai
   const auto t = cryptoParams->GetPlaintextModulus();
 
   const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
-  const DCRTPoly &s = privateKey->GetPrivateElement();
+
+  // drop extra towers from the secret key
+  auto s(privateKey->GetPrivateElement());
+  size_t sizeQ = s.GetParams()->GetParams().size();
+  size_t sizeQl = cv[0].GetParams()->GetParams().size();
+  size_t diffQl = sizeQ - sizeQl;
+  s.DropLastElements(diffQl);
 
   DggType dgg(MP_SD);
   DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);

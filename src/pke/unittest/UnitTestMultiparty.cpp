@@ -1072,6 +1072,9 @@ static void UnitTest_MultiParty_Star(const CryptoContext<Element> cc1,
   tmp_b = plaintextSumInput->GetPackedValue();
   EXPECT_EQ(tmp_a, tmp_b) << failmsg << " Multiparty accumulation fails";
 
+  if (cc->getSchemeId() == "BGVrns")
+    ciphertextMult = cc->Compress(ciphertextMult,1);
+
   Plaintext plaintextMultipartyMult;
   ciphertextPartial1 =
       cc->MultipartyDecryptLead(kp1.secretKey, {ciphertextMult});
@@ -1304,6 +1307,9 @@ static void UnitTest_MultiParty_MP(const CryptoContext<Element> cc1,
   tmp_a = plaintextMultipartyNew->GetPackedValue();
   tmp_b = plaintextSumInput->GetPackedValue();
   EXPECT_EQ(tmp_a, tmp_b) << failmsg << " Multiparty accumulation fails";
+
+  if (cc->getSchemeId() == "BGVrns")
+    ciphertextMult = cc->Compress(ciphertextMult,1);
 
   Plaintext plaintextMultipartyMult;
   ciphertextPartial1 =
