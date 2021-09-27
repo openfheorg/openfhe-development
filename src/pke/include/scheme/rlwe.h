@@ -27,9 +27,7 @@
 #include <memory>
 #include <string>
 
-#include "lattice/dcrtpoly.h"
-#include "lattice/poly.h"
-#include "lattice/stdlatticeparms.h"
+#include "lattice/backend.h"
 #include "utils/serializable.h"
 
 namespace lbcrypto {

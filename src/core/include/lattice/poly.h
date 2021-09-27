@@ -33,7 +33,6 @@ using std::function;
 using std::shared_ptr;
 
 #include "encoding/encodingparams.h"
-#include "lattice/backend.h"
 #include "lattice/elemparams.h"
 #include "lattice/ildcrtparams.h"
 #include "lattice/ilelement.h"

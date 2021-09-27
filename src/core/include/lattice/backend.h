@@ -25,19 +25,20 @@
 #ifndef LBCRYPTO_LATTICE_BACKEND_H
 #define LBCRYPTO_LATTICE_BACKEND_H
 
+#include "math/backend.h"
+
 #include "lattice/elemparams.h"
 #include "lattice/ildcrtparams.h"
 #include "lattice/ilelement.h"
 #include "lattice/ilparams.h"
-
 #include "lattice/poly.h"
+#if defined(WITH_INTEL_HEXL)
+#include "lattice/hexldcrtpoly.h"
+#else // default
+#include "lattice/dcrtpoly.h"
+#endif
 
 namespace lbcrypto {
-
-template <typename IntType>
-class ILParamsImpl;
-template <typename VecType>
-class PolyImpl;
 
 using M2Poly = PolyImpl<M2Vector>;
 using M4Poly = PolyImpl<M4Vector>;
@@ -61,31 +62,31 @@ using ILNativeParams = ILParamsImpl<NativeInteger>;
 using ILParams = ILParamsImpl<BigInteger>;
 using Poly = PolyImpl<BigVector>;
 
-}  // namespace lbcrypto
-
-#include "lattice/dcrtpoly.h"
-
-namespace lbcrypto {
-
-template <typename IntType>
-class ILDCRTParams;
-template <typename VecType>
-class DCRTPolyImpl;
-
-using M2DCRTPoly = DCRTPolyImpl<M2Vector>;
-using M4DCRTPoly = DCRTPolyImpl<M4Vector>;
-#ifdef WITH_NTL
-using M6DCRTPoly = DCRTPolyImpl<M6Vector>;
-#endif
-
 using M2DCRTParams = ILDCRTParams<M2Integer>;
 using M4DCRTParams = ILDCRTParams<M4Integer>;
 #ifdef WITH_NTL
 using M6DCRTParams = ILDCRTParams<M6Integer>;
 #endif
 
-// the default for the backend...
-using DCRTPoly = DCRTPolyImpl<BigVector>;
+#if defined(WITH_INTEL_HEXL) // Hardware specialization
+
+  using M2DCRTPoly = HexlDCRTPoly<M2Vector>;
+  using M4DCRTPoly = HexlDCRTPoly<M4Vector>;
+  #ifdef WITH_NTL
+  using M6DCRTPoly = HexlDCRTPoly<M6Vector>;
+  #endif
+
+  using DCRTPoly = HexlDCRTPoly<BigVector>;
+#else // Default case
+
+  using M2DCRTPoly = DCRTPolyImpl<M2Vector>;
+  using M4DCRTPoly = DCRTPolyImpl<M4Vector>;
+  #ifdef WITH_NTL
+  using M6DCRTPoly = DCRTPolyImpl<M6Vector>;
+  #endif
+  
+  using DCRTPoly = DCRTPolyImpl<BigVector>;
+#endif
 
 }  // namespace lbcrypto
 

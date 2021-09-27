@@ -1,25 +1,32 @@
-// @file dcrtpoly.h Represents integer lattice elements with double-CRT
-// @author TPOC: contact@palisade-crypto.org
-//
-// @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
-// All rights reserved.
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-// 1. Redistributions of source code must retain the above copyright notice,
-// this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-// this list of conditions and the following disclaimer in the documentation
-// and/or other materials provided with the distribution. THIS SOFTWARE IS
-// PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
-// IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-// EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/** @file dcrtpolyinterface.h
+ * 
+ * @brief Defines an interface that any DCRT Polynomial implmentation must implement
+ * in order to work in PALISADE.
+ * 
+ * @author TPOC: contact@palisade-crypto.org
+ * 
+ * @contributor Jonathan Saylor (jsaylor@dualitytech.com)
+ * 
+ * @copyright Copyright (c) 2021, Duality Technologies (https://dualitytech.com/)
+ * All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution. THIS SOFTWARE IS
+ * PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #ifndef LBCRYPTO_LATTICE_DCRTPOLYINTERFACE_H
 #define LBCRYPTO_LATTICE_DCRTPOLYINTERFACE_H
@@ -57,7 +64,7 @@ namespace lbcrypto {
  * Heidelberg
  * 
  * 
- * @tparam DerivedType Curiously-Reocurring-Template-Pattern
+ * @tparam DerivedType Curiously-Recurring-Template-Pattern
  * @tparam BigVecType The Vector type before decomposing the polynomial into CRT
  * @tparam LilVecType The underlaying RNS data structure, a vectors type structure, that will compose the CRT data
  * @tparam RNSContainer The container of LilVecType, a lbcrypto::PolyImpl or vector typically
@@ -85,7 +92,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
   using LilIntType = typename LilVecType::Integer;
 
   // The collection of the the residues
-  using TowerType =  RNSContainerType<LilVecType>;
+  using TowerType = RNSContainerType<LilVecType>;
 
   // the composed polynomial type (for return iterpolation of CRT residues)
   using PolyLargeType = PolyImpl<BigVecType>;
@@ -116,7 +123,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * 
    * @return DerivedType& 
    */
-  DerivedType& GetDerived() {
+  DerivedType &GetDerived() {
     return static_cast<DerivedType*>(this);
   }
   /**
@@ -124,14 +131,14 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * 
    * @return DerivedType const& 
    */
-  DerivedType const& GetDerived() const {
+  const DerivedType &GetDerived() const {
     return *static_cast<DerivedType const*>(this);
   }
 
   // Each derived class needs to have this but static virtual not allowed in c++
   // static const std::string GetElementName();
 
-  virtual const DerivedType &operator=(const NativePoly &element) = 0;
+  virtual const DerivedType &operator=(const TowerType &element) = 0;
 
   /**
    * @note 323-comment, Not sure if we need this in the base abstract classs
@@ -833,19 +840,14 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 
   virtual TowerType DecryptionCRTInterpolate(PlaintextModulus ptm) const = 0;
 
-  /// @warning NOT SURE THIS is a good function after using the interface, maybe
-  /// more generic version needed...
-
   /**
    * @brief If the values are small enough this is used for efficiency
    * 
    * @return NativePoly 
+   * 
+   * @warning This will be replaced with a non-member utility function.
    */
-  virtual NativePoly ToNativePoly() const = 0;
-
-  /**
-   * Yuriy and I stopped here.
-   */
+  virtual TowerType ToNativePoly() const = 0;
 
   /**
    * @brief Interpolates the DCRTPoly to an Poly based on the Chinese Remainder

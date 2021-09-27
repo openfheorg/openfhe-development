@@ -25,11 +25,7 @@
 #include <fstream>
 #include <memory>
 
-#ifdef WITH_INTEL_HEXL
-#include "hexl/hexl.hpp"
-#endif
-
-#include "lattice/dcrtpoly.h"
+#include "lattice/backend.h"
 #include "utils/debug.h"
 #include "utils/utilities.h"
 
@@ -98,8 +94,8 @@ const DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(
   // copy each coefficient mod the new modulus
   for (usint p = 0; p < element.GetLength(); p++) {
     for (usint v = 0; v < vecCount; v++) {
-      Integer tmp = element.at(p) % bigmods[v];
-      m_vectors[v].at(p) = tmp.ConvertToInt();
+      Integer tmp = element[p] % bigmods[v];
+      m_vectors[v][p] = tmp.ConvertToInt();
     }
   }
 
@@ -108,7 +104,7 @@ const DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(
 
 template <typename VecType>
 const DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(
-    const NativePoly &element) {
+    const PolyType &element) {
   if (typename Params::Integer(element.GetModulus()) > this->m_params->GetModulus()) {
     PALISADE_THROW(math_error,
                    "Modulus of element passed to constructor is bigger that "
@@ -167,13 +163,13 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(
  * Poly.*/
 template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(
-    const NativePoly &element, const shared_ptr<DCRTPolyImpl::Params> params) {
+    const PolyType &element, const shared_ptr<DCRTPolyImpl::Params> params) {
   Format format;
   try {
     format = element.GetFormat();
   } catch (const std::exception &e) {
     PALISADE_THROW(type_error,
-                   "There is an issue with the format of the NativePoly passed "
+                   "There is an issue with the format of the PolyType passed "
                    "to the constructor of DCRTPolyImpl");
   }
 
@@ -252,7 +248,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(
       } else {  // if greater than or equal to zero, set it the value generated
         entry = k;
       }
-      ilDggValues.at(j) = entry;
+      ilDggValues[j] = entry;
     }
 
     PolyType ilvector(dcrtParams->GetParams()[i]);
@@ -345,7 +341,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(
       } else {  // if greater than or equal to zero, set it the value generated
         entry = k;
       }
-      ilTugValues.at(j) = entry;
+      ilTugValues[j] = entry;
     }
 
     PolyType ilvector(dcrtParams->GetParams()[i]);
@@ -619,7 +615,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Negate() const {
   tmp.m_vectors.clear();
 
   for (usint i = 0; i < this->m_vectors.size(); i++) {
-    tmp.m_vectors.push_back(std::move(this->m_vectors.at(i).Negate()));
+    tmp.m_vectors.push_back(std::move(this->m_vectors[i].Negate()));
   }
 
   return tmp;
@@ -655,17 +651,17 @@ const DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator-=(
     const DCRTPolyImpl &rhs) {
 #pragma omp parallel for
   for (usint i = 0; i < this->GetNumOfElements(); i++) {
-    this->m_vectors.at(i) -= rhs.m_vectors[i];
+    this->m_vectors[i] -= rhs.m_vectors[i];
   }
   return *this;
 }
 
 template <typename VecType>
 const DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator*=(
-    const DCRTPolyImpl &element) {
+    const DCRTPolyImpl &rhs) {
 #pragma omp parallel for
   for (usint i = 0; i < this->m_vectors.size(); i++) {
-    this->m_vectors.at(i) *= element.m_vectors.at(i);
+    this->m_vectors[i] *= rhs.m_vectors[i];
   }
 
   return *this;
@@ -723,10 +719,10 @@ DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(
          ++i) {                                   // this loops over each tower
       for (usint j = 0; j < vectorLength; ++j) {  // loops within a tower
         if (j < len) {
-          this->m_vectors[i].at(j) = PolyType::Integer(*(rhs.begin() + j));
-          DEBUGEXP(this->m_vectors[i].at(j));
+          this->m_vectors[i][j] = PolyType::Integer(*(rhs.begin() + j));
+          DEBUGEXP(this->m_vectors[i][j]);
         } else {
-          this->m_vectors[i].at(j) = ZERO;
+          this->m_vectors[i][j] = ZERO;
           DEBUGEXP(ZERO);
         }
       }
@@ -735,9 +731,9 @@ DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(
     DEBUGEXP(m_vectors.size());
     for (size_t i = 0; i < m_vectors.size(); i++) {
       NativeVector temp(this->GetRingDimension());
-      temp.SetModulus(m_vectors.at(i).GetModulus());
+      temp.SetModulus(m_vectors[i].GetModulus());
       temp = rhs;
-      m_vectors.at(i).SetValues(std::move(temp), this->GetFormat());
+      m_vectors[i].SetValues(std::move(temp), this->GetFormat());
     }
   }
   return *this;
@@ -747,38 +743,26 @@ DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(
 template <typename VecType>
 DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(
     std::initializer_list<std::string> rhs) {
-  DEBUG_FLAG(true);
-  DEBUGHERE();
   usint len = rhs.size();
   static PolyType::Integer ZERO(0);
   if (!IsEmpty()) {
     usint vectorLength = this->m_vectors[0].GetLength();
-    DEBUGEXP(vectorLength);
     for (usint i = 0; i < m_vectors.size();
          ++i) {                                   // this loops over each tower
       for (usint j = 0; j < vectorLength; ++j) {  // loops within a tower
-        DEBUGEXP(j);
         if (j < len) {
-          this->m_vectors[i].at(j) = PolyType::Integer(*(rhs.begin() + j));
-          DEBUGEXP(this->m_vectors[i].at(j));
+          this->m_vectors[i][j] = PolyType::Integer(*(rhs.begin() + j));
         } else {
-          this->m_vectors[i].at(j) = ZERO;
-          DEBUGEXP(ZERO);
+          this->m_vectors[i][j] = ZERO;
         }
       }
     }
   } else {
-    DEBUGEXP(m_vectors.size());
     for (size_t i = 0; i < m_vectors.size(); i++) {
-      DEBUGHERE();
       NativeVector temp(this->GetRingDimension());
-      DEBUGHERE();
-      temp.SetModulus(m_vectors.at(i).GetModulus());
-      DEBUGHERE();
+      temp.SetModulus(m_vectors[i].GetModulus());
       temp = rhs;
-      DEBUGHERE();
-      m_vectors.at(i).SetValues(std::move(temp), this->GetFormat());
-      DEBUGHERE();
+      m_vectors[i].SetValues(std::move(temp), this->GetFormat());
     }
   }
   return *this;
@@ -795,9 +779,9 @@ DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(uint64_t val) {
   } else {
     for (usint i = 0; i < m_vectors.size(); i++) {
       NativeVector temp(this->GetRingDimension());
-      temp.SetModulus(m_vectors.at(i).GetModulus());
+      temp.SetModulus(m_vectors[i].GetModulus());
       temp = val;
-      m_vectors.at(i).SetValues(std::move(temp), this->GetFormat());
+      m_vectors[i].SetValues(std::move(temp), this->GetFormat());
     }
   }
 
@@ -816,8 +800,8 @@ DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(
   } else {
     for (usint i = 0; i < m_vectors.size(); i++) {
       NativeVector temp(this->GetRingDimension());
-      temp.SetModulus(m_vectors.at(i).GetModulus());
-      m_vectors.at(i).SetValues(std::move(temp), this->GetFormat());
+      temp.SetModulus(m_vectors[i].GetModulus());
+      m_vectors[i].SetValues(std::move(temp), this->GetFormat());
       m_vectors[i] = val;
     }
   }
@@ -839,8 +823,8 @@ DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(
   } else {
     for (usint i = 0; i < m_vectors.size(); i++) {
       NativeVector temp(this->GetRingDimension());
-      temp.SetModulus(m_vectors.at(i).GetModulus());
-      m_vectors.at(i).SetValues(std::move(temp), this->GetFormat());
+      temp.SetModulus(m_vectors[i].GetModulus());
+      m_vectors[i].SetValues(std::move(temp), this->GetFormat());
       m_vectors[i] = val;
     }
   }
@@ -974,7 +958,7 @@ template <typename VecType>
 const DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator*=(
     const Integer &element) {
   for (usint i = 0; i < this->m_vectors.size(); i++) {
-    this->m_vectors.at(i) *=
+    this->m_vectors[i] *=
         (element.Mod(this->m_vectors[i].GetModulus())).ConvertToInt();
   }
 
@@ -1010,7 +994,7 @@ void DCRTPolyImpl<VecType>::MakeSparse(const uint32_t &wFactor) {
 template <typename VecType>
 bool DCRTPolyImpl<VecType>::IsEmpty() const {
   for (size_t i = 0; i < m_vectors.size(); i++) {
-    if (!m_vectors.at(i).IsEmpty()) return false;
+    if (!m_vectors[i].IsEmpty()) return false;
   }
   return true;
 }

@@ -1449,10 +1449,12 @@ void LPAlgorithmSHEBFVrnsB<DCRTPoly>::KeySwitchInPlace(
   if (c.size() > 2) c[0].SetFormat(Format::EVALUATION);
 
   if (c.size() == 2) {  // case of automorphism
-    digitsC2 = c[1].CRTDecompose(relinWindow);
+    auto tmpVector = c[1].CRTDecompose(relinWindow);
+    digitsC2.assign(tmpVector.begin(), tmpVector.end());
     c[1] = digitsC2[0] * a[0];
   } else {  // case of EvalMult
-    digitsC2 = c[2].CRTDecompose(relinWindow);
+    auto tmpVector = c[2].CRTDecompose(relinWindow);
+    digitsC2.assign(tmpVector.begin(), tmpVector.end());
     c[1].SetFormat(Format::EVALUATION);
     c[1] += digitsC2[0] * a[0];
   }
@@ -1499,7 +1501,8 @@ Ciphertext<DCRTPoly> LPAlgorithmSHEBFVrnsB<DCRTPoly>::EvalMultAndRelinearize(
     const std::vector<DCRTPoly> &b = evalKey->GetAVector();
     const std::vector<DCRTPoly> &a = evalKey->GetBVector();
 
-    std::vector<DCRTPoly> digitsC2 = c[index + 2].CRTDecompose();
+    auto tmpVector = c[index + 2].CRTDecompose();
+    std::vector<DCRTPoly> digitsC2(tmpVector.begin(), tmpVector.end());
 
     for (usint i = 0; i < digitsC2.size(); ++i) {
       ct0 += digitsC2[i] * b[i];

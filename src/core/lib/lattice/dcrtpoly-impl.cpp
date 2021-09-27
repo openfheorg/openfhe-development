@@ -32,6 +32,10 @@
 #include "math/discreteuniformgenerator.cpp"
 #include "math/ternaryuniformgenerator.cpp"
 
+#if WITH_INTEL_HEXL
+  #include "lattice/hexldcrtpoly.cpp"
+#endif
+
 // This creates all the necessary class implementations for DCRTPoly
 
 namespace lbcrypto {
@@ -40,8 +44,17 @@ template class ILDCRTParams<M2Integer>;
 template class DCRTPolyImpl<M2Vector>;
 template class ILDCRTParams<M4Integer>;
 template class DCRTPolyImpl<M4Vector>;
+
 #ifdef WITH_NTL
-template class ILDCRTParams<M6Integer>;
-template class DCRTPolyImpl<M6Vector>;
+  template class ILDCRTParams<M6Integer>;
+  template class DCRTPolyImpl<M6Vector>;
+#endif
+
+#ifdef WITH_INTEL_HEXL
+  template class HexlDCRTPoly<M2Vector>;
+  template class HexlDCRTPoly<M4Vector>;
+  #ifdef WITH_NTL
+    template class HexlDCRTPoly<M6Vector>;
+  #endif
 #endif
 }  // namespace lbcrypto

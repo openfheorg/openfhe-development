@@ -74,7 +74,10 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
   using TugType = typename DCRTPolyInterfaceType::TugType;
   using BugType = typename DCRTPolyInterfaceType::BugType;
 
-  // this class contains an array of these:
+  // this class contains an array of these, aka NativePoly
+  // warning, this has been removed before but lattice/backend.h can't be included
+  // as this creates a circular dependency. PolyType can be thought of as a 
+  // forward declaration of the NativePoly type.
   using PolyType = PolyImpl<NativeVector>;
 
   // the composed polynomial type
@@ -104,7 +107,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
 
   const DCRTPolyType &operator=(const PolyLargeType &element);
 
-  const DCRTPolyType &operator=(const NativePoly &element) override;
+  const DCRTPolyType &operator=(const PolyType &element) override;
 
   /**
    * @brief Constructor based on discrete Gaussian generator.
@@ -171,15 +174,15 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
   DCRTPolyImpl(const PolyLargeType &element, const shared_ptr<Params> params);
 
   /**
-   * @brief Construct using a single NativePoly. The NativePoly is copied into
+   * @brief Construct using a single PolyType. The PolyType is copied into
    * every tower. Each tower will be reduced to it's corresponding modulus  via
    * GetModuli(at tower index). The format is derived from the passed in
-   * NativePoly.
+   * PolyType.
    *
    * @param &element Poly to build other towers from.
    * @param params parameter set required for DCRTPoly.
    */
-  DCRTPolyImpl(const NativePoly &element, const shared_ptr<Params> params);
+  DCRTPolyImpl(const PolyType &element, const shared_ptr<Params> params);
 
   /**
    * @brief Construct using an tower of ILVectro2ns. The params and format for
@@ -314,13 +317,6 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @returns a vector of the component elements.
    */
   virtual const std::vector<PolyType> &GetAllElements() const override;
-
-  /**
-   * @brief Get method of the format.
-   *
-   * @return the format, either COEFFICIENT or EVALUATION
-   */
-  // Format GetFormat() const;
 
   /**
    * @brief Write the element as \f$ \sum\limits{i=0}^{\lfloor {\log q/base}
@@ -784,7 +780,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
 
   virtual PolyType DecryptionCRTInterpolate(PlaintextModulus ptm) const override;
 
-  virtual NativePoly ToNativePoly() const override;
+  virtual PolyType ToNativePoly() const override;
 
   /**
    * @brief Interpolates the DCRTPoly to an Poly based on the Chinese Remainder
@@ -803,8 +799,6 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * towers are dropped along the way).
    *
    * @return the product of moduli in the current towers.
-   * 
-   * @warning I switched this to Integer from BigInteger (I think this is the right thing to do!)
    */
   virtual Integer GetWorkingModulus() const override;
 
@@ -1305,17 +1299,12 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
   std::string SerializedObjectName() const override { return "DCRTPoly"; }
   static uint32_t SerializedVersion() { return 1; }
 
- private:
+ protected:
 
   // array of vectors used for double-CRT presentation
   std::vector<PolyType> m_vectors;
 
 };
 }  // namespace lbcrypto
-
-namespace lbcrypto {
-
-typedef DCRTPolyImpl<BigVector> DCRTPoly;
-}
 
 #endif

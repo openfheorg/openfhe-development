@@ -29,17 +29,12 @@
 #include <memory>
 #include <vector>
 
-#include "lattice/dcrtpoly.h"
 #include "math/backend.h"
 #include "math/distrgen.h"
 
 #include "utils/inttypes.h"
 
-#include "lattice/elemparams.h"
-#include "lattice/ildcrtparams.h"
-#include "lattice/ilelement.h"
-#include "lattice/ilparams.h"
-#include "lattice/poly.h"
+#include "lattice/backend.h"
 
 using namespace lbcrypto;
 

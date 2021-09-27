@@ -840,7 +840,6 @@ void LPAlgorithmSHEBFV<Element>::KeySwitchInPlace(
   const auto cryptoParamsLWE =
       std::static_pointer_cast<LPCryptoParametersBFV<Element>>(
           ek->GetCryptoParameters());
-  usint relinWindow = cryptoParamsLWE->GetRelinWindow();
 
   LPEvalKeyRelin<Element> evalKey =
       std::static_pointer_cast<LPEvalKeyRelinImpl<Element>>(ek);
@@ -850,22 +849,27 @@ void LPAlgorithmSHEBFV<Element>::KeySwitchInPlace(
   const std::vector<Element> &b = evalKey->GetAVector();
   const std::vector<Element> &a = evalKey->GetBVector();
 
-  std::vector<Element> digitsC2;
+  usint relinWindow = cryptoParamsLWE->GetRelinWindow();
 
+  std::vector<Element> digitsC2;
 
   // in the case of EvalMult, c[0] is initially in coefficient format and needs
   // to be switched to Format::EVALUATION format
-  if (c.size() > 2) c[0].SetFormat(Format::EVALUATION);
-
+  if (c.size() > 2) {
+    c[0].SetFormat(Format::EVALUATION);
+  }
 
   if (c.size() == 2) {  // case of automorphism
-    digitsC2 = c[1].BaseDecompose(relinWindow);
-    c[1] = digitsC2[0] * a[0];
+      auto tmpVector = c[1].BaseDecompose(relinWindow);
+      digitsC2.assign(tmpVector.begin(), tmpVector.end());
+      // This is where UTAUTOMORPHISM.Test_BFV_Automorphism_PowerOf2 is failing!
+      c[1] = digitsC2[0] * a[0];
   } else {  // case of EvalMult
-    digitsC2 = c[2].BaseDecompose(relinWindow);
-    // Convert ct1 to Format::EVALUATION representation
-    c[1].SetFormat(Format::EVALUATION);
-    c[1] += digitsC2[0] * a[0];
+      auto tmpVector = c[2].BaseDecompose(relinWindow);
+      digitsC2.assign(tmpVector.begin(), tmpVector.end());
+      // Convert ct1 to Format::EVALUATION representation
+      c[1].SetFormat(Format::EVALUATION);
+      c[1] += digitsC2[0] * a[0];
   }
 
   c[0] += digitsC2[0] * b[0];
@@ -928,7 +932,8 @@ Ciphertext<Element> LPAlgorithmSHEBFV<Element>::EvalMultAndRelinearize(
     const std::vector<Element> &b = evalKey->GetAVector();
     const std::vector<Element> &a = evalKey->GetBVector();
 
-    std::vector<Element> digitsC2 = c[index + 2].BaseDecompose(relinWindow);
+    auto tmpVector = c[index + 2].BaseDecompose(relinWindow);
+    std::vector<Element> digitsC2(tmpVector.begin(), tmpVector.end());
 
     for (usint i = 0; i < digitsC2.size(); ++i) {
       ct0 += digitsC2[i] * b[i];
@@ -960,20 +965,22 @@ LPEvalKey<Element> LPAlgorithmSHEBFV<Element>::KeySwitchGen(
 
   usint relinWindow = cryptoParamsLWE->GetRelinWindow();
 
-  std::vector<Element> evalKeyElements(
-      originalPrivateKey->GetPrivateElement().PowersOfBase(relinWindow));
-  std::vector<Element> evalKeyElementsGenerated;
+  auto tmpVector = originalPrivateKey->GetPrivateElement().PowersOfBase(relinWindow);
+  
+  // STL best practice to use the generator, for speed and readiablilty
+  std::vector<Element> evalKeyElementsGenerated(tmpVector.size());
 
-  for (usint i = 0; i < (evalKeyElements.size()); i++) {
-    // Generate a_i vectors
-    Element a(dug, elementParams, Format::EVALUATION);
-    evalKeyElementsGenerated.push_back(a);
+  // Generate random a_i vectors
+  std::generate( std::begin(evalKeyElementsGenerated), std::end(evalKeyElementsGenerated), 
+                 [&]() { return Element(dug, elementParams, Format::EVALUATION); });
 
-    // Generate a_i * s + e - PowerOfBase(s^2)
+  std::vector<Element> evalKeyElements(tmpVector.begin(), tmpVector.end());
+  for (usint i = 0; i < (evalKeyElements.size()); ++i) {
+    // Generate a_i * s + e - PowerOfBase(s^2), using random generator e_i
     Element e(dgg, elementParams, Format::EVALUATION);
-    evalKeyElements.at(i) -= (a * s + e);
+    evalKeyElements[i] -= (evalKeyElementsGenerated[i] * s + e);
   }
-
+  
   ek->SetAVector(std::move(evalKeyElements));
   ek->SetBVector(std::move(evalKeyElementsGenerated));
 
@@ -1459,20 +1466,19 @@ LPEvalKey<Element> LPAlgorithmMultipartyBFV<Element>::MultiKeySwitchGen(
 
   // Pushes the powers of base exponent of original key polynomial onto
   // evalKeyElements.
-  std::vector<Element> evalKeyElements(s.PowersOfBase(relinWindow));
-
-  // evalKeyElementsGenerated hold the generated noise distribution.
-  std::vector<Element> evalKeyElementsGenerated;
+  auto tmpVector = s.PowersOfBase(relinWindow);
+  std::vector<Element> evalKeyElements(tmpVector.begin(), tmpVector.end());
 
   const std::vector<Element> &a = ek->GetBVector();
+  
+  // evalKeyElementsGenerated hold the generated noise distribution.
+  std::vector<Element> evalKeyElementsGenerated(a); // alpha's of i
 
   for (usint i = 0; i < (evalKeyElements.size()); i++) {
-    evalKeyElementsGenerated.push_back(a[i]);  // alpha's of i
-
     // Generate -(a_i * newSK + e) + PowerOfBase(oldSK)
     Element e(dgg, originalKeyParams, Format::EVALUATION);
 
-    evalKeyElements.at(i) -= (a[i] * sNew + e);
+    evalKeyElements[i] -= (a[i] * sNew + e);
   }
 
   keySwitchHintRelin->SetAVector(std::move(evalKeyElements));

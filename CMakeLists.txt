@@ -492,13 +492,14 @@ endif()
 #--------------------------------------------------------------------
 include (ExternalProject)
 
-if (WITH_INTEL_HEXL)
-	include(third-party/intel-hexl/intel-hexl.cmake)
-endif()
-
 # third party directories
 set( THIRDPARTYDIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party )
 include_directories( ${THIRDPARTYDIR}/include )
+
+### Handle third-party HEXL
+if (WITH_INTEL_HEXL)
+	include(third-party/intel-hexl/intel-hexl.cmake)
+endif()
 
 ### Handle third-party CEREAL
 include_directories( ${THIRDPARTYDIR}/cereal/include )

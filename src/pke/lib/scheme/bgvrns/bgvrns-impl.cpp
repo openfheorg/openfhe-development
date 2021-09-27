@@ -1147,11 +1147,13 @@ void LPAlgorithmSHEBGVrns<DCRTPoly>::KeySwitchBVInPlace(
   std::vector<DCRTPoly> digitsC2;
   if (cv.size() == 2) {
     // case of PRE or automorphism
-    digitsC2 = cv[1].CRTDecompose(relinWindow);
+    auto tmpVector = cv[1].CRTDecompose(relinWindow);
+    digitsC2.assign(tmpVector.begin(), tmpVector.end());
     cv[1] = digitsC2[0] * av[0];
   } else {
     // case of EvalMult
-    digitsC2 = cv[2].CRTDecompose(relinWindow);
+    auto tmpVector = cv[2].CRTDecompose(relinWindow);
+    digitsC2.assign(tmpVector.begin(), tmpVector.end());
     cv[1].SetFormat(EVALUATION);
     cv[1] += digitsC2[0] * av[0];
   }
@@ -2405,8 +2407,8 @@ LPAlgorithmSHEBGVrns<DCRTPoly>::EvalFastRotationPrecomputeBV(
   uint32_t relinWindow = cryptoParams->GetRelinWindow();
 
   const vector<DCRTPoly> &cv = ciphertext->GetElements();
-  auto digitDecomp =
-      std::make_shared<vector<DCRTPoly>>(cv[1].CRTDecompose(relinWindow));
+  auto tmpVector = cv[1].CRTDecompose(relinWindow);
+  auto digitDecomp = std::make_shared<vector<DCRTPoly>>(tmpVector.begin(), tmpVector.end());
 
   return digitDecomp;
 }
