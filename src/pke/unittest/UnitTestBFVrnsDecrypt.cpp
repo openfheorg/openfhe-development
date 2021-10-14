@@ -21,6 +21,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
+#include "UnitTestCompareCryptoContext.h"
+
 #include <iostream>
 #include <vector>
 #include "gtest/gtest.h"
@@ -74,9 +78,20 @@ TEST_P(UTBFVrnsDecrypt, BFVrns_Decrypt) {
   usint dcrtBits = std::get<1>(GetParam());
   double sigma = 3.19;
 
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          ptm, HEStd_128_classic, sigma, 0, 0, 0, OPTIMIZED, 2, 0, dcrtBits);
+  CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters;
+  parameters.SetPlaintextModulus(ptm);
+  parameters.SetFirstModSize(dcrtBits);
+  parameters.SetStandardDeviation(3.19);
+
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+
+  {
+      CryptoContext<DCRTPoly> ccOld =
+          CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
+              ptm, HEStd_128_classic, sigma, 0, 0, 0, OPTIMIZED, 2, 0, dcrtBits);
+
+      EXPECT_EQ(Equal(*cc, *ccOld), true);
+  }
 
   cc->Enable(ENCRYPTION);
   cc->Enable(SHE);

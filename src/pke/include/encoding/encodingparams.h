@@ -30,12 +30,12 @@
 #include <utility>
 
 #include "math/backend.h"
+#include "utils/inttypes.h"
 
 namespace lbcrypto {
 class EncodingParamsImpl;
 
 typedef std::shared_ptr<EncodingParamsImpl> EncodingParams;
-typedef uint64_t PlaintextModulus;
 
 /**
  * @class EncodingParamsImpl

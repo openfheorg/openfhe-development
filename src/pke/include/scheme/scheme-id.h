@@ -1,4 +1,4 @@
-// @file version.h -- PALISADE version strings
+// @file scheme-id.h -- PALISADE.
 // @author TPOC: contact@palisade-crypto.org
 //
 // @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
@@ -21,20 +21,49 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef SRC_CORE_INCLUDE_PALISADECORE_H_
-#define SRC_CORE_INCLUDE_PALISADECORE_H_
+#ifndef _SCHEME_ID_H_
+#define _SCHEME_ID_H_
 
-#include "version.h"
 
-#include "math/backend.h"
+#include <iosfwd>
 
-#include "math/nbtheory.h"
 
-#include "math/distrgen.h"
+namespace lbcrypto {
 
-#include "lattice/backend.h"
-#include "lattice/stdlatticeparms.h"
-#include "utils/debug.h"
-#include "utils/defines.h"
+//====================================================================================================================
+// TODO: should it be a SCHEME class??? (dsuponit)
+enum SCHEME { CKKS_SCHEME,
+              BFVRNS_SCHEME,
+              BFVRNSB_SCHEME,
+              BGVRNS_SCHEME,
+              NULL_SCHEME,
+              INVALID_SCHEME
+            };
+//====================================================================================================================
+std::ostream& operator<<(std::ostream& os, SCHEME schemeId);
+//====================================================================================================================
+inline bool isCKKS(SCHEME schemeId) {
+    return (schemeId == CKKS_SCHEME);
+}
 
-#endif /* SRC_CORE_INCLUDE_PALISADECORE_H_ */
+inline bool isNULL(SCHEME schemeId) {
+    return (schemeId == NULL_SCHEME);
+}
+
+inline bool isBFVRNS(SCHEME schemeId) {
+    return (schemeId == BFVRNSB_SCHEME);
+}
+
+inline bool isBFVRNSB(SCHEME schemeId) {
+    return (schemeId == BFVRNS_SCHEME);
+}
+
+inline bool isBGVRNS(SCHEME schemeId) {
+    return (schemeId == BGVRNS_SCHEME);
+}
+
+}  // namespace lbcrypto
+
+
+#endif // _SCHEME_ID_H_
+

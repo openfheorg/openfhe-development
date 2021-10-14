@@ -27,7 +27,6 @@
 
 #include <vector>
 
-#include "encoding/encodingparams.h"
 #include "math/backend.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"

@@ -1,4 +1,4 @@
-// @file version.h -- PALISADE version strings
+// @file cryptocontextparams-null.h -- PALISADE.
 // @author TPOC: contact@palisade-crypto.org
 //
 // @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
@@ -21,20 +21,51 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef SRC_CORE_INCLUDE_PALISADECORE_H_
-#define SRC_CORE_INCLUDE_PALISADECORE_H_
+#ifndef _CRYPTOCONTEXTPARAMS_NULL_H_
+#define _CRYPTOCONTEXTPARAMS_NULL_H_
 
-#include "version.h"
+namespace lbcrypto {
 
-#include "math/backend.h"
+template <typename Element>
+class CryptoContextNULL;
 
-#include "math/nbtheory.h"
+// every CCParams class should include the following forward declaration as there is 
+// no general CCParams class template. This way we may create scheme specific classes
+// derived from Params or have them completely independent.
+template <typename Element>
+class CCParams;
+//====================================================================================================================
+template <typename Element>
+class CCParams<CryptoContextNULL<Element>> {
+    usint            cyclOrder = 0;
+    PlaintextModulus ptModulus = 0;
 
-#include "math/distrgen.h"
+public:
+    CCParams() = default;
+    CCParams(const CCParams& obj) = default;
+    CCParams(CCParams&& obj) = default;
 
-#include "lattice/backend.h"
-#include "lattice/stdlatticeparms.h"
-#include "utils/debug.h"
-#include "utils/defines.h"
+    // getters
+    usint GetCyclotomicOrder() const {
+        return cyclOrder;
+    }
+    PlaintextModulus GetPlaintextModulus() const {
+        return ptModulus;
+    }
 
-#endif /* SRC_CORE_INCLUDE_PALISADECORE_H_ */
+    // setters
+    void SetCyclotomicOrder(usint cyclOrder0) {
+        cyclOrder = cyclOrder0;
+    }
+    void SetPlaintextModulus(PlaintextModulus ptModulus0) {
+        ptModulus = ptModulus0;
+    }
+
+};
+//====================================================================================================================
+
+}  // namespace lbcrypto
+
+
+#endif // _CRYPTOCONTEXTPARAMS_NULL_H_
+

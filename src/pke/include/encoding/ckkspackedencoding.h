@@ -33,14 +33,10 @@
 
 #include "encoding/encodingparams.h"
 #include "encoding/plaintext.h"
-#include "utils/inttypes.h"
+//#include "utils/inttypes.h"
+#include "constants.h"
 
 namespace lbcrypto {
-
-enum RescalingTechnique { APPROXRESCALE, EXACTRESCALE, APPROXAUTO };
-
-// STL pair used as a key for some tables in CKKSPackedEncoding
-using ModulusM = std::pair<NativeInteger, uint64_t>;
 
 /**
  * @class CKKSPackedEncoding

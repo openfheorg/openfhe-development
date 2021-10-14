@@ -1,7 +1,7 @@
-// @file version.h -- PALISADE version strings
+// @file constants.cpp
 // @author TPOC: contact@palisade-crypto.org
 //
-// @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
+// @copyright Copyright (c) 2021, New Jersey Institute of Technology (NJIT)
 // All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -21,20 +21,72 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef SRC_CORE_INCLUDE_PALISADECORE_H_
-#define SRC_CORE_INCLUDE_PALISADECORE_H_
+#include "constants.h"
+#include <ostream>
 
-#include "version.h"
 
-#include "math/backend.h"
+std::ostream &operator<<(std::ostream &s, PKESchemeFeature f) {
+  switch (f) {
+    case ENCRYPTION:
+      s << "ENCRYPTION";
+      break;
+    case PRE:
+      s << "PRE";
+      break;
+    case SHE:
+      s << "SHE";
+      break;
+    case FHE:
+      s << "FHE";
+      break;
+    case LEVELEDSHE:
+      s << "LEVELEDSHE";
+      break;
+    case MULTIPARTY:
+      s << "MULTIPARTY";
+      break;
+    case ADVANCEDSHE:
+      s << "ADVANCEDSHE";
+      break;
+    default:
+      s << "UKNOWN";
+      break;
+  }
+  return s;
+}
 
-#include "math/nbtheory.h"
+std::ostream &operator<<(std::ostream &s, MODE m) {
+  switch (m) {
+    case RLWE:
+      s << "RLWE";
+      break;
+    case OPTIMIZED:
+      s << "OPTIMIZED";
+      break;
+    case SPARSE:
+      s << "SPARSE";
+      break;
+    default:
+      s << "UKNOWN";
+      break;
+  }
+  return s;
+}
 
-#include "math/distrgen.h"
-
-#include "lattice/backend.h"
-#include "lattice/stdlatticeparms.h"
-#include "utils/debug.h"
-#include "utils/defines.h"
-
-#endif /* SRC_CORE_INCLUDE_PALISADECORE_H_ */
+std::ostream& operator<<(std::ostream& s, RescalingTechnique t) {
+    switch (t) {
+    case APPROXRESCALE:
+        s << "APPROXRESCALE";
+        break;
+    case EXACTRESCALE:
+        s << "EXACTRESCALE";
+        break;
+    case APPROXAUTO:
+        s << "APPROXAUTO";
+        break;
+    default:
+        s << "UKNOWN";
+        break;
+    }
+    return s;
+}

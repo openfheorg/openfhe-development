@@ -40,6 +40,7 @@
 #include "utils/caller_info.h"
 #include "utils/hashutil.h"
 #include "utils/inttypes.h"
+#include "constants.h"
 
 #include "math/distrgen.h"
 
@@ -3077,7 +3078,9 @@ class LPCryptoParameters : public Serializable {
     m_encodingParams->SetPlaintextModulus(plaintextModulus);
   }
 
-  virtual bool operator==(const LPCryptoParameters<Element> &cmp) const = 0;
+  virtual bool operator==(const LPCryptoParameters<Element>& cmp) const {
+      return *m_encodingParams == *cmp.GetEncodingParams();
+  }
   virtual bool operator!=(const LPCryptoParameters<Element> &cmp) const {
     return !(*this == cmp);
   }

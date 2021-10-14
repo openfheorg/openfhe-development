@@ -21,6 +21,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "scheme/ckks/cryptocontext-ckks.h"
+#include "gen-cryptocontext.h"
+#include "UnitTestCompareCryptoContext.h"
+
 #include <fstream>
 #include <iostream>
 #include "UnitTestUtils.h"
@@ -83,16 +89,27 @@ namespace {
         return cryptoContext;
     }
     static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC(TEST_ESTIMATED_RESULT testResult = SUCCESS) {
-        int plaintextModulus = 256;
-        double sigma = 4;
-        double rootHermiteFactor = 1.03;
-        uint64_t maxDepth = (testResult != INVALID_MAX_DEPTH) ? 4 : 3;
+        CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters;
+        parameters.SetPlaintextModulus(256);
+        parameters.SetStandardDeviation(4);
+        parameters.SetRootHermiteFactor(1.03);
+        parameters.SetEvalMultCount(3);
+        parameters.SetMaxDepth((testResult != INVALID_MAX_DEPTH) ? 4 : 3);
+        
+        CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+        {
+            int plaintextModulus = 256;
+            double sigma = 4;
+            double rootHermiteFactor = 1.03;
+            uint64_t maxDepth = (testResult != INVALID_MAX_DEPTH) ? 4 : 3;
 
-        // Set Crypto Parameters
-        CryptoContext<DCRTPoly> cryptoContext =
-            CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
+            // Set Crypto Parameters
+            CryptoContext<DCRTPoly> cryptoContextOld =
+                CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
                     plaintextModulus, rootHermiteFactor, sigma, 0, 3, 0, OPTIMIZED, maxDepth);
 
+            EXPECT_EQ(Equal(*cryptoContext, *cryptoContextOld), true);
+        }
         cryptoContext->Enable(ENCRYPTION);
         cryptoContext->Enable(SHE);
 
@@ -107,27 +124,39 @@ namespace {
                             enum KeySwitchTechnique ksTech = HYBRID, usint ringDim = 0,
                             */
 
-        uint32_t multDepth = 4;
-        int plaintextModulus = 65537;
-        SecurityLevel securityLevel = HEStd_NotSet;
-        float stdDev = 3.19;
-        //int maxDepth = 4;
-        int maxDepth = (testResult != INVALID_MAX_DEPTH) ? 4 : 3;
-        MODE mode = OPTIMIZED;
-        KeySwitchTechnique ksTech = HYBRID;
-        usint ringDim = 16;
+        CCParams<CryptoContextBGVRNS<DCRTPoly>> parameters;
+        parameters.SetMultiplicativeDepth(4);
+        parameters.SetPlaintextModulus(65537);
+        parameters.SetSecurityLevel(HEStd_NotSet);
+        parameters.SetRingDim(16);
+        parameters.SetRelinWindow(1);
+        parameters.SetMaxDepth((testResult != INVALID_MAX_DEPTH) ? 4 : 3);
 
-        // Set Crypto Parameters
-        CryptoContext<DCRTPoly> cryptoContext =
-            CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(multDepth,
-                                                                   plaintextModulus,
-                                                                   securityLevel,
-                                                                   stdDev,
-                                                                   maxDepth,
-                                                                   mode,
-                                                                   ksTech,
-                                                                   ringDim);
+        CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+        {
+            uint32_t multDepth = 4;
+            int plaintextModulus = 65537;
+            SecurityLevel securityLevel = HEStd_NotSet;
+            float stdDev = 3.19;
+            //int maxDepth = 4;
+            int maxDepth = (testResult != INVALID_MAX_DEPTH) ? 4 : 3;
+            MODE mode = OPTIMIZED;
+            KeySwitchTechnique ksTech = HYBRID;
+            usint ringDim = 16;
 
+            // Set Crypto Parameters
+            CryptoContext<DCRTPoly> cryptoContextOld =
+                CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(multDepth,
+                    plaintextModulus,
+                    securityLevel,
+                    stdDev,
+                    maxDepth,
+                    mode,
+                    ksTech,
+                    ringDim);
+
+            EXPECT_EQ(Equal(*cryptoContext, *cryptoContextOld), true);
+        }
         cryptoContext->Enable(ENCRYPTION);
         cryptoContext->Enable(SHE);
         cryptoContext->Enable(LEVELEDSHE);
@@ -136,27 +165,41 @@ namespace {
     }
 
     static CryptoContext<DCRTPoly> MakeCKKSDCRTPolyCC(TEST_ESTIMATED_RESULT testResult = SUCCESS) {
-        uint32_t multDepth = 4;
-        uint32_t batchSize = 8;
-        SecurityLevel securityLevel = HEStd_NotSet;
-        usint ringDim = 16; 
-
+        CCParams<CryptoContextCKKS<DCRTPoly>> parameters;
+        parameters.SetMultiplicativeDepth(4);
 #if NATIVEINT == 128
-        uint32_t scaleFactorBits = 78;
-        // Set Crypto Parameters
-        CryptoContext<DCRTPoly> cryptoContext =
-            CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-                    multDepth, scaleFactorBits, batchSize, securityLevel, ringDim,
-		    APPROXAUTO,HYBRID,0,3);
+        parameters.SetScalingFactorBits(78);
 #else
-        uint32_t scaleFactorBits = 50;
-        // Set Crypto Parameters
-        CryptoContext<DCRTPoly> cryptoContext =
-            CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-                    multDepth, scaleFactorBits, batchSize, securityLevel, ringDim,
-		    EXACTRESCALE,HYBRID,0,3);
+        parameters.SetScalingFactorBits(50);
 #endif
+        parameters.SetBatchSize(8);
+        parameters.SetSecurityLevel(HEStd_NotSet);
+        parameters.SetRingDim(16);
+        parameters.SetMaxDepth(3);
 
+        CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+        {
+            uint32_t multDepth = 4;
+            uint32_t batchSize = 8;
+            SecurityLevel securityLevel = HEStd_NotSet;
+            usint ringDim = 16;
+#if NATIVEINT == 128
+            uint32_t scaleFactorBits = 78;
+            // Set Crypto Parameters
+            CryptoContext<DCRTPoly> cryptoContextOld =
+                CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
+                    multDepth, scaleFactorBits, batchSize, securityLevel, ringDim,
+                    APPROXAUTO, HYBRID, 0, 3);
+#else
+            uint32_t scaleFactorBits = 50;
+            // Set Crypto Parameters
+            CryptoContext<DCRTPoly> cryptoContextOld =
+                CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
+                    multDepth, scaleFactorBits, batchSize, securityLevel, ringDim,
+                    EXACTRESCALE, HYBRID, 0, 3);
+#endif
+            EXPECT_EQ(Equal(*cryptoContext, *cryptoContextOld), true);
+        }
         cryptoContext->Enable(ENCRYPTION);
         cryptoContext->Enable(SHE);
         cryptoContext->Enable(LEVELEDSHE);

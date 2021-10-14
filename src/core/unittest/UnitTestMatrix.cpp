@@ -77,7 +77,7 @@ TEST(UTMatrix, serializer) {
 }
 
 template <typename Element>
-void basic_il2n_math(const string& msg) {
+void basic_il2n_math(const std::string& msg) {
   Matrix<Element> z(secureIL2nAlloc<Element>(), 2, 2);
   Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 2, 2).Ones();
   Matrix<Element> I =
@@ -95,7 +95,7 @@ TEST(UTMatrix, basic_il2n_math) {
 }
 
 template <typename T>
-void basic_int_math(const string& msg) {
+void basic_int_math(const std::string& msg) {
   Matrix<T> z(T::Allocator, 2, 2);
   Matrix<T> n = Matrix<T>(T::Allocator, 2, 2).Ones();
   Matrix<T> I = Matrix<T>(T::Allocator, 2, 2).Identity();
@@ -109,7 +109,7 @@ TEST(UTMatrix, basic_int_math) {
 }
 
 template <typename V>
-void basic_intvec_math(const string& msg) {
+void basic_intvec_math(const std::string& msg) {
   DEBUG_FLAG(false);
 
   typename V::Integer modulus("67108913");
@@ -141,7 +141,7 @@ TEST(UTMatrix, basic_intvec_math) {
 }
 
 template <typename Element>
-void transpose(const string& msg) {
+void transpose(const std::string& msg) {
   Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 4, 2).Ones();
   Matrix<Element> nT = Matrix<Element>(n).Transpose();
   Matrix<Element> I =
@@ -152,7 +152,7 @@ void transpose(const string& msg) {
 TEST(UTMatrix, transpose) { RUN_ALL_POLYS(transpose, "transpose") }
 
 template <typename Element>
-void scalar_mult(const string& msg) {
+void scalar_mult(const std::string& msg) {
   Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 4, 2).Ones();
   auto one = secureIL2nAlloc<Element>()();
   one = 1;
@@ -163,7 +163,7 @@ void scalar_mult(const string& msg) {
 TEST(UTMatrix, scalar_mult) { RUN_ALL_POLYS(scalar_mult, "scalar_mult") }
 
 template <typename Element>
-void Poly_mult_square_matrix(const string& msg) {
+void Poly_mult_square_matrix(const std::string& msg) {
   int32_t dimension = 8;
 
   Matrix<Element> A =
@@ -200,7 +200,7 @@ TEST(UTMatrix, Poly_mult_square_matrix) {
 }
 
 template <typename Element>
-void Poly_mult_square_matrix_caps(const string& msg) {
+void Poly_mult_square_matrix_caps(const std::string& msg) {
   int32_t dimension = 16;
 
   MatrixStrassen<Element> A =
@@ -272,7 +272,7 @@ TEST(UTMatrix, cholesky) {
 }
 
 template <typename Element>
-void gadget_vector(const string& msg) {
+void gadget_vector(const std::string& msg) {
   Matrix<Element> n =
       Matrix<Element>(secureIL2nAlloc<Element>(), 1, 4).GadgetVector();
   auto v = secureIL2nAlloc<Element>()();
@@ -289,7 +289,7 @@ void gadget_vector(const string& msg) {
 TEST(UTMatrix, gadget_vector) { RUN_ALL_POLYS(gadget_vector, "gadget_vector") }
 
 template <typename Element>
-void rotate_vec_result(const string& msg) {
+void rotate_vec_result(const std::string& msg) {
   Matrix<Element> n = Matrix<Element>(fastIL2nAlloc<Element>(), 1, 2).Ones();
   const typename Element::Integer& modulus = n(0, 0).GetModulus();
   n.SetFormat(Format::COEFFICIENT);
@@ -315,7 +315,7 @@ TEST(UTMatrix, rotate_vec_result) {
 }
 
 template <typename Element>
-void rotate(const string& msg) {
+void rotate(const std::string& msg) {
   Matrix<Element> n = Matrix<Element>(fastIL2nAlloc<Element>(), 1, 2).Ones();
 
   n.SetFormat(Format::COEFFICIENT);
@@ -337,7 +337,7 @@ void rotate(const string& msg) {
 TEST(UTMatrix, rotate) { RUN_ALL_POLYS(rotate, "rotate") }
 
 template <typename Element>
-void vstack(const string& msg) {
+void vstack(const std::string& msg) {
   Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 4, 2).Ones();
   Matrix<Element> m = Matrix<Element>(secureIL2nAlloc<Element>(), 8, 2).Ones();
   EXPECT_EQ(m, n.VStack(n)) << msg;
@@ -346,7 +346,7 @@ void vstack(const string& msg) {
 TEST(UTMatrix, vstack) { RUN_ALL_POLYS(vstack, "vstack") }
 
 template <typename Element>
-void hstack(const string& msg) {
+void hstack(const std::string& msg) {
   Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 2, 2).Ones();
   Matrix<Element> m = Matrix<Element>(secureIL2nAlloc<Element>(), 2, 4).Ones();
   EXPECT_EQ(m, n.HStack(n)) << msg;
@@ -355,7 +355,7 @@ void hstack(const string& msg) {
 TEST(UTMatrix, hstack) { RUN_ALL_POLYS(hstack, "hstack") }
 
 template <typename Element>
-void norm(const string& msg) {
+void norm(const std::string& msg) {
   Matrix<Element> n = Matrix<Element>(secureIL2nAlloc<Element>(), 2, 2).Ones();
   EXPECT_EQ(1.0, n.Norm());
   Matrix<Element> m =

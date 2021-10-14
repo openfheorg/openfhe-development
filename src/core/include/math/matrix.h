@@ -31,7 +31,6 @@
 #include <string>
 #include <vector>
 
-#include "encoding/encodings.h"
 #include "lattice/backend.h"
 #include "math/backend.h"
 #include "math/distrgen.h"

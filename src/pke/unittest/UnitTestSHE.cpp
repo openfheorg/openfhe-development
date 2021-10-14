@@ -21,6 +21,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "gen-cryptocontext.h"
+#include "UnitTestCompareCryptoContext.h"
+
 #include <iostream>
 #include <list>
 #include <vector>
@@ -601,16 +606,29 @@ GENERATE_TEST_CASES_FUNC_METADATA(UTSHE, UnitTest_Metadata, 512, 65537)
 
 TEST_F(UTSHE, UnitTest_EvalSum_BFVrns_All) {
   uint32_t batchSize = 1 << 12;
+  CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters;
+  parameters.SetPlaintextModulus(65537);
+  parameters.SetStandardDeviation(3.2);
+  parameters.SetEvalMultCount(2);
+  parameters.SetRelinWindow(20);
+  parameters.SetScalingFactorBits(60);
+  parameters.SetBatchSize(batchSize);
+  parameters.SetRingDim(batchSize);
 
-  EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(65537));
-  encodingParams->SetBatchSize(batchSize);
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          encodingParams, HEStd_128_classic, 3.2, 0, 2, 0, OPTIMIZED, 2, 20, 60,
-          batchSize);
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  {
 
+      EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(65537));
+      encodingParams->SetBatchSize(batchSize);
+      CryptoContext<DCRTPoly> ccOld =
+          CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
+              encodingParams, HEStd_128_classic, 3.2, 0, 2, 0, OPTIMIZED, 2, 20, 60,
+              batchSize);
+      cc->Enable(ENCRYPTION);
+      cc->Enable(SHE);
+
+      EXPECT_EQ(Equal(*cc, *ccOld), true);
+  }
   // Initialize the public key containers.
   LPKeyPair<DCRTPoly> kp = cc->KeyGen();
 
@@ -646,15 +664,28 @@ TEST_F(UTSHE, UnitTest_EvalSum_BFVrns_All) {
 }
 
 TEST_F(UTSHE, keyswitch_SingleCRT) {
-  usint m = 512;
+    //CCParams<CryptoContextBGVRNS<DCRTPoly>> parameters;
+    ////parameters.SetMultiplicativeDepth(1);
+    //parameters.SetPlaintextModulus(256);
+    //parameters.SetCyclotomicOrder(512);
+    //parameters.SetStandardDeviation(4);
+    //parameters.SetRelinWindow(1);
+    //parameters.SetNumPrimes(50);
 
-  float stdDev = 4;
+    //CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    //{
+        usint m = 512;
 
-  shared_ptr<DCRTPoly::Params> params =
-      ElemParamFactory::GenElemParams<DCRTPoly::Params>(m, 50);
+        float stdDev = 4;
 
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(params, 256, 1, stdDev);
+        shared_ptr<DCRTPoly::Params> params =
+            ElemParamFactory::GenElemParams<DCRTPoly::Params>(m, 50);
+
+        CryptoContext<DCRTPoly> cc =
+            CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(params, 256, 1, stdDev);
+
+        //EXPECT_EQ(Equal(*cc, *ccOld), true);
+    //}
   cc->Enable(ENCRYPTION);
   cc->Enable(SHE);
 

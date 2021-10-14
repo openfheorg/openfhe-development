@@ -1,4 +1,4 @@
-// @file version.h -- PALISADE version strings
+// @file inttypes.cpp  This code provides basic integer types and enums.
 // @author TPOC: contact@palisade-crypto.org
 //
 // @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
@@ -21,20 +21,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef SRC_CORE_INCLUDE_PALISADECORE_H_
-#define SRC_CORE_INCLUDE_PALISADECORE_H_
+#include "utils/inttypes.h"
+#include <ostream>
 
-#include "version.h"
 
-#include "math/backend.h"
+std::ostream &operator<<(std::ostream &s, Format f) {
+  switch (f) {
+    case EVALUATION:
+      s << "EVALUATION";
+      break;
+    case COEFFICIENT:
+      s << "COEFFICIENT";
+      break;
+    default:
+      s << "UKNOWN";
+      break;
+  }
+  return s;
+}
 
-#include "math/nbtheory.h"
-
-#include "math/distrgen.h"
-
-#include "lattice/backend.h"
-#include "lattice/stdlatticeparms.h"
-#include "utils/debug.h"
-#include "utils/defines.h"
-
-#endif /* SRC_CORE_INCLUDE_PALISADECORE_H_ */

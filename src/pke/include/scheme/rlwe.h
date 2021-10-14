@@ -283,9 +283,11 @@ class LPCryptoParametersRLWE : public LPCryptoParameters<Element> {
     const auto *el =
         dynamic_cast<const LPCryptoParametersRLWE<Element> *>(&rhs);
 
-    if (el == nullptr) return false;
+    if (el == nullptr)
+        return false;
 
-    return this->GetPlaintextModulus() == el->GetPlaintextModulus() &&
+    return LPCryptoParameters<Element>::operator == (*el) &&
+           this->GetPlaintextModulus() == el->GetPlaintextModulus() &&
            *this->GetElementParams() == *el->GetElementParams() &&
            *this->GetEncodingParams() == *el->GetEncodingParams() &&
            m_distributionParameter == el->GetDistributionParameter() &&

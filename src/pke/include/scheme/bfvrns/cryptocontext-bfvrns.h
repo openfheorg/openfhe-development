@@ -1,7 +1,7 @@
-// @file version.h -- PALISADE version strings
+// @file cryptocontext-bfvrns.h -- API to generate BFV crypto context.
 // @author TPOC: contact@palisade-crypto.org
 //
-// @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
+// @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT))
 // All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -21,20 +21,30 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef SRC_CORE_INCLUDE_PALISADECORE_H_
-#define SRC_CORE_INCLUDE_PALISADECORE_H_
+#ifndef _CRYPTOCONTEXT_BFVRNS_H_
+#define _CRYPTOCONTEXT_BFVRNS_H_
 
-#include "version.h"
+#include "scheme/bfvrns/gen-cryptocontext-bfvrns-internal.h"
+#include "scheme/bfvrns/cryptocontextparams-bfvrns.h"
+#include "cryptocontext.h"
 
-#include "math/backend.h"
+namespace lbcrypto {
 
-#include "math/nbtheory.h"
+template <typename Element>
+class CryptoContextBFVRNS {
 
-#include "math/distrgen.h"
+public:
+    using ContextType = CryptoContext<Element>; // required by GenCryptoContext() in gen-cryptocontext.h
+    using CryptoParams = LPCryptoParametersBFVrns<Element>;
+    using PublicKeyEncryptionScheme = LPPublicKeyEncryptionSchemeBFVrns<Element>;
+    using Factory = CryptoContextFactory<Element>;
 
-#include "lattice/backend.h"
-#include "lattice/stdlatticeparms.h"
-#include "utils/debug.h"
-#include "utils/defines.h"
+    static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBFVRNS<Element>>& parameters) {
+        return genCryptoContextBFVRNSInternal<CryptoContextBFVRNS, Element>(parameters);
+    }
+};
 
-#endif /* SRC_CORE_INCLUDE_PALISADECORE_H_ */
+}  // namespace lbcrypto
+
+#endif // _CRYPTOCONTEXT_BFVRNS_H_
+

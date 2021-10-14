@@ -23,9 +23,13 @@
 
 #define PROFILE
 
+#include "scheme/ckks/cryptocontext-ckks.h"
+#include "gen-cryptocontext.h"
 #include "palisade.h"
 
 using namespace lbcrypto;
+
+//#define NEW_GET_CRYPTOCONTEXT
 
 int main() {
   // Step 1: Setup CryptoContext
@@ -87,6 +91,7 @@ int main() {
    */
   uint32_t batchSize = 8;
 
+#ifndef NEW_GET_CRYPTOCONTEXT
   /* A4) Desired security level based on FHE standards.
    * This parameter can take four values. Three of the possible values
    * correspond to 128-bit, 192-bit, and 256-bit security, and the fourth value
@@ -106,6 +111,7 @@ int main() {
 
   // The following call creates a CKKS crypto context based on the
   // arguments defined above.
+  std::cout << "\nUsing the old mechanism to generate cryptocontext\n\n";
   CryptoContext<DCRTPoly> cc =
       CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
           multDepth, scaleFactorBits, batchSize, securityLevel);
@@ -113,6 +119,17 @@ int main() {
   std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension()
             << std::endl
             << std::endl;
+
+
+#else
+  std::cout << "\nUsing the new mechanism to generate cryptocontext\n\n";
+  CCParams<CryptoContextCKKS<DCRTPoly>> parameters;
+  parameters.SetMultiplicativeDepth(multDepth);
+  parameters.SetScalingFactorBits(scaleFactorBits);
+  parameters.SetBatchSize(batchSize);
+
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+#endif
 
   // Enable the features that you wish to use
   cc->Enable(ENCRYPTION);

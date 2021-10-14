@@ -3,7 +3,7 @@
 #
 
 # all files named *-impl.cpp are compiled to form the library
-file (GLOB PKE_SRC_FILES CONFIGURE_DEPENDS lib/*-impl.cpp lib/scheme/*/*-impl.cpp)
+file (GLOB PKE_SRC_FILES CONFIGURE_DEPENDS lib/*-impl.cpp lib/scheme/*/*-impl.cpp lib/scheme/*-impl.cpp lib/encoding/*.cpp)
 
 include_directories(${CORE_INCLUDE_DIRS})
 list(APPEND PKE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include")

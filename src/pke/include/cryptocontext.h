@@ -3141,7 +3141,7 @@ class CryptoContextFactory {
       int maxDepth = 2, KeySwitchTechnique ksTech = BV,
       RescalingTechnique rsTech = APPROXRESCALE);
 
-  /**
+ /**
    * construct a PALISADE CryptoContextImpl for the CKKS Scheme
    * @param encodingParams
    * @param ringdim

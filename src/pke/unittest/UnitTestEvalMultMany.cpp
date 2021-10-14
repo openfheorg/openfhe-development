@@ -21,6 +21,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
+#include "UnitTestCompareCryptoContext.h"
+
 #include <fstream>
 #include <iostream>
 #include "gtest/gtest.h"
@@ -64,14 +68,26 @@ static CryptoContext<Poly> MakeBFVPolyCC() {
 }
 
 static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC() {
-  int plaintextModulus = 256;
-  double sigma = 4;
-  double rootHermiteFactor = 1.03;
+    CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters; 
+    parameters.SetPlaintextModulus(256);
+    parameters.SetStandardDeviation(4);
+    parameters.SetRootHermiteFactor(1.03);
+    parameters.SetEvalMultCount(3);
+    parameters.SetMaxDepth(4);
 
-  // Set Crypto Parameters
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          plaintextModulus, rootHermiteFactor, sigma, 0, 3, 0, OPTIMIZED, 4);
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+    {
+        int plaintextModulus = 256;
+        double sigma = 4;
+        double rootHermiteFactor = 1.03;
+
+        // Set Crypto Parameters
+        CryptoContext<DCRTPoly> cryptoContextOld =
+            CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
+                plaintextModulus, rootHermiteFactor, sigma, 0, 3, 0, OPTIMIZED, 4);
+
+        EXPECT_EQ(Equal(*cryptoContext, *cryptoContextOld), true);
+    }
 
   cryptoContext->Enable(ENCRYPTION);
   cryptoContext->Enable(SHE);

@@ -238,10 +238,14 @@ class PlaintextImpl {
    * @return the Polynomial that the element was encoded into
    */
   template <typename Element>
-  Element& GetElement();
+  Element& GetElement() {
+      PALISADE_THROW(not_implemented_error, "Generic GetElement() is not implemented");
+  }
 
   template <typename Element>
-  const Element& GetElement() const;
+  const Element& GetElement() const {
+      PALISADE_THROW(not_implemented_error, "Generic GetElement() is not implemented");
+  }
 
   /**
    * GetElementRingDimension

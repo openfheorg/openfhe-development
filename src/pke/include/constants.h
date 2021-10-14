@@ -1,7 +1,7 @@
-// @file version.h -- PALISADE version strings
+// @file constants.h
 // @author TPOC: contact@palisade-crypto.org
 //
-// @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
+// @copyright Copyright (c) 2021, New Jersey Institute of Technology (NJIT))
 // All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -21,20 +21,39 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef SRC_CORE_INCLUDE_PALISADECORE_H_
-#define SRC_CORE_INCLUDE_PALISADECORE_H_
+#ifndef _CONSTANTS_H_
+#define _CONSTANTS_H_
 
-#include "version.h"
+#include <iosfwd>
 
-#include "math/backend.h"
+/**
+ * @brief Lists all features supported by public key encryption schemes
+ */
+enum PKESchemeFeature {
+    ENCRYPTION = 0x01,
+    PRE = 0x02,
+    SHE = 0x04,
+    FHE = 0x08,
+    LEVELEDSHE = 0x10,
+    MULTIPARTY = 0x20,
+    ADVANCEDSHE = 0x40
+};
+std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
 
-#include "math/nbtheory.h"
+/**
+ * @brief Lists all modes for RLWE schemes, such as BGV and BFV
+ */
+enum MODE { RLWE = 0, OPTIMIZED = 1, SPARSE = 2 };
+std::ostream& operator<<(std::ostream& s, MODE m);
 
-#include "math/distrgen.h"
 
-#include "lattice/backend.h"
-#include "lattice/stdlatticeparms.h"
-#include "utils/debug.h"
-#include "utils/defines.h"
+enum RescalingTechnique {
+    APPROXRESCALE,
+    EXACTRESCALE,
+    APPROXAUTO,
+    INVALID_RS_TECHNIQUE  // TODO (dsuponit): make this the first value
+};
+std::ostream& operator<<(std::ostream& s, RescalingTechnique t);
 
-#endif /* SRC_CORE_INCLUDE_PALISADECORE_H_ */
+#endif // _CONSTANTS_H_
+

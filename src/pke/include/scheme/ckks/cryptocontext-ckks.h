@@ -1,7 +1,7 @@
-// @file version.h -- PALISADE version strings
+// @file cryptocontext-ckks.h -- API to generate CKKS crypto context.
 // @author TPOC: contact@palisade-crypto.org
 //
-// @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
+// @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT))
 // All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -21,20 +21,30 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef SRC_CORE_INCLUDE_PALISADECORE_H_
-#define SRC_CORE_INCLUDE_PALISADECORE_H_
+#ifndef _CRYPTOCONTEXT_CKKS_H_
+#define _CRYPTOCONTEXT_CKKS_H_
 
-#include "version.h"
+#include "scheme/ckks/gen-cryptocontext-ckks-internal.h"
+#include "scheme/ckks/cryptocontextparams-ckks.h"
+#include "cryptocontext.h"  // TODO: use forward declaration instead?
 
-#include "math/backend.h"
+namespace lbcrypto {
 
-#include "math/nbtheory.h"
+template <typename Element>
+class CryptoContextCKKS {
 
-#include "math/distrgen.h"
+public:
+    using ContextType               = CryptoContext<Element>; // required by GenCryptoContext() in gen-cryptocontext.h
+    using PublicKeyEncryptionScheme = LPPublicKeyEncryptionSchemeCKKS<Element>;
+    using Factory                   = CryptoContextFactory<Element>;
+    using CryptoParams              = LPCryptoParametersCKKS<Element>;
 
-#include "lattice/backend.h"
-#include "lattice/stdlatticeparms.h"
-#include "utils/debug.h"
-#include "utils/defines.h"
+    static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextCKKS<Element>>& parameters) {
+        return genCryptoContextCKKSInternal<CryptoContextCKKS, Element>(parameters);
+    }
+};
 
-#endif /* SRC_CORE_INCLUDE_PALISADECORE_H_ */
+}  // namespace lbcrypto
+
+#endif // _CRYPTOCONTEXT_CKKS_H_
+

@@ -21,13 +21,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "scheme/ckks/cryptocontext-ckks.h"
+#include "scheme/null/cryptocontext-null.h"
+#include "gen-cryptocontext.h"
+
 #include <algorithm>
 #include <iostream>
 #include <vector>
 #include "UnitTestUtils.h"
+#include "UnitTestCompareCryptoContext.h"
 #include "gtest/gtest.h"
 
 #include "cryptocontext.h"
+
 
 #include "encoding/encodings.h"
 
@@ -78,16 +86,19 @@ std::vector<int64_t> NullAutomorphismPackedArray(usint i,
                                                  TEST_ESTIMATED_RESULT testResult = SUCCESS) {
   using Element = Poly;
   usint m = 16;
-  BigInteger q("67108913");
-  // BigInteger rootOfUnity("61564");
   usint plaintextModulus = 17;
 
-  // float stdDev = 4;
+  CCParams<CryptoContextNULL<Element>> parameters;
+  parameters.SetCyclotomicOrder(m);
+  parameters.SetPlaintextModulus(plaintextModulus);
 
-  // auto params = std::make_shared<ILParams>(m, q, rootOfUnity);
-
-  CryptoContext<Element> cc =
+  CryptoContext<Element> cc = GenCryptoContext(parameters);
+  {
+      CryptoContext<Element> ccOld =
       CryptoContextFactory<Element>::genCryptoContextNull(m, plaintextModulus);
+
+      EXPECT_EQ(Equal(*cc, *ccOld), true);
+  }
 
   cc->Enable(ENCRYPTION);
   cc->Enable(SHE);
@@ -124,16 +135,31 @@ std::vector<int64_t> NullAutomorphismPackedArray(usint i,
 std::vector<int64_t> BGVrnsAutomorphismPackedArray(usint i,
                                                 TEST_ESTIMATED_RESULT testResult = SUCCESS) {
   using Element = DCRTPoly;
-  // Set the main parameters
-  int plaintextModulus = 17;
-  double sigma = 3.2;
-  SecurityLevel securityLevel = HEStd_NotSet;
-  uint32_t depth = 1;
 
-  // Instantiate the crypto context
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(
-          depth, plaintextModulus, securityLevel, sigma, 2, OPTIMIZED, BV, 8, 0, 0, 0, 1);
+  CCParams<CryptoContextBGVRNS<DCRTPoly>> parameters;
+  parameters.SetMultiplicativeDepth(1);
+  parameters.SetPlaintextModulus(17);
+  parameters.SetSecurityLevel(HEStd_NotSet);
+  parameters.SetStandardDeviation(3.2);
+  parameters.SetKeySwitchTechnique(BV);
+  parameters.SetRingDim(8);
+  parameters.SetRelinWindow(1);
+
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  {
+      // Set the main parameters
+      int plaintextModulus = 17;
+      double sigma = 3.2;
+      SecurityLevel securityLevel = HEStd_NotSet;
+      uint32_t depth = 1;
+
+      // Instantiate the crypto context
+      CryptoContext<DCRTPoly> ccOld =
+          CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(
+              depth, plaintextModulus, securityLevel, sigma, 2, OPTIMIZED, BV, 8, 0, 0, 0, 1);
+
+	  EXPECT_EQ(Equal(*cc, *ccOld), true);
+  }
 
   // Enable features that you wish to use
   cc->Enable(ENCRYPTION);
@@ -170,6 +196,23 @@ std::vector<int64_t> BGVrnsAutomorphismPackedArray(usint i,
 std::vector<int64_t> BFVAutomorphismPackedArray(usint i,
                                                 TEST_ESTIMATED_RESULT testResult = SUCCESS) {
   using Element = Poly;
+
+  // TODO (dsuponit): are we retiring genCryptoContextBFV() and keeping genCryptoContextBFVrns() only?
+  // TODO (dsuponit): shoud the call to genCryptoContextBFV() be replaced with genCryptoContextBFVrns()?
+  //CCParams<CryptoContextBFVRNS<Element>> parameters;
+  //parameters.SetCyclotomicOrder(16);
+  //parameters.SetCiphertextModulus(67108913); // TODO (dsuponit): this function doesn't exist
+  //parameters.SetRootOfUnity(61564); // TODO (dsuponit): this function doesn't exist
+  //parameters.SetPlaintextModulus(17);
+  //parameters.SetRootHermiteFactor(1.6);
+  //parameters.SetRelinWindow(1);
+  //parameters.SetStandardDeviation(4);
+  //BigInteger BBIPlaintextModulus(parameters.GetPlaintextModulus());
+  //BigInteger delta(parameters.GetCiphertextModulus().DividedBy(BBIPlaintextModulus));
+  //parameters.SetDelta(delta); //  3947583  // TODO (dsuponit): this function doesn't exist
+  //parameters.SetMode(RLWE);
+
+  //CryptoContext<Element> cc = GenCryptoContext(parameters);
   usint m = 16;
   BigInteger q("67108913");
   BigInteger rootOfUnity("61564");
@@ -218,16 +261,28 @@ std::vector<int64_t> BFVAutomorphismPackedArray(usint i,
 std::vector<int64_t> BFVrnsAutomorphismPackedArray(usint i,
                                                    TEST_ESTIMATED_RESULT testResult = SUCCESS) {
   using Element = DCRTPoly;
-  PlaintextModulus p = 65537;
-  double sigma = 4;
-  double rootHermiteFactor = 1.006;
+  CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters;
+  parameters.SetPlaintextModulus(65537);
+  parameters.SetStandardDeviation(4);
+  parameters.SetRootHermiteFactor(1.006);
+  parameters.SetEvalMultCount(1);
 
-  EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(p));
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
-  // Set Crypto Parameters
-  CryptoContext<Element> cc =
-      CryptoContextFactory<Element>::genCryptoContextBFVrns(
-          encodingParams, rootHermiteFactor, sigma, 0, 1, 0, OPTIMIZED, 2);
+  {
+      PlaintextModulus p = 65537;
+      double sigma = 4;
+      double rootHermiteFactor = 1.006;
+
+      EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(p));
+
+      // Set Crypto Parameters
+      CryptoContext<Element> ccOld =
+          CryptoContextFactory<Element>::genCryptoContextBFVrns(
+              encodingParams, rootHermiteFactor, sigma, 0, 1, 0, OPTIMIZED, 2);
+
+      EXPECT_EQ(Equal(*cc, *ccOld), true);
+  }
 
   cc->Enable(ENCRYPTION);
   cc->Enable(SHE);
@@ -575,17 +630,29 @@ TEST_F(UTAUTOMORPHISM, Test_BFV_Automorphism_Arb) { EXPECT_EQ(1, 1); }
 std::vector<std::complex<double>> CKKSEvalAtIndexPackedArray(usint i,
                                                              TEST_ESTIMATED_RESULT testResult = SUCCESS) {
   using Element = DCRTPoly;
-  uint32_t multDepth = 1;
-  uint32_t scaleFactorBits = 50;
-  uint32_t batchSize = 8;
-  SecurityLevel securityLevel = HEStd_NotSet;
-  usint ringDim = 16;
-  CryptoContext<Element> cc = CryptoContextFactory<Element>::genCryptoContextCKKS(multDepth,
-                                                                                  scaleFactorBits,
-                                                                                  batchSize,
-                                                                                  securityLevel,
-                                                                                  ringDim);
 
+  CCParams<CryptoContextCKKS<Element>> parameters;
+  parameters.SetMultiplicativeDepth(1);
+  parameters.SetScalingFactorBits(50);
+  parameters.SetBatchSize(8);
+  parameters.SetSecurityLevel(HEStd_NotSet);
+  parameters.SetRingDim(16);
+
+  CryptoContext<Element> cc = GenCryptoContext(parameters);
+  {
+      uint32_t multDepth = 1;
+      uint32_t scaleFactorBits = 50;
+      uint32_t batchSize = 8;
+      SecurityLevel securityLevel = HEStd_NotSet;
+      usint ringDim = 16;
+      CryptoContext<Element> ccOld = CryptoContextFactory<Element>::genCryptoContextCKKS(multDepth,
+          scaleFactorBits,
+          batchSize,
+          securityLevel,
+          ringDim);
+
+      EXPECT_EQ(Equal(*cc, *ccOld), true);
+  }
   cc->Enable(ENCRYPTION);
   cc->Enable(SHE);
 
@@ -610,10 +677,8 @@ std::vector<std::complex<double>> CKKSEvalAtIndexPackedArray(usint i,
   Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testResult) ?
                                     cc->Encrypt(nullptr, intArray) : cc->Encrypt(kp.publicKey, intArray);
 
-  if( INVALID_INDEX == testResult ) {
+  if( INVALID_INDEX == testResult )
     index = invalidIndexAutomorphism;
-  }
-
   Ciphertext<Element> p1 = cc->EvalAtIndex(ciphertext, index);
   Ciphertext<Element> p2 = cc->EvalAtIndex(p1, -index);
 
@@ -626,26 +691,26 @@ std::vector<std::complex<double>> CKKSEvalAtIndexPackedArray(usint i,
 }
 //================================================================================================
 TEST_F(UTAUTOMORPHISM, Test_CKKS_EvalAtIndex) {
-  PackedEncoding::Destroy();
+    PackedEncoding::Destroy();
 
-  for (auto index : initIndexList) {
-    auto morphedVector = CKKSEvalAtIndexPackedArray(index);
-    EXPECT_TRUE(checkEquality(morphedVector, vector8Complex));
-  }
+    for (auto index : initIndexList) {
+        auto morphedVector = CKKSEvalAtIndexPackedArray(index);
+        EXPECT_TRUE(checkEquality(morphedVector, vector8Complex));
+    }
 }
+  
+  TEST_F(UTAUTOMORPHISM, Test_CKKS_EvalAtIndex_CORNER_CASES) {
+    PackedEncoding::Destroy();
 
-TEST_F(UTAUTOMORPHISM, Test_CKKS_EvalAtIndex_CORNER_CASES) {
-  PackedEncoding::Destroy();
+    // Rotation with index at 0 should result in nothing happening and thus
+    // The checkEquality should be true. Currently there is a bug in the code
+    // however and this is not the case.
+    static const std::vector<usint> cornerCaseIndexList{ 0 };
 
-  // Rotation with index at 0 should result in nothing happening and thus
-  // The checkEquality should be true. Currently there is a bug in the code
-  // however and this is not the case.
-  static const std::vector<usint> cornerCaseIndexList {0};
-
-  for (auto index : cornerCaseIndexList) {
-    auto morphedVector = CKKSEvalAtIndexPackedArray(index);
-    EXPECT_TRUE(checkEquality(morphedVector, vector8Complex));
-  }
+    for (auto index : cornerCaseIndexList) {
+        auto morphedVector = CKKSEvalAtIndexPackedArray(index);
+        EXPECT_TRUE(checkEquality(morphedVector, vector8Complex));
+    }
 }
 
 TEST_F(UTAUTOMORPHISM, Test_CKKS_EvalAtIndex_INVALID_INPUT_DATA) {
@@ -720,17 +785,27 @@ TEST_F(UTAUTOMORPHISM, Test_CKKS_EvalAtIndex_INVALID_INDEX) {
 std::vector<std::complex<double>> CKKSEvalSumPackedArray(usint i,
                                                          TEST_ESTIMATED_RESULT testResult = SUCCESS) {
   using Element = DCRTPoly;
-  uint32_t multDepth = 1;
-  uint32_t scaleFactorBits = 50;
   uint32_t batchSize = 8;
-  SecurityLevel securityLevel = HEStd_NotSet;
-  usint ringDim = 16;
-  CryptoContext<Element> cc = CryptoContextFactory<Element>::genCryptoContextCKKS(multDepth,
-                                                                                  scaleFactorBits,
-                                                                                  batchSize,
-                                                                                  securityLevel,
-                                                                                  ringDim);
+  CCParams<CryptoContextCKKS<Element>> parameters;
+  parameters.SetMultiplicativeDepth(1);
+  parameters.SetScalingFactorBits(50);
+  parameters.SetBatchSize(batchSize);
+  parameters.SetSecurityLevel(HEStd_NotSet);
+  parameters.SetRingDim(16);
 
+  CryptoContext<Element> cc = GenCryptoContext(parameters);
+  {
+      uint32_t multDepth = 1;
+      uint32_t scaleFactorBits = 50;
+      SecurityLevel securityLevel = HEStd_NotSet;
+      usint ringDim = 16;
+      CryptoContext<Element> ccOld = CryptoContextFactory<Element>::genCryptoContextCKKS(multDepth,
+                                                                                      scaleFactorBits,
+                                                                                      batchSize,
+                                                                                      securityLevel,
+                                                                                      ringDim);
+      EXPECT_EQ(Equal(*cc, *ccOld), true);
+  }
   cc->Enable(ENCRYPTION);
   cc->Enable(SHE);
 
@@ -822,11 +897,18 @@ TEST_F(UTAUTOMORPHISM, Test_CKKS_EvalSum_NO_KEY_GEN_CALL) {
 std::vector<int64_t> BGVrnsEvalAtIndexPackedArray(usint i,
                                                   TEST_ESTIMATED_RESULT testResult = SUCCESS) {
   using Element = DCRTPoly;
-  uint32_t depth = 1;
-  int plaintextModulus = 65537;
+  CCParams<CryptoContextBGVRNS<DCRTPoly>> parameters;
+  parameters.SetMultiplicativeDepth(1);
+  parameters.SetPlaintextModulus(65537);
 
-  CryptoContext<Element> cc = CryptoContextFactory<Element>::genCryptoContextBGVrns(depth, plaintextModulus);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  {
+      uint32_t depth = 1;
+      int plaintextModulus = 65537;
 
+      CryptoContext<Element> ccOld = CryptoContextFactory<Element>::genCryptoContextBGVrns(depth, plaintextModulus);
+      EXPECT_EQ(Equal(*cc, *ccOld), true);
+  }
   cc->Enable(ENCRYPTION);
   cc->Enable(SHE);
 
@@ -871,17 +953,17 @@ TEST_F(UTAUTOMORPHISM, Test_BGVrns_EvalAtIndex) {
 }
 
 TEST_F(UTAUTOMORPHISM, Test_BGVrns_EvalAtIndex_CORNER_CASES) {
-  PackedEncoding::Destroy();
+    PackedEncoding::Destroy();
 
-  // Rotation with index at 0 should result in nothing happening and thus
-  // The checkEquality should be true. Currently there is a bug in the code
-  // however and this is not the case.
-  static const std::vector<usint> cornerCaseIndexList {0};
+    // Rotation with index at 0 should result in nothing happening and thus
+    // The checkEquality should be true. Currently there is a bug in the code
+    // however and this is not the case.
+    static const std::vector<usint> cornerCaseIndexList{ 0 };
 
-  for (auto index : cornerCaseIndexList) {
-    auto morphedVector = BGVrnsEvalAtIndexPackedArray(index);
-    EXPECT_TRUE(checkEquality(morphedVector, vector8));
-  }
+    for (auto index : cornerCaseIndexList) {
+        auto morphedVector = BGVrnsEvalAtIndexPackedArray(index);
+        EXPECT_TRUE(checkEquality(morphedVector, vector8));
+    }
 }
 
 TEST_F(UTAUTOMORPHISM, Test_BGVrns_EvalAtIndex_INVALID_INPUT_DATA) {
@@ -939,11 +1021,18 @@ TEST_F(UTAUTOMORPHISM, Test_BGVrns_EvalAtIndex_NO_KEY_GEN_CALL) {
 std::vector<int64_t> BGVrnsEvalSumPackedArray(usint i,
                                               TEST_ESTIMATED_RESULT testResult = SUCCESS) {
   using Element = DCRTPoly;
-  uint32_t depth = 1;
-  int plaintextModulus = 65537;
+  CCParams<CryptoContextBGVRNS<DCRTPoly>> parameters;
+  parameters.SetMultiplicativeDepth(1);
+  parameters.SetPlaintextModulus(65537);
 
-  CryptoContext<Element> cc = CryptoContextFactory<Element>::genCryptoContextBGVrns(depth, plaintextModulus);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  {
+      uint32_t depth = 1;
+      int plaintextModulus = 65537;
 
+      CryptoContext<Element> ccOld = CryptoContextFactory<Element>::genCryptoContextBGVrns(depth, plaintextModulus);
+      EXPECT_EQ(Equal(*cc, *ccOld), true);
+  }
   cc->Enable(ENCRYPTION);
   cc->Enable(SHE);
 

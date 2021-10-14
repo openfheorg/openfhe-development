@@ -21,6 +21,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
+#include "UnitTestCompareCryptoContext.h"
+
 #include <iostream>
 #include <vector>
 #include "gtest/gtest.h"
@@ -48,14 +52,28 @@ class UTBFVrnsCRTOperations : public ::testing::Test {
 };
 
 TEST_F(UTBFVrnsCRTOperations, BFVrns_SwitchCRTBasis) {
-  usint ptm = 1 << 31;
-  double sigma = 3.2;
-  double rootHermiteFactor = 1.006;
 
-  // Set Crypto Parameters
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          ptm, rootHermiteFactor, sigma, 0, 7, 0, OPTIMIZED, 8);
+    CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters;
+    usint ptm = 1 << 31;
+    parameters.SetPlaintextModulus(ptm);
+    parameters.SetStandardDeviation(3.2);
+    parameters.SetRootHermiteFactor(1.006);
+    parameters.SetEvalMultCount(7);
+    parameters.SetMaxDepth(8);
+
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+
+    {
+        double sigma = 3.2;
+        double rootHermiteFactor = 1.006;
+
+        // Set Crypto Parameters
+        CryptoContext<DCRTPoly> cryptoContextOld =
+            CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
+                ptm, rootHermiteFactor, sigma, 0, 7, 0, OPTIMIZED, 8);
+
+        EXPECT_EQ(Equal(*cryptoContext, *cryptoContextOld), true);
+    }
 
   const shared_ptr<ILDCRTParams<BigInteger>> params =
       cryptoContext->GetCryptoParameters()->GetElementParams();
@@ -95,14 +113,28 @@ TEST_F(UTBFVrnsCRTOperations, BFVrns_SwitchCRTBasis) {
 
 // TESTING POLYNOMIAL MULTIPLICATION - ONE TERM IS CONSTANT POLYNOMIAL
 TEST_F(UTBFVrnsCRTOperations, BFVrns_Mult_by_Constant) {
-  usint ptm = 1 << 15;
-  double sigma = 3.2;
-  double rootHermiteFactor = 1.006;
 
-  // Set Crypto Parameters
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          ptm, rootHermiteFactor, sigma, 0, 1, 0, OPTIMIZED, 2);
+    CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters;
+    usint ptm = 1 << 15;
+    parameters.SetPlaintextModulus(ptm);
+    parameters.SetStandardDeviation(3.2);
+    parameters.SetRootHermiteFactor(1.006);
+    parameters.SetEvalMultCount(1);
+    parameters.SetMaxDepth(2);
+
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+
+    {
+        double sigma = 3.2;
+        double rootHermiteFactor = 1.006;
+
+        // Set Crypto Parameters
+        CryptoContext<DCRTPoly> cryptoContextOld =
+            CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
+                ptm, rootHermiteFactor, sigma, 0, 1, 0, OPTIMIZED, 2);
+
+        EXPECT_EQ(Equal(*cryptoContext, *cryptoContextOld), true);
+    }
 
   const shared_ptr<ILDCRTParams<BigInteger>> paramsQ =
       cryptoContext->GetCryptoParameters()->GetElementParams();
@@ -232,14 +264,27 @@ TEST_F(UTBFVrnsCRTOperations, BFVrns_Mult_by_Constant) {
 
 // TESTING POLYNOMIAL MULTIPLICATION - UNIFORM AND GAUSSIAN RANDOM POLYNOMIALS
 TEST_F(UTBFVrnsCRTOperations, BFVrns_Mult_by_Gaussian) {
-  usint ptm = 1 << 15;
-  double sigma = 3.2;
-  double rootHermiteFactor = 1.006;
+    CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters;
+    usint ptm = 1 << 15;
+    parameters.SetPlaintextModulus(ptm);
+    parameters.SetStandardDeviation(3.2);
+    parameters.SetRootHermiteFactor(1.006);
+    parameters.SetEvalMultCount(1);
+    parameters.SetMaxDepth(2);
 
-  // Set Crypto Parameters
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          ptm, rootHermiteFactor, sigma, 0, 1, 0, OPTIMIZED, 2);
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+
+    {
+        double sigma = 3.2;
+        double rootHermiteFactor = 1.006;
+
+        // Set Crypto Parameters
+        CryptoContext<DCRTPoly> cryptoContextOld =
+            CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
+                ptm, rootHermiteFactor, sigma, 0, 1, 0, OPTIMIZED, 2);
+
+        EXPECT_EQ(Equal(*cryptoContext, *cryptoContextOld), true);
+    }
 
   const shared_ptr<ILDCRTParams<BigInteger>> paramsQ =
       cryptoContext->GetCryptoParameters()->GetElementParams();

@@ -21,6 +21,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
 #include "palisade.h"
 
 using namespace lbcrypto;
@@ -28,17 +30,29 @@ using namespace lbcrypto;
 int main() {
   // Sample Program: Step 1: Set CryptoContext
 
-  // Set the main parameters
-  int plaintextModulus = 65537;
-  double sigma = 3.2;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  uint32_t depth = 2;
+//#define NEW_GET_CRYPTOCONTEXT
 
-  // Instantiate the crypto context
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          plaintextModulus, securityLevel, sigma, 0, depth, 0, OPTIMIZED);
+#ifdef NEW_GET_CRYPTOCONTEXT
+    std::cout << "\nUsing the new mechanism to generate cryptocontext\n\n";
+    CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters;
+    parameters.SetPlaintextModulus(65537);
+    parameters.SetStandardDeviation(3.2);
+    parameters.SetEvalMultCount(2);
 
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+#else
+    std::cout << "\nUsing the old mechanism to generate cryptocontext\n\n";
+    // Set the main parameters
+    int plaintextModulus = 65537;
+    double sigma = 3.2;
+    SecurityLevel securityLevel = HEStd_128_classic;
+    uint32_t depth = 2;
+
+    // Instantiate the crypto context
+    CryptoContext<DCRTPoly> cryptoContext =
+        CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
+            plaintextModulus, securityLevel, sigma, 0, depth, 0, OPTIMIZED);
+#endif
   // Enable features that you wish to use
   cryptoContext->Enable(ENCRYPTION);
   cryptoContext->Enable(SHE);
