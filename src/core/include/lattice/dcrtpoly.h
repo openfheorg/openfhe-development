@@ -31,15 +31,12 @@
 #include <vector>
 
 #include "math/backend.h"
-#include "utils/inttypes.h"
 
+#include "utils/inttypes.h"
 #include "utils/exception.h"
 
-#include "lattice/elemparams.h"
 #include "lattice/ildcrtparams.h"
 #include "lattice/dcrtpolyinterface.h"
-#include "lattice/ilparams.h"
-#include "lattice/poly.h"
 #include "math/distrgen.h"
 
 namespace lbcrypto {
@@ -1305,6 +1302,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
   std::vector<PolyType> m_vectors;
 
 };
+
 }  // namespace lbcrypto
 
 #endif

@@ -161,7 +161,6 @@ inline const std::string& GetMathBackendParameters() {
 
 #include "bigintfxd/mubintvecfxd.h"
 #include "bigintfxd/ubintfxd.h"
-#include "bigintfxd/transformfxd.h"
 static_assert(bigintfxd::DataTypeChecker<integral_dtype>::value,
               "Data type provided is not supported in BigInteger");
 
@@ -184,7 +183,6 @@ typedef uint64_t expdtype;
 
 #include "bigintdyn/mubintvecdyn.h"  // rings of ubints
 #include "bigintdyn/ubintdyn.h"  // dynamically sized unsigned big integers or ubints
-#include "bigintdyn/transformdyn.h"
 
 namespace bigintdyn {
 /** Define the mapping for ExpBigInteger (experimental) */
@@ -198,11 +196,8 @@ typedef mubintvec<xubint> xmubintvec;
 }  // namespace bigintdyn
 
 #ifdef WITH_NTL
-
 #include "bigintntl/mubintvecntl.h"  // rings of such
 #include "bigintntl/ubintntl.h"      // experimental gmp unsigned big ints
-#include "bigintntl/transformntl.h"
-
 #endif
 
 // typedefs for the known math backends
@@ -294,6 +289,8 @@ typedef NativeVector32 NativeVector;
 #endif
 
 #include "bigintnat/transformnat.h"
+#include "bigintdyn/transformdyn.h"
+#include "bigintfxd/transformfxd.h"
 
 template class bigintnat::ChineseRemainderTransformFTTNat<NativeVector>;
 template class bigintnat::ChineseRemainderTransformArbNat<NativeVector>;
@@ -311,6 +308,7 @@ template class bigintdyn::ChineseRemainderTransformFTTDyn<M4Vector>;
 template class bigintdyn::ChineseRemainderTransformArbDyn<M4Vector>;
 
 #ifdef WITH_NTL
+#include "bigintntl/transformntl.h"
 template class NTL::ChineseRemainderTransformFTTNtl<M6Vector>;
 template class NTL::ChineseRemainderTransformArbNtl<M6Vector>;
 #endif

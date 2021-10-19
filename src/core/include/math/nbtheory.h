@@ -41,6 +41,8 @@
 #include <string>
 #include <vector>
 #include "utils/inttypes.h"
+#include "utils/exception.h"
+
 
 namespace {  // to define local (or C-style static) functions here
 

@@ -632,4 +632,6 @@ class ChineseRemainderTransformArbDyn : public lbcrypto::ChineseRemainderTransfo
 };
 }  // namespace bigintdyn
 
+#include "math/bigintdyn/transformdyn-impl.h"
+
 #endif

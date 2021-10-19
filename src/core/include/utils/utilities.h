@@ -24,12 +24,9 @@
 #ifndef LBCRYPTO_UTILS_UTILITIES_H
 #define LBCRYPTO_UTILS_UTILITIES_H
 
-#include <string>
-#include <iomanip>
+#include "utils/inttypes.h"
 
-#include "math/backend.h"
-#include "math/distributiongenerator.h"
-#include "math/nbtheory.h"
+#include <string>
 
 /**
  * @namespace lbcrypto
@@ -119,85 +116,6 @@ inline uint32_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t &c) {
     return 1;
   else
     return 0;
-}
-
-#if defined(HAVE_INT128)
-/**
- * 64-bit uint multiplier, result is 128-bit
- * @param a: operand 1
- * @param b: operand 2
- * @return result: 128-bit result = a * b
- */
-inline DoubleNativeInt Mul128(uint64_t a, uint64_t b) {
-  return DoubleNativeInt(a) * DoubleNativeInt(b);
-}
-
-/**
- * Barrett reduction of 128-bit integer modulo 64-bit integer. Source: Menezes,
- * Alfred; Oorschot, Paul; Vanstone, Scott. Handbook of Applied Cryptography,
- * Section 14.3.3.
- * @param a: operand (128-bit)
- * @param m: modulus (64-bit)
- * @param mu: 2^128/modulus (128-bit)
- * @return result: 64-bit result = a mod m
- */
-inline uint64_t BarrettUint128ModUint64(const DoubleNativeInt &a,
-                                        uint64_t modulus,
-                                        const DoubleNativeInt &mu) {
-  // (a * mu)/2^128 // we need the upper 128-bit of (256-bit product)
-  uint64_t result = 0, a_lo = 0, a_hi = 0, mu_lo = 0, mu_hi = 0, left_hi = 0,
-           middle_lo = 0, middle_hi = 0, tmp1 = 0, tmp2 = 0, carry = 0;
-  DoubleNativeInt middle = 0;
-
-  a_lo = (uint64_t)a;
-  a_hi = a >> 64;
-  mu_lo = (uint64_t)mu;
-  mu_hi = mu >> 64;
-
-  left_hi = (Mul128(a_lo, mu_lo)) >> 64;  // mul left parts, discard lower word
-
-  middle = Mul128(a_lo, mu_hi);  // mul middle first
-  middle_lo = (uint64_t)middle;
-  middle_hi = middle >> 64;
-
-  // accumulate and check carry
-  carry = AdditionWithCarryOut(middle_lo, left_hi, tmp1);
-
-  tmp2 = middle_hi + carry;  // accumulate
-
-  middle = Mul128(a_hi, mu_lo);  // mul middle second
-  middle_lo = (uint64_t)middle;
-  middle_hi = middle >> 64;
-
-  carry = IsAdditionOverflow(middle_lo, tmp1);  // check carry
-
-  left_hi = middle_hi + carry;  // accumulate
-
-  // now we have the lower word of (a * mu)/2^128, no need for higher word
-  tmp1 = a_hi * mu_hi + tmp2 + left_hi;
-
-  // subtract lower words only, higher words should be the same
-  result = a_lo - tmp1 * modulus;
-
-  while (result >= modulus) result -= modulus;
-
-  return result;
-}
-#endif
-
-/**
- * Generates a random 128-bit hash
- */
-inline std::string GenerateUniqueKeyID() {
-  const size_t intsInID = 128 / (sizeof(uint32_t) * 8);
-  std::uniform_int_distribution<uint32_t> distribution(
-      0, std::numeric_limits<uint32_t>::max());
-  std::stringstream s;
-  s.fill('0');
-  s << std::hex;
-  for (size_t i = 0; i < intsInID; i++)
-    s << std::setw(8) << distribution(PseudoRandomNumberGenerator::GetPRNG());
-  return s.str();
 }
 
 }  // namespace lbcrypto

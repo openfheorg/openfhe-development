@@ -27,6 +27,7 @@
 
 #include "lattice/backend.h"
 #include "utils/debug.h"
+#include "utils/utilities-int.h"
 #include "utils/utilities.h"
 
 using std::shared_ptr;

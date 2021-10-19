@@ -768,6 +768,21 @@ template <typename Element>
 using LPPrivateKey = shared_ptr<LPPrivateKeyImpl<Element>>;
 
 /**
+ * Generates a random 128-bit hash
+ */
+inline std::string GenerateUniqueKeyID() {
+    const size_t intsInID = 128 / (sizeof(uint32_t) * 8);
+    std::uniform_int_distribution<uint32_t> distribution(
+        0, std::numeric_limits<uint32_t>::max());
+    std::stringstream s;
+    s.fill('0');
+    s << std::hex;
+    for (size_t i = 0; i < intsInID; i++)
+        s << std::setw(8) << distribution(PseudoRandomNumberGenerator::GetPRNG());
+    return s.str();
+}
+
+/**
  * @brief Class fpr LP Private keys
  * @tparam Element a ring element.
  */

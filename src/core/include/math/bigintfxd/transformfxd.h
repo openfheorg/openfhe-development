@@ -633,4 +633,6 @@ class ChineseRemainderTransformArbFxd : public lbcrypto::ChineseRemainderTransfo
 };
 }  // namespace bigintfxd
 
+#include "math/bigintfxd/transformfxd-impl.h"
+
 #endif

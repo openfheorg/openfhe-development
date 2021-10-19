@@ -659,4 +659,6 @@ class ChineseRemainderTransformArbNat : public lbcrypto::ChineseRemainderTransfo
 };
 }  // namespace bigintnat
 
+#include "math/bigintnat/transformnat-impl.h"
+
 #endif

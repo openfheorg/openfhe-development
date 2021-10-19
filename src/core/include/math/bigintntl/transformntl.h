@@ -632,4 +632,6 @@ class ChineseRemainderTransformArbNtl : public lbcrypto::ChineseRemainderTransfo
 };
 }  // namespace NTL
 
+#include "math/bigintntl/transformntl-impl.h"
+
 #endif
