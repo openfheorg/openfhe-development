@@ -1,0 +1,31 @@
+# - Config file for the Palisade package
+# It defines the following variables
+#  PALISADE_INCLUDE_DIRS - include directories for Palisade
+#  PALISADE_LIBRARIES    - libraries to link against
+
+get_filename_component(PALISADE_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT Palisade_BINARY_DIR)
+  include("${PALISADE_CMAKE_DIR}/PalisadeTargets.cmake")
+endif()
+
+# These are IMPORTED targets created by PalisadeTargets.cmake
+set(PALISADE_INCLUDE "@INSTALL_INCLUDE_DIR@")
+set(PALISADE_LIBDIR "@INSTALL_LIB_DIR@")
+set(PALISADE_LIBRARIES @PALISADE_PACKAGE_LIBS@ @THIRDPARTYLIBS@ @OpenMP_CXX_FLAGS@)
+set(PALISADE_STATIC_LIBRARIES @PALISADE_STATIC_LIBS@ @THIRDPARTYLIBS@ @OpenMP_CXX_FLAGS@)
+set(PALISADE_SHARED_LIBRARIES @PALISADE_SHARED_LIBS@ @THIRDPARTYLIBS@ @OpenMP_CXX_FLAGS@)
+
+set(OPENMP_INCLUDES "@OPENMP_INCLUDES@" )
+set(OPENMP_LIBRARIES "@OPENMP_LIBRARIES@" )
+
+set(PALISADE_CXX_FLAGS "@CMAKE_CXX_FLAGS@ @OpenMP_CXX_FLAGS@")
+set(PALISADE_C_FLAGS "@CMAKE_C_FLAGS@ @OpenMP_C_FLAGS@")
+
+if( "@WITH_NTL@" STREQUAL "Y" )
+	set(PALISADE_CXX_FLAGS "${PALISADE_CXX_FLAGS} -DWITH_NTL" )
+	set(PALISADE_C_FLAGS "${PALISADE_C_FLAGS} -DWITH_NTL")
+endif()
+
+set (PALISADE_EXE_LINKER_FLAGS "@CMAKE_EXE_LINKER_FLAGS@ @OpenMP_EXE_LINKER_FLAGS@")

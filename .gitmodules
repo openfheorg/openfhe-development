@@ -1,0 +1,12 @@
+[submodule "third-party/cereal"]
+	path = third-party/cereal
+	url = https://gitlab.com/palisade/cereal.git
+[submodule "third-party/google-benchmark"]
+	path = third-party/google-benchmark
+	url = https://github.com/google/benchmark.git
+[submodule "third-party/google-test"]
+	path = third-party/google-test
+	url = https://github.com/google/googletest.git
+[submodule "third-party/gperftools"]
+	path = third-party/gperftools
+	url = https://github.com/gperftools/gperftools.git

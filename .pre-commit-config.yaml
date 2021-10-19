@@ -1,0 +1,24 @@
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v2.5.0
+      hooks:
+        - id: trailing-whitespace
+        - id: end-of-file-fixer
+        - id: check-merge-conflict
+        - id: mixed-line-ending
+        - id: check-byte-order-marker
+    - repo: local
+      hooks:
+        - id: clang-format
+          name: clang-format
+          entry: clang-format
+          language: system
+          files: \.(c|cc|cxx|cpp|h|hpp|hxx|js|proto)$
+          args: ["-i"]
+        - id: cpplint
+          name: cpplint
+          entry: cpplint
+          language: system
+          files: \.(c|cc|cxx|cpp|h|hpp|hxx)$
+          args:
+            - --recursive

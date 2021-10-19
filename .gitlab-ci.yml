@@ -1,0 +1,2188 @@
+stages:
+#- format
+- pre_build
+- build
+- unit_test
+- benchmark
+- extras
+- docs
+- downstream
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+before_script:
+# - module load gcc/7.3.0
+# - module load cmake/3.9.4
+# - apt-get install --yes cmake
+- whoami
+- export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(pwd)/build/third-party/lib:$(pwd)/build/lib
+- if [[ ${COMPILER^^} == "CLANG" ]]; then export CC=/usr/bin/clang-9; export CXX=/usr/bin/clang++-9; else export CC=gcc-7; export CXX=g++-7; fi
+- if [ -n ${NATIVE_BACKEND} ]; then export NATIVE_SIZE=-DNATIVE_SIZE\=${NATIVE_BACKEND}; else export NATIVE_SIZE=""; fi
+- echo ${NATIVE_SIZE}
+- export CMAKE_ARGS=${NATIVE_SIZE}
+- echo ${CMAKE_ARGS}
+
+# - export DO_CI="OFF"
+
+#cpplint:
+#  stage: format
+#  only:
+#    refs:
+#      - master
+#      - merge_requests
+#  script:
+#  - whoami
+# - sudo apt install python3-pip
+#  - pip install cpplint
+#  - cpplint --recursive ./src > cpplint.txt
+#  - if grep -xq "Total errors" cpplint.txt; then echo "cpplint passed"; else echo "cpplint failed" && exit 1; fi
+
+#clang-format:
+#  stage: format
+#  only:
+#    refs:
+#      - master
+#      - merge_requests
+#  script:
+#  - whoami
+#  - sudo apt-get install clang-format
+#  - ./maint/check-code-format.sh
+
+default_build:
+  stage: build
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} ..
+  - make -j $(nproc) all
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    expire_in: 1 day
+  dependencies: []
+
+define_vars:
+  stage: pre_build
+  rules:
+    - if: "$CI_COMMIT_REF_NAME =~ /master/"
+      when: always
+    - if: "$DOWNSTREAM_TESTER"
+      when: always
+  script:
+  - echo "TARG_CC=${CC}" >> build_etc.env
+  - echo "TARG_CXX=${CXX}" >> build_etc.env
+  - cat build_etc.env
+  artifacts:
+    reports:
+      dotenv: build_etc.env
+    expire_in: 2 hours
+  needs: []
+
+push_abe:
+  only:
+    refs:
+      - master
+  variables:
+    UPSTREAM_BRANCH_REF: $CI_COMMIT_REF_NAME
+  stage: downstream
+  trigger:
+    project: palisade/palisade-abe
+    branch: master
+    strategy: depend
+  needs: [define_vars]
+
+push_signature:
+  only:
+    refs:
+      - master
+  variables:
+    UPSTREAM_BRANCH_REF: $CI_COMMIT_REF_NAME
+  stage: downstream
+  trigger:
+    project: palisade/palisade-signature
+    branch: master
+    strategy: depend
+  needs: [define_vars]
+
+push_trapdoor:
+  only:
+    refs:
+      - master
+  variables:
+    UPSTREAM_BRANCH_REF: $CI_COMMIT_REF_NAME
+  stage: downstream
+  trigger:
+    project: palisade/palisade-trapdoor
+    branch: master
+    strategy: depend
+  needs: [define_vars]
+
+push_abe_manual:
+  only:
+    variables:
+      - $DOWNSTREAM_TESTER
+  variables:
+    UPSTREAM_BRANCH_REF: $CI_COMMIT_REF_NAME
+  stage: downstream
+  trigger:
+    project: palisade/palisade-abe
+    branch: master
+    strategy: depend
+  needs: [define_vars]
+
+push_signature_manual:
+  only:
+    variables:
+      - $DOWNSTREAM_TESTER
+  variables:
+    UPSTREAM_BRANCH_REF: $CI_COMMIT_REF_NAME
+  stage: downstream
+  trigger:
+    project: palisade/palisade-signature
+    branch: master
+    strategy: depend
+  needs: [define_vars]
+
+push_trapdoor_manual:
+  only:
+    variables:
+      - $DOWNSTREAM_TESTER
+  variables:
+    UPSTREAM_BRANCH_REF: $CI_COMMIT_REF_NAME
+  stage: downstream
+  trigger:
+    project: palisade/palisade-trapdoor
+    branch: master
+    strategy: depend
+  needs: [define_vars]
+
+
+noflag_mb4_build:
+  stage: build
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DMATHBACKEND=4 ..
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+debug_mb2_build:
+  stage: build
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=2 ..
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+debug_mb4_build:
+  stage: build
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=4 ..
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+
+ntl_mb6_build:
+  stage: build
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DWITH_NTL=Y -DMATHBACKEND=6 ..
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+tcm_mb2_build:
+  stage: build
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DWITH_TCM=Y -DMATHBACKEND=2 ..
+  - make tcm
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+tcm_mb4_build:
+  stage: build
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DWITH_TCM=Y -DMATHBACKEND=4 ..
+  - make tcm
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+tcm_ntl_mb6_build:
+  stage: build
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DWITH_NTL=Y -DWITH_TCM=Y -DMATHBACKEND=6 ..
+  - make tcm
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+debug_tcm_ntl_mb6_build:
+  stage: build
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DWITH_NTL=Y -DWITH_TCM=Y -DMATHBACKEND=6 ..
+  - make tcm
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+default_test_core:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - default_build
+
+noflag_mb4_test_core:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - noflag_mb4_build
+
+debug_mb2_test_core:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb2_build
+
+debug_mb4_test_core:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb4_build
+
+ntl_mb6_test_core:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - ntl_mb6_build
+
+tcm_mb2_test_core:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb2_build
+
+tcm_mb4_test_core:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb4_build
+
+tcm_ntl_mb6_test_core:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_ntl_mb6_build
+
+debug_tcm_ntl_mb6_test_core:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_tcm_ntl_mb6_build
+
+default_test_pke:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - default_build
+
+noflag_mb4_test_pke:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - noflag_mb4_build
+
+debug_mb2_test_pke:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb2_build
+
+debug_mb4_test_pke:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb4_build
+
+ntl_mb6_test_pke:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - ntl_mb6_build
+
+tcm_mb2_test_pke:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb2_build
+
+tcm_mb4_test_pke:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb4_build
+
+tcm_ntl_mb6_test_pke:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_ntl_mb6_build
+
+debug_tcm_ntl_mb6_test_pke:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_tcm_ntl_mb6_build
+
+default_test_binfhe:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - default_build
+
+noflag_mb4_test_binfhe:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - noflag_mb4_build
+
+debug_mb2_test_binfhe:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb2_build
+
+ntl_mb6_test_binfhe:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - ntl_mb6_build
+
+debug_mb4_test_binfhe:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb4_build
+
+tcm_mb2_test_binfhe:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb2_build
+
+tcm_mb4_test_binfhe:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb4_build
+
+tcm_ntl_mb6_test_binfhe:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_ntl_mb6_build
+
+debug_tcm_ntl_mb6_test_binfhe:
+  stage: unit_test
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_tcm_ntl_mb6_build
+
+
+
+# coverage:
+#   stage: docs
+#   script:
+#   - make -j $(nproc) all COVERAGE=1
+#   - make -j $(nproc) testall COVERAGE=1
+#   - mkdir -p doc/coverage
+#   - gcovr -j $(nproc) --verbose -r . --filter src/[^/]+/lib/* --filter src/* --html --html-details -o doc/coverage/index.html --print-summary
+#   allow_failure: true
+#   dependencies:
+#   - default_build
+#   artifacts:
+#     paths:
+#     - doc/coverage
+#     expire_in: 3 hours
+
+benchmark_basic:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/basic_test --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+# benchmark_crypto:
+#   stage: benchmark
+#   script:
+#   - build/bin/benchmark/Crypto --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+#   dependencies:
+#   - build
+#   artifacts:
+#     paths:
+#       - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+#     expire_in: 1 month
+
+benchmark_encoding:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/Encoding --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_integermath:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/IntegerMath --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_lattice:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/Lattice --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_nbtheory:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/NbTheory --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+# benchmark_she:
+#   stage: benchmark
+#   script:
+#   - build/bin/benchmark/SHE --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+#   dependencies:
+#   - build
+#   artifacts:
+#     paths:
+#       - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+#     expire_in: 1 month
+
+benchmark_vectormath:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/VectorMath --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_lib:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/lib-benchmark --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_binfhe_ginx:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/binfhe-ginx --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_binfhe_ap:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/binfhe-ap --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_poly_1k:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/poly-benchmark-1k --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_poly_4k_:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/poly-benchmark-4k --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_poly_16k:
+  stage: benchmark
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - build/bin/benchmark/poly-benchmark-16k --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+
+# Extras
+
+noflag_mb4_extras_core:
+  stage: extras
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - noflag_mb4_build
+
+debug_mb2_extras_core:
+  stage: extras
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - debug_mb2_build
+
+debug_mb4_extras_core:
+  stage: extras
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - debug_mb4_build
+
+ntl_mb6_extras_core:
+  stage: extras
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - ntl_mb6_build
+
+tcm_mb2_extras_core:
+  stage: extras
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - tcm_mb2_build
+
+tcm_mb4_extras_core:
+  stage: extras
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - tcm_mb4_build
+
+tcm_ntl_mb6_extras_core:
+  stage: extras
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - tcm_ntl_mb6_build
+
+debug_tcm_ntl_mb6_extras_core:
+  stage: extras
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - debug_tcm_ntl_mb6_build
+
+
+# Manual Trigger CI
+
+default_build_manual:
+  stage: build
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} ..
+  - make -j $(nproc) all
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    expire_in: 1 day
+  dependencies: []
+
+noflag_mb4_build_manual:
+  stage: build
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DMATHBACKEND=4 ..
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+debug_mb2_build_manual:
+  stage: build
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=2 ..
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+debug_mb4_build_manual:
+  stage: build
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=4 ..
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+
+ntl_mb6_build_manual:
+  stage: build
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DWITH_NTL=Y -DMATHBACKEND=6 ..
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+tcm_mb2_build_manual:
+  stage: build
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DWITH_TCM=Y -DMATHBACKEND=2 ..
+  - make tcm
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+tcm_mb4_build_manual:
+  stage: build
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DWITH_TCM=Y -DMATHBACKEND=4 ..
+  - make tcm
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+tcm_ntl_mb6_build_manual:
+  stage: build
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DWITH_NTL=Y -DWITH_TCM=Y -DMATHBACKEND=6 ..
+  - make tcm
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+debug_tcm_ntl_mb6_build_manual:
+  stage: build
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DWITH_NTL=Y -DWITH_TCM=Y -DMATHBACKEND=6 ..
+  - make tcm
+  - make -j $(nproc) all
+  - make allextras
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    - build/bin/extras
+    expire_in: 1 day
+  dependencies: []
+
+default_test_core_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - default_build_manual
+
+noflag_mb4_test_core_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - noflag_mb4_build_manual
+
+debug_mb2_test_core_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb2_build_manual
+
+debug_mb4_test_core_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb4_build_manual
+
+ntl_mb6_test_core_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - ntl_mb6_build_manual
+
+tcm_mb2_test_core_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb2_build_manual
+
+tcm_mb4_test_core_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb4_build_manual
+
+tcm_ntl_mb6_test_core_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_ntl_mb6_build_manual
+
+debug_tcm_ntl_mb6_test_core_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_tcm_ntl_mb6_build_manual
+
+default_test_pke_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - default_build_manual
+
+noflag_mb4_test_pke_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - noflag_mb4_build_manual
+
+debug_mb2_test_pke_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb2_build_manual
+
+debug_mb4_test_pke_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb4_build_manual
+
+ntl_mb6_test_pke_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - ntl_mb6_build_manual
+
+tcm_mb2_test_pke_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb2_build_manual
+
+tcm_mb4_test_pke_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb4_build_manual
+
+tcm_ntl_mb6_test_pke_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_ntl_mb6_build_manual
+
+debug_tcm_ntl_mb6_test_pke_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_tcm_ntl_mb6_build_manual
+
+
+default_test_binfhe_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - default_build_manual
+
+noflag_mb4_test_binfhe_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - noflag_mb4_build_manual
+
+debug_mb2_test_binfhe_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb2_build_manual
+
+ntl_mb6_test_binfhe_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - ntl_mb6_build_manual
+
+debug_mb4_test_binfhe_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_mb4_build_manual
+
+tcm_mb2_test_binfhe_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb2_build_manual
+
+tcm_mb4_test_binfhe_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_mb4_build_manual
+
+tcm_ntl_mb6_test_binfhe_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - tcm_ntl_mb6_build_manual
+
+debug_tcm_ntl_mb6_test_binfhe_manual:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - debug_tcm_ntl_mb6_build_manual
+
+
+
+# coverage:
+#   stage: docs
+#   script:
+#   - make -j $(nproc) all COVERAGE=1
+#   - make -j $(nproc) testall COVERAGE=1
+#   - mkdir -p doc/coverage
+#   - gcovr -j $(nproc) --verbose -r . --filter src/[^/]+/lib/* --filter src/* --html --html-details -o doc/coverage/index.html --print-summary
+#   allow_failure: true
+#   dependencies:
+#   - default_build
+#   artifacts:
+#     paths:
+#     - doc/coverage
+#     expire_in: 3 hours
+
+benchmark_basic_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/basic_test --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_encoding_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/Encoding --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_integermath_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/IntegerMath --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_lattice_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/Lattice --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_nbtheory_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/NbTheory --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+# benchmark_she:
+#   stage: benchmark
+#   script:
+#   - build/bin/benchmark/SHE --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+#   dependencies:
+#   - build
+#   artifacts:
+#     paths:
+#       - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+#     expire_in: 1 month
+
+benchmark_vectormath_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/VectorMath --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_lib_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/lib-benchmark --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_binfhe_ginx_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/binfhe-ginx --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_binfhe_ap_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/binfhe-ap --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_poly_1k_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/poly-benchmark-1k --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_poly_4k_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/poly-benchmark-4k --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+benchmark_poly_16k_manual:
+  stage: benchmark
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - build/bin/benchmark/poly-benchmark-16k --benchmark_out="${CI_JOB_NAME}_${CI_COMMIT_SHA}" --benchmark_out_format=csv
+  dependencies:
+  - tcm_mb2_build_manual
+  artifacts:
+    paths:
+      - "${CI_JOB_NAME}_${CI_COMMIT_SHA}"
+    expire_in: 1 month
+
+# Extras
+
+noflag_mb4_extras_core_manual:
+  stage: extras
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - noflag_mb4_build_manual
+
+debug_mb2_extras_core_manual:
+  stage: extras
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - debug_mb2_build_manual
+
+debug_mb4_extras_core_manual:
+  stage: extras
+  only:
+    variables:
+      - $DO_CI
+  script:
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - debug_mb4_build_manual
+
+ntl_mb6_extras_core_manual:
+  stage: extras
+  only:
+    variables:
+      - $DO_CI
+  script:  
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - ntl_mb6_build_manual
+
+tcm_mb2_extras_core_manual:
+  stage: extras
+  only:
+    variables:
+      - $DO_CI
+  script:  
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - tcm_mb2_build_manual
+
+tcm_mb4_extras_core_manual:
+  stage: extras
+  only:
+    variables:
+      - $DO_CI
+  script:  
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - tcm_mb4_build_manual
+
+tcm_ntl_mb6_extras_core_manual:
+  stage: extras
+  only:
+    variables:
+      - $DO_CI
+  script:  
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - tcm_ntl_mb6_build_manual
+
+debug_tcm_ntl_mb6_extras_core_manual:
+  stage: extras
+  only:
+    variables:
+      - $DO_CI
+  script:  
+  - ./build/bin/extras/core/dft
+  - ./build/bin/extras/core/math
+  - ./build/bin/extras/core/ntt1
+  - ./build/bin/extras/core/ntt2
+  dependencies:
+  - debug_tcm_ntl_mb6_build_manual
+
+# Quick CI
+
+default_build_quickci:
+  stage: build
+  only:
+    variables:
+      - $QUICK_CI
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} ..
+  - make -j $(nproc) all
+  artifacts:
+    paths:
+    - build/third-party/lib
+    - build/lib
+    - build/unittest
+    - build/bin/benchmark
+    expire_in: 1 day
+  dependencies: []
+
+default_test_core_quickci:
+  stage: unit_test
+  only:
+    variables:
+      - $QUICK_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/core_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - default_build_quickci
+
+default_test_pke_quickci:
+  stage: unit_test
+  only:
+    variables:
+      - $QUICK_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/pke_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - default_build_quickci
+
+default_test_binfhe_quickci:
+  stage: unit_test
+  only:
+    variables:
+      - $QUICK_CI
+  script:
+  - pwd
+  - echo $LD_LIBRARY_PATH
+  - build/unittest/binfhe_tests --gtest_output=xml
+  artifacts:
+    paths:
+    - test_detail.xml
+    expire_in: 2 days
+  dependencies:
+  - default_build_quickci
+
+pages:
+  stage: docs
+  only:
+    refs:
+      - master
+  script:
+  - whoami
+  - mkdir -p build
+  - cd build
+  - cmake ${CMAKE_ARGS} ..
+  - make apidocs
+  - cd ..
+  - mv doc/apidocs/html/ public/
+  artifacts:
+    paths:
+    - public
+  dependencies: []
+  
+coverage_test:
+  stage: unit_test
+  only:
+    variables:
+      - $DO_COV
+  script:
+  - mkdir -p build
+  - cd build
+  - cmake -DWITH_COVTEST=ON ..
+  - make testall
+  - make cov
+  artifacts:
+    paths:
+    - build/coverage/assets/
+    expire_in: 1 week
+  dependencies:
+  - default_build
+  - default_build_manual
