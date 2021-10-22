@@ -1505,7 +1505,7 @@ LPEvalKey<DCRTPoly> LPAlgorithmPREBFVrns<DCRTPoly>::ReKeyGen(
 template <>
 Ciphertext<DCRTPoly> LPAlgorithmPREBFVrns<DCRTPoly>::ReEncrypt(
     const LPEvalKey<DCRTPoly> ek, ConstCiphertext<DCRTPoly> ciphertext,
-    const LPPublicKey<DCRTPoly> publicKey) const {
+    const LPPublicKey<DCRTPoly> publicKey, usint noiseflooding) const {
   if (publicKey == nullptr) {  // Sender PK is not provided - CPA-secure PRE
     return ciphertext->GetCryptoContext()->KeySwitch(ek, ciphertext);
   } else {  // Sender PK provided - HRA-secure PRE

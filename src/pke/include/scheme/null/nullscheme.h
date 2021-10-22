@@ -233,7 +233,7 @@ class LPAlgorithmPRENull : public LPPREAlgorithm<Element> {
    */
   Ciphertext<Element> ReEncrypt(
       const LPEvalKey<Element> evalKey, ConstCiphertext<Element> ciphertext,
-      const LPPublicKey<Element> publicKey = nullptr) const {
+      const LPPublicKey<Element> publicKey = nullptr, usint noiseflooding = 0) const {
     Ciphertext<Element> newCiphertext(
         std::make_shared<CiphertextImpl<Element>>(*ciphertext));
     return newCiphertext;

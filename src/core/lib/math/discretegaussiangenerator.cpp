@@ -47,7 +47,7 @@ void DiscreteGaussianGeneratorImpl<VecType>::SetStd(double std) {
               "Standard deviation cannot exceed 59 bits"));
       PALISADE_THROW(config_error, errorMsg);
   }
-  
+
   if (m_std < KARNEY_THRESHOLD)
     peikert = true;
   else
@@ -121,7 +121,10 @@ template <typename VecType>
 std::shared_ptr<int64_t>
 DiscreteGaussianGeneratorImpl<VecType>::GenerateIntVector(usint size) const {
   std::shared_ptr<int64_t> ans(new int64_t[size], std::default_delete<int64_t[]>());
+
   int64_t val = 0;
+
+
   double seed;
   if (peikert) {
     std::uniform_real_distribution<double> distribution(0.0, 1.0);

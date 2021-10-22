@@ -77,7 +77,8 @@ public:
             parameters.GetKeySwitchTechnique(),
             parameters.GetFirstModSize(),
             parameters.GetScalingFactorBits(),
-            numLargeDigits);
+            numLargeDigits,
+            parameters.GetMultiHopQModulusLowerBound());
 
         auto cc = CryptoContextFactory<Element>::GetContext(params, scheme);
         cc->setSchemeId("BGVrns");  // TODO: do we need this?? (dsuponit) we could just "return CryptoContextFactory<Element>::GetContext(params, schemeCKKS);"

@@ -1451,7 +1451,7 @@ class CryptoContextImpl : public Serializable {
    */
   Ciphertext<Element> ReEncrypt(
       LPEvalKey<Element> evalKey, ConstCiphertext<Element> ciphertext,
-      const LPPublicKey<Element> publicKey = nullptr) const {
+      const LPPublicKey<Element> publicKey = nullptr, usint noiseflooding = 0) const {
     if (evalKey == nullptr || Mismatched(evalKey->GetCryptoContext()))
       PALISADE_THROW(config_error,
                      "Information passed to ReEncrypt was not generated with "
@@ -1463,7 +1463,7 @@ class CryptoContextImpl : public Serializable {
                      "with this crypto context");
 
     Ciphertext<Element> newCiphertext =
-        GetEncryptionAlgorithm()->ReEncrypt(evalKey, ciphertext, publicKey);
+        GetEncryptionAlgorithm()->ReEncrypt(evalKey, ciphertext, publicKey, noiseflooding);
 
     return newCiphertext;
   }
@@ -3292,7 +3292,7 @@ class CryptoContextFactory {
       usint cyclOrder, usint numPrimes, usint ptm, usint relinWindow, MODE mode,
       int depth = 1, int maxDepth = 2, enum KeySwitchTechnique ksTech = BV,
       usint firstModSize = 0, usint dcrtBits = 0, uint32_t numLargeDigits = 4,
-      usint batchSize = 0, enum ModSwitchMethod msMethod = MANUAL);
+      usint batchSize = 0, enum ModSwitchMethod msMethod = MANUAL, usint multihopQBound = 0);
 
   /**
    * Construct a PALISADE CryptoContextImpl for the BGVrns Scheme.
@@ -3326,7 +3326,7 @@ class CryptoContextFactory {
       enum KeySwitchTechnique ksTech = HYBRID, usint ringDim = 0,
       uint32_t numLargeDigits = 0, usint firstModSize = 0, usint dcrtBits = 0,
       usint relinWindow = 0, usint batchSize = 0,
-      enum ModSwitchMethod msMethod = AUTO);
+      enum ModSwitchMethod msMethod = AUTO, usint multihopQBound = 0);
 
   /**
    * construct a PALISADE CryptoContextImpl for the Null Scheme

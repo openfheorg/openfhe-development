@@ -56,6 +56,7 @@ namespace lbcrypto {
     SET_TO_SCHEME_DEFAULT(SCHEME, securityLevel); \
     SET_TO_SCHEME_DEFAULT(SCHEME, ringDim); \
     SET_TO_SCHEME_DEFAULT(SCHEME, msMethod); \
+    SET_TO_SCHEME_DEFAULT(SCHEME, multiHopQModulusLowerBound); \
 }
 void Params::SetToDefaults(SCHEME scheme) {
     switch(scheme) {
@@ -103,7 +104,9 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
        << "; scalingFactorBits: "  << obj.scalingFactorBits
        << "; securityLevel: "      << obj.securityLevel
        << "; ringDim: "            << obj.ringDim
-       << "; msMethod: "           << obj.msMethod;
+       << "; msMethod: "           << obj.msMethod
+       << "; multiHopQModulusLowerBound: " << obj.multiHopQModulusLowerBound
+       ;
 
     return os;
 }

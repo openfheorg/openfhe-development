@@ -774,7 +774,7 @@ class LPAlgorithmPREBFVrns : public LPAlgorithmPREBFV<Element> {
    */
   Ciphertext<Element> ReEncrypt(
       const LPEvalKey<Element> ek, ConstCiphertext<Element> ciphertext,
-      const LPPublicKey<Element> publicKey = nullptr) const;
+      const LPPublicKey<Element> publicKey = nullptr, usint noiseflooding = 0) const;
 };
 
 /**

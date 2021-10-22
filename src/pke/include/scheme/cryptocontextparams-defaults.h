@@ -63,6 +63,7 @@ namespace CKKS_SCHEME_DEFAULTS {
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
     constexpr ModSwitchMethod      msMethod            = AUTO;
+    constexpr usint                multiHopQModulusLowerBound = 0;
 };
 
 namespace BFVRNS_SCHEME_DEFAULTS {
@@ -88,6 +89,7 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic; // set to avoid compiler errors
     constexpr usint                ringDim             = 0;
     constexpr ModSwitchMethod      msMethod            = AUTO;
+    constexpr usint                multiHopQModulusLowerBound = 0;
 };
 
 namespace BFVRNSB_SCHEME_DEFAULTS {
@@ -113,6 +115,7 @@ namespace BFVRNSB_SCHEME_DEFAULTS {
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic; // set to avoid compiler errors
     constexpr usint                ringDim             = 0;
     constexpr ModSwitchMethod      msMethod            = AUTO;
+    constexpr usint                multiHopQModulusLowerBound = 0;
 };
 
 namespace BGVRNS_SCHEME_DEFAULTS {
@@ -138,6 +141,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
     constexpr ModSwitchMethod      msMethod            = AUTO;
+    constexpr usint                multiHopQModulusLowerBound = 0;
 };
 
 //namespace NULL_SCHEME_DEFAULTS {
@@ -163,6 +167,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
 //    constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
 //    constexpr usint                ringDim             = 0;
 //    constexpr ModSwitchMethod      msMethod            = AUTO;
+//    constexpr usint                multiHopQModulusLowerBound = 0;
 //};
 //====================================================================================================================
 

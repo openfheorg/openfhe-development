@@ -65,6 +65,7 @@ class Params {
     SecurityLevel             securityLevel;
     usint                     ringDim;
     ModSwitchMethod           msMethod;
+    usint                     multiHopQModulusLowerBound;
 
     void SetToDefaults(SCHEME scheme);
 
@@ -153,6 +154,9 @@ public:
     ModSwitchMethod GetModSwitchMethod() const {
         return msMethod;
     }
+    usint GetMultiHopQModulusLowerBound() const {
+        return multiHopQModulusLowerBound;
+    }
 
     // setters
     void SetPlaintextModulus(PlaintextModulus ptModulus0) {
@@ -217,6 +221,9 @@ public:
     }
     void SetModSwitchMethod(ModSwitchMethod msMethod0) {
         msMethod = msMethod0;
+    }
+    void SetMultiHopQModulusLowerBound(usint multiHopQModulusLowerBound0) {
+        multiHopQModulusLowerBound = multiHopQModulusLowerBound0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);

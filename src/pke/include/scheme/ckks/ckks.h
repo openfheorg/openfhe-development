@@ -2080,7 +2080,7 @@ class LPAlgorithmPRECKKS : public LPPREAlgorithm<Element> {
    */
   Ciphertext<Element> ReEncrypt(
       const LPEvalKey<Element> EK, ConstCiphertext<Element> ciphertext,
-      const LPPublicKey<Element> publicKey = nullptr) const;
+      const LPPublicKey<Element> publicKey = nullptr, usint noiseflooding = 0) const;
 
  private:
   /**

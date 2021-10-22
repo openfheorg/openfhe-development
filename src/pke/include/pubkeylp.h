@@ -1009,7 +1009,7 @@ class LPParameterGenerationAlgorithm {
                          usint relinWindow, MODE mode,
                          KeySwitchTechnique ksTech = BV,
                          usint firstModSize = 60, usint dcrtBits = 60,
-                         uint32_t numLargeDigits = 4) const {
+                         uint32_t numLargeDigits = 4, usint multihopQBound = 0) const {
     PALISADE_THROW(
         not_implemented_error,
         "This signature for ParamsGen is not supported for this scheme.");
@@ -1282,7 +1282,7 @@ class LPPREAlgorithm {
    */
   virtual Ciphertext<Element> ReEncrypt(
       const LPEvalKey<Element> evalKey, ConstCiphertext<Element> ciphertext,
-      const LPPublicKey<Element> publicKey = nullptr) const = 0;
+      const LPPublicKey<Element> publicKey = nullptr, usint noiseflooding = 0) const = 0;
 };
 
 /**
@@ -3358,9 +3358,9 @@ class LPPublicKeyEncryptionScheme {
 
   virtual Ciphertext<Element> ReEncrypt(
       const LPEvalKey<Element> evalKey, ConstCiphertext<Element> ciphertext,
-      const LPPublicKey<Element> publicKey) const {
+      const LPPublicKey<Element> publicKey, usint noiseflooding) const {
     if (m_algorithmPRE) {
-      auto ct = m_algorithmPRE->ReEncrypt(evalKey, ciphertext, publicKey);
+      auto ct = m_algorithmPRE->ReEncrypt(evalKey, ciphertext, publicKey, noiseflooding);
       ct->SetKeyTag(evalKey->GetKeyTag());
       return ct;
     }
@@ -4457,11 +4457,11 @@ class LPPublicKeyEncryptionScheme {
                          usint cyclOrder, usint ptm, usint numPrimes,
                          usint relinWindow, MODE mode,
                          enum KeySwitchTechnique ksTech, usint firstModSize,
-                         usint dcrtBits, uint32_t numLargeDigits) const {
+                         usint dcrtBits, uint32_t numLargeDigits, usint multihopQBound) const {
     if (m_algorithmParamsGen) {
       return m_algorithmParamsGen->ParamsGen(
           cryptoParams, cyclOrder, ptm, numPrimes, relinWindow, mode, ksTech,
-          firstModSize, dcrtBits, numLargeDigits);
+          firstModSize, dcrtBits, numLargeDigits, multihopQBound);
     }
     PALISADE_THROW(
         not_implemented_error,

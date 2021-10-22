@@ -789,7 +789,7 @@ class LPAlgorithmParamsGenBGVrns
                  usint cyclOrder, usint ptm, usint numPrimes, usint relinWindow,
                  MODE mode, KeySwitchTechnique ksTech = BV,
                  usint firstModSize = 0, usint dcrtBits = 0,
-                 uint32_t numLargeDigits = 4) const;
+                 uint32_t numLargeDigits = 4, usint multihopQBound = 0) const;
 
   ~LPAlgorithmParamsGenBGVrns() {}
 
@@ -1773,7 +1773,7 @@ class LPAlgorithmPREBGVrns : public LPPREAlgorithm<Element> {
    */
   Ciphertext<Element> ReEncrypt(
       const LPEvalKey<Element> EK, ConstCiphertext<Element> ciphertext,
-      const LPPublicKey<Element> publicKey = nullptr) const override;
+      const LPPublicKey<Element> publicKey = nullptr, usint noiseflooding = 0) const override;
 
  private:
   /**

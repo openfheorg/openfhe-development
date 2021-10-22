@@ -43,7 +43,7 @@ schemes for finite fields. Cryptology ePrint Archive, Report 2021/204,
 
 #include "bgvrns.cpp"
 #include "cryptocontext.h"
-
+#include<math.h>
 namespace lbcrypto {
 
 #define NOPOLY                                                                \
@@ -505,7 +505,7 @@ bool LPAlgorithmParamsGenBGVrns<Poly>::ParamsGen(
     shared_ptr<LPCryptoParameters<Poly>> cryptoParams, usint cyclOrder,
     usint ptm, usint numPrimes, usint relinWindow, MODE mode,
     KeySwitchTechnique ksTech, usint firstModSize, usint dcrtBits,
-    uint32_t numLargeDigits) const {
+    uint32_t numLargeDigits, usint multihopQBound) const {
   NOPOLY
 }
 
@@ -514,7 +514,7 @@ bool LPAlgorithmParamsGenBGVrns<NativePoly>::ParamsGen(
     shared_ptr<LPCryptoParameters<NativePoly>> cryptoParams, usint cyclOrder,
     usint ptm, usint numPrimes, usint relinWindow, MODE mode,
     enum KeySwitchTechnique ksTech, usint firstModSize, usint dcrtBits,
-    uint32_t numLargeDigits) const {
+    uint32_t numLargeDigits, usint multihopQBound) const {
   NONATIVEPOLY
 }
 
@@ -523,7 +523,7 @@ bool LPAlgorithmParamsGenBGVrns<DCRTPoly>::ParamsGen(
     shared_ptr<LPCryptoParameters<DCRTPoly>> cryptoParams, usint cyclOrder,
     usint ptm, usint numPrimes, usint relinWindow, MODE mode,
     enum KeySwitchTechnique ksTech, usint firstModSize, usint dcrtBits,
-    uint32_t numLargeDigits) const {
+    uint32_t numLargeDigits, usint multihopQBound) const {
   const auto cryptoParamsBGVrns =
       std::static_pointer_cast<LPCryptoParametersBGVrns<DCRTPoly>>(
           cryptoParams);
@@ -552,6 +552,15 @@ bool LPAlgorithmParamsGenBGVrns<DCRTPoly>::ParamsGen(
     qBound +=
         ceil(ceil(static_cast<double>(qBound) / numLargeDigits) / PModSize) *
         PModSize;
+
+  //Note this code is not executed if multihopQBound == 0 so it is backwards compatable
+  if (qBound <  multihopQBound) {  
+	  //need to increase qBound to multihopQBound
+	  qBound = multihopQBound;
+
+	  //need to increase numPrimes to support new larger qBound
+	  numPrimes = (unsigned int) ((qBound-firstModSize)/((float) dcrtBits) + 1);
+  }
 
   // RLWE security constraint
   DistributionType distType =
@@ -3233,24 +3242,26 @@ LPEvalKey<DCRTPoly> LPAlgorithmPREBGVrns<DCRTPoly>::ReKeyGen(
 template <>
 Ciphertext<Poly> LPAlgorithmPREBGVrns<Poly>::ReEncrypt(
     const LPEvalKey<Poly> ek, ConstCiphertext<Poly> ciphertext,
-    const LPPublicKey<Poly> publicKey) const {
+    const LPPublicKey<Poly> publicKey, usint noiseflooding) const {
   NOPOLY
 }
 
 template <>
 Ciphertext<NativePoly> LPAlgorithmPREBGVrns<NativePoly>::ReEncrypt(
     const LPEvalKey<NativePoly> ek, ConstCiphertext<NativePoly> ciphertext,
-    const LPPublicKey<NativePoly> publicKey) const {
+    const LPPublicKey<NativePoly> publicKey, usint noiseflooding) const {
   NONATIVEPOLY
 }
 
 template <>
 Ciphertext<DCRTPoly> LPAlgorithmPREBGVrns<DCRTPoly>::ReEncrypt(
     const LPEvalKey<DCRTPoly> ek, ConstCiphertext<DCRTPoly> ciphertext,
-    const LPPublicKey<DCRTPoly> publicKey) const {
+    const LPPublicKey<DCRTPoly> publicKey, usint noiseflooding) const {
   const auto cryptoParams =
       std::static_pointer_cast<LPCryptoParametersBGVrns<DCRTPoly>>(
           ek->GetCryptoParameters());
+
+  auto rk_level=ciphertext->GetHopLevel();
 
   if (cryptoParams->GetKeySwitchTechnique() != BV) {
     std::string errMsg =
@@ -3265,7 +3276,31 @@ Ciphertext<DCRTPoly> LPAlgorithmPREBGVrns<DCRTPoly>::ReEncrypt(
     // Get crypto and elements parameters
     const shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
 
-    const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
+  //const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();//modified    
+    double noise_param = 3.2;
+    if (noiseflooding == 1) {
+      auto clientCC = ciphertext->GetCryptoContext();
+      auto r = clientCC->GetCryptoParameters()->GetRelinWindow();
+      auto n = clientCC->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder()/2;
+      auto log2q = log2(clientCC->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble());
+      auto log2qi = log2(ciphertext->GetElements()[0].GetModulus().ConvertToDouble());
+      double qfactor = (log2q - log2qi);
+
+      //getmodulus using ciphertext 
+      double stat_sec=30;
+      //get the re-encryption level and set the level after re-encryption
+      double B_e = 8*3.2;
+      if (rk_level == 0) {
+        noise_param = (pow(2,(stat_sec*(rk_level+1)))*3*(log2q/r+1)*sqrt(n)*(pow(2,r)-1)*B_e);//rk_level
+      } else {
+        noise_param = (pow(2,(stat_sec*(rk_level+1)))*3*(log2q/r+1)*sqrt(n)*(pow(2,r)-1)*B_e)/(pow(2,qfactor));
+      }
+    }
+    else {
+      noise_param = MPRE_SD; //fixed 20 bits noise
+    }
+
+    DggType dgg(noise_param);
     TugType tug;
 
     PlaintextEncodings encType = ciphertext->GetEncodingType();
@@ -3300,6 +3335,8 @@ Ciphertext<DCRTPoly> LPAlgorithmPREBGVrns<DCRTPoly>::ReEncrypt(
         ciphertext, zeroCiphertext);
 
     ciphertext->GetCryptoContext()->KeySwitchInPlace(ek, c);
+
+    c->SetHopLevel(rk_level+1);
     return c;
   }
 }

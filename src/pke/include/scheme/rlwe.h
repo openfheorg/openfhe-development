@@ -37,6 +37,10 @@ namespace lbcrypto {
 // threshold FHE
 const double MP_SD = 1048576;
 
+// noise flooding distribution parameter
+// for fixed 20 bits noise multihop PRE
+const double MPRE_SD = 1048576;
+
 /**
  * @brief Template for crypto parameters.
  * @tparam Element a ring element.

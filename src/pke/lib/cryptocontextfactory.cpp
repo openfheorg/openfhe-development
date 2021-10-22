@@ -507,7 +507,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBGVrnsWithParamsGen(
     usint cyclOrder, usint numPrimes, usint ptm, usint relinWindow, MODE mode,
     int depth, int maxDepth, enum KeySwitchTechnique ksTech, usint firstModSize,
     usint dcrtBits, uint32_t numLargeDigits, usint batchSize,
-    enum ModSwitchMethod msMethod) {
+    enum ModSwitchMethod msMethod, usint multihopQBound) {
   float stdDev = 3.2;
 
   auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
@@ -524,7 +524,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBGVrnsWithParamsGen(
 
   auto schemeBGVrns = std::make_shared<LPPublicKeyEncryptionSchemeBGVrns<T>>();
   schemeBGVrns->ParamsGen(params, cyclOrder, ptm, numPrimes, relinWindow, mode,
-                          ksTech, firstModSize, dcrtBits, numLargeDigits);
+                          ksTech, firstModSize, dcrtBits, numLargeDigits, multihopQBound);
 
   auto cc = CryptoContextFactory<T>::GetContext(params, schemeBGVrns);
 
@@ -538,7 +538,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBGVrns(
     usint multiplicativeDepth, usint ptm, SecurityLevel stdLevel, float stdDev,
     int maxDepth, MODE mode, enum KeySwitchTechnique ksTech, usint ringDim,
     uint32_t numLargeDigits, usint firstModSize, usint dcrtBits,
-    usint relinWindow, usint batchSize, ModSwitchMethod msMethod) {
+    usint relinWindow, usint batchSize, ModSwitchMethod msMethod, usint multihopQBound) {
   auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
 
   EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(ptm));
@@ -569,7 +569,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBGVrns(
   auto schemeBGVrns = std::make_shared<LPPublicKeyEncryptionSchemeBGVrns<T>>();
   schemeBGVrns->ParamsGen(params, 2 * ringDim, ptm, multiplicativeDepth + 1,
                           relinWindow, mode, ksTech, firstModSize, dcrtBits,
-                          numLargeDigits);
+                          numLargeDigits, multihopQBound);
 
   auto cc = CryptoContextFactory<T>::GetContext(params, schemeBGVrns);
 

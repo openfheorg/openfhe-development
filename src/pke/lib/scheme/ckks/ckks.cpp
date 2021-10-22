@@ -912,7 +912,7 @@ LPEvalKey<Element> LPAlgorithmPRECKKS<Element>::ReKeyGen(
 template <class Element>
 Ciphertext<Element> LPAlgorithmPRECKKS<Element>::ReEncrypt(
     const LPEvalKey<Element> EK, ConstCiphertext<Element> ciphertext,
-    const LPPublicKey<Element> publicKey) const {
+    const LPPublicKey<Element> publicKey, usint noiseflooding) const {
   Ciphertext<Element> c =
       ciphertext->GetCryptoContext()->GetEncryptionAlgorithm()->KeySwitch(
           EK, ciphertext);

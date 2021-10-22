@@ -240,14 +240,14 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(
         auto mk = k % dcrt_qmodulus;
         k = (NativeInteger::Integer)mk;
       }
+
       if (k < 0) {
         k *= (-1);
-        entry = (NativeInteger::Integer)dcrtParams->GetParams()[i]
-                    ->GetModulus()
-                    .ConvertToInt() -
+        entry = (NativeInteger::Integer)dcrt_qmodulus -
                 (NativeInteger::Integer)k;
+
       } else {  // if greater than or equal to zero, set it the value generated
-        entry = k;
+          entry = k;
       }
       ilDggValues[j] = entry;
     }

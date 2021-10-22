@@ -4415,7 +4415,7 @@ LPEvalKey<DCRTPoly> LPAlgorithmPRECKKS<DCRTPoly>::ReKeyGen(
 template <>
 Ciphertext<DCRTPoly> LPAlgorithmPRECKKS<DCRTPoly>::ReEncrypt(
     const LPEvalKey<DCRTPoly> ek, ConstCiphertext<DCRTPoly> ciphertext,
-    const LPPublicKey<DCRTPoly> publicKey) const {
+    const LPPublicKey<DCRTPoly> publicKey, usint noiseflooding) const {
   const auto cryptoParams =
       std::static_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
           ek->GetCryptoParameters());

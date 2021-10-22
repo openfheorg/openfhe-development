@@ -1210,7 +1210,7 @@ LPEvalKey<Element> LPAlgorithmPREBFV<Element>::ReKeyGen(
 template <class Element>
 Ciphertext<Element> LPAlgorithmPREBFV<Element>::ReEncrypt(
     const LPEvalKey<Element> EK, ConstCiphertext<Element> ciphertext,
-    const LPPublicKey<Element> publicKey) const {
+    const LPPublicKey<Element> publicKey, usint noiseflooding) const {
   if (publicKey == nullptr) {  // Sender PK is not provided - CPA-secure PRE
     Ciphertext<Element> c =
         ciphertext->GetCryptoContext()->GetEncryptionAlgorithm()->KeySwitch(
