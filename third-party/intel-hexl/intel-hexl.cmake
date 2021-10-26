@@ -11,7 +11,7 @@ if (INTEL_HEXL_PREBUILT)  # Skip download from gitlab
         HINTS ${INTEL_HEXL_HINT_DIR}
         REQUIRED)
   if (NOT TARGET HEXL::hexl)
-      FATAL_ERROR("Intel HEXL not found")
+    message(FATAL_ERROR, "Intel HEXL not found")
   endif()
 
   get_target_property(INTEL_HEXL_INCLUDE_DIR HEXL::hexl INTERFACE_INCLUDE_DIRECTORIES)
@@ -22,10 +22,6 @@ if (INTEL_HEXL_PREBUILT)  # Skip download from gitlab
 
   # TODO(fboemer): Use target_include_directories
   include_directories(${INTEL_HEXL_INCLUDE_DIR})
-
-  install(FILES ${INTEL_HEXL_LOCATION}
-        DESTINATION ${INSTALL_LIB_DIR}/)
-
 else()
     # ------------------------------------------------------------------------------
     # Download and install Intel HEXL ...
