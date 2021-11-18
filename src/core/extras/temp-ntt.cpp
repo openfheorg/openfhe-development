@@ -22,6 +22,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "palisadecore.h"
+#include "math/hal.h"
 
 using namespace lbcrypto;
 

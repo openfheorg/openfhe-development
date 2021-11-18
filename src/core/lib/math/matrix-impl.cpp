@@ -28,7 +28,6 @@
 #include "lattice/field2n.h"
 #include "math/matrix.cpp"
 #include "math/matrixstrassen.h"
-using std::invalid_argument;
 
 // this is the implementation of matrixes of things that are in core
 // and that need template specializations
@@ -38,11 +37,6 @@ namespace lbcrypto {
 template class Matrix<double>;
 template class Matrix<int>;
 template class Matrix<int64_t>;
-
-ONES_FOR_TYPE(double)
-ONES_FOR_TYPE(int)
-ONES_FOR_TYPE(int64_t)
-ONES_FOR_TYPE(Field2n)
 
 #define MODEQ_FOR_TYPE(T)                         \
   template <>                                     \
@@ -71,40 +65,6 @@ MODEQ_FOR_TYPE(BigInteger)
 
 MODSUBEQ_FOR_TYPE(NativeInteger)
 MODSUBEQ_FOR_TYPE(BigInteger)
-
-// template<>
-// Matrix<Plaintext>& Matrix<Plaintext>::Ones() {
-//  Plaintext One( { 1 } );
-//    for (size_t row = 0; row < rows; ++row) {
-//        for (size_t col = 0; col < cols; ++col) {
-//            *data[row][col] = One;
-//        }
-//    }
-//    return *this;
-//}
-
-IDENTITY_FOR_TYPE(double)
-IDENTITY_FOR_TYPE(int)
-IDENTITY_FOR_TYPE(int64_t)
-IDENTITY_FOR_TYPE(Field2n)
-
-GADGET_FOR_TYPE(double)
-
-GADGET_FOR_TYPE(int)
-GADGET_FOR_TYPE(int64_t)
-//  GADGET_FOR_TYPE(DCRTPoly)
-GADGET_FOR_TYPE(Field2n)
-
-#define NONORM_FOR_TYPE(T)                                                 \
-  template <>                                                              \
-  double Matrix<T>::Norm() const {                                         \
-    PALISADE_THROW(not_available_error, "Norm not defined for this type"); \
-  }
-
-NONORM_FOR_TYPE(double)
-NONORM_FOR_TYPE(int)
-NONORM_FOR_TYPE(int64_t)
-NONORM_FOR_TYPE(Field2n)
 
 // YSP removed the Matrix class because it is not defined for all possible data
 // types needs to be checked to make sure input matrix is used in the right

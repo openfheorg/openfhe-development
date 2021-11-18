@@ -34,7 +34,7 @@
 #include "lattice/ilelement.h"
 #include "lattice/ilparams.h"
 #include "lattice/poly.h"
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
 #include "testdefs.h"

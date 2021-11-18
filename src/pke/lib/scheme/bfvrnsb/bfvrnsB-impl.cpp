@@ -52,6 +52,7 @@ Archive, Report 2018/589. {https://eprint.iacr.org/2018/589}
 
 #include "bfvrnsB.cpp"
 #include "cryptocontext.h"
+#include "math/hal.h"
 
 // #define USE_KARATSUBA
 

@@ -48,7 +48,7 @@
 #include "math/discretegaussiangenerator.cpp"
 #include "math/discreteuniformgenerator.cpp"
 #include "math/nbtheory.cpp"
-#include "math/transform.h"
+#include "math/hal.h"
 
 using namespace std;
 using namespace lbcrypto;

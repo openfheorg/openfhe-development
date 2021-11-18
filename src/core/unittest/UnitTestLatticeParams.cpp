@@ -31,7 +31,6 @@
 #include "gtest/gtest.h"
 
 #include "lattice/backend.h"
-#include "math/backend.h"
 #include "utils/inttypes.h"
 #include "lattice/stdlatticeparms.h"
 

@@ -25,7 +25,7 @@
 #ifndef LBCRYPTO_LATTICE_BACKEND_H
 #define LBCRYPTO_LATTICE_BACKEND_H
 
-#include "math/backend.h"
+#include "math/hal.h"
 
 #include "lattice/elemparams.h"
 #include "lattice/ildcrtparams.h"
@@ -74,6 +74,8 @@ using M6DCRTParams = ILDCRTParams<M6Integer>;
   using M4DCRTPoly = HexlDCRTPoly<M4Vector>;
   #ifdef WITH_NTL
   using M6DCRTPoly = HexlDCRTPoly<M6Vector>;
+  #else
+  using M6DCRTPoly = void;
   #endif
 
   using DCRTPoly = HexlDCRTPoly<BigVector>;
@@ -83,6 +85,8 @@ using M6DCRTParams = ILDCRTParams<M6Integer>;
   using M4DCRTPoly = DCRTPolyImpl<M4Vector>;
   #ifdef WITH_NTL
   using M6DCRTPoly = DCRTPolyImpl<M6Vector>;
+  #else
+  using M6DCRTPoly = void;
   #endif
   
   using DCRTPoly = DCRTPolyImpl<BigVector>;

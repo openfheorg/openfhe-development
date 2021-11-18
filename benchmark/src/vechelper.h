@@ -29,7 +29,7 @@
 
 #include <utility>
 #define _USE_MATH_DEFINES
-#include "math/backend.h"
+#include "math/hal.h"
 using namespace lbcrypto;
 
 template <typename V>

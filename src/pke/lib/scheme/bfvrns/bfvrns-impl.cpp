@@ -24,6 +24,7 @@
 
 #include "bfvrns.cpp"
 #include "cryptocontext.h"
+#include "math/hal.h"
 
 namespace lbcrypto {
 

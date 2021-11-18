@@ -31,7 +31,6 @@ library.
 
 #include "lattice/backend.h"
 #include "lattice/elemparamfactory.h"
-#include "math/backend.h"
 #include "math/distrgen.h"
 #include "testdefs.h"
 #include "utils/exception.h"

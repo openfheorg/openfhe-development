@@ -920,7 +920,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(
 
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(
-    bigintnat::NativeInteger::SignedNativeInt element) const {
+    NativeInteger::SignedNativeInt element) const {
   DCRTPolyImpl<VecType> tmp(*this);
 
 #pragma omp parallel for

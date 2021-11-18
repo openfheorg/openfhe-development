@@ -31,7 +31,7 @@
 
 #include "encoding/encodings.h"
 #include "lattice/dcrtpoly.h"
-#include "math/backend.h"
+#include "math/hal.h"
 
 #include "lattice/elemparamfactory.h"
 #include "utils/inttypes.h"

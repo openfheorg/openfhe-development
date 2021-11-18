@@ -36,10 +36,9 @@ using std::shared_ptr;
 #include "lattice/ildcrtparams.h"
 #include "lattice/ilelement.h"
 #include "lattice/ilparams.h"
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
-#include "math/transform.h"
 #include "utils/inttypes.h"
 #include "utils/memory.h"
 
@@ -448,7 +447,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @return is the return value of the times operation.
    */
   PolyImpl Times(int64_t element) const {
-    return Times((bigintnat::NativeInteger::SignedNativeInt)element);
+    return Times((NativeInteger::SignedNativeInt)element);
   }
 #endif
 
@@ -458,7 +457,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param &element is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
-  PolyImpl Times(bigintnat::NativeInteger::SignedNativeInt element) const;
+  PolyImpl Times(NativeInteger::SignedNativeInt element) const;
 
   // VECTOR OPERATIONS
 
@@ -635,6 +634,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
 
   PolyNative ToNativePoly() const;
 
+  // TODO (dsuponit): do we need ToNativePolyCloneParams()? can't find its usage
   PolyNative ToNativePolyCloneParams() const;
 
   /**
@@ -870,7 +870,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @return the result of the multiplication operation.
    */
   friend inline PolyImpl operator*(const PolyImpl &a, int64_t b) {
-    return a.Times((bigintnat::NativeInteger::SignedNativeInt)b);
+    return a.Times((NativeInteger::SignedNativeInt)b);
   }
 
   /**
@@ -880,7 +880,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @return the result of the multiplication operation.
    */
   friend inline PolyImpl operator*(int64_t a, const PolyImpl &b) {
-    return b.Times((bigintnat::NativeInteger::SignedNativeInt)a);
+    return b.Times((NativeInteger::SignedNativeInt)a);
   }
 
   template <class Archive>

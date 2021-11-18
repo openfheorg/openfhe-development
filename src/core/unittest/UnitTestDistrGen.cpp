@@ -31,7 +31,6 @@
 #include "gtest/gtest.h"
 
 #include "lattice/backend.h"
-#include "math/backend.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
 #include "utils/debug.h"

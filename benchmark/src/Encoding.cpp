@@ -37,6 +37,7 @@ bool runOnlyOnce = true;
 
 #include "encoding/encodings.h"
 #include "lattice/elemparamfactory.h"
+#include "math/hal.h"
 
 using namespace std;
 using namespace lbcrypto;

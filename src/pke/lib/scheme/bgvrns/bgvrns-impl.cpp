@@ -44,6 +44,8 @@ schemes for finite fields. Cryptology ePrint Archive, Report 2021/204,
 #include "bgvrns.cpp"
 #include "cryptocontext.h"
 #include<math.h>
+#include "math/hal.h"
+
 namespace lbcrypto {
 
 #define NOPOLY                                                                \

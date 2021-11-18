@@ -32,6 +32,8 @@
 #include <random>
 
 #include "palisade.h"
+#include "math/hal.h"
+
 
 using namespace std;
 using namespace lbcrypto;

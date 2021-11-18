@@ -24,6 +24,7 @@
 
 #include "encoding/packedencoding.h"
 #include "utils/utilities.h"
+#include "math/hal.h"
 
 namespace lbcrypto {
 

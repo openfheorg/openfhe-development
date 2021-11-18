@@ -1164,12 +1164,12 @@ LPEvalKey<Element> LPAlgorithmPREBFV<Element>::ReKeyGen(
   }
 
   Element s = origPrivateKey->GetPrivateElement();
-
+  
   std::vector<Element> evalKeyElementsA(K);
   std::vector<Element> evalKeyElementsB(K);
 
   for (usint i = 0; i < K; i++) {
-    NativeInteger b = NativeInteger(1) << i * relinWin;
+    IntType b = IntType(1) << i * relinWin;
 
     s.SetFormat(Format::EVALUATION);
 

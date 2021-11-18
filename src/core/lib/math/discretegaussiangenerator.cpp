@@ -23,7 +23,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 

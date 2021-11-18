@@ -2528,7 +2528,7 @@ Ciphertext<DCRTPoly> LPAlgorithmSHECKKS<DCRTPoly>::EvalAddCorePlaintext(
     double scFactor = cryptoParams->GetScalingFactorOfLevel();
 
     DCRTPoly::Integer intSF =
-        static_cast<bigintnat::NativeInteger::Integer>(scFactor + 0.5);
+        static_cast<NativeInteger::Integer>(scFactor + 0.5);
     std::vector<DCRTPoly::Integer> crtSF(sizeQl, intSF);
     auto crtPowSF = crtSF;
     for (usint j = 0; j < diffDepth - 1; j++) {
@@ -2587,7 +2587,7 @@ Ciphertext<DCRTPoly> LPAlgorithmSHECKKS<DCRTPoly>::EvalSubCorePlaintext(
     double scFactor = cryptoParams->GetScalingFactorOfLevel();
 
     DCRTPoly::Integer intSF =
-        static_cast<bigintnat::NativeInteger::Integer>(scFactor + 0.5);
+        static_cast<NativeInteger::Integer>(scFactor + 0.5);
     std::vector<DCRTPoly::Integer> crtSF(sizeQl, intSF);
     // Compute powP^depthDiff in CRT
     auto crtPowSF = crtSF;

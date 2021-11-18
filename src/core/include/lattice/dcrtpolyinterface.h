@@ -37,7 +37,7 @@
 #include <utility>
 #include <vector>
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "utils/inttypes.h"
 
 #include "utils/exception.h"
@@ -549,7 +549,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param &element is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
-  virtual DerivedType Times(bigintnat::NativeInteger::SignedNativeInt element) const = 0;
+  virtual DerivedType Times(NativeInteger::SignedNativeInt element) const = 0;
 
 #if NATIVEINT != 64
   /**
@@ -1511,7 +1511,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the result of the multiplication operation.
    */
   friend inline DerivedType operator*(const DerivedType &a, int64_t b) {
-    return a.Times((bigintnat::NativeInteger::SignedNativeInt)b);
+    return a.Times((NativeInteger::SignedNativeInt)b);
   }
 
   /**
@@ -1521,7 +1521,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the result of the multiplication operation.
    */
   friend inline DerivedType operator*(int64_t a, const DerivedType &b) {
-    return b.Times((bigintnat::NativeInteger::SignedNativeInt)a);
+    return b.Times((NativeInteger::SignedNativeInt)a);
   }
 
 }; // DCRTPolyInterface<BigVecType>

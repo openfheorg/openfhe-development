@@ -28,10 +28,8 @@
 #include <string>
 #include <vector>
 
-#include "../math/dftransform.h"
-#include "../math/transform.h"
+#include "math/dftransform.h"
 #include "lattice/backend.h"
-#include "math/backend.h"
 #include "math/matrix.h"
 
 namespace lbcrypto {

@@ -27,7 +27,7 @@
 
 #include <map>
 #include <vector>
-#include "math/backend.h"
+#include "math/hal.h"
 using std::map;
 
 namespace lbcrypto {

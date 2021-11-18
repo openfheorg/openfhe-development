@@ -26,7 +26,7 @@
 #include "lattice/elemparams.cpp"
 #include "lattice/ildcrtparams.cpp"
 #include "lattice/poly.cpp"
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/binaryuniformgenerator.cpp"
 #include "math/discretegaussiangenerator.cpp"
 #include "math/discreteuniformgenerator.cpp"

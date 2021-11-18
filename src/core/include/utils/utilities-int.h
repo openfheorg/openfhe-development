@@ -24,7 +24,7 @@
 #ifndef __UTILITIES_INT_H__
 #define __UTILITIES_INT_H__
 
-#include "math/backend.h"
+#include "math/hal.h"
 
 namespace lbcrypto {
 

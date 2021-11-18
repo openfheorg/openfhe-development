@@ -1,3 +1,6 @@
+// This file is included only if WITH_INTEL_HEXL is set to ON in CMakeLists.txt
+#ifdef WITH_INTEL_HEXL
+
 /** @file hexldcrtpoly.h
  *
  * @brief test file for checking if the interface class is
@@ -27,7 +30,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#if defined(WITH_INTEL_HEXL)
 
 #ifndef LBCRYPTO_LATTICE_HEXLDCRTPOLY_H
 #define LBCRYPTO_LATTICE_HEXLDCRTPOLY_H
@@ -40,7 +42,7 @@
 #include "hexl/hexl.hpp"
 
 // Local PALISADE libs
-#include "math/backend.h"
+#include "math/hal.h"
 #include "lattice/dcrtpoly.h"
 #include "utils/debug.h"
 

@@ -62,7 +62,7 @@
 #include <random>
 #include <vector>
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/distributiongenerator.h"
 
 namespace lbcrypto {

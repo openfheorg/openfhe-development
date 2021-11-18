@@ -23,7 +23,6 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lattice/backend.h"
-#include "math/backend.h"
 #include "math/matrix.cpp"
 #include "matrix-lattice-impl.cpp"
 
@@ -39,10 +38,6 @@ template class PolyImpl<M4Vector>;
 // template class DCRTPolyImpl<M4Vector>;
 
 template class Matrix<M4Poly>;
-ONES_FOR_TYPE(M4Poly)
-IDENTITY_FOR_TYPE(M4Poly)
-GADGET_FOR_TYPE(M4Poly)
-NORM_FOR_TYPE(M4Poly)
 SPLIT64_FOR_TYPE(M4Poly)
 SPLIT64ALT_FOR_TYPE(M4Poly)
 SPLIT32ALT_FOR_TYPE(M4Poly)
@@ -50,10 +45,6 @@ template Matrix<M4Vector> RotateVecResult(Matrix<M4Poly> const& inMat);
 template Matrix<M4Integer> Rotate(Matrix<M4Poly> const& inMat);
 
 template class Matrix<M4DCRTPoly>;
-ONES_FOR_TYPE(M4DCRTPoly)
-IDENTITY_FOR_TYPE(M4DCRTPoly)
-GADGET_FOR_TYPE_DCRT(M4DCRTPoly)
-NORM_FOR_TYPE(M4DCRTPoly)
 SPLIT64_FOR_TYPE(M4DCRTPoly)
 SPLIT64ALT_FOR_TYPE(M4DCRTPoly)
 SPLIT32ALT_FOR_TYPE(M4DCRTPoly)

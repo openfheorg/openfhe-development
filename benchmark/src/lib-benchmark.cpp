@@ -45,6 +45,7 @@
 #include "cryptocontexthelper.h"
 
 #include "utils/debug.h"
+#include "math/hal.h"
 
 using namespace std;
 using namespace lbcrypto;

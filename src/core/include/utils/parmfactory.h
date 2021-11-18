@@ -29,7 +29,7 @@
 #include <memory>
 #include <vector>
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/distrgen.h"
 
 #include "utils/inttypes.h"

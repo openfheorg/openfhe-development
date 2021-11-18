@@ -25,10 +25,9 @@
 #include "gtest/gtest.h"
 
 #include "cryptocontext.h"
-
 #include "encoding/encodings.h"
-
 #include "utils/debug.h"
+#include "math/hal.h"
 
 using namespace std;
 using namespace lbcrypto;

@@ -32,15 +32,16 @@
 #include <vector>
 
 #include "lattice/backend.h"
-#include "math/backend.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
 #include "utils/inttypes.h"
 #include "utils/memory.h"
 #include "utils/utilities.h"
-using std::invalid_argument;
 
 namespace lbcrypto {
+
+// Forward declaration
+class Field2n;
 
 template <class Element>
 class Matrix : public Serializable {
@@ -147,19 +148,13 @@ class Matrix : public Serializable {
    *
    * @return the resulting matrix
    */
-  Matrix<Element>& Ones();
-
-  // Macro for convenient definitions of class implementations of special
-  // functions
-#define ONES_FOR_TYPE(T)                        \
-  template <>                                   \
-  Matrix<T>& Matrix<T>::Ones() {                \
-    for (size_t row = 0; row < rows; ++row) {   \
-      for (size_t col = 0; col < cols; ++col) { \
-        data[row][col] = 1;                     \
-      }                                         \
-    }                                           \
-    return *this;                               \
+  Matrix<Element>& Ones() {
+      for (size_t row = 0; row < rows; ++row) {
+          for (size_t col = 0; col < cols; ++col) {
+              data[row][col] = 1;
+          }
+      }
+      return *this;
   }
 
   /**
@@ -190,21 +185,18 @@ class Matrix : public Serializable {
    *
    * @return the resulting matrix
    */
-  Matrix<Element>& Identity();
-
-#define IDENTITY_FOR_TYPE(T)                    \
-  template <>                                   \
-  Matrix<T>& Matrix<T>::Identity() {            \
-    for (size_t row = 0; row < rows; ++row) {   \
-      for (size_t col = 0; col < cols; ++col) { \
-        if (row == col) {                       \
-          data[row][col] = 1;                   \
-        } else {                                \
-          data[row][col] = 0;                   \
-        }                                       \
-      }                                         \
-    }                                           \
-    return *this;                               \
+  Matrix<Element>& Identity() {
+      for (size_t row = 0; row < rows; ++row) {
+          for (size_t col = 0; col < cols; ++col) {
+              if (row == col) {
+                  data[row][col] = 1;
+              }
+              else {
+                  data[row][col] = 0;
+              }
+          }
+      }
+      return *this;
   }
 
   /**
@@ -213,56 +205,60 @@ class Matrix : public Serializable {
    * @param base is the base the digits of the matrix are represented in
    * @return the resulting matrix
    */
-  Matrix<Element> GadgetVector(int64_t base = 2) const;
-
-#define GADGET_FOR_TYPE(T)                                \
-  template <>                                             \
-  Matrix<T> Matrix<T>::GadgetVector(int64_t base) const { \
-    Matrix<T> g(allocZero, rows, cols);                   \
-    auto base_matrix = allocZero();                       \
-    size_t k = cols / rows;                               \
-    base_matrix = base;                                   \
-    g(0, 0) = 1;                                          \
-    for (size_t i = 1; i < k; i++) {                      \
-      g(0, i) = g(0, i - 1) * base_matrix;                \
-    }                                                     \
-    for (size_t row = 1; row < rows; row++) {             \
-      for (size_t i = 0; i < k; i++) {                    \
-        g(row, i + row * k) = g(0, i);                    \
-      }                                                   \
-    }                                                     \
-    return g;                                             \
+  template <typename T = Element, typename std::enable_if <
+      !std::is_same<T, M2DCRTPoly>::value &&
+      !std::is_same<T, M4DCRTPoly>::value &&
+      !std::is_same<T, M6DCRTPoly>::value,
+      bool>::type = true>
+  Matrix<T> GadgetVector(int64_t base = 2) const {
+      Matrix<T> g(allocZero, rows, cols);
+      auto base_matrix = allocZero();
+      size_t k = cols / rows;
+      base_matrix = base;
+      g(0, 0) = 1;
+      for (size_t i = 1; i < k; i++) {
+          g(0, i) = g(0, i - 1) * base_matrix;
+      }
+      for (size_t row = 1; row < rows; row++) {
+          for (size_t i = 0; i < k; i++) {
+              g(row, i + row * k) = g(0, i);
+          }
+      }
+      return g;
   }
 
-#define GADGET_FOR_TYPE_DCRT(T)                                         \
-  template <>                                                           \
-  Matrix<T> Matrix<T>::GadgetVector(int64_t base) const {               \
-    Matrix<T> g(allocZero, rows, cols);                                 \
-    auto base_matrix = allocZero();                                     \
-    base_matrix = base;                                                 \
-    size_t bk = 1;                                                      \
-                                                                        \
-    auto params = g(0, 0).GetParams()->GetParams();                     \
-                                                                        \
-    uint64_t digitCount = (long)ceil(                                   \
-        log2(params[0]->GetModulus().ConvertToDouble()) / log2(base));  \
-                                                                        \
-    for (size_t k = 0; k < digitCount; k++) {                           \
-      for (size_t i = 0; i < params.size(); i++) {                      \
-        NativePoly temp(params[i]);                                     \
-        temp = bk;                                                      \
-        g(0, k + i * digitCount).SetElementAtIndex(i, std::move(temp)); \
-      }                                                                 \
-      bk *= base;                                                       \
-    }                                                                   \
-                                                                        \
-    size_t kCols = cols / rows;                                         \
-    for (size_t row = 1; row < rows; row++) {                           \
-      for (size_t i = 0; i < kCols; i++) {                              \
-        g(row, i + row * kCols) = g(0, i);                              \
-      }                                                                 \
-    }                                                                   \
-    return g;                                                           \
+  template <typename T = Element, typename std::enable_if <
+      std::is_same<T, M2DCRTPoly>::value ||
+      std::is_same<T, M4DCRTPoly>::value ||
+      std::is_same<T, M6DCRTPoly>::value,
+      bool>::type = true>
+  Matrix<T> GadgetVector(int64_t base = 2) const {
+      Matrix<T> g(allocZero, rows, cols);
+      auto base_matrix = allocZero();
+      base_matrix = base;
+      size_t bk = 1;
+
+      auto params = g(0, 0).GetParams()->GetParams();
+
+      uint64_t digitCount = (long)ceil(
+          log2(params[0]->GetModulus().ConvertToDouble()) / log2(base));
+
+      for (size_t k = 0; k < digitCount; k++) {
+          for (size_t i = 0; i < params.size(); i++) {
+              NativePoly temp(params[i]);
+              temp = bk;
+              g(0, k + i * digitCount).SetElementAtIndex(i, std::move(temp));
+          }
+          bk *= base;
+      }
+
+      size_t kCols = cols / rows;
+      for (size_t row = 1; row < rows; row++) {
+          for (size_t i = 0; i < kCols; i++) {
+              g(row, i + row * kCols) = g(0, i);
+          }
+      }
+      return g;
   }
 
   /**
@@ -270,22 +266,34 @@ class Matrix : public Serializable {
    *
    * @return the norm in double format
    */
-  double Norm() const;
+  template <typename T = Element, typename std::enable_if <
+      std::is_same<T, double>::value ||
+      std::is_same<T, int>::value ||
+      std::is_same<T, int64_t>::value ||
+      std::is_same<T, Field2n>::value,
+      bool>::type = true>
+  double Norm() const {                                         \
+    PALISADE_THROW(not_available_error, "Norm not defined for this type"); \
+  }
 
-#define NORM_FOR_TYPE(T)                        \
-  template <>                                   \
-  double Matrix<T>::Norm() const {              \
-    double retVal = 0.0;                        \
-    double locVal = 0.0;                        \
-    for (size_t row = 0; row < rows; ++row) {   \
-      for (size_t col = 0; col < cols; ++col) { \
-        locVal = data[row][col].Norm();         \
-        if (locVal > retVal) {                  \
-          retVal = locVal;                      \
-        }                                       \
-      }                                         \
-    }                                           \
-    return retVal;                              \
+  template <typename T = Element, typename std::enable_if <
+      !std::is_same<T, double>::value &&
+      !std::is_same<T, int>::value &&
+      !std::is_same<T, int64_t>::value &&
+      !std::is_same<T, Field2n>::value,
+      bool>::type = true>
+  double Norm() const {
+      double retVal = 0.0;
+      double locVal = 0.0;
+      for (size_t row = 0; row < rows; ++row) {
+          for (size_t col = 0; col < cols; ++col) {
+              locVal = data[row][col].Norm();
+              if (locVal > retVal) {
+                  retVal = locVal;
+              }
+          }
+      }
+      return retVal;
   }
 
   /**

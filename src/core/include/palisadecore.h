@@ -26,7 +26,7 @@
 
 #include "version.h"
 
-#include "math/backend.h"
+#include "math/hal.h"
 
 #include "math/nbtheory.h"
 

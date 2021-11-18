@@ -48,6 +48,7 @@
 #include "utils/debug.h"
 
 #include "lib-hexl-util.h"
+#include "math/hal.h"
 
 using namespace std;
 using namespace lbcrypto;

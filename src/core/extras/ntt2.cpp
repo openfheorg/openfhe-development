@@ -33,6 +33,7 @@
 #include <vector>
 #include "palisadecore.h"
 #include "time.h"
+#include "math/hal.h"
 
 using namespace std;
 using namespace lbcrypto;

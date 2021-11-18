@@ -30,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-#include "math/backend.h"
+#include "math/hal.h"
 
 #include "utils/inttypes.h"
 #include "utils/exception.h"
@@ -575,7 +575,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @param &element is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
-  virtual DCRTPolyType Times(bigintnat::NativeInteger::SignedNativeInt element) const override;
+  virtual DCRTPolyType Times(NativeInteger::SignedNativeInt element) const override;
 
 #if NATIVEINT != 64
   /**
@@ -585,7 +585,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @return is the return value of the times operation.
    */
   virtual DCRTPolyType Times(int64_t element) const override {
-    return Times((bigintnat::NativeInteger::SignedNativeInt)element);
+    return Times((NativeInteger::SignedNativeInt)element);
   }
 #endif
 

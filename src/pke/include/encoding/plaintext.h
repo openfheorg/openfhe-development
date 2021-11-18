@@ -32,8 +32,6 @@
 
 #include "encoding/encodingparams.h"
 #include "lattice/backend.h"
-#include "math/backend.h"
-#include "utils/inttypes.h"
 
 using std::shared_ptr;
 
