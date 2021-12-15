@@ -1,0 +1,326 @@
+name: Run manually
+
+on:
+  workflow_dispatch:
+    inputs:
+      compiler:
+        type: choice
+        description: 'Compiler Type [GCC|CLANG]'
+        options:
+        - 'GCC'
+        - 'CLANG'
+        required: true
+        default: 'GCC'
+      native_backend:
+        description: 'Size of NativeInteger [32|64|128]'
+        type: choice
+        options:
+        - '32'
+        - '64'
+        - '128'
+        required: true
+        default: '64'
+      debug_mb2:
+        description: 'Run debug_mb2'
+        type: boolean
+        required: true
+        default: 'false'
+      debug_mb4:
+        description: 'Run debug_mb4'
+        type: boolean
+        required: true
+        default: 'false'
+      debug_tcm_ntl_mb6:
+        description: 'Run debug_tcm_ntl_mb6'
+        type: boolean
+        required: true
+        default: 'false'
+      noflag_mb4:
+        description: 'Run noflag_mb4'
+        type: boolean
+        required: true
+        default: 'false'
+      ntl_mb6:
+        description: 'Run ntl_mb6'
+        type: boolean
+        required: true
+        default: 'false'
+      tcm_mb2:
+        description: 'Run tcm_mb2'
+        type: boolean
+        required: true
+        default: 'false'
+      tcm_mb4:
+        description: 'Run tcm_mb4'
+        type: boolean
+        required: true
+        default: 'false'
+      tcm_ntl_mb6:
+        description: 'Run tcm_ntl_mb6'
+        type: boolean
+        required: true
+        default: 'false'
+
+jobs:
+
+  ###############################################
+  #
+  #    default jobs starts here
+  #
+  ###############################################
+  default:
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      GIT_SUBMODULE_STRATEGY: recursive
+      COMPILERS_MAP: >-
+       {
+         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+       }
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: default
+      uses: ./.github/actions/default_builder
+      with:
+        module_name: default
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} ..
+        native_backend: ${{ github.event.inputs.native_backend }}
+
+
+  ###############################################
+  #
+  #    tcm_mb2 jobs starts here
+  #
+  ###############################################
+  tcm_mb2:
+    needs: default
+    if: ${{ github.event.inputs.tcm_mb2 == 'true' }}
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      GIT_SUBMODULE_STRATEGY: recursive
+      COMPILERS_MAP: >-
+       {
+         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+       }
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: tcm_mb2
+      uses: ./.github/actions/default_builder
+      with:
+        module_name: tcm_mb2
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=2 ..
+        run_benchmark: true
+        run_tcm: true
+        run_extras: true
+        native_backend: ${{ github.event.inputs.native_backend }}
+
+
+  ###############################################
+  #
+  #    debug_mb2 jobs starts here
+  #
+  ###############################################
+  debug_mb2:
+    needs: default
+    if: ${{ github.event.inputs.debug_mb2 == 'true' }}
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      GIT_SUBMODULE_STRATEGY: recursive
+      COMPILERS_MAP: >-
+       {
+         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+       }
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: debug_mb2
+      uses: ./.github/actions/default_builder
+      with:
+        module_name: debug_mb2
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=2 ..
+        run_extras: true
+        native_backend: ${{ github.event.inputs.native_backend }}
+
+
+  ###############################################
+  #
+  #    tcm_mb4 jobs starts here
+  #
+  ###############################################
+  tcm_mb4:
+    needs: default
+    if: ${{ github.event.inputs.tcm_mb4 == 'true' }}
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      GIT_SUBMODULE_STRATEGY: recursive
+      COMPILERS_MAP: >-
+       {
+         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+       }
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: tcm_mb4
+      uses: ./.github/actions/default_builder
+      with:
+        module_name: tcm_mb4
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=4 ..
+        run_tcm: true
+        run_extras: true
+        native_backend: ${{ github.event.inputs.native_backend }}
+
+
+  ###############################################
+  #
+  #    noflag_mb4 jobs starts here
+  #
+  ###############################################
+  noflag_mb4:
+    needs: default
+    if: ${{ github.event.inputs.noflag_mb4 == 'true' }}
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      GIT_SUBMODULE_STRATEGY: recursive
+      COMPILERS_MAP: >-
+       {
+         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+       }
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: noflag_mb4
+      uses: ./.github/actions/default_builder
+      with:
+        module_name: noflag_mb4
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DMATHBACKEND=4 ..
+        run_extras: true
+        native_backend: ${{ github.event.inputs.native_backend }}
+
+
+  ###############################################
+  #
+  #    debug_mb4 jobs starts here
+  #
+  ###############################################
+  debug_mb4:
+    needs: default
+    if: ${{ github.event.inputs.debug_mb4 == 'true' }}
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      GIT_SUBMODULE_STRATEGY: recursive
+      COMPILERS_MAP: >-
+       {
+         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+       }
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: debug_mb4
+      uses: ./.github/actions/default_builder
+      with:
+        module_name: debug_mb4
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=4 ..
+        run_extras: true
+        native_backend: ${{ github.event.inputs.native_backend }}
+
+
+  ###############################################
+  #
+  #    ntl_mb6 jobs starts here
+  #
+  ###############################################
+  ntl_mb6:
+    needs: default
+    if: ${{ github.event.inputs.ntl_mb6 == 'true' }}
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      GIT_SUBMODULE_STRATEGY: recursive
+      COMPILERS_MAP: >-
+       {
+         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+       }
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: ntl_mb6
+      uses: ./.github/actions/default_builder
+      with:
+        module_name: ntl_mb6
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DMATHBACKEND=6 ..
+        run_extras: true
+        native_backend: ${{ github.event.inputs.native_backend }}
+
+
+  ###############################################
+  #
+  #    tcm_ntl_mb6 jobs starts here
+  #
+  ###############################################
+  tcm_ntl_mb6:
+    needs: default
+    if: ${{ github.event.inputs.tcm_ntl_mb6 == 'true' }}
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      GIT_SUBMODULE_STRATEGY: recursive
+      COMPILERS_MAP: >-
+       {
+         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+       }
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: tcm_ntl_mb6
+      uses: ./.github/actions/default_builder
+      with:
+        module_name: tcm_ntl_mb6
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6 ..
+        run_tcm: true
+        run_extras: true
+        native_backend: ${{ github.event.inputs.native_backend }}
+
+
+  ###############################################
+  #
+  #    debug_tcm_ntl_mb6 jobs starts here
+  #
+  ###############################################
+  debug_tcm_ntl_mb6:
+    needs: default
+    if: ${{ github.event.inputs.debug_tcm_ntl_mb6 == 'true' }}
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      GIT_SUBMODULE_STRATEGY: recursive
+      COMPILERS_MAP: >-
+       {
+         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+       }
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: debug_tcm_ntl_mb6
+      uses: ./.github/actions/default_builder
+      with:
+        module_name: debug_tcm_ntl_mb6
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6 ..
+        run_tcm: true
+        run_extras: true
+        native_backend: ${{ github.event.inputs.native_backend }}

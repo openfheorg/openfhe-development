@@ -1,0 +1,21 @@
+#!/bin/bash
+
+update
+sudo apt update
+
+# install cmake
+sudo apt install cmake=3.16.3-1ubuntu1
+
+# install clagn
+sudo apt-get install clang-10
+
+# install required packages
+sudo apt-get install build-essential
+sudo apt-get install autoconf -y
+sudo apt-get install -y libntl-dev -y
+sudo apt-get install -y libgmp-dev -y
+sudo apt-get install libtool -y
+
+# for documen
+sudo apt-get install doxygen -y
+sudo apt-get install graphviz -y

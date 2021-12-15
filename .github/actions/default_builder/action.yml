@@ -1,0 +1,120 @@
+name: 'A custom GitHub actions pipeline that wrappedup build, unit_test, benchmark and extract stages'
+description: 'composite github actions'
+inputs:
+  module_name:
+    description: 'Name of the module'
+    required: true
+    default: 'default'
+  cmake_args:
+    description: 'Argument for cmake command'
+    required: true
+  native_backend:
+    description: 'Size of NativeInteger [32|64|128]'
+    required: false
+    default: '64'
+  run_benchmark:
+    description: 'Run Benchmark stages'
+    required: false
+  run_tcm:
+    description: 'Run tcm stages'
+    required: false
+  run_extras:
+    description: 'Run allextras stages'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+
+    # -- build
+    - name: '${{ inputs.module_name }}_build'
+      shell: bash
+      run: |
+        whoami
+        mkdir -p build
+        cd build
+        cmake ${{ inputs.cmake_args }} -DNATIVE_SIZE=${{ inputs.native_backend }}
+        # run only if run_tcm input is set
+        if [[ "${{inputs.run_tcm}}" != "" ]]; then
+          make tcm
+        fi
+        make -j $(nproc) all
+        # run only if run_extra input is set
+        if [[ "${{inputs.run_extras}}" != "" ]]; then
+          make allextras 
+        fi
+
+    # -- binfhe
+    - name: '${{ inputs.module_name }}_test_binfhe'
+      shell: bash
+      run: |
+        pwd
+        echo $LD_LIBRARY_PATH
+        build/unittest/binfhe_tests --gtest_output=xml
+
+    # -- test_core
+    - name: '${{ inputs.module_name }}_test_core'
+      shell: bash
+      run: |
+        pwd
+        echo $LD_LIBRARY_PATH
+        build/unittest/core_tests --gtest_output=xml
+
+    # -- test_pke
+    - name: '${{ inputs.module_name }}_test_pke'
+      shell: bash
+      run: |
+        pwd
+        echo $LD_LIBRARY_PATH
+        build/unittest/pke_tests --gtest_output=xml
+
+    # -- benchmark
+    - name: benchmark_basic
+      shell: bash
+      if: ${{ inputs.run_benchmark }}
+      run: |
+        build/bin/benchmark/basic_test --benchmark_out="basic_test_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/binfhe-ap --benchmark_out="binfhe-ap_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/binfhe-ginx --benchmark_out="binfhe-ginx_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/Encoding --benchmark_out="Encoding_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/IntegerMath --benchmark_out="IntegerMath_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/Lattice --benchmark_out="Lattice_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/lib-benchmark --benchmark_out="lib-benchmark_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/NbTheory --benchmark_out="NbTheory_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/poly-benchmark-1k --benchmark_out="poly-benchmark-1k_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/poly-benchmark-4k --benchmark_out="poly-benchmark-4k_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/poly-benchmark-16k --benchmark_out="poly-benchmark-16k_${{ github.sha }}" --benchmark_out_format=csv
+        build/bin/benchmark/VectorMath --benchmark_out="VectorMath_${{ github.sha }}" --benchmark_out_format=csv
+    - name: benchmark_artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: benchmark_vectormath-artifact
+        path: |
+          basic_test_${{ github.sha }}
+          binfhe-ap_${{ github.sha }}
+          binfhe-ginx_${{ github.sha }}
+          Encoding_${{ github.sha }}
+          IntegerMath_${{ github.sha }}
+          Lattice_${{ github.sha }}
+          lib-benchmark_${{ github.sha }}
+          NbTheory_${{ github.sha }}
+          poly-benchmark-1k_${{ github.sha }}
+          poly-benchmark-4k_${{ github.sha }}
+          poly-benchmark-16k_${{ github.sha }}
+          VectorMath_${{ github.sha }}
+        retention-days: 30
+
+    # -- extract
+    - name: '${{ inputs.module_name }}_extras_core'
+      shell: bash
+      if: ${{ inputs.run_extras }}
+      run: |
+        ./build/bin/extras/core/dft
+        ./build/bin/extras/core/math
+        ./build/bin/extras/core/ntt1
+        ./build/bin/extras/core/ntt2
+    
+    # -- cleanup
+    - name: '${{ inputs.module_name }}_cleanup'
+      shell: bash
+      run: rm -rf build
