@@ -322,7 +322,9 @@ if( "${MATHBACKEND}" EQUAL 6 AND "${NATIVEINT}" EQUAL 128)
         message (STATUS "BACKEND 6 is not compatible with 128-bit native backend. Resetting multiprecision backend to 2.")
 endif()
 
-add_definitions(-DMATHBACKEND=${MATHBACKEND})
+set( PALISADE_BACKEND_FLAGS "-DMATHBACKEND=${MATHBACKEND}")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PALISADE_BACKEND_FLAGS}")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PALISADE_BACKEND_FLAGS}")
 
 if(WITH_TCM)
 	message(STATUS "tcmalloc is turned ON")
