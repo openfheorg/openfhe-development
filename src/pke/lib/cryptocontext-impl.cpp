@@ -20,8 +20,9 @@
 // ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+
 #include "cryptocontext.cpp"
-#include "cryptocontextfactory.cpp"
 
 namespace lbcrypto {
 
@@ -41,13 +42,14 @@ Plaintext CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
 
 template <>
 DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(
-    const LPPrivateKey<DCRTPoly> privateKey,
-    ConstCiphertext<DCRTPoly> ciphertext, Plaintext* plaintext) {
-    if (ciphertext == nullptr)
-        PALISADE_THROW(config_error, "ciphertext passed to Decrypt is empty");
-    if (plaintext == nullptr)
-        PALISADE_THROW(config_error, "plaintext passed to Decrypt is empty");
-    if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext()))
+    ConstCiphertext<DCRTPoly> ciphertext,
+    const PrivateKey<DCRTPoly> privateKey,
+    Plaintext* plaintext) {
+  if (ciphertext == nullptr)
+    PALISADE_THROW(config_error, "ciphertext passed to Decrypt is empty");
+  if (plaintext == nullptr)
+    PALISADE_THROW(config_error, "plaintext passed to Decrypt is empty");
+  if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext()))
     PALISADE_THROW(config_error,
                    "Information passed to Decrypt was not generated with "
                    "this crypto context");
@@ -65,11 +67,11 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(
   if ((ciphertext->GetEncodingType() == CKKSPacked) &&
       (ciphertext->GetElements()[0].GetParams()->GetParams().size() >
        1))  // only one tower in DCRTPoly
-    result = GetEncryptionAlgorithm()->Decrypt(privateKey, ciphertext,
+    result = GetScheme()->Decrypt(ciphertext, privateKey,
                                                &decrypted->GetElement<Poly>());
   else
-    result = GetEncryptionAlgorithm()->Decrypt(
-        privateKey, ciphertext, &decrypted->GetElement<NativePoly>());
+    result = GetScheme()->Decrypt(
+        ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
 
   if (result.isValid == false) return result;
 
@@ -81,7 +83,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(
     decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
 
     const auto cryptoParamsCKKS =
-        std::dynamic_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
             this->GetCryptoParameters());
 
     decryptedCKKS->Decode(ciphertext->GetDepth(),
@@ -131,10 +133,10 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
            .GetParams()
            ->GetParams()
            .size() > 1))
-    result = GetEncryptionAlgorithm()->MultipartyDecryptFusion(
+    result = GetScheme()->MultipartyDecryptFusion(
         partialCiphertextVec, &decrypted->GetElement<Poly>());
   else
-    result = GetEncryptionAlgorithm()->MultipartyDecryptFusion(
+    result = GetScheme()->MultipartyDecryptFusion(
         partialCiphertextVec, &decrypted->GetElement<NativePoly>());
 
   if (result.isValid == false) return result;
@@ -143,7 +145,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
     auto decryptedCKKS =
         std::static_pointer_cast<CKKSPackedEncoding>(decrypted);
     const auto cryptoParamsCKKS =
-        std::dynamic_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
             this->GetCryptoParameters());
     decryptedCKKS->Decode(partialCiphertextVec[0]->GetDepth(),
                           partialCiphertextVec[0]->GetScalingFactor(),
@@ -157,17 +159,8 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
   return result;
 }
 
-template class CryptoContextFactory<Poly>;
-template class CryptoContextImpl<Poly>;
-template class CryptoObject<Poly>;
-
-template class CryptoContextFactory<NativePoly>;
-template class CryptoContextImpl<NativePoly>;
-template class CryptoObject<NativePoly>;
-
-template class CryptoContextFactory<DCRTPoly>;
+//template class CryptoContextImpl<Poly>;
+//template class CryptoContextImpl<NativePoly>;
 template class CryptoContextImpl<DCRTPoly>;
-template class CryptoObject<DCRTPoly>;
 
 }  // namespace lbcrypto
-

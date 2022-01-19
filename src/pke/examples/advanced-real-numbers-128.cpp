@@ -26,6 +26,8 @@
 #define PROFILE
 
 #include "palisade.h"
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -39,8 +41,8 @@ void FastRotationsDemo2();
 int main(int argc, char* argv[]) {
   /*
    * Our 128-bit implementation of CKKS includes two variants called
-   * "APPROXRESCALE" and "APPROXAUTO", respectively.  Note that 128-bit
-   * CKKS supports does not support the EXACTRESCALE mode.
+   * "FIXEDMANUAL" and "FIXEDAUTO", respectively.  Note that 128-bit
+   * CKKS supports does not support the FLEXIBLEAUTO mode.
    *
    * To turn on the 128-bit mode, run "cmake -DNATIVE_SIZE=128 .."
    *
@@ -63,31 +65,31 @@ int main(int argc, char* argv[]) {
    * There are two ways to deal with this. The first is to choose prime
    * numbers as close to 2^p as possible, and assume that the scaling
    * factor remains the same. This inevitably incurs some approximation
-   * error, and this is why we refer to it as the APPROXRESCALE variant.
+   * error, and this is why we refer to it as the FIXEDMANUAL variant.
    * The second way of dealing with this is to track how the scaling
    * factor changes and try to adjust for it. This is what we call the
-   * EXACTRESCALE variant of CKKS. Only the approximate approach is supported
-   * for 128-bit CKKS. We also include APPROXAUTO, which is an automated
-   * version of APPROXRESCALE that does all rescaling automatically.
+   * FLEXIBLEAUTO variant of CKKS. Only the approximate approach is supported
+   * for 128-bit CKKS. We also include FIXEDAUTO, which is an automated
+   * version of FIXEDMANUAL that does all rescaling automatically.
    *
-   * We have designed APPROXAUTO so it hides all the nuances of
+   * We have designed FIXEDAUTO so it hides all the nuances of
    * tracking the depth of ciphertexts and having to call the rescale
-   * operation. Therefore, APPROXAUTO is more appropriate for users
+   * operation. Therefore, FIXEDAUTO is more appropriate for users
    * who do not want to get into the details of the underlying crypto
    * and math, or who want to put together a quick prototype. On the
-   * contrary, APPROXRESCALE is more appropriate for production
+   * contrary, FIXEDMANUAL is more appropriate for production
    * applications that have been optimized by experts.
    *
    * The first two parts of this demo introduce the two variants, by
-   * implementing the same computation, using both APPROXAUTO and APPROXRESCALE.
+   * implementing the same computation, using both FIXEDAUTO and FIXEDMANUAL.
    *
    */
 
 #if NATIVEINT == 128
-  AutomaticRescaleDemo(APPROXAUTO);
-  // Note that EXACTRESCALE is not supported for 128-bit CKKS
+  AutomaticRescaleDemo(FIXEDAUTO);
+  // Note that FLEXIBLEAUTO is not supported for 128-bit CKKS
 
-  ManualRescaleDemo(APPROXRESCALE);
+  ManualRescaleDemo(FIXEDMANUAL);
 
   /*
    * Our implementation of CKKS supports three different algorithms
@@ -128,39 +130,33 @@ int main(int argc, char* argv[]) {
 void AutomaticRescaleDemo(RescalingTechnique rsTech) {
   /* Please read comments in main() for an introduction to what the
    * rescale operation is. Knowing about Rescale() is not necessary
-   * to use the APPROXAUTO CKKS variant, it is however needed to
+   * to use the FIXEDAUTO CKKS variant, it is however needed to
    * understand what's happening underneath.
    *
-   * APPROXAUTO is a variant of CKKS that automatically
+   * FIXEDAUTO is a variant of CKKS that automatically
    *    performs rescaling before every multiplication.
    *    This is done to make it easier for users to write FHE
    *    computations without worrying about the depth of ciphertexts
    *    or rescaling.
    */
-  if (rsTech == APPROXAUTO) {
+  if (rsTech == FIXEDAUTO) {
     std::cout << "\n\n\n ===== ApproxAutoDemo ============= " << std::endl;
   }
 
-  uint32_t multDepth = 6;
-  uint32_t scaleFactorBits = 90;
   uint32_t batchSize = 8;
-  SecurityLevel securityLevel = HEStd_128_classic;
+  CCParams<CryptoContextCKKSRNS> parameters;
+  parameters.SetMultiplicativeDepth(6);
+  parameters.SetScalingFactorBits(90);
+  parameters.SetBatchSize(batchSize);
 
-  // 0 means the library will choose it based on securityLevel
-  uint32_t ringDimension = 0;
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-          multDepth, scaleFactorBits, batchSize, securityLevel, ringDimension,
-          rsTech);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
   std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension()
             << std::endl
             << std::endl;
 
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
-  // When using APPROXAUTO, LEVELEDSHE has to be enabled because Rescale is
-  // implicitly used upon multiplication.
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
   cc->Enable(LEVELEDSHE);
 
   auto keys = cc->KeyGen();
@@ -210,10 +206,10 @@ void AutomaticRescaleDemo(RescalingTechnique rsTech) {
 
 void ManualRescaleDemo(RescalingTechnique rsTech) {
   /* Please read comments in main() for an introduction to what the
-   * rescale operation is, and what's the APPROXRESCALE variant of CKKS.
+   * rescale operation is, and what's the FIXEDMANUAL variant of CKKS.
    *
-   * Even though APPROXRESCALE does not implement automatic rescaling
-   * as APPROXAUTO does, this does not mean that it does not abstract
+   * Even though FIXEDMANUAL does not implement automatic rescaling
+   * as FIXEDAUTO does, this does not mean that it does not abstract
    * away some of the nitty-gritty details of using CKKS.
    *
    * In CKKS, ciphertexts are defined versus a large ciphertext modulus Q.
@@ -223,35 +219,30 @@ void ManualRescaleDemo(RescalingTechnique rsTech) {
    * adjust one of them if their ciphertext moduli do not match. The way
    * this is done in the original CKKS paper is through an operation called
    * Modulus Switch. In our implementation, we call this operation
-   * LevelReduce, and both APPROXRESCALE and APPROXAUTO do it automatically.
+   * LevelReduce, and both FIXEDMANUAL and FIXEDAUTO do it automatically.
    * As far as we know, automatic level reduce does not incur any performance
-   * penalty and this is why it is performed in both APPROXRESCALE and
-   * APPROXAUTO.
+   * penalty and this is why it is performed in both FIXEDMANUAL and
+   * FIXEDAUTO.
    *
    * Overall, we believe that automatic modulus switching and rescaling make
    * CKKS much easier to use, at least for non-expert users.
    */
   std::cout << "\n\n\n ===== ApproxRescaleDemo ============= " << std::endl;
 
-  uint32_t multDepth = 5;
-  uint32_t scaleFactorBits = 90;
   uint32_t batchSize = 8;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  // 0 means the library will choose it based on securityLevel
-  uint32_t ringDimension = 0;
+  CCParams<CryptoContextCKKSRNS> parameters;
+  parameters.SetMultiplicativeDepth(5);
+  parameters.SetScalingFactorBits(90);
+  parameters.SetBatchSize(batchSize);
 
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-          multDepth, scaleFactorBits, batchSize, securityLevel, ringDimension,
-          rsTech);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
 
   std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension()
-            << std::endl
-            << std::endl;
-
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
-  cc->Enable(LEVELEDSHE);
+      << std::endl
+      << std::endl;
 
   auto keys = cc->KeyGen();
   cc->EvalMultKeyGen(keys.secretKey);
@@ -267,7 +258,7 @@ void ManualRescaleDemo(RescalingTechnique rsTech) {
   /* Computing f(x) = x^18 + x^9 + 1
    *
    * Compare the following with the corresponding code
-   * for APPROXAUTO. Here we need to track the depth of ciphertexts
+   * for FIXEDAUTO. Here we need to track the depth of ciphertexts
    * and call Rescale() whenever needed. In this instance it's still
    * not hard to do so, but this can be quite tedious in other
    * complicated computations (e.g., in bootstrapping).
@@ -315,14 +306,14 @@ void HybridKeySwitchingDemo1() {
 
   std::cout << "\n\n\n ===== HybridKeySwitchingDemo1 ============= "
             << std::endl;
-  uint32_t multDepth = 5;
-  uint32_t scaleFactorBits = 90;
+
   uint32_t batchSize = 8;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  uint32_t ringDimension =
-      0;  // 0 means the library will choose it based on securityLevel
-  RescalingTechnique rsTech = APPROXAUTO;
-  KeySwitchTechnique ksTech = HYBRID;
+  CCParams<CryptoContextCKKSRNS> parameters;
+  parameters.SetMultiplicativeDepth(5);
+  parameters.SetScalingFactorBits(90);
+  parameters.SetBatchSize(batchSize);
+  parameters.SetRescalingTechnique(FIXEDAUTO);
+  // uint32_t ringDimension = 0;  // 0 means the library will choose it based on securityLevel
   /*
    * dnum is the number of large digits in HYBRID decomposition
    *
@@ -379,11 +370,8 @@ void HybridKeySwitchingDemo1() {
    * HybridKeySwitchingDemo2.
    *
    */
-
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-          multDepth, scaleFactorBits, batchSize, securityLevel, ringDimension,
-          rsTech, ksTech, dnum);
+  parameters.SetNumLargeDigits(dnum);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
   std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension()
             << std::endl;
@@ -392,8 +380,9 @@ void HybridKeySwitchingDemo1() {
             << std::endl
             << std::endl;
 
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
 
   auto keys = cc->KeyGen();
   cc->EvalAtIndexKeyGen(keys.secretKey, {1, -2});
@@ -430,7 +419,7 @@ void HybridKeySwitchingDemo1() {
    */
 #if 0
   const auto cryptoParamsCKKS =
-      std::static_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
+      std::static_pointer_cast<CryptoParametersCKKSRNS>(
           cc->GetCryptoParameters());
 
   auto paramsQ = cc->GetElementParams()->GetParams();
@@ -474,14 +463,14 @@ void HybridKeySwitchingDemo2() {
   std::cout << "\n\n\n ===== HybridKeySwitchingDemo2 ============= "
             << std::endl;
 
-  uint32_t multDepth = 5;
-  uint32_t scaleFactorBits = 90;
   uint32_t batchSize = 8;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  uint32_t ringDimension =
-      0;  // 0 means the library will choose it based on securityLevel
-  RescalingTechnique rsTech = APPROXAUTO;
-  KeySwitchTechnique ksTech = HYBRID;
+  CCParams<CryptoContextCKKSRNS> parameters;
+  parameters.SetMultiplicativeDepth(5);
+  parameters.SetScalingFactorBits(90);
+  parameters.SetBatchSize(batchSize);
+  parameters.SetRescalingTechnique(FIXEDAUTO);
+
+  // uint32_t ringDimension = 0;  // 0 means the library will choose it based on securityLevel
   /*
    * Here we use dnum = 3 digits. Even though 3 digits are
    * more than the two digits in the previous demo and the
@@ -499,10 +488,8 @@ void HybridKeySwitchingDemo2() {
    */
   uint32_t dnum = 3;
 
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-          multDepth, scaleFactorBits, batchSize, securityLevel, ringDimension,
-          rsTech, ksTech, dnum);
+  parameters.SetNumLargeDigits(dnum);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
   // Compare the ring dimension in this demo to the one in
   // the previous.
@@ -513,8 +500,9 @@ void HybridKeySwitchingDemo2() {
             << std::endl
             << std::endl;
 
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
 
   auto keys = cc->KeyGen();
   cc->EvalAtIndexKeyGen(keys.secretKey, {1, -2});
@@ -550,7 +538,7 @@ void HybridKeySwitchingDemo2() {
    */
 #if 0
   const auto cryptoParamsCKKS =
-      std::static_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
+      std::static_pointer_cast<CryptoParametersCKKSRNS>(
           cc->GetCryptoParameters());
 
   auto paramsQ = cc->GetElementParams()->GetParams();
@@ -620,21 +608,21 @@ void FastRotationsDemo1() {
 
   std::cout << "\n\n\n ===== FastRotationsDemo1 ============= " << std::endl;
 
-  uint32_t multDepth = 1;
-  uint32_t scaleFactorBits = 90;
   uint32_t batchSize = 8;
-  SecurityLevel securityLevel = HEStd_128_classic;
+  CCParams<CryptoContextCKKSRNS> parameters;
+  parameters.SetMultiplicativeDepth(1);
+  parameters.SetScalingFactorBits(90);
+  parameters.SetBatchSize(batchSize);
 
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-          multDepth, scaleFactorBits, batchSize, securityLevel);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
   uint32_t N = cc->GetRingDimension();
   std::cout << "CKKS scheme is using ring dimension " << N << std::endl
             << std::endl;
 
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
 
   auto keys = cc->KeyGen();
   cc->EvalAtIndexKeyGen(keys.secretKey, {1, 2, 3, 4, 5, 6, 7});
@@ -713,22 +701,20 @@ void FastRotationsDemo2() {
 
   std::cout << "\n\n\n ===== FastRotationsDemo2 ============= " << std::endl;
 
-  uint32_t multDepth = 1;
-  uint32_t scaleFactorBits = 90;
   uint32_t batchSize = 8;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  uint32_t ringDim = 0;
-  RescalingTechnique rsTech = APPROXAUTO;
-  KeySwitchTechnique ksTech = BV;
-  uint32_t dnum = 0;
+  CCParams<CryptoContextCKKSRNS> parameters;
+  parameters.SetMultiplicativeDepth(1);
+  parameters.SetScalingFactorBits(90);
+  parameters.SetBatchSize(batchSize);
+  parameters.SetRescalingTechnique(FIXEDAUTO);
+  parameters.SetKeySwitchTechnique(BV);
   /*
    * This controls how many multiplications are possible without rescaling.
    * The number of multiplications (depth) is maxDepth - 1.
    * This is useful for an optimization technique called lazy
-   * re-linearization (only applicable in APPROXRESCALE, as
-   * APPROXAUTO implements automatic rescaling).
+   * re-linearization (only applicable in FIXEDMANUAL, as
+   * FIXEDAUTO implements automatic rescaling).
    */
-  uint32_t maxDepth = 2;
   // This is the size of the first modulus
   // by default, firstModSize is set to 105
   uint32_t firstModSize = 100;
@@ -745,22 +731,19 @@ void FastRotationsDemo2() {
    * decomposition) and see how the results are incorrect.
    */
   uint32_t relinWin = 10;
-  MODE mode = OPTIMIZED;  // Using ternary distribution
 
-  // This invocation of genCryptoContextCKKS is of independent
-  // interest because it shows all arguments that genCryptoContextCKKS
-  // can take.
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-          multDepth, scaleFactorBits, batchSize, securityLevel, ringDim, rsTech,
-          ksTech, dnum, maxDepth, firstModSize, relinWin, mode);
+  parameters.SetFirstModSize(firstModSize);
+  parameters.SetRelinWindow(relinWin);
+
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
   uint32_t N = cc->GetRingDimension();
   std::cout << "CKKS scheme is using ring dimension " << N << std::endl
             << std::endl;
 
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
 
   auto keys = cc->KeyGen();
   cc->EvalAtIndexKeyGen(keys.secretKey, {1, 2, 3, 4, 5, 6, 7});

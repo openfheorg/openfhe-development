@@ -1,3 +1,4 @@
+#if 0 // TODO This file should be uncommented after merge to github
 // @file
 // @author TPOC: contact@palisade-crypto.org
 //
@@ -24,16 +25,14 @@
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
-#include "UnitTestCompareCryptoContext.h"
 
 #include <iostream>
 #include <list>
 #include <vector>
 #include "gtest/gtest.h"
 
-#include "cryptocontextgen.h"
-#include "cryptocontexthelper.h"
 #include "palisade.h"
+#include "cryptocontextgen.h"
 #include "utils/testcasegen.h"
 
 using namespace std;
@@ -49,7 +48,6 @@ class UTSHE : public ::testing::Test {
   void SetUp() {}
 
   void TearDown() {
-    CryptoContextFactory<Poly>::ReleaseAllContexts();
     CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
   }
 };
@@ -62,55 +60,23 @@ class UTSHE : public ::testing::Test {
 // GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFV_opt, ORD, PTM)
 
 #define GENERATE_TEST_CASES_FUNC(x, y, ORD, PTM)                   \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, Null, ORD, PTM)               \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BGVrns_rlwe, ORD, PTM)        \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BGVrns_opt, ORD, PTM)         \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFV_rlwe, ORD, PTM)           \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFVrns_rlwe, ORD, PTM)        \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFVrns_opt, ORD, PTM)         \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFVrnsB_rlwe, ORD, PTM)       \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFVrnsB_opt, ORD, PTM)        \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, Null, ORD, PTM)         \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BGVrns_rlwe, ORD, PTM)  \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BGVrns_opt, ORD, PTM)   \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFVrns_rlwe, ORD, PTM)  \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFVrns_opt, ORD, PTM)   \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFVrnsB_rlwe, ORD, PTM) \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFVrnsB_opt, ORD, PTM)  \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, Null, ORD, PTM)           \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_rlwe, ORD, PTM)    \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_opt, ORD, PTM)     \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_rlwe, ORD, PTM)    \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_opt, ORD, PTM)     \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_rlwe, ORD, PTM)   \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_opt, ORD, PTM)    \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFV_opt, ORD, PTM)
+  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_opt, ORD, PTM)
 
 // For EvalAtIndex
 #define GENERATE_TEST_CASES_FUNC_EVALATINDEX(x, y, ORD, PTM)       \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, Null, ORD, PTM)               \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BGVrns_rlwe, ORD, PTM)        \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BGVrns_opt, ORD, PTM)         \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFV_rlwe, ORD, PTM)           \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFVrns_rlwe, ORD, PTM)        \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFVrns_opt, ORD, PTM)         \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFVrnsB_rlwe, ORD, PTM)       \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFVrnsB_opt, ORD, PTM)        \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, Null, ORD, PTM)         \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BGVrns_rlwe, ORD, PTM)  \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BGVrns_opt, ORD, PTM)   \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFVrns_rlwe, ORD, PTM)  \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFVrns_opt, ORD, PTM)   \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFVrnsB_rlwe, ORD, PTM) \
-  GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFVrnsB_opt, ORD, PTM)  \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, Null, ORD, PTM)           \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_rlwe, ORD, PTM)    \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_opt, ORD, PTM)     \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_rlwe, ORD, PTM)    \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_opt, ORD, PTM)     \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_rlwe, ORD, PTM)   \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_opt, ORD, PTM)    \
-  GENERATE_PKE_TEST_CASE(x, y, Poly, BFV_opt, ORD, PTM)
+  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_opt, ORD, PTM)
 
 // For EvalSum
 #define GENERATE_TEST_CASES_FUNC_EVALSUM(x, y, ORD, PTM)         \
@@ -128,8 +94,8 @@ class UTSHE : public ::testing::Test {
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_rlwe, ORD, PTM)  \
   GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_opt, ORD, PTM)
 
-static vector<string> AllSchemes({"Null", "BFV", /*"BFVrns"*/});
-typedef ::testing::Types<Poly, DCRTPoly, NativePoly> EncryptElementTypes;
+//static vector<string> AllSchemes({"Null", "BFV", /*"BFVrns"*/});
+typedef ::testing::Types< /*Poly, */DCRTPoly/*, NativePoly*/ > EncryptElementTypes;
 
 // NOTE the SHE tests are all based on these
 static const usint ORDER = 32;
@@ -150,7 +116,7 @@ static void UnitTest_Add_Packed(const CryptoContext<Element> cc,
   std::vector<int64_t> vectorOfIntsSub = {-1, -1, 0, -1, -2, 0, -1, 1};
   Plaintext plaintextSub = cc->MakeCoefPackedPlaintext(vectorOfIntsSub);
 
-  LPKeyPair<Element> kp = cc->KeyGen();
+  KeyPair<Element> kp = cc->KeyGen();
   Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, plaintext1);
   Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
 
@@ -240,7 +206,7 @@ static void UnitTest_Mult_CoefPacked(const CryptoContext<Element> cc,
       cc->GetCyclotomicOrder() == 16 ? vectorOfIntsMult : vectorOfIntsMultLong);
 
   // Initialize the public key containers.
-  LPKeyPair<Element> kp = cc->KeyGen();
+  KeyPair<Element> kp = cc->KeyGen();
 
   Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
 
@@ -303,7 +269,7 @@ static void UnitTest_Mult_Packed(const CryptoContext<Element> cc,
   Plaintext intArrayExpected = cc->MakePackedPlaintext(vectorOfIntsMult);
 
   // Initialize the public key containers.
-  LPKeyPair<Element> kp = cc->KeyGen();
+  KeyPair<Element> kp = cc->KeyGen();
 
   Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
 
@@ -361,7 +327,7 @@ static void UnitTest_EvalAtIndex(const CryptoContext<Element> cc,
   Plaintext intArrayMinus3 = cc->MakePackedPlaintext(vectorOfIntsMinus3);
 
   // Initialize the public key containers.
-  LPKeyPair<Element> kp = cc->KeyGen();
+  KeyPair<Element> kp = cc->KeyGen();
 
   Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
 
@@ -394,7 +360,7 @@ template <class Element>
 static void UnitTest_EvalMerge(const CryptoContext<Element> cc,
                                const string& failmsg) {
   // Initialize the public key containers.
-  LPKeyPair<Element> kp = cc->KeyGen();
+  KeyPair<Element> kp = cc->KeyGen();
 
   std::vector<Ciphertext<Element>> ciphertexts;
 
@@ -443,7 +409,7 @@ template <class Element>
 static void UnitTest_EvalSum(const CryptoContext<Element> cc,
                              const string& failmsg) {
   // Initialize the public key containers.
-  LPKeyPair<Element> kp = cc->KeyGen();
+  KeyPair<Element> kp = cc->KeyGen();
 
   std::vector<Ciphertext<Element>> ciphertexts;
 
@@ -517,7 +483,7 @@ static void UnitTest_Metadata(const CryptoContext<Element> cc,
   Plaintext plaintext2 = cc->MakePackedPlaintext(input2);
 
   // Generate encryption keys
-  LPKeyPair<Element> kp = cc->KeyGen();
+  KeyPair<Element> kp = cc->KeyGen();
   // Generate multiplication keys
   cc->EvalMultKeyGen(kp.secretKey);
   // Generate rotation keys for offsets +2 (left rotate) and -2 (right rotate)
@@ -606,31 +572,23 @@ GENERATE_TEST_CASES_FUNC_METADATA(UTSHE, UnitTest_Metadata, 512, 65537)
 
 TEST_F(UTSHE, UnitTest_EvalSum_BFVrns_All) {
   uint32_t batchSize = 1 << 12;
-  CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters;
+  CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(65537);
+  parameters.SetBatchSize(batchSize);
   parameters.SetStandardDeviation(3.2);
   parameters.SetEvalMultCount(2);
   parameters.SetRelinWindow(20);
   parameters.SetScalingFactorBits(60);
-  parameters.SetBatchSize(batchSize);
   parameters.SetRingDim(batchSize);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-  {
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
+  cc->Enable(ADVANCEDSHE);
 
-      EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(65537));
-      encodingParams->SetBatchSize(batchSize);
-      CryptoContext<DCRTPoly> ccOld =
-          CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-              encodingParams, HEStd_128_classic, 3.2, 0, 2, 0, OPTIMIZED, 2, 20, 60,
-              batchSize);
-      cc->Enable(ENCRYPTION);
-      cc->Enable(SHE);
-
-      EXPECT_EQ(Equal(*cc, *ccOld), true);
-  }
   // Initialize the public key containers.
-  LPKeyPair<DCRTPoly> kp = cc->KeyGen();
+  KeyPair<DCRTPoly> kp = cc->KeyGen();
 
   std::vector<Ciphertext<DCRTPoly>> ciphertexts;
 
@@ -664,44 +622,30 @@ TEST_F(UTSHE, UnitTest_EvalSum_BFVrns_All) {
 }
 
 TEST_F(UTSHE, keyswitch_SingleCRT) {
-    //CCParams<CryptoContextBGVRNS<DCRTPoly>> parameters;
-    ////parameters.SetMultiplicativeDepth(1);
-    //parameters.SetPlaintextModulus(256);
-    //parameters.SetCyclotomicOrder(512);
-    //parameters.SetStandardDeviation(4);
-    //parameters.SetRelinWindow(1);
-    //parameters.SetNumPrimes(50);
+    CCParams<CryptoContextBGVRNS> parameters;
+    parameters.SetCyclotomicOrder(512);
+    parameters.SetScalingFactorBits(50);
+    parameters.SetPlaintextModulus(256);
+    parameters.SetRelinWindow(1);
+    parameters.SetStandardDeviation(4);
 
-    //CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-    //{
-        usint m = 512;
-
-        float stdDev = 4;
-
-        shared_ptr<DCRTPoly::Params> params =
-            ElemParamFactory::GenElemParams<DCRTPoly::Params>(m, 50);
-
-        CryptoContext<DCRTPoly> cc =
-            CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(params, 256, 1, stdDev);
-
-        //EXPECT_EQ(Equal(*cc, *ccOld), true);
-    //}
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
+  cc->Enable(ADVANCEDSHE);
 
   Plaintext plaintext =
       cc->MakeStringPlaintext("I am good, what are you?! 32 ch");
 
-  LPKeyPair<DCRTPoly> kp = cc->KeyGen();
+  KeyPair<DCRTPoly> kp = cc->KeyGen();
 
   Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
 
-  LPKeyPair<DCRTPoly> kp2 = cc->KeyGen();
+  KeyPair<DCRTPoly> kp2 = cc->KeyGen();
+  EvalKey<DCRTPoly> keySwitchHint = cc->KeySwitchGen(kp.secretKey, kp2.secretKey);
 
-  LPEvalKey<DCRTPoly> keySwitchHint;
-  keySwitchHint = cc->KeySwitchGen(kp.secretKey, kp2.secretKey);
-
-  Ciphertext<DCRTPoly> newCt = cc->KeySwitch(keySwitchHint, ciphertext);
+  Ciphertext<DCRTPoly> newCt = cc->KeySwitch(ciphertext, keySwitchHint);
 
   Plaintext plaintextNew;
 
@@ -711,37 +655,31 @@ TEST_F(UTSHE, keyswitch_SingleCRT) {
 }
 
 TEST_F(UTSHE, keyswitch_ModReduce_DCRT) {
-  usint m = 512;
+  CCParams<CryptoContextBGVRNS> parameters;
+  parameters.SetCyclotomicOrder(512);
+  parameters.SetMultiplicativeDepth(4);
+  parameters.SetScalingFactorBits(30);
+  parameters.SetPlaintextModulus(256);
+  parameters.SetRelinWindow(1);
+  parameters.SetStandardDeviation(4);
 
-  float stdDev = 4;
-  usint size = 4;
-  usint plaintextmodulus = 256;
-  usint relinWindow = 1;
-
-  shared_ptr<ILDCRTParams<BigInteger>> params =
-      GenerateDCRTParams<BigInteger>(m, size, 30);
-
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(
-          params, plaintextmodulus, relinWindow, stdDev);
-
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   Plaintext plaintext =
       cc->MakeStringPlaintext("I am good, what are you?! 32 ch");
 
-  cc->Enable(ENCRYPTION);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
   cc->Enable(LEVELEDSHE);
-  cc->Enable(SHE);
+  cc->Enable(ADVANCEDSHE);
 
-  LPKeyPair<DCRTPoly> kp = cc->KeyGen();
+  KeyPair<DCRTPoly> kp = cc->KeyGen();
 
   Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
 
-  LPKeyPair<DCRTPoly> kp2 = cc->KeyGen();
+  KeyPair<DCRTPoly> kp2 = cc->KeyGen();
+  EvalKey<DCRTPoly> keySwitchHint = cc->KeySwitchGen(kp.secretKey, kp2.secretKey);
 
-  LPEvalKey<DCRTPoly> keySwitchHint;
-  keySwitchHint = cc->KeySwitchGen(kp.secretKey, kp2.secretKey);
-
-  Ciphertext<DCRTPoly> newCt = cc->KeySwitch(keySwitchHint, ciphertext);
+  Ciphertext<DCRTPoly> newCt = cc->KeySwitch(ciphertext, keySwitchHint);
 
   Plaintext plaintextNewKeySwitch;
 
@@ -767,3 +705,4 @@ TEST_F(UTSHE, keyswitch_ModReduce_DCRT) {
             plaintextNewModReduce->GetStringValue())
       << "Mod Reduced Decrypt fails";
 }
+#endif

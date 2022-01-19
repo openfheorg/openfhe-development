@@ -38,7 +38,7 @@ using namespace lbcrypto;
 template <typename T, typename ST>
 void UnitTestContextWithSertype(CryptoContext<T> cc, const ST& sertype,
                                 string msg) {
-  LPKeyPair<T> kp = cc->KeyGen();
+  KeyPair<T> kp = cc->KeyGen();
   try {
     cc->EvalMultKeyGen(kp.secretKey);
   } catch (...) {
@@ -59,21 +59,21 @@ void UnitTestContextWithSertype(CryptoContext<T> cc, const ST& sertype,
 
   EXPECT_EQ(*cc, *newcc) << msg << " Mismatched context";
 
-  EXPECT_EQ(*cc->GetEncryptionAlgorithm(), *newcc->GetEncryptionAlgorithm())
+  EXPECT_EQ(*cc->GetScheme(), *newcc->GetScheme())
       << msg << " Scheme mismatch after ser/deser";
   EXPECT_EQ(*cc->GetCryptoParameters(), *newcc->GetCryptoParameters())
       << msg << " Crypto parms mismatch after ser/deser";
   EXPECT_EQ(*cc->GetEncodingParams(), *newcc->GetEncodingParams())
       << msg << " Encoding parms mismatch after ser/deser";
-  EXPECT_EQ(cc->GetEncryptionAlgorithm()->GetEnabled(),
-            newcc->GetEncryptionAlgorithm()->GetEnabled())
+  EXPECT_EQ(cc->GetScheme()->GetEnabled(),
+            newcc->GetScheme()->GetEnabled())
       << msg << " Enabled features mismatch after ser/deser";
 
   s.str("");
   s.clear();
   Serial::Serialize(kp.publicKey, s, sertype);
 
-  LPPublicKey<T> newPub;
+  PublicKey<T> newPub;
   Serial::Deserialize(newPub, s, sertype);
   ASSERT_TRUE(newPub.get() != 0) << msg << " Key deserialize failed";
 

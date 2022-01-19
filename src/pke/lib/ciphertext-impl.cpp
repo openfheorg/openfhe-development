@@ -21,12 +21,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "lattice/dcrtpoly.cpp"
-#include "lattice/poly.cpp"
+#include "ciphertext.h"
 
-#include "cryptocontext.h"
 namespace lbcrypto {
+
 template class CiphertextImpl<Poly>;
 template class CiphertextImpl<NativePoly>;
 template class CiphertextImpl<DCRTPoly>;
+
 }  // namespace lbcrypto

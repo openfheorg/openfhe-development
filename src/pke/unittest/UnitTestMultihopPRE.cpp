@@ -1,3 +1,4 @@
+#if 0 // TODO uncomment text after merge to github
 // @file pre.cpp - Example of Proxy Re-Encryption.
 // @author TPOC: contact@palisade-crypto.org
 //
@@ -32,6 +33,8 @@
 
 #include "palisade.h"
 #include "include/gtest/gtest.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "gen-cryptocontext.h"
 
 using namespace std;
 using namespace lbcrypto;
@@ -46,9 +49,6 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     int num_of_hops=2; //number of hops
 
     int plaintextModulus = 2;
-    uint32_t multDepth = 0;
-    double sigma = 3.2;		
-    SecurityLevel securityLevel = HEStd_128_classic;
     usint ringDimension = 1024;
     usint relinWindow = 1;
     usint dcrtbits = 0;
@@ -79,21 +79,30 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
       firstqmod = 60;
     }
 
+    CCParams<CryptoContextBGVRNS> parameters;
+    parameters.SetMultiplicativeDepth(0);
+    parameters.SetPlaintextModulus(plaintextModulus);
+    parameters.SetStandardDeviation(3.2);
+    parameters.SetKeySwitchTechnique(BV);
+    parameters.SetRingDim(ringDimension);
+    parameters.SetFirstModSize(firstqmod);
+    parameters.SetScalingFactorBits(dcrtbits);
+    parameters.SetRelinWindow(relinWindow);
+    parameters.SetRescalingTechnique(FIXEDAUTO);
+    parameters.SetMultiHopQModulusLowerBound(qmodulus);
 
-
-    auto cryptoContext =
-        CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(multDepth, plaintextModulus, securityLevel, sigma, 2, OPTIMIZED, BV, ringDimension, 0, firstqmod, dcrtbits, relinWindow, 0, MANUAL, qmodulus);
-    cryptoContext->Enable(ENCRYPTION);
-    cryptoContext->Enable(SHE);
-    cryptoContext->Enable(PRE);
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+    cryptoContext->Enable(PKE);
+    cryptoContext->Enable(KEYSWITCH);
     cryptoContext->Enable(LEVELEDSHE);
+    cryptoContext->Enable(PRE);
 
     ////////////////////////////////////////////////////////////
     // Perform Key Generation Operation
     ////////////////////////////////////////////////////////////
 
     // Initialize Key Pair Containers
-    LPKeyPair<DCRTPoly> keyPair1;
+    KeyPair<DCRTPoly> keyPair1;
 
     keyPair1 = cryptoContext->KeyGen();
 
@@ -144,7 +153,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     Plaintext plaintextDec;
 
     //multiple hop
-    vector<LPKeyPair<DCRTPoly>> keyPairs;
+    vector<KeyPair<DCRTPoly>> keyPairs;
     vector<Ciphertext<DCRTPoly>> reEncryptedCTs;
 
     keyPairs.push_back(keyPair1);
@@ -154,20 +163,18 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
       auto keyPair = cryptoContext->KeyGen();
       keyPairs.push_back(keyPair);
 
-      auto reencryptionKey =
-          cryptoContext->ReKeyGen(keyPairs[i+1].publicKey, keyPairs[i].secretKey);
-
+      auto reencryptionKey = cryptoContext->ReKeyGen(keyPairs[i].secretKey, keyPairs[i+1].publicKey);
 
       if (security_model == 0) {
         //std::cout << "CPA secure PRE" << std::endl;
-        reEncryptedCT = cryptoContext->ReEncrypt(reencryptionKey, reEncryptedCTs[i]); //IND-CPA secure
+        reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey); //IND-CPA secure
       }
       else if (security_model == 1) {
         //std::cout << "Fixed noise (20 bits) practically secure PRE" << std::endl;
-        reEncryptedCT = cryptoContext->ReEncrypt(reencryptionKey, reEncryptedCTs[i], keyPairs[i].publicKey); //fixed bits noise HRA secure
+        reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey); //fixed bits noise HRA secure
       } else {
         //std::cout << "Provable HRA secure PRE" << std::endl;
-        reEncryptedCT1 = cryptoContext->ReEncrypt(reencryptionKey, reEncryptedCTs[i], keyPairs[i].publicKey, 1); //HRA secure noiseflooding
+        reEncryptedCT1 = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey, 1); //HRA secure noiseflooding
         reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1); //mod reduction for noise flooding
       }
       
@@ -211,3 +218,4 @@ INSTANTIATE_TEST_SUITE_P(MULTIHOP_PRE_TEST, UTMultihopPRE, ::testing::ValuesIn(S
 run_demo_pre(0); //IND CPA secure
 run_demo_pre(1); //Fixed 20 bits Noise HRA
 run_demo_pre(2); //provably secure HRA */
+#endif

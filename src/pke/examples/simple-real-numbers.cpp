@@ -23,7 +23,7 @@
 
 #define PROFILE
 
-#include "scheme/ckks/cryptocontext-ckks.h"
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 #include "palisade.h"
 
@@ -91,7 +91,6 @@ int main() {
    */
   uint32_t batchSize = 8;
 
-#ifndef NEW_GET_CRYPTOCONTEXT
   /* A4) Desired security level based on FHE standards.
    * This parameter can take four values. Three of the possible values
    * correspond to 128-bit, 192-bit, and 256-bit security, and the fourth value
@@ -107,33 +106,21 @@ int main() {
    * PARAMETERS" in  the following reference for more details:
    * http://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
    */
-  SecurityLevel securityLevel = HEStd_128_classic;
-
-  // The following call creates a CKKS crypto context based on the
-  // arguments defined above.
-  std::cout << "\nUsing the old mechanism to generate cryptocontext\n\n";
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-          multDepth, scaleFactorBits, batchSize, securityLevel);
-
-  std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension()
-            << std::endl
-            << std::endl;
-
-
-#else
-  std::cout << "\nUsing the new mechanism to generate cryptocontext\n\n";
-  CCParams<CryptoContextCKKS<DCRTPoly>> parameters;
+  CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(multDepth);
   parameters.SetScalingFactorBits(scaleFactorBits);
   parameters.SetBatchSize(batchSize);
+  parameters.SetRescalingTechnique(FLEXIBLEAUTO);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-#endif
 
   // Enable the features that you wish to use
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
+  std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension()
+      << std::endl
+      << std::endl;
 
   // B. Step 2: Key Generation
   /* B1) Generate encryption keys.
@@ -212,8 +199,15 @@ int main() {
   // If you want to see the error/noise introduced by CKKS, bump it up
   // to 15 and it should become visible.
   std::cout.precision(8);
+
   std::cout << std::endl
             << "Results of homomorphic computations: " << std::endl;
+
+  cc->Decrypt(keys.secretKey, c1, &result);
+  result->SetLength(batchSize);
+  std::cout << "x1 = " << result;
+  std::cout << "Estimated precision in bits: " << result->GetLogPrecision()
+            << std::endl;
 
   // Decrypt the result of addition
   cc->Decrypt(keys.secretKey, cAdd, &result);
@@ -238,6 +232,7 @@ int main() {
   std::cout << "x1 * x2 = " << result << std::endl;
 
   // Decrypt the result of rotations
+
   cc->Decrypt(keys.secretKey, cRot1, &result);
   result->SetLength(batchSize);
   std::cout

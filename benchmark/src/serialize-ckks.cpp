@@ -35,76 +35,83 @@
 #include <iterator>
 #include <random>
 
-//#include "palisade.h"
-
-#include "cryptocontextgen.h"
 #include "cryptocontext-ser.h"
 #include "ciphertext-ser.h"
-#include "pubkeylp-ser.h"
-#include "scheme/ckks/ckks-ser.h"
-
+#include "scheme/ckksrns/ckksrns-ser.h"
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "gen-cryptocontext.h"
 
 using namespace std;
 using namespace lbcrypto;
 
 
-
 void CKKS_serialize(benchmark::State& state) {
     // create a cryptocontext
-   CryptoContext<DCRTPoly> cc = GenTestCryptoContext<DCRTPoly>("CKKS", 1024, 50, 50, 4, 20, 8, HYBRID, APPROXRESCALE);
+   CCParams<CryptoContextCKKSRNS> parameters;
+   parameters.SetRingDim(512);
+   parameters.SetMultiplicativeDepth(3);
+   parameters.SetScalingFactorBits(50);
+   parameters.SetRelinWindow(20);
+   parameters.SetBatchSize(8);
 
-	//DEBUG("step 0");
-	{
-		stringstream s;
-        CryptoContext<DCRTPoly> ccNew;
-		while (state.KeepRunning()) {
-            Serial::Serialize(cc, s, SerType::BINARY);
-			Serial::Deserialize(cc, s, SerType::BINARY);
-        }
-	}
+   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+   cc->Enable(PKE);
+   cc->Enable(KEYSWITCH);
+   cc->Enable(LEVELEDSHE);
+   cc->Enable(MULTIPARTY);
 
-    LPKeyPair<DCRTPoly> kp = cc->KeyGen();
-    LPKeyPair<DCRTPoly> kpnew;
+   //DEBUG("step 0");
+   {
+       stringstream s;
+       CryptoContext<DCRTPoly> ccNew;
+       while (state.KeepRunning()) {
+           Serial::Serialize(cc, s, SerType::BINARY);
+           Serial::Deserialize(cc, s, SerType::BINARY);
+       }
+   }
 
-	//DEBUG("step 1");
-	{
-		stringstream s;
-		while (state.KeepRunning()) {
-			Serial::Serialize(kp.publicKey, s, SerType::BINARY);
-			Serial::Deserialize(kpnew.publicKey, s, SerType::BINARY);
-		}
-	}
+   KeyPair<DCRTPoly> kp = cc->KeyGen();
+   KeyPair<DCRTPoly> kpnew;
 
-    //DEBUG("step 2");
-	{
-		stringstream s;
-		while (state.KeepRunning()) {
-			Serial::Serialize(kp.secretKey, s, SerType::BINARY);
-			Serial::Deserialize(kpnew.secretKey, s, SerType::BINARY);
-		}
-	}
+   //DEBUG("step 1");
+   {
+       stringstream s;
+       while (state.KeepRunning()) {
+           Serial::Serialize(kp.publicKey, s, SerType::BINARY);
+           Serial::Deserialize(kpnew.publicKey, s, SerType::BINARY);
+       }
+   }
 
-    //DEBUG("step 3");
-	vector<std::complex<double>> vals = { 1.0, 3.0, 5.0, 7.0, 9.0,
-										 2.0, 4.0, 6.0, 8.0, 11.0 };
-	Plaintext plaintextShort = cc->MakeCKKSPackedPlaintext(vals);
-	Plaintext plaintextShortL2D2 = cc->MakeCKKSPackedPlaintext(vals, 2, 2);
-	Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
-	Ciphertext<DCRTPoly> ciphertextL2D2 =
-		cc->Encrypt(kp.publicKey, plaintextShortL2D2);
+   //DEBUG("step 2");
+   {
+       stringstream s;
+       while (state.KeepRunning()) {
+           Serial::Serialize(kp.secretKey, s, SerType::BINARY);
+           Serial::Deserialize(kpnew.secretKey, s, SerType::BINARY);
+       }
+   }
 
-	Ciphertext<DCRTPoly> newC;
-	Ciphertext<DCRTPoly> newCL2D2;
-	{
-		stringstream s;
-		stringstream s2;
-		while (state.KeepRunning()) {
-			Serial::Serialize(ciphertext, s, SerType::BINARY);
-			Serial::Deserialize(newC, s, SerType::BINARY);
-			Serial::Serialize(ciphertextL2D2, s2, SerType::BINARY);
-			Serial::Deserialize(newCL2D2, s2, SerType::BINARY);
-		}
-	}
+   //DEBUG("step 3");
+   vector<std::complex<double>> vals = { 1.0, 3.0, 5.0, 7.0, 9.0,
+       2.0, 4.0, 6.0, 8.0, 11.0 };
+   Plaintext plaintextShort = cc->MakeCKKSPackedPlaintext(vals);
+   Plaintext plaintextShortL2D2 = cc->MakeCKKSPackedPlaintext(vals, 2, 2);
+   Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
+   Ciphertext<DCRTPoly> ciphertextL2D2 =
+       cc->Encrypt(kp.publicKey, plaintextShortL2D2);
+
+   Ciphertext<DCRTPoly> newC;
+   Ciphertext<DCRTPoly> newCL2D2;
+   {
+       stringstream s;
+       stringstream s2;
+       while (state.KeepRunning()) {
+           Serial::Serialize(ciphertext, s, SerType::BINARY);
+           Serial::Deserialize(newC, s, SerType::BINARY);
+           Serial::Serialize(ciphertextL2D2, s2, SerType::BINARY);
+           Serial::Deserialize(newCL2D2, s2, SerType::BINARY);
+       }
+   }
 }
 
 BENCHMARK(CKKS_serialize)->Unit(benchmark::kMicrosecond)->MinTime(10.0);

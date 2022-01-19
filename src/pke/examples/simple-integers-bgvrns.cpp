@@ -29,41 +29,27 @@
 using namespace lbcrypto;
 
 int main() {
-  // Sample Program: Step 1 - Set CryptoContext
-
-//#define NEW_GET_CRYPTOCONTEXT
-
-#ifdef NEW_GET_CRYPTOCONTEXT
-    std::cout << "\nUsing the new mechanism to generate cryptocontext\n\n";
-    CCParams<CryptoContextBGVRNS<DCRTPoly>> parameters;
+    // Sample Program: Step 1 - Set CryptoContext
+    CCParams<CryptoContextBGVRNS> parameters;
+    parameters.SetMultiplicativeDepth(2);
     parameters.SetPlaintextModulus(65537);
     parameters.SetStandardDeviation(3.2);
-    parameters.SetMultiplicativeDepth(2);
+//    parameters.SetKeySwitchTechnique(HYBRID);
+    parameters.SetKeySwitchTechnique(BV);
+    parameters.SetRescalingTechnique(FIXEDAUTO);
+//    parameters.SetScalingFactorBits(60);
+//    parameters.SetRelinWindow(10);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
-#else
-    std::cout << "\nUsing the old mechanism to generate cryptocontext\n\n";
-    // Set the main parameters
-    int plaintextModulus = 65537;
-    double sigma = 3.2;
-    SecurityLevel securityLevel = HEStd_128_classic;
-    uint32_t depth = 2;
-
-    // Instantiate the crypto context
-    CryptoContext<DCRTPoly> cryptoContext =
-        CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(
-            depth, plaintextModulus, securityLevel, sigma, depth, OPTIMIZED, BV);
-#endif
-
-  // Enable features that you wish to use
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
-  cryptoContext->Enable(LEVELEDSHE);
+    // Enable features that you wish to use
+    cryptoContext->Enable(PKE);
+    cryptoContext->Enable(KEYSWITCH);
+    cryptoContext->Enable(LEVELEDSHE);
 
   // Sample Program: Step 2 - Key Generation
 
   // Initialize Public Key Containers
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   // Generate a public/private key pair
   keyPair = cryptoContext->KeyGen();
@@ -101,10 +87,12 @@ int main() {
   // Homomorphic multiplications
   // modulus switching is done automatically because by default the modulus
   // switching method is set to AUTO (rather than MANUAL)
+  std::cerr << 1 << std::endl;
   auto ciphertextMul12 = cryptoContext->EvalMult(ciphertext1, ciphertext2);
+  std::cerr << 1 << std::endl;
   auto ciphertextMultResult =
       cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
-
+  std::cerr << 1 << std::endl;
   // Homomorphic rotations
   auto ciphertextRot1 = cryptoContext->EvalAtIndex(ciphertext1, 1);
   auto ciphertextRot2 = cryptoContext->EvalAtIndex(ciphertext1, 2);

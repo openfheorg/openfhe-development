@@ -25,6 +25,8 @@
 #define PROFILE  // turns on the reporting of timing results
 
 #include "palisade.h"
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "gen-cryptocontext.h"
 
 using namespace std;
 using namespace lbcrypto;
@@ -36,22 +38,23 @@ int main(int argc, char* argv[]) {
 
   std::cout << "\n======EXAMPLE FOR EVALPOLY========\n" << std::endl;
 
-  usint m = 4096;
+  CCParams<CryptoContextCKKSRNS> parameters;
+  parameters.SetMultiplicativeDepth(6);
+  parameters.SetScalingFactorBits(50);
+  parameters.SetBatchSize(16);
+  parameters.SetSecurityLevel(HEStd_NotSet);
+  parameters.SetRingDim(2048);
+//  parameters.SetRescalingTechnique(FLEXIBLEAUTO);
+//  parameters.SetRescalingTechnique(FIXEDAUTO);
+  parameters.SetRescalingTechnique(FIXEDMANUAL);
+  parameters.SetNumLargeDigits(3);
+  parameters.SetFirstModSize(60);
 
-  usint init_size = 7;
-  usint dcrtBits = 50;
-
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-          init_size - 1, dcrtBits, 16, HEStd_NotSet, m / 2, /*ringDimension*/
-          EXACTRESCALE, HYBRID, 3,                          /*numLargeDigits*/
-          2,                                                /*maxDepth*/
-          60,                                               /*firstMod*/
-          0, OPTIMIZED);
-
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
   cc->Enable(LEVELEDSHE);
+  cc->Enable(ADVANCEDSHE);
 
   std::vector<std::complex<double>> input({0.5, 0.7, 0.9, 0.95, 0.93});
 

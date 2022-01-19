@@ -189,6 +189,7 @@ class NativeIntegerT
       std::is_same<T, uint32_t>::value ||
       std::is_same<T, int64_t>::value ||
       std::is_same<T, uint64_t>::value ||
+      std::is_same<T, unsigned int>::value ||
       std::is_same<T, long>::value ||
       std::is_same<T, unsigned long>::value ||
       std::is_same<T, long long>::value ||
@@ -215,6 +216,7 @@ class NativeIntegerT
       !std::is_same<T, uint32_t>::value &&
       !std::is_same<T, int64_t>::value &&
       !std::is_same<T, uint64_t>::value &&
+      !std::is_same<T, unsigned int>::value &&
       !std::is_same<T, long long>::value &&
       !std::is_same<T, unsigned long long>::value &&
 #if defined(HAVE_INT128)

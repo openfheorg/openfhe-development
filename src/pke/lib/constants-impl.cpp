@@ -24,29 +24,28 @@
 #include "constants.h"
 #include <ostream>
 
-
 std::ostream &operator<<(std::ostream &s, PKESchemeFeature f) {
   switch (f) {
-    case ENCRYPTION:
-      s << "ENCRYPTION";
+    case PKE:
+      s << "PKE";
+      break;
+    case KEYSWITCH:
+      s << "KEYSWITCH";
       break;
     case PRE:
       s << "PRE";
       break;
-    case SHE:
-      s << "SHE";
-      break;
-    case FHE:
-      s << "FHE";
-      break;
     case LEVELEDSHE:
       s << "LEVELEDSHE";
+      break;
+    case ADVANCEDSHE:
+      s << "ADVANCEDSHE";
       break;
     case MULTIPARTY:
       s << "MULTIPARTY";
       break;
-    case ADVANCEDSHE:
-      s << "ADVANCEDSHE";
+    case FHE:
+      s << "FHE";
       break;
     default:
       s << "UKNOWN";
@@ -73,20 +72,74 @@ std::ostream &operator<<(std::ostream &s, MODE m) {
   return s;
 }
 
-std::ostream& operator<<(std::ostream& s, RescalingTechnique t) {
-    switch (t) {
-    case APPROXRESCALE:
-        s << "APPROXRESCALE";
-        break;
-    case EXACTRESCALE:
-        s << "EXACTRESCALE";
-        break;
-    case APPROXAUTO:
-        s << "APPROXAUTO";
-        break;
+std::ostream &operator<<(std::ostream &s, RescalingTechnique t) {
+  switch (t) {
+    case FIXEDMANUAL:
+      s << "FIXEDMANUAL";
+      break;
+    case FIXEDAUTO:
+      s << "FIXEDAUTO";
+      break;
+    case FLEXIBLEAUTO:
+      s << "FLEXIBLEAUTO";
+      break;
+    case NORESCALE:
+      s << "NORESCALE";
+      break;
+    case INVALID_RS_TECHNIQUE:
+      s << "INVALID_RS_TECHNIQUE";
+      break;
     default:
-        s << "UKNOWN";
-        break;
-    }
-    return s;
+      s << "UKNOWN";
+      break;
+  }
+  return s;
+}
+
+std::ostream &operator<<(std::ostream &s, KeySwitchTechnique t) {
+  switch (t) {
+    case BV:
+      s << "BV";
+      break;
+    case HYBRID:
+      s << "HYBRID";
+      break;
+    default:
+      s << "UKNOWN";
+      break;
+  }
+  return s;
+}
+
+std::ostream &operator<<(std::ostream &s, EncryptionTechnique t) {
+  switch (t) {
+    case STANDARD:
+      s << "STANDARD";
+      break;
+    case POVERQ:
+      s << "POVERQ";
+      break;
+    default:
+      s << "UKNOWN";
+      break;
+  }
+  return s;
+}
+
+std::ostream &operator<<(std::ostream &s, MultiplicationTechnique t) {
+  switch (t) {
+    case BEHZ:
+      s << "BEHZ";
+      break;
+    case HPSPOVERQ:
+      s << "HPSPOVERQ";
+      break;
+    case HPSPOVERQLEVELED:
+      s << "HPSPOVERQLEVELED";
+      break;
+    default:
+      s << "UKNOWN";
+      break;
+  }
+  return s;
 }

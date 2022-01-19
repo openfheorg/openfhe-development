@@ -32,8 +32,10 @@
 #include <iostream>
 #include <iterator>
 
-#include "cryptocontextgen.h"
 #include "palisade.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "gen-cryptocontext.h"
+
 
 using namespace std;
 using namespace lbcrypto;
@@ -58,25 +60,21 @@ int main(int argc, char *argv[]) {
   TimeVar t;
   double processingTime(0.0);
 
-  usint plaintextModulus = 536903681;
-  double sigma = 3.2;
-  SecurityLevel securityLevel = HEStd_128_classic;
-
-  ////////////////////////////////////////////////////////////
-  // Parameter generation
-  ////////////////////////////////////////////////////////////
-
-  // Set Crypto Parameters
+  // Crypto Parameters
   // # of evalMults = 3 (first 3) is used to support the multiplication of 7
   // ciphertexts, i.e., ceiling{log2{7}} Max depth is set to 3 (second 3) to
   // generate homomorphic evaluation multiplication keys for s^2 and s^3
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(
-          3, plaintextModulus, securityLevel, sigma, 3);
+  CCParams<CryptoContextBGVRNS> parameters;
+  parameters.SetMultiplicativeDepth(3);
+  parameters.SetPlaintextModulus(536903681);
+  parameters.SetStandardDeviation(3.2);
+  parameters.SetMaxDepth(3);
+  parameters.SetRescalingTechnique(FIXEDAUTO);
 
+  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
+  cryptoContext->Enable(PKE);
+  cryptoContext->Enable(KEYSWITCH);
   cryptoContext->Enable(LEVELEDSHE);
 
   std::cout << "\np = "
@@ -96,7 +94,7 @@ int main(int argc, char *argv[]) {
             << std::endl;
 
   // Initialize Public Key Containers
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   // Perform Key Generation Operation
 

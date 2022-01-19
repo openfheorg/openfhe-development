@@ -32,12 +32,13 @@ bool runOnlyOnce = true;
 #include <fstream>
 #include <iostream>
 
-#include "cryptocontextgen.h"
 #include "cryptocontexthelper.h"
 
 #include "encoding/encodings.h"
 #include "lattice/elemparamfactory.h"
 #include "math/hal.h"
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "gen-cryptocontext.h"
 
 using namespace std;
 using namespace lbcrypto;
@@ -129,7 +130,6 @@ void BM_encoding_PackedIntPlaintext_SetParams(benchmark::State &state) {
 BENCHMARK(BM_encoding_PackedIntPlaintext_SetParams);
 
 void BM_Encoding_String(benchmark::State &state) {  // benchmark
-  CryptoContext<Poly> cc;
   Plaintext plaintext;
 
   usint m = 1024;
@@ -167,14 +167,19 @@ void BM_encoding_PackedCKKSPlaintext(benchmark::State &state) {
       {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0},
       {6, 0}, {7, 0}, {8, 0}, {0, 0}, {0, 0}};
 
-  usint m = 1024;
-  usint numPrimes = 1;
-  uint64_t p = 50;
-  usint relinWin = 0;
-  usint batch = 8;
+  CCParams<CryptoContextCKKSRNS> parameters;
+  parameters.SetRingDim(4096);
+  parameters.SetScalingFactorBits(50);
+  parameters.SetBatchSize(8);
+  parameters.SetKeySwitchTechnique(BV);
+  parameters.SetRescalingTechnique(FIXEDMANUAL);
 
-  auto cc = GenCryptoContextCKKS<DCRTPoly>(m, numPrimes, p, relinWin, batch,
-                                           MODE::OPTIMIZED, BV, APPROXRESCALE);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
+  cc->Enable(MULTIPARTY);
+
   lp = cc->GetElementParams();
   ep = cc->GetEncodingParams();
   auto scalingFactor = cc->GetEncodingParams()->GetPlaintextModulus();

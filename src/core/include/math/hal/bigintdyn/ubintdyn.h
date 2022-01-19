@@ -356,13 +356,14 @@ class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
    *
    * @param val is the initial integer represented as a basic integer type.
    */
-  ubint(int val) : ubint(static_cast<uint64_t>(val)) {}
-  ubint(uint32_t val) : ubint(static_cast<uint64_t>(val)) {}
-  ubint(long val) : ubint(static_cast<uint64_t>(val)) {}
-#ifdef __APPLE__
-  ubint(unsigned long val) : ubint(static_cast<uint64_t>(val)) {}
-#endif
-  ubint(long long val) : ubint(static_cast<uint64_t>(val)) {}
+  template <typename T, typename std::enable_if <
+      std::is_integral<T>::value &&
+      !std::is_same<T, char> ::value &&
+      !std::is_same<T, const char> ::value &&
+      !std::is_same<T, uint64_t>::value &&
+      !std::is_same<T, unsigned __int128>::value,
+      bool>::type = true>
+      ubint(T val) : ubint(static_cast<uint64_t>(val)) {}
 
   /**
    * Constructor for all other types that have not already got their own constructors.
@@ -371,21 +372,9 @@ class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
    * @param &val is the initial integer represented as a big integer.
    */
   template <typename T, typename std::enable_if <
-      !std::is_same<T, int>::value &&
-      !std::is_same<T, uint32_t>::value &&
-      !std::is_same<T, uint64_t>::value &&
-      !std::is_same<T, long>::value &&
-#ifdef __APPLE__
-      !std::is_same<T, unsigned long>::value&&
-#endif
-      !std::is_same<T, long long>::value &&
-#if defined(HAVE_INT128)
-      !std::is_same<T, unsigned __int128>::value &&
-#endif
+      !std::is_integral<T>::value &&
       !std::is_same<T, const std::string> ::value &&
       !std::is_same<T, const char*> ::value &&
-      !std::is_same<T, const char> ::value &&
-      !std::is_same<T, ubint>::value &&
       !std::is_same<T, double>::value,
       bool>::type = true>
       ubint(const T& val) : ubint(val.ConvertToInt()) {}
