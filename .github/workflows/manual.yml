@@ -1,16 +1,20 @@
-name: Run manually
+name: Manual
 
 on:
   workflow_dispatch:
     inputs:
+      # Selelects the compiler to use, this will be used in the COMPILERS_MAP as the key to 
+      # retrieve the corresponding cmake compiler options to pass to the action
       compiler:
         type: choice
         description: 'Compiler Type [GCC|CLANG]'
         options:
-        - 'GCC'
-        - 'CLANG'
+        - 'GCC-9'
+        - 'GCC-10'
+        - 'CLANG-10'
+        - 'CLANG-11'
         required: true
-        default: 'GCC'
+        default: 'GCC-9'
       native_backend:
         description: 'Size of NativeInteger [32|64|128]'
         type: choice
@@ -20,46 +24,56 @@ on:
         - '128'
         required: true
         default: '64'
-      debug_mb2:
-        description: 'Run debug_mb2'
+      mb2_debug:
+        description: 'Run mb2_debug'
         type: boolean
         required: true
-        default: 'false'
-      debug_mb4:
-        description: 'Run debug_mb4'
+        default: true
+      mb2_tcm:
+        description: 'Run mb2_tcm'
         type: boolean
         required: true
-        default: 'false'
-      debug_tcm_ntl_mb6:
-        description: 'Run debug_tcm_ntl_mb6'
+        default: true
+      mb4_noflag:
+        description: 'Run mb4_noflag'
         type: boolean
         required: true
-        default: 'false'
-      noflag_mb4:
-        description: 'Run noflag_mb4'
+        default: true
+      mb4_debug:
+        description: 'Run mb4_debug'
         type: boolean
         required: true
-        default: 'false'
-      ntl_mb6:
-        description: 'Run ntl_mb6'
+        default: true
+      mb4_tcm:
+        description: 'Run mb4_tcm'
         type: boolean
         required: true
-        default: 'false'
-      tcm_mb2:
-        description: 'Run tcm_mb2'
+        default: true
+      mb6_ntl_noflag:
+        description: 'Run mb6_ntl_noflag'
         type: boolean
         required: true
-        default: 'false'
-      tcm_mb4:
-        description: 'Run tcm_mb4'
+        default: true
+      mb6_ntl_debug_tcm:
+        description: 'Run mb6_ntl_debug_tcm'
         type: boolean
         required: true
-        default: 'false'
-      tcm_ntl_mb6:
-        description: 'Run tcm_ntl_mb6'
+        default: true
+      mb6_ntl_tcm:
+        description: 'Run mb6_ntl_tcm'
         type: boolean
         required: true
-        default: 'false'
+        default: true
+
+env:
+  # JSON map to convert input Compiler Type to correct cmake args, key is the input.compiler and the value is the cmake string to set the compiler for C and C++
+  COMPILERS_MAP: >-
+    {
+      "GCC-9"     : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+      "CLANG-10"  : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10",
+      "GCC-10"    : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",      
+      "CLANG-11"  : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-10 -DCMAKE_C_COMPILER=/usr/bin/gcc-10",
+    }
 
 jobs:
 
@@ -70,257 +84,195 @@ jobs:
   ###############################################
   default:
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      COMPILERS_MAP: >-
-       {
-         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
-       }
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
     - name: default
-      uses: ./.github/actions/default_builder
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
         module_name: default
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} ..
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
         native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
   #
-  #    tcm_mb2 jobs starts here
+  #    mb2_debug jobs starts here
   #
   ###############################################
-  tcm_mb2:
+  mb2_debug:
     needs: default
-    if: ${{ github.event.inputs.tcm_mb2 == 'true' }}
+    if: ${{ github.event.inputs.mb2_debug == 'true' }}
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      COMPILERS_MAP: >-
-       {
-         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
-       }
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: tcm_mb2
-      uses: ./.github/actions/default_builder
+    - name: mb2_debug
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
-        module_name: tcm_mb2
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=2 ..
-        run_benchmark: true
-        run_tcm: true
+        module_name: mb2_debug
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=2
         run_extras: true
         native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
   #
-  #    debug_mb2 jobs starts here
+  #    mb2_tcm jobs starts here
   #
   ###############################################
-  debug_mb2:
+  mb2_tcm:
     needs: default
-    if: ${{ github.event.inputs.debug_mb2 == 'true' }}
+    if: ${{ github.event.inputs.mb2_tcm == 'true' }}
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      COMPILERS_MAP: >-
-       {
-         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
-       }
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: debug_mb2
-      uses: ./.github/actions/default_builder
+    - name: mb2_tcm
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
-        module_name: debug_mb2
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=2 ..
+        module_name: mb2_tcm
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=2
+        with_tcm: true
         run_extras: true
         native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
   #
-  #    tcm_mb4 jobs starts here
+  #    mb4_noflag jobs starts here
   #
   ###############################################
-  tcm_mb4:
+  mb4_noflag:
     needs: default
-    if: ${{ github.event.inputs.tcm_mb4 == 'true' }}
+    if: ${{ github.event.inputs.mb4_noflag == 'true' }}
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      COMPILERS_MAP: >-
-       {
-         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
-       }
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: tcm_mb4
-      uses: ./.github/actions/default_builder
+    - name: mb4_noflag
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
-        module_name: tcm_mb4
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=4 ..
-        run_tcm: true
+        module_name: mb4_noflag
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DMATHBACKEND=4
         run_extras: true
         native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
   #
-  #    noflag_mb4 jobs starts here
+  #    mb4_debug jobs starts here
   #
   ###############################################
-  noflag_mb4:
+  mb4_debug:
     needs: default
-    if: ${{ github.event.inputs.noflag_mb4 == 'true' }}
+    if: ${{ github.event.inputs.mb4_debug == 'true' }}
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      COMPILERS_MAP: >-
-       {
-         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
-       }
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: noflag_mb4
-      uses: ./.github/actions/default_builder
+    - name: mb4_debug
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
-        module_name: noflag_mb4
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DMATHBACKEND=4 ..
+        module_name: mb4_debug
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=4
         run_extras: true
         native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
   #
-  #    debug_mb4 jobs starts here
+  #    mb4_tcm jobs starts here
   #
   ###############################################
-  debug_mb4:
+  mb4_tcm:
     needs: default
-    if: ${{ github.event.inputs.debug_mb4 == 'true' }}
+    if: ${{ github.event.inputs.mb4_tcm == 'true' }}
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      COMPILERS_MAP: >-
-       {
-         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
-       }
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: debug_mb4
-      uses: ./.github/actions/default_builder
+    - name: mb4_tcm
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
-        module_name: debug_mb4
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=4 ..
+        module_name: mb4_tcm
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=4
+        with_tcm: true
         run_extras: true
         native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
   #
-  #    ntl_mb6 jobs starts here
+  #    mb6_ntl_noflag jobs starts here
   #
   ###############################################
-  ntl_mb6:
+  mb6_ntl_noflag:
     needs: default
-    if: ${{ github.event.inputs.ntl_mb6 == 'true' }}
+    if: ${{ github.event.inputs.mb6_ntl_noflag == 'true' }}
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      COMPILERS_MAP: >-
-       {
-         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
-       }
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: ntl_mb6
-      uses: ./.github/actions/default_builder
+    - name: mb6_ntl_noflag
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
-        module_name: ntl_mb6
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DMATHBACKEND=6 ..
+        module_name: mb6_ntl_noflag
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DMATHBACKEND=6
         run_extras: true
         native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
   #
-  #    tcm_ntl_mb6 jobs starts here
+  #    mb6_ntl_tcm jobs starts here
   #
   ###############################################
-  tcm_ntl_mb6:
+  mb6_ntl_tcm:
     needs: default
-    if: ${{ github.event.inputs.tcm_ntl_mb6 == 'true' }}
+    if: ${{ github.event.inputs.mb6_ntl_tcm == 'true' }}
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      COMPILERS_MAP: >-
-       {
-         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
-       }
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: tcm_ntl_mb6
-      uses: ./.github/actions/default_builder
+    - name: mb6_ntl_tcm
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
-        module_name: tcm_ntl_mb6
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6 ..
-        run_tcm: true
+        module_name: mb6_ntl_tcm
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6
+        with_tcm: true
         run_extras: true
         native_backend: ${{ github.event.inputs.native_backend }}
 
 
   ###############################################
   #
-  #    debug_tcm_ntl_mb6 jobs starts here
+  #    mb6_ntl_debug_tcm jobs starts here
   #
   ###############################################
-  debug_tcm_ntl_mb6:
+  mb6_ntl_debug_tcm:
     needs: default
-    if: ${{ github.event.inputs.debug_tcm_ntl_mb6 == 'true' }}
+    if: ${{ github.event.inputs.mb6_ntl_debug_tcm == 'true' }}
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      COMPILERS_MAP: >-
-       {
-         "GCC"   : "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9",
-         "CLANG" : "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
-       }
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: debug_tcm_ntl_mb6
-      uses: ./.github/actions/default_builder
+    - name: mb6_ntl_debug_tcm
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
-        module_name: debug_tcm_ntl_mb6
-        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6 ..
-        run_tcm: true
+        module_name: mb6_ntl_debug_tcm
+        cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6
+        with_tcm: true
         run_extras: true
         native_backend: ${{ github.event.inputs.native_backend }}
+
+    

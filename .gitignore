@@ -19,6 +19,8 @@ third-party/include/NTL
 third-party/include/gmp.h
 third-party/lib
 third-party/share
+**/gmp-*
+**/ntl-*
 timing/
 gmon.out
 ## .gitattributes

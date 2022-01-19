@@ -1,219 +1,52 @@
-name: Run on main branch
+name: Main
 
 on:
   push:
     branches:
       - main
+      - github-ci
 
 jobs:
+  
+  call:
+    uses: openfheorg/openfhe-temp/.github/workflows/reuseable_workflow.yml@github-ci
+    with:
+      mb2_debug: true
+      mb2_tcm: true
+      mb4_noflag: true
+      mb4_debug: true
+      mb4_tcm: true
+      mb6_ntl_noflag: true
+      mb6_ntl_debug_tcm: true
+      mb6_ntl_tcm: true
 
-  ###############################################
-  #
-  #    default jobs starts here
-  #
-  ###############################################
-  default:
+  mb2_128:
+    needs: call
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      CMAKE_ARGS: '-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9'
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: default
-      uses: ./.github/actions/default_builder
+    - name: mb2_128
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
-        module_name: default
-        cmake_args: ${{ env.CMAKE_ARGS }} ..
-        run_benchmark: true
-
-
-  ###############################################
-  #
-  #    tcm_mb2 jobs starts here
-  #
-  ###############################################
-  tcm_mb2:
-    needs: default
-    runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      CMAKE_ARGS: '-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9'
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: tcm_mb2
-      uses: ./.github/actions/default_builder
-      with:
-        module_name: tcm_mb2
-        cmake_args: ${{ env.CMAKE_ARGS }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=2 ..
-        run_tcm: true
+        module_name: mb2_128
+        native_backend: 128
+        mathbackend: 2
         run_extras: true
 
-
-  ###############################################
-  #
-  #    debug_mb2 jobs starts here
-  #
-  ###############################################
-  debug_mb2:
-    needs: default
+  mb2_clang:
+    needs: call
     runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      CMAKE_ARGS: '-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9'
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
 
-    - name: debug_mb2
-      uses: ./.github/actions/default_builder
+    - name: mb2_clang
+      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
       with:
-        module_name: debug_mb2
-        cmake_args: ${{ env.CMAKE_ARGS }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=2 ..
-        run_extras: true
-
-
-  ###############################################
-  #
-  #    tcm_mb4 jobs starts here
-  #
-  ###############################################
-  tcm_mb4:
-    needs: default
-    runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      CMAKE_ARGS: '-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9'
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: tcm_mb4
-      uses: ./.github/actions/default_builder
-      with:
-        module_name: tcm_mb4
-        cmake_args: ${{ env.CMAKE_ARGS }} -DBUILD_EXTRAS=ON -DWITH_TCM=ON -DMATHBACKEND=4 ..
-        run_tcm: true
-        run_extras: true
-
-
-  ###############################################
-  #
-  #    noflag_mb4 jobs starts here
-  #
-  ###############################################
-  noflag_mb4:
-    needs: default
-    runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      CMAKE_ARGS: '-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9'
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: noflag_mb4
-      uses: ./.github/actions/default_builder
-      with:
-        module_name: noflag_mb4
-        cmake_args: ${{ env.CMAKE_ARGS }} -DBUILD_EXTRAS=ON -DMATHBACKEND=4 ..
-        run_extras: true
-
-
-  ###############################################
-  #
-  #    debug_mb4 jobs starts here
-  #
-  ###############################################
-  debug_mb4:
-    needs: default
-    runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      CMAKE_ARGS: '-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9'
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: debug_mb4
-      uses: ./.github/actions/default_builder
-      with:
-        module_name: debug_mb4
-        cmake_args: ${{ env.CMAKE_ARGS }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DMATHBACKEND=4 ..
-        run_extras: true
-
-
-  ###############################################
-  #
-  #    ntl_mb6 jobs starts here
-  #
-  ###############################################
-  ntl_mb6:
-    needs: default
-    runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      CMAKE_ARGS: '-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9'
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: ntl_mb6
-      uses: ./.github/actions/default_builder
-      with:
-        module_name: ntl_mb6
-        cmake_args: ${{ env.CMAKE_ARGS }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DMATHBACKEND=6 ..
-        run_extras: true
-
-
-  ###############################################
-  #
-  #    tcm_ntl_mb6 jobs starts here
-  #
-  ###############################################
-  tcm_ntl_mb6:
-    needs: default
-    runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      CMAKE_ARGS: '-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9'
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: tcm_ntl_mb6
-      uses: ./.github/actions/default_builder
-      with:
-        module_name: tcm_ntl_mb6
-        cmake_args: ${{ env.CMAKE_ARGS }} -DBUILD_EXTRAS=ON -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6 ..
-        run_tcm: true
-        run_extras: true
-
-
-  ###############################################
-  #
-  #    debug_tcm_ntl_mb6 jobs starts here
-  #
-  ###############################################
-  debug_tcm_ntl_mb6:
-    needs: default
-    runs-on: [self-hosted, Linux, X64]
-    env:
-      GIT_SUBMODULE_STRATEGY: recursive
-      CMAKE_ARGS: '-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9'
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: debug_tcm_ntl_mb6
-      uses: ./.github/actions/default_builder
-      with:
-        module_name: debug_tcm_ntl_mb6
-        cmake_args: ${{ env.CMAKE_ARGS }} -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=Debug -DWITH_NTL=ON -DWITH_TCM=ON -DMATHBACKEND=6 ..
-        run_tcm: true
+        module_name: mb4_tcm
+        cmake_args: "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
         run_extras: true
 
 
@@ -223,7 +56,7 @@ jobs:
   #
   ###############################################
   pages:
-    needs: [ default, debug_mb2, debug_mb4, debug_tcm_ntl_mb6, noflag_mb4, ntl_mb6, tcm_mb2, tcm_mb4, tcm_ntl_mb6 ]
+    needs: mb2_clang
     runs-on: [self-hosted, Linux, X64]
     env:
       GIT_SUBMODULE_STRATEGY: recursive
@@ -234,11 +67,10 @@ jobs:
     - name: build_docs
       run: |
         whoami
-        mkdir -p build
-        cd build
-        cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9 ..
+        cmake -S . -B build -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9
+        pushd build
         make apidocs
-        cd ..
+        popd
         mv doc/apidocs/html/ docs/
 
     - name: deploy_docs
