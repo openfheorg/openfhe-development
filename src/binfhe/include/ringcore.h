@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "lwecore.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"

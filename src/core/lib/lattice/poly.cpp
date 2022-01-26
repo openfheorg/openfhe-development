@@ -23,7 +23,7 @@
 
 #include <cmath>
 #include <fstream>
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 #define DEMANGLER  // used for the demangling type namefunction.
 

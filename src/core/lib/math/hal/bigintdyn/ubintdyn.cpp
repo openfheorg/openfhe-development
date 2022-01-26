@@ -2397,7 +2397,7 @@ void ubint<limb_t>::PrintIntegerConstants(void) {
 #endif
 }
 
-template class ubint<expdtype>;
+template class bigintdyn::ubint<expdtype>;
 
 #if 0
 // to stream internal representation

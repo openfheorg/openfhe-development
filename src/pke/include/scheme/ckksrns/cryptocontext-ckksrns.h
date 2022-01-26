@@ -30,7 +30,7 @@
 #ifndef _CRYPTOCONTEXT_CKKSRNS_H_
 #define _CRYPTOCONTEXT_CKKSRNS_H_
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "scheme/ckksrns/gen-cryptocontext-ckksrns-internal.h"
 #include "scheme/ckksrns/cryptocontextparams-ckksrns.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"

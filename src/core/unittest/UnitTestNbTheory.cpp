@@ -28,7 +28,7 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "lattice/dcrtpoly.h"
+#include "lattice/lat-hal.h"
 #include "lattice/elemparams.h"
 #include "lattice/ildcrtparams.h"
 #include "lattice/ilelement.h"

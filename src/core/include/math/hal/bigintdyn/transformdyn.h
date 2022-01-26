@@ -28,7 +28,10 @@
 #include <map>
 #include<unordered_map>
 #include <mutex>
+
 #include "math/hal/transform.h"
+#include "math/hal/bigintdyn/mubintvecdyn.h"
+#include "math/hal/bigintdyn/ubintdyn.h"
 
 /**
  * @namespace bigintdyn
@@ -630,10 +633,6 @@ class ChineseRemainderTransformArbDyn : public lbcrypto::ChineseRemainderTransfo
   // dimension of the NTT transform in NTT based polynomial division.
   static std::map<usint, usint> m_nttDivisionDim;
 };
-
-// forced template instantiation
-template class ChineseRemainderTransformFTTDyn<M4Vector>;
-template class ChineseRemainderTransformArbDyn<M4Vector>;
 
 }  // namespace bigintdyn
 

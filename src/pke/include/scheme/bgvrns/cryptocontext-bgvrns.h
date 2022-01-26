@@ -32,7 +32,7 @@
 
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns-internal.h"
 #include "scheme/bgvrns/cryptocontextparams-bgvrns.h"
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 namespace lbcrypto {
 

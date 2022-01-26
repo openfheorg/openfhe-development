@@ -39,12 +39,18 @@
  */
 namespace bigintfxd {
 
+// Forward declare this class for aliases
+template<typename IntegerType> 
+class BigVectorFixedT;
+
+using BigVector = BigVectorFixedT<BigInteger>;
+
 /**
  * @brief The class for representing vectors of big binary integers.
  */
 template <class IntegerType>
-class BigVectorImpl
-    : public lbcrypto::BigVectorInterface<BigVectorImpl<IntegerType>,
+class BigVectorFixedT
+    : public lbcrypto::BigVectorInterface<BigVectorFixedT<IntegerType>,
                                           IntegerType>,
       public lbcrypto::Serializable {
  public:
@@ -53,11 +59,11 @@ class BigVectorImpl
   /**
    * Basic constructor.
    */
-  BigVectorImpl();
+  BigVectorFixedT();
 
-  static inline BigVectorImpl Single(const IntegerType &val,
+  static inline BigVectorFixedT Single(const IntegerType &val,
                                      const IntegerType &modulus) {
-    BigVectorImpl vec(1, modulus);
+    BigVectorFixedT vec(1, modulus);
     vec[0] = val;
     return vec;
   }
@@ -69,21 +75,21 @@ class BigVectorImpl
    * number of entries.
    * @param modulus is the modulus of the ring.
    */
-  explicit BigVectorImpl(usint length, const IntegerType &modulus = 0);
+  explicit BigVectorFixedT(usint length, const IntegerType &modulus = 0);
 
   /**
    * Basic constructor for copying a vector
    *
    * @param bigVector is the big binary vector to be copied.
    */
-  BigVectorImpl(const BigVectorImpl &bigVector);
+  BigVectorFixedT(const BigVectorFixedT &bigVector);
 
   /**
    * Basic move constructor for moving a vector
    *
    * @param &&bigVector is the big binary vector to be moved.
    */
-  BigVectorImpl(BigVectorImpl &&bigVector);  // move copy constructor
+  BigVectorFixedT(BigVectorFixedT &&bigVector);  // move copy constructor
 
   /**
    * Basic constructor for specifying the length of the vector
@@ -95,7 +101,7 @@ class BigVectorImpl
    * @param rhs is an initializer list of strings
    */
 
-  BigVectorImpl(usint length, const IntegerType &modulus,
+  BigVectorFixedT(usint length, const IntegerType &modulus,
                 std::initializer_list<std::string> rhs);
 
   /**
@@ -107,13 +113,13 @@ class BigVectorImpl
    * @param modulus is the modulus of the ring.
    * @param rhs is an initializer list of usint
    */
-  BigVectorImpl(usint length, const IntegerType &modulus,
+  BigVectorFixedT(usint length, const IntegerType &modulus,
                 std::initializer_list<uint64_t> rhs);
 
   /**
    * Destructor.
    */
-  virtual ~BigVectorImpl();
+  virtual ~BigVectorFixedT();
 
   // ASSIGNMENT OPERATORS
 
@@ -121,43 +127,43 @@ class BigVectorImpl
    * Assignment operator to assign value from rhs
    *
    * @param &rhs is the big binary vector to be assigned from.
-   * @return Assigned BigVectorImpl.
+   * @return Assigned BigVectorFixedT.
    */
-  const BigVectorImpl &operator=(const BigVectorImpl &rhs);
+  const BigVectorFixedT &operator=(const BigVectorFixedT &rhs);
 
   /**
    * Move assignment operator
    *
    * @param &&rhs is the big binary vector to be moved.
-   * @return moved BigVectorImpl object
+   * @return moved BigVectorFixedT object
    */
-  const BigVectorImpl &operator=(BigVectorImpl &&rhs);
+  const BigVectorFixedT &operator=(BigVectorFixedT &&rhs);
 
   /**
-   * Initializer list for BigVectorImpl.
+   * Initializer list for BigVectorFixedT.
    *
    * @param &&rhs is the list of strings containing integers to be assigned to
    * the BBV.
-   * @return BigVectorImpl object
+   * @return BigVectorFixedT object
    */
-  const BigVectorImpl &operator=(std::initializer_list<std::string> rhs);
+  const BigVectorFixedT &operator=(std::initializer_list<std::string> rhs);
 
   /**
-   * Initializer list for BigVectorImpl.
+   * Initializer list for BigVectorFixedT.
    *
    * @param &&rhs is the list of integers to be assigned to the BBV.
-   * @return BigVectorImpl object
+   * @return BigVectorFixedT object
    */
-  const BigVectorImpl &operator=(std::initializer_list<uint64_t> rhs);
+  const BigVectorFixedT &operator=(std::initializer_list<uint64_t> rhs);
 
   /**
    * Assignment operator to assign value val to first entry, 0 for the rest of
    * entries.
    *
    * @param val is the value to be assigned at the first entry.
-   * @return Assigned BigVectorImpl.
+   * @return Assigned BigVectorFixedT.
    */
-  const BigVectorImpl &operator=(uint64_t val) {
+  const BigVectorFixedT &operator=(uint64_t val) {
     this->m_data[0] = val;
     if (this->m_modulus != 0) {
       this->m_data[0] %= this->m_modulus;
@@ -238,7 +244,7 @@ class BigVectorImpl
    * @param &modulus is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
-  BigVectorImpl Mod(const IntegerType &modulus) const;
+  BigVectorFixedT Mod(const IntegerType &modulus) const;
 
   /**
    * Vector modulus operator. In-place variant.
@@ -246,7 +252,7 @@ class BigVectorImpl
    * @param &modulus is the modulus to perform on the current vector entries.
    * @return is the result of the modulus operation on current vector.
    */
-  const BigVectorImpl &ModEq(const IntegerType &modulus);
+  const BigVectorFixedT &ModEq(const IntegerType &modulus);
 
   /**
    * Scalar-to-vector modulus addition operation.
@@ -254,7 +260,7 @@ class BigVectorImpl
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
-  BigVectorImpl ModAdd(const IntegerType &b) const;
+  BigVectorFixedT ModAdd(const IntegerType &b) const;
 
   /**
    * Scalar-to-vector modulus addition operation. In-place variant.
@@ -262,7 +268,7 @@ class BigVectorImpl
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus addition operation.
    */
-  const BigVectorImpl &ModAddEq(const IntegerType &b);
+  const BigVectorFixedT &ModAddEq(const IntegerType &b);
 
   /**
    * Scalar modulus addition at a particular index.
@@ -271,7 +277,7 @@ class BigVectorImpl
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-  BigVectorImpl ModAddAtIndex(usint i, const IntegerType &b) const;
+  BigVectorFixedT ModAddAtIndex(usint i, const IntegerType &b) const;
 
   /**
    * Scalar modulus addition at a particular index. In-place variant.
@@ -280,7 +286,7 @@ class BigVectorImpl
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-  const BigVectorImpl &ModAddAtIndexEq(usint i, const IntegerType &b);
+  const BigVectorFixedT &ModAddAtIndexEq(usint i, const IntegerType &b);
 
   /**
    * Vector component wise modulus addition.
@@ -288,7 +294,7 @@ class BigVectorImpl
    * @param &b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
-  BigVectorImpl ModAdd(const BigVectorImpl &b) const;
+  BigVectorFixedT ModAdd(const BigVectorFixedT &b) const;
 
   /**
    * Vector component wise modulus addition. In-place variant.
@@ -296,7 +302,7 @@ class BigVectorImpl
    * @param &b is the vector to perform operation with.
    * @return is the result of the component wise modulus addition operation.
    */
-  const BigVectorImpl &ModAddEq(const BigVectorImpl &b);
+  const BigVectorFixedT &ModAddEq(const BigVectorFixedT &b);
 
   /**
    * Scalar-from-vector modulus subtraction operation.
@@ -304,7 +310,7 @@ class BigVectorImpl
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
-  BigVectorImpl ModSub(const IntegerType &b) const;
+  BigVectorFixedT ModSub(const IntegerType &b) const;
 
   /**
    * Scalar-from-vector modulus subtraction operation. In-place variant.
@@ -312,7 +318,7 @@ class BigVectorImpl
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus subtraction operation.
    */
-  const BigVectorImpl &ModSubEq(const IntegerType &b);
+  const BigVectorFixedT &ModSubEq(const IntegerType &b);
 
   /**
    * Vector component wise modulus subtraction.
@@ -320,7 +326,7 @@ class BigVectorImpl
    * @param &b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
-  BigVectorImpl ModSub(const BigVectorImpl &b) const;
+  BigVectorFixedT ModSub(const BigVectorFixedT &b) const;
 
   /**
    * Vector component wise modulus subtraction. In-place variant.
@@ -328,7 +334,7 @@ class BigVectorImpl
    * @param &b is the vector to perform operation with.
    * @return is the result of the component wise modulus subtraction operation.
    */
-  const BigVectorImpl &ModSubEq(const BigVectorImpl &b);
+  const BigVectorFixedT &ModSubEq(const BigVectorFixedT &b);
 
   /**
    * Scalar-to-vector modulus multiplication operation.
@@ -337,7 +343,7 @@ class BigVectorImpl
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
-  BigVectorImpl ModMul(const IntegerType &b) const;
+  BigVectorFixedT ModMul(const IntegerType &b) const;
 
   /**
    * Scalar-to-vector modulus multiplication operation. In-place variant.
@@ -346,7 +352,7 @@ class BigVectorImpl
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus multiplication operation.
    */
-  const BigVectorImpl &ModMulEq(const IntegerType &b);
+  const BigVectorFixedT &ModMulEq(const IntegerType &b);
 
   /**
    * Vector component wise modulus multiplication.
@@ -355,7 +361,7 @@ class BigVectorImpl
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
-  BigVectorImpl ModMul(const BigVectorImpl &b) const;
+  BigVectorFixedT ModMul(const BigVectorFixedT &b) const;
 
   /**
    * Vector component wise modulus multiplication. In-place variant.
@@ -364,7 +370,7 @@ class BigVectorImpl
    * @return is the result of the component wise modulus multiplication
    * operation.
    */
-  const BigVectorImpl &ModMulEq(const BigVectorImpl &b);
+  const BigVectorFixedT &ModMulEq(const BigVectorFixedT &b);
 
   /**
    * Scalar modulus exponentiation operation.
@@ -372,7 +378,7 @@ class BigVectorImpl
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
-  BigVectorImpl ModExp(const IntegerType &b) const;
+  BigVectorFixedT ModExp(const IntegerType &b) const;
 
   /**
    * Scalar modulus exponentiation operation. In-place variant.
@@ -380,21 +386,21 @@ class BigVectorImpl
    * @param &b is the scalar to perform operation with.
    * @return is the result of the modulus exponentiation operation.
    */
-  const BigVectorImpl &ModExpEq(const IntegerType &b);
+  const BigVectorFixedT &ModExpEq(const IntegerType &b);
 
   /**
    * Modulus inverse operation.
    *
    * @return is the result of the component wise modulus inverse operation.
    */
-  BigVectorImpl ModInverse() const;
+  BigVectorFixedT ModInverse() const;
 
   /**
    * Modulus inverse operation. In-place variant.
    *
    * @return is the result of the component wise modulus inverse operation.
    */
-  const BigVectorImpl &ModInverseEq();
+  const BigVectorFixedT &ModInverseEq();
 
   /**
    * Modulus 2 operation, also a least significant bit.
@@ -402,7 +408,7 @@ class BigVectorImpl
    * @return is the result of the component wise modulus 2 operation, also a
    * least significant bit.
    */
-  BigVectorImpl ModByTwo() const;
+  BigVectorFixedT ModByTwo() const;
 
   /**
    * Modulus 2 operation, also a least significant bit. In-place variant.
@@ -410,7 +416,7 @@ class BigVectorImpl
    * @return is the result of the component wise modulus 2 operation, also a
    * least significant bit.
    */
-  const BigVectorImpl &ModByTwoEq();
+  const BigVectorFixedT &ModByTwoEq();
 
   /**
    * Vector multiplication without applying the modulus operation.
@@ -418,7 +424,7 @@ class BigVectorImpl
    * @param &b is the vector to multiply.
    * @return is the result of the multiplication operation.
    */
-  BigVectorImpl MultWithOutMod(const BigVectorImpl &b) const;
+  BigVectorFixedT MultWithOutMod(const BigVectorFixedT &b) const;
 
   /**
    * Vector multiplication without applying the modulus operation. In-place
@@ -427,7 +433,7 @@ class BigVectorImpl
    * @param &b is the vector to multiply.
    * @return is the result of the multiplication operation.
    */
-  const BigVectorImpl &MultWithOutModEq(const BigVectorImpl &b);
+  const BigVectorFixedT &MultWithOutModEq(const BigVectorFixedT &b);
 
   /**
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
@@ -437,7 +443,7 @@ class BigVectorImpl
    * @param &q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
-  BigVectorImpl MultiplyAndRound(const IntegerType &p,
+  BigVectorFixedT MultiplyAndRound(const IntegerType &p,
                                  const IntegerType &q) const;
 
   /**
@@ -448,7 +454,7 @@ class BigVectorImpl
    * @param &q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
-  const BigVectorImpl &MultiplyAndRoundEq(const IntegerType &p,
+  const BigVectorFixedT &MultiplyAndRoundEq(const IntegerType &p,
                                           const IntegerType &q);
 
   /**
@@ -458,7 +464,7 @@ class BigVectorImpl
    * @param &q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
-  BigVectorImpl DivideAndRound(const IntegerType &q) const;
+  BigVectorFixedT DivideAndRound(const IntegerType &q) const;
 
   /**
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
@@ -467,7 +473,7 @@ class BigVectorImpl
    * @param &q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
-  const BigVectorImpl &DivideAndRoundEq(const IntegerType &q);
+  const BigVectorFixedT &DivideAndRoundEq(const IntegerType &q);
 
   // OTHER FUNCTIONS
 
@@ -488,7 +494,7 @@ class BigVectorImpl
    * @return is the digit at a specific index for all entries for a given number
    * base
    */
-  BigVectorImpl GetDigitAtIndexForBase(usint index, usint base) const;
+  BigVectorFixedT GetDigitAtIndexForBase(usint index, usint base) const;
 
   // STRINGS & STREAMS
 
@@ -496,12 +502,12 @@ class BigVectorImpl
    * ostream operator to output vector values to console
    *
    * @param os is the std ostream object.
-   * @param &ptr_obj is the BigVectorImpl object to be printed.
+   * @param &ptr_obj is the BigVectorFixedT object to be printed.
    * @return std ostream object which captures the vector values.
    */
   template <class IntegerType_c>
   friend std::ostream &operator<<(std::ostream &os,
-                                  const BigVectorImpl<IntegerType_c> &ptr_obj) {
+                                  const BigVectorFixedT<IntegerType_c> &ptr_obj) {
     auto len = ptr_obj.m_length;
     os << "[";
     for (usint i = 0; i < len; i++) {
@@ -586,9 +592,6 @@ class BigVectorImpl
     return true;
   }
 };
-
-extern template class BigVectorImpl<
-    BigInteger<integral_dtype, BigIntegerBitLength>>;
 
 }  // namespace bigintfxd
 

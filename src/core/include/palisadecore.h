@@ -32,7 +32,7 @@
 
 #include "math/distrgen.h"
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "lattice/stdlatticeparms.h"
 #include "utils/debug.h"
 #include "utils/defines.h"

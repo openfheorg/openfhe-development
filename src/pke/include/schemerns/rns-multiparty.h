@@ -24,7 +24,7 @@
 #ifndef LBCRYPTO_CRYPTO_RNS_MULTIPARTY_H
 #define LBCRYPTO_CRYPTO_RNS_MULTIPARTY_H
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 #include "schemebase/base-multiparty.h"
 

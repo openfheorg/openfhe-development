@@ -438,9 +438,10 @@ vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(
     __int128 reduced = scaled128 % modulus.ConvertToInt();
 
     factors[i] = (reduced < 0) ?
-      static_cast<__uint128>(reduced + modulus.ConvertToInt()) :
-      static_cast<__uint128>(reduced);
+      static_cast<BasicInteger>(reduced + modulus.ConvertToInt()) :
+      static_cast<BasicInteger>(reduced);
   }
+  return factors;
 }
 #else  // NATIVEINT == 64
 vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(

@@ -25,77 +25,25 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_INTNATHEXL_BACKENDNAT_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_INTNATHEXL_BACKENDNAT_H_
 
-namespace intnathexl {
+#include "math/hal/intnat-hexl/ubintnathexl.h"
+#include "math/hal/intnat-hexl/mubintvecnathexl.h"
+#include "math/hal/intnat-hexl/transformnathexl.h"
 
-template <typename I>
-class NativeIntegerT;
+#include "math/hal/basicint.h"
 
-#if NATIVEINT == 128
-#define MAX_MODULUS_SIZE 121
-typedef NativeIntegerT<unsigned __int128> NativeInteger;
-typedef NativeIntegerT<unsigned __int128> NativeInteger128;
-#elif NATIVEINT == 64 && !defined(HAVE_INT128)
-#define MAX_MODULUS_SIZE 58
-typedef NativeIntegerT<uint64_t> NativeInteger;
-typedef NativeIntegerT<uint64_t> NativeInteger64;
-#elif NATIVEINT == 64 && defined(HAVE_INT128)
-#define MAX_MODULUS_SIZE 60
-typedef NativeIntegerT<uint64_t> NativeInteger;
-typedef NativeIntegerT<uint64_t> NativeInteger64;
-#elif NATIVEINT == 32  // NOLINT
-#define MAX_MODULUS_SIZE 28
-typedef NativeIntegerT<uint32_t> NativeInteger;
-typedef NativeIntegerT<uint32_t> NativeInteger32;
+#if NATIVEINT != 64
+#error "Building with HEXL optimizations requires NATIVE_SIZE == 64"
 #endif
-
-} // namespace intnathexl
 
 namespace lbcrypto {
 
-#if NATIVEINT == 128
-using BasicInteger = unsigned __int128;
-typedef unsigned __int128 DoubleNativeInt;
-typedef unsigned __int128 uint128_t;
-typedef __int128 int128_t;
-#elif NATIVEINT == 64 && defined(HAVE_INT128)
-using BasicInteger = uint64_t;
-typedef unsigned __int128 DoubleNativeInt;
-typedef unsigned __int128 uint128_t;
-typedef __int128 int128_t;
-#elif NATIVEINT == 64 && !defined(HAVE_INT128)
-using BasicInteger = uint64_t;
-typedef uint64_t DoubleNativeInt;
-typedef uint64_t uint128_t;
-typedef int64_t int128_t;
-#elif NATIVEINT == 32
-using BasicInteger = uint32_t;
-typedef uint64_t DoubleNativeInt;
-#endif
+using NativeInteger = intnathexl::NativeInteger;
+using NativeVector = intnathexl::NativeVector;
 
 }
 
-#include "math/hal/intnat-hexl/mubintvecnathexl.h"
-
-#if NATIVEINT == 128
-typedef intnathexl::NativeIntegerT<unsigned __int128> NativeInteger128;
-typedef intnathexl::NativeVector<NativeInteger128> NativeVector128;
-#elif NATIVEINT == 64
-typedef intnathexl::NativeIntegerT<uint64_t> NativeInteger64;
-typedef intnathexl::NativeVector<NativeInteger64> NativeVector64;
-#elif NATIVEINT == 32
-typedef intnathexl::NativeIntegerT<uint32_t> NativeInteger32;
-typedef intnathexl::NativeVector<NativeInteger32> NativeVector32;
-#endif
-
-#if NATIVEINT == 128
-typedef NativeInteger128 NativeInteger;
-typedef NativeVector128 NativeVector;
-#elif NATIVEINT == 64
-typedef NativeInteger64 NativeInteger;
-typedef NativeVector64 NativeVector;
-#elif NATIVEINT == 32  // NOLINT
-typedef NativeInteger32 NativeInteger;
-typedef NativeVector32 NativeVector;
-#endif
+// Promote to global namespace
+using NativeInteger = lbcrypto::NativeInteger;
+using NativeVector = lbcrypto::NativeVector;
 
 #endif /* SRC_CORE_INCLUDE_MATH_HAL_INTNATHEXL_BACKENDNAT_H_ */

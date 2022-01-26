@@ -65,6 +65,14 @@
  * The namespace of this code
  */
 namespace NTL {
+
+// Forward declare this class for aliases
+template<typename IntegerType> 
+class myVecP;
+
+// Create default type for the MATHBACKEND 6 Vector
+using BigVector = myVecP<BigInteger>;
+
 /**
  * @brief The class for representing vectors of ubint with associated modulo
  * math

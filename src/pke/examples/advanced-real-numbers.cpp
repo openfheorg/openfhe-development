@@ -147,9 +147,9 @@ void AutomaticRescaleDemo(RescalingTechnique rsTech) {
    *    increases.
    */
   if (rsTech == FLEXIBLEAUTO) {
-    std::cout << "\n\n\n ===== ExactRescaleDemo ============= " << std::endl;
+    std::cout << std::endl << std::endl << std::endl << " ===== ExactRescaleDemo ============= " << std::endl;
   } else {
-    std::cout << "\n\n\n ===== ApproxAutoDemo ============= " << std::endl;
+    std::cout << std::endl << std::endl << std::endl << " ===== ApproxAutoDemo ============= " << std::endl;
   }
 
   uint32_t batchSize = 8;

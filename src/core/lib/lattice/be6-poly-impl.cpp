@@ -25,7 +25,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "math/matrix.cpp"
 #include "matrix-lattice-impl.cpp"
 

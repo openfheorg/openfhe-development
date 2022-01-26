@@ -36,7 +36,7 @@
 #include "hexl/hexl.hpp"
 
 #include "math/hal.h"
-#include "lattice/hexldcrtpoly.h"
+#include "lattice/hal/hexl/hexldcrtpoly.h"
 #include "utils/debug.h"
 
 using std::shared_ptr;
@@ -88,6 +88,12 @@ void HexlDCRTPoly<VecType>::DropLastElementAndScale(
 
  this->SetFormat(Format::EVALUATION);
 } // DCRTPolyImpl<VecType>::DropLastElementAndScale
+
+template class HexlDCRTPoly<M2Vector>;
+template class HexlDCRTPoly<M4Vector>;
+#ifdef WITH_NTL
+template class HexlDCRTPoly<M6Vector>;
+#endif
 
 } // namespace lbcrypto
 

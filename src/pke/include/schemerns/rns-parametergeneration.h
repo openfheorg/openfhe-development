@@ -25,7 +25,7 @@
 #ifndef LBCRYPTO_CRYPTO_RNS_PARAMETERGENERATION_H
 #define LBCRYPTO_CRYPTO_RNS_PARAMETERGENERATION_H
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 #include "schemebase/base-parametergeneration.h"
 

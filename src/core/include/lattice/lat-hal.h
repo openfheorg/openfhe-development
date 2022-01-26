@@ -1,5 +1,5 @@
-// @file dcrtpoly-impl.cpp - implementation of the integer lattice using
-// double-CRT representations.
+// @file backend.h This file contains the functionality to switch between
+// lattice backends
 // @author TPOC: contact@palisade-crypto.org
 //
 // @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
@@ -22,39 +22,47 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "lattice/dcrtpoly.cpp"
-#include "lattice/elemparams.cpp"
-#include "lattice/ildcrtparams.cpp"
-#include "lattice/poly.cpp"
-#include "math/hal.h"
-#include "math/binaryuniformgenerator.cpp"
-#include "math/discretegaussiangenerator.cpp"
-#include "math/discreteuniformgenerator.cpp"
-#include "math/ternaryuniformgenerator.cpp"
+#ifndef LBCRYPTO_LATTICE_BACKEND_H
+#define LBCRYPTO_LATTICE_BACKEND_H
 
-#if WITH_INTEL_HEXL
-  #include "lattice/hexldcrtpoly.cpp"
+
+#if defined(WITH_INTEL_HEXL)
+#include "lattice/hal/hexl/lat-backend-hexl.h"
+#else // default
+#include "lattice/hal/default/lat-backend-default.h"
 #endif
 
-// This creates all the necessary class implementations for DCRTPoly
 
 namespace lbcrypto {
 
-template class ILDCRTParams<M2Integer>;
-template class DCRTPolyImpl<M2Vector>;
-template class ILDCRTParams<M4Integer>;
-template class DCRTPolyImpl<M4Vector>;
-
+using M2Poly = PolyImpl<M2Vector>;
+using M4Poly = PolyImpl<M4Vector>;
 #ifdef WITH_NTL
-  template class ILDCRTParams<M6Integer>;
-  template class DCRTPolyImpl<M6Vector>;
+using M6Poly = PolyImpl<M6Vector>;
 #endif
 
-#ifdef WITH_INTEL_HEXL
-  template class HexlDCRTPoly<M2Vector>;
-  template class HexlDCRTPoly<M4Vector>;
-  #ifdef WITH_NTL
-    template class HexlDCRTPoly<M6Vector>;
-  #endif
+using NativePoly = PolyImpl<NativeVector>;
+
+using NativePoly64 = NativePoly;
+
+using M2Params = ILParamsImpl<M2Integer>;
+using M4Params = ILParamsImpl<M4Integer>;
+#ifdef WITH_NTL
+using M6Params = ILParamsImpl<M6Integer>;
 #endif
+
+using ILNativeParams = ILParamsImpl<NativeInteger>;
+
+// the default for the backend...
+using ILParams = ILParamsImpl<BigInteger>;
+using Poly = PolyImpl<BigVector>;
+
+using M2DCRTParams = ILDCRTParams<M2Integer>;
+using M4DCRTParams = ILDCRTParams<M4Integer>;
+#ifdef WITH_NTL
+using M6DCRTParams = ILDCRTParams<M6Integer>;
+#endif
+
 }  // namespace lbcrypto
+
+#endif

@@ -41,7 +41,7 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 1118.
  */
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 #include "keyswitch/keyswitch-base.h"
 

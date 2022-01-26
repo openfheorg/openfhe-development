@@ -31,7 +31,7 @@
 #include <vector>
 
 #include "encoding/encodingparams.h"
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 using std::shared_ptr;
 

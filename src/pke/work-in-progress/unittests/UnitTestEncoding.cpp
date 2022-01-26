@@ -30,7 +30,9 @@
 #include "gtest/gtest.h"
 
 #include "encoding/encodings.h"
-#include "lattice/dcrtpoly.h"
+// uncomment or remove this before push
+// #include "lattice/hal/default/dcrtpoly.h"
+#include "lattice/lat-hal.h"
 #include "math/hal.h"
 
 #include "lattice/elemparamfactory.h"

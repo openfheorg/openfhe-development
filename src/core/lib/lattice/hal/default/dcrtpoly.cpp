@@ -25,7 +25,7 @@
 #include <fstream>
 #include <memory>
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "utils/debug.h"
 #include "utils/utilities-int.h"
 #include "utils/utilities.h"
@@ -1055,26 +1055,11 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(
   if (this->GetFormat() == Format::EVALUATION)
     extra.SetFormat(Format::EVALUATION);
 
-#ifdef WITH_INTEL_HEXL
-  usint ringDim = this->GetRingDimension();
-  for (usint i = 0; i < m_vectors.size(); i++) {
-    const NativeInteger &qi = m_vectors[i].GetModulus();
-    PolyType &m_veci = m_vectors[i];
-    PolyType &extra_m_veci = extra.m_vectors[i];
-    const auto multOp = qlInvModq[i];
-    uint64_t *op1 = reinterpret_cast<uint64_t *>(&m_veci[0]);
-    uint64_t op2 = multOp.ConvertToInt();
-    uint64_t *op3 = reinterpret_cast<uint64_t *>(&extra_m_veci[0]);
-    intel::hexl::EltwiseFMAMod(op1, op1, op2, op3, ringDim, qi.ConvertToInt(),
-                               1);
-  }
-#else
 #pragma omp parallel for
   for (usint i = 0; i < m_vectors.size(); i++) {
     m_vectors[i] *= qlInvModq[i];
     m_vectors[i] += extra.m_vectors[i];
   }
-#endif
 
   this->SetFormat(Format::EVALUATION);
 }

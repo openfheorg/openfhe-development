@@ -29,7 +29,7 @@
 #include <vector>
 
 #include "math/dftransform.h"
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "math/matrix.h"
 
 namespace lbcrypto {

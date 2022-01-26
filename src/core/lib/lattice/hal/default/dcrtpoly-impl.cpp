@@ -1,7 +1,8 @@
-// @file computemu-impl.cpp
-// @author TPOC: info@DualityTech.com
+// @file dcrtpoly-impl.cpp - implementation of the integer lattice using
+// double-CRT representations.
+// @author TPOC: contact@palisade-crypto.org
 //
-// @copyright Copyright (c) 2021, Duality Technologies Inc.
+// @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
 // All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -21,19 +22,27 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "math/hal/computemu.h"
+#include "lattice/hal/default/dcrtpoly.cpp"
+#include "lattice/elemparams.cpp"
+#include "lattice/ildcrtparams.cpp"
+#include "lattice/poly.cpp"
+#include "math/binaryuniformgenerator.cpp"
+#include "math/discretegaussiangenerator.cpp"
+#include "math/discreteuniformgenerator.cpp"
+#include "math/ternaryuniformgenerator.cpp"
 
+// This creates all the necessary class implementations for DCRTPoly
 
-lbcrypto::BasicInteger computeMuUsingBasicInteger(lbcrypto::BasicInteger val, usint MSB) {
-    lbcrypto::BigInteger temp(1);
-    temp <<= 2 * MSB + 3;
-    return ((temp / lbcrypto::BigInteger(val)).ConvertToInt());
-}
+namespace lbcrypto {
 
-lbcrypto::BasicInteger prepModMultUsingBasicInteger(lbcrypto::BasicInteger val,
-                                                    lbcrypto::BasicInteger mod,
-                                                    lbcrypto::BasicInteger maxBits) {
-    lbcrypto::BigInteger temp = lbcrypto::BigInteger(val) << maxBits;
-    return ((temp / lbcrypto::BigInteger(mod)).ConvertToInt());
-}
+template class ILDCRTParams<M2Integer>;
+template class DCRTPolyImpl<M2Vector>;
+template class ILDCRTParams<M4Integer>;
+template class DCRTPolyImpl<M4Vector>;
 
+#ifdef WITH_NTL
+  template class ILDCRTParams<M6Integer>;
+  template class DCRTPolyImpl<M6Vector>;
+#endif
+
+}  // namespace lbcrypto

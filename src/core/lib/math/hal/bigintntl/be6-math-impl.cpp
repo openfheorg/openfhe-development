@@ -35,6 +35,7 @@
 #include "math/nbtheory.cpp"
 #include "math/ternaryuniformgenerator.cpp"
 
+
 namespace lbcrypto {
 
 template class DiscreteGaussianGeneratorImpl<M6Vector>;

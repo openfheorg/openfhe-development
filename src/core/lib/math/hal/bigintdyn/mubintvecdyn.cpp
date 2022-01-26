@@ -695,11 +695,9 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::GetDigitAtIndexForBase(
   }
   return ans;
 }
+
+
+template class mubintvec<BigInteger>;
+
 }  // namespace bigintdyn
 
-#ifdef UBINT_32
-template class bigintdyn::mubintvec<bigintdyn::ubint<uint32_t>>;
-#endif
-#ifdef UBINT_64
-template class bigintdyn::mubintvec<bigintdyn::ubint<uint64_t>>;
-#endif

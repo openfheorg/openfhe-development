@@ -32,6 +32,9 @@
 #include <map>
 #include<unordered_map>
 #include <mutex>
+
+#include "math/hal/bigintntl/ubintntl.h"
+#include "math/hal/bigintntl/mubintvecntl.h"
 #include "math/hal/transform.h"
 
 /**
@@ -638,6 +641,6 @@ class ChineseRemainderTransformArbNtl : public lbcrypto::ChineseRemainderTransfo
 
 #include "math/hal/bigintntl/transformntl-impl.h"
 
-#endif
+#endif // LBCRYPTO_MATH_HAL_BIGINTNTL_TRANSFORMNTL_H
 
 #endif // WITH_NTL

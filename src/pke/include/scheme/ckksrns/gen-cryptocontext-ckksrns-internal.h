@@ -43,8 +43,8 @@ class CCParams;
 template<typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const CCParams<ContextGeneratorType>& parameters) {
 #if NATIVEINT == 128
-    if (parameters.GetRescalingTechnique() == EXACTRESCALE) {
-        PALISADE_THROW(config_error, "128-bit CKKS is not supported for the EXACTRESCALE method.");
+    if (parameters.GetRescalingTechnique() == FLEXIBLEAUTO) {
+        PALISADE_THROW(config_error, "128-bit CKKS is not supported for the FLEXIBLEAUTO method.");
     }
 #endif
     using ParmType = typename Element::Params;

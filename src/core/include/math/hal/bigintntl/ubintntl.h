@@ -43,7 +43,9 @@
 #include <typeinfo>
 #include <vector>
 
-#include "math/hal/vector.h"
+#include "math/hal/integer.h"
+#include "math/hal/basicint.h"
+
 #include "utils/palisadebase64.h"
 #include "utils/parallel.h"
 #include "utils/serializable.h"
@@ -53,17 +55,24 @@
 #include "utils/memory.h"
 
 #include "utils/debug.h"
-#ifdef WITH_INTEL_HEXL
-#include "math/hal/intnat-hexl/backendnathexl.h"
-#else
-#include "math/hal/intnat/backendnat.h"
-#endif
+// #ifdef WITH_INTEL_HEXL
+// #include "math/hal/intnat-hexl/backendnathexl.h"
+// #else
+// #include "math/hal/intnat/backendnat.h"
+// #endif
 
 /**
  *@namespace NTL
  * The namespace of this code
  */
 namespace NTL {
+
+// forward declaration for aliases
+class myZZ;
+
+// Create default type for the MATHBACKEND 6 integer
+using BigInteger = myZZ;
+
 // log2 constants
 /**
  * @brief  Struct to find log value of N.
@@ -145,7 +154,19 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
    *
    * @param &val is the initial integer represented as a native integer.
    */
-  myZZ(const NativeInteger& val) : myZZ(val.ConvertToInt()) {}
+  template <typename T, typename std::enable_if <
+      !std::is_same<T, int>::value &&
+      !std::is_same<T, uint32_t>::value &&
+      !std::is_same<T, uint64_t>::value &&
+      !std::is_same<T, long>::value &&
+      !std::is_same<T, long long>::value &&
+      !std::is_same<T, const std::string> ::value &&
+      !std::is_same<T, const char*> ::value &&
+      !std::is_same<T, const char> ::value &&
+      !std::is_same<T, myZZ>::value &&
+      !std::is_same<T, double>::value,
+      bool>::type = true>
+    myZZ(const T& val) : myZZ(val.ConvertToInt()) {}
 
   /**
    * Constructor from double is not permitted

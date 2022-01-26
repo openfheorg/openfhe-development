@@ -41,7 +41,8 @@
 #include <vector>
 
 #include "math/hal/integer.h"
-#include "math/hal/computemu.h"
+#include "math/hal/basicint.h"
+
 #include "math/nbtheory.h"
 #include "utils/debug.h"
 #include "utils/exception.h"
@@ -49,6 +50,11 @@
 #include "utils/memory.h"
 #include "utils/palisadebase64.h"
 #include "utils/serializable.h"
+
+#if NATIVEINT == 128
+// need the BigInteger to handle double 128-bit word
+#include "math/hal/bigintbackend.h"
+#endif 
 
 // the default behavior of the native integer layer is
 // to assume that the user does not need bounds/range checks
@@ -68,6 +74,10 @@ using U128BITS = unsigned __int128;
 #endif
 
 namespace intnat {
+
+// Forward declare class and give it an alias for the expected type
+template <typename IntType> class NativeIntegerT;
+using NativeInteger = NativeIntegerT<BasicInteger>;
 
 const double LOG2_10 =
     3.32192809;  //!< @brief A pre-computed  constant of Log base 2 of 10.
@@ -727,7 +737,9 @@ class NativeIntegerT
   NativeIntegerT ComputeMu(
       typename std::enable_if<std::is_same<T, DNativeInt>::value, bool>::type =
           true) const {
-      return NativeInt(computeMuUsingBasicInteger(m_value, this->GetMSB()));
+      bigintbackend::BigInteger temp(1);
+      temp <<= 2 * this->GetMSB() + 3;
+      return (temp / bigintbackend::BigInteger(m_value));
   }
 
   /**
@@ -1605,7 +1617,8 @@ class NativeIntegerT
       const NativeIntegerT &modulus,
       typename std::enable_if<std::is_same<T, DNativeInt>::value, bool>::type =
           true) const {
-      return NativeInt(prepModMultUsingBasicInteger(m_value, modulus.m_value, MaxBits()));
+      bigintbackend::BigInteger temp = bigintbackend::BigInteger(m_value) << MaxBits();
+      return NativeInt((temp / bigintbackend::BigInteger(modulus.m_value)).ConvertToInt());
   }
 
   /**
@@ -1695,14 +1708,14 @@ class NativeIntegerT
       const NativeIntegerT &b, const NativeIntegerT &mod,
       typename std::enable_if<std::is_same<T, DNativeInt>::value, bool>::type =
           true) const {
-    NativeInteger mu(mod.ComputeMu());
-    NativeInteger exp(b.m_value);
-    NativeInteger product(1);
-    NativeInteger modulus(mod.m_value);
-    NativeInteger mid(m_value % mod.m_value);
-    const NativeInteger ZERO(0);
-    const NativeInteger ONE(1);
-    const NativeInteger TWO(2);
+    NativeIntegerT mu(mod.ComputeMu());
+    NativeIntegerT exp(b.m_value);
+    NativeIntegerT product(1);
+    NativeIntegerT modulus(mod.m_value);
+    NativeIntegerT mid(m_value % mod.m_value);
+    const NativeIntegerT ZERO(0);
+    const NativeIntegerT ONE(1);
+    const NativeIntegerT TWO(2);
 
     while (true) {
       if (exp % TWO == ONE) {

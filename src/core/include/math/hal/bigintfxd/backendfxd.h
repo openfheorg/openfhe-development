@@ -28,25 +28,9 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_
 
-////////// bigintfxd code
-typedef uint32_t integral_dtype;
-
-/** Define the mapping for BigInteger
-    3500 is the maximum bit width supported by BigIntegers, large enough for
-most use cases The bitwidth can be decreased to the least value still supporting
-BigInteger operations for a specific application - to achieve smaller runtimes
-**/
-#ifndef BigIntegerBitLength
-#if (NATIVEINT < 128)
-#define BigIntegerBitLength 3500  // for 32-bit and 64-bit native backend
-#else
-#define BigIntegerBitLength 8000  // for 128-bit native backend
-#endif
-#endif
-
-#if BigIntegerBitLength < 600
-#error "BigIntegerBitLength is too small"
-#endif
+#include "math/hal/bigintfxd/ubintfxd.h"
+#include "math/hal/bigintfxd/mubintvecfxd.h"
+#include "math/hal/bigintfxd/transformfxd.h"
 
 inline const std::string& GetMathBackendParameters() {
   static std::string id =
@@ -59,18 +43,15 @@ inline const std::string& GetMathBackendParameters() {
   return id;
 }
 
-#include "math/hal/bigintfxd/mubintvecfxd.h"
-#include "math/hal/bigintfxd/ubintfxd.h"
-
 static_assert(bigintfxd::DataTypeChecker<integral_dtype>::value,
               "Data type provided is not supported in BigInteger");
 
-using M2Integer = bigintfxd::BigInteger<integral_dtype, BigIntegerBitLength>;
-using M2Vector = bigintfxd::BigVectorImpl<M2Integer>;
 
-namespace bigintfxd {
+// Global alias for MATHBACKEND 2 Integer
+using M2Integer = bigintfxd::BigInteger;
 
-} // namespace bigintfxd
+// Global alias for MATHBACKEND 2 Vector
+using M2Vector = bigintfxd::BigVector;
 
 
 #endif /* SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_ */

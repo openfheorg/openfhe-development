@@ -43,7 +43,7 @@
 
 // Local PALISADE libs
 #include "math/hal.h"
-#include "lattice/dcrtpoly.h"
+#include "lattice/hal/default/dcrtpoly.h"
 #include "utils/debug.h"
 
 // PALISADE's main namespace

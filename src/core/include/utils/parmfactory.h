@@ -34,7 +34,7 @@
 
 #include "utils/inttypes.h"
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 using namespace lbcrypto;
 

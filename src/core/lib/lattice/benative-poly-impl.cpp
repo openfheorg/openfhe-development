@@ -22,7 +22,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define BLOCK_VECTOR_IMPLEMENT
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "math/matrix.cpp"
 #include "matrix-lattice-impl.cpp"
 

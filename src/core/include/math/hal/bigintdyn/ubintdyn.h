@@ -44,9 +44,25 @@
 #include "utils/memory.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
+
 #include "math/hal/integer.h"
 
+////////// for bigintdyn, decide if you want 32 bit or 64 bit underlying
+/// integers in the implementation
+#define UBINT_32
+// #define UBINT_64
+
+#ifdef UBINT_32
+#define MATH_UBBITS 32
+typedef uint32_t expdtype;
+#undef UBINT_64  // cant have both accidentally
+#endif
+
 #ifdef UBINT_64
+
+#define MATH_UBBITS 64
+typedef uint64_t expdtype;
+#undef UBINT_32  // cant have both accidentally
 
 #undef int128_t
 #define int128_t our_int128_t
@@ -65,6 +81,11 @@ typedef unsigned __int128 uint128_t;
  * The namespace of this code
  */
 namespace bigintdyn {
+// Forward declaration for aliases
+template<typename limb_t> class ubint;
+/** Define the mapping for ExpBigInteger (experimental) */
+using xubint = ubint<expdtype>;
+using BigInteger = xubint;
 
 /**The following structs are needed for initialization of ubint at
  *the preprocessing stage.  The structs compute certain values using
@@ -898,7 +919,7 @@ class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
    * Converts the value to a native integer.
    * @return the int representation of the value as usint.
    */
-  template <typename T = lbcrypto::BasicInteger>
+  template <typename T = BasicInteger>
   T ConvertToInt() const {
     T result = 0;
     if (m_value.size() == 0) {
@@ -1308,6 +1329,8 @@ inline std::ostream &operator<<(std::ostream &os,
   return os;
 }
 #endif
+
 }  // namespace bigintdyn
+
 
 #endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H

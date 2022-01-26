@@ -28,11 +28,16 @@
 //            declared in math/intnat/transformnat.h and
 //            MUST be included in the end of math/intnat/transformnat.h ONLY
 //            and nowhere else
+#include "math/nbtheory.h"
+#include "math/hal/basicint.h"
+#include "math/hal/intnat/ubintnat.h"
+#include "math/hal/intnat/mubintvecnat.h"
+#include "math/hal/intnat/transformnat.h"
+
 #include "utils/exception.h"
 #include "utils/utilities.h"
-#include "math/nbtheory.h"
 #include "utils/defines.h"
-#include "math/hal.h"
+
 
 namespace intnat {
 
@@ -583,16 +588,10 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverseInPla
     reCompute = true;
   }
 
-  if (typeid(IntType) == typeid(NativeInteger)) {
-      NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverseInPlace(
-            m_rootOfUnityReverseTableByModulus[modulus],
-            m_rootOfUnityPreconReverseTableByModulus[modulus], element);
-  } else {
-	  NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverseInPlace(
-	          m_rootOfUnityReverseTableByModulus[modulus], element);
+  NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverseInPlace(
+        m_rootOfUnityReverseTableByModulus[modulus],
+        m_rootOfUnityPreconReverseTableByModulus[modulus], element);
 
-
-  }
 }
 
 template <typename VecType>
@@ -625,14 +624,9 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverse(
     reCompute = true;
   }
 
-  if (typeid(IntType) == typeid(NativeInteger)) {
-    NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverse(
-            element, m_rootOfUnityReverseTableByModulus[modulus],
-            m_rootOfUnityPreconReverseTableByModulus[modulus], result);
-  } else {
-	NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverse(
-	          element, m_rootOfUnityReverseTableByModulus[modulus], result);
-  }
+  NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverse(
+          element, m_rootOfUnityReverseTableByModulus[modulus],
+          m_rootOfUnityPreconReverseTableByModulus[modulus], result);
 
   return;
 }
@@ -667,18 +661,13 @@ void ChineseRemainderTransformFTTNat<
     reCompute = true;
   }
 
-  usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
-  if (typeid(IntType) == typeid(NativeInteger)) {
-    NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
-            m_rootOfUnityInverseReverseTableByModulus[modulus],
-            m_rootOfUnityInversePreconReverseTableByModulus[modulus],
-            m_cycloOrderInverseTableByModulus[modulus][msb],
-            m_cycloOrderInversePreconTableByModulus[modulus][msb], element);
-  } else {
-	NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
-	          m_rootOfUnityInverseReverseTableByModulus[modulus],
-	          m_cycloOrderInverseTableByModulus[modulus][msb], element);
-  }
+  usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);  
+  NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
+          m_rootOfUnityInverseReverseTableByModulus[modulus],
+          m_rootOfUnityInversePreconReverseTableByModulus[modulus],
+          m_cycloOrderInverseTableByModulus[modulus][msb],
+          m_cycloOrderInversePreconTableByModulus[modulus][msb], element);
+
 }
 
 template <typename VecType>
@@ -718,17 +707,11 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverse(
   }
 
   usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
-  if (typeid(IntType) == typeid(NativeInteger)) {
-    NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
-            m_rootOfUnityInverseReverseTableByModulus[modulus],
-            m_rootOfUnityInversePreconReverseTableByModulus[modulus],
-            m_cycloOrderInverseTableByModulus[modulus][msb],
-            m_cycloOrderInversePreconTableByModulus[modulus][msb], result);
-  } else {
-	NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
-	          m_rootOfUnityInverseReverseTableByModulus[modulus],
-	          m_cycloOrderInverseTableByModulus[modulus][msb], result);
-  }
+  NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
+          m_rootOfUnityInverseReverseTableByModulus[modulus],
+          m_rootOfUnityInversePreconReverseTableByModulus[modulus],
+          m_cycloOrderInverseTableByModulus[modulus][msb],
+          m_cycloOrderInversePreconTableByModulus[modulus][msb], result);
 
   return;
 }
@@ -768,36 +751,34 @@ void ChineseRemainderTransformFTTNat<VecType>::PreCompute(
         TableCOI[i] = coInv;
       }
       m_cycloOrderInverseTableByModulus[modulus] = TableCOI;
+      
+      NativeInteger nativeModulus = modulus.ConvertToInt();
+      VecType preconTable(CycloOrderHf, nativeModulus);
+      VecType preconTableI(CycloOrderHf, nativeModulus);
 
-      if (typeid(IntType) == typeid(NativeInteger)) {
-        NativeInteger nativeModulus = modulus.ConvertToInt();
-        VecType preconTable(CycloOrderHf, nativeModulus);
-        VecType preconTableI(CycloOrderHf, nativeModulus);
-
-        for (usint i = 0; i < CycloOrderHf; i++) {
-          preconTable[i] =
-              NativeInteger(
-                  m_rootOfUnityReverseTableByModulus[modulus][i].ConvertToInt())
-                  .PrepModMulConst(nativeModulus);
-          preconTableI[i] =
-              NativeInteger(
-                  m_rootOfUnityInverseReverseTableByModulus[modulus][i]
-                      .ConvertToInt())
-                  .PrepModMulConst(nativeModulus);
-        }
-
-        VecType preconTableCOI(msb + 1, nativeModulus);
-        for (usint i = 0; i < msb + 1; i++) {
-          preconTableCOI[i] =
-              NativeInteger(
-                  m_cycloOrderInverseTableByModulus[modulus][i].ConvertToInt())
-                  .PrepModMulConst(nativeModulus);
-        }
-
-        m_rootOfUnityPreconReverseTableByModulus[modulus] = preconTable;
-        m_rootOfUnityInversePreconReverseTableByModulus[modulus] = preconTableI;
-        m_cycloOrderInversePreconTableByModulus[modulus] = preconTableCOI;
+      for (usint i = 0; i < CycloOrderHf; i++) {
+        preconTable[i] =
+            NativeInteger(
+                m_rootOfUnityReverseTableByModulus[modulus][i].ConvertToInt())
+                .PrepModMulConst(nativeModulus);
+        preconTableI[i] =
+            NativeInteger(
+                m_rootOfUnityInverseReverseTableByModulus[modulus][i]
+                    .ConvertToInt())
+                .PrepModMulConst(nativeModulus);
       }
+
+      VecType preconTableCOI(msb + 1, nativeModulus);
+      for (usint i = 0; i < msb + 1; i++) {
+        preconTableCOI[i] =
+            NativeInteger(
+                m_cycloOrderInverseTableByModulus[modulus][i].ConvertToInt())
+                .PrepModMulConst(nativeModulus);
+      }
+
+      m_rootOfUnityPreconReverseTableByModulus[modulus] = preconTable;
+      m_rootOfUnityInversePreconReverseTableByModulus[modulus] = preconTableI;
+      m_cycloOrderInversePreconTableByModulus[modulus] = preconTableCOI;
     }
   }
 }

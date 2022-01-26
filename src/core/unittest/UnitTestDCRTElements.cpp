@@ -29,7 +29,7 @@ library.
 #include <vector>
 #include "gtest/gtest.h"
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "lattice/elemparamfactory.h"
 #include "math/distrgen.h"
 #include "testdefs.h"

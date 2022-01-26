@@ -27,37 +27,14 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_
 
-////////// for bigintdyn, decide if you want 32 bit or 64 bit underlying
-/// integers in the implementation
-#define UBINT_32
-// #define UBINT_64
+#include "math/hal/bigintdyn/mubintvecdyn.h"   // rings of ubints
+#include "math/hal/bigintdyn/ubintdyn.h"       // dynamically sized unsigned big integers or ubints
+#include "math/hal/bigintdyn/transformdyn.h"   // transforms fo dynamic
 
-#ifdef UBINT_32
-#define MATH_UBBITS 32
-typedef uint32_t expdtype;
-#undef UBINT_64  // cant have both accidentally
-#endif
+// Global alias for MATHBACKEND 4 Integer
+using M4Integer = bigintdyn::BigInteger;
 
-#ifdef UBINT_64
-#define MATH_UBBITS 64
-typedef uint64_t expdtype;
-#undef UBINT_32  // cant have both accidentally
-#endif
-
-#include "math/hal/bigintdyn/mubintvecdyn.h"  // rings of ubints
-#include "math/hal/bigintdyn/ubintdyn.h"  // dynamically sized unsigned big integers or ubints
-
-namespace bigintdyn {
-
-/** Define the mapping for ExpBigInteger (experimental) */
-typedef ubint<expdtype> xubint;
-
-/** Define the mapping for modulo Big Integer Vector */
-typedef mubintvec<xubint> xmubintvec;
-
-} // namespace bigintdyn
-
-using M4Integer = bigintdyn::xubint;
-using M4Vector = bigintdyn::xmubintvec;
+// Global alias for MATHBACKEND 4 Vector
+using M4Vector = bigintdyn::BigVector;
 
 #endif /* SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_ */

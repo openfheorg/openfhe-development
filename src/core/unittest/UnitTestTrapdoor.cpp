@@ -24,7 +24,7 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
 #include "utils/inttypes.h"

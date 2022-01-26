@@ -38,7 +38,6 @@
 
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
-
 #include "utils/blockAllocator/xvector.h"
 
 // the following should be set to 1 in order to have native vector use block
@@ -52,6 +51,10 @@
  * The namespace of intnathexl
  */
 namespace intnathexl {
+
+// Forward declare class and give it an alias for the expected type
+template<typename IntType> class NativeVectorT;
+using NativeVector = NativeVectorT<NativeInteger>;
 
 /**
  * @brief The class for representing vectors of native integers.
@@ -101,8 +104,8 @@ bool operator!=(const NAlloc<T>&, const NAlloc<U>&) { return false; }
 #endif
 
 template <class IntegerType>
-class NativeVector
-    : public lbcrypto::BigVectorInterface<NativeVector<IntegerType>,
+class NativeVectorT
+    : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>,
                                           IntegerType>,
       public lbcrypto::Serializable {
  public:
@@ -113,11 +116,11 @@ class NativeVector
   /**
    * Basic constructor.
    */
-  NativeVector();
+  NativeVectorT();
 
-  static inline NativeVector Single(const IntegerType &val,
+  static inline NativeVectorT Single(const IntegerType &val,
                                     const IntegerType &modulus) {
-    NativeVector vec(1, modulus);
+    NativeVectorT vec(1, modulus);
     vec[0] = val;
     return vec;
   }
@@ -128,7 +131,7 @@ class NativeVector
    * @param length is the length of the native vector, in terms of the number of
    * entries.
    */
-  explicit NativeVector(usint length);
+  explicit NativeVectorT(usint length);
 
   /**
    * Basic constructor for specifying the length of the vector and the modulus.
@@ -137,21 +140,21 @@ class NativeVector
    * entries.
    * @param modulus is the modulus of the ring.
    */
-  NativeVector(usint length, const IntegerType &modulus);
+  NativeVectorT(usint length, const IntegerType &modulus);
 
   /**
    * Basic constructor for copying a vector
    *
    * @param bigVector is the native vector to be copied.
    */
-  NativeVector(const NativeVector &bigVector);
+  NativeVectorT(const NativeVectorT &bigVector);
 
   /**
    * Basic move constructor for moving a vector
    *
    * @param &&bigVector is the native vector to be moved.
    */
-  NativeVector(NativeVector &&bigVector);  // move copy constructor
+  NativeVectorT(NativeVectorT &&bigVector);  // move copy constructor
 
   /**
    * Basic constructor for specifying the length of the vector
@@ -163,7 +166,7 @@ class NativeVector
    * @param rhs is an initializer list of strings
    */
 
-  NativeVector(usint length, const IntegerType &modulus,
+  NativeVectorT(usint length, const IntegerType &modulus,
                std::initializer_list<std::string> rhs);
 
   /**
@@ -175,13 +178,13 @@ class NativeVector
    * @param modulus is the modulus of the ring.
    * @param rhs is an initializer list of usint
    */
-  NativeVector(usint length, const IntegerType &modulus,
+  NativeVectorT(usint length, const IntegerType &modulus,
                std::initializer_list<uint64_t> rhs);
 
   /**
    * Destructor.
    */
-  virtual ~NativeVector();
+  virtual ~NativeVectorT();
 
   // ASSIGNMENT OPERATORS
 
@@ -189,43 +192,43 @@ class NativeVector
    * Assignment operator to assign value from rhs
    *
    * @param &rhs is the native vector to be assigned from.
-   * @return Assigned NativeVector.
+   * @return Assigned NativeVectorT.
    */
-  const NativeVector &operator=(const NativeVector &rhs);
+  const NativeVectorT &operator=(const NativeVectorT &rhs);
 
   /**
    * Move assignment operator
    *
    * @param &&rhs is the native vector to be moved.
-   * @return moved NativeVector object
+   * @return moved NativeVectorT object
    */
-  NativeVector &operator=(NativeVector &&rhs);
+  NativeVectorT &operator=(NativeVectorT &&rhs);
 
   /**
-   * Initializer list for NativeVector.
+   * Initializer list for NativeVectorT.
    *
    * @param &&rhs is the list of strings containing integers to be assigned to
    * the BBV.
-   * @return NativeVector object
+   * @return NativeVectorT object
    */
-  const NativeVector &operator=(std::initializer_list<std::string> rhs);
+  const NativeVectorT &operator=(std::initializer_list<std::string> rhs);
 
   /**
-   * Initializer list for NativeVector.
+   * Initializer list for NativeVectorT.
    *
    * @param &&rhs is the list of integers to be assigned to the BBV.
-   * @return NativeVector object
+   * @return NativeVectorT object
    */
-  const NativeVector &operator=(std::initializer_list<uint64_t> rhs);
+  const NativeVectorT &operator=(std::initializer_list<uint64_t> rhs);
 
   /**
    * Assignment operator to assign value val to first entry, 0 for the rest of
    * entries.
    *
    * @param val is the value to be assigned at the first entry.
-   * @return Assigned NativeVector.
+   * @return Assigned NativeVectorT.
    */
-  inline const NativeVector &operator=(uint64_t val) {
+  inline const NativeVectorT &operator=(uint64_t val) {
     this->m_data[0] = val;
     for (size_t i = 1; i < GetLength(); ++i) {
       this->m_data[i] = 0;
@@ -243,14 +246,14 @@ class NativeVector
    */
   IntegerType &at(size_t i) {
     if (!this->IndexCheck(i)) {
-      PALISADE_THROW(lbcrypto::math_error, "NativeVector index out of range");
+      PALISADE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
     }
     return this->m_data[i];
   }
 
   const IntegerType &at(size_t i) const {
     if (!this->IndexCheck(i)) {
-      PALISADE_THROW(lbcrypto::math_error, "NativeVector index out of range");
+      PALISADE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
     }
     return this->m_data[i];
   }
@@ -303,7 +306,7 @@ class NativeVector
    * @param modulus is the modulus to perform on the current vector entries.
    * @return is the result after the modulus operation on current vector.
    */
-  NativeVector Mod(const IntegerType &modulus) const;
+  NativeVectorT Mod(const IntegerType &modulus) const;
 
   /**
    * Vector Modulus operator. In-place variant.
@@ -311,7 +314,7 @@ class NativeVector
    * @param modulus is the modulus to perform on the current vector entries.
    * @return is the result after the modulus operation on current vector.
    */
-  const NativeVector &ModEq(const IntegerType &modulus);
+  const NativeVectorT &ModEq(const IntegerType &modulus);
 
   /**
    * Scalar modulus addition.
@@ -320,7 +323,7 @@ class NativeVector
    * modulus.
    * @return is the result of the modulus addition operation.
    */
-  NativeVector ModAdd(const IntegerType &b) const;
+  NativeVectorT ModAdd(const IntegerType &b) const;
 
   /**
    * Scalar modulus addition. In-place variant.
@@ -329,7 +332,7 @@ class NativeVector
    * modulus.
    * @return is the result of the modulus addition operation.
    */
-  const NativeVector &ModAddEq(const IntegerType &b);
+  const NativeVectorT &ModAddEq(const IntegerType &b);
 
   /**
    * Scalar modulus addition at a particular index.
@@ -338,7 +341,7 @@ class NativeVector
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-  NativeVector ModAddAtIndex(usint i, const IntegerType &b) const;
+  NativeVectorT ModAddAtIndex(usint i, const IntegerType &b) const;
 
   /**
    * Scalar modulus addition at a particular index. In-place variant.
@@ -347,7 +350,7 @@ class NativeVector
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-  const NativeVector &ModAddAtIndexEq(usint i, const IntegerType &b);
+  const NativeVectorT &ModAddAtIndexEq(usint i, const IntegerType &b);
 
   /**
    * vector modulus addition.
@@ -355,7 +358,7 @@ class NativeVector
    * @param &b is the vector to add at all locations.
    * @return is the result of the modulus addition operation.
    */
-  NativeVector ModAdd(const NativeVector &b) const;
+  NativeVectorT ModAdd(const NativeVectorT &b) const;
 
   /**
    * vector modulus addition. In-place variant.
@@ -363,7 +366,7 @@ class NativeVector
    * @param &b is the vector to add at all locations.
    * @return is the result of the modulus addition operation.
    */
-  const NativeVector &ModAddEq(const NativeVector &b);
+  const NativeVectorT &ModAddEq(const NativeVectorT &b);
 
   /**
    * Scalar modulus subtraction.
@@ -372,7 +375,7 @@ class NativeVector
    * @param &b is the scalar to subtract from all locations.
    * @return is the result of the modulus substraction operation.
    */
-  NativeVector ModSub(const IntegerType &b) const;
+  NativeVectorT ModSub(const IntegerType &b) const;
 
   /**
    * Scalar modulus subtraction. In-place variant.
@@ -381,7 +384,7 @@ class NativeVector
    * @param &b is the scalar to subtract from all locations.
    * @return is the result of the modulus substraction operation.
    */
-  const NativeVector &ModSubEq(const IntegerType &b);
+  const NativeVectorT &ModSubEq(const IntegerType &b);
 
   /**
    * Vector Modulus subtraction.
@@ -389,7 +392,7 @@ class NativeVector
    * @param &b is the vector to subtract.
    * @return is the result of the modulus subtraction operation.
    */
-  NativeVector ModSub(const NativeVector &b) const;
+  NativeVectorT ModSub(const NativeVectorT &b) const;
 
   /**
    * Vector Modulus subtraction. In-place variant.
@@ -397,7 +400,7 @@ class NativeVector
    * @param &b is the vector to subtract.
    * @return is the result of the modulus subtraction operation.
    */
-  const NativeVector &ModSubEq(const NativeVector &b);
+  const NativeVectorT &ModSubEq(const NativeVectorT &b);
 
   /**
    * Scalar modular multiplication.
@@ -406,7 +409,7 @@ class NativeVector
    * @param &b is the scalar to multiply at all locations.
    * @return is the result of the modulus multiplication operation.
    */
-  NativeVector ModMul(const IntegerType &b) const;
+  NativeVectorT ModMul(const IntegerType &b) const;
 
   /**
    * Scalar modular multiplication. In-place variant.
@@ -415,7 +418,7 @@ class NativeVector
    * @param &b is the scalar to multiply at all locations.
    * @return is the result of the modulus multiplication operation.
    */
-  const NativeVector &ModMulEq(const IntegerType &b);
+  const NativeVectorT &ModMulEq(const IntegerType &b);
 
   /**
    * Vector modulus multiplication.
@@ -423,7 +426,7 @@ class NativeVector
    * @param &b is the vector to multiply.
    * @return is the result of the modulus multiplication operation.
    */
-  NativeVector ModMul(const NativeVector &b) const;
+  NativeVectorT ModMul(const NativeVectorT &b) const;
 
   /**
    * Vector modulus multiplication. In-place variant.
@@ -431,7 +434,7 @@ class NativeVector
    * @param &b is the vector to multiply.
    * @return is the result of the modulus multiplication operation.
    */
-  const NativeVector &ModMulEq(const NativeVector &b);
+  const NativeVectorT &ModMulEq(const NativeVectorT &b);
 
   /**
    * Vector multiplication without applying the modulus operation.
@@ -439,7 +442,7 @@ class NativeVector
    * @param &b is the vector to multiply.
    * @return is the result of the multiplication operation.
    */
-  NativeVector MultWithOutMod(const NativeVector &b) const;
+  NativeVectorT MultWithOutMod(const NativeVectorT &b) const;
 
   /**
    * Scalar modulus exponentiation.
@@ -448,7 +451,7 @@ class NativeVector
    * @return a new vector which is the result of the modulus exponentiation
    * operation.
    */
-  NativeVector ModExp(const IntegerType &b) const;
+  NativeVectorT ModExp(const IntegerType &b) const;
 
   /**
    * Scalar modulus exponentiation. In-place variant.
@@ -457,21 +460,21 @@ class NativeVector
    * @return a new vector which is the result of the modulus exponentiation
    * operation.
    */
-  const NativeVector &ModExpEq(const IntegerType &b);
+  const NativeVectorT &ModExpEq(const IntegerType &b);
 
   /**
    * Modulus inverse.
    *
    * @return a new vector which is the result of the modulus inverse operation.
    */
-  NativeVector ModInverse() const;
+  NativeVectorT ModInverse() const;
 
   /**
    * Modulus inverse. In-place variant.
    *
    * @return a new vector which is the result of the modulus inverse operation.
    */
-  const NativeVector &ModInverseEq();
+  const NativeVectorT &ModInverseEq();
 
   /**
    * Perform a modulus by 2 operation.  Returns the least significant bit.
@@ -479,7 +482,7 @@ class NativeVector
    * @return a new vector which is the return value of the modulus by 2, also
    * the least significant bit.
    */
-  NativeVector ModByTwo() const;
+  NativeVectorT ModByTwo() const;
 
   /**
    * Perform a modulus by 2 operation.  Returns the least significant bit.
@@ -488,7 +491,7 @@ class NativeVector
    * @return a new vector which is the return value of the modulus by 2, also
    * the least significant bit.
    */
-  const NativeVector &ModByTwoEq();
+  const NativeVectorT &ModByTwoEq();
 
   /**
    * Multiply and Rounding operation on a BigInteger x. Returns [x*p/q] where []
@@ -498,7 +501,7 @@ class NativeVector
    * @param q is the denominator to be divided.
    * @return the result of multiply and round.
    */
-  NativeVector MultiplyAndRound(const IntegerType &p,
+  NativeVectorT MultiplyAndRound(const IntegerType &p,
                                 const IntegerType &q) const;
 
   /**
@@ -509,7 +512,7 @@ class NativeVector
    * @param q is the denominator to be divided.
    * @return the result of multiply and round.
    */
-  const NativeVector &MultiplyAndRoundEq(const IntegerType &p,
+  const NativeVectorT &MultiplyAndRoundEq(const IntegerType &p,
                                          const IntegerType &q);
 
   /**
@@ -519,7 +522,7 @@ class NativeVector
    * @param q is the denominator to be divided.
    * @return the result of divide and round.
    */
-  NativeVector DivideAndRound(const IntegerType &q) const;
+  NativeVectorT DivideAndRound(const IntegerType &q) const;
 
   /**
    * Divide and Rounding operation on a BigInteger x. Returns [x/q] where [] is
@@ -528,7 +531,7 @@ class NativeVector
    * @param q is the denominator to be divided.
    * @return the result of divide and round.
    */
-  const NativeVector &DivideAndRoundEq(const IntegerType &q);
+  const NativeVectorT &DivideAndRoundEq(const IntegerType &q);
 
   // OTHER FUNCTIONS
 
@@ -549,7 +552,7 @@ class NativeVector
    * @return is the digit at a specific index for all entries for a given number
    * base
    */
-  NativeVector GetDigitAtIndexForBase(usint index, usint base) const;
+  NativeVectorT GetDigitAtIndexForBase(usint index, usint base) const;
 
   // STRINGS & STREAMS
 
@@ -557,12 +560,12 @@ class NativeVector
    * ostream operator to output vector values to console
    *
    * @param os is the std ostream object.
-   * @param &ptr_obj is the NativeVector object to be printed.
+   * @param &ptr_obj is the NativeVectorT object to be printed.
    * @return std ostream object which captures the vector values.
    */
   template <class IntegerType_c>
   friend std::ostream &operator<<(std::ostream &os,
-                                  const NativeVector<IntegerType_c> &ptr_obj) {
+                                  const NativeVectorT<IntegerType_c> &ptr_obj) {
     auto len = ptr_obj.m_data.size();
     os << "[";
     for (usint i = 0; i < len; i++) {
@@ -632,7 +635,7 @@ class NativeVector
     ar(::cereal::make_nvp("m", m_modulus));
   }
 
-  std::string SerializedObjectName() const { return "NativeVector"; }
+  std::string SerializedObjectName() const { return "NativeVectorT"; }
 
   static uint32_t SerializedVersion() { return 1; }
 

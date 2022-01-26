@@ -1,7 +1,7 @@
 /**
- * @file cryptocontext-bfvrns.h
+ * @file lat-backend-hexl.h
  *
- * @brief API to generate BFVRNS crypto context
+ * @brief Defines aliases for the lattice HEXL backend
  *
  * @author TPOC: contact@palisade-crypto.org
  *
@@ -27,38 +27,24 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _CRYPTOCONTEXT_BFVRNS_H_
-#define _CRYPTOCONTEXT_BFVRNS_H_
+#ifndef __LAT_BACKEND_HEXL_H__
+#define __LAT_BACKEND_HEXL_H__
 
-#include "scheme/bfvrns/gen-cryptocontext-bfvrns-internal.h"
-#include "scheme/bfvrns/cryptocontextparams-bfvrns.h"
-#include "lattice/lat-hal.h"
+#include "lattice/hal/hexl/hexldcrtpoly.h"
 
 namespace lbcrypto {
-// forward declarations. TODO (dsuponit): I would replace them with the following includes later:
-//#include "scheme/bfvrns/bfvrns-scheme.h"
-//#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-//#include "cryptocontext.h"
-class SchemeBFVRNS;
-class CryptoParametersBFVRNS;
-template <typename Element> class CryptoContextImpl;
-template <typename Element> class CryptoContextFactory;
 
-class CryptoContextBFVRNS {
-    using Element = DCRTPoly;
+    using M2DCRTPoly = HexlDCRTPoly<M2Vector>;
+    using M4DCRTPoly = HexlDCRTPoly<M4Vector>;
+#ifdef WITH_NTL
+    using M6DCRTPoly = HexlDCRTPoly<M6Vector>;
+#else
+    using M6DCRTPoly = void;
+#endif
 
-public:
-    using ContextType               = CryptoContext<Element>; // required by GenCryptoContext() in gen-cryptocontext.h
-    using Factory                   = CryptoContextFactory<Element>;
-    using PublicKeyEncryptionScheme = SchemeBFVRNS;
-    using CryptoParams              = CryptoParametersBFVRNS;
-
-    static CryptoContext<Element> genCryptoContext(const CCParams<CryptoContextBFVRNS>& parameters) {
-        return genCryptoContextBFVRNSInternal<CryptoContextBFVRNS, Element>(parameters);
-    }
-};
+    using DCRTPoly = HexlDCRTPoly<BigVector>;
 
 }  // namespace lbcrypto
 
-#endif // _CRYPTOCONTEXT_BFVRNS_H_
+#endif // __LAT_BACKEND_HEXL_H__
 

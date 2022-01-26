@@ -24,7 +24,7 @@
 #ifndef LBCRYPTO_CRYPTO_RNS_PKE_H
 #define LBCRYPTO_CRYPTO_RNS_PKE_H
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 #include "schemebase/base-pke.h"
 

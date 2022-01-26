@@ -24,7 +24,7 @@
 #ifndef LBCRYPTO_CRYPTO_RNS_PRE_H
 #define LBCRYPTO_CRYPTO_RNS_PRE_H
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 #include "schemebase/base-pre.h"
 

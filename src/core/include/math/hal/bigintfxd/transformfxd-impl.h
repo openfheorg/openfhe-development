@@ -32,7 +32,7 @@
 #include "utils/exception.h"
 #include "utils/utilities.h"
 #include "math/nbtheory.h"
-#include "math/hal.h"
+// #include "math/hal.h"
 
 namespace bigintfxd {
 
@@ -580,14 +580,14 @@ void ChineseRemainderTransformFTTFxd<VecType>::ForwardTransformToBitReverseInPla
     PreCompute(rootOfUnity, CycloOrder, modulus);
   }
 
-  if (typeid(IntType) == typeid(NativeInteger)) {
-     NumberTheoreticTransformFxd<VecType>().ForwardTransformToBitReverseInPlace(
-            m_rootOfUnityReverseTableByModulus[modulus],
-            m_rootOfUnityPreconReverseTableByModulus[modulus], element);
-  } else {
+  // if (typeid(IntType) == typeid(NativeInteger)) {
+  //    NumberTheoreticTransformFxd<VecType>().ForwardTransformToBitReverseInPlace(
+  //           m_rootOfUnityReverseTableByModulus[modulus],
+  //           m_rootOfUnityPreconReverseTableByModulus[modulus], element);
+  // } else {
 	 NumberTheoreticTransformFxd<VecType>().ForwardTransformToBitReverseInPlace(
 		  m_rootOfUnityReverseTableByModulus[modulus], element);
-  }
+  // }
 }
 
 template <typename VecType>
@@ -617,14 +617,14 @@ void ChineseRemainderTransformFTTFxd<VecType>::ForwardTransformToBitReverse(
     PreCompute(rootOfUnity, CycloOrder, modulus);
   }
 
-  if (typeid(IntType) == typeid(NativeInteger)) {
-    NumberTheoreticTransformFxd<VecType>().ForwardTransformToBitReverse(
-            element, m_rootOfUnityReverseTableByModulus[modulus],
-            m_rootOfUnityPreconReverseTableByModulus[modulus], result);
-  } else {
+  // if (typeid(IntType) == typeid(NativeInteger)) {
+  //   NumberTheoreticTransformFxd<VecType>().ForwardTransformToBitReverse(
+  //           element, m_rootOfUnityReverseTableByModulus[modulus],
+  //           m_rootOfUnityPreconReverseTableByModulus[modulus], result);
+  // } else {
 	NumberTheoreticTransformFxd<VecType>().ForwardTransformToBitReverse(
 	          element, m_rootOfUnityReverseTableByModulus[modulus], result);
-  }
+  // }
 
   return;
 }
@@ -657,17 +657,17 @@ void ChineseRemainderTransformFTTFxd<
   }
 
   usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
-  if (typeid(IntType) == typeid(NativeInteger)) {
-    NumberTheoreticTransformFxd<VecType>().InverseTransformFromBitReverseInPlace(
-            m_rootOfUnityInverseReverseTableByModulus[modulus],
-            m_rootOfUnityInversePreconReverseTableByModulus[modulus],
-            m_cycloOrderInverseTableByModulus[modulus][msb],
-            m_cycloOrderInversePreconTableByModulus[modulus][msb], element);
-  } else {
+  // if (typeid(IntType) == typeid(NativeInteger)) {
+  //   NumberTheoreticTransformFxd<VecType>().InverseTransformFromBitReverseInPlace(
+  //           m_rootOfUnityInverseReverseTableByModulus[modulus],
+  //           m_rootOfUnityInversePreconReverseTableByModulus[modulus],
+  //           m_cycloOrderInverseTableByModulus[modulus][msb],
+  //           m_cycloOrderInversePreconTableByModulus[modulus][msb], element);
+  // } else {
     NumberTheoreticTransformFxd<VecType>().InverseTransformFromBitReverseInPlace(
             m_rootOfUnityInverseReverseTableByModulus[modulus],
             m_cycloOrderInverseTableByModulus[modulus][msb], element);
-  }
+  // }
 }
 
 template <typename VecType>
@@ -704,17 +704,17 @@ void ChineseRemainderTransformFTTFxd<VecType>::InverseTransformFromBitReverse(
   }
 
   usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
-  if (typeid(IntType) == typeid(NativeInteger)) {
-    NumberTheoreticTransformFxd<VecType>().InverseTransformFromBitReverseInPlace(
-            m_rootOfUnityInverseReverseTableByModulus[modulus],
-            m_rootOfUnityInversePreconReverseTableByModulus[modulus],
-            m_cycloOrderInverseTableByModulus[modulus][msb],
-            m_cycloOrderInversePreconTableByModulus[modulus][msb], result);
-  } else {
+  // if (typeid(IntType) == typeid(NativeInteger)) {
+  //   NumberTheoreticTransformFxd<VecType>().InverseTransformFromBitReverseInPlace(
+  //           m_rootOfUnityInverseReverseTableByModulus[modulus],
+  //           m_rootOfUnityInversePreconReverseTableByModulus[modulus],
+  //           m_cycloOrderInverseTableByModulus[modulus][msb],
+  //           m_cycloOrderInversePreconTableByModulus[modulus][msb], result);
+  // } else {
 	NumberTheoreticTransformFxd<VecType>().InverseTransformFromBitReverseInPlace(
 	          m_rootOfUnityInverseReverseTableByModulus[modulus],
 	          m_cycloOrderInverseTableByModulus[modulus][msb], result);
-  }
+  // }
 
   return;
 }
@@ -755,35 +755,35 @@ void ChineseRemainderTransformFTTFxd<VecType>::PreCompute(
       }
       m_cycloOrderInverseTableByModulus[modulus] = TableCOI;
 
-      if (typeid(IntType) == typeid(NativeInteger)) {
-        NativeInteger nativeModulus = modulus.ConvertToInt();
-        VecType preconTable(CycloOrderHf, nativeModulus);
-        VecType preconTableI(CycloOrderHf, nativeModulus);
+      // if (typeid(IntType) == typeid(NativeInteger)) {
+      //   NativeInteger nativeModulus = modulus.ConvertToInt();
+      //   VecType preconTable(CycloOrderHf, nativeModulus);
+      //   VecType preconTableI(CycloOrderHf, nativeModulus);
 
-        for (usint i = 0; i < CycloOrderHf; i++) {
-          preconTable[i] =
-              NativeInteger(
-                  m_rootOfUnityReverseTableByModulus[modulus][i].ConvertToInt())
-                  .PrepModMulConst(nativeModulus);
-          preconTableI[i] =
-              NativeInteger(
-                  m_rootOfUnityInverseReverseTableByModulus[modulus][i]
-                      .ConvertToInt())
-                  .PrepModMulConst(nativeModulus);
-        }
+      //   for (usint i = 0; i < CycloOrderHf; i++) {
+      //     preconTable[i] =
+      //         NativeInteger(
+      //             m_rootOfUnityReverseTableByModulus[modulus][i].ConvertToInt())
+      //             .PrepModMulConst(nativeModulus);
+      //     preconTableI[i] =
+      //         NativeInteger(
+      //             m_rootOfUnityInverseReverseTableByModulus[modulus][i]
+      //                 .ConvertToInt())
+      //             .PrepModMulConst(nativeModulus);
+      //   }
 
-        VecType preconTableCOI(msb + 1, nativeModulus);
-        for (usint i = 0; i < msb + 1; i++) {
-          preconTableCOI[i] =
-              NativeInteger(
-                  m_cycloOrderInverseTableByModulus[modulus][i].ConvertToInt())
-                  .PrepModMulConst(nativeModulus);
-        }
+      //   VecType preconTableCOI(msb + 1, nativeModulus);
+      //   for (usint i = 0; i < msb + 1; i++) {
+      //     preconTableCOI[i] =
+      //         NativeInteger(
+      //             m_cycloOrderInverseTableByModulus[modulus][i].ConvertToInt())
+      //             .PrepModMulConst(nativeModulus);
+      //   }
 
-        m_rootOfUnityPreconReverseTableByModulus[modulus] = preconTable;
-        m_rootOfUnityInversePreconReverseTableByModulus[modulus] = preconTableI;
-        m_cycloOrderInversePreconTableByModulus[modulus] = preconTableCOI;
-      }
+      //   m_rootOfUnityPreconReverseTableByModulus[modulus] = preconTable;
+      //   m_rootOfUnityInversePreconReverseTableByModulus[modulus] = preconTableI;
+      //   m_cycloOrderInversePreconTableByModulus[modulus] = preconTableCOI;
+      // }
     }
   }
 }

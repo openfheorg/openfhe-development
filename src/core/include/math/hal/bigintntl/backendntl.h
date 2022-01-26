@@ -30,11 +30,15 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
 
-#include "math/hal/bigintntl/mubintvecntl.h"  // rings of such
 #include "math/hal/bigintntl/ubintntl.h"      // experimental gmp unsigned big ints
+#include "math/hal/bigintntl/mubintvecntl.h"  // rings of such
+#include "math/hal/bigintntl/transformntl.h"  // transforms for NTL
 
-using M6Integer = NTL::myZZ;
-using M6Vector = NTL::myVecP<M6Integer>;
+// Global alias for MATHBACKEND 6 Integer
+using M6Integer = NTL::BigInteger;
+
+// Global alias for MATHBACKEND 6 Vector
+using M6Vector  = NTL::BigVector;
 
 #endif // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
 

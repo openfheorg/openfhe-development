@@ -30,7 +30,8 @@
 #include <string>
 #include <vector>
 
-#include "math/hal/bigintfxd/mubintvecfxd.h"
+#include "math/hal/vector.h"
+#include "math/hal/bigintdyn/ubintdyn.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
 
@@ -39,6 +40,13 @@
  * The namespace of bigintdyn
  */
 namespace bigintdyn {
+
+template <class ubint_el_t> class mubintvec;
+
+/** Define the mapping for modulo Big Integer Vector */
+using xmubintvec = mubintvec<BigInteger>;
+using BigVector = xmubintvec;
+
 /**
  * @brief The class for representing vectors of ubint with associated modulo
  * math
@@ -594,6 +602,7 @@ class mubintvec
     return true;
   }
 };
+
 }  // namespace bigintdyn
 
 #endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H

@@ -21,8 +21,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __TRANSFORMNAT_IMPL_H__
-#define __TRANSFORMNAT_IMPL_H__
+#ifndef __TRANSFORMNATHEXL_IMPL_H__
+#define __TRANSFORMNATHEXL_IMPL_H__
 
 // ATTENTION: this file contains implementations of the functions
 //            declared in math/intnathexl/transformnat.h and
@@ -30,9 +30,14 @@
 //            and nowhere else
 #include "utils/exception.h"
 #include "utils/utilities.h"
-#include "math/nbtheory.h"
 #include "utils/defines.h"
-#include "math/hal.h"
+
+#include "math/nbtheory.h"
+#include "math/hal/basicint.h"
+#include "math/hal/intnat/ubintnat.h"
+#include "math/hal/intnat/mubintvecnat.h"
+#include "math/hal/intnat/transformnat.h"
+
 #include "hexl/hexl.hpp"
 
 namespace intnathexl {
@@ -590,37 +595,24 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverseInPla
     PreCompute(rootOfUnity, CycloOrder, modulus);
     reCompute = true;
   }
-
-  if (typeid(IntType) == typeid(NativeInteger)) {
-    if (std::is_same<VecType, NativeVector64>::value) {
-      std::pair<uint64_t, uint64_t> key{element->GetLength(),
-                                        modulus.ConvertToInt()};
-      intel::hexl::NTT *p_ntt;
-      std::unique_lock<std::mutex> lock(m_mtxIntelNTT);
-      auto ntt_it = m_IntelNtt.find(key);
-      if (reCompute || ntt_it == m_IntelNtt.end()) {
-        intel::hexl::NTT ntt(element->GetLength(), modulus.ConvertToInt(),
-                             rootOfUnity.ConvertToInt());
-        m_IntelNtt[key] = std::move(ntt);
-        ntt_it = m_IntelNtt.find(key);
-      }
-      p_ntt = &ntt_it->second;
-      lock.unlock();
-
-      auto *data = reinterpret_cast<uint64_t *>(&element->at(0));
-      p_ntt->ComputeForward(data, data, 1, 1);
-      element->SetModulus(modulus);
-    } else {
-      NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverseInPlace(
-          m_rootOfUnityReverseTableByModulus[modulus],
-          m_rootOfUnityPreconReverseTableByModulus[modulus], element);
-    }
-  } else {
-	  NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverseInPlace(
-	          m_rootOfUnityReverseTableByModulus[modulus], element);
-
-
+  
+  std::pair<uint64_t, uint64_t> key{element->GetLength(),
+                                    modulus.ConvertToInt()};
+  intel::hexl::NTT *p_ntt;
+  std::unique_lock<std::mutex> lock(m_mtxIntelNTT);
+  auto ntt_it = m_IntelNtt.find(key);
+  if (reCompute || ntt_it == m_IntelNtt.end()) {
+    intel::hexl::NTT ntt(element->GetLength(), modulus.ConvertToInt(),
+                          rootOfUnity.ConvertToInt());
+    m_IntelNtt[key] = std::move(ntt);
+    ntt_it = m_IntelNtt.find(key);
   }
+  p_ntt = &ntt_it->second;
+  lock.unlock();
+
+  auto *data = reinterpret_cast<uint64_t *>(&element->at(0));
+  p_ntt->ComputeForward(data, data, 1, 1);
+  element->SetModulus(modulus);
 }
 
 template <typename VecType>
@@ -652,38 +644,26 @@ void ChineseRemainderTransformFTTNat<VecType>::ForwardTransformToBitReverse(
     PreCompute(rootOfUnity, CycloOrder, modulus);
     reCompute = true;
   }
-
-  if (typeid(IntType) == typeid(NativeInteger)) {
-    if (std::is_same<VecType, NativeVector64>::value) {
-      std::pair<uint64_t, uint64_t> key{element.GetLength(),
-                                        modulus.ConvertToInt()};
-      intel::hexl::NTT *p_ntt;
-      std::unique_lock<std::mutex> lock(m_mtxIntelNTT);
-      auto ntt_it = m_IntelNtt.find(key);
-      if (reCompute || ntt_it == m_IntelNtt.end()) {
-        intel::hexl::NTT ntt(element.GetLength(), modulus.ConvertToInt(),
-                             rootOfUnity.ConvertToInt());
-        m_IntelNtt[key] = std::move(ntt);
-        ntt_it = m_IntelNtt.find(key);
-      }
-      p_ntt = &ntt_it->second;
-      lock.unlock();
-
-      const uint64_t *input =
-          reinterpret_cast<const uint64_t *>(&element.at(0));
-      uint64_t *output = reinterpret_cast<uint64_t *>(&result->at(0));
-      p_ntt->ComputeForward(output, input, 1, 1);
-      result->SetModulus(modulus);
-
-    } else {
-      NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverse(
-          element, m_rootOfUnityReverseTableByModulus[modulus],
-          m_rootOfUnityPreconReverseTableByModulus[modulus], result);
-    }
-  } else {
-	NumberTheoreticTransformNat<VecType>().ForwardTransformToBitReverse(
-	          element, m_rootOfUnityReverseTableByModulus[modulus], result);
+  
+  std::pair<uint64_t, uint64_t> key{element.GetLength(),
+                                    modulus.ConvertToInt()};
+  intel::hexl::NTT *p_ntt;
+  std::unique_lock<std::mutex> lock(m_mtxIntelNTT);
+  auto ntt_it = m_IntelNtt.find(key);
+  if (reCompute || ntt_it == m_IntelNtt.end()) {
+    intel::hexl::NTT ntt(element.GetLength(), modulus.ConvertToInt(),
+                          rootOfUnity.ConvertToInt());
+    m_IntelNtt[key] = std::move(ntt);
+    ntt_it = m_IntelNtt.find(key);
   }
+  p_ntt = &ntt_it->second;
+  lock.unlock();
+
+  const uint64_t *input =
+      reinterpret_cast<const uint64_t *>(&element.at(0));
+  uint64_t *output = reinterpret_cast<uint64_t *>(&result->at(0));
+  p_ntt->ComputeForward(output, input, 1, 1);
+  result->SetModulus(modulus);
 
   return;
 }
@@ -719,36 +699,22 @@ void ChineseRemainderTransformFTTNat<
   }
 
   usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
-  if (typeid(IntType) == typeid(NativeInteger)) {
-    if (std::is_same<VecType, NativeVector64>::value) {
-      std::pair<uint64_t, uint64_t> key{element->GetLength(),
-                                        modulus.ConvertToInt()};
-      intel::hexl::NTT *p_ntt;
-      std::unique_lock<std::mutex> lock(m_mtxIntelNTT);
-      auto ntt_it = m_IntelNtt.find(key);
-      if (reCompute || ntt_it == m_IntelNtt.end()) {
-        intel::hexl::NTT ntt(element->GetLength(), modulus.ConvertToInt(),
-                             rootOfUnity.ConvertToInt());
-        m_IntelNtt[key] = std::move(ntt);
-        ntt_it = m_IntelNtt.find(key);
-      }
-      p_ntt = &ntt_it->second;
-      lock.unlock();
-      auto *data = reinterpret_cast<uint64_t *>(&element->at(0));
-      p_ntt->ComputeInverse(data, data, 1, 1);
-      element->SetModulus(modulus);
-    } else {
-      NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
-          m_rootOfUnityInverseReverseTableByModulus[modulus],
-          m_rootOfUnityInversePreconReverseTableByModulus[modulus],
-          m_cycloOrderInverseTableByModulus[modulus][msb],
-          m_cycloOrderInversePreconTableByModulus[modulus][msb], element);
-    }
-  } else {
-	NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
-	          m_rootOfUnityInverseReverseTableByModulus[modulus],
-	          m_cycloOrderInverseTableByModulus[modulus][msb], element);
+  std::pair<uint64_t, uint64_t> key{element->GetLength(),
+                                    modulus.ConvertToInt()};
+  intel::hexl::NTT *p_ntt;
+  std::unique_lock<std::mutex> lock(m_mtxIntelNTT);
+  auto ntt_it = m_IntelNtt.find(key);
+  if (reCompute || ntt_it == m_IntelNtt.end()) {
+    intel::hexl::NTT ntt(element->GetLength(), modulus.ConvertToInt(),
+                          rootOfUnity.ConvertToInt());
+    m_IntelNtt[key] = std::move(ntt);
+    ntt_it = m_IntelNtt.find(key);
   }
+  p_ntt = &ntt_it->second;
+  lock.unlock();
+  auto *data = reinterpret_cast<uint64_t *>(&element->at(0));
+  p_ntt->ComputeInverse(data, data, 1, 1);
+  element->SetModulus(modulus);
 }
 
 template <typename VecType>
@@ -788,38 +754,24 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverse(
   }
 
   usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
-  if (typeid(IntType) == typeid(NativeInteger)) {
-    if (std::is_same<VecType, NativeVector64>::value) {
-      std::pair<uint64_t, uint64_t> key{element.GetLength(),
-                                        modulus.ConvertToInt()};
-      intel::hexl::NTT *p_ntt;
-      std::unique_lock<std::mutex> lock(m_mtxIntelNTT);
-      auto ntt_it = m_IntelNtt.find(key);
-      if (reCompute || ntt_it == m_IntelNtt.end()) {
-        intel::hexl::NTT ntt(element.GetLength(), modulus.ConvertToInt(),
-                             rootOfUnity.ConvertToInt());
-        m_IntelNtt[key] = std::move(ntt);
-        ntt_it = m_IntelNtt.find(key);
-      }
-      p_ntt = &ntt_it->second;
-      lock.unlock();
-      auto *input = reinterpret_cast<const uint64_t *>(&result->at(0));
-      uint64_t *output = reinterpret_cast<uint64_t *>(&result->at(0));
-      p_ntt->ComputeInverse(output, input, 1, 1);
-      result->SetModulus(modulus);
-    } else {
-      NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
-          m_rootOfUnityInverseReverseTableByModulus[modulus],
-          m_rootOfUnityInversePreconReverseTableByModulus[modulus],
-          m_cycloOrderInverseTableByModulus[modulus][msb],
-          m_cycloOrderInversePreconTableByModulus[modulus][msb], result);
-    }
-  } else {
-	NumberTheoreticTransformNat<VecType>().InverseTransformFromBitReverseInPlace(
-	          m_rootOfUnityInverseReverseTableByModulus[modulus],
-	          m_cycloOrderInverseTableByModulus[modulus][msb], result);
+  std::pair<uint64_t, uint64_t> key{element.GetLength(),
+                                    modulus.ConvertToInt()};
+  intel::hexl::NTT *p_ntt;
+  std::unique_lock<std::mutex> lock(m_mtxIntelNTT);
+  auto ntt_it = m_IntelNtt.find(key);
+  if (reCompute || ntt_it == m_IntelNtt.end()) {
+    intel::hexl::NTT ntt(element.GetLength(), modulus.ConvertToInt(),
+                          rootOfUnity.ConvertToInt());
+    m_IntelNtt[key] = std::move(ntt);
+    ntt_it = m_IntelNtt.find(key);
   }
-
+  p_ntt = &ntt_it->second;
+  lock.unlock();
+  auto *input = reinterpret_cast<const uint64_t *>(&result->at(0));
+  uint64_t *output = reinterpret_cast<uint64_t *>(&result->at(0));
+  p_ntt->ComputeInverse(output, input, 1, 1);
+  result->SetModulus(modulus);
+    
   return;
 }
 
@@ -858,36 +810,34 @@ void ChineseRemainderTransformFTTNat<VecType>::PreCompute(
         TableCOI[i] = coInv;
       }
       m_cycloOrderInverseTableByModulus[modulus] = TableCOI;
+      
+      NativeInteger nativeModulus = modulus.ConvertToInt();
+      VecType preconTable(CycloOrderHf, nativeModulus);
+      VecType preconTableI(CycloOrderHf, nativeModulus);
 
-      if (typeid(IntType) == typeid(NativeInteger)) {
-        NativeInteger nativeModulus = modulus.ConvertToInt();
-        VecType preconTable(CycloOrderHf, nativeModulus);
-        VecType preconTableI(CycloOrderHf, nativeModulus);
-
-        for (usint i = 0; i < CycloOrderHf; i++) {
-          preconTable[i] =
-              NativeInteger(
-                  m_rootOfUnityReverseTableByModulus[modulus][i].ConvertToInt())
-                  .PrepModMulConst(nativeModulus);
-          preconTableI[i] =
-              NativeInteger(
-                  m_rootOfUnityInverseReverseTableByModulus[modulus][i]
-                      .ConvertToInt())
-                  .PrepModMulConst(nativeModulus);
-        }
-
-        VecType preconTableCOI(msb + 1, nativeModulus);
-        for (usint i = 0; i < msb + 1; i++) {
-          preconTableCOI[i] =
-              NativeInteger(
-                  m_cycloOrderInverseTableByModulus[modulus][i].ConvertToInt())
-                  .PrepModMulConst(nativeModulus);
-        }
-
-        m_rootOfUnityPreconReverseTableByModulus[modulus] = preconTable;
-        m_rootOfUnityInversePreconReverseTableByModulus[modulus] = preconTableI;
-        m_cycloOrderInversePreconTableByModulus[modulus] = preconTableCOI;
+      for (usint i = 0; i < CycloOrderHf; i++) {
+        preconTable[i] =
+            NativeInteger(
+                m_rootOfUnityReverseTableByModulus[modulus][i].ConvertToInt())
+                .PrepModMulConst(nativeModulus);
+        preconTableI[i] =
+            NativeInteger(
+                m_rootOfUnityInverseReverseTableByModulus[modulus][i]
+                    .ConvertToInt())
+                .PrepModMulConst(nativeModulus);
       }
+
+      VecType preconTableCOI(msb + 1, nativeModulus);
+      for (usint i = 0; i < msb + 1; i++) {
+        preconTableCOI[i] =
+            NativeInteger(
+                m_cycloOrderInverseTableByModulus[modulus][i].ConvertToInt())
+                .PrepModMulConst(nativeModulus);
+      }
+
+      m_rootOfUnityPreconReverseTableByModulus[modulus] = preconTable;
+      m_rootOfUnityInversePreconReverseTableByModulus[modulus] = preconTableI;
+      m_cycloOrderInversePreconTableByModulus[modulus] = preconTableCOI;
     }
   }
 }

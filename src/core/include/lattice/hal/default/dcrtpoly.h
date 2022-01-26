@@ -36,7 +36,7 @@
 #include "utils/exception.h"
 
 #include "lattice/ildcrtparams.h"
-#include "lattice/dcrtpolyinterface.h"
+#include "lattice/hal/dcrtpoly-interface.h"
 #include "math/distrgen.h"
 
 namespace lbcrypto {

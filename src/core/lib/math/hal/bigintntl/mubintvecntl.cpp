@@ -631,8 +631,8 @@ myVecP<myT> myVecP<myT>::GetDigitAtIndexForBase(size_t index,
   return ans;
 }
 
-}  // namespace NTL
+template class myVecP<myZZ>;
 
-template class NTL::myVecP<NTL::myZZ>;
+}  // namespace NTL
 
 #endif
