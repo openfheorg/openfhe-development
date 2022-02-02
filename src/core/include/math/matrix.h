@@ -675,8 +675,8 @@ class Matrix : public Serializable {
 
  private:
   data_t data;
-  size_t rows;
-  size_t cols;
+  uint32_t rows;
+  uint32_t cols;
   alloc_func allocZero;
   // mutable int NUM_THREADS = 1;
 

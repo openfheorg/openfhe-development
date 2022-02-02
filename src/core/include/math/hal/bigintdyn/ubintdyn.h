@@ -931,7 +931,7 @@ class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
       result = (T)m_value[0];
     } else {
       // Case where limb_t is less bits than uint64_t
-      size_t msbTest = sizeof(T) * 8;
+      uint32_t msbTest = sizeof(T) * 8;
       if (msbTest > m_MSB) {
         msbTest = m_MSB;
       }
@@ -1229,7 +1229,7 @@ class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
 
  private:
   // variable that stores the MOST SIGNIFICANT BIT position in the
-  size_t m_MSB;
+  uint32_t m_MSB;
 
   // variable to store the bitlength of the limb data type.
   static const usint m_limbBitLength;

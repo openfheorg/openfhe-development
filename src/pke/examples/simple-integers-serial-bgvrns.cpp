@@ -186,7 +186,7 @@ int main() {
   std::cout << "The second ciphertext has been serialized." << std::endl;
 
   if (!Serial::SerializeToFile(DATAFOLDER + "/" + "ciphertext3.txt",
-                               ciphertext1, SerType::BINARY)) {
+                               ciphertext3, SerType::BINARY)) {
     std::cerr
         << "Error writing serialization of ciphertext 3 to ciphertext3.txt"
         << std::endl;
@@ -261,7 +261,7 @@ int main() {
   std::cout << "The first ciphertext has been deserialized." << std::endl;
 
   Ciphertext<DCRTPoly> ct2;
-  if (Serial::DeserializeFromFile(DATAFOLDER + "/ciphertext1.txt", ct2,
+  if (Serial::DeserializeFromFile(DATAFOLDER + "/ciphertext2.txt", ct2,
                                   SerType::BINARY) == false) {
     std::cerr << "Could not read the ciphertext" << std::endl;
     return 1;
@@ -269,7 +269,7 @@ int main() {
   std::cout << "The second ciphertext has been deserialized." << std::endl;
 
   Ciphertext<DCRTPoly> ct3;
-  if (Serial::DeserializeFromFile(DATAFOLDER + "/ciphertext1.txt", ct3,
+  if (Serial::DeserializeFromFile(DATAFOLDER + "/ciphertext3.txt", ct3,
                                   SerType::BINARY) == false) {
     std::cerr << "Could not read the ciphertext" << std::endl;
     return 1;

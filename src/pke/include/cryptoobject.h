@@ -165,8 +165,12 @@ class CryptoObject {
     ar(::cereal::make_nvp("kt", keyTag));
 
     context = CryptoContextFactory<Element>::GetContext(
-        context->GetCryptoParameters(), context->GetScheme());
+        context->GetCryptoParameters(),
+        context->GetScheme(),
+        context->getSchemeId()
+        );
   }
+
 
   std::string SerializedObjectName() const { return "CryptoObject"; }
   static uint32_t SerializedVersion() { return 1; }

@@ -102,7 +102,7 @@ class CryptoContextImpl : public Serializable {
 
   string m_schemeId;
 
-  size_t m_keyGenLevel;
+  uint32_t m_keyGenLevel;
 
   /**
    * TypeCheck makes sure that an operation between two ciphertexts is permitted

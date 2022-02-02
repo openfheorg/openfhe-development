@@ -126,6 +126,19 @@ push_trapdoor:
     strategy: depend
   needs: [define_vars]
 
+push_wasm:
+  only:
+    refs:
+      - master
+  variables:
+    UPSTREAM_BRANCH_REF: $CI_COMMIT_REF_NAME
+  stage: downstream
+  trigger:
+    project: palisade/palisade-wasm
+    branch: master
+    strategy: depend
+  needs: [define_vars]
+
 push_abe_manual:
   only:
     variables:
@@ -164,6 +177,34 @@ push_trapdoor_manual:
     branch: master
     strategy: depend
   needs: [define_vars]
+
+push_wasm_manual:
+  only:
+    variables:
+      - $DOWNSTREAM_TESTER
+  variables:
+    UPSTREAM_BRANCH_REF: $CI_COMMIT_REF_NAME
+  stage: downstream
+  trigger:
+    project: palisade/palisade-wasm
+    branch: master
+    strategy: depend
+  needs: [define_vars]
+
+build_emscripten:
+  stage: build
+  only:
+    refs:
+      - master
+      - merge_requests
+  script:
+    - pwd
+    - source /home/ubuntu/emsdk/emsdk_env.sh
+    - mkdir -p build
+    - cd build
+    - emcmake cmake ${CMAKE_ARGS} -DBUILD_UNITTESTS=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXTRAS=OFF -DBUILD_EXAMPLES=OFF ..
+    - emmake make -j $(nproc) all
+  dependencies: []
 
 
 noflag_mb4_build:

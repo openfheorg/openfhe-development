@@ -543,15 +543,15 @@ class CiphertextImpl : public CryptoObject<Element> {
 
   std::vector<Element>
       m_elements;  /*!< vector of ring elements for this Ciphertext */
-  size_t m_depth;  // holds the multiplicative depth of the ciphertext.
+  uint32_t m_depth;  // holds the multiplicative depth of the ciphertext.
   PlaintextEncodings encodingType; /*!< how was this Ciphertext encoded? */
 
   double m_scalingFactor;
   NativeInteger m_scalingFactorInt;
-  size_t m_level;  // holds the number of rescalings performed before getting
+  uint32_t m_level;  // holds the number of rescalings performed before getting
                    // this ciphertext - initially 0
 
-  size_t m_hopslevel;  // Parameter for re-encryption to store the number of
+  uint32_t m_hopslevel;  // Parameter for re-encryption to store the number of
                        // times the ciphertext has been re-encrypted.
   // A map to hold different Metadata objects - used for flexible extensions of
   // Ciphertext

@@ -382,7 +382,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   // maximum depth support of a ciphertext without keyswitching
   // corresponds to the highest power of secret key for which evaluation keys
   // are genererated
-  size_t m_maxDepth;
+  uint32_t m_maxDepth;
   // specifies whether the secret polynomials are generated from discrete
   // Gaussian distribution or ternary distribution with the norm of unity
   MODE m_mode;

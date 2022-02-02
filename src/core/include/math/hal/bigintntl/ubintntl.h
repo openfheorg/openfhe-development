@@ -971,7 +971,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
                           void>::type
   save(Archive &ar, std::uint32_t const version) const {
     void *data = this->rep.rep;
-    size_t len = 0;
+    ::cereal::size_type len = 0;
     if (data == nullptr) {
       ar(::cereal::binary_data(&len, sizeof(len)));
     } else {
@@ -999,7 +999,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
-    size_t len;
+    ::cereal::size_type len;
     ar(::cereal::binary_data(&len, sizeof(len)));
     if (len == 0) {
       *this = 0;
@@ -1047,7 +1047,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
   // todo: rename to MSB2NLimbs()
   static usint ceilIntByUInt(const ZZ_limb_t Number);
 
-  mutable size_t m_MSB;
+  mutable ::cereal::size_type m_MSB;
   usint GetMSBLimb_t(ZZ_limb_t x) const;
 };
 // class ends

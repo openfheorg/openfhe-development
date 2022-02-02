@@ -30,6 +30,10 @@
 // a string
 #define STR_EXPAND(tok) #tok
 #define STR(tok) STR_EXPAND(tok)
+#ifndef PALISADE_VERSION
+#define PALISADE_VERSION BASE_PALISADE_VERSION
+#endif
+
 
 /**
  * GetPALISADEVersion - Returns PALISADE Version string

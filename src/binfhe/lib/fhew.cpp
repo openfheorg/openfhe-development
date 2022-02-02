@@ -352,9 +352,13 @@ void RingGSWAccumulatorScheme::AddToACCAP(
 }
 
 // GINX Accumulation as described in "Bootstrapping in FHEW-like Cryptosystems"
+// Added ternary MUX introduced in paper https://eprint.iacr.org/2022/074.pdf section 5
+// We optimize the algorithm by multiplying the monomial after the external product
+// This reduces the number of polynomial multiplications which further reduces the runtime
 void RingGSWAccumulatorScheme::AddToACCGINX(
     const std::shared_ptr<RingGSWCryptoParams> params,
-    const RingGSWCiphertext &input, const NativeInteger &a,
+    const RingGSWCiphertext &input1, const RingGSWCiphertext &input2, 
+    const NativeInteger &a,
     std::shared_ptr<RingGSWCiphertext> acc) const {
   // cycltomic order
   uint32_t m = 2 * params->GetLWEParams()->GetN();
@@ -376,24 +380,39 @@ void RingGSWAccumulatorScheme::AddToACCGINX(
 
   for (uint32_t j = 0; j < digitsG2; j++) dct[j].SetFormat(Format::EVALUATION);
 
+  // First obtain both monomial(index) for sk = 1 and monomial(-index) for sk = -1
+  auto aNeg = params->GetLWEParams()->Getq().ModSub(a, q);
   uint64_t index = a.ConvertToInt() * (m / q);
+  uint64_t indexNeg = aNeg.ConvertToInt() * (m / q);
   // index is in range [0,m] - so we need to adjust the edge case when
   // index = m to index = 0
   if (index == m) index = 0;
+  if (indexNeg == m) indexNeg = 0;
   const NativePoly &monomial = params->GetMonomial(index);
+  const NativePoly &monomialNeg = params->GetMonomial(indexNeg);
 
-  // acc = dct * input (matrix product);
+  // acc = acc + dct * input1 * monomial + dct * input2 * negative_monomial;
   // uses in-place * operators for the last call to dct[i] to gain performance
-  // improvement
+  // improvement. Needs to be done using two loops for ternary secrets.
   for (uint32_t j = 0; j < 2; j++) {
-    NativePoly temp1 = (j < 1) ? dct[0] * input[0][j] : (dct[0] *= input[0][j]);
+    NativePoly temp1 = (j < 1) ? dct[0] * input1[0][j]: (dct[0] * input1[0][j]);
     for (uint32_t l = 1; l < digitsG2; l++) {
       if (j == 0)
-        temp1 += dct[l] * input[l][j];
+        temp1 += dct[l] * input1[l][j];
       else
-        temp1 += (dct[l] *= input[l][j]);
+        temp1 += (dct[l] * input1[l][j]);
     }
-    (*acc)[0][j] += (temp1 *= monomial);
+    (*acc)[0][j] += (temp1 * monomial);
+  }
+  for (uint32_t j = 0; j < 2; j++) {
+    NativePoly temp1 = (j < 1) ? dct[0] * input2[0][j]: (dct[0] * input2[0][j]);
+    for (uint32_t l = 1; l < digitsG2; l++) {
+      if (j == 0)
+        temp1 += dct[l] * input2[l][j];
+      else
+        temp1 += (dct[l] * input2[l][j]);
+    }
+    (*acc)[0][j] += (temp1 * monomialNeg);
   }
 }
 
@@ -463,10 +482,8 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
     }
   } else {  // if GINX
     for (uint32_t i = 0; i < n; i++) {
-      // handles -a*E(1)
-      this->AddToACCGINX(params, (*EK.BSkey)[0][0][i], q.ModSub(a[i], q), acc);
-      // handles -a*E(-1) = a*E(1)
-      this->AddToACCGINX(params, (*EK.BSkey)[0][1][i], a[i], acc);
+      // handles -a*E(1) and handles -a*E(-1) = a*E(1)
+      this->AddToACCGINX(params, (*EK.BSkey)[0][0][i], (*EK.BSkey)[0][1][i], q.ModSub(a[i], q), acc);
     }
   }
 

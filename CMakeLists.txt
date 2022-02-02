@@ -27,7 +27,7 @@ project (PALISADE C CXX)
 
 set(PALISADE_VERSION_MAJOR 1)
 set(PALISADE_VERSION_MINOR 11)
-set(PALISADE_VERSION_PATCH 5)
+set(PALISADE_VERSION_PATCH 6)
 set(PALISADE_VERSION ${PALISADE_VERSION_MAJOR}.${PALISADE_VERSION_MINOR}.${PALISADE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -237,6 +237,24 @@ set (CMAKE_INSTALL_MESSAGE LAZY)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+#--------------------------------------------------------------------
+# Uninstall logic
+#--------------------------------------------------------------------
+## clobber cleans and deletes the third-party stuff
+add_custom_target(
+        COMMAND make clean
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+add_custom_target("uninstall" COMMENT "Uninstall PALISADE files")
+add_custom_command(
+        TARGET "uninstall"
+        POST_BUILD
+        COMMENT "Uninstall files within install_manifest.txt"
+        COMMAND ../maint/uninstall_script.sh
+        USES_TERMINAL
+)
+
 
 #--------------------------------------------------------------------
 # Machine-specific checks
