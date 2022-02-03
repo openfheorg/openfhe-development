@@ -30,15 +30,13 @@
 
 #include "gtest/gtest.h"
 
-#include "lattice/backend.h"
-#include "math/backend.h"
+#include "lattice/lat-hal.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
 #include "utils/debug.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-#include "lattice/dcrtpoly.h"
 #include "testdefs.h"
 
 using namespace std;

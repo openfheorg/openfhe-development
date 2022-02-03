@@ -35,7 +35,7 @@
 
 #include "vechelper.h"
 
-#include "lattice/dcrtpoly.cpp"
+#include "lattice/hal/default/dcrtpoly.cpp"
 #include "lattice/elemparamfactory.h"
 #include "lattice/elemparams.cpp"
 #include "lattice/ildcrtparams.cpp"
@@ -44,7 +44,7 @@
 #include "math/discretegaussiangenerator.cpp"
 #include "math/discreteuniformgenerator.cpp"
 #include "math/nbtheory.cpp"
-#include "math/transform.h"
+#include "math/hal.h"
 
 using namespace std;
 using namespace lbcrypto;

@@ -48,6 +48,7 @@
 #include "utils/debug.h"
 
 #include "lib-hexl-util.h"
+#include "math/hal.h"
 
 using namespace std;
 using namespace lbcrypto;
@@ -147,7 +148,7 @@ void BFVrns_KeyGen(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   while (state.KeepRunning()) {
     keyPair = cc->KeyGen();
@@ -160,7 +161,7 @@ void BFVrns_MultKeyGen(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
   keyPair = cc->KeyGen();
 
   while (state.KeepRunning()) {
@@ -174,7 +175,7 @@ void BFVrns_EvalAtIndexKeyGen(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
   keyPair = cc->KeyGen();
 
   std::vector<int32_t> indexList(1);
@@ -193,7 +194,7 @@ void BFVrns_Encryption(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   Plaintext plaintext1 = cc->MakePackedPlaintext(vectorOfInts1);
@@ -209,7 +210,7 @@ void BFVrns_Decryption(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   Plaintext plaintext1 = cc->MakePackedPlaintext(vectorOfInts1);
@@ -228,7 +229,7 @@ void BFVrns_Add(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   std::vector<int64_t> vectorOfInts2 = {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -250,7 +251,7 @@ void BFVrns_AddInPlace(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   std::vector<int64_t> vectorOfInts2 = {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -272,7 +273,7 @@ void BFVrns_AddPlain(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   Plaintext plaintext1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
@@ -293,7 +294,7 @@ void BFVrns_Negate(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   Plaintext plaintext1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
@@ -311,7 +312,7 @@ void BFVrns_Sub(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   std::vector<int64_t> vectorOfInts2 = {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -333,7 +334,7 @@ void BFVrns_SubPlain(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   Plaintext plaintext1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
@@ -354,7 +355,7 @@ void BFVrns_MultNoRelin(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   Plaintext plaintext1 = cc->MakePackedPlaintext(vectorOfInts1);
@@ -376,7 +377,7 @@ void BFVrns_MultRelin(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
@@ -399,7 +400,7 @@ void BFVrns_MultPlain(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
@@ -421,7 +422,7 @@ void BFVrns_EvalAtIndex(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int32_t> indexList(1);
@@ -457,7 +458,7 @@ void CKKS_KeyGen(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   while (state.KeepRunning()) {
     keyPair = cc->KeyGen();
@@ -470,7 +471,7 @@ void CKKS_MultKeyGen(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
   keyPair = cc->KeyGen();
 
   while (state.KeepRunning()) {
@@ -484,7 +485,7 @@ void CKKS_EvalAtIndexKeyGen(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
   keyPair = cc->KeyGen();
 
   std::vector<int32_t> indexList(1);
@@ -503,7 +504,7 @@ void CKKS_Encryption(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
   std::vector<std::complex<double>> vectorOfInts(slots);
@@ -524,7 +525,7 @@ void CKKS_Decryption(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
   std::vector<std::complex<double>> vectorOfInts1(slots);
@@ -549,7 +550,7 @@ void CKKS_Add(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
   std::vector<std::complex<double>> vectorOfInts1(slots);
@@ -578,7 +579,7 @@ void CKKS_AddInPlace(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
   std::vector<std::complex<double>> vectorOfInts1(slots);
@@ -607,7 +608,7 @@ void CKKS_AddPlain(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
   std::vector<std::complex<double>> vectorOfInts1(slots);
@@ -635,7 +636,7 @@ void CKKS_Negate(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
   std::vector<std::complex<double>> vectorOfInts1(slots);
@@ -657,7 +658,7 @@ void CKKS_Sub(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
   std::vector<std::complex<double>> vectorOfInts1(slots);
@@ -686,7 +687,7 @@ void CKKS_SubPlain(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
   std::vector<std::complex<double>> vectorOfInts1(slots);
@@ -714,7 +715,7 @@ void CKKS_MultNoRelin(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
   std::vector<std::complex<double>> vectorOfInts1(slots);
@@ -743,7 +744,7 @@ void CKKS_MultRelin(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
@@ -773,7 +774,7 @@ void CKKS_MultPlain(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
@@ -802,7 +803,7 @@ void CKKS_Relin(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
@@ -834,7 +835,7 @@ void CKKS_Rescale(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
@@ -866,7 +867,7 @@ void CKKS_RescaleInPlace(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   usint slots = cc->GetEncodingParams()->GetBatchSize();
@@ -894,7 +895,7 @@ void CKKS_EvalAtIndex(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateCKKSContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int32_t> indexList(1);
@@ -937,7 +938,7 @@ void BGVrns_KeyGen(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   while (state.KeepRunning()) {
     keyPair = cc->KeyGen();
@@ -950,7 +951,7 @@ void BGVrns_MultKeyGen(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
   keyPair = cc->KeyGen();
 
   while (state.KeepRunning()) {
@@ -964,7 +965,7 @@ void BGVrns_EvalAtIndexKeyGen(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
   keyPair = cc->KeyGen();
 
   std::vector<int32_t> indexList(1);
@@ -983,7 +984,7 @@ void BGVrns_Encryption(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
@@ -999,7 +1000,7 @@ void BGVrns_Decryption(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   Plaintext plaintext = cc->MakePackedPlaintext(vectorOfInts);
@@ -1020,7 +1021,7 @@ void BGVrns_Add(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   std::vector<int64_t> vectorOfInts2 = {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -1042,7 +1043,7 @@ void BGVrns_AddInPlace(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   std::vector<int64_t> vectorOfInts2 = {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -1064,7 +1065,7 @@ void BGVrns_AddPlain(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   std::vector<int64_t> vectorOfInts2 = {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -1085,7 +1086,7 @@ void BGVrns_Negate(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
 
@@ -1104,7 +1105,7 @@ void BGVrns_Sub(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   std::vector<int64_t> vectorOfInts2 = {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -1126,7 +1127,7 @@ void BGVrns_SubPlain(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   std::vector<int64_t> vectorOfInts2 = {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -1147,7 +1148,7 @@ void BGVrns_MultNoRelin(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   std::vector<int64_t> vectorOfInts2 = {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -1169,7 +1170,7 @@ void BGVrns_MultRelin(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
@@ -1192,7 +1193,7 @@ void BGVrns_MultPlain(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   std::vector<int64_t> vectorOfInts2 = {0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1};
@@ -1213,7 +1214,7 @@ void BGVrns_Relin(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
@@ -1238,7 +1239,7 @@ void BGVrns_ModSwitch(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
@@ -1263,7 +1264,7 @@ void BGVrns_ModSwitchInPlace(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
@@ -1287,7 +1288,7 @@ void BGVrns_EvalAtIndex(benchmark::State &state) {
   CryptoContext<DCRTPoly> cc =
       GenerateBGVrnsContext(state.range(0), state.range(1));
 
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int32_t> indexList(1);

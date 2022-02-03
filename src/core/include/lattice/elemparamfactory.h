@@ -32,7 +32,7 @@ using std::string;
 
 #include "lattice/ildcrtparams.h"
 #include "lattice/ilparams.h"
-#include "math/backend.h"
+#include "math/hal.h"
 #include "utils/parmfactory.h"
 
 namespace lbcrypto {

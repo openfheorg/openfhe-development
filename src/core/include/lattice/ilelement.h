@@ -27,7 +27,7 @@
 
 #include <vector>
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 #include "utils/inttypes.h"
@@ -195,8 +195,7 @@ class ILElement : public Serializable {
    * @param &element is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
-  virtual Element Times(
-      bigintnat::NativeInteger::SignedNativeInt element) const = 0;
+  virtual Element Times(NativeInteger::SignedNativeInt element) const = 0;
 
   /**
    * @brief Performs an addition operation and returns the result.

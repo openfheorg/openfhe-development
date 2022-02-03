@@ -30,10 +30,12 @@
 #include <iomanip>
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
-#include "scheme/ckks/ckks-ser.h"
-#include "pubkeylp-ser.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
 #include <tuple>
 #include <unistd.h>
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "gen-cryptocontext.h"
+
 using namespace lbcrypto;
 
 /////////////////////////////////////////////////////////////////
@@ -84,19 +86,23 @@ void demarcate(const std::string &msg) {
  * @param batchSize - batch size to use
  * @return Tuple<cryptoContext, keyPair>
  */
-std::tuple<CryptoContext<DCRTPoly>, LPKeyPair<DCRTPoly>, int>
+std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int>
 serverSetupAndWrite(int multDepth, int scaleFactorBits, int batchSize) {
-  CryptoContext<DCRTPoly> serverCC =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-          multDepth, scaleFactorBits, batchSize);
 
-  serverCC->Enable(ENCRYPTION);
-  serverCC->Enable(SHE);
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetMultiplicativeDepth(multDepth);
+    parameters.SetScalingFactorBits(scaleFactorBits);
+    parameters.SetBatchSize(batchSize);
+
+    CryptoContext<DCRTPoly> serverCC = GenCryptoContext(parameters);
+
+  serverCC->Enable(PKE);
+  serverCC->Enable(KEYSWITCH);
   serverCC->Enable(LEVELEDSHE);
 
   std::cout << "Cryptocontext generated" << std::endl;
 
-  LPKeyPair<DCRTPoly> serverKP = serverCC->KeyGen();
+  KeyPair<DCRTPoly> serverKP = serverCC->KeyGen();
   std::cout << "Keypair generated" << std::endl;
 
   serverCC->EvalMultKeyGen(serverKP.secretKey);
@@ -227,9 +233,9 @@ void clientProcess() {
   }
   std::cout << "Client CC deserialized";
 
-  LPKeyPair<DCRTPoly> clientKP;  // We do NOT have a secret key. The client
+  KeyPair<DCRTPoly> clientKP;  // We do NOT have a secret key. The client
   // should not have access to this
-  LPPublicKey<DCRTPoly> clientPublicKey;
+  PublicKey<DCRTPoly> clientPublicKey;
   if (!Serial::DeserializeFromFile(DATAFOLDER + pubKeyLocation, clientPublicKey,
                                    SerType::BINARY)) {
     std::cerr << "I cannot read serialized data from: " << DATAFOLDER
@@ -321,7 +327,7 @@ void clientProcess() {
  */
 
 std::tuple<Plaintext, Plaintext, Plaintext, Plaintext, Plaintext>
-serverVerification(CryptoContext<DCRTPoly> &cc, LPKeyPair<DCRTPoly> &kp,
+serverVerification(CryptoContext<DCRTPoly> &cc, KeyPair<DCRTPoly> &kp,
                    int vectorSize) {
   Ciphertext<DCRTPoly> serverCiphertextFromClient_Mult;
   Ciphertext<DCRTPoly> serverCiphertextFromClient_Add;

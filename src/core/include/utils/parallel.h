@@ -25,7 +25,7 @@
 #define SRC_CORE_LIB_UTILS_PARALLEL_H_
 
 #ifdef PARALLEL
-#include "omp.h"
+#include <omp.h>
 #endif
 // #include <iostream>
 namespace lbcrypto {

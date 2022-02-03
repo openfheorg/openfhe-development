@@ -1,3 +1,7 @@
+// This file is included only if WITH_NTL is set to ON in CMakeLists.txt
+#include "config_core.h"
+#ifdef WITH_NTL
+
 // @file be6-poly-impl.cpp This file contains template instantiations for all
 // classes using math be6
 // @author TPOC: contact@palisade-crypto.org
@@ -21,10 +25,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "math/backend.h"
-#ifdef WITH_NTL
-
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "math/matrix.cpp"
 #include "matrix-lattice-impl.cpp"
 
@@ -40,10 +41,6 @@ template class PolyImpl<M6Vector>;
 // template class DCRTPolyImpl<M6Vector>;
 
 template class Matrix<M6Poly>;
-ONES_FOR_TYPE(M6Poly)
-IDENTITY_FOR_TYPE(M6Poly)
-GADGET_FOR_TYPE(M6Poly)
-NORM_FOR_TYPE(M6Poly)
 SPLIT64_FOR_TYPE(M6Poly)
 SPLIT64ALT_FOR_TYPE(M6Poly)
 SPLIT32ALT_FOR_TYPE(M6Poly)
@@ -51,10 +48,6 @@ template Matrix<M6Vector> RotateVecResult(Matrix<M6Poly> const& inMat);
 template Matrix<M6Integer> Rotate(Matrix<M6Poly> const& inMat);
 
 template class Matrix<M6DCRTPoly>;
-ONES_FOR_TYPE(M6DCRTPoly)
-IDENTITY_FOR_TYPE(M6DCRTPoly)
-GADGET_FOR_TYPE_DCRT(M6DCRTPoly)
-NORM_FOR_TYPE(M6DCRTPoly)
 SPLIT64_FOR_TYPE(M6DCRTPoly)
 SPLIT64ALT_FOR_TYPE(M6DCRTPoly)
 SPLIT32ALT_FOR_TYPE(M6DCRTPoly)
@@ -82,4 +75,4 @@ CEREAL_CLASS_VERSION(lbcrypto::M6Poly, lbcrypto::M6Poly::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M6DCRTPoly,
                      lbcrypto::M6DCRTPoly::SerializedVersion());
 
-#endif
+#endif // WITH_NTL

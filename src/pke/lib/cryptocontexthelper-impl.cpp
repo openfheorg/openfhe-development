@@ -22,12 +22,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "palisade.h"
-
-#include "cryptocontext.h"
-#include "cryptocontextgen.h"
-#include "cryptocontexthelper.h"
 #include "utils/parmfactory.h"
+#include "cryptocontext.h"
+#include "cryptocontexthelper.h"
+#include "cryptocontextfactory.h"
 
 namespace lbcrypto {
 
@@ -64,15 +62,7 @@ static CryptoContext<Element> buildContextFromSerialized(
     return 0;
   }
 
-  if (parmtype == "BFV") {
-    if (!getValueForName(s, "plaintextModulus", plaintextModulus) ||
-        !getValueForName(s, "securityLevel", secLevel))
-      return 0;
-
-    return CryptoContextFactory<Element>::genCryptoContextBFV(
-        stoul(plaintextModulus), stof(secLevel), 2, 4, 0, 1, 0);
-
-  } else if (parmtype == "BFVrns") {
+  if (parmtype == "BFVrns") {
     if (!getValueForName(s, "plaintextModulus", plaintextModulus) ||
         !getValueForName(s, "securityLevel", secLevel))
       return 0;
@@ -85,7 +75,7 @@ static CryptoContext<Element> buildContextFromSerialized(
         !getValueForName(s, "securityLevel", secLevel))
       return 0;
 
-    return CryptoContextFactory<Element>::genCryptoContextBFVrnsB(
+    return CryptoContextFactory<Element>::genCryptoContextBFVrns(
         stoul(plaintextModulus), stof(secLevel), 4, 0, 1, 0);
 
   } else if (parmtype == "CKKS") {
@@ -101,77 +91,16 @@ static CryptoContext<Element> buildContextFromSerialized(
         std::make_shared<EncodingParamsImpl>(stoul(scaleExp)));
     encodingParams->SetBatchSize(stoul(batchSize));
 
-    return CryptoContextFactory<Element>::genCryptoContextCKKS(
+    return CryptoContextFactory<Element>::genCryptoContextCKKSrns(
         parms, encodingParams, stoul(relinWindow), stof(stDev), OPTIMIZED, 1,
         stoul(numPrimes));
 
-  } else if (parmtype == "Null") {
-    if (!getValueForName(s, "plaintextModulus", plaintextModulus)) {
-      return 0;
-    }
-
-    auto ptm = stoul(plaintextModulus);
-    return CryptoContextFactory<Element>::genCryptoContextNull(
-        parms->GetCyclotomicOrder(), ptm);
   } else {
     PALISADE_THROW(config_error, "Unrecognized parmtype " + parmtype +
                                      " in buildContextFromSerialized");
   }
 
   return 0;
-}
-
-CryptoContext<Poly> CryptoContextHelper::getNewContext(const string& parmset,
-                                                       EncodingParams ep) {
-  using ParmType = typename Poly::Params;
-  using IntType = typename Poly::Integer;
-
-  std::string parmtype;
-  std::string ring;
-  std::string modulus;
-  std::string rootOfUnity;
-  std::string scaleExp;
-
-  map<string, map<string, string>>::iterator it =
-      CryptoContextParameterSets.find(parmset);
-
-  if (it == CryptoContextParameterSets.end()) {
-    return 0;
-  }
-
-  if (!getValueForName(it->second, "parameters", parmtype)) {
-    std::cerr << "parameters element is missing" << std::endl;
-    return 0;
-  }
-
-  // BFV uses parm generation so we skip this code for BFV
-  shared_ptr<ParmType> parms;
-  if ((parmtype != "BFV") && (parmtype != "BFVrns") &&
-      (parmtype != "BFVrnsB")) { /* For all schemes besides BFV */
-    if ((parmtype == "CKKS")) {  /* For CKKS */
-      if (!getValueForName(it->second, "cyclotomicOrder", ring) ||
-          !getValueForName(it->second, "scaleExponent", scaleExp)) {
-        return 0;
-      }
-
-      NativeInteger q = FirstPrime<NativeInteger>(stoul(scaleExp), stoul(ring));
-      NativeInteger rootOfUnity = RootOfUnity<NativeInteger>(stoul(ring), q);
-
-      parms = std::make_shared<ParmType>(stoul(ring), IntType(q),
-                                         IntType(rootOfUnity));
-    } else { /* All other schemes */
-      if (!getValueForName(it->second, "ring", ring) ||
-          !getValueForName(it->second, "modulus", modulus) ||
-          !getValueForName(it->second, "rootOfUnity", rootOfUnity)) {
-        return 0;
-      }
-
-      parms = std::make_shared<ParmType>(stoul(ring), IntType(modulus),
-                                         IntType(rootOfUnity));
-    }
-  }
-
-  return buildContextFromSerialized<Poly>(it->second, parms, ep);
 }
 
 CryptoContext<DCRTPoly> CryptoContextHelper::getNewDCRTContext(
@@ -208,22 +137,22 @@ CryptoContext<DCRTPoly> CryptoContextHelper::getNewDCRTContext(
 }
 
 template <typename Element>
-shared_ptr<LPPublicKeyEncryptionScheme<Element>> CreateSchemeGivenName(
+shared_ptr<SchemeBase<Element>> CreateSchemeGivenName(
     const string& schemeName) {
-  if (schemeName == "BFV")
-    return std::make_shared<LPPublicKeyEncryptionSchemeBFV<Element>>();
-
-  // return std::make_shared<LPPublicKeyEncryptionSchemeBFVrns<Element>>();
-  // return std::make_shared<LPPublicKeyEncryptionSchemeBFVrnsB<Element>>();
-  // return std::make_shared<LPPublicKeyEncryptionSchemeLElementV<Element>>();
-  // return std::make_shared<LPPublicKeyEncryptionSchemeNull<Element>>();
-  // return std::make_shared<LPPublicKeyEncryptionSchemeBFV<Element>>();
-  // return std::make_shared<LPPublicKeyEncryptionSchemeBFVrns<Element>>();
-  // return std::make_shared<LPPublicKeyEncryptionSchemeBFVrnsB<Element>>();
-  //  };
-  //
-  //  return SchemeFromName[schemeName];
-  else
+//  if (schemeName == "BFVrns")
+//    return std::make_shared<SchemeBFVRNS>();
+//
+//  // return std::make_shared<PublicKeyEncryptionSchemeBFVrns<Element>>();
+//  // return std::make_shared<PublicKeyEncryptionSchemeBFVrnsB<Element>>();
+//  // return std::make_shared<PublicKeyEncryptionSchemeLElementV<Element>>();
+//  // return std::make_shared<PublicKeyEncryptionSchemeNull<Element>>();
+//  // return std::make_shared<PublicKeyEncryptionSchemeBFV<Element>>();
+//  // return std::make_shared<PublicKeyEncryptionSchemeBFVrns<Element>>();
+//  // return std::make_shared<PublicKeyEncryptionSchemeBFVrnsB<Element>>();
+//  //  };
+//  //
+//  //  return SchemeFromName[schemeName];
+//  else
     return 0;
 }
 

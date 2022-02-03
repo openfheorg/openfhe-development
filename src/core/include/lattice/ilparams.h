@@ -28,7 +28,7 @@
 #include <string>
 
 #include "lattice/elemparams.h"
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/nbtheory.h"
 #include "utils/inttypes.h"
 

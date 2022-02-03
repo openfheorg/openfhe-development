@@ -29,8 +29,10 @@
 // header files needed for serialization
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
-#include "pubkeylp-ser.h"
 #include "scheme/bgvrns/bgvrns-ser.h"
+
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -42,21 +44,17 @@ int main() {
             << "an error writing serializations." << std::endl;
 
   // Sample Program: Step 1 - Set CryptoContext
+  CCParams<CryptoContextBGVRNS> parameters;
+  parameters.SetMultiplicativeDepth(2);
+  parameters.SetPlaintextModulus(65537);
+  parameters.SetStandardDeviation(3.2);
+  parameters.SetKeySwitchTechnique(BV);
+  parameters.SetRescalingTechnique(FIXEDAUTO);
 
-  // Set the main parameters
-  int plaintextModulus = 65537;
-  double sigma = 3.2;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  uint32_t depth = 2;
-
-  // Instantiate the crypto context
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(
-          depth, plaintextModulus, securityLevel, sigma, depth, OPTIMIZED, BV);
-
+  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // Enable features that you wish to use
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
+  cryptoContext->Enable(PKE);
+  cryptoContext->Enable(KEYSWITCH);
   cryptoContext->Enable(LEVELEDSHE);
 
   std::cout << "\nThe cryptocontext has been generated." << std::endl;
@@ -74,7 +72,7 @@ int main() {
   // Sample Program: Step 2 - Key Generation
 
   // Initialize Public Key Containers
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   // Generate a public/private key pair
   keyPair = cryptoContext->KeyGen();
@@ -188,7 +186,7 @@ int main() {
   std::cout << "The second ciphertext has been serialized." << std::endl;
 
   if (!Serial::SerializeToFile(DATAFOLDER + "/" + "ciphertext3.txt",
-                               ciphertext1, SerType::BINARY)) {
+                               ciphertext3, SerType::BINARY)) {
     std::cerr
         << "Error writing serialization of ciphertext 3 to ciphertext3.txt"
         << std::endl;
@@ -218,7 +216,7 @@ int main() {
   }
   std::cout << "The cryptocontext has been deserialized." << std::endl;
 
-  LPPublicKey<DCRTPoly> pk;
+  PublicKey<DCRTPoly> pk;
   if (Serial::DeserializeFromFile(DATAFOLDER + "/key-public.txt", pk,
                                   SerType::BINARY) == false) {
     std::cerr << "Could not read public key" << std::endl;
@@ -263,7 +261,7 @@ int main() {
   std::cout << "The first ciphertext has been deserialized." << std::endl;
 
   Ciphertext<DCRTPoly> ct2;
-  if (Serial::DeserializeFromFile(DATAFOLDER + "/ciphertext1.txt", ct2,
+  if (Serial::DeserializeFromFile(DATAFOLDER + "/ciphertext2.txt", ct2,
                                   SerType::BINARY) == false) {
     std::cerr << "Could not read the ciphertext" << std::endl;
     return 1;
@@ -271,7 +269,7 @@ int main() {
   std::cout << "The second ciphertext has been deserialized." << std::endl;
 
   Ciphertext<DCRTPoly> ct3;
-  if (Serial::DeserializeFromFile(DATAFOLDER + "/ciphertext1.txt", ct3,
+  if (Serial::DeserializeFromFile(DATAFOLDER + "/ciphertext3.txt", ct3,
                                   SerType::BINARY) == false) {
     std::cerr << "Could not read the ciphertext" << std::endl;
     return 1;
@@ -294,7 +292,7 @@ int main() {
 
   // Sample Program: Step 5 - Decryption
 
-  LPPrivateKey<DCRTPoly> sk;
+  PrivateKey<DCRTPoly> sk;
   if (Serial::DeserializeFromFile(DATAFOLDER + "/key-private.txt", sk,
                                   SerType::BINARY) == false) {
     std::cerr << "Could not read secret key" << std::endl;

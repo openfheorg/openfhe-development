@@ -26,7 +26,7 @@
 #include <random>
 #include "math/distributiongenerator.h"
 
-#include "math/backend.h"
+#include "math/hal.h"
 
 namespace lbcrypto {
 

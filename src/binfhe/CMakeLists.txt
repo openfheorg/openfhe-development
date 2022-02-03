@@ -88,3 +88,14 @@ endif()
 
 add_custom_command( OUTPUT binfheinfocmd COMMAND echo Builds PALISADEbinfhe and these apps: ${BINFHEAPPS} )
 add_custom_target( binfheinfo DEPENDS binfheinfocmd )
+
+# Collect compile definitions and pass them upward
+if ( BUILD_SHARED )
+	get_target_property(_compile_defs PALISADEbinfhe COMPILE_DEFINITIONS)
+	set(_pal_binfhe_compile_defs ${_compile_defs} PARENT_SCOPE)
+endif()
+
+if( BUILD_STATIC )
+	get_target_property(_compile_defs_static PALISADEbinfhe_static COMPILE_DEFINITIONS)
+	set(_pal_binfhe_compile_defs_static ${_compile_defs_static} PARENT_SCOPE)
+endif()

@@ -30,15 +30,10 @@
 #define PROFILE
 
 #include <iostream>
-#include <fstream>
-#include <iterator>
-#include <chrono>
-#include <iterator>
 
 #include "palisade.h"
-#include "cryptocontexthelper.h"
-#include "cryptocontextgen.h"
-#include "encoding/encodings.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
 #include "utils/debug.h"
 
 using namespace std;
@@ -50,33 +45,21 @@ int main(int argc, char *argv[]) {
   TimeVar t;
   double processingTime(0.0);
 
-  usint plaintextModulus = 65537;
-  double sigma = 3.2;
-
-  size_t dcrtBits = 60;
-
   int numkeys = 1 << 4;
   int numruns = 1 << 4;
-  int mult_depth = 3;
-  int relin_window = 1;
-  using Element = DCRTPoly;
 
-  ////////////////////////////////////////////////////////////
-  // Parameter generation
-  ////////////////////////////////////////////////////////////
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(65537);
+  parameters.SetStandardDeviation(3.2);
+  parameters.SetEvalMultCount(3);
+  parameters.SetRelinWindow(1);
+  parameters.SetScalingFactorBits(60);
 
-  EncodingParams encodingParams(
-      std::make_shared<EncodingParamsImpl>(plaintextModulus));
-
-  // Set Crypto Parameters
-  CryptoContext<Element> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          plaintextModulus, HEStd_128_classic, sigma, 0, mult_depth, 0,
-          OPTIMIZED, 2, relin_window, dcrtBits);
-
+  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
+  cryptoContext->Enable(PKE);
+  cryptoContext->Enable(KEYSWITCH);
+  cryptoContext->Enable(LEVELEDSHE);
 
   std::cout << "\np = "
             << cryptoContext->GetCryptoParameters()->GetPlaintextModulus()
@@ -95,7 +78,7 @@ int main(int argc, char *argv[]) {
             << std::endl;
 
   // Initialize Public Key Containers
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   cout << "\nMeasuring Multiplicative Depth:\n";
   TIC(t);

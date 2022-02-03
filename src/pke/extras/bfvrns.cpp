@@ -24,12 +24,11 @@
 // @section DESCRIPTION
 // Demo software for BFV multiparty operations.
 
-#include <chrono>
-#include <fstream>
 #include <iostream>
-#include <iterator>
 
 #include "palisade.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
 
 using namespace std;
 using namespace lbcrypto;
@@ -53,18 +52,20 @@ int main(int argc, char *argv[]) {
   // Generate parameters.
   double diff, start, finish;
 
-  int plaintextModulus = 256;
-  double sigma = 4;
-  double rootHermiteFactor = 1.006;
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(256);
+  parameters.SetRootHermiteFactor(1.006);
+  parameters.SetStandardDeviation(4);
+  parameters.SetEvalMultCount(5);
+  parameters.SetMaxDepth(6);
+  parameters.SetScalingFactorBits(60);
 
-  // Set Crypto Parameters
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          plaintextModulus, rootHermiteFactor, sigma, 0, 5, 0, OPTIMIZED, 6);
-
+  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
+  cryptoContext->Enable(PKE);
+  cryptoContext->Enable(KEYSWITCH);
+  cryptoContext->Enable(LEVELEDSHE);
+  cryptoContext->Enable(ADVANCEDSHE);
 
   std::cout << "p = "
             << cryptoContext->GetCryptoParameters()->GetPlaintextModulus()
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
             << std::endl;
 
   // Initialize Public Key Containers
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   ////////////////////////////////////////////////////////////
   // Perform Key Generation Operation

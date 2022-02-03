@@ -40,11 +40,11 @@
 #include <random>
 
 #include "palisade.h"
-
-#include "cryptocontextgen.h"
-#include "cryptocontexthelper.h"
-
 #include "utils/debug.h"
+
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "gen-cryptocontext.h"
 
 using namespace std;
 using namespace lbcrypto;
@@ -55,20 +55,18 @@ usint mult_depth = 3;
  * Context setup utility methods
  */
 CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
-  double sigma = 3.19;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  usint dcrtBits = 60;
-  usint relinWindow = 0;
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(ptm);
+  parameters.SetStandardDeviation(3.19);
+  parameters.SetEvalMultCount(mult_depth);
+  parameters.SetScalingFactorBits(60);
 
-  // Set Crypto Parameters
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          ptm, securityLevel, sigma, 0, mult_depth, 0, OPTIMIZED, 2,
-          relinWindow, dcrtBits);
-
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // enable features that you wish to use
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
+  cc->Enable(ADVANCEDSHE);
 
   // std::cout << "\nParameters BFVrns for depth " << mult_depth << std::endl;
   // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
@@ -82,16 +80,17 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
 }
 
 CryptoContext<DCRTPoly> GenerateBGVrnsContext(usint ptm) {
-  SecurityLevel securityLevel = HEStd_128_classic;
-  float stdDev = 3.19;
+  CCParams<CryptoContextBGVRNS> parameters;
+  parameters.SetMultiplicativeDepth(mult_depth);
+  parameters.SetPlaintextModulus(ptm);
+  parameters.SetKeySwitchTechnique(BV);
+  parameters.SetRescalingTechnique(FIXEDAUTO);
 
-  // Get BGVrns crypto context and generate encryption keys.
-  auto cc = CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(
-      mult_depth, ptm, securityLevel, stdDev, 2, OPTIMIZED, BV);
-
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
   cc->Enable(LEVELEDSHE);
+  cc->Enable(ADVANCEDSHE);
 
   // std::cout << "\nParameters BGVrns for depth " << mult_depth << std::endl;
   // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
@@ -113,7 +112,7 @@ void BFVrns_EvalMultManyP2(benchmark::State& state) {
   CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm);
 
   // KeyGen
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -146,7 +145,7 @@ void BGVrns_EvalMultManyP2(benchmark::State& state) {
   CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm);
 
   // KeyGen
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -183,7 +182,7 @@ void BFVrns_EvalMultManyP65537(benchmark::State& state) {
   CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(ptm);
 
   // KeyGen
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
@@ -218,7 +217,7 @@ void BGVrns_EvalMultManyP65537(benchmark::State& state) {
   CryptoContext<DCRTPoly> cc = GenerateBGVrnsContext(ptm);
 
   // KeyGen
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};

@@ -30,8 +30,8 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "lattice/dcrtpoly.h"
-#include "math/backend.h"
+#include "lattice/lat-hal.h"
+#include "math/hal.h"
 #include "math/nbtheory.h"
 #include "utils/inttypes.h"
 

@@ -29,7 +29,7 @@
 #include <string>
 #include <utility>
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "utils/inttypes.h"
 
 namespace lbcrypto {

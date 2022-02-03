@@ -31,7 +31,7 @@
 #include <mutex>
 #include <random>
 #include <thread>
-#include "math/backend.h"
+#include "math/hal.h"
 #include "utils/prng/blake2engine.h"
 
 // #define FIXED_SEED // if defined, then uses a fixed seed number for

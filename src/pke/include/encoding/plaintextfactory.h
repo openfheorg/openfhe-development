@@ -175,7 +175,6 @@ class PlaintextFactory {
     pt->Encode();
     return pt;
   }
-
 };
 
 } /* namespace lbcrypto */

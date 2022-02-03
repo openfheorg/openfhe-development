@@ -27,13 +27,11 @@ BFV RNS testing programs
 
 #define PROFILE
 
-#include <fstream>
 #include <iostream>
-#include <iterator>
-#include <limits>
-#include <random>
 
 #include "palisade.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
 #include "utils/parallel.h"
 
 typedef std::numeric_limits<double> dbl;
@@ -70,21 +68,21 @@ void SHERun() {
                "how to both add them together and multiply them together. "
             << std::endl;
 
-  // Generate parameters.
-  usint ptm = 2;
-  double sigma = 3.19;
-  double rootHermiteFactor = 1.0048;
-
   size_t count = 100;
 
-  // Set Crypto Parameters
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          ptm, rootHermiteFactor, sigma, 0, 5, 0, OPTIMIZED, 3, 0, 55);
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(2);
+  parameters.SetRootHermiteFactor(1.0048);
+  parameters.SetStandardDeviation(3.19);
+  parameters.SetEvalMultCount(5);
+  parameters.SetMaxDepth(3);
+  parameters.SetScalingFactorBits(55);
 
+  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
+  cryptoContext->Enable(PKE);
+  cryptoContext->Enable(KEYSWITCH);
+  cryptoContext->Enable(LEVELEDSHE);
 
   auto params = cryptoContext->GetCryptoParameters();
 
@@ -102,7 +100,7 @@ void SHERun() {
 
   double start = currentDateTime();
 
-  LPKeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
   double finish = currentDateTime();
   double diff = finish - start;

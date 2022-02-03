@@ -30,8 +30,7 @@
 
 #include "gtest/gtest.h"
 
-#include "lattice/backend.h"
-#include "math/backend.h"
+#include "lattice/lat-hal.h"
 #include "utils/inttypes.h"
 #include "lattice/stdlatticeparms.h"
 

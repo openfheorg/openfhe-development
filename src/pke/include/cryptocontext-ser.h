@@ -36,12 +36,6 @@
 #include "utils/serial.h"
 
 CEREAL_CLASS_VERSION(
-    lbcrypto::CryptoContextImpl<lbcrypto::Poly>,
-    lbcrypto::CryptoContextImpl<lbcrypto::Poly>::SerializedVersion());
-CEREAL_CLASS_VERSION(
-    lbcrypto::CryptoContextImpl<lbcrypto::NativePoly>,
-    lbcrypto::CryptoContextImpl<lbcrypto::NativePoly>::SerializedVersion());
-CEREAL_CLASS_VERSION(
     lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>,
     lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>::SerializedVersion());
 
@@ -55,8 +49,8 @@ template <typename ST>
 bool CryptoContextImpl<Element>::SerializeEvalMultKey(std::ostream& ser,
                                                       const ST& sertype,
                                                       string id) {
-  std::map<string, std::vector<LPEvalKey<Element>>>* smap;
-  std::map<string, std::vector<LPEvalKey<Element>>> omap;
+  std::map<string, std::vector<EvalKey<Element>>>* smap;
+  std::map<string, std::vector<EvalKey<Element>>> omap;
 
   if (id.length() == 0) {
     smap = &GetAllEvalMultKeys();
@@ -77,104 +71,58 @@ bool CryptoContextImpl<Element>::SerializeEvalMultKey(std::ostream& ser,
 
 namespace lbcrypto {
 // ================================= JSON serialization/deserialization
-    namespace Serial {
-        /**
-         * Deserialize for a CryptoContext (that is, a shared pointer to a
-         * CryptoContextImpl PALISADE doesn't want multiple copies of the same crypto
-         * context floating around, and it enforces that here
-         *
-         * @param obj - the target for the deserialization
-         * @param stream - where the serialization is coming from
-         * @param sertype - JSON serialization type
-         */
-        template <typename T>
-        void Deserialize(CryptoContext<T>& obj, std::istream& stream, const SerType::SERJSON&) {
-            CryptoContext<T> newob;
+namespace Serial {
+/**
+ * Deserialize for a CryptoContext (that is, a shared pointer to a
+ * CryptoContextImpl PALISADE doesn't want multiple copies of the same crypto
+ * context floating around, and it enforces that here
+ *
+ * @param obj - the target for the deserialization
+ * @param stream - where the serialization is coming from
+ * @param sertype - JSON serialization type
+ */
+template <typename T>
+void Deserialize(CryptoContext<T>& obj, std::istream& stream,
+                 const SerType::SERJSON&) {
+  CryptoContext<T> newob;
 
-            try {
-                cereal::JSONInputArchive archive(stream);
-                archive(newob);
-            }
-            catch (std::exception& e) {
-                //    std::cout << e.what() << std::endl;
-                return;
-            }
+  try {
+    cereal::JSONInputArchive archive(stream);
+    archive(newob);
+  } catch (std::exception& e) {
+    //    std::cout << e.what() << std::endl;
+    return;
+  }
 
-            obj = CryptoContextFactory<T>::GetContext(newob->GetCryptoParameters(),
-                newob->GetEncryptionAlgorithm(),
-                newob->getSchemeId());
-        }
+  obj = CryptoContextFactory<T>::GetContext(newob->GetCryptoParameters(),
+                                            newob->GetScheme(),
+                                            newob->getSchemeId());
+}
 
-        template <typename T>
-        bool SerializeToFile(const std::string& filename, const CryptoContext<T>& obj, const SerType::SERJSON& sertype) {
-            std::ofstream file(filename, std::ios::out | std::ios::binary);
-            if (file.is_open()) {
-                Serial::Serialize(obj, file, sertype);
-                file.close();
-                return true;
-            }
-            return false;
-        }
+template <typename T>
+bool SerializeToFile(const std::string& filename, const CryptoContext<T>& obj,
+                     const SerType::SERJSON& sertype) {
+  std::ofstream file(filename, std::ios::out | std::ios::binary);
+  if (file.is_open()) {
+    Serial::Serialize(obj, file, sertype);
+    file.close();
+    return true;
+  }
+  return false;
+}
 
-        template <typename T>
-        bool DeserializeFromFile(const std::string& filename, CryptoContext<T>& obj, const SerType::SERJSON& sertype) {
-            std::ifstream file(filename, std::ios::in | std::ios::binary);
-            if (file.is_open()) {
-                Serial::Deserialize(obj, file, sertype);
-                file.close();
-                return true;
-            }
-            return false;
-        }
-    }
-template void Serial::Deserialize(std::shared_ptr<CryptoContextImpl<Poly>>& obj,
-                                  std::istream& stream,
-                                  const SerType::SERJSON&);
-template bool CryptoContextImpl<Poly>::SerializeEvalMultKey<SerType::SERJSON>(
-    std::ostream& ser, const SerType::SERJSON&, string id);
-template bool CryptoContextImpl<Poly>::SerializeEvalMultKey<SerType::SERJSON>(
-    std::ostream& ser, const SerType::SERJSON&, const CryptoContext<Poly> cc);
-template bool CryptoContextImpl<Poly>::DeserializeEvalMultKey<SerType::SERJSON>(
-    std::istream& ser, const SerType::SERJSON&);
-template bool CryptoContextImpl<Poly>::SerializeEvalSumKey<SerType::SERJSON>(
-    std::ostream& ser, const SerType::SERJSON&, string id);
-template bool CryptoContextImpl<Poly>::SerializeEvalSumKey<SerType::SERJSON>(
-    std::ostream& ser, const SerType::SERJSON&, const CryptoContext<Poly> cc);
-template bool CryptoContextImpl<Poly>::DeserializeEvalSumKey<SerType::SERJSON>(
-    std::istream& ser, const SerType::SERJSON&);
-template bool CryptoContextImpl<Poly>::SerializeEvalAutomorphismKey<
-    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&, string id);
-template bool
-CryptoContextImpl<Poly>::SerializeEvalAutomorphismKey<SerType::SERJSON>(
-    std::ostream& ser, const SerType::SERJSON&, const CryptoContext<Poly> cc);
-template bool CryptoContextImpl<Poly>::DeserializeEvalAutomorphismKey<
-    SerType::SERJSON>(std::istream& ser, const SerType::SERJSON&);
-
-template void Serial::Deserialize(
-    std::shared_ptr<CryptoContextImpl<NativePoly>>& obj, std::istream& stream,
-    const SerType::SERJSON&);
-template bool CryptoContextImpl<NativePoly>::SerializeEvalMultKey<
-    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&, string id);
-template bool CryptoContextImpl<NativePoly>::SerializeEvalMultKey<
-    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&,
-                      const CryptoContext<NativePoly> cc);
-template bool CryptoContextImpl<NativePoly>::DeserializeEvalMultKey<
-    SerType::SERJSON>(std::istream& ser, const SerType::SERJSON&);
-template bool CryptoContextImpl<NativePoly>::SerializeEvalSumKey<
-    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&, string id);
-template bool CryptoContextImpl<NativePoly>::SerializeEvalSumKey<
-    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&,
-                      const CryptoContext<NativePoly> cc);
-template bool CryptoContextImpl<NativePoly>::DeserializeEvalSumKey<
-    SerType::SERJSON>(std::istream& ser, const SerType::SERJSON&);
-template bool CryptoContextImpl<NativePoly>::SerializeEvalAutomorphismKey<
-    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&, string id);
-template bool CryptoContextImpl<NativePoly>::SerializeEvalAutomorphismKey<
-    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&,
-                      const CryptoContext<NativePoly> cc);
-template bool CryptoContextImpl<NativePoly>::DeserializeEvalAutomorphismKey<
-    SerType::SERJSON>(std::istream& ser, const SerType::SERJSON&);
-
+template <typename T>
+bool DeserializeFromFile(const std::string& filename, CryptoContext<T>& obj,
+                         const SerType::SERJSON& sertype) {
+  std::ifstream file(filename, std::ios::in | std::ios::binary);
+  if (file.is_open()) {
+    Serial::Deserialize(obj, file, sertype);
+    file.close();
+    return true;
+  }
+  return false;
+}
+}  // namespace Serial
 template void Serial::Deserialize(
     std::shared_ptr<CryptoContextImpl<DCRTPoly>>& obj, std::istream& stream,
     const SerType::SERJSON&);
@@ -200,10 +148,9 @@ template bool CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<
 template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalAutomorphismKey<
     SerType::SERJSON>(std::istream& ser, const SerType::SERJSON&);
 
-
 // ================================= BINARY serialization/deserialization
 namespace Serial {
-    /**
+/**
  * Deserialize for a CryptoContext (that is, a shared pointer to a
  * CryptoContextImpl PALISADE doesn't want multiple copies of the same crypto
  * context floating around, and it enforces that here
@@ -212,97 +159,48 @@ namespace Serial {
  * @param stream - where the serialization is coming from
  * @param sertype - BINARY serialization type
  */
-    template <typename T>
-    void Deserialize(CryptoContext<T>& obj, std::istream& stream, const SerType::SERBINARY&) {
-        CryptoContext<T> newob;
+template <typename T>
+void Deserialize(CryptoContext<T>& obj, std::istream& stream,
+                 const SerType::SERBINARY&) {
+  CryptoContext<T> newob;
 
-        try {
-            cereal::PortableBinaryInputArchive archive(stream);
-            archive(newob);
-        }
-        catch (std::exception& e) {
-            //    std::cout << e.what() << std::endl;
-            return;
-        }
+  try {
+    cereal::PortableBinaryInputArchive archive(stream);
+    archive(newob);
+  } catch (std::exception& e) {
+    //    std::cout << e.what() << std::endl;
+    return;
+  }
 
-        obj = CryptoContextFactory<T>::GetContext(newob->GetCryptoParameters(),
-            newob->GetEncryptionAlgorithm(),
-            newob->getSchemeId());
-    }
-
-    template <typename T>
-    bool SerializeToFile(const std::string& filename, const CryptoContext<T>& obj, const SerType::SERBINARY& sertype) {
-        std::ofstream file(filename, std::ios::out | std::ios::binary);
-        if (file.is_open()) {
-            Serial::Serialize(obj, file, sertype);
-            file.close();
-            return true;
-        }
-        return false;
-    }
-
-    template <typename T>
-    bool DeserializeFromFile(const std::string& filename, CryptoContext<T>& obj, const SerType::SERBINARY& sertype) {
-        std::ifstream file(filename, std::ios::in | std::ios::binary);
-        if (file.is_open()) {
-            Serial::Deserialize(obj, file, sertype);
-            file.close();
-            return true;
-        }
-        return false;
-    }
+  obj = CryptoContextFactory<T>::GetContext(newob->GetCryptoParameters(),
+                                            newob->GetScheme(),
+                                            newob->getSchemeId());
 }
-template void Serial::Deserialize(std::shared_ptr<CryptoContextImpl<Poly>>& obj,
-                                  std::istream& stream,
-                                  const SerType::SERBINARY&);
-template bool CryptoContextImpl<Poly>::SerializeEvalMultKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, string id);
-template bool CryptoContextImpl<Poly>::SerializeEvalMultKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, const CryptoContext<Poly> cc);
-template bool CryptoContextImpl<Poly>::DeserializeEvalMultKey<
-    SerType::SERBINARY>(std::istream& ser, const SerType::SERBINARY&);
-template bool CryptoContextImpl<Poly>::SerializeEvalSumKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, string id);
-template bool CryptoContextImpl<Poly>::SerializeEvalSumKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, const CryptoContext<Poly> cc);
-template bool CryptoContextImpl<Poly>::DeserializeEvalSumKey<
-    SerType::SERBINARY>(std::istream& ser, const SerType::SERBINARY&);
-template bool
-CryptoContextImpl<Poly>::SerializeEvalAutomorphismKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, string id);
-template bool
-CryptoContextImpl<Poly>::SerializeEvalAutomorphismKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, const CryptoContext<Poly> cc);
-template bool CryptoContextImpl<Poly>::DeserializeEvalAutomorphismKey<
-    SerType::SERBINARY>(std::istream& ser, const SerType::SERBINARY&);
 
-template void Serial::Deserialize(
-    std::shared_ptr<CryptoContextImpl<NativePoly>>& obj, std::istream& stream,
-    const SerType::SERBINARY&);
-template bool
-CryptoContextImpl<NativePoly>::SerializeEvalMultKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, string id);
-template bool CryptoContextImpl<NativePoly>::SerializeEvalMultKey<
-    SerType::SERBINARY>(std::ostream& ser, const SerType::SERBINARY&,
-                        const CryptoContext<NativePoly> cc);
-template bool CryptoContextImpl<NativePoly>::DeserializeEvalMultKey<
-    SerType::SERBINARY>(std::istream& ser, const SerType::SERBINARY&);
-template bool
-CryptoContextImpl<NativePoly>::SerializeEvalSumKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, string id);
-template bool CryptoContextImpl<NativePoly>::SerializeEvalSumKey<
-    SerType::SERBINARY>(std::ostream& ser, const SerType::SERBINARY&,
-                        const CryptoContext<NativePoly> cc);
-template bool CryptoContextImpl<NativePoly>::DeserializeEvalSumKey<
-    SerType::SERBINARY>(std::istream& ser, const SerType::SERBINARY&);
-template bool
-CryptoContextImpl<NativePoly>::SerializeEvalAutomorphismKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, string id);
-template bool CryptoContextImpl<NativePoly>::SerializeEvalAutomorphismKey<
-    SerType::SERBINARY>(std::ostream& ser, const SerType::SERBINARY&,
-                        const CryptoContext<NativePoly> cc);
-template bool CryptoContextImpl<NativePoly>::DeserializeEvalAutomorphismKey<
-    SerType::SERBINARY>(std::istream& ser, const SerType::SERBINARY&);
+template <typename T>
+bool SerializeToFile(const std::string& filename, const CryptoContext<T>& obj,
+                     const SerType::SERBINARY& sertype) {
+  std::ofstream file(filename, std::ios::out | std::ios::binary);
+  if (file.is_open()) {
+    Serial::Serialize(obj, file, sertype);
+    file.close();
+    return true;
+  }
+  return false;
+}
+
+template <typename T>
+bool DeserializeFromFile(const std::string& filename, CryptoContext<T>& obj,
+                         const SerType::SERBINARY& sertype) {
+  std::ifstream file(filename, std::ios::in | std::ios::binary);
+  if (file.is_open()) {
+    Serial::Deserialize(obj, file, sertype);
+    file.close();
+    return true;
+  }
+  return false;
+}
+}  // namespace Serial
 
 template void Serial::Deserialize(
     std::shared_ptr<CryptoContextImpl<DCRTPoly>>& obj, std::istream& stream,

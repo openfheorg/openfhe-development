@@ -30,37 +30,23 @@ using namespace lbcrypto;
 int main() {
   // Sample Program: Step 1: Set CryptoContext
 
-//#define NEW_GET_CRYPTOCONTEXT
-
-#ifdef NEW_GET_CRYPTOCONTEXT
-    std::cout << "\nUsing the new mechanism to generate cryptocontext\n\n";
-    CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters;
+    CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
     parameters.SetStandardDeviation(3.2);
     parameters.SetEvalMultCount(2);
+    parameters.SetScalingFactorBits(60);
+    parameters.SetRelinWindow(10);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
-#else
-    std::cout << "\nUsing the old mechanism to generate cryptocontext\n\n";
-    // Set the main parameters
-    int plaintextModulus = 65537;
-    double sigma = 3.2;
-    SecurityLevel securityLevel = HEStd_128_classic;
-    uint32_t depth = 2;
-
-    // Instantiate the crypto context
-    CryptoContext<DCRTPoly> cryptoContext =
-        CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-            plaintextModulus, securityLevel, sigma, 0, depth, 0, OPTIMIZED);
-#endif
   // Enable features that you wish to use
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
+  cryptoContext->Enable(PKE);
+  cryptoContext->Enable(KEYSWITCH);
+  cryptoContext->Enable(LEVELEDSHE);
 
   // Sample Program: Step 2: Key Generation
 
   // Initialize Public Key Containers
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   // Generate a public/private key pair
   keyPair = cryptoContext->KeyGen();

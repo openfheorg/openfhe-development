@@ -66,6 +66,37 @@ extern bool TestNative;
       FUNCTION<V>("BE6 " MESSAGE);          \
     }                                       \
   }
+#define RUN_BIG_POLYS(FUNCTION, MESSAGE) \
+  {                                      \
+    if (TestB2) {                        \
+      using V = M2Poly;                  \
+      FUNCTION<V>("BE2Poly " MESSAGE);   \
+    }                                    \
+    if (TestB4) {                        \
+      using V = M4Poly;                  \
+      FUNCTION<V>("BE4Poly " MESSAGE);   \
+    }                                    \
+    if (TestB6) {                        \
+      using V = M6Poly;                  \
+      FUNCTION<V>("BE6Poly " MESSAGE);   \
+    }                                    \
+  }
+
+#define RUN_BIG_DCRTPOLYS(FUNCTION, MESSAGE) \
+  {                                          \
+    if (TestB2) {                            \
+      using V = M2DCRTPoly;                  \
+      FUNCTION<V>("BE2DCRTPoly " MESSAGE);   \
+    }                                        \
+    if (TestB4) {                            \
+      using V = M4DCRTPoly;                  \
+      FUNCTION<V>("BE4DCRTPoly " MESSAGE);   \
+    }                                        \
+    if (TestB6) {                            \
+      using V = M6DCRTPoly;                  \
+      FUNCTION<V>("BE6DCRTPoly " MESSAGE);   \
+    }                                        \
+  }
 #else
 #define RUN_BIG_BACKENDS_INT(FUNCTION, MESSAGE) \
   {                                             \
@@ -89,7 +120,39 @@ extern bool TestNative;
       FUNCTION<V>("BE4 " MESSAGE);          \
     }                                       \
   }
+#define RUN_BIG_POLYS(FUNCTION, MESSAGE) \
+  {                                      \
+    if (TestB2) {                        \
+      using V = M2Poly;                  \
+      FUNCTION<V>("BE2Poly " MESSAGE);   \
+    }                                    \
+    if (TestB4) {                        \
+      using V = M4Poly;                  \
+      FUNCTION<V>("BE4Poly " MESSAGE);   \
+    }                                    \
+  }
+
+#define RUN_BIG_DCRTPOLYS(FUNCTION, MESSAGE) \
+  {                                          \
+    if (TestB2) {                            \
+      using V = M2DCRTPoly;                  \
+      FUNCTION<V>("BE2DCRTPoly " MESSAGE);   \
+    }                                        \
+    if (TestB4) {                            \
+      using V = M4DCRTPoly;                  \
+      FUNCTION<V>("BE4DCRTPoly " MESSAGE);   \
+    }                                        \
+  }
 #endif
+
+#define RUN_ALL_POLYS(FUNCTION, MESSAGE) \
+  {                                      \
+    RUN_BIG_POLYS(FUNCTION, MESSAGE)     \
+    if (TestNative) {                    \
+      using V = NativePoly;              \
+      FUNCTION<V>("Native " MESSAGE);    \
+    }                                    \
+  }
 
 #define RUN_NATIVE_BACKENDS_INT(FUNCTION, MESSAGE) \
   {                                                \

@@ -29,10 +29,8 @@
 #include <utility>
 #include <vector>
 
-#include "math/transform.h"
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "lwecore.h"
-#include "math/backend.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 #include "utils/serializable.h"

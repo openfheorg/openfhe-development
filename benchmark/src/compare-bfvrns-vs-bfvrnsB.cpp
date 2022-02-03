@@ -41,8 +41,8 @@
 
 #include "palisade.h"
 
-#include "cryptocontextgen.h"
-#include "cryptocontexthelper.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
 
 #include "utils/debug.h"
 
@@ -50,6 +50,7 @@ using namespace std;
 using namespace lbcrypto;
 
 usint mult_depth = 3;
+double sigma = 3.19;
 static vector<usint> ptm_args{2, 65537};
 static vector<usint> dcrtbit_args{30, 60};
 static vector<usint> logn_args{12, 14};
@@ -77,16 +78,17 @@ static void DecBFVArguments(benchmark::internal::Benchmark* b) {
  */
 
 CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint dcrtBits) {
-  double sigma = 3.19;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  usint relinWindow = 0;
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          ptm, securityLevel, sigma, 0, mult_depth, 0, OPTIMIZED, 2,
-          relinWindow, dcrtBits);
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(ptm);
+  parameters.SetStandardDeviation(sigma);
+  parameters.SetEvalMultCount(mult_depth);
+  parameters.SetScalingFactorBits(dcrtBits);
 
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
+  cc->Enable(ADVANCEDSHE);
 
   // std::cout << "\nParameters BFVrns for depth " << mult_depth << std::endl;
   // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
@@ -100,15 +102,18 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint dcrtBits) {
 }
 
 CryptoContext<DCRTPoly> GenerateBFVrnsBContext(usint ptm, usint dcrtBits) {
-  double sigma = 3.19;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  usint relinWindow = 0;
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrnsB(
-          ptm, securityLevel, sigma, 0, mult_depth, 0, OPTIMIZED, 2,
-          relinWindow, dcrtBits);
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(ptm);
+  parameters.SetStandardDeviation(sigma);
+  parameters.SetEvalMultCount(mult_depth);
+  parameters.SetScalingFactorBits(dcrtBits);
+  parameters.SetMultiplicationTechnique(BEHZ);
+
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
+  cc->Enable(ADVANCEDSHE);
 
   // std::cout << "\nParameters BFVrnsB for depth " << mult_depth << std::endl;
   // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
@@ -123,25 +128,34 @@ CryptoContext<DCRTPoly> GenerateBFVrnsBContext(usint ptm, usint dcrtBits) {
 
 CryptoContext<DCRTPoly> GenerateFlatBFVrnsContext(usint ptm, usint dcrtBits,
                                                   usint n) {
-  double sigma = 3.19;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          ptm, securityLevel, sigma, 0, 0, 0, OPTIMIZED, 0, 0, dcrtBits, n);
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(ptm);
+  parameters.SetStandardDeviation(sigma);
+  parameters.SetMaxDepth(0);
+  parameters.SetScalingFactorBits(dcrtBits);
+  parameters.SetRingDim(n);
+
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
   return cc;
 }
 
 CryptoContext<DCRTPoly> GenerateFlatBFVrnsBContext(usint ptm, usint dcrtBits,
                                                    usint n) {
-  double sigma = 3.19;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrnsB(
-          ptm, securityLevel, sigma, 0, 0, 0, OPTIMIZED, 0, 0, dcrtBits, n);
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(ptm);
+  parameters.SetStandardDeviation(sigma);
+  parameters.SetMaxDepth(0);
+  parameters.SetScalingFactorBits(dcrtBits);
+  parameters.SetRingDim(n);
+  parameters.SetMultiplicationTechnique(BEHZ);
+
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
   return cc;
 }
 
@@ -153,7 +167,7 @@ void BFVrns_EvalMultMany(benchmark::State& state) {
       GenerateBFVrnsContext(state.range(0), state.range(1));
 
   // KeyGen
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -192,7 +206,7 @@ void BFVrnsB_EvalMultMany(benchmark::State& state) {
       GenerateBFVrnsBContext(state.range(0), state.range(1));
 
   // KeyGen
-  LPKeyPair<DCRTPoly> keyPair = cc->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cc->KeyGen();
   cc->EvalMultKeyGen(keyPair.secretKey);
 
   std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -229,7 +243,7 @@ void BFVrns_Decrypt(benchmark::State& state) {
   CryptoContext<DCRTPoly> cryptoContext = GenerateFlatBFVrnsContext(
       state.range(0), state.range(1), 1 << state.range(2));
 
-  LPKeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   Plaintext plaintext1;
@@ -254,7 +268,7 @@ void BFVrnsB_Decrypt(benchmark::State& state) {
   CryptoContext<DCRTPoly> cryptoContext = GenerateFlatBFVrnsBContext(
       state.range(0), state.range(1), 1 << state.range(2));
 
-  LPKeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
+  KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
   std::vector<int64_t> vectorOfInts1 = {1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0};
   Plaintext plaintext1;

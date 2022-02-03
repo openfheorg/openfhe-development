@@ -27,6 +27,8 @@
 #include "utils/inttypes.h"
 
 #include <string>
+#include <climits>     // CHAR_BIT
+#include <type_traits> //std::is_integral
 
 /**
  * @namespace lbcrypto
@@ -116,6 +118,19 @@ inline uint32_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t &c) {
     return 1;
   else
     return 0;
+}
+
+/**
+ * GetIntegerTypeBitLength() calculates the number of all bits in type T and
+ * std::enable_if<...> constrains the allowable types to primitive integers only.
+ * All other types are excluded. Examples: enum, bool, floating point,
+ * any class or struct (ex.: BigInteger, NativeIntegerT, etc.)
+ * Ex: auto bitlen = GetIntegerTypeBitLength<short>(); bitlen == 16
+ */
+template <typename T,
+    typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, bool>::type = true>
+    constexpr usint GetIntegerTypeBitLength() {
+    return sizeof(T) * CHAR_BIT;
 }
 
 }  // namespace lbcrypto
