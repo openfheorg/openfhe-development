@@ -33,7 +33,7 @@
 #include <thread>
 #include <vector>
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/nbtheory.h"
 #include "utils/utilities.h"
 

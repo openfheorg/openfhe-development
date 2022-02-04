@@ -27,6 +27,10 @@
 /*
  * Context setup utility methods
  */
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "gen-cryptocontext.h"
 
 // Macros defining parameters to be passed to benchmarks in
 // lib-hexl-benchmark.cpp
@@ -43,81 +47,56 @@
 
 CryptoContext<DCRTPoly> GenerateBFVrnsContext(uint32_t poly_modulus_degree,
                                               uint32_t numTowers) {
-  // Set the main parameters
-  uint32_t ptxtModulus = 65537;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  double sigma = 3.19;
-  uint32_t numAdds = 0;
-  uint32_t numMults = numTowers - 1;
-  uint32_t numKeyswitches = 0;
-  uint32_t maxDepth = 5;
-  uint32_t relinWindow = 30;
-  uint32_t dcrtBits = 47;
-  uint32_t n = poly_modulus_degree;
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(65537);
+  parameters.SetStandardDeviation(3.19);
+  parameters.SetEvalMultCount(numTowers - 1);
+  parameters.SetMaxDepth(5);
+  parameters.SetRelinWindow(30);
+  parameters.SetScalingFactorBits(47);
+  parameters.SetRingDim(poly_modulus_degree);
 
-  // Instantiate the crypto context
-  auto cc = CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-      ptxtModulus, securityLevel, sigma, numAdds, numMults, numKeyswitches,
-      MODE::OPTIMIZED, maxDepth, relinWindow, dcrtBits, n);
-
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // Enable features that you wish to use
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
 
   return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateCKKSContext(uint32_t poly_modulus_degree,
-                                            uint32_t numTowers) {
-  // Set the main parameters
-  uint32_t multDepth = numTowers - 1;
-  uint32_t scaleFactorBits = 47;
-  uint32_t batchSize = poly_modulus_degree / 2;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  uint32_t ringDim = poly_modulus_degree;
-  uint32_t numLargeDigits = 0;
-  uint32_t maxDepth = 5;
-  uint32_t firstModSize = 60;
-  uint32_t relinWindow = 0;
+CryptoContext<DCRTPoly> GenerateCKKSContext(uint32_t poly_modulus_degree, uint32_t numTowers) {
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetMultiplicativeDepth(numTowers - 1);
+    parameters.SetScalingFactorBits(47);
+    parameters.SetBatchSize(poly_modulus_degree / 2);
+    parameters.SetRingDim(poly_modulus_degree);
+    parameters.SetRescalingTechnique(FIXEDMANUAL);
+    parameters.SetMaxDepth(5);
+    parameters.SetFirstModSize(60);
 
-  // Instantiate the crypto context
-  auto cc = CryptoContextFactory<DCRTPoly>::genCryptoContextCKKS(
-      multDepth, scaleFactorBits, batchSize, securityLevel, ringDim,
-      APPROXRESCALE, KeySwitchTechnique::HYBRID, numLargeDigits, maxDepth,
-      firstModSize, relinWindow);
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    // Enable features that you wish to use
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
 
-  // Enable features that you wish to use
-  cc->Enable(PKESchemeFeature::ENCRYPTION);
-  cc->Enable(PKESchemeFeature::SHE);
-  cc->Enable(PKESchemeFeature::LEVELEDSHE);
-
-  return cc;
+    return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateBGVrnsContext(uint32_t poly_modulus_degree,
-                                              uint32_t numTowers) {
-  // Set the main parameters
-  uint32_t multDepth = numTowers - 1;
-  uint32_t ptxtModulus = 65537;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  double sigma = 3.19;
-  uint32_t maxDepth = 5;
-  uint32_t ringDim = poly_modulus_degree;
-  uint32_t numLargeDigits = 0;
-  uint32_t firstModSize = 60;
-  uint32_t dcrtBits = 0;
-  uint32_t relinWindow = 0;
-  uint32_t batchSize = 0;
+CryptoContext<DCRTPoly> GenerateBGVrnsContext(uint32_t poly_modulus_degree, uint32_t numTowers) {
+  CCParams<CryptoContextBGVRNS> parameters;
+  parameters.SetMultiplicativeDepth(numTowers - 1);
+  parameters.SetPlaintextModulus(65537);
+  parameters.SetMaxDepth(5);
+  parameters.SetRingDim(poly_modulus_degree);
+  parameters.SetFirstModSize(60);
+  parameters.SetRescalingTechnique(FIXEDMANUAL);
 
-  // Instantiate the crypto context
-  auto cc = CryptoContextFactory<DCRTPoly>::genCryptoContextBGVrns(
-      multDepth, ptxtModulus, securityLevel, sigma, maxDepth, MODE::OPTIMIZED,
-      KeySwitchTechnique::HYBRID, ringDim, numLargeDigits, firstModSize,
-      dcrtBits, relinWindow, batchSize, ModSwitchMethod::MANUAL);
-
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // Enable features that you wish to use
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
   cc->Enable(LEVELEDSHE);
 
   return cc;

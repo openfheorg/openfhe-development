@@ -26,13 +26,11 @@ BFV RNS testing programs
 
 #define PROFILE
 
-#include <fstream>
 #include <iostream>
-#include <iterator>
-#include <limits>
-#include <random>
 
 #include "palisade.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
 #include "utils/parallel.h"
 
 typedef std::numeric_limits<double> dbl;
@@ -69,21 +67,22 @@ void SHERun() {
                "how to both add them together and multiply them together. "
             << std::endl;
 
-  // Generate parameters.
-  usint ptm = 2;
-  double sigma = 3.2;
-  double rootHermiteFactor = 1.0048;
-
   size_t count = 100;
 
-  // Set Crypto Parameters
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrnsB(
-          ptm, rootHermiteFactor, sigma, 0, 5, 0, OPTIMIZED, 3, 0, 55);
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(2);
+  parameters.SetRootHermiteFactor(1.0048);
+  parameters.SetStandardDeviation(3.2);
+  parameters.SetEvalMultCount(5);
+  parameters.SetMaxDepth(3);
+  parameters.SetScalingFactorBits(55);
+  parameters.SetMultiplicationTechnique(BEHZ);
 
+  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
+  cryptoContext->Enable(PKE);
+  cryptoContext->Enable(KEYSWITCH);
+  cryptoContext->Enable(LEVELEDSHE);
 
   std::cout << "p = "
             << cryptoContext->GetCryptoParameters()->GetPlaintextModulus()
@@ -102,7 +101,7 @@ void SHERun() {
             << std::endl;
 
   // Initialize Public Key Containers
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   ////////////////////////////////////////////////////////////
   // Perform Key Generation Operation

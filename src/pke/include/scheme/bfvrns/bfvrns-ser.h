@@ -26,20 +26,9 @@
 #define LBCRYPTO_CRYPTO_BFVRNSSER_H
 
 #include "palisade.h"
-#include "scheme/bfv/bfv-ser.h"
 #include "utils/serial.h"
 
-extern template class lbcrypto::LPCryptoParametersBFVrns<lbcrypto::DCRTPoly>;
-extern template class lbcrypto::LPPublicKeyEncryptionSchemeBFVrns<
-    lbcrypto::DCRTPoly>;
-extern template class lbcrypto::LPAlgorithmBFVrns<lbcrypto::DCRTPoly>;
-extern template class lbcrypto::LPAlgorithmPREBFVrns<lbcrypto::DCRTPoly>;
-extern template class lbcrypto::LPAlgorithmSHEBFVrns<lbcrypto::DCRTPoly>;
-extern template class lbcrypto::LPAlgorithmMultipartyBFVrns<lbcrypto::DCRTPoly>;
-extern template class lbcrypto::LPAlgorithmParamsGenBFVrns<lbcrypto::DCRTPoly>;
-
-CEREAL_REGISTER_TYPE(lbcrypto::LPCryptoParametersBFVrns<lbcrypto::DCRTPoly>);
-CEREAL_REGISTER_TYPE(
-    lbcrypto::LPPublicKeyEncryptionSchemeBFVrns<lbcrypto::DCRTPoly>);
+CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersBFVRNS);
+CEREAL_REGISTER_TYPE(lbcrypto::SchemeBFVRNS);
 
 #endif

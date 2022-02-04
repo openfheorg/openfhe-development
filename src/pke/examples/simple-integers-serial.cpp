@@ -25,11 +25,12 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "palisade.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
 
 // header files needed for serialization
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
-#include "pubkeylp-ser.h"
 #include "scheme/bfvrns/bfvrns-ser.h"
 
 using namespace lbcrypto;
@@ -42,20 +43,17 @@ int main() {
             << "an error writing serializations." << std::endl;
   // Sample Program: Step 1: Set CryptoContext
 
-  // Set the main parameters
-  int plaintextModulus = 65537;
-  double sigma = 3.2;
-  SecurityLevel securityLevel = HEStd_128_classic;
-  uint32_t depth = 2;
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(65537);
+  parameters.SetStandardDeviation(3.2);
+  parameters.SetEvalMultCount(2);
+  parameters.SetScalingFactorBits(60);
 
-  // Instantiate the crypto context
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          plaintextModulus, securityLevel, sigma, 0, depth, 0, OPTIMIZED);
-
+  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // Enable features that you wish to use
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
+  cryptoContext->Enable(PKE);
+  cryptoContext->Enable(KEYSWITCH);
+  cryptoContext->Enable(LEVELEDSHE);
 
   std::cout << "\nThe cryptocontext has been generated." << std::endl;
 
@@ -72,7 +70,7 @@ int main() {
   // Sample Program: Step 2: Key Generation
 
   // Initialize Public Key Containers
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   // Generate a public/private key pair
   keyPair = cryptoContext->KeyGen();
@@ -216,7 +214,7 @@ int main() {
   }
   std::cout << "The cryptocontext has been deserialized." << std::endl;
 
-  LPPublicKey<DCRTPoly> pk;
+  PublicKey<DCRTPoly> pk;
   if (Serial::DeserializeFromFile(DATAFOLDER + "/key-public.txt", pk,
                                   SerType::BINARY) == false) {
     std::cerr << "Could not read public key" << std::endl;
@@ -291,7 +289,7 @@ int main() {
 
   // Sample Program: Step 5: Decryption
 
-  LPPrivateKey<DCRTPoly> sk;
+  PrivateKey<DCRTPoly> sk;
   if (Serial::DeserializeFromFile(DATAFOLDER + "/key-private.txt", sk,
                                   SerType::BINARY) == false) {
     std::cerr << "Could not read secret key" << std::endl;

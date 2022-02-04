@@ -29,6 +29,7 @@
 #include <cmath>
 #include <sstream>
 
+#include "config_core.h"
 #include "math/distributiongenerator.h"
 #include "math/nbtheory.h"
 

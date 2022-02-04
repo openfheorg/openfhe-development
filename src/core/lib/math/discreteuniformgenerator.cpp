@@ -26,7 +26,7 @@
 #include <bitset>
 #include <sstream>
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/discreteuniformgenerator.h"
 #include "math/distributiongenerator.h"
 

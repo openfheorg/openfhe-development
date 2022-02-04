@@ -26,13 +26,13 @@
 
 #include "version.h"
 
-#include "math/backend.h"
+#include "math/hal.h"
 
 #include "math/nbtheory.h"
 
 #include "math/distrgen.h"
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 #include "lattice/stdlatticeparms.h"
 #include "utils/debug.h"
 #include "utils/defines.h"

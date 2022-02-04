@@ -24,6 +24,7 @@
 
 #include "encoding/packedencoding.h"
 #include "utils/utilities.h"
+#include "math/hal.h"
 
 namespace lbcrypto {
 
@@ -400,11 +401,11 @@ void PackedEncoding::Unpack(P *ring, const PlaintextModulus &modulus) const {
   // Transform Coeff to Eval
   NativeVector permutedSlots(phim, modulusNI);
   if (IsPowerOfTwo(m)) {
-	  ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(
+    ChineseRemainderTransformFTT<NativeVector>().ForwardTransformToBitReverse(
         packedVector, m_initRoot[modulusM], m, &permutedSlots);
   } else {  // Arbitrary cyclotomic
     permutedSlots =
-    		ChineseRemainderTransformArb<NativeVector>().ForwardTransform(
+        ChineseRemainderTransformArb<NativeVector>().ForwardTransform(
             packedVector, m_initRoot[modulusM], m_bigModulus[modulusM],
             m_bigRoot[modulusM], m);
   }

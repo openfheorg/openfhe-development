@@ -30,40 +30,16 @@
 #include <utility>
 
 #include "palisadecore.h"
-#include "config.h"
+
+#include "key/allkey.h"
+#include "cryptoobject.h"
 
 using std::move;
 using std::shared_ptr;
 using std::string;
 
-namespace lbcrypto {
-
-template <typename Element>
-class CryptoContextImpl;
-
-template <typename Element>
-using CryptoContext = shared_ptr<CryptoContextImpl<Element>>;
-
-template <typename Element>
-class CiphertextImpl;
-
-template <typename Element>
-using Ciphertext = shared_ptr<CiphertextImpl<Element>>;
-
-template <typename Element>
-using ConstCiphertext = const shared_ptr<const CiphertextImpl<Element>>;
-
-class Metadata;
-using MetadataMap = shared_ptr<std::map<string, shared_ptr<Metadata>>>;
-
-}  // namespace lbcrypto
-
-#include "metadata.h"
-
 #include "encoding/plaintextfactory.h"
 #include "math/matrix.h"
-
-#include "pubkeylp.h"
 
 #include "ciphertext.h"
 #include "cryptocontext.h"

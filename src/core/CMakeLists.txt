@@ -114,3 +114,14 @@ endif()
 
 add_custom_command( OUTPUT coreinfocmd COMMAND echo Builds PALISADEcore and these apps: ${COREAPPS} )
 add_custom_target( coreinfo DEPENDS coreinfocmd )
+
+# Collect compile definitions and pass them upward
+if ( BUILD_SHARED )
+	get_target_property(_compile_defs PALISADEcore COMPILE_DEFINITIONS)
+	set(_pal_core_compile_defs ${_compile_defs} PARENT_SCOPE)
+endif()
+
+if( BUILD_STATIC )
+	get_target_property(_compile_defs_static PALISADEcore_static COMPILE_DEFINITIONS)
+	set(_pal_core_compile_defs_static ${_compile_defs_static} PARENT_SCOPE)
+endif()

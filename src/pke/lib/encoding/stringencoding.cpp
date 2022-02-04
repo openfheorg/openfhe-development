@@ -43,7 +43,7 @@ bool StringEncoding::Encode() {
     this->encodedNativeVector.SetValuesToZero();
     size_t i = 0;
     for (; i < ptx.size() && i < this->encodedNativeVector.GetLength(); i++) {
-      this->encodedNativeVector[i] = ptx[i];
+      this->encodedNativeVector[i] = static_cast<uint32_t>(ptx[i]);
     }
     for (; i < this->encodedNativeVector.GetLength(); i++) {
       this->encodedNativeVector[i] = CHARMARKER;
@@ -52,7 +52,7 @@ bool StringEncoding::Encode() {
     this->encodedVector.SetValuesToZero();
     size_t i = 0;
     for (; i < ptx.size() && i < this->encodedVector.GetLength(); i++) {
-      this->encodedVector[i] = ptx[i];
+      this->encodedVector[i] = static_cast<uint32_t>(ptx[i]);
     }
     for (; i < this->encodedVector.GetLength(); i++) {
       this->encodedVector[i] = CHARMARKER;

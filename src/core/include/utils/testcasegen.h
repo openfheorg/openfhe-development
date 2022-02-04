@@ -28,7 +28,7 @@
   TEST_F(TOPNAME, FUNC##_##ELEMENT##_##SCHEME) {                         \
     CryptoContext<ELEMENT> cc;                                           \
     try {                                                                \
-      cc = GenTestCryptoContext<ELEMENT>(#SCHEME, ORD, PTM);             \
+      cc = GenTestCryptoContext(#SCHEME, ORD, PTM);             \
     } catch (const not_implemented_error&) {                             \
       return;                                                            \
     } catch (const not_available_error&) {                               \
@@ -46,7 +46,7 @@
   TEST_F(TOPNAME, FUNC##_##ELEMENT##_##SCHEME) {                              \
     CryptoContext<ELEMENT> cc;                                                \
     try {                                                                     \
-      cc = GenTestCryptoContext<ELEMENT>(#SCHEME, ORD, PTM, BITS);            \
+      cc = GenTestCryptoContext(#SCHEME, ORD, PTM, BITS);            \
     } catch (const not_implemented_error&) {                                  \
       return;                                                                 \
     } catch (const not_available_error&) {                                    \
@@ -66,7 +66,7 @@
          FUNC##_##ELEMENT##_##SCHEME##_##KEYSWITCH##_##MODSWITCHMETHOD) {   \
     CryptoContext<ELEMENT> cc;                                              \
     try {                                                                   \
-      cc = GenTestCryptoContext<ELEMENT>(#SCHEME, ORD, PTM, SIZEMODULI,     \
+      cc = GenTestCryptoContext(#SCHEME, ORD, PTM, SIZEMODULI,     \
                                          NUMPRIME, RELIN, BATCH, KEYSWITCH, \
                                          RESCALEALG, MODSWITCHMETHOD);      \
     } catch (const not_implemented_error&) {                                \
@@ -86,7 +86,7 @@
   TEST_F(TOPNAME, FUNC##_##ELEMENT##_##SCHEME##_##KEYSWITCH##_##RESCALEALG) {  \
     CryptoContext<ELEMENT> cc;                                                 \
     try {                                                                      \
-      cc = GenTestCryptoContext<ELEMENT>(#SCHEME, ORD, SCALE, SCALE, NUMPRIME, \
+      cc = GenTestCryptoContext(#SCHEME, ORD, SCALE, SCALE, NUMPRIME, \
                                          RELIN, BATCH, KEYSWITCH, RESCALEALG); \
     } catch (const not_implemented_error&) {                                   \
       return;                                                                  \

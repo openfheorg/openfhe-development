@@ -14,7 +14,15 @@
 #ifndef LBCRYPTO_CRYPTO_METADATA_H
 #define LBCRYPTO_CRYPTO_METADATA_H
 
+#include "palisadecore.h"
+
 namespace lbcrypto {
+
+template <typename Element>
+class CiphertextImpl;
+
+class Metadata;
+using MetadataMap = std::shared_ptr<std::map<std::string, std::shared_ptr<Metadata>>>;
 
 /**
  * @brief Empty metadata container
@@ -147,12 +155,12 @@ class MetadataTest : public Metadata {
   /**
    * Setter method for the only value stored in this Metadata container.
    */
-  void SetMetadata(string str) { m_s = string(str); }
+  void SetMetadata(std::string str) { m_s = std::string(str); }
 
   /**
    * This method returns the (only) value stored in this Metadata container
    */
-  string GetMetadata() const { return m_s; }
+  std::string GetMetadata() const { return m_s; }
 
   /**
    * Defines how to check equality between objects of this class.
@@ -208,8 +216,8 @@ class MetadataTest : public Metadata {
    * @param ciphertext the ciphertext whose metadata to retrieve.
    */
   template <class Element>
-  static const shared_ptr<MetadataTest> CloneMetadata(
-      ConstCiphertext<Element> ciphertext) {
+  static const std::shared_ptr<MetadataTest> CloneMetadata(
+      const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
     auto it = ciphertext->FindMetadataByKey("test");
 
     if (ciphertext->MetadataFound(it)) {
@@ -231,8 +239,8 @@ class MetadataTest : public Metadata {
    * @param ciphertext the ciphertext whose metadata to retrieve.
    */
   template <class Element>
-  static const shared_ptr<MetadataTest> GetMetadata(
-      ConstCiphertext<Element> ciphertext) {
+  static const std::shared_ptr<MetadataTest> GetMetadata(
+      const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
     auto it = ciphertext->FindMetadataByKey("test");
 
     if (ciphertext->MetadataFound(it)) {
@@ -261,13 +269,13 @@ class MetadataTest : public Metadata {
    * @param ciphertext the ciphertext whose metadata to retrieve.
    */
   template <class Element>
-  static void StoreMetadata(Ciphertext<Element> ciphertext,
-                            shared_ptr<MetadataTest> mdata) {
+  static void StoreMetadata(std::shared_ptr<CiphertextImpl<Element>> ciphertext,
+      std::shared_ptr<MetadataTest> mdata) {
     ciphertext->SetMetadataByKey("test", mdata);
   }
 
  protected:
-  string m_s;
+  std::string m_s;
 };
 
 }  // end namespace lbcrypto

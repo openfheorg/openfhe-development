@@ -23,7 +23,7 @@
 
 #include <cmath>
 #include <fstream>
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 #define DEMANGLER  // used for the demangling type namefunction.
 
@@ -521,17 +521,17 @@ PolyImpl<VecType> PolyImpl<VecType>::Times(const Integer &element) const {
 
 template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Times(
-    bigintnat::NativeInteger::SignedNativeInt element) const {
+    NativeInteger::SignedNativeInt element) const {
   PolyImpl<VecType> tmp = CloneParametersOnly();
   if (element < 0) {
     Integer q = m_params->GetModulus();
-    Integer elementReduced = bigintnat::NativeInteger::Integer(-element);
+    Integer elementReduced = NativeInteger::Integer(-element);
     if (elementReduced > q) elementReduced.ModEq(q);
     tmp.SetValues(GetValues().ModMul(q - Integer(elementReduced)),
                   this->m_format);
   } else {
     Integer q = m_params->GetModulus();
-    Integer elementReduced = bigintnat::NativeInteger::Integer(element);
+    Integer elementReduced = NativeInteger::Integer(element);
     if (elementReduced > q) elementReduced.ModEq(q);
     tmp.SetValues(GetValues().ModMul(Integer(elementReduced)), this->m_format);
   }

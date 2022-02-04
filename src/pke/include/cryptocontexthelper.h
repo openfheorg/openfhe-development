@@ -27,8 +27,8 @@
 #include <iostream>
 #include <string>
 
-#include "cryptocontext.h"
 #include "cryptocontextparametersets.h"
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 

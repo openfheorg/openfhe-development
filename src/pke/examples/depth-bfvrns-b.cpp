@@ -28,15 +28,11 @@
 
 #define PROFILE
 
-#include <chrono>
-#include <fstream>
 #include <iostream>
-#include <iterator>
 
-#include "cryptocontextgen.h"
-#include "cryptocontexthelper.h"
-#include "encoding/encodings.h"
 #include "palisade.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
 #include "utils/debug.h"
 
 using namespace std;
@@ -62,28 +58,20 @@ int main(int argc, char *argv[]) {
   TimeVar t;
   double processingTime(0.0);
 
-  usint plaintextModulus = 536903681;
-  double sigma = 3.2;
-  SecurityLevel securityLevel = HEStd_128_classic;
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(536903681);
+  parameters.SetStandardDeviation(3.2);
+  parameters.SetEvalMultCount(3);
+  parameters.SetMaxDepth(3);
+  parameters.SetScalingFactorBits(60);
+  parameters.SetMultiplicationTechnique(BEHZ);
 
-  ////////////////////////////////////////////////////////////
-  // Parameter generation
-  ////////////////////////////////////////////////////////////
-
-  EncodingParams encodingParams(
-      std::make_shared<EncodingParamsImpl>(plaintextModulus));
-
-  // Set Crypto Parameters
-  // # of evalMults = 3 (first 3) is used to support the multiplication of 7
-  // ciphertexts, i.e., ceiling{log2{7}} Max depth is set to 3 (second 3) to
-  // generate homomorphic evaluation multiplication keys for s^2 and s^3
-  CryptoContext<DCRTPoly> cryptoContext =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrnsB(
-          encodingParams, securityLevel, sigma, 0, 3, 0, OPTIMIZED, 3);
-
+  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
+  cryptoContext->Enable(PKE);
+  cryptoContext->Enable(KEYSWITCH);
+  cryptoContext->Enable(LEVELEDSHE);
+  cryptoContext->Enable(ADVANCEDSHE);
 
   std::cout << "\np = "
             << cryptoContext->GetCryptoParameters()->GetPlaintextModulus()
@@ -102,7 +90,7 @@ int main(int argc, char *argv[]) {
             << std::endl;
 
   // Initialize Public Key Containers
-  LPKeyPair<DCRTPoly> keyPair;
+  KeyPair<DCRTPoly> keyPair;
 
   ////////////////////////////////////////////////////////////
   // Perform Key Generation Operation

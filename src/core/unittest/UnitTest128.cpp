@@ -33,14 +33,13 @@
 #include <iostream>
 #include <fstream>
 
-#include "lattice/dcrtpoly.h"
-#include "math/backend.h"
+#include "math/hal.h"
 #include "utils/inttypes.h"
 #include "math/nbtheory.h"
 
 #include "math/distrgen.h"
 #include "utils/utilities.h"
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 using namespace std;
 using namespace lbcrypto;
@@ -50,19 +49,19 @@ using namespace lbcrypto;
  ************************************************/
 #if (NATIVEINT == 128)
 TEST(UT128, modular_operations) {
-  bigintnat::NativeInteger modulus = ((bigintnat::NativeInteger(1) << 120) +
-                                      bigintnat::NativeInteger(123456789));
-  bigintnat::NativeInteger mu = modulus.ComputeMu();
+  intnat::NativeInteger modulus = ((intnat::NativeInteger(1) << 120) +
+                                      intnat::NativeInteger(123456789));
+  intnat::NativeInteger mu = modulus.ComputeMu();
 
-  bigintnat::NativeInteger a =
-      (bigintnat::NativeInteger(1) << 110) + bigintnat::NativeInteger(1234);
-  bigintnat::NativeInteger b =
-      (bigintnat::NativeInteger(1) << 115) + bigintnat::NativeInteger(6789);
+  intnat::NativeInteger a =
+      (intnat::NativeInteger(1) << 110) + intnat::NativeInteger(1234);
+  intnat::NativeInteger b =
+      (intnat::NativeInteger(1) << 115) + intnat::NativeInteger(6789);
 
-  bigintnat::NativeInteger c =
-      (bigintnat::NativeInteger(1) << 120) + bigintnat::NativeInteger(6);
+  intnat::NativeInteger c =
+      (intnat::NativeInteger(1) << 120) + intnat::NativeInteger(6);
 
-  bigintnat::NativeInteger result = a;
+  intnat::NativeInteger result = a;
 
   result.ModMulEq(b, modulus, mu);
 
@@ -90,7 +89,7 @@ TEST(UT128, modular_operations) {
             BigInteger(result))
       << "Failure in ModMulFastEq";
 
-  bigintnat::NativeInteger precon = b.PrepModMulConst(modulus);
+  intnat::NativeInteger precon = b.PrepModMulConst(modulus);
 
   result = a.ModMulFastConst(b, modulus, precon);
 

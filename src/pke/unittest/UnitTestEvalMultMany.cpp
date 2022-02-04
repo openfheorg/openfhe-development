@@ -23,7 +23,6 @@
 
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
-#include "UnitTestCompareCryptoContext.h"
 
 #include <fstream>
 #include <iostream>
@@ -47,52 +46,22 @@ class UnitTestEvalMultMany : public ::testing::Test {
  public:
 };
 
-static CryptoContext<Poly> MakeBFVPolyCC() {
-  DEBUG_FLAG(false);
-  DEBUG("in MakeBFVPolyCC");
-  int relWindow = 8;
-  int plaintextModulus = 256;
-  double sigma = 4;
-  double rootHermiteFactor = 1.6;
-
-  // Set Crypto Parameters
-  CryptoContext<Poly> cryptoContext =
-      CryptoContextFactory<Poly>::genCryptoContextBFV(
-          plaintextModulus, rootHermiteFactor, relWindow, sigma, 0, 3, 0,
-          OPTIMIZED, 4);
-
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
-  DEBUG("DONEMakeBFVPolyCC");
-  return cryptoContext;
-}
-
 static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC() {
-    CCParams<CryptoContextBFVRNS<DCRTPoly>> parameters; 
+    CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(256);
-    parameters.SetStandardDeviation(4);
     parameters.SetRootHermiteFactor(1.03);
+    parameters.SetStandardDeviation(4);
     parameters.SetEvalMultCount(3);
     parameters.SetMaxDepth(4);
+    parameters.SetScalingFactorBits(60);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
-    {
-        int plaintextModulus = 256;
-        double sigma = 4;
-        double rootHermiteFactor = 1.03;
+    cryptoContext->Enable(PKE);
+    cryptoContext->Enable(KEYSWITCH);
+    cryptoContext->Enable(LEVELEDSHE);
+    cryptoContext->Enable(ADVANCEDSHE);
 
-        // Set Crypto Parameters
-        CryptoContext<DCRTPoly> cryptoContextOld =
-            CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-                plaintextModulus, rootHermiteFactor, sigma, 0, 3, 0, OPTIMIZED, 4);
-
-        EXPECT_EQ(Equal(*cryptoContext, *cryptoContextOld), true);
-    }
-
-  cryptoContext->Enable(ENCRYPTION);
-  cryptoContext->Enable(SHE);
-
-  return cryptoContext;
+    return cryptoContext;
 }
 
 template <typename Element>
@@ -100,9 +69,9 @@ static void RunEvalMultManyTest(CryptoContext<Element> cc, string msg);
 
 // Tests EvalMult w/o keyswitching and EvalMultMany for BFV in the
 // OPTIMIZED mode
-TEST(UTBFVEVALMM, Poly_BFV_Eval_Mult_Many_Operations_VERY_LONG) {
-  RunEvalMultManyTest(MakeBFVPolyCC(), "BFV");
-}
+//TEST(UTBFVEVALMM, Poly_BFV_Eval_Mult_Many_Operations_VERY_LONG) {
+//  RunEvalMultManyTest(MakeBFVPolyCC(), "BFV");
+//}
 
 // Tests EvalMult w/o keyswitching and EvalMultMany for BFVrns in the
 // OPTIMIZED mode

@@ -27,6 +27,8 @@
 
 #define PROFILE  //for TIC TOC
 #include "palisade.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
 
 using namespace std;
 using namespace lbcrypto;
@@ -60,21 +62,18 @@ bool run_demo_pre(void) {
   // int plaintextModulus = 786433; //plaintext prime modulus
   int plaintextModulus = 65537;  // can encode shorts
 
-  uint32_t multDepth = 1;
+  CCParams<CryptoContextBFVRNS> parameters;
+  parameters.SetPlaintextModulus(plaintextModulus);
+  parameters.SetStandardDeviation(3.2);
+  parameters.SetEvalMultCount(1);
+  parameters.SetScalingFactorBits(60);
 
-  double sigma = 3.2;
-  SecurityLevel securityLevel = HEStd_128_classic;
-
-  // Instantiate the crypto context
-  CryptoContext<DCRTPoly> cc =
-      CryptoContextFactory<DCRTPoly>::genCryptoContextBFVrns(
-          plaintextModulus, securityLevel, sigma, 0, multDepth, 0, OPTIMIZED);
-
+  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   cout << "\nParam generation time: " << "\t" << TOC_MS(t) << " ms" << endl;
-
   // Turn on features
-  cc->Enable(ENCRYPTION);
-  cc->Enable(SHE);
+  cc->Enable(PKE);
+  cc->Enable(KEYSWITCH);
+  cc->Enable(LEVELEDSHE);
   cc->Enable(PRE);
 
   std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus()
@@ -100,7 +99,7 @@ bool run_demo_pre(void) {
   ////////////////////////////////////////////////////////////
 
   // Initialize Key Pair Containers
-  LPKeyPair<DCRTPoly> keyPair1;
+  KeyPair<DCRTPoly> keyPair1;
 
   std::cout << "\nRunning Alice key generation (used for source data)..."
             << std::endl;
@@ -151,7 +150,7 @@ bool run_demo_pre(void) {
   ////////////////////////////////////////////////////////////
 
   // Initialize Key Pair Containers
-  LPKeyPair<DCRTPoly> keyPair2;
+  KeyPair<DCRTPoly> keyPair2;
 
   std::cout << "Bob Running key generation ..." << std::endl;
 
@@ -172,10 +171,10 @@ bool run_demo_pre(void) {
   std::cout << "\n"
             << "Generating proxy re-encryption key..." << std::endl;
 
-  LPEvalKey<DCRTPoly> reencryptionKey12;
+  EvalKey<DCRTPoly> reencryptionKey12;
 
   TIC(t);
-  reencryptionKey12 = cc->ReKeyGen(keyPair2.publicKey, keyPair1.secretKey);
+  reencryptionKey12 = cc->ReKeyGen(keyPair1.secretKey, keyPair2.publicKey);
   cout << "Key generation time: " << "\t" << TOC_MS(t) << " ms" << endl;
 
   ////////////////////////////////////////////////////////////
@@ -183,7 +182,7 @@ bool run_demo_pre(void) {
   ////////////////////////////////////////////////////////////
 
   TIC(t);
-  auto ct2 = cc->ReEncrypt(reencryptionKey12, ct1);
+  auto ct2 = cc->ReEncrypt(ct1, reencryptionKey12);
   cout << "Re-Encryption time: " << "\t" << TOC_MS(t) << " ms" << endl;
 
   ////////////////////////////////////////////////////////////

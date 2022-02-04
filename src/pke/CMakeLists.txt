@@ -3,7 +3,8 @@
 #
 
 # all files named *-impl.cpp are compiled to form the library
-file (GLOB PKE_SRC_FILES CONFIGURE_DEPENDS lib/*-impl.cpp lib/scheme/*/*-impl.cpp lib/scheme/*-impl.cpp lib/encoding/*.cpp)
+file (GLOB PKE_SRC_FILES CONFIGURE_DEPENDS lib/*-impl.cpp lib/scheme/*/*.cpp 
+lib/scheme/*-impl.cpp lib/encoding/*.cpp lib/key/*-impl.cpp lib/keyswitch/*.cpp lib/schemebase/*-impl.cpp lib/schemerns/*.cpp)
 
 include_directories(${CORE_INCLUDE_DIRS})
 list(APPEND PKE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -56,7 +57,7 @@ if( BUILD_STATIC )
 endif()
 
 if( BUILD_UNITTESTS )
-	file (GLOB PKE_TEST_SRC_FILES CONFIGURE_DEPENDS unittest/*.cpp)
+	file (GLOB_RECURSE PKE_TEST_SRC_FILES CONFIGURE_DEPENDS unittest/*.cpp)
 	add_executable (pke_tests ${PKE_TEST_SRC_FILES} ${UNITTESTMAIN})
 	set_property(TARGET pke_tests PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/unittest)
 	target_link_libraries ( pke_tests ${PKELIBS} )
@@ -103,3 +104,15 @@ endif()
 
 add_custom_command( OUTPUT pkeinfocmd COMMAND echo Builds PALISADEpke and these apps: ${PKEAPPS} )
 add_custom_target( pkeinfo DEPENDS pkeinfocmd )
+
+# Collect compile definitions and pass them upward
+if ( BUILD_SHARED )
+	get_target_property(_compile_defs PALISADEpke COMPILE_DEFINITIONS)
+	set(_pal_pke_compile_defs ${_compile_defs} PARENT_SCOPE)
+endif()
+
+if( BUILD_STATIC )
+	get_target_property(_compile_defs_static PALISADEpke_static COMPILE_DEFINITIONS)
+	set(_pal_pke_compile_defs_static ${_compile_defs_static} PARENT_SCOPE)
+endif()
+

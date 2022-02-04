@@ -29,12 +29,12 @@
 #include <memory>
 #include <vector>
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "math/distrgen.h"
 
 #include "utils/inttypes.h"
 
-#include "lattice/backend.h"
+#include "lattice/lat-hal.h"
 
 using namespace lbcrypto;
 

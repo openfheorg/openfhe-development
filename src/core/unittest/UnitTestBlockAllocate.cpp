@@ -34,7 +34,7 @@
 
 #include "gtest/gtest.h"
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "utils/blockAllocator/blockAllocator.h"
 #include "utils/debug.h"
 #include "utils/inttypes.h"

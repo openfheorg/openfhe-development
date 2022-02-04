@@ -27,7 +27,7 @@ project (PALISADE C CXX)
 
 set(PALISADE_VERSION_MAJOR 1)
 set(PALISADE_VERSION_MINOR 11)
-set(PALISADE_VERSION_PATCH 5)
+set(PALISADE_VERSION_PATCH 6)
 set(PALISADE_VERSION ${PALISADE_VERSION_MAJOR}.${PALISADE_VERSION_MINOR}.${PALISADE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -240,6 +240,24 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 #--------------------------------------------------------------------
+# Uninstall logic
+#--------------------------------------------------------------------
+## clobber cleans and deletes the third-party stuff
+add_custom_target(
+        COMMAND make clean
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+add_custom_target("uninstall" COMMENT "Uninstall PALISADE files")
+add_custom_command(
+        TARGET "uninstall"
+        POST_BUILD
+        COMMENT "Uninstall files within install_manifest.txt"
+        COMMAND ../script/uninstall_openfhe.sh
+        USES_TERMINAL
+)
+
+
+#--------------------------------------------------------------------
 # Machine-specific checks
 #--------------------------------------------------------------------
 # determine the architecture on a Linux/Unix/macOS/MinGW system
@@ -323,7 +341,9 @@ if( "${MATHBACKEND}" EQUAL 6 AND "${NATIVEINT}" EQUAL 128)
         message (STATUS "BACKEND 6 is not compatible with 128-bit native backend. Resetting multiprecision backend to 2.")
 endif()
 
-add_definitions(-DMATHBACKEND=${MATHBACKEND})
+set( PALISADE_BACKEND_FLAGS "-DMATHBACKEND=${MATHBACKEND}")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PALISADE_BACKEND_FLAGS}")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PALISADE_BACKEND_FLAGS}")
 
 if(WITH_TCM)
 	message(STATUS "tcmalloc is turned ON")
@@ -366,24 +386,38 @@ if (WITH_OPENMP)
 
 	# Set OpenMP configuration manually for macOS
 	if (APPLE)
-		set(OPENMP_LIBRARIES "/usr/local/opt/libomp/lib")
-		set(OPENMP_INCLUDES "/usr/local/opt/libomp/include")
 
-		if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-			set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
-			set(OpenMP_C_LIB_NAMES "libomp")
-			set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
-		endif()
-		if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-			set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
-			set(OpenMP_CXX_LIB_NAMES "libomp")
-			set(OpenMP_libomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
-		endif()
+        # Check for Apple M1 Processor
+        if (${ARCHITECTURE} MATCHES "arm64")
+            message( STATUS "Apple M1 detected")
+            set(OPENMP_LIBRARIES "/opt/homebrew/opt/libomp/lib")
+            set(OPENMP_INCLUDES "/opt/homebrew/opt/libomp/include")
+        else() # Apple Intel Processor
+            message( STATUS "Apple Intel detected")
+            set(OPENMP_LIBRARIES "/usr/local/opt/libomp/lib")
+            set(OPENMP_INCLUDES "/usr/local/opt/libomp/include")
+        endif()
 
-		include_directories("${OPENMP_INCLUDES}")
-		link_directories("${OPENMP_LIBRARIES}")
-		set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-		set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+            set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+            set(OpenMP_C_LIB_NAMES "libomp")
+            set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
+        endif()
+        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+            set(OpenMP_CXX_LIB_NAMES "libomp")
+            set(OpenMP_libomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+        endif()
+
+        include_directories("${OPENMP_INCLUDES}")
+        link_directories("${OPENMP_LIBRARIES}")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        
+        message( STATUS "OPENMP_LIBRARIES: " ${OPENMP_LIBRARIES})
+        message( STATUS "OPENMP_INCLUDES: " ${OPENMP_INCLUDES})
+        message( STATUS "OpenMP_CXX_FLAGS: " ${OpenMP_CXX_FLAGS})
+        message( STATUS "OpenMP_CXX_LIB_NAMES: " ${OpenMP_CXX_LIB_NAMES})
 	endif()
 
 	# OpenMP_CXX_FOUND was added in cmake 3.9.x

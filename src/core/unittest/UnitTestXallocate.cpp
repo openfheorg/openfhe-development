@@ -34,7 +34,7 @@
 
 #include "gtest/gtest.h"
 
-#include "math/backend.h"
+#include "math/hal.h"
 #include "utils/blockAllocator/xallocator.h"
 #include "utils/debug.h"
 #include "utils/defines.h"
