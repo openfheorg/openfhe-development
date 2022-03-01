@@ -1,708 +1,923 @@
-#if 0 // TODO This file should be uncommented after merge to github
-// @file
-// @author TPOC: contact@palisade-crypto.org
-//
-// @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
-// All rights reserved.
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-// 1. Redistributions of source code must retain the above copyright notice,
-// this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-// this list of conditions and the following disclaimer in the documentation
-// and/or other materials provided with the distribution. THIS SOFTWARE IS
-// PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
-// IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-// EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
+#if 0 // TODO uncomment test after merge to github
+/**
+ * @file UnitTestSHE.cpp
+ *
+ * @brief unit tests for the SHE capabilities
+ *
+ * @author TPOC: contact@palisade-crypto.org
+ *
+ * @contributor Dmitriy Suponitskiy
+ *
+ * @copyright Copyright (c) 2022, Duality Technologies (https://dualitytech.com/)
+ * All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution. THIS SOFTWARE IS
+ * PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#include "UnitTestUtils.h"
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
 
 #include <iostream>
-#include <list>
 #include <vector>
 #include "gtest/gtest.h"
+#include <cxxabi.h>
 
-#include "palisade.h"
-#include "cryptocontextgen.h"
-#include "utils/testcasegen.h"
 
-using namespace std;
 using namespace lbcrypto;
 
-class UTSHE : public ::testing::Test {
- public:
-  const usint m = 32;
-  UTSHE() {}
-  ~UTSHE() {}
-
- protected:
-  void SetUp() {}
-
-  void TearDown() {
-    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-  }
+//===========================================================================================================
+enum TEST_CASE_TYPE {
+    ADD_PACKED = 0,
+    MULT_COEF_PACKED,
+    MULT_PACKED,
+    EVALATINDEX,
+    EVALMERGE,
+    EVALSUM,
+    METADATA,
+    EVALSUM_ALL,
+    KS_SINGLE_CRT,
+    KS_MOD_REDUCE_DCRT,
 };
 
-// This file unit tests the SHE capabilities for all schemes, using all known
-// elements
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
+    std::string typeName;
+    switch (type) {
+    case ADD_PACKED:
+        typeName = "ADD_PACKED";
+        break;
+    case MULT_COEF_PACKED:
+        typeName = "MULT_COEF_PACKED";
+        break;
+    case MULT_PACKED:
+        typeName = "MULT_PACKED";
+        break;
+    case EVALATINDEX:
+        typeName = "EVALATINDEX";
+        break;
+    case EVALMERGE:
+        typeName = "EVALMERGE";
+        break;
+    case EVALSUM:
+        typeName = "EVALSUM";
+        break;
+    case METADATA:
+        typeName = "METADATA";
+        break;
+    case EVALSUM_ALL:
+        typeName = "EVALSUM_ALL";
+        break;
+    case KS_SINGLE_CRT:
+        typeName = "KS_SINGLE_CRT";
+        break;
+    case KS_MOD_REDUCE_DCRT:
+        typeName = "KS_MOD_REDUCE_DCRT";
+        break;
+    default:
+        typeName = "UNKNOWN";
+        break;
+    }
+    return os << typeName;
+}
+//===========================================================================================================
+struct TEST_CASE {
+    TEST_CASE_TYPE testCaseType;
+    // test case description - MUST BE UNIQUE
+    std::string description;
 
-// TODO NativePoly SHE tests no bueno on Mult
-// GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFV_rlwe, ORD, PTM)
-// GENERATE_PKE_TEST_CASE(x, y, NativePoly, BFV_opt, ORD, PTM)
+    UnitTestCCParams  params;
 
-#define GENERATE_TEST_CASES_FUNC(x, y, ORD, PTM)                   \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, Null, ORD, PTM)           \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_rlwe, ORD, PTM)    \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_opt, ORD, PTM)     \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_rlwe, ORD, PTM)    \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_opt, ORD, PTM)     \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_rlwe, ORD, PTM)   \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_opt, ORD, PTM)
+    // additional test case data
+    // ........
 
-// For EvalAtIndex
-#define GENERATE_TEST_CASES_FUNC_EVALATINDEX(x, y, ORD, PTM)       \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, Null, ORD, PTM)           \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_rlwe, ORD, PTM)    \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_opt, ORD, PTM)     \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_rlwe, ORD, PTM)    \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_opt, ORD, PTM)     \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_rlwe, ORD, PTM)   \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_opt, ORD, PTM)
+    std::string buildTestName() const {
+        std::stringstream ss;
+        ss << testCaseType << "_" << description;
+        return ss.str();
+    }
+    std::string toString() const {
+        std::stringstream ss;
+        ss << "testCaseType [" << testCaseType << "], " << params.toString();
+        return ss.str();
+    }
+};
 
-// For EvalSum
-#define GENERATE_TEST_CASES_FUNC_EVALSUM(x, y, ORD, PTM)         \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_rlwe, ORD, PTM)  \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_opt, ORD, PTM)   \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_rlwe, ORD, PTM) \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_opt, ORD, PTM)
+// this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
+// the name MUST be constructed from digits, letters and '_' only
+static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+    return test.param.buildTestName();
+};
 
-// For metadata
-#define GENERATE_TEST_CASES_FUNC_METADATA(x, y, ORD, PTM)        \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_rlwe, ORD, PTM)  \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrns_opt, ORD, PTM)   \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_rlwe, ORD, PTM) \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BFVrnsB_opt, ORD, PTM)  \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_rlwe, ORD, PTM)  \
-  GENERATE_PKE_TEST_CASE(x, y, DCRTPoly, BGVrns_opt, ORD, PTM)
-
-//static vector<string> AllSchemes({"Null", "BFV", /*"BFVrns"*/});
-typedef ::testing::Types< /*Poly, */DCRTPoly/*, NativePoly*/ > EncryptElementTypes;
-
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+    return os << test.toString();
+}
+//===========================================================================================================
 // NOTE the SHE tests are all based on these
-static const usint ORDER = 32;
-static const usint PTMOD = 64;
+constexpr usint BATCH     = 16;
+constexpr usint BATCH_LRG = 1 << 12;
+constexpr usint PTM     = 64;
+constexpr usint PTM_LRG = 65537;
+constexpr double STD_DEV = 3.2;
+static std::vector<TEST_CASE> testCases = {
+    // TestType,  Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { ADD_PACKED, "1", {BGVRNS_SCHEME, 16,   2,         59,     DFLT, BATCH,   OPTIMIZED,  DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { ADD_PACKED, "2", {BGVRNS_SCHEME, 16,   2,         59,     DFLT, BATCH,   RLWE,       DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { ADD_PACKED, "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { ADD_PACKED, "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { ADD_PACKED, "5", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    { ADD_PACKED, "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    // ==========================================
+    // TestType,        Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { MULT_COEF_PACKED, "1", {BGVRNS_SCHEME, 16,   2,         59,     DFLT, BATCH,   OPTIMIZED,  DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { MULT_COEF_PACKED, "2", {BGVRNS_SCHEME, 16,   2,         59,     DFLT, BATCH,   RLWE,       DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { MULT_COEF_PACKED, "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { MULT_COEF_PACKED, "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { MULT_COEF_PACKED, "5", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    { MULT_COEF_PACKED, "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    // ==========================================
+    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { MULT_PACKED, "1", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   OPTIMIZED,  DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { MULT_PACKED, "2", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   RLWE,       DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { MULT_PACKED, "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { MULT_PACKED, "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { MULT_PACKED, "5", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    { MULT_PACKED, "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    // ==========================================
+    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { EVALATINDEX, "1", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   OPTIMIZED,  DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVALATINDEX, "2", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   RLWE,       DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVALATINDEX, "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { EVALATINDEX, "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { EVALATINDEX, "5", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    { EVALATINDEX, "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    // ==========================================
+    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { EVALMERGE,   "1", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   OPTIMIZED,  DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVALMERGE,   "2", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   RLWE,       DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVALMERGE,   "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { EVALMERGE,   "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { EVALMERGE,   "5", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    { EVALMERGE,   "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    // ==========================================
+    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { EVALSUM,     "1", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { EVALSUM,     "2", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { EVALSUM,     "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    { EVALSUM,     "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    // ==========================================
+    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { METADATA,    "1", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   OPTIMIZED,  DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { METADATA,    "2", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   RLWE,       DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
+    { METADATA,    "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { METADATA,    "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, HPS},  },
+    { METADATA,    "5", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    { METADATA,    "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,  DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV,DFLT,      2,          DFLT, BEHZ}, },
+    // ==========================================
+    // TestType,          Descr, Scheme,       RDim,      MultDepth, SFBits, RWin, BatchSz,   Mode,  Depth, MDepth, ModSize, SecLvl, KSTech, RSTech,    LDigits, PtMod,   StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
+    { EVALSUM_ALL,        "1", {BFVRNS_SCHEME, BATCH_LRG, DFLT,      60,     20,   BATCH_LRG, DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV, DFLT,      2,          DFLT, DFLT},  },
+    { KS_SINGLE_CRT,      "1", {BGVRNS_SCHEME, 256,       DFLT,      50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, DFLT,        DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_MOD_REDUCE_DCRT, "1", {BGVRNS_SCHEME, 256,       4,         30,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, DFLT,        DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
+};
+//===========================================================================================================
+class UTSHE : public ::testing::TestWithParam<TEST_CASE> {
+    using Element = DCRTPoly;
 
-template <class Element>
-static void UnitTest_Add_Packed(const CryptoContext<Element> cc,
-                                const string& failmsg) {
-  std::vector<int64_t> vectorOfInts1 = {1, 0, 3, 1, 0, 1, 2, 1};
-  Plaintext plaintext1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+protected:
+    void SetUp() {}
 
-  std::vector<int64_t> vectorOfInts2 = {2, 1, 3, 2, 2, 1, 3, 0};
-  Plaintext plaintext2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+    void TearDown() {
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    }
 
-  std::vector<int64_t> vectorOfIntsAdd = {3, 1, 6, 3, 2, 2, 5, 1};
-  Plaintext plaintextAdd = cc->MakeCoefPackedPlaintext(vectorOfIntsAdd);
+    void UnitTest_Add_Packed(const TEST_CASE& testData, const string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-  std::vector<int64_t> vectorOfIntsSub = {-1, -1, 0, -1, -2, 0, -1, 1};
-  Plaintext plaintextSub = cc->MakeCoefPackedPlaintext(vectorOfIntsSub);
+            std::vector<int64_t> vectorOfInts1 = { 1, 0, 3, 1, 0, 1, 2, 1 };
+            Plaintext plaintext1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
 
-  KeyPair<Element> kp = cc->KeyGen();
-  Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, plaintext1);
-  Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
+            std::vector<int64_t> vectorOfInts2 = { 2, 1, 3, 2, 2, 1, 3, 0 };
+            Plaintext plaintext2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
 
-  Ciphertext<Element> cResult;
-  Plaintext results;
+            std::vector<int64_t> vectorOfIntsAdd = { 3, 1, 6, 3, 2, 2, 5, 1 };
+            Plaintext plaintextAdd = cc->MakeCoefPackedPlaintext(vectorOfIntsAdd);
 
-  cResult = cc->EvalAdd(ciphertext1, ciphertext2);
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(plaintextAdd->GetLength());
-  EXPECT_EQ(plaintextAdd->GetCoefPackedValue(), results->GetCoefPackedValue())
-      << failmsg << " EvalAdd fails";
+            std::vector<int64_t> vectorOfIntsSub = { -1, -1, 0, -1, -2, 0, -1, 1 };
+            Plaintext plaintextSub = cc->MakeCoefPackedPlaintext(vectorOfIntsSub);
 
-  auto ct1_clone = ciphertext1->Clone();
-  cc->EvalAddInPlace(ct1_clone, ciphertext2);
-  cc->Decrypt(kp.secretKey, ct1_clone, &results);
-  results->SetLength(plaintextAdd->GetLength());
-  EXPECT_EQ(plaintextAdd->GetCoefPackedValue(), results->GetCoefPackedValue())
-      << failmsg << " EvalAddInPlace fails";
+            KeyPair<Element> kp = cc->KeyGen();
+            Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, plaintext1);
+            Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
 
-  cResult = ciphertext1 + ciphertext2;
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(plaintextAdd->GetLength());
-  EXPECT_EQ(plaintextAdd->GetCoefPackedValue(), results->GetCoefPackedValue())
-      << failmsg << " operator+ fails";
+            Ciphertext<Element> cResult;
+            Plaintext results;
 
-  Ciphertext<Element> caddInplace = ciphertext1->Clone();
-  caddInplace += ciphertext2;
-  cc->Decrypt(kp.secretKey, caddInplace, &results);
-  results->SetLength(plaintextAdd->GetLength());
-  EXPECT_EQ(plaintextAdd->GetCoefPackedValue(), results->GetCoefPackedValue())
-      << failmsg << " operator+= fails";
+            cResult = cc->EvalAdd(ciphertext1, ciphertext2);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintextAdd->GetLength());
+            EXPECT_EQ(plaintextAdd->GetCoefPackedValue(), results->GetCoefPackedValue())
+                << failmsg << " EvalAdd fails";
 
-  cResult = cc->EvalSub(ciphertext1, ciphertext2);
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(plaintextSub->GetLength());
-  EXPECT_EQ(plaintextSub->GetCoefPackedValue(), results->GetCoefPackedValue())
-      << failmsg << " EvalSub fails";
+            auto ct1_clone = ciphertext1->Clone();
+            cc->EvalAddInPlace(ct1_clone, ciphertext2);
+            cc->Decrypt(kp.secretKey, ct1_clone, &results);
+            results->SetLength(plaintextAdd->GetLength());
+            EXPECT_EQ(plaintextAdd->GetCoefPackedValue(), results->GetCoefPackedValue())
+                << failmsg << " EvalAddInPlace fails";
 
-  cResult = ciphertext1 - ciphertext2;
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(plaintextSub->GetLength());
-  EXPECT_EQ(plaintextSub->GetCoefPackedValue(), results->GetCoefPackedValue())
-      << failmsg << " operator- fails";
+            cResult = ciphertext1 + ciphertext2;
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintextAdd->GetLength());
+            EXPECT_EQ(plaintextAdd->GetCoefPackedValue(), results->GetCoefPackedValue())
+                << failmsg << " operator+ fails";
 
-  Ciphertext<Element> csubInplace = ciphertext1->Clone();
-  csubInplace -= ciphertext2;
-  cc->Decrypt(kp.secretKey, csubInplace, &results);
-  results->SetLength(plaintextSub->GetLength());
-  EXPECT_EQ(plaintextSub->GetCoefPackedValue(), results->GetCoefPackedValue())
-      << failmsg << " operator-= fails";
+            Ciphertext<Element> caddInplace = ciphertext1->Clone();
+            caddInplace += ciphertext2;
+            cc->Decrypt(kp.secretKey, caddInplace, &results);
+            results->SetLength(plaintextAdd->GetLength());
+            EXPECT_EQ(plaintextAdd->GetCoefPackedValue(), results->GetCoefPackedValue())
+                << failmsg << " operator+= fails";
 
-  cResult = cc->EvalAdd(ciphertext1, plaintext2);
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(plaintextAdd->GetLength());
-  EXPECT_EQ(plaintextAdd->GetCoefPackedValue(), results->GetCoefPackedValue())
-      << failmsg << " EvalAdd Ct and Pt fails";
+            cResult = cc->EvalSub(ciphertext1, ciphertext2);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintextSub->GetLength());
+            EXPECT_EQ(plaintextSub->GetCoefPackedValue(), results->GetCoefPackedValue())
+                << failmsg << " EvalSub fails";
 
-  cResult = cc->EvalSub(ciphertext1, plaintext2);
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(plaintextSub->GetLength());
-  EXPECT_EQ(plaintextSub->GetCoefPackedValue(), results->GetCoefPackedValue())
-      << failmsg << " EvalSub Ct and Pt fails";
+            cResult = ciphertext1 - ciphertext2;
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintextSub->GetLength());
+            EXPECT_EQ(plaintextSub->GetCoefPackedValue(), results->GetCoefPackedValue())
+                << failmsg << " operator- fails";
+
+            Ciphertext<Element> csubInplace = ciphertext1->Clone();
+            csubInplace -= ciphertext2;
+            cc->Decrypt(kp.secretKey, csubInplace, &results);
+            results->SetLength(plaintextSub->GetLength());
+            EXPECT_EQ(plaintextSub->GetCoefPackedValue(), results->GetCoefPackedValue())
+                << failmsg << " operator-= fails";
+
+            cResult = cc->EvalAdd(ciphertext1, plaintext2);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintextAdd->GetLength());
+            EXPECT_EQ(plaintextAdd->GetCoefPackedValue(), results->GetCoefPackedValue())
+                << failmsg << " EvalAdd Ct and Pt fails";
+
+            cResult = cc->EvalSub(ciphertext1, plaintext2);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintextSub->GetLength());
+            EXPECT_EQ(plaintextSub->GetCoefPackedValue(), results->GetCoefPackedValue())
+                << failmsg << " EvalSub Ct and Pt fails";
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            int status = 0;
+            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            std::free(name);
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_Mult_CoefPacked(const TEST_CASE& testData, const string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            std::vector<int64_t> vectorOfInts1 = { 1, 0, 3, 1, 0, 1, 2, 1 };
+            Plaintext plaintext1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+
+            std::vector<int64_t> vectorOfInts2 = { 2, 1, 3, 2, 2, 1, 3, 0 };
+            Plaintext plaintext2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+
+            // For cyclotomic order != 16, the expected result is the convolution of
+            // vectorOfInt21 and vectorOfInts2
+            std::vector<int64_t> vectorOfIntsMultLong = { 2,  1,  9,  7, 12, 12, 16,
+                                                         12, 19, 12, 7, 7,  7,  3 };
+            std::vector<int64_t> vectorOfIntsMult = { -17, -11, 2, 0, 5, 9, 16, 12 };
+
+            Plaintext intArray1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+
+            Plaintext intArray2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+
+            Plaintext intArrayExpected = cc->MakeCoefPackedPlaintext(
+                cc->GetCyclotomicOrder() == 16 ? vectorOfIntsMult : vectorOfIntsMultLong);
+
+            // Initialize the public key containers.
+            KeyPair<Element> kp = cc->KeyGen();
+
+            Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
+
+            Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
+
+            cc->EvalMultKeyGen(kp.secretKey);
+
+            Ciphertext<Element> cResult;
+            Plaintext results;
+
+            cResult = cc->EvalMult(ciphertext1, ciphertext2);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(intArrayExpected->GetLength());
+            EXPECT_EQ(intArrayExpected->GetCoefPackedValue(),
+                results->GetCoefPackedValue())
+                << failmsg << " EvalMult fails";
+
+            cResult = ciphertext1 * ciphertext2;
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(intArrayExpected->GetLength());
+            EXPECT_EQ(intArrayExpected->GetCoefPackedValue(),
+                results->GetCoefPackedValue())
+                << failmsg << " operator* fails";
+
+            Ciphertext<Element> cmulInplace = ciphertext1->Clone();
+            cmulInplace *= ciphertext2;
+            cc->Decrypt(kp.secretKey, cmulInplace, &results);
+            results->SetLength(intArrayExpected->GetLength());
+            EXPECT_EQ(intArrayExpected->GetCoefPackedValue(),
+                results->GetCoefPackedValue())
+                << failmsg << " operator*= fails";
+
+            cResult = cc->EvalMult(ciphertext1, plaintext2);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(intArrayExpected->GetLength());
+            EXPECT_EQ(intArrayExpected->GetCoefPackedValue(),
+                results->GetCoefPackedValue())
+                << failmsg << " EvalMult Ct and Pt fails";
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            int status = 0;
+            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            std::free(name);
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_Mult_Packed(const TEST_CASE& testData, const string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            std::vector<int64_t> vectorOfInts1 = { 1, 0, 3, 1, 0, 1, 2, 1 };
+            Plaintext plaintext1 = cc->MakePackedPlaintext(vectorOfInts1);
+
+            std::vector<int64_t> vectorOfInts2 = { 2, 1, 3, 2, 2, 1, 3, 1 };
+            Plaintext plaintext2 = cc->MakePackedPlaintext(vectorOfInts2);
+
+            // For cyclotomic order != 16, the expected result is the convolution of
+            // vectorOfInt21 and vectorOfInts2
+            std::vector<int64_t> vectorOfIntsMult = { 2, 0, 9, 2, 0, 1, 6, 1 };
+
+            Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
+
+            Plaintext intArray2 = cc->MakePackedPlaintext(vectorOfInts2);
+
+            Plaintext intArrayExpected = cc->MakePackedPlaintext(vectorOfIntsMult);
+
+            // Initialize the public key containers.
+            KeyPair<Element> kp = cc->KeyGen();
+
+            Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
+
+            Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
+
+            cc->EvalMultKeyGen(kp.secretKey);
+
+            Ciphertext<Element> cResult;
+            Plaintext results;
+
+            cResult = cc->EvalMult(ciphertext1, ciphertext2);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(intArrayExpected->GetLength());
+            EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue())
+                << failmsg << " EvalMult fails";
+
+            cResult = ciphertext1 * ciphertext2;
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(intArrayExpected->GetLength());
+            EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue())
+                << failmsg << " operator* fails";
+
+            Ciphertext<Element> cmulInplace = ciphertext1->Clone();
+            cmulInplace *= ciphertext2;
+            cc->Decrypt(kp.secretKey, cmulInplace, &results);
+            results->SetLength(intArrayExpected->GetLength());
+            EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue())
+                << failmsg << " operator*= fails";
+
+            cResult = cc->EvalMult(ciphertext1, plaintext2);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(intArrayExpected->GetLength());
+            EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue())
+                << failmsg << " EvalMult Ct and Pt fails";
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            int status = 0;
+            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            std::free(name);
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_EvalAtIndex(const TEST_CASE& testData, const string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            std::vector<int64_t> vectorOfInts1 = { 1, 2,  3,  4,  5,  6,  7,  8,
+                                            9, 10, 11, 12, 13, 14, 15, 16 };
+            Plaintext plaintext1 = cc->MakePackedPlaintext(vectorOfInts1);
+
+            // Expected results after evaluating EvalAtIndex(3) and EvalAtIndex(-3)
+            std::vector<int64_t> vectorOfIntsPlus3 = { 4,  5,  6,  7,  8,  9, 10, 11,
+                                                      12, 13, 14, 15, 16, 0, 0,  0 };
+            std::vector<int64_t> vectorOfIntsMinus3 = { 0, 0, 0, 1, 2,  3,  4,  5,
+                                                       6, 7, 8, 9, 10, 11, 12, 13 };
+
+            Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
+
+            Plaintext intArrayPlus3 = cc->MakePackedPlaintext(vectorOfIntsPlus3);
+            Plaintext intArrayMinus3 = cc->MakePackedPlaintext(vectorOfIntsMinus3);
+
+            // Initialize the public key containers.
+            KeyPair<Element> kp = cc->KeyGen();
+
+            Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
+
+            cc->EvalAtIndexKeyGen(kp.secretKey, { 3, -3 });
+
+            Ciphertext<Element> cResult1 = cc->EvalAtIndex(ciphertext1, 3);
+
+            Ciphertext<Element> cResult2 = cc->EvalAtIndex(ciphertext1, -3);
+
+            Plaintext results1;
+
+            Plaintext results2;
+
+            cc->Decrypt(kp.secretKey, cResult1, &results1);
+
+            cc->Decrypt(kp.secretKey, cResult2, &results2);
+
+            results1->SetLength(intArrayPlus3->GetLength());
+            EXPECT_EQ(intArrayPlus3->GetPackedValue(), results1->GetPackedValue())
+                << failmsg << " EvalAtIndex(3) fails";
+
+            results2->SetLength(intArrayMinus3->GetLength());
+            EXPECT_EQ(intArrayMinus3->GetPackedValue(), results2->GetPackedValue())
+                << failmsg << " EvalAtIndex(-3) fails";
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            int status = 0;
+            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            std::free(name);
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_EvalMerge(const TEST_CASE& testData, const string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            // Initialize the public key containers.
+            KeyPair<Element> kp = cc->KeyGen();
+
+            std::vector<Ciphertext<Element>> ciphertexts;
+
+            std::vector<int64_t> vectorOfInts1 = { 32, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
+            ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray1));
+
+            std::vector<int64_t> vectorOfInts2 = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            Plaintext intArray2 = cc->MakePackedPlaintext(vectorOfInts2);
+            ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray2));
+
+            std::vector<int64_t> vectorOfInts3 = { 4, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            Plaintext intArray3 = cc->MakePackedPlaintext(vectorOfInts3);
+            ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray3));
+
+            std::vector<int64_t> vectorOfInts4 = { 8, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            Plaintext intArray4 = cc->MakePackedPlaintext(vectorOfInts4);
+            ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray4));
+
+            std::vector<int64_t> vectorOfInts5 = { 16, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            Plaintext intArray5 = cc->MakePackedPlaintext(vectorOfInts5);
+            ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray5));
+
+            // Expected results after evaluating EvalAtIndex(3) and EvalAtIndex(-3)
+            std::vector<int64_t> vectorMerged = { 32, 2, 4, 8, 16, 0, 0, 0 };
+            Plaintext intArrayMerged = cc->MakePackedPlaintext(vectorMerged);
+
+            vector<int32_t> indexList = { -1, -2, -3, -4, -5 };
+
+            cc->EvalAtIndexKeyGen(kp.secretKey, indexList);
+
+            auto mergedCiphertext = cc->EvalMerge(ciphertexts);
+
+            Plaintext results1;
+
+            cc->Decrypt(kp.secretKey, mergedCiphertext, &results1);
+
+            results1->SetLength(intArrayMerged->GetLength());
+            EXPECT_EQ(intArrayMerged->GetPackedValue(), results1->GetPackedValue())
+                << failmsg << " EvalMerge fails";
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            int status = 0;
+            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            std::free(name);
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_EvalSum(const TEST_CASE& testData, const string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            // Initialize the public key containers.
+            KeyPair<Element> kp = cc->KeyGen();
+
+            std::vector<Ciphertext<Element>> ciphertexts;
+
+            uint32_t n = cc->GetRingDimension();
+
+            std::vector<int64_t> vectorOfInts1 = { 1, 2, 3, 4, 5, 6, 7, 8 };
+            uint32_t dim = vectorOfInts1.size();
+            vectorOfInts1.resize(n);
+            for (uint32_t i = dim; i < n; i++) vectorOfInts1[i] = vectorOfInts1[i % dim];
+            Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
+            auto ct1 = cc->Encrypt(kp.publicKey, intArray1);
+
+            cc->EvalSumKeyGen(kp.secretKey);
+
+            auto ctsum1 = cc->EvalSum(ct1, 1);
+            auto ctsum2 = cc->EvalSum(ct1, 2);
+            auto ctsum3 = cc->EvalSum(ct1, 8);
+
+            std::vector<int64_t> vectorOfInts2 = { 3, 5, 7, 9, 11, 13, 15, 9 };
+            vectorOfInts2.resize(n);
+            for (uint32_t i = dim; i < n; i++) vectorOfInts2[i] = vectorOfInts2[i % dim];
+            Plaintext intArray2 = cc->MakePackedPlaintext(vectorOfInts2);
+
+            std::vector<int64_t> vectorOfIntsAll = { 36, 36, 36, 36, 36, 36, 36, 36 };
+            vectorOfIntsAll.resize(n);
+            for (uint32_t i = dim; i < n; i++)
+                vectorOfIntsAll[i] = vectorOfIntsAll[i % dim];
+            Plaintext intArrayAll = cc->MakePackedPlaintext(vectorOfIntsAll);
+
+            Plaintext results1;
+            cc->Decrypt(kp.secretKey, ctsum1, &results1);
+            Plaintext results2;
+            cc->Decrypt(kp.secretKey, ctsum2, &results2);
+            Plaintext results3;
+            cc->Decrypt(kp.secretKey, ctsum3, &results3);
+
+            intArray1->SetLength(dim);
+            intArray2->SetLength(dim);
+            intArrayAll->SetLength(dim);
+            results1->SetLength(dim);
+            results2->SetLength(dim);
+            results3->SetLength(dim);
+
+            EXPECT_EQ(intArray1->GetPackedValue(), results1->GetPackedValue())
+                << failmsg << " EvalSum for batch size = 1 failed";
+            EXPECT_EQ(intArray2->GetPackedValue(), results2->GetPackedValue())
+                << failmsg << " EvalSum for batch size = 2 failed";
+            EXPECT_EQ(intArrayAll->GetPackedValue(), results3->GetPackedValue())
+                << failmsg << " EvalSum for batch size = 8 failed";
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            int status = 0;
+            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            std::free(name);
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_Metadata(const TEST_CASE& testData, const string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            std::vector<int64_t> input1{ 0,1,2,3,4,5,6,7 };
+            std::vector<int64_t> input2{ 0,-1,-2,-3,-4,-5,-6,-7 };
+            Plaintext plaintext1 = cc->MakePackedPlaintext(input1);
+            Plaintext plaintext2 = cc->MakePackedPlaintext(input2);
+
+            // Generate encryption keys
+            KeyPair<Element> kp = cc->KeyGen();
+            // Generate multiplication keys
+            cc->EvalMultKeyGen(kp.secretKey);
+            // Generate rotation keys for offsets +2 (left rotate) and -2 (right rotate)
+            cc->EvalAtIndexKeyGen(kp.secretKey, { 2, -2 });
+            // Generate keys for EvalSum
+            cc->EvalSumKeyGen(kp.secretKey);
+
+            // Encrypt plaintexts
+            Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, plaintext1);
+            Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
+            Plaintext results;
+
+            // Populating metadata map in ciphertexts
+            auto val1 = std::make_shared<MetadataTest>();
+            val1->SetMetadata("ciphertext1");
+            MetadataTest::StoreMetadata<Element>(ciphertext1, val1);
+            auto val2 = std::make_shared<MetadataTest>();
+            val2->SetMetadata("ciphertext2");
+            MetadataTest::StoreMetadata<Element>(ciphertext2, val2);
+
+            // Checking if metadata is carried over in EvalAdd(ctx,ctx)
+            Ciphertext<Element> cAddCC = cc->EvalAdd(ciphertext1, ciphertext2);
+            auto addCCValTest = MetadataTest::GetMetadata<Element>(cAddCC);
+            EXPECT_EQ(val1->GetMetadata(), addCCValTest->GetMetadata())
+                << "Ciphertext metadata mismatch in EvalAdd(ctx,ctx)";
+
+            // Checking if metadata is carried over in EvalAddInPlace(ctx,ctx)
+            Ciphertext<Element> ciphertext1_clone = ciphertext1->Clone();
+            cc->EvalAddInPlace(ciphertext1_clone, ciphertext2);
+            auto addCCInPlaceValTest = MetadataTest::GetMetadata<Element>(ciphertext1_clone);
+            EXPECT_EQ(val1->GetMetadata(), addCCInPlaceValTest->GetMetadata())
+                << "Ciphertext metadata mismatch in EvalAddInPlace(ctx,ctx)";
+
+            // Checking if metadata is carried over in EvalAdd(ctx,ptx)
+            Ciphertext<Element> cAddCP = cc->EvalAdd(ciphertext1, plaintext1);
+            auto addCPValTest = MetadataTest::GetMetadata<Element>(cAddCP);
+            EXPECT_EQ(val1->GetMetadata(), addCPValTest->GetMetadata())
+                << "Ciphertext metadata mismatch in EvalAdd(ctx,ptx)";
+
+            // Checking if metadata is carried over in EvalSub(ctx,ctx)
+            Ciphertext<Element> cSubCC = cc->EvalSub(ciphertext1, ciphertext2);
+            auto subCCValTest = MetadataTest::GetMetadata<Element>(cSubCC);
+            EXPECT_EQ(val1->GetMetadata(), subCCValTest->GetMetadata())
+                << "Ciphertext metadata mismatch in EvalSub(ctx,ctx)";
+
+            // Checking if metadata is carried over in EvalSub(ctx,ptx)
+            Ciphertext<Element> cSubCP = cc->EvalSub(ciphertext1, plaintext1);
+            auto subCPValTest = MetadataTest::GetMetadata<Element>(cSubCP);
+            EXPECT_EQ(val1->GetMetadata(), subCPValTest->GetMetadata())
+                << "Ciphertext metadata mismatch in EvalSub(ctx,ptx)";
+
+            // Checking if metadata is carried over in EvalMult(ctx,ctx)
+            Ciphertext<Element> cMultCC = cc->EvalMult(ciphertext1, ciphertext2);
+            auto multCCValTest = MetadataTest::GetMetadata<Element>(cMultCC);
+            EXPECT_EQ(val1->GetMetadata(), multCCValTest->GetMetadata())
+                << "Ciphertext metadata mismatch in EvalMult(ctx,ctx)";
+
+            // Checking if metadata is carried over in EvalMult(ctx,ptx)
+            Ciphertext<Element> cMultCP = cc->EvalMult(ciphertext1, plaintext1);
+            auto multCPValTest = MetadataTest::GetMetadata<Element>(cMultCP);
+            EXPECT_EQ(val1->GetMetadata(), multCPValTest->GetMetadata())
+                << "Ciphertext metadata mismatch in EvalMult(ctx,ptx)";
+
+            // Checking if metadata is carried over in EvalAtIndex +2 (left rotate)
+            auto cAtIndex2 = cc->EvalAtIndex(ciphertext1, 2);
+            auto atIndex2ValTest = MetadataTest::GetMetadata<Element>(cAtIndex2);
+            EXPECT_EQ(val1->GetMetadata(), atIndex2ValTest->GetMetadata())
+                << "Ciphertext metadata mismatch in EvalAtIndex +2";
+
+            // Checking if metadata is carried over in EvalAtIndex -2 (right rotate)
+            auto cAtIndexMinus2 = cc->EvalAtIndex(ciphertext1, -2);
+            auto atIndexMinus2ValTest =
+                MetadataTest::GetMetadata<Element>(cAtIndexMinus2);
+            EXPECT_EQ(val1->GetMetadata(), atIndexMinus2ValTest->GetMetadata())
+                << "Ciphertext metadata mismatch in EvalAtIndex -2";
+
+            vector<double> weights(2);
+            for (usint i = 0; i < 2; i++) weights[i] = i;
+
+            vector<Ciphertext<Element>> ciphertexts(2);
+            ciphertexts[0] = ciphertext1;
+            ciphertexts[1] = ciphertext2;
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            int status = 0;
+            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            std::free(name);
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_EvalSum_BFVrns_All(const TEST_CASE& testData, const string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            // Initialize the public key containers.
+            KeyPair<DCRTPoly> kp = cc->KeyGen();
+
+            std::vector<Ciphertext<DCRTPoly>> ciphertexts;
+
+            uint32_t n = cc->GetRingDimension();
+
+            std::vector<int64_t> vectorOfInts1 = { 1, 2, 3, 4, 5, 6, 7, 8 };
+            uint32_t dim = vectorOfInts1.size();
+            vectorOfInts1.resize(n);
+            for (uint32_t i = n - dim; i < n; i++) vectorOfInts1[i] = i;
+
+            Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
+
+            std::vector<int64_t> vectorOfIntsAll = { 32768, 32768, 32768, 32768,
+                                                    32768, 32768, 32768, 32768 };
+            Plaintext intArrayAll = cc->MakePackedPlaintext(vectorOfIntsAll);
+
+            auto ct1 = cc->Encrypt(kp.publicKey, intArray1);
+
+            cc->EvalSumKeyGen(kp.secretKey);
+
+            auto ctsum1 = cc->EvalSum(ct1, BATCH_LRG);
+
+            Plaintext results1;
+            cc->Decrypt(kp.secretKey, ctsum1, &results1);
+
+            intArrayAll->SetLength(dim);
+            results1->SetLength(dim);
+
+            EXPECT_EQ(intArrayAll->GetPackedValue(), results1->GetPackedValue())
+                << " BFVrns EvalSum for batch size = All failed";
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            int status = 0;
+            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            std::free(name);
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_Keyswitch_SingleCRT(const TEST_CASE& testData, const string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            Plaintext plaintext = cc->MakeStringPlaintext("I am good, what are you?! 32 ch");
+            KeyPair<DCRTPoly> kp = cc->KeyGen();
+
+            Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
+
+            KeyPair<DCRTPoly> kp2 = cc->KeyGen();
+            EvalKey<DCRTPoly> keySwitchHint = cc->KeySwitchGen(kp.secretKey, kp2.secretKey);
+
+            Ciphertext<DCRTPoly> newCt = cc->KeySwitch(ciphertext, keySwitchHint);
+
+            Plaintext plaintextNew;
+
+            cc->Decrypt(kp2.secretKey, newCt, &plaintextNew);
+
+            EXPECT_EQ(plaintext->GetStringValue(), plaintextNew->GetStringValue());
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            int status = 0;
+            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            std::free(name);
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_Keyswitch_ModReduce_DCRT(const TEST_CASE& testData, const string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            Plaintext plaintext = cc->MakeStringPlaintext("I am good, what are you?! 32 ch");
+
+            KeyPair<DCRTPoly> kp = cc->KeyGen();
+            Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
+
+            KeyPair<DCRTPoly> kp2 = cc->KeyGen();
+            EvalKey<DCRTPoly> keySwitchHint = cc->KeySwitchGen(kp.secretKey, kp2.secretKey);
+
+            Ciphertext<DCRTPoly> newCt = cc->KeySwitch(ciphertext, keySwitchHint);
+
+            Plaintext plaintextNewKeySwitch;
+
+            cc->Decrypt(kp2.secretKey, newCt, &plaintextNewKeySwitch);
+
+            EXPECT_EQ(plaintext->GetStringValue(),
+                plaintextNewKeySwitch->GetStringValue())
+                << "Key-Switched Decrypt fails";
+
+            /**************************KEYSWITCH TEST END******************************/
+            /**************************MODREDUCE TEST BEGIN******************************/
+
+            cc->ModReduceInPlace(newCt);
+            DCRTPoly sk2PrivateElement(kp2.secretKey->GetPrivateElement());
+            sk2PrivateElement.DropLastElement();
+            kp2.secretKey->SetPrivateElement(sk2PrivateElement);
+
+            Plaintext plaintextNewModReduce;
+
+            cc->Decrypt(kp2.secretKey, newCt, &plaintextNewModReduce);
+
+            EXPECT_EQ(plaintext->GetStringValue(),
+                plaintextNewModReduce->GetStringValue())
+                << "Mod Reduced Decrypt fails";
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            int status = 0;
+            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            std::free(name);
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+};
+//===========================================================================================================
+TEST_P(UTSHE, SHE) {
+    setupSignals();
+    auto test = GetParam();
+    if (test.testCaseType == ADD_PACKED)
+        UnitTest_Add_Packed(test, test.buildTestName());
+    else if (test.testCaseType == MULT_COEF_PACKED)
+        UnitTest_Mult_CoefPacked(test, test.buildTestName());
+    else if (test.testCaseType == MULT_PACKED)
+        UnitTest_Mult_Packed(test, test.buildTestName());
+    else if (test.testCaseType == EVALATINDEX)
+        UnitTest_EvalAtIndex(test, test.buildTestName());
+    else if (test.testCaseType == EVALMERGE)
+        UnitTest_EvalMerge(test, test.buildTestName());
+    else if (test.testCaseType == EVALSUM)
+        UnitTest_EvalSum(test, test.buildTestName());
+    else if (test.testCaseType == METADATA)
+        UnitTest_Metadata(test, test.buildTestName());
+    else if (test.testCaseType == EVALSUM_ALL)
+        UnitTest_EvalSum_BFVrns_All(test, test.buildTestName());
+    else if (test.testCaseType == KS_SINGLE_CRT)
+        UnitTest_Keyswitch_ModReduce_DCRT(test, test.buildTestName());
+    else if (test.testCaseType == KS_MOD_REDUCE_DCRT)
+        UnitTest_EvalSum(test, test.buildTestName());
 }
 
-GENERATE_TEST_CASES_FUNC(UTSHE, UnitTest_Add_Packed, ORDER, PTMOD)
+INSTANTIATE_TEST_SUITE_P(UnitTests, UTSHE, ::testing::ValuesIn(testCases), testName);
 
-template <class Element>
-static void UnitTest_Mult_CoefPacked(const CryptoContext<Element> cc,
-                                     const string& failmsg) {
-  std::vector<int64_t> vectorOfInts1 = {1, 0, 3, 1, 0, 1, 2, 1};
-  Plaintext plaintext1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
-
-  std::vector<int64_t> vectorOfInts2 = {2, 1, 3, 2, 2, 1, 3, 0};
-  Plaintext plaintext2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
-
-  // For cyclotomic order != 16, the expected result is the convolution of
-  // vectorOfInt21 and vectorOfInts2
-  std::vector<int64_t> vectorOfIntsMultLong = {2,  1,  9,  7, 12, 12, 16,
-                                               12, 19, 12, 7, 7,  7,  3};
-  std::vector<int64_t> vectorOfIntsMult = {-17, -11, 2, 0, 5, 9, 16, 12};
-
-  Plaintext intArray1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
-
-  Plaintext intArray2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
-
-  Plaintext intArrayExpected = cc->MakeCoefPackedPlaintext(
-      cc->GetCyclotomicOrder() == 16 ? vectorOfIntsMult : vectorOfIntsMultLong);
-
-  // Initialize the public key containers.
-  KeyPair<Element> kp = cc->KeyGen();
-
-  Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
-
-  Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
-
-  cc->EvalMultKeyGen(kp.secretKey);
-
-  Ciphertext<Element> cResult;
-  Plaintext results;
-
-  cResult = cc->EvalMult(ciphertext1, ciphertext2);
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(intArrayExpected->GetLength());
-  EXPECT_EQ(intArrayExpected->GetCoefPackedValue(),
-            results->GetCoefPackedValue())
-      << failmsg << " EvalMult fails";
-
-  cResult = ciphertext1 * ciphertext2;
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(intArrayExpected->GetLength());
-  EXPECT_EQ(intArrayExpected->GetCoefPackedValue(),
-            results->GetCoefPackedValue())
-      << failmsg << " operator* fails";
-
-  Ciphertext<Element> cmulInplace = ciphertext1->Clone();
-  cmulInplace *= ciphertext2;
-  cc->Decrypt(kp.secretKey, cmulInplace, &results);
-  results->SetLength(intArrayExpected->GetLength());
-  EXPECT_EQ(intArrayExpected->GetCoefPackedValue(),
-            results->GetCoefPackedValue())
-      << failmsg << " operator*= fails";
-
-  cResult = cc->EvalMult(ciphertext1, plaintext2);
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(intArrayExpected->GetLength());
-  EXPECT_EQ(intArrayExpected->GetCoefPackedValue(),
-            results->GetCoefPackedValue())
-      << failmsg << " EvalMult Ct and Pt fails";
-}
-
-GENERATE_TEST_CASES_FUNC(UTSHE, UnitTest_Mult_CoefPacked, ORDER, PTMOD)
-
-template <class Element>
-static void UnitTest_Mult_Packed(const CryptoContext<Element> cc,
-                                 const string& failmsg) {
-  std::vector<int64_t> vectorOfInts1 = {1, 0, 3, 1, 0, 1, 2, 1};
-  Plaintext plaintext1 = cc->MakePackedPlaintext(vectorOfInts1);
-
-  std::vector<int64_t> vectorOfInts2 = {2, 1, 3, 2, 2, 1, 3, 1};
-  Plaintext plaintext2 = cc->MakePackedPlaintext(vectorOfInts2);
-
-  // For cyclotomic order != 16, the expected result is the convolution of
-  // vectorOfInt21 and vectorOfInts2
-  std::vector<int64_t> vectorOfIntsMult = {2, 0, 9, 2, 0, 1, 6, 1};
-
-  Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
-
-  Plaintext intArray2 = cc->MakePackedPlaintext(vectorOfInts2);
-
-  Plaintext intArrayExpected = cc->MakePackedPlaintext(vectorOfIntsMult);
-
-  // Initialize the public key containers.
-  KeyPair<Element> kp = cc->KeyGen();
-
-  Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
-
-  Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
-
-  cc->EvalMultKeyGen(kp.secretKey);
-
-  Ciphertext<Element> cResult;
-  Plaintext results;
-
-  cResult = cc->EvalMult(ciphertext1, ciphertext2);
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(intArrayExpected->GetLength());
-  EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue())
-      << failmsg << " EvalMult fails";
-
-  cResult = ciphertext1 * ciphertext2;
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(intArrayExpected->GetLength());
-  EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue())
-      << failmsg << " operator* fails";
-
-  Ciphertext<Element> cmulInplace = ciphertext1->Clone();
-  cmulInplace *= ciphertext2;
-  cc->Decrypt(kp.secretKey, cmulInplace, &results);
-  results->SetLength(intArrayExpected->GetLength());
-  EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue())
-      << failmsg << " operator*= fails";
-
-  cResult = cc->EvalMult(ciphertext1, plaintext2);
-  cc->Decrypt(kp.secretKey, cResult, &results);
-  results->SetLength(intArrayExpected->GetLength());
-  EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue())
-      << failmsg << " EvalMult Ct and Pt fails";
-}
-
-GENERATE_TEST_CASES_FUNC_EVALATINDEX(UTSHE, UnitTest_Mult_Packed, 512, 65537)
-
-template <class Element>
-static void UnitTest_EvalAtIndex(const CryptoContext<Element> cc,
-                                 const string& failmsg) {
-  std::vector<int64_t> vectorOfInts1 = {1, 2,  3,  4,  5,  6,  7,  8,
-                                        9, 10, 11, 12, 13, 14, 15, 16};
-  Plaintext plaintext1 = cc->MakePackedPlaintext(vectorOfInts1);
-
-  // Expected results after evaluating EvalAtIndex(3) and EvalAtIndex(-3)
-  std::vector<int64_t> vectorOfIntsPlus3 = {4,  5,  6,  7,  8,  9, 10, 11,
-                                            12, 13, 14, 15, 16, 0, 0,  0};
-  std::vector<int64_t> vectorOfIntsMinus3 = {0, 0, 0, 1, 2,  3,  4,  5,
-                                             6, 7, 8, 9, 10, 11, 12, 13};
-
-  Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
-
-  Plaintext intArrayPlus3 = cc->MakePackedPlaintext(vectorOfIntsPlus3);
-  Plaintext intArrayMinus3 = cc->MakePackedPlaintext(vectorOfIntsMinus3);
-
-  // Initialize the public key containers.
-  KeyPair<Element> kp = cc->KeyGen();
-
-  Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
-
-  cc->EvalAtIndexKeyGen(kp.secretKey, {3, -3});
-
-  Ciphertext<Element> cResult1 = cc->EvalAtIndex(ciphertext1, 3);
-
-  Ciphertext<Element> cResult2 = cc->EvalAtIndex(ciphertext1, -3);
-
-  Plaintext results1;
-
-  Plaintext results2;
-
-  cc->Decrypt(kp.secretKey, cResult1, &results1);
-
-  cc->Decrypt(kp.secretKey, cResult2, &results2);
-
-  results1->SetLength(intArrayPlus3->GetLength());
-  EXPECT_EQ(intArrayPlus3->GetPackedValue(), results1->GetPackedValue())
-      << failmsg << " EvalAtIndex(3) fails";
-
-  results2->SetLength(intArrayMinus3->GetLength());
-  EXPECT_EQ(intArrayMinus3->GetPackedValue(), results2->GetPackedValue())
-      << failmsg << " EvalAtIndex(-3) fails";
-}
-
-GENERATE_TEST_CASES_FUNC_EVALATINDEX(UTSHE, UnitTest_EvalAtIndex, 512, 65537)
-
-template <class Element>
-static void UnitTest_EvalMerge(const CryptoContext<Element> cc,
-                               const string& failmsg) {
-  // Initialize the public key containers.
-  KeyPair<Element> kp = cc->KeyGen();
-
-  std::vector<Ciphertext<Element>> ciphertexts;
-
-  std::vector<int64_t> vectorOfInts1 = {32, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
-  ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray1));
-
-  std::vector<int64_t> vectorOfInts2 = {2, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  Plaintext intArray2 = cc->MakePackedPlaintext(vectorOfInts2);
-  ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray2));
-
-  std::vector<int64_t> vectorOfInts3 = {4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  Plaintext intArray3 = cc->MakePackedPlaintext(vectorOfInts3);
-  ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray3));
-
-  std::vector<int64_t> vectorOfInts4 = {8, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  Plaintext intArray4 = cc->MakePackedPlaintext(vectorOfInts4);
-  ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray4));
-
-  std::vector<int64_t> vectorOfInts5 = {16, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  Plaintext intArray5 = cc->MakePackedPlaintext(vectorOfInts5);
-  ciphertexts.push_back(cc->Encrypt(kp.publicKey, intArray5));
-
-  // Expected results after evaluating EvalAtIndex(3) and EvalAtIndex(-3)
-  std::vector<int64_t> vectorMerged = {32, 2, 4, 8, 16, 0, 0, 0};
-  Plaintext intArrayMerged = cc->MakePackedPlaintext(vectorMerged);
-
-  vector<int32_t> indexList = {-1, -2, -3, -4, -5};
-
-  cc->EvalAtIndexKeyGen(kp.secretKey, indexList);
-
-  auto mergedCiphertext = cc->EvalMerge(ciphertexts);
-
-  Plaintext results1;
-
-  cc->Decrypt(kp.secretKey, mergedCiphertext, &results1);
-
-  results1->SetLength(intArrayMerged->GetLength());
-  EXPECT_EQ(intArrayMerged->GetPackedValue(), results1->GetPackedValue())
-      << failmsg << " EvalMerge fails";
-}
-
-GENERATE_TEST_CASES_FUNC_EVALATINDEX(UTSHE, UnitTest_EvalMerge, 512, 65537)
-
-template <class Element>
-static void UnitTest_EvalSum(const CryptoContext<Element> cc,
-                             const string& failmsg) {
-  // Initialize the public key containers.
-  KeyPair<Element> kp = cc->KeyGen();
-
-  std::vector<Ciphertext<Element>> ciphertexts;
-
-  uint32_t n = cc->GetRingDimension();
-
-  std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8};
-  uint32_t dim = vectorOfInts1.size();
-  vectorOfInts1.resize(n);
-  for (uint32_t i = dim; i < n; i++) vectorOfInts1[i] = vectorOfInts1[i % dim];
-  Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
-  auto ct1 = cc->Encrypt(kp.publicKey, intArray1);
-
-  cc->EvalSumKeyGen(kp.secretKey);
-
-  auto ctsum1 = cc->EvalSum(ct1, 1);
-  auto ctsum2 = cc->EvalSum(ct1, 2);
-  auto ctsum3 = cc->EvalSum(ct1, 8);
-
-  std::vector<int64_t> vectorOfInts2 = {3, 5, 7, 9, 11, 13, 15, 9};
-  vectorOfInts2.resize(n);
-  for (uint32_t i = dim; i < n; i++) vectorOfInts2[i] = vectorOfInts2[i % dim];
-  Plaintext intArray2 = cc->MakePackedPlaintext(vectorOfInts2);
-
-  std::vector<int64_t> vectorOfIntsAll = {36, 36, 36, 36, 36, 36, 36, 36};
-  vectorOfIntsAll.resize(n);
-  for (uint32_t i = dim; i < n; i++)
-    vectorOfIntsAll[i] = vectorOfIntsAll[i % dim];
-  Plaintext intArrayAll = cc->MakePackedPlaintext(vectorOfIntsAll);
-
-  Plaintext results1;
-  cc->Decrypt(kp.secretKey, ctsum1, &results1);
-  Plaintext results2;
-  cc->Decrypt(kp.secretKey, ctsum2, &results2);
-  Plaintext results3;
-  cc->Decrypt(kp.secretKey, ctsum3, &results3);
-
-  intArray1->SetLength(dim);
-  intArray2->SetLength(dim);
-  intArrayAll->SetLength(dim);
-  results1->SetLength(dim);
-  results2->SetLength(dim);
-  results3->SetLength(dim);
-
-  EXPECT_EQ(intArray1->GetPackedValue(), results1->GetPackedValue())
-      << failmsg << " EvalSum for batch size = 1 failed";
-  EXPECT_EQ(intArray2->GetPackedValue(), results2->GetPackedValue())
-      << failmsg << " EvalSum for batch size = 2 failed";
-  EXPECT_EQ(intArrayAll->GetPackedValue(), results3->GetPackedValue())
-      << failmsg << " EvalSum for batch size = 8 failed";
-}
-
-GENERATE_TEST_CASES_FUNC_EVALSUM(UTSHE, UnitTest_EvalSum, 512, 65537)
-
-/**
- * Tests whether metadata is carried over for several operations
- */
-template <typename Element>
-static void UnitTest_Metadata(const CryptoContext<Element> cc,
-                              const string& failmsg) {
-  int vecSize = 8;
-
-  // input 1 = { 0,1,2,3,4,5,6,7 };
-  // input 2 = { 0,-1,-2,-3,-4,-5,-6,-7 };
-  std::vector<int64_t> input1(vecSize);
-  std::vector<int64_t> input2(vecSize);
-  for (int i = 0; i < vecSize; i++) {
-    input1[i] = i;
-    input2[i] = -i;
-  }
-  Plaintext plaintext1 = cc->MakePackedPlaintext(input1);
-  Plaintext plaintext2 = cc->MakePackedPlaintext(input2);
-
-  // Generate encryption keys
-  KeyPair<Element> kp = cc->KeyGen();
-  // Generate multiplication keys
-  cc->EvalMultKeyGen(kp.secretKey);
-  // Generate rotation keys for offsets +2 (left rotate) and -2 (right rotate)
-  cc->EvalAtIndexKeyGen(kp.secretKey, {2, -2});
-  // Generate keys for EvalSum
-  cc->EvalSumKeyGen(kp.secretKey);
-
-  // Encrypt plaintexts
-  Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, plaintext1);
-  Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
-  Plaintext results;
-
-  // Populating metadata map in ciphertexts
-  auto val1 = make_shared<MetadataTest>();
-  val1->SetMetadata("ciphertext1");
-  MetadataTest::StoreMetadata<Element>(ciphertext1, val1);
-  auto val2 = make_shared<MetadataTest>();
-  val2->SetMetadata("ciphertext2");
-  MetadataTest::StoreMetadata<Element>(ciphertext2, val2);
-
-  // Checking if metadata is carried over in EvalAdd(ctx,ctx)
-  Ciphertext<Element> cAddCC = cc->EvalAdd(ciphertext1, ciphertext2);
-  auto addCCValTest = MetadataTest::GetMetadata<Element>(cAddCC);
-  EXPECT_EQ(val1->GetMetadata(), addCCValTest->GetMetadata())
-      << "Ciphertext metadata mismatch in EvalAdd(ctx,ctx)";
-
-  // Checking if metadata is carried over in EvalAddInPlace(ctx,ctx)
-  Ciphertext<Element> ciphertext1_clone = ciphertext1->Clone();
-  cc->EvalAddInPlace(ciphertext1_clone, ciphertext2);
-  auto addCCInPlaceValTest = MetadataTest::GetMetadata<Element>(ciphertext1_clone);
-  EXPECT_EQ(val1->GetMetadata(), addCCInPlaceValTest->GetMetadata())
-      << "Ciphertext metadata mismatch in EvalAddInPlace(ctx,ctx)";
-
-  // Checking if metadata is carried over in EvalAdd(ctx,ptx)
-  Ciphertext<Element> cAddCP = cc->EvalAdd(ciphertext1, plaintext1);
-  auto addCPValTest = MetadataTest::GetMetadata<Element>(cAddCP);
-  EXPECT_EQ(val1->GetMetadata(), addCPValTest->GetMetadata())
-      << "Ciphertext metadata mismatch in EvalAdd(ctx,ptx)";
-
-  // Checking if metadata is carried over in EvalSub(ctx,ctx)
-  Ciphertext<Element> cSubCC = cc->EvalSub(ciphertext1, ciphertext2);
-  auto subCCValTest = MetadataTest::GetMetadata<Element>(cSubCC);
-  EXPECT_EQ(val1->GetMetadata(), subCCValTest->GetMetadata())
-      << "Ciphertext metadata mismatch in EvalSub(ctx,ctx)";
-
-  // Checking if metadata is carried over in EvalSub(ctx,ptx)
-  Ciphertext<Element> cSubCP = cc->EvalSub(ciphertext1, plaintext1);
-  auto subCPValTest = MetadataTest::GetMetadata<Element>(cSubCP);
-  EXPECT_EQ(val1->GetMetadata(), subCPValTest->GetMetadata())
-      << "Ciphertext metadata mismatch in EvalSub(ctx,ptx)";
-
-  // Checking if metadata is carried over in EvalMult(ctx,ctx)
-  Ciphertext<Element> cMultCC = cc->EvalMult(ciphertext1, ciphertext2);
-  auto multCCValTest = MetadataTest::GetMetadata<Element>(cMultCC);
-  EXPECT_EQ(val1->GetMetadata(), multCCValTest->GetMetadata())
-      << "Ciphertext metadata mismatch in EvalMult(ctx,ctx)";
-
-  // Checking if metadata is carried over in EvalMult(ctx,ptx)
-  Ciphertext<Element> cMultCP = cc->EvalMult(ciphertext1, plaintext1);
-  auto multCPValTest = MetadataTest::GetMetadata<Element>(cMultCP);
-  EXPECT_EQ(val1->GetMetadata(), multCPValTest->GetMetadata())
-      << "Ciphertext metadata mismatch in EvalMult(ctx,ptx)";
-
-  // Checking if metadata is carried over in EvalAtIndex +2 (left rotate)
-  auto cAtIndex2 = cc->EvalAtIndex(ciphertext1, 2);
-  auto atIndex2ValTest = MetadataTest::GetMetadata<Element>(cAtIndex2);
-  EXPECT_EQ(val1->GetMetadata(), atIndex2ValTest->GetMetadata())
-      << "Ciphertext metadata mismatch in EvalAtIndex +2";
-
-  // Checking if metadata is carried over in EvalAtIndex -2 (right rotate)
-  auto cAtIndexMinus2 = cc->EvalAtIndex(ciphertext1, -2);
-  auto atIndexMinus2ValTest =
-      MetadataTest::GetMetadata<Element>(cAtIndexMinus2);
-  EXPECT_EQ(val1->GetMetadata(), atIndexMinus2ValTest->GetMetadata())
-      << "Ciphertext metadata mismatch in EvalAtIndex -2";
-
-  vector<double> weights(2);
-  for (int i = 0; i < 2; i++) weights[i] = i;
-
-  vector<Ciphertext<Element>> ciphertexts(2);
-  ciphertexts[0] = ciphertext1;
-  ciphertexts[1] = ciphertext2;
-}
-
-GENERATE_TEST_CASES_FUNC_METADATA(UTSHE, UnitTest_Metadata, 512, 65537)
-
-TEST_F(UTSHE, UnitTest_EvalSum_BFVrns_All) {
-  uint32_t batchSize = 1 << 12;
-  CCParams<CryptoContextBFVRNS> parameters;
-  parameters.SetPlaintextModulus(65537);
-  parameters.SetBatchSize(batchSize);
-  parameters.SetStandardDeviation(3.2);
-  parameters.SetEvalMultCount(2);
-  parameters.SetRelinWindow(20);
-  parameters.SetScalingFactorBits(60);
-  parameters.SetRingDim(batchSize);
-
-  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-  cc->Enable(PKE);
-  cc->Enable(KEYSWITCH);
-  cc->Enable(LEVELEDSHE);
-  cc->Enable(ADVANCEDSHE);
-
-  // Initialize the public key containers.
-  KeyPair<DCRTPoly> kp = cc->KeyGen();
-
-  std::vector<Ciphertext<DCRTPoly>> ciphertexts;
-
-  uint32_t n = cc->GetRingDimension();
-
-  std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8};
-  uint32_t dim = vectorOfInts1.size();
-  vectorOfInts1.resize(n);
-  for (uint32_t i = n - dim; i < n; i++) vectorOfInts1[i] = i;
-
-  Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
-
-  std::vector<int64_t> vectorOfIntsAll = {32768, 32768, 32768, 32768,
-                                          32768, 32768, 32768, 32768};
-  Plaintext intArrayAll = cc->MakePackedPlaintext(vectorOfIntsAll);
-
-  auto ct1 = cc->Encrypt(kp.publicKey, intArray1);
-
-  cc->EvalSumKeyGen(kp.secretKey);
-
-  auto ctsum1 = cc->EvalSum(ct1, batchSize);
-
-  Plaintext results1;
-  cc->Decrypt(kp.secretKey, ctsum1, &results1);
-
-  intArrayAll->SetLength(dim);
-  results1->SetLength(dim);
-
-  EXPECT_EQ(intArrayAll->GetPackedValue(), results1->GetPackedValue())
-      << " BFVrns EvalSum for batch size = All failed";
-}
-
-TEST_F(UTSHE, keyswitch_SingleCRT) {
-    CCParams<CryptoContextBGVRNS> parameters;
-    parameters.SetCyclotomicOrder(512);
-    parameters.SetScalingFactorBits(50);
-    parameters.SetPlaintextModulus(256);
-    parameters.SetRelinWindow(1);
-    parameters.SetStandardDeviation(4);
-
-    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-  cc->Enable(PKE);
-  cc->Enable(KEYSWITCH);
-  cc->Enable(LEVELEDSHE);
-  cc->Enable(ADVANCEDSHE);
-
-  Plaintext plaintext =
-      cc->MakeStringPlaintext("I am good, what are you?! 32 ch");
-
-  KeyPair<DCRTPoly> kp = cc->KeyGen();
-
-  Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
-
-  KeyPair<DCRTPoly> kp2 = cc->KeyGen();
-  EvalKey<DCRTPoly> keySwitchHint = cc->KeySwitchGen(kp.secretKey, kp2.secretKey);
-
-  Ciphertext<DCRTPoly> newCt = cc->KeySwitch(ciphertext, keySwitchHint);
-
-  Plaintext plaintextNew;
-
-  cc->Decrypt(kp2.secretKey, newCt, &plaintextNew);
-
-  EXPECT_EQ(plaintext->GetStringValue(), plaintextNew->GetStringValue());
-}
-
-TEST_F(UTSHE, keyswitch_ModReduce_DCRT) {
-  CCParams<CryptoContextBGVRNS> parameters;
-  parameters.SetCyclotomicOrder(512);
-  parameters.SetMultiplicativeDepth(4);
-  parameters.SetScalingFactorBits(30);
-  parameters.SetPlaintextModulus(256);
-  parameters.SetRelinWindow(1);
-  parameters.SetStandardDeviation(4);
-
-  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-  Plaintext plaintext =
-      cc->MakeStringPlaintext("I am good, what are you?! 32 ch");
-
-  cc->Enable(PKE);
-  cc->Enable(KEYSWITCH);
-  cc->Enable(LEVELEDSHE);
-  cc->Enable(ADVANCEDSHE);
-
-  KeyPair<DCRTPoly> kp = cc->KeyGen();
-
-  Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
-
-  KeyPair<DCRTPoly> kp2 = cc->KeyGen();
-  EvalKey<DCRTPoly> keySwitchHint = cc->KeySwitchGen(kp.secretKey, kp2.secretKey);
-
-  Ciphertext<DCRTPoly> newCt = cc->KeySwitch(ciphertext, keySwitchHint);
-
-  Plaintext plaintextNewKeySwitch;
-
-  cc->Decrypt(kp2.secretKey, newCt, &plaintextNewKeySwitch);
-
-  EXPECT_EQ(plaintext->GetStringValue(),
-            plaintextNewKeySwitch->GetStringValue())
-      << "Key-Switched Decrypt fails";
-
-  /**************************KEYSWITCH TEST END******************************/
-  /**************************MODREDUCE TEST BEGIN******************************/
-
-  cc->ModReduceInPlace(newCt);
-  DCRTPoly sk2PrivateElement(kp2.secretKey->GetPrivateElement());
-  sk2PrivateElement.DropLastElement();
-  kp2.secretKey->SetPrivateElement(sk2PrivateElement);
-
-  Plaintext plaintextNewModReduce;
-
-  cc->Decrypt(kp2.secretKey, newCt, &plaintextNewModReduce);
-
-  EXPECT_EQ(plaintext->GetStringValue(),
-            plaintextNewModReduce->GetStringValue())
-      << "Mod Reduced Decrypt fails";
-}
 #endif

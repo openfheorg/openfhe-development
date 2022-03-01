@@ -1,0 +1,136 @@
+/**
+ * @file UnitTestCryptoContext.cpp
+ *
+ * @brief 
+ *
+ * @author TPOC: contact@palisade-crypto.org
+ *
+ * @contributor Dmitriy Suponitskiy
+ *
+ * @copyright Copyright (c) 2022, Duality Technologies (https://dualitytech.com/)
+ * All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution. THIS SOFTWARE IS
+ * PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#include "UnitTestCryptoContext.h"
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "gen-cryptocontext.h"
+
+using namespace lbcrypto;
+
+
+template<typename U>
+static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParams& params, U& parameters) {
+    if (!isDefaultValue(params.ringDimension)) {
+        parameters.SetRingDim(static_cast<usint>(std::round(params.ringDimension)));
+    }
+    if (!isDefaultValue(params.multiplicativeDepth)) {
+        parameters.SetMultiplicativeDepth(static_cast<usint>(std::round(params.multiplicativeDepth)));
+    }
+    if (!isDefaultValue(params.scalingFactorBits)) {
+        parameters.SetScalingFactorBits(static_cast<usint>(std::round(params.scalingFactorBits)));
+    }
+    if (!isDefaultValue(params.relinWindow)) {
+        parameters.SetRelinWindow(static_cast<usint>(std::round(params.relinWindow)));
+    }
+    if (!isDefaultValue(params.batchSize)) {
+        parameters.SetBatchSize(static_cast<usint>(std::round(params.batchSize)));
+    }
+    if (!isDefaultValue(params.mode)) {
+        parameters.SetMode(static_cast<MODE>(std::round(params.mode)));
+    }
+    if (!isDefaultValue(params.depth)) {
+        parameters.SetDepth(static_cast<int>(std::round(params.depth)));
+    }
+    if (!isDefaultValue(params.maxDepth)) {
+        parameters.SetMaxDepth(static_cast<int>(std::round(params.maxDepth)));
+    }
+    if (!isDefaultValue(params.firstModSize)) {
+        parameters.SetFirstModSize(static_cast<usint>(std::round(params.firstModSize)));
+    }
+    if (!isDefaultValue(params.securityLevel)) {
+        parameters.SetSecurityLevel(static_cast<SecurityLevel>(std::round(params.securityLevel)));
+    }
+    if (!isDefaultValue(params.ksTech)) {
+        parameters.SetKeySwitchTechnique(static_cast<KeySwitchTechnique>(std::round(params.ksTech)));
+    }
+    if (!isDefaultValue(params.rsTech)) {
+        parameters.SetRescalingTechnique(static_cast<RescalingTechnique>(std::round(params.rsTech)));
+    }
+    if (!isDefaultValue(params.numLargeDigits)) {
+        parameters.SetNumLargeDigits(static_cast<uint32_t>(std::round(params.numLargeDigits)));
+    }
+    if (!isDefaultValue(params.plaintextModulus)) {
+        parameters.SetPlaintextModulus(static_cast<PlaintextModulus>(std::round(params.plaintextModulus)));
+    }
+    if (!isDefaultValue(params.standardDeviation)) {
+        parameters.SetStandardDeviation(params.standardDeviation);
+    }
+    if (!isDefaultValue(params.multiplicationTechnique)) {
+        parameters.SetMultiplicationTechnique(
+            static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
+    }
+}
+//===========================================================================================================
+CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
+    CryptoContext<Element> cc(nullptr);
+    if (CKKSRNS_SCHEME == params.schemeId) {
+        CCParams<CryptoContextCKKSRNS> parameters;
+        setCryptoContextParametersFromUnitTestCCParams(params, parameters);
+
+        cc = GenCryptoContext(parameters);
+    }
+    else if (BFVRNS_SCHEME == params.schemeId) {
+        CCParams<CryptoContextBFVRNS> parameters;
+        setCryptoContextParametersFromUnitTestCCParams(params, parameters);
+        // set additional values
+        if (!isDefaultValue(params.evalAddCount)) {
+            parameters.SetEvalAddCount(static_cast<usint>(std::round(params.evalAddCount)));
+        }
+        if (!isDefaultValue(params.evalMultCount)) {
+            parameters.SetEvalMultCount(static_cast<usint>(std::round(params.evalMultCount)));
+        }
+        if (!isDefaultValue(params.keySwitchCount)) {
+            parameters.SetKeySwitchCount(static_cast<usint>(std::round(params.keySwitchCount)));
+        }
+
+        cc = GenCryptoContext(parameters);
+    }
+    else if (BGVRNS_SCHEME == params.schemeId) {
+        CCParams<CryptoContextBGVRNS> parameters;
+        setCryptoContextParametersFromUnitTestCCParams(params, parameters);
+
+        cc = GenCryptoContext(parameters);
+    }
+
+    if (!cc)
+        PALISADE_THROW(palisade_error, "Error generating crypto context.");
+
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+    cc->Enable(ADVANCEDSHE);
+    cc->Enable(PRE);
+    cc->Enable(MULTIPARTY);
+
+    return cc;
+}
+
+

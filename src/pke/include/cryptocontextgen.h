@@ -169,10 +169,6 @@ inline CryptoContext<DCRTPoly> GenTestCryptoContext(
 
   using Element = DCRTPoly;
 
-  shared_ptr<typename Element::Params> p =
-      ElemParamFactory::GenElemParams<typename Element::Params>(ORDER, bits,
-                                                                towers);
-
   CryptoContext<Element> cc;
 
   if (name == "BFVrns_rlwe") {

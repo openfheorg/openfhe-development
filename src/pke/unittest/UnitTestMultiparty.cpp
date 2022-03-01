@@ -29,11 +29,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "UnitTestUtils.h"
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
 #include "utils/exception.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
 
 #include "include/gtest/gtest.h"
 #include <iostream>
@@ -52,7 +50,7 @@ enum TEST_CASE_TYPE {
     BFVRNS_TEST_EXTRA,
 };
 
-std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
     case CKKSRNS_TEST:
@@ -74,129 +72,82 @@ std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct GEN_CC_PARAMS {
-    // arguments for GenCryptoContext()
-    // TODO (dsuponit): make a union of structs for every scheme after reviewing cryptocontextparams-defaults.h
-    usint              ringDimension; // CKKSRNS, BFVRNS, BGVRNS
-    usint              multiplicativeDepth; // CKKSRNS, BGVRNS
-    usint              scalingFactorBits; // CKKSRNS, BFVRNS, BGVRNS
-    usint              relinWindow; // CKKSRNS, BFVRNS, BGVRNS
-    usint              batchSize; // CKKSRNS, BFVRNS, BGVRNS
-    MODE               mode; // CKKSRNS, BFVRNS, BGVRNS
-    int                depth; // CKKSRNS, 
-    int                maxDepth; // CKKSRNS, BFVRNS, BGVRNS
-    usint              firstModSize; // BGVRNS
-    SecurityLevel      securityLevel; // BFVRNS, BGVRNS
-    KeySwitchTechnique ksTech; // CKKSRNS, BGVRNS
-    RescalingTechnique rsTech; // CKKSRNS, BGVRNS
-    uint32_t           numLargeDigits; // CKKSRNS, BGVRNS
-    PlaintextModulus   plaintextModulus; // BFVRNS, BGVRNS
-    float              standardDeviation; // BFVRNS, BGVRNS
-    usint              evalAddCount; // BFVRNS, 
-    usint              evalMultCount; // BFVRNS, 
-    usint              keySwitchCount; // BFVRNS, 
-    MultiplicationTechnique multiplicationTechnique; // BFVRNS, 
-
-    std::string toString() const {
-        std::stringstream ss;
-        ss  << "ringDimension [" << ringDimension << "], "
-            << "multiplicativeDepth [" << multiplicativeDepth << "], "
-            << "scalingFactorBits [" << scalingFactorBits << "], "
-            << "relinWindow [" << relinWindow << "], "
-            << "batchSize [" << batchSize << "], "
-            << "mode [" << mode << "], "
-            << "depth [" << depth << "], "
-            << "maxDepth [" << maxDepth << "], "
-            << "firstModSize [" << firstModSize << "], "
-            << "securityLevel [" << securityLevel << "], "
-            << "ksTech [" << ksTech << "], "
-            << "rsTech [" << rsTech << "], "
-            << "numLargeDigits [" << numLargeDigits << "], "
-            << "plaintextModulus [" << plaintextModulus << "], "
-            << "standardDeviation [" << standardDeviation << "], "
-            << "evalAddCount [" << evalAddCount << "], "
-            << "evalMultCount [" << evalMultCount << "], "
-            << "keySwitchCount [" << keySwitchCount << "], "
-            << "multiplicationTechnique [" << multiplicationTechnique << "], "
-            ;
-        return ss.str();
-    }
-};
-
-std::ostream& operator<<(std::ostream& os, const GEN_CC_PARAMS& params) {
-    return os << params.toString();
-}
-//===========================================================================================================
 struct TEST_CASE {
     TEST_CASE_TYPE testCaseType;
-    GEN_CC_PARAMS  params;
+    // test case description - MUST BE UNIQUE
+    std::string description;
+
+    UnitTestCCParams  params;
 
     // additional test case data
     bool star;
 
-    // test case description - MUST BE UNIQUE
-    std::string description;
 
     std::string buildTestName() const {
         std::stringstream ss;
-        ss  << testCaseType << "_"
-            << description;
+        ss  << testCaseType << "_" << description;
         return ss.str();
     }
-
     std::string toString() const {
         std::stringstream ss;
-        ss  << "testCaseType [" << testCaseType << "], "
-            << params.toString()
-            ;
+        ss  << "testCaseType [" << testCaseType << "], " << params.toString();
         return ss.str();
     }
 };
 
-std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+// this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
+// the name MUST be constructed from digits, letters and '_' only
+static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+    return test.param.buildTestName();
+};
+
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
     return os << test.toString();
 }
 //===========================================================================================================
 constexpr usint BATCH = 16;
-std::vector<TEST_CASE> testCases = {
-    // ===================== CKKSRNS test cases =====================
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, BV, FIXEDMANUAL,      4, 0, 0, 0, 0, 0, HPS}, false, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_1"},
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, BV, FIXEDAUTO,        4, 0, 0, 0, 0, 0, HPS}, false, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_2" },
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, HYBRID, FIXEDMANUAL,  4, 0, 0, 0, 0, 0, HPS}, false, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_3" },
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, HYBRID, FIXEDAUTO,    4, 0, 0, 0, 0, 0, HPS}, false, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_4" },
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, BV, FIXEDMANUAL,      4, 0, 0, 0, 0, 0, HPS}, true, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_5"},
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, BV, FIXEDAUTO,        4, 0, 0, 0, 0, 0, HPS}, true, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_6" },
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, HYBRID, FIXEDMANUAL,  4, 0, 0, 0, 0, 0, HPS}, true, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_7" },
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, HYBRID, FIXEDAUTO,    4, 0, 0, 0, 0, 0, HPS}, true, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_8" },
+static std::vector<TEST_CASE> testCases = {
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
+    { CKKSRNS_TEST,  "1", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
+    { CKKSRNS_TEST,  "2", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
+    { CKKSRNS_TEST,  "3", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
+    { CKKSRNS_TEST,  "4", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
+    { CKKSRNS_TEST,  "5", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    true },
+    { CKKSRNS_TEST,  "6", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    true },
+    { CKKSRNS_TEST,  "7", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    true },
+    { CKKSRNS_TEST,  "8", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    true },
 #if NATIVEINT != 128
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, BV, FLEXIBLEAUTO,     4, 0, 0, 0, 0, 0, HPS}, false, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_9" },
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, HYBRID, FLEXIBLEAUTO, 4, 0, 0, 0, 0, 0, HPS}, false, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_10" },
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, BV, FLEXIBLEAUTO,     4, 0, 0, 0, 0, 0, HPS}, true, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_11" },
-    { CKKSRNS_TEST, {2048, 2, 50, 3, BATCH, OPTIMIZED, 1, 2, 0, HEStd_128_classic, HYBRID, FLEXIBLEAUTO, 4, 0, 0, 0, 0, 0, HPS}, true, "REPLACE_THIS_DESCRIPTION_FOR_CKKSRNS_TEST_12" },
+    { CKKSRNS_TEST,  "9", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
+    { CKKSRNS_TEST, "10", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
+    { CKKSRNS_TEST, "11", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    true },
+    { CKKSRNS_TEST, "12", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    true },
 #endif
-    // ===================== BFVRNS test cases =====================
-    { BFVRNS_TEST, {0, 0, 60, 20, BATCH, OPTIMIZED, 0, 2, 0, HEStd_128_classic, BV, FIXEDMANUAL, 0, 65537, 3.2, 0, 2, 0, HPS},  false, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_1"},
-    { BFVRNS_TEST, {0, 0, 60, 20, BATCH, RLWE,      0, 2, 0, HEStd_128_classic, BV, FIXEDMANUAL, 0, 65537, 3.2, 0, 2, 0, HPS},  false, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_2"},
-    { BFVRNS_TEST, {0, 0, 60, 20, BATCH, OPTIMIZED, 0, 2, 0, HEStd_128_classic, BV, FIXEDMANUAL, 0, 65537, 3.2, 0, 2, 0, BEHZ}, false, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_3"},
-    { BFVRNS_TEST, {0, 0, 60, 20, BATCH, RLWE,      0, 2, 0, HEStd_128_classic, BV, FIXEDMANUAL, 0, 65537, 3.2, 0, 2, 0, BEHZ}, false, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_4"},
-    { BFVRNS_TEST, {0, 0, 60, 20, BATCH, OPTIMIZED, 0, 2, 0, HEStd_128_classic, BV, FIXEDMANUAL, 0, 65537, 3.2, 0, 2, 0, HPS},  true, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_5"},
-    { BFVRNS_TEST, {0, 0, 60, 20, BATCH, RLWE,      0, 2, 0, HEStd_128_classic, BV, FIXEDMANUAL, 0, 65537, 3.2, 0, 2, 0, HPS},  true, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_6"},
-    { BFVRNS_TEST, {0, 0, 60, 20, BATCH, OPTIMIZED, 0, 2, 0, HEStd_128_classic, BV, FIXEDMANUAL, 0, 65537, 3.2, 0, 2, 0, BEHZ}, true, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_7"},
-    { BFVRNS_TEST, {0, 0, 60, 20, BATCH, RLWE,      0, 2, 0, HEStd_128_classic, BV, FIXEDMANUAL, 0, 65537, 3.2, 0, 2, 0, BEHZ}, true, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_8"},
-    // ===================== BGVRNS test cases =====================
-    { BGVRNS_TEST, {256, 2, 50, 3, BATCH, OPTIMIZED, 0, 1, 60, HEStd_NotSet, BV,     FIXEDMANUAL, 0, 65537, 3.2, 0, 0, 0, HPS}, false, "REPLACE_THIS_DESCRIPTION_FOR_BGVRNS_TEST_1"},
-    { BGVRNS_TEST, {256, 2, 50, 3, BATCH, OPTIMIZED, 0, 1, 60, HEStd_NotSet, HYBRID, FIXEDMANUAL, 0, 65537, 3.2, 0, 0, 0, HPS}, false, "REPLACE_THIS_DESCRIPTION_FOR_BGVRNS_TEST_2"},
-    { BGVRNS_TEST, {256, 2, 50, 3, BATCH, RLWE,      0, 1, 60, HEStd_NotSet, BV,     FIXEDMANUAL, 0, 65537, 3.2, 0, 0, 0, HPS}, false, "REPLACE_THIS_DESCRIPTION_FOR_BGVRNS_TEST_3"},
-    { BGVRNS_TEST, {256, 2, 50, 3, BATCH, RLWE,      0, 1, 60, HEStd_NotSet, HYBRID, FIXEDMANUAL, 0, 65537, 3.2, 0, 0, 0, HPS}, false, "REPLACE_THIS_DESCRIPTION_FOR_BGVRNS_TEST_4"},
-    { BGVRNS_TEST, {256, 2, 50, 3, BATCH, OPTIMIZED, 0, 1, 60, HEStd_NotSet, BV,     FIXEDMANUAL, 0, 65537, 3.2, 0, 0, 0, HPS}, true, "REPLACE_THIS_DESCRIPTION_FOR_BGVRNS_TEST_5"},
-    { BGVRNS_TEST, {256, 2, 50, 3, BATCH, OPTIMIZED, 0, 1, 60, HEStd_NotSet, HYBRID, FIXEDMANUAL, 0, 65537, 3.2, 0, 0, 0, HPS}, true, "REPLACE_THIS_DESCRIPTION_FOR_BGVRNS_TEST_6"},
-    { BGVRNS_TEST, {256, 2, 50, 3, BATCH, RLWE,      0, 1, 60, HEStd_NotSet, BV,     FIXEDMANUAL, 0, 65537, 3.2, 0, 0, 0, HPS}, true, "REPLACE_THIS_DESCRIPTION_FOR_BGVRNS_TEST_7"},
-    { BGVRNS_TEST, {256, 2, 50, 3, BATCH, RLWE,      0, 1, 60, HEStd_NotSet, HYBRID, FIXEDMANUAL, 0, 65537, 3.2, 0, 0, 0, HPS}, true, "REPLACE_THIS_DESCRIPTION_FOR_BGVRNS_TEST_8"},
-    // ===================== BFVRNS additional test cases =====================
-    { BFVRNS_TEST_EXTRA, {0, 0, 60, 20, 0, RLWE,      1, 2, 60, HEStd_128_classic, BV, NORESCALE, 0, 4, 3.2, 0, 2, 0, HPS},  false, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_EXTRA_1"},
-    { BFVRNS_TEST_EXTRA, {0, 0, 60, 20, 0, OPTIMIZED, 1, 2, 60, HEStd_128_classic, BV, NORESCALE, 0,16, 3.2, 0, 2, 0, HPS},  false, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_EXTRA_2"},
-    { BFVRNS_TEST_EXTRA, {0, 0, 60, 20, 0, RLWE,      1, 2, 60, HEStd_128_classic, BV, NORESCALE, 0, 4, 3.2, 0, 2, 0, BEHZ}, false, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_EXTRA_3"},
-    { BFVRNS_TEST_EXTRA, {0, 0, 60, 20, 0, OPTIMIZED, 1, 2, 60, HEStd_128_classic, BV, NORESCALE, 0,16, 3.2, 0, 2, 0, BEHZ}, false, "REPLACE_THIS_DESCRIPTION_FOR_BFVRNS_TEST_EXTRA_4"},
+    // ==========================================
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
+    { BFVRNS_TEST, "13", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, HPS},     false },
+    { BFVRNS_TEST, "14", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, HPS},     false },
+    { BFVRNS_TEST, "15", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, BEHZ},    false },
+    { BFVRNS_TEST, "16", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, BEHZ},    false },
+    { BFVRNS_TEST, "17", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, HPS},     true },
+    { BFVRNS_TEST, "18", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, HPS},     true },
+    { BFVRNS_TEST, "19", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, BEHZ},    true },
+    { BFVRNS_TEST, "20", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, BEHZ},    true },
+    // ==========================================
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
+    { BGVRNS_TEST, "21", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "22", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "23", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "24", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "25", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "26", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    // ==========================================
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
+    { BFVRNS_TEST_EXTRA, "29", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     3.2,    DFLT,      2,          DFLT, HPS},     false },
+    { BFVRNS_TEST_EXTRA, "30", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    16,    3.2,    DFLT,      2,          DFLT, HPS},     false },
+    { BFVRNS_TEST_EXTRA, "31", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     3.2,    DFLT,      2,          DFLT, BEHZ},    false },
+    { BFVRNS_TEST_EXTRA, "32", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    16,    3.2,    DFLT,      2,          DFLT, BEHZ},    false },
 };
 //===========================================================================================================
 class UTMultiparty : public ::testing::TestWithParam<TEST_CASE> {
@@ -213,9 +164,9 @@ protected:
     //  - CKKSRNS_TEST false/true
     void UnitTest_MultiParty(const TEST_CASE& testData, const string& failmsg = std::string()) {
         try {
-            CryptoContext<Element> cc(generateContext(testData));
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            const double eps = 0.0001;
+            const double eps = EPSILON;
             std::vector<int32_t> indices = { 2 };
             //====================================================================
             KeyPair<Element> kp1 = cc->KeyGen();
@@ -510,7 +461,7 @@ protected:
 
     void UnitTestMultiparty(const TEST_CASE& testData, const string& failmsg = std::string()) {
         try {
-            CryptoContext<Element> cc(generateContext(testData));
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             ////////////////////////////////////////////////////////////
             // Perform Key Generation Operation
@@ -642,79 +593,6 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
-
-private:
-    //void generateContext(CryptoContext<Element>& cc, const TEST_CASE& testData) {
-    CryptoContext<Element> generateContext(const TEST_CASE& testData) {
-        CryptoContext<Element> cc(nullptr);
-        if (CKKSRNS_TEST == testData.testCaseType) {
-            CCParams<CryptoContextCKKSRNS> parameters;
-            parameters.SetRingDim(testData.params.ringDimension);
-            parameters.SetMultiplicativeDepth(testData.params.multiplicativeDepth);
-            parameters.SetScalingFactorBits(testData.params.scalingFactorBits);
-            parameters.SetRelinWindow(testData.params.relinWindow);
-            parameters.SetBatchSize(testData.params.batchSize);
-            parameters.SetMode(testData.params.mode);
-            parameters.SetDepth(testData.params.depth);
-            parameters.SetMaxDepth(testData.params.maxDepth);
-            parameters.SetKeySwitchTechnique(testData.params.ksTech);
-            parameters.SetRescalingTechnique(testData.params.rsTech);
-            parameters.SetNumLargeDigits(testData.params.numLargeDigits);
-
-            cc = GenCryptoContext(parameters);
-        }
-        else if (BFVRNS_TEST == testData.testCaseType || BFVRNS_TEST_EXTRA == testData.testCaseType) {
-            CCParams<CryptoContextBFVRNS> parameters;
-            parameters.SetPlaintextModulus(testData.params.plaintextModulus);
-            parameters.SetBatchSize(testData.params.batchSize);
-            parameters.SetSecurityLevel(testData.params.securityLevel);
-            parameters.SetStandardDeviation(testData.params.standardDeviation);
-            parameters.SetEvalAddCount(testData.params.evalAddCount);
-            parameters.SetEvalMultCount(testData.params.evalMultCount);
-            parameters.SetKeySwitchCount(testData.params.keySwitchCount);
-            parameters.SetMode(testData.params.mode);
-            parameters.SetMaxDepth(testData.params.maxDepth);
-            parameters.SetRelinWindow(testData.params.relinWindow);
-            parameters.SetScalingFactorBits(testData.params.scalingFactorBits);
-            parameters.SetRingDim(testData.params.ringDimension);
-            parameters.SetMultiplicationTechnique(testData.params.multiplicationTechnique);
-
-            cc = GenCryptoContext(parameters);
-        }
-        else if (BGVRNS_TEST == testData.testCaseType) {
-            CCParams<CryptoContextBGVRNS> parameters;
-            parameters.SetMultiplicativeDepth(testData.params.multiplicativeDepth);
-            parameters.SetPlaintextModulus(testData.params.plaintextModulus);
-            parameters.SetSecurityLevel(testData.params.securityLevel);
-            parameters.SetStandardDeviation(testData.params.standardDeviation);
-            parameters.SetMaxDepth(testData.params.maxDepth);
-            parameters.SetMode(testData.params.mode);
-            parameters.SetKeySwitchTechnique(testData.params.ksTech);
-            parameters.SetRingDim(testData.params.ringDimension);
-            parameters.SetNumLargeDigits(testData.params.numLargeDigits);
-            parameters.SetFirstModSize(testData.params.firstModSize);
-            parameters.SetScalingFactorBits(testData.params.scalingFactorBits);
-            parameters.SetRelinWindow(testData.params.relinWindow);
-            parameters.SetBatchSize(testData.params.batchSize);
-            parameters.SetRescalingTechnique(testData.params.rsTech);
-
-            cc = GenCryptoContext(parameters);
-        }
-        // TODO (dsuponit): if would be great to have the cc check and enable() calls outside of this entire if statement unless
-        //                  the enable() calls are different for different schemes
-        if (!cc)
-            PALISADE_THROW(palisade_error, "Error generating crypto context.");
-
-        cc->Enable(PKE);
-        cc->Enable(KEYSWITCH);
-        cc->Enable(LEVELEDSHE);
-        cc->Enable(ADVANCEDSHE);
-        cc->Enable(PRE);
-        cc->Enable(MULTIPARTY);
-
-        return cc;
-    }
-
 };
 //===========================================================================================================
 TEST_P(UTMultiparty, Multiparty) {
@@ -725,12 +603,6 @@ TEST_P(UTMultiparty, Multiparty) {
     else
         UnitTest_MultiParty(test, test.buildTestName());
 }
-
-// this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
-// the name MUST be constructed from digits, letters and '_' only
-auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
-    return test.param.buildTestName();
-};
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTMultiparty, ::testing::ValuesIn(testCases), testName);
 

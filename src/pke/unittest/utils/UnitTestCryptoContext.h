@@ -1,8 +1,7 @@
-#if 0 // TODO uncomment test after merge to github
 /**
- * @file UnitTestBFVrnsSerialize.cpp
+ * @file UnitTestCryptoContext.h
  *
- * @brief
+ * @brief 
  *
  * @author TPOC: contact@palisade-crypto.org
  *
@@ -28,44 +27,16 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "UnitTestSer.h"
-#include "gtest/gtest.h"
+#ifndef __UNITTESTCRYPTOCONTEXT_H__
+#define __UNITTESTCRYPTOCONTEXT_H__
 
-#include "scheme/bfvrns/bfvrns-ser.h"
 
-using namespace std;
-using namespace lbcrypto;
+#include "UnitTestCCParams.h"
+#include "cryptocontext.h"
 
-class UTPKESer : public ::testing::Test {
- protected:
-  void SetUp() {}
+using Element = lbcrypto::DCRTPoly;
 
-  void TearDown() {
-    CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
-    CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
-    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-  }
-};
+lbcrypto::CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& testData);
 
-CryptoContext<DCRTPoly> GenerateTestDCRTCryptoContext(const string& parmsetName,
-    usint nTower,
-    usint pbits) {
-    CryptoContext<DCRTPoly> cc =
-        CryptoContextHelper::getNewDCRTContext(parmsetName, nTower, pbits);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-    return cc;
-}
+#endif // __UNITTESTCRYPTOCONTEXT_H__
 
-template <typename T>
-void UnitTestContext(CryptoContext<T> cc) {
-  UnitTestContextWithSertype(cc, SerType::JSON, "json");
-  UnitTestContextWithSertype(cc, SerType::BINARY, "binary");
-}
-
-TEST_F(UTPKESer, BFVrns_DCRTPoly_Serial) {
-  CryptoContext<DCRTPoly> cc = GenerateTestDCRTCryptoContext("BFVrns2", 3, 20);
-  UnitTestContext<DCRTPoly>(cc);
-}
-#endif

@@ -87,16 +87,14 @@ class CryptoContextImpl : public Serializable {
   static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>&
   evalSumKeyMap() {
     // cached evalsum keys, by secret key UID
-    static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>
-        s_evalSumKeyMap;
+    static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalSumKeyMap;
     return s_evalSumKeyMap;
   }
 
   static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>&
   evalAutomorphismKeyMap() {
     // cached evalautomorphism keys, by secret key UID
-    static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>
-        s_evalAutomorphismKeyMap;
+    static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
     return s_evalAutomorphismKeyMap;
   }
 
@@ -109,29 +107,25 @@ class CryptoContextImpl : public Serializable {
    * @param a
    * @param b
    */
-  void TypeCheck(ConstCiphertext<Element> a, ConstCiphertext<Element> b,
-                 CALLER_INFO_ARGS_HDR) const {
+  void TypeCheck(const ConstCiphertext<Element> a, const ConstCiphertext<Element> b, CALLER_INFO_ARGS_HDR) const {
     if (a == nullptr || b == nullptr) {
       std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
       PALISADE_THROW(type_error, errorMsg);
     }
     if (a->GetCryptoContext().get() != this) {
       std::string errorMsg(
-          std::string("Ciphertext was not created in this CryptoContext") +
-          CALLER_INFO);
+          std::string("Ciphertext was not created in this CryptoContext") + CALLER_INFO);
       PALISADE_THROW(type_error, errorMsg);
     }
     if (a->GetCryptoContext() != b->GetCryptoContext()) {
       std::string errorMsg(
           std::string(
-              "Ciphertexts were not created in the same CryptoContext") +
-          CALLER_INFO);
+              "Ciphertexts were not created in the same CryptoContext") + CALLER_INFO);
       PALISADE_THROW(type_error, errorMsg);
     }
     if (a->GetKeyTag() != b->GetKeyTag()) {
       std::string errorMsg(
-          std::string("Ciphertexts were not encrypted with same keys") +
-          CALLER_INFO);
+          std::string("Ciphertexts were not encrypted with same keys") + CALLER_INFO);
       PALISADE_THROW(type_error, errorMsg);
     }
     if (a->GetEncodingType() != b->GetEncodingType()) {
@@ -145,58 +139,12 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * TypeCheck makes sure that an operation between two ciphertexts is permitted
-   * This is intended for mutable methods, hence inputs are Ciphretext instead
-   * of ConstCiphertext.
-   *
-   * @param a
-   * @param b
-   */
-  /*
- void TypeCheck(Ciphertext<Element> a,
-                Ciphertext<Element> b,
-                CALLER_INFO_ARGS_HDR) const {
-   if (a == nullptr || b == nullptr) {
-     std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
-     PALISADE_THROW(type_error, errorMsg);
-   }
-   if (a->GetCryptoContext().get() != this) {
-     std::string errorMsg(
-       std::string("Ciphertext was not created in this CryptoContext") +
-       CALLER_INFO);
-     PALISADE_THROW(type_error, errorMsg);
-   }
-   if (a->GetCryptoContext() != b->GetCryptoContext()) {
-     std::string errorMsg(
-       std::string("Ciphertexts were not created in the same CryptoContext") +
-       CALLER_INFO);
-     PALISADE_THROW(type_error, errorMsg);
-   }
-   if (a->GetKeyTag() != b->GetKeyTag()) {
-     std::string errorMsg(
-       std::string("Ciphertexts were not encrypted with same keys") +
-       CALLER_INFO);
-     PALISADE_THROW(type_error, errorMsg);
-   }
-   if (a->GetEncodingType() != b->GetEncodingType()) {
-     std::stringstream ss;
-     ss << "Ciphertext encoding types " << a->GetEncodingType();
-     ss << " and " << b->GetEncodingType();
-     ss << " do not match";
-     ss << CALLER_INFO;
-     PALISADE_THROW(type_error, ss.str());
-   }
- }
- */
-
-  /**
    * TypeCheck makes sure that an operation between a ciphertext and a plaintext
    * is permitted
    * @param a
    * @param b
    */
-  void TypeCheck(ConstCiphertext<Element> a, ConstPlaintext b,
-                 CALLER_INFO_ARGS_HDR) const {
+  void TypeCheck(const ConstCiphertext<Element> a, const ConstPlaintext b, CALLER_INFO_ARGS_HDR) const {
     if (a == nullptr) {
       std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
       PALISADE_THROW(type_error, errorMsg);
@@ -207,8 +155,7 @@ class CryptoContextImpl : public Serializable {
     }
     if (a->GetCryptoContext().get() != this) {
       std::string errorMsg(
-          std::string("Ciphertext was not created in this CryptoContext") +
-          CALLER_INFO);
+          std::string("Ciphertext was not created in this CryptoContext") + CALLER_INFO);
       PALISADE_THROW(type_error, errorMsg);
     }
     if (a->GetEncodingType() != b->GetEncodingType()) {
@@ -228,23 +175,26 @@ class CryptoContextImpl : public Serializable {
     return false;
   }
 
-  //TODO Check error occur, fix later
-//  void CheckKey(const Key<Element> key) const {
-//    if (key == nullptr || Mismatched(key->GetCryptoContext()))
-//      PALISADE_THROW(config_error,
-//                     "Information was not generated with this crypto context");
-//  }
-
-  void CheckConstCiphertext(ConstCiphertext<Element> ciphertext) const {
-    if (ciphertext == nullptr || Mismatched(ciphertext->GetCryptoContext()))
-      PALISADE_THROW(config_error,
-                     "Information was not generated with this crypto context");
+  void CheckKey(const shared_ptr<const Key<Element>> key, CALLER_INFO_ARGS_HDR) const {
+      if (key == nullptr) {
+          std::string errorMsg(std::string("Key is nullptr") + CALLER_INFO);
+          PALISADE_THROW(config_error, errorMsg);
+      }
+      if (Mismatched(key->GetCryptoContext())) {
+          std::string errorMsg(std::string("Key was not generated with the same crypto context") + CALLER_INFO);
+          PALISADE_THROW(config_error, errorMsg);
+      }
   }
 
-  void CheckCiphertext(const Ciphertext<Element>& ciphertext) const {
-    if (ciphertext == nullptr || Mismatched(ciphertext->GetCryptoContext()))
-      PALISADE_THROW(config_error,
-                     "Information was not generated with this crypto context");
+  void CheckCiphertext(const ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
+      if (ciphertext == nullptr) {
+          std::string errorMsg(std::string("Ciphertext is nullptr") + CALLER_INFO);
+          PALISADE_THROW(config_error, errorMsg);
+      }
+      if (Mismatched(ciphertext->GetCryptoContext())) {
+          std::string errorMsg(std::string("Ciphertext was not generated with the same crypto context") + CALLER_INFO);
+          PALISADE_THROW(config_error, errorMsg);
+      }
   }
 
  public:
@@ -982,7 +932,7 @@ class CryptoContextImpl : public Serializable {
   Ciphertext<Element> Encrypt(Plaintext plaintext, const PublicKey<Element> publicKey) const {
     if (plaintext == nullptr)
       PALISADE_THROW(type_error, "Input plaintext is nullptr");
-//    CheckKey(publicKey);
+    CheckKey(publicKey);
 
     Ciphertext<Element> ciphertext =
         GetScheme()->Encrypt(plaintext->GetElement<Element>(), publicKey);
@@ -1010,7 +960,7 @@ class CryptoContextImpl : public Serializable {
   Ciphertext<Element> Encrypt(Plaintext plaintext, const PrivateKey<Element> privateKey) const {
 //    if (plaintext == nullptr)
 //      PALISADE_THROW(type_error, "Input plaintext is nullptr");
-//    CheckKey(privateKey);
+    CheckKey(privateKey);
 
     Ciphertext<Element> ciphertext =
         GetScheme()->Encrypt(plaintext->GetElement<Element>(), privateKey);
@@ -1059,8 +1009,8 @@ class CryptoContextImpl : public Serializable {
    * @return new evaluation key
    */
   EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey, const PrivateKey<Element> newPrivateKey) const {
-//    CheckKey(oldPrivateKey);
-//    CheckKey(newPrivateKey);
+    CheckKey(oldPrivateKey);
+    CheckKey(newPrivateKey);
 
     return GetScheme()->KeySwitchGen(oldPrivateKey, newPrivateKey);
   }
@@ -1072,8 +1022,8 @@ class CryptoContextImpl : public Serializable {
    * @return new CiphertextImpl after applying key switch
    */
   Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const {
-    CheckConstCiphertext(ciphertext);
-//    CheckKey(evalKey);
+    CheckCiphertext(ciphertext);
+    CheckKey(evalKey);
 
     return GetScheme()->KeySwitch(ciphertext, evalKey);
   }
@@ -1085,7 +1035,7 @@ class CryptoContextImpl : public Serializable {
    */
   void KeySwitchInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const {
     CheckCiphertext(ciphertext);
-//    CheckKey(evalKey);
+    CheckKey(evalKey);
 
     GetScheme()->KeySwitchInPlace(ciphertext, evalKey);
   }
@@ -1100,7 +1050,7 @@ class CryptoContextImpl : public Serializable {
    * @return new ciphertext -ct
    */
   Ciphertext<Element> EvalNegate(ConstCiphertext<Element> ciphertext) const {
-    CheckConstCiphertext(ciphertext);
+    CheckCiphertext(ciphertext);
 
     return GetScheme()->EvalNegate(ciphertext);
   }
@@ -1586,7 +1536,7 @@ class CryptoContextImpl : public Serializable {
   shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
       const PrivateKey<Element> privateKey,
       const std::vector<usint>& indexList) const {
-//    CheckKey(privateKey);
+    CheckKey(privateKey);
     if (!indexList.size())
       PALISADE_THROW(config_error, "Input index vector is empty");
 
@@ -1605,8 +1555,8 @@ class CryptoContextImpl : public Serializable {
   shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
       const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
       const std::vector<usint>& indexList) const {
-//    CheckKey(publicKey);
-//    CheckKey(privateKey);
+    CheckKey(publicKey);
+    CheckKey(privateKey);
     if (!indexList.size())
       PALISADE_THROW(config_error, "Input index vector is empty");
 
@@ -1627,7 +1577,7 @@ class CryptoContextImpl : public Serializable {
       ConstCiphertext<Element> ciphertext, usint i,
       const std::map<usint, EvalKey<Element>>& evalKeyMap,
       CALLER_INFO_ARGS_HDR) const {
-    CheckConstCiphertext(ciphertext);
+    CheckCiphertext(ciphertext);
 
     if (evalKeyMap.empty()) {
       std::string errorMsg(std::string("Empty input key map") + CALLER_INFO);
@@ -1644,7 +1594,7 @@ class CryptoContextImpl : public Serializable {
 
     auto evalKey = key->second;
 
-//    CheckKey(evalKey);
+    CheckKey(evalKey);
 
     return GetScheme()->EvalAutomorphism(ciphertext, i, evalKeyMap);
   }
@@ -1757,8 +1707,8 @@ class CryptoContextImpl : public Serializable {
   Ciphertext<Element> ComposedEvalMult(
       ConstCiphertext<Element> ciphertext1,
       ConstCiphertext<Element> ciphertext2) const {
-    CheckConstCiphertext(ciphertext1);
-    CheckConstCiphertext(ciphertext2);
+    CheckCiphertext(ciphertext1);
+    CheckCiphertext(ciphertext2);
 
     auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
     if (!evalKeyVec.size()) {
@@ -1778,7 +1728,7 @@ class CryptoContextImpl : public Serializable {
    * @return mod reduced ciphertext
    */
   Ciphertext<Element> Rescale(ConstCiphertext<Element> ciphertext) const {
-    CheckConstCiphertext(ciphertext);
+    CheckCiphertext(ciphertext);
 
     return GetScheme()->ModReduce(ciphertext);
   }
@@ -1801,7 +1751,7 @@ class CryptoContextImpl : public Serializable {
    * @return mod reduced ciphertext
    */
   Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext) const {
-    CheckConstCiphertext(ciphertext);
+    CheckCiphertext(ciphertext);
 
     return GetScheme()->ModReduce(ciphertext);
   }
@@ -1825,7 +1775,7 @@ class CryptoContextImpl : public Serializable {
   Ciphertext<Element> LevelReduce(ConstCiphertext<Element> ciphertext,
                                   const EvalKey<Element> evalKey,
                                   size_t levels = 1) const {
-    CheckConstCiphertext(ciphertext);
+    CheckCiphertext(ciphertext);
 
     return GetScheme()->LevelReduce(ciphertext, evalKey, levels);
   }
@@ -1971,7 +1921,7 @@ class CryptoContextImpl : public Serializable {
   virtual Ciphertext<Element> EvalPoly(
       ConstCiphertext<Element> ciphertext,
       const std::vector<double>& coefficients) const {
-    CheckConstCiphertext(ciphertext);
+    CheckCiphertext(ciphertext);
 
     return GetScheme()->EvalPoly(ciphertext, coefficients);
   }
@@ -2060,8 +2010,8 @@ class CryptoContextImpl : public Serializable {
    */
   EvalKey<Element> ReKeyGen(const PrivateKey<Element> oldPrivateKey,
                             const PublicKey<Element> newPublicKey) const {
-//    CheckKey(oldPrivateKey);
-//    CheckKey(newPublicKey);
+    CheckKey(oldPrivateKey);
+    CheckKey(newPublicKey);
 
     return GetScheme()->ReKeyGen(oldPrivateKey, newPublicKey);
   }
@@ -2089,8 +2039,8 @@ class CryptoContextImpl : public Serializable {
                                 EvalKey<Element> evalKey,
                                 const PublicKey<Element> publicKey = nullptr,
                                 usint noiseflooding = 0) const {
-    CheckConstCiphertext(ciphertext);
-//    CheckKey(evalKey);
+    CheckCiphertext(ciphertext);
+    CheckKey(evalKey);
 
     return GetScheme()->ReEncrypt(ciphertext, evalKey, publicKey, noiseflooding);
   }
@@ -2148,7 +2098,7 @@ class CryptoContextImpl : public Serializable {
   vector<Ciphertext<Element>> MultipartyDecryptLead(
       const vector<Ciphertext<Element>>& ciphertextVec,
       const PrivateKey<Element> privateKey) const {
-//    CheckKey(privateKey);
+    CheckKey(privateKey);
 
     vector<Ciphertext<Element>> newCiphertextVec;
 
@@ -2171,7 +2121,7 @@ class CryptoContextImpl : public Serializable {
   vector<Ciphertext<Element>> MultipartyDecryptMain(
       const vector<Ciphertext<Element>>& ciphertextVec,
       const PrivateKey<Element> privateKey) const {
-//    CheckKey(privateKey);
+    CheckKey(privateKey);
 
     vector<Ciphertext<Element>> newCiphertextVec;
     for (size_t i = 0; i < ciphertextVec.size(); i++) {

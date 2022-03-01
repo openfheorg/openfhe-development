@@ -1,8 +1,7 @@
-#if 0 // TODO uncomment test after merge to github
 /**
- * @file UnitTestBFVrnsSerialize.cpp
+ * @file UnitTestCCParams.cpp
  *
- * @brief
+ * @brief 
  *
  * @author TPOC: contact@palisade-crypto.org
  *
@@ -28,44 +27,37 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "UnitTestSer.h"
-#include "gtest/gtest.h"
+#include "UnitTestCCParams.h"
+#include <sstream>
+#include <ostream>
 
-#include "scheme/bfvrns/bfvrns-ser.h"
 
-using namespace std;
-using namespace lbcrypto;
-
-class UTPKESer : public ::testing::Test {
- protected:
-  void SetUp() {}
-
-  void TearDown() {
-    CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
-    CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
-    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-  }
-};
-
-CryptoContext<DCRTPoly> GenerateTestDCRTCryptoContext(const string& parmsetName,
-    usint nTower,
-    usint pbits) {
-    CryptoContext<DCRTPoly> cc =
-        CryptoContextHelper::getNewDCRTContext(parmsetName, nTower, pbits);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-    return cc;
+std::string UnitTestCCParams::toString() const {
+    std::stringstream ss;
+    ss << "schemeId [" << schemeId << "], "
+        << "ringDimension [" << ringDimension << "], "
+        << "multiplicativeDepth [" << multiplicativeDepth << "], "
+        << "scalingFactorBits [" << scalingFactorBits << "], "
+        << "relinWindow [" << relinWindow << "], "
+        << "batchSize [" << batchSize << "], "
+        << "mode [" << mode << "], "
+        << "depth [" << depth << "], "
+        << "maxDepth [" << maxDepth << "], "
+        << "firstModSize [" << firstModSize << "], "
+        << "securityLevel [" << securityLevel << "], "
+        << "ksTech [" << ksTech << "], "
+        << "rsTech [" << rsTech << "], "
+        << "numLargeDigits [" << numLargeDigits << "], "
+        << "plaintextModulus [" << plaintextModulus << "], "
+        << "standardDeviation [" << standardDeviation << "], "
+        << "evalAddCount [" << evalAddCount << "], "
+        << "evalMultCount [" << evalMultCount << "], "
+        << "keySwitchCount [" << keySwitchCount << "], "
+        << "multiplicationTechnique [" << multiplicationTechnique << "], "
+        ;
+    return ss.str();
 }
-
-template <typename T>
-void UnitTestContext(CryptoContext<T> cc) {
-  UnitTestContextWithSertype(cc, SerType::JSON, "json");
-  UnitTestContextWithSertype(cc, SerType::BINARY, "binary");
+//===========================================================================================================
+std::ostream& operator<<(std::ostream& os, const UnitTestCCParams& params) {
+    return os << params.toString();
 }
-
-TEST_F(UTPKESer, BFVrns_DCRTPoly_Serial) {
-  CryptoContext<DCRTPoly> cc = GenerateTestDCRTCryptoContext("BFVrns2", 3, 20);
-  UnitTestContext<DCRTPoly>(cc);
-}
-#endif
