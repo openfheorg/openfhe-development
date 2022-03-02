@@ -69,12 +69,12 @@ jobs:
         whoami
         cmake -S . -B build -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9
         pushd build
-        make apidocs
+        make Doxygen
+        make Sphinx
         popd
-        mv doc/apidocs/html/ docs/
 
-    - name: deploy_docs
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs
+#     - name: deploy_docs
+#       uses: peaceiris/actions-gh-pages@v3
+#       with:
+#         github_token: ${{ secrets.GITHUB_TOKEN }}
+#         publish_dir: ./docs
