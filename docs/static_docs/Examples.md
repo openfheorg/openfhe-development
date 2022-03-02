@@ -47,4 +47,4 @@ Local Examples
 --------------
 
 The examples included with the PALISADE lattice crypto library.
-Check out the [README](src/pke/examples/README.md) in the repository for more details.
+Check out the [README](../../src/pke/examples/README.md) in the repository for more details.

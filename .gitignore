@@ -6,10 +6,14 @@
 bin/
 build*/
 cmake-build-debug
+docs/doxygen
+docs/sphinx
+.ipynb_checkpoints
 
 test/build
 test/bin
 output.txt
+Doxyfile
 apidoc_warning_logfile.txt
 third-party/distros/gmp-6.1.1
 third-party/distros/gmp-6.1.2
