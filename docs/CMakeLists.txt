@@ -27,7 +27,7 @@ if (DOXYGEN_FOUND)
 
     add_custom_target(Doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})
 
-    find_package(Sphinx PATHS $PYTHONPATH)
+    find_package(Sphinx)
     if (Sphinx_FOUND)
         message(STATUS "Sphinx documentation will be built")
 
