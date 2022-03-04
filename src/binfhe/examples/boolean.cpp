@@ -1,5 +1,3 @@
-// @file boolean.cpp - Example for the FHEW scheme using the default
-// bootstrapping method (GINX)
 //==================================================================================
 // BSD 2-Clause License
 // 
