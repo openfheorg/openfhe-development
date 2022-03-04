@@ -1,3 +1,4 @@
+cmake_policy(SET CMP0074 NEW)   # Makes Doc generation require CMake 3.12
 find_package(Doxygen QUIET COMPONENTS dot)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 if (DOXYGEN_FOUND)
