@@ -8,7 +8,7 @@ This documentation is about the CI/CD Transition from GitLab pipeline to
 GitHub Actions workflow. It is also intended to improve our CI/CD
 capabilities in the new GitHub environment. Directory structure
 
-Repository: https://github.com/openfheorg/openfhe-temp
+Repository: https://github.com/openfheorg/openfhe-development
 
 ::
 
@@ -119,8 +119,8 @@ parameters. It also allows running specific selected jobs.
 Run manual workflow
 ~~~~~~~~~~~~~~~~~~~
 
-1. Go to the openfhe-temp repository at this URL:
-   https://github.com/openfheorg/openfhe-temp
+1. Go to the openfhe-development repository at this URL:
+   https://github.com/openfheorg/openfhe-development
 
 2. Click on the Actions tab on the center of the upper menu ..
 

@@ -11,7 +11,7 @@ env:
 jobs:
 
   call:
-    uses: openfheorg/openfhe-temp/.github/workflows/reuseable_workflow.yml@github-ci
+    uses: openfheorg/openfhe-development/.github/workflows/reuseable_workflow.yml@github-ci
     with:
       mb2_debug: true
       mb2_tcm: true

@@ -63,7 +63,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: default
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: default
 
@@ -82,7 +82,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb2_tcm
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb2_tcm
         mathbackend: 2
@@ -104,7 +104,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb2_debug
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb2_debug
         mathbackend: 2
@@ -126,7 +126,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb4_noflag
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb4_noflag
         mathbackend: 4
@@ -147,7 +147,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb4_tcm
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb4_tcm
         mathbackend: 4
@@ -169,7 +169,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb4_debug
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb4_debug
         mathbackend: 4
@@ -191,7 +191,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb6_ntl_noflag
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb6_ntl_noflag
         mathbackend: 6
@@ -212,7 +212,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb6_ntl_tcm
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb6_ntl_tcm
         mathbackend: 6
@@ -234,7 +234,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb6_ntl_debug_tcm
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb6_ntl_debug_tcm
         mathbackend: 6
@@ -255,7 +255,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb2_natopt
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb2_natopt
         mathbackend: 2

@@ -90,7 +90,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: default
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: custom_build
         cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }} 
