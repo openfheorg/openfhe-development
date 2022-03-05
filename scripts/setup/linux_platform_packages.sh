@@ -2,7 +2,7 @@
 # 
 # This script can be used to install all of the requistes for the Linux Platform
 # 
-# https://github.com/openfheorg/openfhe-temp/wiki/Instructions-for-building-OpenFHE-in-Linux
+# https://github.com/openfheorg/openfhe-development/wiki/Instructions-for-building-OpenFHE-in-Linux
 
 # update
 sudo apt-get update

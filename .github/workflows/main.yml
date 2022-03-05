@@ -9,7 +9,7 @@ on:
 jobs:
   
   call:
-    uses: openfheorg/openfhe-temp/.github/workflows/reuseable_workflow.yml@github-ci
+    uses: openfheorg/openfhe-development/.github/workflows/reuseable_workflow.yml@github-ci
     with:
       mb2_debug: true
       mb2_tcm: true
@@ -28,7 +28,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb2_128
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb2_128
         native_backend: 128
@@ -43,7 +43,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: mb2_clang
-      uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+      uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
         module_name: mb4_tcm
         cmake_args: "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"

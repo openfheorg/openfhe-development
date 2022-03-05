@@ -10,13 +10,13 @@ is specially protected, and the OpenFHE repository uses references to
 the branch for reuseable workflows and actions.
 
 For changes to what happens for the
-`Custom <https://github.com/openfheorg/openfhe-temp/actions/workflows/custom.yml>`_,
-`Main <https://github.com/openfheorg/openfhe-temp/actions/workflows/main.yml>`_,
-`Manual <https://github.com/openfheorg/openfhe-temp/actions/workflows/manual.yml>`_,
+`Custom <https://github.com/openfheorg/openfhe-development/actions/workflows/custom.yml>`_,
+`Main <https://github.com/openfheorg/openfhe-development/actions/workflows/main.yml>`_,
+`Manual <https://github.com/openfheorg/openfhe-development/actions/workflows/manual.yml>`_,
 or
-`Pull-Request <https://github.com/openfheorg/openfhe-temp/actions/workflows/pull-request.yml>`_
+`Pull-Request <https://github.com/openfheorg/openfhe-development/actions/workflows/pull-request.yml>`_
 the files must be updated on the
-`main <https://github.com/openfheorg/openfhe-temp/tree/main>`_
+`main <https://github.com/openfheorg/openfhe-development/tree/main>`_
 branch.
 
 ::
@@ -39,7 +39,7 @@ GitHub Actions are used to create function like abilities to the CI/CD.
 Thus reducing the scripting, lines of code, and complexity of the
 `workflows <#workflows>`__. There is currently a single action to help
 build and test a given configuration
-`.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-temp/blob/main/.github/actions/default_builder/action.yml>`_.
+`.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`_.
 
 Default Builder
 ~~~~~~~~~~~~~~~
@@ -57,7 +57,7 @@ flow of the ``Default Builder`` actions is:
 
 The actions are flexible as when can pass ``inputs`` which can be seen
 in first section of the
-`.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-temp/blob/main/.github/actions/default_builder/action.yml>`_.
+`.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`_.
 These inputs can be used throughout the action.yml to change behaviour.
 
    For more info on *GitHub Actions* in general please visit `Learn
@@ -87,12 +87,12 @@ Adding New Inputs
 
 To add a new input to the action it will need to be added to the
 ``inputs`` section in the
-`.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-temp/blob/main/.github/actions/default_builder/action.yml>`__.
+`.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`__.
 There is a constraint of 10 inputs, so care needs to be taking when
 selecting inputs. Select that the type of the input for your input and
 choose a default value that will not alter the previous behavior of the
 important `workflows <#workflows>`__ After adding the parameter to
-`action.yml <https://github.com/openfheorg/openfhe-temp/blob/main/.github/actions/default_builder/action.yml>`__
+`action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`__
 you must set it using the ``with`` field, shown below, in any workflow
 that you want to use the new parameter.
 
@@ -135,10 +135,10 @@ Workflows
 ---------
 
 When designing the `our
-workflows <https://github.com/openfheorg/openfhe-temp/actions>`__ for
+workflows <https://github.com/openfheorg/openfhe-development/actions>`__ for
 OpenFHE we took the approach of bundling multiple configurations
 together. This influenced how the
-`action.yml <https://github.com/openfheorg/openfhe-temp/blob/main/.github/actions/default_builder/action.yml>`__
+`action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`__
 was designed, as we want to have the server configure, build, and run
 outputs without needing to pass artifacts around. Previously we had done
 all the builds for every configuration, then ran all the unittests for
@@ -155,13 +155,13 @@ There are 5 total Workflows:
 
 - `Main <#Main-Workflow>`_ - Used to extensively test pushes to the main branch and publish docs.
 
-  - This also runs if pushes are made to the `github-ci <https://github.com/openfheorg/openfhe-temp/tree/github-ci>`__ branch to allow testing and development of the CI. -
+  - This also runs if pushes are made to the `github-ci <https://github.com/openfheorg/openfhe-development/tree/github-ci>`__ branch to allow testing and development of the CI. -
 
 - `Manual <#manual-workflow>`_ - Used to do a batch of builds with a control over compilers, native size, configurations
 
 - `Pull-Request <#pull-request-workflow>`__ - Used to test any pull-requests generated, this tests a healthy number of configurations but is not as extensive as **Main**.
 
-- `Reuseable Workflow <https://github.com/openfheorg/openfhe-temp/actions/workflows/reuseable_workflow.yml>`__ - This is not run from the GitHub UI, but instead is used to allow ``pull-request`` and ``main`` workflows to use a large portion of shared code.
+- `Reuseable Workflow <https://github.com/openfheorg/openfhe-development/actions/workflows/reuseable_workflow.yml>`__ - This is not run from the GitHub UI, but instead is used to allow ``pull-request`` and ``main`` workflows to use a large portion of shared code.
 
 Custom Workflow
 ~~~~~~~~~~~~~~~
@@ -169,7 +169,7 @@ Custom Workflow
 The custom workflow allows to select a number of options that are
 supported and worth testing on a server. See the diagram below for the
 options. All the options are created in the
-`.github/workflows/custom.yml <https://github.com/openfheorg/openfhe-temp/actions/workflows/custom.yml>`__
+`.github/workflows/custom.yml <https://github.com/openfheorg/openfhe-development/actions/workflows/custom.yml>`__
 file under the ``on.workflow_dispatch.inputs`` property. The ``jobs``
 property is short and sweet for this workflow as it is only going to
 kickoff a single ``default_builder`` action with the corresponding
@@ -217,7 +217,7 @@ Selection <#compiler-selection>`__
        default:
        # ...
        - name: default
-           uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+           uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
            with:
                # ...
                mathbackend: ${{ fromJson(env.MATHBACKEND_MAP)[github.event.inputs.mathbackend] }}
@@ -237,7 +237,7 @@ Pull-Request Workflow
 ~~~~~~~~~~~~~~~~~~~~~
 
 The
-`pull-request.yml <https://github.com/openfheorg/openfhe-temp/actions/workflows/pull-request.yml>`__
+`pull-request.yml <https://github.com/openfheorg/openfhe-development/actions/workflows/pull-request.yml>`__
 defines the Pull-Request Workflow. The Pull-Request Workflow is run
 whenever under 2 conditions: first when a pull-request is opened and
 whenever changes are pushed to that branch will the pull-request is
@@ -263,10 +263,10 @@ Main Workflow
 ~~~~~~~~~~~~~
 
 The
-`main.yml <https://github.com/openfheorg/openfhe-temp/actions/workflows/main.yml>`__
+`main.yml <https://github.com/openfheorg/openfhe-development/actions/workflows/main.yml>`__
 defines the Main Workflow, which runs when changes are pushed to main.
 The Main Workflow is also run when changes are pushed to the branch
-`github-ci <https://github.com/openfheorg/openfhe-temp/tree/github-ci>`__
+`github-ci <https://github.com/openfheorg/openfhe-development/tree/github-ci>`__
 but this is for testing and development purposes of new CI/CD features.
 This is defined by the code snippet:
 
@@ -285,7 +285,7 @@ important testing jobs are run using the
 ``NATIVE_SIZE=128`` (mb2_128) and compilation with clang (mb2_clang).
 And lastly this workflow has a job that pushes the doxygen generate
 documentation to a specific branch,
-`gh-pages <https://github.com/openfheorg/openfhe-temp/tree/gh-pages>`__
+`gh-pages <https://github.com/openfheorg/openfhe-development/tree/gh-pages>`__
 in the repository, is best access through the
 `github-pages <https://bookish-barnacle-cfd572c2.pages.github.io/>`__.
 
@@ -293,7 +293,7 @@ Reuseable Workflow
 ~~~~~~~~~~~~~~~~~~
 
 The
-`reuseable_workflow.yml <https://github.com/openfheorg/openfhe-temp/actions/workflows/reuseable_workflow.yml>`__
+`reuseable_workflow.yml <https://github.com/openfheorg/openfhe-development/actions/workflows/reuseable_workflow.yml>`__
 defines the Reuseable Workflow, which is not run directly through GitHub
 pushes, pull-requests, or UI interactions. Instead this workflow
 encapuslates the bulk of the CI/CD that should be use in multiple
@@ -314,7 +314,7 @@ entire workflow through the following calling squence:
 
    jobs:
      call:
-       uses: openfheorg/openfhe-temp/.github/workflows/reuseable_workflow.yml@github-ci
+       uses: openfheorg/openfhe-development/.github/workflows/reuseable_workflow.yml@github-ci
        with:
            # ...
 
@@ -354,7 +354,7 @@ in the following way:
          uses: actions/checkout@v2
 
        - name: mb2_tcm
-         uses: openfheorg/openfhe-temp/.github/actions/default_builder@github-ci
+         uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
          with:
            module_name: mb2_tcm
            mathbackend: 2
@@ -463,7 +463,7 @@ input
 ..
 
    Note - this can’t be done in the
-   `.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-temp/blob/main/.github/actions/default_builder/action.yml>`__,
+   `.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`__,
    access to the ``fromJson`` function isn’t available in that scope.
 
 Modifying or Adding New Workflows
@@ -501,7 +501,7 @@ Setup Linux Server for OpenFHE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 OpenFHE To see how to setup
-`linux_platform_packages.sh <https://github.com/openfheorg/openfhe-temp/blob/main/scripts/setup/linux_platform_packages.sh>`__
+`linux_platform_packages.sh <https://github.com/openfheorg/openfhe-development/blob/main/scripts/setup/linux_platform_packages.sh>`__
 in the repository, or run it on your linux platform.
 
 **Note** - this is for an Ubuntu 20.04 distribution.
