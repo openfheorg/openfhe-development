@@ -33,7 +33,6 @@
 /*
   unit tests for the PRE capabilities
  */
-
 #include "UnitTestUtils.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
@@ -43,13 +42,8 @@
 #include <iostream>
 #include <vector>
 
-//#include "cryptocontextgen.h"
-//#include "cryptocontexthelper.h"
-//#include "palisade.h"
-//#include "utils/testcasegen.h"
-//
-using namespace lbcrypto;
 
+using namespace lbcrypto;
 
 //===========================================================================================================
 enum TEST_CASE_TYPE {
@@ -165,46 +159,48 @@ protected:
 
             // This generates the keys which are used to perform the key switching.
             EvalKey<Element> evalKey;
-            evalKey = cc->ReKeyGen(newKp.publicKey, kp.secretKey);
+            evalKey = cc->ReKeyGen(kp.secretKey, newKp.publicKey);
 
             Ciphertext<Element> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
             Plaintext plaintextShortNew;
-            Ciphertext<Element> reCiphertext = cc->ReEncrypt(evalKey, ciphertext);
+            Ciphertext<Element> reCiphertext = cc->ReEncrypt(ciphertext, evalKey);
             DecryptResult result = cc->Decrypt(newKp.secretKey, reCiphertext, &plaintextShortNew);
             EXPECT_EQ(plaintextShortNew->GetStringValue(), plaintextShort->GetStringValue())
                 << failmsg << " ReEncrypt short string plaintext with padding";
 
             Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintextFull);
             Plaintext plaintextFullNew;
-            Ciphertext<Element> reCiphertext2 = cc->ReEncrypt(evalKey, ciphertext2);
+            Ciphertext<Element> reCiphertext2 = cc->ReEncrypt(ciphertext2, evalKey);
             result = cc->Decrypt(newKp.secretKey, reCiphertext2, &plaintextFullNew);
             EXPECT_EQ(plaintextFullNew->GetStringValue(), plaintextFull->GetStringValue())
                 << failmsg << " ReEncrypt full string plaintext";
 
             Ciphertext<Element> ciphertext4 = cc->Encrypt(kp.publicKey, plaintextInt);
             Plaintext plaintextIntNew;
-            Ciphertext<Element> reCiphertext4 = cc->ReEncrypt(evalKey, ciphertext4);
+            Ciphertext<Element> reCiphertext4 = cc->ReEncrypt(ciphertext4, evalKey);
             result = cc->Decrypt(newKp.secretKey, reCiphertext4, &plaintextIntNew);
             EXPECT_EQ(plaintextIntNew->GetCoefPackedValue(), plaintextInt->GetCoefPackedValue())
                 << failmsg << " ReEncrypt integer plaintext";
 
             Ciphertext<Element> ciphertext5 = cc->Encrypt(kp.publicKey, plaintextShort);
             Plaintext plaintextShortNew2;
-            Ciphertext<Element> reCiphertext5 = cc->ReEncrypt(evalKey, ciphertext5, kp.publicKey);
+            std::cerr << __FILE__ << ":l." << __LINE__ << std::endl;
+            Ciphertext<Element> reCiphertext5 = cc->ReEncrypt(ciphertext5, evalKey, kp.publicKey);
+            std::cerr << __FILE__ << ":l." << __LINE__ << std::endl;
             result = cc->Decrypt(newKp.secretKey, reCiphertext5, &plaintextShortNew2);
             EXPECT_EQ(plaintextShortNew2->GetStringValue(), plaintextShort->GetStringValue())
                 << failmsg << " HRA-secure ReEncrypt short string plaintext with padding";
 
             Ciphertext<Element> ciphertext6 = cc->Encrypt(kp.publicKey, plaintextFull);
             Plaintext plaintextFullNew2;
-            Ciphertext<Element> reCiphertext6 = cc->ReEncrypt(evalKey, ciphertext6, kp.publicKey);
+            Ciphertext<Element> reCiphertext6 = cc->ReEncrypt(ciphertext6, evalKey, kp.publicKey);
             result = cc->Decrypt(newKp.secretKey, reCiphertext6, &plaintextFullNew2);
             EXPECT_EQ(plaintextFullNew2->GetStringValue(), plaintextFull->GetStringValue())
                 << failmsg << " HRA-secure ReEncrypt full string plaintext";
 
             Ciphertext<Element> ciphertext7 = cc->Encrypt(kp.publicKey, plaintextInt);
             Plaintext plaintextIntNew2;
-            Ciphertext<Element> reCiphertext7 = cc->ReEncrypt(evalKey, ciphertext7, kp.publicKey);
+            Ciphertext<Element> reCiphertext7 = cc->ReEncrypt(ciphertext7, evalKey, kp.publicKey);
             result = cc->Decrypt(newKp.secretKey, reCiphertext7, &plaintextIntNew2);
             EXPECT_EQ(plaintextIntNew2->GetCoefPackedValue(), plaintextInt->GetCoefPackedValue())
                 << failmsg << " HRA-secure ReEncrypt integer plaintext";
@@ -226,7 +222,7 @@ protected:
 
 };
 
-/===========================================================================================================
+//===========================================================================================================
 TEST_P(ReEncrypt, PRE) {
     setupSignals();
     auto test = GetParam();
