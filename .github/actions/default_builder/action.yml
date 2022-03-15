@@ -97,15 +97,15 @@ runs:
         
         # run only if with_tcm input is set
         if [[ "${{inputs.with_tcm}}" == "true" ]]; then
-          make tcm -j $(nproc)
+          make tcm -j $[$(nproc) - 2]
         fi
         
         # Build the code base
-        make -j $(nproc) all
+        make -j $[$(nproc) - 2] all
 
         # run only if run_extra input is set
         if [[ "${{inputs.run_extras}}" == "true" ]]; then
-          make -j $(nproc) allextras
+          make -j $[$(nproc) - 2] allextras
         fi
 
     # -- binfhe
