@@ -58,9 +58,9 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set,
              "Currently only support for method = GINX.";
     PALISADE_THROW(not_implemented_error, errMsg);
   }
-  if(set != STD128){
+  if(set != STD128 && set != TOY){
     std::string errMsg =
-             "Currently only support for STD128.";
+             "Currently only support for STD128 and TOY.";
     PALISADE_THROW(not_implemented_error, errMsg);
   }
 
@@ -101,7 +101,12 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set,
   if(arbFunc) q = ringDim; // if needed for arbitrary function evlauation, q = ringDim/2
 
   long n = 1305;
-  uint64_t qKS = pow(2, 35); 
+  uint64_t qKS = 1 << 30; 
+  qKS <<= 5;
+
+  if(set == TOY){
+    n = 32;
+  }
 
   auto lweparams = std::make_shared<LWECryptoParams>(n, ringDim, q, Q.ConvertToInt(), qKS, 3.19, 32);
   m_params =
@@ -257,9 +262,9 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set,
 LWEPrivateKey BinFHEContext::KeyGen(NativeInteger DiffQ) const {
   if(DiffQ > m_params->GetLWEParams()->Getq()){
     auto q = m_params->GetLWEParams()->Getq();
-    this->Change_q(DiffQ);
+    this->ChangeQ(DiffQ);
     auto ret = m_LWEscheme->KeyGen(m_params->GetLWEParams());
-    this->Change_q(q);
+    this->ChangeQ(q);
     return ret;
   }
   return m_LWEscheme->KeyGen(m_params->GetLWEParams());
@@ -276,7 +281,7 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk,
                                      NativeInteger DiffQ) const {
   auto q = m_params->GetLWEParams()->Getq();
   if(DiffQ > q){
-    this->Change_q(DiffQ);
+    this->ChangeQ(DiffQ);
   }
   LWECiphertext ct;
 
@@ -288,7 +293,7 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk,
   }
 
   if(DiffQ > q){
-    this->Change_q(q);
+    this->ChangeQ(q);
   }
   return ct;
 }
@@ -300,12 +305,12 @@ void BinFHEContext::Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct,
   // std::cout << "??? " << DiffQ << " " << q << std::endl;
   if(DiffQ != 0){
     // std::cout << "??? " << DiffQ << " " << q << std::endl;
-    this->Change_q(DiffQ);
+    this->ChangeQ(DiffQ);
     LWEPrivateKeyImpl skp(sk->GetElement());
     std::shared_ptr<LWEPrivateKeyImpl> skpptr = std::make_shared<LWEPrivateKeyImpl>(skp);
     skpptr->switchModulus(DiffQ);
     m_LWEscheme->Decrypt(m_params->GetLWEParams(), skpptr, ct, result, p);
-    this->Change_q(q);
+    this->ChangeQ(q);
     return;
   } else {
     m_LWEscheme->Decrypt(m_params->GetLWEParams(), sk, ct, result, p);
@@ -321,7 +326,7 @@ std::shared_ptr<LWESwitchingKey> BinFHEContext::KeySwitchGen(
 void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk, NativeInteger DiffQ) {
   auto q = m_params->GetLWEParams()->Getq();
   if(DiffQ > q){
-    this->Change_q(DiffQ);
+    this->ChangeQ(DiffQ);
   }
 
   auto temp = m_params->GetBaseG();
@@ -343,7 +348,7 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk, NativeInteger DiffQ) {
   }
 
   if(DiffQ > q){
-    this->Change_q(q);
+    this->ChangeQ(q);
   }
 
   return;
@@ -375,11 +380,11 @@ LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext ct1, const uint32_t ro
   auto q = m_params->GetLWEParams()->Getq().ConvertToInt();
   if(roundbits != 0){
     NativeInteger newp = this->GetMaxPlaintextSpace();
-    Change_q(q/newp*(1<<roundbits)); 
+    ChangeQ(q/newp*(1<<roundbits)); 
   }
   NativeInteger beta = GetBeta();
   auto res = m_RingGSWscheme->EvalFloor(m_params, m_BTKey, ct1, m_LWEscheme, beta, q);
-  Change_q(q); 
+  ChangeQ(q); 
   return res;
 }
 

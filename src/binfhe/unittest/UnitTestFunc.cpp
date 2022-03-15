@@ -43,7 +43,7 @@ using namespace lbcrypto;
 // Checks the arbitrary function evaluation
 TEST(UnitTestFHEWGINX, EvalArbFunc) {
   auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(STD128, true, 12);
+  cc.GenerateBinFHEContext(TOY, true, 12);
 
   auto sk = cc.KeyGen();
   cc.BTKeyGen(sk);
@@ -73,7 +73,7 @@ TEST(UnitTestFHEWGINX, EvalArbFunc) {
 // Checks the rounding down evaluation
 TEST(UnitTestFHEWGINX, EvalFloorFunc) {
   auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(STD128, false, 12);
+  cc.GenerateBinFHEContext(TOY, false, 12);
 
   auto sk = cc.KeyGen();
 
@@ -99,7 +99,7 @@ TEST(UnitTestFHEWGINX, EvalFloorFunc) {
 // Checks the sign evaluation
 TEST(UnitTestFHEWGINX, EvalSignFuncTime) {
   auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(STD128, false, 29, 0, GINX, true);
+  cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, true);
 
   uint32_t Q = 1<<29;
   int q = 4096; 
@@ -122,7 +122,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncTime) {
 // Checks the sign evaluation
 TEST(UnitTestFHEWGINX, EvalSignFuncSpace) {
   auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(STD128, false, 29, 0, GINX, false);
+  cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, false);
 
   uint32_t Q = 1<<29;
   int q = 4096; 
@@ -145,7 +145,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncSpace) {
 // Checks the sign evaluation
 TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
   auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(STD128, false, 29, 0, GINX, true);
+  cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, true);
   uint32_t Q = 1<<29;
 
   int basic = 4096; // q
@@ -174,7 +174,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
 // Checks the sign evaluation
 TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
   auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(STD128, false, 29, 0, GINX, false);
+  cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, false);
   uint32_t Q = 1<<29;
 
   int basic = 4096; // q

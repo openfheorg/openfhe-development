@@ -147,7 +147,7 @@ class BinFHEContext : public Serializable {
    * @return creates the cryptocontext
    */
   void GenerateBinFHEContext(BINFHEPARAMSET set,
-                                          bool arbFunc, uint32_t logQ = 11, long N = -1, 
+                                          bool arbFunc, uint32_t logQ = 11, long N = 0, 
                                           BINFHEMETHOD method = GINX, bool timeOptimization = false);
 
   /**
@@ -356,8 +356,8 @@ class BinFHEContext : public Serializable {
   std::string SerializedObjectName() const { return "RingGSWBTKey"; }
   static uint32_t SerializedVersion() { return 1; }
 
-  void Change_q(NativeInteger q) const{
-    m_params->Change_q(q);
+  void ChangeQ(NativeInteger q) const{
+    m_params->ChangeQ(q);
   }
 
   NativeInteger GetMaxPlaintextSpace() const{

@@ -121,7 +121,7 @@ class RingGSWAccumulatorScheme {
 
 
    /**
-   * Evaluate an arbitray function
+   * Evaluate an arbitrary function
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param &EK a shared pointer to the bootstrapping keys

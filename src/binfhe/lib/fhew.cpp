@@ -753,14 +753,14 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::Bootstrap(
   // Modulus switching to a middle step Q'
   auto eQN = LWEscheme->ModSwitch(params->GetLWEParams()->GetqKS(), std::make_shared<LWECiphertextImpl>(aNew, bNew));
 
-  // params->Change_q(bigger_q);
+  // params->ChangeQ(bigger_q);
   // Key switching
   const std::shared_ptr<const LWECiphertextImpl> eQ =
       LWEscheme->KeySwitch(params->GetLWEParams(), EK.KSkey, eQN);
 
   // Modulus switching
   auto res = LWEscheme->ModSwitch(bigger_q, eQ);
-  // params->Change_q(q);
+  // params->ChangeQ(q);
   return res;
 }
 
@@ -831,7 +831,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalFunc(
     a1.SetModulus(q*2); // mod up to 2q, so the encryption of m is then encryption of m or encryption of m+q (both with prob roughly 1/2)
     b1 = ct1->GetB();
     ct0 = std::make_shared<LWECiphertextImpl>(std::move(a1), std::move(b1));
-    params->Change_q(q*2);
+    params->ChangeQ(q*2);
 
     vector<NativeInteger> LUT_local = LUT;
     LUT_local.insert(LUT_local.end(), LUT.begin(), LUT.end()); // repeat the LUT to make it periodic
@@ -841,7 +841,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalFunc(
     auto b2 = ct2->GetB().Mod(bigger_q_local);
     auto res =
       std::make_shared<LWECiphertextImpl>(std::move(a2), std::move(b2));
-    params->Change_q(bigger_q_local);
+    params->ChangeQ(bigger_q_local);
 
     return res;
   } else {
@@ -1004,9 +1004,9 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalSign(
       return Q - Q/4;
   };
 
-  params->Change_q(theBigger_q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
+  params->ChangeQ(theBigger_q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
   auto tmp = Bootstrap(params, curEK, ct2, LWEscheme, f3, q); // this is 1/4q_small or -1/4q_small mod q
-  params->Change_q(q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
+  params->ChangeQ(q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
 
   NativeVector a_round = tmp->GetA();
   NativeInteger b_round = tmp->GetB();
@@ -1087,9 +1087,9 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> RingGSWAccumulatorScheme::EvalDe
       return Q - Q/4;
   };
 
-  params->Change_q(theBigger_q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
+  params->ChangeQ(theBigger_q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
   auto tmp = Bootstrap(params, curEK, ct2, LWEscheme, f3, q); // this is 1/4q_small or -1/4q_small mod q
-  params->Change_q(q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
+  params->ChangeQ(q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
 
 
   NativeVector a_round = tmp->GetA();
