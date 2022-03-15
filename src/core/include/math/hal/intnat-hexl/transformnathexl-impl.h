@@ -42,9 +42,9 @@
 
 #include "math/nbtheory.h"
 #include "math/hal/basicint.h"
-#include "math/hal/intnat/ubintnat.h"
-#include "math/hal/intnat/mubintvecnat.h"
-#include "math/hal/intnat/transformnat.h"
+#include "math/hal/intnat-hexl/ubintnathexl.h"
+#include "math/hal/intnat-hexl/mubintvecnathexl.h"
+#include "math/hal/intnat-hexl/transformnathexl.h"
 
 #include "hexl/hexl.hpp"
 
@@ -706,7 +706,8 @@ void ChineseRemainderTransformFTTNat<
     reCompute = true;
   }
 
-  usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
+  // XXX - jbates - -Werror=unused-variable
+  //usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
   std::pair<uint64_t, uint64_t> key{element->GetLength(),
                                     modulus.ConvertToInt()};
   intel::hexl::NTT *p_ntt;
@@ -761,7 +762,8 @@ void ChineseRemainderTransformFTTNat<VecType>::InverseTransformFromBitReverse(
     (*result)[i] = element[i];
   }
 
-  usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
+  // XXX - jbates - -Werror=unused-variable
+  //usint msb = lbcrypto::GetMSB64(CycloOrderHf - 1);
   std::pair<uint64_t, uint64_t> key{element.GetLength(),
                                     modulus.ConvertToInt()};
   intel::hexl::NTT *p_ntt;

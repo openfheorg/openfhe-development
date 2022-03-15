@@ -39,6 +39,7 @@
 #ifdef WITH_INTEL_HEXL
 
 #include "math/hal.h"
+//#include "math/hal/intnat-hexl/backendnathexl.h"
 #include "math/binaryuniformgenerator.cpp"
 #include "math/discretegaussiangenerator.cpp"
 #include "math/discreteuniformgenerator.cpp"
