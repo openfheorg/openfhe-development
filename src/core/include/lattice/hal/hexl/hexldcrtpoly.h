@@ -242,8 +242,7 @@ class HexlDCRTPoly : public DCRTPolyImpl<VecType> {
 
 };  // HexlDCRTPoly
 
-/// @todo - Not sure if this is needed, was in DCRTPoly.h
-// typedef HexlDCRTPoly<BigVector> DCRTPoly;
+using DCRTPoly = HexlDCRTPoly<BigVector>;
 
 }  // namespace lbcrypto
 
