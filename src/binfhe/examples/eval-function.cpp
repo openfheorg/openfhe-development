@@ -36,7 +36,6 @@
 #include "binfhecontext.h"
 
 using namespace lbcrypto;
-using namespace std;
 
 int main() {
   // Sample Program: Step 1: Set CryptoContext
@@ -71,7 +70,7 @@ int main() {
 
   // Generate LUT from function f(x)
   auto lut = cc.GenerateLUTviaFunction(fp, p);
-  cout << "Evaluate x^3%" << p << "." << endl;
+  std::cout << "Evaluate x^3%" << p << "." << std::endl;
 
   // Sample Program: Step 4: evalute f(x) homomorphically and decrypt
   // Note that we check for all the possible plaintexts.

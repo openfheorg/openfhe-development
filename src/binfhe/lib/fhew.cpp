@@ -839,11 +839,9 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalFunc(
 
     auto a2 = ct2->GetA().Mod(bigger_q_local); 
     auto b2 = ct2->GetB().Mod(bigger_q_local);
-    auto res =
-      std::make_shared<LWECiphertextImpl>(std::move(a2), std::move(b2));
     params->ChangeQ(bigger_q_local);
 
-    return res;
+    return std::make_shared<LWECiphertextImpl>(std::move(a2), std::move(b2));
   } else {
     // It's periodic function so we evaluate directly
   }

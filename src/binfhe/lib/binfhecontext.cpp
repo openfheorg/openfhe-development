@@ -97,8 +97,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set,
     ringDim = N;
   }
   NativeInteger Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(logQprime, ringDim), ringDim); // find prime Q for NTT
-  long q = ringDim * 2; // q = N*2 by default for maximum plaintext space
-  if(arbFunc) q = ringDim; // if needed for arbitrary function evlauation, q = ringDim/2
+  long q = arbFunc ? ringDim : ringDim * 2; // q = N*2 by default for maximum plaintext space, if needed for arbitrary function evlauation, q = ringDim/2
 
   long n = 1305;
   uint64_t qKS = 1 << 30; 
@@ -285,10 +284,10 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk,
   }
   LWECiphertext ct;
 
+  ct = m_LWEscheme->Encrypt(m_params->GetLWEParams(), sk, m, p);
   if ((output == FRESH) || (p != 4)) {
-    ct = m_LWEscheme->Encrypt(m_params->GetLWEParams(), sk, m, p);
+    // No bootstrapping needed
   } else {
-    ct = m_LWEscheme->Encrypt(m_params->GetLWEParams(), sk, m, p);
     ct = m_RingGSWscheme->Bootstrap(m_params, m_BTKey, ct, m_LWEscheme);
   }
 
@@ -302,19 +301,15 @@ void BinFHEContext::Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct,
                             LWEPlaintext *result, LWEPlaintextModulus p,
                             NativeInteger DiffQ) const {
   auto q = m_params->GetLWEParams()->Getq();
-  // std::cout << "??? " << DiffQ << " " << q << std::endl;
   if(DiffQ != 0){
-    // std::cout << "??? " << DiffQ << " " << q << std::endl;
     this->ChangeQ(DiffQ);
     LWEPrivateKeyImpl skp(sk->GetElement());
     std::shared_ptr<LWEPrivateKeyImpl> skpptr = std::make_shared<LWEPrivateKeyImpl>(skp);
     skpptr->switchModulus(DiffQ);
     m_LWEscheme->Decrypt(m_params->GetLWEParams(), skpptr, ct, result, p);
     this->ChangeQ(q);
-    return;
   } else {
     m_LWEscheme->Decrypt(m_params->GetLWEParams(), sk, ct, result, p);
-    return;
   }
 }
 

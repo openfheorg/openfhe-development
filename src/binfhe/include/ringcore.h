@@ -129,11 +129,11 @@ class RingGSWCryptoParams : public Serializable {
       uint32_t baseGlist[3] = {1<<14, 1<<18, 1<<27};
       for(size_t j = 0; j < 3; j++){
         NativeInteger vTemp = NativeInteger(1);
-        std::vector<NativeInteger> tempvec;
         auto tempdigits = (uint32_t)std::ceil(log(Q.ConvertToDouble()) /
                                     log(static_cast<double>(baseGlist[j])));
+        std::vector<NativeInteger> tempvec(tempdigits);
         for (uint32_t i = 0; i < tempdigits; i++) {
-          tempvec.push_back(vTemp);
+          tempvec[i] = vTemp;
           vTemp = vTemp.ModMul(NativeInteger(baseGlist[j]), Q);
         }
         m_Gpower_map[baseGlist[j]] = tempvec;

@@ -37,7 +37,6 @@
 #include "binfhecontext.h"
 
 using namespace lbcrypto;
-using namespace std;
 
 int main() {
 
@@ -82,7 +81,7 @@ int main() {
 
     LWEPlaintext result;
     cc.Decrypt(sk, ct1, &result, 2, q);
-    cout << "Input: " << i << ". Expected sign: " << (i>=3) << ". " "Evaluated Sign: " << result << endl;
+    std::cout << "Input: " << i << ". Expected sign: " << (i>=3) << ". " "Evaluated Sign: " << result << std::endl;
   }
     
   return 0;

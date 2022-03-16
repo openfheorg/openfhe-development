@@ -36,7 +36,6 @@
 #include "binfhecontext.h"
 
 using namespace lbcrypto;
-using namespace std;
 
 int main() {
   // Sample Program: Step 1: Set CryptoContext

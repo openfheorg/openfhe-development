@@ -179,7 +179,7 @@ class RingGSWAccumulatorScheme {
     const NativeInteger bigger_q) const;
 
     /**
-   * Evaluate a sign function over large precision
+   * Evaluate a degit decomposition process over a large precision LWE ciphertext
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param &EK a shared pointer to the bootstrapping keys

@@ -72,12 +72,12 @@ std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::Encrypt(
   NativeInteger q = sk->GetElement().GetModulus();
   uint32_t n = sk->GetElement().GetLength();
 
-  // if(q % p !=0){
-  //   std::string errMsg =
-  //           "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
-  //   PALISADE_THROW(not_implemented_error, errMsg);
-  //   return nullptr;
-  // }
+  if(q % p !=0 && q.ConvertToInt() & 1 == 0){
+    std::string errMsg =
+            "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
+    PALISADE_THROW(not_implemented_error, errMsg);
+    return nullptr;
+  }
 
   NativeInteger b = (m % p) * (q / p) + params->GetDgg().GenerateInteger(q);
 
@@ -119,12 +119,12 @@ void LWEEncryptionScheme::Decrypt(
   NativeVector s = sk->GetElement();
   NativeInteger q = sk->GetElement().GetModulus();
 
-  // if(q % (p*2) !=0){
-  //   std::string errMsg =
-  //           "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p*2.";
-  //   PALISADE_THROW(not_implemented_error, errMsg);
-  //   return;
-  // }
+  if(q % (p*2) !=0  && q.ConvertToInt() & 1 == 0){
+    std::string errMsg =
+            "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p*2.";
+    PALISADE_THROW(not_implemented_error, errMsg);
+    return;
+  }
 
   NativeInteger mu = q.ComputeMu();
 
@@ -144,23 +144,14 @@ void LWEEncryptionScheme::Decrypt(
   // the idea is that Round(4/q x) = q/8 + Floor(4/q x)
   r.ModAddFastEq((q / (p*2)), q);
   *result = ((NativeInteger(p) * r) / q).ConvertToInt();
-  return;
-  if(*result != 1){
-    std::cout << "Wrong.\n";
-  }
-  // return;
-  // auto res = (NativeInteger(p) * r) / q;
-  // *result = (r - res*q/p - q/p/2).ConvertToInt();
 
-// #if defined(BINFHE_DEBUG)
+#if defined(BINFHE_DEBUG)
   double error = (double(p) * (r.ConvertToDouble() - q.ConvertToInt() / (p*2))) /
                      q.ConvertToDouble() -
                  static_cast<double>(*result);
-  // std::cerr << q << " " << p << " " << r << " error:\t" << error << std::endl;
-  // std::cerr << error * q.ConvertToDouble() / double(p) << std::endl;
-// #endif
-  // *result = (r - res*q/p - q/p/2).ConvertToInt();
-  *result = int(error * q.ConvertToDouble() / double(p));
+  std::cerr << q << " " << p << " " << r << " error:\t" << error << std::endl;
+  std::cerr << error * q.ConvertToDouble() / double(p) << std::endl;
+#endif
   return;
 }
 

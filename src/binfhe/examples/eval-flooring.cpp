@@ -36,7 +36,6 @@
 #include "binfhecontext.h"
 
 using namespace lbcrypto;
-using namespace std;
 
 int main() {
   // Sample Program: Step 1: Set CryptoContext
@@ -67,7 +66,7 @@ int main() {
   // Number of bits to round down
   auto bits = 2;
   uint32_t input = 12;
-  cout << "Homomorphically round down the input by " << bits << " bits." << endl;
+  std::cout << "Homomorphically round down the input by " << bits << " bits." << std::endl;
 
   auto ct1 = cc.Encrypt(sk, input%p, FRESH, p);
 

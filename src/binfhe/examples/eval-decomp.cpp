@@ -37,7 +37,6 @@
 #include <chrono>
 
 using namespace lbcrypto;
-using namespace std;
 
 int main() {
   // Sample Program: Step 1: Set CryptoContext
@@ -51,7 +50,7 @@ int main() {
   // However, we do not provide such a step in this example.
   // Therefore, we use a brute force way to create a large LWE ciphertext.
   uint32_t logQ = 23;
-  cc.GenerateBinFHEContext(STD128, false, logQ, 0, GINX, true);
+  cc.GenerateBinFHEContext(TOY, false, logQ, 0, GINX, true);
 
   uint32_t Q = 1<<logQ;
 
@@ -79,20 +78,20 @@ int main() {
   auto decomp = cc.EvalDecomp(ct1, Q);
 
   // Sample Program: Step 5: Decryption
+  p = cc.GetMaxPlaintextSpace().ConvertToInt();
   std::cout << "Decomposed value: ";
   for(size_t i = 0; i < decomp.size(); i++){
     ct1 = decomp[i];
+    LWEPlaintext result;
+    if(i == decomp.size() - 1){
+      p = 2;
+    }
+    cc.Decrypt(sk, ct1, &result, p, q);
+    std::cout << "(" << result << " * " << cc.GetMaxPlaintextSpace().ConvertToInt() << "^" << i << ")";
     if(i != decomp.size()-1){
-      LWEPlaintext result;
-      cc.Decrypt(sk, ct1, &result, p, q);
-      cout << "(" << result << " * " << p << "^" << i << ")";
-      cout  << " + ";
-    } else {
-      LWEPlaintext result;
-      cc.Decrypt(sk, ct1, &result, 2, q);
-      cout << "(" << result << " * " << p << "^" << i << ")";
+      std::cout  << " + ";
     }
   }
-  cout << endl;
+  std::cout << std::endl;
   return 0;
 }
