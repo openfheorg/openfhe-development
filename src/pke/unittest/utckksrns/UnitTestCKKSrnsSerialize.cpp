@@ -1,4 +1,4 @@
-//#if 0 // TODO uncomment test after merge to github
+#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -458,4 +458,4 @@ TEST_P(UTCKKSSer, CKKSSer) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSSer, ::testing::ValuesIn(testCases), testName);
 
-//#endif
+#endif
