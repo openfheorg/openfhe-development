@@ -29,12 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "cryptocontextgen.h"
-#include "cryptocontexthelper.h"
-#include "cryptocontextparametersets.h"
-#include "palisade.h"
-#include "utils/testcasegen.h"
-
 #include "UnitTestUtils.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
