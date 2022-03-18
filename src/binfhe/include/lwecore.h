@@ -64,6 +64,7 @@ class LWECryptoParams : public Serializable {
    * @param N ring dimension for RingGSW/RLWE used in bootstrapping
    * @param &q modulus for additive LWE
    * @param &Q modulus for RingGSW/RLWE used in bootstrapping
+   * @param &q_KS modulus for key switching
    * @param std standard deviation
    * @param baseKS the base used for key switching
    */
