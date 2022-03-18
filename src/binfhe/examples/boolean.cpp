@@ -37,7 +37,7 @@
 
 using namespace lbcrypto;
 
-int test(BINFHEPARAMSET i) {
+int main() {
   // Sample Program: Step 1: Set CryptoContext
 
   auto cc = BinFHEContext();
@@ -46,7 +46,7 @@ int test(BINFHEPARAMSET i) {
   // and HE standard. Other common options are TOY, MEDIUM, STD192, and STD256.
   // MEDIUM corresponds to the level of more than 100 bits for both quantum and
   // classical computer attacks.
-  cc.GenerateBinFHEContext(i);
+  cc.GenerateBinFHEContext(STD128);
 
   // Sample Program: Step 2: Key Generation
 
@@ -94,24 +94,4 @@ int test(BINFHEPARAMSET i) {
       << result << std::endl;
 
   return 0;
-}
-
-int main(){
-
-  test(TOY       );
-  test(STD128_AP    );
-  test(STD128_APOPT );
-  test(STD128     );
-  test(STD128_OPT );
-  test(STD192     );
-  test(STD192_OPT);
-  test(STD256 );
-  test(STD256_OPT);
-  test(STD128Q );
-  test(STD128Q_OPT);
-  test(STD192Q );
-  test(STD192Q_OPT);
-  test(STD256Q );
-  test(STD256Q_OPT);
-  test(SIGNED_MOD_TEST);
 }
