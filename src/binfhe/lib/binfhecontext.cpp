@@ -108,144 +108,67 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint
 
 
 
-void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set,
-                                          BINFHEMETHOD method) {
-  shared_ptr<LWECryptoParams> lweparams;
-  NativeInteger Q;
-  switch (set) {
-    case TOY:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(27, 1024),
-                                       1024);
-      lweparams = std::make_shared<LWECryptoParams>(64, 512, 512, Q, Q, 3.19, 25);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 9, 32, method);
-      break;
-    case STD128_AP:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(27, 2048),
-                                       2048);
-      lweparams =
-          std::make_shared<LWECryptoParams>(512, 1024, 1024, Q, 1 << 14, 3.19, 1 << 7);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 9, 32, method);
-      break;
-    case STD128_APOPT:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(27, 2048),
-                                       2048);
-      lweparams =
-          std::make_shared<LWECryptoParams>(502, 1024, 1024, Q, 1 << 14, 3.19, 1 << 7);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 9, 32, method);
-      break;
-    case STD128:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(27, 2048),
-                                       2048);
-      lweparams =
-          std::make_shared<LWECryptoParams>(512, 1024, 1024, Q, 1 << 14, 3.19, 1 << 7);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 7, 32, method);
-      break;
-    case STD128_OPT:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(27, 2048),
-                                       2048);
-      lweparams =
-          std::make_shared<LWECryptoParams>(502, 1024, 1024, Q, 1 << 14, 3.19, 1 << 7);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 7, 32, method);
-      break;
-    case STD192:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(54, 4096),
-                                       4096);
-      lweparams =
-          std::make_shared<LWECryptoParams>(1024, 2048, 1024, Q, 1 << 19, 3.19, 28);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 27, 32, method);
-      break;
-    case STD192_OPT:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(54, 4096),
-                                       4096);
-      lweparams =
-          std::make_shared<LWECryptoParams>(805, 2048, 1024, Q, 1 << 15, 3.19, 1 << 5);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 27, 32, method);
-      break;
-    case STD256:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(50, 4096),
-                                       4096);
-      lweparams =
-          std::make_shared<LWECryptoParams>(1024, 2048, 2048, Q, 1 << 14, 3.19, 1 << 7);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 25, 46, method);
-      break;
-    case STD256_OPT:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(50, 4096),
-                                       4096);
-      lweparams =
-          std::make_shared<LWECryptoParams>(990, 2048, 2048, Q, 1 << 14, 3.19, 1 << 7);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 25, 46, method);
-      break;
-    case STD128Q:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(50, 4096),
-                                       4096);
-      lweparams =
-          std::make_shared<LWECryptoParams>(1024, 2048, 1024, Q, 1 << 25, 3.19, 32);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 25, 32, method);
-      break;
-    case STD128Q_OPT:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(50, 4096),
-                                       4096);
-      lweparams =
-          std::make_shared<LWECryptoParams>(585, 2048, 1024, Q, 1 << 15, 3.19, 32);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 25, 32, method);
-      break;
-    case STD192Q:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(50, 4096),
-                                       4096);
-      lweparams =
-          std::make_shared<LWECryptoParams>(1024, 2048, 1024, Q, 1 << 17, 3.19, 64);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 25, 32, method);
-      break;
-    case STD192Q_OPT:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(50, 4096),
-                                       4096);
-      lweparams =
-          std::make_shared<LWECryptoParams>(875, 2048, 1024, Q, 1 << 15, 3.19, 1 << 5);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 25, 32, method);
-      break;
-    case STD256Q:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(54, 4096),
-                                       4096);
-      lweparams =
-          std::make_shared<LWECryptoParams>(2048, 2048, 1024, Q, 1 << 16, 3.19, 16);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 27, 32, method);
-      break;
-    case STD256Q_OPT:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(54, 4096),
-                                       4096);
-      lweparams =
-          std::make_shared<LWECryptoParams>(1225, 2048, 1024, Q, 1 << 16, 3.19, 16);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 27, 32, method);
-      break;
-    case SIGNED_MOD_TEST:
-      Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(28, 2048),
-                                       2048);
-      lweparams =
-          std::make_shared<LWECryptoParams>(512, 1024, 512, Q, Q, 3.19, 25);
-      m_params =
-          std::make_shared<RingGSWCryptoParams>(lweparams, 1 << 7, 23, method);
-      break;
-    default:
-      std::string errMsg = "ERROR: No such parameter set exists for FHEW.";
-      PALISADE_THROW(config_error, errMsg);
-  }
-}
+void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD method) {
+    struct BinFHEContextParams {
+        // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
+        usint numberBits;
+        usint cyclOrder;
 
+        // for LWE crypto parameters
+        usint latticeParam;
+        usint mod;    // modulus for additive LWE
+        usint modKS;  // modulus for key switching; if it is zero, then it is replaced with intermediate prime for LWE crypto parameters
+        double stdDev;
+        usint baseKS; // base for key switching
+
+        // for Ring GSW + LWE parameters
+        usint gadgetBase; // gadget base used in the bootstrapping
+        usint baseRK; // base for the refreshing key
+    };
+    enum { PRIME = 0 }; // value for modKS if you want to use the intermediate prime for modulus for key switching
+    const double STD_DEV = 3.19;
+
+    const std::unordered_map<BINFHEPARAMSET, BinFHEContextParams> paramsMap({
+        //           numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase|baseRK
+        { TOY,             { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23 } },
+        { STD128_AP,       { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32 } },
+        { STD128_APOPT,    { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32 } },
+        { STD128,          { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32 } },
+        { STD128_OPT,      { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32 } },
+        { STD192,          { 54,     4096,        1024, 1024, 1 << 19, STD_DEV,     28,    1 << 27,  32 } },
+        { STD192_OPT,      { 54,     4096,         805, 1024, 1 << 15, STD_DEV,     32,    1 << 27,  32 } },
+        { STD256,          { 50,     4096,        1024, 2048, 1 << 14, STD_DEV, 1 << 7,    1 << 25,  46 } },
+        { STD256_OPT,      { 50,     4096,         990, 2048, 1 << 14, STD_DEV, 1 << 7,    1 << 25,  46 } },
+        { STD128Q,         { 50,     4096,        1024, 1024, 1 << 25, STD_DEV,     32,    1 << 25,  32 } },
+        { STD128Q_OPT,     { 50,     4096,         585, 1024, 1 << 15, STD_DEV,     32,    1 << 25,  32 } },
+        { STD192Q,         { 50,     4096,        1024, 1024, 1 << 17, STD_DEV,     64,    1 << 25,  32 } },
+        { STD192Q_OPT,     { 50,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 25,  32 } },
+        { STD256Q,         { 54,     4096,        2048, 1024, 1 << 16, STD_DEV,     16,    1 << 27,  32 } },
+        { STD256Q_OPT,     { 54,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 << 27,  32 } },
+        { SIGNED_MOD_TEST, { 28,     2048,         512, 1024,   PRIME, STD_DEV,     25,    1 <<  7,  23 } },
+    });
+
+    auto search = paramsMap.find(set);
+    if (paramsMap.end() == search) {
+        std::string errMsg("ERROR: Unknown parameter set [" + std::to_string(set) + "] for FHEW.");
+        PALISADE_THROW(config_error, errMsg);
+    }
+
+    BinFHEContextParams params = search->second;
+    // intermediate prime
+    NativeInteger Q(PreviousPrime<NativeInteger>(
+        FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder)
+    );
+
+    usint ringDim = params.cyclOrder / 2;
+    auto lweparams = (PRIME == params.modKS) ?
+        std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
+            params.stdDev, params.baseKS) :
+        std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
+            params.stdDev, params.baseKS);
+
+    m_params = std::make_shared<RingGSWCryptoParams>(lweparams, params.gadgetBase, params.baseRK, method);
+}
 
 LWEPrivateKey BinFHEContext::KeyGen(NativeInteger DiffQ) const {
   if(DiffQ > m_params->GetLWEParams()->Getq()){
