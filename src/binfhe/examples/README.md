@@ -25,6 +25,8 @@ At a high level:
 Examples below are based on the functionalities described
 in [Large-Precision Homomorphic Sign Evaluation using FHEW/TFHE Bootstrapping](https://eprint.iacr.org/2021/1337)
 
+Note that for these advanced features, only GINX bootstrapping with 128-bit security (and toy security) is supported. To use these features, GenerateBinFHEContext needs to be called with at least two parameters: security parameter and whether arbitrary function evaluation is needed. For homomorphic sign evaluation and homomorphic digit decomposition, the large precision Q also needs to be specified. Please see the examples for details.
+
 - [Eval Decomposition](eval-decomp.cpp): - `eval-decomp.cpp`
     - runs a homomorphic digit decomposition process on the input ciphertext
 
