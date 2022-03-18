@@ -145,13 +145,13 @@ void LWEEncryptionScheme::Decrypt(
   r.ModAddFastEq((q / (p*2)), q);
   *result = ((NativeInteger(p) * r) / q).ConvertToInt();
 
-// #if defined(BINFHE_DEBUG)
+ #if defined(BINFHE_DEBUG)
   double error = (double(p) * (r.ConvertToDouble() - q.ConvertToInt() / (p*2))) /
                      q.ConvertToDouble() -
                  static_cast<double>(*result);
   std::cerr << q << " " << p << " " << r << " error:\t" << error << std::endl;
   std::cerr << error * q.ConvertToDouble() / double(p) << std::endl;
-// #endif
+ #endif
   return;
 }
 

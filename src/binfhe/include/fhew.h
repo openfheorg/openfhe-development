@@ -170,13 +170,13 @@ class RingGSWAccumulatorScheme {
    * @param bigger_q the ciphertext modulus
    * @return a shared pointer to the resulting ciphertext
    */
-    std::shared_ptr<LWECiphertextImpl> EvalSign(
-    const std::shared_ptr<RingGSWCryptoParams> params, 
-    std::map<uint32_t,RingGSWEvalKey> &EKs,
-    const std::shared_ptr<const LWECiphertextImpl> ct1,
-    const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
-    const NativeInteger beta,
-    const NativeInteger bigger_q) const;
+  std::shared_ptr<LWECiphertextImpl> EvalSign(
+      const std::shared_ptr<RingGSWCryptoParams> params,
+      const std::map<uint32_t, RingGSWEvalKey>& EKs,
+      const std::shared_ptr<const LWECiphertextImpl> ct1,
+      const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
+      const NativeInteger beta,
+      const NativeInteger bigger_q) const;
 
     /**
    * Evaluate a degit decomposition process over a large precision LWE ciphertext
@@ -189,13 +189,13 @@ class RingGSWAccumulatorScheme {
    * @param bigger_q the ciphertext modulus
    * @return a shared pointer to the resulting ciphertext
    */
-    std::vector<std::shared_ptr<LWECiphertextImpl>> EvalDecomp(
-    const std::shared_ptr<RingGSWCryptoParams> params, 
-    std::map<uint32_t,RingGSWEvalKey> &EKs,
-    const std::shared_ptr<const LWECiphertextImpl> ct1,
-    const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
-    const NativeInteger beta,
-    const NativeInteger bigger_q) const;
+  std::vector<std::shared_ptr<LWECiphertextImpl>> EvalDecomp(
+      const std::shared_ptr<RingGSWCryptoParams> params,
+      const std::map<uint32_t, RingGSWEvalKey>& EKs,
+      const std::shared_ptr<const LWECiphertextImpl> ct1,
+      const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
+      const NativeInteger beta,
+      const NativeInteger bigger_q) const;
 
 
  
