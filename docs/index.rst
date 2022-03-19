@@ -4,7 +4,7 @@ Welcome to PALISADE's documentation!
 Welcome to the OpenFHE webpage!
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :glob:
    :caption: Contents:
 

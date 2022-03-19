@@ -39,7 +39,7 @@ if (DOXYGEN_FOUND)
 
         add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
             COMMAND
-                ${SPHINX_EXECUTABLE} -j 6 -b html
+                ${SPHINX_EXECUTABLE} -j 6 -Q -b html
                 # Tell Breathe where to find the Doxygen output
                 -Dbreathe_projects.PALISADE=${DOXYGEN_OUTPUT_DIR}/xml
                 ${SPHINX_SOURCE} ${SPHINX_BUILD}

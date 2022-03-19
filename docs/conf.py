@@ -39,6 +39,7 @@ extensions = [
     'sphinx.ext.duration',
     'sphinx.ext.todo',
     'breathe',
+    'sphinxcontrib.mermaid'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
