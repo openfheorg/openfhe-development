@@ -31,7 +31,7 @@
 
 /*
   This file contains the linear transform interface functionality for the HEXL accelerated native math backend.
- */
+*/
 
 #ifndef LBCRYPTO_MATH_HAL_INTNATHEXL_TRANSFORMNAT_H
 #define LBCRYPTO_MATH_HAL_INTNATHEXL_TRANSFORMNAT_H
