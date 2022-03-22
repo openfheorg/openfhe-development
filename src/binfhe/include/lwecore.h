@@ -217,7 +217,7 @@ class LWECryptoParams : public Serializable {
   std::string SerializedObjectName() const { return "LWECryptoParams"; }
   static uint32_t SerializedVersion() { return 1; }
 
-  void ChangeQ(NativeInteger q){
+  void SetQ(NativeInteger q){
     m_q = q;
   }
 

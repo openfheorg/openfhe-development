@@ -259,8 +259,8 @@ class RingGSWCryptoParams : public Serializable {
   std::string SerializedObjectName() const { return "RingGSWCryptoParams"; }
   static uint32_t SerializedVersion() { return 1; }
 
-  void ChangeQ(NativeInteger q){
-    m_LWEParams->ChangeQ(q);
+  void SetQ(NativeInteger q){
+    m_LWEParams->SetQ(q);
   }
 
   void Change_BaseG(uint32_t BaseG){

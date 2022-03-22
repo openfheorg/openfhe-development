@@ -824,7 +824,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalFunc(
     a1.SetModulus(q*2); // mod up to 2q, so the encryption of m is then encryption of m or encryption of m+q (both with prob roughly 1/2)
     b1 = ct1->GetB();
     ct0 = std::make_shared<LWECiphertextImpl>(std::move(a1), std::move(b1));
-    params->ChangeQ(q*2);
+    params->SetQ(q*2);
 
     vector<NativeInteger> LUT_local = LUT;
     LUT_local.insert(LUT_local.end(), LUT.begin(), LUT.end()); // repeat the LUT to make it periodic
@@ -832,7 +832,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalFunc(
 
     auto a2 = ct2->GetA().Mod(bigger_q_local); 
     auto b2 = ct2->GetB().Mod(bigger_q_local);
-    params->ChangeQ(bigger_q_local);
+    params->SetQ(bigger_q_local);
 
     return std::make_shared<LWECiphertextImpl>(std::move(a2), std::move(b2));
   } else {
@@ -990,9 +990,9 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalSign(
         return (m < q / 2) ? (Q / 4) : (Q - Q / 4);
     };
 
-    params->ChangeQ(theBigger_q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
+    params->SetQ(theBigger_q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
     auto tmp = Bootstrap(params, curEK, ct2, LWEscheme, f3, q); // this is 1/4q_small or -1/4q_small mod q
-    params->ChangeQ(q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
+    params->SetQ(q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
 
     NativeVector a_round = tmp->GetA();
     NativeInteger b_round = tmp->GetB();
@@ -1078,9 +1078,9 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> RingGSWAccumulatorScheme::EvalDe
         return (m < q / 2) ? (Q / 4) : (Q - Q / 4);
     };
 
-    params->ChangeQ(theBigger_q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
+    params->SetQ(theBigger_q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
     auto tmp = Bootstrap(params, curEK, ct2, LWEscheme, f3, q); // this is 1/4q_small or -1/4q_small mod q
-    params->ChangeQ(q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
+    params->SetQ(q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
 
     NativeVector a_round = tmp->GetA();
     NativeInteger b_round = tmp->GetB();

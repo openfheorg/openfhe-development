@@ -356,8 +356,8 @@ class BinFHEContext : public Serializable {
   std::string SerializedObjectName() const { return "RingGSWBTKey"; }
   static uint32_t SerializedVersion() { return 1; }
 
-  void ChangeQ(NativeInteger q) const{
-    m_params->ChangeQ(q);
+  void SetQ(NativeInteger q) const{
+    m_params->SetQ(q);
   }
 
   NativeInteger GetMaxPlaintextSpace() const{

@@ -38,7 +38,7 @@
 
 using namespace lbcrypto;
 
-int main() {
+int test(uint32_t logQ) {
 
   // Sample Program: Step 1: Set CryptoContext
 
@@ -50,8 +50,8 @@ int main() {
   // modulus is already provided (e.g., by extracting from a CKKS ciphertext).
   // However, we do not provide such a step in this example.
   // Therefore, we use a brute force way to create a large LWE ciphertext.
-  uint32_t logQ = 17;
-  cc.GenerateBinFHEContext(STD128, false, logQ, 0, GINX, false);
+  // uint32_t logQ = 17;
+  cc.GenerateBinFHEContext(TOY, false, logQ, 0, GINX, false);
 
   uint32_t Q = 1<<logQ;
 
@@ -84,5 +84,12 @@ int main() {
     std::cout << "Input: " << i << ". Expected sign: " << (i>=3) << ". " "Evaluated Sign: " << result << std::endl;
   }
     
+  return 0;
+}
+
+int main(){
+  for (size_t i = 13; i < 30; i++){
+    test(i);
+  }
   return 0;
 }
