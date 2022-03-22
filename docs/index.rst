@@ -1,23 +1,10 @@
 Welcome to PALISADE's documentation!
 ====================================
 
-Welcome to the OpenFHE webpage!
-
-.. toctree::
-   :maxdepth: 2
-   :glob:
-   :caption: Contents:
-
-   assets/sphinx_rsts/intro/get_started.rst
-   assets/sphinx_rsts/modules/modules.rst
-   assets/sphinx_rsts/contributing/contributing.rst
-   assets/sphinx_rsts/misc/*
-
-
 PALISADE
 --------
 
-PALISADE is a general lattice cryptography library that currently includes efficient implementations of the following lattice cryptography capabilities:
+OpenFHE is a general lattice cryptography library that currently includes efficient implementations of the following lattice cryptography capabilities:
 
 - Fully Homomorphic Encryption (FHE)
 
@@ -40,9 +27,19 @@ A major focus is on the usability of the schemes. For instance, all HE schemes w
 
 PALISADE implements efficient Residue Number System (RNS) algorithms to achieve high performance, e.g., PALISADE was used as the library for a winning genome-wide association studies solution at iDASH’18.
 
+.. toctree::
+   :maxdepth: 2
+   :glob:
+   :caption: Contents:
+
+   assets/sphinx_rsts/intro/get_started.rst
+   assets/sphinx_rsts/modules/modules.rst
+   assets/sphinx_rsts/contributing/contributing.rst
+   assets/sphinx_rsts/misc/*
+
+
 Components
 -------------
-
 
 PALISADE is a cross-platform C++11 library supporting Linux, Windows, and macOS. The supported compilers are g++ v6.1 or later and clang++ v6.0 or later.
 
@@ -66,7 +63,6 @@ Note as of version 1.11, the following features have been moved to their own rep
 
 
 All the research prototypes for Key-Policy Attributed-Based Encryption and Program Obfuscation have been moved to `Palisade-Trapdoor <https://gitlab.com/palisade/palisade-trapdoor/>`_
-
 
 License
 -----------

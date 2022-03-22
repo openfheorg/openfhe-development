@@ -1,9 +1,7 @@
 PKE Keys documentation
 ====================================
 
-This folder contains the header files of the various keys that are defined within ``Open-FHE``.
-
-    - `Github <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/key>`_ src
+`Github Source <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/key>`_:  This folder contains the header files of the various keys that are defined within ``Open-FHE``.
 
 Keys Class Inheritance
 -----------------------
@@ -11,8 +9,8 @@ Keys Class Inheritance
 .. mermaid::
 
    graph BT
-      Key[Key: Base Class] --> |Inherits|EvalKeyImpl;
-      EvalKeyImpl --> |Inherits|EvalKeyRelinImpl;
+      Key[Key: Base Class] --> |Inherited by|EvalKeyImpl;
+      EvalKeyImpl --> |Inherited by|EvalKeyRelinImpl;
 
 Key Pair
 --------
@@ -51,14 +49,8 @@ File Listings
 
 ``Public Key``
 
-PKE Key
+PKE Keys Generated Docs
 -------------------------------
 
 .. autodoxygenindex::
    :project: pke_key
-
-PKE Key Switching
--------------------------------
-
-.. autodoxygenindex::
-   :project: pke_keyswitch

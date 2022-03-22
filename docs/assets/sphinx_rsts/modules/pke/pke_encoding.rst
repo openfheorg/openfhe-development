@@ -1,9 +1,7 @@
 PKE Encoding documentation
 ====================================
 
-Encoding of plaintext into intermediate form.
-
-    - `Github <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/encoding>`_ src
+`Github Source <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/encoding>`_: Encoding of plaintext into intermediate form
 
 Interactions
 ------------------------
@@ -52,7 +50,8 @@ File Listings
 ```String Encoding``
     - Encodes strings
 
-
+PKE Encoding Generated Docs
+--------------------------------
 
 .. autodoxygenindex::
    :project: pke_encoding

@@ -1,5 +1,3 @@
-<img alt="Layout" height="300cm" src="../docs/assets/src_folders.png" title="PALISADE Layout" width="300cm"/>
-
 ```mermaid
 flowchart BT
     A[CORE<br/>- math implementation<br/>- lattice implementation<br/>- serialization] --> B[PKE<br/> -generalized FHE];
