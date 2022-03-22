@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This file contains the vector manipulation functionality
+ * This file contains the vector manipulation functionality for native integers
  */
 
 #ifndef LBCRYPTO_MATH_HAL_INTNATHEXL_MUBINTVECNAT_H
@@ -63,6 +63,7 @@ namespace intnathexl {
 // Forward declare class and give it an alias for the expected type
 template<typename IntType> class NativeVectorT;
 using NativeVector = NativeVectorT<NativeInteger>;
+
 
 /**
  * @brief The class for representing vectors of native integers.
@@ -590,7 +591,7 @@ class NativeVectorT
   typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value,
                           void>::type
   save(Archive &ar, std::uint32_t const version) const {
-    size_t size = m_data.size();
+    ::cereal::size_type size = m_data.size();
     ar(size);
     if (size > 0) {
       ar(::cereal::binary_data(m_data.data(), size * sizeof(IntegerType)));
@@ -615,14 +616,14 @@ class NativeVectorT
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
-    size_t size;
+    ::cereal::size_type size;
     ar(size);
     m_data.resize(size);
     if (size > 0) {
       auto *data =
           reinterpret_cast<IntegerType *>(malloc(size * sizeof(IntegerType)));
       ar(::cereal::binary_data(data, size * sizeof(IntegerType)));
-      for (size_t i = 0; i < size; i++) {
+      for (::cereal::size_type i = 0; i < size; i++) {
         m_data[i] = data[i];
       }
       free(data);

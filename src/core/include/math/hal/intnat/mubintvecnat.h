@@ -569,7 +569,7 @@ class NativeVectorT
    * ostream operator to output vector values to console
    *
    * @param os is the std ostream object.
-   * @param &ptr_obj is the NativeVector object to be printed.
+   * @param &ptr_obj is the NativeVectorT object to be printed.
    * @return std ostream object which captures the vector values.
    */
   template <class IntegerType_c>
