@@ -295,7 +295,7 @@ shared_ptr<vector<DCRTPoly>> KeySwitchBV::EvalKeySwitchPrecomputeCore(
   uint32_t relinWindow = cryptoParams->GetRelinWindow();
 
   auto decomposed = c.CRTDecompose(relinWindow);
-  return std::make_shared<vector<DCRTPoly>>(decomposed);
+  return std::make_shared<vector<DCRTPoly>>(decomposed.begin(), decomposed.end());
 }
 
 shared_ptr<vector<DCRTPoly>> KeySwitchBV::EvalFastKeySwitchCore(
