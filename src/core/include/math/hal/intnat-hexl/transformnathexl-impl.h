@@ -36,17 +36,16 @@
 //            declared in math/intnathexl/transformnat.h and
 //            MUST be included in the end of math/intnathexl/transformnat.h ONLY
 //            and nowhere else
+#include "math/nbtheory.h"
+#include "math/hal/basicint.h"
+#include "math/hal/intnat/ubintnat.h"
+#include "math/hal/intnat/mubintvecnat.h"
+#include "math/hal/intnat/transformnat.h"
+
 #include "utils/exception.h"
 #include "utils/utilities.h"
 #include "utils/defines.h"
 
-#include "math/nbtheory.h"
-#include "math/hal/basicint.h"
-#include "math/hal/intnat-hexl/ubintnathexl.h"
-#include "math/hal/intnat-hexl/mubintvecnathexl.h"
-#include "math/hal/intnat-hexl/transformnathexl.h"
-
-#include "hexl/hexl.hpp"
 
 namespace intnathexl {
 

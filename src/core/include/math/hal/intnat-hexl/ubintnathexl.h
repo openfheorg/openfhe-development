@@ -51,7 +51,6 @@
 
 #include "math/hal/integer.h"
 #include "math/hal/basicint.h"
-#include "math/hal/bigintbackend.h"
 
 #include "math/nbtheory.h"
 #include "utils/debug.h"
@@ -194,11 +193,11 @@ class NativeIntegerT
    *
    * @param &strval is the initial integer represented as a string.
    */
-  NativeIntegerT(const std::string& strval) { AssignVal(strval); }
+  NativeIntegerT(const std::string &strval) { AssignVal(strval); }
   NativeIntegerT(const char* strval) { AssignVal(std::string(strval)); }
 
   /**
-   * Constructor for different integer types, including NativeInt
+   * Constructor from different integer types, including NativeInt
    *
    * @param &val is the initial integer value.
    */
@@ -236,10 +235,10 @@ class NativeIntegerT
       !std::is_same<T, int64_t>::value &&
       !std::is_same<T, uint64_t>::value &&
       !std::is_same<T, long long>::value &&
-      !std::is_same<T, unsigned long long>::value&&
+      !std::is_same<T, unsigned long long>::value &&
 #if defined(HAVE_INT128)
       !std::is_same<T, __int128>::value &&
-      !std::is_same<T, unsigned __int128>::value&&
+      !std::is_same<T, unsigned __int128>::value &&
 #endif
       !std::is_same<T, const std::string> ::value &&
       !std::is_same<T, const char*> ::value &&
