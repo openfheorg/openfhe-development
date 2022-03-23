@@ -30,19 +30,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-//#include <ctime>
-//#include <iostream>
-//#include <list>
-//#include <vector>
-//#include "UnitTestUtils.h"
-//#include "gtest/gtest.h"
-
-//#include "cryptocontext.h"
-//#include "cryptocontextgen.h"
-//#include "cryptocontexthelper.h"
-//#include "palisade.h"
-//#include "utils/testcasegen.h"
-
 #include "UnitTestUtils.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"

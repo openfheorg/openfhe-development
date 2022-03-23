@@ -44,12 +44,6 @@
 #include "cryptocontext-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 #include "globals.h" // for SERIALIZE_PRECOMPUTE
- //====
-//#include "cryptocontext.h"
-//#include "cryptocontextgen.h"
-//#include "cryptocontexthelper.h"
-//#include "palisade.h"
-//#include "utils/testcasegen.h"
 
 
 using namespace lbcrypto;

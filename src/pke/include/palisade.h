@@ -51,6 +51,6 @@ using std::string;
 
 #include "ciphertext.h"
 #include "cryptocontext.h"
-#include "cryptocontexthelper.h"
+//#include "cryptocontexthelper.h"
 
 #endif /* SRC_LIB_PALISADE_H_ */

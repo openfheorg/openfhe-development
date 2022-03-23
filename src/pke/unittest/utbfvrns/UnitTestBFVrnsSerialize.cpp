@@ -33,27 +33,27 @@
 #include "UnitTestSer.h"
 #include "gtest/gtest.h"
 
+#include "cryptocontexthelper.h"
 #include "scheme/bfvrns/bfvrns-ser.h"
 
 using namespace std;
 using namespace lbcrypto;
 
 class UTPKESer : public ::testing::Test {
- protected:
-  void SetUp() {}
+protected:
+    void SetUp() {}
 
-  void TearDown() {
-    CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
-    CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
-    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-  }
+    void TearDown() {
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    }
 };
 
-CryptoContext<DCRTPoly> GenerateTestDCRTCryptoContext(const string& parmsetName,
-    usint nTower,
-    usint pbits) {
-    CryptoContext<DCRTPoly> cc =
-        CryptoContextHelper::getNewDCRTContext(parmsetName, nTower, pbits);
+CryptoContext<DCRTPoly> GenerateTestDCRTCryptoContext(const string& parmsetName, usint nTower, usint pbits) {
+    // TODO (dsuponit): getNewDCRTContext() should be replaced with a context generator function call
+    // in order to remove the class CryptoContextHelper
+    CryptoContext<DCRTPoly> cc = CryptoContextHelper::getNewDCRTContext(parmsetName, nTower, pbits);
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
@@ -62,12 +62,12 @@ CryptoContext<DCRTPoly> GenerateTestDCRTCryptoContext(const string& parmsetName,
 
 template <typename T>
 void UnitTestContext(CryptoContext<T> cc) {
-  UnitTestContextWithSertype(cc, SerType::JSON, "json");
-  UnitTestContextWithSertype(cc, SerType::BINARY, "binary");
+    UnitTestContextWithSertype(cc, SerType::JSON, "json");
+    UnitTestContextWithSertype(cc, SerType::BINARY, "binary");
 }
 
 TEST_F(UTPKESer, BFVrns_DCRTPoly_Serial) {
-  CryptoContext<DCRTPoly> cc = GenerateTestDCRTCryptoContext("BFVrns2", 3, 20);
-  UnitTestContext<DCRTPoly>(cc);
+    CryptoContext<DCRTPoly> cc = GenerateTestDCRTCryptoContext("BFVrns2", 3, 20);
+    UnitTestContext<DCRTPoly>(cc);
 }
 #endif

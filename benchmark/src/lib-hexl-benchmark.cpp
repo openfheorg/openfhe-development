@@ -39,23 +39,13 @@
 #define _USE_MATH_DEFINES
 #include "benchmark/benchmark.h"
 
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <limits>
-#include <random>
-
 #include "palisade.h"
-
-#include "cryptocontextgen.h"
-#include "cryptocontexthelper.h"
-
 #include "utils/debug.h"
-
 #include "lib-hexl-util.h"
-#include "math/hal.h"
 
-using namespace std;
+#include <iostream>
+
+
 using namespace lbcrypto;
 
 void NTTTransform(benchmark::State &state) {
