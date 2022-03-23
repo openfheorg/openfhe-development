@@ -131,8 +131,8 @@ TEST(UnitTestFHEWAP, ModSwitch) {
   auto ctQ0 = cc.Encrypt(skQ, 0, FRESH);
 
   // switches the modulus from Q to q
-  auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams(), ctQ1);
-  auto ct0 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams(), ctQ0);
+  auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ1);
+  auto ct0 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ0);
 
   LWEPlaintext resultAfterModSwitch1;
   cc.Decrypt(sk, ct1, &resultAfterModSwitch1);
@@ -164,8 +164,8 @@ TEST(UnitTestFHEWGINX, ModSwitch) {
   auto ctQ0 = cc.Encrypt(skQ, 0, FRESH);
 
   // switches the modulus from Q to q
-  auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams(), ctQ1);
-  auto ct0 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams(), ctQ0);
+  auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ1);
+  auto ct0 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ0);
 
   LWEPlaintext resultAfterModSwitch1;
   cc.Decrypt(sk, ct1, &resultAfterModSwitch1);

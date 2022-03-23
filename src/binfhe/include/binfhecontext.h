@@ -43,28 +43,43 @@
 #include "lwe.h"
 #include "ringcore.h"
 #include "utils/serializable.h"
+#include "lattice/stdlatticeparms.h"
 
 namespace lbcrypto {
 
 // security levels for predefined parameter sets
 enum BINFHEPARAMSET {
   TOY,        // no security
-  MEDIUM,     // 108 bits of security for classical and 100 bits for quantum
+  STD128_AP,    // Optimized for AP (has higher failure probability for GINX) -
+                // more than 128 bits of security for classical
+                // computer attacks - uses the same setup as HE standard
+  STD128_APOPT, // Optimized for AP (has higher failure probability for GINX) -
+                // more than 128 bits of security for classical computer attacks -
+                // optimize runtime by finding a non-power-of-two n
   STD128,     // more than 128 bits of security for classical
               // computer attacks - uses the same setup as HE standard
-  STD128_AP,  // Optimized for AP (has higher failure probability for GINX) -
-              // more than 128 bits of security for classical computer attacks -
-              // uses the same setup as HE standard
+  STD128_OPT,     // more than 128 bits of security for classical computer attacks -
+              // optimize runtime by finding a non-power-of-two n
   STD192,     // more than 192 bits of security for classical computer attacks -
               // uses the same setup as HE standard
+  STD192_OPT, // more than 192 bits of security for classical computer attacks -
+              // optimize runtime by finding a non-power-of-two n
   STD256,     // more than 256 bits of security for classical computer attacks -
               // uses the same setup as HE standard
+  STD256_OPT, // more than 256 bits of security for classical computer attacks -
+              // optimize runtime by finding a non-power-of-two n
   STD128Q,    // more than 128 bits of security for quantum attacks - uses the
               // same setup as HE standard
+  STD128Q_OPT, // more than 128 bits of security for quantum attacks -
+              // optimize runtime by finding a non-power-of-two n
   STD192Q,    // more than 192 bits of security for quantum attacks - uses the
               // same setup as HE standard
+  STD192Q_OPT, // more than 192 bits of security for quantum attacks -
+              // optimize runtime by finding a non-power-of-two n
   STD256Q,    // more than 256 bits of security for quantum attacks - uses the
               // same setup as HE standard
+  STD256Q_OPT,    // more than 256 bits of security for quantum attacks -
+              // optimize runtime by finding a non-power-of-two n
   SIGNED_MOD_TEST  // special parameter set for confirming the signed modular
                    // reduction in the accumulator updates works correctly
 };
@@ -96,6 +111,7 @@ class BinFHEContext : public Serializable {
  public:
   BinFHEContext() {}
 
+
   /**
    * Creates a crypto context using custom parameters.
    * Should be used with care (only for advanced users familiar with LWE
@@ -116,6 +132,23 @@ class BinFHEContext : public Serializable {
                              const NativeInteger &Q, double std,
                              uint32_t baseKS, uint32_t baseG, uint32_t baseR,
                              BINFHEMETHOD method = GINX);
+
+  /**
+   * Creates a crypto context using custom parameters.
+   * Should be used with care (only for advanced users familiar with LWE
+   * parameter selection).
+   *
+   * @param sl the parameter set: TOY, MEDIUM, STD128, STD192, STD256
+   * @param arbFunc whether need to evaluate an arbitrary function using functional bootstrapping
+   * @param logQ log(input ciphertext modulus)
+   * @param N ring dimension for RingGSW/RLWE used in bootstrapping
+   * @param method the bootstrapping method (AP or GINX)
+   * @param timeOptimization whether to use dynamic bootstrapping technique
+   * @return creates the cryptocontext
+   */
+  void GenerateBinFHEContext(BINFHEPARAMSET set,
+                                          bool arbFunc, uint32_t logQ = 11, long N = 0, 
+                                          BINFHEMETHOD method = GINX, bool timeOptimization = false);
 
   /**
    * Creates a crypto context using predefined parameters sets. Recommended for
@@ -148,9 +181,10 @@ class BinFHEContext : public Serializable {
   /**
    * Generates a secret key for the main LWE scheme
    *
+   * @param DiffQ Keygen according to DiffQ instead of m_q if DiffQ != 00
    * @return a shared pointer to the secret key
    */
-  LWEPrivateKey KeyGen() const;
+  LWEPrivateKey KeyGen(NativeInteger DiffQ = 0) const;
 
   /**
    * Generates a secret key used in bootstrapping
@@ -165,10 +199,13 @@ class BinFHEContext : public Serializable {
    * @param &m - the plaintext
    * @param output - FRESH to generate fresh ciphertext, BOOTSTRAPPED to
    * generate a refreshed ciphertext (default)
+   * @param p - plaintext modulus
+   * @param DiffQ Encrypt according to DiffQ instead of m_q if DiffQ != 0
    * @return a shared pointer to the ciphertext
    */
   LWECiphertext Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext &m,
-                        BINFHEOUTPUT output = BOOTSTRAPPED) const;
+                        BINFHEOUTPUT output = BOOTSTRAPPED, LWEPlaintextModulus p = 4,
+                        NativeInteger DiffQ = 0) const;
 
   /**
    * Decrypts a ciphertext using a secret key
@@ -176,9 +213,12 @@ class BinFHEContext : public Serializable {
    * @param sk the secret key
    * @param ct the ciphertext
    * @param *result plaintext result
+   * @param p - plaintext modulus
+   * @param DiffQ Decrypt according to DiffQ instead of m_q if DiffQ != 0
    */
   void Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct,
-               LWEPlaintext *result) const;
+               LWEPlaintext *result, LWEPlaintextModulus p = 4,
+               NativeInteger DiffQ = 0) const;
 
   /**
    * Generates a switching key to go from a secret key with (Q,N) to a secret
@@ -195,8 +235,9 @@ class BinFHEContext : public Serializable {
    * Generates boostrapping keys
    *
    * @param sk secret key
+   * @param DiffQ BTKeyGen according to DiffQ instead of m_q if DiffQ != 0
    */
-  void BTKeyGen(ConstLWEPrivateKey sk);
+  void BTKeyGen(ConstLWEPrivateKey sk, NativeInteger DiffQ = 0);
 
   /**
    * Loads bootstrapping keys in the context (typically after deserializing)
@@ -233,20 +274,59 @@ class BinFHEContext : public Serializable {
   LWECiphertext Bootstrap(ConstLWECiphertext ct1) const;
 
   /**
+   * Evaluate an arbitrary function
+   *
+   * @param ct1 ciphertext to be bootstrapped
+   * @param LUT the look-up table of the to-be-evaluated function
+   * @return a shared pointer to the resulting ciphertext
+   */
+  LWECiphertext EvalFunc(ConstLWECiphertext ct1, 
+      const vector<NativeInteger>& LUT) const;
+
+  /**
+   * Generate the LUT for the to-be-evaluated function
+   *
+   * @param f the to-be-evaluated function
+   * @param p plaintext modulus
+   * @return a shared pointer to the resulting ciphertext
+   */
+  vector<NativeInteger> GenerateLUTviaFunction(NativeInteger(*f) (NativeInteger m, NativeInteger p),
+                                      NativeInteger p);
+  
+  /**
+   * Evaluate a round down function
+   *
+   * @param ct1 ciphertext to be bootstrapped
+   * @param roundbits number of bits to be rounded
+   * @return a shared pointer to the resulting ciphertext
+   */
+  LWECiphertext EvalFloor(ConstLWECiphertext ct1, const uint32_t roundbits = 0) const;
+  
+  /**
+   * Evaluate a sign function over large precisions
+   *
+   * @param ct1 ciphertext to be bootstrapped
+   * @return a shared pointer to the resulting ciphertext
+   */
+  LWECiphertext EvalSign(ConstLWECiphertext ct1, 
+      const NativeInteger bigger_q = 0);
+  
+  /**
+   * Evaluate ciphertext decomposition
+   *
+   * @param ct1 ciphertext to be bootstrapped
+   * @return a vector of shared pointers to the resulting ciphertexts
+   */
+  vector<LWECiphertext> EvalDecomp(ConstLWECiphertext ct1, 
+      const NativeInteger bigger_q = 0);
+
+  /**
    * Evaluates NOT gate
    *
    * @param ct1 the input ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
   LWECiphertext EvalNOT(ConstLWECiphertext ct1) const;
-
-  /**
-   * Evaluates constant gate
-   *
-   * @param value the Boolean value to output
-   * @return a shared pointer to the resulting ciphertext
-   */
-  LWECiphertext EvalConstant(bool value) const;
 
   const std::shared_ptr<RingGSWCryptoParams> GetParams() { return m_params; }
 
@@ -276,6 +356,19 @@ class BinFHEContext : public Serializable {
   std::string SerializedObjectName() const { return "RingGSWBTKey"; }
   static uint32_t SerializedVersion() { return 1; }
 
+  void SetQ(NativeInteger q) const{
+    m_params->SetQ(q);
+  }
+
+  NativeInteger GetMaxPlaintextSpace() const{
+    // Under our parameter choices, beta = 128 is enough, and therefore plaintext = q/2beta
+    return m_params->GetLWEParams()->Getq()/this->GetBeta()/2;
+  }
+
+  NativeInteger GetBeta() const{
+    return 128;
+  }
+
  private:
   // Shared pointer to Ring GSW + LWE parameters
   std::shared_ptr<RingGSWCryptoParams> m_params;
@@ -288,6 +381,12 @@ class BinFHEContext : public Serializable {
 
   // Struct containing the bootstrapping keys
   RingGSWEvalKey m_BTKey;
+
+  // Struct containing the bootstrapping keys
+  std::map<uint32_t,RingGSWEvalKey> m_BTKey_map;
+
+  // Whether to optimize time for sign eval
+  bool m_timeOptimization;
 };
 
 }  // namespace lbcrypto

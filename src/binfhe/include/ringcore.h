@@ -77,7 +77,7 @@ class RingGSWCryptoParams : public Serializable {
    */
   explicit RingGSWCryptoParams(const std::shared_ptr<LWECryptoParams> lweparams,
                                uint32_t baseG, uint32_t baseR,
-                               BINFHEMETHOD method)
+                               BINFHEMETHOD method, bool signEval = false)
       : m_LWEParams(lweparams),
         m_baseG(baseG),
         m_baseR(baseR),
@@ -86,13 +86,13 @@ class RingGSWCryptoParams : public Serializable {
       PALISADE_THROW(config_error, "Gadget base should be a power of two.");
     }
 
-    PreCompute();
+    PreCompute(signEval);
   }
 
   /**
    * Performs precomputations based on the supplied parameters
    */
-  void PreCompute() {
+  void PreCompute(bool signEval = false) {
     const shared_ptr<LWECryptoParams> lweparams = m_LWEParams;
 
     NativeInteger Q = lweparams->GetQ();
@@ -125,11 +125,29 @@ class RingGSWCryptoParams : public Serializable {
     }
 
     // Computes baseG^i
-    NativeInteger vTemp = NativeInteger(1);
-    for (uint32_t i = 0; i < m_digitsG; i++) {
-      m_Gpower.push_back(vTemp);
-      vTemp = vTemp.ModMul(NativeInteger(m_baseG), Q);
+    if(signEval){
+      uint32_t baseGlist[3] = {1<<14, 1<<18, 1<<27};
+      for(size_t j = 0; j < 3; j++){
+        NativeInteger vTemp = NativeInteger(1);
+        auto tempdigits = (uint32_t)std::ceil(log(Q.ConvertToDouble()) /
+                                    log(static_cast<double>(baseGlist[j])));
+        std::vector<NativeInteger> tempvec(tempdigits);
+        for (uint32_t i = 0; i < tempdigits; i++) {
+          tempvec[i] = vTemp;
+          vTemp = vTemp.ModMul(NativeInteger(baseGlist[j]), Q);
+        }
+        m_Gpower_map[baseGlist[j]] = tempvec;
+        if(m_baseG == baseGlist[j]) m_Gpower = tempvec;
+      }
+    } else {
+      NativeInteger vTemp = NativeInteger(1);
+      for (uint32_t i = 0; i < m_digitsG; i++) {
+        m_Gpower.push_back(vTemp);
+        vTemp = vTemp.ModMul(NativeInteger(m_baseG), Q);
+      }
     }
+
+    
 
     // Sets the gate constants for supported binary operations
     m_gateConst = {
@@ -198,6 +216,8 @@ class RingGSWCryptoParams : public Serializable {
 
   const std::vector<NativeInteger>& GetGPower() const { return m_Gpower; }
 
+  const std::map<uint32_t, std::vector<NativeInteger>>& GetGPowerMap() const {return m_Gpower_map;}
+
   const std::vector<NativeInteger>& GetGateConst() const { return m_gateConst; }
 
   const NativePoly& GetMonomial(uint32_t i) const { return m_monomials[i]; }
@@ -239,6 +259,21 @@ class RingGSWCryptoParams : public Serializable {
   std::string SerializedObjectName() const { return "RingGSWCryptoParams"; }
   static uint32_t SerializedVersion() { return 1; }
 
+  void SetQ(NativeInteger q){
+    m_LWEParams->SetQ(q);
+  }
+
+  void Change_BaseG(uint32_t BaseG){
+    if(m_baseG != BaseG){
+      m_baseG = BaseG;
+      m_Gpower = m_Gpower_map[m_baseG];
+      m_digitsG = (uint32_t)std::ceil(log(m_LWEParams->GetQ().ConvertToDouble()) /
+                                    log(static_cast<double>(m_baseG)));
+      m_digitsG2 = m_digitsG * 2;
+    }
+  }
+
+
  private:
   // shared pointer to an instance of LWECryptoParams
   std::shared_ptr<LWECryptoParams> m_LWEParams;
@@ -260,6 +295,9 @@ class RingGSWCryptoParams : public Serializable {
 
   // A vector of powers of baseG
   std::vector<NativeInteger> m_Gpower;
+
+  // A map of vectors of powers of baseG for sign evaluation
+  std::map<uint32_t, std::vector<NativeInteger>> m_Gpower_map;
 
   // Parameters for polynomials in RingGSW/RingLWE
   shared_ptr<ILNativeParams> m_polyParams;
