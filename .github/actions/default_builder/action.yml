@@ -57,7 +57,7 @@ runs:
         whoami
         
         # Create the correct cmake arg string
-        cmake_args="${cmake_args} -DNATIVE_SIZE=${{ inputs.native_backend }}"
+        cmake_args="${{inputs.cmake_args}} -DNATIVE_SIZE=${{ inputs.native_backend }}"
 
         # Debugging use only
         echo "Input values for ${{inputs.module_name}}
