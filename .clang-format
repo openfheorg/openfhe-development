@@ -1,2 +1,20 @@
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+# Manual run to reformat a file "foo.cpp": clang-format -i --style=file foo.cpp
+#######################################################################
 BasedOnStyle: Google
+#######################################################################
+Language: Cpp
+# DisableFormat: true
+AlignEscapedNewlines: Left
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: Inline
+AllowShortLoopsOnASingleLine: false
+BreakStringLiterals: false
+ColumnLimit: 120
+DerivePointerAlignment: false
+IndentWidth: 4
+PointerAlignment: Left
+ReflowComments: false
 SortIncludes: false
+UseTab: Never

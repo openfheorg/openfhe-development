@@ -138,6 +138,7 @@ constexpr usint BATCH_LRG = 1 << 12;
 constexpr usint PTM     = 64;
 constexpr usint PTM_LRG = 65537;
 constexpr double STD_DEV = 3.2;
+// clang-format off
 static std::vector<TEST_CASE> testCases = {
     // TestType,  Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { ADD_PACKED, "1", {BGVRNS_SCHEME, 16,   2,         59,     DFLT, BATCH,   OPTIMIZED,  DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
@@ -198,6 +199,7 @@ static std::vector<TEST_CASE> testCases = {
     { KS_SINGLE_CRT,      "1", {BGVRNS_SCHEME, 256,       DFLT,      50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, DFLT,        DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
     { KS_MOD_REDUCE_DCRT, "1", {BGVRNS_SCHEME, 256,       4,         30,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, DFLT,        DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
 };
+// clang-format on
 //===========================================================================================================
 class UTSHE : public ::testing::TestWithParam<TEST_CASE> {
     using Element = DCRTPoly;

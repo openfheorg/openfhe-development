@@ -20,5 +20,4 @@ repos:
           entry: cpplint
           language: system
           files: \.(c|cc|cxx|cpp|h|hpp|hxx)$
-          args:
-            - --recursive
+          args: ["--recursive", "--linelength=500"]
