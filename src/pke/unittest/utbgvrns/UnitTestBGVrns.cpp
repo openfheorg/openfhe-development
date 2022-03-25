@@ -104,7 +104,7 @@ struct TEST_CASE {
 
     std::string buildTestName() const {
         std::stringstream ss;
-        std::cout << "======= testCaseType: " << testCaseType << "; description: " << description << std::endl;
+        //std::cout << "======= testCaseType: " << testCaseType << "; description: " << description << std::endl;
         ss << testCaseType << "_" << description;
         return ss.str();
     }

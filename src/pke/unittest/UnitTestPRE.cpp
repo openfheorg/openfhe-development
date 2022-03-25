@@ -184,9 +184,7 @@ protected:
 
             Ciphertext<Element> ciphertext5 = cc->Encrypt(kp.publicKey, plaintextShort);
             Plaintext plaintextShortNew2;
-            std::cerr << __FILE__ << ":l." << __LINE__ << std::endl;
             Ciphertext<Element> reCiphertext5 = cc->ReEncrypt(ciphertext5, evalKey, kp.publicKey);
-            std::cerr << __FILE__ << ":l." << __LINE__ << std::endl;
             result = cc->Decrypt(newKp.secretKey, reCiphertext5, &plaintextShortNew2);
             EXPECT_EQ(plaintextShortNew2->GetStringValue(), plaintextShort->GetStringValue())
                 << failmsg << " HRA-secure ReEncrypt short string plaintext with padding";
