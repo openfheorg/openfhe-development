@@ -43,8 +43,6 @@
 #include "utils/debug.h"
 #include "lib-hexl-util.h"
 
-#include <iostream>
-
 
 using namespace lbcrypto;
 
