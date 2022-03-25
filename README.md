@@ -20,7 +20,7 @@ documentation about this library.
 
 **Website** [TODO: Migrate from palisade-crypto](https://palisade-crypto.org/)
 
-**Documentation**  [OpenFHE Readthedocs](https://readthedocs.org/projects/openfhe-development/)
+**Documentation**  [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/)
 
 **Source Code** [OpenFHE Development Branch](https://github.com/openfheorg/openfhe-development)
 
