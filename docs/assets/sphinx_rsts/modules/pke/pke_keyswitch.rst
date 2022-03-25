@@ -1,7 +1,7 @@
 PKE Key-Switching documentation
 ====================================
 
-`Github Source <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/keyswitch>`_:  This folder contains the header files of the key-switching methods present in``Open-FHE``.
+`Github Source <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/keyswitch>`_:  This folder contains the header files of the key-switching methods present in ``Open-FHE``.
 
 Key-Switching Class Inheritance
 -----------------------
@@ -21,15 +21,15 @@ File Listings
     - Base class for Lattice-based cryptography(LBC) Somewhat Homomorphic Encryption(SHE) algorithms.
 
 ``Key-switch RNS``
-- Abstract interface class for RNS LBC SHE algorithms
+    - Abstract interface class for RNS LBC SHE algorithms
 
 ``Key-switch BV``
-- Inherits from [key-switch base](keyswitch-base.h)
-- Implements
+    - Inherits from [key-switch base](keyswitch-base.h)
+    - Implements key switching for the
 
 ``Key-switch Hybrid``
-- Inherits from [key-switch base](keyswitch-base.h)
-- Implements
+    - Inherits from [key-switch base](keyswitch-base.h)
+    - Implements
 
 PKE Key-Switching Generated Docs
 --------------------------------
