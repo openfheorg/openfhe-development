@@ -39,6 +39,7 @@ extensions = [
     'sphinx.ext.duration',
     'sphinx.ext.todo',
     'breathe',
+    'sphinxcontrib.mermaid'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -89,7 +90,7 @@ def scan_dir(prefix, append_print, fixed):
     for el in horizon:
         scan_dir(prefix + f"/{el}", append_print + f"_{el}", fixed)
 
-# Location of the PKE Module
+# Location of the modules
 for module in MODULE_LIST:
     scan_dir(f"../src/{module}/include", module, module)
 

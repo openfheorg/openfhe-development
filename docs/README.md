@@ -26,7 +26,7 @@ make Doxygen  # the files can now be accessed at build/docs/doxygen/html/index.h
 mkdir build
 cd build
 cmake ..
-make Sphinx # the files can now be accessed at  build/docs/sphinx/index.html
+make Sphinx 2> sphinx_warnings.txt # the files can now be accessed at  build/docs/sphinx/index.html
 ```
 
 ## Folders
