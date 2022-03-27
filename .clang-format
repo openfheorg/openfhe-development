@@ -5,14 +5,27 @@ BasedOnStyle: Google
 #######################################################################
 Language: Cpp
 # DisableFormat: true
+AccessModifierOffset: -4
+# AlignArrayOfStructures: Right (enable this if clang-format-13 or newer is installed)
+AlignConsecutiveMacros: true
+AlignConsecutiveAssignments: true
+#AlignConsecutiveDeclarations: true
 AlignEscapedNewlines: Left
+AlignOperands: true
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Inline
 AllowShortLoopsOnASingleLine: false
+BreakBeforeBraces: Custom
+BraceWrapping:
+    BeforeCatch:     true
+    BeforeElse:      true
+BreakBeforeTernaryOperators: false
 BreakStringLiterals: false
 ColumnLimit: 120
 DerivePointerAlignment: false
+#EmptyLineBeforeAccessModifier: true (enable this if clang-format-13 or newer is installed)
+IndentPPDirectives: BeforeHash
 IndentWidth: 4
 PointerAlignment: Left
 ReflowComments: false
