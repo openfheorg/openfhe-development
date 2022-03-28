@@ -1,7 +1,6 @@
 OpenFHE Lattice Cryptography Library
 =====================================
 
-
 OpenFHE is a general lattice cryptography library that currently includes efficient implementations of the following lattice cryptography capabilities:
 
 * Fully Homomorphic Encryption (FHE)
@@ -13,10 +12,6 @@ OpenFHE is a general lattice cryptography library that currently includes effici
   * Threshold FHE for BGV, BFV, and CKKS schemes
   * Proxy Re-Encryption for BGV, BFV, and CKKS schemes
 
-**Note** visit our [openfhe-development](https://openfhe-development.readthedocs.io/en/latest) for in-depth
-documentation about this library.
-
-## Links and Resources
 
 **Website** [TODO: Migrate from palisade-crypto](https://palisade-crypto.org/)
 
@@ -28,7 +23,7 @@ documentation about this library.
 
 **Contributing** [Contributing to PALISADE](docs/static_docs/Contributing.md)
 
-**Reporting bugs** [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development)
+**Reporting bugs**
 
 **Reporting security vulnerabilities**
 
