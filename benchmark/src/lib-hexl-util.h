@@ -54,61 +54,64 @@
 #define HEXL_NTT_BENCHMARK(BENCHMARK_NAME) \
   BENCHMARK(BENCHMARK_NAME)->Unit(benchmark::kMicrosecond)->ADD_MICRO_NTT_ARGS
 
-CryptoContext<DCRTPoly> GenerateBFVrnsContext(uint32_t poly_modulus_degree,
-                                              uint32_t numTowers) {
-  CCParams<CryptoContextBFVRNS> parameters;
-  parameters.SetPlaintextModulus(65537);
-  parameters.SetStandardDeviation(3.19);
-  parameters.SetEvalMultCount(numTowers - 1);
-  parameters.SetMaxDepth(5);
-  parameters.SetRelinWindow(30);
-  parameters.SetScalingFactorBits(47);
-  parameters.SetRingDim(poly_modulus_degree);
+namespace lbcrypto {
+    CryptoContext<DCRTPoly> GenerateBFVrnsContext(uint32_t poly_modulus_degree,
+        uint32_t numTowers) {
+        CCParams<CryptoContextBFVRNS> parameters;
+        parameters.SetPlaintextModulus(65537);
+        parameters.SetStandardDeviation(3.19);
+        parameters.SetEvalMultCount(numTowers - 1);
+        parameters.SetMaxDepth(5);
+        parameters.SetRelinWindow(30);
+        parameters.SetScalingFactorBits(47);
+        parameters.SetRingDim(poly_modulus_degree);
 
-  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-  // Enable features that you wish to use
-  cc->Enable(PKE);
-  cc->Enable(KEYSWITCH);
-  cc->Enable(LEVELEDSHE);
+        CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+        // Enable features that you wish to use
+        cc->Enable(PKE);
+        cc->Enable(KEYSWITCH);
+        cc->Enable(LEVELEDSHE);
 
-  return cc;
-}
+        return cc;
+    }
 
-CryptoContext<DCRTPoly> GenerateCKKSContext(uint32_t poly_modulus_degree, uint32_t numTowers) {
-    CCParams<CryptoContextCKKSRNS> parameters;
-    parameters.SetMultiplicativeDepth(numTowers - 1);
-    parameters.SetScalingFactorBits(47);
-    parameters.SetBatchSize(poly_modulus_degree / 2);
-    parameters.SetRingDim(poly_modulus_degree);
-    parameters.SetRescalingTechnique(FIXEDMANUAL);
-    parameters.SetMaxDepth(5);
-    parameters.SetFirstModSize(60);
+    CryptoContext<DCRTPoly> GenerateCKKSContext(uint32_t poly_modulus_degree, uint32_t numTowers) {
+        CCParams<CryptoContextCKKSRNS> parameters;
+        parameters.SetMultiplicativeDepth(numTowers - 1);
+        parameters.SetScalingFactorBits(47);
+        parameters.SetBatchSize(poly_modulus_degree / 2);
+        parameters.SetRingDim(poly_modulus_degree);
+        parameters.SetRescalingTechnique(FIXEDMANUAL);
+        parameters.SetMaxDepth(5);
+        parameters.SetFirstModSize(60);
 
-    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-    // Enable features that you wish to use
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
+        CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+        // Enable features that you wish to use
+        cc->Enable(PKE);
+        cc->Enable(KEYSWITCH);
+        cc->Enable(LEVELEDSHE);
 
-    return cc;
-}
+        return cc;
+    }
 
-CryptoContext<DCRTPoly> GenerateBGVrnsContext(uint32_t poly_modulus_degree, uint32_t numTowers) {
-  CCParams<CryptoContextBGVRNS> parameters;
-  parameters.SetMultiplicativeDepth(numTowers - 1);
-  parameters.SetPlaintextModulus(65537);
-  parameters.SetMaxDepth(5);
-  parameters.SetRingDim(poly_modulus_degree);
-  parameters.SetFirstModSize(60);
-  parameters.SetRescalingTechnique(FIXEDMANUAL);
+    CryptoContext<DCRTPoly> GenerateBGVrnsContext(uint32_t poly_modulus_degree, uint32_t numTowers) {
+        CCParams<CryptoContextBGVRNS> parameters;
+        parameters.SetMultiplicativeDepth(numTowers - 1);
+        parameters.SetPlaintextModulus(65537);
+        parameters.SetMaxDepth(5);
+        parameters.SetRingDim(poly_modulus_degree);
+        parameters.SetFirstModSize(60);
+        parameters.SetRescalingTechnique(FIXEDMANUAL);
 
-  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-  // Enable features that you wish to use
-  cc->Enable(PKE);
-  cc->Enable(KEYSWITCH);
-  cc->Enable(LEVELEDSHE);
+        CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+        // Enable features that you wish to use
+        cc->Enable(PKE);
+        cc->Enable(KEYSWITCH);
+        cc->Enable(LEVELEDSHE);
 
-  return cc;
-}
+        return cc;
+    }
+
+} // namespace lbcrypto
 
 #endif // __LIB_HEXL_UTIL_H__

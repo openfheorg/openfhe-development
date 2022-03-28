@@ -39,6 +39,7 @@
 #include <iterator>
 
 #include "palisade.h"
+#include "cryptocontexthelper.h"
 
 using namespace std;
 using namespace lbcrypto;

@@ -32,21 +32,17 @@
 #define _USE_MATH_DEFINES
 #include "benchmark/benchmark.h"
 
-bool runOnlyOnce = true;
+bool runOnlyOnce = true; // TODO (dsuponit): do we need runOnlyOnce???
 
 #include "palisade.h"
-#include <fstream>
-#include <iostream>
-
-#include "cryptocontexthelper.h"
-
 #include "encoding/encodings.h"
 #include "lattice/elemparamfactory.h"
-#include "math/hal.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 
-using namespace std;
+#include <iostream>
+
+
 using namespace lbcrypto;
 
 void BM_encoding_CoefPacked(benchmark::State &state) {
@@ -169,7 +165,7 @@ void BM_encoding_PackedCKKSPlaintext(benchmark::State &state) {
   shared_ptr<ILDCRTParams<BigInteger>> lp;
   EncodingParams ep;
 
-  std::vector<complex<double>> vectorOfComplex = {
+  std::vector<std::complex<double>> vectorOfComplex = {
       {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0},
       {6, 0}, {7, 0}, {8, 0}, {0, 0}, {0, 0}};
 

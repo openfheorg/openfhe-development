@@ -42,6 +42,7 @@
 #include "key/allkey.h"
 #include "cryptoobject.h"
 
+// TODO (dsuponit): remove all "using std::..." from this file
 using std::move;
 using std::shared_ptr;
 using std::string;
@@ -51,6 +52,5 @@ using std::string;
 
 #include "ciphertext.h"
 #include "cryptocontext.h"
-#include "cryptocontexthelper.h"
 
 #endif /* SRC_LIB_PALISADE_H_ */
