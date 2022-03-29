@@ -29,7 +29,7 @@ documentation about this library.
 
 **Reporting bugs** [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development)
 
-**Reporting security vulnerabilities**
+**Reporting security vulnerabilities** Please email us at contact@openfhe.org
 
 
 ## Installation
