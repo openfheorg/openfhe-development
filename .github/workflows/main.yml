@@ -67,7 +67,7 @@ jobs:
     - name: build_docs
       run: |
         whoami
-        cmake -S . -B build -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9 -DSphinx_ROOT=/home/ubuntu/.local/bin
+        cmake -S . -B build -DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9 -DSphinx_ROOT=/home/ubuntu/.local/bin -DBUILD_DOCS=ON
         pushd build
         make Doxygen
         make Sphinx
