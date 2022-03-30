@@ -45,7 +45,7 @@
 #include <cxxabi.h>
 /*
 #include "math/nbtheory.h"
-#include "palisade.h"
+#include "openfhe.h"
 #include "utils/parmfactory.h"
 #include "utils/utilities.h"
 */

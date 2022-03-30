@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Represents and defines plaintext objects in Palisade
+  Represents and defines plaintext objects in OpenFHE
  */
 
 #ifndef LBCRYPTO_UTILS_PLAINTEXT_H
@@ -48,32 +48,32 @@
 namespace lbcrypto {
 
 enum PlaintextEncodings {
-  Unknown = 0,
-  CoefPacked,
-  Packed,
-  String,
-  CKKSPacked,
+    Unknown = 0,
+    CoefPacked,
+    Packed,
+    String,
+    CKKSPacked,
 };
 
 inline std::ostream& operator<<(std::ostream& out, const PlaintextEncodings p) {
-  switch (p) {
-    case Unknown:
-      out << "Unknown";
-      break;
-    case CoefPacked:
-      out << "CoefPacked";
-      break;
-    case Packed:
-      out << "Packed";
-      break;
-    case String:
-      out << "String";
-      break;
-    case CKKSPacked:
-      out << "CKKSPacked";
-      break;
-  }
-  return out;
+    switch (p) {
+        case Unknown:
+            out << "Unknown";
+            break;
+        case CoefPacked:
+            out << "CoefPacked";
+            break;
+        case Packed:
+            out << "Packed";
+            break;
+        case String:
+            out << "String";
+            break;
+        case CKKSPacked:
+            out << "CKKSPacked";
+            break;
+    }
+    return out;
 }
 
 class PlaintextImpl;
@@ -82,7 +82,7 @@ typedef std::shared_ptr<const PlaintextImpl> ConstPlaintext;
 
 /**
  * @class PlaintextImpl
- * @brief This class represents plaintext in the Palisade library.
+ * @brief This class represents plaintext in the OpenFHE library.
  *
  * PlaintextImpl is primarily intended to be
  * used as a container and in conjunction with specific encodings which inherit
@@ -93,316 +93,327 @@ typedef std::shared_ptr<const PlaintextImpl> ConstPlaintext;
 enum PtxtPolyType { IsPoly, IsDCRTPoly, IsNativePoly };
 
 class PlaintextImpl {
- protected:
-  bool isEncoded;
-  PtxtPolyType typeFlag;
-  EncodingParams encodingParams;
+protected:
+    bool isEncoded;
+    PtxtPolyType typeFlag;
+    EncodingParams encodingParams;
 
-  mutable Poly encodedVector;
-  mutable NativePoly encodedNativeVector;
-  mutable DCRTPoly encodedVectorDCRT;
+    mutable Poly encodedVector;
+    mutable NativePoly encodedNativeVector;
+    mutable DCRTPoly encodedVectorDCRT;
 
-  static const int intCTOR = 0x01;
-  static const int vecintCTOR = 0x02;
-  static const int fracCTOR = 0x04;
-  static const int vecuintCTOR = 0x08;
+    static const int intCTOR     = 0x01;
+    static const int vecintCTOR  = 0x02;
+    static const int fracCTOR    = 0x04;
+    static const int vecuintCTOR = 0x08;
 
-  double scalingFactor;
-  size_t level;
-  size_t depth;
+    double scalingFactor;
+    size_t level;
+    size_t depth;
 
- public:
-  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
-                bool isEncoded = false)
-      : isEncoded(isEncoded),
-        typeFlag(IsPoly),
-        encodingParams(ep),
-        encodedVector(vp, Format::COEFFICIENT),
-        scalingFactor(1),
-        level(0),
-        depth(1) {}
+public:
+    PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, bool isEncoded = false)
+        : isEncoded(isEncoded),
+          typeFlag(IsPoly),
+          encodingParams(ep),
+          encodedVector(vp, Format::COEFFICIENT),
+          scalingFactor(1),
+          level(0),
+          depth(1) {}
 
-  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
-                bool isEncoded = false)
-      : isEncoded(isEncoded),
-        typeFlag(IsNativePoly),
-        encodingParams(ep),
-        encodedNativeVector(vp, Format::COEFFICIENT),
-        scalingFactor(1),
-        level(0),
-        depth(1) {}
+    PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, bool isEncoded = false)
+        : isEncoded(isEncoded),
+          typeFlag(IsNativePoly),
+          encodingParams(ep),
+          encodedNativeVector(vp, Format::COEFFICIENT),
+          scalingFactor(1),
+          level(0),
+          depth(1) {}
 
-  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
-                bool isEncoded = false)
-      : isEncoded(isEncoded),
-        typeFlag(IsDCRTPoly),
-        encodingParams(ep),
-        encodedVector(vp, Format::COEFFICIENT),
-        encodedVectorDCRT(vp, Format::COEFFICIENT),
-        scalingFactor(1),
-        level(0),
-        depth(1) {}
+    PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, bool isEncoded = false)
+        : isEncoded(isEncoded),
+          typeFlag(IsDCRTPoly),
+          encodingParams(ep),
+          encodedVector(vp, Format::COEFFICIENT),
+          encodedVectorDCRT(vp, Format::COEFFICIENT),
+          scalingFactor(1),
+          level(0),
+          depth(1) {}
 
-  PlaintextImpl(const PlaintextImpl& rhs)
-      : isEncoded(rhs.isEncoded),
-        typeFlag(rhs.typeFlag),
-        encodingParams(rhs.encodingParams),
-        encodedVector(rhs.encodedVector),
-        encodedVectorDCRT(rhs.encodedVectorDCRT),
-        scalingFactor(rhs.scalingFactor),
-        level(rhs.level),
-        depth(rhs.depth) {}
+    PlaintextImpl(const PlaintextImpl& rhs)
+        : isEncoded(rhs.isEncoded),
+          typeFlag(rhs.typeFlag),
+          encodingParams(rhs.encodingParams),
+          encodedVector(rhs.encodedVector),
+          encodedVectorDCRT(rhs.encodedVectorDCRT),
+          scalingFactor(rhs.scalingFactor),
+          level(rhs.level),
+          depth(rhs.depth) {}
 
-  PlaintextImpl(const PlaintextImpl&& rhs)
-      : isEncoded(rhs.isEncoded),
-        typeFlag(rhs.typeFlag),
-        encodingParams(std::move(rhs.encodingParams)),
-        encodedVector(std::move(rhs.encodedVector)),
-        encodedVectorDCRT(std::move(rhs.encodedVectorDCRT)),
-        scalingFactor(rhs.scalingFactor),
-        level(rhs.level),
-        depth(rhs.depth) {}
+    PlaintextImpl(const PlaintextImpl&& rhs)
+        : isEncoded(rhs.isEncoded),
+          typeFlag(rhs.typeFlag),
+          encodingParams(std::move(rhs.encodingParams)),
+          encodedVector(std::move(rhs.encodedVector)),
+          encodedVectorDCRT(std::move(rhs.encodedVectorDCRT)),
+          scalingFactor(rhs.scalingFactor),
+          level(rhs.level),
+          depth(rhs.depth) {}
 
-  virtual ~PlaintextImpl() {}
+    virtual ~PlaintextImpl() {}
 
-  /**
+    /**
    * GetEncodingType
    * @return Encoding type used by this plaintext
    */
-  virtual PlaintextEncodings GetEncodingType() const = 0;
+    virtual PlaintextEncodings GetEncodingType() const = 0;
 
-  /**
+    /**
    * Get the scaling factor of the plaintext.
    */
-  double GetScalingFactor() const { return scalingFactor; }
+    double GetScalingFactor() const {
+        return scalingFactor;
+    }
 
-  /**
+    /**
    * Set the scaling factor of the plaintext.
    */
-  void SetScalingFactor(double sf) { scalingFactor = sf; }
+    void SetScalingFactor(double sf) {
+        scalingFactor = sf;
+    }
 
-  /**
+    /**
    * IsEncoded
    * @return true when encoding is done
    */
-  bool IsEncoded() const { return isEncoded; }
+    bool IsEncoded() const {
+        return isEncoded;
+    }
 
-  /**
+    /**
    * GetEncodingParams
    * @return Encoding params used with this plaintext
    */
-  const EncodingParams GetEncodingParams() const { return encodingParams; }
+    const EncodingParams GetEncodingParams() const {
+        return encodingParams;
+    }
 
-  /**
+    /**
    * Encode the plaintext into a polynomial
    * @return true on success
    */
-  virtual bool Encode() = 0;
+    virtual bool Encode() = 0;
 
-  /**
+    /**
    * Decode the polynomial into the plaintext
    * @return
    */
-  virtual bool Decode() = 0;
+    virtual bool Decode() = 0;
 
-  /**
+    /**
    * Calculate and return lower bound that can be encoded with the plaintext
    * modulus the number to encode MUST be greater than this value
    * @return floor(-p/2)
    */
-  int64_t LowBound() const {
-    uint64_t half = GetEncodingParams()->GetPlaintextModulus() >> 1;
-    bool odd = (GetEncodingParams()->GetPlaintextModulus() & 0x1) == 1;
-    int64_t bound = -1 * half;
-    if (odd) bound--;
-    return bound;
-  }
+    int64_t LowBound() const {
+        uint64_t half = GetEncodingParams()->GetPlaintextModulus() >> 1;
+        bool odd      = (GetEncodingParams()->GetPlaintextModulus() & 0x1) == 1;
+        int64_t bound = -1 * half;
+        if (odd)
+            bound--;
+        return bound;
+    }
 
-  /**
+    /**
    * Calculate and return upper bound that can be encoded with the plaintext
    * modulus the number to encode MUST be less than or equal to this value
    * @return floor(p/2)
    */
-  int64_t HighBound() const {
-    return GetEncodingParams()->GetPlaintextModulus() >> 1;
-  }
+    int64_t HighBound() const {
+        return GetEncodingParams()->GetPlaintextModulus() >> 1;
+    }
 
-  /**
+    /**
    * SetFormat - allows format to be changed for PlaintextImpl evaluations
    *
    * @param fmt
    */
-  void SetFormat(Format fmt) const {
-    if (typeFlag == IsPoly)
-      encodedVector.SetFormat(fmt);
-    else if (typeFlag == IsNativePoly)
-      encodedNativeVector.SetFormat(fmt);
-    else
-      encodedVectorDCRT.SetFormat(fmt);
-  }
+    void SetFormat(Format fmt) const {
+        if (typeFlag == IsPoly)
+            encodedVector.SetFormat(fmt);
+        else if (typeFlag == IsNativePoly)
+            encodedNativeVector.SetFormat(fmt);
+        else
+            encodedVectorDCRT.SetFormat(fmt);
+    }
 
-  /**
+    /**
    * GetElement
    * @return the Polynomial that the element was encoded into
    */
-  template <typename Element>
-  Element& GetElement() {
-      PALISADE_THROW(not_implemented_error, "Generic GetElement() is not implemented");
-  }
+    template <typename Element>
+    Element& GetElement() {
+        OpenFHE_THROW(not_implemented_error, "Generic GetElement() is not implemented");
+    }
 
-  template <typename Element>
-  const Element& GetElement() const {
-      PALISADE_THROW(not_implemented_error, "Generic GetElement() is not implemented");
-  }
+    template <typename Element>
+    const Element& GetElement() const {
+        OpenFHE_THROW(not_implemented_error, "Generic GetElement() is not implemented");
+    }
 
-  /**
+    /**
    * GetElementRingDimension
    * @return ring dimension on the underlying element
    */
-  usint GetElementRingDimension() const {
-    return typeFlag == IsPoly ? encodedVector.GetRingDimension()
-                              : (typeFlag == IsNativePoly
-                                     ? encodedNativeVector.GetRingDimension()
-                                     : encodedVectorDCRT.GetRingDimension());
-  }
+    usint GetElementRingDimension() const {
+        return typeFlag == IsPoly ? encodedVector.GetRingDimension() :
+               (typeFlag == IsNativePoly ? encodedNativeVector.GetRingDimension() :
+                encodedVectorDCRT.GetRingDimension());
+    }
 
-  /**
+    /**
    * GetElementModulus
    * @return modulus on the underlying elemenbt
    */
-  const BigInteger GetElementModulus() const {
-    return typeFlag == IsPoly
-               ? encodedVector.GetModulus()
-               : (typeFlag == IsNativePoly
-                      ? BigInteger(encodedNativeVector.GetModulus())
-                      : encodedVectorDCRT.GetModulus());
-  }
+    const BigInteger GetElementModulus() const {
+        return typeFlag == IsPoly ? encodedVector.GetModulus() :
+               (typeFlag == IsNativePoly ? BigInteger(encodedNativeVector.GetModulus()) :
+                encodedVectorDCRT.GetModulus());
+    }
 
-  /**
+    /**
    * Get method to return the length of plaintext
    *
    * @return the length of the plaintext in terms of the number of bits.
    */
-  virtual size_t GetLength() const = 0;
+    virtual size_t GetLength() const = 0;
 
-  /**
+    /**
    * resize the plaintext; only works for plaintexts that support a resizable
    * vector (coefpacked)
    * @param newSize
    */
-  virtual void SetLength(size_t newSize) {
-    PALISADE_THROW(not_implemented_error, "resize not supported");
-  }
+    virtual void SetLength(size_t newSize) {
+        OpenFHE_THROW(not_implemented_error, "resize not supported");
+    }
 
-  /*
+    /*
    * Method to get the depth of a plaintext.
    *
    * @return the depth of the plaintext
    */
-  size_t GetDepth() const { return depth; }
+    size_t GetDepth() const {
+        return depth;
+    }
 
-  /*
+    /*
    * Method to set the depth of a plaintext.
    */
-  void SetDepth(size_t d) { depth = d; }
+    void SetDepth(size_t d) {
+        depth = d;
+    }
 
-  /*
+    /*
    * Method to get the level of a plaintext.
    *
    * @return the level of the plaintext
    */
-  size_t GetLevel() const { return level; }
+    size_t GetLevel() const {
+        return level;
+    }
 
-  /*
+    /*
    * Method to set the level of a plaintext.
    */
-  void SetLevel(size_t l) { level = l; }
+    void SetLevel(size_t l) {
+        level = l;
+    }
 
-  virtual double GetLogError() const {
-    PALISADE_THROW(not_available_error,
-                   "no estimate of noise available for the current scheme");
-  }
+    virtual double GetLogError() const {
+        OpenFHE_THROW(not_available_error, "no estimate of noise available for the current scheme");
+    }
 
-  virtual double GetLogPrecision() const {
-    PALISADE_THROW(not_available_error,
-                   "no estimate of precision available for the current scheme");
-  }
+    virtual double GetLogPrecision() const {
+        OpenFHE_THROW(not_available_error, "no estimate of precision available for the current scheme");
+    }
 
-  virtual const std::string& GetStringValue() const {
-    PALISADE_THROW(type_error, "not a string");
-  }
-  virtual const std::vector<int64_t>& GetCoefPackedValue() const {
-    PALISADE_THROW(type_error, "not a packed coefficient vector");
-  }
-  virtual const std::vector<int64_t>& GetPackedValue() const {
-    PALISADE_THROW(type_error, "not a packed coefficient vector");
-  }
-  virtual const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
-    PALISADE_THROW(type_error, "not a packed vector of complex numbers");
-  }
-  virtual const std::vector<double> GetRealPackedValue() const {
-    PALISADE_THROW(type_error, "not a packed vector of real numbers");
-  }
-  virtual void SetStringValue(const std::string&) {
-    PALISADE_THROW(type_error, "does not support a string");
-  }
-  virtual void SetIntVectorValue(const std::vector<int64_t>&) {
-    PALISADE_THROW(type_error, "does not support an int vector");
-  }
+    virtual const std::string& GetStringValue() const {
+        OpenFHE_THROW(type_error, "not a string");
+    }
+    virtual const std::vector<int64_t>& GetCoefPackedValue() const {
+        OpenFHE_THROW(type_error, "not a packed coefficient vector");
+    }
+    virtual const std::vector<int64_t>& GetPackedValue() const {
+        OpenFHE_THROW(type_error, "not a packed coefficient vector");
+    }
+    virtual const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
+        OpenFHE_THROW(type_error, "not a packed vector of complex numbers");
+    }
+    virtual const std::vector<double> GetRealPackedValue() const {
+        OpenFHE_THROW(type_error, "not a packed vector of real numbers");
+    }
+    virtual void SetStringValue(const std::string&) {
+        OpenFHE_THROW(type_error, "does not support a string");
+    }
+    virtual void SetIntVectorValue(const std::vector<int64_t>&) {
+        OpenFHE_THROW(type_error, "does not support an int vector");
+    }
 
-  /**
+    /**
    * Method to compare two plaintext to test for equivalence.
    * This method is called by operator==
    *
    * @param other - the other plaintext to compare to.
    * @return whether the two plaintext are equivalent.
    */
-  virtual bool CompareTo(const PlaintextImpl& other) const = 0;
+    virtual bool CompareTo(const PlaintextImpl& other) const = 0;
 
-  /**
+    /**
    * operator== for plaintexts.  This method makes sure the plaintexts are of
    * the same type.
    *
    * @param other - the other plaintext to compare to.
    * @return whether the two plaintext are the same.
    */
-  bool operator==(const PlaintextImpl& other) const { return CompareTo(other); }
+    bool operator==(const PlaintextImpl& other) const {
+        return CompareTo(other);
+    }
 
-  bool operator!=(const PlaintextImpl& other) const {
-    return !(*this == other);
-  }
+    bool operator!=(const PlaintextImpl& other) const {
+        return !(*this == other);
+    }
 
-  /**
+    /**
    * operator<< for ostream integration - calls PrintValue
    * @param out
    * @param item
    * @return
    */
-  friend std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item);
+    friend std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item);
 
-  /**
+    /**
    * PrintValue is called by operator<<
    * @param out
    */
-  virtual void PrintValue(std::ostream& out) const = 0;
+    virtual void PrintValue(std::ostream& out) const = 0;
 };
 
 inline std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item) {
-  item.PrintValue(out);
-  return out;
+    item.PrintValue(out);
+    return out;
 }
 
 inline std::ostream& operator<<(std::ostream& out, const Plaintext item) {
-  item->PrintValue(out);
-  return out;
+    item->PrintValue(out);
+    return out;
 }
 
 inline bool operator==(const Plaintext p1, const Plaintext p2) {
-  return *p1 == *p2;
+    return *p1 == *p2;
 }
 
 inline bool operator!=(const Plaintext p1, const Plaintext p2) {
-  return *p1 != *p2;
+    return *p1 != *p2;
 }
 
 /**
@@ -411,12 +422,12 @@ inline bool operator!=(const Plaintext p1, const Plaintext p2) {
  */
 template <>
 inline const Poly& PlaintextImpl::GetElement<Poly>() const {
-  return encodedVector;
+    return encodedVector;
 }
 
 template <>
 inline Poly& PlaintextImpl::GetElement<Poly>() {
-  return encodedVector;
+    return encodedVector;
 }
 
 /**
@@ -425,12 +436,12 @@ inline Poly& PlaintextImpl::GetElement<Poly>() {
  */
 template <>
 inline const NativePoly& PlaintextImpl::GetElement<NativePoly>() const {
-  return encodedNativeVector;
+    return encodedNativeVector;
 }
 
 template <>
 inline NativePoly& PlaintextImpl::GetElement<NativePoly>() {
-  return encodedNativeVector;
+    return encodedNativeVector;
 }
 
 /**
@@ -439,12 +450,12 @@ inline NativePoly& PlaintextImpl::GetElement<NativePoly>() {
  */
 template <>
 inline const DCRTPoly& PlaintextImpl::GetElement<DCRTPoly>() const {
-  return encodedVectorDCRT;
+    return encodedVectorDCRT;
 }
 
 template <>
 inline DCRTPoly& PlaintextImpl::GetElement<DCRTPoly>() {
-  return encodedVectorDCRT;
+    return encodedVectorDCRT;
 }
 
 }  // namespace lbcrypto

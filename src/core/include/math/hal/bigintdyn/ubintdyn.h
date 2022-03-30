@@ -834,13 +834,13 @@ class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
 
   ubint ModMulFastConst(const ubint &b, const ubint &modulus,
                         const ubint &bInv) const {
-    PALISADE_THROW(lbcrypto::not_implemented_error,
+    OpenFHE_THROW(lbcrypto::not_implemented_error,
                    "ModMulFastConst is not implemented for backend 4");
   }
 
   const ubint &ModMulFastConstEq(const ubint &b, const ubint &modulus,
                                  const ubint &bInv) {
-    PALISADE_THROW(lbcrypto::not_implemented_error,
+    OpenFHE_THROW(lbcrypto::not_implemented_error,
                    "ModMulFastConstEq is not implemented for backend 4");
   }
 
@@ -934,7 +934,7 @@ class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
   T ConvertToInt() const {
     T result = 0;
     if (m_value.size() == 0) {
-      PALISADE_THROW(lbcrypto::not_available_error,
+      OpenFHE_THROW(lbcrypto::not_available_error,
                      "ConvertToInt() on uninitialized bint");
     }
     if (sizeof(limb_t) >= sizeof(T)) {
@@ -1172,7 +1172,7 @@ class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OpenFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }

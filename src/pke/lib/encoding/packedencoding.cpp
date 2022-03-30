@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Represents and defines plaintext encodings in Palisade with bit packing capabilities
+  Represents and defines plaintext encodings in OpenFHE with bit packing capabilities
  */
 
 #include "encoding/packedencoding.h"
@@ -66,7 +66,7 @@ bool PackedEncoding::Encode() {
               .ConvertToInt();
       temp = NativeVector(this->GetElementRingDimension(), q);
       if (q < mod)
-        PALISADE_THROW(config_error,
+        OpenFHE_THROW(config_error,
                        "the plaintext modulus size is larger than the size of "
                        "CRT moduli; either decrease the plaintext modulus or "
                        "increase the CRT moduli.");
@@ -78,7 +78,7 @@ bool PackedEncoding::Encode() {
       NativeInteger entry;
 
       if ((PlaintextModulus)llabs(value[i]) >= mod)
-        PALISADE_THROW(math_error, "Cannot encode integer " +
+        OpenFHE_THROW(math_error, "Cannot encode integer " +
                                        std::to_string(value[i]) +
                                        " at position " + std::to_string(i) +
                                        " that is > plaintext modulus " +
@@ -144,7 +144,7 @@ bool PackedEncoding::Encode() {
       BigInteger entry;
 
       if ((PlaintextModulus)llabs(value[i]) >= mod)
-        PALISADE_THROW(math_error, "Cannot encode integer " +
+        OpenFHE_THROW(math_error, "Cannot encode integer " +
                                        std::to_string(value[i]) +
                                        " at position " + std::to_string(i) +
                                        " that is > plaintext modulus " +
@@ -307,7 +307,7 @@ void PackedEncoding::SetParams(usint m, EncodingParams params) {
     hadEx = true;
   }
 
-  if (hadEx) PALISADE_THROW(palisade_error, exception_message);
+  if (hadEx) OpenFHE_THROW(openfhe_error, exception_message);
 }
 
 template <typename P>

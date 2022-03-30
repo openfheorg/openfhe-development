@@ -118,13 +118,13 @@ class LeveledSHEBase {
   virtual Ciphertext<Element> EvalAddMutable(
       Ciphertext<Element> &ciphertext1,
       Ciphertext<Element> &ciphertext2) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalAddMutable is not implemented for this scheme");
   }
 
   virtual void EvalAddMutableInPlace(Ciphertext<Element> &ciphertext1,
                                      Ciphertext<Element> &ciphertext2) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalAddMutable is not implemented for this scheme");
   }
 
@@ -160,7 +160,7 @@ class LeveledSHEBase {
    */
   virtual Ciphertext<Element> EvalAddMutable(Ciphertext<Element> &ciphertext,
                                              Plaintext plaintext) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalAddMutable is not implemented for this scheme");
   }
 
@@ -175,31 +175,31 @@ class LeveledSHEBase {
    */
   virtual void EvalAddMutableInPlace(Ciphertext<Element> &ciphertext,
                                      Plaintext plaintext) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalAddMutable is not implemented for this scheme");
   }
 
   virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext,
                                       const NativeInteger &constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "integer scalar addition is not implemented for this scheme");
   }
 
   virtual void EvalAddInPlace(Ciphertext<Element> &ciphertext,
                               const NativeInteger &constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "integer scalar addition is not implemented for this scheme");
   }
 
   virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext,
                                       double constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "double scalar addition is not implemented for this scheme");
   }
 
   virtual void EvalAddInPlace(Ciphertext<Element> &ciphertext,
                               double constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "double scalar addition is not implemented for this scheme");
   }
 
@@ -241,7 +241,7 @@ class LeveledSHEBase {
   virtual Ciphertext<Element> EvalSubMutable(
       Ciphertext<Element> &ciphertext1,
       Ciphertext<Element> &ciphertext2) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalSubMutable is not implemented for this scheme");
   }
 
@@ -256,7 +256,7 @@ class LeveledSHEBase {
    */
   virtual void EvalSubMutableInPlace(Ciphertext<Element> &ciphertext1,
                                      Ciphertext<Element> &ciphertext2) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalSubMutable is not implemented for this scheme");
   }
 
@@ -285,37 +285,37 @@ class LeveledSHEBase {
    */
   virtual Ciphertext<Element> EvalSubMutable(Ciphertext<Element> &ciphertext,
                                              Plaintext plaintext) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalSubMutable is not implemented for this scheme");
   }
 
   virtual void EvalSubMutableInPlace(Ciphertext<Element> &ciphertext,
                                      Plaintext plaintext) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalSubMutable is not implemented for this scheme");
   }
 
   virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext,
                                       const NativeInteger &constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "integer scalar subtraction is not implemented for this scheme");
   }
 
   virtual void EvalSubInPlace(Ciphertext<Element> &ciphertext,
                               const NativeInteger &constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "integer scalar subtraction is not implemented for this scheme");
   }
 
   virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext,
                                       double constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "double scalar subtraction is not implemented for this scheme");
   }
 
   virtual void EvalSubInPlace(Ciphertext<Element> &ciphertext,
                               double constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "double scalar subtraction is not implemented for this scheme");
   }
 
@@ -357,7 +357,7 @@ class LeveledSHEBase {
   virtual Ciphertext<Element> EvalMult(
       ConstCiphertext<Element> ciphertext1,
       ConstCiphertext<Element> ciphertext2) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalMult is not implemented for this scheme");
   }
 
@@ -373,7 +373,7 @@ class LeveledSHEBase {
   virtual Ciphertext<Element> EvalMultMutable(
       Ciphertext<Element> &ciphertext1,
       Ciphertext<Element> &ciphertext2) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalMultMutable is not implemented for this scheme");
   }
 
@@ -402,7 +402,7 @@ class LeveledSHEBase {
    */
   virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element> &ciphertext,
                                               Plaintext plaintext) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalMultMutable is not implemented for this scheme");
   }
 
@@ -417,32 +417,32 @@ class LeveledSHEBase {
    */
   virtual void EvalMultMutableInPlace(
       Ciphertext<Element> &ciphertext, Plaintext plaintext) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "EvalMultMutable is not implemented for this scheme");
   }
 
 
   virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext,
                                       const NativeInteger &constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "integer scalar multiplication is not implemented for this scheme");
   }
 
   virtual void EvalMultInPlace(Ciphertext<Element> &ciphertext,
                               const NativeInteger &constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "integer scalar multiplication is not implemented for this scheme");
   }
 
   virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext,
                                       double constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "double scalar multiplication is not implemented for this scheme");
   }
 
   virtual void EvalMultInPlace(Ciphertext<Element> &ciphertext,
                               double constant) const {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "double scalar multiplication is not implemented for this scheme");
   }
 
@@ -547,7 +547,7 @@ class LeveledSHEBase {
       const std::vector<usint> &indexList) const {
     std::string errMsg =
         "EvalAutomorphismKeyGen is not implemented for this scheme.";
-    PALISADE_THROW(not_implemented_error, errMsg);
+    OpenFHE_THROW(not_implemented_error, errMsg);
   }
 
   /**
@@ -627,7 +627,7 @@ class LeveledSHEBase {
    */
   virtual Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext,
                                         size_t levels = 1) const  {
-    PALISADE_THROW(config_error, "ModReduce is not supported for this scheme");
+    OpenFHE_THROW(config_error, "ModReduce is not supported for this scheme");
   }
 
   /**
@@ -638,7 +638,7 @@ class LeveledSHEBase {
    */
   virtual void ModReduceInPlace(Ciphertext<Element> &ciphertext,
                                 size_t levels = 1) const {
-    PALISADE_THROW(config_error, "ModReduce is not supported for this scheme");
+    OpenFHE_THROW(config_error, "ModReduce is not supported for this scheme");
   }
 
   /**
@@ -685,13 +685,13 @@ class LeveledSHEBase {
   virtual void LevelReduceInPlace(Ciphertext<Element> ciphertext1,
                                   const EvalKey<Element> evalKey,
                                   size_t levels) const {
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "LevelReduce is not supported for this scheme");
   }
 
   virtual Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext,
                                        size_t towersLeft = 1) const {
-    PALISADE_THROW(config_error, "Compress is not supported for this scheme");
+    OpenFHE_THROW(config_error, "Compress is not supported for this scheme");
   }
 
   /**
@@ -703,7 +703,7 @@ class LeveledSHEBase {
    */
   virtual Ciphertext<DCRTPoly> ModReduceInternal(
       ConstCiphertext<DCRTPoly> ciphertext, size_t levels = 1) const {
-    PALISADE_THROW(config_error, "ModReduce is not supported for this scheme");
+    OpenFHE_THROW(config_error, "ModReduce is not supported for this scheme");
   }
 
   /**
@@ -715,7 +715,7 @@ class LeveledSHEBase {
    */
   virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                         size_t levels = 1) const {
-    PALISADE_THROW(config_error, "ModReduce is not supported for this scheme");
+    OpenFHE_THROW(config_error, "ModReduce is not supported for this scheme");
   }
 
   /**
@@ -731,7 +731,7 @@ class LeveledSHEBase {
   virtual Ciphertext<DCRTPoly> LevelReduceInternal(
       ConstCiphertext<DCRTPoly> ciphertext, const EvalKey<DCRTPoly> evalKey,
       size_t levels) const {
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "LevelReduce is not supported for this scheme");
   }
 
@@ -747,43 +747,43 @@ class LeveledSHEBase {
   virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                           const EvalKey<DCRTPoly> evalKey,
                                           size_t levels) const {
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "LevelReduce is not supported for this scheme");
   }
 
   virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext1,
                            Ciphertext<DCRTPoly> &ciphertext2) const {
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "Leveled Operations are not supported for this scheme");
   }
 
   virtual void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly> &ciphertext1,
                                    Ciphertext<DCRTPoly> &ciphertext2) const {
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "Mutable Operations are not supported for this scheme");
   }
 
   virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ciphertext1,
                                    Ciphertext<DCRTPoly> &ciphertext2) const {
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "Mutable Operations are not supported for this scheme");
   }
 
   virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                           DCRTPoly &pt, usint ptDepth) const {
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "Leveled Operations are not supported for this scheme");
   }
 
   virtual void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly> &ciphertext,
       DCRTPoly &pt, usint ptDepth) const {
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "Mutable Operations are not supported for this scheme");
   }
 
   virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ciphertext,
       DCRTPoly &pt, usint ptDepth) const {
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "Mutable Operations are not supported for this scheme");
   }
 

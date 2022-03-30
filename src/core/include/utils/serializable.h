@@ -79,7 +79,7 @@ using Serialized = void*;
 /**
  * \class Serializable
  *
- * \brief Base class for PALISADE serialization
+ * \brief Base class for OpenFHE serialization
  *
  * This class is inherited by every class that needs to be serialized.
  * The class contains some deprecated methods from the older mechanisms

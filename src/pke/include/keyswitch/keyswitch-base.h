@@ -52,14 +52,14 @@ namespace lbcrypto {
  */
 template <class Element>
 class KeySwitchBase {
-  using ParmType = typename Element::Params;
+    using ParmType = typename Element::Params;
 
- public:
-  KeySwitchBase() {};
+public:
+    KeySwitchBase(){};
 
-  virtual ~KeySwitchBase() {};
+    virtual ~KeySwitchBase(){};
 
-  /**
+    /**
    * Method for KeySwitchGen
    *
    * @param &originalPrivateKey Original private key used for encryption.
@@ -67,56 +67,50 @@ class KeySwitchBase {
    * @param *KeySwitchHint is where the resulting keySwitchHint will be
    * placed.
    */
-  virtual EvalKey<Element> KeySwitchGen(
-      const PrivateKey<Element> oldPrivateKey,
-      const PrivateKey<Element> newPrivateKey) const {
-    PALISADE_THROW(config_error, "KeySwitchGen is not supported");
-  }
+    virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
+                                          const PrivateKey<Element> newPrivateKey) const {
+        OpenFHE_THROW(config_error, "KeySwitchGen is not supported");
+    }
 
-  virtual EvalKey<Element> KeySwitchGen(
-      const PrivateKey<Element> oldPrivateKey,
-      const PrivateKey<Element> newPrivateKey,
-      const EvalKey<Element> evalKey) const {
-    PALISADE_THROW(config_error, "KeySwitchGen is not supported");
-  }
+    virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
+                                          const PrivateKey<Element> newPrivateKey,
+                                          const EvalKey<Element> evalKey) const {
+        OpenFHE_THROW(config_error, "KeySwitchGen is not supported");
+    }
 
-  virtual EvalKey<Element> KeySwitchGen(
-      const PrivateKey<Element> oldPrivateKey,
-      const PublicKey<Element> newPublicKey) const {
-    PALISADE_THROW(config_error, "KeySwitchGen is not supported");
-  }
+    virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
+                                          const PublicKey<Element> newPublicKey) const {
+        OpenFHE_THROW(config_error, "KeySwitchGen is not supported");
+    }
 
-  virtual Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext,
-                                        const EvalKey<Element> evalKey) const {
-    Ciphertext<Element> result = ciphertext->Clone();
-    KeySwitchInPlace(result, evalKey);
-    return result;
-  }
+    virtual Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const {
+        Ciphertext<Element> result = ciphertext->Clone();
+        KeySwitchInPlace(result, evalKey);
+        return result;
+    }
 
-  virtual void KeySwitchInPlace(Ciphertext<Element> &ciphertext,
-                                const EvalKey<Element> evalKey) const {
-    PALISADE_THROW(config_error, "KeySwitch is not supported");
-  }
+    virtual void KeySwitchInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const {
+        OpenFHE_THROW(config_error, "KeySwitch is not supported");
+    }
 
-  /////////////////////////////////////////
-  // CORE OPERATIONS
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // CORE OPERATIONS
+    /////////////////////////////////////////
 
-  virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(
-      Element a, const EvalKey<Element> evalKey) const {
-    PALISADE_THROW(config_error, "KeySwitchCore is not supported");
-  }
+    virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(Element a, const EvalKey<Element> evalKey) const {
+        OpenFHE_THROW(config_error, "KeySwitchCore is not supported");
+    }
 
-  virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
-      Element c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
-    PALISADE_THROW(config_error, "EvalKeySwitchPrecomputeCore is not supported");
-  }
+    virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
+        Element c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
+        OpenFHE_THROW(config_error, "EvalKeySwitchPrecomputeCore is not supported");
+    }
 
-  virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
-      const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
-      const std::shared_ptr<ParmType> paramsQl) const {
-    PALISADE_THROW(config_error, "EvalFastKeySwitchCore is not supported");
-  }
+    virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
+        const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
+        const std::shared_ptr<ParmType> paramsQl) const {
+        OpenFHE_THROW(config_error, "EvalFastKeySwitchCore is not supported");
+    }
 };
 
 }  // namespace lbcrypto

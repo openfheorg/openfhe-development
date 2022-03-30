@@ -336,7 +336,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    */
   virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                         size_t levels = 1) const override {
-    PALISADE_THROW(config_error, "ModReduce is not supported for this scheme");
+    OpenFHE_THROW(config_error, "ModReduce is not supported for this scheme");
   }
 
   /**
@@ -365,7 +365,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
   virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                           const EvalKey<DCRTPoly> evalKey,
                                           size_t levels) const override {
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "LevelReduce is not supported for this scheme");
   }
 

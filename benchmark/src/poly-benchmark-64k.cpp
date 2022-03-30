@@ -32,7 +32,7 @@
 #define _USE_MATH_DEFINES
 #include "benchmark/benchmark.h"
 
-#include "palisade.h"
+#include "openfhe.h"
 
 #include <iostream>
 #include <vector>

@@ -84,10 +84,10 @@ ubint<limb_t>::ubint() {
 template <typename limb_t>
 ubint<limb_t>::ubint(const ubint &val) {
   if (val.m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::type_error, "copy GARBAGE");
+    OpenFHE_THROW(lbcrypto::type_error, "copy GARBAGE");
   }
   if (val.m_value.size() < 0) {
-    PALISADE_THROW(lbcrypto::type_error, "copy size < 0");
+    OpenFHE_THROW(lbcrypto::type_error, "copy size < 0");
   }
   this->m_MSB = val.m_MSB;      // copy MSB
   this->m_value = val.m_value;  // this occasionally fails may have been
@@ -184,7 +184,7 @@ ubint<limb_t> ubint<limb_t>::Add(const ubint &b) const {
   const ubint *A = nullptr;
   const ubint *B = nullptr;
   if (this->m_state == GARBAGE || b.m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "Add() to uninitialized bint");
   }
   // Assignment of pointers, A assigned the higher value and B assigned the
@@ -239,7 +239,7 @@ ubint<limb_t> ubint<limb_t>::Add(const ubint &b) const {
 template <typename limb_t>
 const ubint<limb_t> &ubint<limb_t>::AddEq(const ubint &b) {
   if (this->m_state == GARBAGE || b.m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "AddEq() to uninitialized bint");
   }
   if (b.m_MSB == 0) {  // b==0
@@ -311,7 +311,7 @@ const ubint<limb_t> &ubint<limb_t>::AddEq(const ubint &b) {
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::Sub(const ubint &b) const {
   if (this->m_state == GARBAGE || b.m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "Sub() to uninitialized bint");
   }
   // return 0 if b is higher than *this as there is no support for negative
@@ -328,7 +328,7 @@ ubint<limb_t> ubint<limb_t>::Sub(const ubint &b) const {
       current = i;
       cntr = current + 1;
       if (cntr >= result.m_value.size()) {
-        PALISADE_THROW(lbcrypto::math_error, "error seek past end of result ");
+        OpenFHE_THROW(lbcrypto::math_error, "error seek past end of result ");
       }
       while (result.m_value[cntr] == 0) {
         // set all the zero limbs to all FFs (propagate the 1)
@@ -355,7 +355,7 @@ ubint<limb_t> ubint<limb_t>::Sub(const ubint &b) const {
 template <typename limb_t>
 const ubint<limb_t> &ubint<limb_t>::SubEq(const ubint &b) {
   if (this->m_state == GARBAGE || b.m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "SubEq() to uninitialized bint");
   }
   // return 0 if b is higher than *this as there is no support for negative
@@ -372,7 +372,7 @@ const ubint<limb_t> &ubint<limb_t>::SubEq(const ubint &b) {
       cntr = current + 1;
       // find the first nonzero limb
       if (cntr >= this->m_value.size()) {
-        PALISADE_THROW(lbcrypto::math_error, "error seek past end of result ");
+        OpenFHE_THROW(lbcrypto::math_error, "error seek past end of result ");
       }
       while (this->m_value[cntr] == 0) {
         // set all the zero limbs to all FFs (propagate the 1)
@@ -464,18 +464,18 @@ const ubint<limb_t> &ubint<limb_t>::MulEq(const ubint &b) {
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::DividedBy(const ubint &b) const {
   if (b.m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "DividedBy() Divisor uninitialized");
   }
   if (b == 0) {
-    PALISADE_THROW(lbcrypto::math_error, "Divisor is zero");
+    OpenFHE_THROW(lbcrypto::math_error, "Divisor is zero");
   }
   if (b.m_MSB > this->m_MSB) {
     ubint result(0);
     return result;  // Note we return a zero when b>this
   }
   if (this->m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "DividedBy() Dividend uninitialized");
   } else if (b == *this) {
     ubint result(1);
@@ -485,7 +485,7 @@ ubint<limb_t> ubint<limb_t>::DividedBy(const ubint &b) const {
   int f;
   f = divq_vect((ans), (*this), (b));
   if (f != 0) {
-    PALISADE_THROW(lbcrypto::math_error, "DividedBy() error");
+    OpenFHE_THROW(lbcrypto::math_error, "DividedBy() error");
   }
   ans.NormalizeLimbs();
   ans.m_state = INITIALIZED;
@@ -554,11 +554,11 @@ const ubint<limb_t> &ubint<limb_t>::MultiplyAndRoundEq(const ubint &p,
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::DivideAndRound(const ubint &q) const {
   if (q.m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "DivideAndRound() Divisor uninitialized");
   }
   if (q == 0) {
-    PALISADE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
+    OpenFHE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
   }
   ubint halfQ(q >> 1);
   if (*this < q) {
@@ -574,7 +574,7 @@ ubint<limb_t> ubint<limb_t>::DivideAndRound(const ubint &q) const {
   int f;
   f = divqr_vect(ans, rv, *this, q);
   if (f != 0) {
-    PALISADE_THROW(lbcrypto::math_error, "Divqr() error in DivideAndRound");
+    OpenFHE_THROW(lbcrypto::math_error, "Divqr() error in DivideAndRound");
   }
 
   ans.NormalizeLimbs();
@@ -603,18 +603,18 @@ template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::Mod(const ubint &modulus) const {
   // check for GARBAGE initialization
   if (this->m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "Mod() of uninitialized bint");
   }
   if (modulus.m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "Mod() using uninitialized bint as modulus");
   }
   if (modulus == 0) {
-    PALISADE_THROW(lbcrypto::math_error, "Mod() using zero modulus");
+    OpenFHE_THROW(lbcrypto::math_error, "Mod() using zero modulus");
   }
   if (modulus.m_value.size() > 1 && modulus.m_value.back() == 0) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "Mod() using unnormalized  modulus");
   }
   // return the same value if value is less than modulus
@@ -642,7 +642,7 @@ ubint<limb_t> ubint<limb_t>::Mod(const ubint &modulus) const {
 #endif
   f = divr_vect(ans, *this, modulus);
   if (f != 0) {
-    PALISADE_THROW(lbcrypto::math_error, "Mod() divr error");
+    OpenFHE_THROW(lbcrypto::math_error, "Mod() divr error");
   }
   ans.NormalizeLimbs();
   ans.SetMSB();
@@ -688,18 +688,18 @@ template <typename limb_t>
 const ubint<limb_t> &ubint<limb_t>::ModEq(const ubint &modulus) {
   // check for GARBAGE initialization
   if (this->m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "ModEq() of uninitialized bint");
   }
   if (modulus.m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::math_error,
+    OpenFHE_THROW(lbcrypto::math_error,
                    "ModEq() using uninitialized bint as modulus");
   }
   if (modulus == 0) {
-    PALISADE_THROW(lbcrypto::not_available_error, "ModEq() using zero modulus");
+    OpenFHE_THROW(lbcrypto::not_available_error, "ModEq() using zero modulus");
   }
   if (modulus.m_value.size() > 1 && modulus.m_value.back() == 0) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "ModEq() using unnormalized  modulus");
   }
   // return the same value if value is less than modulus
@@ -727,7 +727,7 @@ const ubint<limb_t> &ubint<limb_t>::ModEq(const ubint &modulus) {
 #endif
   f = divr_vect(ans, *this, modulus);
   if (f != 0) {
-    PALISADE_THROW(lbcrypto::math_error, "Mod() divr error");
+    OpenFHE_THROW(lbcrypto::math_error, "Mod() divr error");
   }
   ans.NormalizeLimbs();
   ans.SetMSB();
@@ -1165,7 +1165,7 @@ ubint<limb_t> ubint<limb_t>::ModInverse(const ubint &modulus) const {
     second = *this;
   }
   if (second == 0) {
-    PALISADE_THROW(lbcrypto::math_error, "Zero has no inverse");
+    OpenFHE_THROW(lbcrypto::math_error, "Zero has no inverse");
   }
   if (second == 1) {
     return 1;
@@ -1182,7 +1182,7 @@ ubint<limb_t> ubint<limb_t>::ModInverse(const ubint &modulus) const {
   // issue is that the loop counter could would need to be an ubint.
   while (mod_back != 1) {
     if (mod_back == 0) {
-      PALISADE_THROW(lbcrypto::math_error,
+      OpenFHE_THROW(lbcrypto::math_error,
                      this->ToString() + " does not have a ModInverse using " +
                          modulus.ToString());
     }
@@ -1275,7 +1275,7 @@ template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::LShift(usshort shift) const {
   // garbage check
   if (m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error, "<< on uninitialized bint");
+    OpenFHE_THROW(lbcrypto::not_available_error, "<< on uninitialized bint");
   }
   // trivial case
   if (this->m_MSB == 0) {
@@ -1333,7 +1333,7 @@ ubint<limb_t> ubint<limb_t>::LShift(usshort shift) const {
 template <typename limb_t>
 const ubint<limb_t> &ubint<limb_t>::LShiftEq(usshort shift) {
   if (m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error, "<<= on uninitialized bint");
+    OpenFHE_THROW(lbcrypto::not_available_error, "<<= on uninitialized bint");
   }
   if (this->m_MSB == 0) {
     return *this;
@@ -1393,7 +1393,7 @@ const ubint<limb_t> &ubint<limb_t>::LShiftEq(usshort shift) {
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::RShift(usshort shift) const {
   if (m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error, "Value not INITIALIZED");
+    OpenFHE_THROW(lbcrypto::not_available_error, "Value not INITIALIZED");
   }
   if (this->m_MSB == 0 || this->m_MSB <= shift) {
     return ubint(0);
@@ -1447,7 +1447,7 @@ template <typename limb_t>
 const ubint<limb_t> &ubint<limb_t>::RShiftEq(usshort shift) {
   // garbage check
   if (m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error, "Value not INITIALIZED");
+    OpenFHE_THROW(lbcrypto::not_available_error, "Value not INITIALIZED");
   }
   // trivial cases
   if (this->m_MSB == 0) {
@@ -1502,7 +1502,7 @@ const ubint<limb_t> &ubint<limb_t>::RShiftEq(usshort shift) {
 template <typename limb_t>
 inline int ubint<limb_t>::Compare(const ubint &a) const {
   if (this->m_state == GARBAGE || a.m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "ERROR Compare() against uninitialized bint\n");
   }
   if (this->m_MSB < a.m_MSB) {
@@ -1529,14 +1529,14 @@ inline int ubint<limb_t>::Compare(const ubint &a) const {
 template <typename limb_t>
 float ubint<limb_t>::ConvertToFloat() const {
   if (m_value.size() == 0) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "ConvertToFloat() on uninitialized bint");
   }
   float ans;
   try {
     ans = std::stof(this->ToString());
   } catch (const std::exception &e) {
-    PALISADE_THROW(lbcrypto::type_error,
+    OpenFHE_THROW(lbcrypto::type_error,
                    "ConvertToFloat() parse error converting to float");
     ans = -1.0;  // TODO: this signifies an error...
   }
@@ -1547,7 +1547,7 @@ float ubint<limb_t>::ConvertToFloat() const {
 template <typename limb_t>
 inline double ubint<limb_t>::ConvertToDouble() const {
   if (m_value.size() == 0) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "ConvertToDouble() on uninitialized bint");
   }
   double ans = 0.0;
@@ -1562,7 +1562,7 @@ inline double ubint<limb_t>::ConvertToDouble() const {
       power *= factor;
     }
   } catch (const std::exception &e) {
-    PALISADE_THROW(lbcrypto::type_error,
+    OpenFHE_THROW(lbcrypto::type_error,
                    "ConvertToDouble() parse error converting to double");
     ans = -1.0;
   }
@@ -1573,14 +1573,14 @@ inline double ubint<limb_t>::ConvertToDouble() const {
 template <typename limb_t>
 long double ubint<limb_t>::ConvertToLongDouble() const {
   if (m_value.size() == 0) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "ConvertToLongDouble() on uninitialized bint");
   }
   long double ans;
   try {
     ans = std::stold(this->ToString());
   } catch (const std::exception &e) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::type_error,
         "ConvertToLongDouble() parse error converting to long double");
     ans = -1.0;
@@ -1682,7 +1682,7 @@ const std::string ubint<limb_t>::GetState() const {
       return "GARBAGE";
       break;
     default:
-      PALISADE_THROW(lbcrypto::not_available_error,
+      OpenFHE_THROW(lbcrypto::not_available_error,
                      "GetState() on uninitialized bint");
   }
 }
@@ -1695,7 +1695,7 @@ const std::string ubint<limb_t>::GetState() const {
 template <typename limb_t>
 inline ubint<limb_t> ubint<limb_t>::MulIntegerByLimb(limb_t b) const {
   if (this->m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "MulIntegerByLimb() of uninitialized bint");
   }
   if (b == 0 || this->m_MSB == 0) {
@@ -1727,7 +1727,7 @@ template <typename limb_t>
 const std::string ubint<limb_t>::ToString() const {
   // todo get rid of m_numDigitInPrintval make dynamic
   if (m_value.size() == 0) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "ToString() on uninitialized bint");
   }
   // create reference for the object to be printed
@@ -2325,7 +2325,7 @@ template <typename limb_t>
 void ubint<limb_t>::SetMSB() {
   m_MSB = 0;
   if (this->m_state == GARBAGE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OpenFHE_THROW(lbcrypto::not_available_error,
                    "SetMSB() of uninitialized bint");
   }
   m_MSB = (m_value.size() - 1) *
@@ -2383,7 +2383,7 @@ uschar ubint<limb_t>::GetBitAtIndex(usint index) const {
 template <typename limb_t>
 void ubint<limb_t>::SetIntAtIndex(usint idx, limb_t value) {
   if (idx >= m_value.size()) {
-    PALISADE_THROW(lbcrypto::math_error, "Index Invalid");
+    OpenFHE_THROW(lbcrypto::math_error, "Index Invalid");
   }
   this->m_value[idx] = value;
 }

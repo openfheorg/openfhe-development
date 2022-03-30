@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_CRYPTO_CIPHERTEXTSER_H
 #define LBCRYPTO_CRYPTO_CIPHERTEXTSER_H
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "utils/serial.h"
 #include "metadata-ser.h"
 

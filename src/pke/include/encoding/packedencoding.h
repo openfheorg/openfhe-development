@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Represents and defines plaintext encodings in Palisade with packing capabilities
+  Represents and defines plaintext encodings in OpenFHE with packing capabilities
  */
 
 #ifndef LBCRYPTO_UTILS_PACKEDEXTENCODING_H

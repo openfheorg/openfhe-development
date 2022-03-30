@@ -1,4 +1,4 @@
-PALISADE Lattice Cryptography Library - Tests
+OpenFHE Lattice Cryptography Library - Tests
 =============================================
 
 [License Information](License.md)
@@ -13,7 +13,7 @@ Test Directory Description
 Directory Objective
 -------------------
 This directory contains common test code and shell scripts useful for executing and automating
-various PALISADE tests.
+various OpenFHE tests.
 
 The scripts have to be run from the build directory, e.g., ../test/build_all_backends.sh.
 

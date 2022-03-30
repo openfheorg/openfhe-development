@@ -32,13 +32,13 @@
 /*
   Description:
   This code benchmarks functions of the src/lib/lattoce directory  of the
-  PALISADE lattice encryption library.
+  OpenFHE lattice encryption library.
  */
 
 #define _USE_MATH_DEFINES
 #include "benchmark/benchmark.h"
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "vechelper.h"
 #include "lattice/elemparamfactory.h"
 

@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  element parameters for palisade
+  element parameters for OpenFHE
  */
 
 #include "lattice/elemparams.h"

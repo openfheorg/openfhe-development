@@ -36,7 +36,7 @@
  // Define PROFILE to enable TIC-TOC timing measurements
 #define PROFILE
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 
@@ -607,7 +607,7 @@ void FastRotationsDemo1() {
    * the first two steps once, and then only perform steps 3-4 for
    * each rotation. This technique is called hoisting, and we have
    * implemented it for all three key switching techniques (BV, GHS,
-   * HYBRID) in PALISADE.
+   * HYBRID) in OpenFHE.
    *
    * The benefits expected by this technique differ depending on the
    * key switching algorithms we're using. BV is the technique that

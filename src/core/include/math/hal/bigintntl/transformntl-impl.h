@@ -126,7 +126,7 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformIterative(
     const VecType &element, const VecType &rootOfUnityTable, VecType *result) {
   usint n = element.GetLength();
   if (result->GetLength() != n) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::math_error,
         "size of input element and size of output element not of same size");
   }
@@ -246,7 +246,7 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformToBitReverse(
     const VecType &element, const VecType &rootOfUnityTable, VecType *result) {
   usint n = element.GetLength();
   if (result->GetLength() != n) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::math_error,
         "size of input element and size of output element not of same size");
   }
@@ -352,7 +352,7 @@ void NumberTheoreticTransformNtl<VecType>::ForwardTransformToBitReverse(
   usint n = element.GetLength();
 
   if (result->GetLength() != n) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::math_error,
         "size of input element and size of output element not of same size");
   }
@@ -468,7 +468,7 @@ void NumberTheoreticTransformNtl<VecType>::InverseTransformFromBitReverse(
   usint n = element.GetLength();
 
   if (result->GetLength() != n) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::math_error,
         "size of input element and size of output element not of same size");
   }
@@ -548,7 +548,7 @@ void NumberTheoreticTransformNtl<VecType>::InverseTransformFromBitReverse(
     VecType *result) {
   usint n = element.GetLength();
   if (result->GetLength() != n) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::math_error,
         "size of input element and size of output element not of same size");
   }
@@ -573,12 +573,12 @@ void ChineseRemainderTransformFTTNtl<VecType>::ForwardTransformToBitReverseInPla
   }
 
   if (!lbcrypto::IsPowerOfTwo(CycloOrder)) {
-    PALISADE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
+    OpenFHE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
   }
 
   usint CycloOrderHf = (CycloOrder >> 1);
   if (element->GetLength() != CycloOrderHf) {
-    PALISADE_THROW(lbcrypto::math_error,
+    OpenFHE_THROW(lbcrypto::math_error,
                    "element size must be equal to CyclotomicOrder / 2");
   }
 
@@ -610,12 +610,12 @@ void ChineseRemainderTransformFTTNtl<VecType>::ForwardTransformToBitReverse(
   }
 
   if (!lbcrypto::IsPowerOfTwo(CycloOrder)) {
-    PALISADE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
+    OpenFHE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
   }
 
   usint CycloOrderHf = (CycloOrder >> 1);
   if (result->GetLength() != CycloOrderHf) {
-    PALISADE_THROW(lbcrypto::math_error,
+    OpenFHE_THROW(lbcrypto::math_error,
                    "result size must be equal to CyclotomicOrder / 2");
   }
 
@@ -649,12 +649,12 @@ void ChineseRemainderTransformFTTNtl<
   }
 
   if (!lbcrypto::IsPowerOfTwo(CycloOrder)) {
-    PALISADE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
+    OpenFHE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
   }
 
   usint CycloOrderHf = (CycloOrder >> 1);
   if (element->GetLength() != CycloOrderHf) {
-    PALISADE_THROW(lbcrypto::math_error,
+    OpenFHE_THROW(lbcrypto::math_error,
                    "element size must be equal to CyclotomicOrder / 2");
   }
 
@@ -690,12 +690,12 @@ void ChineseRemainderTransformFTTNtl<VecType>::InverseTransformFromBitReverse(
   }
 
   if (!lbcrypto::IsPowerOfTwo(CycloOrder)) {
-    PALISADE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
+    OpenFHE_THROW(lbcrypto::math_error, "CyclotomicOrder is not a power of two");
   }
 
   usint CycloOrderHf = (CycloOrder >> 1);
   if (result->GetLength() != CycloOrderHf) {
-    PALISADE_THROW(lbcrypto::math_error,
+    OpenFHE_THROW(lbcrypto::math_error,
                    "result size must be equal to CyclotomicOrder / 2");
   }
 
@@ -799,7 +799,7 @@ void ChineseRemainderTransformFTTNtl<VecType>::PreCompute(
   usint numModulii = moduliiChain.size();
 
   if (numOfRootU != numModulii) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::math_error,
         "size of root of unity and size of moduli chain not of same size");
   }
@@ -929,7 +929,7 @@ VecType BluesteinFFTNtl<VecType>::ForwardTransform(
     const VecType &element, const IntType &root, const usint cycloOrder,
     const ModulusRoot<IntType> &nttModulusRoot) {
   if (element.GetLength() != cycloOrder) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::math_error,
         "expected size of element vector should be equal to cyclotomic order");
   }
@@ -1141,7 +1141,7 @@ VecType ChineseRemainderTransformArbNtl<VecType>::ForwardTransform(
     const IntType &nttRoot, const usint cycloOrder) {
   usint phim = lbcrypto::GetTotient(cycloOrder);
   if (element.GetLength() != phim) {
-    PALISADE_THROW(lbcrypto::math_error, "element size should be equal to phim");
+    OpenFHE_THROW(lbcrypto::math_error, "element size should be equal to phim");
   }
 
   const auto &modulus = element.GetModulus();
@@ -1184,7 +1184,7 @@ VecType ChineseRemainderTransformArbNtl<VecType>::InverseTransform(
     const IntType &nttRoot, const usint cycloOrder) {
   usint phim = lbcrypto::GetTotient(cycloOrder);
   if (element.GetLength() != phim) {
-    PALISADE_THROW(lbcrypto::math_error, "element size should be equal to phim");
+    OpenFHE_THROW(lbcrypto::math_error, "element size should be equal to phim");
   }
 
   const auto &modulus = element.GetModulus();

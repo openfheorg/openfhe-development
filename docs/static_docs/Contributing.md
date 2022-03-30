@@ -1,4 +1,4 @@
- # Contributing to PALISADE
+ # Contributing to OpenFHE
 
 We are using git for version management and control. We use gitlab for
 issue and milestone tracking.
@@ -7,7 +7,7 @@ We classify contributions as *Major* or *Minor*.
 
 A Major contribution would be adding a new scheme, or capability to
 the library. Modifications that would require users to change existing
-PALISADE API code are also considered Major and would not be scheduled
+OpenFHE API code are also considered Major and would not be scheduled
 for inclusion except for a Major release (2.0 is the next scheduled
 major release). We usually require such contributions to be done in
 their own fork of the repository to minimize disruption to the ongoing
@@ -25,7 +25,7 @@ release cycle.
 
 If you discover a problem or identify a useful enhancement, do feel
 free to create a new issue in github. Major enhancements should be
-discussed with the PALISADE team ahead of time before undertaking any
+discussed with the OpenFHE team ahead of time before undertaking any
 work (see below).
 
 # Workflow for Minor Contributions
@@ -95,31 +95,31 @@ We request that you conform to the following workflow:
 
 7. After you finished inserting your new code you wanted to address, make sure the code builds and runs correctly and that you have not introduced any additional bugs.
 8. Make sure all unit tests pass and add additional unit tests as needed for features you've added.
-9. Before creating merge requests, developers should rebase their branch from master and test that their code works properly.  [This page describes a workflow to rebase a branch from a master branch.](https://gitlab.com/palisade/palisade-development/-/wikis/How-to-rebase-your-branch-from-the-master-branch)
+9. Before creating merge requests, developers should rebase their branch from master and test that their code works properly.  [This page describes a workflow to rebase a branch from a master branch.](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/contributing/rebasing_off_main.html)
 10. Submit a merge request so project owners can review your commits here. You should include the text
 ```Fixes #issue``` in your merge request.
 11. You may get feedback on your merge request, especially if there are problems or issues.
 12. When your merge request is accepted, your changes will be merged into master and your branch will be deleted.
 
-  * All additions to the released versions of PALISADE are subject to approval by the PALISADE governance team as outlined in the [PALISADE Governance document.](https://gitlab.com/palisade/palisade-development/blob/master/Governance.md)
+  * All additions to the released versions of ~ are subject to approval by the OpenFHE governance team as outlined in the [OpenFHE Governance document.](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/misc/governance.html)
 
 
 # Workflow for Major Contributions
 
-If you plan major modifications of PALISADE, please consult with the
-PALISADE team first by contacting us at PALISADE-crypto.org to plan
+If you plan major modifications of OpenFHE, please consult with the
+OpenFHE team first by contacting us at PALISADE-crypto.org to plan
 your modifications so that they can be implemented efficiently and in
 a way that doesn't conflict with any other planned future development.
-PALISADE is a work in progress, and major release revisions can
+OpenFHE is a work in progress, and major release revisions can
 deprecate large amounts of existing code. This way you can make sure
 your additions will be consistent with the planned release schedule of
-PALISADE. It will also ensure that you base your changes on the most
+OpenFHE. It will also ensure that you base your changes on the most
 recent version of the development library.
 
 In addition to the workflow for Minor contributions the following is the
 requested procedure or a Major change.
 
-* Fork the `palisade-development` repository on GitLab
+* Fork the `openfhe-development` repository on GitLab
 * Clone your new repository or add it as a remote to an existing repository
 * Check out the existing `master` branch, then start a new feature branch for
   your work
@@ -145,8 +145,8 @@ requested procedure or a Major change.
     onto the most recent `HEAD` commit of `master`.
   * Periodically run the test suite (`make testall`) to make sure that your
     changes are not causing any test failures.
-* Major additions may require changes to the PALISADE CMAKE files. Refer to
-the wiki page [Use-of-CMake-in-PALISADE](https://gitlab.com/palisade/palisade-development/-/wikis/Use-of-CMake-in-PALISADE) for details.
+* Major additions may require changes to the OpenFHE CMAKE files. Refer to
+the wiki page [Use-of-CMake-in-OpenFHE](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/installation/cmake_in_openfhe.html) for details.
 
 * Submit a Pull Request on GitLab. Check the results of the continuous-
   integration tests pipelines and resolve any issues that
@@ -154,15 +154,15 @@ the wiki page [Use-of-CMake-in-PALISADE](https://gitlab.com/palisade/palisade-de
 * Additional discussion of good Git & GitLab workflow is provided at
   http://matplotlib.org/devel/gitwash/development_workflow.html and
   https://docs.scipy.org/doc/numpy-1.15.0/dev/gitwash/development_workflow.html
-* PALISADE is licensed under a [BSD
-  license](https://gitlab.com/palisade-development/blob/master/License.txt)
+* OpenFHE is licensed under a [BSD
+  license](https://github.com/openfheorg/openfhe-development/blob/main/LICENSE)
   which
   allows others to freely modify the code, and if your Pull Request is accepted,
   then that code will be release under this license as well. The copyright for
-  PALISADE is held collectively by the contributors. If you have made a
+  OpenFHE is held collectively by the contributors. If you have made a
   significant contribution, please add your name to the `AUTHORS.md` file.
 
-* All additions to the released versions of PALISADE are subject to approval by the PALISADE governance team as outlined in the [PALISADE Governance document.](https://gitlab.com/palisade/palisade-development/blob/master/Governance.md)
+* All additions to the released versions of OpenFHE are subject to approval by the OpenFHE governance team as outlined in the [OpenFHE Governance document.](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/misc/governance.html)
 
 
 # Style Guidelines
@@ -204,9 +204,9 @@ the wiki page [Use-of-CMake-in-PALISADE](https://gitlab.com/palisade/palisade-de
   Boost header files only within .cpp files rather than other header files to
   avoid unnecessary increases in compilation time. Boost should not be added
   to the public interface unless its existence and use is optional. This keeps
-  the number of dependencies low for users of PALISADE. In these cases,
-  `PALISADE_API_NO_BOOST` should be used to conditionally remove Boost dependencies.-->
-* While PALISADE does not specifically follow these rules, the following style
+  the number of dependencies low for users of OpenFHE. In these cases,
+  `OpenFHE_API_NO_BOOST` should be used to conditionally remove Boost dependencies.-->
+* While OpenFHE does not specifically follow these rules, the following style
   guides are useful references for possible style choices and the rationales behind them.
   * The Google C++ Style Guide: https://google.github.io/styleguide/cppguide.html
   * http://geosoft.no/development/cppstyle.html
@@ -217,7 +217,7 @@ the wiki page [Use-of-CMake-in-PALISADE](https://gitlab.com/palisade/palisade-de
 
 * Style generally follows PEP8 (https://www.python.org/dev/peps/pep-0008/)
 * Code in `.py` and `.pyx` files needs to be written to work with Python 3
-* The minimum Python version that PALISADE supports is Python 3.4, so code
+* The minimum Python version that OpenFHE supports is Python 3.4, so code
   should only use features added in Python 3.4 or earlier
 * Code in the Python examples should be written for Python 3
 

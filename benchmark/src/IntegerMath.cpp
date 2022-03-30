@@ -31,13 +31,13 @@
 
 /*
   Description:
-  This code benchmarks functions of the math directory  of the PALISADE lattice
+  This code benchmarks functions of the math directory  of the OpenFHE lattice
   encryption library.
 */
 #define _USE_MATH_DEFINES
 #include "benchmark/benchmark.h"
 
-#include "palisade.h"
+#include "openfhe.h"
 
 #include <iostream>
 #include <vector>
@@ -218,7 +218,7 @@ template <typename I>
 static void BM_BigInt_ModInverse(benchmark::State& state) {  // benchmark
     while (state.KeepRunning()) {
         I c = I(3017).ModInverse(I(108));
-        PALISADE_UNUSED(c);
+        OpenFHE_UNUSED(c);
     }
 }
 

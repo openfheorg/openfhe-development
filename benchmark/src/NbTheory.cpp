@@ -31,7 +31,7 @@
 
 /*
  * This code benchmarks functions of the number theory directory  of the
- * PALISADE lattice encryption library.
+ * OpenFHE lattice encryption library.
  */
 
 #define _USE_MATH_DEFINES
@@ -39,7 +39,7 @@
 
 #include <iostream>
 
-#include "palisade.h"
+#include "openfhe.h"
 
 using namespace lbcrypto;
 

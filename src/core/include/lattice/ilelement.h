@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Represents and defines integer lattice element objects in Palisade
+  Represents and defines integer lattice element objects in OpenFHE
  */
 
 #ifndef LBCRYPTO_LATTICE_ILELEMENT_H
@@ -49,7 +49,7 @@ namespace lbcrypto {
  * @brief Interface for ideal lattices
  *
  * Every lattice must implement these pure virtuals in order to properly
- * interoperate with PALISADE PKE. Element is the return type for all of these
+ * interoperate with OpenFHE PKE. Element is the return type for all of these
  * virtual functions. There is no constructor here in the base class; it
  * contains no data to construct.
  */
@@ -153,16 +153,16 @@ class ILElement : public Serializable {
    * @return will throw an error.
    */
   virtual IntType &at(usint i) {
-    PALISADE_THROW(not_implemented_error, "at not implemented");
+    OpenFHE_THROW(not_implemented_error, "at not implemented");
   }
   virtual const IntType &at(usint i) const {
-    PALISADE_THROW(not_implemented_error, "const at not implemented");
+    OpenFHE_THROW(not_implemented_error, "const at not implemented");
   }
   virtual IntType &operator[](usint i) {
-    PALISADE_THROW(not_implemented_error, "[] not implemented");
+    OpenFHE_THROW(not_implemented_error, "[] not implemented");
   }
   virtual const IntType &operator[](usint i) const {
-    PALISADE_THROW(not_implemented_error, "const [] not implemented");
+    OpenFHE_THROW(not_implemented_error, "const [] not implemented");
   }
 
   //  virtual NativePoly DecryptionCRTInterpolate(PlaintextModulus ptm) const

@@ -500,7 +500,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    */
   virtual DCRTPolyType Transpose() const override {
     if (this->GetFormat() == COEFFICIENT) {
-      PALISADE_THROW(not_implemented_error,
+      OpenFHE_THROW(not_implemented_error,
                      "DCRTPolyImpl element transposition is currently "
                      "implemented only in the Evaluation representation.");
     } else {
@@ -715,7 +715,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * one
    */
   virtual DCRTPolyType AddRandomNoise(const Integer &modulus) const override {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "AddRandomNoise is not currently implemented for DCRTPoly");
   }
 
@@ -1254,7 +1254,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
   virtual void SwitchModulus(const Integer &modulus, const Integer &rootOfUnity,
                      const Integer &modulusArb = Integer(0),
                      const Integer &rootOfUnityArb = Integer(0)) override {
-    PALISADE_THROW(not_implemented_error,
+    OpenFHE_THROW(not_implemented_error,
                    "SwitchModulus not implemented on DCRTPoly");
   }
 
@@ -1296,7 +1296,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
+      OpenFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }

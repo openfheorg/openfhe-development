@@ -53,11 +53,11 @@ namespace lbcrypto {
 // skNTT corresponds to the secret key z
 std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptAP(
     const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT, const LWEPlaintext& m) const {
-    NativeInteger Q                             = params->GetLWEParams()->GetQ();
-    int64_t q                                   = params->GetLWEParams()->Getq().ConvertToInt();
-    uint32_t N                                  = params->GetLWEParams()->GetN();
-    uint32_t digitsG                            = params->GetDigitsG();
-    uint32_t digitsG2                           = params->GetDigitsG2();
+    NativeInteger Q                                  = params->GetLWEParams()->GetQ();
+    int64_t q                                        = params->GetLWEParams()->Getq().ConvertToInt();
+    uint32_t N                                       = params->GetLWEParams()->GetN();
+    uint32_t digitsG                                 = params->GetDigitsG();
+    uint32_t digitsG2                                = params->GetDigitsG2();
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     auto result = std::make_shared<RingGSWCiphertext>(digitsG2, 2);
@@ -113,9 +113,9 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptAP(
 // Cryptosystems"
 std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptGINX(
     const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT, const LWEPlaintext& m) const {
-    NativeInteger Q                             = params->GetLWEParams()->GetQ();
-    uint32_t digitsG                            = params->GetDigitsG();
-    uint32_t digitsG2                           = params->GetDigitsG2();
+    NativeInteger Q                                  = params->GetLWEParams()->GetQ();
+    uint32_t digitsG                                 = params->GetDigitsG();
+    uint32_t digitsG2                                = params->GetDigitsG2();
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     auto result = std::make_shared<RingGSWCiphertext>(digitsG2, 2);
@@ -246,7 +246,7 @@ RingGSWEvalKey RingGSWAccumulatorScheme::KeyGenGINX(const std::shared_ptr<RingGS
                 break;
             default:
                 std::string errMsg = "ERROR: only ternary secret key distributions are supported.";
-                PALISADE_THROW(not_implemented_error, errMsg);
+                OpenFHE_THROW(not_implemented_error, errMsg);
         }
     }
 
@@ -318,7 +318,7 @@ void RingGSWAccumulatorScheme::SignedDigitDecompose(const std::shared_ptr<RingGS
 void RingGSWAccumulatorScheme::AddToACCAP(const std::shared_ptr<RingGSWCryptoParams> params,
                                           const RingGSWCiphertext& input,
                                           std::shared_ptr<RingGSWCiphertext> acc) const {
-    uint32_t digitsG2                           = params->GetDigitsG2();
+    uint32_t digitsG2                                = params->GetDigitsG2();
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements()[0];
@@ -360,9 +360,9 @@ void RingGSWAccumulatorScheme::AddToACCGINX(const std::shared_ptr<RingGSWCryptoP
                                             const RingGSWCiphertext& input1, const RingGSWCiphertext& input2,
                                             const NativeInteger& a, std::shared_ptr<RingGSWCiphertext> acc) const {
     // cycltomic order
-    uint32_t m                                  = 2 * params->GetLWEParams()->GetN();
-    uint32_t digitsG2                           = params->GetDigitsG2();
-    int64_t q                                   = params->GetLWEParams()->Getq().ConvertToInt();
+    uint32_t m                                       = 2 * params->GetLWEParams()->GetN();
+    uint32_t digitsG2                                = params->GetDigitsG2();
+    int64_t q                                        = params->GetLWEParams()->Getq().ConvertToInt();
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements()[0];
@@ -426,16 +426,16 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
         std::string errMsg =
             "Bootstrapping keys have not been generated. Please call BTKeyGen "
             "before calling bootstrapping.";
-        PALISADE_THROW(config_error, errMsg);
+        OpenFHE_THROW(config_error, errMsg);
     }
 
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
-    NativeInteger q                             = params->GetLWEParams()->Getq();
-    NativeInteger Q                             = params->GetLWEParams()->GetQ();
-    uint32_t N                                  = params->GetLWEParams()->GetN();
-    uint32_t baseR                              = params->GetBaseR();
-    uint32_t n                                  = params->GetLWEParams()->Getn();
-    std::vector<NativeInteger> digitsR          = params->GetDigitsR();
+    NativeInteger q                                  = params->GetLWEParams()->Getq();
+    NativeInteger Q                                  = params->GetLWEParams()->GetQ();
+    uint32_t N                                       = params->GetLWEParams()->GetN();
+    uint32_t baseR                                   = params->GetBaseR();
+    uint32_t n                                       = params->GetLWEParams()->Getn();
+    std::vector<NativeInteger> digitsR               = params->GetDigitsR();
 
     // Specifies the range [q1,q2) that will be used for mapping
     uint32_t qHalf   = q.ConvertToInt() >> 1;
@@ -506,7 +506,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalBinGate(
 
     if (ct1 == ct2) {
         std::string errMsg = "ERROR: Please only use independent ciphertexts as inputs.";
-        PALISADE_THROW(config_error, errMsg);
+        OpenFHE_THROW(config_error, errMsg);
     }
 
     // By default, we compute XOR/XNOR using a combination of AND, OR, and NOT
@@ -646,16 +646,16 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
         std::string errMsg =
             "Bootstrapping keys have not been generated. Please call BTKeyGen "
             "before calling bootstrapping.";
-        PALISADE_THROW(config_error, errMsg);
+        OpenFHE_THROW(config_error, errMsg);
     }
 
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
-    NativeInteger q                             = params->GetLWEParams()->Getq();
-    NativeInteger Q                             = params->GetLWEParams()->GetQ();
-    uint32_t N                                  = params->GetLWEParams()->GetN();
-    uint32_t baseR                              = params->GetBaseR();
-    uint32_t n                                  = params->GetLWEParams()->Getn();
-    std::vector<NativeInteger> digitsR          = params->GetDigitsR();
+    NativeInteger q                                  = params->GetLWEParams()->Getq();
+    NativeInteger Q                                  = params->GetLWEParams()->GetQ();
+    uint32_t N                                       = params->GetLWEParams()->GetN();
+    uint32_t baseR                                   = params->GetBaseR();
+    uint32_t n                                       = params->GetLWEParams()->Getn();
+    std::vector<NativeInteger> digitsR               = params->GetDigitsR();
 
     NativeVector m(params->GetLWEParams()->GetN(), params->GetLWEParams()->GetQ());
     // For specific function evaluation instead of general bootstrapping
@@ -800,7 +800,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalFunc(
         if (q > N) {  // need q to be at most = N for arbitary function
             std::string errMsg =
                 "ERROR: ciphertext modulus q needs to be <= ring dimension for arbitrary function evaluation";
-            PALISADE_THROW(not_implemented_error, errMsg);
+            OpenFHE_THROW(not_implemented_error, errMsg);
         }
 
         a1 = ct1->GetA();
@@ -915,14 +915,14 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalSign(
     if (theBigger_q <= q) {
         std::string errMsg =
             "ERROR: EvalSign is only for large precision. For small precision, please use bootstrapping directly";
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OpenFHE_THROW(not_implemented_error, errMsg);
     }
 
     const auto curBase = params->GetBaseG();
     auto search        = EKs.find(curBase);
     if (search == EKs.end()) {
         std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-        PALISADE_THROW(palisade_error, errMsg);
+        OpenFHE_THROW(palisade_error, errMsg);
     }
     RingGSWEvalKey curEK(search->second);
 
@@ -946,7 +946,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalSign(
                 auto search = EKs.find(base);
                 if (search == EKs.end()) {
                     std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-                    PALISADE_THROW(palisade_error, errMsg);
+                    OpenFHE_THROW(palisade_error, errMsg);
                 }
                 curEK = search->second;
             }
@@ -993,14 +993,14 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> RingGSWAccumulatorScheme::EvalDe
     if (theBigger_q <= q) {
         std::string errMsg =
             "ERROR: EvalSign is only for large precision. For small precision, please use bootstrapping directly";
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OpenFHE_THROW(not_implemented_error, errMsg);
     }
 
     const auto curBase = params->GetBaseG();
     auto search        = EKs.find(curBase);
     if (search == EKs.end()) {
         std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-        PALISADE_THROW(palisade_error, errMsg);
+        OpenFHE_THROW(palisade_error, errMsg);
     }
     RingGSWEvalKey curEK(search->second);
 
@@ -1031,7 +1031,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> RingGSWAccumulatorScheme::EvalDe
                 auto search = EKs.find(base);
                 if (search == EKs.end()) {
                     std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-                    PALISADE_THROW(palisade_error, errMsg);
+                    OpenFHE_THROW(palisade_error, errMsg);
                 }
                 curEK = search->second;
             }

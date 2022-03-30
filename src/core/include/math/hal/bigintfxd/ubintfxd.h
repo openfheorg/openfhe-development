@@ -56,7 +56,7 @@
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/memory.h"
-#include "utils/palisadebase64.h"
+#include "utils/openfhebase64.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
 
@@ -786,14 +786,14 @@ class BigIntegerFixedT
 
   BigIntegerFixedT ModMulFastConst(const BigIntegerFixedT &b, const BigIntegerFixedT &modulus,
                              const BigIntegerFixedT &bInv) const {
-    PALISADE_THROW(lbcrypto::not_implemented_error,
+    OpenFHE_THROW(lbcrypto::not_implemented_error,
                    "ModMulFastConst is not implemented for backend 2");
   }
 
   const BigIntegerFixedT &ModMulFastConstEq(const BigIntegerFixedT &b,
                                       const BigIntegerFixedT &modulus,
                                       const BigIntegerFixedT &bInv) {
-    PALISADE_THROW(lbcrypto::not_implemented_error,
+    OpenFHE_THROW(lbcrypto::not_implemented_error,
                    "ModMulFastConstEq is not implemented for backend 2");
   }
 
@@ -897,7 +897,7 @@ class BigIntegerFixedT
       result += ((T)this->m_value[m_nSize - i - 1] << (m_uintBitLength * i));
     }
     if (this->m_MSB > bits) {
-        PALISADE_THROW(
+        OpenFHE_THROW(
             lbcrypto::math_error,
             std::string("MSB cannot be bigger than ") +
             std::to_string(bits));
@@ -1078,7 +1078,7 @@ class BigIntegerFixedT
                           void>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OpenFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -1091,7 +1091,7 @@ class BigIntegerFixedT
                           void>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OpenFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }

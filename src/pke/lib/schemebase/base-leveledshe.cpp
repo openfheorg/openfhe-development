@@ -323,7 +323,7 @@ LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
 // we already have checks on higher level?
 //  auto it = std::find(indexList.begin(), indexList.end(), 2 * n - 1);
 //  if (it != indexList.end())
-//    PALISADE_THROW(not_available_error, "conjugation is disabled");
+//    OpenFHE_THROW(not_available_error, "conjugation is disabled");
 
   const auto cc = privateKey->GetCryptoContext();
   auto algo = cc->GetScheme();
@@ -333,7 +333,7 @@ LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
 
 // we already have checks on higher level?
 //  if (indexList.size() > N - 1)
-//    PALISADE_THROW(math_error, "size exceeds the ring dimension");
+//    OpenFHE_THROW(math_error, "size exceeds the ring dimension");
 
   auto evalKeys = std::make_shared<std::map<usint, EvalKey<Element>>>();
 
@@ -368,17 +368,17 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(
 //    std::string errorMsg(
 //        std::string("Insufficient number of elements in ciphertext: ") +
 //        std::to_string(cv.size()) + CALLER_INFO);
-//    PALISADE_THROW(config_error, errorMsg);
+//    OpenFHE_THROW(config_error, errorMsg);
 //  }
 
   usint N = cv[0].GetRingDimension();
 
 //  if (i == 2 * N - 1)
-//    PALISADE_THROW(not_available_error,
+//    OpenFHE_THROW(not_available_error,
 //                   "conjugation is disabled " + CALLER_INFO);
 
 //  if (i > 2 * N - 1)
-//    PALISADE_THROW(
+//    OpenFHE_THROW(
 //        not_available_error,
 //        "automorphism indices higher than 2*n are not allowed " + CALLER_INFO);
 

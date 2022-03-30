@@ -158,7 +158,7 @@ bool CKKSPackedEncoding::Encode() {
       double dim =
           static_cast<double>(std::frexp(inverse[i].imag(), &n2) * powP);
       if (is128BitOverflow(dre) || is128BitOverflow(dim)) {
-        PALISADE_THROW(math_error, "Overflow, try to decrease scaling factor");
+        OpenFHE_THROW(math_error, "Overflow, try to decrease scaling factor");
       }
 
       int64_t re64 = std::llround(dre);
@@ -185,7 +185,7 @@ bool CKKSPackedEncoding::Encode() {
       temp[i + Nh] = (im < 0) ? Max128BitValue() + im : im;
 
       if (is128BitOverflow(temp[i]) || is128BitOverflow(temp[i + Nh])) {
-        PALISADE_THROW(math_error, "Overflow, try to decrease scaling factor");
+        OpenFHE_THROW(math_error, "Overflow, try to decrease scaling factor");
       }
     }
 
@@ -229,7 +229,7 @@ bool CKKSPackedEncoding::Encode() {
 
     scalingFactor = pow(scalingFactor, depth);
   } else {
-    PALISADE_THROW(config_error, "Only DCRTPoly is supported for CKKS.");
+    OpenFHE_THROW(config_error, "Only DCRTPoly is supported for CKKS.");
   }
 
   this->isEncoded = true;
@@ -317,7 +317,7 @@ bool CKKSPackedEncoding::Encode() {
         buffer << "Scaled input is " << scaledInputSize << " bits "
                << std::endl;
 
-        PALISADE_THROW(math_error, buffer.str());
+        OpenFHE_THROW(math_error, buffer.str());
       }
 
       int64_t re = std::llround(dre);
@@ -366,7 +366,7 @@ bool CKKSPackedEncoding::Encode() {
 
     scalingFactor = pow(scalingFactor, depth);
   } else {
-    PALISADE_THROW(config_error, "Only DCRTPoly is supported for CKKS.");
+    OpenFHE_THROW(config_error, "Only DCRTPoly is supported for CKKS.");
   }
 
   this->isEncoded = true;
@@ -471,7 +471,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
   // if stddev < sqrt{N}/4 (minimum approximation error that can be achieved)
   // if (stddev < 0.125 * std::sqrt(GetElementRingDimension())) {
   //   if (depth <= 1) {
-  //    PALISADE_THROW(math_error,
+  //    OpenFHE_THROW(math_error,
   //                   "The decryption failed because the approximation error is
   //                   " "too small. Check the protocol used. ");
   //  } else {  // depth > 1 and no rescaling operations have been applied yet
@@ -481,7 +481,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
 
   // If less than 5 bits of precision is observed
   if (logstd > p - 5.0)
-    PALISADE_THROW(math_error,
+    OpenFHE_THROW(math_error,
                    "The decryption failed because the approximation error is "
                    "too high. Check the parameters. ");
 

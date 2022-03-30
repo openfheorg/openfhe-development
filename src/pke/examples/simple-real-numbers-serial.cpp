@@ -35,7 +35,7 @@
   2 separate entities
  */
 
-#include "palisade.h"
+#include "openfhe.h"
 #include <iomanip>
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"

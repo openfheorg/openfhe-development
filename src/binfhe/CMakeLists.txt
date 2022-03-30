@@ -10,49 +10,49 @@ list(APPEND BINFHE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include")
 list(APPEND BINFHE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 include_directories(${BINFHE_INCLUDE_DIRS})
 
-set(BINFHE_VERSION_MAJOR ${PALISADE_VERSION_MAJOR})
-set(BINFHE_VERSION_MINOR ${PALISADE_VERSION_MINOR})
-set(BINFHE_VERSION_PATCH ${PALISADE_VERSION_PATCH})
+set(BINFHE_VERSION_MAJOR ${OpenFHE_VERSION_MAJOR})
+set(BINFHE_VERSION_MINOR ${OpenFHE_VERSION_MINOR})
+set(BINFHE_VERSION_PATCH ${OpenFHE_VERSION_PATCH})
 set(BINFHE_VERSION ${BINFHE_VERSION_MAJOR}.${BINFHE_VERSION_MINOR}.${BINFHE_VERSION_PATCH})
 
 add_library(binfheobj OBJECT ${BINFHE_SRC_FILES})
 set_property(TARGET binfheobj PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 if ( BUILD_SHARED )
-	add_dependencies(binfheobj PALISADEcore)
-	add_library (PALISADEbinfhe SHARED $<TARGET_OBJECTS:binfheobj>)
-	set_property(TARGET PALISADEbinfhe PROPERTY VERSION ${BINFHE_VERSION})
-	set_property(TARGET PALISADEbinfhe PROPERTY SOVERSION ${BINFHE_VERSION_MAJOR})
-	set_property(TARGET PALISADEbinfhe PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-	install(TARGETS PALISADEbinfhe
-		EXPORT PalisadeTargets
+	add_dependencies(binfheobj OpenFHEcore)
+	add_library (OpenFHEbinfhe SHARED $<TARGET_OBJECTS:binfheobj>)
+	set_property(TARGET OpenFHEbinfhe PROPERTY VERSION ${BINFHE_VERSION})
+	set_property(TARGET OpenFHEbinfhe PROPERTY SOVERSION ${BINFHE_VERSION_MAJOR})
+	set_property(TARGET OpenFHEbinfhe PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+	install(TARGETS OpenFHEbinfhe
+		EXPORT OpenFHETargets
 		DESTINATION lib)
 endif()
 
 if( BUILD_STATIC )
-add_dependencies(binfheobj PALISADEcore_static)
-	add_library (PALISADEbinfhe_static STATIC $<TARGET_OBJECTS:binfheobj>)
-	set_property(TARGET PALISADEbinfhe_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-	install(TARGETS PALISADEbinfhe_static
-		EXPORT PalisadeTargets
+add_dependencies(binfheobj OpenFHEcore_static)
+	add_library (OpenFHEbinfhe_static STATIC $<TARGET_OBJECTS:binfheobj>)
+	set_property(TARGET OpenFHEbinfhe_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+	install(TARGETS OpenFHEbinfhe_static
+		EXPORT OpenFHETargets
 		DESTINATION lib)
 endif()
 
 install(DIRECTORY include/
-	DESTINATION include/palisade/binfhe)
+	DESTINATION include/OpenFHE/binfhe)
 
 add_custom_target( allbinfhe )
 
 if( BUILD_SHARED )
-set (BINFHELIBS PUBLIC PALISADEbinfhe PUBLIC PALISADEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (PALISADEbinfhe PUBLIC PALISADEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	add_dependencies( allbinfhe PALISADEbinfhe  )
+set (BINFHELIBS PUBLIC OpenFHEbinfhe PUBLIC OpenFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OpenFHEbinfhe PUBLIC OpenFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	add_dependencies( allbinfhe OpenFHEbinfhe  )
 endif()
 
 if( BUILD_STATIC )
-set (BINFHELIBS ${BINFHELIBS} PUBLIC PALISADEbinfhe_static PUBLIC PALISADEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (PALISADEbinfhe_static PUBLIC PALISADEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
-	add_dependencies( allbinfhe PALISADEbinfhe_static )
+set (BINFHELIBS ${BINFHELIBS} PUBLIC OpenFHEbinfhe_static PUBLIC OpenFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OpenFHEbinfhe_static PUBLIC OpenFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
+	add_dependencies( allbinfhe OpenFHEbinfhe_static )
 endif()
 
 if( BUILD_UNITTESTS )
@@ -86,16 +86,16 @@ if( BUILD_EXAMPLES)
 	add_dependencies( allbinfhe allbinfheexamples)
 endif()
 
-add_custom_command( OUTPUT binfheinfocmd COMMAND echo Builds PALISADEbinfhe and these apps: ${BINFHEAPPS} )
+add_custom_command( OUTPUT binfheinfocmd COMMAND echo Builds OpenFHEbinfhe and these apps: ${BINFHEAPPS} )
 add_custom_target( binfheinfo DEPENDS binfheinfocmd )
 
 # Collect compile definitions and pass them upward
 if ( BUILD_SHARED )
-	get_target_property(_compile_defs PALISADEbinfhe COMPILE_DEFINITIONS)
+	get_target_property(_compile_defs OpenFHEbinfhe COMPILE_DEFINITIONS)
 	set(_pal_binfhe_compile_defs ${_compile_defs} PARENT_SCOPE)
 endif()
 
 if( BUILD_STATIC )
-	get_target_property(_compile_defs_static PALISADEbinfhe_static COMPILE_DEFINITIONS)
+	get_target_property(_compile_defs_static OpenFHEbinfhe_static COMPILE_DEFINITIONS)
 	set(_pal_binfhe_compile_defs_static ${_compile_defs_static} PARENT_SCOPE)
 endif()

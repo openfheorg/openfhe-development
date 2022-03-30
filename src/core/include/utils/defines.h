@@ -37,6 +37,6 @@
 #define SRC_CORE_INCLUDE_UTILS_DEFINES_H
 
 // Avoid unused variable warnings
-#define PALISADE_UNUSED(x) (void)(x)
+#define OpenFHE_UNUSED(x) (void)(x)
 
 #endif  // SRC_CORE_INCLUDE_UTILS_DEFINES_H

@@ -80,7 +80,7 @@ DiscreteUniformGeneratorImpl<VecType>::GenerateInteger() const {
   uint32_t value;
 
   if (m_modulus == typename VecType::Integer(0)) {
-    PALISADE_THROW(math_error, "0 modulus?");
+    OpenFHE_THROW(math_error, "0 modulus?");
   }
 
   do {

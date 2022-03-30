@@ -55,11 +55,11 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(
     const PrivateKey<DCRTPoly> privateKey,
     Plaintext* plaintext) {
   if (ciphertext == nullptr)
-    PALISADE_THROW(config_error, "ciphertext passed to Decrypt is empty");
+    OpenFHE_THROW(config_error, "ciphertext passed to Decrypt is empty");
   if (plaintext == nullptr)
-    PALISADE_THROW(config_error, "plaintext passed to Decrypt is empty");
+    OpenFHE_THROW(config_error, "plaintext passed to Decrypt is empty");
   if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "Information passed to Decrypt was not generated with "
                    "this crypto context");
 
@@ -120,12 +120,12 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
   for (size_t i = 0; i < last_ciphertext; i++) {
     if (partialCiphertextVec[i] == nullptr ||
         Mismatched(partialCiphertextVec[i]->GetCryptoContext()))
-      PALISADE_THROW(config_error,
+      OpenFHE_THROW(config_error,
                      "A ciphertext passed to MultipartyDecryptFusion was not "
                      "generated with this crypto context");
     if (partialCiphertextVec[i]->GetEncodingType() !=
         partialCiphertextVec[0]->GetEncodingType())
-      PALISADE_THROW(type_error,
+      OpenFHE_THROW(type_error,
                      "Ciphertexts passed to MultipartyDecryptFusion have "
                      "mismatched encoding types");
   }

@@ -42,6 +42,12 @@
 #include <iostream>
 #include <vector>
 
+//#include "cryptocontextgen.h"
+//#include "cryptocontexthelper.h"
+//#include "openfhe.h"
+//#include "utils/testcasegen.h"
+//
+using namespace lbcrypto;
 
 using namespace lbcrypto;
 

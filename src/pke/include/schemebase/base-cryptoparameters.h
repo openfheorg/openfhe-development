@@ -121,7 +121,7 @@ class CryptoParametersBase : public Serializable {
 
   virtual const typename Element::DggType &GetDiscreteGaussianGenerator()
       const {
-    PALISADE_THROW(config_error, "No DGG Available for this parameter set");
+    OpenFHE_THROW(config_error, "No DGG Available for this parameter set");
   }
 
   /**
@@ -151,7 +151,7 @@ class CryptoParametersBase : public Serializable {
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
+      OpenFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }

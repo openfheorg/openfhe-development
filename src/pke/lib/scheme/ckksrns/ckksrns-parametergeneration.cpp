@@ -107,7 +107,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
       // Check whether particular selection is standards-compliant
       auto he_std_n = nRLWE(qBound);
       if (he_std_n > n) {
-        PALISADE_THROW(
+        OpenFHE_THROW(
             config_error,
             "The specified ring dimension (" + std::to_string(n) +
                 ") does not comply with HE standards recommendation (" +
@@ -115,7 +115,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
       }
     }
   } else if (n == 0) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         config_error,
         "Please specify the ring dimension or desired security level.");
   }
@@ -220,7 +220,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
 
   const EncodingParams encodingParams = cryptoParamsCKKSRNS->GetEncodingParams();
   if (encodingParams->GetBatchSize() > n / 2)
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "The batch size cannot be larger than ring dimension / 2.");
 
   // if no batch size was specified, we set batchSize = n/2 by default (for full

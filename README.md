@@ -25,7 +25,7 @@ documentation about this library.
 
 **License** OpenFHE is released under the BSD 2-Clause License. See [here](LICENSE)
 
-**Contributing** [Contributing to PALISADE](docs/static_docs/Contributing.md)
+**Contributing** [Contributing to OpenFHE](docs/static_docs/Contributing.md)
 
 **Reporting bugs** [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development)
 

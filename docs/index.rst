@@ -1,7 +1,7 @@
-Welcome to PALISADE's documentation!
+Welcome to OpenFHE's documentation!
 ====================================
 
-PALISADE
+OpenFHE
 --------
 
 OpenFHE is a general lattice cryptography library that currently includes efficient implementations of the following lattice cryptography capabilities:
@@ -25,7 +25,7 @@ OpenFHE is a general lattice cryptography library that currently includes effici
 
 A major focus is on the usability of the schemes. For instance, all HE schemes with packing use the same common API, and are implemented using runtime polymorphism.
 
-PALISADE implements efficient Residue Number System (RNS) algorithms to achieve high performance, e.g., PALISADE was used as the library for a winning genome-wide association studies solution at iDASH’18.
+OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve high performance, e.g., OpenFHE was used as the library for a winning genome-wide association studies solution at iDASH’18.
 
 .. toctree::
    :maxdepth: 2
@@ -41,7 +41,7 @@ PALISADE implements efficient Residue Number System (RNS) algorithms to achieve 
 Components
 -------------
 
-PALISADE is a cross-platform C++11 library supporting Linux, Windows, and macOS. The supported compilers are g++ v6.1 or later and clang++ v6.0 or later.
+OpenFHE is a cross-platform C++11 library supporting Linux, Windows, and macOS. The supported compilers are g++ v6.1 or later and clang++ v6.0 or later.
 
 The library also includes unit tests and sample application demos.
 
@@ -55,7 +55,7 @@ The library is based on modular architecture with the following layers:
 Important Notes
 ---------------
 
-Note as of version 1.11, the following features have been moved to their own repositories in the PALISADE group.
+Note as of version 1.11, the following features have been moved to their own repositories in the OpenFHE group.
 
 * `Digital Signature <https://gitlab.com/palisade/palisade-signature/>`_
 * `Identity-Based Encryption <https://gitlab.com/palisade/palisade-abe/>`_
@@ -67,12 +67,12 @@ All the research prototypes for Key-Policy Attributed-Based Encryption and Progr
 License
 -----------
 
-PALISADE is available under the BSD 2-clause license.
+OpenFHE is available under the BSD 2-clause license.
 
 Additional Resources
 ----------------------
 
-`PALISADE Webinars <https://www.youtube.com/channel/UC1qByOsQina1rpZ8AGl5TZw>`_
+`PALISADE/OpenFHE Webinars <https://www.youtube.com/channel/UC1qByOsQina1rpZ8AGl5TZw>`_
 
 
 Indices and tables

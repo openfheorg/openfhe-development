@@ -87,7 +87,7 @@ void SchemeCKKSRNS::Enable(PKESchemeFeature feature) {
         m_AdvancedSHE = std::make_shared<AdvancedSHECKKSRNS>();
       break;
     case FHE:
-      PALISADE_THROW(not_implemented_error,
+      OpenFHE_THROW(not_implemented_error,
                      "FHE feature not supported for CKKSRNS scheme");
   }
 }

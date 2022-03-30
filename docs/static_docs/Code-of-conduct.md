@@ -1,4 +1,4 @@
-# Palisade Project Code of Conduct
+# OpenFHE Project Code of Conduct
 
 ## Our Pledge
 
@@ -49,7 +49,7 @@ further defined and clarified by project maintainers.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported
-by contacting the project team at [contact@palisade-crypto.org](mailto:contact@palisade-crypto.org). contact@palisade-crypto.org
+by contacting the project team at [contact@openfhe.org](mailto:contact@openfhe.org). contact@openfhe.org
 Alternatively, you may report individually to one of the members of the Steering Council.
 Complaints will be reviewed and investigated and will result in a response that is deemed
 necessary and appropriate to the circumstances. The project team is obligated to

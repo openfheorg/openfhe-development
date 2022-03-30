@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Manufactures plaintext objects in Palisade
+  Manufactures plaintext objects in OpenFHE
  */
 
 #include "encoding/plaintextfactory.h"

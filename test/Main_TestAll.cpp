@@ -1,6 +1,6 @@
 /*
  * @file
- * @author TPOC: contact@palisade-crypto.org
+ * @author TPOC: contact@openfhe.org
  *
  * @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
  * All rights reserved.
@@ -49,7 +49,7 @@ static string lead = "****** ";
 class MinimalistPrinter : public EmptyTestEventListener {
  public:
   void OnTestProgramStart(const ::testing::UnitTest& unit_test) {
-    cout << lead << "PALISADE Version " << GetPALISADEVersion() << endl;
+    cout << lead << "OpenFHE Version " << GetOpenFHEVersion() << endl;
     cout << lead << "Date "
          << testing::internal::FormatEpochTimeInMillisAsIso8601(
                 unit_test.start_timestamp())
@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
     delete listeners.Release(listeners.default_result_printer());
     listeners.Append(new MinimalistPrinter);
   } else {
-    cout << "PALISADE Version " << GetPALISADEVersion() << endl;
+    cout << "OpenFHE Version " << GetOpenFHEVersion() << endl;
     cout << "Default Backend " << GetMathBackendParameters() << endl;
   }
 

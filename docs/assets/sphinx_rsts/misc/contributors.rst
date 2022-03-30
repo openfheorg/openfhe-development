@@ -1,7 +1,7 @@
 Contributors
 ============
 
-We gratefully acknowledge intellectual and software contributions to the library from numerous individuals. The following individuals have contributed code or algorithms to the PALISADE library:
+We gratefully acknowledge intellectual and software contributions to the library from numerous individuals. The following individuals have contributed code or algorithms to the OpenFHE library:
 
 **Core contributors**
 

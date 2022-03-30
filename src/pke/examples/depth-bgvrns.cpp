@@ -41,7 +41,7 @@
 #include <iostream>
 #include <iterator>
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
 

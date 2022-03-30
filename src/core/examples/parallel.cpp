@@ -39,7 +39,7 @@
 #include <fstream>
 #include <iostream>
 #include <thread>
-#include "palisadecore.h"
+#include "openfhecore.h"
 #include "time.h"
 
 // function to verify our generated array
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   // print to stdout.
   DEBUG_FLAG(true);
 
-  lbcrypto::PalisadeParallelControls.Enable();
+  lbcrypto::OpenFHEParallelControls.Enable();
 
   uint32_t array_size = 1000;
   DEBUGEXP(argc);

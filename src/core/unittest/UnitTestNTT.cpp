@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code tests the transform feature of the PALISADE lattice encryption library.
+  This code tests the transform feature of the OpenFHE lattice encryption library.
 
   Test cases in this file make the following assumptions:
   1. All functionatliy of plaintext (both BytePlainTextEncoding and IntPlainTextEncoding) work.

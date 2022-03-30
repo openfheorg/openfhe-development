@@ -67,7 +67,7 @@ inline std::shared_ptr<ILDCRTParams<I>> GenerateDCRTParams(usint m, usint numOfT
   DEBUGEXP(numOfTower);
   DEBUGEXP(pbits);
   if (numOfTower == 0) {
-    PALISADE_THROW(math_error, "Can't make parms with numOfTower == 0");
+    OpenFHE_THROW(math_error, "Can't make parms with numOfTower == 0");
   }
 
   std::vector<NativeInteger> moduli(numOfTower);

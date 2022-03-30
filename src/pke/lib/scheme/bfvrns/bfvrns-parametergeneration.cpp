@@ -68,11 +68,11 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     EncryptionTechnique encTech,
     MultiplicationTechnique multTech) const {
   if (!cryptoParams)
-    PALISADE_THROW(not_available_error,
+    OpenFHE_THROW(not_available_error,
                    "No crypto parameters are supplied to BFVrns ParamsGen");
 
   if ((dcrtBits < 30) || (dcrtBits > 60))
-    PALISADE_THROW(math_error,
+    OpenFHE_THROW(math_error,
                    "BFVrns.ParamsGen: Number of bits in CRT moduli should be "
                    "in the range from 30 to 60");
 
@@ -141,7 +141,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     logq = logqBFV(n);
 
     if ((nRLWE(logq) > n) && (nCustom > 0))
-      PALISADE_THROW(config_error,
+      OpenFHE_THROW(config_error,
                      "Ring dimension n specified by the user does not meet the "
                      "security requirement. Please increase it.");
 
@@ -186,7 +186,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     logqPrev = logq;
 
     if ((nRLWE(logq) > n) && (nCustom > 0))
-      PALISADE_THROW(config_error,
+      OpenFHE_THROW(config_error,
                      "Ring dimension n specified by the user does not meet the "
                      "security requirement. Please increase it.");
 
@@ -259,7 +259,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     logqPrev = logq;
 
     if ((nRLWE(logq) > n) && (nCustom > 0))
-      PALISADE_THROW(config_error,
+      OpenFHE_THROW(config_error,
                      "Ring dimension n specified by the user does not meet the "
                      "security requirement. Please increase it.");
 
@@ -327,7 +327,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
 
   const EncodingParams encodingParams = cryptoParamsBFVRNS->GetEncodingParams();
   if (encodingParams->GetBatchSize() > n)
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "The batch size cannot be larger than the ring dimension.");
   // if no batch size was specified, we set batchSize = n by default (for full
   // packing)

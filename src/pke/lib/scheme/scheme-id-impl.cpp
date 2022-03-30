@@ -53,7 +53,7 @@ std::ostream& operator<<(std::ostream& os, SCHEME schemeId) {
       break;
     default:
       std::string errMsg(std::string("Unknown schemeId ") + std::to_string(schemeId));
-      PALISADE_THROW(config_error, errMsg);
+      OpenFHE_THROW(config_error, errMsg);
   }
 
   return os;

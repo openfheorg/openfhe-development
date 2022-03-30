@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code exercises the Field2n methods of the PALISADE lattice encryption library.
+  This code exercises the Field2n methods of the OpenFHE lattice encryption library.
  */
 
 #include "gtest/gtest.h"

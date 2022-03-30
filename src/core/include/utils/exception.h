@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  framework for exceptions in PALISADE
+  framework for exceptions in OpenFHE
  */
 
 #ifndef SRC_CORE_LIB_UTILS_EXCEPTION_H_
@@ -96,13 +96,13 @@ class ThreadException {
 //   });
 // }
 // e.Rethrow();
-class palisade_error : public std::runtime_error {
+class openfhe_error : public std::runtime_error {
   std::string filename;
   int linenum;
   std::string message;
 
  public:
-  palisade_error(const std::string& file, int line, const std::string& what)
+  openfhe_error(const std::string& file, int line, const std::string& what)
       : std::runtime_error(what), filename(file), linenum(line) {
     message = filename + ":" + std::to_string(linenum) + " " + what;
   }
@@ -113,53 +113,53 @@ class palisade_error : public std::runtime_error {
   int GetLinenum() const { return linenum; }
 };
 
-class config_error : public palisade_error {
+class config_error : public openfhe_error {
  public:
   config_error(const std::string& file, int line, const std::string& what)
-      : palisade_error(file, line, what) {}
+      : openfhe_error(file, line, what) {}
 };
 
-class math_error : public palisade_error {
+class math_error : public openfhe_error {
  public:
   math_error(const std::string& file, int line, const std::string& what)
-      : palisade_error(file, line, what) {}
+      : openfhe_error(file, line, what) {}
 };
 
-class not_implemented_error : public palisade_error {
+class not_implemented_error : public openfhe_error {
  public:
   not_implemented_error(const std::string& file, int line,
                         const std::string& what)
-      : palisade_error(file, line, what) {}
+      : openfhe_error(file, line, what) {}
 };
 
-class not_available_error : public palisade_error {
+class not_available_error : public openfhe_error {
  public:
   not_available_error(const std::string& file, int line,
                       const std::string& what)
-      : palisade_error(file, line, what) {}
+      : openfhe_error(file, line, what) {}
 };
 
-class type_error : public palisade_error {
+class type_error : public openfhe_error {
  public:
   type_error(const std::string& file, int line, const std::string& what)
-      : palisade_error(file, line, what) {}
+      : openfhe_error(file, line, what) {}
 };
 
-// use this error when serializing palisade objects
-class serialize_error : public palisade_error {
+// use this error when serializing OpenFHE objects
+class serialize_error : public openfhe_error {
  public:
   serialize_error(const std::string& file, int line, const std::string& what)
-      : palisade_error(file, line, what) {}
+      : openfhe_error(file, line, what) {}
 };
 
-// use this error when deserializing palisade objects
-class deserialize_error : public palisade_error {
+// use this error when deserializing OpenFHE objects
+class deserialize_error : public openfhe_error {
  public:
   deserialize_error(const std::string& file, int line, const std::string& what)
-      : palisade_error(file, line, what) {}
+      : openfhe_error(file, line, what) {}
 };
 
-#define PALISADE_THROW(exc, expr) throw exc(__FILE__, __LINE__, (expr))
+#define OpenFHE_THROW(exc, expr) throw exc(__FILE__, __LINE__, (expr))
 
 }  // namespace lbcrypto
 

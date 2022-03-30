@@ -30,9 +30,9 @@
 //==================================================================================
 
 /*
-// This program demonstrates the use of the PALISADE library to encrypt bytes of
-text. All PALISADE functionality takes place as a part of a CryptoContext, and
-so the first step in using PALISADE is creating a CryptoContext.
+// This program demonstrates the use of the OpenFHE library to encrypt bytes of
+text. All OpenFHE functionality takes place as a part of a CryptoContext, and
+so the first step in using OpenFHE is creating a CryptoContext.
 //
 // A CryptoContext can be created on the fly by passing parameters into a method
 provided in the CryptoContextFactory. A CryptoContext can be custom tuned for
@@ -50,7 +50,7 @@ will tell you all the available names.
 #include <iterator>
 #include <string>
 
-#include "palisade.h"
+#include "openfhe.h"
 
 #include "cryptocontextgen.h"
 #include "cryptocontextparametersets.h"
@@ -58,11 +58,11 @@ will tell you all the available names.
 using namespace lbcrypto;
 
 ////////////////////////////////////////////////////////////
-// This program demonstrates the use of the PALISADE library's proxy
+// This program demonstrates the use of the OpenFHE library's proxy
 // re-encryption feature
 //
-// All PALISADE functionality takes place as a part of a CryptoContext, and so
-// the first step in using PALISADE is creating a CryptoContext
+// All OpenFHE functionality takes place as a part of a CryptoContext, and so
+// the first step in using OpenFHE is creating a CryptoContext
 //
 // This program creates CryptoContexts for one of three user-specified schemes
 //

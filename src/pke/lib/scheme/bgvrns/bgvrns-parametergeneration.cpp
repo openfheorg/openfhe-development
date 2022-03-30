@@ -126,7 +126,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
       // Check whether particular selection is standards-compliant
       auto he_std_n = nRLWE(qBound);
       if (he_std_n > n) {
-        PALISADE_THROW(
+        OpenFHE_THROW(
             math_error,
             "The specified ring dimension (" + std::to_string(n) +
                 ") does not comply with HE standards recommendation (" +
@@ -134,7 +134,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
       }
     }
   } else if (n == 0) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         math_error,
         "Please specify the ring dimension or desired security level.");
   }
@@ -192,7 +192,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
 
   const EncodingParams encodingParams = cryptoParamsBGVRNS->GetEncodingParams();
   if (encodingParams->GetBatchSize() > n)
-    PALISADE_THROW(config_error,
+    OpenFHE_THROW(config_error,
                    "The batch size cannot be larger than the ring dimension.");
 
   // if no batch size was specified compute a default value
@@ -229,7 +229,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
       }
 
       if (n % b != 0)
-        PALISADE_THROW(math_error,
+        OpenFHE_THROW(math_error,
                        "BGVrns.ParamsGen: something went wrong when computing "
                        "the batchSize");
 

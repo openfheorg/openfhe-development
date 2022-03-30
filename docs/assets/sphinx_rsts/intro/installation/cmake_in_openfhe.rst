@@ -1,12 +1,12 @@
-CMAKE in PALISADE
+CMAKE in OpenFHE
 =================
 
-PALISADE uses CMake to create the Makefiles that build and install the PALISADE Library. This page describes how CMake is used in PALISADE, and how contributors should use CMake when adding new files or new components.
+OpenFHE uses CMake to create the Makefiles that build and install the OpenFHE Library. This page describes how CMake is used in OpenFHE, and how contributors should use CMake when adding new files or new components.
 
-Using PALISADE's CMake system
+Using OpenFHE's CMake system
 -----------------------------
 
-The first step in using CMake is deciding where the build should be performed. This is the "build tree". The "source tree" is where the PALISADE source is located. These should be different directories! The build tree can be in a subdirectory of the source directory (such as "build") or in some other place.
+The first step in using CMake is deciding where the build should be performed. This is the "build tree". The "source tree" is where the OpenFHE source is located. These should be different directories! The build tree can be in a subdirectory of the source directory (such as "build") or in some other place.
 
 The project is described in files named ``CMakeLists.txt``.
 
@@ -26,13 +26,13 @@ CMake does not usually have to be rerun. A ``make`` will rerun CMake if it detec
 Required Compilers
 ^^^^^^^^^^^^^^^^^^^^^
 
-PALISADE supports any GNU C++ compiler version 6 or above and clang C++ compiler version 6 or above.
+OpenFHE supports any GNU C++ compiler version 6 or above and clang C++ compiler version 6 or above.
 
 A warning is issued if an older version of the compiler is found. The build may run but such compilers are unsupported.
 
 Required Packages
 ^^^^^^^^^^^^^^^^^^^^^
-PALISADE requires that certain packages and applications be available on the system. CMake searches for these packages and may either stop if a required package is missing, or disable functionality.
+OpenFHE requires that certain packages and applications be available on the system. CMake searches for these packages and may either stop if a required package is missing, or disable functionality.
 
 These packages are as follows:
 
@@ -48,7 +48,7 @@ Optional Packages
 Command Line Options
 ^^^^^^^^^^^^^^^^^^^^^
 There are a large number of CMake command line options. Most important for our purposes here is the -D option,
-which allows variables to be set, cached, and used in constructing the Makefile and making PALISADE.
+which allows variables to be set, cached, and used in constructing the Makefile and making OpenFHE.
 
 Combining multiple CMake flags
 **********************************
@@ -61,19 +61,19 @@ Different flags can be combined together. For example, to configure cmake with N
 
 Important CMake Flags Used
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-We point out a number of the standard CMake variables that can be set using -D from the CMake command line, which may be of use to PALISADE users. To set one of these variables, use -D*VARIABLE_NAME*=*VALUE* on the command line.
+We point out a number of the standard CMake variables that can be set using -D from the CMake command line, which may be of use to OpenFHE users. To set one of these variables, use -D*VARIABLE_NAME*=*VALUE* on the command line.
 
  ======================= ============================== ================================================================================================================================================================================================================================================================================================================================
   *VARIABLE_NAME*         Definition                     Notes
  ======================= ============================== ================================================================================================================================================================================================================================================================================================================================
-  CMAKE_INSTALL_PREFIX    Base directory for installs    Base directory for installation of PALISADE. Libraries are installed in ${CMAKE_INSTALL_PREFIX}/lib and include files are installed in ${CMAKE_INSTALL_PREFIX}/include/palisade. PALISADE is also exported as a CMake package for the benefit of any users wanting to use PALISADE; the package files are also installed here
-  CMAKE_BUILD_TYPE        Debug, Release                 Default is to build PALISADE for release, with no debug information; developers may want to specify -DCMAKE_BUILD_TYPE=Debug
+  CMAKE_INSTALL_PREFIX    Base directory for installs    Base directory for installation of OpenFHE. Libraries are installed in ${CMAKE_INSTALL_PREFIX}/lib and include files are installed in ${CMAKE_INSTALL_PREFIX}/include/OpenFHE. OpenFHE is also exported as a CMake package for the benefit of any users wanting to use OpenFHE; the package files are also installed here
+  CMAKE_BUILD_TYPE        Debug, Release                 Default is to build OpenFHE for release, with no debug information; developers may want to specify -DCMAKE_BUILD_TYPE=Debug
  ======================= ============================== ================================================================================================================================================================================================================================================================================================================================
 
 
-Flags for PALISADE Builds
+Flags for OpenFHE Builds
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Beginning with release 1.10, the PALISADE build has a number of options to control
+Beginning with release 1.10, the OpenFHE build has a number of options to control
 what is built and what features are included/excluded.
 
 Each of the options is enabled by saying ``-DOPTION_NAME=ON`` and is disabled by saying ``-DOPTION_NAME=OFF``
@@ -103,28 +103,28 @@ The table below shows the current list of options, definition for the option, an
 Note that more options will be added as development progresses.
 
 
-The default math backend for the PALISADE build is Backend 2 (basic fixed-maximum-length big integers). This default can be changed on the CMake command line by setting the MATHBACKEND variable. For example, to select backend 6 (high performance fixed integers based on the GMP and NTL libraries), use ``-DMATHBACKEND=6`` on the CMake command line.
+The default math backend for the OpenFHE build is Backend 2 (basic fixed-maximum-length big integers). This default can be changed on the CMake command line by setting the MATHBACKEND variable. For example, to select backend 6 (high performance fixed integers based on the GMP and NTL libraries), use ``-DMATHBACKEND=6`` on the CMake command line.
 
 Detecting Local Environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-PALISADE detects most of the capabilities of the target machine. It uses the machine's capabilities and the values of the user options to create header files that are used to control the build. These files are placed in the src subdirectory of the CMake build tree, and are included in the PALISADE install.
+OpenFHE detects most of the capabilities of the target machine. It uses the machine's capabilities and the values of the user options to create header files that are used to control the build. These files are placed in the src subdirectory of the CMake build tree, and are included in the OpenFHE install.
 
 As of release 1.10.0, ``src/core/config_core.h`` is used to control the build of the core component, and any library code that depends on it. Future developments will expand this to other components.
 
 Third-Party Components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-PALISADE uses some third-party components from Google for testing and benchmarking, and it uses a third-party serialization library called CEREAL. These libraries are git submodules under PALISADE and are fully integrated into the build.
+OpenFHE uses some third-party components from Google for testing and benchmarking, and it uses a third-party serialization library called CEREAL. These libraries are git submodules under OpenFHE and are fully integrated into the build.
 
 Turn on NTL/GMP (Only for Advanced Users)
 *********************************************
 
-By default PALISADE builds without external dependencies. If you wish to use the NTL/GMP implementation of BigInteger/BigVector, you can [install GMP and NTL manually](Instructions-for-installing-GMP-and-NTL) and run cmake with ``-DWITH_NTL=ON``. The complete command is
+By default OpenFHE builds without external dependencies. If you wish to use the NTL/GMP implementation of BigInteger/BigVector, you can [install GMP and NTL manually](Instructions-for-installing-GMP-and-NTL) and run cmake with ``-DWITH_NTL=ON``. The complete command is
 
 ::
 
     cmake -DWITH_NTL=ON ..
 
-We have tested PALISADE with GMP 6.1.2 and 6.2.1, and NTL 10.5.0 and 11.4.4. Please note that a regular binary install (using tools like `apt-get`) will not work as special compilation flags need to be passed. See [Installation of GMP and NTL](Instructions-for-installing-GMP-and-NTL) for further details on the manual installation.
+We have tested OpenFHE with GMP 6.1.2 and 6.2.1, and NTL 10.5.0 and 11.4.4. Please note that a regular binary install (using tools like `apt-get`) will not work as special compilation flags need to be passed. See [Installation of GMP and NTL](Instructions-for-installing-GMP-and-NTL) for further details on the manual installation.
 
 Note the performance w/o and w/ NTL is almost the same for all schemes/operations. NTL is used only for multiprecision integer arithmetic (the latter only when the MATHBACKEND variable is set to 6). Most of the crypto operations are executed using native arithmetic (by employing RNS procedures), and do not use these higher-precision capabilities.
 
@@ -137,11 +137,11 @@ If you wish to use tcmalloc, you can add ``-DWITH_TCM=ON`` to the cmake command.
 
     cmake -DWITH_TCM=ON ..
 
-tcmalloc can improve performance in the multi-threaded mode (when OMP_NUM_THREADS>1). It provides efficient thread-caching block allocation for all PALISADE objects.
+tcmalloc can improve performance in the multi-threaded mode (when OMP_NUM_THREADS>1). It provides efficient thread-caching block allocation for all OpenFHE objects.
 
 Note that tcmalloc only works in Linux and macOS, and is not currently supported in MinGW.
 
-Tcmalloc should be installed after running cmake and right before running make for PALISADE. To build tcmalloc, run
+Tcmalloc should be installed after running cmake and right before running make for OpenFHE. To build tcmalloc, run
 
 ::
 
@@ -161,13 +161,13 @@ If you wish to use the Intel HEXL library, you can add ``-WITH_INTEL_HEXL=ON`` t
 
     cmake -WITH_INTEL_HEXL=ON ..
 
-Please also make sure `make` for PALISADE is run using `sudo`, i.e., `sudo make`.
+Please also make sure `make` for OpenFHE is run using `sudo`, i.e., `sudo make`.
 
-Intel HEXL library improves PALISADE performance on Intel processors supporting AVX-512 extensions.
+Intel HEXL library improves OpenFHE performance on Intel processors supporting AVX-512 extensions.
 
 Location of Build Products
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-- The Makefile created by CMake creates all PALISADE build products inside the build subdirectory.
+- The Makefile created by CMake creates all OpenFHE build products inside the build subdirectory.
 
 - The actual libraries are placed in the subdirectory lib.
 
@@ -177,68 +177,68 @@ Location of Build Products
 
 - Benchmarks are placed in bin/benchmark.
 
-- Examples (of basic PALISADE features) are placed in bin/examples, and additional examples (more complicated and research-oriented examples) are placed in bin/extras. Note demos are built as part of each sub-component of the library (core, pke, trapdoor, etc.)
+- Examples (of basic OpenFHE features) are placed in bin/examples, and additional examples (more complicated and research-oriented examples) are placed in bin/extras. Note demos are built as part of each sub-component of the library (core, pke, trapdoor, etc.)
 
 - Documentation (built in the build directory under <BUILD_LOCATION>/docs/doxygen/ for DOXYGEN builds, and <BUILD_LOCATION>/docs/sphinx for Sphinx builds)
 
-Installing PALISADE on your system for use by applications external to the PALISADE source tree
+Installing OpenFHE on your system for use by applications external to the OpenFHE source tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Running `make install` will install all libraries and header files in the directories designated by `CMAKE_INSTALL_PREFIX`. Demos, unittests, benchmarks, examples and extras are not installed.
 
-Building applications with an installed PALISADE library
+Building applications with an installed OpenFHE library
 ************************************************************
-A user can create a CMake environment for their own PALISADE application development.
-Simply copy the file CMakeLists.User.txt from the PALISADE source tree to
+A user can create a CMake environment for their own OpenFHE application development.
+Simply copy the file CMakeLists.User.txt from the OpenFHE source tree to
 CMakeLists.txt in your source tree, and add your CMake directives for your own programs to
 the end of the file.
 
 
-This file imports the Palisade package that was built and installed by the PALISADE build.
+This file imports the OpenFHE package that was built and installed by the OpenFHE build.
 
 Cross Compiling with CMake [experimental feature]
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Cross compiling PALISADE for other target environments is an experimental feature. Cross-compilation for new targets should require the following steps:
+Cross compiling OpenFHE for other target environments is an experimental feature. Cross-compilation for new targets should require the following steps:
 
 1. Obtain and configure  a cross-compiler for your target environment (or use the appropriate command line arguments to your compiler to initiate cross compilation).
 2. Specify that CMake should use the cross-compiler.
 3. Proceed with the CMake/make process.
 
 
-It should be noted that the third-party libgmp and NTL libraries will probably need to be built manually for cross compilation using their internal build sequence, and that they may not be supported on the target platform at all. Configuring  PALISADE with -DWITH_NTL=ON will circumvent this issue.
+It should be noted that the third-party libgmp and NTL libraries will probably need to be built manually for cross compilation using their internal build sequence, and that they may not be supported on the target platform at all. Configuring  OpenFHE with -DWITH_NTL=ON will circumvent this issue.
 
-Documentation for extending PALISADE CMake Files
+Documentation for extending OpenFHE CMake Files
 ----------------------------------------------------------
 
-CMake Files for PALISADE Components
+CMake Files for OpenFHE Components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Each component of the library (core, pke, trapdoor, etc.) has its own CMakeLists.txt file. Each of these files is included by the main PALISADE CMakeLists.txt file. The structure of all of these component CMakeList.txt files is identical:
+Each component of the library (core, pke, trapdoor, etc.) has its own CMakeLists.txt file. Each of these files is included by the main OpenFHE CMakeLists.txt file. The structure of all of these component CMakeList.txt files is identical:
 
 1. Determine the files that are built into the component library
 2. Set include directories to build the component library
-3. Set the version number from the PALISADE version number
+3. Set the version number from the OpenFHE version number
 4. Add rules to build the objects in the component library
 5. Add rules to build and install the component library, dynamic as well as static
 6. If unit tests are included in the build, add rules to build unit tests
 7. Add rules to build all the source files in the demo directory into demos
 8. Add targets to build "all" of various pieces of the component
 
-Adding a new file to PALISADE
+Adding a new file to OpenFHE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 A new file can simply be added to the directory tree, and CMake will add it to the build.
 
-Adding a new component to PALISADE
+Adding a new component to OpenFHE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-When adding a new component to PALISADE
+When adding a new component to OpenFHE
 
 1. Observe the structure discussed above when making your new CMakeLists.txt for the component
 2. Be sure to include the component in the master CMakeLists.txt file at the root of the source tree
 3. Be sure to update the "all" targets to include targets from the new component
 
-Documentation of make targets created by PALISADE CMake system
+Documentation of make targets created by OpenFHE CMake system
 --------------------------------------------------------------
 
-When "make" is run without any target specified, it builds all modules, unit tests (if `BUILD_UNITTESTS=ON`), examples (if `BUILD_EXAMPLES=ON`), benchmarks (if `BUILD_BENCHMARKS=ON`), and extras (if `BUILD_EXTRAS=ON`). PALISADE also provides more granular control over which components of PALISADE are built. We discuss these options below. Each of these commands can be used instead of `make` in the main build instructions. Note that for many users, it may be easier to rely on CMake flags `BUILD_UNITTESTS`, `BUILD_EXAMPLES`, and the like, to control what is built using the standard `make` command without specifying a target.
+When "make" is run without any target specified, it builds all modules, unit tests (if `BUILD_UNITTESTS=ON`), examples (if `BUILD_EXAMPLES=ON`), benchmarks (if `BUILD_BENCHMARKS=ON`), and extras (if `BUILD_EXTRAS=ON`). OpenFHE also provides more granular control over which components of OpenFHE are built. We discuss these options below. Each of these commands can be used instead of `make` in the main build instructions. Note that for many users, it may be easier to rely on CMake flags `BUILD_UNITTESTS`, `BUILD_EXAMPLES`, and the like, to control what is built using the standard `make` command without specifying a target.
 
 Build only the library files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -277,11 +277,11 @@ Build only benchmarks and their dependencies (available if BUILD_BENCHMARKS=ON)
 
 Build a specific module and its dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The options for the make command are PALISADEcore, PALISADEpke, PALISADEabe, PALISADEsignature, PALISADEbinfhe (these correspond to core, pke, abe, signature, and binfhe modules). To install pke, enter
+The options for the make command are OpenFHEcore, OpenFHEpke, OpenFHEabe, OpenFHEsignature, OpenFHEbinfhe (these correspond to core, pke, abe, signature, and binfhe modules). To install pke, enter
 
 ::
 
-    make PALISADEpke
+    make OpenFHEpke
 
 Build a specific module + examples (available if BUILD_EXAMPLES=ON)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

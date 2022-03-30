@@ -286,7 +286,7 @@ template <class IntegerType>
 const BigVectorFixedT<IntegerType> &BigVectorFixedT<IntegerType>::ModAddAtIndexEq(
     usint i, const IntegerType &b) {
   if (i > this->GetLength() - 1) {
-    PALISADE_THROW(lbcrypto::math_error,
+    OpenFHE_THROW(lbcrypto::math_error,
                    "mubintvecfxd::ModAddAtIndex. Index is out of range. i = " +
                        std::to_string(i));
   }
@@ -306,7 +306,7 @@ template <class IntegerType>
 const BigVectorFixedT<IntegerType> &BigVectorFixedT<IntegerType>::ModAddEq(
     const BigVectorFixedT &b) {
   if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::math_error,
         "ModAddEq called on BigVectorFixedT's with different parameters.");
   }
@@ -346,7 +346,7 @@ template <class IntegerType>
 const BigVectorFixedT<IntegerType> &BigVectorFixedT<IntegerType>::ModSubEq(
     const BigVectorFixedT &b) {
   if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::math_error,
         "ModSubEq called on BigVectorFixedT's with different parameters.");
   }
@@ -434,7 +434,7 @@ template <class IntegerType>
 const BigVectorFixedT<IntegerType> &BigVectorFixedT<IntegerType>::ModMulEq(
     const BigVectorFixedT &b) {
   if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::math_error,
         "ModMulEq called on BigVectorFixedT's with different parameters.");
   }
@@ -518,7 +518,7 @@ template <class IntegerType>
 const BigVectorFixedT<IntegerType> &BigVectorFixedT<IntegerType>::MultWithOutModEq(
     const BigVectorFixedT &b) {
   if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OpenFHE_THROW(
         lbcrypto::type_error,
         "MultWithOutMod called on BigVectorFixedT's with different parameters.");
   }

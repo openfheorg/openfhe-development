@@ -29,23 +29,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef SRC_LIB_PALISADE_H_
-#define SRC_LIB_PALISADE_H_
+/*
+  OpenFHE native base 64 utlities
+ */
 
-#include <initializer_list>
-#include <memory>
-#include <string>
-#include <utility>
+#include "utils/openfhebase64.h"
 
-#include "palisadecore.h"
+namespace lbcrypto {
 
-#include "key/allkey.h"
-#include "cryptoobject.h"
+const char to_base64_char[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-#include "encoding/plaintextfactory.h"
-#include "math/matrix.h"
-
-#include "ciphertext.h"
-#include "cryptocontext.h"
-
-#endif /* SRC_LIB_PALISADE_H_ */
+} /* namespace lbcrypto */

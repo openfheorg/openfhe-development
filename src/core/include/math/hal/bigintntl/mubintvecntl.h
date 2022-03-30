@@ -176,7 +176,7 @@ class myVecP : public NTL::Vec<myT>,
   // sets modulus and the NTL init function uint64_t argument
   inline void SetModulus(const uint64_t &value) {
     if (value == 0) {
-      PALISADE_THROW(lbcrypto::math_error,
+      OpenFHE_THROW(lbcrypto::math_error,
                      "SetModulus(uint64_t) cannot be zero");
     }
     this->m_modulus = myT(value);
@@ -186,7 +186,7 @@ class myVecP : public NTL::Vec<myT>,
   // sets modulus and the NTL init function myT argument
   void SetModulus(const myT &value) {
     if (value == myT(0)) {
-      PALISADE_THROW(lbcrypto::math_error, "SetModulus(myT) cannot be zero");
+      OpenFHE_THROW(lbcrypto::math_error, "SetModulus(myT) cannot be zero");
     }
     this->m_modulus = value;
     this->m_modulus_state = INITIALIZED;
@@ -196,7 +196,7 @@ class myVecP : public NTL::Vec<myT>,
   inline void SetModulus(const std::string &value) {
     this->m_modulus = myT(value);
     if (this->m_modulus == myT(0)) {
-      PALISADE_THROW(lbcrypto::math_error, "SetModulus(string) cannot be zero");
+      OpenFHE_THROW(lbcrypto::math_error, "SetModulus(string) cannot be zero");
     }
     this->m_modulus_state = INITIALIZED;
   }
@@ -205,7 +205,7 @@ class myVecP : public NTL::Vec<myT>,
   inline void SetModulus(const myVecP &value) {
     this->m_modulus = value.GetModulus();
     if (this->m_modulus == myT(0)) {
-      PALISADE_THROW(lbcrypto::math_error, "SetModulus(myVecP) cannot be zero");
+      OpenFHE_THROW(lbcrypto::math_error, "SetModulus(myVecP) cannot be zero");
     }
     this->m_modulus_state = INITIALIZED;
   }
@@ -214,7 +214,7 @@ class myVecP : public NTL::Vec<myT>,
     if (this->isModulusSet()) {
       return (this->m_modulus);
     } else {
-      PALISADE_THROW(lbcrypto::config_error, "modulus not set");
+      OpenFHE_THROW(lbcrypto::config_error, "modulus not set");
     }
   }
 
@@ -611,7 +611,7 @@ class myVecP : public NTL::Vec<myT>,
                           void>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OpenFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -645,7 +645,7 @@ class myVecP : public NTL::Vec<myT>,
                           void>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OpenFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -672,7 +672,7 @@ class myVecP : public NTL::Vec<myT>,
   // use when argument to function is myT
   void ModulusCheck(std::string msg) const {
     if (!isModulusSet()) {
-      PALISADE_THROW(lbcrypto::config_error,
+      OpenFHE_THROW(lbcrypto::config_error,
                      msg + " uninitialized this->modulus");
     }
   }
@@ -681,15 +681,15 @@ class myVecP : public NTL::Vec<myT>,
   // use when argument to function is myVecP
   void ArgCheckVector(const myVecP &b, std::string fname) const {
     if (this->m_modulus != b.m_modulus) {
-      PALISADE_THROW(
+      OpenFHE_THROW(
           lbcrypto::math_error,
           fname + " modulus vector modulus vector op of different moduli");
     } else if (!isModulusSet()) {
-      PALISADE_THROW(
+      OpenFHE_THROW(
           lbcrypto::config_error,
           fname + " modulus vector modulus vector op  GARBAGE  moduli");
     } else if (this->GetLength() != b.GetLength()) {
-      PALISADE_THROW(lbcrypto::math_error,
+      OpenFHE_THROW(lbcrypto::math_error,
                      fname + " vectors of different lengths");
     }
   }

@@ -138,7 +138,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMultFixed(
   if (sizeQlp >= sizeQlc) {
     pt.DropLastElements(sizeQlp - sizeQlc);
   } else {
-    PALISADE_THROW(not_available_error,
+    OpenFHE_THROW(not_available_error,
                    "In FIXEDMANUAL EvalMult, ciphertext "
                    "cannot have more towers than the plaintext");
   }
@@ -542,7 +542,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalAddCore(
     // Update ptElem with scaled up element
     ptxt = ptxtClone.Times(crtPowSF);
   } else if (ptxtDepth > ciphertext->GetDepth()) {
-    PALISADE_THROW(not_available_error,
+    OpenFHE_THROW(not_available_error,
                    "AlgorithmSHECKKS<DCRTPoly>::EvalAdd "
                    "- plaintext cannot be encoded at a larger depth than that "
                    "of the ciphertext.");
@@ -601,7 +601,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalSubCore(
     // Update ptElem with scaled up element
     ptxt = ptxtClone.Times(crtPowSF);
   } else if (ptxtDepth > ciphertext->GetDepth()) {
-    PALISADE_THROW(not_available_error,
+    OpenFHE_THROW(not_available_error,
                    "AlgorithmSHECKKS<DCRTPoly>::EvalSub "
                    "- plaintext cannot be encoded at a larger depth than that "
                    "of the ciphertext.");

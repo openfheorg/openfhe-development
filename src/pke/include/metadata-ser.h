@@ -32,7 +32,7 @@
 #ifndef LBCRYPTO_CRYPTO_METADATASER_H
 #define LBCRYPTO_CRYPTO_METADATASER_H
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "utils/serial.h"
 
 CEREAL_CLASS_VERSION(lbcrypto::Metadata,

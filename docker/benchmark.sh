@@ -9,7 +9,7 @@
 
 # benchmark  examples  extras
 
-BENCHMARKS=/palisade-development/build/bin/benchmark/*
+BENCHMARKS=/OpenFHE-development/build/bin/benchmark/*
 RESULTS=/var/www/html/benchmark.html
 
 echo "<!DOCTYPE html>" >> $RESULTS

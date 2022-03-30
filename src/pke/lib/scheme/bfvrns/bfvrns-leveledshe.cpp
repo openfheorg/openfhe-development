@@ -88,7 +88,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
         ciphertext2->GetCryptoParameters())) {
     std::string errMsg =
         "AlgorithmSHEBFVrns::EvalMult crypto parameters are not the same";
-    PALISADE_THROW(config_error, errMsg);
+    OpenFHE_THROW(config_error, errMsg);
   }
 
   Ciphertext<DCRTPoly> ciphertextMult = ciphertext1->CloneEmpty();

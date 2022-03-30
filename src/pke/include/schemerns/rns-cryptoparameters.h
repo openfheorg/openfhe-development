@@ -411,7 +411,7 @@ public:
         sublvl < m_PartQlHatInvModq[part].size())
       return m_PartQlHatInvModq[part][sublvl];
 
-    PALISADE_THROW(math_error,
+    OpenFHE_THROW(math_error,
                    "CryptoParametersCKKS::GetPartitionQHatInvModQTable - "
                    "index out of bounds.");
   }
@@ -428,7 +428,7 @@ public:
         sublvl < m_PartQlHatInvModqPrecon[part].size())
       return m_PartQlHatInvModqPrecon[part][sublvl];
 
-    PALISADE_THROW(math_error,
+    OpenFHE_THROW(math_error,
                    "CryptoParametersCKKS::"
                    "GetPartitionQHatInvModQPreconTable - index "
                    "out of bounds.");
@@ -445,7 +445,7 @@ public:
     if (lvl < m_PartQlHatModp.size() && part < m_PartQlHatModp[lvl].size())
       return m_PartQlHatModp[lvl][part];
 
-    PALISADE_THROW(math_error,
+    OpenFHE_THROW(math_error,
                    "CryptoParametersCKKS::GetPartitionQHatModPTable - "
                    "index out of bounds.");
   }
@@ -462,7 +462,7 @@ public:
         part < m_modComplPartqBarrettMu[lvl].size())
       return m_modComplPartqBarrettMu[lvl][part];
 
-    PALISADE_THROW(math_error,
+    OpenFHE_THROW(math_error,
                    "CryptoParametersCKKS::GetPartitionPrecon - index out "
                    "of bounds.");
   }
@@ -580,7 +580,7 @@ public:
   double GetScalingFactorReal(uint32_t l = 0) const {
     if (m_rsTechnique == FLEXIBLEAUTO) {
       if (l >= m_scalingFactorsReal.size()) {
-        PALISADE_THROW(math_error,
+        OpenFHE_THROW(math_error,
                        "CryptoParametersCKKS::GetScalingFactorOfLevel - Cannot "
                        "return scaling factor of level " +
                            std::to_string(l) +
@@ -1553,7 +1553,7 @@ public:
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
+      OpenFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }

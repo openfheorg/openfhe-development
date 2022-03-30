@@ -1,4 +1,4 @@
-Contributing to PALISADE
+Contributing to OpenFHE
 ====================================
 
 When working on the library one should be working on a feature branch, and submit merge requests to move one's code onto the master branch.
@@ -19,7 +19,7 @@ As an example, suppose one is working on the branch ``issue-123``, and there hav
 
     git pull origin issue-123
 
-Make sure both of branches build properly before going any further.  Correct any bugs on the feature branch and commit that branch.  Also check the master branch and notify the PALISADE team if there is an error in the master branch.
+Make sure both of branches build properly before going any further.  Correct any bugs on the feature branch and commit that branch.  Also check the master branch and notify the OpenFHE team if there is an error in the master branch.
 
 2) Run the following rebase operation: ``git rebase master issue-123``
 
@@ -41,5 +41,5 @@ Note that the ``--force-with-lease`` (force) flag is needed to overwrite the git
 
 You can then create a merge request here:
 
-`PALISADE Development Merge Requests <https://gitlab.com/palisade/palisade-development/merge_requests/new/>`_
+`OpenFHE Development Pull Requests <https://github.com/openfheorg/openfhe-development/pulls>`_
 

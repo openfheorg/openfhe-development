@@ -121,7 +121,7 @@ class ParallelControls {
   }
 };
 
-extern ParallelControls PalisadeParallelControls;
+extern ParallelControls OpenFHEParallelControls;
 
 }  // namespace lbcrypto
 

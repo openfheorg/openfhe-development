@@ -171,7 +171,7 @@ MultipartyBase<Element>::MultiEvalAutomorphismKeyGen(
   usint N = s.GetRingDimension();
 
   if (indexList.size() > N - 1)
-    PALISADE_THROW(math_error, "size exceeds the ring dimension");
+    OpenFHE_THROW(math_error, "size exceeds the ring dimension");
 
   const auto cc = privateKey->GetCryptoContext();
 

@@ -134,7 +134,7 @@ def configureDoxyfile(
     filedata = filedata.replace('@CODE_INPUT_DIR@', code_input_dir)
     filedata = filedata.replace('@MAIN_PAGE@', main_page)
     filedata = filedata.replace('@DOXYGEN_OUTPUT_DIR@', output_dir)
-    filedata = filedata.replace('@PALISADE_VERSION@', str(openfhe_version))
+    filedata = filedata.replace('@OpenFHE_VERSION@', str(openfhe_version))
     filedata = filedata.replace('@STYLING@', styling_sheet_name)
 
     with open('Doxyfile', 'w') as file:
@@ -149,7 +149,7 @@ def read_version_number(pth="../CMakeLists.txt"):
     with open(pth, "r") as f:
         data = f.readlines()
 
-    matcher = re.compile("set\(PALISADE_VERSION_([a-zA-Z]+) (\d+)\)")
+    matcher = re.compile("set\(OpenFHE_VERSION_([a-zA-Z]+) (\d+)\)")
     for ln in data:
         result = matcher.match(ln)
 

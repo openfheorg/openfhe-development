@@ -86,7 +86,7 @@ class CryptoContextFactory {
 
 
   /**
-   * construct a PALISADE CryptoContextImpl for the BFVrns Scheme using the
+   * construct a OpenFHE CryptoContextImpl for the BFVrns Scheme using the
    * scheme's ParamsGen methods
    * @param plaintextModulus plaintext modulus
    * @param securityLevel root Hermite factor (lattice security parameter)
@@ -118,7 +118,7 @@ class CryptoContextFactory {
       MultiplicationTechnique multTech = HPS);
 
   /**
-   * construct a PALISADE CryptoContextImpl for the BFVrns Scheme using the
+   * construct a OpenFHE CryptoContextImpl for the BFVrns Scheme using the
    * scheme's ParamsGen methods
    * @param plaintextModulus plaintext modulus
    * @param securityLevel standard secuirity level
@@ -150,7 +150,7 @@ class CryptoContextFactory {
       MultiplicationTechnique multTech = HPS);
 
   /**
-   * construct a PALISADE CryptoContextImpl for the BFVrns Scheme using the
+   * construct a OpenFHE CryptoContextImpl for the BFVrns Scheme using the
    * scheme's ParamsGen methods
    * @param encodingParams plaintext encoding parameters
    * @param securityLevel root Hermite factor (lattice security parameter)
@@ -182,7 +182,7 @@ class CryptoContextFactory {
       MultiplicationTechnique multTech = HPS);
 
   /**
-   * construct a PALISADE CryptoContextImpl for the BFVrns Scheme using the
+   * construct a OpenFHE CryptoContextImpl for the BFVrns Scheme using the
    * scheme's ParamsGen methods
    * @param encodingParams plaintext encoding parameters
    * @param securityLevel standard security level
@@ -214,7 +214,7 @@ class CryptoContextFactory {
       MultiplicationTechnique multTech = HPS);
 
   /**
-   * construct a PALISADE CryptoContextImpl for the BGVrns Scheme
+   * construct a OpenFHE CryptoContextImpl for the BGVrns Scheme
    * @param plaintextmodulus
    * @param ringdim
    * @param modulus
@@ -236,7 +236,7 @@ class CryptoContextFactory {
       enum RescalingTechnique rsTech = FIXEDMANUAL);
 
   /**
-   * construct a PALISADE CryptoContextImpl for the BGVrns Scheme
+   * construct a OpenFHE CryptoContextImpl for the BGVrns Scheme
    * @param encodingParams
    * @param ringdim
    * @param modulus
@@ -257,7 +257,7 @@ class CryptoContextFactory {
       enum RescalingTechnique rsTech = FIXEDMANUAL);
 
   /**
-   * Automatically generate the moduli chain and construct a PALISADE
+   * Automatically generate the moduli chain and construct a OpenFHE
    * CryptoContextImpl for the BGVrns Scheme with it.
    *
    * @param cyclOrder the cyclotomic order M
@@ -285,7 +285,7 @@ class CryptoContextFactory {
       usint multihopQBound = 0);
 
   /**
-   * Construct a PALISADE CryptoContextImpl for the BGVrns Scheme.
+   * Construct a OpenFHE CryptoContextImpl for the BGVrns Scheme.
    *
    * @param multiplicativeDepth the depth of multiplications supported by the
    * scheme (equal to number of towers - 1)
@@ -320,7 +320,7 @@ class CryptoContextFactory {
 
 
   /**
-   * construct a PALISADE CryptoContextImpl for the CKKS Scheme
+   * construct a OpenFHE CryptoContextImpl for the CKKS Scheme
    * @param encodingParams
    * @param ringdim
    * @param modulus

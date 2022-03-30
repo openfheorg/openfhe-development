@@ -50,20 +50,20 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint
                                           BINFHEMETHOD method, bool timeOptimization) {
     if (GINX != method) {
         std::string errMsg("ERROR: GINX is the only supported method");
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OpenFHE_THROW(not_implemented_error, errMsg);
     }
     if (set != STD128 && set != TOY) {
         std::string errMsg("ERROR: STD128 and TOY are the onlysupported sets");
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OpenFHE_THROW(not_implemented_error, errMsg);
     }
 
     if (logQ > 29) {
         std::string errMsg("ERROR: logQ > 29 is not supported");
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OpenFHE_THROW(not_implemented_error, errMsg);
     }
     if (logQ < 11) {
         std::string errMsg("ERROR: logQ < 11 is not supported");
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OpenFHE_THROW(not_implemented_error, errMsg);
     }
     auto logQprime = 54;
     uint32_t baseG = 0;
@@ -151,7 +151,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
     auto search = paramsMap.find(set);
     if (paramsMap.end() == search) {
         std::string errMsg("ERROR: Unknown parameter set [" + std::to_string(set) + "] for FHEW.");
-        PALISADE_THROW(config_error, errMsg);
+        OpenFHE_THROW(config_error, errMsg);
     }
 
     BinFHEContextParams params = search->second;
@@ -305,7 +305,7 @@ std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (
                                                                  NativeInteger p) {
     if (ceil(log2(p.ConvertToInt())) != floor(log2(p.ConvertToInt()))) {
         std::string errMsg("ERROR: Only support plaintext space to be power-of-two.");
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OpenFHE_THROW(not_implemented_error, errMsg);
     }
 
     NativeInteger q        = GetParams()->GetLWEParams()->Getq();
@@ -317,7 +317,7 @@ std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (
         auto temp = f(NativeInteger(i) / interval, p);
         if (temp >= p) {
             std::string errMsg("ERROR: input function should output in Z_{p_output}.");
-            PALISADE_THROW(not_implemented_error, errMsg);
+            OpenFHE_THROW(not_implemented_error, errMsg);
         }
         vec[i] = temp * outerval;
     }

@@ -89,7 +89,7 @@ void Params::SetToDefaults(SCHEME scheme) {
     default:
       std::string errorMsg(std::string("Invalid scheme id: ") +
                            std::to_string(scheme));
-      PALISADE_THROW(config_error, errorMsg);
+      OpenFHE_THROW(config_error, errorMsg);
       break;
   }
 }

@@ -11,7 +11,7 @@ if (DOXYGEN_FOUND)
     set(DOXYGEN_OUTPUT_DIR ${BASE_OUTPUT_DIR}/doxygen)
     set(MAIN_PAGE ${PROJECT_SOURCE_DIR}/README.md)
 
-    set(PALISADE_VERSION ${PALISADE_VERSION})
+    set(OpenFHE_VERSION ${OpenFHE_VERSION})
     configure_file(${DOXYFILE_IN} ${PROCESSED_DOXYFILE} @ONLY)
 
 
@@ -43,6 +43,7 @@ if (DOXYGEN_FOUND)
                 # Tell Breathe where to find the Doxygen output
                 -Dbreathe_projects.OpenFHE=${DOXYGEN_OUTPUT_DIR}/xml
                 ${SPHINX_SOURCE} ${SPHINX_BUILD} 2> errors.txt
+                #${SPHINX_SOURCE} ${SPHINX_BUILD}
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             DEPENDS
                 ${CMAKE_CURRENT_SOURCE_DIR}/index.rst

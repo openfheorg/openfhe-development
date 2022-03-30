@@ -83,7 +83,7 @@ public:
 
         if (Q.GetMSB() > MAX_MODULUS_SIZE) {
             std::string errMsg = "ERROR: Maximum size of Q supported for FHEW is 60 bits.";
-            PALISADE_THROW(config_error, errMsg);
+            OpenFHE_THROW(config_error, errMsg);
         }
 
         PreCompute();
@@ -183,7 +183,7 @@ public:
 
     bool operator==(const LWECryptoParams& other) const {
         return m_n == other.m_n && m_N == other.m_N && m_q == other.m_q && m_Q == other.m_Q &&
-               m_dgg.GetStd() == other.m_dgg.GetStd() && m_baseKS == other.m_baseKS && m_digitsKS == other.m_digitsKS;
+            m_dgg.GetStd() == other.m_dgg.GetStd() && m_baseKS == other.m_baseKS && m_digitsKS == other.m_digitsKS;
     }
 
     bool operator!=(const LWECryptoParams& other) const {
@@ -205,8 +205,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+            OpenFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("n", m_n));
@@ -330,8 +330,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+            OpenFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("a", m_a));
@@ -401,8 +401,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+            OpenFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("s", m_s));
@@ -474,8 +474,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+            OpenFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("k", m_key));

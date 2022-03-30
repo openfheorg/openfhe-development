@@ -209,7 +209,7 @@ inline CryptoContext<DCRTPoly> GenTestCryptoContext(
                                          SPARSE, ksTech, batchSize, rsTech);
   } else {
     std::cout << "nothing for " << name << std::endl;
-    PALISADE_THROW(not_available_error, "No generator for " + name);
+    OpenFHE_THROW(not_available_error, "No generator for " + name);
   }
 
   cc->Enable(PKE);

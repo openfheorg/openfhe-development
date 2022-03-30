@@ -182,7 +182,7 @@ template <typename uint_type, usint BITLENGTH>
 void BigIntegerFixedT<uint_type, BITLENGTH>::SetIntAtIndex(usint idx,
                                                      uint_type value) {
   if (idx >= m_nSize) {
-    PALISADE_THROW(lbcrypto::math_error, "Index invalid");
+    OpenFHE_THROW(lbcrypto::math_error, "Index invalid");
   }
   this->m_value[idx] = value;
 }
@@ -334,7 +334,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::S
   // return 0 if b is higher than *this as there is no support for negative
   // number
   if (!(*this > b)) {
-    //    PALISADE_THROW(lbcrypto::not_implemented_error,
+    //    OpenFHE_THROW(lbcrypto::not_implemented_error,
     //        "there is no support if the minuend is smaller
     // than the subtrahend");
     return 0;
@@ -389,7 +389,7 @@ const BigIntegerFixedT<uint_type, BITLENGTH> &BigIntegerFixedT<uint_type, BITLEN
   // return 0 if b is higher than *this as there is no support for negative
   // number
   if (!(*this > b)) {
-    //    PALISADE_THROW(lbcrypto::not_implemented_error,
+    //    OpenFHE_THROW(lbcrypto::not_implemented_error,
     //        "there is no support if the minuend is smaller
     // than the subtrahend");
     *this = BigIntegerFixedT(0);
@@ -486,7 +486,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::D
     const BigIntegerFixedT &b) const {
   // check for trivial conditions
   if (b == 0) {
-    PALISADE_THROW(lbcrypto::math_error, "Division by zero");
+    OpenFHE_THROW(lbcrypto::math_error, "Division by zero");
   }
   if (b > *this) {
     return 0;
@@ -658,7 +658,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>::DivideAndRound(const BigIntegerFixedT &q) const {
   // check for garbage initialization and 0 condition
   if (q == 0) {
-    PALISADE_THROW(lbcrypto::math_error, "Division by zero");
+    OpenFHE_THROW(lbcrypto::math_error, "Division by zero");
   }
   BigIntegerFixedT halfQ(q >> 1);
   if (*this < q) {
@@ -1321,7 +1321,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
   }
 
   if (second == 0) {
-    PALISADE_THROW(lbcrypto::math_error, "Zero does not have a ModInverse");
+    OpenFHE_THROW(lbcrypto::math_error, "Zero does not have a ModInverse");
   }
   if (second == 1) {
     return 1;
@@ -1338,7 +1338,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
   // issue is that the loop counter could would need to be an ubint.
   while (mod_back != 1) {
     if (mod_back == 0) {
-      PALISADE_THROW(lbcrypto::math_error,
+      OpenFHE_THROW(lbcrypto::math_error,
                      this->ToString() + " does not have a ModInverse using " +
                          modulus.ToString());
     }
@@ -1385,7 +1385,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::L
     return 0;
   }
   if ((this->m_MSB + shift) > BITLENGTH) {
-    PALISADE_THROW(lbcrypto::math_error, "shift overflow");
+    OpenFHE_THROW(lbcrypto::math_error, "shift overflow");
   }
   BigIntegerFixedT ans(*this);
 
@@ -1429,7 +1429,7 @@ const BigIntegerFixedT<uint_type, BITLENGTH>
     return *this;
   }
   if (this->m_MSB + shift > BITLENGTH) {
-    PALISADE_THROW(lbcrypto::math_error, "shift overflow");
+    OpenFHE_THROW(lbcrypto::math_error, "shift overflow");
   }
   usint shiftByUint = shift >> m_logUintBitLength;  // calculate the no.of
                                                     // shifts
@@ -1774,7 +1774,7 @@ void BigIntegerFixedT<uint_type, BITLENGTH>::AssignVal(const std::string &v) {
     cnt--;
     if (cnt == -1) {  // cnt = -1 indicates bitArr is ready for transfer
       if (bitValPtr < 0) {
-        PALISADE_THROW(lbcrypto::math_error,
+        OpenFHE_THROW(lbcrypto::math_error,
                        "string " + v + " cannot fit into BigIntegerFixedT");
       }
 
@@ -1790,7 +1790,7 @@ void BigIntegerFixedT<uint_type, BITLENGTH>::AssignVal(const std::string &v) {
     }
     if (zptr == arrSize && DecValue[arrSize - 1] == 0) {
       if (bitValPtr < 0) {
-        PALISADE_THROW(lbcrypto::math_error,
+        OpenFHE_THROW(lbcrypto::math_error,
                        "string " + v + " cannot fit into BigIntegerFixedT");
       }
       m_value[bitValPtr] = UintInBinaryToDecimal(bitArr);  // Value assignment

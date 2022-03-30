@@ -79,7 +79,7 @@ public:
                                  BINFHEMETHOD method, bool signEval = false)
         : m_LWEParams(lweparams), m_baseG(baseG), m_baseR(baseR), m_method(method) {
         if (!IsPowerOfTwo(baseG)) {
-            PALISADE_THROW(config_error, "Gadget base should be a power of two.");
+            OpenFHE_THROW(config_error, "Gadget base should be a power of two.");
         }
 
         PreCompute(signEval);
@@ -239,7 +239,7 @@ public:
 
     bool operator==(const RingGSWCryptoParams& other) const {
         return *m_LWEParams == *other.m_LWEParams && m_baseR == other.m_baseR && m_baseG == other.m_baseG &&
-               m_method == other.m_method;
+            m_method == other.m_method;
     }
 
     bool operator!=(const RingGSWCryptoParams& other) const {
@@ -257,8 +257,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+            OpenFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                " is from a later version of the library");
         }
         ar(::cereal::make_nvp("params", m_LWEParams));
         ar(::cereal::make_nvp("bR", m_baseR));
@@ -405,8 +405,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+            OpenFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                " is from a later version of the library");
         }
         ar(::cereal::make_nvp("elements", m_elements));
     }
@@ -491,8 +491,8 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+            OpenFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                " is from a later version of the library");
         }
         ar(::cereal::make_nvp("key", m_key));
     }

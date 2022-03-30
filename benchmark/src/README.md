@@ -1,6 +1,6 @@
 # Benchmarking
 
-Palisade uses the [Google microbenchmark support library](https://github.com/google/benchmark#running-benchmarks) to measure performance. Performance testing code can be found in `/benchmark/src`. After building, binaries are written to `/your_build_folder/bin/benchmark`. To build only tests and their dependencies, use the following command in the build folder:
+OpenFHE uses the [Google microbenchmark support library](https://github.com/google/benchmark#running-benchmarks) to measure performance. Performance testing code can be found in `/benchmark/src`. After building, binaries are written to `/your_build_folder/bin/benchmark`. To build only tests and their dependencies, use the following command in the build folder:
 
 ```
 make allbenchmark
@@ -38,7 +38,7 @@ export OMP_NUM_THREADS=1
 
 ## lib-benchmark
 
-[lib-benchmark](lib-benchmark.cpp) is the main PALISADE library benchmark that contains performance tests for standard operations in the following schemes: BFVrns, CKKS, BGVrns. It also contains several performance tests for NTT and INTT transformations.
+[lib-benchmark](lib-benchmark.cpp) is the main OpenFHE library benchmark that contains performance tests for standard operations in the following schemes: BFVrns, CKKS, BGVrns. It also contains several performance tests for NTT and INTT transformations.
 
 An example output after running `lib-benchmark` is as follows:
 
