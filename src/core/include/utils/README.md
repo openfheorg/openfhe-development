@@ -4,5 +4,5 @@ Contains various utilities across:
 
 - debugging utilities
 - memory management utilities
-- prallel operations
+- parallel operations
 - serialization
