@@ -7,7 +7,7 @@ File Listings
 -----------------------
 
 ``Boolean FHE CryptoContext Serialization``
-    - Adds serialization support to Bollean Circuit FHE
+    - Adds serialization support to Boolean Circuit FHE
 
 ``Boolean FHE CryptoContext``
     - CryptoContext for the boolean circuit FHE scheme.
