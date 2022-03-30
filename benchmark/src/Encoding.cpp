@@ -41,21 +41,30 @@ bool runOnlyOnce = true;  // TODO (dsuponit): do we need runOnlyOnce???
 #include "gen-cryptocontext.h"
 
 #include <iostream>
+#include <random>
 
 using namespace lbcrypto;
 
 void BM_encoding_CoefPacked(benchmark::State& state) {
     Plaintext plaintext;
-    usint m               = 1024;
-    PlaintextModulus ptm  = 128;
-    PlaintextModulus half = ptm / 2;
+    usint m              = 1024;
+    PlaintextModulus ptm = 128;
 
     shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParams>(m);
     EncodingParams ep(new EncodingParamsImpl(ptm));
 
     vector<int64_t> intvec;
+    PlaintextModulus half = ptm / 2;
+    // for (usint ii = 0; ii < m / 2; ii++)
+    //    intvec.push_back(rand() % half);
+
+    std::random_device rd;
+    std::mt19937_64 gen(rd());
+    // We must use "unsigned long long" instead of uint64_t as the template argument to define the number generator.
+    // Otherwise, the result may be undefined as per https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
+    std::uniform_int_distribution<unsigned long long> dis(0, half - 1);  // NOLINT
     for (usint ii = 0; ii < m / 2; ii++)
-        intvec.push_back(rand() % half);  // NOLINT
+        intvec.push_back(dis(gen));
 
     while (state.KeepRunning()) {
         plaintext.reset(new CoefPackedEncoding(lp, ep, intvec));

@@ -37,23 +37,11 @@
 #include "benchmark/benchmark.h"
 
 #include "palisade.h"
+#include "vechelper.h"
+#include "lattice/elemparamfactory.h"
 
 #include <iostream>
 
-#include "vechelper.h"
-
-#include "lattice/hal/default/dcrtpoly.cpp"  // NOLINT
-#include "lattice/elemparamfactory.h"
-#include "lattice/elemparams.cpp"              // NOLINT
-#include "lattice/ildcrtparams.cpp"            // NOLINT
-#include "lattice/ilparams.cpp"                // NOLINT
-#include "lattice/poly.cpp"                    // NOLINT
-#include "math/discretegaussiangenerator.cpp"  // NOLINT
-#include "math/discreteuniformgenerator.cpp"   // NOLINT
-#include "math/nbtheory.cpp"                   // NOLINT
-#include "math/hal.h"
-
-using namespace std;
 using namespace lbcrypto;
 
 #define DO_NATIVEVECTOR_BENCHMARK(X)                                                                     \

@@ -30,7 +30,6 @@
 //==================================================================================
 
 /*
-
   Description:
   This code benchmarks functions of the src/lib/lattoce directory  of the
   PALISADE lattice encryption library.
@@ -40,24 +39,13 @@
 #include "benchmark/benchmark.h"
 
 #include "palisade.h"
+#include "vechelper.h"
+#include "lattice/elemparamfactory.h"
 
 #include <iostream>
 #include <vector>
 
-#include "vechelper.h"
-
-#include "lattice/hal/default/dcrtpoly.cpp"  // NOLINT
-#include "lattice/elemparamfactory.h"
-#include "lattice/elemparams.cpp"              // NOLINT
-#include "lattice/ildcrtparams.cpp"            // NOLINT
-#include "lattice/ilparams.cpp"                // NOLINT
-#include "lattice/poly.cpp"                    // NOLINT
-#include "math/discretegaussiangenerator.cpp"  // NOLINT
-#include "math/discreteuniformgenerator.cpp"   // NOLINT
-#include "math/nbtheory.cpp"                   // NOLINT
-#include "math/hal.h"
-
-using namespace std;
+// using namespace std;
 using namespace lbcrypto;
 
 namespace lbcrypto {
@@ -84,11 +72,11 @@ static E makeElement(shared_ptr<lbcrypto::ILDCRTParams<typename E::Integer>> p) 
     return elem;
 }
 
-static vector<usint> o({16, 1024, 2048, 4096, 8192, 16384, 32768});
+static std::vector<usint> o({16, 1024, 2048, 4096, 8192, 16384, 32768});
 static const usint DCRTBITS = 28;
 
 template <typename P>
-static void GenerateParms(map<usint, shared_ptr<P>>& parmArray) {
+static void GenerateParms(std::map<usint, shared_ptr<P>>& parmArray) {
     for (usint v : o) {
         shared_ptr<P> value;
         try {
@@ -102,7 +90,7 @@ static void GenerateParms(map<usint, shared_ptr<P>>& parmArray) {
 }
 
 template <typename P>
-static void GenerateDCRTParms(map<usint, shared_ptr<P>>& parmArray) {
+static void GenerateDCRTParms(std::map<usint, shared_ptr<P>>& parmArray) {
     for (usint v : o) {
         size_t idx = ElemParamFactory::GetNearestIndex(v);
         M2Integer primeq(ElemParamFactory::DefaultSet[idx].q);
@@ -115,7 +103,7 @@ static void GenerateDCRTParms(map<usint, shared_ptr<P>>& parmArray) {
 }
 
 template <typename P, typename E>
-static void GeneratePolys(map<usint, shared_ptr<P>>& parmArray, map<usint, vector<E>>& polyArray) {
+static void GeneratePolys(std::map<usint, shared_ptr<P>>& parmArray, std::map<usint, std::vector<E>>& polyArray) {
     for (auto& pair : parmArray) {
         for (int i = 0; i < 2; i++)
             polyArray[pair.first].push_back(makeElement<E>(parmArray[pair.first]));
@@ -124,23 +112,23 @@ static void GeneratePolys(map<usint, shared_ptr<P>>& parmArray, map<usint, vecto
 
 }  // namespace lbcrypto
 
-map<usint, shared_ptr<ILNativeParams>> Nativeparms;
-map<usint, shared_ptr<M2Params>> BE2parms;
-map<usint, shared_ptr<M2DCRTParams>> BE2dcrtparms;
-map<usint, shared_ptr<M4Params>> BE4parms;
-map<usint, shared_ptr<M4DCRTParams>> BE4dcrtparms;
+std::map<usint, shared_ptr<ILNativeParams>> Nativeparms;
+std::map<usint, shared_ptr<M2Params>> BE2parms;
+std::map<usint, shared_ptr<M2DCRTParams>> BE2dcrtparms;
+std::map<usint, shared_ptr<M4Params>> BE4parms;
+std::map<usint, shared_ptr<M4DCRTParams>> BE4dcrtparms;
 #ifdef WITH_NTL
-map<usint, shared_ptr<M6Params>> BE6parms;
-map<usint, shared_ptr<M6DCRTParams>> BE6dcrtparms;
+std::map<usint, shared_ptr<M6Params>> BE6parms;
+std::map<usint, shared_ptr<M6DCRTParams>> BE6dcrtparms;
 #endif
-map<usint, vector<NativePoly>> Nativepolys;
-map<usint, vector<M2Poly>> BE2polys;
-map<usint, vector<M2DCRTPoly>> BE2DCRTpolys;
-map<usint, vector<M4Poly>> BE4polys;
-map<usint, vector<M4DCRTPoly>> BE4DCRTpolys;
+std::map<usint, std::vector<NativePoly>> Nativepolys;
+std::map<usint, std::vector<M2Poly>> BE2polys;
+std::map<usint, std::vector<M2DCRTPoly>> BE2DCRTpolys;
+std::map<usint, std::vector<M4Poly>> BE4polys;
+std::map<usint, std::vector<M4DCRTPoly>> BE4DCRTpolys;
 #ifdef WITH_NTL
-map<usint, vector<M6Poly>> BE6polys;
-map<usint, vector<M6DCRTPoly>> BE6DCRTpolys;
+std::map<usint, std::vector<M6Poly>> BE6polys;
+std::map<usint, std::vector<M6DCRTPoly>> BE6DCRTpolys;
 #endif
 
 class Setup {
