@@ -72,7 +72,7 @@ std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::Encrypt(
   NativeInteger q = sk->GetElement().GetModulus();
   uint32_t n = sk->GetElement().GetLength();
 
-  if(q % p !=0 && q.ConvertToInt() & 1 == 0){
+  if(q % p !=0 && q.ConvertToInt() & (1 == 0)){
     std::string errMsg =
             "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
     PALISADE_THROW(not_implemented_error, errMsg);
@@ -119,7 +119,7 @@ void LWEEncryptionScheme::Decrypt(
   NativeVector s = sk->GetElement();
   NativeInteger q = sk->GetElement().GetModulus();
 
-  if(q % (p*2) !=0  && q.ConvertToInt() & 1 == 0){
+  if(q % (p*2) !=0  && q.ConvertToInt() & (1 == 0)){
     std::string errMsg =
             "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p*2.";
     PALISADE_THROW(not_implemented_error, errMsg);
