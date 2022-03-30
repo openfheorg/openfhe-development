@@ -51,7 +51,6 @@
 
 #include "utils/debug.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 usint mult_depth = 3;

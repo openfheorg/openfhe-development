@@ -39,9 +39,6 @@ using namespace lbcrypto;
 
 int main() {
     // Sample Program: Step 1: Set CryptoContext
-
-    using namespace std;
-
     auto cc = BinFHEContext();
     cc.GenerateBinFHEContext(STD128, true, 12);
 

@@ -42,7 +42,6 @@
 #include <iostream>
 #include <vector>
 
-using namespace std;
 using namespace lbcrypto;
 
 #define DO_BENCHMARK_TEMPLATE(X, Y) BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond);

@@ -51,7 +51,6 @@
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 usint mult_depth = 3;

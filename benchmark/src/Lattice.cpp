@@ -45,7 +45,6 @@
 #include <iostream>
 #include <vector>
 
-// using namespace std;
 using namespace lbcrypto;
 
 namespace lbcrypto {

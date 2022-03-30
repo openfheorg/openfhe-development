@@ -40,12 +40,11 @@
 #include "vechelper.h"
 #include "math/hal.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 namespace lbcrypto {
 
-static vector<usint> tow_args({1, 2, 4, 8});
+static std::vector<usint> tow_args({1, 2, 4, 8});
 
 static const usint DCRTBITS     = 60;
 static const usint RING_DIM_LOG = 10;
@@ -80,12 +79,12 @@ static void GenerateNativeParms(shared_ptr<ILNativeParams>& parmArray) {
     parmArray = shared_ptr<ILNativeParams>(new ILNativeParams(m, modulo, root));
 }
 
-static void GenerateDCRTParms(map<usint, shared_ptr<M2DCRTParams>>& parmArray) {
+static void GenerateDCRTParms(std::map<usint, shared_ptr<M2DCRTParams>>& parmArray) {
     for (usint t : tow_args) {
         uint32_t m = (1 << (RING_DIM_LOG + 1));
 
-        vector<NativeInteger> moduli(t);
-        vector<NativeInteger> roots(t);
+        std::vector<NativeInteger> moduli(t);
+        std::vector<NativeInteger> roots(t);
 
         NativeInteger firstInteger = FirstPrime<NativeInteger>(DCRTBITS, m);
         moduli[0]                  = PreviousPrime<NativeInteger>(firstInteger, m);
@@ -102,58 +101,58 @@ static void GenerateDCRTParms(map<usint, shared_ptr<M2DCRTParams>>& parmArray) {
     }
 }
 
-static void GeneratePolys(shared_ptr<ILNativeParams> parmArray, shared_ptr<vector<NativePoly>>& polyArrayEval,
-                          shared_ptr<vector<NativePoly>>& polyArrayCoef) {
-    vector<NativePoly> vecEval;
+static void GeneratePolys(shared_ptr<ILNativeParams> parmArray, shared_ptr<std::vector<NativePoly>>& polyArrayEval,
+                          shared_ptr<std::vector<NativePoly>>& polyArrayCoef) {
+    std::vector<NativePoly> vecEval;
     for (size_t i = 0; i < POLY_NUM; i++) {
         vecEval.push_back(makeElement(parmArray, Format::EVALUATION));
     }
-    polyArrayEval = make_shared<vector<NativePoly>>(std::move(vecEval));
+    polyArrayEval = std::make_shared<std::vector<NativePoly>>(std::move(vecEval));
 
-    vector<NativePoly> vecCoef;
+    std::vector<NativePoly> vecCoef;
     for (size_t i = 0; i < POLY_NUM; i++) {
         vecCoef.push_back(makeElement(parmArray, Format::COEFFICIENT));
     }
-    polyArrayCoef = make_shared<vector<NativePoly>>(std::move(vecCoef));
+    polyArrayCoef = std::make_shared<std::vector<NativePoly>>(std::move(vecCoef));
 }
 
-static void GenerateDCRTPolys(map<usint, shared_ptr<M2DCRTParams>>& parmArray,
-                              map<usint, shared_ptr<vector<M2DCRTPoly>>>& polyArrayEval,
-                              map<usint, shared_ptr<vector<M2DCRTPoly>>>& polyArrayCoef) {
+static void GenerateDCRTPolys(std::map<usint, shared_ptr<M2DCRTParams>>& parmArray,
+                              std::map<usint, shared_ptr<std::vector<M2DCRTPoly>>>& polyArrayEval,
+                              std::map<usint, shared_ptr<std::vector<M2DCRTPoly>>>& polyArrayCoef) {
     for (auto& pair : parmArray) {
-        vector<M2DCRTPoly> vecEval;
+        std::vector<M2DCRTPoly> vecEval;
         for (size_t i = 0; i < POLY_NUM; i++) {
             vecEval.push_back(makeElement(parmArray[pair.first], Format::EVALUATION));
         }
-        polyArrayEval[pair.first] = make_shared<vector<M2DCRTPoly>>(std::move(vecEval));
-        vector<M2DCRTPoly> vecCoef;
+        polyArrayEval[pair.first] = std::make_shared<std::vector<M2DCRTPoly>>(std::move(vecEval));
+        std::vector<M2DCRTPoly> vecCoef;
         for (size_t i = 0; i < POLY_NUM; i++) {
             vecCoef.push_back(makeElement(parmArray[pair.first], Format::COEFFICIENT));
         }
-        polyArrayCoef[pair.first] = make_shared<vector<M2DCRTPoly>>(std::move(vecCoef));
+        polyArrayCoef[pair.first] = std::make_shared<std::vector<M2DCRTPoly>>(std::move(vecCoef));
     }
 }
 
 }  // namespace lbcrypto
 
 shared_ptr<ILNativeParams> Nativeparms;
-map<usint, shared_ptr<M2DCRTParams>> DCRTparms;
+std::map<usint, shared_ptr<M2DCRTParams>> DCRTparms;
 
-shared_ptr<vector<NativePoly>> NativepolysEval;
-map<usint, shared_ptr<vector<M2DCRTPoly>>> DCRTpolysEval;
+shared_ptr<std::vector<NativePoly>> NativepolysEval;
+std::map<usint, shared_ptr<std::vector<M2DCRTPoly>>> DCRTpolysEval;
 
-shared_ptr<vector<NativePoly>> NativepolysCoef;
-map<usint, shared_ptr<vector<M2DCRTPoly>>> DCRTpolysCoef;
+shared_ptr<std::vector<NativePoly>> NativepolysCoef;
+std::map<usint, shared_ptr<std::vector<M2DCRTPoly>>> DCRTpolysCoef;
 
 class Setup {
 public:
     Setup() {
         GenerateNativeParms(Nativeparms);
         GenerateDCRTParms(DCRTparms);
-        cerr << "Generating polynomials for the benchmark..." << endl;
+        std::cerr << "Generating polynomials for the benchmark..." << std::endl;
         GeneratePolys(Nativeparms, NativepolysEval, NativepolysCoef);
         GenerateDCRTPolys(DCRTparms, DCRTpolysEval, DCRTpolysCoef);
-        cerr << "Polynomials for the benchmark are generated" << endl;
+        std::cerr << "Polynomials for the benchmark are generated" << std::endl;
     }
 } TestParameters;
 
@@ -164,7 +163,7 @@ static void DCRTArguments(benchmark::internal::Benchmark* b) {
 }
 
 static void Native_add(benchmark::State& state) {  // benchmark
-    shared_ptr<vector<NativePoly>> polys = NativepolysEval;
+    shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly *a, *b, c;
     size_t i = 0;
 
@@ -180,7 +179,7 @@ static void Native_add(benchmark::State& state) {  // benchmark
 BENCHMARK(Native_add)->Unit(benchmark::kMicrosecond);
 
 static void DCRT_add(benchmark::State& state) {  // benchmark
-    shared_ptr<vector<M2DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
+    shared_ptr<std::vector<M2DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     M2DCRTPoly *a, *b, c;
     size_t i = 0;
 
@@ -196,7 +195,7 @@ static void DCRT_add(benchmark::State& state) {  // benchmark
 BENCHMARK(DCRT_add)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
 
 static void Native_mul(benchmark::State& state) {
-    shared_ptr<vector<NativePoly>> polys = NativepolysEval;
+    shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly *a, *b, c;
     size_t i = 0;
     while (state.KeepRunning()) {
@@ -211,7 +210,7 @@ static void Native_mul(benchmark::State& state) {
 BENCHMARK(Native_mul)->Unit(benchmark::kMicrosecond);
 
 static void DCRT_mul(benchmark::State& state) {
-    shared_ptr<vector<M2DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
+    shared_ptr<std::vector<M2DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     M2DCRTPoly *a, *b, c;
     size_t i = 0;
 
@@ -227,7 +226,7 @@ static void DCRT_mul(benchmark::State& state) {
 BENCHMARK(DCRT_mul)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
 
 static void Native_ntt(benchmark::State& state) {
-    shared_ptr<vector<NativePoly>> polys = NativepolysCoef;
+    shared_ptr<std::vector<NativePoly>> polys = NativepolysCoef;
     NativePoly a;
     size_t i = 0;
 
@@ -242,7 +241,7 @@ static void Native_ntt(benchmark::State& state) {
 BENCHMARK(Native_ntt)->Unit(benchmark::kMicrosecond);
 
 static void DCRT_ntt(benchmark::State& state) {
-    shared_ptr<vector<M2DCRTPoly>> polys = DCRTpolysCoef[state.range(0)];
+    shared_ptr<std::vector<M2DCRTPoly>> polys = DCRTpolysCoef[state.range(0)];
     M2DCRTPoly a;
     size_t i = 0;
 
@@ -257,7 +256,7 @@ static void DCRT_ntt(benchmark::State& state) {
 BENCHMARK(DCRT_ntt)->Unit(benchmark::kMicrosecond)->Apply(DCRTArguments);
 
 static void Native_intt(benchmark::State& state) {
-    shared_ptr<vector<NativePoly>> polys = NativepolysEval;
+    shared_ptr<std::vector<NativePoly>> polys = NativepolysEval;
     NativePoly a;
     size_t i = 0;
 
@@ -272,7 +271,7 @@ static void Native_intt(benchmark::State& state) {
 BENCHMARK(Native_intt)->Unit(benchmark::kMicrosecond);
 
 static void DCRT_intt(benchmark::State& state) {
-    shared_ptr<vector<M2DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
+    shared_ptr<std::vector<M2DCRTPoly>> polys = DCRTpolysEval[state.range(0)];
     M2DCRTPoly a;
     size_t i = 0;
 

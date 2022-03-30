@@ -112,7 +112,6 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params,
     if (q % (p * 2) != 0 && q.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p*2.";
         PALISADE_THROW(not_implemented_error, errMsg);
-        return;
     }
 
     NativeInteger mu = q.ComputeMu();

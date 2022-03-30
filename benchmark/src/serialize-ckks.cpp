@@ -45,7 +45,6 @@
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 void CKKS_serialize(benchmark::State& state) {
@@ -65,7 +64,7 @@ void CKKS_serialize(benchmark::State& state) {
 
     // DEBUG("step 0");
     {
-        stringstream s;
+        std::stringstream s;
         CryptoContext<DCRTPoly> ccNew;
         while (state.KeepRunning()) {
             Serial::Serialize(cc, s, SerType::BINARY);
@@ -78,7 +77,7 @@ void CKKS_serialize(benchmark::State& state) {
 
     // DEBUG("step 1");
     {
-        stringstream s;
+        std::stringstream s;
         while (state.KeepRunning()) {
             Serial::Serialize(kp.publicKey, s, SerType::BINARY);
             Serial::Deserialize(kpnew.publicKey, s, SerType::BINARY);
@@ -87,7 +86,7 @@ void CKKS_serialize(benchmark::State& state) {
 
     // DEBUG("step 2");
     {
-        stringstream s;
+        std::stringstream s;
         while (state.KeepRunning()) {
             Serial::Serialize(kp.secretKey, s, SerType::BINARY);
             Serial::Deserialize(kpnew.secretKey, s, SerType::BINARY);
@@ -104,8 +103,8 @@ void CKKS_serialize(benchmark::State& state) {
     Ciphertext<DCRTPoly> newC;
     Ciphertext<DCRTPoly> newCL2D2;
     {
-        stringstream s;
-        stringstream s2;
+        std::stringstream s;
+        std::stringstream s2;
         while (state.KeepRunning()) {
             Serial::Serialize(ciphertext, s, SerType::BINARY);
             Serial::Deserialize(newC, s, SerType::BINARY);

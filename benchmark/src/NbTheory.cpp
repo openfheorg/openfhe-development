@@ -41,7 +41,6 @@
 
 #include "palisade.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 //==================================
