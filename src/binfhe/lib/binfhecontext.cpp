@@ -91,12 +91,12 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint
         ringDim = N;
     }
     NativeInteger Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(logQprime, ringDim), ringDim); // find prime Q for NTT
-    long q = arbFunc ? ringDim : ringDim * 2; // q = N*2 by default for maximum plaintext space, if needed for arbitrary function evlauation, q = ringDim/2
+    uint32_t q = arbFunc ? ringDim : ringDim * 2; // q = N*2 by default for maximum plaintext space, if needed for arbitrary function evlauation, q = ringDim/2
 
     uint64_t qKS = 1 << 30;
     qKS <<= 5;
 
-    long n = (set == TOY) ? 32 : 1305;
+    uint32_t n = (set == TOY) ? 32 : 1305;
     auto lweparams = std::make_shared<LWECryptoParams>(n, ringDim, q, Q.ConvertToInt(), qKS, 3.19, 32);
     m_params =
         std::make_shared<RingGSWCryptoParams>(lweparams, baseG, 23, method, ((logQ != 11) && timeOptimization));
