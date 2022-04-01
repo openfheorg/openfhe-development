@@ -1,11 +1,10 @@
-Core Lattice documentation
-====================================
+Core Lattice Hardware Abstraction Layer Documentation
+======================================================
 
-Core Lattice Documentation
--------------------------------
-
-.. autodoxygenindex::
-   :project: core_lattice
+.. contents:: Core Lattice HAL
+   :depth: 2
+   :local:
+   :backlinks: none
 
 Core Lattice HAL Documentation
 -------------------------------
@@ -24,3 +23,4 @@ Core Lattice HAL Default Backend Documentation
 
 .. autodoxygenindex::
    :project: core_lattice_hal_default
+

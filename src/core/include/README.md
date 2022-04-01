@@ -1,21 +1,29 @@
 # Core Library Implementation
 
+```mermaid
+flowchart BT
+    A[Math<br> - Provides base math operations </br> - Supports various math backends] --> B[Lattice <br> - Represent polynomial rings </br> - support operations over polynomial rings. </br> - calls math layer for lower-level math ops];
+    B[Lattice <br> - Represent polynomial rings </br> - support operations over polynomial rings. </br> - calls math layer for lower-level math ops] --> C[Core Layer];
+```
+
 Contains the underlying primitives that are used in both `pke` and `binfhe`.
 
-## Utils
+## [Lattice](lattice)
 
-Contains utilities for fast memory management, and generation of `PRNGs`
+- Contains files that support lattice-layer operations in OpenFHE. This layer is used to represent polynomial rings and support operations over those rings. 
 
-### Block Allocator
+- As can be seen above, this is the "middle" layer between higher-level lattice cryptography elements, and the lower level math operations.
 
-- Utility for allocating and freeing fixed blocks of memory memory.
 
-- Prevents memory faults by using a heap
+## [Math](math)
 
-- Basically a custom memory management system.
+- TODO
 
-### PRNG
+## [Utils](utils)
 
-- Our cryptographic hash function which is based off of [Blake2b](https://blake2.net), which allows fast hashing.
+Contains various utilities across:
 
-- To define new `PRNG` engines, refer to [blake2engine.h](prng/blake2engine.h).
+- debugging utilities
+- memory management utilities
+- parallel operations
+- serialization
