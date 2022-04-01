@@ -1,7 +1,7 @@
 OpenFHE Modules
 =================================================
 
-Understanding the various components
+Understanding the various Modules
 ------------------------------------
 
 .. mermaid::
