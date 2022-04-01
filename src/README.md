@@ -1,3 +1,5 @@
+# Palisade Code Components
+
 ```mermaid
 flowchart BT
     A[CORE<br/>- math implementation<br/>- lattice implementation<br/>- serialization] --> B[PKE<br/> -generalized FHE];

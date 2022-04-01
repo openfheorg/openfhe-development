@@ -17,7 +17,7 @@ Components
 .. toctree::
    :maxdepth: 3
 
-   core/core_lattice.rst
+   core/lattice/core_lattice.rst
    core/core_math.rst
    core/utils/core_utils.rst
 
