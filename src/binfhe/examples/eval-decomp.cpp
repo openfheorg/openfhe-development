@@ -87,7 +87,7 @@ int main() {
       p = 2;
     }
     cc.Decrypt(sk, ct1, &result, p, q);
-    std::cout << "(" << result << " * " << cc.GetMaxPlaintextSpace().ConvertToInt() << "^" << i << ")";
+    std::cout << "(" << result << " * " << cc.GetMaxPlaintextSpace() << "^" << i << ")";
     if(i != decomp.size()-1){
       std::cout  << " + ";
     }
