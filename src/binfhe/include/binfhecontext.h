@@ -328,6 +328,14 @@ class BinFHEContext : public Serializable {
    */
   LWECiphertext EvalNOT(ConstLWECiphertext ct1) const;
 
+  /**
+   * Evaluates constant gate
+   *
+   * @param value the Boolean value to output
+   * @return a shared pointer to the resulting ciphertext
+   */
+  LWECiphertext EvalConstant(bool value) const;
+
   const std::shared_ptr<RingGSWCryptoParams> GetParams() { return m_params; }
 
   const std::shared_ptr<LWEEncryptionScheme> GetLWEScheme() {
