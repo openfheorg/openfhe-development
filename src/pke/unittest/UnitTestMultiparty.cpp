@@ -108,6 +108,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
 }
 //===========================================================================================================
 constexpr usint BATCH = 16;
+// clang-format off
 static std::vector<TEST_CASE> testCases = {
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
     { CKKSRNS_TEST,  "1", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
@@ -151,6 +152,7 @@ static std::vector<TEST_CASE> testCases = {
     { BFVRNS_TEST_EXTRA, "31", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     3.2,    DFLT,      2,          DFLT, BEHZ},    false },
     { BFVRNS_TEST_EXTRA, "32", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    16,    3.2,    DFLT,      2,          DFLT, BEHZ},    false },
 };
+// clang-format on
 //===========================================================================================================
 class UTMultiparty : public ::testing::TestWithParam<TEST_CASE> {
     using Element = DCRTPoly;

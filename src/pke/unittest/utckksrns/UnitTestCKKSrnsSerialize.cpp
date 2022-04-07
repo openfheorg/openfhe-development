@@ -122,6 +122,7 @@ constexpr usint SCALE    = 50;
 constexpr usint MULT_DEPTH = 3;
 constexpr usint RELIN    = 20;
 constexpr usint BATCH    = 8;
+// clang-format off
 static std::vector<TEST_CASE> testCases = {
     // TestType,            Descr, Scheme,        RDim,     MultDepth,  SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { CONTEXT_WITH_SERTYPE, "1", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -164,6 +165,7 @@ static std::vector<TEST_CASE> testCases = {
 #endif
     // ==========================================
 };
+// clang-format on
 //===========================================================================================================
 class UTCKKSSer : public ::testing::TestWithParam<TEST_CASE> {
     using Element = DCRTPoly;

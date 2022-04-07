@@ -157,6 +157,7 @@ constexpr usint SCALE = 90;
 constexpr usint SCALE = 50;
 #endif
 
+// clang-format off
 static std::vector<TEST_CASE> testCases = {
     // TestType,  Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { ADD_PACKED, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -276,6 +277,7 @@ static std::vector<TEST_CASE> testCases = {
 #endif
     // ==========================================
 };
+// clang-format on
 //===========================================================================================================
 
 class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE> {

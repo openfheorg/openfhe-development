@@ -149,6 +149,7 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
  * log2(5308417) = 22.34
  * log2(3221225473) = 31.58
  */
+ // clang-format off
 INSTANTIATE_TEST_SUITE_P(
     BFVrns_Decrypt, UTBFVRNS_DECRYPT,
     ::testing::Values(std::make_tuple(1 << 1, 30),        // A
@@ -192,4 +193,5 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_tuple(65537, 60),         // G
                       std::make_tuple(5308417, 60),       // H
                       std::make_tuple(3221225473, 60)));  // H
+ // clang-format on
 #endif

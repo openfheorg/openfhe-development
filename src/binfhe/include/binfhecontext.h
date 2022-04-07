@@ -1,22 +1,22 @@
 //==================================================================================
 // BSD 2-Clause License
-// 
+//
 // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
-// 
+//
 // All rights reserved.
-// 
+//
 // Author TPOC: contact@openfhe.org
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 //    this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,6 +38,8 @@
 
 #include <memory>
 #include <string>
+#include <map>
+#include <vector>
 
 #include "fhew.h"
 #include "lwe.h"
@@ -49,45 +51,45 @@ namespace lbcrypto {
 
 // security levels for predefined parameter sets
 enum BINFHEPARAMSET {
-  TOY,        // no security
-  STD128_AP,    // Optimized for AP (has higher failure probability for GINX) -
-                // more than 128 bits of security for classical
-                // computer attacks - uses the same setup as HE standard
-  STD128_APOPT, // Optimized for AP (has higher failure probability for GINX) -
-                // more than 128 bits of security for classical computer attacks -
-                // optimize runtime by finding a non-power-of-two n
-  STD128,     // more than 128 bits of security for classical
-              // computer attacks - uses the same setup as HE standard
-  STD128_OPT,     // more than 128 bits of security for classical computer attacks -
-              // optimize runtime by finding a non-power-of-two n
-  STD192,     // more than 192 bits of security for classical computer attacks -
-              // uses the same setup as HE standard
-  STD192_OPT, // more than 192 bits of security for classical computer attacks -
-              // optimize runtime by finding a non-power-of-two n
-  STD256,     // more than 256 bits of security for classical computer attacks -
-              // uses the same setup as HE standard
-  STD256_OPT, // more than 256 bits of security for classical computer attacks -
-              // optimize runtime by finding a non-power-of-two n
-  STD128Q,    // more than 128 bits of security for quantum attacks - uses the
-              // same setup as HE standard
-  STD128Q_OPT, // more than 128 bits of security for quantum attacks -
-              // optimize runtime by finding a non-power-of-two n
-  STD192Q,    // more than 192 bits of security for quantum attacks - uses the
-              // same setup as HE standard
-  STD192Q_OPT, // more than 192 bits of security for quantum attacks -
-              // optimize runtime by finding a non-power-of-two n
-  STD256Q,    // more than 256 bits of security for quantum attacks - uses the
-              // same setup as HE standard
-  STD256Q_OPT,    // more than 256 bits of security for quantum attacks -
-              // optimize runtime by finding a non-power-of-two n
-  SIGNED_MOD_TEST  // special parameter set for confirming the signed modular
-                   // reduction in the accumulator updates works correctly
+    TOY,             // no security
+    STD128_AP,       // Optimized for AP (has higher failure probability for GINX) -
+                     // more than 128 bits of security for classical
+                     // computer attacks - uses the same setup as HE standard
+    STD128_APOPT,    // Optimized for AP (has higher failure probability for GINX) -
+                     // more than 128 bits of security for classical computer attacks -
+                     // optimize runtime by finding a non-power-of-two n
+    STD128,          // more than 128 bits of security for classical
+                     // computer attacks - uses the same setup as HE standard
+    STD128_OPT,      // more than 128 bits of security for classical computer attacks -
+                     // optimize runtime by finding a non-power-of-two n
+    STD192,          // more than 192 bits of security for classical computer attacks -
+                     // uses the same setup as HE standard
+    STD192_OPT,      // more than 192 bits of security for classical computer attacks -
+                     // optimize runtime by finding a non-power-of-two n
+    STD256,          // more than 256 bits of security for classical computer attacks -
+                     // uses the same setup as HE standard
+    STD256_OPT,      // more than 256 bits of security for classical computer attacks -
+                     // optimize runtime by finding a non-power-of-two n
+    STD128Q,         // more than 128 bits of security for quantum attacks - uses the
+                     // same setup as HE standard
+    STD128Q_OPT,     // more than 128 bits of security for quantum attacks -
+                     // optimize runtime by finding a non-power-of-two n
+    STD192Q,         // more than 192 bits of security for quantum attacks - uses the
+                     // same setup as HE standard
+    STD192Q_OPT,     // more than 192 bits of security for quantum attacks -
+                     // optimize runtime by finding a non-power-of-two n
+    STD256Q,         // more than 256 bits of security for quantum attacks - uses the
+                     // same setup as HE standard
+    STD256Q_OPT,     // more than 256 bits of security for quantum attacks -
+                     // optimize runtime by finding a non-power-of-two n
+    SIGNED_MOD_TEST  // special parameter set for confirming the signed modular
+                     // reduction in the accumulator updates works correctly
 };
 
 // Type of ciphertext generated by the Encrypt method
 enum BINFHEOUTPUT {
-  FRESH,        // a fresh encryption
-  BOOTSTRAPPED  // a freshly encrypted ciphertext is bootstrapped
+    FRESH,        // a fresh encryption
+    BOOTSTRAPPED  // a freshly encrypted ciphertext is bootstrapped
 };
 
 class LWECiphertextImpl;
@@ -108,11 +110,10 @@ using ConstLWEPrivateKey = const std::shared_ptr<const LWEPrivateKeyImpl>;
  * The wrapper class for Boolean circuit FHE
  */
 class BinFHEContext : public Serializable {
- public:
-  BinFHEContext() {}
+public:
+    BinFHEContext() {}
 
-
-  /**
+    /**
    * Creates a crypto context using custom parameters.
    * Should be used with care (only for advanced users familiar with LWE
    * parameter selection).
@@ -128,12 +129,10 @@ class BinFHEContext : public Serializable {
    * @param method the bootstrapping method (AP or GINX)
    * @return creates the cryptocontext
    */
-  void GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger &q,
-                             const NativeInteger &Q, double std,
-                             uint32_t baseKS, uint32_t baseG, uint32_t baseR,
-                             BINFHEMETHOD method = GINX);
+    void GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q, double std,
+                               uint32_t baseKS, uint32_t baseG, uint32_t baseR, BINFHEMETHOD method = GINX);
 
-  /**
+    /**
    * Creates a crypto context using custom parameters.
    * Should be used with care (only for advanced users familiar with LWE
    * parameter selection).
@@ -146,11 +145,10 @@ class BinFHEContext : public Serializable {
    * @param timeOptimization whether to use dynamic bootstrapping technique
    * @return creates the cryptocontext
    */
-  void GenerateBinFHEContext(BINFHEPARAMSET set,
-                                          bool arbFunc, uint32_t logQ = 11, long N = 0, 
-                                          BINFHEMETHOD method = GINX, bool timeOptimization = false);
+    void GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint32_t logQ = 11, int64_t N = 0,
+                               BINFHEMETHOD method = GINX, bool timeOptimization = false);
 
-  /**
+    /**
    * Creates a crypto context using predefined parameters sets. Recommended for
    * most users.
    *
@@ -158,41 +156,41 @@ class BinFHEContext : public Serializable {
    * @param method the bootstrapping method (AP or GINX)
    * @return create the cryptocontext
    */
-  void GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD method = GINX);
+    void GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD method = GINX);
 
-  /**
+    /**
    * Gets the refreshing key (used for serialization).
    *
    * @return a shared pointer to the refreshing key
    */
-  const std::shared_ptr<RingGSWBTKey> GetRefreshKey() const {
-    return m_BTKey.BSkey;
-  }
+    const std::shared_ptr<RingGSWBTKey> GetRefreshKey() const {
+        return m_BTKey.BSkey;
+    }
 
-  /**
+    /**
    * Gets the switching key (used for serialization).
    *
    * @return a shared pointer to the switching key
    */
-  const std::shared_ptr<LWESwitchingKey> GetSwitchKey() const {
-    return m_BTKey.KSkey;
-  }
+    const std::shared_ptr<LWESwitchingKey> GetSwitchKey() const {
+        return m_BTKey.KSkey;
+    }
 
-  /**
+    /**
    * Generates a secret key for the main LWE scheme
    *
    * @param DiffQ Keygen according to DiffQ instead of m_q if DiffQ != 00
    * @return a shared pointer to the secret key
    */
-  LWEPrivateKey KeyGen(NativeInteger DiffQ = 0) const;
+    LWEPrivateKey KeyGen(NativeInteger DiffQ = 0) const;
 
-  /**
+    /**
    * Generates a secret key used in bootstrapping
    * @return a shared pointer to the secret key
    */
-  LWEPrivateKey KeyGenN() const;
+    LWEPrivateKey KeyGenN() const;
 
-  /**
+    /**
    * Encrypts a bit using a secret key (symmetric key encryption)
    *
    * @param sk - the secret key
@@ -203,11 +201,10 @@ class BinFHEContext : public Serializable {
    * @param DiffQ Encrypt according to DiffQ instead of m_q if DiffQ != 0
    * @return a shared pointer to the ciphertext
    */
-  LWECiphertext Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext &m,
-                        BINFHEOUTPUT output = BOOTSTRAPPED, LWEPlaintextModulus p = 4,
-                        NativeInteger DiffQ = 0) const;
+    LWECiphertext Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHEOUTPUT output = BOOTSTRAPPED,
+                          LWEPlaintextModulus p = 4, NativeInteger DiffQ = 0) const;
 
-  /**
+    /**
    * Decrypts a ciphertext using a secret key
    *
    * @param sk the secret key
@@ -216,11 +213,10 @@ class BinFHEContext : public Serializable {
    * @param p - plaintext modulus
    * @param DiffQ Decrypt according to DiffQ instead of m_q if DiffQ != 0
    */
-  void Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct,
-               LWEPlaintext *result, LWEPlaintextModulus p = 4,
-               NativeInteger DiffQ = 0) const;
+    void Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct, LWEPlaintext* result, LWEPlaintextModulus p = 4,
+                 NativeInteger DiffQ = 0) const;
 
-  /**
+    /**
    * Generates a switching key to go from a secret key with (Q,N) to a secret
    * key with (q,n)
    *
@@ -228,33 +224,34 @@ class BinFHEContext : public Serializable {
    * @param skN old secret key
    * @return a shared pointer to the switching key
    */
-  std::shared_ptr<LWESwitchingKey> KeySwitchGen(ConstLWEPrivateKey sk,
-                                                ConstLWEPrivateKey skN) const;
+    std::shared_ptr<LWESwitchingKey> KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPrivateKey skN) const;
 
-  /**
+    /**
    * Generates boostrapping keys
    *
    * @param sk secret key
    * @param DiffQ BTKeyGen according to DiffQ instead of m_q if DiffQ != 0
    */
-  void BTKeyGen(ConstLWEPrivateKey sk, NativeInteger DiffQ = 0);
+    void BTKeyGen(ConstLWEPrivateKey sk, NativeInteger DiffQ = 0);
 
-  /**
+    /**
    * Loads bootstrapping keys in the context (typically after deserializing)
    *
    * @param key struct with the bootstrapping keys
    */
-  void BTKeyLoad(const RingGSWEvalKey &key) { m_BTKey = key; }
+    void BTKeyLoad(const RingGSWEvalKey& key) {
+        m_BTKey = key;
+    }
 
-  /**
+    /**
    * Clear the bootstrapping keys in the current context
    */
-  void ClearBTKeys() {
-    m_BTKey.BSkey.reset();
-    m_BTKey.KSkey.reset();
-  }
+    void ClearBTKeys() {
+        m_BTKey.BSkey.reset();
+        m_BTKey.KSkey.reset();
+    }
 
-  /**
+    /**
    * Evaluates a binary gate (calls bootstrapping as a subroutine)
    *
    * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XNOR
@@ -262,139 +259,139 @@ class BinFHEContext : public Serializable {
    * @param ct2 second ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-  LWECiphertext EvalBinGate(const BINGATE gate, ConstLWECiphertext ct1,
-                            ConstLWECiphertext ct2) const;
+    LWECiphertext EvalBinGate(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const;
 
-  /**
+    /**
    * Bootstraps a ciphertext (without peforming any operation)
    *
    * @param ct1 ciphertext to be bootstrapped
    * @return a shared pointer to the resulting ciphertext
    */
-  LWECiphertext Bootstrap(ConstLWECiphertext ct1) const;
+    LWECiphertext Bootstrap(ConstLWECiphertext ct1) const;
 
-  /**
+    /**
    * Evaluate an arbitrary function
    *
    * @param ct1 ciphertext to be bootstrapped
    * @param LUT the look-up table of the to-be-evaluated function
    * @return a shared pointer to the resulting ciphertext
    */
-  LWECiphertext EvalFunc(ConstLWECiphertext ct1, 
-      const vector<NativeInteger>& LUT) const;
+    LWECiphertext EvalFunc(ConstLWECiphertext ct1, const vector<NativeInteger>& LUT) const;
 
-  /**
+    /**
    * Generate the LUT for the to-be-evaluated function
    *
    * @param f the to-be-evaluated function
    * @param p plaintext modulus
    * @return a shared pointer to the resulting ciphertext
    */
-  vector<NativeInteger> GenerateLUTviaFunction(NativeInteger(*f) (NativeInteger m, NativeInteger p),
-                                      NativeInteger p);
-  
-  /**
+    vector<NativeInteger> GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p), NativeInteger p);
+
+    /**
    * Evaluate a round down function
    *
    * @param ct1 ciphertext to be bootstrapped
    * @param roundbits number of bits to be rounded
    * @return a shared pointer to the resulting ciphertext
    */
-  LWECiphertext EvalFloor(ConstLWECiphertext ct1, const uint32_t roundbits = 0) const;
-  
-  /**
+    LWECiphertext EvalFloor(ConstLWECiphertext ct1, const uint32_t roundbits = 0) const;
+
+    /**
    * Evaluate a sign function over large precisions
    *
    * @param ct1 ciphertext to be bootstrapped
    * @return a shared pointer to the resulting ciphertext
    */
-  LWECiphertext EvalSign(ConstLWECiphertext ct1, 
-      const NativeInteger bigger_q = 0);
-  
-  /**
+    LWECiphertext EvalSign(ConstLWECiphertext ct1, const NativeInteger bigger_q = 0);
+
+    /**
    * Evaluate ciphertext decomposition
    *
    * @param ct1 ciphertext to be bootstrapped
    * @return a vector of shared pointers to the resulting ciphertexts
    */
-  vector<LWECiphertext> EvalDecomp(ConstLWECiphertext ct1, 
-      const NativeInteger bigger_q = 0);
+    vector<LWECiphertext> EvalDecomp(ConstLWECiphertext ct1, const NativeInteger bigger_q = 0);
 
-  /**
+    /**
    * Evaluates NOT gate
    *
    * @param ct1 the input ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-  LWECiphertext EvalNOT(ConstLWECiphertext ct1) const;
+    LWECiphertext EvalNOT(ConstLWECiphertext ct1) const;
 
-  /**
+    /**
    * Evaluates constant gate
    *
    * @param value the Boolean value to output
    * @return a shared pointer to the resulting ciphertext
    */
-  LWECiphertext EvalConstant(bool value) const;
+    LWECiphertext EvalConstant(bool value) const;
 
-  const std::shared_ptr<RingGSWCryptoParams> GetParams() { return m_params; }
-
-  const std::shared_ptr<LWEEncryptionScheme> GetLWEScheme() {
-    return m_LWEscheme;
-  }
-
-  const std::shared_ptr<RingGSWAccumulatorScheme> GetRingGSWScheme() {
-    return m_RingGSWscheme;
-  }
-
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(::cereal::make_nvp("params", m_params));
-  }
-
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
+    const std::shared_ptr<RingGSWCryptoParams> GetParams() {
+        return m_params;
     }
-    ar(::cereal::make_nvp("params", m_params));
-  }
 
-  std::string SerializedObjectName() const { return "RingGSWBTKey"; }
-  static uint32_t SerializedVersion() { return 1; }
+    const std::shared_ptr<LWEEncryptionScheme> GetLWEScheme() {
+        return m_LWEscheme;
+    }
 
-  void SetQ(NativeInteger q) const{
-    m_params->SetQ(q);
-  }
+    const std::shared_ptr<RingGSWAccumulatorScheme> GetRingGSWScheme() {
+        return m_RingGSWscheme;
+    }
 
-  NativeInteger GetMaxPlaintextSpace() const{
-    // Under our parameter choices, beta = 128 is enough, and therefore plaintext = q/2beta
-    return m_params->GetLWEParams()->Getq()/this->GetBeta()/2;
-  }
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(::cereal::make_nvp("params", m_params));
+    }
 
-  NativeInteger GetBeta() const{
-    return 128;
-  }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                                                  " is from a later version of the library");
+        }
+        ar(::cereal::make_nvp("params", m_params));
+    }
 
- private:
-  // Shared pointer to Ring GSW + LWE parameters
-  std::shared_ptr<RingGSWCryptoParams> m_params;
+    std::string SerializedObjectName() const {
+        return "RingGSWBTKey";
+    }
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 
-  // Shared pointer to the underlying additive LWE scheme
-  std::shared_ptr<LWEEncryptionScheme> m_LWEscheme;
+    void SetQ(NativeInteger q) const {
+        m_params->SetQ(q);
+    }
 
-  // Shared pointer to the underlying RingGSW/RLWE scheme
-  std::shared_ptr<RingGSWAccumulatorScheme> m_RingGSWscheme;
+    NativeInteger GetMaxPlaintextSpace() const {
+        // Under our parameter choices, beta = 128 is enough, and therefore plaintext = q/2beta
+        return m_params->GetLWEParams()->Getq() / this->GetBeta() / 2;
+    }
 
-  // Struct containing the bootstrapping keys
-  RingGSWEvalKey m_BTKey;
+    NativeInteger GetBeta() const {
+        return 128;
+    }
 
-  // Struct containing the bootstrapping keys
-  std::map<uint32_t,RingGSWEvalKey> m_BTKey_map;
+private:
+    // Shared pointer to Ring GSW + LWE parameters
+    std::shared_ptr<RingGSWCryptoParams> m_params;
 
-  // Whether to optimize time for sign eval
-  bool m_timeOptimization;
+    // Shared pointer to the underlying additive LWE scheme
+    std::shared_ptr<LWEEncryptionScheme> m_LWEscheme;
+
+    // Shared pointer to the underlying RingGSW/RLWE scheme
+    std::shared_ptr<RingGSWAccumulatorScheme> m_RingGSWscheme;
+
+    // Struct containing the bootstrapping keys
+    RingGSWEvalKey m_BTKey;
+
+    // Struct containing the bootstrapping keys
+    std::map<uint32_t, RingGSWEvalKey> m_BTKey_map;
+
+    // Whether to optimize time for sign eval
+    bool m_timeOptimization;
 };
 
 }  // namespace lbcrypto
