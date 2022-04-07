@@ -279,5 +279,22 @@ std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::KeySwitch(
   return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
 }
 
+// noiseless LWE embedding
+// a is a zero vector of dimension n; with integers mod q
+// b = m floor(q/4) is an integer mod q
+std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::NoiselessEmbedding(
+    const std::shared_ptr<LWECryptoParams> params,
+    const LWEPlaintext &m) const {
+  NativeInteger q = params->Getq();
+  uint32_t n = params->Getn();
+
+  NativeVector a(n, q);
+  for (uint32_t i = 0; i < n; ++i) a[i] = 0;
+
+  NativeInteger b = m * (q >> 2);
+
+  return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+}
+
 
 };  // namespace lbcrypto
