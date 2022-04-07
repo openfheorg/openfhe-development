@@ -122,7 +122,7 @@ void BFVrns_EvalMultManyP2(benchmark::State& state) {
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     Plaintext plaintext               = cc->MakeCoefPackedPlaintext(vectorOfInts);
 
-    vector<Ciphertext<DCRTPoly>> ciphertexts;
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
         ciphertexts.push_back(cc->Encrypt(keyPair.publicKey, plaintext));
 
@@ -155,7 +155,7 @@ void BGVrns_EvalMultManyP2(benchmark::State& state) {
     std::vector<int64_t> vectorOfInts = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     Plaintext plaintext               = cc->MakeCoefPackedPlaintext(vectorOfInts);
 
-    vector<Ciphertext<DCRTPoly>> ciphertexts;
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
         ciphertexts.push_back(cc->Encrypt(keyPair.publicKey, plaintext));
 
@@ -192,7 +192,7 @@ void BFVrns_EvalMultManyP65537(benchmark::State& state) {
     std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
     Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
 
-    vector<Ciphertext<DCRTPoly>> ciphertexts;
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
         ciphertexts.push_back(cc->Encrypt(keyPair.publicKey, plaintext));
 
@@ -225,7 +225,7 @@ void BGVrns_EvalMultManyP65537(benchmark::State& state) {
     std::vector<int64_t> vectorOfInts = {1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1};
     Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
 
-    vector<Ciphertext<DCRTPoly>> ciphertexts;
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
         ciphertexts.push_back(cc->Encrypt(keyPair.publicKey, plaintext));
 

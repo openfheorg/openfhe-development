@@ -50,7 +50,7 @@ using namespace lbcrypto;
 namespace lbcrypto {
 
 template <typename E>
-static E makeElement(shared_ptr<lbcrypto::ILParamsImpl<typename E::Integer>> params) {
+static E makeElement(std::shared_ptr<lbcrypto::ILParamsImpl<typename E::Integer>> params) {
     typename E::Vector vec = makeVector<typename E::Vector>(params->GetRingDimension(), params->GetModulus());
     E elem(params);
 
@@ -59,8 +59,8 @@ static E makeElement(shared_ptr<lbcrypto::ILParamsImpl<typename E::Integer>> par
 }
 
 template <typename E>
-static E makeElement(shared_ptr<lbcrypto::ILDCRTParams<typename E::Integer>> p) {
-    shared_ptr<ILParamsImpl<typename E::Integer>> params(
+static E makeElement(std::shared_ptr<lbcrypto::ILDCRTParams<typename E::Integer>> p) {
+    std::shared_ptr<ILParamsImpl<typename E::Integer>> params(
         new ILParamsImpl<typename E::Integer>(p->GetCyclotomicOrder(), p->GetModulus(), 1));
     typename E::Vector vec = makeVector<typename E::Vector>(params->GetRingDimension(), params->GetModulus());
 
@@ -75,9 +75,9 @@ static std::vector<usint> o({16, 1024, 2048, 4096, 8192, 16384, 32768});
 static const usint DCRTBITS = 28;
 
 template <typename P>
-static void GenerateParms(std::map<usint, shared_ptr<P>>& parmArray) {
+static void GenerateParms(std::map<usint, std::shared_ptr<P>>& parmArray) {
     for (usint v : o) {
-        shared_ptr<P> value;
+        std::shared_ptr<P> value;
         try {
             value = ElemParamFactory::GenElemParams<P>(v);
         }
@@ -89,7 +89,7 @@ static void GenerateParms(std::map<usint, shared_ptr<P>>& parmArray) {
 }
 
 template <typename P>
-static void GenerateDCRTParms(std::map<usint, shared_ptr<P>>& parmArray) {
+static void GenerateDCRTParms(std::map<usint, std::shared_ptr<P>>& parmArray) {
     for (usint v : o) {
         size_t idx = ElemParamFactory::GetNearestIndex(v);
         M2Integer primeq(ElemParamFactory::DefaultSet[idx].q);
@@ -102,7 +102,7 @@ static void GenerateDCRTParms(std::map<usint, shared_ptr<P>>& parmArray) {
 }
 
 template <typename P, typename E>
-static void GeneratePolys(std::map<usint, shared_ptr<P>>& parmArray, std::map<usint, std::vector<E>>& polyArray) {
+static void GeneratePolys(std::map<usint, std::shared_ptr<P>>& parmArray, std::map<usint, std::vector<E>>& polyArray) {
     for (auto& pair : parmArray) {
         for (int i = 0; i < 2; i++)
             polyArray[pair.first].push_back(makeElement<E>(parmArray[pair.first]));
@@ -111,14 +111,14 @@ static void GeneratePolys(std::map<usint, shared_ptr<P>>& parmArray, std::map<us
 
 }  // namespace lbcrypto
 
-std::map<usint, shared_ptr<ILNativeParams>> Nativeparms;
-std::map<usint, shared_ptr<M2Params>> BE2parms;
-std::map<usint, shared_ptr<M2DCRTParams>> BE2dcrtparms;
-std::map<usint, shared_ptr<M4Params>> BE4parms;
-std::map<usint, shared_ptr<M4DCRTParams>> BE4dcrtparms;
+std::map<usint, std::shared_ptr<ILNativeParams>> Nativeparms;
+std::map<usint, std::shared_ptr<M2Params>> BE2parms;
+std::map<usint, std::shared_ptr<M2DCRTParams>> BE2dcrtparms;
+std::map<usint, std::shared_ptr<M4Params>> BE4parms;
+std::map<usint, std::shared_ptr<M4DCRTParams>> BE4dcrtparms;
 #ifdef WITH_NTL
-std::map<usint, shared_ptr<M6Params>> BE6parms;
-std::map<usint, shared_ptr<M6DCRTParams>> BE6dcrtparms;
+std::map<usint, std::shared_ptr<M6Params>> BE6parms;
+std::map<usint, std::shared_ptr<M6DCRTParams>> BE6dcrtparms;
 #endif
 std::map<usint, std::vector<NativePoly>> Nativepolys;
 std::map<usint, std::vector<M2Poly>> BE2polys;
@@ -156,45 +156,45 @@ public:
     }
 
     template <typename P>
-    shared_ptr<P> GetParm(usint o);
+    std::shared_ptr<P> GetParm(usint o);
 
     template <typename E>
     const E& GetPoly(usint o, int p);
 } TestParameters;
 
 template <>
-shared_ptr<ILNativeParams> Setup::GetParm(usint o) {
+std::shared_ptr<ILNativeParams> Setup::GetParm(usint o) {
     return Nativeparms[o];
 }
 
 template <>
-shared_ptr<M2Params> Setup::GetParm(usint o) {
+std::shared_ptr<M2Params> Setup::GetParm(usint o) {
     return BE2parms[o];
 }
 
 template <>
-shared_ptr<M2DCRTParams> Setup::GetParm(usint o) {
+std::shared_ptr<M2DCRTParams> Setup::GetParm(usint o) {
     return BE2dcrtparms[o];
 }
 
 template <>
-shared_ptr<M4Params> Setup::GetParm(usint o) {
+std::shared_ptr<M4Params> Setup::GetParm(usint o) {
     return BE4parms[o];
 }
 
 template <>
-shared_ptr<M4DCRTParams> Setup::GetParm(usint o) {
+std::shared_ptr<M4DCRTParams> Setup::GetParm(usint o) {
     return BE4dcrtparms[o];
 }
 
 #ifdef WITH_NTL
 template <>
-shared_ptr<M6Params> Setup::GetParm(usint o) {
+std::shared_ptr<M6Params> Setup::GetParm(usint o) {
     return BE6parms[o];
 }
 
 template <>
-shared_ptr<M6DCRTParams> Setup::GetParm(usint o) {
+std::shared_ptr<M6DCRTParams> Setup::GetParm(usint o) {
     return BE6dcrtparms[o];
 }
 #endif
@@ -248,7 +248,7 @@ const M6DCRTPoly& Setup::GetPoly(usint o, int p) {
 
 // benchmark just a declaration of an empty
 template <typename E>
-static void make_LATTICE_empty(shared_ptr<typename E::Params> params) {
+static void make_LATTICE_empty(std::shared_ptr<typename E::Params> params) {
     E v1(params);
 }
 
@@ -277,7 +277,7 @@ DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M6DCRTPoly)
 
 template <typename E>
 static void make_LATTICE_vector(benchmark::State& state,
-                                shared_ptr<typename E::Params> params) {  // function
+                                std::shared_ptr<typename E::Params> params) {  // function
     E elem = makeElement<E>(params);
 }
 
@@ -437,7 +437,7 @@ DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M6DCRTPoly)
 #endif
 
 template <class E>
-static void switchformat_LATTICE(benchmark::State& state, shared_ptr<typename E::Params> params) {
+static void switchformat_LATTICE(benchmark::State& state, std::shared_ptr<typename E::Params> params) {
     E a = TestParameters.GetPoly<E>(state.range(0), 0);
     a.SwitchFormat();
 }
@@ -466,7 +466,7 @@ DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M6DCRTPoly)
 #endif
 
 template <class E>
-static void doubleswitchformat_LATTICE(benchmark::State& state, shared_ptr<typename E::Params> params) {
+static void doubleswitchformat_LATTICE(benchmark::State& state, std::shared_ptr<typename E::Params> params) {
     E a = TestParameters.GetPoly<E>(state.range(0), 0);
 
     a.SwitchFormat();

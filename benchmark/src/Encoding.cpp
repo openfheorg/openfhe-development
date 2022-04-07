@@ -50,10 +50,10 @@ void BM_encoding_CoefPacked(benchmark::State& state) {
     usint m              = 1024;
     PlaintextModulus ptm = 128;
 
-    shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParams>(m);
+    std::shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParams>(m);
     EncodingParams ep(new EncodingParamsImpl(ptm));
 
-    vector<int64_t> intvec;
+    std::vector<int64_t> intvec;
     PlaintextModulus half = ptm / 2;
     // for (usint ii = 0; ii < m / 2; ii++)
     //    intvec.push_back(rand() % half);
@@ -76,7 +76,7 @@ BENCHMARK(BM_encoding_CoefPacked);
 
 void BM_encoding_PackedIntPlaintext(benchmark::State& state) {
     Plaintext plaintext;
-    shared_ptr<ILParams> lp;
+    std::shared_ptr<ILParams> lp;
     EncodingParams ep;
 
     std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 0, 0};
@@ -106,7 +106,7 @@ BENCHMARK(BM_encoding_PackedIntPlaintext);
 
 void BM_encoding_PackedIntPlaintext_SetParams(benchmark::State& state) {
     Plaintext plaintext;
-    shared_ptr<ILParams> lp;
+    std::shared_ptr<ILParams> lp;
     EncodingParams ep;
 
     usint m            = 22;
@@ -144,7 +144,7 @@ void BM_Encoding_String(benchmark::State& state) {  // benchmark
     usint m              = 1024;
     PlaintextModulus ptm = 256;
 
-    shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParams>(m);
+    std::shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParams>(m);
     EncodingParams ep(new EncodingParamsImpl(ptm));
 
     auto randchar = []() -> char {
@@ -156,7 +156,7 @@ void BM_Encoding_String(benchmark::State& state) {  // benchmark
         return charset[rand() % max_index];
     };
 
-    string fullStr(m / 2, 0);
+    std::string fullStr(m / 2, 0);
     std::generate_n(fullStr.begin(), m / 2, randchar);
 
     while (state.KeepRunning()) {
@@ -169,7 +169,7 @@ BENCHMARK(BM_Encoding_String);
 
 void BM_encoding_PackedCKKSPlaintext(benchmark::State& state) {
     Plaintext plaintext;
-    shared_ptr<ILDCRTParams<BigInteger>> lp;
+    std::shared_ptr<ILDCRTParams<BigInteger>> lp;
     EncodingParams ep;
 
     std::vector<std::complex<double>> vectorOfComplex = {{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0},

@@ -55,9 +55,9 @@ using namespace lbcrypto;
 
 usint mult_depth = 3;
 double sigma     = 3.19;
-static vector<usint> ptm_args{2, 65537};
-static vector<usint> dcrtbit_args{30, 60};
-static vector<usint> logn_args{12, 14};
+static std::vector<usint> ptm_args{2, 65537};
+static std::vector<usint> dcrtbit_args{30, 60};
+static std::vector<usint> logn_args{12, 14};
 
 static void MultBFVArguments(benchmark::internal::Benchmark* b) {
     for (usint ptm : ptm_args) {
@@ -179,7 +179,7 @@ void BFVrns_EvalMultMany(benchmark::State& state) {
     else
         plaintext = cc->MakePackedPlaintext(vectorOfInts);
 
-    vector<Ciphertext<DCRTPoly>> ciphertexts;
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
         ciphertexts.push_back(cc->Encrypt(keyPair.publicKey, plaintext));
 
@@ -214,7 +214,7 @@ void BFVrnsB_EvalMultMany(benchmark::State& state) {
     else
         plaintext = cc->MakePackedPlaintext(vectorOfInts);
 
-    vector<Ciphertext<DCRTPoly>> ciphertexts;
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     for (int i = 0; i < (1 << mult_depth); i++)
         ciphertexts.push_back(cc->Encrypt(keyPair.publicKey, plaintext));
 
