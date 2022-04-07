@@ -268,6 +268,10 @@ LWECiphertext BinFHEContext::EvalNOT(ConstLWECiphertext ct) const {
     return m_RingGSWscheme->EvalNOT(m_params, ct);
 }
 
+LWECiphertext BinFHEContext::EvalConstant(bool value) const {
+    return m_LWEscheme->NoiselessEmbedding(m_params->GetLWEParams(), value);
+}
+
 LWECiphertext BinFHEContext::EvalFunc(ConstLWECiphertext ct1, const std::vector<NativeInteger>& LUT) const {
     NativeInteger beta = GetBeta();
     return m_RingGSWscheme->EvalFunc(m_params, m_BTKey, ct1, m_LWEscheme, LUT, beta, 0);
