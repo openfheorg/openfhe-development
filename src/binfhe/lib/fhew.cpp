@@ -58,7 +58,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptAP(
     uint32_t N                                  = params->GetLWEParams()->GetN();
     uint32_t digitsG                            = params->GetDigitsG();
     uint32_t digitsG2                           = params->GetDigitsG2();
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     auto result = std::make_shared<RingGSWCiphertext>(digitsG2, 2);
 
@@ -116,7 +116,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptGINX(
     NativeInteger Q                             = params->GetLWEParams()->GetQ();
     uint32_t digitsG                            = params->GetDigitsG();
     uint32_t digitsG2                           = params->GetDigitsG2();
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     auto result = std::make_shared<RingGSWCiphertext>(digitsG2, 2);
 
@@ -319,7 +319,7 @@ void RingGSWAccumulatorScheme::AddToACCAP(const std::shared_ptr<RingGSWCryptoPar
                                           const RingGSWCiphertext& input,
                                           std::shared_ptr<RingGSWCiphertext> acc) const {
     uint32_t digitsG2                           = params->GetDigitsG2();
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements()[0];
     std::vector<NativePoly> dct(digitsG2);
@@ -363,7 +363,7 @@ void RingGSWAccumulatorScheme::AddToACCGINX(const std::shared_ptr<RingGSWCryptoP
     uint32_t m                                  = 2 * params->GetLWEParams()->GetN();
     uint32_t digitsG2                           = params->GetDigitsG2();
     int64_t q                                   = params->GetLWEParams()->Getq().ConvertToInt();
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements()[0];
     std::vector<NativePoly> dct(digitsG2);
@@ -429,7 +429,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
         PALISADE_THROW(config_error, errMsg);
     }
 
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
     NativeInteger q                             = params->GetLWEParams()->Getq();
     NativeInteger Q                             = params->GetLWEParams()->GetQ();
     uint32_t N                                  = params->GetLWEParams()->GetN();
@@ -649,7 +649,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
         PALISADE_THROW(config_error, errMsg);
     }
 
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
     NativeInteger q                             = params->GetLWEParams()->Getq();
     NativeInteger Q                             = params->GetLWEParams()->GetQ();
     uint32_t N                                  = params->GetLWEParams()->GetN();

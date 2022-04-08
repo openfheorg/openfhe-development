@@ -46,7 +46,6 @@
 #include "math/matrix.h"
 #include "math/matrixstrassen.cpp"
 
-// using namespace std;
 using namespace lbcrypto;
 
 template <typename Element>

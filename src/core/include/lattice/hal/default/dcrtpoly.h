@@ -111,7 +111,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    *Coefficient representation. It is defined in inttypes.h.
    *@param initializeElementToZero
    */
-  DCRTPolyImpl(const shared_ptr<Params> params, Format format = EVALUATION,
+  DCRTPolyImpl(const std::shared_ptr<Params> params, Format format = EVALUATION,
                bool initializeElementToZero = false);
 
   const DCRTPolyType &operator=(const PolyLargeType &element);
@@ -128,7 +128,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * that indicates if the polynomial is in Evaluation representation or
    * Coefficient representation. It is defined in inttypes.h.
    */
-  DCRTPolyImpl(const DggType &dgg, const shared_ptr<Params> params,
+  DCRTPolyImpl(const DggType &dgg, const std::shared_ptr<Params> params,
                Format format = EVALUATION);
 
   /**
@@ -142,7 +142,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * that indicates if the polynomial is in Evaluation representation or
    * Coefficient representation. It is defined in inttypes.h.
    */
-  DCRTPolyImpl(const BugType &bug, const shared_ptr<Params> params,
+  DCRTPolyImpl(const BugType &bug, const std::shared_ptr<Params> params,
                Format format = EVALUATION);
 
   /**
@@ -157,7 +157,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @param h - Hamming weight for sparse ternary distribution (by default, when
    * h = 0, the distribution is NOT sparse)
    */
-  DCRTPolyImpl(const TugType &tug, const shared_ptr<Params> params,
+  DCRTPolyImpl(const TugType &tug, const std::shared_ptr<Params> params,
                Format format = EVALUATION, uint32_t h = 0);
 
   /**
@@ -169,7 +169,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * that indicates if the polynomial is in Evaluation representation or
    * Coefficient representation. It is defined in inttypes.h.
    */
-  DCRTPolyImpl(DugType &dug, const shared_ptr<Params> params,
+  DCRTPolyImpl(DugType &dug, const std::shared_ptr<Params> params,
                Format format = EVALUATION);
 
   /**
@@ -180,7 +180,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @param &element Poly to build other towers from.
    * @param params parameter set required for DCRTPoly.
    */
-  DCRTPolyImpl(const PolyLargeType &element, const shared_ptr<Params> params);
+  DCRTPolyImpl(const PolyLargeType &element, const std::shared_ptr<Params> params);
 
   /**
    * @brief Construct using a single PolyType. The PolyType is copied into
@@ -191,7 +191,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @param &element Poly to build other towers from.
    * @param params parameter set required for DCRTPoly.
    */
-  DCRTPolyImpl(const PolyType &element, const shared_ptr<Params> params);
+  DCRTPolyImpl(const PolyType &element, const std::shared_ptr<Params> params);
 
   /**
    * @brief Construct using an tower of ILVectro2ns. The params and format for
@@ -818,7 +818,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    *
    * @return element parameters of the extended basis.
    */
-  virtual shared_ptr<Params> GetExtendedCRTBasis(std::shared_ptr<Params> paramsP) const override;
+  virtual std::shared_ptr<Params> GetExtendedCRTBasis(std::shared_ptr<Params> paramsP) const override;
 
   /**
    * @brief Performs approximate CRT basis switching:
@@ -872,9 +872,9 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * p_j
    * @return the representation of {X + alpha*Q} in basis {Q,P}.
    */
-  virtual void ApproxModUp(const shared_ptr<Params> paramsQ,
-                   const shared_ptr<Params> paramsP,
-                   const shared_ptr<Params> paramsQP,
+  virtual void ApproxModUp(const std::shared_ptr<Params> paramsQ,
+                   const std::shared_ptr<Params> paramsP,
+                   const std::shared_ptr<Params> paramsQP,
                    const vector<NativeInteger> &QHatInvModq,
                    const vector<NativeInteger> &QHatInvModqPrecon,
                    const vector<vector<NativeInteger>> &QHatModp,
@@ -909,7 +909,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @return the representation of {\approx(X/P)}_{Q}
    */
   virtual DCRTPolyType ApproxModDown(
-      const shared_ptr<Params> paramsQ, const shared_ptr<Params> paramsP,
+      const std::shared_ptr<Params> paramsQ, const std::shared_ptr<Params> paramsP,
       const vector<NativeInteger> &PInvModq,
       const vector<NativeInteger> &PInvModqPrecon,
       const vector<NativeInteger> &PHatInvModp,
@@ -947,7 +947,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @return the representation of {X}_{P}
    */
   virtual DCRTPolyType SwitchCRTBasis(
-      const shared_ptr<Params> paramsP,
+      const std::shared_ptr<Params> paramsP,
       const std::vector<NativeInteger> &QHatInvModq,
       const std::vector<NativeInteger> &QHatInvModqPrecon,
       const std::vector<std::vector<NativeInteger>> &QHatModp,
@@ -982,8 +982,8 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @param resultFormat Specifies the format we want the result to be in
    *
    */
-  virtual void ExpandCRTBasis(const shared_ptr<Params> paramsQP,
-                      const shared_ptr<Params> paramsP,
+  virtual void ExpandCRTBasis(const std::shared_ptr<Params> paramsQP,
+                      const std::shared_ptr<Params> paramsP,
                       const std::vector<NativeInteger> &QHatInvModq,
                       const std::vector<NativeInteger> &QHatInvModqPrecon,
                       const std::vector<std::vector<NativeInteger>> &QHatModp,
@@ -1051,7 +1051,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @return the result {\approx{t/Q * X}}_{P}
    */
   virtual DCRTPolyType ApproxScaleAndRound(
-      const shared_ptr<Params> paramsP,
+      const std::shared_ptr<Params> paramsP,
       const std::vector<std::vector<NativeInteger>> &tPSHatInvModsDivsModp,
       const std::vector<DoubleNativeInt> &modpBarretMu) const override;
 
@@ -1081,7 +1081,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @return the result {t/Q * X}_{P}
    */
   virtual DCRTPolyType ScaleAndRound(
-      const shared_ptr<Params> paramsP,
+      const std::shared_ptr<Params> paramsP,
       const std::vector<std::vector<NativeInteger>> &tPSHatInvModsDivsModp,
       const std::vector<double> &tPSHatInvModsDivsFrac,
       const std::vector<DoubleNativeInt> &modpBarretMu) const override;
@@ -1145,7 +1145,7 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * @param &mtildeInvModbskPrecon NTL-specific precomputations
    */
   virtual void FastBaseConvqToBskMontgomery(
-      const shared_ptr<Params> paramsBsk,
+      const std::shared_ptr<Params> paramsBsk,
       const std::vector<NativeInteger> &moduliQ,
       const std::vector<NativeInteger> &moduliBsk,
       const std::vector<DoubleNativeInt> &modbskBarrettMu,

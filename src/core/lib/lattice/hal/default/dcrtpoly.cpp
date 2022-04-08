@@ -41,8 +41,6 @@
 #include "utils/utilities-int.h"
 #include "utils/utilities.h"
 
-using std::shared_ptr;
-using std::string;
 
 namespace lbcrypto {
 
@@ -55,7 +53,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl() {
 
 template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(
-    const shared_ptr<DCRTPolyImpl::Params> dcrtParams, Format format,
+    const std::shared_ptr<DCRTPolyImpl::Params> dcrtParams, Format format,
     bool initializeElementToZero) {
   this->m_format = format;
   this->m_params = dcrtParams;
@@ -149,7 +147,7 @@ const DCRTPolyImpl<VecType> &DCRTPolyImpl<VecType>::operator=(
 template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(
     const PolyLargeType &element,
-    const shared_ptr<DCRTPolyImpl::Params> params) {
+    const std::shared_ptr<DCRTPolyImpl::Params> params) {
   Format format;
   try {
     format = element.GetFormat();
@@ -175,7 +173,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(
  * Poly.*/
 template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(
-    const PolyType &element, const shared_ptr<DCRTPolyImpl::Params> params) {
+    const PolyType &element, const std::shared_ptr<DCRTPolyImpl::Params> params) {
   Format format;
   try {
     format = element.GetFormat();
@@ -219,7 +217,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const std::vector<PolyType> &towers) {
  * random numbers. The algorithm to populate the towers can be seen below.*/
 template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(
-    const DggType &dgg, const shared_ptr<DCRTPolyImpl::Params> dcrtParams,
+    const DggType &dgg, const std::shared_ptr<DCRTPolyImpl::Params> dcrtParams,
     Format format) {
   this->m_format = format;
   this->m_params = dcrtParams;
@@ -274,7 +272,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(
 
 template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(
-    DugType &dug, const shared_ptr<DCRTPolyImpl::Params> dcrtParams,
+    DugType &dug, const std::shared_ptr<DCRTPolyImpl::Params> dcrtParams,
     Format format) {
   this->m_format = format;
   this->m_params = dcrtParams;
@@ -298,7 +296,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(
 
 template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(
-    const BugType &bug, const shared_ptr<DCRTPolyImpl::Params> dcrtParams,
+    const BugType &bug, const std::shared_ptr<DCRTPolyImpl::Params> dcrtParams,
     Format format) {
   this->m_format = format;
   this->m_params = dcrtParams;
@@ -322,7 +320,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(
 
 template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(
-    const TugType &tug, const shared_ptr<DCRTPolyImpl::Params> dcrtParams,
+    const TugType &tug, const std::shared_ptr<DCRTPolyImpl::Params> dcrtParams,
     Format format, uint32_t h) {
   this->m_format = format;
   this->m_params = dcrtParams;
@@ -518,7 +516,7 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::CRTDecompose(
 
       result[i] = std::move(currentDCRTPoly);
     } else {
-      vector<PolyType> decomposed =
+      std::vector<PolyType> decomposed =
           input.m_vectors[i].BaseDecompose(baseBits, false);
 
       for (size_t j = 0; j < decomposed.size(); j++) {
@@ -1224,7 +1222,7 @@ DCRTPolyImpl<VecType>::CRTInterpolate() const {
   // *[ (qt/qj)^(-1) mod qj ]}modqt
 
   // first, precompute qt/qj factors
-  vector<Integer> multiplier(nTowers);
+  std::vector<Integer> multiplier(nTowers);
   for (usint vi = 0; vi < nTowers; vi++) {
     Integer qj(m_vectors[vi].GetModulus().ConvertToInt());
     Integer divBy = bigModulus / qj;
@@ -1328,7 +1326,7 @@ DCRTPolyImpl<VecType>::CRTInterpolateIndex(usint i) const {
   // *[ (qt/qj)^(-1) mod qj ]}modqt
 
   // first, precompute qt/qj factors
-  vector<Integer> multiplier(nTowers);
+  std::vector<Integer> multiplier(nTowers);
   for (usint vi = 0; vi < nTowers; vi++) {
     Integer qj(m_vectors[vi].GetModulus().ConvertToInt());
     Integer divBy = bigModulus / qj;
@@ -1420,15 +1418,15 @@ typename DCRTPolyImpl<VecType>::Integer DCRTPolyImpl<VecType>::GetWorkingModulus
 }
 
 template <typename VecType>
-shared_ptr<typename DCRTPolyImpl<VecType>::Params>
+std::shared_ptr<typename DCRTPolyImpl<VecType>::Params>
 DCRTPolyImpl<VecType>::GetExtendedCRTBasis(
-    shared_ptr<DCRTPolyImpl::Params> paramsP) const {
+    std::shared_ptr<DCRTPolyImpl::Params> paramsP) const {
   usint sizeQ = m_vectors.size();
   usint sizeP = paramsP->GetParams().size();
   usint sizeQP = sizeQ + sizeP;
 
-  vector<NativeInteger> moduliQP(sizeQP);
-  vector<NativeInteger> rootsQP(sizeQP);
+  std::vector<NativeInteger> moduliQP(sizeQP);
+  std::vector<NativeInteger> rootsQP(sizeQP);
   for (size_t i = 0; i < sizeQ; i++) {
     moduliQP[i] = this->m_params->GetParams()[i]->GetModulus();
     rootsQP[i] = this->m_params->GetParams()[i]->GetRootOfUnity();
@@ -1444,12 +1442,12 @@ DCRTPolyImpl<VecType>::GetExtendedCRTBasis(
 #if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
-    const shared_ptr<DCRTPolyImpl::Params> paramsQ,
-    const shared_ptr<DCRTPolyImpl::Params> paramsP,
-    const vector<NativeInteger> &QHatInvModq,
-    const vector<NativeInteger> &QHatInvModqPrecon,
-    const vector<vector<NativeInteger>> &QHatModp,
-    const vector<DoubleNativeInt> &modpBarrettMu) const {
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::vector<NativeInteger> &QHatInvModq,
+    const std::vector<NativeInteger> &QHatInvModqPrecon,
+    const std::vector<std::vector<NativeInteger>> &QHatModp,
+    const std::vector<DoubleNativeInt> &modpBarrettMu) const {
   DCRTPolyType ans(paramsP, this->GetFormat(), true);
 
   usint ringDim = this->GetRingDimension();
@@ -1460,7 +1458,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
 
 #pragma omp parallel for
   for (usint ri = 0; ri < ringDim; ri++) {
-    vector<DoubleNativeInt> sum(sizeP);
+    std::vector<DoubleNativeInt> sum(sizeP);
     for (usint i = 0; i < sizeQ; i++) {
       const NativeInteger &xi = m_vectors[i][ri];
       const NativeInteger &qi = m_vectors[i].GetModulus();
@@ -1484,8 +1482,8 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
 #else
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
-    const shared_ptr<DCRTPolyImpl::Params> paramsQ,
-    const shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
     const vector<NativeInteger> &QHatInvModq,
     const vector<NativeInteger> &QHatInvModqPrecon,
     const vector<vector<NativeInteger>> &QHatModp,
@@ -1514,8 +1512,8 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
 
 template <typename VecType>
 void DCRTPolyImpl<VecType>::ApproxModUp(
-    const shared_ptr<Params> paramsQ, const shared_ptr<Params> paramsP,
-    const shared_ptr<Params> paramsQP, const vector<NativeInteger> &QHatInvModq,
+    const std::shared_ptr<Params> paramsQ, const std::shared_ptr<Params> paramsP,
+    const std::shared_ptr<Params> paramsQP, const vector<NativeInteger> &QHatInvModq,
     const vector<NativeInteger> &QHatInvModqPrecon,
     const vector<vector<NativeInteger>> &QHatModp,
     const vector<DoubleNativeInt> &modpBarrettMu) {
@@ -1564,7 +1562,7 @@ void DCRTPolyImpl<VecType>::ApproxModUp(
 
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
-    const shared_ptr<Params> paramsQ, const shared_ptr<Params> paramsP,
+    const std::shared_ptr<Params> paramsQ, const std::shared_ptr<Params> paramsP,
     const vector<NativeInteger> &PInvModq,
     const vector<NativeInteger> &PInvModqPrecon,
     const vector<NativeInteger> &PHatInvModp,
@@ -1625,7 +1623,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
 #if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(
-    const shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
     const std::vector<NativeInteger> &QHatInvModq,
     const std::vector<NativeInteger> &QHatInvModqPrecon,
     const std::vector<std::vector<NativeInteger>> &QHatModp,
@@ -1687,7 +1685,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(
 #else
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(
-    const shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
     const std::vector<NativeInteger> &QHatInvModq,
     const std::vector<NativeInteger> &QHatInvModqPrecon,
     const std::vector<std::vector<NativeInteger>> &QHatModp,
@@ -1724,7 +1722,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(
 
     const std::vector<NativeInteger> &alphaQModpri = alphaQModp[alpha];
 
-    vector<NativeInteger> mu(sizeP);
+    std::vector<NativeInteger> mu(sizeP);
     for (usint j = 0; j < sizeP; j++) {
       mu[j] = ans.m_vectors[j].GetModulus().ComputeMu();
     }
@@ -1749,8 +1747,8 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(
 
 template <typename VecType>
 void DCRTPolyImpl<VecType>::ExpandCRTBasis(
-    const shared_ptr<DCRTPolyImpl::Params> paramsQP,
-    const shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQP,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
     const std::vector<NativeInteger> &QHatInvModq,
     const std::vector<NativeInteger> &QHatInvModqPrecon,
     const std::vector<std::vector<NativeInteger>> &QHatModp,
@@ -2097,7 +2095,7 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
 #if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
-    const shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
     const std::vector<std::vector<NativeInteger>> &tPSHatInvModsDivsModp,
     const std::vector<DoubleNativeInt> &modpBarretMu) const {
   DCRTPolyType ans(paramsP, this->GetFormat(), true);
@@ -2136,7 +2134,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
 #else
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
-    const shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
     const std::vector<std::vector<NativeInteger>> &tPSHatInvModsDivsModp,
     const std::vector<DoubleNativeInt> &modpBarretMu) const {
   DCRTPolyType ans(paramsP, this->GetFormat(), true);
@@ -2146,7 +2144,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
   size_t sizeP = ans.m_vectors.size();
   size_t sizeQ = sizeQP - sizeP;
 
-  vector<NativeInteger> mu(sizeP);
+  std::vector<NativeInteger> mu(sizeP);
   for (usint j = 0; j < sizeP; j++) {
     mu[j] = (paramsP->GetParams()[j]->GetModulus()).ComputeMu();
   }
@@ -2178,7 +2176,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
 #if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
-    const shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
     const std::vector<std::vector<NativeInteger>> &tPSHatInvModsDivsModp,
     const std::vector<double> &tPSHatInvModsDivsFrac,
     const std::vector<DoubleNativeInt> &modpBarretMu) const {
@@ -2230,7 +2228,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
 #else
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
-    const shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
     const std::vector<std::vector<NativeInteger>> &tPSHatInvModsDivsModp,
     const std::vector<double> &tPSHatInvModsDivsFrac,
     const std::vector<DoubleNativeInt> &modpBarretMu) const {
@@ -2241,7 +2239,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
   size_t sizeP = ans.m_vectors.size();
   size_t sizeQ = sizeQP - sizeP;
 
-  vector<NativeInteger> mu(sizeP);
+  std::vector<NativeInteger> mu(sizeP);
   for (usint j = 0; j < sizeP; j++) {
     mu[j] = (paramsP->GetParams()[j]->GetModulus()).ComputeMu();
   }
@@ -2333,7 +2331,7 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
 #if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
-    const shared_ptr<DCRTPolyImpl::Params> paramsBsk,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsBsk,
     const std::vector<NativeInteger> &moduliQ,
     const std::vector<NativeInteger> &moduliBsk,
     const std::vector<DoubleNativeInt> &modbskBarrettMu,
@@ -2468,7 +2466,7 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
 #else
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
-    const shared_ptr<DCRTPolyImpl::Params> paramsBsk,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsBsk,
     const std::vector<NativeInteger> &moduliQ,
     const std::vector<NativeInteger> &moduliBsk,
     const std::vector<DoubleNativeInt> &modbskBarrettMu,
@@ -2521,7 +2519,7 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     }
   }
 
-  vector<NativeInteger> mu(numBsk);
+  std::vector<NativeInteger> mu(numBsk);
   for (usint j = 0; j < numBsk; j++) {
     mu[j] = moduliBsk[j].ComputeMu();
   }
@@ -2711,7 +2709,7 @@ void DCRTPolyImpl<VecType>::FastRNSFloorq(
     }
   }
 
-  vector<NativeInteger> mu(numBsk);
+  std::vector<NativeInteger> mu(numBsk);
   for (usint j = 0; j < numBsk; j++) {
     mu[j] = moduliBsk[j].ComputeMu();
   }
@@ -2891,7 +2889,7 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
     }
   }
 
-  vector<NativeInteger> mu(sizeQ);
+  std::vector<NativeInteger> mu(sizeQ);
   for (usint j = 0; j < sizeQ; j++) {
     mu[j] = moduliQ[j].ComputeMu();
   }

@@ -43,7 +43,6 @@
 #include "palisadecore.h"
 #include "time.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 // define the main sections of the test
@@ -56,7 +55,7 @@ int main(int argc, char *argv[]) {
   if (argc > 1) nloop = atoi(argv[1]);
 
   if (nloop < 1) nloop = 1;
-  cout << "running " << argv[0] << " nloop = " << nloop << endl;
+  std::cout << "running " << argv[0] << " nloop = " << nloop << std::endl;
 
   test_BigVector(nloop);
   return 0;
@@ -78,12 +77,12 @@ int main(int argc, char *argv[]) {
                     << " computation time: "                              \
                     << "\t" << time2 << " us");                           \
       if (res != testval) {                                               \
-        cout << "Bad " << #res << " = " << #fn << endl;                   \
+        std::cout << "Bad " << #res << " = " << #fn << std::endl;                   \
         /*vec_diff(res, testval);*/                                       \
       }                                                                   \
-    } catch (exception & e) {                                             \
-      cout << #res << " = " << #fn << " caught exception " << e.what()    \
-           << endl;                                                       \
+    } catch (std::exception & e) {                                             \
+      std::cout << #res << " = " << #fn << " caught exception " << e.what()    \
+           << std::endl;                                                       \
     }                                                                     \
   } while (0);
 
@@ -100,20 +99,20 @@ BigVector BBVfromStrvec(std::vector<std::string> &s) {
 void vec_diff(BigVector &a, BigVector &b) {
   for (usint i = 0; i < a.GetLength(); ++i) {
     if (a.at(i) != b.at(i)) {
-      cout << "i: " << i << endl;
-      cout << "first vector " << endl;
-      cout << a.at(i);
-      cout << endl;
-      cout << "second vector " << endl;
-      cout << b.at(i);
-      cout << endl;
+      std::cout << "i: " << i << std::endl;
+      std::cout << "first vector " << std::endl;
+      std::cout << a.at(i);
+      std::cout << std::endl;
+      std::cout << "second vector " << std::endl;
+      std::cout << b.at(i);
+      std::cout << std::endl;
     }
   }
 }
 
 // main BigVector test suite. tests math
 void test_BigVector(usint nloop) {
-  cout << "testing BigVector" << endl;
+  std::cout << "testing BigVector" << std::endl;
 
   TimeVar t1, t2, t3;  // timers for TIC() TOC()
   double time2;

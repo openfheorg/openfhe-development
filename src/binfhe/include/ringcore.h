@@ -89,7 +89,7 @@ public:
    * Performs precomputations based on the supplied parameters
    */
     void PreCompute(bool signEval = false) {
-        const shared_ptr<LWECryptoParams> lweparams = m_LWEParams;
+        const std::shared_ptr<LWECryptoParams> lweparams = m_LWEParams;
 
         NativeInteger Q           = lweparams->GetQ();
         NativeInteger q           = lweparams->Getq();
@@ -213,7 +213,7 @@ public:
         return m_digitsR;
     }
 
-    const shared_ptr<ILNativeParams> GetPolyParams() const {
+    const std::shared_ptr<ILNativeParams> GetPolyParams() const {
         return m_polyParams;
     }
 
@@ -315,7 +315,7 @@ private:
     std::map<uint32_t, std::vector<NativeInteger>> m_Gpower_map;
 
     // Parameters for polynomials in RingGSW/RingLWE
-    shared_ptr<ILNativeParams> m_polyParams;
+    std::shared_ptr<ILNativeParams> m_polyParams;
 
     // Constants used in evaluating binary gates
     std::vector<NativeInteger> m_gateConst;

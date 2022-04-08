@@ -51,7 +51,6 @@
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 // ---------------  TESTING METHODS OF TRANSFORM ---------------
@@ -59,7 +58,7 @@ using namespace lbcrypto;
 // TEST CASE TO TEST POLYNOMIAL MULTIPLICATION USING CHINESE REMAINDER THEOREM
 
 template <typename V>
-void CRT_polynomial_mult(const string& msg) {
+void CRT_polynomial_mult(const std::string& msg) {
   typename V::Integer primeModulus("113");  // 65537
   usint cycloOrder = 8;
   usint n = cycloOrder / 2;
@@ -107,7 +106,7 @@ TEST(UTTransform, CRT_polynomial_mult) {
 // USING CHINESE REMAINDER THEOREM
 
 template <typename V>
-void CRT_polynomial_mult_small(const string& msg) {
+void CRT_polynomial_mult_small(const std::string& msg) {
   DEBUG_FLAG(false);
 
   usint m = 22;
@@ -161,7 +160,7 @@ TEST(UTTransform, CRT_polynomial_mult_small) {
 // USING CHINESE REMAINDER THEOREM
 
 template <typename V>
-void CRT_polynomial_mult_big_ring(const string& msg) {
+void CRT_polynomial_mult_big_ring(const std::string& msg) {
   usint m = 1800;
 
   typename V::Integer modulus(14401);
@@ -202,7 +201,7 @@ TEST(UTTransform, CRT_polynomial_mult_big_ring) {
 }
 
 template <typename V>
-void CRT_polynomial_mult_big_ring_prime_cyclotomics(const string& msg) {
+void CRT_polynomial_mult_big_ring_prime_cyclotomics(const std::string& msg) {
   DEBUG_FLAG(false);
 
   usint m = 1733;
@@ -251,7 +250,7 @@ TEST(UTTransform, CRT_polynomial_mult_big_ring_prime_cyclotomics) {
 // CHECKING IF INVERSET-TRANSFORM(FORWARD-TRANSFORM(A)) = A.
 
 template <typename V>
-void CRT_CHECK_small_ring(const string& msg) {
+void CRT_CHECK_small_ring(const std::string& msg) {
   usint m = 22;
   typename V::Integer squareRootOfRoot(3750);
   typename V::Integer modulus(4621);
@@ -286,7 +285,7 @@ TEST(UTTransform, CRT_CHECK_small_ring) {
 // CHECKING IF INVERSET-TRANSFORM(FORWARD-TRANSFORM(A)) = A.
 
 template <typename V>
-void CRT_CHECK_big_ring(const string& msg) {
+void CRT_CHECK_big_ring(const std::string& msg) {
   usint m = 1800;
 
   typename V::Integer modulus(14401);
@@ -323,7 +322,7 @@ TEST(UTTransform, CRT_CHECK_big_ring) {
 }
 
 template <typename V>
-void CRT_CHECK_small_ring_precomputed(const string& msg) {
+void CRT_CHECK_small_ring_precomputed(const std::string& msg) {
   usint m = 22;
   typename V::Integer squareRootOfRoot(3750);
   typename V::Integer modulus(4621);
@@ -358,7 +357,7 @@ TEST(UTTransform, CRT_CHECK_small_ring_precomputed) {
 }
 
 template <typename V>
-void CRT_CHECK_very_big_ring_precomputed(const string& msg) {
+void CRT_CHECK_very_big_ring_precomputed(const std::string& msg) {
   DEBUG_FLAG(false);
   usint m = 8422;
   DEBUG("1");

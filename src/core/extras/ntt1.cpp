@@ -47,7 +47,6 @@
 #include "palisadecore.h"
 #include "time.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 // define the main sections of the test
@@ -75,12 +74,12 @@ int main(int argc, char *argv[]) {
                << " computation time: "                                \
                << "\t" << time2 << " us");                             \
       if (res != testval) {                                            \
-        cout << "Bad " << #res << " = " << #fn << endl;                \
+        std::cout << "Bad " << #res << " = " << #fn << std::endl;           \
         /*vec_diff(res, testval);*/                                    \
       }                                                                \
     } catch (exception & e) {                                          \
-      cout << #res << " = " << #fn << " caught exception " << e.what() \
-           << endl;                                                    \
+      std::cout << #res << " = " << #fn << " caught exception " << e.what() \
+           << std::endl;                                               \
     }                                                                  \
   } while (0);
 
@@ -97,23 +96,23 @@ BigVector BBVfromStrvec(std::vector<std::string> &s) {
 void vec_diff(BigVector &a, BigVector &b) {
   for (usint i = 0; i < a.GetLength(); ++i) {
     if (a.at(i) != b.at(i)) {
-      cout << "i: " << i << endl;
-      cout << "first vector " << endl;
-      cout << a.at(i);
-      cout << endl;
-      cout << "second vector " << endl;
-      cout << b.at(i);
-      cout << endl;
+      std::cout << "i: " << i << std::endl;
+      std::cout << "first vector " << std::endl;
+      std::cout << a.at(i);
+      std::cout << std::endl;
+      std::cout << "second vector " << std::endl;
+      std::cout << b.at(i);
+      std::cout << std::endl;
     }
   }
 }
 
 // function to compare two Poly and print differing values
-bool clonetest(Poly &a, Poly &b, string name) {
+bool clonetest(Poly &a, Poly &b, std::string name) {
   if (a != b) {
-    cout << name << " FAILED " << endl;
-    cout << "a:" << a << endl;
-    cout << "b:" << b << endl;
+    std::cout << name << " FAILED " << std::endl;
+    std::cout << "a:" << a << std::endl;
+    std::cout << "b:" << b << std::endl;
     return true;
   } else {
     return false;
@@ -136,9 +135,9 @@ void test_NTT() {
   double time2br, time2bf;
   double time3br, time3bf;
 
-  cout << "testing NTT backend " << MATHBACKEND;
+  std::cout << "testing NTT backend " << MATHBACKEND;
   if (BigIntegerBitLength > 0)
-    cout << " BITLENGTH " << BigIntegerBitLength << endl;
+    std::cout << " BITLENGTH " << BigIntegerBitLength << std::endl;
 
   TIC(t_total);
   // there are three test cases, 1) small modulus 2) approx 48 bits.
@@ -306,10 +305,10 @@ void test_NTT() {
 #endif
 #ifdef TEST3
   NextQ(q3, BigInteger("2"), m, BigInteger("4"), BigInteger("4"));
-  cout << "q3 : " << q3.ToString() << endl;
+  std::cout << "q3 : " << q3.ToString() << std::endl;
 
   BigInteger rootOfUnity3(RootOfUnity<BigInteger>(m, q3));
-  cout << "rootOfUnity3 : " << rootOfUnity3.ToString() << endl;
+  std::cout << "rootOfUnity3 : " << rootOfUnity3.ToString() << std::endl;
   ILParams params3(m, q3, rootOfUnity3);
   auto x3p = std::make_shared<ILParams>(params3);
 
@@ -347,10 +346,10 @@ void test_NTT() {
 
   bool failed = false;
   int ix;
-  cout << "Startng timing" << endl;
+  std::cout << "Startng timing" << std::endl;
 
   for (ix = 0; ix < nloop; ix++) {
-    if (ix % 100 == 0) cout << ix << endl;
+    if (ix % 100 == 0) std::cout << ix << std::endl;
 #ifdef TEST1
     // forward
     TIC(t1);
@@ -421,7 +420,7 @@ void test_NTT() {
   }
 
   if (failed) {
-    cout << "failure in loop number " << ix << endl;
+    std::cout << "failure in loop number " << ix << std::endl;
   } else {
     time1af /= static_cast<double>(nloop);
     time1bf /= static_cast<double>(nloop);
@@ -437,36 +436,36 @@ void test_NTT() {
     time3ar /= static_cast<double>(nloop);
     time3br /= static_cast<double>(nloop);
 
-    cout << nloop << " loops" << endl;
-    cout << "t1af: "
-         << "\t" << time1af << " us" << endl;
-    cout << "t1bf: "
-         << "\t" << time1bf << " us" << endl;
+    std::cout << nloop << " loops" << std::endl;
+    std::cout << "t1af: "
+         << "\t" << time1af << " us" << std::endl;
+    std::cout << "t1bf: "
+         << "\t" << time1bf << " us" << std::endl;
 
-    cout << "t2af: "
-         << "\t" << time2af << " us" << endl;
-    cout << "t2bf: "
-         << "\t" << time2bf << " us" << endl;
+    std::cout << "t2af: "
+         << "\t" << time2af << " us" << std::endl;
+    std::cout << "t2bf: "
+         << "\t" << time2bf << " us" << std::endl;
 
-    cout << "t3af: "
-         << "\t" << time3af << " us" << endl;
-    cout << "t3bf: "
-         << "\t" << time3bf << " us" << endl;
+    std::cout << "t3af: "
+         << "\t" << time3af << " us" << std::endl;
+    std::cout << "t3bf: "
+         << "\t" << time3bf << " us" << std::endl;
 
-    cout << "t1ar: "
-         << "\t" << time1ar << " us" << endl;
-    cout << "t1br: "
-         << "\t" << time1br << " us" << endl;
+    std::cout << "t1ar: "
+         << "\t" << time1ar << " us" << std::endl;
+    std::cout << "t1br: "
+         << "\t" << time1br << " us" << std::endl;
 
-    cout << "t2ar: "
-         << "\t" << time2ar << " us" << endl;
-    cout << "t2br: "
-         << "\t" << time2br << " us" << endl;
+    std::cout << "t2ar: "
+         << "\t" << time2ar << " us" << std::endl;
+    std::cout << "t2br: "
+         << "\t" << time2br << " us" << std::endl;
 
-    cout << "t3ar: "
-         << "\t" << time3ar << " us" << endl;
-    cout << "t3br: "
-         << "\t" << time3br << " us" << endl;
+    std::cout << "t3ar: "
+         << "\t" << time3ar << " us" << std::endl;
+    std::cout << "t3br: "
+         << "\t" << time3br << " us" << std::endl;
   }
 #endif
   return;

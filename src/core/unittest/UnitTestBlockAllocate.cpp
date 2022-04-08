@@ -48,7 +48,6 @@
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 class UnitTestBinInt : public ::testing::Test {

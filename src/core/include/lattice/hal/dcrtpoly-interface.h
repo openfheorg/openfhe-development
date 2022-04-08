@@ -111,7 +111,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
   typedef BinaryUniformGeneratorImpl<LilVecType> BugType;
 
  protected:
-  shared_ptr<Params> m_params;
+  std::shared_ptr<Params> m_params;
 
   // Either Format::EVALUATION (0) or Format::COEFFICIENT (1)
   Format m_format;
@@ -158,7 +158,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param format - EVALUATION or COEFFICIENT
    */
   inline static function<DerivedType()> Allocator(
-      const shared_ptr<Params> params, Format format) {
+      const std::shared_ptr<Params> params, Format format) {
     return [=]() { return DerivedType(params, format, true); };
   }
 
@@ -171,7 +171,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the resulting vector.
    */
   inline static function<DerivedType()>
-  MakeDiscreteGaussianCoefficientAllocator(shared_ptr<Params> params,
+  MakeDiscreteGaussianCoefficientAllocator(std::shared_ptr<Params> params,
                                            Format resultFormat, double stddev) {
     return [=]() {
       DggType dgg(stddev);
@@ -189,7 +189,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the resulting vector.
    */
   inline static function<DerivedType()> MakeDiscreteUniformAllocator(
-      shared_ptr<Params> params, Format format) {
+      std::shared_ptr<Params> params, Format format) {
     return [=]() {
       DugType dug;
       return DerivedType(dug, params, format);
@@ -212,7 +212,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @brief returns the parameters of the element.
    * @return the element parameter set.
    */
-  const shared_ptr<Params> GetParams() const { return m_params; };
+  const std::shared_ptr<Params> GetParams() const { return m_params; };
 
   /**
    * @brief returns the element's cyclotomic order
@@ -519,7 +519,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param &element is the element to add entry-wise.
    * @return is the result of the addition operation.
    */
-  virtual DerivedType Plus(const vector<BigIntType> &element) const = 0;
+  virtual DerivedType Plus(const std::vector<BigIntType> &element) const = 0;
 
   /**
    * @brief Scalar subtraction - subtract an element to all entries.
@@ -538,7 +538,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param &element is the element to subtract entry-wise.
    * @return is the result of the subtraction operation.
    */
-  virtual DerivedType Minus(const vector<BigIntType> &element) const = 0;
+  virtual DerivedType Minus(const std::vector<BigIntType> &element) const = 0;
 
   /**
    * @brief Scalar multiplication - multiply all entries.
@@ -881,7 +881,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    *
    * @return element parameters of the extended basis.
    */
-  virtual shared_ptr<Params> GetExtendedCRTBasis(std::shared_ptr<Params> paramsP) const = 0;
+  virtual std::shared_ptr<Params> GetExtendedCRTBasis(std::shared_ptr<Params> paramsP) const = 0;
 
   /**
    * @brief Performs approximate CRT basis switching:
@@ -935,13 +935,13 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * p_j
    * @return the representation of {X + alpha*Q} in basis {Q,P}.
    */
-  virtual void ApproxModUp(const shared_ptr<Params> paramsQ,
-                   const shared_ptr<Params> paramsP,
-                   const shared_ptr<Params> paramsQP,
-                   const vector<NativeInteger> &QHatInvModq,
-                   const vector<NativeInteger> &QHatInvModqPrecon,
-                   const vector<vector<NativeInteger>> &QHatModp,
-                   const vector<DoubleNativeInt> &modpBarrettMu) = 0;
+  virtual void ApproxModUp(const std::shared_ptr<Params> paramsQ,
+                   const std::shared_ptr<Params> paramsP,
+                   const std::shared_ptr<Params> paramsQP,
+                   const std::vector<NativeInteger> &QHatInvModq,
+                   const std::vector<NativeInteger> &QHatInvModqPrecon,
+                   const std::vector<std::vector<NativeInteger>> &QHatModp,
+                   const std::vector<DoubleNativeInt> &modpBarrettMu) = 0;
 
   /**
    * @brief Performs approximate modulus reduction:
@@ -972,17 +972,17 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the representation of {\approx(X/P)}_{Q}
    */
   virtual DerivedType ApproxModDown(
-      const shared_ptr<Params> paramsQ, const shared_ptr<Params> paramsP,
-      const vector<NativeInteger> &PInvModq,
-      const vector<NativeInteger> &PInvModqPrecon,
-      const vector<NativeInteger> &PHatInvModp,
-      const vector<NativeInteger> &PHatInvModpPrecon,
-      const vector<vector<NativeInteger>> &PHatModq,
-      const vector<DoubleNativeInt> &modqBarrettMu,
-      const vector<NativeInteger> &tInvModp,
-      const vector<NativeInteger> &tInvModpPrecon,
+      const std::shared_ptr<Params> paramsQ, const std::shared_ptr<Params> paramsP,
+      const std::vector<NativeInteger> &PInvModq,
+      const std::vector<NativeInteger> &PInvModqPrecon,
+      const std::vector<NativeInteger> &PHatInvModp,
+      const std::vector<NativeInteger> &PHatInvModpPrecon,
+      const std::vector<std::vector<NativeInteger>> &PHatModq,
+      const std::vector<DoubleNativeInt> &modqBarrettMu,
+      const std::vector<NativeInteger> &tInvModp,
+      const std::vector<NativeInteger> &tInvModpPrecon,
       const NativeInteger &t,
-      const vector<NativeInteger> &tModqPrecon) const = 0;
+      const std::vector<NativeInteger> &tModqPrecon) const = 0;
 
   /**
    * @brief Performs CRT basis switching:
@@ -1010,7 +1010,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the representation of {X}_{P}
    */
   virtual DerivedType SwitchCRTBasis(
-      const shared_ptr<Params> paramsP,
+      const std::shared_ptr<Params> paramsP,
       const std::vector<NativeInteger> &QHatInvModq,
       const std::vector<NativeInteger> &QHatInvModqPrecon,
       const std::vector<std::vector<NativeInteger>> &QHatModp,
@@ -1045,8 +1045,8 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param resultFormat Specifies the format we want the result to be in
    *
    */
-  virtual void ExpandCRTBasis(const shared_ptr<Params> paramsQP,
-                      const shared_ptr<Params> paramsP,
+  virtual void ExpandCRTBasis(const std::shared_ptr<Params> paramsQP,
+                      const std::shared_ptr<Params> paramsP,
                       const std::vector<NativeInteger> &QHatInvModq,
                       const std::vector<NativeInteger> &QHatInvModqPrecon,
                       const std::vector<std::vector<NativeInteger>> &QHatModp,
@@ -1114,7 +1114,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the result {\approx{t/Q * X}}_{P}
    */
   virtual DerivedType ApproxScaleAndRound(
-      const shared_ptr<Params> paramsP,
+      const std::shared_ptr<Params> paramsP,
       const std::vector<std::vector<NativeInteger>> &tPSHatInvModsDivsModp,
       const std::vector<DoubleNativeInt> &modpBarretMu) const = 0;
 
@@ -1144,7 +1144,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the result {t/Q * X}_{P}
    */
   virtual DerivedType ScaleAndRound(
-      const shared_ptr<Params> paramsP,
+      const std::shared_ptr<Params> paramsP,
       const std::vector<std::vector<NativeInteger>> &tPSHatInvModsDivsModp,
       const std::vector<double> &tPSHatInvModsDivsFrac,
       const std::vector<DoubleNativeInt> &modpBarretMu) const = 0;
@@ -1208,7 +1208,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param &mtildeInvModbskPrecon NTL-specific precomputations
    */
   virtual void FastBaseConvqToBskMontgomery(
-      const shared_ptr<Params> paramsBsk,
+      const std::shared_ptr<Params> paramsBsk,
       const std::vector<NativeInteger> &moduliQ,
       const std::vector<NativeInteger> &moduliBsk,
       const std::vector<DoubleNativeInt> &modbskBarrettMu,
@@ -1406,7 +1406,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the result of the addition operation.
    */
   friend inline DerivedType operator+(const DerivedType &a,
-                                       const vector<BigIntType> &b) {
+                                       const std::vector<BigIntType> &b) {
     return a.Plus(b);
   }
 
@@ -1416,7 +1416,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param b element to add.
    * @return the result of the addition operation.
    */
-  friend inline DerivedType operator+(const vector<BigIntType> &a,
+  friend inline DerivedType operator+(const std::vector<BigIntType> &a,
                                        const DerivedType &b) {
     return b.Plus(a);
   }
@@ -1439,7 +1439,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the result of the subtraction operation.
    */
   friend inline DerivedType operator-(const DerivedType &a,
-                                       const vector<BigIntType> &b) {
+                                       const std::vector<BigIntType> &b) {
     return a.Minus(b);
   }
 
@@ -1449,7 +1449,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param b element to subtract.
    * @return the result of the subtraction operation.
    */
-  friend inline DerivedType operator-(const vector<BigIntType> &a,
+  friend inline DerivedType operator-(const std::vector<BigIntType> &a,
                                        const DerivedType &b) {
     return b.Minus(a);
   }
@@ -1494,7 +1494,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @return the result of the multiplication operation.
    */
   friend inline DerivedType operator*(const DerivedType &a,
-                                       const vector<BigIntType> &b) {
+                                       const std::vector<BigIntType> &b) {
     return a.Times(b);
   }
 

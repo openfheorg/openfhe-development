@@ -43,7 +43,6 @@
 #include "testdefs.h"
 #include "utils/exception.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 void testDCRTPolyConstructorNegative(std::vector<NativePoly>& towers);
@@ -52,7 +51,7 @@ void testDCRTPolyConstructorNegative(std::vector<NativePoly>& towers);
 // these tests work only for DCRTPoly
 
 template <typename Element>
-void DCRT_constructors(const string& msg) {
+void DCRT_constructors(const std::string& msg) {
   DEBUG_FLAG(false);
   usint m = 8;
   usint towersize = 3;
@@ -221,7 +220,7 @@ TEST(UTDCRTPoly, DCRT_constructors) {
 }
 
 template <typename Element>
-void DCRT_getters_and_ops(const string& msg) {
+void DCRT_getters_and_ops(const std::string& msg) {
   usint m = 8;
   usint towersize = 3;
 
@@ -319,7 +318,7 @@ TEST(UTDCRTPoly, DCRT_getters_and_ops) {
 }
 
 template <typename Element>
-void DCRT_arithmetic_ops_element(const string& msg) {
+void DCRT_arithmetic_ops_element(const std::string& msg) {
   usint m = 8;
   usint towersize = 3;
 
@@ -604,12 +603,12 @@ TEST(UTDCRTPoly, DCRT_arithmetic_ops_element) {
 }
 
 template <typename Element>
-void DCRT_mod_ops_on_two_elements(const string& msg) {
+void DCRT_mod_ops_on_two_elements(const std::string& msg) {
   usint order = 16;
   usint nBits = 24;
   usint towersize = 3;
 
-  shared_ptr<ILDCRTParams<typename Element::Integer>> ildcrtparams =
+  std::shared_ptr<ILDCRTParams<typename Element::Integer>> ildcrtparams =
       GenerateDCRTParams<typename Element::Integer>(order, towersize, nBits);
 
   typename Element::DugType dug;

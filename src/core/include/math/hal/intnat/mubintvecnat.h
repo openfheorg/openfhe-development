@@ -677,10 +677,10 @@ namespace cereal {
 template <class Archive, class A>
 inline void CEREAL_SAVE_FUNCTION_NAME(
     Archive &ar,
-    std::vector<intnat::NativeIntegerT<uint64_t>, A> const &vector) {
+    std::vector<intnat::NativeIntegerT<uint64_t>, A> const &vec) {
   ar(make_size_tag(
-      static_cast<cereal::size_type>(vector.size())));  // number of elements
-  for (const auto& v : vector) {
+      static_cast<cereal::size_type>(vec.size())));  // number of elements
+  for (const auto& v : vec) {
     ar(v.ConvertToInt());
   }
 }
@@ -690,12 +690,12 @@ template <class Archive, class A>
 inline void CEREAL_SAVE_FUNCTION_NAME(
     Archive &ar,
     std::vector<intnat::NativeIntegerT<unsigned __int128>, A> const
-        &vector) {
+        &vec) {
   ar(make_size_tag(
-      static_cast<cereal::size_type>(vector.size())));  // number of elements
+      static_cast<cereal::size_type>(vec.size())));  // number of elements
   constexpr unsigned __int128 mask =
       (static_cast<unsigned __int128>(1) << 64) - 1;
-  for (const auto& v : vector) {
+  for (const auto& v : vec) {
     uint64_t vec[2];
     unsigned __int128 int128 = v.ConvertToInt();
     vec[0] = int128 & mask;  // least significant word
@@ -709,11 +709,11 @@ inline void CEREAL_SAVE_FUNCTION_NAME(
 
 template <class Archive, class A>
 inline void CEREAL_LOAD_FUNCTION_NAME(
-    Archive &ar, std::vector<intnat::NativeIntegerT<uint64_t>, A> &vector) {
+    Archive &ar, std::vector<intnat::NativeIntegerT<uint64_t>, A> &vec) {
   cereal::size_type size;
   ar(make_size_tag(size));
-  vector.resize(static_cast<size_t>(size));
-  for (auto &v : vector) {
+  vec.resize(static_cast<size_t>(size));
+  for (auto &v : vec) {
     uint64_t b;
     ar(b);
     v = b;
@@ -724,11 +724,11 @@ inline void CEREAL_LOAD_FUNCTION_NAME(
 template <class Archive, class A>
 inline void CEREAL_LOAD_FUNCTION_NAME(
     Archive &ar,
-    std::vector<intnat::NativeIntegerT<unsigned __int128>, A> &vector) {
+    std::vector<intnat::NativeIntegerT<unsigned __int128>, A> &vec) {
   cereal::size_type size;
   ar(make_size_tag(size));
-  vector.resize(static_cast<size_t>(size));
-  for (auto &v : vector) {
+  vec.resize(static_cast<size_t>(size));
+  for (auto &v : vec) {
     uint64_t vec[2];
     ar(vec);
     v = vec[1];  // most significant word

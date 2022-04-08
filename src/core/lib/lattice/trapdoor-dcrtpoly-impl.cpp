@@ -51,7 +51,7 @@ template class RLWETrapdoorUtility<DCRTPoly>;
 // "Implementing Token-Based Obfuscation under (Ring) LWE"
 template <>
 std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>>
-RLWETrapdoorUtility<DCRTPoly>::TrapdoorGen(shared_ptr<ParmType> params,
+RLWETrapdoorUtility<DCRTPoly>::TrapdoorGen(std::shared_ptr<ParmType> params,
                                            double stddev, int64_t base,
                                            bool bal) {
   auto zero_alloc = DCRTPoly::Allocator(params, EVALUATION);
@@ -96,7 +96,7 @@ RLWETrapdoorUtility<DCRTPoly>::TrapdoorGen(shared_ptr<ParmType> params,
 
 template <>
 std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>>
-RLWETrapdoorUtility<DCRTPoly>::TrapdoorGenSquareMat(shared_ptr<ParmType> params,
+RLWETrapdoorUtility<DCRTPoly>::TrapdoorGenSquareMat(std::shared_ptr<ParmType> params,
                                                     double stddev, size_t d,
                                                     int64_t base, bool bal) {
   auto zero_alloc = DCRTPoly::Allocator(params, EVALUATION);
@@ -160,7 +160,7 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSamp(
   TimeVar t1, t1_tot, t2, t2_tot;
   TIC(t1);
   TIC(t1_tot);
-  const shared_ptr<ParmType> params = u.GetParams();
+  const std::shared_ptr<ParmType> params = u.GetParams();
   auto zero_alloc = DCRTPoly::Allocator(params, EVALUATION);
 
   double c = (base + 1) * SIGMA;
@@ -242,7 +242,7 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSampSquareMat(
     size_t n, size_t k, const Matrix<DCRTPoly>& A,
     const RLWETrapdoorPair<DCRTPoly>& T, const Matrix<DCRTPoly>& U,
     DggType& dgg, DggType& dggLargeSigma, int64_t base) {
-  const shared_ptr<ParmType> params = U(0, 0).GetParams();
+  const std::shared_ptr<ParmType> params = U(0, 0).GetParams();
   auto zero_alloc = DCRTPoly::Allocator(params, EVALUATION);
 
   double c = (base + 1) * SIGMA;

@@ -42,7 +42,6 @@
 #include <vector>
 using std::function;
 #include <memory>
-using std::shared_ptr;
 
 #include "lattice/elemparams.h"
 #include "lattice/ildcrtparams.h"
@@ -94,10 +93,10 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param initializeElementToZero - if true, allocates  an empty vector set to
    * all 0s
    */
-  PolyImpl(const shared_ptr<Params> params, Format format = Format::EVALUATION,
+  PolyImpl(const std::shared_ptr<Params> params, Format format = Format::EVALUATION,
            bool initializeElementToZero = false);
 
-  PolyImpl(const shared_ptr<ILDCRTParams<Integer>> params,
+  PolyImpl(const std::shared_ptr<ILDCRTParams<Integer>> params,
            Format format = Format::EVALUATION,
            bool initializeElementToZero = false);
 
@@ -108,7 +107,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param params - element parameters
    * @param format - Format::EVALUATION or COEFFICIENT
    */
-  PolyImpl(bool initializeElementToMax, const shared_ptr<Params> params,
+  PolyImpl(bool initializeElementToMax, const std::shared_ptr<Params> params,
            Format format);
 
   /**
@@ -118,7 +117,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param &params the input params.
    * @param format - Format::EVALUATION or COEFFICIENT
    */
-  PolyImpl(const DggType &dgg, const shared_ptr<Params> params,
+  PolyImpl(const DggType &dgg, const std::shared_ptr<Params> params,
            Format format = Format::EVALUATION);
 
   /**
@@ -128,7 +127,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param &params the input params.
    * @param format - Format::EVALUATION or COEFFICIENT
    */
-  PolyImpl(const BugType &bug, const shared_ptr<Params> params,
+  PolyImpl(const BugType &bug, const std::shared_ptr<Params> params,
            Format format = Format::EVALUATION);
 
   /**
@@ -140,7 +139,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param h - Hamming weight for sparse ternary distribution (by default, when
    * h = 0, the distribution is NOT sparse)
    */
-  PolyImpl(const TugType &tug, const shared_ptr<Params> params,
+  PolyImpl(const TugType &tug, const std::shared_ptr<Params> params,
            Format format = Format::EVALUATION, uint32_t h = 0);
 
   /**
@@ -150,7 +149,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param &params the input params.
    * @param format - Format::EVALUATION or COEFFICIENT
    */
-  PolyImpl(DugType &dug, const shared_ptr<Params> params,
+  PolyImpl(DugType &dug, const std::shared_ptr<Params> params,
            Format format = Format::EVALUATION);
 
   /**
@@ -159,7 +158,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param params the params to use.
    * @param format - Format::EVALUATION or COEFFICIENT
    */
-  inline static function<PolyType()> Allocator(const shared_ptr<Params> params,
+  inline static function<PolyType()> Allocator(const std::shared_ptr<Params> params,
                                                Format format) {
     return [=]() { return PolyType(params, format, true); };
   }
@@ -173,7 +172,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @return the resulting vector.
    */
   inline static function<PolyType()> MakeDiscreteGaussianCoefficientAllocator(
-      shared_ptr<Params> params, Format resultFormat, double stddev) {
+      std::shared_ptr<Params> params, Format resultFormat, double stddev) {
     return [=]() {
       DiscreteGaussianGeneratorImpl<VecType> dgg(stddev);
       PolyType ilvec(dgg, params, Format::COEFFICIENT);
@@ -190,7 +189,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @return the resulting vector.
    */
   inline static function<PolyType()> MakeDiscreteUniformAllocator(
-      shared_ptr<Params> params, Format format) {
+      std::shared_ptr<Params> params, Format format) {
     return [=]() {
       DiscreteUniformGeneratorImpl<VecType> dug;
       dug.SetModulus(params->GetModulus());
@@ -204,7 +203,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param &element the copied element.
    * @param parms ILParams instance that is is passed.
    */
-  PolyImpl(const PolyType &element, shared_ptr<Params> parms = 0);
+  PolyImpl(const PolyType &element, std::shared_ptr<Params> parms = 0);
 
   /**
    * @brief Copy constructor from a Poly of native integers.
@@ -220,7 +219,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param &&element the copied element.
    * @param parms ILParams instance that is is passed.
    */
-  PolyImpl(PolyType &&element, shared_ptr<Params> parms = 0);
+  PolyImpl(PolyType &&element, std::shared_ptr<Params> parms = 0);
 
   /**
    * @brief Clone the object by making a copy of it and returning the copy
@@ -324,7 +323,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    *
    * @return the ring element params.
    */
-  const shared_ptr<Params> GetParams() const { return m_params; }
+  const std::shared_ptr<Params> GetParams() const { return m_params; }
 
   /**
    * @brief Get format of the element
@@ -925,7 +924,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
   Format m_format;
 
   // parameters for ideal lattices
-  shared_ptr<Params> m_params;
+  std::shared_ptr<Params> m_params;
 
   void ArbitrarySwitchFormat();
 };

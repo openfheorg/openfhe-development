@@ -47,7 +47,6 @@
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 // --------------- TESTING INTEGER OPERATIONS ON VECTOR  ---------------
@@ -66,7 +65,7 @@ using namespace lbcrypto;
    calculatedResult.
 */
 template <typename V>
-void AtAndSetModulusTest(const string& msg) {
+void AtAndSetModulusTest(const std::string& msg) {
   DEBUG_FLAG(false);
   usint len = 10;
   V m(len);
@@ -136,7 +135,7 @@ TEST(UTBinVect, AtAndSetModulusTest) {
 }
 
 template <typename V>
-void CTOR_Test(const string& msg) {
+void CTOR_Test(const std::string& msg) {
   typename V::Integer q("233");
   usint expectedResult[10] = {48, 53, 7, 178, 190, 120, 79, 108, 60, 12};
   const usint len = sizeof(expectedResult) / sizeof(expectedResult[0]);
@@ -175,7 +174,7 @@ TEST(UTBinVect, CTOR_Test) { RUN_BIG_BACKENDS(CTOR_Test, "CTOR_Test") }
 // TEST CASE WHEN NUMBERS AFTER ADDITION ARE SMALLER THAN MODULUS
 
 template <typename V>
-void ModAddBigModulus(const string& msg) {
+void ModAddBigModulus(const std::string& msg) {
   typename V::Integer q("3435435");  // constructor calling to set mod value
   // calling constructor to create a vector of length 5 and passing value of q
   V m(5, q);
@@ -205,7 +204,7 @@ TEST(UTBinVect, ModAddBigModulus) {
 // TEST CASE WHEN NUMBERS AFTER ADDITION ARE GREATER THAN MODULUS
 
 template <typename V>
-void ModAddSmallerModulus(const string& msg) {
+void ModAddSmallerModulus(const std::string& msg) {
   DEBUG_FLAG(false);
 
   typename V::Integer q("3534");  // constructor calling to set mod value
@@ -250,7 +249,7 @@ TEST(UTBinVect, ModAddSmallerModulus) {
 // TEST CASE WHEN FIRST NUMBER IS LESS THAN SECOND NUMBER
 
 template <typename V>
-void modsub_first_less_than_second(const string& msg) {
+void modsub_first_less_than_second(const std::string& msg) {
   typename V::Integer q("3534");  // constructor calling to set mod value
   // calling constructor to create a vector of length 5 and passing value of q
   V m(5, q);
@@ -280,7 +279,7 @@ TEST(UTBinVect, modsub_first_less_than_second) {
 // TEST CASE WHEN FIRST NUMBER IS GREATER THAN SECOND NUMBER
 
 template <typename V>
-void modsub_first_greater_than_second(const string& msg) {
+void modsub_first_greater_than_second(const std::string& msg) {
   typename V::Integer q("35");  // constructor calling to set mod value
   // calling constructor to create a vector of length 5 and passing value of q
   V m(5, q);
@@ -314,7 +313,7 @@ TEST(UTBinVect, modsub_first_greater_than_second) {
         and the result is stored in Big Vector calculatedResult.
 */
 template <typename V>
-void ModMulTest(const string& msg) {
+void ModMulTest(const std::string& msg) {
   typename V::Integer q("3534");  // constructor calling to set mod value
   // calling constructor to create a vector of length 5 and passing value of q
   V m(5, q);
@@ -344,7 +343,7 @@ TEST(UTBinVect, ModMulTest) { RUN_BIG_BACKENDS(ModMulTest, "ModMulTest") }
         and the result is stored in Big Vector calculatedResult.
 */
 template <typename V>
-void ModExpTest(const string& msg) {
+void ModExpTest(const std::string& msg) {
   DEBUG_FLAG(false);
   typename V::Integer q("3534");  // constructor calling to set mod value
 
@@ -380,7 +379,7 @@ TEST(UTBinVect, ModExpTest) { RUN_BIG_BACKENDS(ModExpTest, "ModExpTest") }
         and the result is stored in Big Vector calculatedResult.
 */
 template <typename V>
-void test_modinv(const string& msg) {
+void test_modinv(const std::string& msg) {
   typename V::Integer q("35");  // constructor calling to set mod value
   // calling constructor to create a vector of length 5 and passing value of q
   V m(5, q);
@@ -413,7 +412,7 @@ TEST(UTBinVect, test_modinv) { RUN_BIG_BACKENDS(test_modinv, "test_modinv") }
 // TEST CASE WHEN NUMBERS AFTER ADDITION ARE SMALLER THAN MODULUS
 
 template <typename V>
-void modadd_vector_result_smaller_modulus(const string& msg) {
+void modadd_vector_result_smaller_modulus(const std::string& msg) {
   typename V::Integer q("878870");  // constructor calling to set mod value
   // calling constructor to create a vector of length 5 and passing value of q
   V m(5, q);
@@ -449,7 +448,7 @@ TEST(UTBinVect, modadd_vector_result_smaller_modulus) {
 // TEST CASE WHEN NUMBERS AFTER ADDITION ARE GREATER THAN MODULUS
 
 template <typename V>
-void modadd_vector_result_greater_modulus(const string& msg) {
+void modadd_vector_result_greater_modulus(const std::string& msg) {
   DEBUG_FLAG(false);
   typename V::Integer q("657");  // constructor calling to set mod value
   // calling constructor to create a vector of length 5 and passing value of q
@@ -486,7 +485,7 @@ TEST(UTBinVect, modadd_vector_result_greater_modulus) {
         Returns:  (m+n)mod q, and the result is stored in Big Vector a.
 */
 template <typename V>
-void method_add_equals_vector_operation(const string& msg) {
+void method_add_equals_vector_operation(const std::string& msg) {
   DEBUG_FLAG(false);
   typename V::Integer q("657");
   // calling constructor to create a vector of length 5 and passing value of q
@@ -526,7 +525,7 @@ TEST(UTBinVect, method_add_equals_vector_operation) {
 */
 
 template <typename V>
-void modmul_vector(const string& msg) {
+void modmul_vector(const std::string& msg) {
   typename V::Integer q("657");  // constructor calling to set mod value
   // calling constructor to create a vector of length 5 and passing value of q
   V m(5, q);

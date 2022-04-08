@@ -47,9 +47,9 @@ namespace lbcrypto {
 template <class Element>
 class MatrixStrassen {  // TODO : public Serializable {
  public:
-  typedef vector<vector<Element>> data_t;
-  typedef vector<Element> lineardata_t;
-  typedef typename vector<Element>::iterator it_lineardata_t;
+  typedef std::vector<std::vector<Element>> data_t;
+  typedef std::vector<Element> lineardata_t;
+  typedef typename std::vector<Element>::iterator it_lineardata_t;
   typedef std::function<Element(void)> alloc_func;
 
   /**
@@ -647,7 +647,7 @@ inline MatrixStrassen<int32_t> ConvertToInt32(
  */
 inline MatrixStrassen<Poly> SplitInt32IntoPolyElements(
     MatrixStrassen<int32_t> const& other, size_t n,
-    const shared_ptr<ILParams> params);
+    const std::shared_ptr<ILParams> params);
 
 /**
  * Another method for splitting a vector of int32_t into a vector of ring
@@ -660,6 +660,6 @@ inline MatrixStrassen<Poly> SplitInt32IntoPolyElements(
  */
 inline MatrixStrassen<Poly> SplitInt32AltIntoPolyElements(
     MatrixStrassen<int32_t> const& other, size_t n,
-    const shared_ptr<ILParams> params);
+    const std::shared_ptr<ILParams> params);
 }  // namespace lbcrypto
 #endif  // LBCRYPTO_MATH_MATRIXSTRASSEN_H
