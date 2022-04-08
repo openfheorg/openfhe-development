@@ -100,56 +100,48 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params,
                                   const std::shared_ptr<const LWEPrivateKeyImpl> sk,
                                   const std::shared_ptr<const LWECiphertextImpl> ct, LWEPlaintext* result,
                                   const LWEPlaintextModulus& p) const {
-  // TODO in the future we should add a check to make sure sk parameters match
-  // the ct parameters
+    // TODO in the future we should add a check to make sure sk parameters match
+    // the ct parameters
 
-  // Create local variables to speed up the computations
-  NativeVector a = ct->GetA();
-  uint32_t n = sk->GetElement().GetLength();
-  NativeVector s = sk->GetElement();
-  NativeInteger q = sk->GetElement().GetModulus();
+    // Create local variables to speed up the computations
+    NativeVector a  = ct->GetA();
+    uint32_t n      = sk->GetElement().GetLength();
+    NativeVector s  = sk->GetElement();
+    NativeInteger q = sk->GetElement().GetModulus();
 
-  // if(q % (p*2) !=0){
-  //   std::string errMsg =
-  //           "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p*2.";
-  //   PALISADE_THROW(not_implemented_error, errMsg);
-  //   return;
-  // }
+    if (q % (p * 2) != 0 && q.ConvertToInt() & (1 == 0)) {
+        std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p*2.";
+        PALISADE_THROW(not_implemented_error, errMsg);
+    }
 
-  NativeInteger mu = q.ComputeMu();
+    NativeInteger mu = q.ComputeMu();
 
-  NativeInteger inner(0);
-  for (uint32_t i = 0; i < n; ++i) {
-    inner += a[i].ModMulFast(s[i], q, mu);
-  }
-  inner.ModEq(q);
+    NativeInteger inner(0);
+    for (uint32_t i = 0; i < n; ++i) {
+        inner += a[i].ModMulFast(s[i], q, mu);
+    }
+    inner.ModEq(q);
 
-  NativeInteger r = ct->GetB();
+    NativeInteger r = ct->GetB();
 
-  r.ModSubFastEq(inner, q);
+    r.ModSubFastEq(inner, q);
 
-  // Alternatively, rounding can be done as
-  // *result = (r.MultiplyAndRound(NativeInteger(4),q)).ConvertToInt();
-  // But the method below is a more efficient way of doing the rounding
-  // the idea is that Round(4/q x) = q/8 + Floor(4/q x)
-  r.ModAddFastEq((q / (p*2)), q);
-  *result = ((NativeInteger(p) * r) / q).ConvertToInt();
-  // return;
-  auto res = (NativeInteger(p) * r) / q;
-  *result = (r - res*q/p - q/p/2).ConvertToInt();
+    // Alternatively, rounding can be done as
+    // *result = (r.MultiplyAndRound(NativeInteger(4),q)).ConvertToInt();
+    // But the method below is a more efficient way of doing the rounding
+    // the idea is that Round(4/q x) = q/8 + Floor(4/q x)
+    r.ModAddFastEq((q / (p * 2)), q);
+    *result = ((NativeInteger(p) * r) / q).ConvertToInt();
 
 #if defined(BINFHE_DEBUG)
-  double error = (double(p) * (r.ConvertToDouble() - q.ConvertToInt() / (p*2))) /
-                     q.ConvertToDouble() -
-                 static_cast<double>(*result);
-  std::cerr << q << " " << p << " " << r << " error:\t" << error << std::endl;
-  // std::cerr << error * q.ConvertToDouble() / double(p) << std::endl;
+    double error = (static_cast<double>(p) * (r.ConvertToDouble() - q.ConvertToInt() / (p * 2))) / q.ConvertToDouble() -
+                   static_cast<double>(*result);
+    std::cerr << q << " " << p << " " << r << " error:\t" << error << std::endl;
+    std::cerr << error * q.ConvertToDouble() / static_cast<double>(p) << std::endl;
 #endif
-  // *result = (r - res*q/p - q/p/2).ConvertToInt();
-  // *result = int(error * q.ConvertToDouble() / double(p));
-  return;
-}
 
+    return;
+}
 
 // the main rounding operation used in ModSwitch (as described in Section 3 of
 // https://eprint.iacr.org/2014/816) The idea is that Round(x) = 0.5 + Floor(x)
