@@ -40,7 +40,7 @@ using namespace lbcrypto;
 // path where files will be written to
 const std::string DATAFOLDER = "demoData";
 
-int main() {
+int serialization_example() {
     // Generating the crypto context
 
     auto cc1 = BinFHEContext();
