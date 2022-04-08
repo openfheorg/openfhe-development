@@ -85,7 +85,7 @@ const uint64_t HashUtil::k_512[80] = {
     0x431d67c49c100d4c, 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a,
     0x5fcb6fab3ad6faec, 0x6c44198c4a475817};
 
-void HashUtil::SHA256(string message, std::vector<int64_t>& digest) {
+void HashUtil::SHA256(std::string message, std::vector<int64_t>& digest) {
   uint32_t h_256[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
                        0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
 

@@ -40,8 +40,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-using std::string;
-using std::vector;
+
 
 namespace lbcrypto {
 
@@ -49,8 +48,8 @@ enum HashAlgorithm { SHA_256 = 0, SHA_512 = 1 };
 
 class HashUtil {
  public:
-  static void Hash(string message, HashAlgorithm algo,
-                   vector<int64_t>& digest) {
+  static void Hash(std::string message, HashAlgorithm algo,
+                   std::vector<int64_t>& digest) {
     switch (algo) {
       case SHA_256:
         SHA256(message, digest);
@@ -69,8 +68,8 @@ class HashUtil {
   static std::string HashString(std::string message);
 
  private:
-  static void SHA256(string message, vector<int64_t>& digest);
-  static void SHA512(string message, vector<int64_t>& digest);
+  static void SHA256(std::string message, std::vector<int64_t>& digest);
+  static void SHA512(std::string message, std::vector<int64_t>& digest);
   static const uint32_t k_256[64];
   static const uint64_t k_512[80];
 };

@@ -157,7 +157,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param params the params to use.
    * @param format - EVALUATION or COEFFICIENT
    */
-  inline static function<DerivedType()> Allocator(
+  inline static std::function<DerivedType()> Allocator(
       const std::shared_ptr<Params> params, Format format) {
     return [=]() { return DerivedType(params, format, true); };
   }
@@ -170,7 +170,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param stddev standard deviation for the discrete gaussian generator.
    * @return the resulting vector.
    */
-  inline static function<DerivedType()>
+  inline static std::function<DerivedType()>
   MakeDiscreteGaussianCoefficientAllocator(std::shared_ptr<Params> params,
                                            Format resultFormat, double stddev) {
     return [=]() {
@@ -188,7 +188,7 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * @param format format for the polynomials generated.
    * @return the resulting vector.
    */
-  inline static function<DerivedType()> MakeDiscreteUniformAllocator(
+  inline static std::function<DerivedType()> MakeDiscreteUniformAllocator(
       std::shared_ptr<Params> params, Format format) {
     return [=]() {
       DugType dug;

@@ -36,8 +36,6 @@
 #include "math/matrixstrassen.h"
 #include "utils/parallel.h"
 
-using std::invalid_argument;
-
 namespace lbcrypto {
 
 template <class Element>
@@ -294,7 +292,7 @@ MatrixStrassen<Element>& MatrixStrassen<Element>::VStack(
     PALISADE_THROW(math_error, "VStack rows not equal size");
   }
   for (size_t row = 0; row < other.rows; ++row) {
-    std::vector<unique_ptr<Element>> rowElems;
+    std::vector<std::unique_ptr<Element>> rowElems;
     for (auto elem : other.data[row]) {
       rowElems.push_back(Element(*elem));
     }
@@ -312,7 +310,7 @@ inline MatrixStrassen<Element>& MatrixStrassen<Element>::HStack(
     PALISADE_THROW(math_error, "HStack cols not equal size");
   }
   for (size_t row = 0; row < rows; ++row) {
-    std::vector<unique_ptr<Element>> rowElems;
+    std::vector<std::unique_ptr<Element>> rowElems;
     for (auto elem = other.data[row].begin(); elem != other.data[row].end();
          ++elem) {
       rowElems.push_back(Element(*elem));

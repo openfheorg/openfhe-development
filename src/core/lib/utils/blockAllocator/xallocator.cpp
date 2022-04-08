@@ -431,7 +431,7 @@ extern "C" void xalloc_stats() {
   std::unique_lock<std::mutex> lock(xalloc_mutex);
   {
 #ifdef STATIC_POOLS
-    cout << " Static Pools " << endl;
+    std::cout << " Static Pools " << std::endl;
 #endif
 
     for (usint i = 0; i < MAX_ALLOCATORS; i++) {

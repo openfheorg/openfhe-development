@@ -1236,7 +1236,7 @@ class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
 
  private:
   // vector storing the native integers. stored little endian
-  vector<limb_t> m_value;
+  std::vector<limb_t> m_value;
 
  private:
   // variable that stores the MOST SIGNIFICANT BIT position in the

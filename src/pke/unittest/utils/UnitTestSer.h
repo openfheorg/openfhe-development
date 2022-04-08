@@ -54,7 +54,7 @@
 using namespace lbcrypto;
 
 template <typename Element, typename ST>
-void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype, const string& failmsg = std::string()) {
+void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype, const std::string& failmsg = std::string()) {
     try {
         KeyPair<Element> kp = cc->KeyGen();
         cc->EvalMultKeyGen(kp.secretKey);

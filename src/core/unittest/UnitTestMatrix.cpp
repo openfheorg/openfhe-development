@@ -49,7 +49,7 @@
 using namespace lbcrypto;
 
 template <typename Element>
-static function<Element()> secureIL2nAlloc() {
+static std::function<Element()> secureIL2nAlloc() {
   usint m = 2048;
   typename Element::Integer secureModulus("8590983169");
   typename Element::Integer secureRootOfUnity("4810681236");
@@ -59,7 +59,7 @@ static function<Element()> secureIL2nAlloc() {
 }
 
 template <typename Element>
-static function<Element()> fastIL2nAlloc() {
+static std::function<Element()> fastIL2nAlloc() {
   usint m = 16;
   typename Element::Integer modulus("67108913");
   typename Element::Integer rootOfUnity("61564");
@@ -69,7 +69,7 @@ static function<Element()> fastIL2nAlloc() {
 }
 
 template <typename Element>
-static function<Element()> fastUniformIL2nAlloc() {
+static std::function<Element()> fastUniformIL2nAlloc() {
   usint m = 16;
   typename Element::Integer modulus("67108913");
   typename Element::Integer rootOfUnity("61564");

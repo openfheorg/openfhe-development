@@ -189,7 +189,7 @@ bool CKKSPackedEncoding::Encode() {
       }
     }
 
-    const shared_ptr<ILDCRTParams<BigInteger>> params =
+    const std::shared_ptr<ILDCRTParams<BigInteger>> params =
         this->encodedVectorDCRT.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>> &nativeParams =
         params->GetParams();
@@ -326,7 +326,7 @@ bool CKKSPackedEncoding::Encode() {
       temp[i] = (re < 0) ? Max64BitValue() + re : re;
       temp[i + Nh] = (im < 0) ? Max64BitValue() + im : im;
     }
-    const shared_ptr<ILDCRTParams<BigInteger>> params =
+    const std::shared_ptr<ILDCRTParams<BigInteger>> params =
         this->encodedVectorDCRT.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>> &nativeParams =
         params->GetParams();

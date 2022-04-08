@@ -45,7 +45,6 @@
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 class UTEncoding : public ::testing::Test {
@@ -59,10 +58,10 @@ protected:
 };
 
 TEST_F(UTEncoding, coef_packed_encoding) {
-    vector<int64_t> value = { 32, 17, 8, -12, -32, 22, -101, 6 };
+    std::vector<int64_t> value = { 32, 17, 8, -12, -32, 22, -101, 6 };
     usint m = 16;
 
-    shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParamsImpl<BigInteger>>(m);
+    std::shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParamsImpl<BigInteger>>(m);
     EncodingParams ep(std::make_shared<EncodingParamsImpl>(256));
 
     CoefPackedEncoding se(lp, ep, value);
@@ -133,8 +132,8 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) {
 
     // populate the towers for the small modulus
 
-    vector<NativeInteger> init_moduli(init_size);
-    vector<NativeInteger> init_rootsOfUnity(init_size);
+    std::vector<NativeInteger> init_moduli(init_size);
+    std::vector<NativeInteger> init_rootsOfUnity(init_size);
 
     NativeInteger q = FirstPrime<NativeInteger>(dcrtBits, mArb);
     init_moduli[0] = q;
@@ -148,8 +147,8 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) {
 
     // populate the towers for the big modulus
 
-    vector<NativeInteger> init_moduli_NTT(init_size);
-    vector<NativeInteger> init_rootsOfUnity_NTT(init_size);
+    std::vector<NativeInteger> init_moduli_NTT(init_size);
+    std::vector<NativeInteger> init_rootsOfUnity_NTT(init_size);
 
     q = FirstPrime<NativeInteger>(dcrtBitsBig, mNTT);
     init_moduli_NTT[0] = q;
@@ -198,8 +197,8 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_negative)
     usint mNTT = pow(2, ceil(log2(2 * m - 1)));
 
     // populate the towers for the small modulus
-    vector<NativeInteger> init_moduli(init_size);
-    vector<NativeInteger> init_rootsOfUnity(init_size);
+    std::vector<NativeInteger> init_moduli(init_size);
+    std::vector<NativeInteger> init_rootsOfUnity(init_size);
 
     NativeInteger q = FirstPrime<NativeInteger>(dcrtBits, mArb);
     init_moduli[0] = q;
@@ -213,8 +212,8 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_negative)
 
     // populate the towers for the big modulus
 
-    vector<NativeInteger> init_moduli_NTT(init_size);
-    vector<NativeInteger> init_rootsOfUnity_NTT(init_size);
+    std::vector<NativeInteger> init_moduli_NTT(init_size);
+    std::vector<NativeInteger> init_rootsOfUnity_NTT(init_size);
 
     q = FirstPrime<NativeInteger>(dcrtBitsBig, mNTT);
     init_moduli_NTT[0] = q;
@@ -250,10 +249,10 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_negative)
 }
 
 TEST_F(UTEncoding, string_encoding) {
-    string value = "Hello, world!";
+    std::string value = "Hello, world!";
     usint m = 64;
 
-    shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParamsImpl<BigInteger>>(m);
+    std::shared_ptr<ILParams> lp = ElemParamFactory::GenElemParams<ILParamsImpl<BigInteger>>(m);
     EncodingParams ep(std::make_shared<EncodingParamsImpl>(256));
 
     StringEncoding se(lp, ep, value);
@@ -262,7 +261,7 @@ TEST_F(UTEncoding, string_encoding) {
     EXPECT_EQ(se.GetStringValue(), value) << "string encode/decode";
 
     // truncate!
-    shared_ptr<ILParams> lp2 = ElemParamFactory::GenElemParams<ILParamsImpl<BigInteger>>(4);
+    std::shared_ptr<ILParams> lp2 = ElemParamFactory::GenElemParams<ILParamsImpl<BigInteger>>(4);
     StringEncoding se2(lp2, ep, value);
     se2.Encode();
     se2.Decode();

@@ -232,7 +232,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_Add_Packed(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Add_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -342,7 +342,7 @@ protected:
         }
     }
 
-    void UnitTest_Mult_Packed(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Mult_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -418,7 +418,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalAtIndex(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalAtIndex(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -488,7 +488,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalMerge(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalMerge(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -521,7 +521,7 @@ protected:
             // Generate multiplication keys
             cc->EvalMultKeyGen(kp.secretKey);
             // Generate rotation keys for all right rotations 1 to 8.
-            vector<int32_t> indexList{ -1,-2,-3,-4,-5,-6,-7,-8 };
+            std::vector<int32_t> indexList{ -1,-2,-3,-4,-5,-6,-7,-8 };
             cc->EvalAtIndexKeyGen(kp.secretKey, indexList);
 
             // Encrypt plaintexts
@@ -561,7 +561,7 @@ protected:
         }
     }
 
-    void UnitTest_ReEncryption(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_ReEncryption(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -620,7 +620,7 @@ protected:
         }
     }
 
-    void UnitTest_AutoLevelReduce(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_AutoLevelReduce(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -848,7 +848,7 @@ protected:
         }
     }
 
-    void UnitTest_Compress(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Compress(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -892,7 +892,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalFastRotation(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalFastRotation(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -967,7 +967,7 @@ protected:
         }
     }
 
-    void UnitTest_Metadata(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Metadata(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1055,11 +1055,11 @@ protected:
             EXPECT_EQ(val1->GetMetadata(), atIndexMinus2ValTest->GetMetadata())
                 << "Ciphertext metadata mismatch in EvalAtIndex -2";
 
-            vector<double> weights(2);
+            std::vector<double> weights(2);
             for (int i = 0; i < 2; i++)
                 weights[i] = i;
 
-            vector<Ciphertext<Element>> ciphertexts(2);
+            std::vector<Ciphertext<Element>> ciphertexts(2);
             ciphertexts[0] = ciphertext1;
             ciphertexts[1] = ciphertext2;
 

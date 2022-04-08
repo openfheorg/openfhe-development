@@ -67,7 +67,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * dimension
    */
   virtual bool ParamsGenBFVRNS(
-      shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
       int32_t evalAddCount = 0,
       int32_t evalMultCount = 0,
       int32_t keySwitchCount = 0,
@@ -99,7 +99,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * FLEXIBLEAUTO)
    */
   virtual bool ParamsGenCKKSRNS(
-      shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
       usint cyclOrder,
       usint numPrimes,
       usint scaleExp,
@@ -130,7 +130,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param dcrtBits the bit-width of moduli.
    */
   virtual bool ParamsGenBGVRNS(
-      shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
+      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
       usint ptm, usint numPrimes, usint relinWindow, MODE mode,
       usint firstModSize = 60,
       usint dcrtBits = 60,

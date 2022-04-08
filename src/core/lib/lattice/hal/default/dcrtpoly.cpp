@@ -860,7 +860,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Plus(
 
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Plus(
-    const vector<Integer> &crtElement) const {
+    const std::vector<Integer> &crtElement) const {
   DCRTPolyImpl<VecType> tmp(*this);
 
 #pragma omp parallel for
@@ -884,7 +884,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Minus(
 
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Minus(
-    const vector<Integer> &crtElement) const {
+    const std::vector<Integer> &crtElement) const {
   DCRTPolyImpl<VecType> tmp(*this);
 
 #pragma omp parallel for
@@ -1484,10 +1484,10 @@ template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
     const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
-    const vector<NativeInteger> &QHatInvModq,
-    const vector<NativeInteger> &QHatInvModqPrecon,
-    const vector<vector<NativeInteger>> &QHatModp,
-    const vector<DoubleNativeInt> &modpBarrettMu) const {
+    const std::vector<NativeInteger> &QHatInvModq,
+    const std::vector<NativeInteger> &QHatInvModqPrecon,
+    const std::vector<std::vector<NativeInteger>> &QHatModp,
+    const std::vector<DoubleNativeInt> &modpBarrettMu) const {
   DCRTPolyType ans(paramsP, this->GetFormat(), true);
 
   usint sizeQ = (m_vectors.size() > paramsQ->GetParams().size())
@@ -1513,10 +1513,10 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
 template <typename VecType>
 void DCRTPolyImpl<VecType>::ApproxModUp(
     const std::shared_ptr<Params> paramsQ, const std::shared_ptr<Params> paramsP,
-    const std::shared_ptr<Params> paramsQP, const vector<NativeInteger> &QHatInvModq,
-    const vector<NativeInteger> &QHatInvModqPrecon,
-    const vector<vector<NativeInteger>> &QHatModp,
-    const vector<DoubleNativeInt> &modpBarrettMu) {
+    const std::shared_ptr<Params> paramsQP, const std::vector<NativeInteger> &QHatInvModq,
+    const std::vector<NativeInteger> &QHatInvModqPrecon,
+    const std::vector<std::vector<NativeInteger>> &QHatModp,
+    const std::vector<DoubleNativeInt> &modpBarrettMu) {
   std::vector<PolyType> polyInNTT;
   // if the input polynomial is in evaluation representation, store it for
   // later use to reduce the number of NTTs
@@ -1563,15 +1563,15 @@ void DCRTPolyImpl<VecType>::ApproxModUp(
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     const std::shared_ptr<Params> paramsQ, const std::shared_ptr<Params> paramsP,
-    const vector<NativeInteger> &PInvModq,
-    const vector<NativeInteger> &PInvModqPrecon,
-    const vector<NativeInteger> &PHatInvModp,
-    const vector<NativeInteger> &PHatInvModpPrecon,
-    const vector<vector<NativeInteger>> &PHatModq,
-    const vector<DoubleNativeInt> &modqBarrettMu,
-    const vector<NativeInteger> &tInvModp,
-    const vector<NativeInteger> &tInvModpPrecon, const NativeInteger &t,
-    const vector<NativeInteger> &tModqPrecon) const {
+    const std::vector<NativeInteger> &PInvModq,
+    const std::vector<NativeInteger> &PInvModqPrecon,
+    const std::vector<NativeInteger> &PHatInvModp,
+    const std::vector<NativeInteger> &PHatInvModpPrecon,
+    const std::vector<std::vector<NativeInteger>> &PHatModq,
+    const std::vector<DoubleNativeInt> &modqBarrettMu,
+    const std::vector<NativeInteger> &tInvModp,
+    const std::vector<NativeInteger> &tInvModpPrecon, const NativeInteger &t,
+    const std::vector<NativeInteger> &tModqPrecon) const {
   usint sizeQP = m_vectors.size();
   usint sizeP = paramsP->GetParams().size();
   usint sizeQ = sizeQP - sizeP;

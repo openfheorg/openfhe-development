@@ -39,7 +39,6 @@
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 int main(int argc, char* argv[]) {
@@ -115,16 +114,16 @@ int main(int argc, char* argv[]) {
 
   plaintextDec->SetLength(encodedLength);
 
-  cout << std::setprecision(10) << std::endl;
+  std::cout << std::setprecision(10) << std::endl;
 
 
-  cout << "\n Result of evaluating a linear weighted sum with coefficients "
+  std::cout << "\n Result of evaluating a linear weighted sum with coefficients "
        << coefficients << " \n";
-  cout << plaintextDec << endl;
+  std::cout << plaintextDec << std::endl;
 
-  cout << "\n Expected result: " << unencIP << endl;
+  std::cout << "\n Expected result: " << unencIP << std::endl;
 
-  cout << "\n Evaluation time: " << timeEvalLinearWSum << " ms" << endl;
+  std::cout << "\n Evaluation time: " << timeEvalLinearWSum << " ms" << std::endl;
 
   return 0;
 }

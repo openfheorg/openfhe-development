@@ -66,8 +66,8 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext,
   Ciphertext<DCRTPoly> ciphertext(
       std::make_shared<CiphertextImpl<DCRTPoly>>(privateKey));
 
-  const shared_ptr<ParmType> ptxtParams = plaintext.GetParams();
-  std::shared_ptr<vector<DCRTPoly>> ba =
+  const std::shared_ptr<ParmType> ptxtParams = plaintext.GetParams();
+  std::shared_ptr<std::vector<DCRTPoly>> ba =
       EncryptZeroCore(privateKey, ptxtParams);
 
   plaintext.SetFormat(EVALUATION);
@@ -85,8 +85,8 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext,
   Ciphertext<DCRTPoly> ciphertext(
       std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
 
-  const shared_ptr<ParmType> ptxtParams = plaintext.GetParams();
-  std::shared_ptr<vector<DCRTPoly>> ba =
+  const std::shared_ptr<ParmType> ptxtParams = plaintext.GetParams();
+  std::shared_ptr<std::vector<DCRTPoly>> ba =
       EncryptZeroCore(publicKey, ptxtParams);
 
   plaintext.SetFormat(EVALUATION);
@@ -142,9 +142,9 @@ DecryptResult PKERNS::Decrypt(
   return DecryptResult(plaintext->GetLength());
 }
 
-std::shared_ptr<vector<DCRTPoly>> PKERNS::EncryptZeroCore(
+std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
     const PrivateKey<DCRTPoly> privateKey,
-    const shared_ptr<ParmType> params) const {
+    const std::shared_ptr<ParmType> params) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
           privateKey->GetCryptoParameters());
@@ -176,12 +176,12 @@ std::shared_ptr<vector<DCRTPoly>> PKERNS::EncryptZeroCore(
     c1 = -a;
   }
 
-  return std::make_shared<vector<DCRTPoly>>(std::initializer_list<DCRTPoly>({std::move(c0), std::move(c1)}));
+  return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>({std::move(c0), std::move(c1)}));
 }
 
-std::shared_ptr<vector<DCRTPoly>> PKERNS::EncryptZeroCore(
+std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
     const PublicKey<DCRTPoly> publicKey,
-    const shared_ptr<ParmType> params) const {
+    const std::shared_ptr<ParmType> params) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
           publicKey->GetCryptoParameters());
@@ -228,7 +228,7 @@ std::shared_ptr<vector<DCRTPoly>> PKERNS::EncryptZeroCore(
     c1 = p1 * v + ns * e1;
   }
 
-  return std::make_shared<vector<DCRTPoly>>(std::initializer_list<DCRTPoly>({std::move(c0), std::move(c1)}));
+  return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>({std::move(c0), std::move(c1)}));
 }
 
 DCRTPoly PKERNS::DecryptCore(const std::vector<DCRTPoly> &cv,

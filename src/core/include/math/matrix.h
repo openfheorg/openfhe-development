@@ -58,8 +58,8 @@ class Field2n;
 template <class Element>
 class Matrix : public Serializable {
  public:
-  typedef vector<vector<Element>> data_t;
-  typedef vector<Element> data_row_t;
+  typedef std::vector<std::vector<Element>> data_t;
+  typedef std::vector<Element> data_row_t;
   typedef std::function<Element(void)> alloc_func;
 
   /**

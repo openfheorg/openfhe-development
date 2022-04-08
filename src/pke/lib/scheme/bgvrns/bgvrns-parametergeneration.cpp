@@ -59,7 +59,7 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 namespace lbcrypto {
 
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
-    shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
+    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
     usint ptm, usint numPrimes, usint relinWindow, MODE mode,
     usint firstModSize, usint dcrtBits,
     uint32_t numPartQ, usint multihopQBound,
@@ -140,8 +140,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   }
   //// End HE Standards compliance logic/check
 
-  vector<NativeInteger> moduliQ(numPrimes);
-  vector<NativeInteger> rootsQ(numPrimes);
+  std::vector<NativeInteger> moduliQ(numPrimes);
+  std::vector<NativeInteger> rootsQ(numPrimes);
 
   // For ModulusSwitching to work we need the moduli to be also congruent to 1
   // modulo ptm

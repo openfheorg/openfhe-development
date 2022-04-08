@@ -42,7 +42,6 @@
 #include "gen-cryptocontext.h"
 #include "utils/debug.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 int main(int argc, char *argv[]) {
@@ -158,34 +157,34 @@ int main(int argc, char *argv[]) {
   std::vector<int64_t> vectorOfInts7 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
   Plaintext plaintext7 = cryptoContext->MakePackedPlaintext(vectorOfInts7);
 
-  cout << "\nOriginal Plaintext #1: \n";
-  cout << plaintext1 << endl;
+  std::cout << "\nOriginal Plaintext #1: \n";
+  std::cout << plaintext1 << std::endl;
 
-  cout << "\nOriginal Plaintext #2: \n";
-  cout << plaintext2 << endl;
+  std::cout << "\nOriginal Plaintext #2: \n";
+  std::cout << plaintext2 << std::endl;
 
-  cout << "\nOriginal Plaintext #3: \n";
-  cout << plaintext3 << endl;
+  std::cout << "\nOriginal Plaintext #3: \n";
+  std::cout << plaintext3 << std::endl;
 
-  cout << "\nOriginal Plaintext #4: \n";
-  cout << plaintext4 << endl;
+  std::cout << "\nOriginal Plaintext #4: \n";
+  std::cout << plaintext4 << std::endl;
 
-  cout << "\nOriginal Plaintext #5: \n";
-  cout << plaintext5 << endl;
+  std::cout << "\nOriginal Plaintext #5: \n";
+  std::cout << plaintext5 << std::endl;
 
-  cout << "\nOriginal Plaintext #6: \n";
-  cout << plaintext6 << endl;
+  std::cout << "\nOriginal Plaintext #6: \n";
+  std::cout << plaintext6 << std::endl;
 
-  cout << "\nOriginal Plaintext #7: \n";
-  cout << plaintext7 << endl;
+  std::cout << "\nOriginal Plaintext #7: \n";
+  std::cout << plaintext7 << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Encryption
   ////////////////////////////////////////////////////////////
 
-  cout << "\nRunning encryption of all plaintexts... ";
+  std::cout << "\nRunning encryption of all plaintexts... ";
 
-  vector<Ciphertext<DCRTPoly>> ciphertexts;
+  std::vector<Ciphertext<DCRTPoly>> ciphertexts;
 
   TIC(t);
 
@@ -199,7 +198,7 @@ int main(int argc, char *argv[]) {
 
   processingTime = TOC(t);
 
-  cout << "Completed\n";
+  std::cout << "Completed\n";
 
   std::cout << "\nAverage encryption time: " << processingTime / 7 << "ms"
             << std::endl;
@@ -228,14 +227,14 @@ int main(int argc, char *argv[]) {
 
   plaintextDecMult->SetLength(plaintext1->GetLength());
 
-  cout << "\nResult of homomorphic multiplication of ciphertexts #1 and #2: \n";
-  cout << plaintextDecMult << endl;
+  std::cout << "\nResult of homomorphic multiplication of ciphertexts #1 and #2: \n";
+  std::cout << plaintextDecMult << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Homomorphic multiplication of 7 ciphertexts
   ////////////////////////////////////////////////////////////
 
-  cout << "\nRunning a binary-tree multiplication of 7 ciphertexts...";
+  std::cout << "\nRunning a binary-tree multiplication of 7 ciphertexts...";
 
   TIC(t);
 
@@ -243,7 +242,7 @@ int main(int argc, char *argv[]) {
 
   processingTime = TOC(t);
 
-  cout << "Completed\n";
+  std::cout << "Completed\n";
 
   std::cout << "\nTotal time of multiplying 7 ciphertexts using EvalMultMany: "
             << processingTime << "ms" << std::endl;
@@ -255,15 +254,15 @@ int main(int argc, char *argv[]) {
 
   plaintextDecMult7->SetLength(plaintext1->GetLength());
 
-  cout << "\nResult of 6 homomorphic multiplications: \n";
-  cout << plaintextDecMult7 << endl;
+  std::cout << "\nResult of 6 homomorphic multiplications: \n";
+  std::cout << plaintextDecMult7 << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Homomorphic multiplication of 3 ciphertexts where relinearization is done
   // at the end
   ////////////////////////////////////////////////////////////
 
-  cout << "\nRunning a depth-3 multiplication w/o relinearization until the "
+  std::cout << "\nRunning a depth-3 multiplication w/o relinearization until the "
           "very end...";
 
   TIC(t);
@@ -273,7 +272,7 @@ int main(int argc, char *argv[]) {
 
   processingTime = TOC(t);
 
-  cout << "Completed\n";
+  std::cout << "Completed\n";
 
   std::cout << "Time of multiplying 2 ciphertexts w/o relinearization: "
             << processingTime << "ms" << std::endl;
@@ -288,36 +287,36 @@ int main(int argc, char *argv[]) {
 
   plaintextDecMult123->SetLength(plaintext1->GetLength());
 
-  cout << "\nResult of 3 homomorphic multiplications: \n";
-  cout << plaintextDecMult123 << endl;
+  std::cout << "\nResult of 3 homomorphic multiplications: \n";
+  std::cout << plaintextDecMult123 << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Homomorphic multiplication of 3 ciphertexts w/o any relinearization
   ////////////////////////////////////////////////////////////
 
-  cout << "\nRunning a depth-3 multiplication w/o relinearization...";
+  std::cout << "\nRunning a depth-3 multiplication w/o relinearization...";
 
   ciphertextMult12 =
       cryptoContext->EvalMultNoRelin(ciphertexts[0], ciphertexts[1]);
   ciphertextMult123 =
       cryptoContext->EvalMultNoRelin(ciphertextMult12, ciphertexts[2]);
 
-  cout << "Completed\n";
+  std::cout << "Completed\n";
 
   cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult123,
                          &plaintextDecMult123);
 
   plaintextDecMult123->SetLength(plaintext1->GetLength());
 
-  cout << "\nResult of 3 homomorphic multiplications: \n";
-  cout << plaintextDecMult123 << endl;
+  std::cout << "\nResult of 3 homomorphic multiplications: \n";
+  std::cout << plaintextDecMult123 << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Homomorphic multiplication of 3 ciphertexts w/ relinearization after each
   // multiplication
   ////////////////////////////////////////////////////////////
 
-  cout << "\nRunning a depth-3 multiplication w/ relinearization after each "
+  std::cout << "\nRunning a depth-3 multiplication w/ relinearization after each "
           "multiplication...";
 
   TIC(t);
@@ -325,7 +324,7 @@ int main(int argc, char *argv[]) {
   ciphertextMult12 = cryptoContext->EvalMult(ciphertexts[0], ciphertexts[1]);
 
   processingTime = TOC(t);
-  cout << "Completed\n";
+  std::cout << "Completed\n";
   std::cout << "Time of multiplying 2 ciphertexts w/ relinearization: "
             << processingTime << "ms" << std::endl;
 
@@ -336,8 +335,8 @@ int main(int argc, char *argv[]) {
 
   plaintextDecMult123->SetLength(plaintext1->GetLength());
 
-  cout << "\nResult of 3 homomorphic multiplications: \n";
-  cout << plaintextDecMult123 << endl;
+  std::cout << "\nResult of 3 homomorphic multiplications: \n";
+  std::cout << plaintextDecMult123 << std::endl;
 
   return 0;
 }

@@ -242,7 +242,7 @@ static void Native_ntt(benchmark::State& state) {
 BENCHMARK(Native_ntt)->Unit(benchmark::kMicrosecond);
 
 static void DCRT_ntt(benchmark::State& state) {
-    shared_ptr<std::vector<M2DCRTPoly>> polys = DCRTpolysCoef[state.range(0)];
+    std::shared_ptr<std::vector<M2DCRTPoly>> polys = DCRTpolysCoef[state.range(0)];
     M2DCRTPoly a;
     size_t i = 0;
 

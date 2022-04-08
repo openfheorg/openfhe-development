@@ -44,7 +44,6 @@
 
 typedef std::numeric_limits<double> dbl;
 
-using namespace std;
 using namespace lbcrypto;
 
 // Poly tests
@@ -124,8 +123,8 @@ void SHERun() {
 
   double finish = currentDateTime();
   double diff = finish - start;
-  cout << "Key generation time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Key generation time: "
+       << "\t" << diff << " ms" << std::endl;
 
   if (!keyPair.good()) {
     std::cout << "Key generation failed!" << std::endl;

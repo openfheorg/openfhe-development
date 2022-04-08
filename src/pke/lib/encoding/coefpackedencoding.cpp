@@ -39,7 +39,7 @@ namespace lbcrypto {
 
 template <typename P>
 inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
-                             int64_t ub, const vector<int64_t>& value) {
+                             int64_t ub, const std::vector<int64_t>& value) {
   poly.SetValuesToZero();
 
   const typename P::Integer& q = poly.GetModulus();
@@ -90,7 +90,7 @@ bool CoefPackedEncoding::Encode() {
 
 template <typename P>
 inline static void fillVec(const P& poly, const PlaintextModulus& mod,
-                           vector<int64_t>& value) {
+                           std::vector<int64_t>& value) {
   value.clear();
 
   int64_t half = int64_t(mod) / 2;

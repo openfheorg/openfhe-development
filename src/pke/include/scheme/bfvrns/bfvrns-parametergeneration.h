@@ -44,7 +44,7 @@ class ParameterGenerationBFVRNS : public ParameterGenerationRNS {
 public:
   virtual ~ParameterGenerationBFVRNS() {}
 
-  virtual bool ParamsGenBFVRNS(shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+  virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                  int32_t evalAddCount = 0,
                  int32_t evalMultCount = 0,
                  int32_t keySwitchCount = 0,

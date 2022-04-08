@@ -42,8 +42,6 @@
 #include <utility>
 #include <vector>
 
-using std::unique_ptr;
-using std::vector;
 
 namespace lbcrypto {
 

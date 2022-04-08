@@ -44,7 +44,6 @@
 #include "utils/debug.h"
 #include "utils/parmfactory.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 class UTBFVRNS_CRT : public ::testing::Test {
@@ -72,14 +71,14 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
-    const shared_ptr<ILDCRTParams<BigInteger>> params =
+    const std::shared_ptr<ILDCRTParams<BigInteger>> params =
       cryptoContext->GetCryptoParameters()->GetElementParams();
 
   const auto cryptoParamsBFVrns =
       std::static_pointer_cast<CryptoParametersRNS>(
           cryptoContext->GetCryptoParameters());
 
-  const shared_ptr<ILDCRTParams<BigInteger>> paramsP =
+  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsP =
       cryptoParamsBFVrns->GetParamsP();
 
   typename DCRTPoly::DugType dug;
@@ -121,17 +120,17 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
-    const shared_ptr<ILDCRTParams<BigInteger>> paramsQ =
+    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ =
       cryptoContext->GetCryptoParameters()->GetElementParams();
 
   const auto cryptoParamsBFVrns =
       std::static_pointer_cast<CryptoParametersRNS>(
           cryptoContext->GetCryptoParameters());
 
-  const shared_ptr<ILDCRTParams<BigInteger>> paramsP =
+  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsP =
       cryptoParamsBFVrns->GetParamsP();
 
-  const shared_ptr<ILDCRTParams<BigInteger>> paramsQP =
+  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQP =
       cryptoParamsBFVrns->GetParamsQP();
 
   typename DCRTPoly::DugType dug;
@@ -259,17 +258,17 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
-  const shared_ptr<ILDCRTParams<BigInteger>> paramsQ =
+  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ =
       cryptoContext->GetCryptoParameters()->GetElementParams();
 
   const auto cryptoParamsBFVrns =
       std::static_pointer_cast<CryptoParametersRNS>(
           cryptoContext->GetCryptoParameters());
 
-  const shared_ptr<ILDCRTParams<BigInteger>> paramsP =
+  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsP =
       cryptoParamsBFVrns->GetParamsP();
 
-  const shared_ptr<ILDCRTParams<BigInteger>> paramsQP =
+  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQP =
       cryptoParamsBFVrns->GetParamsQP();
 
   typename DCRTPoly::DugType dug;

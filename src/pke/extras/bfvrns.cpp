@@ -39,7 +39,6 @@
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 int main(int argc, char *argv[]) {
@@ -110,8 +109,8 @@ int main(int argc, char *argv[]) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "Key generation time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Key generation time: "
+       << "\t" << diff << " ms" << std::endl;
 
   if (!keyPair.good()) {
     std::cout << "Key generation failed!" << std::endl;
@@ -158,8 +157,8 @@ int main(int argc, char *argv[]) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "Encryption time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Encryption time: "
+       << "\t" << diff << " ms" << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Decryption of Ciphertext
@@ -183,26 +182,26 @@ int main(int argc, char *argv[]) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "Decryption time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Decryption time: "
+       << "\t" << diff << " ms" << std::endl;
 
-  cout << "\n Original Plaintext: \n";
-  cout << *plaintext1 << endl;
-  cout << *plaintext2 << endl;
-  cout << *plaintext3 << endl;
-  cout << *plaintext4 << endl;
-  cout << *plaintext5 << endl;
-  cout << *plaintext6 << endl;
+  std::cout << "\n Original Plaintext: \n";
+  std::cout << *plaintext1 << std::endl;
+  std::cout << *plaintext2 << std::endl;
+  std::cout << *plaintext3 << std::endl;
+  std::cout << *plaintext4 << std::endl;
+  std::cout << *plaintext5 << std::endl;
+  std::cout << *plaintext6 << std::endl;
 
-  cout << "\n Resulting Decryption of Ciphertext: \n";
-  cout << *plaintext1Dec << endl;
-  cout << *plaintext2Dec << endl;
-  cout << *plaintext3Dec << endl;
-  cout << *plaintext4Dec << endl;
-  cout << *plaintext5Dec << endl;
-  cout << *plaintext6Dec << endl;
+  std::cout << "\n Resulting Decryption of Ciphertext: \n";
+  std::cout << *plaintext1Dec << std::endl;
+  std::cout << *plaintext2Dec << std::endl;
+  std::cout << *plaintext3Dec << std::endl;
+  std::cout << *plaintext4Dec << std::endl;
+  std::cout << *plaintext5Dec << std::endl;
+  std::cout << *plaintext6Dec << std::endl;
 
-  cout << "\n";
+  std::cout << "\n";
 
   ////////////////////////////////////////////////////////////
   // EvalMult Operation
@@ -228,8 +227,8 @@ int main(int argc, char *argv[]) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "EvalMult time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "EvalMult time: "
+       << "\t" << diff << " ms" << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Decryption after Accumulation Operation on Re-Encrypted Data
@@ -255,22 +254,22 @@ int main(int argc, char *argv[]) {
 
   // std::cin.get();
 
-  cout << "\n Original Plaintext: \n";
-  cout << *plaintext1 << endl;
-  cout << *plaintext2 << endl;
-  cout << *plaintext3 << endl;
-  cout << *plaintext4 << endl;
-  cout << *plaintext5 << endl;
-  cout << *plaintext6 << endl;
+  std::cout << "\n Original Plaintext: \n";
+  std::cout << *plaintext1 << std::endl;
+  std::cout << *plaintext2 << std::endl;
+  std::cout << *plaintext3 << std::endl;
+  std::cout << *plaintext4 << std::endl;
+  std::cout << *plaintext5 << std::endl;
+  std::cout << *plaintext6 << std::endl;
 
-  cout << "\n Resulting Plaintext (after polynomial multiplication): \n";
-  cout << *plaintextMul1 << endl;
-  cout << *plaintextMul2 << endl;
-  cout << *plaintextMul3 << endl;
-  cout << *plaintextMul4 << endl;
-  cout << *plaintextMul5 << endl;
+  std::cout << "\n Resulting Plaintext (after polynomial multiplication): \n";
+  std::cout << *plaintextMul1 << std::endl;
+  std::cout << *plaintextMul2 << std::endl;
+  std::cout << *plaintextMul3 << std::endl;
+  std::cout << *plaintextMul4 << std::endl;
+  std::cout << *plaintextMul5 << std::endl;
 
-  cout << "\n";
+  std::cout << "\n";
 
   ////////////////////////////////////////////////////////////
   // EvalAdd Operation
@@ -286,8 +285,8 @@ int main(int argc, char *argv[]) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "EvalAdd time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "EvalAdd time: "
+       << "\t" << diff << " ms" << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Decryption after Accumulation Operation
@@ -304,22 +303,22 @@ int main(int argc, char *argv[]) {
   finish = currentDateTime();
   diff = finish - start;
 
-  cout << "\n Original Plaintext: \n";
-  cout << *plaintextMul1 << endl;
-  cout << *plaintextMul4 << endl;
-  cout << *plaintextMul5 << endl;
+  std::cout << "\n Original Plaintext: \n";
+  std::cout << *plaintextMul1 << std::endl;
+  std::cout << *plaintextMul4 << std::endl;
+  std::cout << *plaintextMul5 << std::endl;
 
-  cout << "\n Resulting Added Plaintext: \n";
-  cout << *plaintextAdd1 << endl;
-  cout << *plaintextAdd2 << endl;
+  std::cout << "\n Resulting Added Plaintext: \n";
+  std::cout << *plaintextAdd1 << std::endl;
+  std::cout << *plaintextAdd2 << std::endl;
 
-  cout << "\n";
+  std::cout << "\n";
 
   ////////////////////////////////////////////////////////////
   // Done
   ////////////////////////////////////////////////////////////
   Ciphertext<DCRTPoly> ciphertextMul1234567;
-  vector<Ciphertext<DCRTPoly>> cipherTextList;
+  std::vector<Ciphertext<DCRTPoly>> cipherTextList;
 
   cipherTextList.push_back(ciphertext1);
   cipherTextList.push_back(ciphertext2);
@@ -333,7 +332,7 @@ int main(int argc, char *argv[]) {
   cryptoContext->Decrypt(keyPair.secretKey, ciphertextMul1234567,
                          &plaintextMul7);
 
-  cout << *plaintextMul7 << endl;
+  std::cout << *plaintextMul7 << std::endl;
 
   std::cout << "Execution Completed." << std::endl;
 

@@ -43,7 +43,6 @@
 
 #include "utils/debug.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 class UnitTestEvalMultMany : public ::testing::Test {
@@ -74,7 +73,7 @@ static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC() {
 }
 
 template <typename Element>
-static void RunEvalMultManyTest(CryptoContext<Element> cc, string msg);
+static void RunEvalMultManyTest(CryptoContext<Element> cc, std::string msg);
 
 // Tests EvalMult w/o keyswitching and EvalMultMany for BFV in the
 // OPTIMIZED mode
@@ -90,7 +89,7 @@ TEST(UTBFVrnsEVALMM, Poly_BFVrns_Eval_Mult_Many_Operations) {
 
 template <typename Element>
 static void RunEvalMultManyTest(CryptoContext<Element> cryptoContext,
-                                string msg) {
+                                std::string msg) {
   DEBUG_FLAG(false);
   ////////////////////////////////////////////////////////////
   // Perform the key generation operation.
@@ -168,7 +167,7 @@ static void RunEvalMultManyTest(CryptoContext<Element> cryptoContext,
   // Prepare EvalMultMany
   ////////////////////////////////////////////////////////////
 
-  vector<Ciphertext<Element>> cipherTextList;
+  std::vector<Ciphertext<Element>> cipherTextList;
 
   cipherTextList.push_back(ciphertext1);
   cipherTextList.push_back(ciphertext2);

@@ -73,7 +73,7 @@ class CryptoParametersBase : public Serializable {
    *
    * @return the ring element parameters.
    */
-  virtual const shared_ptr<typename Element::Params> GetElementParams() const {
+  virtual const std::shared_ptr<typename Element::Params> GetElementParams() const {
     return m_params;
   }
 
@@ -127,7 +127,7 @@ class CryptoParametersBase : public Serializable {
   /**
    * Sets the reference to element params
    */
-  virtual void SetElementParams(shared_ptr<typename Element::Params> params) {
+  virtual void SetElementParams(std::shared_ptr<typename Element::Params> params) {
     m_params = params;
   }
 
@@ -167,20 +167,20 @@ class CryptoParametersBase : public Serializable {
     m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
   }
 
-  CryptoParametersBase(shared_ptr<typename Element::Params> params,
+  CryptoParametersBase(std::shared_ptr<typename Element::Params> params,
                        const PlaintextModulus &plaintextModulus) {
     m_params = params;
     m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
   }
 
-  CryptoParametersBase(shared_ptr<typename Element::Params> params,
+  CryptoParametersBase(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams) {
     m_params = params;
     m_encodingParams = encodingParams;
   }
 
   CryptoParametersBase(CryptoParametersBase<Element> *from,
-                       shared_ptr<typename Element::Params> newElemParms) {
+                       std::shared_ptr<typename Element::Params> newElemParms) {
     *this = *from;
     m_params = newElemParms;
   }
@@ -192,7 +192,7 @@ class CryptoParametersBase : public Serializable {
 
  protected:
   // element-specific parameters
-  shared_ptr<typename Element::Params> m_params;
+  std::shared_ptr<typename Element::Params> m_params;
 
   // encoding-specific parameters
   EncodingParams m_encodingParams;

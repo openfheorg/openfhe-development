@@ -51,7 +51,7 @@ public:
   CryptoParametersCKKSRNS(const CryptoParametersCKKSRNS &rhs)
       : CryptoParametersRNS(rhs) {}
 
-  CryptoParametersCKKSRNS(shared_ptr<ParmType> params,
+  CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params,
                        const PlaintextModulus &plaintextModulus,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint relinWindow, MODE mode,
@@ -64,7 +64,7 @@ public:
           assuranceMeasure, securityLevel, relinWindow, mode, depth, maxDepth,
           ksTech, rsTech, encTech, multTech) {}
 
-  CryptoParametersCKKSRNS(shared_ptr<ParmType> params,
+  CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint relinWindow, MODE mode,

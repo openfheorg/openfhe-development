@@ -44,7 +44,7 @@ template <typename Element>
 class EvalKeyRelinImpl;
 
 template <typename Element>
-using EvalKeyRelin = shared_ptr<EvalKeyRelinImpl<Element>>;
+using EvalKeyRelin = std::shared_ptr<EvalKeyRelinImpl<Element>>;
 
 /**
  * @brief Concrete class for Relinearization keys of RLWE scheme

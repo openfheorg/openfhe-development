@@ -121,7 +121,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void ReEncryption(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void ReEncryption(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -136,11 +136,11 @@ protected:
                 return charset[rand() % max_index];
             };
 
-            string shortStr(vecSize / 2, 0);
+            std::string shortStr(vecSize / 2, 0);
             std::generate_n(shortStr.begin(), vecSize / 2, randchar);
             Plaintext plaintextShort = cc->MakeStringPlaintext(shortStr);
 
-            string fullStr(vecSize, 0);
+            std::string fullStr(vecSize, 0);
             std::generate_n(fullStr.begin(), vecSize, randchar);
             Plaintext plaintextFull = cc->MakeStringPlaintext(fullStr);
 

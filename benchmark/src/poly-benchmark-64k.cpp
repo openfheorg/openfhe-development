@@ -103,7 +103,7 @@ static void GenerateDCRTParms(std::map<usint, std::shared_ptr<M2DCRTParams>>& pa
 
 static void GeneratePolys(std::shared_ptr<ILNativeParams> parmArray,
                           std::shared_ptr<std::vector<NativePoly>>& polyArrayEval,
-                          std::shared_ptr<vector<NativePoly>>& polyArrayCoef) {
+                          std::shared_ptr<std::vector<NativePoly>>& polyArrayCoef) {
     std::vector<NativePoly> vecEval;
     for (size_t i = 0; i < POLY_NUM; i++) {
         vecEval.push_back(makeElement(parmArray, Format::EVALUATION));
@@ -142,7 +142,7 @@ std::map<usint, std::shared_ptr<M2DCRTParams>> DCRTparms;
 std::shared_ptr<std::vector<NativePoly>> NativepolysEval;
 std::map<usint, std::shared_ptr<std::vector<M2DCRTPoly>>> DCRTpolysEval;
 
-std::shared_ptr<vector<NativePoly>> NativepolysCoef;
+std::shared_ptr<std::vector<NativePoly>> NativepolysCoef;
 std::map<usint, std::shared_ptr<std::vector<M2DCRTPoly>>> DCRTpolysCoef;
 
 class Setup {

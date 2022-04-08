@@ -155,8 +155,8 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(
       b.push_back(b0[i] * s + ns * e1);
     }
   } else {
-    const shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
-    const shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
+    const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
+    const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
 
     usint sizeQ = paramsQ->GetParams().size();
     usint sizeQP = paramsQP->GetParams().size();

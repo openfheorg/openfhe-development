@@ -41,10 +41,9 @@
 #include "palisade.h"
 #include "cryptocontexthelper.h"
 
-using namespace std;
 using namespace lbcrypto;
 
-int run_demo_pre(string input);
+int run_demo_pre(std::string input);
 
 void usage() {
   std::cout << "-i (optional) run interactively to select parameters"
@@ -76,10 +75,10 @@ int main(int argc, char *argv[]) {
   ////////////////////////////////////////////////////////////
   // Set-up of parameters
   ////////////////////////////////////////////////////////////
-  string input = "";
-  string progname = *argv;
+  std::string input = "";
+  std::string progname = *argv;
   while (argc-- > 1) {
-    string arg(*++argv);
+    std::string arg(*++argv);
     if (arg == "-help" || arg == "-?") {
       usage();
       return 0;
@@ -118,7 +117,7 @@ int main(int argc, char *argv[]) {
 
   std::ostringstream stream;
   CryptoContextHelper::printParmSetNamesByFilter(stream, "PRE");
-  string parameter_set_list = stream.str();
+  std::string parameter_set_list = stream.str();
 
   // tokenize the string that lists parameters, separated by commas
   char delim = ',';  // our delimiter
@@ -146,7 +145,7 @@ int main(int argc, char *argv[]) {
   if (input.compare("ALL") != 0) {  // run a particular parameter set
     // validate input
     bool valid = false;
-    for (string param : tokens) {
+    for (std::string param : tokens) {
       if (input.compare(param) == 0) {
         valid = true;
         break;
@@ -167,7 +166,7 @@ int main(int argc, char *argv[]) {
     }
   } else {  // run ALL parameter sets
     // tokens contain the array of parameter name strings
-    for (string param : tokens) {
+    for (std::string param : tokens) {
       std::cout << "Running using parameter set: " << param << std::endl;
       int rc = run_demo_pre(param);
 
@@ -179,7 +178,7 @@ int main(int argc, char *argv[]) {
   exit(0);  // successful return
 }
 
-int run_demo_pre(string input) {
+int run_demo_pre(std::string input) {
   // Generate parameters.
   double diff, start, finish;
 
@@ -187,15 +186,15 @@ int run_demo_pre(string input) {
 
   CryptoContext<Poly> cryptoContext = CryptoContextHelper::getNewContext(input);
   if (!cryptoContext) {
-    cout << "Error using parameter set:" << input << endl;
+    std::cout << "Error using parameter set:" << input << std::endl;
     return 1;
   }
 
   finish = currentDateTime();
   diff = finish - start;
 
-  cout << "\nParam generation time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "\nParam generation time: "
+       << "\t" << diff << " ms" << std::endl;
 
   // Turn on features
   cryptoContext->Enable(PKE);
@@ -237,8 +236,8 @@ int run_demo_pre(string input) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "Key generation time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Key generation time: "
+       << "\t" << diff << " ms" << std::endl;
 
   if (!keyPair1.good()) {
     std::cout << "Key generation failed!" << std::endl;
@@ -262,8 +261,8 @@ int run_demo_pre(string input) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "Encryption time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Encryption time: "
+       << "\t" << diff << " ms" << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Decryption of Ciphertext
@@ -277,20 +276,20 @@ int run_demo_pre(string input) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "Decryption time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Decryption time: "
+       << "\t" << diff << " ms" << std::endl;
 
   // std::cin.get();
 
   plaintextDec1->SetLength(plaintext->GetLength());
 
-  cout << "\n Original Plaintext: \n";
-  cout << plaintext << endl;
+  std::cout << "\n Original Plaintext: \n";
+  std::cout << plaintext << std::endl;
 
-  cout << "\n Resulting Decryption of Ciphertext before Re-Encryption: \n";
-  cout << plaintextDec1 << endl;
+  std::cout << "\n Resulting Decryption of Ciphertext before Re-Encryption: \n";
+  std::cout << plaintextDec1 << std::endl;
 
-  cout << "\n";
+  std::cout << "\n";
 
   ////////////////////////////////////////////////////////////
   // Perform Key Generation Operation
@@ -307,8 +306,8 @@ int run_demo_pre(string input) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "Key generation time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Key generation time: "
+       << "\t" << diff << " ms" << std::endl;
 
   if (!keyPair2.good()) {
     std::cout << "Key generation failed!" << std::endl;
@@ -332,8 +331,8 @@ int run_demo_pre(string input) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "Key generation time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Key generation time: "
+       << "\t" << diff << " ms" << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Re-Encryption
@@ -345,8 +344,8 @@ int run_demo_pre(string input) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "Re-Encryption time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Re-Encryption time: "
+       << "\t" << diff << " ms" << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Decryption of Ciphertext
@@ -360,21 +359,21 @@ int run_demo_pre(string input) {
 
   finish = currentDateTime();
   diff = finish - start;
-  cout << "Decryption time: "
-       << "\t" << diff << " ms" << endl;
+  std::cout << "Decryption time: "
+       << "\t" << diff << " ms" << std::endl;
 
   plaintextDec2->SetLength(plaintext->GetLength());
 
-  cout << "\n Original Plaintext: \n";
-  cout << plaintext << endl;
+  std::cout << "\n Original Plaintext: \n";
+  std::cout << plaintext << std::endl;
 
-  cout << "\n Resulting Decryption of Ciphertext before Re-Encryption: \n";
-  cout << plaintextDec1 << endl;
+  std::cout << "\n Resulting Decryption of Ciphertext before Re-Encryption: \n";
+  std::cout << plaintextDec1 << std::endl;
 
-  cout << "\n Resulting Decryption of Ciphertext after Re-Encryption: \n";
-  cout << plaintextDec2 << endl;
+  std::cout << "\n Resulting Decryption of Ciphertext after Re-Encryption: \n";
+  std::cout << plaintextDec2 << std::endl;
 
-  cout << "\n";
+  std::cout << "\n";
 
   ////////////////////////////////////////////////////////////
   // Done

@@ -115,7 +115,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * relinearization key is generated
    * @param mode mode for secret polynomial, defaults to RLWE.
    */
-  CryptoParametersRLWE(shared_ptr<typename Element::Params> params,
+  CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint relinWindow, int depth = 1,
@@ -150,7 +150,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * relinearization key is generated
    * @param mode mode for secret polynomial, defaults to RLWE.
    */
-  CryptoParametersRLWE(shared_ptr<typename Element::Params> params,
+  CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        SecurityLevel stdLevel, usint relinWindow, int depth = 1,

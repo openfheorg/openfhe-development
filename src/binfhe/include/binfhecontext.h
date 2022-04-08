@@ -296,7 +296,7 @@ public:
    * @param LUT the look-up table of the to-be-evaluated function
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalFunc(ConstLWECiphertext ct1, const vector<NativeInteger>& LUT) const;
+    LWECiphertext EvalFunc(ConstLWECiphertext ct1, const std::vector<NativeInteger>& LUT) const;
 
     /**
    * Generate the LUT for the to-be-evaluated function
@@ -305,7 +305,7 @@ public:
    * @param p plaintext modulus
    * @return a shared pointer to the resulting ciphertext
    */
-    vector<NativeInteger> GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p), NativeInteger p);
+    std::vector<NativeInteger> GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p), NativeInteger p);
 
     /**
    * Evaluate a round down function
@@ -330,7 +330,7 @@ public:
    * @param ct1 ciphertext to be bootstrapped
    * @return a vector of shared pointers to the resulting ciphertexts
    */
-    vector<LWECiphertext> EvalDecomp(ConstLWECiphertext ct1, const NativeInteger bigger_q = 0);
+    std::vector<LWECiphertext> EvalDecomp(ConstLWECiphertext ct1, const NativeInteger bigger_q = 0);
 
     /**
    * Evaluates NOT gate

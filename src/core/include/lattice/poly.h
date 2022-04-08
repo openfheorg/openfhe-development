@@ -40,7 +40,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-using std::function;
 #include <memory>
 
 #include "lattice/elemparams.h"
@@ -158,7 +157,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param params the params to use.
    * @param format - Format::EVALUATION or COEFFICIENT
    */
-  inline static function<PolyType()> Allocator(const std::shared_ptr<Params> params,
+  inline static std::function<PolyType()> Allocator(const std::shared_ptr<Params> params,
                                                Format format) {
     return [=]() { return PolyType(params, format, true); };
   }
@@ -171,7 +170,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param stddev standard deviation for the discrete gaussian generator.
    * @return the resulting vector.
    */
-  inline static function<PolyType()> MakeDiscreteGaussianCoefficientAllocator(
+  inline static std::function<PolyType()> MakeDiscreteGaussianCoefficientAllocator(
       std::shared_ptr<Params> params, Format resultFormat, double stddev) {
     return [=]() {
       DiscreteGaussianGeneratorImpl<VecType> dgg(stddev);
@@ -188,7 +187,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * @param format format for the polynomials generated.
    * @return the resulting vector.
    */
-  inline static function<PolyType()> MakeDiscreteUniformAllocator(
+  inline static std::function<PolyType()> MakeDiscreteUniformAllocator(
       std::shared_ptr<Params> params, Format format) {
     return [=]() {
       DiscreteUniformGeneratorImpl<VecType> dug;
@@ -918,7 +917,7 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
 
  private:
   // stores either coefficient or Format::EVALUATION representation
-  unique_ptr<VecType> m_values;
+  std::unique_ptr<VecType> m_values;
 
   // 1 for coefficient and 0 for Format::EVALUATION format
   Format m_format;
