@@ -1,22 +1,22 @@
 //==================================================================================
 // BSD 2-Clause License
-// 
+//
 // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
-// 
+//
 // All rights reserved.
-// 
+//
 // Author TPOC: contact@openfhe.org
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 //    this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -46,7 +46,6 @@
 
 #include "utils/debug.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 /*
@@ -54,9 +53,9 @@ using namespace lbcrypto;
  */
 
 BinFHEContext GenerateFHEWContext(BINFHEPARAMSET set) {
-  auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(set, GINX);
-  return cc;
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(set, GINX);
+    return cc;
 }
 
 /*
@@ -64,17 +63,17 @@ BinFHEContext GenerateFHEWContext(BINFHEPARAMSET set) {
  */
 
 template <class ParamSet>
-void FHEW_NOT(benchmark::State &state, ParamSet param_set) {
-  BINFHEPARAMSET param(param_set);
-  BinFHEContext cc = GenerateFHEWContext(param);
+void FHEW_NOT(benchmark::State& state, ParamSet param_set) {
+    BINFHEPARAMSET param(param_set);
+    BinFHEContext cc = GenerateFHEWContext(param);
 
-  LWEPrivateKey sk = cc.KeyGen();
+    LWEPrivateKey sk = cc.KeyGen();
 
-  LWECiphertext ct1 = cc.Encrypt(sk, 1, FRESH);
+    LWECiphertext ct1 = cc.Encrypt(sk, 1, FRESH);
 
-  for (auto _ : state) {
-    LWECiphertext ct11 = cc.EvalNOT(ct1);
-  }
+    for (auto _ : state) {
+        LWECiphertext ct11 = cc.EvalNOT(ct1);
+    }
 }
 
 BENCHMARK_CAPTURE(FHEW_NOT, MEDIUM, MEDIUM)->Unit(benchmark::kMicrosecond);
@@ -82,99 +81,75 @@ BENCHMARK_CAPTURE(FHEW_NOT, STD128, STD128)->Unit(benchmark::kMicrosecond);
 
 // benchmark for binary gates, such as AND, OR, NAND, NOR
 template <class ParamSet, class BinGate>
-void FHEW_BINGATE(benchmark::State &state, ParamSet param_set,
-                  BinGate bin_gate) {
-  BINGATE gate(bin_gate);
-  BINFHEPARAMSET param(param_set);
+void FHEW_BINGATE(benchmark::State& state, ParamSet param_set, BinGate bin_gate) {
+    BINGATE gate(bin_gate);
+    BINFHEPARAMSET param(param_set);
 
-  BinFHEContext cc = GenerateFHEWContext(param);
+    BinFHEContext cc = GenerateFHEWContext(param);
 
-  LWEPrivateKey sk = cc.KeyGen();
+    LWEPrivateKey sk = cc.KeyGen();
 
-  cc.BTKeyGen(sk);
+    cc.BTKeyGen(sk);
 
-  LWECiphertext ct1 = cc.Encrypt(sk, 1);
-  LWECiphertext ct2 = cc.Encrypt(sk, 1);
+    LWECiphertext ct1 = cc.Encrypt(sk, 1);
+    LWECiphertext ct2 = cc.Encrypt(sk, 1);
 
-  for (auto _ : state) {
-    LWECiphertext ct11 = cc.EvalBinGate(gate, ct1, ct2);
-  }
+    for (auto _ : state) {
+        LWECiphertext ct11 = cc.EvalBinGate(gate, ct1, ct2);
+    }
 }
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_OR, MEDIUM, OR)
-    ->Unit(benchmark::kMicrosecond)
-    ->MinTime(10.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_OR, MEDIUM, OR)->Unit(benchmark::kMicrosecond)->MinTime(10.0);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_AND, MEDIUM, AND)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_AND, MEDIUM, AND)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_NOR, MEDIUM, NOR)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_NOR, MEDIUM, NOR)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_NAND, MEDIUM, NAND)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_NAND, MEDIUM, NAND)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XOR, MEDIUM, XOR)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XOR, MEDIUM, XOR)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XNOR, MEDIUM, XNOR)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XNOR, MEDIUM, XNOR)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XOR_FAST, MEDIUM, XOR_FAST)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XOR_FAST, MEDIUM, XOR_FAST)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XNOR_FAST, MEDIUM, XNOR_FAST)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XNOR_FAST, MEDIUM, XNOR_FAST)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_OR, STD128, OR)
-    ->Unit(benchmark::kMicrosecond)
-    ->MinTime(10.0);
+BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_OR, STD128, OR)->Unit(benchmark::kMicrosecond)->MinTime(10.0);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_AND, STD128, AND)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_AND, STD128, AND)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_NOR, STD128, NOR)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_NOR, STD128, NOR)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_NAND, STD128, NAND)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_NAND, STD128, NAND)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XOR, STD128, XOR)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XOR, STD128, XOR)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XNOR, STD128, XNOR)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XNOR, STD128, XNOR)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XOR_FAST, STD128, XOR_FAST)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XOR_FAST, STD128, XOR_FAST)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XNOR_FAST, STD128, XNOR_FAST)
-    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XNOR_FAST, STD128, XNOR_FAST)->Unit(benchmark::kMicrosecond);
 
 // benchmark for key switching
 template <class ParamSet>
-void FHEW_KEYSWITCH(benchmark::State &state, ParamSet param_set) {
-  BINFHEPARAMSET param(param_set);
-  BinFHEContext cc = GenerateFHEWContext(param);
+void FHEW_KEYSWITCH(benchmark::State& state, ParamSet param_set) {
+    BINFHEPARAMSET param(param_set);
+    BinFHEContext cc = GenerateFHEWContext(param);
 
-  LWEPrivateKey sk = cc.KeyGen();
-  LWEPrivateKey skN = cc.KeyGenN();
+    LWEPrivateKey sk  = cc.KeyGen();
+    LWEPrivateKey skN = cc.KeyGenN();
 
-  auto ctQN1 = cc.Encrypt(skN, 1, FRESH);
-  auto keySwitchHint = cc.KeySwitchGen(sk, skN);
+    auto ctQN1         = cc.Encrypt(skN, 1, FRESH);
+    auto keySwitchHint = cc.KeySwitchGen(sk, skN);
 
-  for (auto _ : state) {
-    std::shared_ptr<LWECiphertextImpl> eQ1 = cc.GetLWEScheme()->KeySwitch(
-        cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
-  }
+    for (auto _ : state) {
+        std::shared_ptr<LWECiphertextImpl> eQ1 =
+            cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
+    }
 }
 
-BENCHMARK_CAPTURE(FHEW_KEYSWITCH, MEDIUM, MEDIUM)
-    ->Unit(benchmark::kMicrosecond)
-    ->MinTime(1.0);
-
-BENCHMARK_CAPTURE(FHEW_KEYSWITCH, STD128, STD128)
-    ->Unit(benchmark::kMicrosecond)
-    ->MinTime(1.0);
+BENCHMARK_CAPTURE(FHEW_KEYSWITCH, MEDIUM, MEDIUM)->Unit(benchmark::kMicrosecond)->MinTime(1.0);
+BENCHMARK_CAPTURE(FHEW_KEYSWITCH, STD128, STD128)->Unit(benchmark::kMicrosecond)->MinTime(1.0);
 
 BENCHMARK_MAIN();
