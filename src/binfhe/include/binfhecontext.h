@@ -52,6 +52,7 @@ namespace lbcrypto {
 // security levels for predefined parameter sets
 enum BINFHEPARAMSET {
     TOY,             // no security
+    MEDIUM,          // 108 bits of security for classical and 100 bits for quantum
     STD128_AP,       // Optimized for AP (has higher failure probability for GINX) -
                      // more than 128 bits of security for classical
                      // computer attacks - uses the same setup as HE standard
@@ -175,11 +176,19 @@ public:
     const std::shared_ptr<LWESwitchingKey> GetSwitchKey() const {
         return m_BTKey.KSkey;
     }
+     /**
+    * Gets the bootstrapping key map (used for serialization).
+    *
+    * @return a shared pointer to the bootstrapping key map
+    */
+    const std::shared_ptr<std::map<uint32_t, RingGSWEvalKey>> GetBTKeyMap() const{
+      return std::make_shared<std::map<uint32_t, RingGSWEvalKey>>(m_BTKey_map);
+    }
 
     /**
    * Generates a secret key for the main LWE scheme
    *
-   * @param DiffQ Keygen according to DiffQ instead of m_q if DiffQ != 00
+   * @param DiffQ Keygen according to DiffQ instead of m_q if DiffQ != 0
    * @return a shared pointer to the secret key
    */
     LWEPrivateKey KeyGen(NativeInteger DiffQ = 0) const;
@@ -244,11 +253,22 @@ public:
     }
 
     /**
+   * Loads a bootstrapping key map element in the context (typically after deserializing)
+   *
+   * @param baseG baseG corresponding to the given key
+   * @param key struct with the bootstrapping keys
+   */
+    void BTKeyMapLoadSingleElement(const uint32_t& baseG, const RingGSWEvalKey& key) {
+        m_BTKey_map[baseG] = key;
+    }
+
+    /**
    * Clear the bootstrapping keys in the current context
    */
     void ClearBTKeys() {
         m_BTKey.BSkey.reset();
         m_BTKey.KSkey.reset();
+        m_BTKey_map.clear();
     }
 
     /**
