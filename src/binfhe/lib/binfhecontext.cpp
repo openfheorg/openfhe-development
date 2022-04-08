@@ -129,7 +129,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
     const std::unordered_map<BINFHEPARAMSET, BinFHEContextParams> paramsMap({
         //           numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase|baseRK
         { TOY,             { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23 } },
-        { MEDIUM,          { 28,     2048,         455, 1024, 1 << 15, STD_DEV, 1 << 8,    1 << 10,  32 } },
+        { MEDIUM,          { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32 } },
         { STD128_AP,       { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32 } },
         { STD128_APOPT,    { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32 } },
         { STD128,          { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32 } },
