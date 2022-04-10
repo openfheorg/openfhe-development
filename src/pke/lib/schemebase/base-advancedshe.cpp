@@ -482,7 +482,6 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalInnerProduct(
   return result;
 }
 
-#if 0
 template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(
     const std::vector<Ciphertext<Element>> &ciphertextVec,
@@ -507,18 +506,18 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(
     std::vector<int64_t> mask = {1, 0};
     plaintext = cc->MakePackedPlaintext(mask);
   }
+  auto algo = ciphertextVec[0]->GetCryptoContext()->GetScheme();
 
-  ciphertextMerged = EvalMult(ciphertextMerged, plaintext);
+  ciphertextMerged = algo->EvalMult(ciphertextMerged, plaintext);
 
   for (size_t i = 1; i < ciphertextVec.size(); i++) {
-    ciphertextMerged = EvalAdd(
-        ciphertextMerged, EvalAtIndex(EvalMult(ciphertextVec[i], plaintext),
+    ciphertextMerged = algo->EvalAdd(
+        ciphertextMerged, algo->EvalAtIndex(algo->EvalMult(ciphertextVec[i], plaintext),
                                       -(int32_t)i, evalKeyMap));
   }
 
   return ciphertextMerged;
 }
-#endif
 
 template <class Element>
 std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices_2n(usint batchSize,
@@ -715,4 +714,3 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum2nComplexCols(
 
 }  // namespace lbcrypto
 
-#endif

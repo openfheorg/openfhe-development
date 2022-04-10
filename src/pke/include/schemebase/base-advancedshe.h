@@ -277,8 +277,9 @@ public:
   virtual Ciphertext<Element> EvalMerge(
       const std::vector<Ciphertext<Element>> &ciphertextVector,
       const std::map<usint, EvalKey<Element>> &evalKeyMap) const  {
-    PALISADE_THROW(config_error, "EvalMerge is not supported for the scheme.");
-  }
+//  {
+//    PALISADE_THROW(config_error, "EvalMerge is not supported for the scheme.");
+//  }
 
  protected:
   std::vector<usint> GenerateIndices_2n(usint batchSize, usint m) const;
@@ -310,3 +311,4 @@ public:
 }  // namespace lbcrypto
 
 #endif
+

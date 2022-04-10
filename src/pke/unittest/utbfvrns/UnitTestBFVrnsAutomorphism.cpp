@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -202,4 +201,4 @@ TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2_INVALID_INDEX) {
     EXPECT_EQ(1, 1);
   }
 }
-#endif
+

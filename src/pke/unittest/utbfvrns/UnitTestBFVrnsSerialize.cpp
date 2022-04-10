@@ -56,6 +56,7 @@ CryptoContext<DCRTPoly> GenerateTestDCRTCryptoContext(const std::string& parmset
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
+    cc->Enable(ADVANCEDSHE);
     return cc;
 }
 
@@ -70,3 +71,4 @@ TEST_F(UTPKESer, BFVrns_DCRTPoly_Serial) {
     UnitTestContext<DCRTPoly>(cc);
 }
 #endif
+
