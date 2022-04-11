@@ -350,7 +350,7 @@ protected:
         }
     }
 
-    void UnitTestKeysAndCiphertexts(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }

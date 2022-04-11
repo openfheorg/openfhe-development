@@ -454,11 +454,11 @@ class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
    * reversal indices.
    *
    * @param &i is the element to perform the automorphism transform with.
-   * @param &map a vector with precomputed indices
+   * @param &vec a vector with precomputed indices
    * @return is the result of the automorphism transform.
    */
   virtual DerivedType AutomorphismTransform(usint i,
-                                const std::vector<usint> &map) const = 0;
+                                const std::vector<usint> &vec) const = 0;
 
   /**
    * @brief Transpose the ring element using the automorphism operation

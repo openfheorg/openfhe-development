@@ -183,10 +183,10 @@ MultipartyBase<Element>::MultiEvalAutomorphismKeyGen(
         std::make_shared<PrivateKeyImpl<Element>>(cc);
 
     usint index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
-    std::vector<usint> map(N);
-    PrecomputeAutoMap(N, index, &map);
+    std::vector<usint> vec(N);
+    PrecomputeAutoMap(N, index, &vec);
 
-    Element sPermuted = s.AutomorphismTransform(index, map);
+    Element sPermuted = s.AutomorphismTransform(index, vec);
     privateKeyPermuted->SetPrivateElement(sPermuted);
 
     (*result)[indexList[i]] = MultiKeySwitchGen(

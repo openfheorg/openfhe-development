@@ -344,10 +344,10 @@ LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
         std::make_shared<PrivateKeyImpl<Element>>(cc);
 
     usint index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
-    std::vector<usint> map(N);
-    PrecomputeAutoMap(N, index, &map);
+    std::vector<usint> vec(N);
+    PrecomputeAutoMap(N, index, &vec);
 
-    Element sPermuted = s.AutomorphismTransform(index, map);
+    Element sPermuted = s.AutomorphismTransform(index, vec);
     privateKeyPermuted->SetPrivateElement(sPermuted);
     (*evalKeys)[indexList[i]] = algo->KeySwitchGen(privateKey,
         privateKeyPermuted);
@@ -382,8 +382,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(
 //        not_available_error,
 //        "automorphism indices higher than 2*n are not allowed " + CALLER_INFO);
 
-  std::vector<usint> map(N);
-  PrecomputeAutoMap(N, i, &map);
+  std::vector<usint> vec(N);
+  PrecomputeAutoMap(N, i, &vec);
 
   auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
@@ -393,8 +393,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(
 
   std::vector<Element> &rcv = result->GetElements();
 
-  rcv[0] = rcv[0].AutomorphismTransform(i, map);
-  rcv[1] = rcv[1].AutomorphismTransform(i, map);
+  rcv[0] = rcv[0].AutomorphismTransform(i, vec);
+  rcv[1] = rcv[1].AutomorphismTransform(i, vec);
 
   return result;
 }
@@ -435,13 +435,13 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
       algo->EvalFastKeySwitchCore(digits, evalKey, cv[0].GetParams());
 
   usint N = cryptoParams->GetElementParams()->GetRingDimension();
-  std::vector<usint> map(N);
-  PrecomputeAutoMap(N, autoIndex, &map);
+  std::vector<usint> vec(N);
+  PrecomputeAutoMap(N, autoIndex, &vec);
 
   (*ba)[0] += cv[0];
 
-  (*ba)[0] = (*ba)[0].AutomorphismTransform(autoIndex, map);
-  (*ba)[1] = (*ba)[1].AutomorphismTransform(autoIndex, map);
+  (*ba)[0] = (*ba)[0].AutomorphismTransform(autoIndex, vec);
+  (*ba)[1] = (*ba)[1].AutomorphismTransform(autoIndex, vec);
 
   Ciphertext<Element> result = ciphertext->Clone();
 

@@ -481,14 +481,14 @@ class DCRTPolyImpl : public DCRTPolyInterface<DCRTPolyImpl<VecType>, VecType, Na
    * reversal indices.
    *
    * @param &i is the element to perform the automorphism transform with.
-   * @param &map a vector with precomputed indices
+   * @param &vec a vector with precomputed indices
    * @return is the result of the automorphism transform.
    */
   virtual DCRTPolyType AutomorphismTransform(usint i,
-                                     const std::vector<usint> &map) const override {
+                                     const std::vector<usint> &vec) const override {
     DCRTPolyType result(*this);
     for (usint k = 0; k < m_vectors.size(); k++) {
-      result.m_vectors[k] = m_vectors[k].AutomorphismTransform(i, map);
+      result.m_vectors[k] = m_vectors[k].AutomorphismTransform(i, vec);
     }
     return result;
   }

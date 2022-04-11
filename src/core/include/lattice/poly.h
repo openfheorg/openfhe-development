@@ -626,10 +626,10 @@ class PolyImpl : public ILElement<PolyImpl<VecType>, VecType> {
    * reversal indices.
    *
    * @param &i is the element to perform the automorphism transform with.
-   * @param &map a vector with precomputed indices
+   * @param &vec a vector with precomputed indices
    * @return is the result of the automorphism transform.
    */
-  PolyImpl AutomorphismTransform(usint i, const std::vector<usint> &map) const;
+  PolyImpl AutomorphismTransform(usint i, const std::vector<usint> &vec) const;
 
   /**
    * @brief Interpolates based on the Chinese Remainder Transform Interpolation.
