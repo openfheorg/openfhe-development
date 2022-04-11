@@ -56,7 +56,7 @@ namespace lbcrypto {
 TODO (dsuponit): Do we need to keep these pairs cyclOrder / ringDimention and numPrimes / multDepth in Params?
     We should remove one variable from each pair.Otherwise we will complicate the code by comparing these parameters and
     making a decision for the user who sets both of them at the same time.it is going to be very ambiguousand will
-    lead us to confusions and bugs.Either way, we must stay with just ONE set of these parameters.It doesn’t really matter
+    lead us to confusions and bugs.Either way, we must stay with just ONE set of these parameters.It doesnï¿½t really matter
     what 2 of them are chosen as cyclOrder = 2 * ringDimention and numPrimes = multDepth + 1.
     */
 class Params {
