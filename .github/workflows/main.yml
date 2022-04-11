@@ -45,8 +45,8 @@ jobs:
     - name: mb2_clang
       uses: openfheorg/openfhe-development/.github/actions/default_builder@github-ci
       with:
-        module_name: mb4_tcm
-        cmake_args: "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10"
+        module_name: mb4_tcm  # might need correctinhg
+        cmake_args: "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_C_COMPILER=/usr/bin/clang-10 -DBUILD_DOCS=ON" #Need the docs flag as the pages job uses this build
         run_extras: true
 
 
