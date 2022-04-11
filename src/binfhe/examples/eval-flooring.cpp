@@ -1,22 +1,22 @@
 //==================================================================================
 // BSD 2-Clause License
-// 
+//
 // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
-// 
+//
 // All rights reserved.
-// 
+//
 // Author TPOC: contact@openfhe.org
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 //    this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,47 +38,44 @@
 using namespace lbcrypto;
 
 int main() {
-  // Sample Program: Step 1: Set CryptoContext
-  
-  using namespace std;
+    // Sample Program: Step 1: Set CryptoContext
+    auto cc = BinFHEContext();
 
-  auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(STD128, false);
 
-  cc.GenerateBinFHEContext(STD128, false);
+    // Sample Program: Step 2: Key Generation
 
-  // Sample Program: Step 2: Key Generation
+    // Generate the secret key
+    auto sk = cc.KeyGen();
 
-  // Generate the secret key
-  auto sk = cc.KeyGen();
+    std::cout << "Generating the bootstrapping keys..." << std::endl;
 
-  std::cout << "Generating the bootstrapping keys..." << std::endl;
+    // Generate the bootstrapping keys (refresh and switching keys)
+    cc.BTKeyGen(sk);
 
-  // Generate the bootstrapping keys (refresh and switching keys)
-  cc.BTKeyGen(sk);
+    std::cout << "Completed the key generation." << std::endl;
 
-  std::cout << "Completed the key generation." << std::endl;
+    // Sample Program: Step 3: Encryption
 
-  // Sample Program: Step 3: Encryption
+    // Obtain the maximum plaintext space
+    int p = cc.GetMaxPlaintextSpace().ConvertToInt();
 
-  // Obtain the maximum plaintext space
-  int p = cc.GetMaxPlaintextSpace().ConvertToInt(); 
+    // Number of bits to round down
+    auto bits      = 2;
+    uint32_t input = 12;
+    std::cout << "Homomorphically round down the input by " << bits << " bits." << std::endl;
 
-  // Number of bits to round down
-  auto bits = 2;
-  uint32_t input = 12;
-  std::cout << "Homomorphically round down the input by " << bits << " bits." << std::endl;
+    auto ct1 = cc.Encrypt(sk, input % p, FRESH, p);
 
-  auto ct1 = cc.Encrypt(sk, input%p, FRESH, p);
+    // Sample Program: Step 4: Evaluation
+    auto ctRounded = cc.EvalFloor(ct1, bits);
 
-  // Sample Program: Step 4: Evaluation
-  auto ctRounded = cc.EvalFloor(ct1, bits); 
+    // Sample Program: Step 5: Decryption
+    LWEPlaintext result;
 
-  // Sample Program: Step 5: Decryption
-  LWEPlaintext result;
+    cc.Decrypt(sk, ctRounded, &result, p / (1 << bits));
 
-  cc.Decrypt(sk, ctRounded, &result, p/(1<<bits));
+    std::cout << "Input: " << input << ". Expected: " << (input >> bits) << ". Evaluated = " << result << std::endl;
 
-  std::cout << "Input: " << input << ". Expected: " << (input>>bits) << ". Evaluated = " << result << std::endl;
-
-  return 0;
+    return 0;
 }

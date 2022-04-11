@@ -79,7 +79,7 @@ bool StringEncoding::Encode() {
 }
 
 template <typename P>
-static void fillPlaintext(const P& poly, string& str,
+static void fillPlaintext(const P& poly, std::string& str,
                           const PlaintextModulus& mod) {
   str.clear();
   for (size_t i = 0; i < poly.GetLength(); i++) {

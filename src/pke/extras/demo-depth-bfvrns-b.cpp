@@ -42,7 +42,6 @@
 #include "gen-cryptocontext.h"
 #include "utils/debug.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 int main(int argc, char *argv[]) {
@@ -87,7 +86,7 @@ int main(int argc, char *argv[]) {
   // Initialize Public Key Containers
   KeyPair<DCRTPoly> keyPair;
 
-  cout << "\nMeasuring Multiplicative Depth:\n";
+  std::cout << "\nMeasuring Multiplicative Depth:\n";
   TIC(t);
 
   std::vector<int64_t> vectorOfInts1 = { 1 };
@@ -101,7 +100,7 @@ int main(int argc, char *argv[]) {
     keyPair = cryptoContext->KeyGen();
     cryptoContext->EvalMultKeysGen(keyPair.secretKey);
 
-    cout << "Key " << i << ": ";
+    std::cout << "Key " << i << ": ";
 
     for (int j = 0; j < numruns; j++) {
       ciphertext = cryptoContext->Encrypt(keyPair.publicKey, plaintext);
@@ -116,19 +115,19 @@ int main(int argc, char *argv[]) {
         depth[j]++;
       }
       depth[j]--;
-      cerr << depth[j] << " ";
+      std::cerr << depth[j] << " ";
     }
     min[i] = depth[0];
     for (int j = 1; j < numruns; j++)
       if (min[i] > depth[j]) min[i] = depth[j];
-    cout << "--> " << min[i] << "\n";
+    std::cout << "--> " << min[i] << "\n";
   }
-  cout << "\n";
+  std::cout << "\n";
 
   int MIN = min[0];
   for (int i = 1; i < numkeys; i++)
     if (MIN > min[i]) MIN = min[i];
-  cout << "Smallest depth = " << MIN;
+  std::cout << "Smallest depth = " << MIN;
 
   processingTime = TOC(t);
   std::cout << " in " << processingTime / 1000. << "s\n" << std::endl;

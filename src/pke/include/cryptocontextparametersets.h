@@ -38,14 +38,12 @@
 
 #include <map>
 #include <string>
-using std::map;
-using std::string;
 
 namespace lbcrypto {
 
-extern map<string, map<string, string>> CryptoContextParameterSets;
+extern std::map<std::string, std::map<std::string, std::string>> CryptoContextParameterSets;
 
-inline bool knownParameterSet(string p) {
+inline bool knownParameterSet(std::string p) {
   return CryptoContextParameterSets.find(p) != CryptoContextParameterSets.end();
 }
 

@@ -116,7 +116,7 @@ bool PackedEncoding::Encode() {
       this->Pack(&firstElement, this->encodingParams->GetPlaintextModulus());
       this->encodedVectorDCRT.SetElementAtIndex(0, firstElement);
 
-      const shared_ptr<ILDCRTParams<BigInteger>> params =
+      const std::shared_ptr<ILDCRTParams<BigInteger>> params =
           this->encodedVectorDCRT.GetParams();
       const std::vector<std::shared_ptr<ILNativeParams>> &nativeParams =
           params->GetParams();
@@ -178,7 +178,7 @@ bool PackedEncoding::Encode() {
 
 template <typename T>
 static void fillVec(const T &poly, const PlaintextModulus &mod,
-                    vector<int64_t> &vec) {
+                    std::vector<int64_t> &vec) {
   vec.clear();
 
   int64_t half = int64_t(mod) / 2;

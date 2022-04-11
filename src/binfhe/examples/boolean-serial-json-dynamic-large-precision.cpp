@@ -19,9 +19,9 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS forA PARTICULAR PURPOSE ARE
 // DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// forANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 // DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
 // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Example for FHEW with binary serialization
+  Example forFHEW with binary serialization
  */
 
 #include "binfhecontext-ser.h"
@@ -45,48 +45,72 @@ int main() {
 
     auto cc1 = BinFHEContext();
 
-    cc1.GenerateBinFHEContext(TOY);
+    uint32_t logQ = 17;
+    cc1.GenerateBinFHEContext(TOY, false, logQ, 0, GINX, true);
+    uint32_t Q = 1 << logQ;
+
+    int q      = 4096;                                               // q
+    int factor = 1 << int(logQ - log2(q));                           // Q/q
+    int p      = cc1.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
 
     std::cout << "Generating keys." << std::endl;
 
     // Generating the secret key
-    auto sk1 = cc1.KeyGen();
+    auto sk1 = cc1.KeyGen(Q);
 
     // Generate the bootstrapping keys
-    cc1.BTKeyGen(sk1);
+    cc1.BTKeyGen(sk1, Q);
 
     std::cout << "Done generating all keys." << std::endl;
 
-    // Encryption for a ciphertext that will be serialized
+    // Encryption fora ciphertext that will be serialized
     auto ct1 = cc1.Encrypt(sk1, 1);
 
-    // CODE FOR SERIALIZATION
+    // CODE forSERIALIZATION
 
     // Serializing key-independent crypto context
 
-    if (!Serial::SerializeToFile(DATAFOLDER + "/cryptoContext.txt", cc1, SerType::BINARY)) {
+    if (!Serial::SerializeToFile(DATAFOLDER + "/cryptoContext.txt", cc1, SerType::JSON)) {
         std::cerr << "Error serializing the cryptocontext" << std::endl;
         return 1;
     }
     std::cout << "The cryptocontext has been serialized." << std::endl;
 
-    // Serializing refreshing and key switching keys (needed for bootstrapping)
+    // Serializing refreshing and key switching keys (needed forbootstrapping)
 
-    if (!Serial::SerializeToFile(DATAFOLDER + "/refreshKey.txt", cc1.GetRefreshKey(), SerType::BINARY)) {
+    if (!Serial::SerializeToFile(DATAFOLDER + "/refreshKey.txt", cc1.GetRefreshKey(), SerType::JSON)) {
         std::cerr << "Error serializing the refreshing key" << std::endl;
         return 1;
     }
     std::cout << "The refreshing key has been serialized." << std::endl;
 
-    if (!Serial::SerializeToFile(DATAFOLDER + "/ksKey.txt", cc1.GetSwitchKey(), SerType::BINARY)) {
+    if (!Serial::SerializeToFile(DATAFOLDER + "/ksKey.txt", cc1.GetSwitchKey(), SerType::JSON)) {
         std::cerr << "Error serializing the switching key" << std::endl;
         return 1;
     }
     std::cout << "The key switching key has been serialized." << std::endl;
 
+    auto BTKeyMap = cc1.GetBTKeyMap();
+    for(auto it = BTKeyMap->begin(); it != BTKeyMap->end(); it++)
+    {
+        auto index = it->first;
+        auto thekey = it->second;
+        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "refreshKey.txt", thekey.BSkey, SerType::JSON)) {
+            std::cerr << "Error serializing the refreshing key" << std::endl;
+            return 1;
+        }
+
+        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "ksKey.txt", thekey.KSkey, SerType::JSON)) {
+            std::cerr << "Error serializing the switching key" << std::endl;
+            return 1;
+        }
+
+        std::cout << "The BT map element for baseG = " << index << " has been serialized." << std::endl;
+    }
+
     // Serializing private keys
 
-    if (!Serial::SerializeToFile(DATAFOLDER + "/sk1.txt", sk1, SerType::BINARY)) {
+    if (!Serial::SerializeToFile(DATAFOLDER + "/sk1.txt", sk1, SerType::JSON)) {
         std::cerr << "Error serializing sk1" << std::endl;
         return 1;
     }
@@ -94,38 +118,58 @@ int main() {
 
     // Serializing a ciphertext
 
-    if (!Serial::SerializeToFile(DATAFOLDER + "/ct1.txt", ct1, SerType::BINARY)) {
+    if (!Serial::SerializeToFile(DATAFOLDER + "/ct1.txt", ct1, SerType::JSON)) {
         std::cerr << "Error serializing ct1" << std::endl;
         return 1;
     }
     std::cout << "A ciphertext has been serialized." << std::endl;
 
-    // CODE FOR DESERIALIZATION
+    // CODE forDESERIALIZATION
 
     // Deserializing the cryptocontext
 
     BinFHEContext cc;
-    if (Serial::DeserializeFromFile(DATAFOLDER + "/cryptoContext.txt", cc, SerType::BINARY) == false) {
+    if (Serial::DeserializeFromFile(DATAFOLDER + "/cryptoContext.txt", cc, SerType::JSON) == false) {
         std::cerr << "Could not deserialize the cryptocontext" << std::endl;
         return 1;
     }
     std::cout << "The cryptocontext has been deserialized." << std::endl;
 
-    // deserializing the refreshing and switching keys (for bootstrapping)
+    // deserializing the refreshing and switching keys (forbootstrapping)
 
     std::shared_ptr<RingGSWBTKey> refreshKey;
-    if (Serial::DeserializeFromFile(DATAFOLDER + "/refreshKey.txt", refreshKey, SerType::BINARY) == false) {
+    if (Serial::DeserializeFromFile(DATAFOLDER + "/refreshKey.txt", refreshKey, SerType::JSON) == false) {
         std::cerr << "Could not deserialize the refresh key" << std::endl;
         return 1;
     }
     std::cout << "The refresh key has been deserialized." << std::endl;
 
     std::shared_ptr<LWESwitchingKey> ksKey;
-    if (Serial::DeserializeFromFile(DATAFOLDER + "/ksKey.txt", ksKey, SerType::BINARY) == false) {
+    if (Serial::DeserializeFromFile(DATAFOLDER + "/ksKey.txt", ksKey, SerType::JSON) == false) {
         std::cerr << "Could not deserialize the switching key" << std::endl;
         return 1;
     }
     std::cout << "The switching key has been deserialized." << std::endl;
+
+    uint32_t baseGlist[3] = {1 << 14, 1 << 18, 1 << 27};
+
+    for(size_t i = 0; i < 3; i++)
+    {
+        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "refreshKey.txt", refreshKey, SerType::JSON) == false) {
+            std::cerr << "Could not deserialize the refresh key" << std::endl;
+            return 1;
+        }
+
+        std::shared_ptr<LWESwitchingKey> ksKey;
+        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "ksKey.txt", ksKey, SerType::JSON) == false) {
+            std::cerr << "Could not deserialize the switching key" << std::endl;
+            return 1;
+        }
+        std::cout << "The BT map element for baseG = " << baseGlist[i] << " has been deserialized." << std::endl;
+        
+        // Loading the keys in the cryptocontext
+        cc.BTKeyMapLoadSingleElement(baseGlist[i], {refreshKey, ksKey});
+    }
 
     // Loading the keys in the cryptocontext
     cc.BTKeyLoad({refreshKey, ksKey});
@@ -133,7 +177,7 @@ int main() {
     // Deserializing the secret key
 
     LWEPrivateKey sk;
-    if (Serial::DeserializeFromFile(DATAFOLDER + "/sk1.txt", sk, SerType::BINARY) == false) {
+    if (Serial::DeserializeFromFile(DATAFOLDER + "/sk1.txt", sk, SerType::JSON) == false) {
         std::cerr << "Could not deserialize the secret key" << std::endl;
         return 1;
     }
@@ -142,7 +186,7 @@ int main() {
     // Deserializing a previously serialized ciphertext
 
     LWECiphertext ct;
-    if (Serial::DeserializeFromFile(DATAFOLDER + "/ct1.txt", ct, SerType::BINARY) == false) {
+    if (Serial::DeserializeFromFile(DATAFOLDER + "/ct1.txt", ct, SerType::JSON) == false) {
         std::cerr << "Could not deserialize the ciphertext" << std::endl;
         return 1;
     }
@@ -150,19 +194,20 @@ int main() {
 
     // OPERATIONS WITH DESERIALIZED KEYS AND CIPHERTEXTS
 
-    auto ct2 = cc.Encrypt(sk, 1);
+    for (int i = 0; i < 8; i++) {
+        // We first encrypt with large Q
+        auto ct1 = cc.Encrypt(sk, p / 2 + i - 3, FRESH, p, Q);
 
-    std::cout << "Running the computation" << std::endl;
+        // Get the MSB
+        ct1 = cc.EvalSign(ct1, Q);
 
-    auto ctResult = cc.EvalBinGate(AND, ct, ct2);
-
-    std::cout << "The computation has completed" << std::endl;
-
-    LWEPlaintext result;
-
-    cc.Decrypt(sk, ctResult, &result);
-
-    std::cout << "result of 1 AND 1 = " << result << std::endl;
+        LWEPlaintext result;
+        cc.Decrypt(sk, ct1, &result, 2, q);
+        std::cout << "Input: " << i << ". Expected sign: " << (i >= 3)
+                  << ". "
+                     "Evaluated Sign: "
+                  << result << std::endl;
+    }
 
     return 0;
 }

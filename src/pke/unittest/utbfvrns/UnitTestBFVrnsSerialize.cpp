@@ -36,7 +36,6 @@
 #include "cryptocontexthelper.h"
 #include "scheme/bfvrns/bfvrns-ser.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 class UTPKESer : public ::testing::Test {
@@ -50,7 +49,7 @@ protected:
     }
 };
 
-CryptoContext<DCRTPoly> GenerateTestDCRTCryptoContext(const string& parmsetName, usint nTower, usint pbits) {
+CryptoContext<DCRTPoly> GenerateTestDCRTCryptoContext(const std::string& parmsetName, usint nTower, usint pbits) {
     // TODO (dsuponit): getNewDCRTContext() should be replaced with a context generator function call
     // in order to remove the class CryptoContextHelper
     CryptoContext<DCRTPoly> cc = CryptoContextHelper::getNewDCRTContext(parmsetName, nTower, pbits);

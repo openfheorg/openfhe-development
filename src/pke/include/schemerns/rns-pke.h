@@ -112,13 +112,13 @@ class PKERNS : public PKEBase<DCRTPoly> {
   // CORE OPERATIONS
   /////////////////////////////////////
 
-  virtual std::shared_ptr<vector<DCRTPoly>> EncryptZeroCore(
+  virtual std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(
       const PrivateKey<DCRTPoly> privateKey,
-      const shared_ptr<ParmType> params = nullptr) const override;
+      const std::shared_ptr<ParmType> params = nullptr) const override;
 
-  virtual std::shared_ptr<vector<DCRTPoly>> EncryptZeroCore(
+  virtual std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(
       const PublicKey<DCRTPoly> publicKey,
-      const shared_ptr<ParmType> params = nullptr) const override;
+      const std::shared_ptr<ParmType> params = nullptr) const override;
 
   virtual DCRTPoly DecryptCore(const std::vector<DCRTPoly> &cv,
                        const PrivateKey<DCRTPoly> privateKey) const override;

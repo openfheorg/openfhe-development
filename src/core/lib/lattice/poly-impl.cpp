@@ -45,7 +45,7 @@
 namespace lbcrypto {
 
 template <>
-PolyImpl<BigVector>::PolyImpl(const shared_ptr<ILDCRTParams<BigInteger>> params,
+PolyImpl<BigVector>::PolyImpl(const std::shared_ptr<ILDCRTParams<BigInteger>> params,
                               Format format, bool initializeElementToZero)
     : m_values(nullptr), m_format(format) {
   // construct a local params out of the stuff from the DCRT Params

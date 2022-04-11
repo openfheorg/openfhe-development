@@ -69,7 +69,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
 
   const auto elementParams = cryptoParams->GetElementParams();
 
-  std::shared_ptr<vector<DCRTPoly>> ba =
+  std::shared_ptr<std::vector<DCRTPoly>> ba =
       EncryptZeroCore(privateKey, elementParams);
 
   ptxt.SetFormat(Format::EVALUATION);
@@ -94,7 +94,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
 
   const auto elementParams = cryptoParams->GetElementParams();
 
-  std::shared_ptr<vector<DCRTPoly>> ba =
+  std::shared_ptr<std::vector<DCRTPoly>> ba =
       EncryptZeroCore(publicKey, elementParams);
 
   ptxt.SetFormat(Format::EVALUATION);

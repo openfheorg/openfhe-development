@@ -88,8 +88,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
   size_t n = GetElementParams()->GetRingDimension();
 
   // Construct moduliQ and rootsQ from crypto parameters
-  vector<NativeInteger> moduliQ(sizeQ);
-  vector<NativeInteger> rootsQ(sizeQ);
+  std::vector<NativeInteger> moduliQ(sizeQ);
+  std::vector<NativeInteger> rootsQ(sizeQ);
   for (size_t i = 0; i < sizeQ; i++) {
     moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
     rootsQ[i] = GetElementParams()->GetParams()[i]->GetRootOfUnity();
@@ -114,7 +114,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
     m_numPerPartQ = a;
 
     // Compute the composite digits PartQ = Q_j
-    vector<BigInteger> moduliPartQ;
+    std::vector<BigInteger> moduliPartQ;
     moduliPartQ.resize(m_numPartQ);
     for (usint j = 0; j < m_numPartQ; j++) {
       moduliPartQ[j] = BigInteger(1);
@@ -124,7 +124,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
     }
 
     // Compute PartQHat_i = Q/Q_j
-    vector<BigInteger> PartQHat;
+    std::vector<BigInteger> PartQHat;
     PartQHat.resize(m_numPartQ);
     for (size_t i = 0; i < m_numPartQ; i++) {
       PartQHat[i] = BigInteger(1);
@@ -154,10 +154,10 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
     for (uint32_t j = 0; j < m_numPartQ; j++) {
       auto startTower = j * a;
       auto endTower = ((j + 1) * a - 1 < sizeQ) ? (j + 1) * a - 1 : sizeQ - 1;
-      vector<shared_ptr<ILNativeParams>> params =
+      std::vector<std::shared_ptr<ILNativeParams>> params =
           GetElementParams()->GetParamPartition(startTower, endTower);
-      vector<NativeInteger> moduli(params.size());
-      vector<NativeInteger> roots(params.size());
+      std::vector<NativeInteger> moduli(params.size());
+      std::vector<NativeInteger> roots(params.size());
       for (uint32_t i = 0; i < params.size(); i++) {
         moduli[i] = params[i]->GetModulus();
         roots[i] = params[i]->GetRootOfUnity();
@@ -181,8 +181,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
     // Choose special primes in auxiliary basis and compute their roots
     // moduliP holds special primes p1, p2, ..., pk
     // m_modulusP holds the product of special primes P = p1*p2*...pk
-    vector<NativeInteger> moduliP(sizeP);
-    vector<NativeInteger> rootsP(sizeP);
+    std::vector<NativeInteger> moduliP(sizeP);
+    std::vector<NativeInteger> rootsP(sizeP);
     // firstP contains a prime whose size is PModSize.
     NativeInteger firstP = FirstPrime<NativeInteger>(auxBits, primeStep);
     NativeInteger pPrev = firstP;
@@ -208,8 +208,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
         std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliP, rootsP);
 
     // Create the moduli and roots for the extended CRT basis QP
-    vector<NativeInteger> moduliQP(sizeQ + sizeP);
-    vector<NativeInteger> rootsQP(sizeQ + sizeP);
+    std::vector<NativeInteger> moduliQP(sizeQ + sizeP);
+    std::vector<NativeInteger> rootsQP(sizeQ + sizeP);
     for (size_t i = 0; i < sizeQ; i++) {
       moduliQP[i] = moduliQ[i];
       rootsQP[i] = rootsQ[i];
@@ -288,7 +288,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
       m_paramsComplPartQ[l].resize(beta);
       m_modComplPartqBarrettMu[l].resize(beta);
       for (uint32_t j = 0; j < beta; j++) {
-        const shared_ptr<ILDCRTParams<BigInteger>> digitPartition =
+        const std::shared_ptr<ILDCRTParams<BigInteger>> digitPartition =
             GetParamsPartQ(j);
         auto cyclOrder = digitPartition->GetCyclotomicOrder();
 
@@ -296,8 +296,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
         if (j == beta - 1) sizePartQj = (l + 1) - j * alpha;
         uint32_t sizeComplPartQj = (l + 1) - sizePartQj + sizeP;
 
-        vector<NativeInteger> moduli(sizeComplPartQj);
-        vector<NativeInteger> roots(sizeComplPartQj);
+        std::vector<NativeInteger> moduli(sizeComplPartQj);
+        std::vector<NativeInteger> roots(sizeComplPartQj);
 
         for (uint32_t k = 0; k < sizeComplPartQj; k++) {
           if (k < (l + 1) - sizePartQj) {

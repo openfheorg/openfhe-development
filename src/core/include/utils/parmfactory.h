@@ -59,7 +59,7 @@ using namespace lbcrypto;
  * @return
  */
 template <typename I>
-inline shared_ptr<ILDCRTParams<I>> GenerateDCRTParams(usint m, usint numOfTower,
+inline std::shared_ptr<ILDCRTParams<I>> GenerateDCRTParams(usint m, usint numOfTower,
                                                       usint pbits) {
   DEBUG_FLAG(false);
   DEBUG("in GenerateDCRTParams");

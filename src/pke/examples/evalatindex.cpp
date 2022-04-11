@@ -45,7 +45,6 @@
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 void BFVrnsEvalAtIndex2n();
@@ -99,7 +98,7 @@ void BFVrnsEvalAtIndex2n() {
   // Initialize the public key containers.
   KeyPair<DCRTPoly> kp = cc->KeyGen();
 
-  vector<int32_t> indexList = {2,     3,  4,  5,      6,      7,
+  std::vector<int32_t> indexList = {2,     3,  4,  5,      6,      7,
                                8,     9,  10, -n + 2, -n + 3, n - 1,
                                n - 2, -1, -2, -3,     -4,     -5};
 
@@ -153,7 +152,7 @@ void CKKSEvalAtIndex2n() {
   KeyPair<DCRTPoly> kp = cc->KeyGen();
 
   int32_t n = cyclOrder / 4;
-  vector<int32_t> indexList = {2,     3,  4,  5,      6,      7,
+  std::vector<int32_t> indexList = {2,     3,  4,  5,      6,      7,
                                8,     9,  10, -n + 2, -n + 3, n - 1,
                                n - 2, -1, -2, -3,     -4,     -5};
 
@@ -202,7 +201,7 @@ void BFVrnsEvalMerge2n() {
   // Initialize the public key containers.
   KeyPair<DCRTPoly> kp = cc->KeyGen();
 
-  vector<int32_t> indexList = {-1, -2, -3, -4, -5};
+  std::vector<int32_t> indexList = {-1, -2, -3, -4, -5};
 
   cc->EvalAtIndexKeyGen(kp.secretKey, indexList);
 

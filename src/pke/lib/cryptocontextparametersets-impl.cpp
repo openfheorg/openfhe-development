@@ -33,7 +33,7 @@
 
 namespace lbcrypto {
 
-map<string, map<string, string>> CryptoContextParameterSets = {
+std::map<std::string, std::map<std::string, std::string>> CryptoContextParameterSets = {
     {"BFV1",
      {
          {"parameters", "BFV"},

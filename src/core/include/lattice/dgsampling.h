@@ -133,7 +133,7 @@ class LatticeGaussSampUtility {
   static void ZSampleSigma2x2(const Field2n &a, const Field2n &b,
                               const Field2n &d, const Matrix<Field2n> &c,
                               const typename Element::DggType &dgg,
-                              shared_ptr<Matrix<int64_t>> p);
+                              std::shared_ptr<Matrix<int64_t>> p);
 
   /**
    * Subroutine used by SamplePertSquareMat as described in "Implementing
@@ -149,7 +149,7 @@ class LatticeGaussSampUtility {
   static void SampleMat(const Matrix<Field2n> &A, const Matrix<Field2n> &B,
                         const Matrix<Field2n> &D, const Matrix<Field2n> &C,
                         const typename Element::DggType &dgg,
-                        shared_ptr<Matrix<int64_t>> p);
+                        std::shared_ptr<Matrix<int64_t>> p);
 
   /**
    * Subroutine used by ZSampleSigma2x2 as described Algorithm 4 in
@@ -160,7 +160,7 @@ class LatticeGaussSampUtility {
    * @param dgg discrete Gaussian generator
    * @param n ring dimension used for rejection sampling
    */
-  static shared_ptr<Matrix<int64_t>> ZSampleF(
+  static std::shared_ptr<Matrix<int64_t>> ZSampleF(
       const Field2n &f, const Field2n &c, const typename Element::DggType &dgg,
       size_t n);
 
@@ -168,23 +168,23 @@ class LatticeGaussSampUtility {
   // subroutine used by GaussSampGq
   // Discrete sampling variant
   // As described in Figure 2 of https://eprint.iacr.org/2017/308.pdf
-  static void Perturb(double sigma, size_t k, size_t n, const vector<double> &l,
-                      const vector<double> &h, int64_t base,
-                      typename Element::DggType &dgg, vector<int64_t> *p);
+  static void Perturb(double sigma, size_t k, size_t n, const std::vector<double> &l,
+                      const std::vector<double> &h, int64_t base,
+                      typename Element::DggType &dgg, std::vector<int64_t> *p);
 
   // subroutine used by GaussSampGqArbBase
   // Continuous sampling variant
   // As described in Algorithm 3 of https://eprint.iacr.org/2017/844.pdf
   static void PerturbFloat(double sigma, size_t k, size_t n,
-                           const vector<double> &l, const vector<double> &h,
+                           const std::vector<double> &l, const std::vector<double> &h,
                            int64_t base, typename Element::DggType &dgg,
-                           vector<double> *p);
+                           std::vector<double> *p);
 
   // subroutine used by GaussSampGq
   // As described in Algorithm 3 of https://eprint.iacr.org/2017/844.pdf
   static void SampleC(const Matrix<double> &c, size_t k, size_t n, double sigma,
                       typename Element::DggType &dgg, Matrix<double> *a,
-                      vector<int64_t> *z);
+                      std::vector<int64_t> *z);
 
   // subroutine earlier used by ZSampleF
   // Algorithm utilizes the same permutation algorithm as discussed in
@@ -194,7 +194,7 @@ class LatticeGaussSampUtility {
   // subroutine used by ZSampleF
   // Algorithm utilizes the same inverse permutation algorithm as discussed in
   // https://eprint.iacr.org/2017/844.pdf
-  static void InversePermute(shared_ptr<Matrix<int64_t>> p);
+  static void InversePermute(std::shared_ptr<Matrix<int64_t>> p);
 };
 
 }  // namespace lbcrypto

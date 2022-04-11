@@ -39,7 +39,6 @@
 #include <map>
 #include <vector>
 #include "math/hal.h"
-using std::map;
 
 namespace lbcrypto {
 
@@ -105,10 +104,10 @@ class StdLatticeParm {
   // will suffer MAKE SURE that the number of entries in the DistributionType
   // enum is == the first index, and MAKE SURE that the number of entries in the
   // SecurityLevel enum is == the second index
-  static map<usint, StdLatticeParm*> byRing[3][3];
-  static map<usint, StdLatticeParm*> byLogQ[3][3];
+  static std::map<usint, StdLatticeParm*> byRing[3][3];
+  static std::map<usint, StdLatticeParm*> byLogQ[3][3];
 
-  static vector<StdLatticeParm> StandardLatticeParmSets;
+  static std::vector<StdLatticeParm> StandardLatticeParmSets;
   static bool initialized;
 
  public:

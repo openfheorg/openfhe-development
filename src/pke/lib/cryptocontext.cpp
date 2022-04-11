@@ -69,15 +69,15 @@ void CryptoContextImpl<Element>::EvalMultKeysGen(
                    "Key passed to EvalMultsKeyGen were not generated with this "
                    "crypto context");
 
-  const vector<EvalKey<Element>>& evalKeys =
+  const std::vector<EvalKey<Element>>& evalKeys =
       GetScheme()->EvalMultKeysGen(key);
 
   GetAllEvalMultKeys()[evalKeys[0]->GetKeyTag()] = evalKeys;
 }
 
 template <typename Element>
-const vector<EvalKey<Element>>&
-CryptoContextImpl<Element>::GetEvalMultKeyVector(const string& keyID) {
+const std::vector<EvalKey<Element>>&
+CryptoContextImpl<Element>::GetEvalMultKeyVector(const std::string& keyID) {
   auto ekv = GetAllEvalMultKeys().find(keyID);
   if (ekv == GetAllEvalMultKeys().end())
     PALISADE_THROW(not_available_error,
@@ -87,7 +87,7 @@ CryptoContextImpl<Element>::GetEvalMultKeyVector(const string& keyID) {
 }
 
 template <typename Element>
-std::map<string, std::vector<EvalKey<Element>>>&
+std::map<std::string, std::vector<EvalKey<Element>>>&
 CryptoContextImpl<Element>::GetAllEvalMultKeys() {
   return evalMultKeyMap();
 }
@@ -102,7 +102,7 @@ void CryptoContextImpl<Element>::ClearEvalMultKeys() {
  * @param id
  */
 template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalMultKeys(const string& id) {
+void CryptoContextImpl<Element>::ClearEvalMultKeys(const std::string& id) {
   auto kd = GetAllEvalMultKeys().find(id);
   if (kd != GetAllEvalMultKeys().end()) GetAllEvalMultKeys().erase(kd);
 }
@@ -156,7 +156,7 @@ void CryptoContextImpl<Element>::EvalSumKeyGen(
 }
 
 template <typename Element>
-shared_ptr<std::map<usint, EvalKey<Element>>>
+std::shared_ptr<std::map<usint, EvalKey<Element>>>
 CryptoContextImpl<Element>::EvalSumRowsKeyGen(
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey,
     usint rowSize, usint subringDim) {
@@ -180,7 +180,7 @@ CryptoContextImpl<Element>::EvalSumRowsKeyGen(
 }
 
 template <typename Element>
-shared_ptr<std::map<usint, EvalKey<Element>>>
+std::shared_ptr<std::map<usint, EvalKey<Element>>>
 CryptoContextImpl<Element>::EvalSumColsKeyGen(
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
   if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
@@ -204,7 +204,7 @@ CryptoContextImpl<Element>::EvalSumColsKeyGen(
 
 template <typename Element>
 const std::map<usint, EvalKey<Element>>&
-CryptoContextImpl<Element>::GetEvalSumKeyMap(const string& keyID) {
+CryptoContextImpl<Element>::GetEvalSumKeyMap(const std::string& keyID) {
   auto ekv = GetAllEvalSumKeys().find(keyID);
   if (ekv == GetAllEvalSumKeys().end())
     PALISADE_THROW(not_available_error,
@@ -214,7 +214,7 @@ CryptoContextImpl<Element>::GetEvalSumKeyMap(const string& keyID) {
 }
 
 template <typename Element>
-std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>&
+std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
 CryptoContextImpl<Element>::GetAllEvalSumKeys() {
   return evalSumKeyMap();
 }
@@ -229,7 +229,7 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys() {
  * @param id
  */
 template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalSumKeys(const string& id) {
+void CryptoContextImpl<Element>::ClearEvalSumKeys(const std::string& id) {
   auto kd = GetAllEvalSumKeys().find(id);
   if (kd != GetAllEvalSumKeys().end()) GetAllEvalSumKeys().erase(kd);
 }
@@ -253,7 +253,7 @@ void CryptoContextImpl<Element>::ClearEvalSumKeys(
 
 template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalSumKey(
-    const shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert) {
+    const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert) {
   // find the tag
   if (!mapToInsert->empty()) {
     auto onekey = mapToInsert->begin();
@@ -290,7 +290,7 @@ void CryptoContextImpl<Element>::EvalAtIndexKeyGen(
 
 template <typename Element>
 const std::map<usint, EvalKey<Element>>&
-CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(const string& keyID) {
+CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(const std::string& keyID) {
   auto ekv = evalAutomorphismKeyMap().find(keyID);
   if (ekv == evalAutomorphismKeyMap().end())
     PALISADE_THROW(not_available_error,
@@ -300,7 +300,7 @@ CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(const string& keyID) {
 }
 
 template <typename Element>
-std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>&
+std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
 CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys() {
   return evalAutomorphismKeyMap();
 }
@@ -315,7 +315,7 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys() {
  * @param id
  */
 template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const string& id) {
+void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(const std::string& id) {
   auto kd = evalAutomorphismKeyMap().find(id);
   if (kd != evalAutomorphismKeyMap().end()) evalAutomorphismKeyMap().erase(kd);
 }
@@ -340,7 +340,7 @@ void CryptoContextImpl<Element>::ClearEvalAutomorphismKeys(
 
 template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalAutomorphismKey(
-    const shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert) {
+    const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert) {
   // find the tag
   auto onekey = mapToInsert->begin();
   evalAutomorphismKeyMap()[onekey->second->GetKeyTag()] = mapToInsert;
@@ -420,7 +420,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndex(
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalMerge(
-    const vector<Ciphertext<Element>>& ciphertextVector) const {
+    const std::vector<Ciphertext<Element>>& ciphertextVector) const {
   if (ciphertextVector[0] == nullptr ||
       Mismatched(ciphertextVector[0]->GetCryptoContext()))
     PALISADE_THROW(config_error,
@@ -475,7 +475,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(
 
 template <typename Element>
 Plaintext CryptoContextImpl<Element>::GetPlaintextForDecrypt(
-    PlaintextEncodings pte, shared_ptr<ParmType> evp, EncodingParams ep) {
+    PlaintextEncodings pte, std::shared_ptr<ParmType> evp, EncodingParams ep) {
   auto vp = std::make_shared<typename NativePoly::Params>(
       evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
 
@@ -543,7 +543,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(
 
 template <typename Element>
 DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
-    const vector<Ciphertext<Element>>& partialCiphertextVec,
+    const std::vector<Ciphertext<Element>>& partialCiphertextVec,
     Plaintext* plaintext) const {
   DecryptResult result;
 

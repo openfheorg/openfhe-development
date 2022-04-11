@@ -108,6 +108,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
 }
 //===========================================================================================================
 constexpr usint BATCH = 16;
+// clang-format off
 static std::vector<TEST_CASE> testCases = {
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
     { CKKSRNS_TEST,  "1", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
@@ -151,6 +152,7 @@ static std::vector<TEST_CASE> testCases = {
     { BFVRNS_TEST_EXTRA, "31", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     3.2,    DFLT,      2,          DFLT, BEHZ},    false },
     { BFVRNS_TEST_EXTRA, "32", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    16,    3.2,    DFLT,      2,          DFLT, BEHZ},    false },
 };
+// clang-format on
 //===========================================================================================================
 class UTMultiparty : public ::testing::TestWithParam<TEST_CASE> {
     using Element = DCRTPoly;
@@ -164,7 +166,7 @@ protected:
     // in order to avoid redundancy, UnitTest_MultiParty() uses 2 conditions:
     //  - testData.star false/true
     //  - CKKSRNS_TEST false/true
-    void UnitTest_MultiParty(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_MultiParty(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -203,7 +205,7 @@ protected:
                 (CKKSRNS_TEST == testData.testCaseType) ? evalMultAB->GetKeyTag() : kp2.publicKey->GetKeyTag());
             cc->InsertEvalMultKey({ evalMultFinal });
             //====================================================================
-            vector<PrivateKey<Element>> secretKeys{ kp1.secretKey, kp2.secretKey };
+            std::vector<PrivateKey<Element>> secretKeys{ kp1.secretKey, kp2.secretKey };
             KeyPair<Element> kpMultiparty = cc->MultipartyKeyGen(secretKeys);
             if (!kpMultiparty.good())
                 PALISADE_THROW(palisade_error, "Key generation failed");
@@ -355,7 +357,7 @@ protected:
             Plaintext plaintextMultipartyNew;
             auto ciphertextPartial1 = cc->MultipartyDecryptLead({ ciphertextAdd123 }, kp1.secretKey);
             auto ciphertextPartial2 = cc->MultipartyDecryptMain({ ciphertextAdd123 }, kp2.secretKey);
-            vector<Ciphertext<Element>> partialCiphertextVec{ ciphertextPartial1[0], ciphertextPartial2[0] };
+            std::vector<Ciphertext<Element>> partialCiphertextVec{ ciphertextPartial1[0], ciphertextPartial2[0] };
             cc->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultipartyNew);
             plaintextMultipartyNew->SetLength(plaintext1->GetLength());
 
@@ -380,7 +382,7 @@ protected:
             Plaintext plaintextMultipartyMult;
             ciphertextPartial1 = cc->MultipartyDecryptLead({ ciphertextMult }, kp1.secretKey);
             ciphertextPartial2 = cc->MultipartyDecryptMain({ ciphertextMult }, kp2.secretKey);
-            vector<Ciphertext<Element>> partialCiphertextVecMult{ ciphertextPartial1[0], ciphertextPartial2[0] };
+            std::vector<Ciphertext<Element>> partialCiphertextVecMult{ ciphertextPartial1[0], ciphertextPartial2[0] };
             cc->MultipartyDecryptFusion(partialCiphertextVecMult, &plaintextMultipartyMult);
             plaintextMultipartyMult->SetLength(plaintext1->GetLength());
 
@@ -403,7 +405,7 @@ protected:
             Plaintext plaintextMultipartyEvalSum;
             ciphertextPartial1 = cc->MultipartyDecryptLead({ ciphertextEvalSum }, kp1.secretKey);
             ciphertextPartial2 = cc->MultipartyDecryptMain({ ciphertextEvalSum }, kp2.secretKey);
-            vector<Ciphertext<Element>> partialCiphertextVecEvalSum{ ciphertextPartial1[0], ciphertextPartial2[0] };
+            std::vector<Ciphertext<Element>> partialCiphertextVecEvalSum{ ciphertextPartial1[0], ciphertextPartial2[0] };
             cc->MultipartyDecryptFusion(partialCiphertextVecEvalSum, &plaintextMultipartyEvalSum);
             plaintextMultipartyEvalSum->SetLength(plaintext1->GetLength());
 
@@ -426,7 +428,7 @@ protected:
             Plaintext plaintextMultipartyRotate;
             ciphertextPartial1 = cc->MultipartyDecryptLead({ ciphertextRotate }, kp1.secretKey);
             ciphertextPartial2 = cc->MultipartyDecryptMain({ ciphertextRotate }, kp2.secretKey);
-            vector<Ciphertext<Element>> partialCiphertextVecRotate{ ciphertextPartial1[0], ciphertextPartial2[0] };
+            std::vector<Ciphertext<Element>> partialCiphertextVecRotate{ ciphertextPartial1[0], ciphertextPartial2[0] };
             cc->MultipartyDecryptFusion(partialCiphertextVecRotate, &plaintextMultipartyRotate);
             plaintextMultipartyRotate->SetLength(plaintext1->GetLength());
 
@@ -461,7 +463,7 @@ protected:
         }
     }
 
-    void UnitTestMultiparty(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTestMultiparty(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -484,7 +486,7 @@ protected:
             // after the re-encryption operation.
             ////////////////////////////////////////////////////////////
 
-            vector<PrivateKey<Element>> secretKeys{ kp1.secretKey, kp2.secretKey, kp3.secretKey };
+            std::vector<PrivateKey<Element>> secretKeys{ kp1.secretKey, kp2.secretKey, kp3.secretKey };
             KeyPair<Element> kpMultiparty = cc->MultipartyKeyGen(secretKeys);  // This is the same core key generation operation.
             ASSERT_TRUE(kpMultiparty.good()) << "kpMultiparty generation failed!";
 
@@ -557,7 +559,7 @@ protected:
             auto ciphertextPartial2 = cc->MultipartyDecryptMain({ ciphertextAddNew }, kp2.secretKey);
             auto ciphertextPartial3 = cc->MultipartyDecryptMain({ ciphertextAddNew }, kp3.secretKey);
 
-            vector<Ciphertext<Element>> partialCiphertextVec{
+            std::vector<Ciphertext<Element>> partialCiphertextVec{
                 ciphertextPartial1[0],
                 ciphertextPartial2[0],
                 ciphertextPartial3[0] };

@@ -59,7 +59,7 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 namespace lbcrypto {
 
 bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
-    shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
     int32_t evalAddCount, int32_t evalMultCount,
     int32_t keySwitchCount, size_t dcrtBits,
     uint32_t nCustom,
@@ -302,8 +302,8 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   size_t sizeQ =
       static_cast<size_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
 
-  vector<NativeInteger> moduliQ(sizeQ);
-  vector<NativeInteger> rootsQ(sizeQ);
+  std::vector<NativeInteger> moduliQ(sizeQ);
+  std::vector<NativeInteger> rootsQ(sizeQ);
 
   // makes sure the first integer is less than 2^60-1 to take advantage of NTL
   // optimizations

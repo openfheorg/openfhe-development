@@ -122,6 +122,7 @@ constexpr usint SCALE    = 50;
 constexpr usint MULT_DEPTH = 3;
 constexpr usint RELIN    = 20;
 constexpr usint BATCH    = 8;
+// clang-format off
 static std::vector<TEST_CASE> testCases = {
     // TestType,            Descr, Scheme,        RDim,     MultDepth,  SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { CONTEXT_WITH_SERTYPE, "1", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -164,6 +165,7 @@ static std::vector<TEST_CASE> testCases = {
 #endif
     // ==========================================
 };
+// clang-format on
 //===========================================================================================================
 class UTCKKSSer : public ::testing::TestWithParam<TEST_CASE> {
     using Element = DCRTPoly;
@@ -176,7 +178,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTestContext(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTestContext(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
         UnitTestContextWithSertype(cc, SerType::JSON, "json");
@@ -184,7 +186,7 @@ protected:
     }
 
     template <typename ST>
-    void TestKeysAndCiphertexts(const TEST_CASE& testData, const ST& sertype, const string& failmsg = std::string()) {
+    void TestKeysAndCiphertexts(const TEST_CASE& testData, const ST& sertype, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -225,7 +227,7 @@ protected:
                 EXPECT_EQ(*kp.secretKey, *kpnew.secretKey) << "Secret key mismatch after ser/deser";
             }
             DEBUG("step 3");
-            vector<std::complex<double>> vals = { 1.0, 3.0, 5.0, 7.0, 9.0,
+            std::vector<std::complex<double>> vals = { 1.0, 3.0, 5.0, 7.0, 9.0,
                                                  2.0, 4.0, 6.0, 8.0, 11.0 };
             Plaintext plaintextShort = cc->MakeCKKSPackedPlaintext(vals);
             Plaintext plaintextShortL2D2 = cc->MakeCKKSPackedPlaintext(vals, 2, 2);
@@ -298,7 +300,7 @@ protected:
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
             EXPECT_EQ(CryptoContextFactory<DCRTPoly>::GetContextCount(), 0) << "after release";
 
-            vector<EvalKey<DCRTPoly>> evalMultKeys;
+            std::vector<EvalKey<DCRTPoly>> evalMultKeys;
             CryptoContextImpl<DCRTPoly>::DeserializeEvalMultKey(ser0, sertype);
             EXPECT_EQ(CryptoContextFactory<DCRTPoly>::GetContextCount(), 1) << "one-key deser, context";
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::GetAllEvalMultKeys().size(), 1U) << "one-key deser, keys";
@@ -366,19 +368,19 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
-    void UnitTestKeysAndCiphertexts(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }
 
     template <typename ST>
-    void TestDecryptionSerNoCRTTables(const TEST_CASE& testData, const ST& sertype, const string& failmsg = std::string()) {
+    void TestDecryptionSerNoCRTTables(const TEST_CASE& testData, const ST& sertype, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             KeyPair<Element> kp = cc->KeyGen();
 
-            vector<std::complex<double>> vals = { 1.0, 3.0, 5.0, 7.0, 9.0,
+            std::vector<std::complex<double>> vals = { 1.0, 3.0, 5.0, 7.0, 9.0,
                                                  2.0, 4.0, 6.0, 8.0, 11.0 };
             Plaintext plaintextShort = cc->MakeCKKSPackedPlaintext(vals);
             Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
@@ -431,7 +433,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
-    void UnitTestDecryptionSerNoCRTTables(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTestDecryptionSerNoCRTTables(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         TestDecryptionSerNoCRTTables(testData, SerType::JSON, "json");
         TestDecryptionSerNoCRTTables(testData, SerType::BINARY, "binary");
     }

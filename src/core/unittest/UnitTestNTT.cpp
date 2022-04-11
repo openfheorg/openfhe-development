@@ -48,11 +48,10 @@
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 template <typename Element>
-void switch_format_simple_single_crt(const string& msg) {
+void switch_format_simple_single_crt(const std::string& msg) {
   using ParmType = typename Element::Params;
 
   usint m1 = 16;
@@ -89,15 +88,15 @@ TEST(UTNTT, switch_format_simple_single_crt) {
 }
 
 template <typename Element>
-void switch_format_simple_double_crt(const string& msg) {
+void switch_format_simple_double_crt(const std::string& msg) {
   usint init_m = 16;
 
   float init_stdDev = 4;
 
   usint init_size = 2;
 
-  vector<NativeInteger> init_moduli(init_size);
-  vector<NativeInteger> init_rootsOfUnity(init_size);
+  std::vector<NativeInteger> init_moduli(init_size);
+  std::vector<NativeInteger> init_rootsOfUnity(init_size);
 
   NativeInteger q = FirstPrime<NativeInteger>(28, init_m);
   NativeInteger temp;

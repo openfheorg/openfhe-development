@@ -48,17 +48,16 @@
 #include "testdefs.h"
 #include "utils/serial.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 template <typename T>
-void bigint(const string& msg) {
+void bigint(const std::string& msg) {
   T small(7);
   T medium(uint64_t(1) << 27 | uint64_t(1) << 22);
   T larger(uint64_t(1) << 40 | uint64_t(1) << 22);
 
-  auto sfunc = [&](T& val, string siz) {
-    stringstream s;
+  auto sfunc = [&](T& val, std::string siz) {
+    std::stringstream s;
     T deser;
 
     Serial::Serialize(val, s, SerType::JSON);
@@ -82,11 +81,11 @@ void bigint(const string& msg) {
 TEST(UTSer, bigint) { RUN_ALL_BACKENDS_INT(bigint, "bigint") }
 
 template <typename T>
-void hugeint(const string& msg) {
+void hugeint(const std::string& msg) {
   T yooge("371828316732191777888912");
 
-  auto sfunc = [&](T& val, string siz) {
-    stringstream s;
+  auto sfunc = [&](T& val, std::string siz) {
+    std::stringstream s;
     T deser;
 
     Serial::Serialize(val, s, SerType::JSON);
@@ -107,7 +106,7 @@ void hugeint(const string& msg) {
 TEST(UTSer, hugeint) { RUN_BIG_BACKENDS_INT(hugeint, "hugeint") }
 
 template <typename V>
-void vector_of_bigint(const string& msg) {
+void vector_of_bigint(const std::string& msg) {
   DEBUG_FLAG(false);
   const int vecsize = 100;
 
@@ -128,7 +127,7 @@ void vector_of_bigint(const string& msg) {
   }
 
   auto sfunc = [&](V& val) {
-    stringstream s;
+    std::stringstream s;
     V deser;
 
     Serial::Serialize(val, s, SerType::JSON);
@@ -145,11 +144,11 @@ void vector_of_bigint(const string& msg) {
 }
 
 template <typename Element>
-void ilparams_test(const string& msg) {
+void ilparams_test(const std::string& msg) {
   auto p = ElemParamFactory::GenElemParams<typename Element::Params>(1024);
 
   auto sfunc = [&msg](decltype(p) val) {
-    stringstream s;
+    std::stringstream s;
     decltype(p) deser;
 
     Serial::Serialize(val, s, SerType::JSON);
@@ -168,11 +167,11 @@ void ilparams_test(const string& msg) {
 TEST(UTSer, ilparams_test) { RUN_ALL_POLYS(ilparams_test, "ilparams_test") }
 
 template <typename Element>
-void ildcrtparams_test(const string& msg) {
+void ildcrtparams_test(const std::string& msg) {
   auto p = GenerateDCRTParams<typename Element::Integer>(1024, 5, 30);
 
   auto sfunc = [&msg](decltype(p) val) {
-    stringstream s;
+    std::stringstream s;
     decltype(p) deser;
 
     Serial::Serialize(val, s, SerType::JSON);
@@ -193,13 +192,13 @@ TEST(UTSer, ildcrtparams_test) {
 }
 
 template <typename Element>
-void ilvector_test(const string& msg) {
+void ilvector_test(const std::string& msg) {
   auto p = ElemParamFactory::GenElemParams<typename Element::Params>(1024);
   typename Element::DugType dug;
   Element vec(dug, p);
 
   auto sfunc = [&](Element& val) {
-    stringstream s;
+    std::stringstream s;
     Element deser;
 
     Serial::Serialize(val, s, SerType::JSON);
@@ -218,13 +217,13 @@ void ilvector_test(const string& msg) {
 TEST(UTSer, ilvector_test) { RUN_ALL_POLYS(ilvector_test, "ilvector_test") }
 
 template <typename Element>
-void ildcrtpoly_test(const string& msg) {
+void ildcrtpoly_test(const std::string& msg) {
   auto p = GenerateDCRTParams<typename Element::Integer>(1024, 5, 30);
   typename Element::DugType dug;
   Element vec(dug, p);
 
   auto sfunc = [&](Element& val) {
-    stringstream s;
+    std::stringstream s;
     Element deser;
 
     Serial::Serialize(val, s, SerType::JSON);
@@ -246,7 +245,7 @@ TEST(UTSer, ildcrtpoly_test) {
 
 ////////////////////////////////////////////////////////////
 template <typename V>
-void serialize_matrix_bigint(const string& msg) {
+void serialize_matrix_bigint(const std::string& msg) {
   DEBUG_FLAG(false);
   // dimensions of matrix.
   const int nrows = 4;
@@ -276,7 +275,7 @@ void serialize_matrix_bigint(const string& msg) {
   DEBUG("step 4");
   // serialize the Matrix
 
-  stringstream ss;
+  std::stringstream ss;
   Serial::Serialize(testmat, ss, SerType::BINARY);
 
 #if !defined(NDEBUG)

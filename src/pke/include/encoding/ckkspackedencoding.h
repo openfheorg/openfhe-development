@@ -57,25 +57,25 @@ namespace lbcrypto {
 class CKKSPackedEncoding : public PlaintextImpl {
  public:
   // these two constructors are used inside of Decrypt
-  CKKSPackedEncoding(shared_ptr<Poly::Params> vp, EncodingParams ep)
+  CKKSPackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {
     depth = 1;
     m_logError = 0.0;
   }
 
-  CKKSPackedEncoding(shared_ptr<NativePoly::Params> vp, EncodingParams ep)
+  CKKSPackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {
     depth = 1;
     m_logError = 0.0;
   }
 
-  CKKSPackedEncoding(shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
+  CKKSPackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {
     depth = 1;
     m_logError = 0.0;
   }
 
-  CKKSPackedEncoding(shared_ptr<Poly::Params> vp, EncodingParams ep,
+  CKKSPackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
                      const std::vector<std::complex<double>> &coeffs,
                      size_t depth, uint32_t level, double scFact)
       : PlaintextImpl(vp, ep), value(coeffs) {
@@ -85,7 +85,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
     m_logError = 0.0;
   }
 
-  CKKSPackedEncoding(shared_ptr<NativePoly::Params> vp, EncodingParams ep,
+  CKKSPackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
                      const std::vector<std::complex<double>> &coeffs,
                      size_t depth, uint32_t level, double scFact)
       : PlaintextImpl(vp, ep), value(coeffs) {
@@ -101,7 +101,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
    * @param scFact scaling factor of a plaintext of this level at depth 1.
    *
    */
-  CKKSPackedEncoding(shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
+  CKKSPackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
                      const std::vector<std::complex<double>> &coeffs,
                      size_t depth, uint32_t level, double scFact)
       : PlaintextImpl(vp, ep), value(coeffs) {
@@ -117,7 +117,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
    * @param rhs - The input object to copy.
    */
   explicit CKKSPackedEncoding(const std::vector<std::complex<double>> &rhs)
-      : PlaintextImpl(shared_ptr<Poly::Params>(0), nullptr), value(rhs) {
+      : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(rhs) {
     depth = 1;
     m_logError = 0.0;
   }
@@ -126,7 +126,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
    * @brief Default empty constructor with empty uninitialized data elements.
    */
   CKKSPackedEncoding()
-      : PlaintextImpl(shared_ptr<Poly::Params>(0), nullptr), value() {
+      : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value() {
     depth = 1;
     m_logError = 0.0;
   }

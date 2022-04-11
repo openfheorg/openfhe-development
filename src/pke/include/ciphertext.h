@@ -51,10 +51,10 @@ template <typename Element>
 class CiphertextImpl;
 
 template <typename Element>
-using Ciphertext = shared_ptr<CiphertextImpl<Element>>;
+using Ciphertext = std::shared_ptr<CiphertextImpl<Element>>;
 
 template <typename Element>
-using ConstCiphertext = shared_ptr<const CiphertextImpl<Element>>; // TODO (dsuponit): add another "const" to have "const shared_ptr<const CiphertextImpl<Element>>"
+using ConstCiphertext = std::shared_ptr<const CiphertextImpl<Element>>; // TODO (dsuponit): add another "const" to have "const std::shared_ptr<const CiphertextImpl<Element>>"
 
 /**
  * @brief CiphertextImpl
@@ -78,7 +78,7 @@ class CiphertextImpl : public CryptoObject<Element> {
         m_scalingFactorInt(1),
         m_level(0),
         m_hopslevel(0) {
-    m_metadataMap = std::make_shared<std::map<string, shared_ptr<Metadata>>>();
+    m_metadataMap = std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
   }
 
   /**
@@ -86,7 +86,7 @@ class CiphertextImpl : public CryptoObject<Element> {
    *
    * @param cc
    */
-  explicit CiphertextImpl(CryptoContext<Element> cc, const string& id = "",
+  explicit CiphertextImpl(CryptoContext<Element> cc, const std::string& id = "",
                           PlaintextEncodings encType = Unknown)
       : CryptoObject<Element>(cc, id),
         m_depth(1),
@@ -95,7 +95,7 @@ class CiphertextImpl : public CryptoObject<Element> {
         m_scalingFactorInt(1),
         m_level(0),
         m_hopslevel(0) {
-    m_metadataMap = std::make_shared<std::map<string, shared_ptr<Metadata>>>();
+    m_metadataMap = std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
   }
 
   /**
@@ -103,7 +103,7 @@ class CiphertextImpl : public CryptoObject<Element> {
    *
    * @param k key whose CryptoObject parameters will get cloned
    */
-  explicit CiphertextImpl(const shared_ptr<Key<Element>> k)
+  explicit CiphertextImpl(const std::shared_ptr<Key<Element>> k)
       : CryptoObject<Element>(k->GetCryptoContext(), k->GetKeyTag()),
         m_depth(1),
         encodingType(Unknown),
@@ -111,7 +111,7 @@ class CiphertextImpl : public CryptoObject<Element> {
         m_scalingFactorInt(1),
         m_level(0),
         m_hopslevel(0) {
-    m_metadataMap = std::make_shared<std::map<string, shared_ptr<Metadata>>>();
+    m_metadataMap = std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
   }
 
   /**
@@ -178,7 +178,7 @@ class CiphertextImpl : public CryptoObject<Element> {
         this->GetCryptoContext(), this->GetKeyTag(), this->GetEncodingType()));
 
     ct->m_metadataMap =
-        std::make_shared<std::map<string, shared_ptr<Metadata>>>();
+        std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
     *(ct->m_metadataMap) = *(this->m_metadataMap);
 
     return ct;
@@ -393,8 +393,8 @@ class CiphertextImpl : public CryptoObject<Element> {
    * @return an iterator pointing at the position in the map where the key
    *         was found (or the map.end() if not found).
    */
-  std::map<string, shared_ptr<Metadata>>::iterator FindMetadataByKey(
-      string key) const {
+  std::map<std::string, std::shared_ptr<Metadata>>::iterator FindMetadataByKey(
+      std::string key) const {
     return m_metadataMap->find(key);
   }
 
@@ -407,7 +407,7 @@ class CiphertextImpl : public CryptoObject<Element> {
    * @return a boolean value indicating whether the key was found or not.
    */
   bool MetadataFound(
-      std::map<string, shared_ptr<Metadata>>::iterator it) const {
+      std::map<std::string, std::shared_ptr<Metadata>>::iterator it) const {
     return (it != m_metadataMap->end());
   }
 
@@ -419,15 +419,15 @@ class CiphertextImpl : public CryptoObject<Element> {
    *         was found (or the map.end() if not found).
    * @return a shared pointer pointing to the Metadata object in the map.
    */
-  shared_ptr<Metadata>& GetMetadata(
-      std::map<string, shared_ptr<Metadata>>::iterator it) const {
+  std::shared_ptr<Metadata>& GetMetadata(
+      std::map<std::string, std::shared_ptr<Metadata>>::iterator it) const {
     return it->second;
   }
 
   /**
    * Get a Metadata element from the Metadata map of the ciphertext.
    */
-  shared_ptr<Metadata> GetMetadataByKey(string key) const {
+  std::shared_ptr<Metadata> GetMetadataByKey(std::string key) const {
     auto it = m_metadataMap->find(key);
     return std::make_shared<Metadata>(*(it->second));
   }
@@ -435,7 +435,7 @@ class CiphertextImpl : public CryptoObject<Element> {
   /**
    * Set a Metadata element in the Metadata map of the ciphertext.
    */
-  void SetMetadataByKey(string key, shared_ptr<Metadata> value) {
+  void SetMetadataByKey(std::string key, std::shared_ptr<Metadata> value) {
     (*m_metadataMap)[key] = value;
   }
 
@@ -476,9 +476,9 @@ class CiphertextImpl : public CryptoObject<Element> {
       if (lE != rE) return false;
     }
 
-    const shared_ptr<std::map<string, shared_ptr<Metadata>>> lhsMap =
+    const std::shared_ptr<std::map<std::string, std::shared_ptr<Metadata>>> lhsMap =
         this->m_metadataMap;
-    const shared_ptr<std::map<string, shared_ptr<Metadata>>> rhsMap =
+    const std::shared_ptr<std::map<std::string, std::shared_ptr<Metadata>>> rhsMap =
         rhs.m_metadataMap;
 
     if (lhsMap->size() != rhsMap->size()) return false;

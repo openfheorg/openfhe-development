@@ -1,22 +1,22 @@
 //==================================================================================
 // BSD 2-Clause License
-// 
+//
 // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
-// 
+//
 // All rights reserved.
-// 
+//
 // Author TPOC: contact@openfhe.org
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 //    this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -42,160 +42,164 @@ using namespace lbcrypto;
 
 // Checks the arbitrary function evaluation
 TEST(UnitTestFHEWGINX, EvalArbFunc) {
-  auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(TOY, true, 12);
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(TOY, true, 12);
 
-  auto sk = cc.KeyGen();
-  cc.BTKeyGen(sk);
-  int p = cc.GetMaxPlaintextSpace().ConvertToInt(); 
-  auto fp = [](NativeInteger m, NativeInteger p1) -> NativeInteger{
-      if(m < p1)
-        return (m*m*m) % p1;
-      else
-        return ((m-p1/2)*(m-p1/2)*(m-p1/2))%p1;
+    auto sk = cc.KeyGen();
+    cc.BTKeyGen(sk);
+    int p   = cc.GetMaxPlaintextSpace().ConvertToInt();
+    auto fp = [](NativeInteger m, NativeInteger p1) -> NativeInteger {
+        if (m < p1)
+            return (m * m * m) % p1;
+        else
+            return ((m - p1 / 2) * (m - p1 / 2) * (m - p1 / 2)) % p1;
     };
-  auto lut = cc.GenerateLUTviaFunction(fp, p);
+    auto lut = cc.GenerateLUTviaFunction(fp, p);
 
-  for(int i = 0; i < p; i++){
-    auto ct1 = cc.Encrypt(sk, i%p, FRESH, p);
+    for (int i = 0; i < p; i++) {
+        auto ct1 = cc.Encrypt(sk, i % p, FRESH, p);
 
-    auto ct_cube = cc.EvalFunc(ct1, lut);
+        auto ct_cube = cc.EvalFunc(ct1, lut);
 
-    LWEPlaintext result;
+        LWEPlaintext result;
 
-    cc.Decrypt(sk, ct_cube, &result, p);
+        cc.Decrypt(sk, ct_cube, &result, p);
 
-    std::string failed = "Arbitrary Function Evaluation failed";
-    EXPECT_EQ(uint(fp(i, p).ConvertToInt()), result) << failed;
-  }
+        std::string failed = "Arbitrary Function Evaluation failed";
+        EXPECT_EQ(uint(fp(i, p).ConvertToInt()), result) << failed;
+    }
 }
 
 // Checks the rounding down evaluation
 TEST(UnitTestFHEWGINX, EvalFloorFunc) {
-  auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(TOY, false, 12);
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(TOY, false, 12);
 
-  auto sk = cc.KeyGen();
+    auto sk = cc.KeyGen();
 
-  cc.BTKeyGen(sk);
+    cc.BTKeyGen(sk);
 
-  int p = cc.GetMaxPlaintextSpace().ConvertToInt(); // Obtain the maximum plaintext space
+    int p = cc.GetMaxPlaintextSpace().ConvertToInt();  // Obtain the maximum plaintext space
 
-  for(int i = p/2-3; i < p/2+5; i++){
-    auto ct1 = cc.Encrypt(sk, i%p, FRESH, p);
+    for (int i = p / 2 - 3; i < p / 2 + 5; i++) {
+        auto ct1 = cc.Encrypt(sk, i % p, FRESH, p);
 
-    // round by one bit.
-    auto ctRounded = cc.EvalFloor(ct1, 1); 
+        // round by one bit.
+        auto ctRounded = cc.EvalFloor(ct1, 1);
 
-    LWEPlaintext result;
+        LWEPlaintext result;
 
-    cc.Decrypt(sk, ctRounded, &result, p/2);
+        cc.Decrypt(sk, ctRounded, &result, p / 2);
 
-    std::string failed = "Floor Function Evalution failed";
-    EXPECT_EQ(uint(i/2), result) << failed;
-  }
+        std::string failed = "Floor Function Evalution failed";
+        EXPECT_EQ(uint(i / 2), result) << failed;
+    }
 }
 
 // Checks the sign evaluation
 TEST(UnitTestFHEWGINX, EvalSignFuncTime) {
-  auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, true);
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, true);
 
-  uint32_t Q = 1<<29;
-  int q = 4096; 
-  int factor = 1<<int(29 - log2(q));  
-  int p = cc.GetMaxPlaintextSpace().ConvertToInt(); 
-  auto sk = cc.KeyGen(Q);
-  cc.BTKeyGen(sk, Q);
+    uint32_t Q = 1 << 29;
+    int q      = 4096;
+    int factor = 1 << int(29 - log2(q));
+    int p      = cc.GetMaxPlaintextSpace().ConvertToInt();
+    auto sk    = cc.KeyGen(Q);
+    cc.BTKeyGen(sk, Q);
 
-  std::string failed = "Large Precision Sign Evalution failed";
+    std::string failed = "Large Precision Sign Evalution failed";
 
-  for(int i = 0; i < 8; i++){
-    auto ct1 = cc.Encrypt(sk, p*factor/2+i-3 , FRESH, p*factor, Q);
-    ct1 = cc.EvalSign(ct1, Q);
-    LWEPlaintext result;
-    cc.Decrypt(sk, ct1, &result, 2, q);
-    EXPECT_EQ(uint(i >= 3), result) << failed;  
-  }
+    for (int i = 0; i < 8; i++) {
+        auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, FRESH, p * factor, Q);
+        ct1      = cc.EvalSign(ct1, Q);
+        LWEPlaintext result;
+        cc.Decrypt(sk, ct1, &result, 2, q);
+        EXPECT_EQ(uint(i >= 3), result) << failed;
+    }
 }
 
 // Checks the sign evaluation
 TEST(UnitTestFHEWGINX, EvalSignFuncSpace) {
-  auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, false);
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, false);
 
-  uint32_t Q = 1<<29;
-  int q = 4096; 
-  int factor = 1<<int(29 - log2(q));  
-  int p = cc.GetMaxPlaintextSpace().ConvertToInt(); 
-  auto sk = cc.KeyGen(Q);
-  cc.BTKeyGen(sk, Q);
+    uint32_t Q = 1 << 29;
+    int q      = 4096;
+    int factor = 1 << int(29 - log2(q));
+    int p      = cc.GetMaxPlaintextSpace().ConvertToInt();
+    auto sk    = cc.KeyGen(Q);
+    cc.BTKeyGen(sk, Q);
 
-  std::string failed = "Large Precision Sign Evalution failed";
+    std::string failed = "Large Precision Sign Evalution failed";
 
-  for(int i = 0; i < 8; i++){
-    auto ct1 = cc.Encrypt(sk, p*factor/2+i-3 , FRESH, p*factor, Q);
-    ct1 = cc.EvalSign(ct1, Q);
-    LWEPlaintext result;
-    cc.Decrypt(sk, ct1, &result, 2, q);
-    EXPECT_EQ(uint(i >= 3), result) << failed;  
-  }
+    for (int i = 0; i < 8; i++) {
+        auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, FRESH, p * factor, Q);
+        ct1      = cc.EvalSign(ct1, Q);
+        LWEPlaintext result;
+        cc.Decrypt(sk, ct1, &result, 2, q);
+        EXPECT_EQ(uint(i >= 3), result) << failed;
+    }
 }
 
 // Checks the sign evaluation
 TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
-  auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, true);
-  uint32_t Q = 1<<29;
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, true);
+    uint32_t Q = 1 << 29;
 
-  int basic = 4096; // q
-  int factor = 1<<int(29 - log2(basic));  // Q/q
-  int p_basic = cc.GetMaxPlaintextSpace().ConvertToInt();
-  auto st = p_basic*factor/2-3;
-  // Generate the secret key
-  auto sk = cc.KeyGen(Q);
-  cc.BTKeyGen(sk, Q);
-  std::string failed = "Large Precision Ciphertext Decomposition failed";
+    int basic   = 4096;                        // q
+    int factor  = 1 << int(29 - log2(basic));  // Q/q
+    int p_basic = cc.GetMaxPlaintextSpace().ConvertToInt();
+    auto st     = p_basic * factor / 2 - 3;
+    // Generate the secret key
+    auto sk = cc.KeyGen(Q);
+    cc.BTKeyGen(sk, Q);
+    std::string failed = "Large Precision Ciphertext Decomposition failed";
 
-  for(int i = st; i < st+8; i++){
-    auto ct1 = cc.Encrypt(sk, i , FRESH, p_basic*factor, Q);
-    
-    auto decomp = cc.EvalDecomp(ct1, Q);
-    ct1 = decomp[1];
+    for (int i = st; i < st + 8; i++) {
+        auto ct1 = cc.Encrypt(sk, i, FRESH, p_basic * factor, Q);
 
-    LWEPlaintext result;
-    cc.Decrypt(sk, ct1, &result, p_basic, basic);  
-    if(i < st+3) EXPECT_EQ(uint(15), result) << failed;
-    else EXPECT_EQ(uint(0), result) << failed;
-    EXPECT_EQ(uint(ceil(log(factor)/log(p_basic)) + 1), decomp.size()) << failed;
-  }
+        auto decomp = cc.EvalDecomp(ct1, Q);
+        ct1         = decomp[1];
+
+        LWEPlaintext result;
+        cc.Decrypt(sk, ct1, &result, p_basic, basic);
+        if (i < st + 3)
+            EXPECT_EQ(uint(15), result) << failed;
+        else
+            EXPECT_EQ(uint(0), result) << failed;
+        EXPECT_EQ(uint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
+    }
 }
 
 // Checks the sign evaluation
 TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
-  auto cc = BinFHEContext();
-  cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, false);
-  uint32_t Q = 1<<29;
+    auto cc = BinFHEContext();
+    cc.GenerateBinFHEContext(TOY, false, 29, 0, GINX, false);
+    uint32_t Q = 1 << 29;
 
-  int basic = 4096; // q
-  int factor = 1<<int(29 - log2(basic));  // Q/q
-  int p_basic = cc.GetMaxPlaintextSpace().ConvertToInt();
-  auto st = p_basic*factor/2-3;
-  // Generate the secret key
-  auto sk = cc.KeyGen(Q);
-  cc.BTKeyGen(sk, Q);
-  std::string failed = "Large Precision Ciphertext Decomposition failed";
+    int basic   = 4096;                        // q
+    int factor  = 1 << int(29 - log2(basic));  // Q/q
+    int p_basic = cc.GetMaxPlaintextSpace().ConvertToInt();
+    auto st     = p_basic * factor / 2 - 3;
+    // Generate the secret key
+    auto sk = cc.KeyGen(Q);
+    cc.BTKeyGen(sk, Q);
+    std::string failed = "Large Precision Ciphertext Decomposition failed";
 
-  for(int i = st; i < st+8; i++){
-    auto ct1 = cc.Encrypt(sk, i , FRESH, p_basic*factor, Q);
-    
-    auto decomp = cc.EvalDecomp(ct1, Q);
-    ct1 = decomp[1];
+    for (int i = st; i < st + 8; i++) {
+        auto ct1 = cc.Encrypt(sk, i, FRESH, p_basic * factor, Q);
 
-    LWEPlaintext result;
-    cc.Decrypt(sk, ct1, &result, p_basic, basic);  
-    if(i < st+3) EXPECT_EQ(uint(15), result) << failed;
-    else EXPECT_EQ(uint(0), result) << failed;
-    EXPECT_EQ(uint(ceil(log(factor)/log(p_basic)) + 1), decomp.size()) << failed;
-  }
+        auto decomp = cc.EvalDecomp(ct1, Q);
+        ct1         = decomp[1];
+
+        LWEPlaintext result;
+        cc.Decrypt(sk, ct1, &result, p_basic, basic);
+        if (i < st + 3)
+            EXPECT_EQ(uint(15), result) << failed;
+        else
+            EXPECT_EQ(uint(0), result) << failed;
+        EXPECT_EQ(uint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
+    }
 }

@@ -42,11 +42,6 @@
 #include "key/allkey.h"
 #include "cryptoobject.h"
 
-// TODO (dsuponit): remove all "using std::..." from this file
-using std::move;
-using std::shared_ptr;
-using std::string;
-
 #include "encoding/plaintextfactory.h"
 #include "math/matrix.h"
 

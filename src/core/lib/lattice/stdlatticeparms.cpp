@@ -35,19 +35,18 @@
 
 #include <vector>
 #include "lattice/stdlatticeparms.h"
-using std::vector;
 
 namespace lbcrypto {
 
-map<usint, StdLatticeParm*> StdLatticeParm::byRing[3][3];
-map<usint, StdLatticeParm*> StdLatticeParm::byLogQ[3][3];
+std::map<usint, StdLatticeParm*> StdLatticeParm::byRing[3][3];
+std::map<usint, StdLatticeParm*> StdLatticeParm::byLogQ[3][3];
 
 bool StdLatticeParm::initialized = false;
 
 // this is a collection of all of the parameter sets
 // the constructor for each one saves and indexes it so that you can search for
 // it with static methods in the StdLatticeParm class
-vector<StdLatticeParm> StdLatticeParm::StandardLatticeParmSets({
+std::vector<StdLatticeParm> StdLatticeParm::StandardLatticeParmSets({
     StdLatticeParm(HEStd_uniform, 1024, HEStd_128_classic, 29),
     StdLatticeParm(HEStd_uniform, 1024, HEStd_192_classic, 21),
     StdLatticeParm(HEStd_uniform, 1024, HEStd_256_classic, 16),

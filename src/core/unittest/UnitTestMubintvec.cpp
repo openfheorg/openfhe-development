@@ -45,7 +45,6 @@
 #include "math/distrgen.h"
 #include "utils/utilities.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 /* list of tests left to run

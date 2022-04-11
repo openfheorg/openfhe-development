@@ -164,10 +164,10 @@ public:
   virtual void AdjustLevelsAndDepthToOneInPlace(
       Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &plaintext, usint ptDepth) const override;
 
-  vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(
+  std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(
       ConstCiphertext<DCRTPoly> ciphertext, double constant) const;
 
-  vector<DCRTPoly::Integer> GetElementForEvalMult(
+  std::vector<DCRTPoly::Integer> GetElementForEvalMult(
         ConstCiphertext<DCRTPoly> ciphertext, double constant) const;
 
   /////////////////////////////////////

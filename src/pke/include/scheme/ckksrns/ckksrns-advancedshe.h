@@ -46,14 +46,14 @@ public:
   virtual ~AdvancedSHECKKSRNS() {}
 
   virtual Ciphertext<DCRTPoly> EvalLinearWSum(
-      vector<ConstCiphertext<DCRTPoly>>& ciphertexts, const vector<double> &constants) const override;
+      std::vector<ConstCiphertext<DCRTPoly>>& ciphertexts, const std::vector<double> &constants) const override;
 
   virtual Ciphertext<DCRTPoly> EvalLinearWSumMutable(
-      vector<Ciphertext<DCRTPoly>>& ciphertexts, const vector<double> &constants) const override;
+      std::vector<Ciphertext<DCRTPoly>>& ciphertexts, const std::vector<double> &constants) const override;
 
   virtual Ciphertext<DCRTPoly> EvalPoly(
       ConstCiphertext<DCRTPoly> ciphertext,
-      const vector<double> &coefficients) const override;
+      const std::vector<double> &coefficients) const override;
 
   /////////////////////////////////////
   // SERIALIZATION

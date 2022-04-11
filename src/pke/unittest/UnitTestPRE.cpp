@@ -100,6 +100,7 @@ const usint BATCH    = 16;
 const usint SBITS    = 60;
 const usint RWIN     = 20;
 const double STD_DEV = 3.2;
+// clang-format off
 static std::vector<TEST_CASE> testCases = {
     // TestType,  Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,      Depth, MDepth, ModSize, SecLvl, KSTech, RSTech, LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
     { RE_ENCRYPT, "1", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, STD_DEV, DFLT,      2,          DFLT, HPS},  },
@@ -108,6 +109,7 @@ static std::vector<TEST_CASE> testCases = {
     { RE_ENCRYPT, "4", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, STD_DEV, DFLT,      2,          DFLT, BEHZ}, },
     // ==========================================
 };
+// clang-format on
 
 class ReEncrypt : public ::testing::TestWithParam<TEST_CASE> {
     using Element = DCRTPoly;
@@ -119,7 +121,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void ReEncryption(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void ReEncryption(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -134,11 +136,11 @@ protected:
                 return charset[rand() % max_index];
             };
 
-            string shortStr(vecSize / 2, 0);
+            std::string shortStr(vecSize / 2, 0);
             std::generate_n(shortStr.begin(), vecSize / 2, randchar);
             Plaintext plaintextShort = cc->MakeStringPlaintext(shortStr);
 
-            string fullStr(vecSize, 0);
+            std::string fullStr(vecSize, 0);
             std::generate_n(fullStr.begin(), vecSize, randchar);
             Plaintext plaintextFull = cc->MakeStringPlaintext(fullStr);
 

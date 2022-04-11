@@ -59,7 +59,7 @@ template <typename Element>
 class CryptoContextImpl;
 
 template <typename Element>
-using CryptoContext = shared_ptr<CryptoContextImpl<Element>>;
+using CryptoContext = std::shared_ptr<CryptoContextImpl<Element>>;
 
 /**
  * @brief CryptoContextImpl
@@ -86,31 +86,31 @@ class CryptoContextImpl : public Serializable {
 
  protected:
   // crypto parameters used for this context
-  shared_ptr<CryptoParametersBase<Element>> params;
+  std::shared_ptr<CryptoParametersBase<Element>> params;
   // algorithm used; accesses all crypto methods
-  shared_ptr<SchemeBase<Element>> scheme;
+  std::shared_ptr<SchemeBase<Element>> scheme;
 
-  static std::map<string, std::vector<EvalKey<Element>>>& evalMultKeyMap() {
+  static std::map<std::string, std::vector<EvalKey<Element>>>& evalMultKeyMap() {
     // cached evalmult keys, by secret key UID
-    static std::map<string, std::vector<EvalKey<Element>>> s_evalMultKeyMap;
+    static std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap;
     return s_evalMultKeyMap;
   }
 
-  static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>&
+  static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
   evalSumKeyMap() {
     // cached evalsum keys, by secret key UID
-    static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalSumKeyMap;
+    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalSumKeyMap;
     return s_evalSumKeyMap;
   }
 
-  static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>&
+  static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
   evalAutomorphismKeyMap() {
     // cached evalautomorphism keys, by secret key UID
-    static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
+    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
     return s_evalAutomorphismKeyMap;
   }
 
-  string m_schemeId;
+  std::string m_schemeId;
 
   uint32_t m_keyGenLevel;
 
@@ -187,7 +187,7 @@ class CryptoContextImpl : public Serializable {
     return false;
   }
 
-  void CheckKey(const shared_ptr<const Key<Element>> key, CALLER_INFO_ARGS_HDR) const {
+  void CheckKey(const std::shared_ptr<const Key<Element>> key, CALLER_INFO_ARGS_HDR) const {
       if (key == nullptr) {
           std::string errorMsg(std::string("Key is nullptr") + CALLER_INFO);
           PALISADE_THROW(config_error, errorMsg);
@@ -238,9 +238,9 @@ class CryptoContextImpl : public Serializable {
    */
   void SetPrivateKey(const PrivateKey<Element> privateKey) {
 #ifdef DEBUG_KEY
-    cerr << "Warning - SetPrivateKey is only intended to be used for debugging "
+    std::cerr << "Warning - SetPrivateKey is only intended to be used for debugging "
             "purposes - not for production systems."
-         << endl;
+         << std::endl;
     this->privateKey = privateKey;
 #else
     PALISADE_THROW(
@@ -283,9 +283,9 @@ class CryptoContextImpl : public Serializable {
 #endif
   }
 
-  void setSchemeId(string schemeTag) { this->m_schemeId = schemeTag; }
+  void setSchemeId(std::string schemeTag) { this->m_schemeId = schemeTag; }
 
-  string getSchemeId() const { return this->m_schemeId; }
+  std::string getSchemeId() const { return this->m_schemeId; }
 
   /**
    * CryptoContextImpl constructor from pointers to parameters and scheme
@@ -294,7 +294,7 @@ class CryptoContextImpl : public Serializable {
    */
   CryptoContextImpl(CryptoParametersBase<Element>* params = nullptr,
                     SchemeBase<Element>* scheme = nullptr,
-                    const string& schemeId = "Not") {
+                    const std::string& schemeId = "Not") {
     this->params.reset(params);
     this->scheme.reset(scheme);
     this->m_keyGenLevel = 0;
@@ -306,9 +306,9 @@ class CryptoContextImpl : public Serializable {
    * @param params - shared pointer to CryptoParameters
    * @param scheme - sharedpointer to Crypto Scheme
    */
-  CryptoContextImpl(shared_ptr<CryptoParametersBase<Element>> params,
-                    shared_ptr<SchemeBase<Element>> scheme,
-                    const string& schemeId = "Not") {
+  CryptoContextImpl(std::shared_ptr<CryptoParametersBase<Element>> params,
+                    std::shared_ptr<SchemeBase<Element>> scheme,
+                    const std::string& schemeId = "Not") {
     this->params = params;
     this->scheme = scheme;
     this->m_keyGenLevel = 0;
@@ -390,7 +390,7 @@ class CryptoContextImpl : public Serializable {
    * @return true on success
    */
   template <typename ST>
-  static bool SerializeEvalMultKey(std::ostream& ser, const ST& sertype, string id = "");
+  static bool SerializeEvalMultKey(std::ostream& ser, const ST& sertype, std::string id = "");
 
   /**
    * SerializeEvalMultKey for all EvalMultKeys made in a given context
@@ -402,7 +402,7 @@ class CryptoContextImpl : public Serializable {
    */
   template <typename ST>
   static bool SerializeEvalMultKey(std::ostream& ser, const ST& sertype, const CryptoContext<Element> cc) {
-    std::map<string, std::vector<EvalKey<Element>>> omap;
+    std::map<std::string, std::vector<EvalKey<Element>>> omap;
     for (const auto& k : GetAllEvalMultKeys()) {
       if (k.second[0]->GetCryptoContext() == cc) {
         omap[k.first] = k.second;
@@ -425,7 +425,7 @@ class CryptoContextImpl : public Serializable {
    */
   template <typename ST>
   static bool DeserializeEvalMultKey(std::istream& ser, const ST& sertype) {
-    std::map<string, std::vector<EvalKey<Element>>> evalMultKeyMap;
+    std::map<std::string, std::vector<EvalKey<Element>>> evalMultKeyMap;
 
     Serial::Deserialize(GetAllEvalMultKeys(), ser, sertype);
 
@@ -448,7 +448,7 @@ class CryptoContextImpl : public Serializable {
    * ClearEvalMultKeys - flush EvalMultKey cache for a given id
    * @param id
    */
-  static void ClearEvalMultKeys(const string& id);
+  static void ClearEvalMultKeys(const std::string& id);
 
   /**
    * ClearEvalMultKeys - flush EvalMultKey cache for a given context
@@ -474,9 +474,9 @@ class CryptoContextImpl : public Serializable {
    */
   template <typename ST>
   static bool SerializeEvalSumKey(std::ostream& ser, const ST& sertype,
-                                  string id = "") {
-    std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>* smap;
-    std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
+                                  std::string id = "") {
+    std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>* smap;
+    std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
 
     if (id.length() == 0) {
       smap = &GetAllEvalSumKeys();
@@ -503,7 +503,7 @@ class CryptoContextImpl : public Serializable {
   template <typename ST>
   static bool SerializeEvalSumKey(std::ostream& ser, const ST& sertype,
                                   const CryptoContext<Element> cc) {
-    std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
+    std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
     for (const auto& k : GetAllEvalSumKeys()) {
       if (k.second->begin()->second->GetCryptoContext() == cc) {
         omap[k.first] = k.second;
@@ -528,7 +528,7 @@ class CryptoContextImpl : public Serializable {
    */
   template <typename ST>
   static bool DeserializeEvalSumKey(std::istream& ser, const ST& sertype) {
-    std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>
+    std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>
         evalSumKeyMap;
 
     Serial::Deserialize(evalSumKeyMap, ser, sertype);
@@ -552,7 +552,7 @@ class CryptoContextImpl : public Serializable {
    * ClearEvalSumKeys - flush EvalSumKey cache for a given id
    * @param id
    */
-  static void ClearEvalSumKeys(const string& id);
+  static void ClearEvalSumKeys(const std::string& id);
 
   /**
    * ClearEvalSumKeys - flush EvalSumKey cache for a given context
@@ -566,7 +566,7 @@ class CryptoContextImpl : public Serializable {
    * @param mapToInsert
    */
   static void InsertEvalSumKey(
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap);
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap);
 
   /**
    * SerializeEvalAutomorphismKey for a single EvalAuto key or all of the
@@ -579,9 +579,9 @@ class CryptoContextImpl : public Serializable {
    */
   template <typename ST>
   static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype,
-                                           string id = "") {
-    std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>* smap;
-    std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
+                                           std::string id = "") {
+    std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>* smap;
+    std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
     if (id.length() == 0) {
       smap = &GetAllEvalAutomorphismKeys();
     } else {
@@ -607,7 +607,7 @@ class CryptoContextImpl : public Serializable {
   template <typename ST>
   static bool SerializeEvalAutomorphismKey(std::ostream& ser, const ST& sertype,
                                            const CryptoContext<Element> cc) {
-    std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
+    std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> omap;
     for (const auto& k : GetAllEvalAutomorphismKeys()) {
       if (k.second->begin()->second->GetCryptoContext() == cc) {
         omap[k.first] = k.second;
@@ -632,7 +632,7 @@ class CryptoContextImpl : public Serializable {
   template <typename ST>
   static bool DeserializeEvalAutomorphismKey(std::istream& ser,
                                              const ST& sertype) {
-    std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>
+    std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>
         evalSumKeyMap;
 
     Serial::Deserialize(evalSumKeyMap, ser, sertype);
@@ -656,7 +656,7 @@ class CryptoContextImpl : public Serializable {
    * ClearEvalAutomorphismKeys - flush EvalAutomorphismKey cache for a given id
    * @param id
    */
-  static void ClearEvalAutomorphismKeys(const string& id);
+  static void ClearEvalAutomorphismKeys(const std::string& id);
 
   /**
    * ClearEvalAutomorphismKeys - flush EvalAutomorphismKey cache for a given
@@ -671,7 +671,7 @@ class CryptoContextImpl : public Serializable {
    * @param mapToInsert
    */
   static void InsertEvalAutomorphismKey(
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap);
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap);
 
   // TURN FEATURES ON
   /**
@@ -691,13 +691,13 @@ class CryptoContextImpl : public Serializable {
    * Getter for Scheme
    * @return scheme
    */
-  const shared_ptr<SchemeBase<Element>> GetScheme() const { return scheme; }
+  const std::shared_ptr<SchemeBase<Element>> GetScheme() const { return scheme; }
 
   /**
    * Getter for CryptoParams
    * @return params
    */
-  const shared_ptr<CryptoParametersBase<Element>> GetCryptoParameters() const {
+  const std::shared_ptr<CryptoParametersBase<Element>> GetCryptoParameters() const {
     return params;
   }
 
@@ -709,7 +709,7 @@ class CryptoContextImpl : public Serializable {
    * Getter for element params
    * @return
    */
-  const shared_ptr<ParmType> GetElementParams() const {
+  const std::shared_ptr<ParmType> GetElementParams() const {
     return params->GetElementParams();
   }
 
@@ -759,18 +759,18 @@ class CryptoContextImpl : public Serializable {
 
   // KEYS GETTERS
 
-  static std::map<string, std::vector<EvalKey<Element>>>& GetAllEvalMultKeys();
+  static std::map<std::string, std::vector<EvalKey<Element>>>& GetAllEvalMultKeys();
 
-  static const vector<EvalKey<Element>>& GetEvalMultKeyVector(
-      const string& keyID);
+  static const std::vector<EvalKey<Element>>& GetEvalMultKeyVector(
+      const std::string& keyID);
 
-  static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>&
+  static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
   GetAllEvalAutomorphismKeys();
 
   static const std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(
-      const string& id);
+      const std::string& id);
 
-  static std::map<string, shared_ptr<std::map<usint, EvalKey<Element>>>>&
+  static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
   GetAllEvalSumKeys();
 
   /**
@@ -779,7 +779,7 @@ class CryptoContextImpl : public Serializable {
    * @return the EvalSum key map
    */
   static const std::map<usint, EvalKey<Element>>& GetEvalSumKeyMap(
-      const string& id);
+      const std::string& id);
 
   // PLAINTEXT FACTORY METHODS
 
@@ -789,7 +789,7 @@ class CryptoContextImpl : public Serializable {
    * @param str
    * @return plaintext
    */
-  Plaintext MakeStringPlaintext(const string& str) const {
+  Plaintext MakeStringPlaintext(const std::string& str) const {
     return PlaintextFactory::MakePlaintext(String, this->GetElementParams(),
                                            this->GetEncodingParams(), str);
   }
@@ -799,7 +799,7 @@ class CryptoContextImpl : public Serializable {
    * @param value
    * @return plaintext
    */
-  Plaintext MakeCoefPackedPlaintext(const vector<int64_t>& value) const {
+  Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value) const {
     return PlaintextFactory::MakePlaintext(CoefPacked, this->GetElementParams(),
                                            this->GetEncodingParams(), value);
   }
@@ -809,7 +809,7 @@ class CryptoContextImpl : public Serializable {
    * @param value
    * @return plaintext
    */
-  Plaintext MakePackedPlaintext(const vector<int64_t>& value) const {
+  Plaintext MakePackedPlaintext(const std::vector<int64_t>& value) const {
     return PlaintextFactory::MakePlaintext(Packed, this->GetElementParams(),
                                            this->GetEncodingParams(), value);
   }
@@ -851,7 +851,7 @@ class CryptoContextImpl : public Serializable {
    */
   virtual Plaintext MakeCKKSPackedPlaintext(
       const std::vector<std::complex<double>>& value, size_t depth = 1,
-      uint32_t level = 0, const shared_ptr<ParmType> params = nullptr) const {
+      uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr) const {
     Plaintext p;
     const auto cryptoParams =
         std::dynamic_pointer_cast<CryptoParametersRNS>(
@@ -860,7 +860,7 @@ class CryptoContextImpl : public Serializable {
     double scFact = cryptoParams->GetScalingFactorReal(level);
 
     if (params == nullptr) {
-      shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
+      std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
       if (level != 0) {
         ILDCRTParams<DCRTPoly::Integer> elemParams =
             *(cryptoParams->GetElementParams());
@@ -896,7 +896,7 @@ class CryptoContextImpl : public Serializable {
    */
   virtual Plaintext MakeCKKSPackedPlaintext(
       const std::vector<double>& value, size_t depth = 1, uint32_t level = 0,
-      const shared_ptr<ParmType> params = nullptr) const {
+      const std::shared_ptr<ParmType> params = nullptr) const {
     std::vector<std::complex<double>> complexValue(value.size());
     std::transform(value.begin(), value.end(), complexValue.begin(),
                    [](double da) { return std::complex<double>(da); });
@@ -912,7 +912,7 @@ class CryptoContextImpl : public Serializable {
    * @param ep Encoding parameters
    * @return plaintext
    */
-  static Plaintext GetPlaintextForDecrypt(PlaintextEncodings pte, shared_ptr<ParmType> evp, EncodingParams ep);
+  static Plaintext GetPlaintextForDecrypt(PlaintextEncodings pte, std::shared_ptr<ParmType> evp, EncodingParams ep);
 
   /////////////////////////////////////////
   // PKE Wrapper
@@ -1545,7 +1545,7 @@ class CryptoContextImpl : public Serializable {
    * @param indexList list of automorphism indices to be computed
    * @return returns the evaluation keys
    */
-  shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
       const PrivateKey<Element> privateKey,
       const std::vector<usint>& indexList) const {
     CheckKey(privateKey);
@@ -1564,7 +1564,7 @@ class CryptoContextImpl : public Serializable {
    * @return returns the evaluation keys; index 0 of the vector corresponds to
    * plaintext index 2, index 1 to plaintex index 3, etc.
    */
-  shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
       const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
       const std::vector<usint>& indexList) const {
     CheckKey(publicKey);
@@ -1638,7 +1638,7 @@ class CryptoContextImpl : public Serializable {
    * @param ct the input ciphertext on which to do the precomputation (digit
    * decomposition)
    */
-  shared_ptr<vector<Element>> EvalFastRotationPrecompute(ConstCiphertext<Element> ciphertext) const {
+  std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(ConstCiphertext<Element> ciphertext) const {
     return GetScheme()->EvalFastRotationPrecompute(ciphertext);
   }
 
@@ -1680,7 +1680,7 @@ class CryptoContextImpl : public Serializable {
    */
   Ciphertext<Element> EvalFastRotation(
       ConstCiphertext<Element> ciphertext, const usint index, const usint m,
-      const shared_ptr<vector<Element>> digits) const {
+      const std::shared_ptr<std::vector<Element>> digits) const {
     return GetScheme()->EvalFastRotation(ciphertext, index, m, digits);
   }
 
@@ -1825,7 +1825,7 @@ class CryptoContextImpl : public Serializable {
    *
    * @return new ciphertext.
    */
-  Ciphertext<Element> EvalAddMany(const vector<Ciphertext<Element>>& ciphertextVec) const {
+  Ciphertext<Element> EvalAddMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
     // input parameter check
     if (!ciphertextVec.size())
       PALISADE_THROW(type_error, "Empty input ciphertext vector");
@@ -1844,7 +1844,7 @@ class CryptoContextImpl : public Serializable {
    *
    * @return new ciphertext.
    */
-  Ciphertext<Element> EvalAddManyInPlace(vector<Ciphertext<Element>>& ciphertextVec) const {
+  Ciphertext<Element> EvalAddManyInPlace(std::vector<Ciphertext<Element>>& ciphertextVec) const {
     // input parameter check
     if (!ciphertextVec.size())
       PALISADE_THROW(type_error, "Empty input ciphertext vector");
@@ -1860,14 +1860,14 @@ class CryptoContextImpl : public Serializable {
    * @param constants a list of weights
    * @return new ciphertext containing the weighted sum
    */
-  Ciphertext<Element> EvalLinearWSum(vector<ConstCiphertext<Element>>& ciphertextVec,
-                                     const vector<double> &constantVec) const {
+  Ciphertext<Element> EvalLinearWSum(std::vector<ConstCiphertext<Element>>& ciphertextVec,
+                                     const std::vector<double> &constantVec) const {
     return GetScheme()->EvalLinearWSum(ciphertextVec, constantVec);
   }
 
   Ciphertext<Element> EvalLinearWSum(
-      const vector<double> &constantsVec,
-      vector<ConstCiphertext<Element>>& ciphertextVec) const {
+      const std::vector<double> &constantsVec,
+      std::vector<ConstCiphertext<Element>>& ciphertextVec) const {
     return EvalLinearWSum(ciphertextVec, constantsVec);
   }
 
@@ -1881,14 +1881,14 @@ class CryptoContextImpl : public Serializable {
    * @return new ciphertext containing the weighted sum
    */
   Ciphertext<Element> EvalLinearWSumMutable(
-      vector<Ciphertext<Element>>& ciphertextVec,
-      const vector<double> &constantsVec) const {
+      std::vector<Ciphertext<Element>>& ciphertextVec,
+      const std::vector<double> &constantsVec) const {
     return GetScheme()->EvalLinearWSumMutable(ciphertextVec, constantsVec);
   }
 
   Ciphertext<Element> EvalLinearWSumMutable(
-      const vector<double> &constantsVec,
-      vector<Ciphertext<Element>>& ciphertextVec) const {
+      const std::vector<double> &constantsVec,
+      std::vector<Ciphertext<Element>>& ciphertextVec) const {
     return EvalLinearWSumMutable(ciphertextVec, constantsVec);
   }
 
@@ -1905,7 +1905,7 @@ class CryptoContextImpl : public Serializable {
    *
    * @return new ciphertext.
    */
-  Ciphertext<Element> EvalMultMany(const vector<Ciphertext<Element>>& ciphertextVec) const {
+  Ciphertext<Element> EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
     // input parameter check
     if (!ciphertextVec.size()) {
       PALISADE_THROW(type_error, "Empty input ciphertext vector");
@@ -1947,12 +1947,12 @@ class CryptoContextImpl : public Serializable {
   void EvalSumKeyGen(const PrivateKey<Element> privateKey,
                      const PublicKey<Element> publicKey = nullptr);
 
-  shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(
       const PrivateKey<Element> privateKey,
       const PublicKey<Element> publicKey = nullptr, usint rowSize = 0,
       usint subringDim = 0);
 
-  shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
       const PrivateKey<Element> privateKey,
       const PublicKey<Element> publicKey = nullptr);
 
@@ -2008,7 +2008,7 @@ class CryptoContextImpl : public Serializable {
    * EvalAutomorphismKeyGen.
    * @return resulting ciphertext
    */
-  Ciphertext<Element> EvalMerge(const vector<Ciphertext<Element>>& ciphertextVec) const;
+  Ciphertext<Element> EvalMerge(const std::vector<Ciphertext<Element>>& ciphertextVec) const;
 
   /////////////////////////////////////////
   // PRE Wrapper
@@ -2070,7 +2070,7 @@ class CryptoContextImpl : public Serializable {
    * public key
    */
   KeyPair<Element> MultipartyKeyGen(
-      const vector<PrivateKey<Element>>& privateKeyVec) {
+      const std::vector<PrivateKey<Element>>& privateKeyVec) {
     if (!privateKeyVec.size())
       PALISADE_THROW(config_error, "Input private key vector is empty");
     return GetScheme()->MultipartyKeyGen(
@@ -2107,12 +2107,12 @@ class CryptoContextImpl : public Serializable {
    * @param privateKey secret key share used for decryption.
    * @param ciphertext ciphertext id decrypted.
    */
-  vector<Ciphertext<Element>> MultipartyDecryptLead(
-      const vector<Ciphertext<Element>>& ciphertextVec,
+  std::vector<Ciphertext<Element>> MultipartyDecryptLead(
+      const std::vector<Ciphertext<Element>>& ciphertextVec,
       const PrivateKey<Element> privateKey) const {
     CheckKey(privateKey);
 
-    vector<Ciphertext<Element>> newCiphertextVec;
+    std::vector<Ciphertext<Element>> newCiphertextVec;
 
     for (size_t i = 0; i < ciphertextVec.size(); i++) {
       CheckCiphertext(ciphertextVec[i]);
@@ -2130,12 +2130,12 @@ class CryptoContextImpl : public Serializable {
    * @param privateKey secret key share used for decryption.
    * @param ciphertext ciphertext that is being decrypted.
    */
-  vector<Ciphertext<Element>> MultipartyDecryptMain(
-      const vector<Ciphertext<Element>>& ciphertextVec,
+  std::vector<Ciphertext<Element>> MultipartyDecryptMain(
+      const std::vector<Ciphertext<Element>>& ciphertextVec,
       const PrivateKey<Element> privateKey) const {
     CheckKey(privateKey);
 
-    vector<Ciphertext<Element>> newCiphertextVec;
+    std::vector<Ciphertext<Element>> newCiphertextVec;
     for (size_t i = 0; i < ciphertextVec.size(); i++) {
       CheckCiphertext(ciphertextVec[i]);
       newCiphertextVec.push_back(
@@ -2154,7 +2154,7 @@ class CryptoContextImpl : public Serializable {
    * @return the decoding result.
    */
   DecryptResult MultipartyDecryptFusion(
-      const vector<Ciphertext<Element>>& partialCiphertextVec,
+      const std::vector<Ciphertext<Element>>& partialCiphertextVec,
       Plaintext* plaintext) const;
 
   /**
@@ -2193,9 +2193,9 @@ class CryptoContextImpl : public Serializable {
    * @param keyId - new key identifier used for the resulting evaluation key
    * @return a dictionary with new joined automorphism keys.
    */
-  shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
       const PrivateKey<Element> privateKey,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
       const std::vector<usint>& indexList, const std::string& keyId = "") {
     if (!privateKey)
       PALISADE_THROW(config_error, "Input private key is nullptr");
@@ -2219,9 +2219,9 @@ class CryptoContextImpl : public Serializable {
    * @param keyId - new key identifier used for the resulting evaluation key
    * @return a dictionary with new joined rotation keys.
    */
-  shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
       const PrivateKey<Element> privateKey,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
       const std::vector<int32_t>& indexList, const std::string& keyId = "") {
     if (!privateKey)
       PALISADE_THROW(config_error, "Input private key is nullptr");
@@ -2244,9 +2244,9 @@ class CryptoContextImpl : public Serializable {
    * @param keyId - new key identifier used for the resulting evaluation key
    * @return new joined summation keys.
    */
-  shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
       const PrivateKey<Element> privateKey,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
       const std::string& keyId = "") {
     if (!privateKey)
       PALISADE_THROW(config_error, "Input private key is nullptr");
@@ -2303,9 +2303,9 @@ class CryptoContextImpl : public Serializable {
    * @param keyId - new key identifier used for the resulting evaluation key
    * @return the new joined key set for summation.
    */
-  shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2,
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2,
       const std::string& keyId = "") {
     if (!evalKeyMap1)
       PALISADE_THROW(config_error, "Input first evaluation key map is nullptr");
@@ -2324,9 +2324,9 @@ class CryptoContextImpl : public Serializable {
    * @param keyId - new key identifier used for the resulting evaluation key.
    * @return the new joined key set for summation.
    */
-  shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2,
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2,
       const std::string& keyId = "") {
     if (!evalKeyMap1)
       PALISADE_THROW(config_error, "Input first evaluation key map is nullptr");

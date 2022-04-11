@@ -55,7 +55,7 @@ class Key : public CryptoObject<Element>, public Serializable {
   explicit Key(CryptoContext<Element> cc = 0, const std::string &id = "")
       : CryptoObject<Element>(cc, id) {}
 
-  explicit Key(shared_ptr<CryptoObject<Element>> co)
+  explicit Key(std::shared_ptr<CryptoObject<Element>> co)
       : CryptoObject<Element>(co) {}
 
   virtual ~Key() {}

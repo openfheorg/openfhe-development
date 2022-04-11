@@ -39,7 +39,6 @@
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 void RunBGVrnsAdditive();
@@ -176,9 +175,9 @@ void RunBGVrnsAdditive() {
 
   Plaintext plaintextMultipartyNew;
 
-  const shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams =
+  const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams =
       kp1.secretKey->GetCryptoParameters();
-  const shared_ptr<typename DCRTPoly::Params> elementParams =
+  const std::shared_ptr<typename DCRTPoly::Params> elementParams =
       cryptoParams->GetElementParams();
 
   // partial decryption by first party
@@ -193,7 +192,7 @@ void RunBGVrnsAdditive() {
   auto ciphertextPartial3 =
       cc->MultipartyDecryptMain({ ciphertextAdd123 }, kp3.secretKey);
 
-  vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
+  std::vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
   partialCiphertextVec.push_back(ciphertextPartial1[0]);
   partialCiphertextVec.push_back(ciphertextPartial2[0]);
   partialCiphertextVec.push_back(ciphertextPartial3[0]);
@@ -201,17 +200,17 @@ void RunBGVrnsAdditive() {
   // partial decryptions are combined together
   cc->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultipartyNew);
 
-  cout << "\n Original Plaintext: \n" << endl;
-  cout << plaintext1 << endl;
-  cout << plaintext2 << endl;
-  cout << plaintext3 << endl;
+  std::cout << "\n Original Plaintext: \n" << std::endl;
+  std::cout << plaintext1 << std::endl;
+  std::cout << plaintext2 << std::endl;
+  std::cout << plaintext3 << std::endl;
 
   plaintextMultipartyNew->SetLength(plaintext1->GetLength());
 
-  cout << "\n Resulting Fused Plaintext adding 3 ciphertexts: \n" << endl;
-  cout << plaintextMultipartyNew << endl;
+  std::cout << "\n Resulting Fused Plaintext adding 3 ciphertexts: \n" << std::endl;
+  std::cout << plaintextMultipartyNew << std::endl;
 
-  cout << "\n";
+  std::cout << "\n";
 }
 
 void RunBFVrns() {
@@ -381,9 +380,9 @@ void RunBFVrns() {
 
   Plaintext plaintextMultipartyNew;
 
-  const shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams =
+  const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams =
       kp1.secretKey->GetCryptoParameters();
-  const shared_ptr<typename DCRTPoly::Params> elementParams =
+  const std::shared_ptr<typename DCRTPoly::Params> elementParams =
       cryptoParams->GetElementParams();
 
   // Distributed decryption
@@ -396,24 +395,24 @@ void RunBFVrns() {
   auto ciphertextPartial2 =
       cc->MultipartyDecryptMain({ciphertextAdd123}, kp2.secretKey);
 
-  vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
+  std::vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
   partialCiphertextVec.push_back(ciphertextPartial1[0]);
   partialCiphertextVec.push_back(ciphertextPartial2[0]);
 
   // Two partial decryptions are combined
   cc->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultipartyNew);
 
-  cout << "\n Original Plaintext: \n" << endl;
-  cout << plaintext1 << endl;
-  cout << plaintext2 << endl;
-  cout << plaintext3 << endl;
+  std::cout << "\n Original Plaintext: \n" << std::endl;
+  std::cout << plaintext1 << std::endl;
+  std::cout << plaintext2 << std::endl;
+  std::cout << plaintext3 << std::endl;
 
   plaintextMultipartyNew->SetLength(plaintext1->GetLength());
 
-  cout << "\n Resulting Fused Plaintext: \n" << endl;
-  cout << plaintextMultipartyNew << endl;
+  std::cout << "\n Resulting Fused Plaintext: \n" << std::endl;
+  std::cout << plaintextMultipartyNew << std::endl;
 
-  cout << "\n";
+  std::cout << "\n";
 
   Plaintext plaintextMultipartyMult;
 
@@ -423,7 +422,7 @@ void RunBFVrns() {
   ciphertextPartial2 =
       cc->MultipartyDecryptMain({ciphertextMult}, kp2.secretKey);
 
-  vector<Ciphertext<DCRTPoly>> partialCiphertextVecMult;
+  std::vector<Ciphertext<DCRTPoly>> partialCiphertextVecMult;
   partialCiphertextVecMult.push_back(ciphertextPartial1[0]);
   partialCiphertextVecMult.push_back(ciphertextPartial2[0]);
 
@@ -432,12 +431,12 @@ void RunBFVrns() {
 
   plaintextMultipartyMult->SetLength(plaintext1->GetLength());
 
-  cout << "\n Resulting Fused Plaintext after Multiplication of plaintexts 1 "
+  std::cout << "\n Resulting Fused Plaintext after Multiplication of plaintexts 1 "
           "and 3: \n"
-       << endl;
-  cout << plaintextMultipartyMult << endl;
+       << std::endl;
+  std::cout << plaintextMultipartyMult << std::endl;
 
-  cout << "\n";
+  std::cout << "\n";
 
   Plaintext plaintextMultipartyEvalSum;
 
@@ -447,7 +446,7 @@ void RunBFVrns() {
   ciphertextPartial2 =
       cc->MultipartyDecryptMain({ ciphertextEvalSum }, kp2.secretKey);
 
-  vector<Ciphertext<DCRTPoly>> partialCiphertextVecEvalSum;
+  std::vector<Ciphertext<DCRTPoly>> partialCiphertextVecEvalSum;
   partialCiphertextVecEvalSum.push_back(ciphertextPartial1[0]);
   partialCiphertextVecEvalSum.push_back(ciphertextPartial2[0]);
 
@@ -456,8 +455,8 @@ void RunBFVrns() {
 
   plaintextMultipartyEvalSum->SetLength(plaintext1->GetLength());
 
-  cout << "\n Fused result after summation of ciphertext 3: \n" << endl;
-  cout << plaintextMultipartyEvalSum << endl;
+  std::cout << "\n Fused result after summation of ciphertext 3: \n" << std::endl;
+  std::cout << plaintextMultipartyEvalSum << std::endl;
 }
 
 void RunCKKS() {
@@ -629,9 +628,9 @@ void RunCKKS() {
 
   Plaintext plaintextMultipartyNew;
 
-  const shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams =
+  const std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams =
       kp1.secretKey->GetCryptoParameters();
-  const shared_ptr<typename DCRTPoly::Params> elementParams =
+  const std::shared_ptr<typename DCRTPoly::Params> elementParams =
       cryptoParams->GetElementParams();
 
   // distributed decryption
@@ -642,23 +641,23 @@ void RunCKKS() {
   auto ciphertextPartial2 =
       cc->MultipartyDecryptMain({ ciphertextAdd123 }, kp2.secretKey);
 
-  vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
+  std::vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
   partialCiphertextVec.push_back(ciphertextPartial1[0]);
   partialCiphertextVec.push_back(ciphertextPartial2[0]);
 
   cc->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultipartyNew);
 
-  cout << "\n Original Plaintext: \n" << endl;
-  cout << plaintext1 << endl;
-  cout << plaintext2 << endl;
-  cout << plaintext3 << endl;
+  std::cout << "\n Original Plaintext: \n" << std::endl;
+  std::cout << plaintext1 << std::endl;
+  std::cout << plaintext2 << std::endl;
+  std::cout << plaintext3 << std::endl;
 
   plaintextMultipartyNew->SetLength(plaintext1->GetLength());
 
-  cout << "\n Resulting Fused Plaintext: \n" << endl;
-  cout << plaintextMultipartyNew << endl;
+  std::cout << "\n Resulting Fused Plaintext: \n" << std::endl;
+  std::cout << plaintextMultipartyNew << std::endl;
 
-  cout << "\n";
+  std::cout << "\n";
 
   Plaintext plaintextMultipartyMult;
 
@@ -668,7 +667,7 @@ void RunCKKS() {
   ciphertextPartial2 =
       cc->MultipartyDecryptMain({ ciphertextMult }, kp2.secretKey);
 
-  vector<Ciphertext<DCRTPoly>> partialCiphertextVecMult;
+  std::vector<Ciphertext<DCRTPoly>> partialCiphertextVecMult;
   partialCiphertextVecMult.push_back(ciphertextPartial1[0]);
   partialCiphertextVecMult.push_back(ciphertextPartial2[0]);
 
@@ -677,12 +676,12 @@ void RunCKKS() {
 
   plaintextMultipartyMult->SetLength(plaintext1->GetLength());
 
-  cout << "\n Resulting Fused Plaintext after Multiplication of plaintexts 1 "
+  std::cout << "\n Resulting Fused Plaintext after Multiplication of plaintexts 1 "
           "and 3: \n"
-       << endl;
-  cout << plaintextMultipartyMult << endl;
+       << std::endl;
+  std::cout << plaintextMultipartyMult << std::endl;
 
-  cout << "\n";
+  std::cout << "\n";
 
   Plaintext plaintextMultipartyEvalSum;
 
@@ -692,7 +691,7 @@ void RunCKKS() {
   ciphertextPartial2 =
       cc->MultipartyDecryptMain({ ciphertextEvalSum }, kp2.secretKey);
 
-  vector<Ciphertext<DCRTPoly>> partialCiphertextVecEvalSum;
+  std::vector<Ciphertext<DCRTPoly>> partialCiphertextVecEvalSum;
   partialCiphertextVecEvalSum.push_back(ciphertextPartial1[0]);
   partialCiphertextVecEvalSum.push_back(ciphertextPartial2[0]);
 
@@ -701,8 +700,8 @@ void RunCKKS() {
 
   plaintextMultipartyEvalSum->SetLength(plaintext1->GetLength());
 
-  cout << "\n Fused result after the Summation of ciphertext 3: "
+  std::cout << "\n Fused result after the Summation of ciphertext 3: "
           "\n"
-       << endl;
-  cout << plaintextMultipartyEvalSum << endl;
+       << std::endl;
+  std::cout << plaintextMultipartyEvalSum << std::endl;
 }

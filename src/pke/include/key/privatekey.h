@@ -50,7 +50,7 @@ template <typename Element>
 class PrivateKeyImpl;
 
 template <typename Element>
-using PrivateKey = shared_ptr<PrivateKeyImpl<Element>>;
+using PrivateKey = std::shared_ptr<PrivateKeyImpl<Element>>;
 
 /**
  * Generates a random 128-bit hash

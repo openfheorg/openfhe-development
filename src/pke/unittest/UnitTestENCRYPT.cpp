@@ -131,11 +131,11 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void EncryptionString(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void EncryptionString(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            string value = "You keep using that word. I do not think it means what you think it means";
+            std::string value = "You keep using that word. I do not think it means what you think it means";
             Plaintext plaintext = CryptoContextImpl<Element>::MakePlaintext(String, cc, value);
 
             KeyPair<Element> kp = cc->KeyGen();
@@ -165,7 +165,7 @@ protected:
         }
     }
 
-    void EncryptionCoefPacked(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void EncryptionCoefPacked(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -173,11 +173,11 @@ protected:
             auto ptm = cc->GetCryptoParameters()->GetPlaintextModulus();
             int half = ptm / 2;
 
-            vector<int64_t> intvec;
+            std::vector<int64_t> intvec;
             for (size_t ii = 0; ii < intSize; ii++) intvec.push_back(rand() % half);
             Plaintext plaintextInt = cc->MakeCoefPackedPlaintext(intvec);
 
-            vector<int64_t> sintvec;
+            std::vector<int64_t> sintvec;
             for (size_t ii = 0; ii < intSize; ii++) {
                 int rnum = rand() % half;
                 if (rand() % 2) rnum *= -1;

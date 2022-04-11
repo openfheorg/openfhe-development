@@ -44,7 +44,7 @@ template <typename Element>
 class EvalKeyImpl;
 
 template <typename Element>
-using EvalKey = shared_ptr<EvalKeyImpl<Element>>;
+using EvalKey = std::shared_ptr<EvalKeyImpl<Element>>;
 
 /**
  * @brief Abstract interface for evaluation/proxy keys

@@ -179,7 +179,7 @@ EvalKey<Element> LeveledSHEBase<Element>::EvalMultKeyGen(
 }
 
 template <class Element>
-vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(
+std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(
     const PrivateKey<Element> privateKey) const {
   const auto cc = privateKey->GetCryptoContext();
   const auto cryptoParams = privateKey->GetCryptoParameters();
@@ -189,7 +189,7 @@ vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(
 
   const Element &s = privateKey->GetPrivateElement();
 
-  vector<EvalKey<Element>> evalKeyVec;
+  std::vector<EvalKey<Element>> evalKeyVec;
 
   usint maxDepth = cryptoParams->GetMaxDepth();
   std::vector<Element> sPower(maxDepth - 1);
@@ -241,7 +241,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMult(
 
   auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
-  shared_ptr<vector<Element>> ab =
+  std::shared_ptr<std::vector<Element>> ab =
       algo->KeySwitchCore(cv[2], evalKey);
 
   cv[0] += (*ab)[0];
@@ -263,7 +263,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultMutable(
 
   auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
-  shared_ptr<vector<Element>> ab =
+  std::shared_ptr<std::vector<Element>> ab =
       algo->KeySwitchCore(cv[2], evalKey);
 
   cv[0] += (*ab)[0];
@@ -277,7 +277,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultMutable(
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalMultAndRelinearize(
     ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2,
-    const vector<EvalKey<Element>> &evalKeyVec) const {
+    const std::vector<EvalKey<Element>> &evalKeyVec) const {
   Ciphertext<Element> result = EvalMult(ciphertext1, ciphertext2);
   RelinearizeInPlace(result, evalKeyVec);
   return result;
@@ -286,7 +286,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultAndRelinearize(
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::Relinearize(
     ConstCiphertext<Element> ciphertext,
-    const vector<EvalKey<Element>> &evalKeyVec) const {
+    const std::vector<EvalKey<Element>> &evalKeyVec) const {
   Ciphertext<Element> result = ciphertext->Clone();
   RelinearizeInPlace(result, evalKeyVec);
   return result;
@@ -295,14 +295,14 @@ Ciphertext<Element> LeveledSHEBase<Element>::Relinearize(
 template <class Element>
 void LeveledSHEBase<Element>::RelinearizeInPlace(
     Ciphertext<Element> &ciphertext,
-    const vector<EvalKey<Element>> &evalKeyVec) const {
+    const std::vector<EvalKey<Element>> &evalKeyVec) const {
   std::vector<Element> &cv = ciphertext->GetElements();
   for (auto &c : cv) c.SetFormat(Format::EVALUATION);
 
   auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
   for (size_t j = 2; j < cv.size(); j++) {
-    shared_ptr<vector<Element>> ab =
+    std::shared_ptr<std::vector<Element>> ab =
         algo->KeySwitchCore(cv[j], evalKeyVec[j - 2]);
     cv[0] += (*ab)[0];
     cv[1] += (*ab)[1];
@@ -315,7 +315,7 @@ void LeveledSHEBase<Element>::RelinearizeInPlace(
 /////////////////////////////////////////
 
 template <class Element>
-shared_ptr<std::map<usint, EvalKey<Element>>>
+std::shared_ptr<std::map<usint, EvalKey<Element>>>
 LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
     const PrivateKey<Element> privateKey,
     const std::vector<usint> &indexList) const {
@@ -344,10 +344,10 @@ LeveledSHEBase<Element>::EvalAutomorphismKeyGen(
         std::make_shared<PrivateKeyImpl<Element>>(cc);
 
     usint index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
-    std::vector<usint> map(N);
-    PrecomputeAutoMap(N, index, &map);
+    std::vector<usint> vec(N);
+    PrecomputeAutoMap(N, index, &vec);
 
-    Element sPermuted = s.AutomorphismTransform(index, map);
+    Element sPermuted = s.AutomorphismTransform(index, vec);
     privateKeyPermuted->SetPrivateElement(sPermuted);
     (*evalKeys)[indexList[i]] = algo->KeySwitchGen(privateKey,
         privateKeyPermuted);
@@ -382,8 +382,8 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(
 //        not_available_error,
 //        "automorphism indices higher than 2*n are not allowed " + CALLER_INFO);
 
-  std::vector<usint> map(N);
-  PrecomputeAutoMap(N, i, &map);
+  std::vector<usint> vec(N);
+  PrecomputeAutoMap(N, i, &vec);
 
   auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
@@ -393,14 +393,14 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(
 
   std::vector<Element> &rcv = result->GetElements();
 
-  rcv[0] = rcv[0].AutomorphismTransform(i, map);
-  rcv[1] = rcv[1].AutomorphismTransform(i, map);
+  rcv[0] = rcv[0].AutomorphismTransform(i, vec);
+  rcv[1] = rcv[1].AutomorphismTransform(i, vec);
 
   return result;
 }
 
 template <class Element>
-shared_ptr<vector<Element>> LeveledSHEBase<Element>::EvalFastRotationPrecompute(
+std::shared_ptr<std::vector<Element>> LeveledSHEBase<Element>::EvalFastRotationPrecompute(
     ConstCiphertext<Element> ciphertext) const {
   const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
   auto algo = ciphertext->GetCryptoContext()->GetScheme();
@@ -411,7 +411,7 @@ shared_ptr<vector<Element>> LeveledSHEBase<Element>::EvalFastRotationPrecompute(
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
     ConstCiphertext<Element> ciphertext, const usint index, const usint m,
-    const shared_ptr<vector<Element>> digits) const {
+    const std::shared_ptr<std::vector<Element>> digits) const {
   if (index == 0) {
     Ciphertext<Element> result = ciphertext->Clone();
     return result;
@@ -431,17 +431,17 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 
   const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
 
-  shared_ptr<vector<Element>> ba =
+  std::shared_ptr<std::vector<Element>> ba =
       algo->EvalFastKeySwitchCore(digits, evalKey, cv[0].GetParams());
 
   usint N = cryptoParams->GetElementParams()->GetRingDimension();
-  std::vector<usint> map(N);
-  PrecomputeAutoMap(N, autoIndex, &map);
+  std::vector<usint> vec(N);
+  PrecomputeAutoMap(N, autoIndex, &vec);
 
   (*ba)[0] += cv[0];
 
-  (*ba)[0] = (*ba)[0].AutomorphismTransform(autoIndex, map);
-  (*ba)[1] = (*ba)[1].AutomorphismTransform(autoIndex, map);
+  (*ba)[0] = (*ba)[0].AutomorphismTransform(autoIndex, vec);
+  (*ba)[1] = (*ba)[1].AutomorphismTransform(autoIndex, vec);
 
   Ciphertext<Element> result = ciphertext->Clone();
 
@@ -451,7 +451,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 }
 
 template <class Element>
-shared_ptr<std::map<usint, EvalKey<Element>>>
+std::shared_ptr<std::map<usint, EvalKey<Element>>>
 LeveledSHEBase<Element>::EvalAtIndexKeyGen(
     const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
     const std::vector<int32_t> &indexList) const {

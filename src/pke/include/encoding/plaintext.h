@@ -45,8 +45,6 @@
 #include "encoding/encodingparams.h"
 #include "lattice/lat-hal.h"
 
-using std::shared_ptr;
-
 namespace lbcrypto {
 
 enum PlaintextEncodings {
@@ -79,8 +77,8 @@ inline std::ostream& operator<<(std::ostream& out, const PlaintextEncodings p) {
 }
 
 class PlaintextImpl;
-typedef shared_ptr<PlaintextImpl> Plaintext;
-typedef shared_ptr<const PlaintextImpl> ConstPlaintext;
+typedef std::shared_ptr<PlaintextImpl> Plaintext;
+typedef std::shared_ptr<const PlaintextImpl> ConstPlaintext;
 
 /**
  * @class PlaintextImpl
@@ -114,7 +112,7 @@ class PlaintextImpl {
   size_t depth;
 
  public:
-  PlaintextImpl(shared_ptr<Poly::Params> vp, EncodingParams ep,
+  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsPoly),
@@ -124,7 +122,7 @@ class PlaintextImpl {
         level(0),
         depth(1) {}
 
-  PlaintextImpl(shared_ptr<NativePoly::Params> vp, EncodingParams ep,
+  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsNativePoly),
@@ -134,7 +132,7 @@ class PlaintextImpl {
         level(0),
         depth(1) {}
 
-  PlaintextImpl(shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
+  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsDCRTPoly),
@@ -333,10 +331,10 @@ class PlaintextImpl {
   virtual const std::string& GetStringValue() const {
     PALISADE_THROW(type_error, "not a string");
   }
-  virtual const vector<int64_t>& GetCoefPackedValue() const {
+  virtual const std::vector<int64_t>& GetCoefPackedValue() const {
     PALISADE_THROW(type_error, "not a packed coefficient vector");
   }
-  virtual const vector<int64_t>& GetPackedValue() const {
+  virtual const std::vector<int64_t>& GetPackedValue() const {
     PALISADE_THROW(type_error, "not a packed coefficient vector");
   }
   virtual const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
@@ -348,7 +346,7 @@ class PlaintextImpl {
   virtual void SetStringValue(const std::string&) {
     PALISADE_THROW(type_error, "does not support a string");
   }
-  virtual void SetIntVectorValue(const vector<int64_t>&) {
+  virtual void SetIntVectorValue(const std::vector<int64_t>&) {
     PALISADE_THROW(type_error, "does not support an int vector");
   }
 

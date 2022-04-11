@@ -56,7 +56,6 @@
 #include "utils/blockAllocator/xstring.h"
 #include "utils/blockAllocator/xvector.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 class UnitTestBinInt : public ::testing::Test {
@@ -76,8 +75,6 @@ class UnitTestBinInt : public ::testing::Test {
 // On VisualStudio, to disable the debug heap for faster performance when using
 // the debugger use this option:
 // Debugging > Environment _NO_DEBUG_HEAP=1
-
-using namespace std;
 
 // static int MAX_BENCHMARK = 10000;
 static int MAX_BENCHMARK = 1024;
@@ -106,7 +103,7 @@ static void out_of_memory() {
 // MapGlobalHeapTest
 //------------------------------------------------------------------------------
 void MapGlobalHeapTest() {
-  map<int, char> myMap;
+  std::map<int, char> myMap;
   for (int i = 0; i < MAX_BENCHMARK; i++) myMap[i] = 'a';
   myMap.clear();
 }
@@ -124,7 +121,7 @@ void MapFixedBlockTest() {
 // ListGlobalHeapTest
 //------------------------------------------------------------------------------
 void ListGlobalHeapTest() {
-  list<int> myList;
+  std::list<int> myList;
   for (int i = 0; i < MAX_BENCHMARK; i++) myList.push_back(123);
   myList.clear();
 }
@@ -142,7 +139,7 @@ void ListFixedBlockTest() {
 // VectorGlobalHeapTest
 //------------------------------------------------------------------------------
 void VectorGlobalHeapTest() {
-  vector<int> myVector;
+  std::vector<int> myVector;
   for (int i = 0; i < MAX_BENCHMARK; i++) myVector.push_back(123);
   myVector.clear();
 }
@@ -160,9 +157,9 @@ void VectorFixedBlockTest() {
 // StringGlobalHeapTest
 //------------------------------------------------------------------------------
 void StringGlobalHeapTest() {
-  list<string> myList;
+  std::list<std::string> myList;
   for (int i = 0; i < MAX_BENCHMARK; i++) {
-    string myString("benchmark");
+    std::string myString("benchmark");
     myString +=
         "benchmark test benchmark test benchmark test benchmark test benchmark "
         "test benchmark test benchmark test "
@@ -225,10 +222,10 @@ TEST(UTBlockAllocate, stl_test) {
   mySet.insert("world");
 
   xstringstream myStringStream;
-  myStringStream << "hello world " << 2016 << ends;
+  myStringStream << "hello world " << 2016 << std::ends;
 
   xwstringstream myWStringStream;
-  myWStringStream << L"hello world " << 2016 << ends;
+  myWStringStream << L"hello world " << 2016 << std::ends;
 
   xstring myString("hello world");
 
