@@ -37,9 +37,3 @@ Core Math Integer NTL Backend documentation
 
 .. autodoxygenindex::
    :project: core_math_hal_bigintntl
-
-Core Math Integer HEXL Backend documentation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autodoxygenindex::
-   :project: core_math_hal_intnat-hexl
