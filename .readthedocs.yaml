@@ -19,7 +19,3 @@ sphinx:
 formats:
     - pdf
     - htmlzip
-
-python:
-  install:
-    - requirements: docs/requirements.txt
