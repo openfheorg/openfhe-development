@@ -45,7 +45,6 @@
 
 #include "utils/debug.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 namespace {

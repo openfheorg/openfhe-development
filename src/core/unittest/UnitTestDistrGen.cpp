@@ -47,7 +47,6 @@
 
 #include "testdefs.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 //////////////////////////////////////////////////////////////////
@@ -64,7 +63,7 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus,
                                           std::string test_name);
 
 template <typename V>
-void DiscreteUniformGenerator_LONG(const string& msg) {
+void DiscreteUniformGenerator_LONG(const std::string& msg) {
   // TEST CASE TO GENERATE A UNIFORM BIG BINARY INTEGER WITH SMALL MODULUS
   {
     typename V::Integer modulus("10403");
@@ -239,7 +238,7 @@ void testDiscreteUniformGenerator(typename V::Integer& modulus,
 
 #ifdef PARALLEL
 template <typename V>
-void ParallelDiscreteUniformGenerator_LONG(const string& msg) {
+void ParallelDiscreteUniformGenerator_LONG(const std::string& msg) {
   // BUILD SEVERAL VECTORS OF BBI IN PARALLEL, CONCATENATE THEM TO ONE LARGE
   // VECTOR AND TEST THE RESULT OF THE FIRST AND SECOND CENTRAL MOMENTS
 
@@ -273,11 +272,11 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus,
   // usint size = omp_get_max_threads() * 4;
 
   DEBUG_FLAG(false);
-  vector<typename V::Integer> randBigVector;
+  std::vector<typename V::Integer> randBigVector;
 #pragma omp parallel  // this is executed in parallel
   {
     // private copies of our vector
-    vector<typename V::Integer> randBigVectorPvt;
+    std::vector<typename V::Integer> randBigVectorPvt;
     auto distrUniGen = DiscreteUniformGeneratorImpl<V>();
 
     distrUniGen.SetModulus(modulus);
@@ -375,7 +374,7 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus,
 ////////////////////////////////////////////////
 
 template <typename V>
-void BinaryUniformGeneratorTest(const string& msg) {
+void BinaryUniformGeneratorTest(const std::string& msg) {
   // fail if less than 0
   {
     auto binaryUniGen = BinaryUniformGeneratorImpl<V>();
@@ -421,7 +420,7 @@ TEST(UTDistrGen, BinaryUniformGenerator) {
 
 // mean test
 template <typename V>
-void TernaryUniformGeneratorTest(const string& msg) {
+void TernaryUniformGeneratorTest(const std::string& msg) {
   auto ternaryUniGen = TernaryUniformGeneratorImpl<V>();
 
   usint length = 100000;
@@ -456,7 +455,7 @@ TEST(UTDistrGen, TernaryUniformGenerator) {
 ////////////////////////////////////////////////
 
 template <typename V>
-void DiscreteGaussianGeneratorTest(const string& msg) {
+void DiscreteGaussianGeneratorTest(const std::string& msg) {
   // mean test
 
   {
@@ -512,7 +511,7 @@ TEST(UTDistrGen, DiscreteGaussianGenerator) {
 
 #ifdef PARALLEL
 template <typename V>
-void ParallelDiscreteGaussianGenerator_VERY_LONG(const string& msg) {
+void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
   // mean test
   DEBUG_FLAG(false);
 
@@ -521,12 +520,12 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const string& msg) {
     usint size = 10000;
     typename V::Integer modulus("10403");
 
-    vector<int32_t> dggCharVector;
+    std::vector<int32_t> dggCharVector;
 
 #pragma omp parallel  // this is executed in parallel
     {
       // private copies of our vector
-      vector<int32_t> dggCharVectorPvt;
+      std::vector<int32_t> dggCharVectorPvt;
       auto dgg = DiscreteGaussianGeneratorImpl<V>(stdev);
 
       // build the vectors in parallel
@@ -571,11 +570,11 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const string& msg) {
     typename V::Integer modulus("10403");
     typename V::Integer modulusByTwo(modulus.DividedBy(2));
 
-    vector<typename V::Integer> dggBigVector;
+    std::vector<typename V::Integer> dggBigVector;
 #pragma omp parallel  // this is executed in parallel
     {
       // private copies of our vector
-      vector<typename V::Integer> dggBigVectorPvt;
+      std::vector<typename V::Integer> dggBigVectorPvt;
       auto dgg = DiscreteGaussianGeneratorImpl<V>(stdev);
 
       // build the vectors in parallel
@@ -625,7 +624,7 @@ TEST(UTDistrGen, ParallelDiscreteGaussianGenerator_VERY_LONG) {
 
 // Mean test for Karney sampling
 template <typename V>
-void Karney_Mean(const string& msg) {
+void Karney_Mean(const std::string& msg) {
   int stdev = 10;
   usint size = 10000;
   double mean = 0;
@@ -645,7 +644,7 @@ TEST(UTDistrGen, Karney_Mean) { RUN_ALL_BACKENDS(Karney_Mean, "Karney_Mean") }
 
 // Variance test for Karney sampling
 template <typename V>
-void Karney_Variance(const string& msg) {
+void Karney_Variance(const std::string& msg) {
   int stdev = 10;
   usint size = 10000;
   double mean = 0;
@@ -678,8 +677,8 @@ void ThreadSafetyTestHelper() {
 }
 
 template <typename V>
-void ThreadSafetyInGetPRNG(const string& msg) {
-  thread t1(ThreadSafetyTestHelper);
+void ThreadSafetyInGetPRNG(const std::string& msg) {
+  std::thread t1(ThreadSafetyTestHelper);
   t1.join();
 
   ThreadSafetyTestHelper();

@@ -174,7 +174,7 @@ inline CryptoContext<DCRTPoly> GenCryptoContextBGVrns(
 }
 
 inline CryptoContext<DCRTPoly> GenTestCryptoContext(
-    const string& name, usint ORDER, PlaintextModulus ptm,
+    const std::string& name, usint ORDER, PlaintextModulus ptm,
     usint bits = DefaultQbits, usint towers = DefaultT, usint relinWin = 0,
     usint batchSize = 16, KeySwitchTechnique ksTech = BV,
     RescalingTechnique rsTech = FIXEDMANUAL, usint dummy = 0) {

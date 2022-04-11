@@ -44,7 +44,7 @@ class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
 public:
   virtual ~ParameterGenerationBGVRNS() {}
 
-  virtual bool ParamsGenBGVRNS(shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+  virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                  usint cyclOrder, usint ptm, usint numPrimes, usint relinWindow,
                  MODE mode,
                  usint firstModSize = 0,

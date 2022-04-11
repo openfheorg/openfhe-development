@@ -39,7 +39,6 @@
 
 #include "utils/utilities.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 TEST(Utilities, IsPowerOfTwo) {

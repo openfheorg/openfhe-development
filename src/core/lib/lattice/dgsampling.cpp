@@ -90,7 +90,7 @@ void LatticeGaussSampUtility<Element>::GaussSampGq(
   for (size_t j = 0; j < u.GetLength(); j++) {
     typename Element::Integer v(u.at(j));
 
-    vector<int64_t> p(k);
+    std::vector<int64_t> p(k);
 
     LatticeGaussSampUtility<Element>::Perturb(sigma, k, u.GetLength(), l, h,
                                               base, dgg, &p);
@@ -107,7 +107,7 @@ void LatticeGaussSampUtility<Element>::GaussSampGq(
     for (size_t t = 1; t < k; t++) {
       a(t, 0) = (a(t - 1, 0) + (int64_t)(v_digits[t]) - p[t]) / base;
     }
-    vector<int64_t> zj(k);
+    std::vector<int64_t> zj(k);
 
     LatticeGaussSampUtility<Element>::SampleC(c, k, u.GetLength(), sigma, dgg,
                                               &a, &zj);
@@ -174,7 +174,7 @@ void LatticeGaussSampUtility<Element>::GaussSampGqArbBase(
 
     std::vector<int64_t> v_digits = *(GetDigits(v, base, k));
 
-    vector<double> p(k);
+    std::vector<double> p(k);
 
     LatticeGaussSampUtility<Element>::PerturbFloat(sigma, k, u.GetLength(), l,
                                                    h, base, dgg, &p);
@@ -190,7 +190,7 @@ void LatticeGaussSampUtility<Element>::GaussSampGqArbBase(
       a(t, 0) = (a(t - 1, 0) + (int64_t)(v_digits[t]) - p[t]) /
                 static_cast<double>(base);
     }
-    vector<int64_t> zj(k);
+    std::vector<int64_t> zj(k);
 
     LatticeGaussSampUtility<Element>::SampleC(c, k, u.GetLength(), sigma, dgg,
                                               &a, &zj);
@@ -213,11 +213,11 @@ void LatticeGaussSampUtility<Element>::GaussSampGqArbBase(
 
 template <class Element>
 void LatticeGaussSampUtility<Element>::Perturb(double sigma, size_t k, size_t n,
-                                               const vector<double> &l,
-                                               const vector<double> &h,
+                                               const std::vector<double> &l,
+                                               const std::vector<double> &h,
                                                int64_t base,
                                                typename Element::DggType &dgg,
-                                               vector<int64_t> *p) {
+                                               std::vector<int64_t> *p) {
   std::vector<int32_t> z(k);
   double d = 0;
 
@@ -238,9 +238,9 @@ void LatticeGaussSampUtility<Element>::Perturb(double sigma, size_t k, size_t n,
 
 template <class Element>
 void LatticeGaussSampUtility<Element>::PerturbFloat(
-    double sigma, size_t k, size_t n, const vector<double> &l,
-    const vector<double> &h, int64_t base, typename Element::DggType &dgg,
-    vector<double> *p) {
+    double sigma, size_t k, size_t n, const std::vector<double> &l,
+    const std::vector<double> &h, int64_t base, typename Element::DggType &dgg,
+    std::vector<double> *p) {
   std::normal_distribution<> d(0, sigma);
 
   PRNG &g = PseudoRandomNumberGenerator::GetPRNG();
@@ -266,7 +266,7 @@ void LatticeGaussSampUtility<Element>::SampleC(const Matrix<double> &c,
                                                size_t k, size_t n, double sigma,
                                                typename Element::DggType &dgg,
                                                Matrix<double> *a,
-                                               vector<int64_t> *z) {
+                                               std::vector<int64_t> *z) {
   (*z)[k - 1] = dgg.GenerateIntegerKarney(-(*a)(k - 1, 0) / c(k - 1, 0),
                                           sigma / c(k - 1, 0));
   *a = *a - (static_cast<double>((*z)[k - 1])) * c;
@@ -284,14 +284,14 @@ template <class Element>
 void LatticeGaussSampUtility<Element>::ZSampleSigma2x2(
     const Field2n &a, const Field2n &b, const Field2n &d,
     const Matrix<Field2n> &c, const typename Element::DggType &dgg,
-    shared_ptr<Matrix<int64_t>> q) {
+    std::shared_ptr<Matrix<int64_t>> q) {
   // size of the the lattice
   size_t n = a.Size();
 
   Field2n dCoeff = d;
   dCoeff.SetFormat(Format::COEFFICIENT);
 
-  shared_ptr<Matrix<int64_t>> q2Int = ZSampleF(dCoeff, c(1, 0), dgg, n);
+  std::shared_ptr<Matrix<int64_t>> q2Int = ZSampleF(dCoeff, c(1, 0), dgg, n);
   Field2n q2(*q2Int);
 
   Field2n q2Minusc2 = q2 - c(1, 0);
@@ -307,7 +307,7 @@ void LatticeGaussSampUtility<Element>::ZSampleSigma2x2(
   Field2n f = a - b * d.Inverse() * b.Transpose();
   f.SetFormat(Format::COEFFICIENT);
 
-  shared_ptr<Matrix<int64_t>> q1Int = ZSampleF(f, c1, dgg, n);
+  std::shared_ptr<Matrix<int64_t>> q1Int = ZSampleF(f, c1, dgg, n);
 
   for (size_t i = 0; i < q1Int->GetRows(); i++) {
     (*q)(i, 0) = (*q1Int)(i, 0);
@@ -325,7 +325,7 @@ template <class Element>
 void LatticeGaussSampUtility<Element>::SampleMat(
     const Matrix<Field2n> &A, const Matrix<Field2n> &B,
     const Matrix<Field2n> &D, const Matrix<Field2n> &C,
-    const typename Element::DggType &dgg, shared_ptr<Matrix<int64_t>> p) {
+    const typename Element::DggType &dgg, std::shared_ptr<Matrix<int64_t>> p) {
   size_t d = C.GetRows();
 
   if (d == 2) {
@@ -459,7 +459,7 @@ void LatticeGaussSampUtility<Element>::SampleMat(
 // https://eprint.iacr.org/2017/844.pdf f is in Format::COEFFICIENT
 // representation c is in Format::COEFFICIENT representation
 template <class Element>
-shared_ptr<Matrix<int64_t>> LatticeGaussSampUtility<Element>::ZSampleF(
+std::shared_ptr<Matrix<int64_t>> LatticeGaussSampUtility<Element>::ZSampleF(
     const Field2n &f, const Field2n &c, const typename Element::DggType &dgg,
     size_t n) {
   if (f.Size() == 1) {
@@ -515,7 +515,7 @@ Matrix<int32_t> LatticeGaussSampUtility<Element>::Permute(Matrix<int32_t> *p) {
 // https://eprint.iacr.org/2017/844.pdf
 template <class Element>
 void LatticeGaussSampUtility<Element>::InversePermute(
-    shared_ptr<Matrix<int64_t>> p) {
+    std::shared_ptr<Matrix<int64_t>> p) {
   // a vector of int64_t is used for intermediate storage because it is faster
   // than a Matrix of unique pointers to int64_t
 

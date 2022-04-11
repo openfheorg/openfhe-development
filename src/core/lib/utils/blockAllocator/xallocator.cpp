@@ -43,8 +43,6 @@
 #include "utils/blockAllocator/xallocator.h"
 #include "utils/debug.h"
 
-using namespace std;
-
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
 #endif
@@ -433,19 +431,19 @@ extern "C" void xalloc_stats() {
   std::unique_lock<std::mutex> lock(xalloc_mutex);
   {
 #ifdef STATIC_POOLS
-    cout << " Static Pools " << endl;
+    std::cout << " Static Pools " << std::endl;
 #endif
 
     for (usint i = 0; i < MAX_ALLOCATORS; i++) {
       if (_allocators[i] == 0) break;
 
       if (_allocators[i]->GetName() != nullptr)
-        cout << _allocators[i]->GetName();
+        std::cout << _allocators[i]->GetName();
 
-      cout << " Block Size: " << _allocators[i]->GetBlockSize();
-      cout << " Block Count: " << _allocators[i]->GetBlockCount();
-      cout << " Blocks In Use: " << _allocators[i]->GetBlocksInUse();
-      cout << endl;
+      std::cout << " Block Size: " << _allocators[i]->GetBlockSize();
+      std::cout << " Block Count: " << _allocators[i]->GetBlockCount();
+      std::cout << " Blocks In Use: " << _allocators[i]->GetBlocksInUse();
+      std::cout << std::endl;
     }
   }
   lock_release();

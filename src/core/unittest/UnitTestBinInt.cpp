@@ -50,7 +50,6 @@
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 extern bool TestB2;
@@ -67,9 +66,9 @@ class UTBinInt : public ::testing::Test {
 };
 
 template <typename T>
-void assign_test(const string& msg) {
+void assign_test(const std::string& msg) {
   T v;
-  vector<uint64_t> vals({
+  std::vector<uint64_t> vals({
       27,
       uint64_t(1) << 10,
       uint64_t(1) << 25,
@@ -86,9 +85,9 @@ void assign_test(const string& msg) {
 TEST_F(UTBinInt, assign) { RUN_ALL_BACKENDS_INT(assign_test, "assign") }
 
 template <typename T>
-void identity_test(const string& msg) {
+void identity_test(const std::string& msg) {
   // Function to produce a failure message
-  auto f = [](T& a, const string& m) {
+  auto f = [](T& a, const std::string& m) {
     T ZERO(0);
     T ONE(1);
 
@@ -117,7 +116,7 @@ TEST_F(UTBinInt, identity) { RUN_BIG_BACKENDS_INT(identity_test, "identity") }
 /* TESTING BASIC MATH METHODS AND OPERATORS     */
 /************************************************/
 template <typename T>
-void basic_math_test(const string& msg) {
+void basic_math_test(const std::string& msg) {
   /************************************************/
   /* TESTING METHOD ADD FOR ALL CONDITIONS       */
   /************************************************/
@@ -481,7 +480,7 @@ TEST_F(UTBinInt, basic_math) {
 }
 
 template <typename T>
-void basic_compare_test(const string& msg) {
+void basic_compare_test(const std::string& msg) {
   /************************************************/
   /* TESTING BASIC COMPARATOR METHODS AND OPERATORS */
   /**************************************************/
@@ -542,7 +541,7 @@ TEST_F(UTBinInt, basic_compare) {
 }
 
 template <typename T>
-void mod_test(const string& msg) {
+void mod_test(const std::string& msg) {
   /************************************************/
   /* TESTING METHOD MOD FOR ALL CONDITIONS        */
   /************************************************/
@@ -634,7 +633,7 @@ void mod_test(const string& msg) {
 TEST_F(UTBinInt, mod_operations) { RUN_ALL_BACKENDS_INT(mod_test, "mod") }
 
 template <typename T>
-void mod_inverse(const string& msg) {
+void mod_inverse(const std::string& msg) {
   /*************************************************/
   /* TESTING METHOD MOD INVERSE FOR ALL CONDITIONS */
   /*************************************************/
@@ -678,7 +677,7 @@ void mod_inverse(const string& msg) {
   {
     T first("4974113608263");
     T second("486376675628");
-    string modcorrect("110346851983");
+    std::string modcorrect("110346851983");
     T modresult;
 
     modresult = first.Mod(second);
@@ -688,7 +687,7 @@ void mod_inverse(const string& msg) {
 
     T input("405107564542978792");
     T modulus("1152921504606847009");
-    string modIcorrect("844019068664266609");
+    std::string modIcorrect("844019068664266609");
     T modIresult;
 
     bool thrown = false;
@@ -709,7 +708,7 @@ void mod_inverse(const string& msg) {
     // BBI just hangs, do not run this test.
     T first("4974113608263");
     T second("0");
-    string modcorrect("4974113608263");
+    std::string modcorrect("4974113608263");
     T modresult;
 
     modresult = first.Mod(second);
@@ -723,7 +722,7 @@ void mod_inverse(const string& msg) {
 TEST_F(UTBinInt, mod_inverse) { RUN_ALL_BACKENDS_INT(mod_inverse, "modinv") }
 
 template <typename T>
-void mod_arithmetic(const string& msg) {
+void mod_arithmetic(const std::string& msg) {
   T calculatedResult;
   uint64_t expectedResult;
   /************************************************/
@@ -974,7 +973,7 @@ TEST_F(UTBinInt, mod_arithmetic) {
 }
 
 template <typename T>
-void big_modexp(const string& msg) {
+void big_modexp(const std::string& msg) {
   DEBUG_FLAG(false);
   TimeVar t;
 
@@ -995,7 +994,7 @@ void big_modexp(const string& msg) {
 TEST_F(UTBinInt, big_modexp) { RUN_BIG_BACKENDS_INT(big_modexp, "big_modexp") }
 
 template <typename T>
-void power_2_modexp(const string& msg) {
+void power_2_modexp(const std::string& msg) {
   T m("2");
   T n("50");
   T q("16");
@@ -1012,7 +1011,7 @@ TEST_F(UTBinInt, power_2_modexp) {
 }
 
 template <typename T>
-void shift(const string& msg) {
+void shift(const std::string& msg) {
   /****************************/
   /* TESTING SHIFT OPERATORS  */
   /****************************/
@@ -1178,10 +1177,10 @@ TEST_F(UTBinInt, shift) { RUN_ALL_BACKENDS_INT(shift, "shift") }
 /****************************************/
 
 template <typename T>
-void binString(const string& msg) {
+void binString(const std::string& msg) {
   // TEST_F CASE FOR STATIC METHOD FromBinaryString in BigInteger
 
-  string binaryString = "1011101101110001111010111011000000011";
+  std::string binaryString = "1011101101110001111010111011000000011";
   T b = T::FromBinaryString(binaryString);
 
   T expectedResult("100633769475");
@@ -1191,7 +1190,7 @@ void binString(const string& msg) {
 TEST_F(UTBinInt, binString) { RUN_ALL_BACKENDS_INT(binString, "binString") }
 
 template <typename T>
-void expNoMod(const string& msg) {
+void expNoMod(const std::string& msg) {
   T x("56");
   T result = x.Exp(10);
 
@@ -1202,7 +1201,7 @@ void expNoMod(const string& msg) {
 TEST_F(UTBinInt, expNoMod) { RUN_ALL_BACKENDS_INT(expNoMod, "expNoMod") }
 
 template <typename T>
-void convToDouble(const string& msg) {
+void convToDouble(const std::string& msg) {
   T x("104037585658683680");
   double xInDouble = 104037585658683680;
 
@@ -1214,7 +1213,7 @@ TEST_F(UTBinInt, convToDouble) {
 }
 
 template <typename T>
-void getDigitAtIndex(const string& msg) {
+void getDigitAtIndex(const std::string& msg) {
   T x(0xa);
 
   EXPECT_EQ(x.GetDigitAtIndexForBase(1, 2), 0ULL) << msg;
@@ -1228,7 +1227,7 @@ TEST_F(UTBinInt, getDigitAtIndex) {
 }
 
 template <typename T>
-void GetBitAtIndex(const string& msg) {
+void GetBitAtIndex(const std::string& msg) {
   T x(1);
 
   x <<= 55;  // x has one bit at 55
@@ -1250,7 +1249,7 @@ TEST_F(UTBinInt, GetBitAtIndex) {
 }
 
 template <typename T>
-void GetInternalRepresentation(const string& msg) {
+void GetInternalRepresentation(const std::string& msg) {
   DEBUG_FLAG(false);
   T x(1);
 
@@ -1268,7 +1267,7 @@ void GetInternalRepresentation(const string& msg) {
 #endif
 
   // define what is correct based on math backend selected
-  string correct("2 0 0 16");
+  std::string correct("2 0 0 16");
 
 #ifdef WITH_NTL
   if (typeid(T) == typeid(M6Integer)) correct = "2 68719476736";

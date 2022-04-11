@@ -134,7 +134,7 @@ public:
                                                 const RingGSWEvalKey& EK,
                                                 const std::shared_ptr<const LWECiphertextImpl> ct1,
                                                 const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
-                                                const vector<NativeInteger>& LUT, const NativeInteger beta,
+                                                const std::vector<NativeInteger>& LUT, const NativeInteger beta,
                                                 const NativeInteger bigger_q) const;
 
     /**

@@ -44,7 +44,6 @@
 #include "utils/inttypes.h"
 #include "utils/parmfactory.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 /*-TESTING METHODS OF LATTICE ELEMENTS    ----------------*/
@@ -54,7 +53,7 @@ using namespace lbcrypto;
 // When they are completed and run for both types,  they move to this file.
 
 template <typename Element>
-static void common_basic_ops(const string& msg) {
+static void common_basic_ops(const std::string& msg) {
   DEBUG_FLAG(false);
   // using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
@@ -71,16 +70,16 @@ static void common_basic_ops(const string& msg) {
 #else
   usint bits = 20;
 
-  //  shared_ptr<ParmType> ilparams =
+  //  std::shared_ptr<ParmType> ilparams =
   // ElemParamFactory::GenElemParams<ParmType>(m,bits,towersize); //note this
   // works too.
 
-  shared_ptr<ParmType> ilparams =
+  std::shared_ptr<ParmType> ilparams =
       ElemParamFactory::GenElemParams<ParmType>(m, bits);
 
 #endif
 
-  // shared_ptr<ParmType> ilparams =
+  // std::shared_ptr<ParmType> ilparams =
   // ElemParamFactory::GenElemParams<ParmType>(m,60,2);
 
   // GenerateDCRTParams<typename Element::Integer>(8, 3, 20) );
@@ -151,7 +150,7 @@ TEST(UTDCRTPoly, common_basic_ops) {
 
 // template for common_set_format()
 template <typename Element>
-void common_set_format(const string& msg) {
+void common_set_format(const std::string& msg) {
   DEBUG_FLAG(false);
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
@@ -165,7 +164,7 @@ void common_set_format(const string& msg) {
   auto ilparams =
       std::make_shared<ParmType>(m, primeModulus, primitiveRootOfUnity);
 #else
-  shared_ptr<ParmType> ilparams = ElemParamFactory::GenElemParams<ParmType>(
+  std::shared_ptr<ParmType> ilparams = ElemParamFactory::GenElemParams<ParmType>(
       m, primeModulus, primitiveRootOfUnity);
 #endif
 
@@ -203,7 +202,7 @@ TEST(UTDCRTPoly, common_set_format) {
 
 // template for common_setters_getters()
 template <typename Element>
-void common_setters_getters(const string& msg) {
+void common_setters_getters(const std::string& msg) {
   DEBUG_FLAG(false);
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
@@ -251,7 +250,7 @@ TEST(UTDCRTPoly, common_setters_getters) {
 
 // template for common_binary_ops()
 template <typename Element>
-void common_binary_ops(const string& msg) {
+void common_binary_ops(const std::string& msg) {
   DEBUG_FLAG(false);
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
@@ -264,7 +263,7 @@ void common_binary_ops(const string& msg) {
 
   // auto ilparams = std::make_shared<ParmType>(m, primeModulus,
   // primitiveRootOfUnity);
-  shared_ptr<ParmType> ilparams = ElemParamFactory::GenElemParams<ParmType>(
+  std::shared_ptr<ParmType> ilparams = ElemParamFactory::GenElemParams<ParmType>(
       m, primeModulus, primitiveRootOfUnity);
 
   Element ilvector2n1(ilparams);
@@ -328,7 +327,7 @@ void common_binary_ops(const string& msg) {
     ilv4.SwitchFormat();
     DEBUGEXP(ilv4);
     Element expected(ilparams, Format::COEFFICIENT);
-    stringstream tmpstr;
+    std::stringstream tmpstr;
     tmpstr << (ilv4.GetModulus() - IntType(1));
     expected = {"0", tmpstr.str(), "2", "4"};
     EXPECT_EQ(expected, ilv4)
@@ -347,7 +346,7 @@ TEST(UTDCRTPoly, common_binary_ops) {
 
 // templet for common_clone_ops
 template <typename Element>
-void common_clone_ops(const string& msg) {
+void common_clone_ops(const std::string& msg) {
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
 
@@ -402,7 +401,7 @@ TEST(UTDCRTPoly, common_clone_ops) {
 
 // template for common_arithmetic_ops_element()
 template <typename Element>
-void common_arithmetic_ops_element(const string& msg) {
+void common_arithmetic_ops_element(const std::string& msg) {
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
 
@@ -481,7 +480,7 @@ TEST(UTDCRTPoly, common_arithmetic_ops_element) {
 
 // template fore common_other_methods()
 template <typename Element>
-void common_other_methods(const string& msg) {
+void common_other_methods(const std::string& msg) {
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
 
@@ -559,7 +558,7 @@ TEST(UTPoly, common_other_methods) {
 }
 
 template <typename Element>
-void common_cyclotomicOrder(const string& msg) {
+void common_cyclotomicOrder(const std::string& msg) {
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
 

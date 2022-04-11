@@ -45,7 +45,6 @@
 #include "utils/utilities.h"
 #include "lattice/lat-hal.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 /************************************************
@@ -149,8 +148,8 @@ TEST(UT128, NTT_operations) {
 
   ILNativeParams params(m1, modulus, rootOfUnity);
   ILNativeParams params2(m1 / 2, modulus, rootOfUnity);
-  shared_ptr<ILNativeParams> x1p(new ILNativeParams(params));
-  shared_ptr<ILNativeParams> x2p(new ILNativeParams(params2));
+  std::shared_ptr<ILNativeParams> x1p(new ILNativeParams(params));
+  std::shared_ptr<ILNativeParams> x2p(new ILNativeParams(params2));
 
   NativePoly x1(x1p, Format::COEFFICIENT);
   x1 = {431, 3414, 1234, 7845, 2145, 7415, 5471, 8452};

@@ -160,7 +160,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTestContext(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTestContext(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
         UnitTestContextWithSertype(cc, SerType::JSON, "json");
@@ -168,7 +168,7 @@ protected:
     }
 
     template <typename ST>
-    void TestKeysAndCiphertexts(const TEST_CASE& testData, const ST& sertype, const string& failmsg = std::string()) {
+    void TestKeysAndCiphertexts(const TEST_CASE& testData, const ST& sertype, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -220,7 +220,7 @@ protected:
                 EXPECT_EQ(*kp.secretKey, *kpnew.secretKey) << "Secret key mismatch after ser/deser";
             }
             DEBUG("step 3");
-            vector<int64_t> vals = { 1, 3, 5, 7, 9, 2, 4, 6, 8, 11 };
+            std::vector<int64_t> vals = { 1, 3, 5, 7, 9, 2, 4, 6, 8, 11 };
             Plaintext plaintextShort = cc->MakePackedPlaintext(vals);
             Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
 
@@ -281,7 +281,7 @@ protected:
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
             EXPECT_EQ(CryptoContextFactory<DCRTPoly>::GetContextCount(), 0) << "after release" << std::endl;
 
-            vector<EvalKey<DCRTPoly>> evalMultKeys;
+            std::vector<EvalKey<DCRTPoly>> evalMultKeys;
             CryptoContextImpl<DCRTPoly>::DeserializeEvalMultKey(ser0, sertype);
             EXPECT_EQ(CryptoContextFactory<DCRTPoly>::GetContextCount(), 1) << "one-key deser, context";
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::GetAllEvalMultKeys().size(), 1U) << "one-key deser, keys";
@@ -350,7 +350,7 @@ protected:
         }
     }
 
-    void UnitTestKeysAndCiphertexts(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }

@@ -39,14 +39,13 @@
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 using CT = Ciphertext<DCRTPoly>;  // ciphertext
 using PT = Plaintext;             // plaintext
 
-using vecInt = vector<int64_t>;  // vector of ints
-using vecChar = vector<char>;    // vector of characters
+using vecInt = std::vector<int64_t>;  // vector of ints
+using vecChar = std::vector<char>;    // vector of characters
 
 bool run_demo_pre(void);
 
@@ -66,7 +65,7 @@ int main(int argc, char *argv[]) {
 bool run_demo_pre(void) {
   // Generate parameters.
   TimeVar t; //timer for tic toc
-  cout << "setting up BFV RNS crypto system" << endl;
+  std::cout << "setting up BFV RNS crypto system" << std::endl;
   TIC(t);
   // int plaintextModulus = 786433; //plaintext prime modulus
   int plaintextModulus = 65537;  // can encode shorts
@@ -78,7 +77,7 @@ bool run_demo_pre(void) {
   parameters.SetScalingFactorBits(60);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-  cout << "\nParam generation time: " << "\t" << TOC_MS(t) << " ms" << endl;
+  std::cout << "\nParam generation time: " << "\t" << TOC_MS(t) << " ms" << std::endl;
   // Turn on features
   cc->Enable(PKE);
   cc->Enable(KEYSWITCH);
@@ -115,7 +114,7 @@ bool run_demo_pre(void) {
 
   TIC(t);
   keyPair1 = cc->KeyGen();
-  cout << "Key generation time: " << "\t" << TOC_MS(t) << " ms" << endl;
+  std::cout << "Key generation time: " << "\t" << TOC_MS(t) << " ms" << std::endl;
 
   if (!keyPair1.good()) {
     std::cout << "Alice Key generation failed!" << std::endl;
@@ -140,7 +139,7 @@ bool run_demo_pre(void) {
 
   TIC(t);
   auto ct1 = cc->Encrypt(keyPair1.publicKey, pt);
-  cout << "Encryption time: " << "\t" << TOC_MS(t) << " ms" << endl;
+  std::cout << "Encryption time: " << "\t" << TOC_MS(t) << " ms" << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Decryption of Ciphertext
@@ -150,7 +149,7 @@ bool run_demo_pre(void) {
 
   TIC(t);
   cc->Decrypt(keyPair1.secretKey, ct1, &ptDec1);
-  cout << "Decryption time: " << "\t" << TOC_MS(t) << " ms" << endl;
+  std::cout << "Decryption time: " << "\t" << TOC_MS(t) << " ms" << std::endl;
 
   ptDec1->SetLength(pt->GetLength());
 
@@ -165,7 +164,7 @@ bool run_demo_pre(void) {
 
   TIC(t);
   keyPair2 = cc->KeyGen();
-  cout << "Key generation time: " << "\t" << TOC_MS(t) << " ms" << endl;
+  std::cout << "Key generation time: " << "\t" << TOC_MS(t) << " ms" << std::endl;
 
   if (!keyPair2.good()) {
     std::cout << "Bob Key generation failed!" << std::endl;
@@ -184,7 +183,7 @@ bool run_demo_pre(void) {
 
   TIC(t);
   reencryptionKey12 = cc->ReKeyGen(keyPair1.secretKey, keyPair2.publicKey);
-  cout << "Key generation time: " << "\t" << TOC_MS(t) << " ms" << endl;
+  std::cout << "Key generation time: " << "\t" << TOC_MS(t) << " ms" << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Re-Encryption
@@ -192,7 +191,7 @@ bool run_demo_pre(void) {
 
   TIC(t);
   auto ct2 = cc->ReEncrypt(ct1, reencryptionKey12);
-  cout << "Re-Encryption time: " << "\t" << TOC_MS(t) << " ms" << endl;
+  std::cout << "Re-Encryption time: " << "\t" << TOC_MS(t) << " ms" << std::endl;
 
   ////////////////////////////////////////////////////////////
   // Decryption of Ciphertext
@@ -202,7 +201,7 @@ bool run_demo_pre(void) {
 
   TIC(t);
   cc->Decrypt(keyPair2.secretKey, ct2, &ptDec2);
-  cout << "Decryption time: " << "\t" << TOC_MS(t) << " ms" << endl;
+  std::cout << "Decryption time: " << "\t" << TOC_MS(t) << " ms" << std::endl;
 
   ptDec2->SetLength(pt->GetLength());
 
@@ -221,15 +220,15 @@ bool run_demo_pre(void) {
   // compare all the results for correctness
   for (unsigned int j = 0; j < pt->GetLength(); j++) {
     if ((unpacked0[j] != unpacked1[j]) || (unpacked0[j] != unpacked2[j])) {
-      cout << j << ", " << unpacked0[j] << ", " << unpacked1[j] << ", "
-           << unpacked2[j] << endl;
+      std::cout << j << ", " << unpacked0[j] << ", " << unpacked1[j] << ", "
+           << unpacked2[j] << std::endl;
       good = false;
     }
   }
   if (good) {
-    cout << "PRE passes" << endl;
+    std::cout << "PRE passes" << std::endl;
   } else {
-    cout << "PRE fails" << endl;
+    std::cout << "PRE fails" << std::endl;
   }
 
   ////////////////////////////////////////////////////////////

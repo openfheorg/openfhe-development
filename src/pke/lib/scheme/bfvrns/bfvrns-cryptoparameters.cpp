@@ -77,8 +77,8 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
   size_t sizeQ = GetElementParams()->GetParams().size();
 
-  vector<NativeInteger> moduliQ(sizeQ);
-  vector<NativeInteger> rootsQ(sizeQ);
+  std::vector<NativeInteger> moduliQ(sizeQ);
+  std::vector<NativeInteger> rootsQ(sizeQ);
 
   for (size_t i = 0; i < sizeQ; i++) {
     moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
@@ -124,8 +124,8 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
   if (multTech != BEHZ) {
     size_t sizeR = (multTech == HPS) ? sizeQ + 1 : sizeQ;
-    vector<NativeInteger> moduliR(sizeR);
-    vector<NativeInteger> rootsR(sizeR);
+    std::vector<NativeInteger> moduliR(sizeR);
+    std::vector<NativeInteger> rootsR(sizeR);
 
     moduliR[0] = PreviousPrime<NativeInteger>(moduliQ[sizeQ - 1], 2 * n);
     rootsR[0] = RootOfUnity<NativeInteger>(2 * n, moduliR[0]);
@@ -149,8 +149,8 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
     // BFVrns : Encrypt : With extra
     if (encTech == POVERQ) {
-      vector<NativeInteger> moduliQr(sizeQ + 1);
-      vector<NativeInteger> rootsQr(sizeQ + 1);
+      std::vector<NativeInteger> moduliQr(sizeQ + 1);
+      std::vector<NativeInteger> rootsQr(sizeQ + 1);
       for (uint32_t i = 0; i < sizeQ; i++) {
         moduliQr[i] = moduliQ[i];
         rootsQr[i] = rootsQ[i];
@@ -249,8 +249,8 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
       m_paramsQlRl.resize(1);
       m_paramsRl[0] =
           std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliR, rootsR);
-      vector<NativeInteger> moduliQR(sizeQ + sizeR);
-      vector<NativeInteger> rootsQR(sizeQ + sizeR);
+      std::vector<NativeInteger> moduliQR(sizeQ + sizeR);
+      std::vector<NativeInteger> rootsQR(sizeQ + sizeR);
       for (size_t i = 0; i < sizeQ; i++) {
         moduliQR[i] = moduliQ[i];
         rootsQR[i] = rootsQ[i];
@@ -266,12 +266,12 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
       m_paramsRl.resize(sizeQ);
       m_paramsQlRl.resize(sizeQ);
 
-      vector<NativeInteger> moduliQl;
-      vector<NativeInteger> rootsQl;
-      vector<NativeInteger> moduliRl;
-      vector<NativeInteger> rootsRl;
-      vector<NativeInteger> moduliQlRl;
-      vector<NativeInteger> rootsQlRl;
+      std::vector<NativeInteger> moduliQl;
+      std::vector<NativeInteger> rootsQl;
+      std::vector<NativeInteger> moduliRl;
+      std::vector<NativeInteger> rootsRl;
+      std::vector<NativeInteger> moduliQlRl;
+      std::vector<NativeInteger> rootsQlRl;
 
       for (usint l = 0; l < sizeQ; ++l) {
         moduliQl.push_back(moduliQ[l]);
@@ -367,11 +367,11 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     // BFVrns : Mult : SwitchCRTBasis
     /////////////////////////////////////
 
-    vector<BigInteger> Ql(sizeQ + 1);
-    vector<BigInteger> Rl(sizeQ + 1);
-    vector<BigInteger> QlRl(sizeQ + 1);
-    vector<BigInteger> QlHat(sizeQ + 1);
-    vector<BigInteger> RlHat(sizeQ + 1);
+    std::vector<BigInteger> Ql(sizeQ + 1);
+    std::vector<BigInteger> Rl(sizeQ + 1);
+    std::vector<BigInteger> QlRl(sizeQ + 1);
+    std::vector<BigInteger> QlHat(sizeQ + 1);
+    std::vector<BigInteger> RlHat(sizeQ + 1);
 
     if (multTech == HPSPOVERQLEVELED) {
       Ql[0] = 1;

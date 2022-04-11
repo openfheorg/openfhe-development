@@ -99,7 +99,7 @@ class MultipartyBase {
    */
   virtual KeyPair<Element> MultipartyKeyGen(
       CryptoContext<Element> cc,
-      const vector<PrivateKey<Element>> &privateKeyVec,
+      const std::vector<PrivateKey<Element>> &privateKeyVec,
       bool makeSparse = false);
 
   /**
@@ -149,7 +149,7 @@ class MultipartyBase {
   virtual std::shared_ptr<std::map<usint, EvalKey<Element>>>
   MultiEvalAutomorphismKeyGen(
       const PrivateKey<Element> privateKey,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
       const std::vector<usint> &indexVec) const;
 
   /**
@@ -162,9 +162,9 @@ class MultipartyBase {
    * @param indexList list of indices to be computed
    * @return returns the joined evaluation keys
    */
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
       const PrivateKey<Element> privateKey,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
       const std::vector<int32_t> &indexVec) const;
 
   /**
@@ -176,9 +176,9 @@ class MultipartyBase {
    * @param eSum a dictionary with prior joined summation keys.
    * @return new joined summation keys.
    */
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
       const PrivateKey<Element> privateKey,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap) const;
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap) const;
 
   // MULTIPARTY PKE
 
@@ -213,7 +213,7 @@ class MultipartyBase {
    * @return the decoding result.
    */
   virtual DecryptResult MultipartyDecryptFusion(
-      const vector<Ciphertext<Element>> &ciphertextVec,
+      const std::vector<Ciphertext<Element>> &ciphertextVec,
       NativePoly *plaintext) const;
 
   /**
@@ -225,7 +225,7 @@ class MultipartyBase {
    * @return the decoding result.
    */
   virtual DecryptResult MultipartyDecryptFusion(
-      const vector<Ciphertext<Element>> &ciphertextVec, Poly *plaintext) const {
+      const std::vector<Ciphertext<Element>> &ciphertextVec, Poly *plaintext) const {
     PALISADE_THROW(config_error, "Decryption to Poly is not supported");
   }
 
@@ -278,10 +278,10 @@ class MultipartyBase {
    * @param es2 second automorphism key set.
    * @return the new joined key set for summation.
    */
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>>
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>>
   MultiAddEvalAutomorphismKeys(
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
 
   /**
    * Threshold FHE: Adds two prior evaluation key sets for summation
@@ -290,9 +290,9 @@ class MultipartyBase {
    * @param es2 second summation key set.
    * @return the new joined key set for summation.
    */
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
 
   template <class Archive>
   void save(Archive &ar, std::uint32_t const version) const {}

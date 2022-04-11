@@ -66,7 +66,7 @@ public:
    * @return
    */
   virtual Ciphertext<Element> EvalAddMany(
-      const vector<Ciphertext<Element>> &ciphertextVec) const;
+      const std::vector<Ciphertext<Element>> &ciphertextVec) const;
 
   /**
    * Virtual function for evaluating addition of a list of ciphertexts.
@@ -76,7 +76,7 @@ public:
    * @param *newCiphertext the new resulting ciphertext.
    */
   virtual Ciphertext<Element> EvalAddManyInPlace(
-      vector<Ciphertext<Element>> &ciphertextVec) const;
+      std::vector<Ciphertext<Element>> &ciphertextVec) const;
 
   /**
    * Virtual function for computing the linear weighted sum of a
@@ -87,7 +87,7 @@ public:
    * @return A ciphertext containing the linear weighted sum.
    */
   virtual Ciphertext<Element> EvalLinearWSum(
-      vector<ConstCiphertext<Element>>& ciphertextVec, const vector<double> &weights) const {
+      std::vector<ConstCiphertext<Element>>& ciphertextVec, const std::vector<double> &weights) const {
     std::string errMsg = "EvalLinearWSum is not implemented for this scheme.";
     PALISADE_THROW(not_implemented_error, errMsg);
   }
@@ -102,7 +102,7 @@ public:
    * @return A ciphertext containing the linear weighted sum.
    */
   virtual Ciphertext<Element> EvalLinearWSumMutable(
-      vector<Ciphertext<Element>>& ciphertextVec, const vector<double> &weights) const {
+      std::vector<Ciphertext<Element>>& ciphertextVec, const std::vector<double> &weights) const {
     std::string errMsg =
         "EvalLinearWSumMutable is not implemented for this scheme.";
     PALISADE_THROW(not_implemented_error, errMsg);
@@ -118,8 +118,8 @@ public:
    * @param *newCiphertext the new resulting ciphertext.
    */
   virtual Ciphertext<Element> EvalMultMany(
-      const vector<Ciphertext<Element>> &ciphertextVec,
-      const vector<EvalKey<Element>> &evalKeyVec) const;
+      const std::vector<Ciphertext<Element>> &ciphertextVec,
+      const std::vector<EvalKey<Element>> &evalKeyVec) const;
 
   /**
    * Method for polynomial evaluation for polynomials represented as power
@@ -153,7 +153,7 @@ public:
    * @param privateKey private key.
    * @return returns the evaluation keys
    */
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(
       const PrivateKey<Element> privateKey,
       const PublicKey<Element> publicKey) const;
 
@@ -167,7 +167,7 @@ public:
    * @param subringDim subring dimension (set to cyclotomic order if set to 0)
    * @return returns the evaluation keys
    */
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(
       const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey,
       usint rowSize, usint subringDim = 0) const;
 
@@ -181,7 +181,7 @@ public:
    * @param colSize size of columns in the matrix
    * @return returns the evaluation keys
    */
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
       const PrivateKey<Element> privateKey,
       const PublicKey<Element> publicKey) const;
 
@@ -275,7 +275,7 @@ public:
    * @return resulting ciphertext
    */
   virtual Ciphertext<Element> EvalMerge(
-      const vector<Ciphertext<Element>> &ciphertextVector,
+      const std::vector<Ciphertext<Element>> &ciphertextVector,
       const std::map<usint, EvalKey<Element>> &evalKeyMap) const  {
     PALISADE_THROW(config_error, "EvalMerge is not supported for the scheme.");
   }

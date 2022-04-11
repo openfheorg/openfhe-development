@@ -59,9 +59,9 @@ template <typename Element>
 template <typename ST>
 bool CryptoContextImpl<Element>::SerializeEvalMultKey(std::ostream& ser,
                                                       const ST& sertype,
-                                                      string id) {
-  std::map<string, std::vector<EvalKey<Element>>>* smap;
-  std::map<string, std::vector<EvalKey<Element>>> omap;
+                                                      std::string id) {
+  std::map<std::string, std::vector<EvalKey<Element>>>* smap;
+  std::map<std::string, std::vector<EvalKey<Element>>> omap;
 
   if (id.length() == 0) {
     smap = &GetAllEvalMultKeys();
@@ -138,21 +138,21 @@ template void Serial::Deserialize(
     std::shared_ptr<CryptoContextImpl<DCRTPoly>>& obj, std::istream& stream,
     const SerType::SERJSON&);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<
-    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&, string id);
+    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&, std::string id);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<
     SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&,
                       const CryptoContext<DCRTPoly> cc);
 template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalMultKey<
     SerType::SERJSON>(std::istream& ser, const SerType::SERJSON&);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<
-    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&, string id);
+    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&, std::string id);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<
     SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&,
                       const CryptoContext<DCRTPoly> cc);
 template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalSumKey<
     SerType::SERJSON>(std::istream& ser, const SerType::SERJSON&);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<
-    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&, string id);
+    SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&, std::string id);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<
     SerType::SERJSON>(std::ostream& ser, const SerType::SERJSON&,
                       const CryptoContext<DCRTPoly> cc);
@@ -218,7 +218,7 @@ template void Serial::Deserialize(
     const SerType::SERBINARY&);
 template bool
 CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, string id);
+    std::ostream& ser, const SerType::SERBINARY&, std::string id);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey<
     SerType::SERBINARY>(std::ostream& ser, const SerType::SERBINARY&,
                         const CryptoContext<DCRTPoly> cc);
@@ -226,7 +226,7 @@ template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalMultKey<
     SerType::SERBINARY>(std::istream& ser, const SerType::SERBINARY&);
 template bool
 CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, string id);
+    std::ostream& ser, const SerType::SERBINARY&, std::string id);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey<
     SerType::SERBINARY>(std::ostream& ser, const SerType::SERBINARY&,
                         const CryptoContext<DCRTPoly> cc);
@@ -234,7 +234,7 @@ template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalSumKey<
     SerType::SERBINARY>(std::istream& ser, const SerType::SERBINARY&);
 template bool
 CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<SerType::SERBINARY>(
-    std::ostream& ser, const SerType::SERBINARY&, string id);
+    std::ostream& ser, const SerType::SERBINARY&, std::string id);
 template bool CryptoContextImpl<DCRTPoly>::SerializeEvalAutomorphismKey<
     SerType::SERBINARY>(std::ostream& ser, const SerType::SERBINARY&,
                         const CryptoContext<DCRTPoly> cc);

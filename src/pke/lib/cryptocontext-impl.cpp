@@ -37,7 +37,7 @@ namespace lbcrypto {
 
 template <>
 Plaintext CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
-    PlaintextEncodings pte, shared_ptr<ParmType> evp, EncodingParams ep) {
+    PlaintextEncodings pte, std::shared_ptr<ParmType> evp, EncodingParams ep) {
   if ((pte == CKKSPacked) && (evp->GetParams().size() > 1)) {
     auto vp = std::make_shared<typename Poly::Params>(
         evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
@@ -109,7 +109,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(
 
 template <>
 DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
-    const vector<Ciphertext<DCRTPoly>>& partialCiphertextVec,
+    const std::vector<Ciphertext<DCRTPoly>>& partialCiphertextVec,
     Plaintext* plaintext) const {
   DecryptResult result;
 

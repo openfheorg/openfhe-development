@@ -74,16 +74,16 @@ class KeySwitchHYBRID : public KeySwitchRNS {
   // CORE OPERATIONS
   /////////////////////////////////////////
 
-  virtual shared_ptr<vector<DCRTPoly>> KeySwitchCore(
+  virtual std::shared_ptr<std::vector<DCRTPoly>> KeySwitchCore(
       DCRTPoly a, const EvalKey<DCRTPoly> evalKey) const override;
 
-  virtual shared_ptr<vector<DCRTPoly>> EvalKeySwitchPrecomputeCore(
-      DCRTPoly c, shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
+  virtual std::shared_ptr<std::vector<DCRTPoly>> EvalKeySwitchPrecomputeCore(
+      DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
 
-  virtual shared_ptr<vector<DCRTPoly>> EvalFastKeySwitchCore(
-      const shared_ptr<vector<DCRTPoly>> digits,
+  virtual std::shared_ptr<std::vector<DCRTPoly>> EvalFastKeySwitchCore(
+      const std::shared_ptr<std::vector<DCRTPoly>> digits,
       const EvalKey<DCRTPoly> evalKey,
-      const shared_ptr<ParmType> paramsQl) const override;
+      const std::shared_ptr<ParmType> paramsQl) const override;
 
   /////////////////////////////////////////
   // SERIALIZATION

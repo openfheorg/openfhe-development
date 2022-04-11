@@ -107,8 +107,8 @@ DO_BENCHMARK_TEMPLATE(BM_BigInt_large_variables, M4Integer)
 DO_BENCHMARK_TEMPLATE(BM_BigInt_large_variables, M6Integer)
 #endif
 
-static string smalla("10403"), smallb("103");
-static string largea("18446744073709551616"), largeb("18446744073709551617");
+static std::string smalla("10403"), smallb("103");
+static std::string largea("18446744073709551616"), largeb("18446744073709551617");
 
 // add
 template <typename I>

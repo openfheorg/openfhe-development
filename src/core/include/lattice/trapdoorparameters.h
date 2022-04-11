@@ -65,18 +65,18 @@ class TrapdoorParams {
    *@param dgg Discrete Gaussian Generator for random number generation
    *@param stddev Distribution parameter for the Gaussian Generator
    */
-  TrapdoorParams(shared_ptr<ParmType> elemparams, DggType& dgg, double stddev)
+  TrapdoorParams(std::shared_ptr<ParmType> elemparams, DggType& dgg, double stddev)
       : m_elemparams(elemparams), m_dgg(dgg), m_stddev(stddev) {}
   /*
    *@brief Accessor function for ring element params
    *@return Ring element params
    */
-  shared_ptr<ParmType> GetElemParams() const { return m_elemparams; }
+  std::shared_ptr<ParmType> GetElemParams() const { return m_elemparams; }
   /*
    *@brief Mutator function for ring element params
    *@param elemparams Ring element params
    */
-  void SetElemParams(shared_ptr<ParmType> elemparams) {
+  void SetElemParams(std::shared_ptr<ParmType> elemparams) {
     this->m_elemparams = elemparams;
   }
   /*
@@ -104,7 +104,7 @@ class TrapdoorParams {
   }
 
  protected:
-  shared_ptr<ParmType> m_elemparams;
+  std::shared_ptr<ParmType> m_elemparams;
   DggType m_dgg;
   double m_stddev;
 };
@@ -136,7 +136,7 @@ class RLWETrapdoorParams : public TrapdoorParams<Element> {
    *@param base Base for the gadget matrix
    *@param bal Flag for balanced generation in trapdoor
    */
-  RLWETrapdoorParams(shared_ptr<ParmType> elemparams, DggType& dgg,
+  RLWETrapdoorParams(std::shared_ptr<ParmType> elemparams, DggType& dgg,
                      double stddev, int64_t base, bool bal = false)
       : TrapdoorParams<Element>(elemparams, dgg, stddev) {
     m_base = base;
@@ -221,24 +221,24 @@ class PerturbationVector {
    *@brief Constructor for perturbation vector
    *@param pvector Vector containing ring elements
    */
-  explicit PerturbationVector(shared_ptr<Matrix<Element>> pvector)
+  explicit PerturbationVector(std::shared_ptr<Matrix<Element>> pvector)
       : m_pvector(pvector) {}
   /*
    *@brief Mutator for perturbation vector
    *@param pvector Vector containing ring elements
    */
-  void SetVector(shared_ptr<Matrix<Element>> pvector) {
+  void SetVector(std::shared_ptr<Matrix<Element>> pvector) {
     this->m_pvector = pvector;
   }
   /*
    *@brief Accessor for perturbation vector
    *@return Vector containing ring elements
    */
-  shared_ptr<Matrix<Element>> GetVector() const { return m_pvector; }
+  std::shared_ptr<Matrix<Element>> GetVector() const { return m_pvector; }
 
  private:
   // Perturbation vector represented as a vector of ring elements
-  shared_ptr<Matrix<Element>> m_pvector;
+  std::shared_ptr<Matrix<Element>> m_pvector;
 };
 }  // namespace lbcrypto
 

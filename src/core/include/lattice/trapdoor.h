@@ -105,7 +105,7 @@ class RLWETrapdoorUtility {
    * and trapdoor itself
    */
   static std::pair<Matrix<Element>, RLWETrapdoorPair<Element>> TrapdoorGen(
-      shared_ptr<ParmType> params, double stddev, int64_t base = 2,
+      std::shared_ptr<ParmType> params, double stddev, int64_t base = 2,
       bool bal = false);
 
   /**
@@ -123,7 +123,7 @@ class RLWETrapdoorUtility {
    * trapdoor itself
    */
   static std::pair<Matrix<Element>, RLWETrapdoorPair<Element>>
-  TrapdoorGenSquareMat(shared_ptr<ParmType> params, double stddev,
+  TrapdoorGenSquareMat(std::shared_ptr<ParmType> params, double stddev,
                        size_t dimension, int64_t base = 2, bool bal = false);
 
   /**
@@ -185,7 +185,7 @@ class RLWETrapdoorUtility {
   static Matrix<Element> GaussSampOnline(
       size_t n, size_t k, const Matrix<Element> &A,
       const RLWETrapdoorPair<Element> &T, const Element &u, DggType &dgg,
-      const shared_ptr<Matrix<Element>> perturbationVector, int64_t base = 2);
+      const std::shared_ptr<Matrix<Element>> perturbationVector, int64_t base = 2);
 
   /**
    * Offline stage of pre-image sampling (perturbation sampling)
@@ -199,7 +199,7 @@ class RLWETrapdoorUtility {
    * @param &base base for G-lattice
    * @return the sampled vector (matrix)
    */
-  static shared_ptr<Matrix<Element>> GaussSampOffline(
+  static std::shared_ptr<Matrix<Element>> GaussSampOffline(
       size_t n, size_t k, const RLWETrapdoorPair<Element> &T, DggType &dgg,
       DggType &dggLargeSigma, int64_t base = 2);
 
@@ -219,7 +219,7 @@ class RLWETrapdoorUtility {
   static void ZSampleSigmaP(size_t n, double s, double sigma,
                             const RLWETrapdoorPair<Element> &Tprime,
                             const DggType &dgg, const DggType &dggLargeSigma,
-                            shared_ptr<Matrix<Element>> perturbationVector) {
+                            std::shared_ptr<Matrix<Element>> perturbationVector) {
     DEBUG_FLAG(false);
     TimeVar t1, t1_tot;
 
@@ -231,7 +231,7 @@ class RLWETrapdoorUtility {
     // k is the bit length
     size_t k = Tprime0.GetCols();
 
-    const shared_ptr<ParmType> params = Tprime0(0, 0).GetParams();
+    const std::shared_ptr<ParmType> params = Tprime0(0, 0).GetParams();
     DEBUG("z1a: " << TOC(t1));  // 0
     TIC(t1);
     // all three Polynomials are initialized with "0" coefficients
@@ -373,11 +373,11 @@ class RLWETrapdoorUtility {
   static void SamplePertSquareMat(
       size_t n, double s, double sigma, const RLWETrapdoorPair<Element> &Tprime,
       const DggType &dgg, const DggType &dggLargeSigma,
-      shared_ptr<Matrix<Element>> perturbationVector) {
+      std::shared_ptr<Matrix<Element>> perturbationVector) {
     Matrix<Element> R = Tprime.m_r;
     Matrix<Element> E = Tprime.m_e;
 
-    const shared_ptr<ParmType> params = R(0, 0).GetParams();
+    const std::shared_ptr<ParmType> params = R(0, 0).GetParams();
 
     // k is the bit length
     size_t k = R.GetCols();

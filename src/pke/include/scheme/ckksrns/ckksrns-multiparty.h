@@ -45,11 +45,11 @@ public:
   virtual ~MultipartyCKKSRNS() {}
 
   virtual DecryptResult MultipartyDecryptFusion(
-      const vector<Ciphertext<DCRTPoly>> &ciphertextVec,
+      const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
       Poly *plaintext) const override;
 
   virtual DecryptResult MultipartyDecryptFusion(
-      const vector<Ciphertext<DCRTPoly>> &ciphertextVec,
+      const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
       NativePoly *plaintext) const override;
 
   /////////////////////////////////////

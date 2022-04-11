@@ -44,7 +44,6 @@
 #include "utils/debug.h"
 #include "utils/parmfactory.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 class UTBFVRNS_DECRYPT
@@ -67,7 +66,7 @@ class UTBFVRNS_DECRYPT
  */
 static void checkEquality(const std::vector<int64_t>& a,
                           const std::vector<int64_t>& b, int vectorSize,
-                          const string& failmsg) {
+                          const std::string& failmsg) {
   std::vector<usint> allTrue(vectorSize);
   std::vector<usint> tmp(vectorSize);
   for (int i = 0; i < vectorSize; i++) {
@@ -77,8 +76,8 @@ static void checkEquality(const std::vector<int64_t>& a,
   EXPECT_TRUE(tmp == allTrue) << failmsg;
 }
 
-// static vector<usint> ptm_args{2, 65537, 5308417};
-// static vector<usint> dcrtbit_args{30, 40, 50, 60};
+// static std::vector<usint> ptm_args{2, 65537, 5308417};
+// static std::vector<usint> dcrtbit_args{30, 40, 50, 60};
 
 TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
   usint ptm = std::get<0>(GetParam());

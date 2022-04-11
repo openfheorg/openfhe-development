@@ -240,7 +240,7 @@ BENCHMARK(BM_PM2);  // register benchmark
 
 // Note this benchmark returns two BBIs so we return a string and suffer
 // some overhead
-static string PROU_equals_m_not_equals_mbytwo(void) {
+static std::string PROU_equals_m_not_equals_mbytwo(void) {
     usint m     = 4096;
     usint nBits = 33;
 
@@ -255,7 +255,7 @@ static string PROU_equals_m_not_equals_mbytwo(void) {
 }
 
 static void BM_PROU1(benchmark::State& state) {
-    string out;
+    std::string out;
     while (state.KeepRunning()) {
         out = PROU_equals_m_not_equals_mbytwo();
     }
@@ -268,7 +268,7 @@ BENCHMARK(BM_PROU1);  // register benchmark
 
 #if 0  // this takes a long time to run so comment out for quick check
 // similarly this outputs 3 values with a string
-static string PROU_equals_m_not_equals_mbytwo_mbyfour_single_input(void) {
+static std::string PROU_equals_m_not_equals_mbytwo_mbyfour_single_input(void) {
   const usint n = 2048;
   const usint m = 2*n;
   const usint nBits = 43;
@@ -298,7 +298,7 @@ static string PROU_equals_m_not_equals_mbytwo_mbyfour_single_input(void) {
 
 
 static void BM_PROU2(benchmark::State& state) {
-  string out;
+  std::string out;
   while (state.KeepRunning()) {
     out = PROU_equals_m_not_equals_mbytwo_mbyfour_single_input();
   }
@@ -312,7 +312,7 @@ BENCHMARK(BM_PROU2);
 #endif
 
 // similarly this outputs 3 values with a string
-static string PROU_equals_m_not_equals_mbytwo_mbyfour_multiple_inputs(void) {
+static std::string PROU_equals_m_not_equals_mbytwo_mbyfour_multiple_inputs(void) {
     usint nqBitsArray[] = {
         1,
         1,
@@ -381,7 +381,7 @@ static string PROU_equals_m_not_equals_mbytwo_mbyfour_multiple_inputs(void) {
 }
 
 static void BM_PROU3(benchmark::State& state) {  // benchmark
-    string out;
+    std::string out;
     while (state.KeepRunning()) {
         out = PROU_equals_m_not_equals_mbytwo_mbyfour_multiple_inputs();
     }

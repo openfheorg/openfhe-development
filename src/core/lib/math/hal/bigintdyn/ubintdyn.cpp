@@ -1862,10 +1862,10 @@ inline int nlz32(uint32_t x) {  // todo: needs to be flexible.
 template <typename limb_t>
 int ubint<limb_t>::divqr_vect(ubint &qin, ubint &rin, const ubint &uin,
                               const ubint &vin) const {
-  vector<limb_t> &q = (qin.m_value);
-  vector<limb_t> &r = (rin.m_value);
-  const vector<limb_t> &u = (uin.m_value);
-  const vector<limb_t> &v = (vin.m_value);
+  std::vector<limb_t> &q = (qin.m_value);
+  std::vector<limb_t> &r = (rin.m_value);
+  const std::vector<limb_t> &u = (uin.m_value);
+  const std::vector<limb_t> &v = (vin.m_value);
 
   int m = u.size();
   int n = v.size();
@@ -1905,14 +1905,14 @@ int ubint<limb_t>::divqr_vect(ubint &qin, ubint &rin, const ubint &uin,
   s = nlz(v[n - 1]);  // 0 <= s <= m_limbBitLenghth-1.
   // std::cout<< "nlz of " << v[n-1]  << " = "<<  s;
   // vn = (limb_t *)alloca(4*n);
-  vector<limb_t> vn(n);
+  std::vector<limb_t> vn(n);
   for (i = n - 1; i > 0; i--) {
     vn[i] = (v[i] << s) | ((Dlimb_t)v[i - 1] >> (m_limbBitLength - s));
   }
   vn[0] = v[0] << s;
 
   // un = (limb_t *)alloca(4*(m + 1));
-  vector<limb_t> un(m + 1);
+  std::vector<limb_t> un(m + 1);
 
   un[m] = (Dlimb_t)u[m - 1] >> (m_limbBitLength - s);
   for (i = m - 1; i > 0; i--) {
@@ -1972,9 +1972,9 @@ int ubint<limb_t>::divqr_vect(ubint &qin, ubint &rin, const ubint &uin,
 template <typename limb_t>
 int ubint<limb_t>::divq_vect(ubint &qin, const ubint &uin,
                              const ubint &vin) const {
-  vector<limb_t> &q = (qin.m_value);
-  const vector<limb_t> &u = (uin.m_value);
-  const vector<limb_t> &v = (vin.m_value);
+  std::vector<limb_t> &q = (qin.m_value);
+  const std::vector<limb_t> &u = (uin.m_value);
+  const std::vector<limb_t> &v = (vin.m_value);
 
   int m = u.size();
   int n = v.size();
@@ -2011,14 +2011,14 @@ int ubint<limb_t>::divq_vect(ubint &qin, const ubint &uin,
   s = nlz(v[n - 1]);  // 0 <= s <= m_limbBitLenghth-1.
   // std::cout<< "nlz of " << v[n-1]  << " = "<<  s;
   // vn = (limb_t *)alloca(4*n);
-  vector<limb_t> vn(n);
+  std::vector<limb_t> vn(n);
   for (i = n - 1; i > 0; i--) {
     vn[i] = (v[i] << s) | ((Dlimb_t)v[i - 1] >> (m_limbBitLength - s));
   }
   vn[0] = v[0] << s;
 
   // un = (limb_t *)alloca(4*(m + 1));
-  vector<limb_t> un(m + 1);
+  std::vector<limb_t> un(m + 1);
 
   un[m] = (Dlimb_t)u[m - 1] >> (m_limbBitLength - s);
   for (i = m - 1; i > 0; i--) {
@@ -2072,16 +2072,16 @@ template <typename limb_t>
 int ubint<limb_t>::divr_vect(ubint &rin, const ubint &uin,
                              const ubint &vin) const {
 #ifdef OLD_DIV
-  vector<limb_t> &r = (rin.m_value);
-  const vector<limb_t> &u = (uin.m_value);
-  const vector<limb_t> &v = (vin.m_value);
+  std::vector<limb_t> &r = (rin.m_value);
+  const std::vector<limb_t> &u = (uin.m_value);
+  const std::vector<limb_t> &v = (vin.m_value);
 
   int m = u.size();
   int n = v.size();
 #else
-  vector<limb_t> &r = (rin.m_value);
+  std::vector<limb_t> &r = (rin.m_value);
   limb_t const *u = (uin.m_value.data());
-  const vector<limb_t> &v = (vin.m_value);
+  const std::vector<limb_t> &v = (vin.m_value);
 
   int m = uin.m_value.size();
   int n = v.size();
@@ -2103,7 +2103,7 @@ int ubint<limb_t>::divr_vect(ubint &rin, const ubint &uin,
     return 1;  // Return if invalid param.
   }
   if (n == 1) {  // Take care of
-    vector<limb_t> q(m - n + 1);
+    std::vector<limb_t> q(m - n + 1);
     // q.resize(m-n+1);
 
     k = 0;                           // the case of a
@@ -2123,8 +2123,8 @@ int ubint<limb_t>::divr_vect(ubint &rin, const ubint &uin,
   s = nlz(v[n - 1]);  // 0 <= s <= m_limbBitLenghth-1.
                       // std::cout<< "nlz of " << v[n-1]  << " = "<<  s;
 #ifdef OLD_DIV
-  vector<limb_t> vn(n);
-  vector<limb_t> un(m + 1);
+  std::vector<limb_t> vn(n);
+  std::vector<limb_t> un(m + 1);
 #else
   auto *vn = reinterpret_cast<limb_t *>(alloca(sizeof(limb_t) * n));
   auto *un = reinterpret_cast<limb_t *>(alloca(sizeof(limb_t) * (m + 1)));

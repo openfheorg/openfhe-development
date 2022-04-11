@@ -40,12 +40,11 @@
 #include "utils/inttypes.h"
 #include "utils/exception.h"
 
-using namespace std;
 using namespace lbcrypto;
 
-static void regthrow(const string& msg) { PALISADE_THROW(config_error, msg); }
+static void regthrow(const std::string& msg) { PALISADE_THROW(config_error, msg); }
 
-static void parthrow(const string& msg) {
+static void parthrow(const std::string& msg) {
   // now try throw inside omp
   ThreadException e;
 #pragma omp parallel for
@@ -59,7 +58,7 @@ static void parthrow(const string& msg) {
   e.Rethrow();
 }
 
-static void runthrow(const string& msg) {
+static void runthrow(const std::string& msg) {
   // now try throw inside omp
   ThreadException e;
 #pragma omp parallel for

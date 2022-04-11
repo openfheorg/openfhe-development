@@ -43,7 +43,6 @@
 #include "utils/inttypes.h"
 #include "lattice/stdlatticeparms.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 class UTLatticeParams : public ::testing::Test {

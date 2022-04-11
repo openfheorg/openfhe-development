@@ -46,10 +46,10 @@
 // some functions are inlined in this files to avoid link errors
 //===========================================================================================================
  // simple macro for in cases with exceptions
-#define UT_EXPECT_THROW_SIMPLE(function) \
+#define UT_EXPECT_THROW_SIMPLE(func) \
     PackedEncoding::Destroy();           \
     try {                                \
-        function;                        \
+        func;                        \
         EXPECT_EQ(0, 1);                 \
     }                                    \
     catch(const exception& e) {          \

@@ -39,7 +39,6 @@
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 int main(int argc, char* argv[]) {
@@ -111,30 +110,30 @@ int main(int argc, char* argv[]) {
 
   plaintextDec2->SetLength(encodedLength);
 
-  cout << std::setprecision(15) << std::endl;
+  std::cout << std::setprecision(15) << std::endl;
 
-  cout << "\n Original Plaintext #1: \n";
-  cout << plaintext1 << endl;
+  std::cout << "\n Original Plaintext #1: \n";
+  std::cout << plaintext1 << std::endl;
 
-  cout << "\n Result of evaluating a polynomial with coefficients "
+  std::cout << "\n Result of evaluating a polynomial with coefficients "
        << coefficients1 << " \n";
-  cout << plaintextDec << endl;
+  std::cout << plaintextDec << std::endl;
 
-  cout << "\n Expected result: (0.70519107, 1.38285078, 3.97211180, "
+  std::cout << "\n Expected result: (0.70519107, 1.38285078, 3.97211180, "
           "5.60215665, 4.86357575) "
-       << endl;
+       << std::endl;
 
-  cout << "\n Evaluation time: " << timeEvalPoly1 << " ms" << endl;
+  std::cout << "\n Evaluation time: " << timeEvalPoly1 << " ms" << std::endl;
 
-  cout << "\n Result of evaluating a polynomial with coefficients "
+  std::cout << "\n Result of evaluating a polynomial with coefficients "
        << coefficients2 << " \n";
-  cout << plaintextDec2 << endl;
+  std::cout << plaintextDec2 << std::endl;
 
-  cout << "\n Expected result: (3.4515092326, 5.3752765397, 4.8993108833, "
+  std::cout << "\n Expected result: (3.4515092326, 5.3752765397, 4.8993108833, "
           "3.2495023573, 4.0485229982) "
-       << endl;
+       << std::endl;
 
-  cout << "\n Evaluation time: " << timeEvalPoly2 << " ms" << endl;
+  std::cout << "\n Evaluation time: " << timeEvalPoly2 << " ms" << std::endl;
 
   return 0;
 }

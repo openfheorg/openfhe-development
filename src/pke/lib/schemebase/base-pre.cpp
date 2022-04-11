@@ -76,7 +76,7 @@ Ciphertext<Element> PREBase<Element>::ReEncrypt(
   Ciphertext<Element> result = ciphertext->Clone();
   if (publicKey != nullptr) {
     std::vector<Element> &cv = result->GetElements();
-    std::shared_ptr<vector<Element>> ba =
+    std::shared_ptr<std::vector<Element>> ba =
         algo->EncryptZeroCore(publicKey);
 
     cv[0] += (*ba)[0];

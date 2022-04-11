@@ -150,7 +150,7 @@ TEST(UnitTestFHEWSerialAP, BINARY) {
     EXPECT_EQ(*cc.GetParams(), *cc1.GetParams()) << msg << " Context mismatch";
 
     /* commented out for now; the bootstrapping key is too large to fit in the
-  stringstream
+  std::stringstream
 
   s.str("");
   s.clear();
@@ -216,7 +216,7 @@ TEST(UnitTestFHEWSerialGINX, BINARY) {
     EXPECT_EQ(*cc.GetParams(), *cc1.GetParams()) << msg << " Context mismatch";
 
     /* commented out for now; the bootstrapping key is too large to fit in the
-  stringstream
+  std::stringstream
 
   s.str("");
   s.clear();

@@ -59,7 +59,7 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 namespace lbcrypto {
 
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
-          shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
+          std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
           usint numPrimes, usint scaleExp, usint relinWindow, MODE mode,
           usint firstModSize,
           uint32_t numPartQ,
@@ -123,8 +123,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
 
   usint dcrtBits = scaleExp;
 
-  vector<NativeInteger> moduliQ(numPrimes);
-  vector<NativeInteger> rootsQ(numPrimes);
+  std::vector<NativeInteger> moduliQ(numPrimes);
+  std::vector<NativeInteger> rootsQ(numPrimes);
 
   NativeInteger q = FirstPrime<NativeInteger>(dcrtBits, cyclOrder);
   moduliQ[numPrimes - 1] = q;

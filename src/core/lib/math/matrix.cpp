@@ -38,7 +38,6 @@
 
 #include "math/matrix.h"
 
-using std::invalid_argument;
 
 namespace lbcrypto {
 

@@ -58,7 +58,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptAP(
     uint32_t N                                  = params->GetLWEParams()->GetN();
     uint32_t digitsG                            = params->GetDigitsG();
     uint32_t digitsG2                           = params->GetDigitsG2();
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     auto result = std::make_shared<RingGSWCiphertext>(digitsG2, 2);
 
@@ -116,7 +116,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptGINX(
     NativeInteger Q                             = params->GetLWEParams()->GetQ();
     uint32_t digitsG                            = params->GetDigitsG();
     uint32_t digitsG2                           = params->GetDigitsG2();
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     auto result = std::make_shared<RingGSWCiphertext>(digitsG2, 2);
 
@@ -319,7 +319,7 @@ void RingGSWAccumulatorScheme::AddToACCAP(const std::shared_ptr<RingGSWCryptoPar
                                           const RingGSWCiphertext& input,
                                           std::shared_ptr<RingGSWCiphertext> acc) const {
     uint32_t digitsG2                           = params->GetDigitsG2();
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements()[0];
     std::vector<NativePoly> dct(digitsG2);
@@ -363,7 +363,7 @@ void RingGSWAccumulatorScheme::AddToACCGINX(const std::shared_ptr<RingGSWCryptoP
     uint32_t m                                  = 2 * params->GetLWEParams()->GetN();
     uint32_t digitsG2                           = params->GetDigitsG2();
     int64_t q                                   = params->GetLWEParams()->Getq().ConvertToInt();
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements()[0];
     std::vector<NativePoly> dct(digitsG2);
@@ -429,7 +429,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
         PALISADE_THROW(config_error, errMsg);
     }
 
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
     NativeInteger q                             = params->GetLWEParams()->Getq();
     NativeInteger Q                             = params->GetLWEParams()->GetQ();
     uint32_t N                                  = params->GetLWEParams()->GetN();
@@ -649,7 +649,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
         PALISADE_THROW(config_error, errMsg);
     }
 
-    const shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
+    const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
     NativeInteger q                             = params->GetLWEParams()->Getq();
     NativeInteger Q                             = params->GetLWEParams()->GetQ();
     uint32_t N                                  = params->GetLWEParams()->GetN();
@@ -744,7 +744,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::Bootstrap(
 }
 
 // Check what type of function the input function is.
-int checkInputFunction(vector<NativeInteger> lut, NativeInteger bigger_q) {
+int checkInputFunction(std::vector<NativeInteger> lut, NativeInteger bigger_q) {
     int ret = 0;  // 0 for negacyclic, 1 for periodic, 2 for arbitrary
     if (lut[0] == (bigger_q - lut[lut.size() / 2])) {
         for (size_t i = 1; i < lut.size() / 2; i++) {
@@ -774,7 +774,7 @@ int checkInputFunction(vector<NativeInteger> lut, NativeInteger bigger_q) {
 std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalFunc(
     const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey& EK,
     const std::shared_ptr<const LWECiphertextImpl> ct1, const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
-    const vector<NativeInteger>& LUT, const NativeInteger beta, const NativeInteger bigger_q) const {
+    const std::vector<NativeInteger>& LUT, const NativeInteger beta, const NativeInteger bigger_q) const {
     NativeInteger q              = params->GetLWEParams()->Getq();
     NativeInteger bigger_q_local = bigger_q;
     if (bigger_q == 0)
@@ -810,7 +810,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalFunc(
         ct0 = std::make_shared<LWECiphertextImpl>(std::move(a1), std::move(b1));
         params->SetQ(q * 2);
 
-        vector<NativeInteger> LUT_local = LUT;
+        std::vector<NativeInteger> LUT_local = LUT;
         LUT_local.insert(LUT_local.end(), LUT.begin(), LUT.end());  // repeat the LUT to make it periodic
         // re-evaluate since it's now periodic
         auto ct2 = EvalFunc(params, EK, ct0, LWEscheme, LUT_local, beta, bigger_q_local * 2);
@@ -1006,7 +1006,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> RingGSWAccumulatorScheme::EvalDe
 
     auto ct    = std::make_shared<LWECiphertextImpl>(ct1->GetA(), ct1->GetB());
     uint32_t n = params->GetLWEParams()->Getn();
-    vector<std::shared_ptr<LWECiphertextImpl>> ret;
+    std::vector<std::shared_ptr<LWECiphertextImpl>> ret;
     while (theBigger_q > q) {
         NativeVector a = ct->GetA().Mod(q);
         a.SetModulus(q);

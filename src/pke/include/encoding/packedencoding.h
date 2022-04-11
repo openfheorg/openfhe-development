@@ -62,40 +62,40 @@ using ModulusM = std::pair<NativeInteger, uint64_t>;
  */
 
 class PackedEncoding : public PlaintextImpl {
-  vector<int64_t> value;
+  std::vector<int64_t> value;
 
  public:
   // these two constructors are used inside of Decrypt
-  PackedEncoding(shared_ptr<Poly::Params> vp, EncodingParams ep)
+  PackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {}
 
-  PackedEncoding(shared_ptr<NativePoly::Params> vp, EncodingParams ep)
+  PackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {}
 
-  PackedEncoding(shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
+  PackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {}
 
-  PackedEncoding(shared_ptr<Poly::Params> vp, EncodingParams ep,
-                 vector<int64_t> coeffs)
+  PackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
+                 std::vector<int64_t> coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
-  PackedEncoding(shared_ptr<NativePoly::Params> vp, EncodingParams ep,
-                 vector<int64_t> coeffs)
+  PackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
+                 std::vector<int64_t> coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
-  PackedEncoding(shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
-                 vector<int64_t> coeffs)
+  PackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
+                 std::vector<int64_t> coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
-  PackedEncoding(shared_ptr<Poly::Params> vp, EncodingParams ep,
+  PackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
                  std::initializer_list<int64_t> coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
-  PackedEncoding(shared_ptr<NativePoly::Params> vp, EncodingParams ep,
+  PackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
                  std::initializer_list<int64_t> coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
-  PackedEncoding(shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
+  PackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
                  std::initializer_list<int64_t> coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
@@ -105,7 +105,7 @@ class PackedEncoding : public PlaintextImpl {
    * @param rhs - The input object to copy.
    */
   explicit PackedEncoding(const std::vector<int64_t> &rhs)
-      : PlaintextImpl(shared_ptr<Poly::Params>(0), nullptr), value(rhs) {}
+      : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(rhs) {}
 
   /**
    * @brief Constructs a container with a copy of each of the elements in il, in
@@ -113,13 +113,13 @@ class PackedEncoding : public PlaintextImpl {
    * @param arr the list to copy.
    */
   PackedEncoding(std::initializer_list<int64_t> arr)
-      : PlaintextImpl(shared_ptr<Poly::Params>(0), nullptr), value(arr) {}
+      : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(arr) {}
 
   /**
    * @brief Default empty constructor with empty uninitialized data elements.
    */
   PackedEncoding()
-      : PlaintextImpl(shared_ptr<Poly::Params>(0), nullptr), value() {}
+      : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value() {}
 
   static usint GetAutomorphismGenerator(usint m) {
     return m_automorphismGenerator[m];
@@ -129,13 +129,13 @@ class PackedEncoding : public PlaintextImpl {
 
   bool Decode();
 
-  const vector<int64_t> &GetPackedValue() const { return value; }
+  const std::vector<int64_t> &GetPackedValue() const { return value; }
 
   /**
    * SetIntVectorValue
    * @param val integer vector to initialize the plaintext
    */
-  void SetIntVectorValue(const vector<int64_t> &val) { value = val; }
+  void SetIntVectorValue(const std::vector<int64_t> &val) { value = val; }
 
   /**
    * GetEncodingType
