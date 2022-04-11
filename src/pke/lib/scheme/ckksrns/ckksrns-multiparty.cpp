@@ -59,7 +59,7 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 namespace lbcrypto {
 
 DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
-    const vector<Ciphertext<DCRTPoly>> &ciphertextVec, Poly *plaintext) const {
+    const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec, Poly *plaintext) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertextVec[0]->GetCryptoParameters());
@@ -87,7 +87,7 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
 }
 
 DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
-    const vector<Ciphertext<DCRTPoly>> &ciphertextVec,
+    const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
     NativePoly *plaintext) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(

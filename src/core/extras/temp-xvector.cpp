@@ -35,21 +35,17 @@
 
 #define PROFILE  // need to define in order to turn on timing reporting
 
-#include <chrono>
-#include <exception>
-#include <fstream>
 #include <iostream>
 #include "utils/blockAllocator/xvector.h"
 #include "utils/inttypes.h"
 
-using namespace std;
 
 int main(int argc, char* argv[]) {
-  vector<uint64_t> va;
-  vector<uint64_t, stl_allocator<uint64_t>> vb;
+  std::vector<uint64_t> va;
+  std::vector<uint64_t, stl_allocator<uint64_t>> vb;
 
-  cout << va.size() << endl;
-  cout << vb.size() << endl;
+  std::cout << va.size() << std::endl;
+  std::cout << vb.size() << std::endl;
 
   return 0;
 }

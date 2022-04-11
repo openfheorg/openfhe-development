@@ -172,13 +172,13 @@ class PKEBase {
   // CORE OPERATIONS
   /////////////////////////////////////////
 
-  virtual std::shared_ptr< vector<Element> > EncryptZeroCore(
+  virtual std::shared_ptr< std::vector<Element> > EncryptZeroCore(
       const PrivateKey<Element> privateKey,
-      const shared_ptr<ParmType> params = nullptr) const;
+      const std::shared_ptr<ParmType> params = nullptr) const;
 
-  virtual std::shared_ptr< vector<Element> > EncryptZeroCore(
+  virtual std::shared_ptr< std::vector<Element> > EncryptZeroCore(
       const PublicKey<Element> publicKey,
-      const shared_ptr<ParmType> params = nullptr) const;
+      const std::shared_ptr<ParmType> params = nullptr) const;
 
   virtual Element DecryptCore(const std::vector<Element> &cv,
                       const PrivateKey<Element> privateKey) const;

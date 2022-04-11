@@ -39,7 +39,6 @@
 #include "lattice/field2n.h"
 #include "math/matrix.cpp"
 #include "math/matrixstrassen.h"
-using std::invalid_argument;
 
 // this is the implementation of matrixes of things that are in core
 // and that need template specializations

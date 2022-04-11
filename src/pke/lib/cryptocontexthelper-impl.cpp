@@ -40,9 +40,9 @@
 
 namespace lbcrypto {
 
-static bool getValueForName(const map<string, string>& allvals,
-                            const string key, string& value) {
-  map<string, string>::const_iterator it = allvals.find(key);
+static bool getValueForName(const std::map<std::string, std::string>& allvals,
+                            const std::string key, std::string& value) {
+  std::map<std::string, std::string>::const_iterator it = allvals.find(key);
   if (it == allvals.end()) {
     std::cerr << key << " element is missing" << std::endl;
     return false;
@@ -54,7 +54,7 @@ static bool getValueForName(const map<string, string>& allvals,
 
 template <typename Element>
 static CryptoContext<Element> buildContextFromSerialized(
-    const map<string, string>& s, shared_ptr<typename Element::Params> parms,
+    const std::map<std::string, std::string>& s, std::shared_ptr<typename Element::Params> parms,
     EncodingParams ep = 0) {
   std::string parmtype;
   std::string plaintextModulus;
@@ -115,12 +115,12 @@ static CryptoContext<Element> buildContextFromSerialized(
 }
 
 CryptoContext<DCRTPoly> CryptoContextHelper::getNewDCRTContext(
-    const string& parmset, usint numTowers, usint primeBits) {
+    const std::string& parmset, usint numTowers, usint primeBits) {
   std::string parmtype;
   std::string ring;
   std::string plaintextModulus;
 
-  map<string, map<string, string>>::iterator it =
+  std::map<std::string, std::map<std::string, std::string>>::iterator it =
       CryptoContextParameterSets.find(parmset);
 
   if (it == CryptoContextParameterSets.end()) {
@@ -133,7 +133,7 @@ CryptoContext<DCRTPoly> CryptoContextHelper::getNewDCRTContext(
   }
 
   // BFV uses parm generation so we skip this code for BFV
-  shared_ptr<DCRTPoly::Params> parms;
+  std::shared_ptr<DCRTPoly::Params> parms;
   if ((parmtype != "BFV") && (parmtype != "BFVrns") &&
       (parmtype != "BFVrnsB")) {
     if (!getValueForName(it->second, "ring", ring) ||
@@ -148,8 +148,8 @@ CryptoContext<DCRTPoly> CryptoContextHelper::getNewDCRTContext(
 }
 
 template <typename Element>
-shared_ptr<SchemeBase<Element>> CreateSchemeGivenName(
-    const string& schemeName) {
+std::shared_ptr<SchemeBase<Element>> CreateSchemeGivenName(
+    const std::string& schemeName) {
 //  if (schemeName == "BFVrns")
 //    return std::make_shared<SchemeBFVRNS>();
 //
@@ -169,7 +169,7 @@ shared_ptr<SchemeBase<Element>> CreateSchemeGivenName(
 
 template <typename Element>
 CryptoContext<Element> CryptoContextHelper::ContextFromAppProfile(
-    const string& sch, PlaintextModulus ptm, usint nA, usint nM, usint nK,
+    const std::string& sch, PlaintextModulus ptm, usint nA, usint nM, usint nK,
     usint maxD, float secFactor) {
   //
   ////  usint m;
@@ -241,7 +241,7 @@ CryptoContext<Element> CryptoContextHelper::ContextFromAppProfile(
 // CryptoContextHelper::ContextFromAppProfile<DCRTPoly>(const string& sch, const
 // rapidjson::Value&);
 
-static void printSet(std::ostream& out, string key, map<string, string>& pset) {
+static void printSet(std::ostream& out, std::string key, std::map<std::string, std::string>& pset) {
   out << "Parameter set: " << key << std::endl;
 
   for (const auto& P : pset) {
@@ -249,7 +249,7 @@ static void printSet(std::ostream& out, string key, map<string, string>& pset) {
   }
 }
 
-void CryptoContextHelper::printParmSet(std::ostream& out, string parmset) {
+void CryptoContextHelper::printParmSet(std::ostream& out, std::string parmset) {
   auto it = CryptoContextParameterSets.find(parmset);
   if (it == CryptoContextParameterSets.end()) {
     out << "Parameter set " << parmset << " is unknown" << std::endl;
@@ -265,7 +265,7 @@ void CryptoContextHelper::printAllParmSets(std::ostream& out) {
 }
 
 void CryptoContextHelper::printAllParmSetNames(std::ostream& out) {
-  map<string, map<string, string>>::iterator it =
+  std::map<std::string, std::map<std::string, std::string>>::iterator it =
       CryptoContextParameterSets.begin();
 
   out << it->first;
@@ -277,10 +277,10 @@ void CryptoContextHelper::printAllParmSetNames(std::ostream& out) {
 }
 
 void CryptoContextHelper::printParmSetNamesByFilter(std::ostream& out,
-                                                    const string& filter) {
+                                                    const std::string& filter) {
   size_t counter = 0;
   for (const auto& it : CryptoContextParameterSets) {
-    if (it.first.find(filter) != string::npos) {
+    if (it.first.find(filter) != std::string::npos) {
       if (counter == 0)
         out << it.first;
       else
@@ -296,7 +296,7 @@ void CryptoContextHelper::printParmSetNamesByFilters(
   size_t counter = 0;
   for (const auto& it : CryptoContextParameterSets) {
     for (const auto& filter : filters) {
-      if (it.first.find(filter) != string::npos) {
+      if (it.first.find(filter) != std::string::npos) {
         if (counter == 0)
           out << it.first;
         else
@@ -310,10 +310,10 @@ void CryptoContextHelper::printParmSetNamesByFilters(
 }
 
 void CryptoContextHelper::printParmSetNamesByExcludeFilter(
-    std::ostream& out, const string& filter) {
+    std::ostream& out, const std::string& filter) {
   size_t counter = 0;
   for (const auto& it : CryptoContextParameterSets) {
-    if (it.first.find(filter) == string::npos) {
+    if (it.first.find(filter) == std::string::npos) {
       if (counter == 0)
         out << it.first;
       else
@@ -330,7 +330,7 @@ void CryptoContextHelper::printParmSetNamesByExcludeFilters(
   for (const auto& it : CryptoContextParameterSets) {
     bool isFound = false;
     for (const auto& filter : filters) {
-      if (it.first.find(filter) != string::npos) {
+      if (it.first.find(filter) != std::string::npos) {
         isFound = true;
         break;
       }

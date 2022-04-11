@@ -138,6 +138,7 @@ constexpr usint BATCH_LRG = 1 << 12;
 constexpr usint PTM     = 64;
 constexpr usint PTM_LRG = 65537;
 constexpr double STD_DEV = 3.2;
+// clang-format off
 static std::vector<TEST_CASE> testCases = {
     // TestType,  Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { ADD_PACKED, "1", {BGVRNS_SCHEME, 16,   2,         59,     DFLT, BATCH,   OPTIMIZED,  DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
@@ -198,6 +199,7 @@ static std::vector<TEST_CASE> testCases = {
     { KS_SINGLE_CRT,      "1", {BGVRNS_SCHEME, 256,       DFLT,      50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, DFLT,        DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
     { KS_MOD_REDUCE_DCRT, "1", {BGVRNS_SCHEME, 256,       4,         30,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, DFLT,        DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
 };
+// clang-format on
 //===========================================================================================================
 class UTSHE : public ::testing::TestWithParam<TEST_CASE> {
     using Element = DCRTPoly;
@@ -209,7 +211,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_Add_Packed(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Add_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -304,7 +306,7 @@ protected:
         }
     }
 
-    void UnitTest_Mult_CoefPacked(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Mult_CoefPacked(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -383,7 +385,7 @@ protected:
         }
     }
 
-    void UnitTest_Mult_Packed(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Mult_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -455,7 +457,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalAtIndex(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalAtIndex(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -516,7 +518,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalMerge(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalMerge(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -549,7 +551,7 @@ protected:
             std::vector<int64_t> vectorMerged = { 32, 2, 4, 8, 16, 0, 0, 0 };
             Plaintext intArrayMerged = cc->MakePackedPlaintext(vectorMerged);
 
-            vector<int32_t> indexList = { -1, -2, -3, -4, -5 };
+            std::vector<int32_t> indexList = { -1, -2, -3, -4, -5 };
 
             cc->EvalAtIndexKeyGen(kp.secretKey, indexList);
 
@@ -578,7 +580,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalSum(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalSum(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -649,7 +651,7 @@ protected:
         }
     }
 
-    void UnitTest_Metadata(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Metadata(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -736,10 +738,10 @@ protected:
             EXPECT_EQ(val1->GetMetadata(), atIndexMinus2ValTest->GetMetadata())
                 << "Ciphertext metadata mismatch in EvalAtIndex -2";
 
-            vector<double> weights(2);
+            std::vector<double> weights(2);
             for (usint i = 0; i < 2; i++) weights[i] = i;
 
-            vector<Ciphertext<Element>> ciphertexts(2);
+            std::vector<Ciphertext<Element>> ciphertexts(2);
             ciphertexts[0] = ciphertext1;
             ciphertexts[1] = ciphertext2;
         }
@@ -758,7 +760,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalSum_BFVrns_All(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalSum_BFVrns_All(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -810,7 +812,7 @@ protected:
         }
     }
 
-    void UnitTest_Keyswitch_SingleCRT(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Keyswitch_SingleCRT(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -845,7 +847,7 @@ protected:
         }
     }
 
-    void UnitTest_Keyswitch_ModReduce_DCRT(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Keyswitch_ModReduce_DCRT(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 

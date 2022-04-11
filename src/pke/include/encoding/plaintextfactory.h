@@ -52,7 +52,7 @@ class PlaintextFactory {
 
  public:
   static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 shared_ptr<Poly::Params> vp,
+                                 std::shared_ptr<Poly::Params> vp,
                                  EncodingParams ep) {
     Plaintext pt;
 
@@ -79,7 +79,7 @@ class PlaintextFactory {
   }
 
   static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 shared_ptr<NativePoly::Params> vp,
+                                 std::shared_ptr<NativePoly::Params> vp,
                                  EncodingParams ep) {
     Plaintext pt;
 
@@ -106,7 +106,7 @@ class PlaintextFactory {
   }
 
   static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 shared_ptr<DCRTPoly::Params> vp,
+                                 std::shared_ptr<DCRTPoly::Params> vp,
                                  EncodingParams ep) {
     Plaintext pt;
 
@@ -133,8 +133,8 @@ class PlaintextFactory {
   }
 
   static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 shared_ptr<Poly::Params> vp, EncodingParams ep,
-                                 const vector<int64_t>& value) {
+                                 std::shared_ptr<Poly::Params> vp, EncodingParams ep,
+                                 const std::vector<int64_t>& value) {
     Plaintext pt = MakePlaintext(encoding, vp, ep);
     pt->SetIntVectorValue(value);
     pt->Encode();
@@ -142,9 +142,9 @@ class PlaintextFactory {
   }
 
   static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 shared_ptr<NativePoly::Params> vp,
+                                 std::shared_ptr<NativePoly::Params> vp,
                                  EncodingParams ep,
-                                 const vector<int64_t>& value) {
+                                 const std::vector<int64_t>& value) {
     Plaintext pt = MakePlaintext(encoding, vp, ep);
     pt->SetIntVectorValue(value);
     pt->Encode();
@@ -152,9 +152,9 @@ class PlaintextFactory {
   }
 
   static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 shared_ptr<DCRTPoly::Params> vp,
+                                 std::shared_ptr<DCRTPoly::Params> vp,
                                  EncodingParams ep,
-                                 const vector<int64_t>& value) {
+                                 const std::vector<int64_t>& value) {
     Plaintext pt = MakePlaintext(encoding, vp, ep);
     pt->SetIntVectorValue(value);
     pt->Encode();
@@ -162,8 +162,8 @@ class PlaintextFactory {
   }
 
   static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 shared_ptr<Poly::Params> vp, EncodingParams ep,
-                                 const string& value) {
+                                 std::shared_ptr<Poly::Params> vp, EncodingParams ep,
+                                 const std::string& value) {
     Plaintext pt = MakePlaintext(encoding, vp, ep);
     pt->SetStringValue(value);
     pt->Encode();
@@ -171,8 +171,8 @@ class PlaintextFactory {
   }
 
   static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 shared_ptr<NativePoly::Params> vp,
-                                 EncodingParams ep, const string& value) {
+                                 std::shared_ptr<NativePoly::Params> vp,
+                                 EncodingParams ep, const std::string& value) {
     Plaintext pt = MakePlaintext(encoding, vp, ep);
     pt->SetStringValue(value);
     pt->Encode();
@@ -180,8 +180,8 @@ class PlaintextFactory {
   }
 
   static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 shared_ptr<DCRTPoly::Params> vp,
-                                 EncodingParams ep, const string& value) {
+                                 std::shared_ptr<DCRTPoly::Params> vp,
+                                 EncodingParams ep, const std::string& value) {
     Plaintext pt = MakePlaintext(encoding, vp, ep);
     pt->SetStringValue(value);
     pt->Encode();

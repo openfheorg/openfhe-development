@@ -66,7 +66,7 @@ class CryptoContextFactory {
   using IntType = typename Element::Integer;
 
  protected:
-  static vector<CryptoContext<Element>> AllContexts;
+  static std::vector<CryptoContext<Element>> AllContexts;
 
  public:
   static void ReleaseAllContexts();
@@ -76,13 +76,13 @@ class CryptoContextFactory {
   static CryptoContext<Element> GetSingleContext();
 
   static CryptoContext<Element> GetContext(
-      shared_ptr<CryptoParametersBase<Element>> params,
-      shared_ptr<SchemeBase<Element>> scheme, const string& schemeId = "Not");
+      std::shared_ptr<CryptoParametersBase<Element>> params,
+      std::shared_ptr<SchemeBase<Element>> scheme, const std::string& schemeId = "Not");
 
   static CryptoContext<Element> GetContextForPointer(
       CryptoContextImpl<Element>* cc);
 
-  static const vector<CryptoContext<Element>>& GetAllContexts();
+  static const std::vector<CryptoContext<Element>>& GetAllContexts();
 
 
   /**
@@ -230,7 +230,7 @@ class CryptoContextFactory {
    * @return new context
    */
   static CryptoContext<Element> genCryptoContextBGVrns(
-      shared_ptr<ParmType> params, const PlaintextModulus plaintextmodulus,
+      std::shared_ptr<ParmType> params, const PlaintextModulus plaintextmodulus,
       usint relinWindow, float stDev, MODE mode = RLWE, int depth = 1,
       int maxDepth = 2, KeySwitchTechnique ksTech = BV,
       enum RescalingTechnique rsTech = FIXEDMANUAL);
@@ -251,7 +251,7 @@ class CryptoContextFactory {
    * @return new context
    */
   static CryptoContext<Element> genCryptoContextBGVrns(
-      shared_ptr<ParmType> params, EncodingParams encodingParams,
+      std::shared_ptr<ParmType> params, EncodingParams encodingParams,
       usint relinWindow, float stDev, MODE mode = RLWE, int depth = 1,
       int maxDepth = 2, enum KeySwitchTechnique ksTech = BV,
       enum RescalingTechnique rsTech = FIXEDMANUAL);
@@ -336,7 +336,7 @@ class CryptoContextFactory {
    * @return new context
    */
   static CryptoContext<Element> genCryptoContextCKKSrns(
-      shared_ptr<ParmType> params, EncodingParams encodingParams,
+      std::shared_ptr<ParmType> params, EncodingParams encodingParams,
       usint relinWindow, float stDev, MODE mode = RLWE, int depth = 1,
       int maxDepth = 2, enum KeySwitchTechnique ksTech = BV,
       RescalingTechnique rsTech = FIXEDMANUAL);

@@ -51,7 +51,7 @@ public:
   CryptoParametersBGVRNS(const CryptoParametersBGVRNS &rhs)
       : CryptoParametersRNS(rhs) {}
 
-  CryptoParametersBGVRNS(shared_ptr<ParmType> params,
+  CryptoParametersBGVRNS(std::shared_ptr<ParmType> params,
                        const PlaintextModulus &plaintextModulus,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint relinWindow, MODE mode,
@@ -64,7 +64,7 @@ public:
           assuranceMeasure, securityLevel, relinWindow, mode, depth, maxDepth,
           ksTech, rsTech, encTech, multTech) {}
 
-  CryptoParametersBGVRNS(shared_ptr<ParmType> params,
+  CryptoParametersBGVRNS(std::shared_ptr<ParmType> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint relinWindow, MODE mode,

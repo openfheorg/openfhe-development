@@ -44,7 +44,6 @@
 #include "utils/inttypes.h"
 #include "utils/parmfactory.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 // --------------- TESTING METHODS OF LATTICE ELEMENTS ---------------
@@ -55,7 +54,7 @@ using namespace lbcrypto;
 // UnitTestCommonElements.cpp
 
 template <typename Element>
-void rounding_ops(const string& msg) {
+void rounding_ops(const std::string& msg) {
   DEBUG_FLAG(false);
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
@@ -147,7 +146,7 @@ TEST(UTDCRTPoly, rounding_ops) {
 
 // template for set_get_values()
 template <typename Element>
-void set_get_values(const string& msg) {
+void set_get_values(const std::string& msg) {
   DEBUG_FLAG(false);
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
@@ -218,7 +217,7 @@ TEST(UTDCRTPoly, set_get_values) {
 
 // template for at()
 template <typename Element>
-void at(const string& msg) {
+void at(const std::string& msg) {
   DEBUG_FLAG(false);
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
@@ -273,7 +272,7 @@ TEST(UTDCRTPoly, at) {
 // template for switch_modulus
 
 template <typename Element>
-void switch_modulus(const string& msg) {
+void switch_modulus(const std::string& msg) {
   DEBUG_FLAG(false);
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
@@ -326,7 +325,7 @@ TEST(UTDCRTPoly, switch_modulus) {
 
 // template fore rn_generators()
 template <typename Element>
-void rn_generators(const string& msg) {
+void rn_generators(const std::string& msg) {
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
 
@@ -385,7 +384,7 @@ TEST(UTDCRTPoly, rn_generators) {
 
 // template fore poly_other_methods()
 template <typename Element>
-void poly_other_methods(const string& msg) {
+void poly_other_methods(const std::string& msg) {
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
 
@@ -474,7 +473,7 @@ TEST(UTDCRTPoly, poly_other_methods) {
 // Signed mod must handle the modulo operation for both positive and negative
 // numbers It is used in decoding/decryption of homomorphic encryption schemes
 template <typename Element>
-void signed_mod(const string& msg) {
+void signed_mod(const std::string& msg) {
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
 
@@ -519,7 +518,7 @@ TEST(UTDCRTPoly, signed_mod) {
 
 // template fore automorphismTransform()
 template <typename Element>
-void automorphismTransform(const string& msg) {
+void automorphismTransform(const std::string& msg) {
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
 
@@ -561,7 +560,7 @@ TEST(UTDCRTPoly, automorphismTransform) {
 }
 
 template <typename Element>
-void transposition(const string& msg) {
+void transposition(const std::string& msg) {
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
 
@@ -608,7 +607,7 @@ TEST(UTDCRTPoly, transposition) {
 }
 
 template <typename Element>
-void Poly_mod_ops_on_two_elements(const string& msg) {
+void Poly_mod_ops_on_two_elements(const std::string& msg) {
   using VecType = typename Element::Vector;
   using ParmType = typename Element::Params;
 

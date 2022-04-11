@@ -144,7 +144,7 @@ void NumberTheoreticTransformFxd<VecType>::ForwardTransformIterative(
   usint logn = lbcrypto::GetMSB64(n - 1);
   for (logm = 1; logm <= logn; logm++) {
     // calculate the i indexes into the root table one time per loop
-    vector<usint> indexes(1 << (logm - 1));
+    std::vector<usint> indexes(1 << (logm - 1));
     for (i = 0; i < (usint)(1 << (logm - 1)); i++) {
       indexes[i] = (i << (logn - logm));
     }

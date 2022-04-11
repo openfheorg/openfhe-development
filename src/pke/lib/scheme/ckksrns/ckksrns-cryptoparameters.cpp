@@ -77,8 +77,8 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(
 
   size_t sizeQ = GetElementParams()->GetParams().size();
 
-  vector<NativeInteger> moduliQ(sizeQ);
-  vector<NativeInteger> rootsQ(sizeQ);
+  std::vector<NativeInteger> moduliQ(sizeQ);
+  std::vector<NativeInteger> rootsQ(sizeQ);
 
   for (size_t i = 0; i < sizeQ; i++) {
     moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
@@ -193,7 +193,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(
 
 #if 0
     size_t sizeP = GetParamsP()->GetParams().size();
-    vector<NativeInteger> moduliP(sizeP);
+    std::vector<NativeInteger> moduliP(sizeP);
     for (size_t j = 0; j < sizeP; j++) {
       moduliP[j] = GetParamsP()->GetParams()[j]->GetModulus();
     }

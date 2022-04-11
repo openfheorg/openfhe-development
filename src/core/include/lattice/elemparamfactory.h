@@ -37,10 +37,7 @@
 #define SRC_CORE_LIB_LATTICE_ELEMPARAMFACTORY_H_
 
 #include <memory>
-using std::shared_ptr;
-
 #include <string>
-using std::string;
 
 #include "lattice/ildcrtparams.h"
 #include "lattice/ilparams.h"
@@ -59,8 +56,8 @@ class ElemParamFactory {
   static struct ElemParmSet {
     usint m;    // cyclotomic order
     usint n;    // ring dimension
-    string q;   // ciphertext modulus
-    string ru;  // root of unity
+    std::string q;   // ciphertext modulus
+    std::string ru;  // root of unity
   } DefaultSet[];
 
   static size_t GetNearestIndex(usint m) {
@@ -82,7 +79,7 @@ class ElemParamFactory {
    * @return new params
    */
   template <typename P>
-  static shared_ptr<P> GenElemParams(ElementOrder o) {
+  static std::shared_ptr<P> GenElemParams(ElementOrder o) {
     DEBUG_FLAG(false);
     DEBUG("in GenElemParams(ElementOrder o)");
     return std::make_shared<P>(
@@ -99,7 +96,7 @@ class ElemParamFactory {
    * @return new params
    */
   template <typename P>
-  static shared_ptr<P> GenElemParams(usint m) {
+  static std::shared_ptr<P> GenElemParams(usint m) {
     DEBUG_FLAG(false);
     DEBUG("in GenElemParams(usint m)");
     size_t sIdx = GetNearestIndex(m);
@@ -119,7 +116,7 @@ class ElemParamFactory {
    * @return new params
    */
   template <typename P>
-  static shared_ptr<P> GenElemParams(usint m, usint bits, usint towersize = 1) {
+  static std::shared_ptr<P> GenElemParams(usint m, usint bits, usint towersize = 1) {
     DEBUG_FLAG(false);
     DEBUG("in GenElemParams(usint m, usint bits, usint towers)");
     typename P::Integer q = FirstPrime<typename P::Integer>(bits, m);
@@ -136,7 +133,7 @@ class ElemParamFactory {
    * @return
    */
   template <typename P>
-  static shared_ptr<P> GenElemParams(usint m,
+  static std::shared_ptr<P> GenElemParams(usint m,
                                      const typename P::Integer& ctModulus,
                                      const typename P::Integer& rootUnity) {
     DEBUG_FLAG(false);
@@ -146,7 +143,7 @@ class ElemParamFactory {
 };
 
 template <>
-inline shared_ptr<ILDCRTParams<M2Integer>>
+inline std::shared_ptr<ILDCRTParams<M2Integer>>
 ElemParamFactory::GenElemParams<ILDCRTParams<M2Integer>>(usint m, usint bits,
                                                          usint towersize) {
   DEBUG_FLAG(false);
@@ -160,7 +157,7 @@ ElemParamFactory::GenElemParams<ILDCRTParams<M2Integer>>(usint m, usint bits,
 }
 
 template <>
-inline shared_ptr<ILDCRTParams<M4Integer>>
+inline std::shared_ptr<ILDCRTParams<M4Integer>>
 ElemParamFactory::GenElemParams<ILDCRTParams<M4Integer>>(usint m, usint bits,
                                                          usint towersize) {
   DEBUG_FLAG(false);
@@ -174,7 +171,7 @@ ElemParamFactory::GenElemParams<ILDCRTParams<M4Integer>>(usint m, usint bits,
 }
 #ifdef WITH_NTL
 template <>
-inline shared_ptr<ILDCRTParams<M6Integer>>
+inline std::shared_ptr<ILDCRTParams<M6Integer>>
 ElemParamFactory::GenElemParams<ILDCRTParams<M6Integer>>(usint m, usint bits,
                                                          usint towersize) {
   DEBUG_FLAG(false);

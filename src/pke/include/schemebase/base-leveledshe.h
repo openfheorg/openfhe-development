@@ -343,7 +343,7 @@ class LeveledSHEBase {
    * @param &originalPrivateKey Original private key used for encryption.
    * @param *evalMultKeys the resulting evalution key vector list.
    */
-  virtual vector<EvalKey<Element>> EvalMultKeysGen(
+  virtual std::vector<EvalKey<Element>> EvalMultKeysGen(
       const PrivateKey<Element> privateKey) const;
 
   /**
@@ -490,7 +490,7 @@ class LeveledSHEBase {
   virtual Ciphertext<Element> EvalMultAndRelinearize(
       ConstCiphertext<Element> ciphertext1,
       ConstCiphertext<Element> ciphertext2,
-      const vector<EvalKey<Element>> &evalKeyVec) const;
+      const std::vector<EvalKey<Element>> &evalKeyVec) const;
 
   /**
    * Virtual function to do relinearization
@@ -503,7 +503,7 @@ class LeveledSHEBase {
    */
   virtual Ciphertext<Element> Relinearize(
       ConstCiphertext<Element> ciphertext,
-      const vector<EvalKey<Element>> &evalKeyVec) const;
+      const std::vector<EvalKey<Element>> &evalKeyVec) const;
 
   /**
    * Virtual function to do relinearization
@@ -516,7 +516,7 @@ class LeveledSHEBase {
    */
   virtual void RelinearizeInPlace(
       Ciphertext<Element> &ciphertext,
-      const vector<EvalKey<Element>> &evalKeyVec) const;
+      const std::vector<EvalKey<Element>> &evalKeyVec) const;
 
   /////////////////////////////////////////
   // SHE AUTOMORPHISM
@@ -530,7 +530,7 @@ class LeveledSHEBase {
    * @param indexList list of automorphism indices to be computed
    * @return returns the evaluation keys
    */
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
       const PrivateKey<Element> privateKey,
       const std::vector<usint> &indexList) const;
 
@@ -542,7 +542,7 @@ class LeveledSHEBase {
    * @param indexList list of automorphism indices to be computed
    * @return returns the evaluation keys
    */
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
       const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
       const std::vector<usint> &indexList) const {
     std::string errMsg =
@@ -571,7 +571,7 @@ class LeveledSHEBase {
    * @param ct the input ciphertext on which to do the precomputation (digit
    * decomposition)
    */
-  virtual shared_ptr<vector<Element>> EvalFastRotationPrecompute(
+  virtual std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(
       ConstCiphertext<Element> ciphertext) const;
 
   /**
@@ -587,7 +587,7 @@ class LeveledSHEBase {
    */
   virtual Ciphertext<Element> EvalFastRotation(
       ConstCiphertext<Element> ciphertext, const usint index, const usint m,
-      const shared_ptr<vector<Element>> digits) const;
+      const std::shared_ptr<std::vector<Element>> digits) const;
 
   /**
    * Generates evaluation keys for a list of indices
@@ -598,7 +598,7 @@ class LeveledSHEBase {
    * @param indexList list of indices to be computed
    * @return returns the evaluation keys
    */
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalAtIndexKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAtIndexKeyGen(
       const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
       const std::vector<int32_t> &indexList) const;
 

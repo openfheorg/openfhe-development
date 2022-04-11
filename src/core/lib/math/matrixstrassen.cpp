@@ -36,8 +36,6 @@
 #include "math/matrixstrassen.h"
 #include "utils/parallel.h"
 
-using std::invalid_argument;
-
 namespace lbcrypto {
 
 template <class Element>
@@ -294,7 +292,7 @@ MatrixStrassen<Element>& MatrixStrassen<Element>::VStack(
     PALISADE_THROW(math_error, "VStack rows not equal size");
   }
   for (size_t row = 0; row < other.rows; ++row) {
-    vector<unique_ptr<Element>> rowElems;
+    std::vector<std::unique_ptr<Element>> rowElems;
     for (auto elem : other.data[row]) {
       rowElems.push_back(Element(*elem));
     }
@@ -312,7 +310,7 @@ inline MatrixStrassen<Element>& MatrixStrassen<Element>::HStack(
     PALISADE_THROW(math_error, "HStack cols not equal size");
   }
   for (size_t row = 0; row < rows; ++row) {
-    vector<unique_ptr<Element>> rowElems;
+    std::vector<std::unique_ptr<Element>> rowElems;
     for (auto elem = other.data[row].begin(); elem != other.data[row].end();
          ++elem) {
       rowElems.push_back(Element(*elem));
@@ -555,7 +553,7 @@ MatrixStrassen<int32_t> ConvertToInt32(const MatrixStrassen<BigVector>& input,
 //  n
 MatrixStrassen<Poly> SplitInt32IntoPolyElements(
     MatrixStrassen<int32_t> const& other, size_t n,
-    const shared_ptr<ILParams> params) {
+    const std::shared_ptr<ILParams> params) {
   auto zero_alloc = Poly::Allocator(params, Format::COEFFICIENT);
 
   size_t rows = other.GetRows() / n;
@@ -587,7 +585,7 @@ MatrixStrassen<Poly> SplitInt32IntoPolyElements(
 //  split a vector of BBI into a vector of ring elements with ring dimension n
 MatrixStrassen<Poly> SplitInt32AltIntoPolyElements(
     MatrixStrassen<int32_t> const& other, size_t n,
-    const shared_ptr<ILParams> params) {
+    const std::shared_ptr<ILParams> params) {
   auto zero_alloc = Poly::Allocator(params, Format::COEFFICIENT);
 
   size_t rows = other.GetRows();

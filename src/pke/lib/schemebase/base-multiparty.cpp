@@ -63,7 +63,7 @@ namespace lbcrypto {
 // makeSparse is not used by this scheme
 template <class Element>
 KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
-    CryptoContext<Element> cc, const vector<PrivateKey<Element>> &privateKeyVec,
+    CryptoContext<Element> cc, const std::vector<PrivateKey<Element>> &privateKeyVec,
     bool makeSparse) {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRLWE<Element>>(
@@ -72,7 +72,7 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
   KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
                            std::make_shared<PrivateKeyImpl<Element>>(cc));
 
-  const shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
   const auto ns = cryptoParams->GetNoiseScale();
 
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
@@ -113,7 +113,7 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
   KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
                            std::make_shared<PrivateKeyImpl<Element>>(cc));
 
-  const shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
   const auto ns = cryptoParams->GetNoiseScale();
 
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
@@ -162,10 +162,10 @@ EvalKey<Element> MultipartyBase<Element>::MultiKeySwitchGen(
 }
 
 template <class Element>
-shared_ptr<std::map<usint, EvalKey<Element>>>
+std::shared_ptr<std::map<usint, EvalKey<Element>>>
 MultipartyBase<Element>::MultiEvalAutomorphismKeyGen(
     const PrivateKey<Element> privateKey,
-    const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+    const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
     const std::vector<usint> &indexList) const {
   const Element &s = privateKey->GetPrivateElement();
   usint N = s.GetRingDimension();
@@ -183,10 +183,10 @@ MultipartyBase<Element>::MultiEvalAutomorphismKeyGen(
         std::make_shared<PrivateKeyImpl<Element>>(cc);
 
     usint index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
-    std::vector<usint> map(N);
-    PrecomputeAutoMap(N, index, &map);
+    std::vector<usint> vec(N);
+    PrecomputeAutoMap(N, index, &vec);
 
-    Element sPermuted = s.AutomorphismTransform(index, map);
+    Element sPermuted = s.AutomorphismTransform(index, vec);
     privateKeyPermuted->SetPrivateElement(sPermuted);
 
     (*result)[indexList[i]] = MultiKeySwitchGen(
@@ -197,10 +197,10 @@ MultipartyBase<Element>::MultiEvalAutomorphismKeyGen(
 }
 
 template <class Element>
-shared_ptr<std::map<usint, EvalKey<Element>>>
+std::shared_ptr<std::map<usint, EvalKey<Element>>>
 MultipartyBase<Element>::MultiEvalAtIndexKeyGen(
     const PrivateKey<Element> privateKey,
-    const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+    const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
     const std::vector<int32_t> &indexList) const {
   const auto cc = privateKey->GetCryptoContext();
 
@@ -219,10 +219,10 @@ MultipartyBase<Element>::MultiEvalAtIndexKeyGen(
 }
 
 template <class Element>
-shared_ptr<std::map<usint, EvalKey<Element>>>
+std::shared_ptr<std::map<usint, EvalKey<Element>>>
 MultipartyBase<Element>::MultiEvalSumKeyGen(
     const PrivateKey<Element> privateKey,
-    const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap) const {
+    const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap) const {
   const auto cryptoParams = privateKey->GetCryptoParameters();
 
   size_t max = ceil(log2(cryptoParams->GetEncodingParams()->GetBatchSize()));
@@ -247,7 +247,7 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptLead(
       std::static_pointer_cast<CryptoParametersRLWE<Element>>(
           privateKey->GetCryptoParameters());
 
-  const shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
   const auto ns = cryptoParams->GetNoiseScale();
 
   const std::vector<Element> &cv = ciphertext->GetElements();
@@ -273,7 +273,7 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(
       std::static_pointer_cast<CryptoParametersRLWE<Element>>(
           privateKey->GetCryptoParameters());
 
-  const shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
   const auto es = cryptoParams->GetNoiseScale();
 
   const std::vector<Element> &cv = ciphertext->GetElements();
@@ -292,7 +292,7 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(
 
 template <class Element>
 DecryptResult MultipartyBase<Element>::MultipartyDecryptFusion(
-    const vector<Ciphertext<Element>> &ciphertextVec,
+    const std::vector<Ciphertext<Element>> &ciphertextVec,
     NativePoly *plaintext) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRLWE<Element>>(
@@ -423,10 +423,10 @@ EvalKey<Element> MultipartyBase<Element>::MultiMultEvalKey(
 }
 
 template <class Element>
-shared_ptr<std::map<usint, EvalKey<Element>>>
+std::shared_ptr<std::map<usint, EvalKey<Element>>>
 MultipartyBase<Element>::MultiAddEvalAutomorphismKeys(
-    const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-    const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const {
+    const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
+    const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const {
   auto evalKeyMapAuto = std::make_shared<std::map<usint, EvalKey<Element>>>();
 
   for (auto it = evalKeyMap1->begin(); it != evalKeyMap1->end(); ++it) {
@@ -439,10 +439,10 @@ MultipartyBase<Element>::MultiAddEvalAutomorphismKeys(
 }
 
 template <class Element>
-shared_ptr<std::map<usint, EvalKey<Element>>>
+std::shared_ptr<std::map<usint, EvalKey<Element>>>
 MultipartyBase<Element>::MultiAddEvalSumKeys(
-    const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-    const shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const {
+    const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
+    const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const {
   auto EvalKeyMapSum = std::make_shared<std::map<usint, EvalKey<Element>>>();
 
   for (auto it = evalKeyMap1->begin(); it != evalKeyMap1->end(); ++it) {

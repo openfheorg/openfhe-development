@@ -67,7 +67,7 @@ PolyImpl<VecType>::PolyImpl()
     : m_values(nullptr), m_format(Format::EVALUATION) {}
 
 template <typename VecType>
-PolyImpl<VecType>::PolyImpl(const shared_ptr<PolyImpl::Params> params,
+PolyImpl<VecType>::PolyImpl(const std::shared_ptr<PolyImpl::Params> params,
                             Format format, bool initializeElementToZero)
     : m_values(nullptr), m_format(format) {
   m_params = params;
@@ -79,7 +79,7 @@ PolyImpl<VecType>::PolyImpl(const shared_ptr<PolyImpl::Params> params,
 
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(bool initializeElementToMax,
-                            const shared_ptr<PolyImpl::Params> params,
+                            const std::shared_ptr<PolyImpl::Params> params,
                             Format format)
     : m_values(nullptr), m_format(format) {
   m_params = params;
@@ -91,7 +91,7 @@ PolyImpl<VecType>::PolyImpl(bool initializeElementToMax,
 
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const DggType &dgg,
-                            const shared_ptr<PolyImpl::Params> params,
+                            const std::shared_ptr<PolyImpl::Params> params,
                             Format format) {
   m_params = params;
 
@@ -106,7 +106,7 @@ PolyImpl<VecType>::PolyImpl(const DggType &dgg,
 
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(DiscreteUniformGeneratorImpl<VecType> &dug,
-                            const shared_ptr<PolyImpl::Params> params,
+                            const std::shared_ptr<PolyImpl::Params> params,
                             Format format) {
   m_params = params;
 
@@ -121,7 +121,7 @@ PolyImpl<VecType>::PolyImpl(DiscreteUniformGeneratorImpl<VecType> &dug,
 
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const BinaryUniformGeneratorImpl<VecType> &bug,
-                            const shared_ptr<PolyImpl::Params> params,
+                            const std::shared_ptr<PolyImpl::Params> params,
                             Format format) {
   m_params = params;
 
@@ -135,7 +135,7 @@ PolyImpl<VecType>::PolyImpl(const BinaryUniformGeneratorImpl<VecType> &bug,
 
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const TernaryUniformGeneratorImpl<VecType> &tug,
-                            const shared_ptr<PolyImpl::Params> params,
+                            const std::shared_ptr<PolyImpl::Params> params,
                             Format format, uint32_t h) {
   m_params = params;
 
@@ -150,7 +150,7 @@ PolyImpl<VecType>::PolyImpl(const TernaryUniformGeneratorImpl<VecType> &tug,
 
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const PolyImpl &element,
-                            shared_ptr<PolyImpl::Params>)
+                            std::shared_ptr<PolyImpl::Params>)
     : m_format(element.m_format), m_params(element.m_params) {
   DEBUG_FLAG(false);
   if (!IsEmpty()) {
@@ -189,7 +189,7 @@ PolyImpl<VecType>::PolyImpl(const PolyNative &rhs, Format format) {
 
 // this is the move
 template <typename VecType>
-PolyImpl<VecType>::PolyImpl(PolyImpl &&element, shared_ptr<PolyImpl::Params>)
+PolyImpl<VecType>::PolyImpl(PolyImpl &&element, std::shared_ptr<PolyImpl::Params>)
     : m_format(element.m_format), m_params(element.m_params) {
   // m_values(element.m_values) //note this becomes move below
 

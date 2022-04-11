@@ -1,22 +1,22 @@
 //==================================================================================
 // BSD 2-Clause License
-// 
+//
 // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
-// 
+//
 // All rights reserved.
-// 
+//
 // Author TPOC: contact@openfhe.org
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 //    this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -42,18 +42,18 @@
 using namespace lbcrypto;
 
 template <typename V>
-inline V makeVector(usint ringdim, const typename V::Integer &mod) {
-  DiscreteUniformGeneratorImpl<V> dug;
-  dug.SetModulus(mod);
+inline V makeVector(usint ringdim, const typename V::Integer& mod) {
+    DiscreteUniformGeneratorImpl<V> dug;
+    dug.SetModulus(mod);
 
-  return dug.GenerateVector(ringdim);
+    return dug.GenerateVector(ringdim);
 }
 
-inline NativeVector makeNativeVector(usint ringdim, const NativeInteger &mod) {
-  DiscreteUniformGeneratorImpl<NativeVector> dug;
-  dug.SetModulus(mod);
+inline NativeVector makeNativeVector(usint ringdim, const NativeInteger& mod) {
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    dug.SetModulus(mod);
 
-  return dug.GenerateVector(ringdim);
+    return dug.GenerateVector(ringdim);
 }
 
 #endif

@@ -40,33 +40,32 @@
 #include <string>
 
 #include "encoding/plaintext.h"
-using std::string;
 
 namespace lbcrypto {
 
 class StringEncoding : public PlaintextImpl {
-  string ptx;
+  std::string ptx;
   // enum EncodingType { CHAR7bit } encoding = CHAR7bit;
 
  public:
   // these three constructors are used inside of Decrypt
-  StringEncoding(shared_ptr<Poly::Params> vp, EncodingParams ep)
+  StringEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {}
 
-  StringEncoding(shared_ptr<NativePoly::Params> vp, EncodingParams ep)
+  StringEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {}
 
-  StringEncoding(shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
+  StringEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {}
 
-  StringEncoding(shared_ptr<Poly::Params> vp, EncodingParams ep, string str)
+  StringEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep, std::string str)
       : PlaintextImpl(vp, ep), ptx(str) {}
 
-  StringEncoding(shared_ptr<NativePoly::Params> vp, EncodingParams ep,
-                 string str)
+  StringEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
+                 std::string str)
       : PlaintextImpl(vp, ep), ptx(str) {}
 
-  StringEncoding(shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, string str)
+  StringEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, std::string str)
       : PlaintextImpl(vp, ep), ptx(str) {}
 
   // TODO provide wide-character version (for unicode); right now this class
@@ -78,7 +77,7 @@ class StringEncoding : public PlaintextImpl {
    * GetStringValue
    * @return the un-encoded string
    */
-  const string& GetStringValue() const { return ptx; }
+  const std::string& GetStringValue() const { return ptx; }
 
   /**
    * SetStringValue

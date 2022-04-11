@@ -44,7 +44,6 @@
 #include "utils/debug.h"
 #include "utils/parmfactory.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 class UTBFVRNS_DECRYPT
@@ -67,7 +66,7 @@ class UTBFVRNS_DECRYPT
  */
 static void checkEquality(const std::vector<int64_t>& a,
                           const std::vector<int64_t>& b, int vectorSize,
-                          const string& failmsg) {
+                          const std::string& failmsg) {
   std::vector<usint> allTrue(vectorSize);
   std::vector<usint> tmp(vectorSize);
   for (int i = 0; i < vectorSize; i++) {
@@ -77,8 +76,8 @@ static void checkEquality(const std::vector<int64_t>& a,
   EXPECT_TRUE(tmp == allTrue) << failmsg;
 }
 
-// static vector<usint> ptm_args{2, 65537, 5308417};
-// static vector<usint> dcrtbit_args{30, 40, 50, 60};
+// static std::vector<usint> ptm_args{2, 65537, 5308417};
+// static std::vector<usint> dcrtbit_args{30, 40, 50, 60};
 
 TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
   usint ptm = std::get<0>(GetParam());
@@ -149,6 +148,7 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
  * log2(5308417) = 22.34
  * log2(3221225473) = 31.58
  */
+ // clang-format off
 INSTANTIATE_TEST_SUITE_P(
     BFVrns_Decrypt, UTBFVRNS_DECRYPT,
     ::testing::Values(std::make_tuple(1 << 1, 30),        // A
@@ -192,4 +192,5 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_tuple(65537, 60),         // G
                       std::make_tuple(5308417, 60),       // H
                       std::make_tuple(3221225473, 60)));  // H
+ // clang-format on
 #endif

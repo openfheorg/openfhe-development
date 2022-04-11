@@ -157,6 +157,7 @@ constexpr usint SCALE = 90;
 constexpr usint SCALE = 50;
 #endif
 
+// clang-format off
 static std::vector<TEST_CASE> testCases = {
     // TestType,  Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { ADD_PACKED, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -276,6 +277,7 @@ static std::vector<TEST_CASE> testCases = {
 #endif
     // ==========================================
 };
+// clang-format on
 //===========================================================================================================
 
 class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE> {
@@ -305,7 +307,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_Add_Packed(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Add_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -414,7 +416,7 @@ protected:
         }
     }
 
-    void UnitTest_Mult_Packed(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Mult_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -495,7 +497,7 @@ protected:
      * - automatic scaling up of plaintexts to a depth that matches that of a
      * ciphertext
      */
-    void UnitTest_ScaleFactorAdjustments(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_ScaleFactorAdjustments(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -655,7 +657,7 @@ protected:
         }
     }
 
-    void UnitTest_AutoLevelReduce(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_AutoLevelReduce(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -898,7 +900,7 @@ protected:
         }
     }
 
-    void UnitTest_Compress(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Compress(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -940,7 +942,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalFastRotation(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalFastRotation(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1018,7 +1020,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalAtIndex(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalAtIndex(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1088,7 +1090,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalMerge(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalMerge(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         // TODO (dsuponit) error from pke/include/schemebase/base-scheme.h:1500 EvalMerge operation has not been enabled"
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -1127,7 +1129,7 @@ protected:
             // Generate multiplication keys
             cc->EvalMultKeyGen(kp.secretKey);
             // Generate rotation keys for all right rotations 1 to 8.
-            vector<int32_t> indexList = { -1, -2, -3, -4, -5, -6, -7, -8 };
+            std::vector<int32_t> indexList = { -1, -2, -3, -4, -5, -6, -7, -8 };
             cc->EvalAtIndexKeyGen(kp.secretKey, indexList);
 
             // Encrypt plaintexts
@@ -1169,15 +1171,15 @@ protected:
         }
     }
 
-    void UnitTest_EvalLinearWSum(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalLinearWSum(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            vector<double> weights{ 0, 1, 2 };
-            vector<std::complex<double>> in1(VECTOR_SIZE, 3); // all 3's
-            vector<std::complex<double>> in2(VECTOR_SIZE, 2); // all 2's
-            vector<std::complex<double>> in3(VECTOR_SIZE, 1); // all 1's
-            vector<std::complex<double>> out(VECTOR_SIZE);
+            std::vector<double> weights{ 0, 1, 2 };
+            std::vector<std::complex<double>> in1(VECTOR_SIZE, 3); // all 3's
+            std::vector<std::complex<double>> in2(VECTOR_SIZE, 2); // all 2's
+            std::vector<std::complex<double>> in3(VECTOR_SIZE, 1); // all 1's
+            std::vector<std::complex<double>> out(VECTOR_SIZE);
             for (usint i = 0; i < VECTOR_SIZE; i++) {
                 // TODO (dsuponit): what is the purpose of this calculation? to have a noise?
                 // otherwise it is better to create "out" without calculating values in the loop
@@ -1198,8 +1200,8 @@ protected:
             Ciphertext<Element> cIn2 = cc->Encrypt(kp.publicKey, pIn2);
             Ciphertext<Element> cIn3 = cc->Encrypt(kp.publicKey, pIn3);
 
-            vector<Ciphertext<Element>> ciphertexts{ cIn1, cIn2, cIn3 };
-            vector<ConstCiphertext<Element>> constCiphertexts{ cIn1, cIn2, cIn3 };
+            std::vector<Ciphertext<Element>> ciphertexts{ cIn1, cIn2, cIn3 };
+            std::vector<ConstCiphertext<Element>> constCiphertexts{ cIn1, cIn2, cIn3 };
 
             auto cResult = cc->EvalLinearWSum(constCiphertexts, weights);
             Plaintext results;
@@ -1229,7 +1231,7 @@ protected:
         }
     }
 
-    void UnitTest_ReEncryption(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_ReEncryption(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1290,7 +1292,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalPoly(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_EvalPoly(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1394,7 +1396,7 @@ protected:
     /***
      * Tests whether metadata is carried over for several operations in CKKS
      */
-    void UnitTest_Metadata(const TEST_CASE& testData, const string& failmsg = std::string()) {
+    void UnitTest_Metadata(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1515,10 +1517,10 @@ protected:
             EXPECT_EQ(val1->GetMetadata(), fastRotMinus2ValTest->GetMetadata())
                 << "Ciphertext metadata mismatch in EvalFastRotation -2";
 
-            vector<double> weights(2);
+            std::vector<double> weights(2);
             for (int i = 0; i < 2; i++) weights[i] = i;
 
-            vector<ConstCiphertext<Element>> ciphertexts{ ciphertext1, ciphertext2 };
+            std::vector<ConstCiphertext<Element>> ciphertexts{ ciphertext1, ciphertext2 };
 
             // Checking if metadata is carried over in EvalLinearWSum
             auto cLWS = cc->EvalLinearWSum(ciphertexts, weights);

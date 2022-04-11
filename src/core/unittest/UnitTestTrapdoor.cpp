@@ -39,7 +39,6 @@
 #include "utils/utilities.h"
 #include "lattice/trapdoor.h"
 
-// using namespace std;
 using namespace lbcrypto;
 
 class UnitTestTrapdoor : public ::testing::Test {
@@ -617,8 +616,8 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatricesDCRT) {
   size_t dcrtBits = 60;
   size_t size = 3;
 
-  vector<NativeInteger> moduli(size);
-  vector<NativeInteger> roots(size);
+  std::vector<NativeInteger> moduli(size);
+  std::vector<NativeInteger> roots(size);
 
   // makes sure the first integer is less than 2^60-1 to take advangate of NTL
   // optimizations

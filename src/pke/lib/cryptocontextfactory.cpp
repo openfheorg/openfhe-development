@@ -38,7 +38,7 @@
 namespace lbcrypto {
 
 template <typename Element>
-vector<CryptoContext<Element>> CryptoContextFactory<Element>::AllContexts;
+std::vector<CryptoContext<Element>> CryptoContextFactory<Element>::AllContexts;
 
 template <typename Element>
 void CryptoContextFactory<Element>::ReleaseAllContexts() {
@@ -58,9 +58,9 @@ CryptoContext<Element> CryptoContextFactory<Element>::GetSingleContext() {
 
 template <typename Element>
 CryptoContext<Element> CryptoContextFactory<Element>::GetContext(
-    shared_ptr<CryptoParametersBase<Element>> params,
-    shared_ptr<SchemeBase<Element>> scheme,
-    const string& schemeId) {
+    std::shared_ptr<CryptoParametersBase<Element>> params,
+    std::shared_ptr<SchemeBase<Element>> scheme,
+    const std::string& schemeId) {
   for (CryptoContext<Element> cc : CryptoContextFactory<Element>::AllContexts) {
     if (*cc->GetScheme().get() == *scheme.get() &&
         *cc->GetCryptoParameters().get() == *params.get()) {
@@ -90,7 +90,7 @@ CryptoContext<Element> CryptoContextFactory<Element>::GetContextForPointer(
 }
 
 template <typename T>
-const vector<CryptoContext<T>>& CryptoContextFactory<T>::GetAllContexts() {
+const std::vector<CryptoContext<T>>& CryptoContextFactory<T>::GetAllContexts() {
   return AllContexts;
 }
 
@@ -215,7 +215,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBFVrns(
 
 template <typename T>
 CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBGVrns(
-    shared_ptr<ParmType> ep, const PlaintextModulus plaintextmodulus,
+    std::shared_ptr<ParmType> ep, const PlaintextModulus plaintextmodulus,
     usint relinWindow, float stDev, MODE mode, int depth, int maxDepth,
     enum KeySwitchTechnique ksTech, enum RescalingTechnique rsTech) {
   auto params = std::make_shared<CryptoParametersBGVRNS>(
@@ -241,7 +241,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBGVrns(
 
 template <typename T>
 CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBGVrns(
-    shared_ptr<ParmType> ep, EncodingParams encodingParams, usint relinWindow,
+    std::shared_ptr<ParmType> ep, EncodingParams encodingParams, usint relinWindow,
     float stDev, MODE mode, int depth, int maxDepth,
     enum KeySwitchTechnique ksTech, enum RescalingTechnique rsTech) {
   auto params = std::make_shared<CryptoParametersBGVRNS>(
@@ -354,7 +354,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBGVrns(
 
 template <typename T>
 CryptoContext<T> CryptoContextFactory<T>::genCryptoContextCKKSrns(
-    shared_ptr<ParmType> ep, EncodingParams encodingParams, usint relinWindow,
+    std::shared_ptr<ParmType> ep, EncodingParams encodingParams, usint relinWindow,
     float stDev, MODE mode, int depth, int maxDepth, KeySwitchTechnique ksTech,
     RescalingTechnique rsTech) {
 #if NATIVEINT == 128

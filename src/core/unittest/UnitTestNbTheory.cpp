@@ -49,13 +49,12 @@
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 // ---------------  TESTING METHODS OF NBTHEORY ---------------
 
 template <typename T>
-void method_greatest_common_divisor(const string& msg) {
+void method_greatest_common_divisor(const std::string& msg) {
   {
     // TEST CASE TO FIND GREATEST COMMON DIVISOR OF TWO SMALL NUMBERS
     T a("10403"), b("103");
@@ -92,7 +91,7 @@ TEST(UTNbTheory, method_greatest_common_divisor) {
 }
 
 template <typename T>
-void method_miller_rabin_primality(const string& msg) {
+void method_miller_rabin_primality(const std::string& msg) {
   {
     // TEST CASE FOR MILLER RABIN PRIMALITY TEST FOR SMALL PRIME
     T prime("24469");
@@ -134,17 +133,17 @@ TEST(UTNbTheory, method_miller_rabin_primality) {
 
 template <typename Element>
 ::testing::AssertionResult isMemberOf(Element val,
-                                      const vector<Element>& values) {
+                                      const std::vector<Element>& values) {
   if (std::find(values.begin(), values.end(), val) != values.end())
     return ::testing::AssertionSuccess();
   return ::testing::AssertionFailure();
 }
 
 template <typename T>
-void method_factorize_returns_factors(const string& msg) {
+void method_factorize_returns_factors(const std::string& msg) {
   T comp("53093040");
   std::set<T> factors;
-  vector<T> answers({2, 3, 5, 7, 11, 13, 15, 17});
+  std::vector<T> answers({2, 3, 5, 7, 11, 13, 15, 17});
 
   lbcrypto::PrimeFactorize(comp, factors);
 
@@ -173,7 +172,7 @@ TEST(UTNbTheory, first_prime_overflow) {
 }
 
 template <typename T>
-void method_prime_modulus(const string& msg) {
+void method_prime_modulus(const std::string& msg) {
   usint m, nBits;
   {
     // TEST CASE TO FIND PRIME MODULUS
@@ -202,7 +201,7 @@ TEST(UTNbTheory, method_prime_modulus) {
 }
 
 template <typename T>
-void method_primitive_root_of_unity_VERY_LONG(const string& msg) {
+void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
   {
     // TEST CASE TO ENSURE THE ROOT OF UNITY THAT IS FOUND IS A PRIMITIVE ROOT
     // OF UNTIY
@@ -404,11 +403,11 @@ TEST(UTNbTheory, method_primitive_root_of_unity_VERY_LONG) {
 }
 
 template <typename T>
-void test_nextQ(const string& msg) {
+void test_nextQ(const std::string& msg) {
   usint m = 2048;
   usint bits = 22;
 
-  vector<T> moduliBBV = {T("4208641"), T("4263937"), T("4270081"), T("4274177"),
+  std::vector<T> moduliBBV = {T("4208641"), T("4263937"), T("4270081"), T("4274177"),
                          T("4294657"), T("4300801"), T("4304897"), T("4319233"),
                          T("4323329"), T("4360193")};
 

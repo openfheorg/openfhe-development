@@ -57,7 +57,7 @@ class CryptoContextHelper {
    * @param out stream to write to
    * @param parmset parameter set name
    */
-  static void printParmSet(std::ostream& out, string parmset);
+  static void printParmSet(std::ostream& out, std::string parmset);
 
   /**
    *
@@ -72,7 +72,7 @@ class CryptoContextHelper {
    * @param filter is a substring that matches parameter set names
    */
   static void printParmSetNamesByFilter(std::ostream& out,
-                                        const string& filter);
+                                        const std::string& filter);
 
   /**
    * Prints all parameter sets matching one of the filters
@@ -90,7 +90,7 @@ class CryptoContextHelper {
    * @param filter is a substring that matches parameter set names
    */
   static void printParmSetNamesByExcludeFilter(std::ostream& out,
-                                               const string& filter);
+                                               const std::string& filter);
 
   /**
    * Prints all parameter sets excluding the ones matching one of the filters
@@ -107,7 +107,7 @@ class CryptoContextHelper {
    * @param parmsetname name of parameter set to use
    * @return newly constructed CryptoContext, or null on failure
    */
-  static CryptoContext<Poly> getNewContext(const string& parmsetname,
+  static CryptoContext<Poly> getNewContext(const std::string& parmsetname,
                                            EncodingParams p = 0);
 
   /**
@@ -118,12 +118,12 @@ class CryptoContextHelper {
    * @param primeBits - bit width of the primes in the towers
    * @return newly constructed CryptoContext, or null on failure
    */
-  static CryptoContext<DCRTPoly> getNewDCRTContext(const string& parmsetname,
+  static CryptoContext<DCRTPoly> getNewDCRTContext(const std::string& parmsetname,
                                                    usint numTowers,
                                                    usint primeBits);
 
   template <typename Element>
-  static CryptoContext<Element> ContextFromAppProfile(const string& scheme,
+  static CryptoContext<Element> ContextFromAppProfile(const std::string& scheme,
                                                       PlaintextModulus ptm,
                                                       usint nA, usint nM,
                                                       usint nK, usint maxD,

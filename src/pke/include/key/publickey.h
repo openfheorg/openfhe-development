@@ -48,7 +48,7 @@ template <typename Element>
 class PublicKeyImpl;
 
 template <typename Element>
-using PublicKey = shared_ptr<PublicKeyImpl<Element>>;
+using PublicKey = std::shared_ptr<PublicKeyImpl<Element>>;
 
 /**
  * @brief Class for public key

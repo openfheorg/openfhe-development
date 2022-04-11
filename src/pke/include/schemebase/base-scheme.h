@@ -128,7 +128,7 @@ class SchemeBase {
   // PARAMETER GENERATION WRAPPER
   /////////////////////////////////////////
 
-  virtual bool ParamsGenBFVRNS(shared_ptr<CryptoParametersBase<Element>> cryptoParams,
+  virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                          int32_t evalAddCount = 0,
                          int32_t evalMultCount = 0,
                          int32_t keySwitchCount = 0,
@@ -147,7 +147,7 @@ class SchemeBase {
                    "Parameter generation operation has not been implemented");
   }
 
-  virtual bool ParamsGenCKKSRNS(shared_ptr<CryptoParametersBase<Element>> cryptoParams,
+  virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                          usint cyclOrder,
                          usint numPrimes,
                          usint scaleExp,
@@ -169,7 +169,7 @@ class SchemeBase {
                    "for this scheme.");
   }
 
-  virtual bool ParamsGenBGVRNS(shared_ptr<CryptoParametersBase<Element>> cryptoParams,
+  virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                          usint cyclOrder,
                          usint ptm,
                          usint numPrimes,
@@ -374,8 +374,8 @@ class SchemeBase {
                    "KeySwitchInPlace operation has not been enabled");
   }
 
-  virtual shared_ptr<vector<Element>> EvalKeySwitchPrecomputeCore(
-      Element c, shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
+  virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
+      Element c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
     if (m_KeySwitch) {
       return m_KeySwitch->EvalKeySwitchPrecomputeCore(c, cryptoParamsBase);
     }
@@ -384,10 +384,10 @@ class SchemeBase {
         "EvalKeySwitchPrecomputeCore operation has not been enabled");
   }
 
-  virtual shared_ptr<vector<Element>> EvalFastKeySwitchCore(
-      const shared_ptr<vector<Element>> digits,
+  virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
+      const std::shared_ptr<std::vector<Element>> digits,
       const EvalKey<Element> evalKey,
-      const shared_ptr<ParmType> params) const {
+      const std::shared_ptr<ParmType> params) const {
     if (m_KeySwitch) {
       if (nullptr == digits)
         PALISADE_THROW(config_error, "Input digits is nullptr");
@@ -404,7 +404,7 @@ class SchemeBase {
                    "EvalFastKeySwitchCore operation has not been enabled");
   }
 
-  virtual shared_ptr<vector<Element>> KeySwitchCore(Element a, const EvalKey<Element> evalKey) const {
+  virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(Element a, const EvalKey<Element> evalKey) const {
     if (m_KeySwitch) {
       if (!evalKey)
         PALISADE_THROW(config_error, "Input evaluation key is nullptr");
@@ -744,7 +744,7 @@ class SchemeBase {
                    "EvalMultKeyGen operation has not been enabled");
   }
 
-  virtual vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey) const {
+  virtual std::vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey) const {
     if (m_LeveledSHE) {
       if (!privateKey)
         PALISADE_THROW(config_error, "Input private key is nullptr");
@@ -820,7 +820,7 @@ class SchemeBase {
   virtual Ciphertext<Element> EvalMultAndRelinearize(
       ConstCiphertext<Element> ciphertext1,
       ConstCiphertext<Element> ciphertext2,
-      const vector<EvalKey<Element>> &evalKeyVec) const {
+      const std::vector<EvalKey<Element>> &evalKeyVec) const {
     if (m_LeveledSHE) {
       if (!ciphertext1)
         PALISADE_THROW(config_error, "Input first ciphertext is nullptr");
@@ -838,7 +838,7 @@ class SchemeBase {
 
   virtual Ciphertext<Element> Relinearize(
       ConstCiphertext<Element> ciphertext,
-      const vector<EvalKey<Element>> &evalKeyVec) const {
+      const std::vector<EvalKey<Element>> &evalKeyVec) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         PALISADE_THROW(config_error, "Input ciphertext is nullptr");
@@ -852,7 +852,7 @@ class SchemeBase {
 
   virtual void RelinearizeInPlace(
       Ciphertext<Element> &ciphertext,
-      const vector<EvalKey<Element>> &evalKeyVec) const {
+      const std::vector<EvalKey<Element>> &evalKeyVec) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         PALISADE_THROW(config_error, "Input ciphertext is nullptr");
@@ -951,7 +951,7 @@ class SchemeBase {
   // SHE AUTOMORPHISM Wrapper
   /////////////////////////////////////////
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
       const PrivateKey<Element> privateKey,
       const std::vector<usint> &indexList) const {
     if (m_LeveledSHE) {
@@ -968,7 +968,7 @@ class SchemeBase {
                    "EvalAutomorphismKeyGen operation has not been enabled");
   }
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
       const PublicKey<Element> publicKey,
       const PrivateKey<Element> privateKey,
       const std::vector<usint> &indexList) const {
@@ -1006,7 +1006,7 @@ class SchemeBase {
     PALISADE_THROW(config_error, errorMsg);
   }
 
-  virtual shared_ptr<vector<Element>> EvalFastRotationPrecompute(ConstCiphertext<Element> ciphertext) const {
+  virtual std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(ConstCiphertext<Element> ciphertext) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         PALISADE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1019,7 +1019,7 @@ class SchemeBase {
 
   virtual Ciphertext<Element> EvalFastRotation(
       ConstCiphertext<Element> ciphertext, const usint index, const usint m,
-      const shared_ptr<vector<Element>> digits) const {
+      const std::shared_ptr<std::vector<Element>> digits) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         PALISADE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1030,7 +1030,7 @@ class SchemeBase {
                    "EvalFastRotation operation has not been enabled");
   }
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalAtIndexKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAtIndexKeyGen(
       const PublicKey<Element> publicKey,
       const PrivateKey<Element> privateKey,
       const std::vector<int32_t> &indexList) const {
@@ -1269,7 +1269,7 @@ class SchemeBase {
   // Advanced SHE Wrapper
   /////////////////////////////////////////
 
-  virtual Ciphertext<Element> EvalAddMany(const vector<Ciphertext<Element>> &ciphertextVec) const {
+  virtual Ciphertext<Element> EvalAddMany(const std::vector<Ciphertext<Element>> &ciphertextVec) const {
     if (m_AdvancedSHE) {
       if (!ciphertextVec.size())
         PALISADE_THROW(config_error, "Input ciphertext vector is empty");
@@ -1279,7 +1279,7 @@ class SchemeBase {
     PALISADE_THROW(config_error, "EvalAddMany operation has not been enabled");
   }
 
-  virtual Ciphertext<Element> EvalAddManyInPlace(vector<Ciphertext<Element>> &ciphertextVec) const {
+  virtual Ciphertext<Element> EvalAddManyInPlace(std::vector<Ciphertext<Element>> &ciphertextVec) const {
     if (m_AdvancedSHE) {
       if (!ciphertextVec.size())
         PALISADE_THROW(config_error, "Input ciphertext vector is empty");
@@ -1302,8 +1302,8 @@ class SchemeBase {
   }
 
   virtual Ciphertext<Element> EvalLinearWSum(
-      vector<ConstCiphertext<Element>>& ciphertextVec,
-      const vector<double> &constantVec) const {
+      std::vector<ConstCiphertext<Element>>& ciphertextVec,
+      const std::vector<double> &constantVec) const {
     if (m_AdvancedSHE) {
       if (!ciphertextVec.size())
         PALISADE_THROW(config_error, "Input ciphertext vector is empty");
@@ -1315,8 +1315,8 @@ class SchemeBase {
   }
 
   virtual Ciphertext<Element> EvalLinearWSumMutable(
-      vector<Ciphertext<Element>> ciphertextVec,
-      const vector<double> &constantVec) const {
+      std::vector<Ciphertext<Element>> ciphertextVec,
+      const std::vector<double> &constantVec) const {
     if (m_AdvancedSHE) {
       if (!ciphertextVec.size())
         PALISADE_THROW(config_error, "Input ciphertext vector is empty");
@@ -1328,8 +1328,8 @@ class SchemeBase {
   }
 
   virtual Ciphertext<Element> EvalMultMany(
-      const vector<Ciphertext<Element>> &ciphertextVec,
-      const vector<EvalKey<Element>> &evalKeyVec) const {
+      const std::vector<Ciphertext<Element>> &ciphertextVec,
+      const std::vector<EvalKey<Element>> &evalKeyVec) const {
     if (m_AdvancedSHE) {
       if (!ciphertextVec.size())
         PALISADE_THROW(config_error, "Input ciphertext vector is empty");
@@ -1352,7 +1352,7 @@ class SchemeBase {
     }
   }
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(
       const PrivateKey<Element> privateKey,
       const PublicKey<Element> publicKey) const {
     if (m_AdvancedSHE) {
@@ -1369,7 +1369,7 @@ class SchemeBase {
                    "EvalSumKeyGen operation has not been enabled");
   }
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(
       const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey,
       usint rowSize, usint subringDim = 0) const {
     if (m_AdvancedSHE) {
@@ -1387,7 +1387,7 @@ class SchemeBase {
                    "EvalSumRowsKeyGen operation has not been enabled");
   }
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumColsKeyGen(
       const PrivateKey<Element> privateKey,
       const PublicKey<Element> publicKey) const {
     if (m_AdvancedSHE) {
@@ -1495,7 +1495,7 @@ class SchemeBase {
   }
 
   virtual Ciphertext<Element> EvalMerge(
-      const vector<Ciphertext<Element>> &ciphertextVec,
+      const std::vector<Ciphertext<Element>> &ciphertextVec,
       const std::map<usint, EvalKey<Element>> &evalKeyMap) const {
     if (m_AdvancedSHE) {
       if (!ciphertextVec.size())
@@ -1514,7 +1514,7 @@ class SchemeBase {
 
   virtual KeyPair<Element> MultipartyKeyGen(
       CryptoContext<Element> cc,
-      const vector<PrivateKey<Element>> &privateKeyVec, bool makeSparse) {
+      const std::vector<PrivateKey<Element>> &privateKeyVec, bool makeSparse) {
     if (m_Multiparty) {
       if (!cc) PALISADE_THROW(config_error, "Input crypto context is nullptr");
       if (!privateKeyVec.size())
@@ -1574,7 +1574,7 @@ class SchemeBase {
   }
 
   virtual DecryptResult MultipartyDecryptFusion(
-      const vector<Ciphertext<Element>> &ciphertextVec,
+      const std::vector<Ciphertext<Element>> &ciphertextVec,
       NativePoly *plaintext) const {
     if (m_Multiparty) {
       if (!ciphertextVec.size())
@@ -1587,7 +1587,7 @@ class SchemeBase {
   }
 
   virtual DecryptResult MultipartyDecryptFusion(
-      const vector<Ciphertext<Element>> &ciphertextVec, Poly *plaintext) const {
+      const std::vector<Ciphertext<Element>> &ciphertextVec, Poly *plaintext) const {
     if (m_Multiparty) {
       if (!ciphertextVec.size())
         PALISADE_THROW(config_error, "Input ciphertext vector is empty");
@@ -1618,10 +1618,10 @@ class SchemeBase {
     PALISADE_THROW(config_error, "Multiparty capability has not been enabled");
   }
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>>
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>>
   MultiEvalAutomorphismKeyGen(
       const PrivateKey<Element> privateKey,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalAutoKeyMap,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalAutoKeyMap,
       const std::vector<usint> &indexList, const std::string &keyId = "") {
     if (m_Multiparty) {
       if (!privateKey)
@@ -1643,9 +1643,9 @@ class SchemeBase {
     PALISADE_THROW(config_error, "Multiparty capability has not been enabled");
   }
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
       const PrivateKey<Element> privateKey,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalAutoKeyMap,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalAutoKeyMap,
       const std::vector<int32_t> &indexList, const std::string &keyId = "") {
     if (m_Multiparty) {
       if (!privateKey)
@@ -1667,9 +1667,9 @@ class SchemeBase {
     PALISADE_THROW(config_error, "Multiparty capability has not been enabled");
   }
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
       const PrivateKey<Element> privateKey,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap,
       const std::string &keyId = "") {
     if (m_Multiparty) {
       if (!privateKey)
@@ -1720,9 +1720,9 @@ class SchemeBase {
     PALISADE_THROW(config_error, "Multiparty capability has not been enabled");
   }
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap1,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2,
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap1,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2,
       const std::string &keyId = "") {
     if (m_Multiparty) {
       if (!evalSumKeyMap1)
@@ -1744,10 +1744,10 @@ class SchemeBase {
     PALISADE_THROW(config_error, "Multiparty capability has not been enabled");
   }
 
-  virtual shared_ptr<std::map<usint, EvalKey<Element>>>
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>>
   MultiAddEvalAutomorphismKeys(
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap1,
-      const shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap1,
+      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2,
       const std::string &keyId = "") {
     if (m_Multiparty) {
       if (!evalSumKeyMap1)

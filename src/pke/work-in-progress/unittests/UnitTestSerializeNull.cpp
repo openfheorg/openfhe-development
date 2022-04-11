@@ -34,7 +34,6 @@
 
 #include "scheme/null/nullscheme-ser.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 class UTPKESer : public ::testing::Test {

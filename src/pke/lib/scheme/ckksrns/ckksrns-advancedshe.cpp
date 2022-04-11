@@ -59,8 +59,8 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 namespace lbcrypto {
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(
-    vector<ConstCiphertext<DCRTPoly>>& ciphertexts, const vector<double> &constants) const {
-  vector<Ciphertext<DCRTPoly>> cts(ciphertexts.size());
+    std::vector<ConstCiphertext<DCRTPoly>>& ciphertexts, const std::vector<double> &constants) const {
+  std::vector<Ciphertext<DCRTPoly>> cts(ciphertexts.size());
 
   for (uint32_t i = 0; i < ciphertexts.size(); i++) {
     cts[i] = ciphertexts[i]->Clone();
@@ -70,7 +70,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(
 }
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(
-    vector<Ciphertext<DCRTPoly>>& ciphertexts, const vector<double> &constants) const {
+    std::vector<Ciphertext<DCRTPoly>>& ciphertexts, const std::vector<double> &constants) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
 

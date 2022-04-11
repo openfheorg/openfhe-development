@@ -76,7 +76,7 @@ public:
    * dimension
    */
   virtual bool ParamsGenBFVRNS(
-      shared_ptr<CryptoParametersBase<Element>> cryptoParams,
+      std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
       int32_t evalAddCount = 0,
       int32_t evalMultCount = 0,
       int32_t keySwitchCount = 0,
@@ -108,7 +108,7 @@ public:
    * FLEXIBLEAUTO)
    */
   virtual bool ParamsGenCKKSRNS(
-      shared_ptr<CryptoParametersBase<Element>> cryptoParams,
+      std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
       usint cyclOrder,
       usint numPrimes,
       usint scaleExp,
@@ -139,7 +139,7 @@ public:
    * @param dcrtBits the bit-width of moduli.
    */
   virtual bool ParamsGenBGVRNS(
-      shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
+      std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
       usint ptm, usint numPrimes, usint relinWindow, MODE mode,
       usint firstModSize = 60,
       usint dcrtBits = 60,

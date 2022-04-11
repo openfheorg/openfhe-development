@@ -42,15 +42,10 @@
 #include "key/allkey.h"
 #include "cryptoobject.h"
 
-using std::move;
-using std::shared_ptr;
-using std::string;
-
 #include "encoding/plaintextfactory.h"
 #include "math/matrix.h"
 
 #include "ciphertext.h"
 #include "cryptocontext.h"
-#include "cryptocontexthelper.h"
 
 #endif /* SRC_LIB_PALISADE_H_ */

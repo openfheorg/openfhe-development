@@ -47,7 +47,6 @@
 #include "encoding/encodings.h"
 #include "utils/debug.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 namespace {

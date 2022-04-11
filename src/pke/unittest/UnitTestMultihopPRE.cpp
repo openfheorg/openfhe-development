@@ -44,7 +44,6 @@
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 
@@ -123,7 +122,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     ////////////////////////////////////////////////////////////
     // Encode source data
     ////////////////////////////////////////////////////////////
-    vector<int64_t> vectorOfInts;
+    std::vector<int64_t> vectorOfInts;
     unsigned int nShort=0;
     int ringsize=0;
     ringsize = cryptoContext->GetRingDimension();
@@ -161,8 +160,8 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     Plaintext plaintextDec;
 
     //multiple hop
-    vector<KeyPair<DCRTPoly>> keyPairs;
-    vector<Ciphertext<DCRTPoly>> reEncryptedCTs;
+    std::vector<KeyPair<DCRTPoly>> keyPairs;
+    std::vector<Ciphertext<DCRTPoly>> reEncryptedCTs;
 
     keyPairs.push_back(keyPair1);
     reEncryptedCTs.push_back(ciphertext1);
@@ -197,7 +196,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     cryptoContext->Decrypt(keyPairs[kp_size_vec-1].secretKey, reEncryptedCTs[ct_size_vec-1], &plaintextDec);  
 
     //verification
-    vector<int64_t> unpackedPT, unpackedDecPT;
+    std::vector<int64_t> unpackedPT, unpackedDecPT;
     unpackedPT = plaintextDec1->GetCoefPackedValue();
     unpackedDecPT = plaintextDec->GetCoefPackedValue();
     for (unsigned int j = 0; j < unpackedPT.size(); j++) {

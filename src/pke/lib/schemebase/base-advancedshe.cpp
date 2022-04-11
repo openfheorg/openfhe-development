@@ -60,7 +60,7 @@ namespace lbcrypto {
 
 template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalAddMany(
-    const vector<Ciphertext<Element>> &ciphertextVec) const {
+    const std::vector<Ciphertext<Element>> &ciphertextVec) const {
   const size_t inSize = ciphertextVec.size();
 
   if (ciphertextVec.size() < 1)
@@ -68,7 +68,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalAddMany(
                    "Input ciphertext vector size should be 1 or more");
 
   const size_t lim = inSize * 2 - 2;
-  vector<Ciphertext<Element>> ciphertextSumVec;
+  std::vector<Ciphertext<Element>> ciphertextSumVec;
   ciphertextSumVec.resize(inSize - 1);
   size_t ctrIndex = 0;
 
@@ -86,7 +86,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalAddMany(
 
 template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalAddManyInPlace(
-    vector<Ciphertext<Element>> &ciphertextVec) const {
+    std::vector<Ciphertext<Element>> &ciphertextVec) const {
 
   if (ciphertextVec.size() < 1)
     PALISADE_THROW(config_error,
@@ -115,8 +115,8 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalAddManyInPlace(
 
 template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(
-    const vector<Ciphertext<Element>> &ciphertextVec,
-    const vector<EvalKey<Element>> &evalKeys) const {
+    const std::vector<Ciphertext<Element>> &ciphertextVec,
+    const std::vector<EvalKey<Element>> &evalKeys) const {
   // TODO: seems that we can simply call EvalAddMany() here.
   // TODO: see EvalAddMany() below
   if (ciphertextVec.size() < 1)
@@ -125,7 +125,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(
 
   const size_t inSize = ciphertextVec.size();
   const size_t lim = inSize * 2 - 2;
-  vector<Ciphertext<Element>> ciphertextMultVec;
+  std::vector<Ciphertext<Element>> ciphertextMultVec;
   ciphertextMultVec.resize(inSize - 1);
   size_t ctrIndex = 0;
 
@@ -148,7 +148,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(
 
   std::uniform_real_distribution<double> distribution(0.0, 1.0);
 
-  string kID = ciphertext->GetKeyTag();
+  std::string kID = ciphertext->GetKeyTag();
   const auto cryptoParams = ciphertext->GetCryptoParameters();
   const auto encodingParams = cryptoParams->GetEncodingParams();
   const auto elementParams = cryptoParams->GetElementParams();
@@ -199,7 +199,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(
 }
 
 template <class Element>
-shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
+std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
     Element>::EvalSumKeyGen(const PrivateKey<Element> privateKey,
                             const PublicKey<Element> publicKey) const {
   if (!privateKey) PALISADE_THROW(config_error, "Input private key is nullptr");
@@ -241,7 +241,7 @@ shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
 }
 
 template <class Element>
-shared_ptr<std::map<usint, EvalKey<Element>>>
+std::shared_ptr<std::map<usint, EvalKey<Element>>>
 AdvancedSHEBase<Element>::EvalSumRowsKeyGen(
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey,
     usint rowSize, usint subringDim) const {
@@ -275,7 +275,7 @@ AdvancedSHEBase<Element>::EvalSumRowsKeyGen(
 }
 
 template <class Element>
-shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
+std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
     Element>::EvalSumColsKeyGen(const PrivateKey<Element> privateKey,
                                 const PublicKey<Element> publicKey) const {
   auto cc = privateKey->GetCryptoContext();
@@ -485,14 +485,14 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalInnerProduct(
 #if 0
 template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(
-    const vector<Ciphertext<Element>> &ciphertextVec,
+    const std::vector<Ciphertext<Element>> &ciphertextVec,
     const std::map<usint, EvalKey<Element>> &evalKeyMap) const {
   if (ciphertextVec.size() == 0)
     PALISADE_THROW(math_error,
                    "EvalMerge: the vector of ciphertexts to be merged "
                    "cannot be empty");
 
-  const shared_ptr<CryptoParametersBase<Element>> cryptoParams =
+  const std::shared_ptr<CryptoParametersBase<Element>> cryptoParams =
       ciphertextVec[0]->GetCryptoParameters();
   Ciphertext<Element> ciphertextMerged(
       std::make_shared<CiphertextImpl<Element>>(*(ciphertextVec[0])));

@@ -72,8 +72,8 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(
       std::static_pointer_cast<CryptoParametersRNS>(
           newKey->GetCryptoParameters());
 
-  const shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
-  const shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
+  const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
 
   usint sizeQ = paramsQ->GetParams().size();
   usint sizeQP = paramsQP->GetParams().size();
@@ -108,11 +108,11 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(
 
   auto numPartQ = cryptoParams->GetNumPartQ();
 
-  vector<DCRTPoly> av(numPartQ);
-  vector<DCRTPoly> bv(numPartQ);
+  std::vector<DCRTPoly> av(numPartQ);
+  std::vector<DCRTPoly> bv(numPartQ);
 
-  vector<NativeInteger> PModq = cryptoParams->GetPModq();
-  vector<vector<NativeInteger>> PartQHatModq = cryptoParams->GetPartQHatModq();
+  std::vector<NativeInteger> PModq = cryptoParams->GetPModq();
+  std::vector<std::vector<NativeInteger>> PartQHatModq = cryptoParams->GetPartQHatModq();
 
   for (usint part = 0; part < numPartQ; part++) {
     DCRTPoly a = DCRTPoly(dug, paramsQP, Format::EVALUATION);
@@ -158,8 +158,8 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(
       std::static_pointer_cast<CryptoParametersRNS>(
           newKey->GetCryptoParameters());
 
-  const shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
-  const shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
+  const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
 
   usint sizeQ = paramsQ->GetParams().size();
   usint sizeQP = paramsQP->GetParams().size();
@@ -194,11 +194,11 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(
 
   auto numPartQ = cryptoParams->GetNumPartQ();
 
-  vector<DCRTPoly> av(numPartQ);
-  vector<DCRTPoly> bv(numPartQ);
+  std::vector<DCRTPoly> av(numPartQ);
+  std::vector<DCRTPoly> bv(numPartQ);
 
-  vector<NativeInteger> PModq = cryptoParams->GetPModq();
-  vector<vector<NativeInteger>> PartQHatModq = cryptoParams->GetPartQHatModq();
+  std::vector<NativeInteger> PModq = cryptoParams->GetPModq();
+  std::vector<std::vector<NativeInteger>> PartQHatModq = cryptoParams->GetPartQHatModq();
 
   for (usint part = 0; part < numPartQ; part++) {
     DCRTPoly a = ekPrev == nullptr ? DCRTPoly(dug, paramsQP, Format::EVALUATION)
@@ -240,7 +240,7 @@ void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                        const EvalKey<DCRTPoly> ek) const {
   std::vector<DCRTPoly> &cv = ciphertext->GetElements();
 
-  shared_ptr<vector<DCRTPoly>> ba = (cv.size() == 2) ?
+  std::shared_ptr<std::vector<DCRTPoly>> ba = (cv.size() == 2) ?
       KeySwitchCore(cv[1], ek) :
       KeySwitchCore(cv[2], ek);
 
@@ -256,23 +256,23 @@ void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly> &ciphertext,
   cv.resize(2);
 }
 
-shared_ptr<vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(
+std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(
     DCRTPoly a, const EvalKey<DCRTPoly> evalKey) const {
   const auto cryptoParamsBase = evalKey->GetCryptoParameters();
-  shared_ptr<vector<DCRTPoly>> digits = EvalKeySwitchPrecomputeCore(a, cryptoParamsBase);
-  shared_ptr<vector<DCRTPoly>> result = EvalFastKeySwitchCore(digits, evalKey, a.GetParams());
+  std::shared_ptr<std::vector<DCRTPoly>> digits = EvalKeySwitchPrecomputeCore(a, cryptoParamsBase);
+  std::shared_ptr<std::vector<DCRTPoly>> result = EvalFastKeySwitchCore(digits, evalKey, a.GetParams());
   return result;
 }
 
-shared_ptr<vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
-    DCRTPoly c, shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
+std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
+    DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
   const auto cryptoParams =
         std::static_pointer_cast<CryptoParametersRNS>(
             cryptoParamsBase);
 
-  const shared_ptr<ParmType> paramsQl = c.GetParams();
-  const shared_ptr<ParmType> paramsP = cryptoParams->GetParamsP();
-  const shared_ptr<ParmType> paramsQlP = c.GetExtendedCRTBasis(paramsP);
+  const std::shared_ptr<ParmType> paramsQl = c.GetParams();
+  const std::shared_ptr<ParmType> paramsP = cryptoParams->GetParamsP();
+  const std::shared_ptr<ParmType> paramsQlP = c.GetExtendedCRTBasis(paramsP);
 
   size_t sizeQl = paramsQl->GetParams().size();
   size_t sizeP = paramsP->GetParams().size();
@@ -284,7 +284,7 @@ shared_ptr<vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
   if (numPartQl > cryptoParams->GetNumberOfQPartitions())
     numPartQl = cryptoParams->GetNumberOfQPartitions();
 
-  vector<DCRTPoly> partsCt(numPartQl);
+  std::vector<DCRTPoly> partsCt(numPartQl);
 
   // Digit decomposition
   // Zero-padding and split
@@ -294,8 +294,8 @@ shared_ptr<vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
 
       uint32_t sizePartQl = sizeQl - alpha * part;
 
-      vector<NativeInteger> moduli(sizePartQl);
-      vector<NativeInteger> roots(sizePartQl);
+      std::vector<NativeInteger> moduli(sizePartQl);
+      std::vector<NativeInteger> roots(sizePartQl);
 
       for (uint32_t i = 0; i < sizePartQl; i++) {
         moduli[i] = paramsPartQ->GetParams()[i]->GetModulus();
@@ -313,7 +313,7 @@ shared_ptr<vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
                                Format::EVALUATION, true);
     }
 
-    const vector<NativeInteger> &QHatInvModq =
+    const std::vector<NativeInteger> &QHatInvModq =
         cryptoParams->GetPartQHatInvModq(part);
 
     usint sizePartQl = partsCt[part].GetNumOfElements();
@@ -324,8 +324,8 @@ shared_ptr<vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
     }
   }
 
-  vector<DCRTPoly> partsCtCompl(numPartQl);
-  vector<DCRTPoly> partsCtExt(numPartQl);
+  std::vector<DCRTPoly> partsCtCompl(numPartQl);
+  std::vector<DCRTPoly> partsCtExt(numPartQl);
 
   for (uint32_t part = 0; part < numPartQl; part++) {
     auto partCtClone = partsCt[part].Clone();
@@ -360,20 +360,20 @@ shared_ptr<vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
     }
   }
 
-  return std::make_shared<vector<DCRTPoly>>(std::move(partsCtExt));
+  return std::make_shared<std::vector<DCRTPoly>>(std::move(partsCtExt));
 }
 
-shared_ptr<vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
-    const shared_ptr<vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
-    const shared_ptr<ParmType> paramsQl) const {
+std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
+    const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
+    const std::shared_ptr<ParmType> paramsQl) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
           evalKey->GetCryptoParameters());
   const std::vector<DCRTPoly> &bv = evalKey->GetBVector();
   const std::vector<DCRTPoly> &av = evalKey->GetAVector();
 
-  const shared_ptr<ParmType> paramsP = cryptoParams->GetParamsP();
-  const shared_ptr<ParmType> paramsQlP = (*digits)[0].GetParams();
+  const std::shared_ptr<ParmType> paramsP = cryptoParams->GetParamsP();
+  const std::shared_ptr<ParmType> paramsQlP = (*digits)[0].GetParams();
 
   size_t sizeQl = paramsQl->GetParams().size();
   size_t sizeQlP = paramsQlP->GetParams().size();
@@ -429,7 +429,7 @@ shared_ptr<vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
   // ct0.SetFormat(Format::EVALUATION);
   // ct1.SetFormat(Format::EVALUATION);
 
-  return std::make_shared<vector<DCRTPoly>>(std::initializer_list<DCRTPoly>{std::move(ct0), std::move(ct1)});
+  return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>{std::move(ct0), std::move(ct1)});
 }
 
 }  // namespace lbcrypto

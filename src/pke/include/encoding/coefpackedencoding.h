@@ -45,29 +45,29 @@
 namespace lbcrypto {
 
 class CoefPackedEncoding : public PlaintextImpl {
-  vector<int64_t> value;
+  std::vector<int64_t> value;
 
  public:
   // these two constructors are used inside of Decrypt
-  CoefPackedEncoding(shared_ptr<Poly::Params> vp, EncodingParams ep)
+  CoefPackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {}
 
-  CoefPackedEncoding(shared_ptr<NativePoly::Params> vp, EncodingParams ep)
+  CoefPackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {}
 
-  CoefPackedEncoding(shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
+  CoefPackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {}
 
-  CoefPackedEncoding(shared_ptr<Poly::Params> vp, EncodingParams ep,
-                     vector<int64_t> coeffs)
+  CoefPackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
+                     std::vector<int64_t> coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
-  CoefPackedEncoding(shared_ptr<NativePoly::Params> vp, EncodingParams ep,
-                     vector<int64_t> coeffs)
+  CoefPackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
+                     std::vector<int64_t> coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
-  CoefPackedEncoding(shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
-                     vector<int64_t> coeffs)
+  CoefPackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
+                     std::vector<int64_t> coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
   virtual ~CoefPackedEncoding() {}
@@ -76,13 +76,13 @@ class CoefPackedEncoding : public PlaintextImpl {
    * GetCoeffsValue
    * @return the un-encoded scalar
    */
-  const vector<int64_t>& GetCoefPackedValue() const { return value; }
+  const std::vector<int64_t>& GetCoefPackedValue() const { return value; }
 
   /**
    * SetIntVectorValue
    * @param val integer vector to initialize the plaintext
    */
-  void SetIntVectorValue(const vector<int64_t>& val) { value = val; }
+  void SetIntVectorValue(const std::vector<int64_t>& val) { value = val; }
 
   /**
    * Encode the plaintext into the Poly

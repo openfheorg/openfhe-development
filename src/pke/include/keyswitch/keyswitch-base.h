@@ -102,19 +102,19 @@ class KeySwitchBase {
   // CORE OPERATIONS
   /////////////////////////////////////////
 
-  virtual shared_ptr<vector<Element>> KeySwitchCore(
+  virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(
       Element a, const EvalKey<Element> evalKey) const {
     PALISADE_THROW(config_error, "KeySwitchCore is not supported");
   }
 
-  virtual shared_ptr<vector<Element>> EvalKeySwitchPrecomputeCore(
-      Element c, shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
+  virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
+      Element c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
     PALISADE_THROW(config_error, "EvalKeySwitchPrecomputeCore is not supported");
   }
 
-  virtual shared_ptr<vector<Element>> EvalFastKeySwitchCore(
-      const shared_ptr<vector<Element>> digits, const EvalKey<Element> evalKey,
-      const shared_ptr<ParmType> paramsQl) const {
+  virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
+      const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
+      const std::shared_ptr<ParmType> paramsQl) const {
     PALISADE_THROW(config_error, "EvalFastKeySwitchCore is not supported");
   }
 };

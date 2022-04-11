@@ -46,7 +46,6 @@
 #include <exception>
 
 
-using namespace std;
 using namespace lbcrypto;
 
 namespace {
@@ -231,7 +230,7 @@ namespace {
             // Prepare EvalMultMany
             ////////////////////////////////////////////////////////////
 
-            vector<Ciphertext<Element>> cipherTextList =
+            std::vector<Ciphertext<Element>> cipherTextList =
             { ciphertext1, ciphertext2, ciphertext3, ciphertext4 };
 
             ////////////////////////////////////////////////////////////
@@ -239,7 +238,7 @@ namespace {
             ////////////////////////////////////////////////////////////
 
             auto ciphertextMul12345 = (INVALID_CIPHER_TEXT_LIST == testResult) ?
-                cryptoContext->EvalMultMany(vector<Ciphertext<Element>>()) :
+                cryptoContext->EvalMultMany(std::vector<Ciphertext<Element>>()) :
                 cryptoContext->EvalMultMany(cipherTextList);
 
             ////////////////////////////////////////////////////////////

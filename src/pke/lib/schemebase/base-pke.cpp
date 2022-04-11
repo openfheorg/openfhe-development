@@ -70,7 +70,7 @@ KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc,
       std::static_pointer_cast<CryptoParametersRLWE<Element>>(
           cc->GetCryptoParameters());
 
-  const shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
   const auto ns = cryptoParams->GetNoiseScale();
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   DugType dug;
@@ -112,7 +112,7 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(
     Element plaintext, const PrivateKey<Element> privateKey) const {
   Ciphertext<Element> ciphertext =
       std::make_shared<CiphertextImpl<Element>>(privateKey);
-  std::shared_ptr<vector<Element>> ba = EncryptZeroCore(privateKey);
+  std::shared_ptr<std::vector<Element>> ba = EncryptZeroCore(privateKey);
   (*ba)[0] += plaintext;
 
   ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
@@ -126,7 +126,7 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(
     Element plaintext, const PublicKey<Element> publicKey) const {
   Ciphertext<Element> ciphertext =
       std::make_shared<CiphertextImpl<Element>>(publicKey);
-  std::shared_ptr<vector<Element>> ba = EncryptZeroCore(publicKey);
+  std::shared_ptr<std::vector<Element>> ba = EncryptZeroCore(publicKey);
 
   (*ba)[0] += plaintext;
 
@@ -138,14 +138,14 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(
 
 // makeSparse is not used by this scheme
 template <class Element>
-std::shared_ptr<vector<Element>> PKEBase<Element>::EncryptZeroCore(
+std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
     const PrivateKey<Element> privateKey,
-    const shared_ptr<ParmType> params) const {
+    const std::shared_ptr<ParmType> params) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRLWE<Element>>(
           privateKey->GetCryptoParameters());
 
-  const shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
   const Element &s = privateKey->GetPrivateElement();
   const auto ns = cryptoParams->GetNoiseScale();
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
@@ -156,19 +156,19 @@ std::shared_ptr<vector<Element>> PKEBase<Element>::EncryptZeroCore(
 
   Element b = ns * e - a * s;
 
-  return std::make_shared<vector<Element>>(std::initializer_list<Element>({std::move(b), std::move(a)}));
+  return std::make_shared<std::vector<Element>>(std::initializer_list<Element>({std::move(b), std::move(a)}));
 }
 
 // makeSparse is not used by this scheme
 template <class Element>
-std::shared_ptr<vector<Element>> PKEBase<Element>::EncryptZeroCore(
+std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
     const PublicKey<Element> publicKey,
-    const shared_ptr<ParmType> params) const {
+    const std::shared_ptr<ParmType> params) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRLWE<Element>>(
           publicKey->GetCryptoParameters());
 
-  const shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
   const auto ns = cryptoParams->GetNoiseScale();
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   TugType tug;
@@ -191,7 +191,7 @@ std::shared_ptr<vector<Element>> PKEBase<Element>::EncryptZeroCore(
   b = p0 * v + ns * e0;
   a = p1 * v + ns * e1;
 
-  return std::make_shared<vector<Element>>(std::initializer_list<Element>({std::move(b), std::move(a)}));
+  return std::make_shared<std::vector<Element>>(std::initializer_list<Element>({std::move(b), std::move(a)}));
 }
 
 template <class Element>

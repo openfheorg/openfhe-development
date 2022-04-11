@@ -55,7 +55,7 @@ template class Matrix<Field2n>;
 
 template <>
 std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>>
-RLWETrapdoorUtility<Poly>::TrapdoorGen(shared_ptr<typename Poly::Params> params,
+RLWETrapdoorUtility<Poly>::TrapdoorGen(std::shared_ptr<typename Poly::Params> params,
                                        double stddev, int64_t base, bool bal) {
   auto zero_alloc = Poly::Allocator(params, EVALUATION);
   auto gaussian_alloc = Poly::MakeDiscreteGaussianCoefficientAllocator(
@@ -99,7 +99,7 @@ RLWETrapdoorUtility<Poly>::TrapdoorGen(shared_ptr<typename Poly::Params> params,
 template <>
 std::pair<Matrix<NativePoly>, RLWETrapdoorPair<NativePoly>>
 RLWETrapdoorUtility<NativePoly>::TrapdoorGen(
-    shared_ptr<typename NativePoly::Params> params, double stddev, int64_t base,
+    std::shared_ptr<typename NativePoly::Params> params, double stddev, int64_t base,
     bool bal) {
   auto zero_alloc = NativePoly::Allocator(params, EVALUATION);
   auto gaussian_alloc = NativePoly::MakeDiscreteGaussianCoefficientAllocator(
@@ -145,7 +145,7 @@ RLWETrapdoorUtility<NativePoly>::TrapdoorGen(
 template <>
 std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>>
 RLWETrapdoorUtility<Poly>::TrapdoorGenSquareMat(
-    shared_ptr<typename Poly::Params> params, double stddev, size_t d,
+    std::shared_ptr<typename Poly::Params> params, double stddev, size_t d,
     int64_t base, bool bal) {
   auto zero_alloc = Poly::Allocator(params, EVALUATION);
   auto gaussian_alloc = Poly::MakeDiscreteGaussianCoefficientAllocator(
@@ -197,7 +197,7 @@ RLWETrapdoorUtility<Poly>::TrapdoorGenSquareMat(
 template <>
 std::pair<Matrix<NativePoly>, RLWETrapdoorPair<NativePoly>>
 RLWETrapdoorUtility<NativePoly>::TrapdoorGenSquareMat(
-    shared_ptr<typename NativePoly::Params> params, double stddev, size_t d,
+    std::shared_ptr<typename NativePoly::Params> params, double stddev, size_t d,
     int64_t base, bool bal) {
   auto zero_alloc = NativePoly::Allocator(params, EVALUATION);
   auto gaussian_alloc = NativePoly::MakeDiscreteGaussianCoefficientAllocator(
@@ -260,7 +260,7 @@ Matrix<Poly> RLWETrapdoorUtility<Poly>::GaussSamp(
   TimeVar t1, t1_tot, t2, t2_tot;
   TIC(t1);
   TIC(t1_tot);
-  const shared_ptr<typename Poly::Params> params = u.GetParams();
+  const std::shared_ptr<typename Poly::Params> params = u.GetParams();
   auto zero_alloc = Poly::Allocator(params, EVALUATION);
 
   double c = (base + 1) * SIGMA;
@@ -331,7 +331,7 @@ Matrix<NativePoly> RLWETrapdoorUtility<NativePoly>::GaussSamp(
   TimeVar t1, t1_tot, t2, t2_tot;
   TIC(t1);
   TIC(t1_tot);
-  const shared_ptr<typename NativePoly::Params> params = u.GetParams();
+  const std::shared_ptr<typename NativePoly::Params> params = u.GetParams();
   auto zero_alloc = NativePoly::Allocator(params, EVALUATION);
 
   double c = (base + 1) * SIGMA;
@@ -398,7 +398,7 @@ Matrix<Poly> RLWETrapdoorUtility<Poly>::GaussSampSquareMat(
     size_t n, size_t k, const Matrix<Poly>& A, const RLWETrapdoorPair<Poly>& T,
     const Matrix<Poly>& U, typename Poly::DggType& dgg,
     typename Poly::DggType& dggLargeSigma, int64_t base) {
-  const shared_ptr<typename Poly::Params> params = U(0, 0).GetParams();
+  const std::shared_ptr<typename Poly::Params> params = U(0, 0).GetParams();
   auto zero_alloc = Poly::Allocator(params, EVALUATION);
 
   double c = (base + 1) * SIGMA;
@@ -468,7 +468,7 @@ Matrix<NativePoly> RLWETrapdoorUtility<NativePoly>::GaussSampSquareMat(
     const RLWETrapdoorPair<NativePoly>& T, const Matrix<NativePoly>& U,
     typename NativePoly::DggType& dgg,
     typename NativePoly::DggType& dggLargeSigma, int64_t base) {
-  const shared_ptr<typename NativePoly::Params> params = U(0, 0).GetParams();
+  const std::shared_ptr<typename NativePoly::Params> params = U(0, 0).GetParams();
   auto zero_alloc = NativePoly::Allocator(params, EVALUATION);
 
   double c = (base + 1) * SIGMA;

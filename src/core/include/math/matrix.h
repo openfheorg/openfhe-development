@@ -58,8 +58,8 @@ class Field2n;
 template <class Element>
 class Matrix : public Serializable {
  public:
-  typedef vector<vector<Element>> data_t;
-  typedef vector<Element> data_row_t;
+  typedef std::vector<std::vector<Element>> data_t;
+  typedef std::vector<Element> data_row_t;
   typedef std::function<Element(void)> alloc_func;
 
   /**
@@ -796,13 +796,13 @@ Matrix<int32_t> ConvertToInt32(const Matrix<BigVector>& input,
 template <typename Element>
 Matrix<Element> SplitInt64IntoElements(
     Matrix<int64_t> const& other, size_t n,
-    const shared_ptr<typename Element::Params> params);
+    const std::shared_ptr<typename Element::Params> params);
 
 #define SPLIT64_FOR_TYPE(T)                                             \
   template <>                                                           \
   Matrix<T> SplitInt64IntoElements(                                     \
       Matrix<int64_t> const& other, size_t n,                           \
-      const shared_ptr<typename T::Params> params) {                    \
+      const std::shared_ptr<typename T::Params> params) {                    \
     auto zero_alloc = T::Allocator(params, Format::COEFFICIENT);        \
     size_t rows = other.GetRows() / n;                                  \
     Matrix<T> result(zero_alloc, rows, 1);                              \
@@ -826,13 +826,13 @@ Matrix<Element> SplitInt64IntoElements(
 template <typename Element>
 Matrix<Element> SplitInt32AltIntoElements(
     Matrix<int32_t> const& other, size_t n,
-    const shared_ptr<typename Element::Params> params);
+    const std::shared_ptr<typename Element::Params> params);
 
 #define SPLIT32ALT_FOR_TYPE(T)                                   \
   template <>                                                    \
   Matrix<T> SplitInt32AltIntoElements(                           \
       Matrix<int32_t> const& other, size_t n,                    \
-      const shared_ptr<typename T::Params> params) {             \
+      const std::shared_ptr<typename T::Params> params) {             \
     auto zero_alloc = T::Allocator(params, Format::COEFFICIENT); \
     size_t rows = other.GetRows();                               \
     Matrix<T> result(zero_alloc, rows, 1);                       \
@@ -856,13 +856,13 @@ Matrix<Element> SplitInt32AltIntoElements(
 template <typename Element>
 Matrix<Element> SplitInt64AltIntoElements(
     Matrix<int64_t> const& other, size_t n,
-    const shared_ptr<typename Element::Params> params);
+    const std::shared_ptr<typename Element::Params> params);
 
 #define SPLIT64ALT_FOR_TYPE(T)                                   \
   template <>                                                    \
   Matrix<T> SplitInt64AltIntoElements(                           \
       Matrix<int64_t> const& other, size_t n,                    \
-      const shared_ptr<typename T::Params> params) {             \
+      const std::shared_ptr<typename T::Params> params) {             \
     auto zero_alloc = T::Allocator(params, Format::COEFFICIENT); \
     size_t rows = other.GetRows();                               \
     Matrix<T> result(zero_alloc, rows, 1);                       \

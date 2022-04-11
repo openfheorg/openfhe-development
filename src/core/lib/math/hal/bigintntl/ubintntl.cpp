@@ -208,7 +208,7 @@ myZZ myZZ::FromBinaryString(const std::string &vin) {
 
   const unsigned int bitsPerByte = 8;
   // parse out string 8 bits at a time into array of bytes
-  vector<unsigned char> bytes;
+  std::vector<unsigned char> bytes;
   std::reverse(v.begin(), v.end());
   for (usint i = 0; i < len; i += bitsPerByte) {
     std::string bits = v.substr(0, bitsPerByte);
