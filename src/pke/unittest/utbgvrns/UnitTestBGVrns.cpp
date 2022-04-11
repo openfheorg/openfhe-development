@@ -1,3 +1,4 @@
+#if 0
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -1111,4 +1112,5 @@ TEST_P(UTBGVRNS, BGVRNS) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS, ::testing::ValuesIn(testCasesUTBGVRNS), testName);
 
+#endif
 

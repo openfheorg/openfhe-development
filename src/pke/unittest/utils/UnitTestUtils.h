@@ -58,6 +58,8 @@
 //===========================================================================================================
 constexpr double EPSILON = 0.00000001;
 
+constexpr double EPSILON_HIGH = 0.0001;
+
 /**
  * Function to check equality of 2 numeric values
  *

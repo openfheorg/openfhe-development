@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -450,4 +449,4 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_EvalSum_NO_KEY_GEN_CALL) {
   }
 }
 //================================================================================================
-#endif
+
