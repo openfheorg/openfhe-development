@@ -475,12 +475,10 @@ LeveledSHEBase<Element>::EvalAtIndexKeyGen(
 //          indexList[i], m, encodingParams->GetPlaintextGenerator());
 //  }
 
-  if (publicKey)
-    // NTRU-based scheme
-    return EvalAutomorphismKeyGen(publicKey, privateKey, autoIndices);
-  else
-    // RLWE-based scheme
-    return EvalAutomorphismKeyGen(privateKey, autoIndices);
+//  if (publicKey) // NTRU-based scheme
+//    return EvalAutomorphismKeyGen(publicKey, privateKey, autoIndices);
+  // RLWE-based scheme
+  return EvalAutomorphismKeyGen(privateKey, autoIndices);
 }
 
 template <class Element>

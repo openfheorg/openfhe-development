@@ -233,9 +233,8 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
 
   auto algo = privateKey->GetCryptoContext()->GetScheme();
 
-  if (publicKey)  // NTRU-based scheme
-    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
-
+//  if (publicKey)  // NTRU-based scheme
+//    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
   // Regular RLWE scheme
   return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
@@ -266,12 +265,12 @@ AdvancedSHEBase<Element>::EvalSumRowsKeyGen(
 
   auto algo = cc->GetScheme();
 
-  if (publicKey)
-    // NTRU-based scheme
-    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
-  else
-    // Regular RLWE scheme
-    return algo->EvalAutomorphismKeyGen(privateKey, indices);
+  //  if (publicKey)
+  //    // NTRU-based scheme
+  //    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
+  //  else
+  //    // Regular RLWE scheme
+  return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
 
 template <class Element>
@@ -297,12 +296,10 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
 
   auto algo = cc->GetScheme();
 
-  if (publicKey)
-    // NTRU-based scheme
-    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
-  else
-    // Regular RLWE scheme
-    return algo->EvalAutomorphismKeyGen(privateKey, indices);
+//  if (publicKey) // NTRU-based scheme
+//    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
+  // Regular RLWE scheme
+  return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
 
 template <class Element>
@@ -714,3 +711,4 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum2nComplexCols(
 
 }  // namespace lbcrypto
 
+#endif

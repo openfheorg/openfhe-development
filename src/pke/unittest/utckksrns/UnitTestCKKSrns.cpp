@@ -107,7 +107,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE {
+struct TEST_CASE_UTCKKSRNS {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -131,11 +131,11 @@ struct TEST_CASE {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTCKKSRNS>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS& test) {
     return os << test.toString();
 }
 //===========================================================================================================
@@ -157,7 +157,7 @@ constexpr usint SCALE = 50;
 #endif
 
 // clang-format off
-static std::vector<TEST_CASE> testCases = {
+static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // TestType,  Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { ADD_PACKED, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { ADD_PACKED, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -279,7 +279,7 @@ static std::vector<TEST_CASE> testCases = {
 // clang-format on
 //===========================================================================================================
 
-class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE> {
+class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
     using Element = DCRTPoly;
 
     // the size for all vectors remains const - 8 elements
@@ -308,7 +308,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_Add_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Add_Packed(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -417,7 +417,7 @@ protected:
         }
     }
 
-    void UnitTest_Mult_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -498,7 +498,7 @@ protected:
      * - automatic scaling up of plaintexts to a depth that matches that of a
      * ciphertext
      */
-    void UnitTest_ScaleFactorAdjustments(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_ScaleFactorAdjustments(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -661,7 +661,7 @@ protected:
         }
     }
 
-    void UnitTest_AutoLevelReduce(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_AutoLevelReduce(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -904,7 +904,7 @@ protected:
         }
     }
 
-    void UnitTest_Compress(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Compress(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -946,7 +946,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalFastRotation(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalFastRotation(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1024,7 +1024,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalAtIndex(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAtIndex(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1094,7 +1094,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalMerge(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMerge(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         // TODO (dsuponit) error from pke/include/schemebase/base-scheme.h:1500 EvalMerge operation has not been enabled"
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -1175,7 +1175,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalLinearWSum(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalLinearWSum(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1235,7 +1235,7 @@ protected:
         }
     }
 
-    void UnitTest_ReEncryption(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_ReEncryption(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1296,7 +1296,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalPoly(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalPoly(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1410,7 +1410,7 @@ protected:
     /***
      * Tests whether metadata is carried over for several operations in CKKS
      */
-    void UnitTest_Metadata(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Metadata(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 

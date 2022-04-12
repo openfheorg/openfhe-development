@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -74,7 +73,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE {
+struct TEST_CASE_UTCKKSSer {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -98,11 +97,11 @@ struct TEST_CASE {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTCKKSSer>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSSer& test) {
     return os << test.toString();
 }
 //===========================================================================================================
@@ -123,7 +122,7 @@ constexpr usint MULT_DEPTH = 3;
 constexpr usint RELIN    = 20;
 constexpr usint BATCH    = 8;
 // clang-format off
-static std::vector<TEST_CASE> testCases = {
+static std::vector<TEST_CASE_UTCKKSSer> testCases = {
     // TestType,            Descr, Scheme,        RDim,     MultDepth,  SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { CONTEXT_WITH_SERTYPE, "1", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { CONTEXT_WITH_SERTYPE, "2", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -135,39 +134,39 @@ static std::vector<TEST_CASE> testCases = {
 #endif
     // ==========================================
     // TestType,            Descr, Scheme,        RDim,     MultDepth,  SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { KEYS_AND_CIPHERTEXTS, "1", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "2", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "3", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "4", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "1", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "2", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "3", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "4", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    { KEYS_AND_CIPHERTEXTS, "5", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "6", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "5", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "6", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType,            Descr,  Scheme,        RDim,     MultDepth,  SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { KEYS_AND_CIPHERTEXTS, "7",  {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "8",  {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "9",  {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "10", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "7",  {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "8",  {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "9",  {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "10", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    { KEYS_AND_CIPHERTEXTS, "11", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "12", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "11", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ KEYS_AND_CIPHERTEXTS, "12", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType,    Descr,  Scheme,        RDim,     MultDepth,  SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { NO_CRT_TABLES, "1", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { NO_CRT_TABLES, "2", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { NO_CRT_TABLES, "3", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { NO_CRT_TABLES, "4", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ NO_CRT_TABLES, "1", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ NO_CRT_TABLES, "2", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ NO_CRT_TABLES, "3", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ NO_CRT_TABLES, "4", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    { NO_CRT_TABLES, "5", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { NO_CRT_TABLES, "6", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ NO_CRT_TABLES, "5", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ NO_CRT_TABLES, "6", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
 };
 // clang-format on
 //===========================================================================================================
-class UTCKKSSer : public ::testing::TestWithParam<TEST_CASE> {
+class UTCKKSSer : public ::testing::TestWithParam<TEST_CASE_UTCKKSSer> {
     using Element = DCRTPoly;
     const double eps = EPSILON;
 
@@ -178,7 +177,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTestContext(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTestContext(const TEST_CASE_UTCKKSSer& testData, const std::string& failmsg = std::string()) {
         CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
         UnitTestContextWithSertype(cc, SerType::JSON, "json");
@@ -186,7 +185,7 @@ protected:
     }
 
     template <typename ST>
-    void TestKeysAndCiphertexts(const TEST_CASE& testData, const ST& sertype, const std::string& failmsg = std::string()) {
+    void TestKeysAndCiphertexts(const TEST_CASE_UTCKKSSer& testData, const ST& sertype, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -253,10 +252,11 @@ protected:
             Plaintext plaintextShortNewL2D2;
             cc->Decrypt(kp.secretKey, newC, &plaintextShortNew);
             cc->Decrypt(kp.secretKey, newCL2D2, &plaintextShortNewL2D2);
-
+            plaintextShortNew->SetLength(plaintextShort->GetLength());
+            plaintextShortNewL2D2->SetLength(plaintextShortL2D2->GetLength());
             checkEquality(plaintextShortNew->GetCKKSPackedValue(), plaintextShort->GetCKKSPackedValue(), eps,
                 failmsg + " Decrypted serialization test fails");
-            checkEquality(plaintextShortNewL2D2->GetCKKSPackedValue(), plaintextShort->GetCKKSPackedValue(), eps,
+            checkEquality(plaintextShortNewL2D2->GetCKKSPackedValue(), plaintextShortL2D2->GetCKKSPackedValue(), eps,
                 failmsg + " Decrypted serialization test fails (level 2, depth 2)");
 
             DEBUG("step 6");
@@ -368,13 +368,13 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
-    void UnitTestKeysAndCiphertexts(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(const TEST_CASE_UTCKKSSer& testData, const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }
 
     template <typename ST>
-    void TestDecryptionSerNoCRTTables(const TEST_CASE& testData, const ST& sertype, const std::string& failmsg = std::string()) {
+    void TestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSSer& testData, const ST& sertype, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -433,7 +433,7 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
-    void UnitTestDecryptionSerNoCRTTables(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSSer& testData, const std::string& failmsg = std::string()) {
         TestDecryptionSerNoCRTTables(testData, SerType::JSON, "json");
         TestDecryptionSerNoCRTTables(testData, SerType::BINARY, "binary");
     }
@@ -454,4 +454,3 @@ TEST_P(UTCKKSSer, CKKSSer) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSSer, ::testing::ValuesIn(testCases), testName);
 
-#endif
