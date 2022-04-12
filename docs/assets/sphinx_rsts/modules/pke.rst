@@ -1,7 +1,5 @@
-General PKE documentation
-====================================
-
-Generalized FHE
+General Public Key Encryption (PKE) documentation
+=================================================
 
 .. toctree::
    :maxdepth: 2
@@ -12,6 +10,10 @@ Generalized FHE
    pke/pke_keyswitch.rst
    pke/pke_scheme.rst
 
+PKE Documentation
+-----------------------------
+
+This section contains the documentation for ciphertexts (our encrypted data) and our cryptocontext, which is the primary object we use to interact with the PALISADE components.
 
 .. autodoxygenindex::
    :project: pke
