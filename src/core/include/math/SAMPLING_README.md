@@ -1,13 +1,13 @@
-# Sampling in PALISADE
+# Sampling in OpenFHE
 
-PALISADE library offers various methods for sampling from discrete Gaussian distribution. The methods are implemented in both [DiscreteGaussianGenerator](./discretegaussiangenerator.h) and [DiscreteGaussianGeneratorGeneric](./discretegaussiangeneratorgeneric.h) classes, which have their specific uses. All of the samplers discussed have been tested in [GLITCH Discrete Gaussian Testing Suite](https://eprint.iacr.org/2017/438.pdf) and no problems/abnormalities have been found.
+OpenFHE library offers various methods for sampling from discrete Gaussian distribution. The methods are implemented in both [DiscreteGaussianGenerator](./discretegaussiangenerator.h) and [DiscreteGaussianGeneratorGeneric](./discretegaussiangeneratorgeneric.h) classes, which have their specific uses. All of the samplers discussed have been tested in [GLITCH Discrete Gaussian Testing Suite](https://eprint.iacr.org/2017/438.pdf) and no problems/abnormalities have been found.
 
 ## Samplers in DiscreteGaussianGenerator
 
 The class [DiscreteGaussianGenerator](./discretegaussiangenerator.h)  is the main class for homomorphic encryption and includes the implementations of rejection sampling, Karney's method and Peikert's inversion method.
 
 * __Rejection Sampling:__ Rejection sampling is defined in section 4.1 of the paper [Trapdoors for Hard Lattices and
-New Cryptographic Constructions](https://eprint.iacr.org/2007/432.pdf). It is used in the methods GenerateInteger(double mean, double stddev, size_t n, const IntType &modulus) and GenerateInteger(double mean, double stddev, size_t n). Rejection sampling can be used for any arbitrary center and distribution parameter without any precomputations. However, it has high rejection rate and is vulnerable to timing attacks. It is currently not used by any cryptographic protocols in PALISADE.
+New Cryptographic Constructions](https://eprint.iacr.org/2007/432.pdf). It is used in the methods GenerateInteger(double mean, double stddev, size_t n, const IntType &modulus) and GenerateInteger(double mean, double stddev, size_t n). Rejection sampling can be used for any arbitrary center and distribution parameter without any precomputations. However, it has high rejection rate and is vulnerable to timing attacks. It is currently not used by any cryptographic protocols in OpenFHE.
 
 * __Karney's Method:__ Karney's method is defined as Algorithm D in the paper [Sampling exactly from the normal distribution](https://arxiv.org/pdf/1303.6257.pdf), which is an improved sampling method, based on rejection sampling. It is used in the method GenerateIntegerKarney. Like the rejection sampling, it can be used for arbitrary center and distribution parameter without any precomputations. It has a smaller rejection rate than the traditional sampling but it may still be prone to timing attacks.
 

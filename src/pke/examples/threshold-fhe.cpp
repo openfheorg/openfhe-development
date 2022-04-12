@@ -33,7 +33,7 @@
   Examples of threshold FHE for BGVrns, BFVrns and CKKS
  */
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"

@@ -6,7 +6,7 @@
 # 
 # > _inc=$(cat install_manifest.txt|grep "/include/palisade" | head -n 1)
 # 
-# Results in something like `/usr/local/include/palisade/core/config_core.h` but the file maybe different over time
+# Results in something like `/usr/local/include/openfhe/core/config_core.h` but the file maybe different over time
 # What this does is finds all the lines containing "/include/palisade" and then selects only the first result
 # 
 # > ${_inc%palisade*}palisade
@@ -45,7 +45,7 @@ function uninstall_mingw() {
     rm -vr "${match}"
 
     # Parse out the include directory's full path from install_manifest.txt's by using bash parameter expansion
-    _lib=$(cat install_manifest.txt|grep "PALISADE/lib" | head -n 1)
+    _lib=$(cat install_manifest.txt|grep "OpenFHElib" | head -n 1)
     match=${_lib%lib/libPALISADE*}lib/
     echo "Removing: ${match}"
     rm -vr "${match}"

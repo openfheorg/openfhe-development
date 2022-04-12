@@ -40,7 +40,7 @@ if( BUILD_STATIC )
 endif()
 
 install(DIRECTORY include/
-	DESTINATION include/palisade/pke)
+	DESTINATION include/openfhe/pke)
 
 add_custom_target( allpke )
 

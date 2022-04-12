@@ -44,7 +44,7 @@ if( BUILD_STATIC )
 endif()
 
 install(DIRECTORY include/
-	DESTINATION include/palisade/core)
+	DESTINATION include/openfhe/core)
 
 add_custom_target( allcore )
 

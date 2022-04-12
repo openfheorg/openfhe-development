@@ -35,7 +35,7 @@
  */
 
 #define PROFILE  //for TIC TOC
-#include "palisade.h"
+#include "openfhe.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
 

@@ -38,7 +38,7 @@
 
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
-#include "palisade.h"
+#include "openfhe.h"
 
 using namespace lbcrypto;
 

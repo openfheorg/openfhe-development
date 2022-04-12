@@ -42,7 +42,7 @@
 #include <vector>
 
 #include "cryptocontext.h"
-#include "palisade.h"
+#include "openfhe.h"
 
 #include "utils/serial.h"
 

@@ -1,4 +1,4 @@
-PALISADE supports a number of different math backends
+OpenFHE supports a number of different math backends
 
 The design goal is to have several math backends available at the same time, and to permit the programmer to choose,
 at runtime, which backend to use.
@@ -38,11 +38,11 @@ is constrained only by memory.  This implementation requires that UBINT_32 be de
 currently not functioning and is an open work item.
 
 * MATHBACKEND 6
-This is an integration of the NTL library with PALISADE, and is only available when NTL/GMP is enabled using CMAKE.
+This is an integration of the NTL library with OpenFHE, and is only available when NTL/GMP is enabled using CMAKE.
 
 All implementations for Big/Native Integer/Vector are based on [interface.h](interface.h).
 
-Palisade supports several methods for modular multiplication.
+OpenFHE supports several methods for modular multiplication.
 We use the following naming conventions:
 
 * `ModMul(b, mod)` - Naive modular multiplication that uses % operator for modular reduction, and usually slow.

@@ -48,7 +48,7 @@
 #include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/memory.h"
-#include "utils/palisadebase64.h"
+#include "utils/openfhebase64.h"
 #include "utils/parallel.h"
 #include "utils/serializable.h"
 

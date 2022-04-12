@@ -37,7 +37,7 @@
 #include <string>
 #include <utility>
 
-#include "palisadecore.h"
+#include "openfhecore.h"
 
 #include "key/allkey.h"
 #include "cryptoobject.h"

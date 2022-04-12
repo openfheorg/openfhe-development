@@ -11,7 +11,7 @@ Visual Studio Code
 - :ref:`editor-vs-general-configuration`
 
   - :ref:`editor-vs-decrease-memory-cpu`
-  - :ref:`editor-vs-palisade-path`
+  - :ref:`editor-vs-OpenFHE-path`
   - :ref:`editor-vs-markdown`
   - :ref:`editor-vs-code-formatting`
   - :ref:`editor-vs-git`
@@ -35,7 +35,7 @@ Visual Studio Code
 General Configuration
 ^^^^^^^^^^^^^^^^^^^^^
 
-This section includes setting snippets to include in the to work with Palisade in a friendly manor. In addition we have some recommended extensions for developers to use:
+This section includes setting snippets to include in the to work with OpenFHE in a friendly manor. In addition we have some recommended extensions for developers to use:
 
 - [Clang-Format]
 - [GitLens]
@@ -58,24 +58,24 @@ Code uses inotify to monitor file changes, use the following to tell Code to ign
     },
 
 
-.. _editor-vs-palisade-path:
+.. _editor-vs-OpenFHE-path:
 
-Setup Palisade Install Path
+Setup OpenFHE Install Path
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If developing external to the Palisade repository the following are great to add to the local `.vscode/settings.json`. This is normally intended for users or working with independent example repositories.
+If developing external to the OpenFHE repository the following are great to add to the local `.vscode/settings.json`. This is normally intended for users or working with independent example repositories.
 
 ::
 
-    // Include installed palisade for library references
+    // Include installed OpenFHE for library references
     "C_Cpp.default.includePath": [
-        "/usr/local/include/palisade/core",
-        "/usr/local/include/palisade/pke",
-        "/usr/local/include/palisade/cereal",
-        // "/usr/local/include/palisade/binfhe", // (optional) only needed if working with circuits
+        "/usr/local/include/OpenFHE/core",
+        "/usr/local/include/OpenFHE/pke",
+        "/usr/local/include/OpenFHE/cereal",
+        // "/usr/local/include/OpenFHE/binfhe", // (optional) only needed if working with circuits
     ],
 
-> :warning: Using this inside the Palisade Development repository will create duplicate references, don't use it inside the repo.
+> :warning: Using this inside the OpenFHE Development repository will create duplicate references, don't use it inside the repo.
 
 
 .. _editor-vs-markdown:
@@ -83,7 +83,7 @@ If developing external to the Palisade repository the following are great to add
 Markdown
 ^^^^^^^^
 
-Palisade uses markdown documents inside the repository to document details about the code. To get the most from code use the extension [Markdown All in One].
+OpenFHE uses markdown documents inside the repository to document details about the code. To get the most from code use the extension [Markdown All in One].
 
 .. _editor-vs-code-formatting:
 
@@ -131,7 +131,7 @@ You can use code for git diffs, merges, and rebasing (rebasing works best with t
 Setup Debugger
 --------------
 
-To set up the debugger for examples that uses palisade, the examples need to be compiled with cmake with the debug mode ON. This is done by using the command:
+To set up the debugger for examples that uses OpenFHE, the examples need to be compiled with cmake with the debug mode ON. This is done by using the command:
 
 .. code-block:: bash
 
@@ -279,6 +279,6 @@ Eclipse
 CMAKE
 ^^^^^^^^^^^^
 
-Developers that wish to use Eclipse for building PALISADE can use the shell script ``configure/setup-eclipse-cmake.sh``.
+Developers that wish to use Eclipse for building OpenFHE can use the shell script ``configure/setup-eclipse-cmake.sh``.
 This script should be run in the users build tree. All command line arguments are passed to CMake. The shell configures the build tree so that it can be imported into Eclipse, and built directly from Eclipse.
 

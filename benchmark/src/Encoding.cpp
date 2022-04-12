@@ -34,7 +34,7 @@
 
 bool runOnlyOnce = true;  // TODO (dsuponit): do we need runOnlyOnce???
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "encoding/encodings.h"
 #include "lattice/elemparamfactory.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"

@@ -36,7 +36,7 @@
 // Define PROFILE to enable TIC-TOC timing measurements
 #define PROFILE
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 

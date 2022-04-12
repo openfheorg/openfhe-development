@@ -32,7 +32,7 @@
 #ifndef LBCRYPTO_CRYPTO_METADATA_H
 #define LBCRYPTO_CRYPTO_METADATA_H
 
-#include "palisadecore.h"
+#include "openfhecore.h"
 
 namespace lbcrypto {
 

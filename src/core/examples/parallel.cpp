@@ -39,7 +39,7 @@
 #include <fstream>
 #include <iostream>
 #include <thread>
-#include "palisadecore.h"
+#include "openfhecore.h"
 #include "time.h"
 
 // function to verify our generated array

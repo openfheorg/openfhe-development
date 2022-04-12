@@ -41,7 +41,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include "palisadecore.h"
+#include "openfhecore.h"
 #include "time.h"
 #include "math/hal.h"
 

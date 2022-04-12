@@ -28,7 +28,7 @@ RUN apt update && apt install -y git \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 #git clone the palisade-development repository and its submodules (this always clones the most latest commit)
-RUN git clone https://gitlab.com/palisade/$repository.git && cd $repository && git checkout $branch && git checkout $tag && git submodule sync --recursive && git submodule update --init  --recursive
+RUN git clone https://gitlab.com/openfhe/$repository.git && cd $repository && git checkout $branch && git checkout $tag && git submodule sync --recursive && git submodule update --init  --recursive
 
 #installing PALISADE and running tests
 RUN mkdir /$repository/build && cd /$repository/build && cmake .. && make -j $no_threads && make install && make testall

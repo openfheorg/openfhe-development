@@ -1,6 +1,6 @@
-Installing PALISADE on MacOS
+Installing OpenFHE on MacOS
 ====================================
-These instructions were tested in macOS Mojave but should also work for other recent releases. It is assumed that the clang compiler that comes with Xcode is used for building PALISADE.
+These instructions were tested in macOS Mojave but should also work for other recent releases. It is assumed that the clang compiler that comes with Xcode is used for building OpenFHE.
 
 1. Install the Mac terminal command line functions if needed (type `git` at the command line to trigger the install). Then install home-brew if not already present:
 
@@ -40,15 +40,15 @@ Cmake will check for any system dependencies that are needed for the build proce
 
 **If you get an error about OMP asking to rerun cmake, just run "cmake .." once more.**
 
-5. The PALISADE distribution includes some external libraries, such as GMP. NTL and tcmalloc. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
+5. The OpenFHE distribution includes some external libraries, such as GMP. NTL and tcmalloc. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
 
-6. Build PALISADE by running the following command (this will take few minutes; using the ``-j #`` make command-line flag is suggested to speed up the build, where # is the number of cores on your machine).
+6. Build OpenFHE by running the following command (this will take few minutes; using the ``-j #`` make command-line flag is suggested to speed up the build, where # is the number of cores on your machine).
 
 ::
 
     make
 
-7. Install PALISADE in a system directory (if desired or for production purposes)
+7. Install OpenFHE in a system directory (if desired or for production purposes)
 
 ::
 

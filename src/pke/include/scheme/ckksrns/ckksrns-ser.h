@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_CRYPTO_CKKSRNS_SER_H
 #define LBCRYPTO_CRYPTO_CKKSRNS_SER_H
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "utils/serial.h"
 
 namespace lbcrypto {

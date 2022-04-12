@@ -1,6 +1,6 @@
 [submodule "third-party/cereal"]
 	path = third-party/cereal
-	url = https://gitlab.com/palisade/cereal.git
+	url = https://gitlab.com/openfhe/cereal.git
 [submodule "third-party/google-benchmark"]
 	path = third-party/google-benchmark
 	url = https://github.com/google/benchmark.git

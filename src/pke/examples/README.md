@@ -1,11 +1,11 @@
-PALISADE Lattice Cryptography Library - Examples
+OpenFHE Lattice Cryptography Library - Examples
 =============================================
 
 [License Information](License.md)
 
 Document Description
 ===================
-This document describes the examples included with the PALISADE lattice crypto library.
+This document describes the examples included with the OpenFHE lattice crypto library.
 
 Examples Directory Description
 ==========================
@@ -28,8 +28,8 @@ File Listing
 - [pke.cpp](src/pke/examples/pke.cpp): demonstrates use of encryption across several schemes
 - [polynomial_evaluation.cpp](src/pke/examples/polynomial_evaluation.cpp): demonstrates an evaluation of a polynomial (power series) using CKKS
 - [pre.cpp](src/pke/examples/pre.cpp): demonstrates use of proxy re-encryption across several schemes
-- [pre-buffer.cpp](src/pke/examples/pre-buffer.cpp): demonstrates use of PALISADE for encryption, re-encryption and decryption of packed vector of binary data
-- [pre-text.cpp](src/pke/examples/pre-text.cpp): demonstrates use of PALISADE for encryption, re-encryption and decryption of text
+- [pre-buffer.cpp](src/pke/examples/pre-buffer.cpp): demonstrates use of OpenFHE for encryption, re-encryption and decryption of packed vector of binary data
+- [pre-text.cpp](src/pke/examples/pre-text.cpp): demonstrates use of OpenFHE for encryption, re-encryption and decryption of text
 - [simple-integers.cpp](src/pke/examples/simple-integers.cpp): simple example showing homomorphic additions, multiplications, and rotations for vectors of integers using BFVrns
 - [simple-integers-bgvrns.cpp](src/pke/examples/simple-integers-bgvrns.cpp): simple example showing homomorphic additions, multiplications, and rotations for vectors of integers using BGVrns
 - [simple-integers-serial.cpp](src/pke/examples/simple-integers-serial.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using BFVrns
@@ -38,4 +38,4 @@ File Listing
 - [simple-real-numbers-serial.cpp](src/pke/examples/simple-real-numbers-serial.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using CKKS
 - [threshold-fhe.cpp](src/pke/examples/threshold-fhe.cpp): shows several examples of threshold FHE in BGVrns, BFVrns, and CKKS
 
-*Example client/server systems* exists in a separate repository - [palisade-serial-examples](https://gitlab.com/palisade/palisade-serial-examples)
+*Example client/server systems* exists in a separate repository - [OpenFHE/palisade-serial-examples](https://gitlab.com/palisade/palisade-serial-examples)

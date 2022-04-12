@@ -356,7 +356,7 @@ endif()
 
 ### build configure_core.h to make options available
 configure_file(./configure/config_core.in src/core/config_core.h)
-install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION include/palisade/core)
+install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION include/openfhe/core)
 
 find_program(TAR "gtar")
 find_program(TAR "tar")
@@ -572,7 +572,7 @@ if(WITH_TCM)
 		FILES_MATCHING PATTERN "libtcmalloc_minimal.*")
     list(APPEND THIRDPARTYLIBS "tcmalloc")
 	list(APPEND THIRDPARTYSTATICLIBS "tcmalloc_static")
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/include DESTINATION include/palisade/third-party/)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/include DESTINATION include/openfhe/third-party/)
 endif()
 
 if(WITH_NTL)
