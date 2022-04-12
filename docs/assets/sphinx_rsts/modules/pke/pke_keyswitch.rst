@@ -10,6 +10,8 @@ Intuition
 
 Let :math:`c_t` be a ciphertext :math:`c_t = (c_0, c_1) \in \mathbb{R}_Q^2`, which can be decrypted with  :math:`s_A`.
 
+Through key-switching, we create a new ciphertext, :math:`c_t'` such that :math:`c_t' = (c_0', c_1') \in \mathbb{R}_Q^2`, which contains the same message as :math:`c_t`, but can be decrypted by a different secret key :math:`s_B`.
+
 Key switching
 
 - This feature is needed to compute automorphisms(rotations) of ciphertexts, or to relinearize ciphertexts
