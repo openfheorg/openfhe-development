@@ -9,7 +9,7 @@ Core Lattice Hardware Abstraction Layer Documentation
       a[DCRTPolyInterface] --> |Inherited by|b[DCRTPoly - HAL Default];
       b[DCRTPoly-HAL Default] --> |Inherited by|c[HexlDCRTPoly];
 
-This hardware abstraction layer allows OpenFHE to use a variety of device backends while still allowing for high performance. As of March 31st 2022, we have the default backend, and the `Intel Hexl <https://github.com/intel/hexl>`_ backend.
+This hardware abstraction layer allows OpenFHE to use a variety of hardware-integrated backends while still allowing for high performance. As of March 31st 2022, we have the default backend, and the `Intel Hexl <https://github.com/intel/hexl>`_ backend.
 
 **Note:** Follow the convention set by the the `OpenFHE HEXL code <https://github.com/openfheorg/openfhe-hexl>`_ to extend the supported backends.
 

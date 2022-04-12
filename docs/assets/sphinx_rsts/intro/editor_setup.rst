@@ -69,10 +69,10 @@ If developing external to the OpenFHE repository the following are great to add 
 
     // Include installed OpenFHE for library references
     "C_Cpp.default.includePath": [
-        "/usr/local/include/OpenFHE/core",
-        "/usr/local/include/OpenFHE/pke",
-        "/usr/local/include/OpenFHE/cereal",
-        // "/usr/local/include/OpenFHE/binfhe", // (optional) only needed if working with circuits
+        "/usr/local/include/openfhe/core",
+        "/usr/local/include/openfhe/pke",
+        "/usr/local/include/openfhe/cereal",
+        // "/usr/local/include/openfhe/binfhe", // (optional) only needed if working with circuits
     ],
 
 > :warning: Using this inside the OpenFHE Development repository will create duplicate references, don't use it inside the repo.

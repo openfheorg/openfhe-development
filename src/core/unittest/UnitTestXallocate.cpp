@@ -154,7 +154,7 @@ void Benchmark(const char* name, AllocFunc allocFunc, DeallocFunc deallocFunc) {
   TotalElapsedMicroseconds += ElapsedMicroseconds;
 
   PROFILELOG(name << "           TOTAL TIME: " << TotalElapsedMicroseconds);
-  PALISADE_UNUSED(TotalElapsedMicroseconds);
+  OPENFHE_UNUSED(TotalElapsedMicroseconds);
 }
 
 TEST(UTBlockAllocate, xalloc_test) {
