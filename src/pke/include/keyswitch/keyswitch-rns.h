@@ -41,9 +41,9 @@
 namespace lbcrypto {
 
 /**
- * @brief Abstract interface class for LBC SHE algorithms
- * @tparam Element a ring element.
+ * @brief A child of KeySwitchBase for use with RNS keyswitching
  */
+
 class KeySwitchRNS : public KeySwitchBase<DCRTPoly> {
  public:
   virtual ~KeySwitchRNS() {}
