@@ -47,8 +47,8 @@
 namespace lbcrypto {
 
 /**
- * @brief Abstract interface class for LBC SHE algorithms
- * @tparam Element a ring element.
+ * @brief Abstract class for LBC keyswitching
+ * @tparam Element a secret key type instantiation
  */
 template <class Element>
 class KeySwitchBase {

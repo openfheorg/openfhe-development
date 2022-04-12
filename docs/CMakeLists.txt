@@ -42,8 +42,9 @@ if (DOXYGEN_FOUND)
                 ${SPHINX_EXECUTABLE} -j 6 -Q -b html
                 # Tell Breathe where to find the Doxygen output
                 -Dbreathe_projects.PALISADE=${DOXYGEN_OUTPUT_DIR}/xml
-                ${SPHINX_SOURCE} ${SPHINX_BUILD} 2> errors.txt
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+#                ${SPHINX_SOURCE} ${SPHINX_BUILD} 2> errors.txt
+                ${SPHINX_SOURCE} ${SPHINX_BUILD}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             DEPENDS
                 ${CMAKE_CURRENT_SOURCE_DIR}/index.rst
                 ${DOXYGEN_INDEX_FILE}
