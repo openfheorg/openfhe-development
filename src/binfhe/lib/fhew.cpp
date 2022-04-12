@@ -246,7 +246,7 @@ RingGSWEvalKey RingGSWAccumulatorScheme::KeyGenGINX(const std::shared_ptr<RingGS
                 break;
             default:
                 std::string errMsg = "ERROR: only ternary secret key distributions are supported.";
-                PALISADE_THROW(not_implemented_error, errMsg);
+                OPENFHE_THROW(not_implemented_error, errMsg);
         }
     }
 
@@ -426,7 +426,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
         std::string errMsg =
             "Bootstrapping keys have not been generated. Please call BTKeyGen "
             "before calling bootstrapping.";
-        PALISADE_THROW(config_error, errMsg);
+        OPENFHE_THROW(config_error, errMsg);
     }
 
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
@@ -506,7 +506,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalBinGate(
 
     if (ct1 == ct2) {
         std::string errMsg = "ERROR: Please only use independent ciphertexts as inputs.";
-        PALISADE_THROW(config_error, errMsg);
+        OPENFHE_THROW(config_error, errMsg);
     }
 
     // By default, we compute XOR/XNOR using a combination of AND, OR, and NOT
@@ -646,7 +646,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
         std::string errMsg =
             "Bootstrapping keys have not been generated. Please call BTKeyGen "
             "before calling bootstrapping.";
-        PALISADE_THROW(config_error, errMsg);
+        OPENFHE_THROW(config_error, errMsg);
     }
 
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
@@ -800,7 +800,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalFunc(
         if (q > N) {  // need q to be at most = N for arbitary function
             std::string errMsg =
                 "ERROR: ciphertext modulus q needs to be <= ring dimension for arbitrary function evaluation";
-            PALISADE_THROW(not_implemented_error, errMsg);
+            OPENFHE_THROW(not_implemented_error, errMsg);
         }
 
         a1 = ct1->GetA();
@@ -915,14 +915,14 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalSign(
     if (theBigger_q <= q) {
         std::string errMsg =
             "ERROR: EvalSign is only for large precision. For small precision, please use bootstrapping directly";
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
     const auto curBase = params->GetBaseG();
     auto search        = EKs.find(curBase);
     if (search == EKs.end()) {
         std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-        PALISADE_THROW(palisade_error, errMsg);
+        OPENFHE_THROW(openfhe_error, errMsg);
     }
     RingGSWEvalKey curEK(search->second);
 
@@ -946,7 +946,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalSign(
                 auto search = EKs.find(base);
                 if (search == EKs.end()) {
                     std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-                    PALISADE_THROW(palisade_error, errMsg);
+                    OPENFHE_THROW(openfhe_error, errMsg);
                 }
                 curEK = search->second;
             }
@@ -993,14 +993,14 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> RingGSWAccumulatorScheme::EvalDe
     if (theBigger_q <= q) {
         std::string errMsg =
             "ERROR: EvalSign is only for large precision. For small precision, please use bootstrapping directly";
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
     const auto curBase = params->GetBaseG();
     auto search        = EKs.find(curBase);
     if (search == EKs.end()) {
         std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-        PALISADE_THROW(palisade_error, errMsg);
+        OPENFHE_THROW(openfhe_error, errMsg);
     }
     RingGSWEvalKey curEK(search->second);
 
@@ -1031,7 +1031,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> RingGSWAccumulatorScheme::EvalDe
                 auto search = EKs.find(base);
                 if (search == EKs.end()) {
                     std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-                    PALISADE_THROW(palisade_error, errMsg);
+                    OPENFHE_THROW(openfhe_error, errMsg);
                 }
                 curEK = search->second;
             }

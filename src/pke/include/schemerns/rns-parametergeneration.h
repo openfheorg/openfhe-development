@@ -77,7 +77,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
       enum RescalingTechnique rsTech = FIXEDMANUAL,
       enum EncryptionTechnique encTech = STANDARD,
       enum MultiplicationTechnique multTech = HPS) const override {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");
   }
@@ -111,7 +111,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
       enum RescalingTechnique rsTech = FIXEDMANUAL,
       enum EncryptionTechnique encTech = STANDARD,
       enum MultiplicationTechnique multTech = HPS) const override {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");
   }
@@ -140,7 +140,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
       enum RescalingTechnique rsTech = FIXEDMANUAL,
       enum EncryptionTechnique encTech = STANDARD,
       enum MultiplicationTechnique multTech = HPS) const override {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         not_implemented_error,
         "This signature for ParamsGen is not supported for this scheme.");
   }

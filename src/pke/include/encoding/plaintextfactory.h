@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Manufactures plaintext objects in Palisade
+  Manufactures plaintext objects in OpenFHE
  */
 
 #ifndef SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_
@@ -58,7 +58,7 @@ class PlaintextFactory {
 
     switch (encoding) {
       case Unknown:
-        PALISADE_THROW(type_error,
+        OPENFHE_THROW(type_error,
                        "Unknown plaintext encoding type in MakePlaintext");
         break;
       case CoefPacked:
@@ -85,7 +85,7 @@ class PlaintextFactory {
 
     switch (encoding) {
       case Unknown:
-        PALISADE_THROW(type_error,
+        OPENFHE_THROW(type_error,
                        "Unknown plaintext encoding type in MakePlaintext");
         break;
       case CoefPacked:
@@ -112,7 +112,7 @@ class PlaintextFactory {
 
     switch (encoding) {
       case Unknown:
-        PALISADE_THROW(type_error,
+        OPENFHE_THROW(type_error,
                        "Unknown plaintext encoding type in MakePlaintext");
         break;
       case CoefPacked:

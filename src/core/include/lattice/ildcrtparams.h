@@ -153,7 +153,7 @@ class ILDCRTParams : public ElemParams<IntType> {
       : ElemParams<IntType>(cyclotomic_order, 0, 0, 0, 0) {
     this->originalModulus = inputOriginalModulus;
     if (moduli.size() != rootsOfUnity.size()) {
-      PALISADE_THROW(math_error,
+      OPENFHE_THROW(math_error,
                      "sizes of moduli and roots of unity do not match");
     }
 
@@ -245,7 +245,7 @@ class ILDCRTParams : public ElemParams<IntType> {
   std::vector<std::shared_ptr<ILNativeParams>> GetParamPartition(
       uint32_t start, uint32_t end) const {
     if (end < start || end > this->GetParams().size()) {
-      PALISADE_THROW(math_error,
+      OPENFHE_THROW(math_error,
                      "Incorrect parameters for GetParamPartition - (start: " +
                          std::to_string(start) +
                          ", end:" + std::to_string(end) + ")");
@@ -365,7 +365,7 @@ class ILDCRTParams : public ElemParams<IntType> {
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
+      OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }

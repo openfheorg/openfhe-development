@@ -61,7 +61,7 @@ class HashUtil {
         return;
 
       default:
-        PALISADE_THROW(not_available_error, "ERROR: Unknown Hash Algorithm");
+        OPENFHE_THROW(not_available_error, "ERROR: Unknown Hash Algorithm");
     }
   }
 

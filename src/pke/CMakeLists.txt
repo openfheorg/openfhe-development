@@ -11,30 +11,30 @@ list(APPEND PKE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include")
 list(APPEND PKE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 include_directories(${PKE_INCLUDE_DIRS})
 
-set(PKE_VERSION_MAJOR ${PALISADE_VERSION_MAJOR})
-set(PKE_VERSION_MINOR ${PALISADE_VERSION_MINOR})
-set(PKE_VERSION_PATCH ${PALISADE_VERSION_PATCH})
+set(PKE_VERSION_MAJOR ${OpenFHE_VERSION_MAJOR})
+set(PKE_VERSION_MINOR ${OpenFHE_VERSION_MINOR})
+set(PKE_VERSION_PATCH ${OpenFHE_VERSION_PATCH})
 set(PKE_VERSION ${PKE_VERSION_MAJOR}.${PKE_VERSION_MINOR}.${PKE_VERSION_PATCH})
 
 add_library (pkeobj OBJECT ${PKE_SRC_FILES})
 set_property(TARGET pkeobj PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 if( BUILD_SHARED )
-	add_dependencies(pkeobj PALISADEcore)
-	add_library (PALISADEpke SHARED $<TARGET_OBJECTS:pkeobj>)
-	set_property(TARGET PALISADEpke PROPERTY VERSION ${PKE_VERSION})
-	set_property(TARGET PALISADEpke PROPERTY SOVERSION ${PKE_VERSION_MAJOR})
-	set_property(TARGET PALISADEpke PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-	install(TARGETS PALISADEpke
+	add_dependencies(pkeobj OpenFHEcore)
+	add_library (OpenFHEpke SHARED $<TARGET_OBJECTS:pkeobj>)
+	set_property(TARGET OpenFHEpke PROPERTY VERSION ${PKE_VERSION})
+	set_property(TARGET OpenFHEpke PROPERTY SOVERSION ${PKE_VERSION_MAJOR})
+	set_property(TARGET OpenFHEpke PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+	install(TARGETS OpenFHEpke
 		EXPORT PalisadeTargets
 		DESTINATION lib)
 endif()
 
 if( BUILD_STATIC )
 	add_dependencies(pkeobj PALISADEcore_static)
-	add_library (PALISADEpke_static STATIC $<TARGET_OBJECTS:pkeobj>)
-	set_property(TARGET PALISADEpke_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-	install(TARGETS PALISADEpke_static
+	add_library (OpenFHEpke_static STATIC $<TARGET_OBJECTS:pkeobj>)
+	set_property(TARGET OpenFHEpke_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+	install(TARGETS OpenFHEpke_static
 		EXPORT PalisadeTargets
 		DESTINATION lib)
 endif()
@@ -45,15 +45,15 @@ install(DIRECTORY include/
 add_custom_target( allpke )
 
 if( BUILD_SHARED )
-	set (PKELIBS PUBLIC PALISADEpke PUBLIC PALISADEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (PALISADEpke PUBLIC PALISADEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	add_dependencies( allpke PALISADEpke)
+	set (PKELIBS PUBLIC OpenFHEpke PUBLIC PALISADEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OpenFHEpke PUBLIC PALISADEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	add_dependencies( allpke OpenFHEpke)
 endif()
 
 if( BUILD_STATIC )
-	set (PKELIBS ${PKELIBS} PUBLIC PALISADEpke_static PUBLIC PALISADEcore_static ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (PALISADEpke_static PUBLIC PALISADEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
-	add_dependencies( allpke PALISADEpke_static)
+	set (PKELIBS ${PKELIBS} PUBLIC OpenFHEpke_static PUBLIC PALISADEcore_static ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OpenFHEpke_static PUBLIC PALISADEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
+	add_dependencies( allpke OpenFHEpke_static)
 endif()
 
 if( BUILD_UNITTESTS )
@@ -104,17 +104,17 @@ if (BUILD_EXTRAS)
 	add_dependencies( allpke allpkeextras )
 endif()
 
-add_custom_command( OUTPUT pkeinfocmd COMMAND echo Builds PALISADEpke and these apps: ${PKEAPPS} )
+add_custom_command( OUTPUT pkeinfocmd COMMAND echo Builds OpenFHEpke and these apps: ${PKEAPPS} )
 add_custom_target( pkeinfo DEPENDS pkeinfocmd )
 
 # Collect compile definitions and pass them upward
 if ( BUILD_SHARED )
-	get_target_property(_compile_defs PALISADEpke COMPILE_DEFINITIONS)
+	get_target_property(_compile_defs OpenFHEpke COMPILE_DEFINITIONS)
 	set(_pal_pke_compile_defs ${_compile_defs} PARENT_SCOPE)
 endif()
 
 if( BUILD_STATIC )
-	get_target_property(_compile_defs_static PALISADEpke_static COMPILE_DEFINITIONS)
+	get_target_property(_compile_defs_static OpenFHEpke_static COMPILE_DEFINITIONS)
 	set(_pal_pke_compile_defs_static ${_compile_defs_static} PARENT_SCOPE)
 endif()
 

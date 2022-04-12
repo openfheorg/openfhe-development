@@ -55,7 +55,7 @@ template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(usint length,
                                         const IntegerType &modulus) {
   if (modulus.GetMSB() > MAX_MODULUS_SIZE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OPENFHE_THROW(lbcrypto::not_available_error,
                    "NativeVectorT supports only modulus size <=  " +
                        std::to_string(MAX_MODULUS_SIZE) + " bits");
   }
@@ -179,7 +179,7 @@ const NativeVectorT<IntegerType> &NativeVectorT<IntegerType>::operator=(
 template <class IntegerType>
 void NativeVectorT<IntegerType>::SetModulus(const IntegerType &value) {
   if (value.GetMSB() > MAX_MODULUS_SIZE) {
-    PALISADE_THROW(lbcrypto::not_available_error,
+    OPENFHE_THROW(lbcrypto::not_available_error,
                    "NativeVectorT supports only modulus size <=  " +
                        std::to_string(MAX_MODULUS_SIZE) + " bits");
   }
@@ -300,7 +300,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAddAtIndex(
     std::string errMsg =
         "ubintnat::ModAddAtIndex. Index is out of range. i = " +
         std::to_string(i);
-    PALISADE_THROW(lbcrypto::math_error, errMsg);
+    OPENFHE_THROW(lbcrypto::math_error, errMsg);
   }
   NativeVectorT ans(*this);
   ans.m_data[i].ModAddEq(b, this->m_modulus);
@@ -314,7 +314,7 @@ const NativeVectorT<IntegerType> &NativeVectorT<IntegerType>::ModAddAtIndexEq(
     std::string errMsg =
         "ubintnat::ModAddAtIndex. Index is out of range. i = " +
         std::to_string(i);
-    PALISADE_THROW(lbcrypto::math_error, errMsg);
+    OPENFHE_THROW(lbcrypto::math_error, errMsg);
   }
   this->m_data[i].ModAddEq(b, this->m_modulus);
   return *this;
@@ -325,7 +325,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(
     const NativeVectorT &b) const {
   if ((this->m_data.size() != b.m_data.size()) ||
       this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         lbcrypto::math_error,
         "ModAdd called on NativeVectorT's with different parameters.");
   }
@@ -342,7 +342,7 @@ const NativeVectorT<IntegerType> &NativeVectorT<IntegerType>::ModAddEq(
     const NativeVectorT &b) {
   if ((this->m_data.size() != b.m_data.size()) ||
       this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         lbcrypto::math_error,
         "ModAddEq called on NativeVectorT's with different parameters.");
   }
@@ -377,7 +377,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(
     const NativeVectorT &b) const {
   if ((this->m_data.size() != b.m_data.size()) ||
       this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         lbcrypto::math_error,
         "ModSub called on NativeVectorT's with different parameters.");
   }
@@ -393,7 +393,7 @@ const NativeVectorT<IntegerType> &NativeVectorT<IntegerType>::ModSubEq(
     const NativeVectorT &b) {
   if ((this->m_data.size() != b.m_data.size()) ||
       this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         lbcrypto::math_error,
         "ModSubEq called on NativeVectorT's with different parameters.");
   }
@@ -439,7 +439,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(
     const NativeVectorT &b) const {
   if ((this->m_data.size() != b.m_data.size()) ||
       this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         lbcrypto::math_error,
         "ModMul called on NativeVectorT's with different parameters.");
   }
@@ -458,7 +458,7 @@ const NativeVectorT<IntegerType> &NativeVectorT<IntegerType>::ModMulEq(
     const NativeVectorT &b) {
   if ((this->m_data.size() != b.m_data.size()) ||
       this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         lbcrypto::math_error,
         "ModMulEq called on NativeVectorT's with different parameters.");
   }
@@ -540,7 +540,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultWithOutMod(
     const NativeVectorT &b) const {
   if ((this->m_data.size() != b.m_data.size()) ||
       this->m_modulus != b.m_modulus) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         lbcrypto::math_error,
         "ModMul called on NativeVectorT's with different parameters.");
   }

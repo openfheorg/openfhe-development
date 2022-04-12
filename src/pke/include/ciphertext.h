@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Operations for the reoresentation of ciphertext in PALISADE
+  Operations for the reoresentation of ciphertext in OpenFHE
  */
 
 #ifndef LBCRYPTO_CRYPTO_CIPHERTEXT_H
@@ -59,7 +59,7 @@ using ConstCiphertext = std::shared_ptr<const CiphertextImpl<Element>>; // TODO 
 /**
  * @brief CiphertextImpl
  *
- * The CiphertextImpl object is used to contain encrypted text in the PALISADE
+ * The CiphertextImpl object is used to contain encrypted text in the OpenFHE
  * library
  *
  * @tparam Element a ring element.
@@ -256,7 +256,7 @@ class CiphertextImpl : public CryptoObject<Element> {
   const Element& GetElement() const {
     if (m_elements.size() == 1) return m_elements[0];
 
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "GetElement should only be used in cases with a "
                    "Ciphertext with a single element");
   }
@@ -270,7 +270,7 @@ class CiphertextImpl : public CryptoObject<Element> {
   Element& GetElement() {
     if (m_elements.size() == 1) return m_elements[0];
 
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "GetElement should only be used in cases with a "
                    "Ciphertext with a single element");
   }
@@ -299,7 +299,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     else if (m_elements.size() == 1)
       m_elements[0] = element;
     else
-      PALISADE_THROW(config_error,
+      OPENFHE_THROW(config_error,
                      "SetElement should only be used in cases with a "
                      "Ciphertext with a single element");
   }
@@ -530,7 +530,7 @@ class CiphertextImpl : public CryptoObject<Element> {
   template <class Archive>
   void load(Archive& ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
+      OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }

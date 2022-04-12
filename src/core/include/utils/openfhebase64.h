@@ -30,11 +30,11 @@
 //==================================================================================
 
 /*
-  palisade native base 64 utlities
+  OpenFHE native base 64 utlities
  */
 
-#ifndef SRC_CORE_LIB_UTILS_PALISADEBASE64_H_
-#define SRC_CORE_LIB_UTILS_PALISADEBASE64_H_
+#ifndef SRC_CORE_LIB_UTILS_OpenFHEBASE64_H_
+#define SRC_CORE_LIB_UTILS_OpenFHEBASE64_H_
 
 #include <utils/exception.h>
 #include <cctype>
@@ -63,7 +63,7 @@ inline unsigned char get_6bits_atoffset(uint64_t m_value, uint32_t index) {
   static unsigned char smallmask[] = {0, 0x1, 0x3, 0x7, 0xf, 0x1f, 0x3f};
 
   if (index == 0) {
-    PALISADE_THROW(math_error, "Zero index in GetBitAtIndex");
+    OPENFHE_THROW(math_error, "Zero index in GetBitAtIndex");
   }
   if (index <= 6) {
     return m_value & smallmask[index];
@@ -74,4 +74,4 @@ inline unsigned char get_6bits_atoffset(uint64_t m_value, uint32_t index) {
 
 } /* namespace lbcrypto */
 
-#endif /* SRC_CORE_LIB_UTILS_PALISADEBASE64_H_ */
+#endif /* SRC_CORE_LIB_UTILS_OpenFHEBASE64_H_ */

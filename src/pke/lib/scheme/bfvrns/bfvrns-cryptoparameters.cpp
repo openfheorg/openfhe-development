@@ -783,7 +783,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
       m_msk = NextPrime<NativeInteger>(firstInteger, 2 * n);
       s++;
-      if (s >= 60) PALISADE_THROW(math_error, "msk is larger than 60 bits");
+      if (s >= 60) OPENFHE_THROW(math_error, "msk is larger than 60 bits");
     }
     m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_msk));
 

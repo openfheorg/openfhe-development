@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Represents and defines string-encoded plaintext objects in Palisade
+  Represents and defines string-encoded plaintext objects in OpenFHE
  */
 
 #ifndef SRC_CORE_LIB_ENCODING_STRINGENCODING_H_

@@ -142,7 +142,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
   bool Encode();
 
   bool Decode() {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         not_available_error,
         "CKKSPackedEncoding::Decode() is not implemented. "
         "Use CKKSPackedEncoding::Decode(depth,scalingFactor,rstech) instead.");

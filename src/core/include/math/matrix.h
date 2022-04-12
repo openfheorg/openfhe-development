@@ -114,7 +114,7 @@ class Matrix : public Serializable {
 
   void SetSize(size_t rows, size_t cols) {
     if (this->rows != 0 || this->cols != 0) {
-      PALISADE_THROW(not_available_error,
+      OPENFHE_THROW(not_available_error,
                      "You cannot SetSize on a non-empty matrix");
     }
 
@@ -285,7 +285,7 @@ class Matrix : public Serializable {
       std::is_same<T, Field2n>::value,
       bool>::type = true>
   double Norm() const {                                         \
-    PALISADE_THROW(not_available_error, "Norm not defined for this type"); \
+    OPENFHE_THROW(not_available_error, "Norm not defined for this type"); \
   }
 
   template <typename T = Element, typename std::enable_if <
@@ -436,7 +436,7 @@ class Matrix : public Serializable {
    */
   Matrix<Element> Add(Matrix<Element> const& other) const {
     if (rows != other.rows || cols != other.cols) {
-      PALISADE_THROW(math_error,
+      OPENFHE_THROW(math_error,
                      "Addition operands have incompatible dimensions");
     }
     Matrix<Element> result(*this);
@@ -475,7 +475,7 @@ class Matrix : public Serializable {
    */
   Matrix<Element> Sub(Matrix<Element> const& other) const {
     if (rows != other.rows || cols != other.cols) {
-      PALISADE_THROW(math_error,
+      OPENFHE_THROW(math_error,
                      "Subtraction operands have incompatible dimensions");
     }
     Matrix<Element> result(allocZero, rows, other.cols);
@@ -644,7 +644,7 @@ class Matrix : public Serializable {
 #define NOT_AN_ELEMENT_MATRIX(T)                                     \
   template <>                                                        \
   void Matrix<T>::SwitchFormat() {                                   \
-    PALISADE_THROW(not_available_error, "Not a matrix of Elements"); \
+    OPENFHE_THROW(not_available_error, "Not a matrix of Elements"); \
   }
 
   /*
@@ -671,7 +671,7 @@ class Matrix : public Serializable {
   template <class Archive>
   void load(Archive& ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
+      OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }

@@ -94,7 +94,7 @@ class MatrixStrassen {  // TODO : public Serializable {
 
   void SetSize(size_t rows, size_t cols) {
     if (this->rows != 0 || this->cols != 0) {
-      PALISADE_THROW(not_available_error,
+      OPENFHE_THROW(not_available_error,
                      "You cannot SetSize on a non-empty matrix");
     }
 
@@ -290,7 +290,7 @@ class MatrixStrassen {  // TODO : public Serializable {
   inline MatrixStrassen<Element> Add(
       MatrixStrassen<Element> const& other) const {
     if (rows != other.rows || cols != other.cols) {
-      PALISADE_THROW(math_error,
+      OPENFHE_THROW(math_error,
                      "Addition operands have incompatible dimensions");
     }
     MatrixStrassen<Element> result(*this);
@@ -333,7 +333,7 @@ class MatrixStrassen {  // TODO : public Serializable {
   inline MatrixStrassen<Element> Sub(
       MatrixStrassen<Element> const& other) const {
     if (rows != other.rows || cols != other.cols) {
-      PALISADE_THROW(math_error,
+      OPENFHE_THROW(math_error,
                      "Subtraction operands have incompatible dimensions");
     }
     MatrixStrassen<Element> result(allocZero, rows, other.cols);

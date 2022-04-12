@@ -115,7 +115,7 @@ class Metadata {
   template <class Archive>
   void load(Archive& ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
+      OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -189,8 +189,8 @@ class MetadataTest : public Metadata {
       return m_s == mdataTest.GetMetadata();  // All Metadata objects without
                                               // any members are equal
     } catch (const std::bad_cast& e) {
-      PALISADE_THROW(
-          palisade_error,
+      OPENFHE_THROW(
+          openfhe_error,
           "Tried to downcast an object of different class to MetadataTest");
     }
   }
@@ -218,7 +218,7 @@ class MetadataTest : public Metadata {
   template <class Archive>
   void load(Archive& ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
+      OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -242,8 +242,8 @@ class MetadataTest : public Metadata {
       return std::dynamic_pointer_cast<MetadataTest>(
           ciphertext->GetMetadata(it)->Clone());
     } else {
-      PALISADE_THROW(
-          palisade_error,
+      OPENFHE_THROW(
+          openfhe_error,
           "Attempt to access metadata (MetadataTest) that has not been set.");
     }
   }
@@ -265,8 +265,8 @@ class MetadataTest : public Metadata {
       return std::dynamic_pointer_cast<MetadataTest>(
           ciphertext->GetMetadata(it));
     } else {
-      PALISADE_THROW(
-          palisade_error,
+      OPENFHE_THROW(
+          openfhe_error,
           "Attempt to access metadata (MetadataTest) that has not been set.");
     }
   }

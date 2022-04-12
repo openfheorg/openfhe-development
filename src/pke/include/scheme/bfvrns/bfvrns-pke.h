@@ -105,7 +105,7 @@ public:
         "PKEBFVRNS: Decryption to Poly from DCRTPoly is not supported as it "
         "may "
         "lead to incorrect results.";
-    PALISADE_THROW(not_available_error, errMsg);
+    OPENFHE_THROW(not_available_error, errMsg);
   }
 
   /////////////////////////////////////

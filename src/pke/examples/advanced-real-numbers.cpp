@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
    */
   AutomaticRescaleDemo(FLEXIBLEAUTO);
 
-  // A new example that was added in PALISADE v1.10
+  // A new example that was added in OpenFHE v1.10
   AutomaticRescaleDemo(FIXEDAUTO);
 
   ManualRescaleDemo(FIXEDMANUAL);
@@ -701,7 +701,7 @@ void FastRotationsDemo1() {
    * the first two steps once, and then only perform steps 3-4 for
    * each rotation. This technique is called hoisting, and we have
    * implemented it for all three key switching techniques (BV, GHS,
-   * HYBRID) in PALISADE.
+   * HYBRID) in OpenFHE.
    *
    * The benefits expected by this technique differ depending on the
    * key switching algorithms we're using. BV is the technique that

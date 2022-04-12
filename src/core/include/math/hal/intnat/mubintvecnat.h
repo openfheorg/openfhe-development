@@ -255,14 +255,14 @@ class NativeVectorT
    */
   IntegerType &at(size_t i) {
     if (!this->IndexCheck(i)) {
-      PALISADE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
+      OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
     }
     return this->m_data[i];
   }
 
   const IntegerType &at(size_t i) const {
     if (!this->IndexCheck(i)) {
-      PALISADE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
+      OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
     }
     return this->m_data[i];
   }
@@ -612,7 +612,7 @@ class NativeVectorT
                           void>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OPENFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -636,7 +636,7 @@ class NativeVectorT
                           void>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OPENFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }

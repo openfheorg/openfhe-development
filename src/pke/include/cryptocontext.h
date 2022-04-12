@@ -43,7 +43,7 @@
 #include <vector>
 #include <algorithm>
 
-//#include "palisade.h"
+//#include "openfhe.h"
 #include "encoding/plaintextfactory.h"
 #include "key/allkey.h"
 #include "schemerns/allrns.h"
@@ -64,13 +64,13 @@ using CryptoContext = std::shared_ptr<CryptoContextImpl<Element>>;
 /**
  * @brief CryptoContextImpl
  *
- * A CryptoContextImpl is the object used to access the PALISADE library
+ * A CryptoContextImpl is the object used to access the OpenFHE library
  *
- * All PALISADE functionality is accessed by way of an instance of a
+ * All OpenFHE functionality is accessed by way of an instance of a
  * CryptoContextImpl; we say that various objects are "created in" a context,
  * and can only be used in the context in which they were created
  *
- * All PALISADE methods are accessed through CryptoContextImpl methods. Guards
+ * All OpenFHE methods are accessed through CryptoContextImpl methods. Guards
  * are implemented to make certain that only valid objects that have been
  * created in the context are used
  *
@@ -122,23 +122,23 @@ class CryptoContextImpl : public Serializable {
   void TypeCheck(const ConstCiphertext<Element> a, const ConstCiphertext<Element> b, CALLER_INFO_ARGS_HDR) const {
     if (a == nullptr || b == nullptr) {
       std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
-      PALISADE_THROW(type_error, errorMsg);
+      OPENFHE_THROW(type_error, errorMsg);
     }
     if (a->GetCryptoContext().get() != this) {
       std::string errorMsg(
           std::string("Ciphertext was not created in this CryptoContext") + CALLER_INFO);
-      PALISADE_THROW(type_error, errorMsg);
+      OPENFHE_THROW(type_error, errorMsg);
     }
     if (a->GetCryptoContext() != b->GetCryptoContext()) {
       std::string errorMsg(
           std::string(
               "Ciphertexts were not created in the same CryptoContext") + CALLER_INFO);
-      PALISADE_THROW(type_error, errorMsg);
+      OPENFHE_THROW(type_error, errorMsg);
     }
     if (a->GetKeyTag() != b->GetKeyTag()) {
       std::string errorMsg(
           std::string("Ciphertexts were not encrypted with same keys") + CALLER_INFO);
-      PALISADE_THROW(type_error, errorMsg);
+      OPENFHE_THROW(type_error, errorMsg);
     }
     if (a->GetEncodingType() != b->GetEncodingType()) {
       std::stringstream ss;
@@ -146,7 +146,7 @@ class CryptoContextImpl : public Serializable {
       ss << " and " << b->GetEncodingType();
       ss << " do not match";
       ss << CALLER_INFO;
-      PALISADE_THROW(type_error, ss.str());
+      OPENFHE_THROW(type_error, ss.str());
     }
   }
 
@@ -159,16 +159,16 @@ class CryptoContextImpl : public Serializable {
   void TypeCheck(const ConstCiphertext<Element> a, const ConstPlaintext b, CALLER_INFO_ARGS_HDR) const {
     if (a == nullptr) {
       std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
-      PALISADE_THROW(type_error, errorMsg);
+      OPENFHE_THROW(type_error, errorMsg);
     }
     if (b == nullptr) {
       std::string errorMsg(std::string("Null Plaintext") + CALLER_INFO);
-      PALISADE_THROW(type_error, errorMsg);
+      OPENFHE_THROW(type_error, errorMsg);
     }
     if (a->GetCryptoContext().get() != this) {
       std::string errorMsg(
           std::string("Ciphertext was not created in this CryptoContext") + CALLER_INFO);
-      PALISADE_THROW(type_error, errorMsg);
+      OPENFHE_THROW(type_error, errorMsg);
     }
     if (a->GetEncodingType() != b->GetEncodingType()) {
       std::stringstream ss;
@@ -176,7 +176,7 @@ class CryptoContextImpl : public Serializable {
       ss << " and Plaintext encoding type " << b->GetEncodingType();
       ss << " do not match";
       ss << CALLER_INFO;
-      PALISADE_THROW(type_error, ss.str());
+      OPENFHE_THROW(type_error, ss.str());
     }
   }
 
@@ -190,22 +190,22 @@ class CryptoContextImpl : public Serializable {
   void CheckKey(const std::shared_ptr<const Key<Element>> key, CALLER_INFO_ARGS_HDR) const {
       if (key == nullptr) {
           std::string errorMsg(std::string("Key is nullptr") + CALLER_INFO);
-          PALISADE_THROW(config_error, errorMsg);
+          OPENFHE_THROW(config_error, errorMsg);
       }
       if (Mismatched(key->GetCryptoContext())) {
           std::string errorMsg(std::string("Key was not generated with the same crypto context") + CALLER_INFO);
-          PALISADE_THROW(config_error, errorMsg);
+          OPENFHE_THROW(config_error, errorMsg);
       }
   }
 
   void CheckCiphertext(const ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
       if (ciphertext == nullptr) {
           std::string errorMsg(std::string("Ciphertext is nullptr") + CALLER_INFO);
-          PALISADE_THROW(config_error, errorMsg);
+          OPENFHE_THROW(config_error, errorMsg);
       }
       if (Mismatched(ciphertext->GetCryptoContext())) {
           std::string errorMsg(std::string("Ciphertext was not generated with the same crypto context") + CALLER_INFO);
-          PALISADE_THROW(config_error, errorMsg);
+          OPENFHE_THROW(config_error, errorMsg);
       }
   }
 
@@ -216,7 +216,7 @@ class CryptoContextImpl : public Serializable {
    * This stores the private key in the crypto context.
    * This is only intended for debugging and should not be
    * used in production systems. Please define DEBUG_KEY in
-   * palisade.h to enable this.
+   * openfhe.h to enable this.
    *
    * If used, one can create a key pair and store the secret
    * key in th crypto context like this:
@@ -243,7 +243,7 @@ class CryptoContextImpl : public Serializable {
          << std::endl;
     this->privateKey = privateKey;
 #else
-    PALISADE_THROW(
+    OPENFHE_THROW(
         not_available_error,
         "SetPrivateKey is only allowed if DEBUG_KEY is set in palisade.h");
 #endif
@@ -253,7 +253,7 @@ class CryptoContextImpl : public Serializable {
    * This gets the private key from the crypto context.
    * This is only intended for debugging and should not be
    * used in production systems. Please define DEBUG_KEY in
-   * palisade.h to enable this.
+   * openfhe.h to enable this.
    *
    * If used, one can create a key pair and store the secret
    * key in th crypto context like this:
@@ -277,7 +277,7 @@ class CryptoContextImpl : public Serializable {
 #ifdef DEBUG_KEY
     return this->privateKey;
 #else
-    PALISADE_THROW(
+    OPENFHE_THROW(
         not_available_error,
         "GetPrivateKey is only allowed if DEBUG_KEY is set in palisade.h");
 #endif
@@ -943,7 +943,7 @@ class CryptoContextImpl : public Serializable {
    */
   Ciphertext<Element> Encrypt(Plaintext plaintext, const PublicKey<Element> publicKey) const {
     if (plaintext == nullptr)
-      PALISADE_THROW(type_error, "Input plaintext is nullptr");
+      OPENFHE_THROW(type_error, "Input plaintext is nullptr");
     CheckKey(publicKey);
 
     Ciphertext<Element> ciphertext =
@@ -971,7 +971,7 @@ class CryptoContextImpl : public Serializable {
    */
   Ciphertext<Element> Encrypt(Plaintext plaintext, const PrivateKey<Element> privateKey) const {
 //    if (plaintext == nullptr)
-//      PALISADE_THROW(type_error, "Input plaintext is nullptr");
+//      OPENFHE_THROW(type_error, "Input plaintext is nullptr");
     CheckKey(privateKey);
 
     Ciphertext<Element> ciphertext =
@@ -1014,7 +1014,7 @@ class CryptoContextImpl : public Serializable {
   /////////////////////////////////////////
 
   /**
-   * KeySwitchGen creates a key that can be used with the PALISADE KeySwitch
+   * KeySwitchGen creates a key that can be used with the OpenFHE KeySwitch
    * operation
    * @param key1
    * @param key2
@@ -1028,7 +1028,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * KeySwitch - PALISADE KeySwitch method
+   * KeySwitch - OpenFHE KeySwitch method
    * @param keySwitchHint - reference to KeySwitchHint
    * @param ciphertext - ciphertext
    * @return new CiphertextImpl after applying key switch
@@ -1041,7 +1041,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * KeySwitch - PALISADE KeySwitchInPlace method
+   * KeySwitch - OpenFHE KeySwitchInPlace method
    * @param keySwitchHint - reference to KeySwitchHint
    * @param ciphertext - ciphertext on which to perform in-place key switching
    */
@@ -1057,7 +1057,7 @@ class CryptoContextImpl : public Serializable {
   /////////////////////////////////////////
 
   /**
-   * EvalSub - PALISADE Negate method for a ciphertext
+   * EvalSub - OpenFHE Negate method for a ciphertext
    * @param ct
    * @return new ciphertext -ct
    */
@@ -1083,7 +1083,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * EvalAdd - PALISADE EvalAddInPlace method for a pair of ciphertexts
+   * EvalAdd - OpenFHE EvalAddInPlace method for a pair of ciphertexts
    * @param ct1 Input/output ciphertext
    * @param ct2 Input cipherext
    * @return \p ct1 contains \p ct1 + \p ct2
@@ -1094,7 +1094,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * EvalAdd - PALISADE EvalAddMutable method for a pair of ciphertexts.
+   * EvalAdd - OpenFHE EvalAddMutable method for a pair of ciphertexts.
    * This is a mutable version - input ciphertexts may get automatically
    * rescaled, or level-reduced.
    *
@@ -1108,7 +1108,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * EvalAdd - PALISADE EvalAdd method for a ciphertext and plaintext
+   * EvalAdd - OpenFHE EvalAdd method for a ciphertext and plaintext
    * @param ciphertext
    * @param plaintext
    * @return new ciphertext for ciphertext + plaintext
@@ -1133,7 +1133,7 @@ class CryptoContextImpl : public Serializable {
     EvalAddInPlace(ciphertext, plaintext);
   }
   /**
-   * EvalAdd - PALISADE EvalAddMutable method for a ciphertext and plaintext
+   * EvalAdd - OpenFHE EvalAddMutable method for a ciphertext and plaintext
    * This is a mutable version - input ciphertexts may get automatically
    * rescaled, or level-reduced.
    *
@@ -1172,7 +1172,7 @@ class CryptoContextImpl : public Serializable {
   //}
 
   /**
-   * EvalAdd - PALISADE EvalAdd method for a ciphertext and constant
+   * EvalAdd - OpenFHE EvalAdd method for a ciphertext and constant
    * @param ciphertext
    * @param constant
    * @return new ciphertext for ciphertext + constant
@@ -1205,7 +1205,7 @@ class CryptoContextImpl : public Serializable {
   /////////////////////////////////////////
 
   /**
-   * EvalSub - PALISADE EvalSub method for a pair of ciphertexts
+   * EvalSub - OpenFHE EvalSub method for a pair of ciphertexts
    * @param ct1
    * @param ct2
    * @return new ciphertext for ct1 - ct2
@@ -1221,7 +1221,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * EvalSub - PALISADE EvalSubMutable method for a pair of ciphertexts
+   * EvalSub - OpenFHE EvalSubMutable method for a pair of ciphertexts
    * This is a mutable version - input ciphertexts may get automatically
    * rescaled, or level-reduced.
    *
@@ -1235,7 +1235,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * EvalSubPlain - PALISADE EvalSub method for a ciphertext and plaintext
+   * EvalSubPlain - OpenFHE EvalSub method for a ciphertext and plaintext
    * @param ciphertext
    * @param plaintext
    * @return new ciphertext for ciphertext - plaintext
@@ -1250,7 +1250,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * EvalSubPlain - PALISADE EvalSubMutable method for a ciphertext and
+   * EvalSubPlain - OpenFHE EvalSubMutable method for a ciphertext and
    * plaintext This is a mutable version - input ciphertexts may get
    * automatically rescaled, or level-reduced.
    *
@@ -1319,7 +1319,7 @@ class CryptoContextImpl : public Serializable {
   /////////////////////////////////////////
 
   /**
-   * EvalMultKeyGen creates a key that can be used with the PALISADE EvalMult
+   * EvalMultKeyGen creates a key that can be used with the OpenFHE EvalMult
    * operator
    * the new evaluation key is stored in cryptocontext
    * @param key
@@ -1328,7 +1328,7 @@ class CryptoContextImpl : public Serializable {
 
   /**
    * EvalMultsKeyGen creates a vector evalmult keys that can be used with the
-   * PALISADE EvalMult operator 1st key (for s^2) is used for multiplication of
+   * OpenFHE EvalMult operator 1st key (for s^2) is used for multiplication of
    * ciphertexts of depth 1 2nd key (for s^3) is used for multiplication of
    * ciphertexts of depth 2, etc.
    * a vector of new evaluation keys is stored in crytpocontext
@@ -1338,7 +1338,7 @@ class CryptoContextImpl : public Serializable {
   void EvalMultKeysGen(const PrivateKey<Element> privateKey);
 
   /**
-   * EvalMult - PALISADE EvalMult method for a pair of ciphertexts - with key
+   * EvalMult - OpenFHE EvalMult method for a pair of ciphertexts - with key
    * switching
    * @param ct1
    * @param ct2
@@ -1349,14 +1349,14 @@ class CryptoContextImpl : public Serializable {
 
     const auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
     if (!evalKeyVec.size()) {
-      PALISADE_THROW(type_error, "Evaluation key has not been generated for EvalMult");
+      OPENFHE_THROW(type_error, "Evaluation key has not been generated for EvalMult");
     }
 
     return GetScheme()->EvalMult(ciphertext1, ciphertext2, evalKeyVec[0]);
   }
 
   /**
-   * EvalMult - PALISADE EvalMult method for a pair of ciphertexts - with key
+   * EvalMult - OpenFHE EvalMult method for a pair of ciphertexts - with key
    * switching This is a mutable version - input ciphertexts may get
    * automatically rescaled, or level-reduced.
    *
@@ -1369,7 +1369,7 @@ class CryptoContextImpl : public Serializable {
 
     const auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
     if (!evalKeyVec.size()) {
-      PALISADE_THROW(type_error, "Evaluation key has not been generated for EvalMultMutable");
+      OPENFHE_THROW(type_error, "Evaluation key has not been generated for EvalMultMutable");
     }
 
     return GetScheme()->EvalMultMutable(ciphertext1, ciphertext2,
@@ -1377,7 +1377,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * EvalMult - PALISADE EvalMult method for a pair of ciphertexts - no key
+   * EvalMult - OpenFHE EvalMult method for a pair of ciphertexts - no key
    * switching (relinearization)
    * @param ct1
    * @param ct2
@@ -1404,13 +1404,13 @@ class CryptoContextImpl : public Serializable {
       ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
     // input parameter check
     if (!ciphertext1 || !ciphertext2)
-      PALISADE_THROW(type_error, "Input ciphertext is nullptr");
+      OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
 
     const auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
 
     if (evalKeyVec.size() < (ciphertext1->GetElements().size() +
                              ciphertext2->GetElements().size() - 3)) {
-      PALISADE_THROW(type_error,
+      OPENFHE_THROW(type_error,
                      "Insufficient value was used for maxDepth to generate "
                      "keys for EvalMult");
     }
@@ -1428,12 +1428,12 @@ class CryptoContextImpl : public Serializable {
    */
   Ciphertext<Element> Relinearize(ConstCiphertext<Element> ciphertext) const {
     // input parameter check
-    if (!ciphertext) PALISADE_THROW(type_error, "Input ciphertext is nullptr");
+    if (!ciphertext) OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
 
     const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
 
     if (evalKeyVec.size() < (ciphertext->GetElements().size() - 2)) {
-      PALISADE_THROW(type_error,
+      OPENFHE_THROW(type_error,
                      "Insufficient value was used for maxDepth to generate "
                      "keys for EvalMult");
     }
@@ -1450,11 +1450,11 @@ class CryptoContextImpl : public Serializable {
    */
   void RelinearizeInPlace(Ciphertext<Element>& ciphertext) const {
     // input parameter check
-    if (!ciphertext) PALISADE_THROW(type_error, "Input ciphertext is nullptr");
+    if (!ciphertext) OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
 
     const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
     if (evalKeyVec.size() < (ciphertext->GetElements().size() - 2)) {
-      PALISADE_THROW(type_error,
+      OPENFHE_THROW(type_error,
                      "Insufficient value was used for maxDepth to generate "
                      "keys for EvalMult");
     }
@@ -1486,7 +1486,7 @@ class CryptoContextImpl : public Serializable {
   // TODO (dsuponit): commented the code below to avoid compiler errors
   //Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, const NativeInteger& constant) const {
   //  if (!ciphertext) {
-  //    PALISADE_THROW(type_error, "Input ciphertext is nullptr");
+  //    OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
   //  }
   //  return GetScheme()->EvalMult(ciphertext, constant);
   //}
@@ -1499,7 +1499,7 @@ class CryptoContextImpl : public Serializable {
   // TODO (dsuponit): commented the code below to avoid compiler errors
   //void EvalMultInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& constant) const {
   //  if (!ciphertext) {
-  //    PALISADE_THROW(type_error, "Input ciphertext is nullptr");
+  //    OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
   //  }
 
   //  GetScheme()->EvalMultInPlace(ciphertext, constant);
@@ -1512,7 +1512,7 @@ class CryptoContextImpl : public Serializable {
 
   Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, double constant) const {
     if (!ciphertext) {
-      PALISADE_THROW(type_error, "Input ciphertext is nullptr");
+      OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
     }
     return GetScheme()->EvalMult(ciphertext, constant);
   }
@@ -1523,7 +1523,7 @@ class CryptoContextImpl : public Serializable {
 
   void EvalMultInPlace(Ciphertext<Element>& ciphertext, double constant) const {
     if (!ciphertext) {
-      PALISADE_THROW(type_error, "Input ciphertext is nullptr");
+      OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
     }
 
     GetScheme()->EvalMultInPlace(ciphertext, constant);
@@ -1550,7 +1550,7 @@ class CryptoContextImpl : public Serializable {
       const std::vector<usint>& indexList) const {
     CheckKey(privateKey);
     if (!indexList.size())
-      PALISADE_THROW(config_error, "Input index vector is empty");
+      OPENFHE_THROW(config_error, "Input index vector is empty");
 
     return GetScheme()->EvalAutomorphismKeyGen(privateKey, indexList);
   }
@@ -1570,7 +1570,7 @@ class CryptoContextImpl : public Serializable {
     CheckKey(publicKey);
     CheckKey(privateKey);
     if (!indexList.size())
-      PALISADE_THROW(config_error, "Input index vector is empty");
+      OPENFHE_THROW(config_error, "Input index vector is empty");
 
     return GetScheme()->EvalAutomorphismKeyGen(publicKey, privateKey,
                                                indexList);
@@ -1593,7 +1593,7 @@ class CryptoContextImpl : public Serializable {
 
     if (evalKeyMap.empty()) {
       std::string errorMsg(std::string("Empty input key map") + CALLER_INFO);
-      PALISADE_THROW(type_error, errorMsg);
+      OPENFHE_THROW(type_error, errorMsg);
     }
 
     auto key = evalKeyMap.find(i);
@@ -1601,7 +1601,7 @@ class CryptoContextImpl : public Serializable {
     if (key == evalKeyMap.end()) {
       std::string errorMsg(std::string("Could not find an EvalKey for index ") +
                            std::to_string(i) + CALLER_INFO);
-      PALISADE_THROW(type_error, errorMsg);
+      OPENFHE_THROW(type_error, errorMsg);
     }
 
     auto evalKey = key->second;
@@ -1710,7 +1710,7 @@ class CryptoContextImpl : public Serializable {
   /////////////////////////////////////////
 
   /**
-   * ComposedEvalMult - PALISADE composed evalmult
+   * ComposedEvalMult - OpenFHE composed evalmult
    * @param ciphertext1 - vector for first cipher text
    * @param ciphertext2 - vector for second cipher text
    * @param quadKeySwitchHint - is the quadratic key switch hint from original
@@ -1724,7 +1724,7 @@ class CryptoContextImpl : public Serializable {
 
     auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
     if (!evalKeyVec.size()) {
-      PALISADE_THROW(type_error,
+      OPENFHE_THROW(type_error,
                      "Evaluation key has not been generated for EvalMult");
     }
 
@@ -1733,7 +1733,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * Rescale - An alias for PALISADE ModReduce method.
+   * Rescale - An alias for OpenFHE ModReduce method.
    * This is because ModReduce is called Rescale in CKKS.
    *
    * @param ciphertext - ciphertext
@@ -1746,7 +1746,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * Rescale - An alias for PALISADE ModReduceInPlace method.
+   * Rescale - An alias for OpenFHE ModReduceInPlace method.
    * This is because ModReduceInPlace is called RescaleInPlace in CKKS.
    *
    * @param ciphertext - ciphertext to be mod-reduced in-place
@@ -1758,7 +1758,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * ModReduce - PALISADE ModReduce method used only for BGVrns
+   * ModReduce - OpenFHE ModReduce method used only for BGVrns
    * @param ciphertext - ciphertext
    * @return mod reduced ciphertext
    */
@@ -1769,7 +1769,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * ModReduce - PALISADE ModReduceInPlace method used only for BGVrns
+   * ModReduce - OpenFHE ModReduceInPlace method used only for BGVrns
    * @param ciphertext - ciphertext to be mod-reduced in-place
    */
   void ModReduceInPlace(Ciphertext<Element>& ciphertext) const {
@@ -1779,7 +1779,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * LevelReduce - PALISADE LevelReduce method
+   * LevelReduce - OpenFHE LevelReduce method
    * @param cipherText1
    * @param linearKeySwitchHint
    * @return vector of level reduced ciphertext
@@ -1808,7 +1808,7 @@ class CryptoContextImpl : public Serializable {
    */
   Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext, uint32_t towersLeft = 1) const {
     if (ciphertext == nullptr)
-      PALISADE_THROW(config_error, "input ciphertext is invalid (has no data)");
+      OPENFHE_THROW(config_error, "input ciphertext is invalid (has no data)");
 
     return GetScheme()->Compress(ciphertext, towersLeft);
   }
@@ -1828,7 +1828,7 @@ class CryptoContextImpl : public Serializable {
   Ciphertext<Element> EvalAddMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
     // input parameter check
     if (!ciphertextVec.size())
-      PALISADE_THROW(type_error, "Empty input ciphertext vector");
+      OPENFHE_THROW(type_error, "Empty input ciphertext vector");
 
     return GetScheme()->EvalAddMany(ciphertextVec);
   }
@@ -1847,13 +1847,13 @@ class CryptoContextImpl : public Serializable {
   Ciphertext<Element> EvalAddManyInPlace(std::vector<Ciphertext<Element>>& ciphertextVec) const {
     // input parameter check
     if (!ciphertextVec.size())
-      PALISADE_THROW(type_error, "Empty input ciphertext vector");
+      OPENFHE_THROW(type_error, "Empty input ciphertext vector");
 
     return GetScheme()->EvalAddManyInPlace(ciphertextVec);
   }
 
   /**
-   * EvalLinearWSum - PALISADE EvalLinearWSum method to compute a linear
+   * EvalLinearWSum - OpenFHE EvalLinearWSum method to compute a linear
    * weighted sum
    *
    * @param ciphertexts a list of ciphertexts
@@ -1893,7 +1893,7 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * EvalMultMany - PALISADE function for evaluating multiplication on
+   * EvalMultMany - OpenFHE function for evaluating multiplication on
    * ciphertext followed by relinearization operation (at the end). It computes
    * the multiplication in a binary tree manner. Also, it reduces the number of
    * elements in the ciphertext to two after each multiplication.
@@ -1908,12 +1908,12 @@ class CryptoContextImpl : public Serializable {
   Ciphertext<Element> EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
     // input parameter check
     if (!ciphertextVec.size()) {
-      PALISADE_THROW(type_error, "Empty input ciphertext vector");
+      OPENFHE_THROW(type_error, "Empty input ciphertext vector");
     }
 
     const auto evalKeyVec = GetEvalMultKeyVector(ciphertextVec[0]->GetKeyTag());
     if (evalKeyVec.size() < (ciphertextVec[0]->GetElements().size() - 2)) {
-      PALISADE_THROW(type_error,
+      OPENFHE_THROW(type_error,
                      "Insufficient value was used for maxDepth to generate "
                      "keys for EvalMult");
     }
@@ -2015,7 +2015,7 @@ class CryptoContextImpl : public Serializable {
   /////////////////////////////////////////
 
   /**
-   * ReKeyGen produces an Eval Key that PALISADE can use for Proxy Re Encryption
+   * ReKeyGen produces an Eval Key that OpenFHE can use for Proxy Re Encryption
    * @param newKey (public)
    * @param oldKey (private)
    * @return new evaluation key
@@ -2029,8 +2029,8 @@ class CryptoContextImpl : public Serializable {
   }
 
   /**
-   * ReKeyGen produces an Eval Key that PALISADE can use for Proxy Re Encryption
-   * NOTE this functionality has been completely removed from PALISADE
+   * ReKeyGen produces an Eval Key that OpenFHE can use for Proxy Re Encryption
+   * NOTE this functionality has been completely removed from OpenFHE
    * @param newKey (private)
    * @param oldKey (private)
    * @return new evaluation key
@@ -2040,7 +2040,7 @@ class CryptoContextImpl : public Serializable {
       __attribute__((deprecated("functionality removed from PALISADE")));
 
   /**
-   * ReEncrypt - Proxy Re Encryption mechanism for PALISADE
+   * ReEncrypt - Proxy Re Encryption mechanism for OpenFHE
    * @param evalKey - evaluation key from the PRE keygen method
    * @param ciphertext - vector of shared pointers to encrypted Ciphertext
    * @param publicKey the public key of the recipient of the re-encrypted
@@ -2072,7 +2072,7 @@ class CryptoContextImpl : public Serializable {
   KeyPair<Element> MultipartyKeyGen(
       const std::vector<PrivateKey<Element>>& privateKeyVec) {
     if (!privateKeyVec.size())
-      PALISADE_THROW(config_error, "Input private key vector is empty");
+      OPENFHE_THROW(config_error, "Input private key vector is empty");
     return GetScheme()->MultipartyKeyGen(
         CryptoContextFactory<Element>::GetContextForPointer(this),
         privateKeyVec, false);
@@ -2094,7 +2094,7 @@ class CryptoContextImpl : public Serializable {
   KeyPair<Element> MultipartyKeyGen(const PublicKey<Element> publicKey,
                                     bool makeSparse = false,
                                     bool fresh = false) {
-    if (!publicKey) PALISADE_THROW(config_error, "Input public key is empty");
+    if (!publicKey) OPENFHE_THROW(config_error, "Input public key is empty");
     return GetScheme()->MultipartyKeyGen(
         CryptoContextFactory<Element>::GetContextForPointer(this), publicKey,
         makeSparse, fresh);
@@ -2172,11 +2172,11 @@ class CryptoContextImpl : public Serializable {
       const PrivateKey<Element> newPrivateKey,
       const EvalKey<Element> evalKey) const {
     if (!originalPrivateKey)
-      PALISADE_THROW(config_error, "Input first private key is nullptr");
+      OPENFHE_THROW(config_error, "Input first private key is nullptr");
     if (!newPrivateKey)
-      PALISADE_THROW(config_error, "Input second private key is nullptr");
+      OPENFHE_THROW(config_error, "Input second private key is nullptr");
     if (!evalKey)
-      PALISADE_THROW(config_error, "Input evaluation key is nullptr");
+      OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
 
     return GetScheme()->MultiKeySwitchGen(originalPrivateKey, newPrivateKey,
                                           evalKey);
@@ -2198,11 +2198,11 @@ class CryptoContextImpl : public Serializable {
       const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
       const std::vector<usint>& indexList, const std::string& keyId = "") {
     if (!privateKey)
-      PALISADE_THROW(config_error, "Input private key is nullptr");
+      OPENFHE_THROW(config_error, "Input private key is nullptr");
     if (!evalKeyMap)
-      PALISADE_THROW(config_error, "Input evaluation key map is nullptr");
+      OPENFHE_THROW(config_error, "Input evaluation key map is nullptr");
     if (!indexList.size())
-      PALISADE_THROW(config_error, "Input index vector is empty");
+      OPENFHE_THROW(config_error, "Input index vector is empty");
 
     return GetScheme()->MultiEvalAutomorphismKeyGen(privateKey, evalKeyMap,
                                                     indexList, keyId);
@@ -2224,11 +2224,11 @@ class CryptoContextImpl : public Serializable {
       const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
       const std::vector<int32_t>& indexList, const std::string& keyId = "") {
     if (!privateKey)
-      PALISADE_THROW(config_error, "Input private key is nullptr");
+      OPENFHE_THROW(config_error, "Input private key is nullptr");
     if (!evalKeyMap)
-      PALISADE_THROW(config_error, "Input evaluation key map is nullptr");
+      OPENFHE_THROW(config_error, "Input evaluation key map is nullptr");
     if (!indexList.size())
-      PALISADE_THROW(config_error, "Input index vector is empty");
+      OPENFHE_THROW(config_error, "Input index vector is empty");
 
     return GetScheme()->MultiEvalAtIndexKeyGen(privateKey, evalKeyMap,
                                                indexList, keyId);
@@ -2249,9 +2249,9 @@ class CryptoContextImpl : public Serializable {
       const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
       const std::string& keyId = "") {
     if (!privateKey)
-      PALISADE_THROW(config_error, "Input private key is nullptr");
+      OPENFHE_THROW(config_error, "Input private key is nullptr");
     if (!evalKeyMap)
-      PALISADE_THROW(config_error, "Input evaluation key map is nullptr");
+      OPENFHE_THROW(config_error, "Input evaluation key map is nullptr");
     return GetScheme()->MultiEvalSumKeyGen(privateKey, evalKeyMap, keyId);
   }
 
@@ -2267,9 +2267,9 @@ class CryptoContextImpl : public Serializable {
                                     EvalKey<Element> evalKey2,
                                     const std::string& keyId = "") {
     if (!evalKey1)
-      PALISADE_THROW(config_error, "Input first evaluation key is nullptr");
+      OPENFHE_THROW(config_error, "Input first evaluation key is nullptr");
     if (!evalKey2)
-      PALISADE_THROW(config_error, "Input second evaluation key is nullptr");
+      OPENFHE_THROW(config_error, "Input second evaluation key is nullptr");
 
     return GetScheme()->MultiAddEvalKeys(evalKey1, evalKey2, keyId);
   }
@@ -2288,9 +2288,9 @@ class CryptoContextImpl : public Serializable {
                                     EvalKey<Element> evalKey,
                                     const std::string& keyId = "") {
     if (!privateKey)
-      PALISADE_THROW(config_error, "Input private key is nullptr");
+      OPENFHE_THROW(config_error, "Input private key is nullptr");
     if (!evalKey)
-      PALISADE_THROW(config_error, "Input evaluation key is nullptr");
+      OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
 
     return GetScheme()->MultiMultEvalKey(privateKey, evalKey, keyId);
   }
@@ -2308,9 +2308,9 @@ class CryptoContextImpl : public Serializable {
       const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2,
       const std::string& keyId = "") {
     if (!evalKeyMap1)
-      PALISADE_THROW(config_error, "Input first evaluation key map is nullptr");
+      OPENFHE_THROW(config_error, "Input first evaluation key map is nullptr");
     if (!evalKeyMap2)
-      PALISADE_THROW(config_error,
+      OPENFHE_THROW(config_error,
                      "Input second evaluation key map is nullptr");
 
     return GetScheme()->MultiAddEvalSumKeys(evalKeyMap1, evalKeyMap2, keyId);
@@ -2329,9 +2329,9 @@ class CryptoContextImpl : public Serializable {
       const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2,
       const std::string& keyId = "") {
     if (!evalKeyMap1)
-      PALISADE_THROW(config_error, "Input first evaluation key map is nullptr");
+      OPENFHE_THROW(config_error, "Input first evaluation key map is nullptr");
     if (!evalKeyMap2)
-      PALISADE_THROW(config_error,
+      OPENFHE_THROW(config_error,
                      "Input second evaluation key map is nullptr");
 
     return GetScheme()->MultiAddEvalAutomorphismKeys(evalKeyMap1, evalKeyMap2,
@@ -2350,9 +2350,9 @@ class CryptoContextImpl : public Serializable {
                                      PublicKey<Element> publicKey2,
                                      const std::string& keyId = "") {
     if (!publicKey1)
-      PALISADE_THROW(config_error, "Input first public key is nullptr");
+      OPENFHE_THROW(config_error, "Input first public key is nullptr");
     if (!publicKey2)
-      PALISADE_THROW(config_error, "Input second public key is nullptr");
+      OPENFHE_THROW(config_error, "Input second public key is nullptr");
 
     return GetScheme()->MultiAddPubKeys(publicKey1, publicKey2, keyId);
   }
@@ -2369,9 +2369,9 @@ class CryptoContextImpl : public Serializable {
                                         EvalKey<Element> evalKey2,
                                         const std::string& keyId = "") {
     if (!evalKey1)
-      PALISADE_THROW(config_error, "Input first evaluation key is nullptr");
+      OPENFHE_THROW(config_error, "Input first evaluation key is nullptr");
     if (!evalKey2)
-      PALISADE_THROW(config_error, "Input second evaluation key is nullptr");
+      OPENFHE_THROW(config_error, "Input second evaluation key is nullptr");
 
     return GetScheme()->MultiAddEvalMultKeys(evalKey1, evalKey2, keyId);
   }
@@ -2386,7 +2386,7 @@ class CryptoContextImpl : public Serializable {
   template <class Archive>
   void load(Archive& ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
+      OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -2395,7 +2395,7 @@ class CryptoContextImpl : public Serializable {
     ar(cereal::make_nvp("si", m_schemeId));
 
     // NOTE: a pointer to this object will be wrapped in a shared_ptr, and is a
-    // "CryptoContext". PALISADE relies on the notion that identical
+    // "CryptoContext". OpenFHE relies on the notion that identical
     // CryptoContextImpls are not duplicated in memory Once we deserialize this
     // object, we must check to see if there is a matching object for this
     // object that's already existing in memory if it DOES exist, use it. If it

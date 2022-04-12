@@ -1,5 +1,5 @@
 ##
-## CMakeLists.txt for PALISADE
+## CMakeLists.txt for OpenFHE
 ##
 ## This script will build machine-specific header files for compile
 ## as it generates the Makefile
@@ -25,10 +25,10 @@ endif()
 
 project (PALISADE C CXX)
 
-set(PALISADE_VERSION_MAJOR 1)
-set(PALISADE_VERSION_MINOR 11)
-set(PALISADE_VERSION_PATCH 6)
-set(PALISADE_VERSION ${PALISADE_VERSION_MAJOR}.${PALISADE_VERSION_MINOR}.${PALISADE_VERSION_PATCH})
+set(OpenFHE_VERSION_MAJOR 1)
+set(OpenFHE_VERSION_MINOR 11)
+set(OpenFHE_VERSION_PATCH 6)
+set(OpenFHE_VERSION ${OpenFHE_VERSION_MAJOR}.${OpenFHE_VERSION_MINOR}.${OpenFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED ON)
@@ -174,8 +174,8 @@ else()
    set (NATIVE_OPT "")
 endif()
 
-set(C_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DPALISADE_VERSION=${PALISADE_VERSION}")
-set(CXX_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DPALISADE_VERSION=${PALISADE_VERSION} ${IGNORE_WARNINGS}")
+set(C_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DOpenFHE_VERSION=${OpenFHE_VERSION}")
+set(CXX_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DOpenFHE_VERSION=${OpenFHE_VERSION} ${IGNORE_WARNINGS}")
 
 if ( EMSCRIPTEN )
 	set(EMSCRIPTEN_IGNORE_WARNINGS "-Wno-unused-but-set-variable -Wno-unknown-warning-option")
@@ -201,11 +201,11 @@ if(WITH_COVTEST)
 endif()
 
 if(BUILD_STATIC)
-    set(PALISADE_STATIC_LIBS PALISADEcore_static PALISADEpke_static PALISADEbinfhe_static)
+    set(PALISADE_STATIC_LIBS PALISADEcore_static OpenFHEpke_static OpenFHEbinfhe_static)
 endif()
 
 if(BUILD_SHARED)
-    set(PALISADE_SHARED_LIBS PALISADEcore PALISADEpke PALISADEbinfhe)
+    set(PALISADE_SHARED_LIBS PALISADEcore OpenFHEpke OpenFHEbinfhe)
 endif()
 
 set(PALISADE_PACKAGE_LIBS ${PALISADE_STATIC_LIBS} ${PALISADE_SHARED_LIBS})
@@ -717,22 +717,22 @@ export(EXPORT PalisadeTargets FILE "${PROJECT_BINARY_DIR}/PalisadeTargets.cmake"
 
 export(PACKAGE Palisade)
 
-# Create the PalisadeConfig.cmake and PalisadeConfigVersion files
+# Create the OpenFHEConfig.cmake and OpenFHEConfigVersion files
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
    "${INSTALL_INCLUDE_DIR}")
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
-configure_file(PalisadeConfig.cmake.in
+configure_file(OpenFHEConfig.cmake.in
   "${PROJECT_BINARY_DIR}/PalisadeConfig.cmake" @ONLY)
 # ... for the install tree
 set(CONF_INCLUDE_DIRS "\${PALISADE_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(PalisadeConfig.cmake.in
+configure_file(OpenFHEConfig.cmake.in
   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/PalisadeConfig.cmake" @ONLY)
 # ... for both
-configure_file(PalisadeConfigVersion.cmake.in
+configure_file(OpenFHEConfigVersion.cmake.in
   "${PROJECT_BINARY_DIR}/PalisadeConfigVersion.cmake" @ONLY)
 
-# Install the PalisadeConfig.cmake and PalisadeConfigVersion.cmake
+# Install the OpenFHEConfig.cmake and OpenFHEConfigVersion.cmake
 install(FILES
   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/PalisadeConfig.cmake"
   "${PROJECT_BINARY_DIR}/PalisadeConfigVersion.cmake"

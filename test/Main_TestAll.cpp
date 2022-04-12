@@ -1,6 +1,6 @@
 /*
  * @file
- * @author TPOC: contact@palisade-crypto.org
+ * @author TPOC: contact@openfhe.org
  *
  * @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
  * All rights reserved.

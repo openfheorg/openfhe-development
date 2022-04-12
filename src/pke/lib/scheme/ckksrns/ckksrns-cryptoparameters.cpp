@@ -123,7 +123,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(
             prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
         double ratio = m_scalingFactorsReal[k] / m_scalingFactorsReal[0];
         if (ratio <= 0.5 || ratio >= 2.0)
-          PALISADE_THROW(
+          OPENFHE_THROW(
               config_error,
               "CryptoParametersCKKSRNS::PrecomputeCRTTables "
               "- FLEXIBLEAUTO cannot support this "
@@ -139,7 +139,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(
         double ratio = m_scalingFactorsReal[k] / m_scalingFactorsReal[1];
 
         if (ratio <= 0.5 || ratio >= 2.0)
-          PALISADE_THROW(
+          OPENFHE_THROW(
               config_error,
               "CryptoParametersCKKSRNS::PrecomputeCRTTables "
               "- FLEXIBLEAUTO cannot support this "

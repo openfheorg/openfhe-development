@@ -122,7 +122,7 @@ const myZZ &myZZ::MultiplyAndRoundEq(const myZZ &p, const myZZ &q) {
 
 myZZ myZZ::DivideAndRound(const myZZ &q) const {
   if (q == myZZ(0)) {
-    PALISADE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
+    OPENFHE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
   }
   myZZ halfQ(q >> 1);
   if (*this < q) {
@@ -145,7 +145,7 @@ myZZ myZZ::DivideAndRound(const myZZ &q) const {
 
 const myZZ &myZZ::DivideAndRoundEq(const myZZ &q) {
   if (q == myZZ(0)) {
-    PALISADE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
+    OPENFHE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
   }
   myZZ halfQ(q >> 1);
   if (*this < q) {
@@ -333,7 +333,7 @@ usint myZZ::GetDigitAtIndexForBase(usint index, usint base) const {
 }
 
 // returns the bit at the index into the binary format of the big integer,
-// note that msb is 1 like all other bit indicies in PALISADE.
+// note that msb is 1 like all other bit indicies in OpenFHE.
 
 uschar myZZ::GetBitAtIndex(usint index) const {
   return (uschar)GetBitRangeAtIndex(index, 1);

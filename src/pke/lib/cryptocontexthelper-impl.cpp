@@ -107,7 +107,7 @@ static CryptoContext<Element> buildContextFromSerialized(
         stoul(numPrimes));
 
   } else {
-    PALISADE_THROW(config_error, "Unrecognized parmtype " + parmtype +
+    OPENFHE_THROW(config_error, "Unrecognized parmtype " + parmtype +
                                      " in buildContextFromSerialized");
   }
 

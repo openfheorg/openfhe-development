@@ -360,7 +360,7 @@ class NativeIntegerT
     NativeInt oldv = m_value;
     m_value += b.m_value;
     if (m_value < oldv) {
-      PALISADE_THROW(lbcrypto::math_error, "Overflow");
+      OPENFHE_THROW(lbcrypto::math_error, "Overflow");
     }
     return *this;
   }
@@ -464,7 +464,7 @@ class NativeIntegerT
   NativeIntegerT MulCheck(const NativeIntegerT &b) const {
     NativeInt prod = m_value * b.m_value;
     if (prod > 0 && (prod < m_value || prod < b.m_value))
-      PALISADE_THROW(lbcrypto::math_error, "Overflow");
+      OPENFHE_THROW(lbcrypto::math_error, "Overflow");
     return prod;
   }
 
@@ -499,7 +499,7 @@ class NativeIntegerT
     NativeInt oldval = m_value;
     m_value *= b.m_value;
     if (m_value < oldval) {
-      PALISADE_THROW(lbcrypto::math_error, "Overflow");
+      OPENFHE_THROW(lbcrypto::math_error, "Overflow");
     }
     return *this;
   }
@@ -523,7 +523,7 @@ class NativeIntegerT
    * @return is the result of the division operation.
    */
   NativeIntegerT DividedBy(const NativeIntegerT &b) const {
-    if (b.m_value == 0) PALISADE_THROW(lbcrypto::math_error, "Divide by zero");
+    if (b.m_value == 0) OPENFHE_THROW(lbcrypto::math_error, "Divide by zero");
     return this->m_value / b.m_value;
   }
 
@@ -534,7 +534,7 @@ class NativeIntegerT
    * @return is the result of the division operation.
    */
   const NativeIntegerT &DividedByEq(const NativeIntegerT &b) {
-    if (b.m_value == 0) PALISADE_THROW(lbcrypto::math_error, "Divide by zero");
+    if (b.m_value == 0) OPENFHE_THROW(lbcrypto::math_error, "Divide by zero");
     this->m_value /= b.m_value;
     return *this;
   }
@@ -682,7 +682,7 @@ class NativeIntegerT
    */
   NativeIntegerT DivideAndRound(const NativeIntegerT &q) const {
     if (q == 0) {
-      PALISADE_THROW(lbcrypto::math_error, "Divide by zero");
+      OPENFHE_THROW(lbcrypto::math_error, "Divide by zero");
     }
     NativeInt ans = m_value / q.m_value;
     NativeInt rem = m_value % q.m_value;
@@ -1768,7 +1768,7 @@ class NativeIntegerT
       std::string msg = toString(m_value) +
                         " does not have a ModInverse using " +
                         toString(modulus);
-      PALISADE_THROW(lbcrypto::math_error, msg);
+      OPENFHE_THROW(lbcrypto::math_error, msg);
     }
     if (modulus == 1) {
       return 0;
@@ -1875,7 +1875,7 @@ class NativeIntegerT
   template <typename OutputType = NativeInt>
   OutputType ConvertToInt() const {
     if (sizeof(OutputType) < sizeof(m_value))
-      PALISADE_THROW(lbcrypto::type_error,
+      OPENFHE_THROW(lbcrypto::type_error,
                      "Invalid integer conversion: sizeof(OutputIntType) < "
                      "sizeof(InputIntType)");
     return static_cast<OutputType>(m_value);
@@ -1896,14 +1896,14 @@ class NativeIntegerT
    */
   static NativeIntegerT FromBinaryString(const std::string &bitString) {
     if (bitString.length() > MaxBits()) {
-      PALISADE_THROW(lbcrypto::math_error,
+      OPENFHE_THROW(lbcrypto::math_error,
                      "Bit string is too long to fit in a intnat");
     }
     NativeInt v = 0;
     for (size_t i = 0; i < bitString.length(); i++) {
       int n = bitString[i] - '0';
       if (n < 0 || n > 1) {
-        PALISADE_THROW(lbcrypto::math_error,
+        OPENFHE_THROW(lbcrypto::math_error,
                        "Bit string must contain only 0 or 1");
       }
       v <<= 1;
@@ -1963,7 +1963,7 @@ class NativeIntegerT
    */
   uschar GetBitAtIndex(usint index) const {
     if (index == 0) {
-      PALISADE_THROW(lbcrypto::math_error, "Zero index in GetBitAtIndex");
+      OPENFHE_THROW(lbcrypto::math_error, "Zero index in GetBitAtIndex");
     }
 
     return (m_value >> (index - 1)) & 0x01;
@@ -2008,7 +2008,7 @@ class NativeIntegerT
                           T>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OPENFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -2022,7 +2022,7 @@ class NativeIntegerT
                           void>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OPENFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -2040,7 +2040,7 @@ class NativeIntegerT
                           void>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OPENFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -2110,13 +2110,13 @@ class NativeIntegerT
     for (size_t i = 0; i < str.length(); i++) {
       int v = str[i] - '0';
       if (v < 0 || v > 9) {
-        PALISADE_THROW(lbcrypto::type_error, "String contains a non-digit");
+        OPENFHE_THROW(lbcrypto::type_error, "String contains a non-digit");
       }
       m_value *= 10;
       m_value += v;
 
       if (m_value < test_value) {
-        PALISADE_THROW(
+        OPENFHE_THROW(
             lbcrypto::math_error,
             str + " is too large to fit in this native integer object");
       }
@@ -2144,7 +2144,7 @@ class NativeIntegerT
   inline NativeIntegerT AddCheck(const NativeIntegerT &b) const {
     NativeInt newv = m_value + b.m_value;
     if (newv < m_value || newv < b.m_value) {
-      PALISADE_THROW(lbcrypto::math_error, "Overflow");
+      OPENFHE_THROW(lbcrypto::math_error, "Overflow");
     }
     return newv;
   }

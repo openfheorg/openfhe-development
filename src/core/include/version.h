@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  PALISADE version strings
+  OpenFHE version strings
  */
 
 #ifndef SRC_VERSION_H_
@@ -48,7 +48,7 @@
 
 
 /**
- * GetPALISADEVersion - Returns PALISADE Version string
+ * GetOpenFHEVersion - Returns OpenFHE Version string
  * @return
  */
 inline std::string GetPALISADEVersion() { return STR(PALISADE_VERSION); }

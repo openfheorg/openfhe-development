@@ -207,9 +207,9 @@ int main() {
   
   // Sample Program: Step 4 - Evaluation
 
-  // PALISADE maintains an internal map of CryptoContext objects which are
+  // OpenFHE maintains an internal map of CryptoContext objects which are
   // indexed by a tag and the tag is applied to both the CryptoContext and some
-  // of the keys. When deserializing a context, PALISADE checks for the tag and
+  // of the keys. When deserializing a context, OpenFHE checks for the tag and
   // if it finds it in the CryptoContext map, it will return the stored version.
   // Hence, we need to clear the context and clear the keys.
   cryptoContext->ClearEvalMultKeys();

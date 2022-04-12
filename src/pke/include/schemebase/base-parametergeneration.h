@@ -86,7 +86,7 @@ public:
       enum RescalingTechnique rsTech = FIXEDMANUAL,
       enum EncryptionTechnique encTech = STANDARD,
       enum MultiplicationTechnique multTech = HPS) const {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");
   }
@@ -120,7 +120,7 @@ public:
       enum RescalingTechnique rsTech = FIXEDMANUAL,
       enum EncryptionTechnique encTech = STANDARD,
       enum MultiplicationTechnique multTech = HPS) const {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");
   }
@@ -149,7 +149,7 @@ public:
       enum RescalingTechnique rsTech = FIXEDMANUAL,
       enum EncryptionTechnique encTech = STANDARD,
       enum MultiplicationTechnique multTech = HPS) const {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         not_implemented_error,
         "This signature for ParamsGen is not supported for this scheme.");
   }

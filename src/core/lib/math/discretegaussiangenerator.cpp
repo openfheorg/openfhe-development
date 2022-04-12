@@ -56,7 +56,7 @@ void DiscreteGaussianGeneratorImpl<VecType>::SetStd(double std) {
     std::string errorMsg(
           std::string(
               "Standard deviation cannot exceed 59 bits"));
-      PALISADE_THROW(config_error, errorMsg);
+      OPENFHE_THROW(config_error, errorMsg);
   }
 
   if (m_std < KARNEY_THRESHOLD)
@@ -171,7 +171,7 @@ usint DiscreteGaussianGeneratorImpl<VecType>::FindInVector(
   if (lower != S.end()) {
     return lower - S.begin() + 1;
   }
-  PALISADE_THROW(not_available_error,
+  OPENFHE_THROW(not_available_error,
                  "DGG Inversion Sampling. FindInVector value not found: " +
                      std::to_string(search));
 }
@@ -278,11 +278,11 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(
   DEBUG("t " << t);
 
   if (std::isinf(mean)) {
-    PALISADE_THROW(not_available_error,
+    OPENFHE_THROW(not_available_error,
                    "DiscreteGaussianGeneratorImpl called with mean == +-inf");
   }
   if (std::isinf(stddev)) {
-    PALISADE_THROW(not_available_error,
+    OPENFHE_THROW(not_available_error,
                    "DiscreteGaussianGeneratorImpl called with stddev == +-inf");
   }
   typename VecType::Integer result;
@@ -299,7 +299,7 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(
 
   usint count = 0;
   const usint limit = 10000;
-  // PALISADE_THROW(palisade_error, "dbg throw");
+  // OPENFHE_THROW(openfhe_error, "dbg throw");
 
   while (!flagSuccess) {
     //  pick random int
@@ -315,7 +315,7 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(
     count++;
     if (count > limit) {
       DEBUG("x " << x << " dice " << dice);
-      PALISADE_THROW(
+      OPENFHE_THROW(
           not_available_error,
           "GenerateInteger could not find success after repeated attempts");
     }

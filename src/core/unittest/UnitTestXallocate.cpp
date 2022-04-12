@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code exercises the block allocator utility of the PALISADE lattice encryption library.
+  This code exercises the block allocator utility of the OpenFHE lattice encryption library.
  */
 
 // #define PROFILE  // define if we want elapsed time output and pool statistics

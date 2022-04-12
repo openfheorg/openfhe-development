@@ -60,7 +60,7 @@
 #include "math/hal/integer.h"
 #include "math/hal/basicint.h"
 
-#include "utils/palisadebase64.h"
+#include "utils/openfhebase64.h"
 #include "utils/parallel.h"
 #include "utils/serializable.h"
 
@@ -741,13 +741,13 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
 
   myZZ ModMulFastConst(const myZZ &b, const myZZ &modulus,
                        const myZZ &bInv) const {
-    PALISADE_THROW(lbcrypto::not_implemented_error,
+    OPENFHE_THROW(lbcrypto::not_implemented_error,
                    "ModMulFastConst is not implemented for backend 6");
   }
 
   const myZZ &ModMulFastConstEq(const myZZ &b, const myZZ &modulus,
                                 const myZZ &bInv) {
-    PALISADE_THROW(lbcrypto::not_implemented_error,
+    OPENFHE_THROW(lbcrypto::not_implemented_error,
                    "ModMulFastConstEq is not implemented for backend 6");
   }
 
@@ -784,7 +784,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
    */
   myZZ ModInverse(const myZZ &modulus) const {
     if (modulus == myZZ(0)) {
-      PALISADE_THROW(lbcrypto::math_error, "zero has no inverse");
+      OPENFHE_THROW(lbcrypto::math_error, "zero has no inverse");
     }
     myZZ tmp(0);
     try {
@@ -796,7 +796,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
       errmsg << "ModInverse exception "
              << " this: " << *this << " modulus: " << modulus << "GCD("
              << e.get_a() << "," << e.get_n() << "!=1" << std::endl;
-      PALISADE_THROW(lbcrypto::math_error, errmsg.str());
+      OPENFHE_THROW(lbcrypto::math_error, errmsg.str());
     }
     return tmp;
   }
@@ -809,7 +809,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
    */
   const myZZ &ModInverseEq(const myZZ &modulus) {
     if (modulus == myZZ(0)) {
-      PALISADE_THROW(lbcrypto::math_error, "zero has no inverse");
+      OPENFHE_THROW(lbcrypto::math_error, "zero has no inverse");
     }
     try {
       *this = InvMod(*this % modulus, modulus);
@@ -820,7 +820,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
       errmsg << "ModInverse exception "
              << " this: " << *this << " modulus: " << modulus << "GCD("
              << e.get_a() << "," << e.get_n() << "!=1" << std::endl;
-      PALISADE_THROW(lbcrypto::math_error, errmsg.str());
+      OPENFHE_THROW(lbcrypto::math_error, errmsg.str());
     }
     return *this;
   }
@@ -874,7 +874,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
 
   // CONVERTING
 
-  // palisade conversion methods
+  // OpenFHE conversion methods
   uint64_t ConvertToInt() const;
 
   uint64_t ConvertToUint64() const;
@@ -953,7 +953,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
 
   // STRINGS & STREAMS
 
-  // palisade string conversion
+  // OpenFHE string conversion
   const std::string ToString() const;
 
   static const std::string IntegerTypeName() { return "UBNTLINT"; }
@@ -1009,7 +1009,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
                           void>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OPENFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
@@ -1034,7 +1034,7 @@ class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
                           void>::type
   load(Archive &ar, std::uint32_t const version) {
     if (version > SerializedVersion()) {
-      PALISADE_THROW(lbcrypto::deserialize_error,
+      OPENFHE_THROW(lbcrypto::deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }

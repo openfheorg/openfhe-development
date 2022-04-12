@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   // print to stdout.
   DEBUG_FLAG(true);
 
-  lbcrypto::PalisadeParallelControls.Enable();
+  lbcrypto::OpenFHEParallelControls.Enable();
 
   uint32_t array_size = 1000;
   DEBUGEXP(argc);

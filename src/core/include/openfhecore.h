@@ -30,11 +30,11 @@
 //==================================================================================
 
 /*
-  PALISADE version strings
+  OpenFHE version strings
  */
 
-#ifndef SRC_CORE_INCLUDE_PALISADECORE_H_
-#define SRC_CORE_INCLUDE_PALISADECORE_H_
+#ifndef SRC_CORE_INCLUDE_OpenFHECORE_H_
+#define SRC_CORE_INCLUDE_OpenFHECORE_H_
 
 #include "version.h"
 
@@ -49,4 +49,4 @@
 #include "utils/debug.h"
 #include "utils/defines.h"
 
-#endif /* SRC_CORE_INCLUDE_PALISADECORE_H_ */
+#endif /*SRC_CORE_INCLUDE_OpenFHECORE_H_*/

@@ -12,7 +12,7 @@ cmake_minimum_required (VERSION 3.5.1)
 ### the BUILD_STATIC option. For that, you run "cmake .. -DBUILD_STATIC=ON".
 ### After having your link completed you will find static libs
 ### with the suffix "_static" in ./build/libs/.
-### Examples: PALISADEpke_static.a, PALISADEcore_static.a, etc.
+### Examples: OpenFHEpke_static.a, PALISADEcore_static.a, etc.
 ### After you run "make install" in your build directory, you can build your custom application.
 ### If you need your application to be linked statically, then run "cmake .. -DBUILD_STATIC=ON"
 

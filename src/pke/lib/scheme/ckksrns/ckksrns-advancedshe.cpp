@@ -123,7 +123,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPoly(
     ConstCiphertext<DCRTPoly> x,
     const std::vector<double> &coefficients) const {
   if (coefficients[coefficients.size() - 1] == 0)
-    PALISADE_THROW(
+    OPENFHE_THROW(
         math_error,
         "EvalPoly: The highest-order coefficient cannot be set to 0.");
 

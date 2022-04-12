@@ -52,7 +52,7 @@ bool SERIALIZE_PRECOMPUTE = true;
 template <typename Element>
 void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element> key) {
   if (key == nullptr || Mismatched(key->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Key passed to EvalMultKeyGen were not generated with this "
                    "crypto context");
 
@@ -65,7 +65,7 @@ template <typename Element>
 void CryptoContextImpl<Element>::EvalMultKeysGen(
     const PrivateKey<Element> key) {
   if (key == nullptr || Mismatched(key->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Key passed to EvalMultsKeyGen were not generated with this "
                    "crypto context");
 
@@ -80,7 +80,7 @@ const std::vector<EvalKey<Element>>&
 CryptoContextImpl<Element>::GetEvalMultKeyVector(const std::string& keyID) {
   auto ekv = GetAllEvalMultKeys().find(keyID);
   if (ekv == GetAllEvalMultKeys().end())
-    PALISADE_THROW(not_available_error,
+    OPENFHE_THROW(not_available_error,
                    "You need to use EvalMultKeyGen so that you have an "
                    "EvalMultKey available for this ID");
   return ekv->second;
@@ -138,14 +138,14 @@ template <typename Element>
 void CryptoContextImpl<Element>::EvalSumKeyGen(
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
   if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Private key passed to EvalSumKeyGen were not generated "
                    "with this crypto context");
   }
 
   if (publicKey != nullptr &&
       privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         config_error,
         "Public key passed to EvalSumKeyGen does not match private key");
   }
@@ -161,14 +161,14 @@ CryptoContextImpl<Element>::EvalSumRowsKeyGen(
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey,
     usint rowSize, usint subringDim) {
   if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Private key passed to EvalSumKeyGen were not generated "
                    "with this crypto context");
   }
 
   if (publicKey != nullptr &&
       privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         config_error,
         "Public key passed to EvalSumKeyGen does not match private key");
   }
@@ -184,14 +184,14 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>>
 CryptoContextImpl<Element>::EvalSumColsKeyGen(
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
   if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Private key passed to EvalSumKeyGen were not generated "
                    "with this crypto context");
   }
 
   if (publicKey != nullptr &&
       privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         config_error,
         "Public key passed to EvalSumKeyGen does not match private key");
   }
@@ -207,7 +207,7 @@ const std::map<usint, EvalKey<Element>>&
 CryptoContextImpl<Element>::GetEvalSumKeyMap(const std::string& keyID) {
   auto ekv = GetAllEvalSumKeys().find(keyID);
   if (ekv == GetAllEvalSumKeys().end())
-    PALISADE_THROW(not_available_error,
+    OPENFHE_THROW(not_available_error,
                    "You need to use EvalSumKeyGen so that you have EvalSumKeys "
                    "available for this ID");
   return *ekv->second;
@@ -270,14 +270,14 @@ void CryptoContextImpl<Element>::EvalAtIndexKeyGen(
     const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
     const PublicKey<Element> publicKey) {
   if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Private key passed to EvalAtIndexKeyGen were not generated "
                    "with this crypto context");
   }
 
   if (publicKey != nullptr &&
       privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         config_error,
         "Public key passed to EvalAtIndexKeyGen does not match private key");
   }
@@ -293,7 +293,7 @@ const std::map<usint, EvalKey<Element>>&
 CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(const std::string& keyID) {
   auto ekv = evalAutomorphismKeyMap().find(keyID);
   if (ekv == evalAutomorphismKeyMap().end())
-    PALISADE_THROW(not_available_error,
+    OPENFHE_THROW(not_available_error,
                    "You need to use EvalAutomorphismKeyGen so that you have "
                    "EvalAutomorphismKeys available for this ID");
   return *ekv->second;
@@ -350,7 +350,7 @@ template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalSum(
     ConstCiphertext<Element> ciphertext, usint batchSize) const {
   if (ciphertext == nullptr || Mismatched(ciphertext->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Information passed to EvalSum was not generated with this "
                    "crypto context");
 
@@ -367,7 +367,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSumRows(
     const std::map<usint, EvalKey<Element>>& evalSumKeys,
     usint subringDim) const {
   if (ciphertext == nullptr || Mismatched(ciphertext->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Information passed to EvalSum was not generated with this "
                    "crypto context");
 
@@ -381,7 +381,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalSumCols(
     ConstCiphertext<Element> ciphertext, usint rowSize,
     const std::map<usint, EvalKey<Element>>& evalSumKeysRight) const {
   if (ciphertext == nullptr || Mismatched(ciphertext->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Information passed to EvalSum was not generated with this "
                    "crypto context");
 
@@ -397,7 +397,7 @@ template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndex(
     ConstCiphertext<Element> ciphertext, int32_t index) const {
   if (ciphertext == nullptr || Mismatched(ciphertext->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Information passed to EvalAtIndex was not generated with "
                    "this crypto context");
 
@@ -423,7 +423,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalMerge(
     const std::vector<Ciphertext<Element>>& ciphertextVector) const {
   if (ciphertextVector[0] == nullptr ||
       Mismatched(ciphertextVector[0]->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Information passed to EvalMerge was not generated with "
                    "this crypto context");
 
@@ -444,7 +444,7 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(
   if (ct1 == nullptr || ct2 == nullptr ||
       ct1->GetKeyTag() != ct2->GetKeyTag() ||
       Mismatched(ct1->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Information passed to EvalInnerProduct was not generated "
                    "with this crypto context");
 
@@ -461,7 +461,7 @@ template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalInnerProduct(
     ConstCiphertext<Element> ct1, ConstPlaintext ct2, usint batchSize) const {
   if (ct1 == nullptr || ct2 == nullptr || Mismatched(ct1->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Information passed to EvalInnerProduct was not generated "
                    "with this crypto context");
 
@@ -489,11 +489,11 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(
     ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey,
     Plaintext* plaintext) {
   if (ciphertext == nullptr)
-    PALISADE_THROW(config_error, "ciphertext passed to Decrypt is empty");
+    OPENFHE_THROW(config_error, "ciphertext passed to Decrypt is empty");
   if (plaintext == nullptr)
-    PALISADE_THROW(config_error, "plaintext passed to Decrypt is empty");
+    OPENFHE_THROW(config_error, "plaintext passed to Decrypt is empty");
   if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext()))
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "Information passed to Decrypt was not generated with "
                    "this crypto context");
 
@@ -554,12 +554,12 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
   for (size_t i = 0; i < last_ciphertext; i++) {
     if (partialCiphertextVec[i] == nullptr ||
         Mismatched(partialCiphertextVec[i]->GetCryptoContext()))
-      PALISADE_THROW(config_error,
+      OPENFHE_THROW(config_error,
                      "A ciphertext passed to MultipartyDecryptFusion was not "
                      "generated with this crypto context");
     if (partialCiphertextVec[i]->GetEncodingType() !=
         partialCiphertextVec[0]->GetEncodingType())
-      PALISADE_THROW(type_error,
+      OPENFHE_THROW(type_error,
                      "Ciphertexts passed to MultipartyDecryptFusion have "
                      "mismatched encoding types");
   }

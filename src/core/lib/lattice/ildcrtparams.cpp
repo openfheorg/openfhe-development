@@ -42,9 +42,9 @@ ILDCRTParams<IntType>::ILDCRTParams(usint order, usint depth, usint bits)
     : ElemParams<IntType>(order, 0) {
   if (order == 0) return;
   if (depth == 0)
-    PALISADE_THROW(config_error, "Invalid depth for ILDCRTParams");
+    OPENFHE_THROW(config_error, "Invalid depth for ILDCRTParams");
   if (bits == 0 || bits > 64)
-    PALISADE_THROW(config_error, "Invalid bits for ILDCRTParams");
+    OPENFHE_THROW(config_error, "Invalid bits for ILDCRTParams");
 
   m_parms.resize(depth);
   this->ciphertextModulus = IntType(0);

@@ -29,8 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef SRC_LIB_PALISADE_H_
-#define SRC_LIB_PALISADE_H_
+#ifndef SRC_LIB_OpenFHE_H_
+#define SRC_LIB_OpenFHE_H_
 
 #include <initializer_list>
 #include <memory>
@@ -48,4 +48,4 @@
 #include "ciphertext.h"
 #include "cryptocontext.h"
 
-#endif /* SRC_LIB_PALISADE_H_ */
+#endif /* SRC_LIB_OpenFHE_H_ */

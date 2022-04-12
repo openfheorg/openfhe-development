@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code tests the transform feature of the PALISADE lattice encryption library.
+  This code tests the transform feature of the OpenFHE lattice encryption library.
  */
 
 #include "gtest/gtest.h"
@@ -42,7 +42,7 @@
 
 using namespace lbcrypto;
 
-static void regthrow(const std::string& msg) { PALISADE_THROW(config_error, msg); }
+static void regthrow(const std::string& msg) { OPENFHE_THROW(config_error, msg); }
 
 static void parthrow(const std::string& msg) {
   // now try throw inside omp

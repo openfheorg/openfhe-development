@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  palisade native base 64 utlities
+  OpenFHE native base 64 utlities
  */
 
 #include "utils/openfhebase64.h"

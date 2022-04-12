@@ -78,7 +78,7 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
   } else if (sizeQl == 1) {
     *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
   } else {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         math_error,
         "Decryption failure: No towers left; consider increasing the depth.");
   }
@@ -106,7 +106,7 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
   if (sizeQl == 1)
     *plaintext = b.GetElementAtIndex(0);
   else
-    PALISADE_THROW(
+    OPENFHE_THROW(
         math_error,
         "Decryption failure: No towers left; consider increasing the depth.");
 

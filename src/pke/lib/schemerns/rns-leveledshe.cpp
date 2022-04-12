@@ -550,7 +550,7 @@ void LeveledSHERNS::ModReduceInPlace(Ciphertext<DCRTPoly> &ciphertext,
           ciphertext->GetCryptoParameters());
 
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         not_implemented_error,
         "ModReduce is not implemented for NORESCALE rescaling technique");
   }
@@ -580,7 +580,7 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly> ciphertext,
           ciphertext->GetCryptoParameters());
 
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         not_implemented_error,
         "LevelReduce is not implemented for NORESCALE rescaling technique");
   }

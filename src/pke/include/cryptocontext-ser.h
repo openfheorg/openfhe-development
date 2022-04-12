@@ -85,7 +85,7 @@ namespace lbcrypto {
 namespace Serial {
 /**
  * Deserialize for a CryptoContext (that is, a shared pointer to a
- * CryptoContextImpl PALISADE doesn't want multiple copies of the same crypto
+ * CryptoContextImpl OpenFHE doesn't want multiple copies of the same crypto
  * context floating around, and it enforces that here
  *
  * @param obj - the target for the deserialization
@@ -163,7 +163,7 @@ template bool CryptoContextImpl<DCRTPoly>::DeserializeEvalAutomorphismKey<
 namespace Serial {
 /**
  * Deserialize for a CryptoContext (that is, a shared pointer to a
- * CryptoContextImpl PALISADE doesn't want multiple copies of the same crypto
+ * CryptoContextImpl OpenFHE doesn't want multiple copies of the same crypto
  * context floating around, and it enforces that here
  *
  * @param obj - the target for the deserialization
