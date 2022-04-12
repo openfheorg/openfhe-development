@@ -17,8 +17,8 @@ do
 done
 
 docker build -t $REPOSITORY . --build-arg no_threads=$THREADS --build-arg repository=$REPOSITORY --build-arg tag=$TAG
-docker run -dit --name palisade -p 80:80 $REPOSITORY
-docker commit palisade palisade:$TAG
+docker run -dit --name openfhe -p 80:80 $REPOSITORY
+docker commit openfhe openfhe:$TAG
 docker login registry.gitlab.com
-docker image tag palisade:$TAG registry.gitlab.com/openfhe/$REPOSITORY/$TAG:$TAG
+docker image tag openfhe:$TAG registry.gitlab.com/openfhe/$REPOSITORY/$TAG:$TAG
 docker push registry.gitlab.com/openfhe/$REPOSITORY/$TAG:$TAG

@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ARG repository="palisade-development"
+ARG repository="OpenFHE-development"
 ARG branch=master
 ARG tag=master
 ARG CC_param=/usr/bin/gcc-10

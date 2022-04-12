@@ -20,14 +20,14 @@ function uninstall_unix() {
     sudo xargs rm -vf < install_manifest.txt || echo Nothing in install_manifest.txt to be uninstalled!
 
     # Parse out the include directory's full path from install_manifest.txt's by using bash parameter expansion
-    _inc=$(cat install_manifest.txt|grep "/include/palisade" | head -n 1)
-    match="${_inc%palisade*}palisade"
+    _inc=$(cat install_manifest.txt|grep "/include/openfhe" | head -n 1)
+    match="${_inc%openfhe*}openfhe"
     echo "Removing: ${match}"
     sudo rm -vr "${match}"
 
     # Parse out the include directory's full path from install_manifest.txt's by using bash parameter expansion
-    _lib=$(cat install_manifest.txt|grep "/lib/Palisade" | head -n 1)
-    match="${_lib%Palisade*}"
+    _lib=$(cat install_manifest.txt|grep "/lib/OpenFHE" | head -n 1)
+    match="${_lib%OpenFHE*}"
     echo "Removing: ${match}"
     sudo rm -vr "${match}"
 
@@ -39,20 +39,20 @@ function uninstall_mingw() {
     echo "WARNING - Running uninstall on MinGW requires admin priviledges"
 
     # Parse out the include directory's full path from install_manifest.txt's by using bash parameter expansion
-    _inc=$(cat install_manifest.txt|grep "/include/palisade" | head -n 1)
-    match="${_inc%palisade*}"
+    _inc=$(cat install_manifest.txt|grep "/include/openfhe" | head -n 1)
+    match="${_inc%openfhe*}"
     echo "Removing: ${match}"
     rm -vr "${match}"
 
     # Parse out the include directory's full path from install_manifest.txt's by using bash parameter expansion
     _lib=$(cat install_manifest.txt|grep "OpenFHElib" | head -n 1)
-    match=${_lib%lib/libPALISADE*}lib/
+    match=${_lib%lib/libOpenFHE*}lib/
     echo "Removing: ${match}"
     rm -vr "${match}"
     
     # Parse out the include directory's full path from install_manifest.txt's by using bash parameter expansion
-    _cmake=$(cat install_manifest.txt|grep "CMake/Palisade" | head -n 1)
-    match="${_cmake%Palisade*}"
+    _cmake=$(cat install_manifest.txt|grep "CMake/OpenFHE" | head -n 1)
+    match="${_cmake%OpenFHE*}"
     echo "Removing: ${match}"
     rm -vr "${match}"
 

@@ -71,7 +71,7 @@ static void runthrow(const std::string& msg) {
 }
 
 // instantiate various test for common_set_format()
-TEST(UTException, palisade_exception) {
+TEST(UTException, openfhe_exception) {
   ASSERT_THROW(regthrow("outside throw"), config_error);
 
   ASSERT_THROW(parthrow("inside throw"), config_error);

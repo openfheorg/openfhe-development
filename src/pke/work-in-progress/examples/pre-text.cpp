@@ -50,7 +50,7 @@ will tell you all the available names.
 #include <iterator>
 #include <string>
 
-#include "palisade.h"
+#include "openfhe.h"
 
 #include "cryptocontextgen.h"
 #include "cryptocontextparametersets.h"

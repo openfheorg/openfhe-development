@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_SER_H
 #define LBCRYPTO_CRYPTO_BASE_SER_H
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "utils/serial.h"
 
 extern template class lbcrypto::CryptoParametersBase<lbcrypto::DCRTPoly>;

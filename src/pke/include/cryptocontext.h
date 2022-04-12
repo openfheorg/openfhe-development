@@ -245,7 +245,7 @@ class CryptoContextImpl : public Serializable {
 #else
     OPENFHE_THROW(
         not_available_error,
-        "SetPrivateKey is only allowed if DEBUG_KEY is set in palisade.h");
+        "SetPrivateKey is only allowed if DEBUG_KEY is set in openfhe.h");
 #endif
   }
 
@@ -279,7 +279,7 @@ class CryptoContextImpl : public Serializable {
 #else
     OPENFHE_THROW(
         not_available_error,
-        "GetPrivateKey is only allowed if DEBUG_KEY is set in palisade.h");
+        "GetPrivateKey is only allowed if DEBUG_KEY is set in openfhe.h");
 #endif
   }
 
@@ -2037,7 +2037,7 @@ class CryptoContextImpl : public Serializable {
    */
   EvalKey<Element> ReKeyGen(const PrivateKey<Element> originalPrivateKey,
                             const PrivateKey<Element> newPrivateKey) const
-      __attribute__((deprecated("functionality removed from PALISADE")));
+      __attribute__((deprecated("functionality removed from OpenFHE")));
 
   /**
    * ReEncrypt - Proxy Re Encryption mechanism for OpenFHE

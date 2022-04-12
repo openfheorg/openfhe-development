@@ -38,7 +38,7 @@
 #include <iostream>
 #include <iterator>
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "cryptocontexthelper.h"
 
 using namespace lbcrypto;

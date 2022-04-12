@@ -42,8 +42,8 @@
 // a string
 #define STR_EXPAND(tok) #tok
 #define STR(tok) STR_EXPAND(tok)
-#ifndef PALISADE_VERSION
-#define PALISADE_VERSION BASE_PALISADE_VERSION
+#ifndef OpenFHE_VERSION
+#define OpenFHE_VERSION BASE_OpenFHE_VERSION
 #endif
 
 
@@ -51,6 +51,6 @@
  * GetOpenFHEVersion - Returns OpenFHE Version string
  * @return
  */
-inline std::string GetPALISADEVersion() { return STR(PALISADE_VERSION); }
+inline std::string GetOpenFHEVersion() { return STR(OpenFHE_VERSION); }
 
 #endif /* SRC_VERSION_H_ */

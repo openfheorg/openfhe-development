@@ -23,7 +23,7 @@ endif()
 ##endif()
 ### TODO: for now, we use CLang for Mac
 
-project (PALISADE C CXX)
+project (OpenFHE C CXX)
 
 set(OpenFHE_VERSION_MAJOR 1)
 set(OpenFHE_VERSION_MINOR 11)
@@ -201,14 +201,14 @@ if(WITH_COVTEST)
 endif()
 
 if(BUILD_STATIC)
-    set(PALISADE_STATIC_LIBS PALISADEcore_static OpenFHEpke_static OpenFHEbinfhe_static)
+    set(OpenFHE_STATIC_LIBS OpenFHEcore_static OpenFHEpke_static OpenFHEbinfhe_static)
 endif()
 
 if(BUILD_SHARED)
-    set(PALISADE_SHARED_LIBS PALISADEcore OpenFHEpke OpenFHEbinfhe)
+    set(OpenFHE_SHARED_LIBS OpenFHEcore OpenFHEpke OpenFHEbinfhe)
 endif()
 
-set(PALISADE_PACKAGE_LIBS ${PALISADE_STATIC_LIBS} ${PALISADE_SHARED_LIBS})
+set(OpenFHE_PACKAGE_LIBS ${OpenFHE_STATIC_LIBS} ${OpenFHE_SHARED_LIBS})
 
 #--------------------------------------------------------------------
 # Installation logic
@@ -218,12 +218,12 @@ set(PALISADE_PACKAGE_LIBS ${PALISADE_STATIC_LIBS} ${PALISADE_SHARED_LIBS})
 ### set up for install
 set(INSTALL_LIB_DIR lib CACHE PATH
 	"Installation directory for libraries")
-set(INSTALL_INCLUDE_DIR include/palisade CACHE PATH
+set(INSTALL_INCLUDE_DIR include/openfhe CACHE PATH
 	"Installation directory for headers")
 if(WIN32 AND NOT CYGWIN)
   set(DEF_INSTALL_CMAKE_DIR CMake)
 else()
-  set(DEF_INSTALL_CMAKE_DIR lib/Palisade)
+  set(DEF_INSTALL_CMAKE_DIR lib/OpenFHE)
 endif()
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
   "Installation directory for CMake files")
@@ -249,7 +249,7 @@ add_custom_target(
         COMMAND make clean
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
-add_custom_target("uninstall" COMMENT "Uninstall PALISADE files")
+add_custom_target("uninstall" COMMENT "Uninstall OpenFHE files")
 add_custom_command(
         TARGET "uninstall"
         POST_BUILD
@@ -343,9 +343,9 @@ if( "${MATHBACKEND}" EQUAL 6 AND "${NATIVEINT}" EQUAL 128)
         message (STATUS "BACKEND 6 is not compatible with 128-bit native backend. Resetting multiprecision backend to 2.")
 endif()
 
-set( PALISADE_BACKEND_FLAGS "-DMATHBACKEND=${MATHBACKEND}")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PALISADE_BACKEND_FLAGS}")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PALISADE_BACKEND_FLAGS}")
+set( OpenFHE_BACKEND_FLAGS "-DMATHBACKEND=${MATHBACKEND}")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenFHE_BACKEND_FLAGS}")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenFHE_BACKEND_FLAGS}")
 
 if(WITH_TCM)
 	message(STATUS "tcmalloc is turned ON")
@@ -533,7 +533,7 @@ endif()
 
 ### Handle third-party CEREAL
 include_directories( ${THIRDPARTYDIR}/cereal/include )
-install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION include/palisade)
+install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION include/openfhe)
 
 include_directories( ${CMAKE_SOURCE_DIR}/third-party/google-test/googletest )
 include_directories( ${CMAKE_SOURCE_DIR}/third-party/google-test/googletest/include )
@@ -703,7 +703,7 @@ if (BUILD_EXTRAS)
 		DEPENDS allcoreextras allpkeextras  )
 endif()
 
-add_custom_target( allmodules DEPENDS ${PALISADE_PACKAGE_LIBS} )
+add_custom_target( allmodules DEPENDS ${OpenFHE_PACKAGE_LIBS} )
 
 # Add the additional "make clean" files
 GET_DIRECTORY_PROPERTY(clean_files ADDITIONAL_MAKE_CLEAN_FILES)
@@ -713,9 +713,9 @@ LIST(REMOVE_ITEM       clean_files "")
 SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${clean_files}")
 
 
-export(EXPORT PalisadeTargets FILE "${PROJECT_BINARY_DIR}/PalisadeTargets.cmake")
+export(EXPORT OpenFHETargets FILE "${PROJECT_BINARY_DIR}/OpenFHETargets.cmake")
 
-export(PACKAGE Palisade)
+export(PACKAGE OpenFHE)
 
 # Create the OpenFHEConfig.cmake and OpenFHEConfigVersion files
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
@@ -723,21 +723,21 @@ file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
 configure_file(OpenFHEConfig.cmake.in
-  "${PROJECT_BINARY_DIR}/PalisadeConfig.cmake" @ONLY)
+  "${PROJECT_BINARY_DIR}/OpenFHEConfig.cmake" @ONLY)
 # ... for the install tree
-set(CONF_INCLUDE_DIRS "\${PALISADE_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/${REL_INCLUDE_DIR}")
 configure_file(OpenFHEConfig.cmake.in
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/PalisadeConfig.cmake" @ONLY)
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake" @ONLY)
 # ... for both
 configure_file(OpenFHEConfigVersion.cmake.in
-  "${PROJECT_BINARY_DIR}/PalisadeConfigVersion.cmake" @ONLY)
+  "${PROJECT_BINARY_DIR}/OpenFHEConfigVersion.cmake" @ONLY)
 
 # Install the OpenFHEConfig.cmake and OpenFHEConfigVersion.cmake
 install(FILES
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/PalisadeConfig.cmake"
-  "${PROJECT_BINARY_DIR}/PalisadeConfigVersion.cmake"
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake"
+  "${PROJECT_BINARY_DIR}/OpenFHEConfigVersion.cmake"
   DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 # Install the export set for use with the install-tree
-install(EXPORT PalisadeTargets DESTINATION
+install(EXPORT OpenFHETargets DESTINATION
   "${INSTALL_CMAKE_DIR}" COMPONENT dev)

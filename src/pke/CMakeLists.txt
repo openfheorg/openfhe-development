@@ -26,16 +26,16 @@ if( BUILD_SHARED )
 	set_property(TARGET OpenFHEpke PROPERTY SOVERSION ${PKE_VERSION_MAJOR})
 	set_property(TARGET OpenFHEpke PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 	install(TARGETS OpenFHEpke
-		EXPORT PalisadeTargets
+		EXPORT OpenFHETargets
 		DESTINATION lib)
 endif()
 
 if( BUILD_STATIC )
-	add_dependencies(pkeobj PALISADEcore_static)
+	add_dependencies(pkeobj OpenFHEcore_static)
 	add_library (OpenFHEpke_static STATIC $<TARGET_OBJECTS:pkeobj>)
 	set_property(TARGET OpenFHEpke_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 	install(TARGETS OpenFHEpke_static
-		EXPORT PalisadeTargets
+		EXPORT OpenFHETargets
 		DESTINATION lib)
 endif()
 
@@ -45,14 +45,14 @@ install(DIRECTORY include/
 add_custom_target( allpke )
 
 if( BUILD_SHARED )
-	set (PKELIBS PUBLIC OpenFHEpke PUBLIC PALISADEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (OpenFHEpke PUBLIC PALISADEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	set (PKELIBS PUBLIC OpenFHEpke PUBLIC OpenFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OpenFHEpke PUBLIC OpenFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
 	add_dependencies( allpke OpenFHEpke)
 endif()
 
 if( BUILD_STATIC )
-	set (PKELIBS ${PKELIBS} PUBLIC OpenFHEpke_static PUBLIC PALISADEcore_static ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (OpenFHEpke_static PUBLIC PALISADEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
+	set (PKELIBS ${PKELIBS} PUBLIC OpenFHEpke_static PUBLIC OpenFHEcore_static ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OpenFHEpke_static PUBLIC OpenFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
 	add_dependencies( allpke OpenFHEpke_static)
 endif()
 
