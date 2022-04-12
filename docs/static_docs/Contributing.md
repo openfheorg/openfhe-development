@@ -107,7 +107,7 @@ We request that you conform to the following workflow:
 # Workflow for Major Contributions
 
 If you plan major modifications of OpenFHE, please consult with the
-OpenFHE team first by contacting us at PALISADE-crypto.org to plan
+OpenFHE team first by contacting us at contact@openfhe.org to plan
 your modifications so that they can be implemented efficiently and in
 a way that doesn't conflict with any other planned future development.
 OpenFHE is a work in progress, and major release revisions can

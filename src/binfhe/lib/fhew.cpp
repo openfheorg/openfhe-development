@@ -922,7 +922,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalSign(
     auto search        = EKs.find(curBase);
     if (search == EKs.end()) {
         std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-        OpenFHE_THROW(palisade_error, errMsg);
+        OpenFHE_THROW(openfhe_error, errMsg);
     }
     RingGSWEvalKey curEK(search->second);
 
@@ -946,7 +946,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalSign(
                 auto search = EKs.find(base);
                 if (search == EKs.end()) {
                     std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-                    OpenFHE_THROW(palisade_error, errMsg);
+                    OpenFHE_THROW(openfhe_error, errMsg);
                 }
                 curEK = search->second;
             }
@@ -1000,7 +1000,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> RingGSWAccumulatorScheme::EvalDe
     auto search        = EKs.find(curBase);
     if (search == EKs.end()) {
         std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-        OpenFHE_THROW(palisade_error, errMsg);
+        OpenFHE_THROW(openfhe_error, errMsg);
     }
     RingGSWEvalKey curEK(search->second);
 
@@ -1031,7 +1031,7 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> RingGSWAccumulatorScheme::EvalDe
                 auto search = EKs.find(base);
                 if (search == EKs.end()) {
                     std::string errMsg("ERROR: No key [" + std::to_string(curBase) + "] found in the map");
-                    OpenFHE_THROW(palisade_error, errMsg);
+                    OpenFHE_THROW(openfhe_error, errMsg);
                 }
                 curEK = search->second;
             }

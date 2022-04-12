@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code benchmarks functions of the math directory  of the PALISADE lattice
+  This code benchmarks functions of the math directory  of the OpenFHE lattice
   encryption library.
  */
 #define _USE_MATH_DEFINES

@@ -46,5 +46,5 @@ Check out the [README](https://gitlab.com/palisade/palisade-serial-examples/-/bl
 Local Examples
 --------------
 
-The examples included with the PALISADE lattice crypto library.
+The examples included with the OpenFHE lattice crypto library.
 Check out the [README](../../src/pke/examples/README.md) in the repository for more details.
