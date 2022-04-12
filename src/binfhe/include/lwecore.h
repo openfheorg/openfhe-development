@@ -47,13 +47,15 @@
 namespace lbcrypto {
 
 typedef int64_t LWEPlaintext;
+typedef int64_t LWEPlaintextModulus;
 
 /**
  * @brief Class that stores all parameters for the LWE scheme
  */
 class LWECryptoParams : public Serializable {
  public:
-  LWECryptoParams() : m_n(0), m_N(0), m_q(0), m_Q(0), m_baseKS(0) {}
+  // NativeInteger m_qKS = 1<<20; //PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(26, 2048), 2048);
+  LWECryptoParams() : m_n(0), m_N(0), m_q(0), m_Q(0), m_qKS(0), m_baseKS(0) {}
 
   /**
    * Main constructor for LWECryptoParams
@@ -62,13 +64,21 @@ class LWECryptoParams : public Serializable {
    * @param N ring dimension for RingGSW/RLWE used in bootstrapping
    * @param &q modulus for additive LWE
    * @param &Q modulus for RingGSW/RLWE used in bootstrapping
+   * @param &q_KS modulus for key switching
    * @param std standard deviation
    * @param baseKS the base used for key switching
    */
   explicit LWECryptoParams(uint32_t n, uint32_t N, const NativeInteger &q,
-                           const NativeInteger &Q, double std, uint32_t baseKS)
-      : m_n(n), m_N(N), m_q(q), m_Q(Q), m_baseKS(baseKS) {
+                           const NativeInteger &Q, const NativeInteger &q_KS, double std, uint32_t baseKS)
+      : m_n(n), m_N(N), m_q(q), m_Q(Q), m_qKS(q_KS), m_baseKS(baseKS) {
     m_dgg.SetStd(std);
+    if((n == 512) && (m_qKS > (1 << 14))){
+      m_ks_dgg.SetStd(std);
+      // std::cout << std * m_qKS.ConvertToDouble() / (1 << 14) << " \n";
+    } else {
+      m_ks_dgg.SetStd(std);
+    }
+    // m_ks_dgg.SetStd(std);
 
     if (Q.GetMSB() > MAX_MODULUS_SIZE) {
       std::string errMsg =
@@ -85,7 +95,7 @@ class LWECryptoParams : public Serializable {
   void PreCompute() {
     // Number of digits in representing numbers mod Q
     uint32_t digitCount = (uint32_t)std::ceil(
-        log(m_Q.ConvertToDouble()) / log(static_cast<double>(m_baseKS)));
+        log(m_qKS.ConvertToDouble()) / log(static_cast<double>(m_baseKS)));
     // Populate digits
     NativeInteger value = 1;
     for (uint32_t i = 0; i < digitCount; i++) {
@@ -144,12 +154,18 @@ class LWECryptoParams : public Serializable {
 
   const NativeInteger &GetQ() const { return m_Q; }
 
+  const NativeInteger &GetqKS() const { return m_qKS; }
+
   uint32_t GetBaseKS() const { return m_baseKS; }
 
   const std::vector<NativeInteger> &GetDigitsKS() const { return m_digitsKS; }
 
   const DiscreteGaussianGeneratorImpl<NativeVector> &GetDgg() const {
     return m_dgg;
+  }
+
+  const DiscreteGaussianGeneratorImpl<NativeVector> &GetDggKS() const {
+    return m_ks_dgg;
   }
 
   bool operator==(const LWECryptoParams &other) const {
@@ -168,7 +184,9 @@ class LWECryptoParams : public Serializable {
     ar(::cereal::make_nvp("N", m_N));
     ar(::cereal::make_nvp("q", m_q));
     ar(::cereal::make_nvp("Q", m_Q));
+    ar(::cereal::make_nvp("qKS", m_qKS));
     ar(::cereal::make_nvp("sigma", m_dgg.GetStd()));
+    ar(::cereal::make_nvp("sigmaKS", m_ks_dgg.GetStd()));
     ar(::cereal::make_nvp("bKS", m_baseKS));
   }
 
@@ -184,9 +202,13 @@ class LWECryptoParams : public Serializable {
     ar(::cereal::make_nvp("N", m_N));
     ar(::cereal::make_nvp("q", m_q));
     ar(::cereal::make_nvp("Q", m_Q));
+    ar(::cereal::make_nvp("qKS", m_qKS));
     double sigma;
     ar(::cereal::make_nvp("sigma", sigma));
+    double sigmaKS;
+    ar(::cereal::make_nvp("sigmaKS", sigmaKS));
     this->m_dgg.SetStd(sigma);
+    this->m_ks_dgg.SetStd(sigmaKS);
     ar(::cereal::make_nvp("bKS", m_baseKS));
 
     this->PreCompute();
@@ -194,6 +216,10 @@ class LWECryptoParams : public Serializable {
 
   std::string SerializedObjectName() const { return "LWECryptoParams"; }
   static uint32_t SerializedVersion() { return 1; }
+
+  void SetQ(NativeInteger q){
+    m_q = q;
+  }
 
  private:
   // lattice parameter for the additive LWE scheme
@@ -204,8 +230,12 @@ class LWECryptoParams : public Serializable {
   NativeInteger m_q;
   // modulus for the RingGSW/RingLWE scheme
   NativeInteger m_Q;
+  // modulus for key-switching
+  NativeInteger m_qKS;
   // Error distribution generator
   DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
+  // Error distribution generator for key switching
+  DiscreteGaussianGeneratorImpl<NativeVector> m_ks_dgg;
   // Base used in key switching
   uint32_t m_baseKS;
   // Powers of m_baseKS
@@ -352,6 +382,9 @@ class LWEPrivateKeyImpl : public Serializable {
 
   std::string SerializedObjectName() const { return "LWEPrivateKey"; }
   static uint32_t SerializedVersion() { return 1; }
+  void switchModulus(NativeInteger q){m_s.Mod(q);m_s.SetModulus(q);}
+
+
 
  private:
   NativeVector m_s;

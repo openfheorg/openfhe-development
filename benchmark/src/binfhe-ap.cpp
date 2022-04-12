@@ -77,7 +77,6 @@ void FHEW_NOT(benchmark::State &state, ParamSet param_set) {
   }
 }
 
-BENCHMARK_CAPTURE(FHEW_NOT, MEDIUM, MEDIUM)->Unit(benchmark::kMicrosecond);
 BENCHMARK_CAPTURE(FHEW_NOT, STD128, STD128)->Unit(benchmark::kMicrosecond);
 BENCHMARK_CAPTURE(FHEW_NOT, STD128_AP, STD128_AP)
     ->Unit(benchmark::kMicrosecond);
@@ -102,31 +101,6 @@ void FHEW_BINGATE(benchmark::State &state, ParamSet param_set,
     LWECiphertext ct11 = cc.EvalBinGate(gate, ct1, ct2);
   }
 }
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_OR, MEDIUM, OR)
-    ->Unit(benchmark::kMicrosecond)
-    ->MinTime(10.0);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_AND, MEDIUM, AND)
-    ->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_NOR, MEDIUM, NOR)
-    ->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_NAND, MEDIUM, NAND)
-    ->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XOR, MEDIUM, XOR)
-    ->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XNOR, MEDIUM, XNOR)
-    ->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XOR_FAST, MEDIUM, XOR_FAST)
-    ->Unit(benchmark::kMicrosecond);
-
-BENCHMARK_CAPTURE(FHEW_BINGATE, MEDIUM_XNOR_FAST, MEDIUM, XNOR_FAST)
-    ->Unit(benchmark::kMicrosecond);
 
 BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_OR, STD128, OR)
     ->Unit(benchmark::kMicrosecond)
@@ -195,10 +169,6 @@ void FHEW_KEYSWITCH(benchmark::State &state, ParamSet param_set) {
         cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
   }
 }
-
-BENCHMARK_CAPTURE(FHEW_KEYSWITCH, MEDIUM, MEDIUM)
-    ->Unit(benchmark::kMicrosecond)
-    ->MinTime(1.0);
 
 BENCHMARK_CAPTURE(FHEW_KEYSWITCH, STD128, STD128)
     ->Unit(benchmark::kMicrosecond)

@@ -14,6 +14,7 @@ Key switching
 
 - This feature is needed to compute automorphisms(rotations) of ciphertexts, or to relinearize ciphertexts
 
+
 Key-Switching Class Inheritance
 -----------------------
 

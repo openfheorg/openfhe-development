@@ -83,12 +83,14 @@ class LWEEncryptionScheme {
    * @param params a shared pointer to LWE scheme parameters
    * @param sk - the secret key
    * @param &m - the plaintext
+   * @param &p - the plaintext space
    * @return a shared pointer to the ciphertext
    */
   std::shared_ptr<LWECiphertextImpl> Encrypt(
       const std::shared_ptr<LWECryptoParams> params,
       const std::shared_ptr<const LWEPrivateKeyImpl> sk,
-      const LWEPlaintext& m) const;
+      const LWEPlaintext& m,
+      const LWEPlaintextModulus& p = 4) const;
 
   /**
    * Decrypts the ciphertext using secret key sk
@@ -96,22 +98,24 @@ class LWEEncryptionScheme {
    * @param params a shared pointer to LWE scheme parameters
    * @param sk the secret key
    * @param ct the ciphertext
+   * @param &p the plaintext space
    * @param *result plaintext result
    */
   void Decrypt(const std::shared_ptr<LWECryptoParams> params,
                const std::shared_ptr<const LWEPrivateKeyImpl> sk,
                const std::shared_ptr<const LWECiphertextImpl> ct,
-               LWEPlaintext* result) const;
+               LWEPlaintext* result,
+               const LWEPlaintextModulus& p = 4) const;
 
   /**
    * Changes an LWE ciphertext modulo Q into an LWE ciphertext modulo q
    *
-   * @param params a shared pointer to LWE scheme parameters
+   * @param q modulus to
    * @param ctQ the input ciphertext
    * @return resulting ciphertext
    */
   std::shared_ptr<LWECiphertextImpl> ModSwitch(
-      const std::shared_ptr<LWECryptoParams> params,
+      NativeInteger q, 
       const std::shared_ptr<const LWECiphertextImpl> ctQ) const;
 
   /**
@@ -140,7 +144,7 @@ class LWEEncryptionScheme {
       const std::shared_ptr<LWECryptoParams> params,
       const std::shared_ptr<LWESwitchingKey> K,
       const std::shared_ptr<const LWECiphertextImpl> ctQN) const;
-
+  
   /**
    * Embeds a plaintext bit without noise or encryption
    *
@@ -152,6 +156,9 @@ class LWEEncryptionScheme {
       const std::shared_ptr<LWECryptoParams> params,
       const LWEPlaintext& m) const;
 };
+
+NativeInteger RoundqQ(const NativeInteger &v, const NativeInteger &q,
+                      const NativeInteger &Q);
 
 }  // namespace lbcrypto
 
