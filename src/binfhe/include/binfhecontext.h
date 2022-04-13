@@ -411,7 +411,7 @@ private:
     std::map<uint32_t, RingGSWEvalKey> m_BTKey_map;
 
     // Whether to optimize time for sign eval
-    bool m_timeOptimization;
+    bool m_timeOptimization = false;
 };
 
 }  // namespace lbcrypto
