@@ -232,7 +232,7 @@ Adding a new component to OpenFHE
 When adding a new component to OpenFHE
 
 1. Observe the structure discussed above when making your new CMakeLists.txt for the component
-2. Be sure to include the component in the master CMakeLists.txt file at the root of the source tree
+2. Be sure to include the component in the main CMakeLists.txt file at the root of the source tree
 3. Be sure to update the "all" targets to include targets from the new component
 
 Documentation of make targets created by OpenFHE CMake system
@@ -277,11 +277,11 @@ Build only benchmarks and their dependencies (available if BUILD_BENCHMARKS=ON)
 
 Build a specific module and its dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The options for the make command are OpenFHEcore, OpenFHEpke, OpenFHEabe, OpenFHEsignature, OpenFHEbinfhe (these correspond to core, pke, abe, signature, and binfhe modules). To install pke, enter
+The options for the make command are OPENFHEcore, OPENFHEpke, OPENFHEabe, OPENFHEsignature, OPENFHEbinfhe (these correspond to core, pke, abe, signature, and binfhe modules). To install pke, enter
 
 ::
 
-    make OpenFHEpke
+    make OPENFHEpke
 
 Build a specific module + examples (available if BUILD_EXAMPLES=ON)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -40,4 +40,4 @@ The high-level instructions for building projects that use OpenFHE are as follow
 
 8. Run "make" to build the executable.
 
-To include a specific module, e.g., core or pke, in your C++ demo, use the main header file for that module, e.g., openfhecore.h or openfhe.h. Please see the demos provided for that module for more examples. If your application uses serialization, additional header files will be needed (see the demos with serialization for more details).
+To include a specific module, e.g., core or pke, in your C++ demo, use the main header file for that module, e.g., OPENFHEcore.h or openfhe.h. Please see the demos provided for that module for more examples. If your application uses serialization, additional header files will be needed (see the demos with serialization for more details).

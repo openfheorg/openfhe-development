@@ -49,7 +49,7 @@ static string lead = "****** ";
 class MinimalistPrinter : public EmptyTestEventListener {
  public:
   void OnTestProgramStart(const ::testing::UnitTest& unit_test) {
-    cout << lead << "OpenFHE Version " << GetOpenFHEVersion() << endl;
+    cout << lead << "OPENFHE Version " << GetOPENFHEVersion() << endl;
     cout << lead << "Date "
          << testing::internal::FormatEpochTimeInMillisAsIso8601(
                 unit_test.start_timestamp())
@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
     delete listeners.Release(listeners.default_result_printer());
     listeners.Append(new MinimalistPrinter);
   } else {
-    cout << "OpenFHE Version " << GetOpenFHEVersion() << endl;
+    cout << "OPENFHE Version " << GetOPENFHEVersion() << endl;
     cout << "Default Backend " << GetMathBackendParameters() << endl;
   }
 

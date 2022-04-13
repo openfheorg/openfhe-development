@@ -25,7 +25,7 @@ OpenFHE is a general lattice cryptography library that currently includes effici
 
 A major focus is on the usability of the schemes. For instance, all HE schemes with packing use the same common API, and are implemented using runtime polymorphism.
 
-OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve high performance, e.g., OpenFHE was used as the library for a winning genome-wide association studies solution at iDASH’18.
+OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve high performance, e.g., OpenFHE(called PALISADE at the time) was used as the library for a winning genome-wide association studies solution at iDASH’18.
 
 .. toctree::
    :maxdepth: 2
@@ -55,12 +55,11 @@ The library is based on modular architecture with the following layers:
 Important Notes
 ---------------
 
-Note as of version 1.11, the following features have been moved to their own repositories in the OpenFHE group.
+Note as of version 1.11, the following features have been moved to their own repositories in the PALISADE group.
 
 * `Digital Signature <https://gitlab.com/palisade/palisade-signature/>`_
 * `Identity-Based Encryption <https://gitlab.com/palisade/palisade-abe/>`_
 * `Ciphertext-Policy Attribute-Based Encryption <https://gitlab.com/palisade/palisade-abe/>`_
-
 
 All the research prototypes for Key-Policy Attributed-Based Encryption and Program Obfuscation have been moved to `Palisade-Trapdoor <https://gitlab.com/palisade/palisade-trapdoor/>`_
 

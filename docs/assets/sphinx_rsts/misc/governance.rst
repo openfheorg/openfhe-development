@@ -94,12 +94,12 @@ names, contact info, and date of first inclusion into the team.
   by the Steering Team for each meeting.
 
 * **Pre-release:** The Pre-release team administers the current
-  pre-release branch in the OpenFHE-development repository and is
+  pre-release branch in the openfhe-development repository and is
   responsible for the review and publication of new pre-releases, as
   well as updates, patches and bug fixes to these pre-releases as they
   are evaluated for submission to stable-release status. The
-  Pre-release team determines which features in the master branch of
-  OpenFHE-development are sufficiently mature to be chosen for
+  Pre-release team determines which features in the main branch of
+  openfhe-development are sufficiently mature to be chosen for
   pre-release. They also are responsible for quality control checking
   of associated documentation related to the pre-release. The team
   will follow the guidelines (below) for release numbering.
@@ -136,7 +136,7 @@ names, contact info, and date of first inclusion into the team.
        Steering team.
 
 * **Maintainers:** A Maintainer is an individual responsible for the
-  management of the OpenFHE-development repository. Maintainers have
+  management of the openfhe-development repository. Maintainers have
   the ability to commit/push source code and can handle merge/pull
   requests into the main branch of the repository with the following caveats:
 
@@ -281,7 +281,7 @@ Major and Minor numbers are maintained, and the patch is incremented.
 
 When a stable-release is patched, the pre-release Major and Minor
 numbers are maintained, and the patch is incremented. The patches
-applied to the stable-release are to be applied to the master branch
+applied to the stable-release are to be applied to the main branch
 of the development release as appropriate.
 
 At no time will there be multiple pre-release versions supported. Only

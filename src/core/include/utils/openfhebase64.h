@@ -33,8 +33,8 @@
   OpenFHE native base 64 utlities
  */
 
-#ifndef SRC_CORE_LIB_UTILS_OpenFHEBASE64_H_
-#define SRC_CORE_LIB_UTILS_OpenFHEBASE64_H_
+#ifndef SRC_CORE_LIB_UTILS_OPENFHEBASE64_H_
+#define SRC_CORE_LIB_UTILS_OPENFHEBASE64_H_
 
 #include <utils/exception.h>
 #include <cctype>
@@ -74,4 +74,4 @@ inline unsigned char get_6bits_atoffset(uint64_t m_value, uint32_t index) {
 
 } /* namespace lbcrypto */
 
-#endif /* SRC_CORE_LIB_UTILS_OpenFHEBASE64_H_ */
+#endif /* SRC_CORE_LIB_UTILS_OPENFHEBASE64_H_ */

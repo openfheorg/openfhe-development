@@ -41,7 +41,7 @@ Note that CMake will check for any system dependencies that are needed for the b
 
 If you want to build only library files or some other subset of OpenFHE, please review the last paragraph of this page.
 
-After the "make" completes, you should see the OpenFHE library files in the lib folder, binaries of demos in bin/demo, binaries of benchmarks in bib/benchmark, and binaries for unit tests in the unittest folder.
+After the "make" completes, you should see the OpenFHE library files in the lib folder, binaries of demos in bin/demo, binaries of benchmarks in bin/benchmark, and binaries for unit tests in the unittest folder.
 
 6. Install OpenFHE to a system directory (if desired or for production purposes) ``make install``
 

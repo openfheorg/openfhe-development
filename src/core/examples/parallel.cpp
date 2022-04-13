@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
     /* Obtain thread number */
     tid = omp_get_thread_num();
 
-    /* Only master thread does this */
+    /* Only main thread does this */
     if (tid == 0) {
       nthreads = omp_get_num_threads();
       std::cout << "Confirmed Number of threads = " << nthreads << std::endl;

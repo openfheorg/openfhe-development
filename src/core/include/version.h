@@ -42,15 +42,15 @@
 // a string
 #define STR_EXPAND(tok) #tok
 #define STR(tok) STR_EXPAND(tok)
-#ifndef OpenFHE_VERSION
-#define OpenFHE_VERSION BASE_OpenFHE_VERSION
+#ifndef OPENFHE_VERSION
+#define OPENFHE_VERSION BASE_OPENFHE_VERSION
 #endif
 
 
 /**
- * GetOpenFHEVersion - Returns OpenFHE Version string
+ * GetOPENFHEVersion - Returns OpenFHE Version string
  * @return
  */
-inline std::string GetOpenFHEVersion() { return STR(OpenFHE_VERSION); }
+inline std::string GetOPENFHEVersion() { return STR(OPENFHE_VERSION); }
 
 #endif /* SRC_VERSION_H_ */

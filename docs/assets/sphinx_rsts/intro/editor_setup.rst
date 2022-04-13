@@ -11,7 +11,7 @@ Visual Studio Code
 - :ref:`editor-vs-general-configuration`
 
   - :ref:`editor-vs-decrease-memory-cpu`
-  - :ref:`editor-vs-OpenFHE-path`
+  - :ref:`editor-vs-openfhe-path`
   - :ref:`editor-vs-markdown`
   - :ref:`editor-vs-code-formatting`
   - :ref:`editor-vs-git`
@@ -58,7 +58,7 @@ Code uses inotify to monitor file changes, use the following to tell Code to ign
     },
 
 
-.. _editor-vs-OpenFHE-path:
+.. _editor-vs-openfhe-path:
 
 Setup OpenFHE Install Path
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

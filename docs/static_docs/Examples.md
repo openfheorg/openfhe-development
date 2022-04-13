@@ -8,10 +8,10 @@ this repository but also independent repositories.
 
 **Table of Contents**
 
-- [OpenFHE Integer Examples](#OpenFHE-integer-examples)
-- [OpenFHE Encrypted Circuit Emulator](#OpenFHE-encrypted-circuit-emulator)
-- [OpenFHE Python 3 Demos](#OpenFHE-python-3-demos)
-- [OpenFHE serial examples](#OpenFHE-serial-examples)
+- [OpenFHE/PALISADE Integer Examples](#OpenFHE-integer-examples)
+- [OpenFHE/PALISADE Encrypted Circuit Emulator](#OpenFHE-encrypted-circuit-emulator)
+- [OpenFHE/PALISADE Python 3 Demos](#OpenFHE-python-3-demos)
+- [OpenFHE/PALISADE Serial examples](#OpenFHE-serial-examples)
 - [Local Examples](#local-examples)
 
 ---

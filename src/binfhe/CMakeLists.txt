@@ -10,30 +10,30 @@ list(APPEND BINFHE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include")
 list(APPEND BINFHE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 include_directories(${BINFHE_INCLUDE_DIRS})
 
-set(BINFHE_VERSION_MAJOR ${OpenFHE_VERSION_MAJOR})
-set(BINFHE_VERSION_MINOR ${OpenFHE_VERSION_MINOR})
-set(BINFHE_VERSION_PATCH ${OpenFHE_VERSION_PATCH})
+set(BINFHE_VERSION_MAJOR ${OPENFHE_VERSION_MAJOR})
+set(BINFHE_VERSION_MINOR ${OPENFHE_VERSION_MINOR})
+set(BINFHE_VERSION_PATCH ${OPENFHE_VERSION_PATCH})
 set(BINFHE_VERSION ${BINFHE_VERSION_MAJOR}.${BINFHE_VERSION_MINOR}.${BINFHE_VERSION_PATCH})
 
 add_library(binfheobj OBJECT ${BINFHE_SRC_FILES})
 set_property(TARGET binfheobj PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 if ( BUILD_SHARED )
-	add_dependencies(binfheobj OpenFHEcore)
-	add_library (OpenFHEbinfhe SHARED $<TARGET_OBJECTS:binfheobj>)
-	set_property(TARGET OpenFHEbinfhe PROPERTY VERSION ${BINFHE_VERSION})
-	set_property(TARGET OpenFHEbinfhe PROPERTY SOVERSION ${BINFHE_VERSION_MAJOR})
-	set_property(TARGET OpenFHEbinfhe PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-	install(TARGETS OpenFHEbinfhe
+	add_dependencies(binfheobj OPENFHEcore)
+	add_library (OPENFHEbinfhe SHARED $<TARGET_OBJECTS:binfheobj>)
+	set_property(TARGET OPENFHEbinfhe PROPERTY VERSION ${BINFHE_VERSION})
+	set_property(TARGET OPENFHEbinfhe PROPERTY SOVERSION ${BINFHE_VERSION_MAJOR})
+	set_property(TARGET OPENFHEbinfhe PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+	install(TARGETS OPENFHEbinfhe
 		EXPORT OpenFHETargets
 		DESTINATION lib)
 endif()
 
 if( BUILD_STATIC )
-add_dependencies(binfheobj OpenFHEcore_static)
-	add_library (OpenFHEbinfhe_static STATIC $<TARGET_OBJECTS:binfheobj>)
-	set_property(TARGET OpenFHEbinfhe_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-	install(TARGETS OpenFHEbinfhe_static
+add_dependencies(binfheobj OPENFHEcore_static)
+	add_library (OPENFHEbinfhe_static STATIC $<TARGET_OBJECTS:binfheobj>)
+	set_property(TARGET OPENFHEbinfhe_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+	install(TARGETS OPENFHEbinfhe_static
 		EXPORT OpenFHETargets
 		DESTINATION lib)
 endif()
@@ -44,15 +44,15 @@ install(DIRECTORY include/
 add_custom_target( allbinfhe )
 
 if( BUILD_SHARED )
-set (BINFHELIBS PUBLIC OpenFHEbinfhe PUBLIC OpenFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (OpenFHEbinfhe PUBLIC OpenFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	add_dependencies( allbinfhe OpenFHEbinfhe  )
+set (BINFHELIBS PUBLIC OPENFHEbinfhe PUBLIC OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OPENFHEbinfhe PUBLIC OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	add_dependencies( allbinfhe OPENFHEbinfhe  )
 endif()
 
 if( BUILD_STATIC )
-set (BINFHELIBS ${BINFHELIBS} PUBLIC OpenFHEbinfhe_static PUBLIC OpenFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (OpenFHEbinfhe_static PUBLIC OpenFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
-	add_dependencies( allbinfhe OpenFHEbinfhe_static )
+set (BINFHELIBS ${BINFHELIBS} PUBLIC OPENFHEbinfhe_static PUBLIC OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OPENFHEbinfhe_static PUBLIC OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
+	add_dependencies( allbinfhe OPENFHEbinfhe_static )
 endif()
 
 if( BUILD_UNITTESTS )
@@ -86,16 +86,16 @@ if( BUILD_EXAMPLES)
 	add_dependencies( allbinfhe allbinfheexamples)
 endif()
 
-add_custom_command( OUTPUT binfheinfocmd COMMAND echo Builds OpenFHEbinfhe and these apps: ${BINFHEAPPS} )
+add_custom_command( OUTPUT binfheinfocmd COMMAND echo Builds OPENFHEbinfhe and these apps: ${BINFHEAPPS} )
 add_custom_target( binfheinfo DEPENDS binfheinfocmd )
 
 # Collect compile definitions and pass them upward
 if ( BUILD_SHARED )
-	get_target_property(_compile_defs OpenFHEbinfhe COMPILE_DEFINITIONS)
+	get_target_property(_compile_defs OPENFHEbinfhe COMPILE_DEFINITIONS)
 	set(_pal_binfhe_compile_defs ${_compile_defs} PARENT_SCOPE)
 endif()
 
 if( BUILD_STATIC )
-	get_target_property(_compile_defs_static OpenFHEbinfhe_static COMPILE_DEFINITIONS)
+	get_target_property(_compile_defs_static OPENFHEbinfhe_static COMPILE_DEFINITIONS)
 	set(_pal_binfhe_compile_defs_static ${_compile_defs_static} PARENT_SCOPE)
 endif()

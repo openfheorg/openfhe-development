@@ -68,7 +68,7 @@ Doc listing team member's names, contact info, and date of first inclusion into 
 * **Pre-release:** The Pre-release team administers the current pre-release branch in the openfhe-development repository
   and is responsible for the review and publication of new pre-releases, as well as updates, patches and bug fixes to
   these pre-releases as they are evaluated for submission to stable-release status. The Pre-release team determines
-  which features in the master branch of openfhe-development are sufficiently mature to be chosen for pre-release. They
+  which features in the main branch of openfhe-development are sufficiently mature to be chosen for pre-release. They
   also are responsible for quality control checking of associated documentation related to the pre-release. The team
   will follow the guidelines (below) for release numbering. Pre-release of Major releases (i.e. incrementing the initial
   release number) have significant impact and must be approved by the Steering team.
@@ -201,7 +201,7 @@ When a pre-release is approved for stable-release, the pre-release Major and Min
 is incremented.
 
 When a stable-release is patched, the pre-release Major and Minor numbers are maintained, and the patch is incremented.
-The patches applied to the stable-release are to be applied to the master branch of the development release as
+The patches applied to the stable-release are to be applied to the main branch of the development release as
 appropriate.
 
 At no time will there be multiple pre-release versions supported. Only the latest pre-release will be considered active.

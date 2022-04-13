@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ARG repository="OpenFHE-development"
+ARG repository="openfhe-development"
 ARG branch=master
 ARG tag=master
 ARG CC_param=/usr/bin/gcc-10
@@ -27,9 +27,8 @@ RUN apt update && apt install -y git \
                                   
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-#git clone the OpenFHE-development repository and its submodules (this always clones the most latest commit)
-RUN git clone https://gitlab.com/openfhe/$repository.git && cd $repository && git checkout $branch && git checkout $tag && git submodule sync --recursive && git submodule update --init  --recursive
+#git clone the openfhe-development repository and its submodules (this always clones the most latest commit)
+RUN git clone https://github.com/openfhe/$repository.git && cd $repository && git checkout $branch && git checkout $tag && git submodule sync --recursive && git submodule update --init  --recursive
 
 #installing OpenFHE and running tests
 RUN mkdir /$repository/build && cd /$repository/build && cmake .. && make -j $no_threads && make install && make testall
-
