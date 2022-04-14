@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -201,4 +200,3 @@ static void RunEvalMultManyTest(CryptoContext<Element> cryptoContext,
   EXPECT_EQ(*plaintextMulMany, *plaintextResult3)
       << msg << ".EvalMultMany gives incorrect results.\n";
 }
-#endif

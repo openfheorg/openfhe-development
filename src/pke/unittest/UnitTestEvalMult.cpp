@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -778,4 +777,3 @@ TEST_F(UnitTestEvalMult, Test_CKKS_Relin) {
     PackedEncoding::Destroy();
     RunRelinTestCKKS(MakeCKKSDCRTPolyCC());
 }
-#endif

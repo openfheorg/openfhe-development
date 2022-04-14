@@ -1,4 +1,4 @@
-#if 0 // TODO uncomment test after merge to github
+#if 0
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -74,7 +74,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE {
+struct TEST_CASE_UTMultiparty {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -99,17 +99,17 @@ struct TEST_CASE {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTMultiparty>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTMultiparty& test) {
     return os << test.toString();
 }
 //===========================================================================================================
 constexpr usint BATCH = 16;
 // clang-format off
-static std::vector<TEST_CASE> testCases = {
+static std::vector<TEST_CASE_UTMultiparty> testCases = {
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
     { CKKSRNS_TEST,  "1", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
     { CKKSRNS_TEST,  "2", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
@@ -154,7 +154,7 @@ static std::vector<TEST_CASE> testCases = {
 };
 // clang-format on
 //===========================================================================================================
-class UTMultiparty : public ::testing::TestWithParam<TEST_CASE> {
+class UTMultiparty : public ::testing::TestWithParam<TEST_CASE_UTMultiparty> {
     using Element = DCRTPoly;
 
 protected:
@@ -166,7 +166,7 @@ protected:
     // in order to avoid redundancy, UnitTest_MultiParty() uses 2 conditions:
     //  - testData.star false/true
     //  - CKKSRNS_TEST false/true
-    void UnitTest_MultiParty(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_MultiParty(const TEST_CASE_UTMultiparty& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -463,7 +463,7 @@ protected:
         }
     }
 
-    void UnitTestMultiparty(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTestMultiparty(const TEST_CASE_UTMultiparty& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 

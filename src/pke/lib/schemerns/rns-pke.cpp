@@ -154,11 +154,15 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   DugType dug;
 
-  DCRTPoly a(dug, params, Format::EVALUATION);
-  DCRTPoly e(dgg, params, Format::EVALUATION);
+  const std::shared_ptr<ParmType> elementParams = (params == nullptr)
+      ? cryptoParams->GetElementParams()
+      : params;
+
+  DCRTPoly a(dug, elementParams, Format::EVALUATION);
+  DCRTPoly e(dgg, elementParams, Format::EVALUATION);
 
   uint32_t sizeQ = s.GetParams()->GetParams().size();
-  uint32_t sizeQl = params->GetParams().size();
+  uint32_t sizeQl = elementParams->GetParams().size();
 
   DCRTPoly c0, c1;
   if (sizeQl != sizeQ) {
@@ -190,22 +194,25 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
   const auto ns = cryptoParams->GetNoiseScale();
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   TugType tug;
+
+  const std::shared_ptr<ParmType> elementParams = (params == nullptr)
+      ? cryptoParams->GetElementParams()
+      : params;
   // TODO (dsuponit): "tug" must be assigned with TernaryUniformGenerator. Otherwise the DCRTPoly constructor crashes.
   // check other files if "tug" is properly assigned
-
     //std::cerr << __FILE__ << ":l." << __LINE__ << std::endl;
     //if (cryptoParams->GetMode() != RLWE) {
     //    PALISADE_THROW(math_error, "TugType tug must be assigned");
     //}
   DCRTPoly v = cryptoParams->GetMode() == RLWE
-                   ? DCRTPoly(dgg, params, Format::EVALUATION)
-                   : DCRTPoly(tug, params, Format::EVALUATION);
+                   ? DCRTPoly(dgg, elementParams, Format::EVALUATION)
+                   : DCRTPoly(tug, elementParams, Format::EVALUATION);
 
-  DCRTPoly e0(dgg, params, Format::EVALUATION);
-  DCRTPoly e1(dgg, params, Format::EVALUATION);
+  DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
+  DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
 
   uint32_t sizeQ = pk[0].GetParams()->GetParams().size();
-  uint32_t sizeQl = params->GetParams().size();
+  uint32_t sizeQl = elementParams->GetParams().size();
 
   DCRTPoly c0, c1;
   if (sizeQl != sizeQ) {
