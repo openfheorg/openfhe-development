@@ -19,7 +19,10 @@
 
 ## Choosing a Backend
 
+You can do either:
 
+- Add a flag during the `CMAKE` process:` cmake -DMATHBACKEND=4 ..` 
+- Uncomment the appropriate line in `src/core/math/hal/bigintbackend.h` (and comment out the rest)
 
 ## Math Backend Descriptions
 
