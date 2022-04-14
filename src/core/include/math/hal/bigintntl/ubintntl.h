@@ -976,9 +976,10 @@ public:
         std::string ret("");
         const ZZ_limb_t* zlp = ZZ_limbs_get(*this);
 
-        for (size_t i = 0; i < this->size(); i++) {
+        size_t max = static_cast<size_t>(this->size());
+        for (size_t i = 0; i < max; i++) {
             ret += std::to_string(zlp[i]);
-            if (i < (this->size() - 1)) {
+            if (i < (max - 1)) {
                 ret += " ";
             }
         }
