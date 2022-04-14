@@ -1,88 +1,88 @@
 # OpenFHE Core Math
 
+We provide a brief description below, but encourage readers to refer
+to [Read The Docs - Core Math](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/core/core_math.html)
+
 # Math Backends
 
-- By selecting a particular `MATHBACKEND`, we are choosing a default implementation for:
-  - `BigInteger`
-  - `BigVector`
-  - `Poly` and `ciphertext modulus` used in `DCRTPoly`
+OpenFHE supports a number of mathematical backends for various usecases. For more information refer to [Math Backends](math_backends.md) or 
+[Read The Docs - Core Math](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/core/core_math.html)
 
-- For native arithmetic, `NativeInteger` and `NativeVector` is available.
+# Inheritance Diagram
 
-- All implementations for Big/Native Integer/Vector are based on [integer.h](integer.h).
+Let Gen. = Generator
 
-## Design
+```mermaid
+flowchart BT
+    A[Distribution Generator] --> |Inherited by|B[Ternary Uniform Gen.];
+    A[Distribution Generator] --> |Inherited by|C[Discrete Uniform Gen.];
+    A[Distribution Generator] --> |Inherited by|D[Binary Uniform Gen.];
+    A[Distribution Generator] --> |Inherited by|E[Discrete Gaussian Gen.];
+    A[Distribution Generator] --> |Inherited by|F[Discrete Gaussian Generic Gen.];
+```
 
-**Goal**: Support choosing, at **run-time**, which math backend to use.
+# File Listings
 
-**Currently**: **Compile-time** choice of which backend to use
+[Binary Uniform Generator](binaryuniformgenerator.h)
 
-## Choosing a Backend
+- Generate `Uniform` distribution of binary values (mod 2)
+- Relies on built-in C++ generator for 32-bit unsigned integers defined in `<random>`
 
-You can do either:
+[DFT Transform](dftransform.h)
 
-- Add a flag during the `CMAKE` process:` cmake -DMATHBACKEND=4 ..` 
-- Uncomment the appropriate line in `src/core/math/hal/bigintbackend.h` (and comment out the rest)
+- Discrete Fourier Transform (FFT) code
 
-## Math Backend Descriptions
+[Discrete Gaussian Generator](discretegaussiangenerator.h)
 
-### MATHBACKEND 2
+- Generate `Gaussian` distribution of discrete values.
+- Relies on built-in C++ generator for 32-bit unsigned integers defined in `<random>`
 
-- Max size of `BigInteger` will be `BitIntegerBitLength` (defined in `backend.h) which has a default of 3000 bits.
-- It is advisable to select a value for `BigIntegerBitLength` larger than double the `bitwidth` of the largest (ciphertext) modulus.
-- This parameter can be decreased for runtime/space optimization when the largest modulus is under 1500 bits.
+[Discrete Gaussian Generator Generic](discretegaussiangeneratorgeneric.h)
 
-- **Note**: The underlying implementation is fixed-size array of native ints. 
-  - Native integer used is defined by the `typedef` using `integral_dtype` and MUST be `uint32_t`; using other types is an open work item
+- Implements the generic sampler by UCSD discussed in [Gaussian Sampling over the Integers:
+  Efficient, Generic, Constant-Time](https://eprint.iacr.org/2017/259.pdf)
+- based heavily on Michael Walter's original code.
+- Generic Sampler works independent from standard deviation of the distribution
+  - combinaes an array of aforementioned base samplers centered around 0 to $\frac{2^{b} - 1}{2^b}$ through convolution
+- 2 different "Base Samples"
+  - Peikert's inversion method
+  - Knuth-Yao
 
+[Discrete Uniform Generator](discreteuniformgenerator.h)
 
-### MATHBACKEND 4
+- Generate `Uniform` distribution of discrete values.
+- Relies on built-in C++ generator for 32-bit unsigned integers defined in `<random>`
 
-- No Explicit max size of `BigInteger`
-- Size grows dynamically and is only constrained by memory
-- The implementation requires that `UBINT_32` is defined as is in `ubintdyn.h` 
-- **Note**: Setting `UBINT_64` is not supported. It is however a open work item.
+[Distr Gen](distrgen.h)
 
-### MATHBACKEND 6
+- Basic noise generation functionality
 
-- Integration of `NTL` library with `OpenFHE`
-- Only available when `NTL` or `GMP` is enabled using `CMAKE`
+[Distribution Generator](distributiongenerator.h)
 
-This is an integration of the NTL library with PALISADE, 
-and is only available when NTL/GMP is enabled using CMAKE.
+- Base class for distribution generators
 
+[Hardware Abstraction Layer (HAL)](hal.h)
 
-# Supported Math Operations
+- Code to switch between math backends
 
-## Modular Multiplication
+[Matrix](matrix.h)
 
-We use the following naming conventions:
+- Templated matrix implementation for SIMD-compatible matrix code
 
-- `ModMul(b, mod)` 
-  - Naive modular multiplication that uses % operator for modular reduction
-  - usually slow.
+[Matrix Strassen](matrixstrassen.h)
 
-- `ModMul(b, mod, mu)` 
-  - Barrett modular multiplication. `mu` for Barrett modulo can be precomputed by `mod.ComputeMu()`.
+- Matrix Strassen Operations
 
-- `ModMulFast(b, mod)` 
-  - Naive modular multiplication w/ operands < mod
+[NB Theory](nbtheory.h)
 
-- `ModMulFast(b, mod, mu)` 
-  - Barrett modular multiplication w/ operands < mod
+- Number theory utilities
+- Check if two numbers are coprime
+- GCD of two numbers
+- If a number, i, is prime
+- witness function to test if a number is prime
+- Eulers Totient function phin(n)
+- Generator Algorithm
 
-- `ModMulFastConst(b, mod, bPrecomp)` 
-  - modular multiplication using precomputed information on b, w/ operands < mod.
-  - `bPrecomp` can be precomputed by `b.PrepModMulConst(mod)`. 
-  - This method is currently implemented only for NativeInteger class. 
-  - The fastest method.
+[Ternary Uniform Generator](ternaryuniformgenerator.h)
 
-
-## Other Modular Operations
-
-| Variant | Naive          | Barrett            | Fast Naive         | Fast Barrett           | Fast Const                        |
-|---------|----------------|--------------------|--------------------|------------------------|-----------------------------------|
-| Mod     | Mod(mod)       | Mod(mod, mu)       | -                  | -                      | -                                 |
-| ModAdd  | ModAdd(b, mod) | ModAdd(b, mod, mu) | ModAddFast(b, mod) | -                      | -                                 |
-| ModSub  | ModSub(b, mod) | ModSub(b, mod, mu) | ModSubFast(b, mod) | -                      | -                                 |
-| ModMul  | ModMul(b, mod) | ModMul(b, mod, mu) | ModMulFast(b, mod) | ModMulFast(b, mod, mu) | ModMulFastConst(b, mod, bPrecomp) |
+- Provides generation of uniform distribution of binary values
