@@ -2,7 +2,14 @@
 
 # Math Backends
 
-Default type for `BigInteger` and `BigVector` in the library.
+- By selecting a particular `MATHBACKEND`, we are choosing a default implementation for:
+  - `BigInteger`
+  - `BigVector`
+  - `Poly` and `ciphertext modulus` used in `DCRTPoly`
+
+- For native arithmetic, `NativeInteger` and `NativeVector` is available.
+
+- All implementations for Big/Native Integer/Vector are based on [integer.h](integer.h).
 
 ## Design
 
@@ -17,6 +24,15 @@ Default type for `BigInteger` and `BigVector` in the library.
 ## Math Backend Descriptions
 
 ### MATHBACKEND 2
+
+- Max size of `BigInteger` will be `BitIntegerBitLength` (defined in `backend.h) which has a default of 3000 bits.
+- It is advisable to select a value for `BigIntegerBitLength` larger than double the `bitwidth` of the largest (ciphertext) modulus.
+- This parameter can be decreased for runtime/space optimization when the largest modulus is under 1500 bits.
+
+- **Note**: The underlying implementation is fixed-size array of native ints. 
+  - Native integer used is defined by the `typedef` using `integral_dtype` and MUST be `uint32_t`; using other types is an open work item
+
+
 ### MATHBACKEND 4
 
 - No Explicit max size of `BigInteger`
@@ -25,6 +41,13 @@ Default type for `BigInteger` and `BigVector` in the library.
 - **Note**: Setting `UBINT_64` is not supported. It is however a open work item.
 
 ### MATHBACKEND 6
+
+- Integration of `NTL` library with `OpenFHE`
+- Only available when `NTL` or `GMP` is enabled using `CMAKE`
+
+This is an integration of the NTL library with PALISADE, 
+and is only available when NTL/GMP is enabled using CMAKE.
+
 
 # Supported Math Operations
 
