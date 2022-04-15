@@ -307,7 +307,7 @@ usint myZZ::GetBitRangeAtIndex(usint ppo, usint length) const {
         return 0;
 
     usint pin = ppo - 1;
-    uint64_t bl;
+    int64_t bl;
     int64_t sa;
     _ntl_limb_t wh;
 
