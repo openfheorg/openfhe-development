@@ -3,7 +3,13 @@ Installation
 
 Welcome to the PALISADE installation instructions! For OS-specific instructions, follow one of the following links below, or proceed with the high-level platform-independent installation instructions below.
 
-Note: By default, the library is built without external dependencies. But the user is also provided options to add GMP/NTL, tcmalloc, and/or Intel HEXL third-party libraries if desired.
+
+.. note:: Note: By default, the library is built without external dependencies.
+   But the user is also provided options to add
+
+   - ``GMP/NTL``
+   - ``tcmalloc``
+   - and/or ``Intel HEXL`` third-party libraries if desired
 
 .. toctree::
    :maxdepth: 1
@@ -32,7 +38,10 @@ We use CMake to build PALISADE.
     cd build
     cmake ..
 
-Note that CMake will check for any system dependencies that are needed for the build process. If the CMake build does not complete successfully, please review the error CMake shows at the end. If the error does not go away (even though you installed the dependency), try running "make clean" to clear the CMake cache.
+
+.. note:: ``CMake`` will check for any system dependencies that are needed for the build process
+   If the ``CMake`` build does not complete successfully, please review the error ``CMake`` shows at the end.
+   If the error does not go away (even though you installed the dependency), try running ``make clean`` to clear the CMake cache.
 
 4. If you want to use any external libraries, such as NTL/GMP or tcmalloc, install these libraries.
 

@@ -100,8 +100,7 @@ The table below shows the current list of options, definition for the option, an
   CKKS_M_FACTOR      Parameter used to strengthen the CKKS adversarial model in scenarios where decryption results are shared among multiple parties (See Security.md for more details)    1
  ================== ===================================================================================================================================================================== ==========
 
-Note that more options will be added as development progresses.
-
+.. note:: More Options will be added as development progresses
 
 The default math backend for the PALISADE build is Backend 2 (basic fixed-maximum-length big integers). This default can be changed on the CMake command line by setting the MATHBACKEND variable. For example, to select backend 6 (high performance fixed integers based on the GMP and NTL libraries), use ``-DMATHBACKEND=6`` on the CMake command line.
 
@@ -118,15 +117,23 @@ PALISADE uses some third-party components from Google for testing and benchmarki
 Turn on NTL/GMP (Only for Advanced Users)
 *********************************************
 
-By default PALISADE builds without external dependencies. If you wish to use the NTL/GMP implementation of BigInteger/BigVector, you can [install GMP and NTL manually](Instructions-for-installing-GMP-and-NTL) and run cmake with ``-DWITH_NTL=ON``. The complete command is
+By default PALISADE builds without external dependencies. If you wish to use the ``NTL/GMP`` implementation of ``BigInteger/BigVector``, you can [install GMP and NTL manually](Instructions-for-installing-GMP-and-NTL) and run cmake with ``-DWITH_NTL=ON``. The complete command is
 
 ::
 
     cmake -DWITH_NTL=ON ..
 
-We have tested PALISADE with GMP 6.1.2 and 6.2.1, and NTL 10.5.0 and 11.4.4. Please note that a regular binary install (using tools like `apt-get`) will not work as special compilation flags need to be passed. See [Installation of GMP and NTL](Instructions-for-installing-GMP-and-NTL) for further details on the manual installation.
+We have tested PALISADE with ``GMP 6.1.2`` and ``6.2.1``, and ``NTL 10.5.0`` and ``11.4.4``.
 
-Note the performance w/o and w/ NTL is almost the same for all schemes/operations. NTL is used only for multiprecision integer arithmetic (the latter only when the MATHBACKEND variable is set to 6). Most of the crypto operations are executed using native arithmetic (by employing RNS procedures), and do not use these higher-precision capabilities.
+.. note:: A regular binary install (using tools like ``apt-get``) will not work
+   Special compilation flags need to be passed. See `Instructions for installing GMP and NTL <https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/installation/gmp_ntl.html?highlight=gmp>`_
+
+
+
+.. note:: The performance w/o and w `NTL` is almost the same for all schemes/operations
+
+   - `NTL` is used only for multiprecision integer arithmetic. The latter only when ``MATHBACKEND`` is set to ``6``.
+   - Most crypto operations are executed using native arithmetic (employing RNS procedures) and do not use higher-precision capabilities.
 
 Turn on tcmalloc
 *********************************************
@@ -139,7 +146,7 @@ If you wish to use tcmalloc, you can add ``-DWITH_TCM=ON`` to the cmake command.
 
 tcmalloc can improve performance in the multi-threaded mode (when OMP_NUM_THREADS>1). It provides efficient thread-caching block allocation for all PALISADE objects.
 
-Note that tcmalloc only works in Linux and macOS, and is not currently supported in MinGW.
+.. note:: ``tcmalloc`` only works in Linux and macOS, and is not currently supported in ``MinGW``.
 
 Tcmalloc should be installed after running cmake and right before running make for PALISADE. To build tcmalloc, run
 
@@ -204,8 +211,8 @@ Cross compiling PALISADE for other target environments is an experimental featur
 2. Specify that CMake should use the cross-compiler.
 3. Proceed with the CMake/make process.
 
-
-It should be noted that the third-party libgmp and NTL libraries will probably need to be built manually for cross compilation using their internal build sequence, and that they may not be supported on the target platform at all. Configuring  PALISADE with -DWITH_NTL=ON will circumvent this issue.
+.. note:: third-party libgmp and NTL libraries will probably need to be built manually for cross compilation using their internal build sequence, and that they may not be supported on the target platform at all.
+   Configuring  PALISADE with -DWITH_NTL=ON will circumvent this issue.
 
 Documentation for extending PALISADE CMake Files
 ----------------------------------------------------------
@@ -238,7 +245,19 @@ When adding a new component to PALISADE
 Documentation of make targets created by PALISADE CMake system
 --------------------------------------------------------------
 
-When "make" is run without any target specified, it builds all modules, unit tests (if `BUILD_UNITTESTS=ON`), examples (if `BUILD_EXAMPLES=ON`), benchmarks (if `BUILD_BENCHMARKS=ON`), and extras (if `BUILD_EXTRAS=ON`). PALISADE also provides more granular control over which components of PALISADE are built. We discuss these options below. Each of these commands can be used instead of `make` in the main build instructions. Note that for many users, it may be easier to rely on CMake flags `BUILD_UNITTESTS`, `BUILD_EXAMPLES`, and the like, to control what is built using the standard `make` command without specifying a target.
+When ``make`` is run without any target specified, it builds:
+- all modules,
+- unit tests (if ``BUILD_UNITTESTS=ON``),
+- examples (if ``BUILD_EXAMPLES=ON``),
+- benchmarks (if ``BUILD_BENCHMARKS=ON``),
+- and extras (if ``BUILD_EXTRAS=ON``).
+
+.. note:: PALISADE also provides more granular control over which components of PALISADE are built.
+
+We discuss these options below. Each of these commands can be used instead of ``make`` in the main build instructions.
+
+.. note:: for many users, it may be easier to rely on CMake flags ``BUILD_UNITTESTS``, ``BUILD_EXAMPLES``, and the like,
+          to control what is built using the standard `make` command without specifying a target.
 
 Build only the library files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -3,8 +3,7 @@ Core Utils Block Allocator
 
 Documentation for `core/include/utils/blockAllocator <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/utils/blockAllocator>`_
 
-.. contents:: Block Allocator
-   :depth: 2
+.. contents:: Page Contents
    :local:
    :backlinks: none
 
@@ -13,7 +12,7 @@ Motivation
 
 We create stl-compatible custom block allocators for various types which allows for fast allocation and free-ing.
 
-**Note**: the ``xY.h`` is such that the ``x`` describes that we are using the custom allocator class, and the ``Y`` describes the underlying type e.g: ``list`` or ``map``, etc.
+.. note:: ``xY.h`` is such that the ``x`` describes that we are using the custom allocator class, and the ``Y`` describes the underlying type e.g: ``list`` or ``map``, etc.
 
 References
 -------------

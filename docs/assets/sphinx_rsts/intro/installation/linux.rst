@@ -71,7 +71,8 @@ Installing PALISADE on Linux
         cd build
         cmake ..
 
-Note that cmake will check for any system dependencies that are needed for the build process.
+.. note:: Note that cmake will check for any system dependencies that are needed for the build process.
+
 
 4. The PALISADE distribution includes some external libraries, such as GMP. NTL and tcmalloc. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
 

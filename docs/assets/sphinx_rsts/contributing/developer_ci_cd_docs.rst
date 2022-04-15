@@ -430,9 +430,10 @@ selected. This map uses the
 ``workflow_dispatch.inputs.compiler.options`` as the key, and the cmake
 equivalent option as the value.
 
-   NOTE - This are linked by the definition of **COMPILERS_MAP** in the
-   jobs and therefore modifying the input will require modification of
-   all *env.COMPILERS_MAP*
+.. note:: This are linked by the definition of **COMPILERS_MAP** in the
+             jobs
+   Modifying the input will require modification of
+      all *env.COMPILERS_MAP*
 
 Because we want to support many compilers and versions we will need to
 expose more pairs in the future. For now the key things to understand is
@@ -462,9 +463,9 @@ input
 
 ..
 
-   Note - this can’t be done in the
-   `.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`__,
-   access to the ``fromJson`` function isn’t available in that scope.
+   .. note:: this can’t be done in the
+                `.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`__,
+      - Access to the ``fromJson`` function isn't available in that scope.
 
 Modifying or Adding New Workflows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -504,7 +505,7 @@ OpenFHE To see how to setup
 `linux_platform_packages.sh <https://github.com/openfheorg/openfhe-development/blob/main/scripts/setup/linux_platform_packages.sh>`__
 in the repository, or run it on your linux platform.
 
-**Note** - this is for an Ubuntu 20.04 distribution.
+.. note:: This is for an Ubuntu 20.04 distribution
 
 Launch an EC2 Instance using AWS CLI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -19,7 +19,7 @@ Contains utils for the underlying math layer including the following capabilitie
 
 - memory management utilities
 
-- prallel operations
+- parallel operations
 
 - serialization
 

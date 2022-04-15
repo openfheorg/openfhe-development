@@ -24,7 +24,7 @@ File Listings
     - Packs integers into a vector of size ``n``
     - Element-wise ops: Supports only element-wise addition (``EvalAdd``), but not multiplication. Thus, typically only works well when no multiplications are necessary
     - Scalar ops: multiplication supported
-    - Note: is rarely used
+    .. note:: is rarely used.
 
 ``Encoding Params``
     - The object containing the parameters for encoding. These parameters are kept and continually reused (can be modified) during the encoding of new values
@@ -39,7 +39,8 @@ File Listings
         - Right Shift: positive index
         - Left Shift: negative index
         - Rotations work cyclically
-    - Note: is almost always what you want to use (other than if you want to deal with floating numbers)
+
+    .. note:: is almost always what you want to use (other than if you want to deal with floating numbers)
 
 ```Plaintext``
     - The base plaintext implementation

@@ -1,12 +1,13 @@
 # OpenFHE Core Math
 
 We provide a brief description below, but encourage readers to refer
-to [Read The Docs - Core Math](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/core/core_math.html)
+to [Read The Docs - Core Math](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/core/math/core_math.html) for more information about the code.
+
+Additionally, we encourage readers to refer to [Read The Docs - Core Math Backends](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/core/math/core_math_backends.html)
 
 # Math Backends
 
-OpenFHE supports a number of mathematical backends for various usecases. For more information refer to [Math Backends](math_backends.md) or 
-[Read The Docs - Core Math](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/core/core_math.html)
+OpenFHE supports a number of mathematical backends for various usecases. For more information refer to [Math Backends](math_backends.md).
 
 # Inheritance Diagram
 

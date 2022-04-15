@@ -23,13 +23,22 @@ Boolean FHE
 Core
 ----------------------------
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    core.rst
+   core/lattice/core_lattice.rst
+   core/lattice/hal.rst
+   core/math/core_math.rst
+   core/utils/core_utils.rst
+
 
 Public-Key Encryption (PKE)
 ----------------------------
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    pke.rst
+   pke/pke_encoding.rst
+   pke/pke_keys.rst
+   pke/pke_keyswitch.rst
+   pke/pke_scheme.rst
