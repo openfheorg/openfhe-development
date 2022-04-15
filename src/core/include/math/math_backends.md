@@ -1,6 +1,3 @@
-
-
-
 # Math Backends
 
 - By selecting a particular `MATHBACKEND`, we are choosing a default implementation for:
