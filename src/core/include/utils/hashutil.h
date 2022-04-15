@@ -41,37 +41,35 @@
 #include <string>
 #include <vector>
 
-
 namespace lbcrypto {
 
 enum HashAlgorithm { SHA_256 = 0, SHA_512 = 1 };
 
 class HashUtil {
- public:
-  static void Hash(std::string message, HashAlgorithm algo,
-                   std::vector<int64_t>& digest) {
-    switch (algo) {
-      case SHA_256:
-        SHA256(message, digest);
-        return;
+public:
+    static void Hash(std::string message, HashAlgorithm algo, std::vector<int64_t>& digest) {
+        switch (algo) {
+            case SHA_256:
+                SHA256(message, digest);
+                return;
 
-      case SHA_512:
-        // TODO SHA512 disabled, returning SHA256 instead
-        SHA256(message, digest);
-        return;
+            case SHA_512:
+                // TODO SHA512 disabled, returning SHA256 instead
+                SHA256(message, digest);
+                return;
 
-      default:
-        PALISADE_THROW(not_available_error, "ERROR: Unknown Hash Algorithm");
+            default:
+                PALISADE_THROW(not_available_error, "ERROR: Unknown Hash Algorithm");
+        }
     }
-  }
 
-  static std::string HashString(std::string message);
+    static std::string HashString(std::string message);
 
- private:
-  static void SHA256(std::string message, std::vector<int64_t>& digest);
-  static void SHA512(std::string message, std::vector<int64_t>& digest);
-  static const uint32_t k_256[64];
-  static const uint64_t k_512[80];
+private:
+    static void SHA256(std::string message, std::vector<int64_t>& digest);
+    static void SHA512(std::string message, std::vector<int64_t>& digest);
+    static const uint32_t k_256[64];
+    static const uint64_t k_512[80];
 };
 
 }  // namespace lbcrypto

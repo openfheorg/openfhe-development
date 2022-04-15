@@ -55,96 +55,95 @@ namespace lbcrypto {
  */
 template <typename Element, typename VecType>
 class ILElement : public Serializable {
-  using IntType = typename VecType::Integer;
+    using IntType = typename VecType::Integer;
 
- public:
-  /**
+public:
+    /**
    * @brief Clone the object by making a copy of it and returning the copy
    * @return new Element
    */
-  virtual Element Clone() const = 0;
+    virtual Element Clone() const = 0;
 
-  /**
+    /**
    * @brief Clone the object, but have it contain nothing
    * @return new Element
    */
-  virtual Element CloneEmpty() const = 0;
+    virtual Element CloneEmpty() const = 0;
 
-  /**
+    /**
    * @brief Clones the element's parameters, leaves vector initialized to 0
    * @return new Element
    */
-  virtual Element CloneParametersOnly() const = 0;
+    virtual Element CloneParametersOnly() const = 0;
 
-  /**
+    /**
    * @brief Clones the element with parameters and with noise for the vector
    * @param dgg
    * @param format
    * @return new Element
    */
-  virtual Element CloneWithNoise(
-      const DiscreteGaussianGeneratorImpl<VecType> &dgg,
-      Format format = Format::EVALUATION) const = 0;
+    virtual Element CloneWithNoise(const DiscreteGaussianGeneratorImpl<VecType>& dgg,
+                                   Format format = Format::EVALUATION) const = 0;
 
-  /**
+    /**
    * @brief Standard destructor
    */
-  virtual ~ILElement() {}
+    virtual ~ILElement() {}
 
-  // Assignment operators
-  /**
+    // Assignment operators
+    /**
    * @brief Assignment operator that copies elements.
    * @param rhs
    */
-  virtual const Element &operator=(const Element &rhs) = 0;
-  /**
+    virtual const Element& operator=(const Element& rhs) = 0;
+    /**
    * @brief Assignment operator that copies elements.
    * @param rhs
    */
-  virtual const Element &operator=(Element &&rhs) = 0;
-  /**
+    virtual const Element& operator=(Element&& rhs) = 0;
+    /**
    * @brief Assignment operator that copies elements.
    * @param rhs
    */
-  virtual const Element &operator=(std::initializer_list<uint64_t> rhs) = 0;
+    virtual const Element& operator=(std::initializer_list<uint64_t> rhs) = 0;
 
-  // GETTERS
-  /**
+    // GETTERS
+    /**
    * @brief Get format of the element
    *
    * @return Format is either COEFFICIENT or EVALUATION
    */
-  virtual Format GetFormat() const = 0;
+    virtual Format GetFormat() const = 0;
 
-  /**
+    /**
    * @brief Get the length of the element.
    *
    * @return length
    */
-  virtual usint GetLength() const = 0;
+    virtual usint GetLength() const = 0;
 
-  /**
+    /**
    * @brief Get modulus of the element
    *
    * @return the modulus.
    */
-  virtual const IntType &GetModulus() const = 0;
+    virtual const IntType& GetModulus() const = 0;
 
-  /**
+    /**
    * @brief Get the values for the element
    *
    * @return the vector.
    */
-  virtual const VecType &GetValues() const = 0;
+    virtual const VecType& GetValues() const = 0;
 
-  /**
+    /**
    * @brief Get the cyclotomic order
    *
    * @return order
    */
-  virtual usint GetCyclotomicOrder() const = 0;
+    virtual usint GetCyclotomicOrder() const = 0;
 
-  /**
+    /**
    * @brief Gets the Value in the Element that is At Index and returns it.
    * This is only implemented for some derived classes, so the default
    * implementation throws an exception
@@ -152,163 +151,163 @@ class ILElement : public Serializable {
    * @param i is the index.
    * @return will throw an error.
    */
-  virtual IntType &at(usint i) {
-    PALISADE_THROW(not_implemented_error, "at not implemented");
-  }
-  virtual const IntType &at(usint i) const {
-    PALISADE_THROW(not_implemented_error, "const at not implemented");
-  }
-  virtual IntType &operator[](usint i) {
-    PALISADE_THROW(not_implemented_error, "[] not implemented");
-  }
-  virtual const IntType &operator[](usint i) const {
-    PALISADE_THROW(not_implemented_error, "const [] not implemented");
-  }
+    virtual IntType& at(usint i) {
+        PALISADE_THROW(not_implemented_error, "at not implemented");
+    }
+    virtual const IntType& at(usint i) const {
+        PALISADE_THROW(not_implemented_error, "const at not implemented");
+    }
+    virtual IntType& operator[](usint i) {
+        PALISADE_THROW(not_implemented_error, "[] not implemented");
+    }
+    virtual const IntType& operator[](usint i) const {
+        PALISADE_THROW(not_implemented_error, "const [] not implemented");
+    }
 
-  //  virtual NativePoly DecryptionCRTInterpolate(PlaintextModulus ptm) const
-  //= 0;
+    //  virtual NativePoly DecryptionCRTInterpolate(PlaintextModulus ptm) const
+    //= 0;
 
-  // OPERATORS
-  /**
+    // OPERATORS
+    /**
    * @brief Unary negation on a lattice
    * @return -lattice
    */
-  virtual Element operator-() const = 0;
+    virtual Element operator-() const = 0;
 
-  /**
+    /**
    * @brief Scalar addition - add an element to the first index only.
    * This operation is only allowed in COEFFICIENT format.
    *
    * @param &element is the element to add entry-wise.
    * @return is the return of the addition operation.
    */
-  virtual Element Plus(const IntType &element) const = 0;
+    virtual Element Plus(const IntType& element) const = 0;
 
-  /**
+    /**
    * @brief Scalar subtraction - subtract an element frp, all entries.
    *
    * @param &element is the element to subtract entry-wise.
    * @return is the return value of the minus operation.
    */
-  virtual Element Minus(const IntType &element) const = 0;
+    virtual Element Minus(const IntType& element) const = 0;
 
-  /**
+    /**
    * @brief Scalar multiplication - multiply all entries.
    *
    * @param &element is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
-  virtual Element Times(const IntType &element) const = 0;
+    virtual Element Times(const IntType& element) const = 0;
 
-  /**
+    /**
    * @brief Scalar multiplication - mulltiply by a signed integer
    *
    * @param &element is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
-  virtual Element Times(NativeInteger::SignedNativeInt element) const = 0;
+    virtual Element Times(NativeInteger::SignedNativeInt element) const = 0;
 
-  /**
+    /**
    * @brief Performs an addition operation and returns the result.
    *
    * @param &element is the element to add with.
    * @return is the result of the addition.
    */
-  virtual Element Plus(const Element &element) const = 0;
+    virtual Element Plus(const Element& element) const = 0;
 
-  /**
+    /**
    * @brief Performs a subtraction operation and returns the result.
    *
    * @param &element is the element to subtract with.
    * @return is the result of the subtraction.
    */
-  virtual Element Minus(const Element &element) const = 0;
+    virtual Element Minus(const Element& element) const = 0;
 
-  /**
+    /**
    * @brief Performs a multiplication operation and returns the result.
    *
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
    */
-  virtual Element Times(const Element &element) const = 0;
+    virtual Element Times(const Element& element) const = 0;
 
-  // overloaded op= operators
-  /**
+    // overloaded op= operators
+    /**
    * @brief Performs += operation with a BigInteger and returns the result.
    *
    * @param &element is the element to add
    * @return is the result of the addition.
    */
-  virtual const Element &operator+=(const IntType &element) = 0;
+    virtual const Element& operator+=(const IntType& element) = 0;
 
-  /**
+    /**
    * @brief Performs -= operation with a BigInteger and returns the result.
    *
    * @param &element is the element to subtract
    * @return is the result of the addition.
    */
-  virtual const Element &operator-=(const IntType &element) = 0;
+    virtual const Element& operator-=(const IntType& element) = 0;
 
-  /**
+    /**
    * @brief Performs *= operation with a BigInteger and returns the result.
    *
    * @param &element is the element to multiply by
    * @return is the result of the multiplication.
    */
-  virtual const Element &operator*=(const IntType &element) = 0;
+    virtual const Element& operator*=(const IntType& element) = 0;
 
-  /**
+    /**
    * @brief Performs an addition operation and returns the result.
    *
    * @param &element is the element to add
    * @return is the result of the addition.
    */
-  virtual const Element &operator+=(const Element &element) = 0;
+    virtual const Element& operator+=(const Element& element) = 0;
 
-  /**
+    /**
    * @brief Performs an subtraction operation and returns the result.
    *
    * @param &element is the element to subtract
    * @return is the result of the addition.
    */
-  virtual const Element &operator-=(const Element &element) = 0;
+    virtual const Element& operator-=(const Element& element) = 0;
 
-  /**
+    /**
    * @brief Performs an multiplication operation and returns the result.
    *
    * @param &element is the element to multiply by
    * @return is the result of the multiplication.
    */
-  virtual const Element &operator*=(const Element &element) = 0;
+    virtual const Element& operator*=(const Element& element) = 0;
 
-  /**
+    /**
    * @brief Equality operator.  Compares values of element to be compared to.
    * @param element the element to compare to.
    */
-  virtual bool operator==(const Element &element) const = 0;
+    virtual bool operator==(const Element& element) const = 0;
 
-  /**
+    /**
    * @brief Inequality operator.  Compares values of element to be compared to.
    * @param element the element to compare to.
    */
-  inline bool operator!=(const Element &element) const {
-    return !(*this == element);
-  }
+    inline bool operator!=(const Element& element) const {
+        return !(*this == element);
+    }
 
-  /**
+    /**
    * @brief Adds one to every entry of the Element, in place
    */
-  virtual void AddILElementOne() = 0;
+    virtual void AddILElementOne() = 0;
 
-  /**
+    /**
    * @brief Performs an automorphism transform operation and returns the result.
    *
    * @param &i is the element to perform the automorphism transform with.
    * @return is the result of the automorphism transform.
    */
-  virtual Element AutomorphismTransform(const usint &i) const = 0;
+    virtual Element AutomorphismTransform(const usint& i) const = 0;
 
-  /**
+    /**
    * @brief Performs an automorphism transform operation using precomputed bit
    * reversal indices.
    *
@@ -316,17 +315,16 @@ class ILElement : public Serializable {
    * @param &vec a vector with precomputed indices
    * @return is the result of the automorphism transform.
    */
-  virtual Element AutomorphismTransform(
-      usint i, const std::vector<uint32_t> &vec) const = 0;
+    virtual Element AutomorphismTransform(usint i, const std::vector<uint32_t>& vec) const = 0;
 
-  /**
+    /**
    * @brief Transpose the ring element using the automorphism operation
    *
    * @return is the result of the transposition.
    */
-  virtual Element Transpose() const = 0;
+    virtual Element Transpose() const = 0;
 
-  /**
+    /**
    * @brief Write the element as \f$ \sum\limits{i=0}^{\lfloor {\log q/base}
    * \rfloor} {(base^i u_i)} \f$ and return the vector of \f$ \left\{u_0,
    * u_1,...,u_{\lfloor {\log q/base} \rfloor} \right\} \in R_{{base}^{\lceil
@@ -338,64 +336,63 @@ class ILElement : public Serializable {
    * evaluation mode
    * @result is the pointer where the base decomposition vector is stored
    */
-  virtual std::vector<Element> BaseDecompose(
-      usint baseBits, bool evalModeAnswer = true) const = 0;
+    virtual std::vector<Element> BaseDecompose(usint baseBits, bool evalModeAnswer = true) const = 0;
 
-  /**
+    /**
    * @brief Scalar division followed by rounding operation - operation on all
    * entries.
    *
    * @param &q is the element to divide entry-wise.
    * @return is the return value of the divide, followed by rounding operation.
    */
-  virtual Element DivideAndRound(const IntType &q) const = 0;
+    virtual Element DivideAndRound(const IntType& q) const = 0;
 
-  /**
+    /**
    * @brief Determines if inverse exists
    *
    * @return true if there exists a multiplicative inverse.
    */
-  virtual bool InverseExists() const = 0;
+    virtual bool InverseExists() const = 0;
 
-  /**
+    /**
    * @brief Returns the infinity norm, basically the largest value in the ring
    * element.
    *
    * @return the largest value in the ring element.
    */
-  virtual double Norm() const = 0;
+    virtual double Norm() const = 0;
 
-  /**
+    /**
    * @brief Returns true if the vector is empty/ m_values==nullptr
    *
    * @return true if the vector is empty and all values nullptr.  false
    * otherwise.
    */
-  virtual bool IsEmpty() const = 0;
+    virtual bool IsEmpty() const = 0;
 
-  /**
+    /**
    * @brief Make the element Sparse for SHE KeyGen operations.
    * Sets every index not equal to zero mod the wFactor to zero.
    *
    * @param &wFactor ratio between the original element's ring dimension and the
    * new ring dimension.
    */
-  virtual void MakeSparse(const uint32_t &wFactor) = 0;
+    virtual void MakeSparse(const uint32_t& wFactor) = 0;
 
-  /**
+    /**
    * @brief Calculate Element mod 2
    *
    * @return result of performing a mod-2 operation on the element.
    */
-  virtual Element ModByTwo() const = 0;
+    virtual Element ModByTwo() const = 0;
 
-  /**
+    /**
    * @brief Calculate and return the Multiplicative Inverse of the element
    * @return the multiplicative inverse of the element, if it exists.
    */
-  virtual Element MultiplicativeInverse() const = 0;
+    virtual Element MultiplicativeInverse() const = 0;
 
-  /**
+    /**
    * @brief Scalar multiplication followed by division and rounding operation -
    * operation on all entries.
    *
@@ -404,28 +401,27 @@ class ILElement : public Serializable {
    * @return is the return value of the multiply, divide and followed by
    * rounding operation.
    */
-  virtual Element MultiplyAndRound(const IntType &p,
-                                   const IntType &q) const = 0;
+    virtual Element MultiplyAndRound(const IntType& p, const IntType& q) const = 0;
 
-  /**
+    /**
    * @brief Calculate a vector of elements by raising the base element to
    * successive powers
    *
    * @param baseBits
    * @return
    */
-  virtual std::vector<Element> PowersOfBase(usint baseBits) const = 0;
+    virtual std::vector<Element> PowersOfBase(usint baseBits) const = 0;
 
-  /**
+    /**
    * @brief Mod - perform a modulus operation.
    * Does proper mapping of [-modulus/2, modulus/2) to [0, modulus).
    *
    * @param modulus is the modulus to use.
    * @return is the return value of the modulus.
    */
-  virtual Element Mod(const IntType &modulus) const = 0;
+    virtual Element Mod(const IntType& modulus) const = 0;
 
-  /**
+    /**
    * @brief Switch modulus and adjust the values
    *
    * @param &modulus is the modulus to be set.
@@ -435,25 +431,25 @@ class ILElement : public Serializable {
    * ASSUMPTION: This method assumes that the caller provides the correct
    * rootOfUnity for the modulus.
    */
-  virtual void SwitchModulus(const IntType &modulus, const IntType &rootOfUnity,
-                             const IntType &modulusArb = IntType::ZERO,
-                             const IntType &rootOfUnityArb = IntType::ZERO) = 0;
+    virtual void SwitchModulus(const IntType& modulus, const IntType& rootOfUnity,
+                               const IntType& modulusArb     = IntType::ZERO,
+                               const IntType& rootOfUnityArb = IntType::ZERO) = 0;
 
-  /**
+    /**
    * @brief onvert from Coefficient to CRT or vice versa; calls FFT and inverse
    * FFT.
    */
-  virtual void SwitchFormat() = 0;
+    virtual void SwitchFormat() = 0;
 
-  /**
+    /**
    * @brief Sets the format/representation of the element.
    * @param format the format/representation to set.
    */
-  void SetFormat(const Format format) {
-    if (this->GetFormat() != format) {
-      this->SwitchFormat();
+    void SetFormat(const Format format) {
+        if (this->GetFormat() != format) {
+            this->SwitchFormat();
+        }
     }
-  }
 };
 
 }  // namespace lbcrypto

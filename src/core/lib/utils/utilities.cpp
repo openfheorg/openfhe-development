@@ -41,58 +41,59 @@ namespace lbcrypto {
 // if Input polynomial has a length n less than CycloOrder,
 // then it adds CycloOrder-n zeros in the Input Polynomial
 template <typename V>
-V ZeroPadForward(const V &InputPoly, usint target_order) {
-  if (InputPoly.GetLength() < target_order) {
-    V ans(target_order);
+V ZeroPadForward(const V& InputPoly, usint target_order) {
+    if (InputPoly.GetLength() < target_order) {
+        V ans(target_order);
 
-    for (usint i = 0; i < InputPoly.GetLength(); i++)
-      ans.at(i) = InputPoly.at(i);
+        for (usint i = 0; i < InputPoly.GetLength(); i++)
+            ans.at(i) = InputPoly.at(i);
 
-    for (usint i = InputPoly.GetLength(); i < target_order; i++)
-      ans.at(i) = typename V::Integer(0);
+        for (usint i = InputPoly.GetLength(); i < target_order; i++)
+            ans.at(i) = typename V::Integer(0);
 
-    ans.SetModulus(InputPoly.GetModulus());
+        ans.SetModulus(InputPoly.GetModulus());
 
-    return ans;
-
-  } else {
-    return V(InputPoly);
-  }
+        return ans;
+    }
+    else {
+        return V(InputPoly);
+    }
 }
 
 // Adds 0 between each BigInteger to support conversion from Inverse FFT to
 // Inverse CRT
 template <typename V>
-V ZeroPadInverse(const V &InputPoly, usint target_order) {
-  if (InputPoly.GetLength() < target_order) {
-    V ans(target_order);
+V ZeroPadInverse(const V& InputPoly, usint target_order) {
+    if (InputPoly.GetLength() < target_order) {
+        V ans(target_order);
 
-    for (usint i = 0; i < InputPoly.GetLength(); i++) {
-      ans.at(2 * i) = typename V::Integer("0");
-      ans.at(2 * i + 1) = InputPoly.at(i);
+        for (usint i = 0; i < InputPoly.GetLength(); i++) {
+            ans.at(2 * i)     = typename V::Integer("0");
+            ans.at(2 * i + 1) = InputPoly.at(i);
+        }
+
+        ans.SetModulus(InputPoly.GetModulus());
+
+        return ans;
     }
-
-    ans.SetModulus(InputPoly.GetModulus());
-
-    return ans;
-  } else {
-    return V(InputPoly);
-  }
+    else {
+        return V(InputPoly);
+    }
 }
 
 // auxiliary function to replace a specific character "in" with another
 // character "out"
 std::string replaceChar(std::string str, char in, char out) {
-  // set our locator equal to the first appearance of any character in replace
-  size_t found = str.find_first_of(in);
+    // set our locator equal to the first appearance of any character in replace
+    size_t found = str.find_first_of(in);
 
-  // While our position in the string is in range.
-  while (found != std::string::npos) {
-    str[found] = out;  // Change the character at position.
-    found = str.find_first_of(in, found + 1);  // Relocate again.
-  }
+    // While our position in the string is in range.
+    while (found != std::string::npos) {
+        str[found] = out;                               // Change the character at position.
+        found      = str.find_first_of(in, found + 1);  // Relocate again.
+    }
 
-  return str;  // return our new string.
+    return str;  // return our new string.
 }
 
 }  // namespace lbcrypto

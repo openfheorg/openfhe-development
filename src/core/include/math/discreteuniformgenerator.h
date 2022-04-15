@@ -55,50 +55,50 @@ typedef DiscreteUniformGeneratorImpl<BigVector> DiscreteUniformGenerator;
  */
 template <typename VecType>
 class DiscreteUniformGeneratorImpl : public DistributionGenerator<VecType> {
- public:
-  /**
+public:
+    /**
    * @brief Constructs a new DiscreteUniformGenerator with the given modulus.
    */
-  DiscreteUniformGeneratorImpl();
+    DiscreteUniformGeneratorImpl();
 
-  ~DiscreteUniformGeneratorImpl() {}
+    ~DiscreteUniformGeneratorImpl() {}
 
-  /**
+    /**
    * @brief         Sets the modulus. Overrides parent function
    * @param modulus The new modulus.
    */
-  void SetModulus(const typename VecType::Integer& modulus);
+    void SetModulus(const typename VecType::Integer& modulus);
 
-  /**
+    /**
    * @brief Generates a random integer based on the modulus set for the Discrete
    * Uniform Generator object. Required by DistributionGenerator.
    */
-  typename VecType::Integer GenerateInteger() const;
+    typename VecType::Integer GenerateInteger() const;
 
-  /**
+    /**
    * @brief Generates a vector of random integers using GenerateInteger()
    */
-  VecType GenerateVector(const usint size) const;
+    VecType GenerateVector(const usint size) const;
 
- private:
-  // discrete uniform generator relies on the built-in C++ generator for 32-bit
-  // unsigned integers the constants below set the parameters specific to 32-bit
-  // chunk configuration
-  static const usint CHUNK_MIN = 0;
-  static const usint CHUNK_WIDTH = std::numeric_limits<uint32_t>::digits;
-  static const usint CHUNK_MAX = std::numeric_limits<uint32_t>::max();
+private:
+    // discrete uniform generator relies on the built-in C++ generator for 32-bit
+    // unsigned integers the constants below set the parameters specific to 32-bit
+    // chunk configuration
+    static const usint CHUNK_MIN   = 0;
+    static const usint CHUNK_WIDTH = std::numeric_limits<uint32_t>::digits;
+    static const usint CHUNK_MAX   = std::numeric_limits<uint32_t>::max();
 
-  // number of 32-bit chunks in the modulus set for the discrete uniform
-  // generator object
-  usint m_chunksPerValue;
+    // number of 32-bit chunks in the modulus set for the discrete uniform
+    // generator object
+    usint m_chunksPerValue;
 
-  // built-in generator for 32-bit unsigned integers
-  static std::uniform_int_distribution<uint32_t> m_distribution;
+    // built-in generator for 32-bit unsigned integers
+    static std::uniform_int_distribution<uint32_t> m_distribution;
 
-  /**
+    /**
    * The modulus value that should be used to generate discrete values.
    */
-  typename VecType::Integer m_modulus;
+    typename VecType::Integer m_modulus;
 };
 
 }  // namespace lbcrypto

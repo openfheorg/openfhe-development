@@ -31,4 +31,5 @@
 
 #include "serial.h"
 
-#pragma message "utils/serialize-json.h is deprecated and will be removed in the 3rd quarter of 2021. serial.h should be used instead"
+#pragma message \
+    "utils/serialize-json.h is deprecated and will be removed in the 3rd quarter of 2021. serial.h should be used instead"

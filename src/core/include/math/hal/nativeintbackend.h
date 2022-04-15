@@ -38,11 +38,11 @@
 
 #ifdef WITH_INTEL_HEXL
 
-#include "math/hal/intnat-hexl/backendnathexl.h"
-#include "math/hal/intnat-hexl/transformnathexl.h"
+    #include "math/hal/intnat-hexl/backendnathexl.h"
+    #include "math/hal/intnat-hexl/transformnathexl.h"
 #else
-#include "math/hal/intnat/backendnat.h"
-#include "math/hal/intnat/transformnat.h"
+    #include "math/hal/intnat/backendnat.h"
+    #include "math/hal/intnat/transformnat.h"
 #endif
 
-#endif // __NATIVEINTBACKEND_H__
+#endif  // __NATIVEINTBACKEND_H__

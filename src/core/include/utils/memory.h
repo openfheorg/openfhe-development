@@ -42,41 +42,41 @@
 #include <utility>
 #include <vector>
 
-
 namespace lbcrypto {
 
 //  make_unique was left out of c++11, these are the accepted implementation
 #if _MSC_VER == 1700
 
-//  MSVC11 does not support variadic templates
-#define _MAKE_UNIQUE(TEMPLATE_LIST, PADDING_LIST, LIST, COMMA, X1, X2, X3, X4) \
-                                                                               \
-  template <class T COMMA LIST(_CLASS_TYPE)>                                   \
-  inline std::unique_ptr<T> make_unique(LIST(_TYPE_REFREF_ARG)) {              \
-    return std::unique_ptr<T>(new T(LIST(_FORWARD_ARG)));                      \
-  }
+    //  MSVC11 does not support variadic templates
+    #define _MAKE_UNIQUE(TEMPLATE_LIST, PADDING_LIST, LIST, COMMA, X1, X2, X3, X4) \
+                                                                                   \
+        template <class T COMMA LIST(_CLASS_TYPE)>                                 \
+        inline std::unique_ptr<T> make_unique(LIST(_TYPE_REFREF_ARG)) {            \
+            return std::unique_ptr<T>(new T(LIST(_FORWARD_ARG)));                  \
+        }
 _VARIADIC_EXPAND_0X(_MAKE_UNIQUE, , , , )
-#undef _MAKE_UNIQUE
+    #undef _MAKE_UNIQUE
 
 #else
 
 //  *nix implementation
 template <typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args) {
-  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 #endif
 
 template <class X>
 void MoveAppend(std::vector<X>& dst, std::vector<X>& src) {
-  if (dst.empty()) {
-    dst = std::move(src);
-  } else {
-    dst.reserve(dst.size() + src.size());
-    std::move(std::begin(src), std::end(src), std::back_inserter(dst));
-    src.clear();
-  }
+    if (dst.empty()) {
+        dst = std::move(src);
+    }
+    else {
+        dst.reserve(dst.size() + src.size());
+        std::move(std::begin(src), std::end(src), std::back_inserter(dst));
+        src.clear();
+    }
 }
 
 }  // namespace lbcrypto

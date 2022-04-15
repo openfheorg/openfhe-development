@@ -39,37 +39,38 @@
 // TODO (dsuponit): purge the headers below and combine #pragma for GNU and clang
 #include <iostream>
 #include <string>
+#include <vector>
 
 #ifndef CEREAL_RAPIDJSON_HAS_STDSTRING
-#define CEREAL_RAPIDJSON_HAS_STDSTRING 1
+    #define CEREAL_RAPIDJSON_HAS_STDSTRING 1
 #endif
 #ifndef CEREAL_RAPIDJSON_HAS_CXX11_RVALUE_REFS
-#define CEREAL_RAPIDJSON_HAS_CXX11_RVALUE_REFS 1
+    #define CEREAL_RAPIDJSON_HAS_CXX11_RVALUE_REFS 1
 #endif
 #define CEREAL_RAPIDJSON_HAS_CXX11_NOEXCEPT 0
 
 #ifdef __GNUC__
-#if __GNUC__ >= 8
-#pragma GCC diagnostic ignored "-Wclass-memaccess"
-#endif
+    #if __GNUC__ >= 8
+        #pragma GCC diagnostic ignored "-Wclass-memaccess"
+    #endif
 #endif
 
 #ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-private-field"
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunused-private-field"
 #endif
 
 #include "cereal/cereal.hpp"
 #include "cereal/types/polymorphic.hpp"
 
 #ifdef __GNUC__
-#if __GNUC__ >= 8
-#pragma GCC diagnostic pop
-#endif
+    #if __GNUC__ >= 8
+        #pragma GCC diagnostic pop
+    #endif
 #endif
 
 #ifdef __clang__
-#pragma clang diagnostic pop
+    #pragma clang diagnostic pop
 #endif
 
 namespace lbcrypto {
@@ -86,22 +87,21 @@ using Serialized = void*;
  * for serialization
  */
 class Serializable {
- public:
-  virtual ~Serializable() {}
+public:
+    virtual ~Serializable() {}
 
-  virtual std::string SerializedObjectName() const = 0;
-
+    virtual std::string SerializedObjectName() const = 0;
 };
 
 // helper template to stream vector contents provided T has an stream operator<<
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
-  os << "[";
-  for (auto i = v.begin(); i != v.end(); ++i) {
-    os << " " << *i;
-  }
-  os << " ]";
-  return os;
+    os << "[";
+    for (auto i = v.begin(); i != v.end(); ++i) {
+        os << " " << *i;
+    }
+    os << " ]";
+    return os;
 }
 
 }  // namespace lbcrypto

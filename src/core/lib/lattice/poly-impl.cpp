@@ -33,28 +33,22 @@
   implementation of the integer lattice
  */
 
-#include "elemparams.cpp"
-#include "ilparams.cpp"
-// #include "math/discretegaussiangenerator.cpp"
-// #include "math/discreteuniformgenerator.cpp"
-// #include "math/binaryuniformgenerator.cpp"
-// #include "math/ternaryuniformgenerator.cpp"
-// #include "math/transform.cpp"
-#include "poly.cpp"
+#include "elemparams.cpp"  // NOLINT
+#include "ilparams.cpp"    // NOLINT
+#include "poly.cpp"        // NOLINT
 
 namespace lbcrypto {
 
 template <>
-PolyImpl<BigVector>::PolyImpl(const std::shared_ptr<ILDCRTParams<BigInteger>> params,
-                              Format format, bool initializeElementToZero)
+PolyImpl<BigVector>::PolyImpl(const std::shared_ptr<ILDCRTParams<BigInteger>> params, Format format,
+                              bool initializeElementToZero)
     : m_values(nullptr), m_format(format) {
-  // construct a local params out of the stuff from the DCRT Params
-  m_params = std::make_shared<ILParams>(params->GetCyclotomicOrder(),
-                                        params->GetModulus(), 1);
+    // construct a local params out of the stuff from the DCRT Params
+    m_params = std::make_shared<ILParams>(params->GetCyclotomicOrder(), params->GetModulus(), 1);
 
-  if (initializeElementToZero) {
-    this->SetValuesToZero();
-  }
+    if (initializeElementToZero) {
+        this->SetValuesToZero();
+    }
 }
 
 }  // namespace lbcrypto

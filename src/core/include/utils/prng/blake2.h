@@ -1,3 +1,4 @@
+// clang-format off
 /*
    BLAKE2 reference source code package - reference C implementations
 
@@ -195,3 +196,4 @@ int blake2(void *out, size_t outlen, const void *in, size_t inlen,
 #endif
 
 #endif
+// clang-format on
