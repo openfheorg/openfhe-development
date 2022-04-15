@@ -1,5 +1,21 @@
-
-
 # Directory Structure
 
-- examples: various 
+## Examples:
+
+We provide the following examples:
+
+- misc. operations across the various schemes including CKKS, BGV, BFV.
+
+- serialization of ciphertexts, and cryptocontexts (Cryptocontexts are the main object we use to interact with the
+  various crypto objects)
+
+- threshold FHE
+
+## include
+
+- Header files
+
+## lib
+
+- implementation of the header files
+
