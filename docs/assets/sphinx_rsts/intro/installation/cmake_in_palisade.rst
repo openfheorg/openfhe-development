@@ -246,6 +246,7 @@ Documentation of make targets created by PALISADE CMake system
 --------------------------------------------------------------
 
 When ``make`` is run without any target specified, it builds:
+
 - all modules,
 - unit tests (if ``BUILD_UNITTESTS=ON``),
 - examples (if ``BUILD_EXAMPLES=ON``),

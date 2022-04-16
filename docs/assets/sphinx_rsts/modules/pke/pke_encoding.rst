@@ -24,7 +24,7 @@ File Listings
     - Packs integers into a vector of size ``n``
     - Element-wise ops: Supports only element-wise addition (``EvalAdd``), but not multiplication. Thus, typically only works well when no multiplications are necessary
     - Scalar ops: multiplication supported
-    .. note:: is rarely used.
+    .. note:: ``Coef Packed Encoding`` is rarely used.
 
 ``Encoding Params``
     - The object containing the parameters for encoding. These parameters are kept and continually reused (can be modified) during the encoding of new values
