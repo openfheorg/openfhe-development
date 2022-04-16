@@ -50,28 +50,30 @@ namespace lbcrypto {
 // This class is used to catch and rethrow exceptions from threads/critical
 // regions (thank you stack overflow)
 class ThreadException {
-  std::exception_ptr Ptr;
-  std::mutex Lock;
+    std::exception_ptr Ptr;
+    std::mutex Lock;
 
- public:
-  ThreadException() : Ptr(nullptr) {}
-  ~ThreadException() {}
-  void Rethrow() {
-    if (this->Ptr) std::rethrow_exception(this->Ptr);
-  }
-  void CaptureException() {
-    std::unique_lock<std::mutex> guard(this->Lock);
-    this->Ptr = std::current_exception();
-  }
-
-  template <typename Function, typename... Parameters>
-  void Run(Function f, Parameters... params) {
-    try {
-      f(params...);
-    } catch (...) {
-      CaptureException();
+public:
+    ThreadException() : Ptr(nullptr) {}
+    ~ThreadException() {}
+    void Rethrow() {
+        if (this->Ptr)
+            std::rethrow_exception(this->Ptr);
     }
-  }
+    void CaptureException() {
+        std::unique_lock<std::mutex> guard(this->Lock);
+        this->Ptr = std::current_exception();
+    }
+
+    template <typename Function, typename... Parameters>
+    void Run(Function f, Parameters... params) {
+        try {
+            f(params...);
+        }
+        catch (...) {
+            CaptureException();
+        }
+    }
 };
 
 // how  to use ThreadException
@@ -97,66 +99,65 @@ class ThreadException {
 // }
 // e.Rethrow();
 class palisade_error : public std::runtime_error {
-  std::string filename;
-  int linenum;
-  std::string message;
+    std::string filename;
+    int linenum;
+    std::string message;
 
- public:
-  palisade_error(const std::string& file, int line, const std::string& what)
-      : std::runtime_error(what), filename(file), linenum(line) {
-    message = filename + ":" + std::to_string(linenum) + " " + what;
-  }
+public:
+    palisade_error(const std::string& file, int line, const std::string& what)
+        : std::runtime_error(what), filename(file), linenum(line) {
+        message = filename + ":" + std::to_string(linenum) + " " + what;
+    }
 
-  const char* what() const throw() { return message.c_str(); }
+    const char* what() const throw() {
+        return message.c_str();
+    }
 
-  const std::string& GetFilename() const { return filename; }
-  int GetLinenum() const { return linenum; }
+    const std::string& GetFilename() const {
+        return filename;
+    }
+    int GetLinenum() const {
+        return linenum;
+    }
 };
 
 class config_error : public palisade_error {
- public:
-  config_error(const std::string& file, int line, const std::string& what)
-      : palisade_error(file, line, what) {}
+public:
+    config_error(const std::string& file, int line, const std::string& what) : palisade_error(file, line, what) {}
 };
 
 class math_error : public palisade_error {
- public:
-  math_error(const std::string& file, int line, const std::string& what)
-      : palisade_error(file, line, what) {}
+public:
+    math_error(const std::string& file, int line, const std::string& what) : palisade_error(file, line, what) {}
 };
 
 class not_implemented_error : public palisade_error {
- public:
-  not_implemented_error(const std::string& file, int line,
-                        const std::string& what)
-      : palisade_error(file, line, what) {}
+public:
+    not_implemented_error(const std::string& file, int line, const std::string& what)
+        : palisade_error(file, line, what) {}
 };
 
 class not_available_error : public palisade_error {
- public:
-  not_available_error(const std::string& file, int line,
-                      const std::string& what)
-      : palisade_error(file, line, what) {}
+public:
+    not_available_error(const std::string& file, int line, const std::string& what)
+        : palisade_error(file, line, what) {}
 };
 
 class type_error : public palisade_error {
- public:
-  type_error(const std::string& file, int line, const std::string& what)
-      : palisade_error(file, line, what) {}
+public:
+    type_error(const std::string& file, int line, const std::string& what) : palisade_error(file, line, what) {}
 };
 
 // use this error when serializing palisade objects
 class serialize_error : public palisade_error {
- public:
-  serialize_error(const std::string& file, int line, const std::string& what)
-      : palisade_error(file, line, what) {}
+public:
+    serialize_error(const std::string& file, int line, const std::string& what) : palisade_error(file, line, what) {}
 };
 
 // use this error when deserializing palisade objects
 class deserialize_error : public palisade_error {
- public:
-  deserialize_error(const std::string& file, int line, const std::string& what)
-      : palisade_error(file, line, what) {}
+public:
+    deserialize_error(const std::string& file, int line, const std::string& what) : palisade_error(file, line, what) {}
 };
 
 #define PALISADE_THROW(exc, expr) throw exc(__FILE__, __LINE__, (expr))

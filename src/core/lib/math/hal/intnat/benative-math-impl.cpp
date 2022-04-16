@@ -34,13 +34,13 @@
  */
 
 #include "math/hal.h"
-#include "math/binaryuniformgenerator.cpp"
-#include "math/discretegaussiangenerator.cpp"
-#include "math/discreteuniformgenerator.cpp"
-#include "math/matrix.cpp"
+#include "math/binaryuniformgenerator.cpp"     // NOLINT
+#include "math/discretegaussiangenerator.cpp"  // NOLINT
+#include "math/discreteuniformgenerator.cpp"   // NOLINT
+#include "math/matrix.cpp"                     // NOLINT
 #include "math/matrix.h"
-#include "math/nbtheory.cpp"
-#include "math/ternaryuniformgenerator.cpp"
+#include "math/nbtheory.cpp"                 // NOLINT
+#include "math/ternaryuniformgenerator.cpp"  // NOLINT
 #include "math/hal/transform.h"
 
 namespace lbcrypto {
@@ -50,49 +50,32 @@ template class BinaryUniformGeneratorImpl<NativeVector>;
 template class TernaryUniformGeneratorImpl<NativeVector>;
 template class DiscreteUniformGeneratorImpl<NativeVector>;
 
-template NativeInteger RootOfUnity<NativeInteger>(usint m,
-                                                  const NativeInteger &modulo);
-template std::vector<NativeInteger> RootsOfUnity(
-    usint m, const std::vector<NativeInteger> moduli);
-template NativeInteger GreatestCommonDivisor(const NativeInteger &a,
-                                             const NativeInteger &b);
-template bool MillerRabinPrimalityTest(const NativeInteger &p,
-                                       const usint niter);
-template const NativeInteger PollardRhoFactorization(const NativeInteger &n);
-template void PrimeFactorize(NativeInteger n,
-                             std::set<NativeInteger> &primeFactors);
+template NativeInteger RootOfUnity<NativeInteger>(usint m, const NativeInteger& modulo);
+template std::vector<NativeInteger> RootsOfUnity(usint m, const std::vector<NativeInteger> moduli);
+template NativeInteger GreatestCommonDivisor(const NativeInteger& a, const NativeInteger& b);
+template bool MillerRabinPrimalityTest(const NativeInteger& p, const usint niter);
+template const NativeInteger PollardRhoFactorization(const NativeInteger& n);
+template void PrimeFactorize(NativeInteger n, std::set<NativeInteger>& primeFactors);
 template NativeInteger FirstPrime(uint64_t nBits, uint64_t m);
-template NativeInteger NextPrime(const NativeInteger &q,
-                                 uint64_t cyclotomicOrder);
-template NativeInteger PreviousPrime(const NativeInteger &q,
-                                     uint64_t cyclotomicOrder);
+template NativeInteger NextPrime(const NativeInteger& q, uint64_t cyclotomicOrder);
+template NativeInteger PreviousPrime(const NativeInteger& q, uint64_t cyclotomicOrder);
 
-template std::vector<NativeInteger> GetTotientList(const NativeInteger &n);
-template std::vector<usint> GetTotientList(const usint &n);
+template std::vector<NativeInteger> GetTotientList(const NativeInteger& n);
+template std::vector<usint> GetTotientList(const usint& n);
 
-template NativeVector PolyMod(const NativeVector &dividend,
-                              const NativeVector &divisor,
-                              const NativeInteger &modulus);
-template NativeVector PolynomialMultiplication(const NativeVector &a,
-                                               const NativeVector &b);
-template NativeVector GetCyclotomicPolynomial(usint m,
-                                              const NativeInteger &modulus);
-template NativeInteger SyntheticRemainder(const NativeVector &dividend,
-                                          const NativeInteger &a,
-                                          const NativeInteger &modulus);
-template NativeVector SyntheticPolyRemainder(const NativeVector &dividend,
-                                             const NativeVector &aList,
-                                             const NativeInteger &modulus);
-template NativeVector PolynomialPower<NativeVector>(const NativeVector &input,
-                                                    usint power);
-template NativeVector SyntheticPolynomialDivision(const NativeVector &dividend,
-                                                  const NativeInteger &a,
-                                                  const NativeInteger &modulus);
-template NativeInteger FindGeneratorCyclic(const NativeInteger &modulo);
-template bool IsGenerator(const NativeInteger &g, const NativeInteger &modulo);
-template std::shared_ptr<std::vector<int64_t>> GetDigits(const NativeInteger &u,
-                                                         uint64_t base,
-                                                         uint32_t k);
+template NativeVector PolyMod(const NativeVector& dividend, const NativeVector& divisor, const NativeInteger& modulus);
+template NativeVector PolynomialMultiplication(const NativeVector& a, const NativeVector& b);
+template NativeVector GetCyclotomicPolynomial(usint m, const NativeInteger& modulus);
+template NativeInteger SyntheticRemainder(const NativeVector& dividend, const NativeInteger& a,
+                                          const NativeInteger& modulus);
+template NativeVector SyntheticPolyRemainder(const NativeVector& dividend, const NativeVector& aList,
+                                             const NativeInteger& modulus);
+template NativeVector PolynomialPower<NativeVector>(const NativeVector& input, usint power);
+template NativeVector SyntheticPolynomialDivision(const NativeVector& dividend, const NativeInteger& a,
+                                                  const NativeInteger& modulus);
+template NativeInteger FindGeneratorCyclic(const NativeInteger& modulo);
+template bool IsGenerator(const NativeInteger& g, const NativeInteger& modulo);
+template std::shared_ptr<std::vector<int64_t>> GetDigits(const NativeInteger& u, uint64_t base, uint32_t k);
 
 template class Matrix<NativeInteger>;
 template class Matrix<NativeVector>;

@@ -34,19 +34,18 @@
  */
 
 #include "math/hal.h"
-#include "math/binaryuniformgenerator.cpp"
-#include "math/discretegaussiangenerator.cpp"
-#include "math/discreteuniformgenerator.cpp"
-#include "math/nbtheory.cpp"
-#include "math/ternaryuniformgenerator.cpp"
+#include "math/binaryuniformgenerator.cpp"     // NOLINT
+#include "math/discretegaussiangenerator.cpp"  // NOLINT
+#include "math/discreteuniformgenerator.cpp"   // NOLINT
+#include "math/nbtheory.cpp"                   // NOLINT
+#include "math/ternaryuniformgenerator.cpp"    // NOLINT
 
 namespace bigintfxd {
 
 template class ChineseRemainderTransformFTTFxd<BigVector>;
 template class ChineseRemainderTransformArbFxd<BigVector>;
 
-}
-
+}  // namespace bigintfxd
 
 namespace lbcrypto {
 
@@ -55,43 +54,31 @@ template class BinaryUniformGeneratorImpl<M2Vector>;
 template class TernaryUniformGeneratorImpl<M2Vector>;
 template class DiscreteUniformGeneratorImpl<M2Vector>;
 
-template M2Integer RootOfUnity<M2Integer>(usint m, const M2Integer &modulo);
-template std::vector<M2Integer> RootsOfUnity(
-    usint m, const std::vector<M2Integer> moduli);
-template M2Integer GreatestCommonDivisor(const M2Integer &a,
-                                         const M2Integer &b);
-template bool MillerRabinPrimalityTest(const M2Integer &p, const usint niter);
-template const M2Integer PollardRhoFactorization(const M2Integer &n);
-template void PrimeFactorize(M2Integer n, std::set<M2Integer> &primeFactors);
+template M2Integer RootOfUnity<M2Integer>(usint m, const M2Integer& modulo);
+template std::vector<M2Integer> RootsOfUnity(usint m, const std::vector<M2Integer> moduli);
+template M2Integer GreatestCommonDivisor(const M2Integer& a, const M2Integer& b);
+template bool MillerRabinPrimalityTest(const M2Integer& p, const usint niter);
+template const M2Integer PollardRhoFactorization(const M2Integer& n);
+template void PrimeFactorize(M2Integer n, std::set<M2Integer>& primeFactors);
 template M2Integer FirstPrime(uint64_t nBits, uint64_t m);
-template M2Integer NextPrime(const M2Integer &q, uint64_t cyclotomicOrder);
-template M2Integer PreviousPrime(const M2Integer &q, uint64_t cyclotomicOrder);
-template std::vector<M2Integer> GetTotientList(const M2Integer &n);
-template M2Vector PolyMod(const M2Vector &dividend, const M2Vector &divisor,
-                          const M2Integer &modulus);
-template M2Vector PolynomialMultiplication(const M2Vector &a,
-                                           const M2Vector &b);
-template M2Vector GetCyclotomicPolynomial(usint m, const M2Integer &modulus);
-template M2Integer SyntheticRemainder(const M2Vector &dividend,
-                                      const M2Integer &a,
-                                      const M2Integer &modulus);
-template M2Vector SyntheticPolyRemainder(const M2Vector &dividend,
-                                         const M2Vector &aList,
-                                         const M2Integer &modulus);
-template M2Vector PolynomialPower<M2Vector>(const M2Vector &input, usint power);
-template M2Vector SyntheticPolynomialDivision(const M2Vector &dividend,
-                                              const M2Integer &a,
-                                              const M2Integer &modulus);
-template M2Integer FindGeneratorCyclic(const M2Integer &modulo);
-template bool IsGenerator(const M2Integer &g, const M2Integer &modulo);
-template std::shared_ptr<std::vector<int64_t>> GetDigits(const M2Integer &u,
-                                                         uint64_t base,
-                                                         uint32_t k);
+template M2Integer NextPrime(const M2Integer& q, uint64_t cyclotomicOrder);
+template M2Integer PreviousPrime(const M2Integer& q, uint64_t cyclotomicOrder);
+template std::vector<M2Integer> GetTotientList(const M2Integer& n);
+template M2Vector PolyMod(const M2Vector& dividend, const M2Vector& divisor, const M2Integer& modulus);
+template M2Vector PolynomialMultiplication(const M2Vector& a, const M2Vector& b);
+template M2Vector GetCyclotomicPolynomial(usint m, const M2Integer& modulus);
+template M2Integer SyntheticRemainder(const M2Vector& dividend, const M2Integer& a, const M2Integer& modulus);
+template M2Vector SyntheticPolyRemainder(const M2Vector& dividend, const M2Vector& aList, const M2Integer& modulus);
+template M2Vector PolynomialPower<M2Vector>(const M2Vector& input, usint power);
+template M2Vector SyntheticPolynomialDivision(const M2Vector& dividend, const M2Integer& a, const M2Integer& modulus);
+template M2Integer FindGeneratorCyclic(const M2Integer& modulo);
+template bool IsGenerator(const M2Integer& g, const M2Integer& modulo);
+template std::shared_ptr<std::vector<int64_t>> GetDigits(const M2Integer& u, uint64_t base, uint32_t k);
 }  // namespace lbcrypto
 
 #include "math/matrix.h"
 
-#include "math/matrix.cpp"
+#include "math/matrix.cpp"  // NOLINT
 
 namespace lbcrypto {
 

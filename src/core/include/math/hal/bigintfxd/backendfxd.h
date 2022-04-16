@@ -42,27 +42,22 @@
 #include "math/hal/bigintfxd/ubintfxd.h"
 #include "math/hal/bigintfxd/mubintvecfxd.h"
 #include "math/hal/bigintfxd/transformfxd.h"
+#include <string>
 
 inline const std::string& GetMathBackendParameters() {
-  static std::string id =
-      "Backend " + std::to_string(MATHBACKEND) +
-      (MATHBACKEND == 2
-           ? " internal int size " +
-                 std::to_string(sizeof(integral_dtype) * 8) + " BitLength " +
-                 std::to_string(BigIntegerBitLength)
-           : "");
-  return id;
+    static std::string id = "Backend " + std::to_string(MATHBACKEND) +
+                            (MATHBACKEND == 2 ? " internal int size " + std::to_string(sizeof(integral_dtype) * 8) +
+                                                    " BitLength " + std::to_string(BigIntegerBitLength) :
+                                                "");
+    return id;
 }
 
-static_assert(bigintfxd::DataTypeChecker<integral_dtype>::value,
-              "Data type provided is not supported in BigInteger");
-
+static_assert(bigintfxd::DataTypeChecker<integral_dtype>::value, "Data type provided is not supported in BigInteger");
 
 // Global alias for MATHBACKEND 2 Integer
 using M2Integer = bigintfxd::BigInteger;
 
 // Global alias for MATHBACKEND 2 Vector
 using M2Vector = bigintfxd::BigVector;
-
 
 #endif /* SRC_CORE_INCLUDE_MATH_HAL_BIGINTFXD_BACKENDFXD_H_ */

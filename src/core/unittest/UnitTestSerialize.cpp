@@ -52,250 +52,254 @@ using namespace lbcrypto;
 
 template <typename T>
 void bigint(const std::string& msg) {
-  T small(7);
-  T medium(uint64_t(1) << 27 | uint64_t(1) << 22);
-  T larger(uint64_t(1) << 40 | uint64_t(1) << 22);
+    T small(7);
+    T medium(uint64_t(1) << 27 | uint64_t(1) << 22);
+    T larger(uint64_t(1) << 40 | uint64_t(1) << 22);
 
-  auto sfunc = [&](T& val, std::string siz) {
-    std::stringstream s;
-    T deser;
+    auto sfunc = [&](T& val, std::string siz) {
+        std::stringstream s;
+        T deser;
 
-    Serial::Serialize(val, s, SerType::JSON);
-    Serial::Deserialize(deser, s, SerType::JSON);
-    EXPECT_EQ(val, deser) << msg << " " << siz
-                          << " integer json ser/deser fails";
+        Serial::Serialize(val, s, SerType::JSON);
+        Serial::Deserialize(deser, s, SerType::JSON);
+        EXPECT_EQ(val, deser) << msg << " " << siz << " integer json ser/deser fails";
 
-    s.str("");
-    Serial::Serialize(val, s, SerType::BINARY);
+        s.str("");
+        Serial::Serialize(val, s, SerType::BINARY);
 
-    Serial::Deserialize(deser, s, SerType::BINARY);
-    EXPECT_EQ(val, deser) << msg << " " << siz
-                          << " integer binary ser/deser fails";
-  };
+        Serial::Deserialize(deser, s, SerType::BINARY);
+        EXPECT_EQ(val, deser) << msg << " " << siz << " integer binary ser/deser fails";
+    };
 
-  sfunc(small, "small");
-  sfunc(medium, "medium");
-  sfunc(larger, "larger");
+    sfunc(small, "small");
+    sfunc(medium, "medium");
+    sfunc(larger, "larger");
 }
 
-TEST(UTSer, bigint) { RUN_ALL_BACKENDS_INT(bigint, "bigint") }
+TEST(UTSer, bigint) {
+    RUN_ALL_BACKENDS_INT(bigint, "bigint")
+}
 
 template <typename T>
 void hugeint(const std::string& msg) {
-  T yooge("371828316732191777888912");
+    T yooge("371828316732191777888912");
 
-  auto sfunc = [&](T& val, std::string siz) {
-    std::stringstream s;
-    T deser;
+    auto sfunc = [&](T& val, std::string siz) {
+        std::stringstream s;
+        T deser;
 
-    Serial::Serialize(val, s, SerType::JSON);
-    Serial::Deserialize(deser, s, SerType::JSON);
-    EXPECT_EQ(val, deser) << msg << " " << siz
-                          << " integer json ser/deser fails";
+        Serial::Serialize(val, s, SerType::JSON);
+        Serial::Deserialize(deser, s, SerType::JSON);
+        EXPECT_EQ(val, deser) << msg << " " << siz << " integer json ser/deser fails";
 
-    s.str("");
-    Serial::Serialize(val, s, SerType::BINARY);
-    Serial::Deserialize(deser, s, SerType::BINARY);
-    EXPECT_EQ(val, deser) << msg << " " << siz
-                          << " integer binary ser/deser fails";
-  };
+        s.str("");
+        Serial::Serialize(val, s, SerType::BINARY);
+        Serial::Deserialize(deser, s, SerType::BINARY);
+        EXPECT_EQ(val, deser) << msg << " " << siz << " integer binary ser/deser fails";
+    };
 
-  sfunc(yooge, "Huge");
+    sfunc(yooge, "Huge");
 }
 
-TEST(UTSer, hugeint) { RUN_BIG_BACKENDS_INT(hugeint, "hugeint") }
+TEST(UTSer, hugeint) {
+    RUN_BIG_BACKENDS_INT(hugeint, "hugeint")
+}
 
 template <typename V>
 void vector_of_bigint(const std::string& msg) {
-  DEBUG_FLAG(false);
-  const int vecsize = 100;
+    DEBUG_FLAG(false);
+    const int vecsize = 100;
 
-  DEBUG("step 0");
-  typename V::Integer mod((uint64_t)1 << 40);
+    DEBUG("step 0");
+    typename V::Integer mod((uint64_t)1 << 40);
 
-  DEBUG("step 1");
-  V testvec(vecsize, mod);
-  DEBUG("step 2");
-  DiscreteUniformGeneratorImpl<V> dug;
-  DEBUG("step 3");
-  dug.SetModulus(mod);
-  typename V::Integer ranval;
+    DEBUG("step 1");
+    V testvec(vecsize, mod);
+    DEBUG("step 2");
+    DiscreteUniformGeneratorImpl<V> dug;
+    DEBUG("step 3");
+    dug.SetModulus(mod);
+    typename V::Integer ranval;
 
-  for (int i = 0; i < vecsize; i++) {
-    ranval = dug.GenerateInteger();
-    testvec.at(i) = ranval;
-  }
+    for (int i = 0; i < vecsize; i++) {
+        ranval        = dug.GenerateInteger();
+        testvec.at(i) = ranval;
+    }
 
-  auto sfunc = [&](V& val) {
-    std::stringstream s;
-    V deser;
+    auto sfunc = [&](V& val) {
+        std::stringstream s;
+        V deser;
 
-    Serial::Serialize(val, s, SerType::JSON);
-    Serial::Deserialize(deser, s, SerType::JSON);
-    EXPECT_EQ(val, deser) << msg << " vector json ser/deser fails";
+        Serial::Serialize(val, s, SerType::JSON);
+        Serial::Deserialize(deser, s, SerType::JSON);
+        EXPECT_EQ(val, deser) << msg << " vector json ser/deser fails";
 
-    s.str("");
-    Serial::Serialize(val, s, SerType::BINARY);
-    Serial::Deserialize(deser, s, SerType::BINARY);
-    EXPECT_EQ(val, deser) << msg << " vector binary ser/deser fails";
-  };
+        s.str("");
+        Serial::Serialize(val, s, SerType::BINARY);
+        Serial::Deserialize(deser, s, SerType::BINARY);
+        EXPECT_EQ(val, deser) << msg << " vector binary ser/deser fails";
+    };
 
-  sfunc(testvec);
+    sfunc(testvec);
 }
 
 template <typename Element>
 void ilparams_test(const std::string& msg) {
-  auto p = ElemParamFactory::GenElemParams<typename Element::Params>(1024);
+    auto p = ElemParamFactory::GenElemParams<typename Element::Params>(1024);
 
-  auto sfunc = [&msg](decltype(p) val) {
-    std::stringstream s;
-    decltype(p) deser;
+    auto sfunc = [&msg](decltype(p) val) {
+        std::stringstream s;
+        decltype(p) deser;
 
-    Serial::Serialize(val, s, SerType::JSON);
-    Serial::Deserialize(deser, s, SerType::JSON);
-    EXPECT_EQ(*val, *deser) << msg << " json ser/deser fails";
+        Serial::Serialize(val, s, SerType::JSON);
+        Serial::Deserialize(deser, s, SerType::JSON);
+        EXPECT_EQ(*val, *deser) << msg << " json ser/deser fails";
 
-    s.str("");
-    Serial::Serialize(val, s, SerType::BINARY);
-    Serial::Deserialize(deser, s, SerType::BINARY);
-    EXPECT_EQ(*val, *deser) << msg << " binary ser/deser fails";
-  };
+        s.str("");
+        Serial::Serialize(val, s, SerType::BINARY);
+        Serial::Deserialize(deser, s, SerType::BINARY);
+        EXPECT_EQ(*val, *deser) << msg << " binary ser/deser fails";
+    };
 
-  sfunc(p);
+    sfunc(p);
 }
 
-TEST(UTSer, ilparams_test) { RUN_ALL_POLYS(ilparams_test, "ilparams_test") }
+TEST(UTSer, ilparams_test) {
+    RUN_ALL_POLYS(ilparams_test, "ilparams_test")
+}
 
 template <typename Element>
 void ildcrtparams_test(const std::string& msg) {
-  auto p = GenerateDCRTParams<typename Element::Integer>(1024, 5, 30);
+    auto p = GenerateDCRTParams<typename Element::Integer>(1024, 5, 30);
 
-  auto sfunc = [&msg](decltype(p) val) {
-    std::stringstream s;
-    decltype(p) deser;
+    auto sfunc = [&msg](decltype(p) val) {
+        std::stringstream s;
+        decltype(p) deser;
 
-    Serial::Serialize(val, s, SerType::JSON);
-    Serial::Deserialize(deser, s, SerType::JSON);
-    EXPECT_EQ(*val, *deser) << msg << " json ser/deser fails";
+        Serial::Serialize(val, s, SerType::JSON);
+        Serial::Deserialize(deser, s, SerType::JSON);
+        EXPECT_EQ(*val, *deser) << msg << " json ser/deser fails";
 
-    s.str("");
-    Serial::Serialize(val, s, SerType::BINARY);
-    Serial::Deserialize(deser, s, SerType::BINARY);
-    EXPECT_EQ(*val, *deser) << msg << " binary ser/deser fails";
-  };
+        s.str("");
+        Serial::Serialize(val, s, SerType::BINARY);
+        Serial::Deserialize(deser, s, SerType::BINARY);
+        EXPECT_EQ(*val, *deser) << msg << " binary ser/deser fails";
+    };
 
-  sfunc(p);
+    sfunc(p);
 }
 
 TEST(UTSer, ildcrtparams_test) {
-  RUN_BIG_DCRTPOLYS(ildcrtparams_test, "ildcrtparams_test")
+    RUN_BIG_DCRTPOLYS(ildcrtparams_test, "ildcrtparams_test")
 }
 
 template <typename Element>
 void ilvector_test(const std::string& msg) {
-  auto p = ElemParamFactory::GenElemParams<typename Element::Params>(1024);
-  typename Element::DugType dug;
-  Element vec(dug, p);
+    auto p = ElemParamFactory::GenElemParams<typename Element::Params>(1024);
+    typename Element::DugType dug;
+    Element vec(dug, p);
 
-  auto sfunc = [&](Element& val) {
-    std::stringstream s;
-    Element deser;
+    auto sfunc = [&](Element& val) {
+        std::stringstream s;
+        Element deser;
 
-    Serial::Serialize(val, s, SerType::JSON);
-    Serial::Deserialize(deser, s, SerType::JSON);
-    EXPECT_EQ(val, deser) << msg << " vector json ser/deser fails";
+        Serial::Serialize(val, s, SerType::JSON);
+        Serial::Deserialize(deser, s, SerType::JSON);
+        EXPECT_EQ(val, deser) << msg << " vector json ser/deser fails";
 
-    s.str("");
-    Serial::Serialize(val, s, SerType::BINARY);
-    Serial::Deserialize(deser, s, SerType::BINARY);
-    EXPECT_EQ(val, deser) << msg << " vector binary ser/deser fails";
-  };
+        s.str("");
+        Serial::Serialize(val, s, SerType::BINARY);
+        Serial::Deserialize(deser, s, SerType::BINARY);
+        EXPECT_EQ(val, deser) << msg << " vector binary ser/deser fails";
+    };
 
-  sfunc(vec);
+    sfunc(vec);
 }
 
-TEST(UTSer, ilvector_test) { RUN_ALL_POLYS(ilvector_test, "ilvector_test") }
+TEST(UTSer, ilvector_test) {
+    RUN_ALL_POLYS(ilvector_test, "ilvector_test")
+}
 
 template <typename Element>
 void ildcrtpoly_test(const std::string& msg) {
-  auto p = GenerateDCRTParams<typename Element::Integer>(1024, 5, 30);
-  typename Element::DugType dug;
-  Element vec(dug, p);
+    auto p = GenerateDCRTParams<typename Element::Integer>(1024, 5, 30);
+    typename Element::DugType dug;
+    Element vec(dug, p);
 
-  auto sfunc = [&](Element& val) {
-    std::stringstream s;
-    Element deser;
+    auto sfunc = [&](Element& val) {
+        std::stringstream s;
+        Element deser;
 
-    Serial::Serialize(val, s, SerType::JSON);
-    Serial::Deserialize(deser, s, SerType::JSON);
-    EXPECT_EQ(val, deser) << msg << " vector json ser/deser fails";
+        Serial::Serialize(val, s, SerType::JSON);
+        Serial::Deserialize(deser, s, SerType::JSON);
+        EXPECT_EQ(val, deser) << msg << " vector json ser/deser fails";
 
-    s.str("");
-    Serial::Serialize(val, s, SerType::BINARY);
-    Serial::Deserialize(deser, s, SerType::BINARY);
-    EXPECT_EQ(val, deser) << msg << " vector binary ser/deser fails";
-  };
+        s.str("");
+        Serial::Serialize(val, s, SerType::BINARY);
+        Serial::Deserialize(deser, s, SerType::BINARY);
+        EXPECT_EQ(val, deser) << msg << " vector binary ser/deser fails";
+    };
 
-  sfunc(vec);
+    sfunc(vec);
 }
 
 TEST(UTSer, ildcrtpoly_test) {
-  RUN_BIG_DCRTPOLYS(ildcrtpoly_test, "ildcrtpoly_test")
+    RUN_BIG_DCRTPOLYS(ildcrtpoly_test, "ildcrtpoly_test")
 }
 
 ////////////////////////////////////////////////////////////
 template <typename V>
 void serialize_matrix_bigint(const std::string& msg) {
-  DEBUG_FLAG(false);
-  // dimensions of matrix.
-  const int nrows = 4;
-  const int ncols = 8;
+    DEBUG_FLAG(false);
+    // dimensions of matrix.
+    const int nrows = 4;
+    const int ncols = 8;
 
-  DEBUG("step 0");
-  const typename V::Integer mod((uint64_t)1 << 40);
+    DEBUG("step 0");
+    const typename V::Integer mod((uint64_t)1 << 40);
 
-  DEBUG("step 1");
-  Matrix<typename V::Integer> testmat(V::Integer::Allocator, nrows, ncols);
+    DEBUG("step 1");
+    Matrix<typename V::Integer> testmat(V::Integer::Allocator, nrows, ncols);
 
-  DEBUG("step 2");
-  DiscreteUniformGeneratorImpl<V> dug;
+    DEBUG("step 2");
+    DiscreteUniformGeneratorImpl<V> dug;
 
-  DEBUG("step 3");
-  dug.SetModulus(mod);
-  typename V::Integer ranval;
+    DEBUG("step 3");
+    dug.SetModulus(mod);
+    typename V::Integer ranval;
 
-  // load up the matix with random values
-  for (size_t i = 0; i < nrows; i++) {
-    for (size_t j = 0; j < ncols; j++) {
-      ranval = dug.GenerateInteger();
-      testmat(i, j) = ranval;
+    // load up the matix with random values
+    for (size_t i = 0; i < nrows; i++) {
+        for (size_t j = 0; j < ncols; j++) {
+            ranval        = dug.GenerateInteger();
+            testmat(i, j) = ranval;
+        }
     }
-  }
 
-  DEBUG("step 4");
-  // serialize the Matrix
+    DEBUG("step 4");
+    // serialize the Matrix
 
-  std::stringstream ss;
-  Serial::Serialize(testmat, ss, SerType::BINARY);
+    std::stringstream ss;
+    Serial::Serialize(testmat, ss, SerType::BINARY);
 
 #if !defined(NDEBUG)
-  if (dbg_flag) {
-    std::cout << Serial::SerializeToString(testmat) << std::endl;
-  }
+    if (dbg_flag) {
+        std::cout << Serial::SerializeToString(testmat) << std::endl;
+    }
 #endif
-  DEBUG("step 5");
+    DEBUG("step 5");
 
-  // empty matrix
-  Matrix<typename V::Integer> newmat(V::Integer::Allocator, 0, 0);
+    // empty matrix
+    Matrix<typename V::Integer> newmat(V::Integer::Allocator, 0, 0);
 
-  Serial::Deserialize(newmat, ss, SerType::BINARY);
+    Serial::Deserialize(newmat, ss, SerType::BINARY);
 
-  DEBUG("step 9");
-  EXPECT_EQ(testmat, newmat) << msg << " Mismatch after ser/deser";
-  DEBUGEXP(testmat);
-  DEBUGEXP(newmat);
+    DEBUG("step 9");
+    EXPECT_EQ(testmat, newmat) << msg << " Mismatch after ser/deser";
+    DEBUGEXP(testmat);
+    DEBUGEXP(newmat);
 }
 
 TEST(UTSer, serialize_matrix_bigint) {
-  RUN_ALL_BACKENDS(serialize_matrix_bigint, "serialize_matrix_bigint")
+    RUN_ALL_BACKENDS(serialize_matrix_bigint, "serialize_matrix_bigint")
 }

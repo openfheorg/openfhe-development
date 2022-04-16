@@ -52,61 +52,61 @@ namespace lbcrypto {
 enum ElementOrder { M16 = 0, M1024, M2048, M4096, M8192, M16384, M32768 };
 
 class ElemParamFactory {
- public:
-  static struct ElemParmSet {
-    usint m;    // cyclotomic order
-    usint n;    // ring dimension
-    std::string q;   // ciphertext modulus
-    std::string ru;  // root of unity
-  } DefaultSet[];
+public:
+    static struct ElemParmSet {
+        usint m;         // cyclotomic order
+        usint n;         // ring dimension
+        std::string q;   // ciphertext modulus
+        std::string ru;  // root of unity
+    } DefaultSet[];
 
-  static size_t GetNearestIndex(usint m) {
-    size_t sIdx = 0;
-    if (DefaultSet[0].m < m) {
-      for (sIdx = 1; DefaultSet[sIdx].m != 0; sIdx++) {
-        if (m <= DefaultSet[sIdx].m) break;
-      }
+    static size_t GetNearestIndex(usint m) {
+        size_t sIdx = 0;
+        if (DefaultSet[0].m < m) {
+            for (sIdx = 1; DefaultSet[sIdx].m != 0; sIdx++) {
+                if (m <= DefaultSet[sIdx].m)
+                    break;
+            }
+        }
+        if (DefaultSet[sIdx].m == 0)
+            sIdx--;
+
+        return sIdx;
     }
-    if (DefaultSet[sIdx].m == 0) sIdx--;
 
-    return sIdx;
-  }
-
-  /**
+    /**
    * GenElemParams for a particular predefined cyclotomic order
    *
    * @param o - the order (an ElementOrder)
    * @return new params
    */
-  template <typename P>
-  static std::shared_ptr<P> GenElemParams(ElementOrder o) {
-    DEBUG_FLAG(false);
-    DEBUG("in GenElemParams(ElementOrder o)");
-    return std::make_shared<P>(
-        DefaultSet[static_cast<int>(o)].m,
-        typename P::Integer(DefaultSet[static_cast<int>(o)].q),
-        typename P::Integer(DefaultSet[static_cast<int>(o)].ru));
-  }
+    template <typename P>
+    static std::shared_ptr<P> GenElemParams(ElementOrder o) {
+        DEBUG_FLAG(false);
+        DEBUG("in GenElemParams(ElementOrder o)");
+        return std::make_shared<P>(DefaultSet[static_cast<int>(o)].m,
+                                   typename P::Integer(DefaultSet[static_cast<int>(o)].q),
+                                   typename P::Integer(DefaultSet[static_cast<int>(o)].ru));
+    }
 
-  /**
+    /**
    * GenElemParams for a particular cyclotomic order - finds the predefined
    * order that's >= m
    *
    * @param m - order
    * @return new params
    */
-  template <typename P>
-  static std::shared_ptr<P> GenElemParams(usint m) {
-    DEBUG_FLAG(false);
-    DEBUG("in GenElemParams(usint m)");
-    size_t sIdx = GetNearestIndex(m);
+    template <typename P>
+    static std::shared_ptr<P> GenElemParams(usint m) {
+        DEBUG_FLAG(false);
+        DEBUG("in GenElemParams(usint m)");
+        size_t sIdx = GetNearestIndex(m);
 
-    return std::make_shared<P>(DefaultSet[sIdx].m,
-                               typename P::Integer(DefaultSet[sIdx].q),
-                               typename P::Integer(DefaultSet[sIdx].ru));
-  }
+        return std::make_shared<P>(DefaultSet[sIdx].m, typename P::Integer(DefaultSet[sIdx].q),
+                                   typename P::Integer(DefaultSet[sIdx].ru));
+    }
 
-  /**
+    /**
    * GenElemParams for a particular cyclotomic order and bits in q
    * NOTE this is deprecated and will go away once ParamsGen is fully
    * implemented
@@ -115,16 +115,16 @@ class ElemParamFactory {
    * @param bits # of bits in q
    * @return new params
    */
-  template <typename P>
-  static std::shared_ptr<P> GenElemParams(usint m, usint bits, usint towersize = 1) {
-    DEBUG_FLAG(false);
-    DEBUG("in GenElemParams(usint m, usint bits, usint towers)");
-    typename P::Integer q = FirstPrime<typename P::Integer>(bits, m);
-    typename P::Integer ru = RootOfUnity<typename P::Integer>(m, q);
-    return std::make_shared<P>(m, q, ru);
-  }
+    template <typename P>
+    static std::shared_ptr<P> GenElemParams(usint m, usint bits, usint towersize = 1) {
+        DEBUG_FLAG(false);
+        DEBUG("in GenElemParams(usint m, usint bits, usint towers)");
+        typename P::Integer q  = FirstPrime<typename P::Integer>(bits, m);
+        typename P::Integer ru = RootOfUnity<typename P::Integer>(m, q);
+        return std::make_shared<P>(m, q, ru);
+    }
 
-  /**
+    /**
    * GenElemParams given the three components directly
    *
    * @param m - cyclotomic order
@@ -132,56 +132,52 @@ class ElemParamFactory {
    * @param rootUnity - root of unity
    * @return
    */
-  template <typename P>
-  static std::shared_ptr<P> GenElemParams(usint m,
-                                     const typename P::Integer& ctModulus,
-                                     const typename P::Integer& rootUnity) {
-    DEBUG_FLAG(false);
-    DEBUG("in GenElemParams(usint m, const typename P::Integer etc)");
-    return std::make_shared<P>(m, ctModulus, rootUnity);
-  }
+    template <typename P>
+    static std::shared_ptr<P> GenElemParams(usint m, const typename P::Integer& ctModulus,
+                                            const typename P::Integer& rootUnity) {
+        DEBUG_FLAG(false);
+        DEBUG("in GenElemParams(usint m, const typename P::Integer etc)");
+        return std::make_shared<P>(m, ctModulus, rootUnity);
+    }
 };
 
 template <>
-inline std::shared_ptr<ILDCRTParams<M2Integer>>
-ElemParamFactory::GenElemParams<ILDCRTParams<M2Integer>>(usint m, usint bits,
-                                                         usint towersize) {
-  DEBUG_FLAG(false);
-  DEBUG(
-      "in GenElemParams<ILDCRTParams<M2Integer>>(usint m, usint bits, usint "
-      "towersize)");
-  DEBUGEXP(m);
-  DEBUGEXP(bits);
-  DEBUGEXP(towersize);
-  return GenerateDCRTParams<M2Integer>(m, towersize, bits);
+inline std::shared_ptr<ILDCRTParams<M2Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M2Integer>>(
+    usint m, usint bits, usint towersize) {
+    DEBUG_FLAG(false);
+    DEBUG(
+        "in GenElemParams<ILDCRTParams<M2Integer>>(usint m, usint bits, usint "
+        "towersize)");
+    DEBUGEXP(m);
+    DEBUGEXP(bits);
+    DEBUGEXP(towersize);
+    return GenerateDCRTParams<M2Integer>(m, towersize, bits);
 }
 
 template <>
-inline std::shared_ptr<ILDCRTParams<M4Integer>>
-ElemParamFactory::GenElemParams<ILDCRTParams<M4Integer>>(usint m, usint bits,
-                                                         usint towersize) {
-  DEBUG_FLAG(false);
-  DEBUG(
-      "in GenElemParams<ILDCRTParams<M4Integer>>(usint m, usint bits, usint "
-      "towersize)");
-  DEBUGEXP(m);
-  DEBUGEXP(bits);
-  DEBUGEXP(towersize);
-  return GenerateDCRTParams<M4Integer>(m, towersize, bits);
+inline std::shared_ptr<ILDCRTParams<M4Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M4Integer>>(
+    usint m, usint bits, usint towersize) {
+    DEBUG_FLAG(false);
+    DEBUG(
+        "in GenElemParams<ILDCRTParams<M4Integer>>(usint m, usint bits, usint "
+        "towersize)");
+    DEBUGEXP(m);
+    DEBUGEXP(bits);
+    DEBUGEXP(towersize);
+    return GenerateDCRTParams<M4Integer>(m, towersize, bits);
 }
 #ifdef WITH_NTL
 template <>
-inline std::shared_ptr<ILDCRTParams<M6Integer>>
-ElemParamFactory::GenElemParams<ILDCRTParams<M6Integer>>(usint m, usint bits,
-                                                         usint towersize) {
-  DEBUG_FLAG(false);
-  DEBUG(
-      "in GenElemParams<ILDCRTParams<M6Integer>>(usint m, usint bits, usint "
-      "towersize)");
-  DEBUGEXP(m);
-  DEBUGEXP(bits);
-  DEBUGEXP(towersize);
-  return GenerateDCRTParams<M6Integer>(m, towersize, bits);
+inline std::shared_ptr<ILDCRTParams<M6Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M6Integer>>(
+    usint m, usint bits, usint towersize) {
+    DEBUG_FLAG(false);
+    DEBUG(
+        "in GenElemParams<ILDCRTParams<M6Integer>>(usint m, usint bits, usint "
+        "towersize)");
+    DEBUGEXP(m);
+    DEBUGEXP(bits);
+    DEBUGEXP(towersize);
+    return GenerateDCRTParams<M6Integer>(m, towersize, bits);
 }
 #endif
 } /* namespace lbcrypto */

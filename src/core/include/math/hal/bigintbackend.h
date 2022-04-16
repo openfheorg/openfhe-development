@@ -72,13 +72,13 @@
 #include "math/hal/bigintntl/backendntl.h"
 
 #ifndef MATHBACKEND
-#define MATHBACKEND 2
+    #define MATHBACKEND 2
 // #define MATHBACKEND 4
 // #define MATHBACKEND 6
 #endif
 
 #if MATHBACKEND != 2 && MATHBACKEND != 4 && MATHBACKEND != 6
-#error "MATHBACKEND value is not valid"
+    #error "MATHBACKEND value is not valid"
 #endif
 
 /**
@@ -90,24 +90,24 @@ namespace bigintbackend {
 #if MATHBACKEND == 2
 
 using BigInteger = M2Integer;
-using BigVector = M2Vector;
+using BigVector  = M2Vector;
 
 #elif MATHBACKEND == 4
 
-#ifdef UBINT_64
-#error MATHBACKEND 4 with UBINT_64 currently does not work do not use.
-#endif
+    #ifdef UBINT_64
+        #error MATHBACKEND 4 with UBINT_64 currently does not work do not use.
+    #endif
 
 using BigInteger = M4Integer;
-using BigVector = M4Vector;
+using BigVector  = M4Vector;
 
 #elif MATHBACKEND == 6
 
 using BigInteger = M6Integer;
-using BigVector = M6Vector;
+using BigVector  = M6Vector;
 
 #endif
 
 }  // namespace bigintbackend
 
-#endif // __BIGINTBACKEND_H__
+#endif  // __BIGINTBACKEND_H__

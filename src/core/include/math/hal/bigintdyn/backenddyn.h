@@ -38,9 +38,9 @@
 #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_
 #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_
 
-#include "math/hal/bigintdyn/mubintvecdyn.h"   // rings of ubints
-#include "math/hal/bigintdyn/ubintdyn.h"       // dynamically sized unsigned big integers or ubints
-#include "math/hal/bigintdyn/transformdyn.h"   // transforms fo dynamic
+#include "math/hal/bigintdyn/mubintvecdyn.h"  // rings of ubints
+#include "math/hal/bigintdyn/ubintdyn.h"      // dynamically sized unsigned big integers or ubints
+#include "math/hal/bigintdyn/transformdyn.h"  // transforms fo dynamic
 
 // Global alias for MATHBACKEND 4 Integer
 using M4Integer = bigintdyn::BigInteger;

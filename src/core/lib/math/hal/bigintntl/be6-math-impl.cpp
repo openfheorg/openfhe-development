@@ -40,15 +40,14 @@
 #include "config_core.h"
 #ifdef WITH_NTL
 
-#include "math/hal.h"
-#include "math/binaryuniformgenerator.cpp"
-#include "math/discretegaussiangenerator.cpp"
-#include "math/discreteuniformgenerator.cpp"
-#include "math/matrix.cpp"
-#include "math/matrix.h"
-#include "math/nbtheory.cpp"
-#include "math/ternaryuniformgenerator.cpp"
-
+    #include "math/hal.h"
+    #include "math/binaryuniformgenerator.cpp"     // NOLINT
+    #include "math/discretegaussiangenerator.cpp"  // NOLINT
+    #include "math/discreteuniformgenerator.cpp"   // NOLINT
+    #include "math/matrix.cpp"                     // NOLINT
+    #include "math/matrix.h"
+    #include "math/nbtheory.cpp"                 // NOLINT
+    #include "math/ternaryuniformgenerator.cpp"  // NOLINT
 
 namespace lbcrypto {
 
@@ -57,38 +56,26 @@ template class BinaryUniformGeneratorImpl<M6Vector>;
 template class TernaryUniformGeneratorImpl<M6Vector>;
 template class DiscreteUniformGeneratorImpl<M6Vector>;
 
-template M6Integer RootOfUnity<M6Integer>(usint m, const M6Integer &modulo);
-template std::vector<M6Integer> RootsOfUnity(
-    usint m, const std::vector<M6Integer> moduli);
-template M6Integer GreatestCommonDivisor(const M6Integer &a,
-                                         const M6Integer &b);
-template bool MillerRabinPrimalityTest(const M6Integer &p, const usint niter);
-template const M6Integer PollardRhoFactorization(const M6Integer &n);
-template void PrimeFactorize(M6Integer n, std::set<M6Integer> &primeFactors);
+template M6Integer RootOfUnity<M6Integer>(usint m, const M6Integer& modulo);
+template std::vector<M6Integer> RootsOfUnity(usint m, const std::vector<M6Integer> moduli);
+template M6Integer GreatestCommonDivisor(const M6Integer& a, const M6Integer& b);
+template bool MillerRabinPrimalityTest(const M6Integer& p, const usint niter);
+template const M6Integer PollardRhoFactorization(const M6Integer& n);
+template void PrimeFactorize(M6Integer n, std::set<M6Integer>& primeFactors);
 template M6Integer FirstPrime(uint64_t nBits, uint64_t m);
-template M6Integer NextPrime(const M6Integer &q, uint64_t cyclotomicOrder);
-template M6Integer PreviousPrime(const M6Integer &q, uint64_t cyclotomicOrder);
-template std::vector<M6Integer> GetTotientList(const M6Integer &n);
-template M6Vector PolyMod(const M6Vector &dividend, const M6Vector &divisor,
-                          const M6Integer &modulus);
-template M6Vector PolynomialMultiplication(const M6Vector &a,
-                                           const M6Vector &b);
-template M6Vector GetCyclotomicPolynomial(usint m, const M6Integer &modulus);
-template M6Integer SyntheticRemainder(const M6Vector &dividend,
-                                      const M6Integer &a,
-                                      const M6Integer &modulus);
-template M6Vector SyntheticPolyRemainder(const M6Vector &dividend,
-                                         const M6Vector &aList,
-                                         const M6Integer &modulus);
-template M6Vector PolynomialPower<M6Vector>(const M6Vector &input, usint power);
-template M6Vector SyntheticPolynomialDivision(const M6Vector &dividend,
-                                              const M6Integer &a,
-                                              const M6Integer &modulus);
-template M6Integer FindGeneratorCyclic(const M6Integer &modulo);
-template bool IsGenerator(const M6Integer &g, const M6Integer &modulo);
-template std::shared_ptr<std::vector<int64_t>> GetDigits(const M6Integer &u,
-                                                         uint64_t base,
-                                                         uint32_t k);
+template M6Integer NextPrime(const M6Integer& q, uint64_t cyclotomicOrder);
+template M6Integer PreviousPrime(const M6Integer& q, uint64_t cyclotomicOrder);
+template std::vector<M6Integer> GetTotientList(const M6Integer& n);
+template M6Vector PolyMod(const M6Vector& dividend, const M6Vector& divisor, const M6Integer& modulus);
+template M6Vector PolynomialMultiplication(const M6Vector& a, const M6Vector& b);
+template M6Vector GetCyclotomicPolynomial(usint m, const M6Integer& modulus);
+template M6Integer SyntheticRemainder(const M6Vector& dividend, const M6Integer& a, const M6Integer& modulus);
+template M6Vector SyntheticPolyRemainder(const M6Vector& dividend, const M6Vector& aList, const M6Integer& modulus);
+template M6Vector PolynomialPower<M6Vector>(const M6Vector& input, usint power);
+template M6Vector SyntheticPolynomialDivision(const M6Vector& dividend, const M6Integer& a, const M6Integer& modulus);
+template M6Integer FindGeneratorCyclic(const M6Integer& modulo);
+template bool IsGenerator(const M6Integer& g, const M6Integer& modulo);
+template std::shared_ptr<std::vector<int64_t>> GetDigits(const M6Integer& u, uint64_t base, uint32_t k);
 
 template class Matrix<M6Integer>;
 template class Matrix<M6Vector>;
@@ -98,4 +85,4 @@ template class Matrix<M6Vector>;
 CEREAL_CLASS_VERSION(M6Integer, M6Integer::SerializedVersion());
 CEREAL_CLASS_VERSION(M6Vector, M6Vector::SerializedVersion());
 
-#endif // WITH_NTL
+#endif  // WITH_NTL
