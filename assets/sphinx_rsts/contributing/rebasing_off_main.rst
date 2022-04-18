@@ -37,7 +37,9 @@ Make sure both of branches build properly before going any further.  Correct any
 
     git push --force-with-lease origin issue-123
 
-Note that the ``--force-with-lease`` (force) flag is needed to overwrite the git commit history of the branch. If ``--force-with-lease`` is not supplied, the push will be declined.
+
+.. note:: The ``--force-with-lease`` (force) flag is needed to overwrite the git commit history
+   If ``--force-with-lease`` is not supplied, the push will be declined.
 
 You can then create a merge request here:
 

@@ -18,9 +18,9 @@ import subprocess
 # -- Project information -----------------------------------------------------
 from typing import Union
 
-project = 'PALISADE'
-copyright = '2022, PALISADE'
-author = 'PALISADE'
+project = 'OpenFHE'
+copyright = '2022, OpenFHE'
+author = 'OpenFHE'
 MODULE_LIST = ["pke", "core", "binfhe"]
 import subprocess, os
 
@@ -39,6 +39,7 @@ extensions = [
     'sphinx.ext.duration',
     'sphinx.ext.todo',
     'breathe',
+    'sphinxcontrib.mermaid'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -63,7 +64,7 @@ html_static_path = ['assets/sphinx_builds/_static']
 
 # -- Breathe ---------------------------------------------------
 
-breathe_default_project = "PALISADE"
+breathe_default_project = "OpenFHE"
 breathe_default_members = ('members', 'undoc-members', "private-members")
 breathe_implementation_filename_extensions = ['.c', '.cc', '.cpp']
 
@@ -89,7 +90,7 @@ def scan_dir(prefix, append_print, fixed):
     for el in horizon:
         scan_dir(prefix + f"/{el}", append_print + f"_{el}", fixed)
 
-# Location of the PKE Module
+# Location of the modules
 for module in MODULE_LIST:
     scan_dir(f"../src/{module}/include", module, module)
 
@@ -111,7 +112,7 @@ def configureDoxyfile(
         code_input_dir: str,
         output_dir: str,
         main_page: str,
-        palisade_version: Union[int, str],
+        openfhe_version: Union[int, str],
         styling_sheet_name: str
 ):
     """
@@ -122,7 +123,7 @@ def configureDoxyfile(
         where to dump the XML and HTML files that were produced
     :param main_page:
         our main README.md landing page. Only relevant for pure-Doxygen builds
-    :param palisade_version:
+    :param openfhe_version:
         project number
     :param styling_sheet_name:
     :return:
@@ -133,7 +134,7 @@ def configureDoxyfile(
     filedata = filedata.replace('@CODE_INPUT_DIR@', code_input_dir)
     filedata = filedata.replace('@MAIN_PAGE@', main_page)
     filedata = filedata.replace('@DOXYGEN_OUTPUT_DIR@', output_dir)
-    filedata = filedata.replace('@PALISADE_VERSION@', str(palisade_version))
+    filedata = filedata.replace('@PALISADE_VERSION@', str(openfhe_version))
     filedata = filedata.replace('@STYLING@', styling_sheet_name)
 
     with open('Doxyfile', 'w') as file:

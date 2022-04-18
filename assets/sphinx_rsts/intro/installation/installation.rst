@@ -3,7 +3,13 @@ Installation
 
 Welcome to the PALISADE installation instructions! For OS-specific instructions, follow one of the following links below, or proceed with the high-level platform-independent installation instructions below.
 
-Note: By default, the library is built without external dependencies. But the user is also provided options to add GMP/NTL, tcmalloc, and/or Intel HEXL third-party libraries if desired.
+
+.. note:: Note: By default, the library is built without external dependencies.
+   But the user is also provided options to add
+
+   - ``GMP/NTL``
+   - ``tcmalloc``
+   - and/or ``Intel HEXL`` third-party libraries if desired
 
 .. toctree::
    :maxdepth: 1
@@ -32,43 +38,45 @@ We use CMake to build PALISADE.
     cd build
     cmake ..
 
-Note that CMake will check for any system dependencies that are needed for the build process. If the CMake build does not complete successfully, please review the error CMake shows at the end. If the error does not go away (even though you installed the dependency), try running "make clean" to clear the CMake cache.
+.. note:: ``CMake`` will check for any system dependencies that are needed for the build process
+
+   - If the ``CMake`` build does not complete successfully, please review the error ``CMake`` shows at the end.
+   - If the error does not go away (even though you installed the dependency), try running ``make clean`` to clear the CMake cache.
 
 4. If you want to use any external libraries, such as NTL/GMP or tcmalloc, install these libraries.
 
-5. Build PALISADE by running the following command (this will take few minutes; using the -j make command-line flag is suggested to speed up the build)
+5. Build PALISADE by running the following command (this will take few minutes; using the ``-j`` make command-line flag is suggested to speed up the build)
 ``make``
 
-If you want to build only library files or some other subset of PALISADE, please review the last paragraph of this page.
+- If you want to build only library files or some other subset of PALISADE, please review the last paragraph of this page.
 
-After the "make" completes, you should see the PALISADE library files in the lib folder, binaries of demos in bin/demo, binaries of benchmarks in bib/benchmark, and binaries for unit tests in the unittest folder.
+- After the ``make`` completes, you should see the PALISADE library files in the lib folder, binaries of demos in ``bin/demo``, binaries of benchmarks in ``bin/benchmark``, and binaries for unit tests in the unittest folder.
 
-6. Install PALISADE to a system directory (if desired or for production purposes)
-``
-make install
-``
-You would probably need to run `sudo make install` unless you are specifying some other install location. You can change the install location by running
-``cmake -DCMAKE_INSTALL_PREFIX=/your/path ..``. The header files are placed in the "include/palisade" folder of the specified path, and the binaries of the library
-are copied directly to the "lib" folder. For example, if no installation path is provided in Ubuntu (and many other Unix-based OSes), the header and library
-binary files will be placed in "/usr/local/include/palisade" and "/usr/local/lib", respectively.
+6. Install PALISADE to a system directory (if desired or for production purposes) ::
+
+   make install
+
+You would probably need to run ``sudo make install`` unless you are specifying some other install location. You can change the install location by running
+``cmake -DCMAKE_INSTALL_PREFIX=/your/path ..``.
+
+- The header files are placed in the ``include/palisade`` folder of the specified path, and the binaries of the library
+are copied directly to the ``lib`` folder. For example, if no installation path is provided in Ubuntu (and many other Unix-based OSes), the header and library
+binary files will be placed in ``/usr/local/include/palisade`` and ``/usr/local/lib``, respectively.
 
 Testing and cleaning the build
 ##############################
 
-Run unit tests to make sure all capabilities operate as expected
-``
-make testall
-``
+Run unit tests to make sure all capabilities operate as expected ::
 
-Run sample code to test, e.g.,
-``
-bin/examples/pke/simple-integers
-``
+   make testall
 
-To remove the files built by make, you can execute
-``
-make clean
-``
+Run sample code to test, e.g., ::
+
+   bin/examples/pke/simple-integers
+
+To remove the files built by make, you can execute ::
+
+   make clean
 
 Supported Operating Systems
 ###########################
@@ -88,7 +96,3 @@ PALISADE users have reported successful operation on the following systems:
 * Manjaro Linux
 
 Please let us know the results if you have run PALISADE any additional systems not listed above.
-
-Detailed information about building PALISADE
-
-More detailed steps for some common platforms are provided in the following Wiki articles:

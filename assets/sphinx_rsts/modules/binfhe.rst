@@ -6,10 +6,10 @@ Boolean FHE (BinFHE) documentation
 File Listings
 -----------------------
 
-``Binary FHE CryptoContext Serialization``
-    - Adds serialization support to Bollean Circuit FHE
+``Boolean FHE CryptoContext Serialization``
+    - Adds serialization support to Boolean Circuit FHE
 
-``Binary FHE CryptoContext``
+``Boolean FHE CryptoContext``
     - CryptoContext for the boolean circuit FHE scheme.
     - A CryptoContext is the primary object through which we interact with the various ``OpenFHE`` capabilities
     - Note: various parameter ``enum`` are also provided, primarily ``BINFHEPARAMSET`` and ``BINFHEOUTPUT`` which define the level of security, and type of ciphertext generated when the ``encrypt`` method is called.
@@ -34,7 +34,7 @@ File Listings
 
 ``Ring Core``
     - Main ring class for boolean FHE
-    - Defines the enum for the supported binary gates:
+    - Defines the enum for the supported boolean gates:
         - ``OR``, ``XOR_FAST``, ``XOR``
         - ``AND``, ``NAND``
         - ``NOR``, ``XNOR_FAST``, ``XNOR``
@@ -44,7 +44,7 @@ File Listings
         - ``RingGSWBTKey``: stores the refreshing key used in bootstrapping. Is a 3-d vector of ``RingGSW`` ciphertexts
 
 
-Binary FHE Generated Docs
+Boolean FHE Generated Docs
 --------------------------------
 
 .. autodoxygenindex::
