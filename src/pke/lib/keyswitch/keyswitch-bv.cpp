@@ -81,8 +81,25 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
 
   usint relinWindow = cryptoParams->GetRelinWindow();
 
-  std::vector<DCRTPoly> av;
-  std::vector<DCRTPoly> bv;
+  usint sizeSOld = sOld.GetNumOfElements();
+  usint nWindows = 0;
+  std::vector<usint> arrWindows;
+  if (relinWindow > 0) {
+    // creates an array of digits up to a certain tower
+    for (usint i = 0; i < sizeSOld; i++) {
+      usint sOldMSB =
+          sOld.GetElementAtIndex(i).GetModulus().GetLengthForBase(2);
+      usint curWindows = sOldMSB / relinWindow;
+      if (sOldMSB % relinWindow > 0) curWindows++;
+      arrWindows.push_back(nWindows);
+      nWindows += curWindows;
+    }
+  } else {
+    nWindows = sizeSOld;
+  }
+
+  std::vector<DCRTPoly> av(nWindows);
+  std::vector<DCRTPoly> bv(nWindows);
 
   if (relinWindow > 0) {
     for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
@@ -96,8 +113,8 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
         DCRTPoly a(dug, elementParams, Format::EVALUATION);
         DCRTPoly e(dgg, elementParams, Format::EVALUATION);
 
-        av.push_back(a);
-        bv.push_back(filtered - a * sNew + ns * e);
+        av[k + arrWindows[i]] = a;
+        bv[k + arrWindows[i]] = filtered - (av[k + arrWindows[i]] * sNew + ns * e);
       }
     }
   } else {
@@ -108,8 +125,8 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
       DCRTPoly a(dug, elementParams, Format::EVALUATION);
       DCRTPoly e(dgg, elementParams, Format::EVALUATION);
 
-      av.push_back(a);
-      bv.push_back(filtered - a * sNew + ns * e);
+      av[i] = a;
+      bv[i] = filtered - (av[i] * sNew + ns * e);
     }
   }
 
@@ -122,29 +139,47 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
 EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
                                             const PrivateKey<DCRTPoly> newKey,
                                             const EvalKey<DCRTPoly> ek) const {
-  EvalKey<DCRTPoly> evalKey(
-      std::make_shared<EvalKeyImpl<DCRTPoly>>(newKey->GetCryptoContext()));
+  EvalKeyRelin<DCRTPoly> evalKey(
+      std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
 
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(
           oldKey->GetCryptoParameters());
 
   const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
-  const DCRTPoly &sOld = oldKey->GetPrivateElement();
+
   const DCRTPoly &sNew = newKey->GetPrivateElement();
+  DCRTPoly sOld = oldKey->GetPrivateElement();
+  sOld.DropLastElements(oldKey->GetCryptoContext()->GetKeyGenLevel());
 
   const auto ns = cryptoParams->GetNoiseScale();
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
+  DugType dug;
 
   usint relinWindow = cryptoParams->GetRelinWindow();
 
-  const std::vector<DCRTPoly> &a = ek->GetAVector();
+  usint sizeSOld = sOld.GetNumOfElements();
+  usint nWindows = 0;
+  std::vector<usint> arrWindows;
+  if (relinWindow > 0) {
+    // creates an array of digits up to a certain tower
+    for (usint i = 0; i < sizeSOld; i++) {
+      usint sOldMSB =
+          sOld.GetElementAtIndex(i).GetModulus().GetLengthForBase(2);
+      usint curWindows = sOldMSB / relinWindow;
+      if (sOldMSB % relinWindow > 0) curWindows++;
+      arrWindows.push_back(nWindows);
+      nWindows += curWindows;
+    }
+  } else {
+    nWindows = sizeSOld;
+  }
 
-  std::vector<DCRTPoly> av;
-  std::vector<DCRTPoly> bv;
+  std::vector<DCRTPoly> av(nWindows);
+  std::vector<DCRTPoly> bv(nWindows);
 
   if (relinWindow > 0) {
-    for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
+    for (usint i = 0; i < sizeSOld; i++) {
       std::vector<DCRTPoly::PolyType> sOldDecomposed =
           sOld.GetElementAtIndex(i).PowersOfBase(relinWindow);
 
@@ -152,21 +187,33 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
         DCRTPoly filtered(elementParams, Format::EVALUATION, true);
         filtered.SetElementAtIndex(i, sOldDecomposed[k]);
 
-        DCRTPoly e(dgg, elementParams, Format::EVALUATION);
+        if (ek == nullptr) {  // single-key HE
+          // Generate a_i vectors
+          DCRTPoly a(dug, elementParams, Format::EVALUATION);
+          av[k + arrWindows[i]] = a;
+        } else {  // threshold HE
+          av[k + arrWindows[i]] = ek->GetAVector()[k + arrWindows[i]];
+        }
 
-        av.push_back(a[i * sOldDecomposed.size() + k]);
-        bv.push_back(filtered - a[i * sOldDecomposed.size() + k] * sNew + ns * e);
+        DCRTPoly e(dgg, elementParams, Format::EVALUATION);
+        bv[k + arrWindows[i]] = filtered - (av[k + arrWindows[i]] * sNew + ns * e);
       }
     }
   } else {
-    for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
+    for (usint i = 0; i < sizeSOld; i++) {
       DCRTPoly filtered(elementParams, Format::EVALUATION, true);
       filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
 
-      DCRTPoly e(dgg, elementParams, Format::EVALUATION);
+      if (ek == nullptr) {  // single-key HE
+        // Generate a_i vectors
+        DCRTPoly a(dug, elementParams, Format::EVALUATION);
+        av[i] = a;
+      } else {  // threshold HE
+        av[i] = ek->GetAVector()[i];
+      }
 
-      av.push_back(a[i]);
-      bv.push_back(filtered - a[i] * sNew + ns * e);
+      DCRTPoly e(dgg, elementParams, Format::EVALUATION);
+      bv[i] = filtered - (av[i] * sNew + ns * e);
     }
   }
 
@@ -266,15 +313,16 @@ void KeySwitchBV::KeySwitchInPlace(
       KeySwitchCore(cv[1], ek) :
       KeySwitchCore(cv[2], ek);
 
-  cv[0].SetFormat((*ba)[0].GetFormat());
+  cv[0].SetFormat(Format::EVALUATION);
   cv[0] += (*ba)[0];
 
-  cv[1].SetFormat((*ba)[1].GetFormat());
   if (cv.size() > 2) {
+    cv[1].SetFormat(Format::EVALUATION);
     cv[1] += (*ba)[1];
   } else {
     cv[1] = (*ba)[1];
   }
+
   cv.resize(2);
 }
 
@@ -313,12 +361,12 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalFastKeySwitchCore(
     bv[k].DropLastElements(diffQl);
   }
 
-  DCRTPoly ct1 = (*digits)[0] * av[0];
-  DCRTPoly ct0 = (*digits)[0] * bv[0];
+  DCRTPoly ct1 = (av[0] *= (*digits)[0]);
+  DCRTPoly ct0 = (bv[0] *= (*digits)[0]);
 
   for (usint i = 1; i < (*digits).size(); ++i) {
-    ct0 += (*digits)[i] * bv[i];
-    ct1 += (*digits)[i] * av[i];
+    ct0 += (bv[i] *= (*digits)[i]);
+    ct1 += (av[i] *= (*digits)[i]);
   }
 
   return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>{std::move(ct0), std::move(ct1)});

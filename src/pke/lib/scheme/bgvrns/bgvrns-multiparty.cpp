@@ -64,6 +64,7 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersBGVRNS>(
           ciphertextVec[0]->GetCryptoParameters());
+
   const std::vector<DCRTPoly> &cv0 = ciphertextVec[0]->GetElements();
 
   DCRTPoly b = cv0[0];
@@ -73,7 +74,7 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
   }
   b.SetFormat(Format::COEFFICIENT);
 
-  size_t sizeQl = b.GetParams()->GetParams().size();
+  size_t sizeQl = b.GetNumOfElements();
   for (usint l = sizeQl - 1; l > 0; l--) {
     b.ModReduce(
         cryptoParams->GetPlaintextModulus(),
@@ -86,6 +87,28 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
 
   *plaintext = b.GetElementAtIndex(0).Mod(cryptoParams->GetPlaintextModulus());
   return DecryptResult(plaintext->GetLength());
+}
+
+DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
+    const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
+    Poly *plaintext) const {
+  const auto cryptoParams =
+      std::static_pointer_cast<CryptoParametersBGVRNS>(
+          ciphertextVec[0]->GetCryptoParameters());
+
+  const std::vector<DCRTPoly> &cv0 = ciphertextVec[0]->GetElements();
+
+  DCRTPoly b = cv0[0];
+  for (size_t i = 1; i < ciphertextVec.size(); i++) {
+    const std::vector<DCRTPoly> &cvi = ciphertextVec[i]->GetElements();
+    b += cvi[0];
+  }
+  b.SetFormat(Format::COEFFICIENT);
+
+  *plaintext = b.CRTInterpolate().Mod(cryptoParams->GetPlaintextModulus());
+
+  return DecryptResult(plaintext->GetLength());
+
 }
 
 }

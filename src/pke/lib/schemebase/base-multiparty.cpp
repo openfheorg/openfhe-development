@@ -77,7 +77,6 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
 
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   DugType dug;
-  TugType tug;
 
   // Private Key Generation
 
@@ -141,8 +140,8 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
   Element e(dgg, elementParams, Format::EVALUATION);
 
   // When PRE is not used, a joint key is computed
-  Element b = fresh ? ns * e - a * s
-                    : ns * e - a * s + pk[0];
+  Element b = fresh ? (ns * e - a * s)
+                    : (ns * e - a * s + pk[0]);
 
   keyPair.secretKey->SetPrivateElement(std::move(s));
 
@@ -177,7 +176,7 @@ MultipartyBase<Element>::MultiEvalAutomorphismKeyGen(
 
   auto result = std::make_shared<std::map<usint, EvalKey<Element>>>();
 
-#pragma omp parallel for if (indexList.size() >= 4)
+//#pragma omp parallel for if (indexList.size() >= 4)
   for (usint i = 0; i < indexList.size(); i++) {
     PrivateKey<Element> privateKeyPermuted =
         std::make_shared<PrivateKeyImpl<Element>>(cc);
@@ -190,7 +189,7 @@ MultipartyBase<Element>::MultiEvalAutomorphismKeyGen(
     privateKeyPermuted->SetPrivateElement(sPermuted);
 
     (*result)[indexList[i]] = MultiKeySwitchGen(
-        privateKeyPermuted, privateKey, evalKeyMap->find(indexList[i])->second);
+        privateKey, privateKeyPermuted, evalKeyMap->find(indexList[i])->second);
   }
 
   return result;
@@ -225,15 +224,21 @@ MultipartyBase<Element>::MultiEvalSumKeyGen(
     const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap) const {
   const auto cryptoParams = privateKey->GetCryptoParameters();
 
-  size_t max = ceil(log2(cryptoParams->GetEncodingParams()->GetBatchSize()));
-  std::vector<usint> indices(max);
+  usint batchSize = cryptoParams->GetEncodingParams()->GetBatchSize();
   usint M = cryptoParams->GetElementParams()->GetCyclotomicOrder();
 
-  usint g = 5;
+  std::vector<usint> indices;
 
-  for (size_t j = 0; j < max; j++) {
-    indices[j] = g;
-    g = (g * g) % M;
+  if (batchSize > 1) {
+    usint g = 5;
+    for (int i = 0; i < ceil(log2(batchSize)) - 1; i++) {
+      indices.push_back(g);
+      g = (g * g) % M;
+    }
+    if (2 * batchSize < M)
+      indices.push_back(g);
+    else
+      indices.push_back(M - 1);
   }
 
   return MultiEvalAutomorphismKeyGen(privateKey, evalKeyMap, indices);
@@ -258,9 +263,9 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptLead(
   Element e(dgg, elementParams, Format::EVALUATION);
 
   Element b = cv[0] + s * cv[1] + ns * e;
-  b.SwitchFormat();
+//  b.SwitchFormat();
 
-  Ciphertext<Element> result = ciphertext->Clone();
+  Ciphertext<Element> result = ciphertext->CloneEmpty();
   result->SetElements({std::move(b)});
   return result;
 }
@@ -285,7 +290,7 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(
   // e is added to do noise flooding
   Element b = s * cv[1] + es * e;
 
-  Ciphertext<Element> result = ciphertext->Clone();
+  Ciphertext<Element> result = ciphertext->CloneEmpty();
   result->SetElements({std::move(b)});
   return result;
 }
