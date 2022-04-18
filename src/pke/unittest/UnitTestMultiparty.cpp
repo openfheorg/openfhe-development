@@ -1,4 +1,3 @@
-#if 0
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -141,10 +140,10 @@ static std::vector<TEST_CASE_UTMultiparty> testCases = {
     { BGVRNS_TEST, "22", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "23", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "24", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
-    { BGVRNS_TEST, "25", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    { BGVRNS_TEST, "26", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    { BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    { BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    //{ BGVRNS_TEST, "25", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    //{ BGVRNS_TEST, "26", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    //{ BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    //{ BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
     // ==========================================
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
     { BFVRNS_TEST_EXTRA, "29", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     3.2,    DFLT,      2,          DFLT, HPS},     false },
@@ -170,7 +169,7 @@ protected:
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            const double eps = EPSILON;
+            const double eps = 0.000001;
             std::vector<int32_t> indices = { 2 };
             //====================================================================
             KeyPair<Element> kp1 = cc->KeyGen();
@@ -363,11 +362,14 @@ protected:
 
             errMsg = failmsg + " Multiparty accumulation failed";
             if (CKKSRNS_TEST == testData.testCaseType) {
+              std::stringstream buffer;
+              buffer << "should be: " << plaintextMultipartyNew->GetCKKSPackedValue() << " - we get: " << plaintextSumInput->GetCKKSPackedValue();
+
                 checkEquality(
                     plaintextMultipartyNew->GetCKKSPackedValue(),
                     plaintextSumInput->GetCKKSPackedValue(),
                     eps,
-                    errMsg);
+                    errMsg + buffer.str());
             }
             else {
                 checkEquality(
@@ -610,4 +612,3 @@ TEST_P(UTMultiparty, Multiparty) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTMultiparty, ::testing::ValuesIn(testCases), testName);
 
-#endif
