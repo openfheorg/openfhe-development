@@ -1,68 +1,80 @@
-PALISADE supports a number of different math backends
+# OpenFHE Core Math
 
-The design goal is to have several math backends available at the same time, and to permit the programmer to choose,
-at runtime, which backend to use.
+We provide a brief description below, but encourage readers to refer
+to [Read The Docs - Core Math](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/core/math/core_math.html) for more information about the code.
 
-The current implementation supports the availability of several backends, but requires the programmer to make a
-compile-time choice of which backend to use as the default type for BigInteger and BigVector in the library.
+Additionally, we encourage readers to refer to [Read The Docs - Core Math Backends](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/core/math/core_math_backends.html)
 
-Math backend selection is controlled by editing src/core/include/math/backend.h. or by adding a CMAKE flag, e.g.
+# Math Backends
 
+OpenFHE supports a number of mathematical backends for various usecases. For more information refer to [Math Backends](math_backends.md).
+
+# Inheritance Diagram
+
+Let Gen. = Generator
+
+```mermaid
+flowchart BT
+    A[Distribution Generator] --> |Inherited by|B[Ternary Uniform Gen.];
+    A[Distribution Generator] --> |Inherited by|C[Discrete Uniform Gen.];
+    A[Distribution Generator] --> |Inherited by|D[Binary Uniform Gen.];
+    A[Distribution Generator] --> |Inherited by|E[Discrete Gaussian Gen.];
+    A[Distribution Generator] --> |Inherited by|F[Discrete Gaussian Generic Gen.];
 ```
- cmake -DMATHBACKEND=4 ..
-```
 
-The programmer should select a value for MATHBACKEND; the file contains several options. As indicated in the comments
-in this file:
+# File Listings
 
-//To select backend, please UNCOMMENT the appropriate line rather than changing the number on the
-//uncommented line
+[Binary Uniform Generator](binaryuniformgenerator.h)
 
-By selecting a particular value for MATHBACKEND, the programmer selects a particular default implementation for
-BigInteger, BigVector, and for the composite Poly and ciphertext modulus used in DCRTPoly
+- Generate `Uniform` distribution of binary values (mod 2)
 
-For native integer arithmetic NativeInteger, NativeVector implementation is available.
-The following is the status of the various MATHBACKEND implementations. We expect subsequent releases to remove these
-restrictions and expand available options
+[DFT Transform](dftransform.h)
 
-* MATHBACKEND 2
-If the programmer selects MATHBACKEND 2, the maximum size of BigInteger will be set to BigIntegerBitLength, which is defined in
-backend.h and which has a default value of 3000 bits. It's advisable to select a value for BigIntegerBitLength that is larger than the double bitwidth of the largest (ciphertext) modulus. This parameter can be decreased for runtime/space optimization when the largest modulus is under 1500 bits.
+- Discrete Fourier Transform (FFT) code
 
-The underlying implementation is a fixed-size array of native integers. The native integer used in MATHBACKEND 2, which is defined
-by the typedef integral_dtype, MUST be uint32_t; using other types is an open work item.
+[Discrete Gaussian Generator](discretegaussiangenerator.h)
 
-* MATHBACKEND 4
-If the programmer selects MATHBACKEND 4, there is no explicit maximum size of BigInteger; the size grows dynamically as needed and
-is constrained only by memory.  This implementation requires that UBINT_32 be defined, as is done in the file. Setting UBINT_64 is
-currently not functioning and is an open work item.
+- Generate `Gaussian` distribution of discrete values.
 
-* MATHBACKEND 6
-This is an integration of the NTL library with PALISADE, and is only available when NTL/GMP is enabled using CMAKE.
+[Discrete Gaussian Generator Generic](discretegaussiangeneratorgeneric.h)
 
-All implementations for Big/Native Integer/Vector are based on [interface.h](interface.h).
+- Implements the generic sampler by UCSD discussed in [Gaussian Sampling over the Integers:
+  Efficient, Generic, Constant-Time](https://eprint.iacr.org/2017/259.pdf)
 
-Palisade supports several methods for modular multiplication.
-We use the following naming conventions:
+[Discrete Uniform Generator](discreteuniformgenerator.h)
 
-* `ModMul(b, mod)` - Naive modular multiplication that uses % operator for modular reduction, and usually slow.
+- Generate `Uniform` distribution of discrete values.
 
-* `ModMul(b, mod, mu)` - Barrett modular multiplication.
-`mu` for Barrett modulo can be precomputed by `mod.ComputeMu()`.
+[Distr Gen](distrgen.h)
 
-* `ModMulFast(b, mod)` - Naive modular multiplication w/ operands < mod
+- Basic noise generation functionality
 
-* `ModMulFast(b, mod, mu)` - Barrett modular multiplication w/ operands < mod
+[Distribution Generator](distributiongenerator.h)
 
-* `ModMulFastConst(b, mod, bPrecomp)` - modular multiplication using precomputed information on b, w/ operands < mod.
-`bPrecomp` can be precomputed by `b.PrepModMulConst(mod)`. This method is currently implemented only for NativeInteger class. The fastest method.
+- Base class for distribution generators
 
-Naming conventions for standard modular operations:
+[Hardware Abstraction Layer (HAL)](hal.h)
 
+- Code to switch between math backends
 
-| Variant | Naive          | Barrett            | Fast Naive         | Fast Barrett           | Fast Const                        |
-| ------- | -------------- | ------------------ | ------------------ | ---------------------- | --------------------------------- |
-| Mod     | Mod(mod)       | Mod(mod, mu)       | -                  | -                      | -                                 |
-| ModAdd  | ModAdd(b, mod) | ModAdd(b, mod, mu) | ModAddFast(b, mod) | -                      | -                                 |
-| ModSub  | ModSub(b, mod) | ModSub(b, mod, mu) | ModSubFast(b, mod) | -                      | -                                 |
-| ModMul  | ModMul(b, mod) | ModMul(b, mod, mu) | ModMulFast(b, mod) | ModMulFast(b, mod, mu) | ModMulFastConst(b, mod, bPrecomp) |
+[Matrix](matrix.h)
+
+- Templated matrix implementation for SIMD-compatible matrix code
+
+[Matrix Strassen](matrixstrassen.h)
+
+- Matrix Strassen Operations
+
+[NB Theory](nbtheory.h)
+
+- Number theory utilities
+- Check if two numbers are coprime
+- GCD of two numbers
+- If a number, i, is prime
+- witness function to test if a number is prime
+- Eulers Totient function phin(n)
+- Generator Algorithm
+
+[Ternary Uniform Generator](ternaryuniformgenerator.h)
+
+- Provides generation of uniform distribution of binary values

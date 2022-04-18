@@ -3,8 +3,7 @@ Pseudorandom Number Generator (PRNG)
 
 Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/utils/prng>`_
 
-.. contents:: Core PRNG
-   :depth: 2
+.. contents:: Page Contents
    :local:
    :backlinks: none
 

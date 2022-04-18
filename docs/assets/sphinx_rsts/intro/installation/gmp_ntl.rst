@@ -1,7 +1,9 @@
 Instructions for installing GMP and NTL
 =======================================
 
-This section describes how to install GMP and NTL onto your system, and how to use them in PALISADE. Note: scroll to the bottom for an all-in-one install script
+This section describes how to install GMP and NTL onto your system, and how to use them in PALISADE.
+
+.. note:: scroll to the bottom for an all-in-one install script
 
 The standard binary install using tools like ``apt-get`` will not work, and manual installation of GMP and NTL from the source code is needed. The steps are detailed below.
 
@@ -18,7 +20,8 @@ Installing GMP and NTL for PALISADE:
 
     tar --lzip -xvf gmp-6.1.2.tar.lz
 
-> NOTE - You may need to install lzip `sudo apt-get install lzip`
+.. note:: You may need to install lzip
+   - Debian based systems:``sudo apt-get install lzip``
 
 3. Build and install `GMP <https://gmplib.org/manual/Installing-GMP>`_ (installed in /usr/local/lib by default):
 
