@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -152,7 +151,7 @@ TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2_INVALID_PRIVATE_
       EXPECT_EQ(0, 1);
     }
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_PRIVATE_KEY exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -167,7 +166,7 @@ TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2_INVALID_PUBLIC_K
       EXPECT_EQ(0, 1);
     }
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_PUBLIC_KEY exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -182,7 +181,7 @@ TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2_INVALID_EVAL_KEY
       EXPECT_EQ(0, 1);
     }
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_EVAL_KEY exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -197,9 +196,9 @@ TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2_INVALID_INDEX) {
       EXPECT_EQ(0, 1);
     }
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_INDEX exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
 }
-#endif
+

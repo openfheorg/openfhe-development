@@ -68,7 +68,8 @@ int main(int argc, char *argv[]) {
 void RunBGVrnsAdditive() {
   CCParams<CryptoContextBGVRNS> parameters;
   parameters.SetPlaintextModulus(65537);
-  parameters.SetRescalingTechnique(FIXEDAUTO);
+//  parameters.SetRescalingTechnique(FIXEDAUTO);
+  parameters.SetRescalingTechnique(FIXEDMANUAL);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // Enable features that you wish to use
@@ -466,7 +467,7 @@ void RunCKKS() {
   parameters.SetMultiplicativeDepth(3);
   parameters.SetScalingFactorBits(50);
   parameters.SetBatchSize(batchSize);
-  parameters.SetRescalingTechnique(FIXEDMANUAL);
+  parameters.SetRescalingTechnique(FLEXIBLEAUTO);
   parameters.SetKeySwitchTechnique(BV);
   parameters.SetNumLargeDigits(2);
   parameters.SetFirstModSize(60); // TODO (dsuponit): should this be set from the defaults?

@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -100,7 +99,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE {
+struct TEST_CASE_UTSHE {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -124,11 +123,11 @@ struct TEST_CASE {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTSHE>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTSHE& test) {
     return os << test.toString();
 }
 //===========================================================================================================
@@ -139,7 +138,7 @@ constexpr usint PTM     = 64;
 constexpr usint PTM_LRG = 65537;
 constexpr double STD_DEV = 3.2;
 // clang-format off
-static std::vector<TEST_CASE> testCases = {
+static std::vector<TEST_CASE_UTSHE> testCases = {
     // TestType,  Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { ADD_PACKED, "1", {BGVRNS_SCHEME, 16,   2,         59,     DFLT, BATCH,   OPTIMIZED,  DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
     { ADD_PACKED, "2", {BGVRNS_SCHEME, 16,   2,         59,     DFLT, BATCH,   RLWE,       DFLT,   1,     60,      HEStd_NotSet, BV,   FIXEDMANUAL, DFLT,    PTM,   STD_DEV,DFLT,      DFLT,       DFLT, DFLT}, },
@@ -196,12 +195,12 @@ static std::vector<TEST_CASE> testCases = {
     // ==========================================
     // TestType,          Descr, Scheme,       RDim,      MultDepth, SFBits, RWin, BatchSz,   Mode,  Depth, MDepth, ModSize, SecLvl, KSTech, RSTech,    LDigits, PtMod,   StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
     { EVALSUM_ALL,        "1", {BFVRNS_SCHEME, BATCH_LRG, DFLT,      60,     20,   BATCH_LRG, DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, STD_DEV, DFLT,      2,          DFLT, DFLT},  },
-    { KS_SINGLE_CRT,      "1", {BGVRNS_SCHEME, 256,       DFLT,      50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, DFLT,        DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    { KS_MOD_REDUCE_DCRT, "1", {BGVRNS_SCHEME, 256,       4,         30,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, DFLT,        DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_SINGLE_CRT,      "1", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL, DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    //{ KS_MOD_REDUCE_DCRT, "1", {BGVRNS_SCHEME, 1<<13,     1,         30,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL, DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
 };
 // clang-format on
 //===========================================================================================================
-class UTSHE : public ::testing::TestWithParam<TEST_CASE> {
+class UTSHE : public ::testing::TestWithParam<TEST_CASE_UTSHE> {
     using Element = DCRTPoly;
 
 protected:
@@ -211,7 +210,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_Add_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Add_Packed(const TEST_CASE_UTSHE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -306,7 +305,7 @@ protected:
         }
     }
 
-    void UnitTest_Mult_CoefPacked(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Mult_CoefPacked(const TEST_CASE_UTSHE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -385,7 +384,7 @@ protected:
         }
     }
 
-    void UnitTest_Mult_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Mult_Packed(const TEST_CASE_UTSHE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -457,7 +456,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalAtIndex(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAtIndex(const TEST_CASE_UTSHE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -518,7 +517,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalMerge(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMerge(const TEST_CASE_UTSHE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -580,7 +579,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalSum(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalSum(const TEST_CASE_UTSHE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -651,7 +650,7 @@ protected:
         }
     }
 
-    void UnitTest_Metadata(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Metadata(const TEST_CASE_UTSHE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -760,7 +759,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalSum_BFVrns_All(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalSum_BFVrns_All(const TEST_CASE_UTSHE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -812,7 +811,7 @@ protected:
         }
     }
 
-    void UnitTest_Keyswitch_SingleCRT(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Keyswitch_SingleCRT(const TEST_CASE_UTSHE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -847,7 +846,7 @@ protected:
         }
     }
 
-    void UnitTest_Keyswitch_ModReduce_DCRT(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Keyswitch_ModReduce_DCRT(const TEST_CASE_UTSHE& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -928,4 +927,3 @@ TEST_P(UTSHE, SHE) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTSHE, ::testing::ValuesIn(testCases), testName);
 
-#endif

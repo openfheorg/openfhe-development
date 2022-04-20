@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -193,4 +192,4 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_tuple(5308417, 60),       // H
                       std::make_tuple(3221225473, 60)));  // H
  // clang-format on
-#endif
+

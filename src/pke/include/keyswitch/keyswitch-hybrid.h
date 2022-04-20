@@ -69,6 +69,10 @@ class KeySwitchHYBRID : public KeySwitchRNS {
       const PrivateKey<DCRTPoly> newPrivateKey,
       const EvalKey<DCRTPoly> evalKey) const override;
 
+  virtual EvalKey<DCRTPoly> KeySwitchGen(
+      const PrivateKey<DCRTPoly> oldPrivateKey,
+      const PublicKey<DCRTPoly> newPublicKey) const override;
+
   virtual void KeySwitchInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                 const EvalKey<DCRTPoly> evalKey) const override;
 

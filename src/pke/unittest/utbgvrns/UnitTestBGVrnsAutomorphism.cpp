@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -169,7 +168,7 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_Automorphism_PowerOf2_INVALID_PRIVATE_
       EXPECT_EQ(0, 1);
     }
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_Automorphism_PowerOf2_INVALID_PRIVATE_KEY exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -184,7 +183,7 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_Automorphism_PowerOf2_INVALID_PUBLIC_K
       EXPECT_EQ(0, 1);
     }
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_Automorphism_PowerOf2_INVALID_PUBLIC_KEY exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -199,7 +198,7 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_Automorphism_PowerOf2_INVALID_EVAL_KEY
       EXPECT_EQ(0, 1);
     }
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_Automorphism_PowerOf2_INVALID_EVAL_KEY exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -214,7 +213,7 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_Automorphism_PowerOf2_INVALID_INDEX) {
       EXPECT_EQ(0, 1);
     }
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_Automorphism_PowerOf2_INVALID_INDEX exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -311,7 +310,7 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_EvalAtIndex_INVALID_PRIVATE_KEY) {
       EXPECT_EQ(0, 1);
     }
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_EvalAtIndex_INVALID_PRIVATE_KEY exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -326,7 +325,7 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_EvalAtIndex_INVALID_PUBLIC_KEY) {
       EXPECT_EQ(0, 1);
     }
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_EvalAtIndex_INVALID_PUBLIC_KEY exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -339,7 +338,7 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_EvalAtIndex_NO_KEY_GEN_CALL) {
     auto morphedVector = BGVrnsEvalAtIndexPackedArray(1, NO_KEY_GEN_CALL);
     EXPECT_EQ(0, 1);
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_EvalAtIndex_NO_KEY_GEN_CALL exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -405,7 +404,7 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_EvalSum_INVALID_PRIVATE_KEY) {
     auto morphedVector = BGVrnsEvalSumPackedArray(0, INVALID_PRIVATE_KEY);
     EXPECT_EQ(0, 1);
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_EvalSum_INVALID_PRIVATE_KEY exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -418,7 +417,7 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_EvalSum_INVALID_PUBLIC_KEY) {
     auto morphedVector = BGVrnsEvalSumPackedArray(0, INVALID_PUBLIC_KEY);
     EXPECT_EQ(0, 1);
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_EvalSum_INVALID_PUBLIC_KEY exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -431,7 +430,7 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_EvalSum_INVALID_BATCH_SIZE) {
     auto morphedVector = BGVrnsEvalSumPackedArray(0, INVALID_BATCH_SIZE);
     EXPECT_EQ(0, 1);
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_EvalSum_INVALID_BATCH_SIZE exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
@@ -444,10 +443,10 @@ TEST_F(UTBGVRNS_AUTOMORPHISM, Test_BGVrns_EvalSum_NO_KEY_GEN_CALL) {
     auto morphedVector = BGVrnsEvalSumPackedArray(0, NO_KEY_GEN_CALL);
     EXPECT_EQ(0, 1);
   }
-  catch(const exception& e) {
+  catch(const std::exception& e) {
     //std::cout << "Test_BGVrns_EvalSum_NO_KEY_GEN_CALL exception: " << e.what() << std::endl;
     EXPECT_EQ(1, 1);
   }
 }
 //================================================================================================
-#endif
+
