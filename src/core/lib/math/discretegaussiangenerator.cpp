@@ -278,6 +278,7 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
     }
     if (std::isinf(stddev)) {
         OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with stddev == +-inf");
+
     }
     typename VecType::Integer result;
 

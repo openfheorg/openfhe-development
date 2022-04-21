@@ -834,6 +834,7 @@ public:
 
     const ubint& ModMulFastConstEq(const ubint& b, const ubint& modulus, const ubint& bInv) {
         OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 4");
+
     }
 
     /**

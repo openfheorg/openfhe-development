@@ -75,7 +75,7 @@ If developing external to the OpenFHE repository the following are great to add 
         // "/usr/local/include/openfhe/binfhe", // (optional) only needed if working with circuits
     ],
 
-> :warning: Using this inside the OpenFHE Development repository will create duplicate references, don't use it inside the repo.
+.. warning:: Using this inside OpenFHE-Development repository will create duplicate references
 
 
 .. _editor-vs-markdown:
@@ -255,7 +255,7 @@ and add it to your launch options in ``launch.json``
 
             "preLaunchTask": "buildCmake32",
 
-> **Note** - this goes at the same level as ``name``, ``type``, etc.
+.. note:: this goes at the same level as ``name``, ``type``, etc.
 
 
 <!-- References -->

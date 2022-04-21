@@ -3,12 +3,13 @@ Core Lattice Documentation
 
 Documentation for `core/include/lattice/ <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/lattice>`_
 
-Note: Refer to :ref:`hal` to learn more about the hardware abstraction layer. HAL allows users to use a variety of backends while still allowing for high performance.
-
-.. toctree::
-   :maxdepth: 3
+.. contents:: Page Contents
    :local:
 
+Hardware Abstraction Layer
+---------------------------
+
+Note: Refer to :ref:`hal` to learn more about the hardware abstraction layer. HAL allows users to use a variety of backends while still allowing for high performance.
 
 The Lattice Layer
 -----------------
@@ -57,7 +58,11 @@ Polynomial Ring Formats
 The coefficients of the polynomial ring, in their initial form, are just coefficients. Translated into one of ``Poly`` or
 ``DCRTPoly``, can be simply seen as vector's representing polynomial ring elements.
 
-We internally represent polynomial ring elements as being either in ``COEFFICIENT`` or ``EVALUATION`` format. Note that it is generally computationally less expensive to carry on all operations in the evaluation form. However, the CRT and inverse CRT operations take O(nlogn) time using current best known algorithms, where n is the ring dimension.
+
+.. note:: We internally represent polynomial ring elements as being either in ``COEFFICIENT`` or ``EVALUATION`` format
+   It is generally computationally less expensive to carry on all operations in the evaluation form
+   However, the CRT and inverse CRT operations take ``O(nlogn)`` time using current best known algorithms, where n is the ring dimension.
+
 
 COEFFICIENT form
 ****************

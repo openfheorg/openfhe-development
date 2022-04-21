@@ -748,6 +748,7 @@ public:
 
     const myZZ& ModMulFastConstEq(const myZZ& b, const myZZ& modulus, const myZZ& bInv) {
         OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 6");
+
     }
 
     /**

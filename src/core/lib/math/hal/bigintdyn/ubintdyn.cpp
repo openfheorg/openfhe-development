@@ -88,6 +88,7 @@ ubint<limb_t>::ubint(const ubint& val) {
     }
     if (val.m_value.size() < 0) {
         OPENFHE_THROW(lbcrypto::type_error, "copy size < 0");
+
     }
     this->m_MSB   = val.m_MSB;    // copy MSB
     this->m_value = val.m_value;  // this occasionally fails may have been
@@ -469,6 +470,7 @@ ubint<limb_t> ubint<limb_t>::DividedBy(const ubint& b) const {
     }
     if (b == 0) {
         OPENFHE_THROW(lbcrypto::math_error, "Divisor is zero");
+
     }
     if (b.m_MSB > this->m_MSB) {
         ubint result(0);
@@ -558,6 +560,7 @@ ubint<limb_t> ubint<limb_t>::DivideAndRound(const ubint& q) const {
     }
     if (q == 0) {
         OPENFHE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
+
     }
     ubint halfQ(q >> 1);
     if (*this < q) {

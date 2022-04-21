@@ -154,6 +154,7 @@ void Matrix<Element>::Determinant(Element* determinant) const {
     // auto determinant = *allocZero();
     if (rows < 1)
         OPENFHE_THROW(math_error, "Dimension should be at least one");
+
     if (rows == 1) {
         *determinant = data[0][0];
     }

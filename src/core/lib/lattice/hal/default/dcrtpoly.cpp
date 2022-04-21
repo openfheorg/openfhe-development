@@ -979,6 +979,9 @@ template <typename VecType>
 void DCRTPolyImpl<VecType>::DropLastElements(size_t i) {
     if (m_vectors.size() < i) {
         OPENFHE_THROW(config_error,
+=======
+        PALISADE_THROW(config_error,
+>>>>>>> main
                        "There are not enough towers in the current ciphertext to "
                        "perform the modulus reduction");
     }
@@ -1105,6 +1108,7 @@ typename DCRTPolyImpl<VecType>::Integer& DCRTPolyImpl<VecType>::at(usint i) {
         OPENFHE_THROW(math_error, "No values in DCRTPolyImpl");
     if (i >= this->GetLength())
         OPENFHE_THROW(math_error, "out of range in  DCRTPolyImpl.at()");
+
     PolyLargeType tmp(CRTInterpolateIndex(i));
     return tmp[i];
 }
@@ -1115,6 +1119,7 @@ const typename DCRTPolyImpl<VecType>::Integer& DCRTPolyImpl<VecType>::at(usint i
         OPENFHE_THROW(math_error, "No values in DCRTPolyImpl");
     if (i >= this->GetLength())
         OPENFHE_THROW(math_error, "out of range in  DCRTPolyImpl.at()");
+
     PolyLargeType tmp(CRTInterpolateIndex(i));
     return tmp[i];
 }

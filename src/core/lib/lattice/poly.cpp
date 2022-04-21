@@ -461,6 +461,7 @@ void PolyImpl<VecType>::SetValues(const VecType& values, Format format) {
     }
     if (m_params->GetRingDimension() != values.GetLength() || m_params->GetModulus() != values.GetModulus()) {
         OPENFHE_THROW(type_error, "Parameter mismatch on SetValues for Polynomial");
+
     }
     m_values = make_unique<VecType>(values);
     m_format = format;
@@ -473,6 +474,7 @@ void PolyImpl<VecType>::SetValues(VecType&& values, Format format) {
     }
     if (m_params->GetRingDimension() != values.GetLength() || m_params->GetModulus() != values.GetModulus()) {
         OPENFHE_THROW(type_error, "Parameter mismatch on SetValues for Polynomial");
+
     }
     m_values = make_unique<VecType>(std::move(values));
     m_format = format;
@@ -555,6 +557,7 @@ template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Negate() const {
     //    if (m_format != Format::EVALUATION)
     //      OPENFHE_THROW(not_implemented_error, "Negate for
+
     // PolyImpl is supported only in Format::EVALUATION format.\n");
 
     PolyImpl<VecType> tmp(*this);

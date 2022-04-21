@@ -148,13 +148,13 @@ public:
     type_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
 };
 
-// use this error when serializing OpenFHE objects
+// use this error when serializing openfhe objects
 class serialize_error : public openfhe_error {
 public:
     serialize_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
 };
 
-// use this error when deserializing OpenFHE objects
+// use this error when deserializing openfhe objects
 class deserialize_error : public openfhe_error {
 public:
     deserialize_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
