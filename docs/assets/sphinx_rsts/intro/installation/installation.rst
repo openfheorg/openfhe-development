@@ -45,23 +45,23 @@ We use CMake to build OpenFHE.
 
 4. If you want to use any external libraries, such as NTL/GMP or tcmalloc, install these libraries.
 
-5. Build PALISADE by running the following command (this will take few minutes; using the ``-j`` make command-line flag is suggested to speed up the build)
+5. Build OpenFHE by running the following command (this will take few minutes; using the ``-j`` make command-line flag is suggested to speed up the build)
 ``make``
 
-- If you want to build only library files or some other subset of PALISADE, please review the last paragraph of this page.
+- If you want to build only library files or some other subset of OpenFHE, please review the last paragraph of this page.
 
-- After the ``make`` completes, you should see the PALISADE library files in the lib folder, binaries of demos in ``bin/demo``, binaries of benchmarks in ``bin/benchmark``, and binaries for unit tests in the unittest folder.
+- After the ``make`` completes, you should see the OpenFHE library files in the lib folder, binaries of demos in ``bin/demo``, binaries of benchmarks in ``bin/benchmark``, and binaries for unit tests in the unittest folder.
 
-6. Install PALISADE to a system directory (if desired or for production purposes) ::
+6. Install OpenFHE to a system directory (if desired or for production purposes) ::
 
    make install
 
 You would probably need to run ``sudo make install`` unless you are specifying some other install location. You can change the install location by running
 ``cmake -DCMAKE_INSTALL_PREFIX=/your/path ..``.
 
-- The header files are placed in the ``include/palisade`` folder of the specified path, and the binaries of the library
+- The header files are placed in the ``include/openfhe`` folder of the specified path, and the binaries of the library
 are copied directly to the ``lib`` folder. For example, if no installation path is provided in Ubuntu (and many other Unix-based OSes), the header and library
-binary files will be placed in ``/usr/local/include/palisade`` and ``/usr/local/lib``, respectively.
+binary files will be placed in ``/usr/local/include/openfhe`` and ``/usr/local/lib``, respectively.
 
 Testing and cleaning the build
 ##############################
@@ -96,4 +96,4 @@ OpenFHE users have reported successful operation on the following systems:
 * Arch Linux
 * Manjaro Linux
 
-Please let us know the results if you have run PALISADE any additional systems not listed above.
+Please let us know the results if you have run OpenFHE any additional systems not listed above.

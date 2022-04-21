@@ -212,7 +212,7 @@ Cross compiling OpenFHE for other target environments is an experimental feature
 3. Proceed with the CMake/make process.
 
 .. note:: third-party libgmp and NTL libraries will probably need to be built manually for cross compilation using their internal build sequence, and that they may not be supported on the target platform at all.
-   Configuring  PALISADE with -DWITH_NTL=ON will circumvent this issue.
+   Configuring  OpenFHE with -DWITH_NTL=ON will circumvent this issue.
 
 Documentation for extending OpenFHE CMake Files
 ----------------------------------------------------------
@@ -253,7 +253,7 @@ When ``make`` is run without any target specified, it builds:
 - benchmarks (if ``BUILD_BENCHMARKS=ON``),
 - and extras (if ``BUILD_EXTRAS=ON``).
 
-.. note:: PALISADE also provides more granular control over which components of PALISADE are built.
+.. note:: OpenFHE also provides more granular control over which components of OpenFHE are built.
 
 We discuss these options below. Each of these commands can be used instead of ``make`` in the main build instructions.
 

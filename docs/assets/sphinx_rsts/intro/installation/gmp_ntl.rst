@@ -1,7 +1,7 @@
 Instructions for installing GMP and NTL
 =======================================
 
-This section describes how to install GMP and NTL onto your system, and how to use them in PALISADE.
+This section describes how to install GMP and NTL onto your system, and how to use them in OpenFHE.
 
 .. note:: scroll to the bottom for an all-in-one install script
 
