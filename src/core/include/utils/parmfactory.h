@@ -59,39 +59,39 @@ using namespace lbcrypto;
  * @return
  */
 template <typename I>
-inline std::shared_ptr<ILDCRTParams<I>> GenerateDCRTParams(usint m, usint numOfTower,
-                                                      usint pbits) {
-  DEBUG_FLAG(false);
-  DEBUG("in GenerateDCRTParams");
-  DEBUGEXP(m);
-  DEBUGEXP(numOfTower);
-  DEBUGEXP(pbits);
-  if (numOfTower == 0) {
-    OPENFHE_THROW(math_error, "Can't make parms with numOfTower == 0");
-  }
+inline std::shared_ptr<ILDCRTParams<I>> GenerateDCRTParams(usint m, usint numOfTower, usint pbits) {
+    DEBUG_FLAG(false);
+    DEBUG("in GenerateDCRTParams");
+    DEBUGEXP(m);
+    DEBUGEXP(numOfTower);
+    DEBUGEXP(pbits);
+    if (numOfTower == 0) {
+        OPENFHE_THROW(math_error, "Can't make parms with numOfTower == 0");
+    }
 
-  std::vector<NativeInteger> moduli(numOfTower);
-  std::vector<NativeInteger> rootsOfUnity(numOfTower);
+    std::vector<NativeInteger> moduli(numOfTower);
+    std::vector<NativeInteger> rootsOfUnity(numOfTower);
 
-  NativeInteger q = FirstPrime<NativeInteger>(pbits, m);
-  I modulus(1);
+    NativeInteger q = FirstPrime<NativeInteger>(pbits, m);
+    I modulus(1);
 
-  usint j = 0;
-  DEBUGEXP(q);
+    usint j = 0;
+    DEBUGEXP(q);
 
-  for (;;) {
-    moduli[j] = q;
-    rootsOfUnity[j] = RootOfUnity(m, q);
-    modulus = modulus * I(q.ConvertToInt());
-    DEBUG("j " << j << " modulus " << q << " rou " << rootsOfUnity[j]);
-    if (++j == numOfTower) break;
+    for (;;) {
+        moduli[j]       = q;
+        rootsOfUnity[j] = RootOfUnity(m, q);
+        modulus         = modulus * I(q.ConvertToInt());
+        DEBUG("j " << j << " modulus " << q << " rou " << rootsOfUnity[j]);
+        if (++j == numOfTower)
+            break;
 
-    q = NextPrime(q, m);
-  }
+        q = NextPrime(q, m);
+    }
 
-  auto params = std::make_shared<ILDCRTParams<I>>(m, moduli, rootsOfUnity);
+    auto params = std::make_shared<ILDCRTParams<I>>(m, moduli, rootsOfUnity);
 
-  return params;
+    return params;
 }
 
 #endif /* SRC_CORE_LIB_UTILS_PARMFACTORY_H_ */

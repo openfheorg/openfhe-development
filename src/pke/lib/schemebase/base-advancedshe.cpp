@@ -233,9 +233,8 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
 
   auto algo = privateKey->GetCryptoContext()->GetScheme();
 
-  if (publicKey)  // NTRU-based scheme
-    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
-
+//  if (publicKey)  // NTRU-based scheme
+//    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
   // Regular RLWE scheme
   return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
@@ -266,12 +265,12 @@ AdvancedSHEBase<Element>::EvalSumRowsKeyGen(
 
   auto algo = cc->GetScheme();
 
-  if (publicKey)
-    // NTRU-based scheme
-    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
-  else
-    // Regular RLWE scheme
-    return algo->EvalAutomorphismKeyGen(privateKey, indices);
+  //  if (publicKey)
+  //    // NTRU-based scheme
+  //    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
+  //  else
+  //    // Regular RLWE scheme
+  return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
 
 template <class Element>
@@ -297,12 +296,10 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
 
   auto algo = cc->GetScheme();
 
-  if (publicKey)
-    // NTRU-based scheme
-    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
-  else
-    // Regular RLWE scheme
-    return algo->EvalAutomorphismKeyGen(privateKey, indices);
+//  if (publicKey) // NTRU-based scheme
+//    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
+  // Regular RLWE scheme
+  return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
 
 template <class Element>
@@ -482,7 +479,6 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalInnerProduct(
   return result;
 }
 
-#if 0
 template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(
     const std::vector<Ciphertext<Element>> &ciphertextVec,
@@ -507,18 +503,18 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(
     std::vector<int64_t> mask = {1, 0};
     plaintext = cc->MakePackedPlaintext(mask);
   }
+  auto algo = ciphertextVec[0]->GetCryptoContext()->GetScheme();
 
-  ciphertextMerged = EvalMult(ciphertextMerged, plaintext);
+  ciphertextMerged = algo->EvalMult(ciphertextMerged, plaintext);
 
   for (size_t i = 1; i < ciphertextVec.size(); i++) {
-    ciphertextMerged = EvalAdd(
-        ciphertextMerged, EvalAtIndex(EvalMult(ciphertextVec[i], plaintext),
+    ciphertextMerged = algo->EvalAdd(
+        ciphertextMerged, algo->EvalAtIndex(algo->EvalMult(ciphertextVec[i], plaintext),
                                       -(int32_t)i, evalKeyMap));
   }
 
   return ciphertextMerged;
 }
-#endif
 
 template <class Element>
 std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices_2n(usint batchSize,

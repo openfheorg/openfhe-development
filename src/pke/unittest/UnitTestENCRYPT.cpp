@@ -65,7 +65,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE {
+struct TEST_CASE_Encrypt_Decrypt {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -89,16 +89,16 @@ struct TEST_CASE {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_Encrypt_Decrypt>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_Encrypt_Decrypt& test) {
     return os << test.toString();
 }
 //===========================================================================================================
 constexpr usint BATCH = 16;
-static std::vector<TEST_CASE> testCases = {
+static std::vector<TEST_CASE_Encrypt_Decrypt> testCases = {
     // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin, BatchSz, Mode,      Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,      LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { STRING_TEST,  "1", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   RLWE,      DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL, DFLT,    256,   3.2,    DFLT,      0,          DFLT, DFLT,} },
     { STRING_TEST,  "2", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   OPTIMIZED, DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL, DFLT,    256,   3.2,    DFLT,      0,          DFLT, DFLT,} },
@@ -116,7 +116,7 @@ static std::vector<TEST_CASE> testCases = {
     { COEF_PACKED_TEST,  "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    512,   3.2,    DFLT,      2,          DFLT, BEHZ}, },
 };
 //===========================================================================================================
-class Encrypt_Decrypt : public ::testing::TestWithParam<TEST_CASE> {
+class Encrypt_Decrypt : public ::testing::TestWithParam<TEST_CASE_Encrypt_Decrypt> {
     using Element = DCRTPoly;
 
 protected:
@@ -131,7 +131,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void EncryptionString(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void EncryptionString(const TEST_CASE_Encrypt_Decrypt& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -165,7 +165,7 @@ protected:
         }
     }
 
-    void EncryptionCoefPacked(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void EncryptionCoefPacked(const TEST_CASE_Encrypt_Decrypt& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -227,4 +227,5 @@ TEST_P(Encrypt_Decrypt, ENCRYPT) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, Encrypt_Decrypt, ::testing::ValuesIn(testCases), testName);
+
 

@@ -49,7 +49,7 @@
  *  file where it is implemented. if you have the function definition only then
  *  CALLER_INFO_ARGS_HDR should be added. After that you can use the string
  *  CALLER_INFO inside the function.
- *  
+ *
  *  Example:
  *  before adding caller information
  *  *.h:
@@ -58,7 +58,7 @@
  *      void foo(int x) {
  *          std::cout << "foo() input: " << x << std::endl;
  *      }
- *  
+ *
  *  after adding caller information
  *  *.h:
  *      void foo(int x, CALLER_INFO_ARGS_HDR);
@@ -70,30 +70,21 @@
 
 #ifdef BUILTIN_INFO_AVAILABLE
 
-#define CALLER_INFO_ARGS_HDR                       \
-    const char* callerFile = __builtin_FILE(),     \
-    const char* callerFunc = __builtin_FUNCTION(), \
-    size_t      callerLine = __builtin_LINE()
+    #define CALLER_INFO_ARGS_HDR                                                                  \
+        const char *callerFile = __builtin_FILE(), const char *callerFunc = __builtin_FUNCTION(), \
+                   size_t callerLine = __builtin_LINE()
 
-#define CALLER_INFO std::string(" [called from: ") + callerFile + ":" + \
-                    callerFunc + "():l." + std::to_string(callerLine) + "]"
+    #define CALLER_INFO \
+        std::string(" [called from: ") + callerFile + ":" + callerFunc + "():l." + std::to_string(callerLine) + "]"
 
 #else
 
-#define CALLER_INFO_ARGS_HDR     \
-    const char* callerFile = "", \
-    const char* callerFunc = "", \
-    size_t      callerLine = 0
+    #define CALLER_INFO_ARGS_HDR const char *callerFile = "", const char *callerFunc = "", size_t callerLine = 0
 
-#define CALLER_INFO std::string("")
+    #define CALLER_INFO std::string("")
 
-#endif // BUILTIN_INFO_AVAILABLE
+#endif  // BUILTIN_INFO_AVAILABLE
 
+#define CALLER_INFO_ARGS_CPP const char *callerFile, const char *callerFunc, size_t callerLine
 
-#define CALLER_INFO_ARGS_CPP \
-    const char* callerFile,  \
-    const char* callerFunc,  \
-    size_t      callerLine
-
-
-#endif // __CALLER_INFO_H__ 
+#endif  // __CALLER_INFO_H__

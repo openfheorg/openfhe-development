@@ -35,12 +35,12 @@
 
 #define BLOCK_VECTOR_IMPLEMENT
 #include "lattice/lat-hal.h"
-#include "math/matrix.cpp"
-#include "matrix-lattice-impl.cpp"
+#include "math/matrix.cpp"          // NOLINT
+#include "matrix-lattice-impl.cpp"  // NOLINT
 
-#include "elemparams.cpp"
-#include "ilparams.cpp"
-#include "poly.cpp"
+#include "elemparams.cpp"  // NOLINT
+#include "ilparams.cpp"    // NOLINT
+#include "poly.cpp"        // NOLINT
 
 namespace lbcrypto {
 
@@ -58,10 +58,9 @@ template Matrix<NativeInteger> Rotate(Matrix<NativePoly> const& inMat);
 // native poly version
 template <>
 PolyImpl<NativeVector> PolyImpl<NativeVector>::ToNativePoly() const {
-  return *this;
+    return *this;
 }
 
 }  // namespace lbcrypto
 
-CEREAL_CLASS_VERSION(lbcrypto::NativePoly,
-                     lbcrypto::NativePoly::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::NativePoly, lbcrypto::NativePoly::SerializedVersion());

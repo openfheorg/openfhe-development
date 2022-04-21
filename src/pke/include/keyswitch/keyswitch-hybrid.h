@@ -42,8 +42,10 @@
 namespace lbcrypto {
 
 /**
- * @brief Abstract interface class for LBC SHE algorithms
- * @tparam Element a ring element.
+ * @brief Hybrid Keyswitching as described in [
+    Homomorphic Evaluation of the AES Circuit(GHS
+    Scheme)](https://eprint.iacr.org/2012/099.pdf)
+    Uses a mix of BV and GHS keyswitching for efficient key-switching
  */
 class KeySwitchHYBRID : public KeySwitchRNS {
   using ParmType = typename DCRTPoly::Params;
@@ -66,6 +68,10 @@ class KeySwitchHYBRID : public KeySwitchRNS {
       const PrivateKey<DCRTPoly> oldPrivateKey,
       const PrivateKey<DCRTPoly> newPrivateKey,
       const EvalKey<DCRTPoly> evalKey) const override;
+
+  virtual EvalKey<DCRTPoly> KeySwitchGen(
+      const PrivateKey<DCRTPoly> oldPrivateKey,
+      const PublicKey<DCRTPoly> newPublicKey) const override;
 
   virtual void KeySwitchInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                 const EvalKey<DCRTPoly> evalKey) const override;

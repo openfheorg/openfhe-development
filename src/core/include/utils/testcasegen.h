@@ -36,80 +36,91 @@
 #ifndef SRC_CORE_LIB_UTILS_TESTCASEGEN_H_
 #define SRC_CORE_LIB_UTILS_TESTCASEGEN_H_
 
-#define GENERATE_PKE_TEST_CASE(TOPNAME, FUNC, ELEMENT, SCHEME, ORD, PTM) \
-  TEST_F(TOPNAME, FUNC##_##ELEMENT##_##SCHEME) {                         \
-    CryptoContext<ELEMENT> cc;                                           \
-    try {                                                                \
-      cc = GenTestCryptoContext(#SCHEME, ORD, PTM);             \
-    } catch (const not_implemented_error&) {                             \
-      return;                                                            \
-    } catch (const not_available_error&) {                               \
-      return;                                                            \
-    } catch (const std::exception& ex) {                                 \
-      std::cerr << "Exception occurred: " << ex.what() << std::endl;     \
-    } catch (...) {                                                      \
-      std::cerr << "Unknown failure occurred." << std::endl;             \
-    }                                                                    \
-    FUNC<ELEMENT>(cc, #SCHEME);                                          \
-  }
+#define GENERATE_PKE_TEST_CASE(TOPNAME, FUNC, ELEMENT, SCHEME, ORD, PTM)   \
+    TEST_F(TOPNAME, FUNC##_##ELEMENT##_##SCHEME) {                         \
+        CryptoContext<ELEMENT> cc;                                         \
+        try {                                                              \
+            cc = GenTestCryptoContext(#SCHEME, ORD, PTM);                  \
+        }                                                                  \
+        catch (const not_implemented_error&) {                             \
+            return;                                                        \
+        }                                                                  \
+        catch (const not_available_error&) {                               \
+            return;                                                        \
+        }                                                                  \
+        catch (const std::exception& ex) {                                 \
+            std::cerr << "Exception occurred: " << ex.what() << std::endl; \
+        }                                                                  \
+        catch (...) {                                                      \
+            std::cerr << "Unknown failure occurred." << std::endl;         \
+        }                                                                  \
+        FUNC<ELEMENT>(cc, #SCHEME);                                        \
+    }
 
-#define GENERATE_PKE_TEST_CASE_BITS(TOPNAME, FUNC, ELEMENT, SCHEME, ORD, PTM, \
-                                    BITS)                                     \
-  TEST_F(TOPNAME, FUNC##_##ELEMENT##_##SCHEME) {                              \
-    CryptoContext<ELEMENT> cc;                                                \
-    try {                                                                     \
-      cc = GenTestCryptoContext(#SCHEME, ORD, PTM, BITS);            \
-    } catch (const not_implemented_error&) {                                  \
-      return;                                                                 \
-    } catch (const not_available_error&) {                                    \
-      return;                                                                 \
-    } catch (const std::exception& ex) {                                      \
-      std::cerr << "Exception occurred: " << ex.what() << std::endl;          \
-    } catch (...) {                                                           \
-      std::cerr << "Unknown failure occurred." << std::endl;                  \
-    }                                                                         \
-    FUNC<ELEMENT>(cc, #SCHEME);                                               \
-  }
+#define GENERATE_PKE_TEST_CASE_BITS(TOPNAME, FUNC, ELEMENT, SCHEME, ORD, PTM, BITS) \
+    TEST_F(TOPNAME, FUNC##_##ELEMENT##_##SCHEME) {                                  \
+        CryptoContext<ELEMENT> cc;                                                  \
+        try {                                                                       \
+            cc = GenTestCryptoContext(#SCHEME, ORD, PTM, BITS);                     \
+        }                                                                           \
+        catch (const not_implemented_error&) {                                      \
+            return;                                                                 \
+        }                                                                           \
+        catch (const not_available_error&) {                                        \
+            return;                                                                 \
+        }                                                                           \
+        catch (const std::exception& ex) {                                          \
+            std::cerr << "Exception occurred: " << ex.what() << std::endl;          \
+        }                                                                           \
+        catch (...) {                                                               \
+            std::cerr << "Unknown failure occurred." << std::endl;                  \
+        }                                                                           \
+        FUNC<ELEMENT>(cc, #SCHEME);                                                 \
+    }
 
-#define GENERATE_BGVrns_TEST_CASE(TOPNAME, FUNC, ELEMENT, SCHEME, ORD, PTM, \
-                                  SIZEMODULI, NUMPRIME, RELIN, KEYSWITCH,   \
-                                  BATCH, RESCALEALG, MODSWITCHMETHOD)       \
-  TEST_F(TOPNAME,                                                           \
-         FUNC##_##ELEMENT##_##SCHEME##_##KEYSWITCH##_##MODSWITCHMETHOD) {   \
-    CryptoContext<ELEMENT> cc;                                              \
-    try {                                                                   \
-      cc = GenTestCryptoContext(#SCHEME, ORD, PTM, SIZEMODULI,     \
-                                         NUMPRIME, RELIN, BATCH, KEYSWITCH, \
-                                         RESCALEALG, MODSWITCHMETHOD);      \
-    } catch (const not_implemented_error&) {                                \
-      return;                                                               \
-    } catch (const not_available_error&) {                                  \
-      return;                                                               \
-    } catch (const std::exception& ex) {                                    \
-      std::cerr << "Exception occurred: " << ex.what() << std::endl;        \
-    } catch (...) {                                                         \
-      std::cerr << "Unknown failure occurred." << std::endl;                \
-    }                                                                       \
-    FUNC<ELEMENT>(cc, #SCHEME);                                             \
-  }
+#define GENERATE_BGVrns_TEST_CASE(TOPNAME, FUNC, ELEMENT, SCHEME, ORD, PTM, SIZEMODULI, NUMPRIME, RELIN, KEYSWITCH, \
+                                  BATCH, RESCALEALG, MODSWITCHMETHOD)                                               \
+    TEST_F(TOPNAME, FUNC##_##ELEMENT##_##SCHEME##_##KEYSWITCH##_##MODSWITCHMETHOD) {                                \
+        CryptoContext<ELEMENT> cc;                                                                                  \
+        try {                                                                                                       \
+            cc = GenTestCryptoContext(#SCHEME, ORD, PTM, SIZEMODULI, NUMPRIME, RELIN, BATCH, KEYSWITCH, RESCALEALG, \
+                                      MODSWITCHMETHOD);                                                             \
+        }                                                                                                           \
+        catch (const not_implemented_error&) {                                                                      \
+            return;                                                                                                 \
+        }                                                                                                           \
+        catch (const not_available_error&) {                                                                        \
+            return;                                                                                                 \
+        }                                                                                                           \
+        catch (const std::exception& ex) {                                                                          \
+            std::cerr << "Exception occurred: " << ex.what() << std::endl;                                          \
+        }                                                                                                           \
+        catch (...) {                                                                                               \
+            std::cerr << "Unknown failure occurred." << std::endl;                                                  \
+        }                                                                                                           \
+        FUNC<ELEMENT>(cc, #SCHEME);                                                                                 \
+    }
 
-#define GENERATE_CKKS_TEST_CASE(TOPNAME, FUNC, ELEMENT, SCHEME, ORD, SCALE,    \
-                                NUMPRIME, RELIN, BATCH, KEYSWITCH, RESCALEALG) \
-  TEST_F(TOPNAME, FUNC##_##ELEMENT##_##SCHEME##_##KEYSWITCH##_##RESCALEALG) {  \
-    CryptoContext<ELEMENT> cc;                                                 \
-    try {                                                                      \
-      cc = GenTestCryptoContext(#SCHEME, ORD, SCALE, SCALE, NUMPRIME, \
-                                         RELIN, BATCH, KEYSWITCH, RESCALEALG); \
-    } catch (const not_implemented_error&) {                                   \
-      return;                                                                  \
-    } catch (const not_available_error&) {                                     \
-      return;                                                                  \
-    } catch (const std::exception& ex) {                                       \
-      std::cerr << "Exception occurred: " << ex.what() << std::endl;           \
-    } catch (...) {                                                            \
-      std::cerr << "Unknown failure occurred." << std::endl;                   \
-    }                                                                          \
-    FUNC<ELEMENT>(cc, #SCHEME);                                                \
-  }
+#define GENERATE_CKKS_TEST_CASE(TOPNAME, FUNC, ELEMENT, SCHEME, ORD, SCALE, NUMPRIME, RELIN, BATCH, KEYSWITCH,    \
+                                RESCALEALG)                                                                       \
+    TEST_F(TOPNAME, FUNC##_##ELEMENT##_##SCHEME##_##KEYSWITCH##_##RESCALEALG) {                                   \
+        CryptoContext<ELEMENT> cc;                                                                                \
+        try {                                                                                                     \
+            cc = GenTestCryptoContext(#SCHEME, ORD, SCALE, SCALE, NUMPRIME, RELIN, BATCH, KEYSWITCH, RESCALEALG); \
+        }                                                                                                         \
+        catch (const not_implemented_error&) {                                                                    \
+            return;                                                                                               \
+        }                                                                                                         \
+        catch (const not_available_error&) {                                                                      \
+            return;                                                                                               \
+        }                                                                                                         \
+        catch (const std::exception& ex) {                                                                        \
+            std::cerr << "Exception occurred: " << ex.what() << std::endl;                                        \
+        }                                                                                                         \
+        catch (...) {                                                                                             \
+            std::cerr << "Unknown failure occurred." << std::endl;                                                \
+        }                                                                                                         \
+        FUNC<ELEMENT>(cc, #SCHEME);                                                                               \
+    }
 
 #endif /* SRC_CORE_LIB_UTILS_TESTCASEGEN_H_ */

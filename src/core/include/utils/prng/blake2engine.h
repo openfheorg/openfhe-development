@@ -1,3 +1,4 @@
+// clang-format off
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -165,3 +166,4 @@ class Blake2Engine {
 }  // namespace lbcrypto
 
 #endif
+// clang-format on

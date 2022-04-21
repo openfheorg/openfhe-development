@@ -1,22 +1,22 @@
 //==================================================================================
 // BSD 2-Clause License
-// 
+//
 // Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
-// 
+//
 // All rights reserved.
-// 
+//
 // Author TPOC: contact@openfhe.org
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 //    this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,39 +38,39 @@ void DieHarder();
 void UniformGenerator();
 
 int main() {
-  // DieHarder();
-  UniformGenerator();
+    // DieHarder();
+    UniformGenerator();
 
-  return 0;
+    return 0;
 }
 
 void UniformGenerator() {
-  auto distrUniGen = DiscreteUniformGeneratorImpl<NativeVector>();
-  distrUniGen.SetModulus(NativeInteger((uint64_t)1 << 59));
+    auto distrUniGen = DiscreteUniformGeneratorImpl<NativeVector>();
+    distrUniGen.SetModulus(NativeInteger((uint64_t)1 << 59));
 
-  uint32_t nthreads = ParallelControls().GetMachineThreads();
+    uint32_t nthreads = ParallelControls().GetMachineThreads();
 
-  std::cout << "number of threads: " << nthreads << std::endl;
+    std::cout << "number of threads: " << nthreads << std::endl;
 
-  std::vector<NativeVector> vec(nthreads);
+    std::vector<NativeVector> vec(nthreads);
 
 #pragma omp parallel for
-  for (uint32_t i = 0; i < nthreads; i++) {
-    vec[i] = distrUniGen.GenerateVector(8);
-  }
+    for (uint32_t i = 0; i < nthreads; i++) {
+        vec[i] = distrUniGen.GenerateVector(8);
+    }
 
-  for (uint32_t i = 0; i < nthreads; i++) {
-    std::cout << "vector " << i << " " << vec[i] << std::endl;
-  }
+    for (uint32_t i = 0; i < nthreads; i++) {
+        std::cout << "vector " << i << " " << vec[i] << std::endl;
+    }
 }
 
 void DieHarder() {
-  std::ofstream myfile;
-  myfile.open("out.bin", std::ios::out | std::ios::binary);
-  for (size_t i = 0; i < 10000000; i++) {
-    uint32_t sample = PseudoRandomNumberGenerator::GetPRNG()();
-    // std::cout << sample << std::endl;
-    myfile.write(reinterpret_cast<char*>(&sample), sizeof(uint32_t));
-  }
-  myfile.close();
+    std::ofstream myfile;
+    myfile.open("out.bin", std::ios::out | std::ios::binary);
+    for (size_t i = 0; i < 10000000; i++) {
+        uint32_t sample = PseudoRandomNumberGenerator::GetPRNG()();
+        // std::cout << sample << std::endl;
+        myfile.write(reinterpret_cast<char*>(&sample), sizeof(uint32_t));
+    }
+    myfile.close();
 }

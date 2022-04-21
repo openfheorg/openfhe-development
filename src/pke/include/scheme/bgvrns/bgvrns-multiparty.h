@@ -47,6 +47,10 @@ public:
       const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
       NativePoly *plaintext) const override;
 
+  virtual DecryptResult MultipartyDecryptFusion(
+      const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
+      Poly *plaintext) const override;
+
   /////////////////////////////////////
   // SERIALIZATION
   /////////////////////////////////////

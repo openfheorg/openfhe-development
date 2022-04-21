@@ -42,17 +42,15 @@
 
 #include "math/hal/basicint.h"
 
-
 namespace lbcrypto {
 
 using NativeInteger = intnat::NativeInteger;
-using NativeVector = intnat::NativeVector;
+using NativeVector  = intnat::NativeVector;
 
-}
+}  // namespace lbcrypto
 
 // Promote to global namespace
 using NativeInteger = lbcrypto::NativeInteger;
-using NativeVector = lbcrypto::NativeVector;
-
+using NativeVector  = lbcrypto::NativeVector;
 
 #endif /* SRC_CORE_INCLUDE_MATH_HAL_INTNAT_BACKENDNAT_H_ */

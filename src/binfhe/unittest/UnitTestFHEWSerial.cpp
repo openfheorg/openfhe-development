@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code runs unit tests for the FHEW methods of the OpenFHE lattice encryption library
+  This code runs unit tests for the FHEW methods of the OPENFHE lattice encryption library
  */
 
 #include "gtest/gtest.h"

@@ -38,4 +38,4 @@ File Listing
 - [simple-real-numbers-serial.cpp](src/pke/examples/simple-real-numbers-serial.cpp): simple example showing typical serialization/deserialization calls for a prototype computing homomorphic additions, multiplications, and rotations for vectors of integers using CKKS
 - [threshold-fhe.cpp](src/pke/examples/threshold-fhe.cpp): shows several examples of threshold FHE in BGVrns, BFVrns, and CKKS
 
-*Example client/server systems* exists in a separate repository - [OpenFHE/palisade-serial-examples](https://gitlab.com/palisade/palisade-serial-examples)
+*Example client/server systems* exists in a separate repository - [palisade-serial-examples](https://gitlab.com/palisade/palisade-serial-examples)

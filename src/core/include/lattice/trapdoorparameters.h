@@ -47,66 +47,74 @@ namespace lbcrypto {
  */
 template <class Element>
 class TrapdoorParams {
-  using ParmType = typename Element::Params;
-  using DggType = typename Element::DggType;
+    using ParmType = typename Element::Params;
+    using DggType  = typename Element::DggType;
 
- public:
-  /*
+public:
+    /*
    *@brief Default destructor
    */
-  virtual ~TrapdoorParams() {}
-  /*
+    virtual ~TrapdoorParams() {}
+    /*
    *@brief Default constructor
    */
-  TrapdoorParams() : m_stddev(0) {}
-  /*
+    TrapdoorParams() : m_stddev(0) {}
+    /*
    *@brief Constructor for trapdoor parameters
    *@param elemparams Parameters for the ring element
    *@param dgg Discrete Gaussian Generator for random number generation
    *@param stddev Distribution parameter for the Gaussian Generator
    */
-  TrapdoorParams(std::shared_ptr<ParmType> elemparams, DggType& dgg, double stddev)
-      : m_elemparams(elemparams), m_dgg(dgg), m_stddev(stddev) {}
-  /*
+    TrapdoorParams(std::shared_ptr<ParmType> elemparams, DggType& dgg, double stddev)
+        : m_elemparams(elemparams), m_dgg(dgg), m_stddev(stddev) {}
+    /*
    *@brief Accessor function for ring element params
    *@return Ring element params
    */
-  std::shared_ptr<ParmType> GetElemParams() const { return m_elemparams; }
-  /*
+    std::shared_ptr<ParmType> GetElemParams() const {
+        return m_elemparams;
+    }
+    /*
    *@brief Mutator function for ring element params
    *@param elemparams Ring element params
    */
-  void SetElemParams(std::shared_ptr<ParmType> elemparams) {
-    this->m_elemparams = elemparams;
-  }
-  /*
+    void SetElemParams(std::shared_ptr<ParmType> elemparams) {
+        this->m_elemparams = elemparams;
+    }
+    /*
    *@brief Accessor function for Discrete Gaussian Generator
    *@return the set Discrete Gaussian Generator
    */
-  DggType& GetDGG() { return m_dgg; }
-  /*
+    DggType& GetDGG() {
+        return m_dgg;
+    }
+    /*
    *@brief Mutator function for Discrete Gaussian Generator
    *@param dgg Discrete Gaussian Generator to be set
    */
-  void SetDGG(DggType& dgg) { this->m_dgg = dgg; }
-  /*
+    void SetDGG(DggType& dgg) {
+        this->m_dgg = dgg;
+    }
+    /*
    *@brief Accessor function for distribution parameter
    *@return Distribution parameter
    */
-  double GetStdDev() { return m_stddev; }
-  /*
+    double GetStdDev() {
+        return m_stddev;
+    }
+    /*
    *@brief Mutator function for distribution parameter
    *@param stddev Distribution parameter to be set
    */
-  void SetStdDev(double stddev) {
-    this->m_stddev = stddev;
-    m_dgg.SetStd(stddev);
-  }
+    void SetStdDev(double stddev) {
+        this->m_stddev = stddev;
+        m_dgg.SetStd(stddev);
+    }
 
- protected:
-  std::shared_ptr<ParmType> m_elemparams;
-  DggType m_dgg;
-  double m_stddev;
+protected:
+    std::shared_ptr<ParmType> m_elemparams;
+    DggType m_dgg;
+    double m_stddev;
 };
 /*
  *@brief Templated class for trapdoor parameters specifically designed for RLWE
@@ -115,20 +123,19 @@ class TrapdoorParams {
  */
 template <class Element>
 class RLWETrapdoorParams : public TrapdoorParams<Element> {
-  using ParmType = typename Element::Params;
-  using DggType = typename Element::DggType;
+    using ParmType = typename Element::Params;
+    using DggType  = typename Element::DggType;
 
- public:
-  /*
+public:
+    /*
    *@brief Default destructor
    */
-  ~RLWETrapdoorParams() {}
-  /*
+    ~RLWETrapdoorParams() {}
+    /*
    *@brief Default constructor
    */
-  RLWETrapdoorParams()
-      : m_n(0), m_bal(0), m_k(0), m_base(0), TrapdoorParams<Element>() {}
-  /*
+    RLWETrapdoorParams() : m_n(0), m_bal(0), m_k(0), m_base(0), TrapdoorParams<Element>() {}
+    /*
    *@brief Constructor for trapdoor parameters
    *@param elemparams Parameters for the ring element
    *@param dgg Discrete Gaussian Generator for random number generation
@@ -136,74 +143,88 @@ class RLWETrapdoorParams : public TrapdoorParams<Element> {
    *@param base Base for the gadget matrix
    *@param bal Flag for balanced generation in trapdoor
    */
-  RLWETrapdoorParams(std::shared_ptr<ParmType> elemparams, DggType& dgg,
-                     double stddev, int64_t base, bool bal = false)
-      : TrapdoorParams<Element>(elemparams, dgg, stddev) {
-    m_base = base;
-    m_bal = bal;
-    double val = elemparams->GetModulus().ConvertToDouble();
-    double logTwo = log(val - 1.0) / log(base) + 1.0;
-    m_k = (usint)floor(logTwo);
-    m_n = elemparams->GetCyclotomicOrder() >> 1;
-    double c = (m_base + 1) * SIGMA;
-    double s = SPECTRAL_BOUND(m_n, m_k, base);
+    RLWETrapdoorParams(std::shared_ptr<ParmType> elemparams, DggType& dgg, double stddev, int64_t base,
+                       bool bal = false)
+        : TrapdoorParams<Element>(elemparams, dgg, stddev) {
+        m_base        = base;
+        m_bal         = bal;
+        double val    = elemparams->GetModulus().ConvertToDouble();
+        double logTwo = log(val - 1.0) / log(base) + 1.0;
+        m_k           = (usint)floor(logTwo);
+        m_n           = elemparams->GetCyclotomicOrder() >> 1;
+        double c      = (m_base + 1) * SIGMA;
+        double s      = SPECTRAL_BOUND(m_n, m_k, base);
 
-    if (sqrt(s * s - c * c) <= KARNEY_THRESHOLD)
-      m_dggLargeSigma = DggType(sqrt(s * s - c * c));
-    else
-      m_dggLargeSigma = dgg;
-  }
-  /*
+        if (sqrt(s * s - c * c) <= KARNEY_THRESHOLD)
+            m_dggLargeSigma = DggType(sqrt(s * s - c * c));
+        else
+            m_dggLargeSigma = dgg;
+    }
+    /*
    *@brief Accessor function for the gadget matrix base
    *@return Base for gadget matrix
    */
-  int64_t GetBase() { return m_base; }
-  /*
+    int64_t GetBase() {
+        return m_base;
+    }
+    /*
    *@brief Mutator function for the gadget matrix base
    *@param base Base for gadget matrix to be set
    */
-  void SetBase(int64_t base) { this->m_base = base; }
-  /*
+    void SetBase(int64_t base) {
+        this->m_base = base;
+    }
+    /*
    *@brief Accessor function for balanced representation flag
    *@return Flag for balanced representation
    */
-  bool IsBal() { return m_bal; }
-  /*
+    bool IsBal() {
+        return m_bal;
+    }
+    /*
    *@brief Mutator function for balanced representation flag
    *@param bal flag for balanced representation
    */
-  void SetBal(bool bal) { this->m_bal = bal; }
-  /*
+    void SetBal(bool bal) {
+        this->m_bal = bal;
+    }
+    /*
    *@brief Accessor function for trapdoor length
    *@return Trapdoor length
    */
-  size_t GetK() { return m_k; }
-  /*
+    size_t GetK() {
+        return m_k;
+    }
+    /*
    *@brief Accessor function for ring size
    *@return Ring size
    */
-  usint GetN() { return m_n; }
-  /*
+    usint GetN() {
+        return m_n;
+    }
+    /*
    *@brief Accessor function for Discrete Gaussian Generator with Large
    *Distribution Parameter
    *@return the set Discrete Gaussian Generator
    */
-  DggType& GetDGGLargeSigma() { return m_dggLargeSigma; }
-  /*
+    DggType& GetDGGLargeSigma() {
+        return m_dggLargeSigma;
+    }
+    /*
    *@brief Mutator function for Discrete Gaussian Generator with Large
    *Distribution Parameter
    *@param dgg Discrete Gaussian Generator to be set
    */
-  void SetDGGLargeSigma(DggType& dggLargeSigma) {
-    this->m_dggLargeSigma = dggLargeSigma;
-  }
+    void SetDGGLargeSigma(DggType& dggLargeSigma) {
+        this->m_dggLargeSigma = dggLargeSigma;
+    }
 
- protected:
-  int64_t m_base;
-  bool m_bal;
-  size_t m_k;
-  usint m_n;
-  DggType m_dggLargeSigma = DggType(0);
+protected:
+    int64_t m_base;
+    bool m_bal;
+    size_t m_k;
+    usint m_n;
+    DggType m_dggLargeSigma = DggType(0);
 };
 /*
  *@brief Templated class for perturbation vector container class, used for
@@ -212,34 +233,35 @@ class RLWETrapdoorParams : public TrapdoorParams<Element> {
  */
 template <class Element>
 class PerturbationVector {
- public:
-  /*
+public:
+    /*
    *@brief Default constructor
    */
-  PerturbationVector() {}
-  /*
+    PerturbationVector() {}
+    /*
    *@brief Constructor for perturbation vector
    *@param pvector Vector containing ring elements
    */
-  explicit PerturbationVector(std::shared_ptr<Matrix<Element>> pvector)
-      : m_pvector(pvector) {}
-  /*
+    explicit PerturbationVector(std::shared_ptr<Matrix<Element>> pvector) : m_pvector(pvector) {}
+    /*
    *@brief Mutator for perturbation vector
    *@param pvector Vector containing ring elements
    */
-  void SetVector(std::shared_ptr<Matrix<Element>> pvector) {
-    this->m_pvector = pvector;
-  }
-  /*
+    void SetVector(std::shared_ptr<Matrix<Element>> pvector) {
+        this->m_pvector = pvector;
+    }
+    /*
    *@brief Accessor for perturbation vector
    *@return Vector containing ring elements
    */
-  std::shared_ptr<Matrix<Element>> GetVector() const { return m_pvector; }
+    std::shared_ptr<Matrix<Element>> GetVector() const {
+        return m_pvector;
+    }
 
- private:
-  // Perturbation vector represented as a vector of ring elements
-  std::shared_ptr<Matrix<Element>> m_pvector;
+private:
+    // Perturbation vector represented as a vector of ring elements
+    std::shared_ptr<Matrix<Element>> m_pvector;
 };
 }  // namespace lbcrypto
 
-#endif // __TRAPDOORPARAMETERS_H__
+#endif  // __TRAPDOORPARAMETERS_H__

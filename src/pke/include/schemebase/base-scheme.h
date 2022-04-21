@@ -324,7 +324,7 @@ class SchemeBase {
         OPENFHE_THROW(config_error, "Input second private key is nullptr");
       if (!evalKey) OPENFHE_THROW(config_error, "Input eval key is nullptr");
 
-      auto result = m_KeySwitch->KeySwitchGen(oldPrivateKey, newPrivateKey);
+      auto result = m_KeySwitch->KeySwitchGen(oldPrivateKey, newPrivateKey, evalKey);
       result->SetKeyTag(newPrivateKey->GetKeyTag());
       return result;
     }

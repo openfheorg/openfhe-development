@@ -33,14 +33,14 @@
   Implementation of the integer lattice using double-CRT representations
  */
 
-#include "lattice/hal/default/dcrtpoly.cpp"
-#include "lattice/elemparams.cpp"
-#include "lattice/ildcrtparams.cpp"
-#include "lattice/poly.cpp"
-#include "math/binaryuniformgenerator.cpp"
-#include "math/discretegaussiangenerator.cpp"
-#include "math/discreteuniformgenerator.cpp"
-#include "math/ternaryuniformgenerator.cpp"
+#include "lattice/hal/default/dcrtpoly.cpp"    // NOLINT
+#include "lattice/elemparams.cpp"              // NOLINT
+#include "lattice/ildcrtparams.cpp"            // NOLINT
+#include "lattice/poly.cpp"                    // NOLINT
+#include "math/binaryuniformgenerator.cpp"     // NOLINT
+#include "math/discretegaussiangenerator.cpp"  // NOLINT
+#include "math/discreteuniformgenerator.cpp"   // NOLINT
+#include "math/ternaryuniformgenerator.cpp"    // NOLINT
 
 // This creates all the necessary class implementations for DCRTPoly
 
@@ -52,8 +52,8 @@ template class ILDCRTParams<M4Integer>;
 template class DCRTPolyImpl<M4Vector>;
 
 #ifdef WITH_NTL
-  template class ILDCRTParams<M6Integer>;
-  template class DCRTPolyImpl<M6Vector>;
+template class ILDCRTParams<M6Integer>;
+template class DCRTPolyImpl<M6Vector>;
 #endif
 
 }  // namespace lbcrypto

@@ -72,16 +72,18 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
   }
   b.SetFormat(Format::COEFFICIENT);
 
-  size_t sizeQl = b.GetParams()->GetParams().size();
-  if (sizeQl > 1) {
-    *plaintext = b.CRTInterpolate();
-  } else if (sizeQl == 1) {
-    *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
-  } else {
-    OPENFHE_THROW(
-        math_error,
-        "Decryption failure: No towers left; consider increasing the depth.");
-  }
+  *plaintext = b.CRTInterpolate();
+
+//  size_t sizeQl = b.GetParams()->GetParams().size();
+//  if (sizeQl > 1) {
+//    *plaintext = b.CRTInterpolate();
+//  } else if (sizeQl == 1) {
+//    *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
+//  } else {
+//    OPENFHE_THROW(
+//        math_error,
+//        "Decryption failure: No towers left; consider increasing the depth.");
+//  }
 
   return DecryptResult(plaintext->GetLength());
 }
@@ -102,16 +104,17 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
   }
   b.SetFormat(Format::COEFFICIENT);
 
-  const size_t sizeQl = b.GetParams()->GetParams().size();
-  if (sizeQl == 1)
-    *plaintext = b.GetElementAtIndex(0);
-  else
-    OPENFHE_THROW(
-        math_error,
-        "Decryption failure: No towers left; consider increasing the depth.");
+//  const size_t sizeQl = b.GetParams()->GetParams().size();
+//  if (sizeQl == 1)
+//    *plaintext = b.GetElementAtIndex(0);
+//  else
+//    OPENFHE_THROW(
+//        math_error,
+//        "Decryption failure: No towers left; consider increasing the depth.");
+
+  *plaintext = b.GetElementAtIndex(0);
 
   return DecryptResult(plaintext->GetLength());
-
 }
 
 }

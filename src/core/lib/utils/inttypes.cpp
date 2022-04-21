@@ -36,19 +36,17 @@
 #include "utils/inttypes.h"
 #include <ostream>
 
-
-std::ostream &operator<<(std::ostream &s, Format f) {
-  switch (f) {
-    case EVALUATION:
-      s << "EVALUATION";
-      break;
-    case COEFFICIENT:
-      s << "COEFFICIENT";
-      break;
-    default:
-      s << "UKNOWN";
-      break;
-  }
-  return s;
+std::ostream& operator<<(std::ostream& s, Format f) {
+    switch (f) {
+        case EVALUATION:
+            s << "EVALUATION";
+            break;
+        case COEFFICIENT:
+            s << "COEFFICIENT";
+            break;
+        default:
+            s << "UKNOWN";
+            break;
+    }
+    return s;
 }
-

@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -63,7 +62,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE {
+struct TEST_CASE_ReEncrypt {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -87,11 +86,11 @@ struct TEST_CASE {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_ReEncrypt>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_ReEncrypt& test) {
     return os << test.toString();
 }
 //===========================================================================================================
@@ -101,7 +100,7 @@ const usint SBITS    = 60;
 const usint RWIN     = 20;
 const double STD_DEV = 3.2;
 // clang-format off
-static std::vector<TEST_CASE> testCases = {
+static std::vector<TEST_CASE_ReEncrypt> testCases = {
     // TestType,  Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,      Depth, MDepth, ModSize, SecLvl, KSTech, RSTech, LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
     { RE_ENCRYPT, "1", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, STD_DEV, DFLT,      2,          DFLT, HPS},  },
     { RE_ENCRYPT, "2", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, STD_DEV, DFLT,      2,          DFLT, HPS},  },
@@ -111,7 +110,7 @@ static std::vector<TEST_CASE> testCases = {
 };
 // clang-format on
 
-class ReEncrypt : public ::testing::TestWithParam<TEST_CASE> {
+class ReEncrypt : public ::testing::TestWithParam<TEST_CASE_ReEncrypt> {
     using Element = DCRTPoly;
 
 protected:
@@ -121,7 +120,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void ReEncryption(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void ReEncryption(const TEST_CASE_ReEncrypt& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -232,4 +231,3 @@ TEST_P(ReEncrypt, PRE) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, ReEncrypt, ::testing::ValuesIn(testCases), testName);
 
-#endif

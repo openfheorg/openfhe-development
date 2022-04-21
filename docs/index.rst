@@ -55,9 +55,9 @@ The library is based on modular architecture with the following layers:
 Important Notes
 ---------------
 
-Note as of version 1.11, the following features have been moved to their own repositories in the PALISADE group.
+Note as of version 1.11, the following features have been moved to their own repositories in the PALISADE(Effectively the v1 of OpenFHE) group.
 
-* `Digital Signature <https://gitlab.com/palisade/palisade-signature/>`_
+* `Digital Signature <https://gitlab.com/OPENFHE_THROW/palisade-signature/>`_
 * `Identity-Based Encryption <https://gitlab.com/palisade/palisade-abe/>`_
 * `Ciphertext-Policy Attribute-Based Encryption <https://gitlab.com/palisade/palisade-abe/>`_
 

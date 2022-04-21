@@ -35,8 +35,8 @@
 #include "utils/inttypes.h"
 
 #include <string>
-#include <climits>     // CHAR_BIT
-#include <type_traits> //std::is_integral
+#include <climits>      // CHAR_BIT
+#include <type_traits>  // std::is_integral
 
 /**
  * @namespace lbcrypto
@@ -56,7 +56,7 @@ namespace lbcrypto {
  * @return is the output of the zero padding.
  */
 template <typename V>
-V ZeroPadForward(const V &InputPoly, usint target_order);
+V ZeroPadForward(const V& InputPoly, usint target_order);
 
 /**
  * Zero Pad Inverse of Elements.
@@ -70,7 +70,7 @@ V ZeroPadForward(const V &InputPoly, usint target_order);
  * @return is the output of the zero padding.
  */
 template <typename V>
-V ZeroPadInverse(const V &InputPoly, usint target_order);
+V ZeroPadInverse(const V& InputPoly, usint target_order);
 
 /**
  * Determines if a number is a power of 2.
@@ -79,7 +79,7 @@ V ZeroPadInverse(const V &InputPoly, usint target_order);
  * @return is true if the unsigned int is a power of 2.
  */
 inline bool IsPowerOfTwo(usint Input) {
-  return Input && !(Input & (Input - 1));
+    return Input && !(Input & (Input - 1));
 }
 
 /**
@@ -104,11 +104,11 @@ std::string replaceChar(std::string str, char in, char out);
  * @return 1 if overflow occurs, 0 otherwise
  */
 inline uint32_t IsAdditionOverflow(uint64_t a, uint64_t b) {
-  a += b;
-  if (a < b)
-    return 1;
-  else
-    return 0;
+    a += b;
+    if (a < b)
+        return 1;
+    else
+        return 0;
 }
 
 /**
@@ -119,13 +119,13 @@ inline uint32_t IsAdditionOverflow(uint64_t a, uint64_t b) {
  * @return 1 if overflow occurs, 0 otherwise
  */
 
-inline uint32_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t &c) {
-  a += b;
-  c = a;
-  if (a < b)
-    return 1;
-  else
-    return 0;
+inline uint32_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t& c) {
+    a += b;
+    c = a;
+    if (a < b)
+        return 1;
+    else
+        return 0;
 }
 
 /**
@@ -136,8 +136,8 @@ inline uint32_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t &c) {
  * Ex: auto bitlen = GetIntegerTypeBitLength<short>(); bitlen == 16
  */
 template <typename T,
-    typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, bool>::type = true>
-    constexpr usint GetIntegerTypeBitLength() {
+          typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, bool>::type = true>
+constexpr usint GetIntegerTypeBitLength() {
     return sizeof(T) * CHAR_BIT;
 }
 

@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -167,4 +166,3 @@ TEST_F(UTSHEAdvanced, test_eval_add_single_crt) {
 
 #endif
 
-#endif

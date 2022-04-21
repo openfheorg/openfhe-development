@@ -116,7 +116,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr int                  depth               = 1;
     constexpr int                  maxDepth            = 2;
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
-    constexpr RescalingTechnique   rsTech              = FLEXIBLEAUTO; // set to avoid compiler errors
+    constexpr RescalingTechnique   rsTech              = FIXEDMANUAL; // set to avoid compiler errors
     constexpr usint                firstModSize        = 0;
     constexpr usint                cyclOrder           = 0;
     constexpr usint                numPrimes           = 0;

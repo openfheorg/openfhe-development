@@ -61,9 +61,9 @@
 namespace intnat {
 
 // Forward declare class and give it an alias for the expected type
-template<typename IntType> class NativeVectorT;
+template <typename IntType>
+class NativeVectorT;
 using NativeVector = NativeVectorT<NativeInteger>;
-
 
 /**
  * @brief The class for representing vectors of native integers.
@@ -113,59 +113,56 @@ bool operator!=(const NAlloc<T>&, const NAlloc<U>&) { return false; }
 #endif
 
 template <class IntegerType>
-class NativeVectorT
-    : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>,
-                                          IntegerType>,
-      public lbcrypto::Serializable {
- public:
-  typedef IntegerType BVInt;
+class NativeVectorT : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>, IntegerType>,
+                      public lbcrypto::Serializable {
+public:
+    typedef IntegerType BVInt;
 
-  // CONSTRUCTORS
+    // CONSTRUCTORS
 
-  /**
+    /**
    * Basic constructor.
    */
-  NativeVectorT();
+    NativeVectorT();
 
-  static inline NativeVectorT Single(const IntegerType &val,
-                                    const IntegerType &modulus) {
-    NativeVectorT vec(1, modulus);
-    vec[0] = val;
-    return vec;
-  }
+    static inline NativeVectorT Single(const IntegerType& val, const IntegerType& modulus) {
+        NativeVectorT vec(1, modulus);
+        vec[0] = val;
+        return vec;
+    }
 
-  /**
+    /**
    * Basic constructor for specifying the length of the vector.
    *
    * @param length is the length of the native vector, in terms of the number of
    * entries.
    */
-  explicit NativeVectorT(usint length);
+    explicit NativeVectorT(usint length);
 
-  /**
+    /**
    * Basic constructor for specifying the length of the vector and the modulus.
    *
    * @param length is the length of the native vector, in terms of the number of
    * entries.
    * @param modulus is the modulus of the ring.
    */
-  NativeVectorT(usint length, const IntegerType &modulus);
+    NativeVectorT(usint length, const IntegerType& modulus);
 
-  /**
+    /**
    * Basic constructor for copying a vector
    *
    * @param bigVector is the native vector to be copied.
    */
-  NativeVectorT(const NativeVectorT &bigVector);
+    NativeVectorT(const NativeVectorT& bigVector);
 
-  /**
+    /**
    * Basic move constructor for moving a vector
    *
    * @param &&bigVector is the native vector to be moved.
    */
-  NativeVectorT(NativeVectorT &&bigVector);  // move copy constructor
+    NativeVectorT(NativeVectorT&& bigVector);  // move copy constructor
 
-  /**
+    /**
    * Basic constructor for specifying the length of the vector
    * the modulus and an initializer list.
    *
@@ -175,10 +172,9 @@ class NativeVectorT
    * @param rhs is an initializer list of strings
    */
 
-  NativeVectorT(usint length, const IntegerType &modulus,
-               std::initializer_list<std::string> rhs);
+    NativeVectorT(usint length, const IntegerType& modulus, std::initializer_list<std::string> rhs);
 
-  /**
+    /**
    * Basic constructor for specifying the length of the vector
    * the modulus and an initializer list.
    *
@@ -187,322 +183,325 @@ class NativeVectorT
    * @param modulus is the modulus of the ring.
    * @param rhs is an initializer list of usint
    */
-  NativeVectorT(usint length, const IntegerType &modulus,
-               std::initializer_list<uint64_t> rhs);
+    NativeVectorT(usint length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs);
 
-  /**
+    /**
    * Destructor.
    */
-  virtual ~NativeVectorT();
+    virtual ~NativeVectorT();
 
-  // ASSIGNMENT OPERATORS
+    // ASSIGNMENT OPERATORS
 
-  /**
+    /**
    * Assignment operator to assign value from rhs
    *
    * @param &rhs is the native vector to be assigned from.
    * @return Assigned NativeVectorT.
    */
-  const NativeVectorT &operator=(const NativeVectorT &rhs);
+    const NativeVectorT& operator=(const NativeVectorT& rhs);
 
-  /**
+    /**
    * Move assignment operator
    *
    * @param &&rhs is the native vector to be moved.
    * @return moved NativeVectorT object
    */
-  NativeVectorT &operator=(NativeVectorT &&rhs);
+    NativeVectorT& operator=(NativeVectorT&& rhs);
 
-  /**
+    /**
    * Initializer list for NativeVectorT.
    *
    * @param &&rhs is the list of strings containing integers to be assigned to
    * the BBV.
    * @return NativeVectorT object
    */
-  const NativeVectorT &operator=(std::initializer_list<std::string> rhs);
+    const NativeVectorT& operator=(std::initializer_list<std::string> rhs);
 
-  /**
+    /**
    * Initializer list for NativeVectorT.
    *
    * @param &&rhs is the list of integers to be assigned to the BBV.
    * @return NativeVectorT object
    */
-  const NativeVectorT &operator=(std::initializer_list<uint64_t> rhs);
+    const NativeVectorT& operator=(std::initializer_list<uint64_t> rhs);
 
-  /**
+    /**
    * Assignment operator to assign value val to first entry, 0 for the rest of
    * entries.
    *
    * @param val is the value to be assigned at the first entry.
    * @return Assigned NativeVectorT.
    */
-  inline const NativeVectorT &operator=(uint64_t val) {
-    this->m_data[0] = val;
-    for (size_t i = 1; i < GetLength(); ++i) {
-      this->m_data[i] = 0;
+    inline const NativeVectorT& operator=(uint64_t val) {
+        this->m_data[0] = val;
+        for (size_t i = 1; i < GetLength(); ++i) {
+            this->m_data[i] = 0;
+        }
+        return *this;
     }
-    return *this;
-  }
 
-  // ACCESSORS
+    // ACCESSORS
 
-  /**
+    /**
    * Sets/gets a value at an index.
    * This method is slower than operator[] as it checks if index out of range
    *
    * @param index is the index to set a value at.
    */
-  IntegerType &at(size_t i) {
-    if (!this->IndexCheck(i)) {
-      OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
+    IntegerType& at(size_t i) {
+        if (!this->IndexCheck(i)) {
+            OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
+        }
+        return this->m_data[i];
     }
-    return this->m_data[i];
-  }
 
-  const IntegerType &at(size_t i) const {
-    if (!this->IndexCheck(i)) {
-      OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
+    const IntegerType& at(size_t i) const {
+        if (!this->IndexCheck(i)) {
+            OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
+        }
+        return this->m_data[i];
     }
-    return this->m_data[i];
-  }
 
-  /**
+    /**
    * operators to get a value at an index.
    * @param idx is the index to get a value at.
    * @return is the value at the index. return nullptr if invalid index.
    */
-  IntegerType &operator[](size_t idx) { return (this->m_data[idx]); }
+    IntegerType& operator[](size_t idx) {
+        return (this->m_data[idx]);
+    }
 
-  const IntegerType &operator[](size_t idx) const {
-    return (this->m_data[idx]);
-  }
+    const IntegerType& operator[](size_t idx) const {
+        return (this->m_data[idx]);
+    }
 
-  /**
+    /**
    * Sets the vector modulus.
    *
    * @param value is the value to set.
    * @param value is the modulus value to set.
    */
-  void SetModulus(const IntegerType &value);
+    void SetModulus(const IntegerType& value);
 
-  /**
+    /**
    * Sets the vector modulus and changes the values to match the new modulus.
    *
    * @param value is the value to set.
    */
-  void SwitchModulus(const IntegerType &value);
+    void SwitchModulus(const IntegerType& value);
 
-  /**
+    /**
    * Gets the vector modulus.
    *
    * @return the vector modulus.
    */
-  const IntegerType &GetModulus() const;
+    const IntegerType& GetModulus() const;
 
-  /**
+    /**
    * Gets the vector length.
    *
    * @return vector length.
    */
-  size_t GetLength() const { return this->m_data.size(); }
+    size_t GetLength() const {
+        return this->m_data.size();
+    }
 
-  // MODULAR ARITHMETIC OPERATIONS
+    // MODULAR ARITHMETIC OPERATIONS
 
-  /**
+    /**
    * Vector Modulus operator.
    *
    * @param modulus is the modulus to perform on the current vector entries.
    * @return is the result after the modulus operation on current vector.
    */
-  NativeVectorT Mod(const IntegerType &modulus) const;
+    NativeVectorT Mod(const IntegerType& modulus) const;
 
-  /**
+    /**
    * Vector Modulus operator. In-place variant.
    *
    * @param modulus is the modulus to perform on the current vector entries.
    * @return is the result after the modulus operation on current vector.
    */
-  const NativeVectorT &ModEq(const IntegerType &modulus);
+    const NativeVectorT& ModEq(const IntegerType& modulus);
 
-  /**
+    /**
    * Scalar modulus addition.
    *
    * After addition modulus operation is performed with the current vector
    * modulus.
    * @return is the result of the modulus addition operation.
    */
-  NativeVectorT ModAdd(const IntegerType &b) const;
+    NativeVectorT ModAdd(const IntegerType& b) const;
 
-  /**
+    /**
    * Scalar modulus addition. In-place variant.
    *
    * After addition modulus operation is performed with the current vector
    * modulus.
    * @return is the result of the modulus addition operation.
    */
-  const NativeVectorT &ModAddEq(const IntegerType &b);
+    const NativeVectorT& ModAddEq(const IntegerType& b);
 
-  /**
+    /**
    * Scalar modulus addition at a particular index.
    *
    * @param i is the index of the entry to add.
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-  NativeVectorT ModAddAtIndex(usint i, const IntegerType &b) const;
+    NativeVectorT ModAddAtIndex(usint i, const IntegerType& b) const;
 
-  /**
+    /**
    * Scalar modulus addition at a particular index. In-place variant.
    *
    * @param i is the index of the entry to add.
    * @param &b is the scalar to add.
    * @return is the result of the modulus addition operation.
    */
-  const NativeVectorT &ModAddAtIndexEq(usint i, const IntegerType &b);
+    const NativeVectorT& ModAddAtIndexEq(usint i, const IntegerType& b);
 
-  /**
+    /**
    * vector modulus addition.
    *
    * @param &b is the vector to add at all locations.
    * @return is the result of the modulus addition operation.
    */
-  NativeVectorT ModAdd(const NativeVectorT &b) const;
+    NativeVectorT ModAdd(const NativeVectorT& b) const;
 
-  /**
+    /**
    * vector modulus addition. In-place variant.
    *
    * @param &b is the vector to add at all locations.
    * @return is the result of the modulus addition operation.
    */
-  const NativeVectorT &ModAddEq(const NativeVectorT &b);
+    const NativeVectorT& ModAddEq(const NativeVectorT& b);
 
-  /**
+    /**
    * Scalar modulus subtraction.
    * After substraction modulus operation is performed with the current vector
    * modulus.
    * @param &b is the scalar to subtract from all locations.
    * @return is the result of the modulus substraction operation.
    */
-  NativeVectorT ModSub(const IntegerType &b) const;
+    NativeVectorT ModSub(const IntegerType& b) const;
 
-  /**
+    /**
    * Scalar modulus subtraction. In-place variant.
    * After substraction modulus operation is performed with the current vector
    * modulus.
    * @param &b is the scalar to subtract from all locations.
    * @return is the result of the modulus substraction operation.
    */
-  const NativeVectorT &ModSubEq(const IntegerType &b);
+    const NativeVectorT& ModSubEq(const IntegerType& b);
 
-  /**
+    /**
    * Vector Modulus subtraction.
    *
    * @param &b is the vector to subtract.
    * @return is the result of the modulus subtraction operation.
    */
-  NativeVectorT ModSub(const NativeVectorT &b) const;
+    NativeVectorT ModSub(const NativeVectorT& b) const;
 
-  /**
+    /**
    * Vector Modulus subtraction. In-place variant.
    *
    * @param &b is the vector to subtract.
    * @return is the result of the modulus subtraction operation.
    */
-  const NativeVectorT &ModSubEq(const NativeVectorT &b);
+    const NativeVectorT& ModSubEq(const NativeVectorT& b);
 
-  /**
+    /**
    * Scalar modular multiplication.
    * See the comments in the cpp files for details of the implementation.
    *
    * @param &b is the scalar to multiply at all locations.
    * @return is the result of the modulus multiplication operation.
    */
-  NativeVectorT ModMul(const IntegerType &b) const;
+    NativeVectorT ModMul(const IntegerType& b) const;
 
-  /**
+    /**
    * Scalar modular multiplication. In-place variant.
    * See the comments in the cpp files for details of the implementation.
    *
    * @param &b is the scalar to multiply at all locations.
    * @return is the result of the modulus multiplication operation.
    */
-  const NativeVectorT &ModMulEq(const IntegerType &b);
+    const NativeVectorT& ModMulEq(const IntegerType& b);
 
-  /**
+    /**
    * Vector modulus multiplication.
    *
    * @param &b is the vector to multiply.
    * @return is the result of the modulus multiplication operation.
    */
-  NativeVectorT ModMul(const NativeVectorT &b) const;
+    NativeVectorT ModMul(const NativeVectorT& b) const;
 
-  /**
+    /**
    * Vector modulus multiplication. In-place variant.
    *
    * @param &b is the vector to multiply.
    * @return is the result of the modulus multiplication operation.
    */
-  const NativeVectorT &ModMulEq(const NativeVectorT &b);
+    const NativeVectorT& ModMulEq(const NativeVectorT& b);
 
-  /**
+    /**
    * Vector multiplication without applying the modulus operation.
    *
    * @param &b is the vector to multiply.
    * @return is the result of the multiplication operation.
    */
-  NativeVectorT MultWithOutMod(const NativeVectorT &b) const;
+    NativeVectorT MultWithOutMod(const NativeVectorT& b) const;
 
-  /**
+    /**
    * Scalar modulus exponentiation.
    *
    * @param &b is the scalar to exponentiate at all locations.
    * @return a new vector which is the result of the modulus exponentiation
    * operation.
    */
-  NativeVectorT ModExp(const IntegerType &b) const;
+    NativeVectorT ModExp(const IntegerType& b) const;
 
-  /**
+    /**
    * Scalar modulus exponentiation. In-place variant.
    *
    * @param &b is the scalar to exponentiate at all locations.
    * @return a new vector which is the result of the modulus exponentiation
    * operation.
    */
-  const NativeVectorT &ModExpEq(const IntegerType &b);
+    const NativeVectorT& ModExpEq(const IntegerType& b);
 
-  /**
+    /**
    * Modulus inverse.
    *
    * @return a new vector which is the result of the modulus inverse operation.
    */
-  NativeVectorT ModInverse() const;
+    NativeVectorT ModInverse() const;
 
-  /**
+    /**
    * Modulus inverse. In-place variant.
    *
    * @return a new vector which is the result of the modulus inverse operation.
    */
-  const NativeVectorT &ModInverseEq();
+    const NativeVectorT& ModInverseEq();
 
-  /**
+    /**
    * Perform a modulus by 2 operation.  Returns the least significant bit.
    *
    * @return a new vector which is the return value of the modulus by 2, also
    * the least significant bit.
    */
-  NativeVectorT ModByTwo() const;
+    NativeVectorT ModByTwo() const;
 
-  /**
+    /**
    * Perform a modulus by 2 operation.  Returns the least significant bit.
    * In-place variant.
    *
    * @return a new vector which is the return value of the modulus by 2, also
    * the least significant bit.
    */
-  const NativeVectorT &ModByTwoEq();
+    const NativeVectorT& ModByTwoEq();
 
-  /**
+    /**
    * Multiply and Rounding operation on a BigInteger x. Returns [x*p/q] where []
    * is the rounding operation.
    *
@@ -510,10 +509,9 @@ class NativeVectorT
    * @param q is the denominator to be divided.
    * @return the result of multiply and round.
    */
-  NativeVectorT MultiplyAndRound(const IntegerType &p,
-                                const IntegerType &q) const;
+    NativeVectorT MultiplyAndRound(const IntegerType& p, const IntegerType& q) const;
 
-  /**
+    /**
    * Multiply and Rounding operation on a BigInteger x. Returns [x*p/q] where []
    * is the rounding operation. In-place variant.
    *
@@ -521,30 +519,29 @@ class NativeVectorT
    * @param q is the denominator to be divided.
    * @return the result of multiply and round.
    */
-  const NativeVectorT &MultiplyAndRoundEq(const IntegerType &p,
-                                         const IntegerType &q);
+    const NativeVectorT& MultiplyAndRoundEq(const IntegerType& p, const IntegerType& q);
 
-  /**
+    /**
    * Divide and Rounding operation on a BigInteger x. Returns [x/q] where [] is
    * the rounding operation.
    *
    * @param q is the denominator to be divided.
    * @return the result of divide and round.
    */
-  NativeVectorT DivideAndRound(const IntegerType &q) const;
+    NativeVectorT DivideAndRound(const IntegerType& q) const;
 
-  /**
+    /**
    * Divide and Rounding operation on a BigInteger x. Returns [x/q] where [] is
    * the rounding operation. In-place variant.
    *
    * @param q is the denominator to be divided.
    * @return the result of divide and round.
    */
-  const NativeVectorT &DivideAndRoundEq(const IntegerType &q);
+    const NativeVectorT& DivideAndRoundEq(const IntegerType& q);
 
-  // OTHER FUNCTIONS
+    // OTHER FUNCTIONS
 
-  /**
+    /**
    * Digit vector at a specific index for all entries for a given number base.
    * Warning: only power-of-2 bases are currently supported.
    * Example: for vector (83, 1, 45), index 2 and base 4 we have:
@@ -561,111 +558,107 @@ class NativeVectorT
    * @return is the digit at a specific index for all entries for a given number
    * base
    */
-  NativeVectorT GetDigitAtIndexForBase(usint index, usint base) const;
+    NativeVectorT GetDigitAtIndexForBase(usint index, usint base) const;
 
-  // STRINGS & STREAMS
+    // STRINGS & STREAMS
 
-  /**
+    /**
    * ostream operator to output vector values to console
    *
    * @param os is the std ostream object.
    * @param &ptr_obj is the NativeVectorT object to be printed.
    * @return std ostream object which captures the vector values.
    */
-  template <class IntegerType_c>
-  friend std::ostream &operator<<(std::ostream &os,
-                                  const NativeVectorT<IntegerType_c> &ptr_obj) {
-    auto len = ptr_obj.m_data.size();
-    os << "[";
-    for (usint i = 0; i < len; i++) {
-      os << ptr_obj.m_data[i];
-      os << ((i == (len - 1)) ? "]" : " ");
+    template <class IntegerType_c>
+    friend std::ostream& operator<<(std::ostream& os, const NativeVectorT<IntegerType_c>& ptr_obj) {
+        auto len = ptr_obj.m_data.size();
+        os << "[";
+        for (usint i = 0; i < len; i++) {
+            os << ptr_obj.m_data[i];
+            os << ((i == (len - 1)) ? "]" : " ");
+        }
+        os << " modulus: " << ptr_obj.m_modulus;
+        return os;
     }
-    os << " modulus: " << ptr_obj.m_modulus;
-    return os;
-  }
 
-  // SERIALIZATION
+    // SERIALIZATION
 
-  template <class Archive>
-  typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value,
-                          void>::type
-  save(Archive &ar, std::uint32_t const version) const {
-    ::cereal::size_type size = m_data.size();
-    ar(size);
-    if (size > 0) {
-      ar(::cereal::binary_data(m_data.data(), size * sizeof(IntegerType)));
+    template <class Archive>
+    typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
+        Archive& ar, std::uint32_t const version) const {
+        ::cereal::size_type size = m_data.size();
+        ar(size);
+        if (size > 0) {
+            ar(::cereal::binary_data(m_data.data(), size * sizeof(IntegerType)));
+        }
+        ar(m_modulus);
     }
-    ar(m_modulus);
-  }
 
-  template <class Archive>
-  typename std::enable_if<cereal::traits::is_text_archive<Archive>::value,
-                          void>::type
-  save(Archive &ar, std::uint32_t const version) const {
-    ar(::cereal::make_nvp("v", m_data));
-    ar(::cereal::make_nvp("m", m_modulus));
-  }
-
-  template <class Archive>
-  typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value,
-                          void>::type
-  load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      OPENFHE_THROW(lbcrypto::deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
+    template <class Archive>
+    typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type save(
+        Archive& ar, std::uint32_t const version) const {
+        ar(::cereal::make_nvp("v", m_data));
+        ar(::cereal::make_nvp("m", m_modulus));
     }
-    ::cereal::size_type size;
-    ar(size);
-    m_data.resize(size);
-    if (size > 0) {
-      auto *data =
-          reinterpret_cast<IntegerType *>(malloc(size * sizeof(IntegerType)));
-      ar(::cereal::binary_data(data, size * sizeof(IntegerType)));
-      for (::cereal::size_type i = 0; i < size; i++) {
-        m_data[i] = data[i];
-      }
-      free(data);
+
+    template <class Archive>
+    typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
+        Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
+                                                            " is from a later version of the library");
+        }
+        ::cereal::size_type size;
+        ar(size);
+        m_data.resize(size);
+        if (size > 0) {
+            auto* data = reinterpret_cast<IntegerType*>(malloc(size * sizeof(IntegerType)));
+            ar(::cereal::binary_data(data, size * sizeof(IntegerType)));
+            for (::cereal::size_type i = 0; i < size; i++) {
+                m_data[i] = data[i];
+            }
+            free(data);
+        }
+        ar(m_modulus);
     }
-    ar(m_modulus);
-  }
 
-  template <class Archive>
-  typename std::enable_if<cereal::traits::is_text_archive<Archive>::value,
-                          void>::type
-  load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      OPENFHE_THROW(lbcrypto::deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
+    template <class Archive>
+    typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
+        Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
+                                                            " is from a later version of the library");
+        }
+        ar(::cereal::make_nvp("v", m_data));
+        ar(::cereal::make_nvp("m", m_modulus));
     }
-    ar(::cereal::make_nvp("v", m_data));
-    ar(::cereal::make_nvp("m", m_modulus));
-  }
 
-  std::string SerializedObjectName() const { return "NativeVectorT"; }
+    std::string SerializedObjectName() const {
+        return "NativeVectorT";
+    }
 
-  static uint32_t SerializedVersion() { return 1; }
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 
- private:
-  // m_data is a pointer to the vector
+private:
+    // m_data is a pointer to the vector
 
 #if BLOCK_VECTOR_ALLOCATION != 1
-  std::vector<IntegerType> m_data;
+    std::vector<IntegerType> m_data;
 #else
-  xvector<IntegerType> m_data;
+    xvector<IntegerType> m_data;
 #endif
-  // m_modulus stores the internal modulus of the vector.
-  IntegerType m_modulus = 0;
+    // m_modulus stores the internal modulus of the vector.
+    IntegerType m_modulus = 0;
 
-  // function to check if the index is a valid index.
-  bool IndexCheck(size_t length) const {
-    if (length > this->m_data.size()) {
-      return false;
+    // function to check if the index is a valid index.
+    bool IndexCheck(size_t length) const {
+        if (length > this->m_data.size()) {
+            return false;
+        }
+        return true;
     }
-    return true;
-  }
 };
 
 }  // namespace intnat
@@ -675,66 +668,56 @@ namespace cereal {
 //! Serialization for vector of NativeInteger
 
 template <class Archive, class A>
-inline void CEREAL_SAVE_FUNCTION_NAME(
-    Archive &ar,
-    std::vector<intnat::NativeIntegerT<uint64_t>, A> const &vec) {
-  ar(make_size_tag(
-      static_cast<cereal::size_type>(vec.size())));  // number of elements
-  for (const auto& v : vec) {
-    ar(v.ConvertToInt());
-  }
+inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeIntegerT<uint64_t>, A> const& vec) {
+    ar(make_size_tag(static_cast<cereal::size_type>(vec.size())));  // number of elements
+    for (const auto& v : vec) {
+        ar(v.ConvertToInt());
+    }
 }
 
 #if defined(HAVE_INT128)
 template <class Archive, class A>
-inline void CEREAL_SAVE_FUNCTION_NAME(
-    Archive &ar,
-    std::vector<intnat::NativeIntegerT<unsigned __int128>, A> const
-        &vec) {
-  ar(make_size_tag(
-      static_cast<cereal::size_type>(vec.size())));  // number of elements
-  constexpr unsigned __int128 mask =
-      (static_cast<unsigned __int128>(1) << 64) - 1;
-  for (const auto& v : vec) {
-    uint64_t vec[2];
-    unsigned __int128 int128 = v.ConvertToInt();
-    vec[0] = int128 & mask;  // least significant word
-    vec[1] = int128 >> 64;   // most significant word
-    ar(vec);
-  }
+inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar,
+                                      std::vector<intnat::NativeIntegerT<unsigned __int128>, A> const& vec) {
+    ar(make_size_tag(static_cast<cereal::size_type>(vec.size())));  // number of elements
+    constexpr unsigned __int128 mask = (static_cast<unsigned __int128>(1) << 64) - 1;
+    for (const auto& v : vec) {
+        uint64_t vec[2];
+        unsigned __int128 int128 = v.ConvertToInt();
+        vec[0]                   = int128 & mask;  // least significant word
+        vec[1]                   = int128 >> 64;   // most significant word
+        ar(vec);
+    }
 }
 #endif
 
 //! Deserialization for vector of NativeInteger
 
 template <class Archive, class A>
-inline void CEREAL_LOAD_FUNCTION_NAME(
-    Archive &ar, std::vector<intnat::NativeIntegerT<uint64_t>, A> &vec) {
-  cereal::size_type size;
-  ar(make_size_tag(size));
-  vec.resize(static_cast<size_t>(size));
-  for (auto &v : vec) {
-    uint64_t b;
-    ar(b);
-    v = b;
-  }
+inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeIntegerT<uint64_t>, A>& vec) {
+    cereal::size_type size;
+    ar(make_size_tag(size));
+    vec.resize(static_cast<size_t>(size));
+    for (auto& v : vec) {
+        uint64_t b;
+        ar(b);
+        v = b;
+    }
 }
 
 #if defined(HAVE_INT128)
 template <class Archive, class A>
-inline void CEREAL_LOAD_FUNCTION_NAME(
-    Archive &ar,
-    std::vector<intnat::NativeIntegerT<unsigned __int128>, A> &vec) {
-  cereal::size_type size;
-  ar(make_size_tag(size));
-  vec.resize(static_cast<size_t>(size));
-  for (auto &v : vec) {
-    uint64_t vec[2];
-    ar(vec);
-    v = vec[1];  // most significant word
-    v <<= 64;
-    v += vec[0];  // least significant word
-  }
+inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeIntegerT<unsigned __int128>, A>& vec) {
+    cereal::size_type size;
+    ar(make_size_tag(size));
+    vec.resize(static_cast<size_t>(size));
+    for (auto& v : vec) {
+        uint64_t vec[2];
+        ar(vec);
+        v = vec[1];  // most significant word
+        v <<= 64;
+        v += vec[0];  // least significant word
+    }
 }
 #endif
 }  // namespace cereal

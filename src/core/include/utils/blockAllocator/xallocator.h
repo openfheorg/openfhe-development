@@ -39,14 +39,14 @@
 // http://www.codeproject.com/Articles/1084801/Replace-malloc-free-with-a-Fast-Fixed-Block-Memory
 
 #ifdef __cplusplus
-// Define AUTOMATIC_XALLOCATOR_INIT_DESTROY to automatically call
-// xalloc_init() and xalloc_destroy() when using xallocator in C++
-// projects. On embedded systems that never exit, you can save 1-byte
-// of RAM storage per translation unit by undefining
-// AUTOMATIC_XALLOCATOR_INIT_DESTROY and calling xalloc_init()
-// manually before the OS starts.
-#define AUTOMATIC_XALLOCATOR_INIT_DESTROY
-#ifdef AUTOMATIC_XALLOCATOR_INIT_DESTROY
+    // Define AUTOMATIC_XALLOCATOR_INIT_DESTROY to automatically call
+    // xalloc_init() and xalloc_destroy() when using xallocator in C++
+    // projects. On embedded systems that never exit, you can save 1-byte
+    // of RAM storage per translation unit by undefining
+    // AUTOMATIC_XALLOCATOR_INIT_DESTROY and calling xalloc_init()
+    // manually before the OS starts.
+    #define AUTOMATIC_XALLOCATOR_INIT_DESTROY
+    #ifdef AUTOMATIC_XALLOCATOR_INIT_DESTROY
 /// If a C++ translation unit, create a static instance of
 /// XallocInitDestroy. Any C++ file including xallocator.h will have
 /// the xallocDestroy instance declared first within the translation
@@ -55,15 +55,15 @@
 /// any static user objects relying on xallocator will be destroyed
 /// first before xalloc_destroy() is called.
 class XallocInitDestroy {
- public:
-  XallocInitDestroy();
-  ~XallocInitDestroy();
+public:
+    XallocInitDestroy();
+    ~XallocInitDestroy();
 
- private:
-  static usint refCount;
+private:
+    static usint refCount;
 };
-#endif  // AUTOMATIC_XALLOCATOR_INIT_DESTROY
-#endif  // __cplusplus
+    #endif  // AUTOMATIC_XALLOCATOR_INIT_DESTROY
+#endif      // __cplusplus
 
 #ifdef __cplusplus
 extern "C" {
@@ -106,10 +106,14 @@ void* xrealloc(void* ptr, size_t size);
 void xalloc_stats();
 
 // Macro to overload new/delete with xalloc/xfree
-#define XALLOCATOR                                          \
- public:                                                    \
-  void* operator new(size_t size) { return xmalloc(size); } \
-  void operator delete(void* pObject) { xfree(pObject); }
+#define XALLOCATOR                        \
+public:                                   \
+    void* operator new(size_t size) {     \
+        return xmalloc(size);             \
+    }                                     \
+    void operator delete(void* pObject) { \
+        xfree(pObject);                   \
+    }
 
 #ifdef __cplusplus
 }

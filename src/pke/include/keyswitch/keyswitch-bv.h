@@ -42,8 +42,11 @@
 namespace lbcrypto {
 
 /**
- * @brief Abstract interface class for LBC SHE algorithms
- * @tparam Element a ring element.
+ * @brief Implements BV scheme from [Fully Homomorphic Encryption from
+    Ring-LWE and Security for Key Dependent Messages (BVScheme)](
+    https://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf
+    )
+ * Requires the computation of a quadratic number of NTTs.
  */
 class KeySwitchBV : public KeySwitchRNS {
   using ParmType = typename DCRTPoly::Params;

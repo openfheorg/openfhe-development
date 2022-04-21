@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -74,7 +73,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE {
+struct TEST_CASE_UTMultiparty {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -99,17 +98,17 @@ struct TEST_CASE {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTMultiparty>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTMultiparty& test) {
     return os << test.toString();
 }
 //===========================================================================================================
 constexpr usint BATCH = 16;
 // clang-format off
-static std::vector<TEST_CASE> testCases = {
+static std::vector<TEST_CASE_UTMultiparty> testCases = {
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
     { CKKSRNS_TEST,  "1", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
     { CKKSRNS_TEST,  "2", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT, DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT},    false },
@@ -141,10 +140,10 @@ static std::vector<TEST_CASE> testCases = {
     { BGVRNS_TEST, "22", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "23", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "24", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
-    { BGVRNS_TEST, "25", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    { BGVRNS_TEST, "26", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    { BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    { BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    //{ BGVRNS_TEST, "25", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    //{ BGVRNS_TEST, "26", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    //{ BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    //{ BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
     // ==========================================
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
     { BFVRNS_TEST_EXTRA, "29", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     3.2,    DFLT,      2,          DFLT, HPS},     false },
@@ -154,7 +153,7 @@ static std::vector<TEST_CASE> testCases = {
 };
 // clang-format on
 //===========================================================================================================
-class UTMultiparty : public ::testing::TestWithParam<TEST_CASE> {
+class UTMultiparty : public ::testing::TestWithParam<TEST_CASE_UTMultiparty> {
     using Element = DCRTPoly;
 
 protected:
@@ -166,11 +165,11 @@ protected:
     // in order to avoid redundancy, UnitTest_MultiParty() uses 2 conditions:
     //  - testData.star false/true
     //  - CKKSRNS_TEST false/true
-    void UnitTest_MultiParty(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_MultiParty(const TEST_CASE_UTMultiparty& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            const double eps = EPSILON;
+            const double eps = 0.000001;
             std::vector<int32_t> indices = { 2 };
             //====================================================================
             KeyPair<Element> kp1 = cc->KeyGen();
@@ -363,11 +362,14 @@ protected:
 
             errMsg = failmsg + " Multiparty accumulation failed";
             if (CKKSRNS_TEST == testData.testCaseType) {
+              std::stringstream buffer;
+              buffer << "should be: " << plaintextMultipartyNew->GetCKKSPackedValue() << " - we get: " << plaintextSumInput->GetCKKSPackedValue();
+
                 checkEquality(
                     plaintextMultipartyNew->GetCKKSPackedValue(),
                     plaintextSumInput->GetCKKSPackedValue(),
                     eps,
-                    errMsg);
+                    errMsg + buffer.str());
             }
             else {
                 checkEquality(
@@ -463,7 +465,7 @@ protected:
         }
     }
 
-    void UnitTestMultiparty(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTestMultiparty(const TEST_CASE_UTMultiparty& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -610,4 +612,3 @@ TEST_P(UTMultiparty, Multiparty) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTMultiparty, ::testing::ValuesIn(testCases), testName);
 
-#endif

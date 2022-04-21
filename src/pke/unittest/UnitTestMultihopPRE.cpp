@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment text after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -225,4 +224,3 @@ INSTANTIATE_TEST_SUITE_P(MULTIHOP_PRE_TEST, UTMultihopPRE, ::testing::ValuesIn(S
 run_demo_pre(0); //IND CPA secure
 run_demo_pre(1); //Fixed 20 bits Noise HRA
 run_demo_pre(2); //provably secure HRA */
-#endif

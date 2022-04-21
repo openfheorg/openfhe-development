@@ -145,11 +145,14 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
       std::static_pointer_cast<CryptoParametersRLWE<Element>>(
           privateKey->GetCryptoParameters());
 
-  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
   const Element &s = privateKey->GetPrivateElement();
   const auto ns = cryptoParams->GetNoiseScale();
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   DugType dug;
+
+  const std::shared_ptr<ParmType> elementParams = (params == nullptr)
+      ? cryptoParams->GetElementParams()
+      : params;
 
   Element a(dug, elementParams, Format::EVALUATION);
   Element e(dgg, elementParams, Format::EVALUATION);
@@ -168,10 +171,13 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
       std::static_pointer_cast<CryptoParametersRLWE<Element>>(
           publicKey->GetCryptoParameters());
 
-  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
   const auto ns = cryptoParams->GetNoiseScale();
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   TugType tug;
+
+  const std::shared_ptr<ParmType> elementParams = (params == nullptr)
+      ? cryptoParams->GetElementParams()
+      : params;
 
   const std::vector<Element> &pk = publicKey->GetPublicElements();
 

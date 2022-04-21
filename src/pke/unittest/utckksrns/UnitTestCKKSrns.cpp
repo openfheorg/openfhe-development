@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -108,7 +107,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE {
+struct TEST_CASE_UTCKKSRNS {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -132,11 +131,11 @@ struct TEST_CASE {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTCKKSRNS>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS& test) {
     return os << test.toString();
 }
 //===========================================================================================================
@@ -158,7 +157,7 @@ constexpr usint SCALE = 50;
 #endif
 
 // clang-format off
-static std::vector<TEST_CASE> testCases = {
+static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // TestType,  Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { ADD_PACKED, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { ADD_PACKED, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -180,23 +179,23 @@ static std::vector<TEST_CASE> testCases = {
 #endif
     // ==========================================
     // TestType,               Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { SCALE_FACTOR_ADJUSTMENTS, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { SCALE_FACTOR_ADJUSTMENTS, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { SCALE_FACTOR_ADJUSTMENTS, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { SCALE_FACTOR_ADJUSTMENTS, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ SCALE_FACTOR_ADJUSTMENTS, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ SCALE_FACTOR_ADJUSTMENTS, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ SCALE_FACTOR_ADJUSTMENTS, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ SCALE_FACTOR_ADJUSTMENTS, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    { SCALE_FACTOR_ADJUSTMENTS, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { SCALE_FACTOR_ADJUSTMENTS, "6", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ SCALE_FACTOR_ADJUSTMENTS, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ SCALE_FACTOR_ADJUSTMENTS, "6", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType,        Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { AUTO_LEVEL_REDUCE, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { AUTO_LEVEL_REDUCE, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { AUTO_LEVEL_REDUCE, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { AUTO_LEVEL_REDUCE, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ AUTO_LEVEL_REDUCE, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ AUTO_LEVEL_REDUCE, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ AUTO_LEVEL_REDUCE, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ AUTO_LEVEL_REDUCE, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    { AUTO_LEVEL_REDUCE, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { AUTO_LEVEL_REDUCE, "6", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ AUTO_LEVEL_REDUCE, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ AUTO_LEVEL_REDUCE, "6", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType, Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
@@ -250,10 +249,10 @@ static std::vector<TEST_CASE> testCases = {
 #endif
     // ==========================================
     // TestType,     Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { RE_ENCRYPTION, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { RE_ENCRYPTION, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ RE_ENCRYPTION, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ RE_ENCRYPTION, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    { RE_ENCRYPTION, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ RE_ENCRYPTION, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType, Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
@@ -280,7 +279,7 @@ static std::vector<TEST_CASE> testCases = {
 // clang-format on
 //===========================================================================================================
 
-class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE> {
+class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
     using Element = DCRTPoly;
 
     // the size for all vectors remains const - 8 elements
@@ -289,6 +288,8 @@ class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE> {
     // The precision after which we consider two values equal.
     // This is necessary because CKKS works for approximate numbers.
     const double eps = EPSILON;
+
+    const double epsHigh = EPSILON_HIGH;
 
     const std::vector<std::complex<double>> vectorOfInts0_7{ 0, 1, 2, 3, 4, 5, 6, 7 };
     const std::vector<std::complex<double>> vectorOfInts0_7neg{ 0,-1,-2,-3,-4,-5,-6,-7 };
@@ -307,7 +308,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_Add_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Add_Packed(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -416,7 +417,7 @@ protected:
         }
     }
 
-    void UnitTest_Mult_Packed(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -497,7 +498,7 @@ protected:
      * - automatic scaling up of plaintexts to a depth that matches that of a
      * ciphertext
      */
-    void UnitTest_ScaleFactorAdjustments(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_ScaleFactorAdjustments(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -555,21 +556,24 @@ protected:
             Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
 
             auto cMult = cc->EvalMult(ciphertext1, ciphertext2);
-            auto cAddAfterMult = cc->EvalAdd(cMult, 10);
-            auto cSubAfterMult = cc->EvalSub(cMult, 10);
-            auto cMult2 = cc->EvalMult(ciphertext1, cMult);
-            auto cAddAfterMult2 = cc->EvalAdd(cMult2, 11);
-            auto cSubAfterMult2 = cc->EvalSub(cMult2, 11);
-            auto c2AddAfterMult2 = cc->EvalAdd(cMult2, -11);
-            auto c2SubAfterMult2 = cc->EvalSub(cMult2, -11);
-            auto cAddPtAfterMult2 = cc->EvalAdd(cMult2, plaintextConst);
-            auto cSubPtAfterMult2 = cc->EvalSub(cMult2, plaintextConst);
-            auto cAddPt2AfterMult2 = cc->EvalAdd(cMult2, plaintextConst2);
-            auto cSubPt2AfterMult2 = cc->EvalSub(cMult2, plaintextConst2);
-            auto cDeepAdd = cc->EvalAdd(cMult2, plaintextConstDeep);
-            auto cDeepSub = cc->EvalSub(cMult2, plaintextConstDeep);
-            auto c2DeepAdd = cc->EvalAdd(cMult2, plaintextConst2Deep);
-            auto c2DeepSub = cc->EvalSub(cMult2, plaintextConst2Deep);
+            auto cMultRs = cc->Rescale(cMult);
+
+            auto cAddAfterMult = cc->EvalAdd(cMultRs, 10);
+            auto cSubAfterMult = cc->EvalSub(cMultRs, 10);
+            auto cMult2 = cc->EvalMult(ciphertext1, cMultRs);
+            auto cMultRs2 = cc->Rescale(cMult2);
+            auto cAddAfterMult2 = cc->EvalAdd(cMultRs2, 11);
+            auto cSubAfterMult2 = cc->EvalSub(cMultRs2, 11);
+            auto c2AddAfterMult2 = cc->EvalAdd(cMultRs2, -11);
+            auto c2SubAfterMult2 = cc->EvalSub(cMultRs2, -11);
+            auto cAddPtAfterMult2 = cc->EvalAdd(cMultRs2, plaintextConst);
+            auto cSubPtAfterMult2 = cc->EvalSub(cMultRs2, plaintextConst);
+            auto cAddPt2AfterMult2 = cc->EvalAdd(cMultRs2, plaintextConst2);
+            auto cSubPt2AfterMult2 = cc->EvalSub(cMultRs2, plaintextConst2);
+            auto cDeepAdd = cc->EvalAdd(cMultRs2, plaintextConstDeep);
+            auto cDeepSub = cc->EvalSub(cMultRs2, plaintextConstDeep);
+            auto c2DeepAdd = cc->EvalAdd(cMultRs2, plaintextConst2Deep);
+            auto c2DeepSub = cc->EvalSub(cMultRs2, plaintextConst2Deep);
 
             Plaintext results;
             cc->Decrypt(kp.secretKey, cAddAfterMult, &results);
@@ -657,7 +661,7 @@ protected:
         }
     }
 
-    void UnitTest_AutoLevelReduce(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_AutoLevelReduce(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -900,7 +904,7 @@ protected:
         }
     }
 
-    void UnitTest_Compress(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Compress(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -942,7 +946,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalFastRotation(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalFastRotation(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1020,7 +1024,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalAtIndex(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAtIndex(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1090,7 +1094,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalMerge(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMerge(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         // TODO (dsuponit) error from pke/include/schemebase/base-scheme.h:1500 EvalMerge operation has not been enabled"
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -1171,7 +1175,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalLinearWSum(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalLinearWSum(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1231,7 +1235,7 @@ protected:
         }
     }
 
-    void UnitTest_ReEncryption(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_ReEncryption(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1292,7 +1296,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalPoly(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalPoly(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1347,36 +1351,46 @@ protected:
             Plaintext results1;
             cc->Decrypt(kp.secretKey, cResult1, &results1);
             results1->SetLength(encodedLength);
-            checkEquality(plaintextResult1->GetCKKSPackedValue(), results1->GetCKKSPackedValue(), eps,
-                failmsg + " EvalPoly with positive coefficients failed");
+            std::stringstream buffer1;
+            buffer1 << "should be: " << plaintextResult1->GetCKKSPackedValue() << " - we get: " << results1->GetCKKSPackedValue();
+            checkEquality(plaintextResult1->GetCKKSPackedValue(), results1->GetCKKSPackedValue(), epsHigh,
+                failmsg + " EvalPoly with positive coefficients failed: " + buffer1.str());
 
             Ciphertext<Element> cResult2 = cc->EvalPoly(ciphertext1, coefficients2);
             Plaintext results2;
             cc->Decrypt(kp.secretKey, cResult2, &results2);
             results2->SetLength(encodedLength);
-            checkEquality(plaintextResult2->GetCKKSPackedValue(), results2->GetCKKSPackedValue(), eps,
-                failmsg + " EvalPoly with negative coefficients failed");
+            std::stringstream buffer2;
+            buffer2 << "should be: " << plaintextResult2->GetCKKSPackedValue() << " - we get: " << results2->GetCKKSPackedValue();
+            checkEquality(plaintextResult2->GetCKKSPackedValue(), results2->GetCKKSPackedValue(), epsHigh,
+                failmsg + " EvalPoly with negative coefficients failed: " + buffer2.str());
 
             Ciphertext<Element> cResult3 = cc->EvalPoly(ciphertext1, coefficients3);
             Plaintext results3;
             cc->Decrypt(kp.secretKey, cResult3, &results3);
             results3->SetLength(encodedLength);
-            checkEquality(plaintextResult3->GetCKKSPackedValue(), results3->GetCKKSPackedValue(), eps,
-                failmsg + " EvalPoly for a power function failed");
+            std::stringstream buffer3;
+            buffer3 << "should be: " << plaintextResult3->GetCKKSPackedValue() << " - we get: " << results3->GetCKKSPackedValue();
+            checkEquality(plaintextResult3->GetCKKSPackedValue(), results3->GetCKKSPackedValue(), epsHigh,
+                failmsg + " EvalPoly for a power function failed: " + buffer3.str());
 
             Ciphertext<Element> cResult4 = cc->EvalPoly(ciphertext1, coefficients4);
             Plaintext results4;
             cc->Decrypt(kp.secretKey, cResult4, &results4);
             results4->SetLength(encodedLength);
-            checkEquality(plaintextResult4->GetCKKSPackedValue(), results4->GetCKKSPackedValue(), eps,
-                failmsg + " EvalPoly for negative coefficients with magnitude > 1 failed");
+            std::stringstream buffer4;
+            buffer4 << "should be: " << plaintextResult4->GetCKKSPackedValue() << " - we get: " << results4->GetCKKSPackedValue();
+            checkEquality(plaintextResult4->GetCKKSPackedValue(), results4->GetCKKSPackedValue(), epsHigh,
+                failmsg + " EvalPoly for negative coefficients with magnitude > 1 failed: " + buffer4.str());
 
             Ciphertext<Element> cResult5 = cc->EvalPoly(ciphertext1, coefficients5);
             Plaintext results5;
             cc->Decrypt(kp.secretKey, cResult5, &results5);
             results5->SetLength(encodedLength);
-            checkEquality(plaintextResult5->GetCKKSPackedValue(), results5->GetCKKSPackedValue(), eps,
-                failmsg + " EvalPoly for low-degree polynomial failed");
+            std::stringstream buffer5;
+            buffer5 << "should be: " << plaintextResult5->GetCKKSPackedValue() << " - we get: " << results5->GetCKKSPackedValue();
+            checkEquality(plaintextResult5->GetCKKSPackedValue(), results5->GetCKKSPackedValue(), epsHigh,
+                failmsg + " EvalPoly for low-degree polynomial failed: " + buffer5.str());
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -1396,7 +1410,7 @@ protected:
     /***
      * Tests whether metadata is carried over for several operations in CKKS
      */
-    void UnitTest_Metadata(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Metadata(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -1582,4 +1596,3 @@ TEST_P(UTCKKSRNS, CKKSRNS) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS, ::testing::ValuesIn(testCases), testName);
 
-#endif

@@ -1,3 +1,4 @@
+// clang-format off
 /*
    BLAKE2 reference source code package - reference C implementations
 
@@ -345,3 +346,4 @@ fail:
   return -1;
 }
 #endif
+// clang-format on

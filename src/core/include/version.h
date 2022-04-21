@@ -41,16 +41,17 @@
 // version string is passed as a preprocessor define, which gets macro'd up into
 // a string
 #define STR_EXPAND(tok) #tok
-#define STR(tok) STR_EXPAND(tok)
+#define STR(tok)        STR_EXPAND(tok)
 #ifndef OPENFHE_VERSION
-#define OPENFHE_VERSION BASE_OPENFHE_VERSION
+    #define OPENFHE_VERSION BASE_OPENFHE_VERSION
 #endif
 
-
 /**
- * GetOPENFHEVersion - Returns OpenFHE Version string
+ * GetOPENFHEVersion - Returns OPENFHE Version string
  * @return
  */
-inline std::string GetOPENFHEVersion() { return STR(OPENFHE_VERSION); }
+inline std::string GetOPENFHEVersion() {
+    return STR(OPENFHE_VERSION);
+}
 
 #endif /* SRC_VERSION_H_ */
