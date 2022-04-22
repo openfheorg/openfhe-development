@@ -1,11 +1,11 @@
 Using The Library
 ====================================
 
-PALISADE consists of a number of library objects that can be linked into lattice cryptography applications.
+OpenFHE consists of a number of library objects that can be linked into lattice cryptography applications.
 
 The source files in the demo directories, particularly those in src/examples/pke, illustrate the use of the library.
 
-To use PALISADE, you must
+To use OpenFHE, you must
 
   * select a lattice element to be used for your application. We support:
 
@@ -52,7 +52,7 @@ In order to make this easier for the user, there are several CryptoContextFactor
 
 Streamlining and improving the process of parameter selection and CryptoContext generation is an area that is being actively worked.
 
-Anything done in PALISADE is done through the CryptoContext. All operations are CryptoContext methods. The code only allows operations between objects that were created in the same context, and will generate an error if it finds that this is not the case.
+Anything done in OpenFHE is done through the CryptoContext. All operations are CryptoContext methods. The code only allows operations between objects that were created in the same context, and will generate an error if it finds that this is not the case.
 
 Objects created by a CryptoContext usually have a Serialize method that converts the object into a cereal object that can be saved to a string or to a disk file. A serialization can be Deserialized through the use of several of the CryptoContext's Deserialize methods. The following methods are provided:
 

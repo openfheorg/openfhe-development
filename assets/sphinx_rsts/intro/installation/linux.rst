@@ -1,4 +1,4 @@
-Installing PALISADE on Linux
+Installing OpenFHE on Linux
 ====================================
 
 .. topic:: Quick Note for CentOS CentOS Installation
@@ -74,15 +74,15 @@ Installing PALISADE on Linux
 .. note:: Note that cmake will check for any system dependencies that are needed for the build process.
 
 
-4. The PALISADE distribution includes some external libraries, such as GMP. NTL and tcmalloc. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
+4. The OpenFHE distribution includes some external libraries, such as GMP. NTL and tcmalloc. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
 
-5. Build PALISADE by running the following command (this will take few minutes; using the -j<threads> make command-line flag is suggested to speed up the build)
+5. Build OpenFHE by running the following command (this will take few minutes; using the -j<threads> make command-line flag is suggested to speed up the build)
 
     ::
 
         make
 
-6. Install PALISADE in a system directory (if desired or for production purposes)
+6. Install OpenFHE in a system directory (if desired or for production purposes)
 
     ::
 

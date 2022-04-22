@@ -1,10 +1,10 @@
-Throwing Exceptions in PALISADE
+Throwing Exceptions in OpenFHE
 ===============================
 
-The PALISADE library will throw a palisade_error exception in the event of certain unrecoverable errors. A palisade_error is a subclass of ``std::exception``. The library *actually* throws an exception which is a subclass of palisade_error.
+The OpenFHE library will throw a openfhe_error exception in the event of certain unrecoverable errors. A openfhe_error is a subclass of ``std::exception``. The library *actually* throws an exception which is a subclass of openfhe_error.
 
 
-Programmers use the PALISADE_THROW macro in exception.h to generate an exception. Each exception includes the filename and line number at which the exception was thrown as well as a programmer-defined message.
+Programmers use the OPENFHE_THROW macro in exception.h to generate an exception. Each exception includes the filename and line number at which the exception was thrown as well as a programmer-defined message.
 
 
 Exceptions and the methods associated with them are defined in ``src/core/include/utils/exception.h``.
@@ -18,7 +18,7 @@ The available exceptions are as follows
 config_error
 ^^^^^^^^^^^^^^^^
 
-This exception is thrown whenever the user of the library supplies configuration parameters that cannot be used to configure PALISADE. An example of this would be providing a ciphertext modulus that is not a prime number, or providing a plaintext modulus that cannot be used with a particular encoding type.
+This exception is thrown whenever the user of the library supplies configuration parameters that cannot be used to configure OpenFHE. An example of this would be providing a ciphertext modulus that is not a prime number, or providing a plaintext modulus that cannot be used with a particular encoding type.
 
 math_error
 ^^^^^^^^^^^^^^^^
