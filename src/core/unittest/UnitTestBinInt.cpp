@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code tests the binary integers in the math libraries of the PALISADE lattice encryption library.
+  This code tests the binary integers in the math libraries of the OpenFHE lattice encryption library.
  */
 
 #define PROFILE

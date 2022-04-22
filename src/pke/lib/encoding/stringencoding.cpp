@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Represents and defines string-encoded plaintext objects in Palisade
+  Represents and defines string-encoded plaintext objects in OpenFHE
  */
 
 #include "encoding/stringencoding.h"
@@ -45,7 +45,7 @@ bool StringEncoding::Encode() {
   auto mod = this->encodingParams->GetPlaintextModulus();
 
   if (mod != 256) {
-    PALISADE_THROW(config_error, "Plaintext modulus must be " +
+    OPENFHE_THROW(config_error, "Plaintext modulus must be " +
                                      std::to_string(charPtm) +
                                      " for string encoding");
   }

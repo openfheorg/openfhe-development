@@ -496,7 +496,7 @@ public:
    */
     DCRTPolyType Transpose() const override {
         if (this->GetFormat() == COEFFICIENT) {
-            PALISADE_THROW(not_implemented_error,
+            OPENFHE_THROW(not_implemented_error,
                            "DCRTPolyImpl element transposition is currently "
                            "implemented only in the Evaluation representation.");
         }
@@ -710,7 +710,7 @@ public:
    * one
    */
     DCRTPolyType AddRandomNoise(const Integer& modulus) const override {
-        PALISADE_THROW(not_implemented_error, "AddRandomNoise is not currently implemented for DCRTPoly");
+        OPENFHE_THROW(not_implemented_error, "AddRandomNoise is not currently implemented for DCRTPoly");
     }
 
     /**
@@ -1215,7 +1215,7 @@ public:
    */
     void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb = Integer(0),
                        const Integer& rootOfUnityArb = Integer(0)) override {
-        PALISADE_THROW(not_implemented_error, "SwitchModulus not implemented on DCRTPoly");
+        OPENFHE_THROW(not_implemented_error, "SwitchModulus not implemented on DCRTPoly");
     }
 
     /**
@@ -1255,7 +1255,7 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_vectors));

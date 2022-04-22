@@ -255,7 +255,7 @@ usint BaseSampler::FindInVector(const std::vector<double>& S, double search) con
     if (lower != S.end())
         return lower - S.begin();
 
-    PALISADE_THROW(not_available_error,
+    OPENFHE_THROW(not_available_error,
                    "DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
 }
 

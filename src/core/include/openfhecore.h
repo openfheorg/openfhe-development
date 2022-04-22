@@ -29,23 +29,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef SRC_LIB_PALISADE_H_
-#define SRC_LIB_PALISADE_H_
+/*
+  OpenFHE version strings
+ */
 
-#include <initializer_list>
-#include <memory>
-#include <string>
-#include <utility>
+#ifndef SRC_CORE_INCLUDE_OPENFHECORE_H_
+#define SRC_CORE_INCLUDE_OPENFHECORE_H_
 
-#include "palisadecore.h"
+#include "version.h"
 
-#include "key/allkey.h"
-#include "cryptoobject.h"
+#include "math/hal.h"
 
-#include "encoding/plaintextfactory.h"
-#include "math/matrix.h"
+#include "math/nbtheory.h"
 
-#include "ciphertext.h"
-#include "cryptocontext.h"
+#include "math/distrgen.h"
 
-#endif /* SRC_LIB_PALISADE_H_ */
+#include "lattice/lat-hal.h"
+#include "lattice/stdlatticeparms.h"
+#include "utils/debug.h"
+#include "utils/defines.h"
+
+#endif /* SRC_CORE_INCLUDE_OPENFHECORE_H_ */

@@ -40,7 +40,7 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
-#include "palisadecore.h"
+#include "openfhecore.h"
 #include "time.h"
 
 using namespace lbcrypto;

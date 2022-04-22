@@ -226,7 +226,7 @@ class MultipartyBase {
    */
   virtual DecryptResult MultipartyDecryptFusion(
       const std::vector<Ciphertext<Element>> &ciphertextVec, Poly *plaintext) const {
-    PALISADE_THROW(config_error, "Decryption to Poly is not supported");
+    OPENFHE_THROW(config_error, "Decryption to Poly is not supported");
   }
 
   /**

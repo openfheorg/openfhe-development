@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Represents and defines packing integers of plaintext objects into polynomial coefficients in Palisade
+  Represents and defines packing integers of plaintext objects into polynomial coefficients in OpenFHE
  */
 
 #include "encoding/coefpackedencoding.h"
@@ -46,12 +46,12 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
 
   for (size_t i = 0; i < value.size() && i < poly.GetLength(); i++) {
     if (value[i] > INT32_MAX || value[i] < INT32_MIN) {
-      PALISADE_THROW(config_error,
+      OPENFHE_THROW(config_error,
                      "Cannot encode a coefficient larger than 32 bits");
     }
 
     if (value[i] <= lb || value[i] > ub)
-      PALISADE_THROW(config_error,
+      OPENFHE_THROW(config_error,
                      "Cannot encode integer " + std::to_string(value[i]) +
                          " at position " + std::to_string(i) +
                          " because it is out of range of plaintext modulus " +

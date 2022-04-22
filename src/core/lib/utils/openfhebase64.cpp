@@ -30,10 +30,10 @@
 //==================================================================================
 
 /*
-  palisade native base 64 utlities
+  OpenFHE native base 64 utlities
  */
 
-#include "utils/palisadebase64.h"
+#include "utils/openfhebase64.h"
 
 namespace lbcrypto {
 

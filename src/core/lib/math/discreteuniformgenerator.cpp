@@ -76,7 +76,7 @@ typename VecType::Integer DiscreteUniformGeneratorImpl<VecType>::GenerateInteger
     uint32_t value;
 
     if (m_modulus == typename VecType::Integer(0)) {
-        PALISADE_THROW(math_error, "0 modulus?");
+        OPENFHE_THROW(math_error, "0 modulus?");
     }
 
     do {

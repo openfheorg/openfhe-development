@@ -44,7 +44,7 @@
 #include <iterator>
 #include <random>
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "utils/debug.h"
 
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"

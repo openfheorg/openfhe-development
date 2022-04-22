@@ -284,7 +284,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModAddAtIndex(usint i
 template <class IntegerType>
 const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddAtIndexEq(usint i, const IntegerType& b) {
     if (i > this->GetLength() - 1) {
-        PALISADE_THROW(lbcrypto::math_error,
+        OPENFHE_THROW(lbcrypto::math_error,
                        "mubintvecfxd::ModAddAtIndex. Index is out of range. i = " + std::to_string(i));
     }
     this->m_data[i].ModAddEq(b, this->m_modulus);
@@ -301,7 +301,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModAdd(const BigVecto
 template <class IntegerType>
 const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddEq(const BigVectorFixedT& b) {
     if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
-        PALISADE_THROW(lbcrypto::math_error, "ModAddEq called on BigVectorFixedT's with different parameters.");
+        OPENFHE_THROW(lbcrypto::math_error, "ModAddEq called on BigVectorFixedT's with different parameters.");
     }
     for (usint i = 0; i < this->m_length; i++) {
         this->m_data[i].ModAddFastEq(b.m_data[i], this->m_modulus);
@@ -335,7 +335,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModSub(const BigVecto
 template <class IntegerType>
 const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModSubEq(const BigVectorFixedT& b) {
     if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
-        PALISADE_THROW(lbcrypto::math_error, "ModSubEq called on BigVectorFixedT's with different parameters.");
+        OPENFHE_THROW(lbcrypto::math_error, "ModSubEq called on BigVectorFixedT's with different parameters.");
     }
     for (usint i = 0; i < this->m_length; i++) {
         this->m_data[i].ModSubFastEq(b.m_data[i], this->m_modulus);
@@ -416,7 +416,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModMul(const BigVecto
 template <class IntegerType>
 const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModMulEq(const BigVectorFixedT& b) {
     if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
-        PALISADE_THROW(lbcrypto::math_error, "ModMulEq called on BigVectorFixedT's with different parameters.");
+        OPENFHE_THROW(lbcrypto::math_error, "ModMulEq called on BigVectorFixedT's with different parameters.");
     }
     IntegerType mu = this->m_modulus.ComputeMu();
     // Precompute the Barrett mu parameter
@@ -497,7 +497,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::MultWithOutMod(const 
 template <class IntegerType>
 const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultWithOutModEq(const BigVectorFixedT& b) {
     if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
-        PALISADE_THROW(lbcrypto::type_error, "MultWithOutMod called on BigVectorFixedT's with different parameters.");
+        OPENFHE_THROW(lbcrypto::type_error, "MultWithOutMod called on BigVectorFixedT's with different parameters.");
     }
     for (usint i = 0; i < this->m_length; i++) {
         this->m_data[i].MulEq(b.m_data[i]);

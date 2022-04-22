@@ -52,7 +52,7 @@ void DiscreteGaussianGeneratorImpl<VecType>::SetStd(double std) {
     m_std = std;
     if (log2(m_std) > 59) {
         std::string errorMsg(std::string("Standard deviation cannot exceed 59 bits"));
-        PALISADE_THROW(config_error, errorMsg);
+        OPENFHE_THROW(config_error, errorMsg);
     }
 
     if (m_std < KARNEY_THRESHOLD)
@@ -168,7 +168,7 @@ usint DiscreteGaussianGeneratorImpl<VecType>::FindInVector(const std::vector<dou
     if (lower != S.end()) {
         return lower - S.begin() + 1;
     }
-    PALISADE_THROW(not_available_error,
+    OPENFHE_THROW(not_available_error,
                    "DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
 }
 
@@ -274,10 +274,11 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
     DEBUG("t " << t);
 
     if (std::isinf(mean)) {
-        PALISADE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with mean == +-inf");
+        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with mean == +-inf");
     }
     if (std::isinf(stddev)) {
-        PALISADE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with stddev == +-inf");
+        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with stddev == +-inf");
+
     }
     typename VecType::Integer result;
 
@@ -292,7 +293,7 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
 
     usint count       = 0;
     const usint limit = 10000;
-    // PALISADE_THROW(palisade_error, "dbg throw");
+    // OPENFHE_THROWopenfhe_throw, "dbg throw");
 
     while (!flagSuccess) {
         //  pick random int
@@ -308,7 +309,7 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
         count++;
         if (count > limit) {
             DEBUG("x " << x << " dice " << dice);
-            PALISADE_THROW(not_available_error, "GenerateInteger could not find success after repeated attempts");
+            OPENFHE_THROW(not_available_error, "GenerateInteger could not find success after repeated attempts");
         }
     }
 

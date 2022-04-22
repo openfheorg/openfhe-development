@@ -1,6 +1,6 @@
-Installing PALISADE on Windows
+Installing OpenFHE on Windows
 ====================================
-The preferred way of building PALISADE in Windows is using MinGW64. VC++ is no longer supported.
+The preferred way of building OpenFHE in Windows is using MinGW64. VC++ is no longer supported.
 
 Download and install MSYS2 from http://www.msys2.org/ using default settings. Start the MSYS2 MINGW 64-bit shell and execute the following command
 
@@ -32,15 +32,15 @@ to update all packages (you may need to run it twice as it often fails the first
 
 Note that cmake will check for any system dependencies that are needed for the build process.
 
-4. The PALISADE distribution includes some external libraries, such as GMP and NTL. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
+4. The OpenFHE distribution includes some external libraries, such as GMP and NTL. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
 
-5. Build PALISADE by running the following command (this will take few minutes; using the -j<threads> make command-line flag is suggested to speed up the build where threads is typically the number of cores or threads on your machine)
+5. Build OpenFHE by running the following command (this will take few minutes; using the -j<threads> make command-line flag is suggested to speed up the build where threads is typically the number of cores or threads on your machine)
 
 ::
 
     make
 
-6. Install PALISADE in a system directory (if desired or for production purposes)
+6. Install OpenFHE in a system directory (if desired or for production purposes)
 
 ::
 

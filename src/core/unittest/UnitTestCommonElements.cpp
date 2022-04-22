@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code tests the transform feature of the PALISADE lattice encryption library.
+  This code tests the transform feature of the OpenFHE lattice encryption library.
  */
 
 #include <iostream>

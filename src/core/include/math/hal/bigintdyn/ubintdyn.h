@@ -829,11 +829,12 @@ public:
     const ubint& ModMulFastEq(const ubint& b, const ubint& modulus, const ubint& mu);
 
     ubint ModMulFastConst(const ubint& b, const ubint& modulus, const ubint& bInv) const {
-        PALISADE_THROW(lbcrypto::not_implemented_error, "ModMulFastConst is not implemented for backend 4");
+        OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConst is not implemented for backend 4");
     }
 
     const ubint& ModMulFastConstEq(const ubint& b, const ubint& modulus, const ubint& bInv) {
-        PALISADE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 4");
+        OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 4");
+
     }
 
     /**
@@ -926,7 +927,7 @@ public:
     T ConvertToInt() const {
         T result = 0;
         if (m_value.size() == 0) {
-            PALISADE_THROW(lbcrypto::not_available_error, "ConvertToInt() on uninitialized bint");
+            OPENFHE_THROW(lbcrypto::not_available_error, "ConvertToInt() on uninitialized bint");
         }
         if (sizeof(limb_t) >= sizeof(T)) {
             result = m_value[0];
@@ -1172,7 +1173,7 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
+            OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));

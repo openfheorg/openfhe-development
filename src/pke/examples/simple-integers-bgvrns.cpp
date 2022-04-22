@@ -35,7 +35,7 @@
 
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
-#include "palisade.h"
+#include "openfhe.h"
 
 using namespace lbcrypto;
 

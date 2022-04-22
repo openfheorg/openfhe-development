@@ -35,7 +35,7 @@
  */
 
 #define PROFILE  //for TIC TOC
-#include "palisade.h"
+#include "openfhe.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
 
@@ -210,7 +210,7 @@ bool run_demo_pre(void) {
   auto unpacked2 = ptDec2->GetPackedValue();
   bool good = true;
 
-  // note that PALISADE assumes that plaintext is in the range of -p/2..p/2
+  // note that OpenFHE assumes that plaintext is in the range of -p/2..p/2
   // to recover 0...q simply add q if the unpacked value is negative
   for (unsigned int j = 0; j < pt->GetLength(); j++) {
     if (unpacked1[j] < 0) unpacked1[j] += plaintextModulus;

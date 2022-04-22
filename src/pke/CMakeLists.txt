@@ -11,49 +11,49 @@ list(APPEND PKE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include")
 list(APPEND PKE_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 include_directories(${PKE_INCLUDE_DIRS})
 
-set(PKE_VERSION_MAJOR ${PALISADE_VERSION_MAJOR})
-set(PKE_VERSION_MINOR ${PALISADE_VERSION_MINOR})
-set(PKE_VERSION_PATCH ${PALISADE_VERSION_PATCH})
+set(PKE_VERSION_MAJOR ${OPENFHE_VERSION_MAJOR})
+set(PKE_VERSION_MINOR ${OPENFHE_VERSION_MINOR})
+set(PKE_VERSION_PATCH ${OPENFHE_VERSION_PATCH})
 set(PKE_VERSION ${PKE_VERSION_MAJOR}.${PKE_VERSION_MINOR}.${PKE_VERSION_PATCH})
 
 add_library (pkeobj OBJECT ${PKE_SRC_FILES})
 set_property(TARGET pkeobj PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 if( BUILD_SHARED )
-	add_dependencies(pkeobj PALISADEcore)
-	add_library (PALISADEpke SHARED $<TARGET_OBJECTS:pkeobj>)
-	set_property(TARGET PALISADEpke PROPERTY VERSION ${PKE_VERSION})
-	set_property(TARGET PALISADEpke PROPERTY SOVERSION ${PKE_VERSION_MAJOR})
-	set_property(TARGET PALISADEpke PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-	install(TARGETS PALISADEpke
-		EXPORT PalisadeTargets
+	add_dependencies(pkeobj OPENFHEcore)
+	add_library (OPENFHEpke SHARED $<TARGET_OBJECTS:pkeobj>)
+	set_property(TARGET OPENFHEpke PROPERTY VERSION ${PKE_VERSION})
+	set_property(TARGET OPENFHEpke PROPERTY SOVERSION ${PKE_VERSION_MAJOR})
+	set_property(TARGET OPENFHEpke PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+	install(TARGETS OPENFHEpke
+		EXPORT OpenFHETargets
 		DESTINATION lib)
 endif()
 
 if( BUILD_STATIC )
-	add_dependencies(pkeobj PALISADEcore_static)
-	add_library (PALISADEpke_static STATIC $<TARGET_OBJECTS:pkeobj>)
-	set_property(TARGET PALISADEpke_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-	install(TARGETS PALISADEpke_static
-		EXPORT PalisadeTargets
+	add_dependencies(pkeobj OPENFHEcore_static)
+	add_library (OPENFHEpke_static STATIC $<TARGET_OBJECTS:pkeobj>)
+	set_property(TARGET OPENFHEpke_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+	install(TARGETS OPENFHEpke_static
+		EXPORT OpenFHETargets
 		DESTINATION lib)
 endif()
 
 install(DIRECTORY include/
-	DESTINATION include/palisade/pke)
+	DESTINATION include/openfhe/pke)
 
 add_custom_target( allpke )
 
 if( BUILD_SHARED )
-	set (PKELIBS PUBLIC PALISADEpke PUBLIC PALISADEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (PALISADEpke PUBLIC PALISADEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	add_dependencies( allpke PALISADEpke)
+	set (PKELIBS PUBLIC OPENFHEpke PUBLIC OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OPENFHEpke PUBLIC OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	add_dependencies( allpke OPENFHEpke)
 endif()
 
 if( BUILD_STATIC )
-	set (PKELIBS ${PKELIBS} PUBLIC PALISADEpke_static PUBLIC PALISADEcore_static ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (PALISADEpke_static PUBLIC PALISADEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
-	add_dependencies( allpke PALISADEpke_static)
+	set (PKELIBS ${PKELIBS} PUBLIC OPENFHEpke_static PUBLIC OPENFHEcore_static ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OPENFHEpke_static PUBLIC OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
+	add_dependencies( allpke OPENFHEpke_static)
 endif()
 
 if( BUILD_UNITTESTS )
@@ -104,17 +104,17 @@ if (BUILD_EXTRAS)
 	add_dependencies( allpke allpkeextras )
 endif()
 
-add_custom_command( OUTPUT pkeinfocmd COMMAND echo Builds PALISADEpke and these apps: ${PKEAPPS} )
+add_custom_command( OUTPUT pkeinfocmd COMMAND echo Builds OPENFHEpke and these apps: ${PKEAPPS} )
 add_custom_target( pkeinfo DEPENDS pkeinfocmd )
 
 # Collect compile definitions and pass them upward
 if ( BUILD_SHARED )
-	get_target_property(_compile_defs PALISADEpke COMPILE_DEFINITIONS)
+	get_target_property(_compile_defs OPENFHEpke COMPILE_DEFINITIONS)
 	set(_pal_pke_compile_defs ${_compile_defs} PARENT_SCOPE)
 endif()
 
 if( BUILD_STATIC )
-	get_target_property(_compile_defs_static PALISADEpke_static COMPILE_DEFINITIONS)
+	get_target_property(_compile_defs_static OPENFHEpke_static COMPILE_DEFINITIONS)
 	set(_pal_pke_compile_defs_static ${_compile_defs_static} PARENT_SCOPE)
 endif()
 

@@ -240,7 +240,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(
     const PrivateKey<DCRTPoly> oldKey,
     const PublicKey<DCRTPoly> newKey) const {
   // TODO (Andrey) implement method for ReEncrypt
-  PALISADE_THROW(config_error, "KeySwitchGen is not supported");
+  OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
 }
 
 void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly> &ciphertext,

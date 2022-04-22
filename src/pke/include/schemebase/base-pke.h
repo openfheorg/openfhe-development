@@ -151,7 +151,7 @@ class PKEBase {
   virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext,
                                 const PrivateKey<Element> privateKey,
                                 NativePoly *plaintext) const {
-    PALISADE_THROW(config_error, "Decryption to NativePoly is not supported");
+    OPENFHE_THROW(config_error, "Decryption to NativePoly is not supported");
   }
 
   /**
@@ -165,7 +165,7 @@ class PKEBase {
   virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext,
                                 const PrivateKey<Element> privateKey,
                                 Poly *plaintext) const {
-    PALISADE_THROW(config_error, "Decryption to Poly is not supported");
+    OPENFHE_THROW(config_error, "Decryption to Poly is not supported");
   }
 
   /////////////////////////////////////////

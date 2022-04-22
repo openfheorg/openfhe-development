@@ -1,0 +1,83 @@
+# - Config file for the OpenFHE package
+# It defines the following variables
+#  OpenFHE_INCLUDE_DIRS - include directories for OpenFHE
+#  OpenFHE_LIBRARIES    - libraries to link against
+
+get_filename_component(OpenFHE_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT OpenFHE_BINARY_DIR)
+  include("${OpenFHE_CMAKE_DIR}/OpenFHETargets.cmake")
+endif()
+
+# These are IMPORTED targets created by OpenFHETargets.cmake
+set(OpenFHE_INCLUDE "@INSTALL_INCLUDE_DIR@")
+set(OpenFHE_LIBDIR "@INSTALL_LIB_DIR@")
+set(OpenFHE_LIBRARIES @OpenFHE_PACKAGE_LIBS@ @THIRDPARTYLIBS@ @OpenMP_CXX_FLAGS@)
+set(OpenFHE_STATIC_LIBRARIES @OpenFHE_STATIC_LIBS@ @THIRDPARTYLIBS@ @OpenMP_CXX_FLAGS@)
+set(OpenFHE_SHARED_LIBRARIES @OpenFHE_SHARED_LIBS@ @THIRDPARTYLIBS@ @OpenMP_CXX_FLAGS@)
+set(BASE_OPENFHE_VERSION @OPENFHE_VERSION@)
+
+set(OPENMP_INCLUDES "@OPENMP_INCLUDES@" )
+set(OPENMP_LIBRARIES "@OPENMP_LIBRARIES@" )
+
+set(OpenFHE_CXX_FLAGS "@CMAKE_CXX_FLAGS@ @OpenMP_CXX_FLAGS@")
+set(OpenFHE_C_FLAGS "@CMAKE_C_FLAGS@ @OpenMP_C_FLAGS@")
+
+if( "@WITH_NTL@" STREQUAL "Y" )
+	set(OpenFHE_CXX_FLAGS "${OpenFHE_CXX_FLAGS} -DWITH_NTL" )
+	set(OpenFHE_C_FLAGS "${OpenFHE_C_FLAGS} -DWITH_NTL")
+endif()
+
+set (OpenFHE_EXE_LINKER_FLAGS "@CMAKE_EXE_LINKER_FLAGS@ @OpenMP_EXE_LINKER_FLAGS@")
+
+# CXX info
+set(OpenFHE_CXX_STANDARD "@CMAKE_CXX_STANDARD@")
+set(OpenFHE_CXX_COMPILER_ID "@CMAKE_CXX_COMPILER_ID@")
+set(OpenFHE_CXX_COMPILER_VERSION "@CMAKE_CXX_COMPILER_VERSION@")
+
+# Build Options
+set(OpenFHE_STATIC "@BUILD_STATIC@")
+set(OpenFHE_SHARED "@BUILD_SHARED@")
+set(OpenFHE_TCM "@WITH_TCM@")
+set(OpenFHE_WITH_INTEL_HEXL "@WITH_INTEL_HEXL@")
+set(OpenFHE_OPENMP "@WITH_OPENMP@")
+set(OpenFHE_NATIVE_SIZE "@NATIVE_SIZE@")
+set(OpenFHE_CKKS_M_FACTOR "@CKKS_M_FACTOR@")
+set(OpenFHE_NATIVEOPT "@WITH_NATIVEOPT@")
+
+# Math Backend
+if("@WITH_BE2@")
+	set(OpenFHE_BACKEND "BE2")
+elseif("@WITH_BE4@")
+	set(OpenFHE_BACKEND "BE4")
+elseif("@WITH_NTL@")
+	set(OpenFHE_BACKEND "NTL")
+endif()
+
+# Build Details
+set(OpenFHE_EMSCRIPTEN "@EMSCRIPTEN@")
+set(OpenFHE_ARCHITECTURE "@ARCHITECTURE@")
+set(OpenFHE_BACKEND_FLAGS_BASE "@OpenFHE_BACKEND_FLAGS@")
+
+# Compile Definitions
+
+if( "@BUILD_SHARED@" )
+	set(OpenFHE_BINFHE_COMPILE_DEFINITIONS "@_pal_binfhe_compile_defs@")
+	set(OpenFHE_CORE_COMPILE_DEFINITIONS "@_pal_core_compile_defs@")
+	set(OpenFHE_PKE_COMPILE_DEFINITIONS "@_pal_pke_compile_defs@")
+	set(OpenFHE_COMPILE_DEFINITIONS
+			${OpenFHE_BINFHE_COMPILE_DEFINITIONS}
+			${OpenFHE_CORE_COMPILE_DEFINITIONS}
+			${OpenFHE_PKE_COMPILE_DEFINITIONS})
+endif()
+
+if( "@BUILD_STATIC@" )
+	set(OpenFHE_BINFHE_COMPILE_DEFINITIONS_STATIC "@_pal_binfhe_compile_defs_static@")
+	set(OpenFHE_CORE_COMPILE_DEFINITIONS_STATIC "@_pal_core_compile_defs_static@")
+	set(OpenFHE_PKE_COMPILE_DEFINITIONS_STATIC "@_pal_pke_compile_defs_static@")
+	set(OpenFHE_COMPILE_DEFINITIONS_STATIC
+			${OpenFHE_BINFHE_COMPILE_DEFINITIONS_STATIC}
+			${OpenFHE_CORE_COMPILE_DEFINITIONS_STATIC}
+			${OpenFHE_PKE_COMPILE_DEFINITIONS_STATIC})
+endif()

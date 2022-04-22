@@ -39,7 +39,7 @@
 #include <fstream>
 #include <iostream>
 #include <thread>
-#include "palisadecore.h"
+#include "openfhecore.h"
 #include "time.h"
 
 // function to verify our generated array
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     // print to stdout.
     DEBUG_FLAG(true);
 
-    lbcrypto::PalisadeParallelControls.Enable();
+    lbcrypto::OpenFHEParallelControls.Enable();
 
     uint32_t array_size = 1000;
     DEBUGEXP(argc);
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
         /* Obtain thread number */
         tid = omp_get_thread_num();
 
-        /* Only master thread does this */
+        /* Only main thread does this */
         if (tid == 0) {
             nthreads = omp_get_num_threads();
             std::cout << "Confirmed Number of threads = " << nthreads << std::endl;

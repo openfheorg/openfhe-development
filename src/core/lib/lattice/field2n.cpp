@@ -40,7 +40,7 @@ namespace lbcrypto {
 // Constructor from ring element
 Field2n::Field2n(const Poly& element) {
     if (element.GetFormat() != Format::COEFFICIENT) {
-        PALISADE_THROW(type_error, "Poly not in Format::COEFFICIENT representation");
+        OPENFHE_THROW(type_error, "Poly not in Format::COEFFICIENT representation");
     }
     else {
         // the value of element.at(i) is usually small - so a 64-bit integer is more
@@ -63,7 +63,7 @@ Field2n::Field2n(const Poly& element) {
 // Constructor from ring element
 Field2n::Field2n(const NativePoly& element) {
     if (element.GetFormat() != Format::COEFFICIENT) {
-        PALISADE_THROW(type_error, "Poly not in Format::COEFFICIENT representation");
+        OPENFHE_THROW(type_error, "Poly not in Format::COEFFICIENT representation");
     }
     else {
         // the value of element.at(i) is usually small - so a 64-bit integer is more
@@ -83,7 +83,7 @@ Field2n::Field2n(const NativePoly& element) {
 // Constructor from DCRTPoly ring element
 Field2n::Field2n(const DCRTPoly& DCRTelement) {
     if (DCRTelement.GetFormat() != Format::COEFFICIENT) {
-        PALISADE_THROW(type_error, "DCRTPoly not in Format::COEFFICIENT representation");
+        OPENFHE_THROW(type_error, "DCRTPoly not in Format::COEFFICIENT representation");
     }
     else {
         // the value of element.at(i) is usually small - so a 64-bit integer is more
@@ -117,7 +117,7 @@ Field2n::Field2n(const Matrix<int64_t>& element) {
 // Inverse operation for the field elements
 Field2n Field2n::Inverse() const {
     if (format == Format::COEFFICIENT) {
-        PALISADE_THROW(type_error, "Polynomial not in Format::EVALUATION representation");
+        OPENFHE_THROW(type_error, "Polynomial not in Format::EVALUATION representation");
     }
     else {
         Field2n inverse(this->size(), Format::EVALUATION);
@@ -139,7 +139,7 @@ Field2n Field2n::Plus(const Field2n& rhs) const {
         return sum;
     }
     else {
-        PALISADE_THROW(type_error, "Operands are not in the same format");
+        OPENFHE_THROW(type_error, "Operands are not in the same format");
     }
 }
 
@@ -151,7 +151,7 @@ Field2n Field2n::Plus(double scalar) const {
         return sum;
     }
     else {
-        PALISADE_THROW(not_implemented_error,
+        OPENFHE_THROW(not_implemented_error,
                        "Field2n scalar addition is currently supported only for "
                        "Format::COEFFICIENT representation");
     }
@@ -167,7 +167,7 @@ Field2n Field2n::Minus(const Field2n& rhs) const {
         return difference;
     }
     else {
-        PALISADE_THROW(type_error, "Operands are not in the same format");
+        OPENFHE_THROW(type_error, "Operands are not in the same format");
     }
 }
 
@@ -181,7 +181,7 @@ Field2n Field2n::Times(const Field2n& rhs) const {
         return result;
     }
     else {
-        PALISADE_THROW(type_error,
+        OPENFHE_THROW(type_error,
                        "At least one of the polynomials is not in "
                        "Format::EVALUATION representation");
     }
@@ -199,7 +199,7 @@ Field2n Field2n::ShiftRight() {
         return result;
     }
     else {
-        PALISADE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
+        OPENFHE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
     }
 }
 
@@ -207,7 +207,7 @@ Field2n Field2n::ShiftRight() {
 Field2n Field2n::AutomorphismTransform(size_t i) const {
     if (this->format == Format::EVALUATION) {
         if (i % 2 == 0) {
-            PALISADE_THROW(math_error, "automorphism index should be odd\n");
+            OPENFHE_THROW(math_error, "automorphism index should be odd\n");
         }
 
         Field2n result(*this);
@@ -221,7 +221,7 @@ Field2n Field2n::AutomorphismTransform(size_t i) const {
         return result;
     }
     else {
-        PALISADE_THROW(not_implemented_error,
+        OPENFHE_THROW(not_implemented_error,
                        "Field2n Automorphism is only implemented for "
                        "Format::EVALUATION format");
     }
@@ -254,7 +254,7 @@ Field2n Field2n::ExtractOdd() const {
         return odds;
     }
     else {
-        PALISADE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
+        OPENFHE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
     }
 }
 
@@ -268,7 +268,7 @@ Field2n Field2n::ExtractEven() const {
         return evens;
     }
     else {
-        PALISADE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
+        OPENFHE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
     }
 }
 
@@ -292,7 +292,7 @@ Field2n Field2n::Permute() const {
         return permuted;
     }
     else {
-        PALISADE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
+        OPENFHE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
     }
 }
 
@@ -312,7 +312,7 @@ Field2n Field2n::InversePermute() const {
         return invpermuted;
     }
     else {
-        PALISADE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
+        OPENFHE_THROW(type_error, "Polynomial not in Format::COEFFICIENT representation");
     }
 }
 

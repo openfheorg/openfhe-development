@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code exercises the block allocator utility of the PALISADE lattice encryption library.
+  This code exercises the block allocator utility of the OpenFHE lattice encryption library.
  */
 
 // #define PROFILE  // define if we want elapsed time output and pool statistics
@@ -160,7 +160,7 @@ void Benchmark(const char* name, AllocFunc allocFunc, DeallocFunc deallocFunc) {
     TotalElapsedMicroseconds += ElapsedMicroseconds;
 
     PROFILELOG(name << "           TOTAL TIME: " << TotalElapsedMicroseconds);
-    PALISADE_UNUSED(TotalElapsedMicroseconds);
+    OPENFHE_UNUSED(TotalElapsedMicroseconds);
 }
 
 TEST(UTBlockAllocate, xalloc_test) {

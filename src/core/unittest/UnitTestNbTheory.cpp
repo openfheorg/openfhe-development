@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code exercises the math libraries of the PALISADE lattice encryption library
+  This code exercises the math libraries of the OpenFHE lattice encryption library
  */
 
 #include <iostream>

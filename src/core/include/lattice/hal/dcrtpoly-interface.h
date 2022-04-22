@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Defines an interface that any DCRT Polynomial implmentation must implement in order to work in PALISADE.
+  Defines an interface that any DCRT Polynomial implmentation must implement in order to work in OpenFHE.
  */
 
 #ifndef LBCRYPTO_LATTICE_DCRTPOLYINTERFACE_H
@@ -473,7 +473,7 @@ public:
    */
     virtual DerivedType Transpose() const {
         if (m_format == COEFFICIENT) {
-            PALISADE_THROW(not_implemented_error,
+            OPENFHE_THROW(not_implemented_error,
                            "DCRTPolyInterface element transposition is currently "
                            "implemented only in the Evaluation representation.");
         }
@@ -607,7 +607,7 @@ public:
    */
     virtual DerivedType MultiplyAndRound(const BigIntType& p, const BigIntType& q) const {
         std::string errMsg = "Operation not implemented yet";
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(not_implemented_error, errMsg);
         return this->GetDerived();
     }
 
@@ -622,7 +622,7 @@ public:
    */
     virtual DerivedType DivideAndRound(const BigIntType& q) const {
         std::string errMsg = "Operation not implemented yet";
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(not_implemented_error, errMsg);
         return this->GetDerived();
     }
 
@@ -687,7 +687,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     virtual DerivedType ModByTwo() const {
-        PALISADE_THROW(not_implemented_error, "Mod of an BigIntType not implemented on DCRTPoly");
+        OPENFHE_THROW(not_implemented_error, "Mod of an BigIntType not implemented on DCRTPoly");
     }
 
     /**
@@ -700,7 +700,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     virtual DerivedType Mod(const BigIntType& modulus) const {
-        PALISADE_THROW(not_implemented_error, "Mod of an BigIntType not implemented on DCRTPoly");
+        OPENFHE_THROW(not_implemented_error, "Mod of an BigIntType not implemented on DCRTPoly");
     }
 
     // OTHER FUNCTIONS AND UTILITIES
@@ -713,7 +713,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     virtual const BigVecType& GetValues() const {
-        PALISADE_THROW(not_implemented_error, "GetValues not implemented on DCRTPoly");
+        OPENFHE_THROW(not_implemented_error, "GetValues not implemented on DCRTPoly");
     }
 
     /**
@@ -725,7 +725,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     virtual void SetValues(const BigVecType& values, Format format) {
-        PALISADE_THROW(not_implemented_error, "SetValues not implemented on DCRTPoly");
+        OPENFHE_THROW(not_implemented_error, "SetValues not implemented on DCRTPoly");
     }
 
     /**
@@ -769,7 +769,7 @@ public:
    * @warning Doesn't make sense for DCRT
    */
     virtual DerivedType AddRandomNoise(const BigIntType& modulus) const {
-        PALISADE_THROW(not_implemented_error, "AddRandomNoise is not currently implemented for DCRTPoly");
+        OPENFHE_THROW(not_implemented_error, "AddRandomNoise is not currently implemented for DCRTPoly");
     }
 
     /**
@@ -781,7 +781,7 @@ public:
    * @warning Only used by RingSwitching, which is no longer supported. Will be removed in future.
    */
     virtual void MakeSparse(const uint32_t& wFactor) {
-        PALISADE_THROW(not_implemented_error, "MakeSparse is not currently implemented for DCRTPoly");
+        OPENFHE_THROW(not_implemented_error, "MakeSparse is not currently implemented for DCRTPoly");
     }
 
     /**
@@ -1284,7 +1284,7 @@ public:
    */
     virtual void SwitchModulus(const BigIntType& modulus, const BigIntType& rootOfUnity, const BigIntType& modulusArb,
                                const BigIntType& rootOfUnityArb) {
-        PALISADE_THROW(not_implemented_error, "SwitchModulus not implemented on DCRTPoly");
+        OPENFHE_THROW(not_implemented_error, "SwitchModulus not implemented on DCRTPoly");
     }
 
     /**

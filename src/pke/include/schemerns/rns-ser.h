@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_CRYPTO_RNS_SER_H
 #define LBCRYPTO_CRYPTO_RNS_SER_H
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "utils/serial.h"
 
 CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersRNS);

@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  PALISADE version strings
+  OpenFHE version strings
  */
 
 #ifndef SRC_VERSION_H_
@@ -42,16 +42,16 @@
 // a string
 #define STR_EXPAND(tok) #tok
 #define STR(tok)        STR_EXPAND(tok)
-#ifndef PALISADE_VERSION
-    #define PALISADE_VERSION BASE_PALISADE_VERSION
+#ifndef OPENFHE_VERSION
+    #define OPENFHE_VERSION BASE_OPENFHE_VERSION
 #endif
 
 /**
- * GetPALISADEVersion - Returns PALISADE Version string
+ * GetOPENFHEVersion - Returns OPENFHE Version string
  * @return
  */
-inline std::string GetPALISADEVersion() {
-    return STR(PALISADE_VERSION);
+inline std::string GetOPENFHEVersion() {
+    return STR(OPENFHE_VERSION);
 }
 
 #endif /* SRC_VERSION_H_ */

@@ -108,7 +108,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
           "switching parameters: Can't appropriately distribute " +
           std::to_string(sizeQ) + " towers into " + std::to_string(numPartQ) +
           " digits. Please select different number of digits.";
-      PALISADE_THROW(config_error, str);
+      OPENFHE_THROW(config_error, str);
     }
 
     m_numPerPartQ = a;

@@ -33,7 +33,7 @@
   Example of integer Gaussian sampling
  */
 
-#include "palisadecore.h"
+#include "openfhecore.h"
 // #include <vld.h>
 using namespace lbcrypto;
 

@@ -47,7 +47,7 @@ You can do either:
 - Integration of `NTL` library with `OpenFHE`
 - Only available when `NTL` or `GMP` is enabled using `CMAKE`
 
-This is an integration of the NTL library with PALISADE, and is only available when NTL/GMP is enabled using CMAKE.
+This is an integration of the NTL library with OpenFHE, and is only available when NTL/GMP is enabled using CMAKE.
 
 # Supported Math Operations
 

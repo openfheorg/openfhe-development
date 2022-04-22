@@ -290,7 +290,7 @@ void mubintvec<ubint_el_t>::SetModulus(const mubintvec& value) {
 template <class ubint_el_t>
 const ubint_el_t& mubintvec<ubint_el_t>::GetModulus() const {
     if (m_modulus_state != INITIALIZED) {
-        PALISADE_THROW(lbcrypto::not_available_error, "GetModulus() on uninitialized mubintvec");
+        OPENFHE_THROW(lbcrypto::not_available_error, "GetModulus() on uninitialized mubintvec");
     }
     return (m_modulus);
 }
@@ -378,7 +378,7 @@ template <class ubint_el_t>
 mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModAddAtIndex(usint i, const ubint_el_t& b) const {
     if (i > this->GetLength() - 1) {
         std::string errMsg = "mubintvec::ModAddAtIndex. Index is out of range. i = " + std::to_string(i);
-        PALISADE_THROW(lbcrypto::math_error, errMsg);
+        OPENFHE_THROW(lbcrypto::math_error, errMsg);
     }
     mubintvec ans(*this);
     ans.m_data[i].ModAddEq(b, this->m_modulus);
@@ -389,7 +389,7 @@ template <class ubint_el_t>
 const mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModAddAtIndexEq(usint i, const ubint_el_t& b) {
     if (i > this->GetLength() - 1) {
         std::string errMsg = "mubintvec::ModAddAtIndex. Index is out of range. i = " + std::to_string(i);
-        PALISADE_THROW(lbcrypto::math_error, errMsg);
+        OPENFHE_THROW(lbcrypto::math_error, errMsg);
     }
     this->m_data[i].ModAddEq(b, this->m_modulus);
     return *this;
@@ -405,10 +405,10 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModAdd(const mubintvec& b) const {
 template <class ubint_el_t>
 const mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModAddEq(const mubintvec& b) {
     if (this->m_modulus != b.m_modulus) {
-        PALISADE_THROW(lbcrypto::math_error, "mubintvec adding vectors of different moduli");
+        OPENFHE_THROW(lbcrypto::math_error, "mubintvec adding vectors of different moduli");
     }
     else if (this->m_data.size() != b.m_data.size()) {
-        PALISADE_THROW(lbcrypto::math_error, "mubintvec adding vectors of different lengths");
+        OPENFHE_THROW(lbcrypto::math_error, "mubintvec adding vectors of different lengths");
     }
     else {
         for (usint i = 0; i < this->m_data.size(); i++) {
@@ -443,10 +443,11 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModSub(const mubintvec& b) const {
 template <class ubint_el_t>
 const mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModSubEq(const mubintvec& b) {
     if (this->m_modulus != b.m_modulus) {
-        PALISADE_THROW(lbcrypto::math_error, "mubintvec subtracting vectors of different moduli");
+        OPENFHE_THROW(lbcrypto::math_error, "mubintvec subtracting vectors of different moduli");
     }
     else if (this->m_data.size() != b.m_data.size()) {
-        PALISADE_THROW(lbcrypto::math_error, "mubintvec subtracting vectors of different lengths");
+        OPENFHE_THROW(lbcrypto::math_error, "mubintvec subtracting vectors of different lengths");
+
     }
     else {
         for (usint i = 0; i < this->m_data.size(); i++) {
@@ -502,10 +503,10 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModMul(const mubintvec& b) const {
 #ifdef NO_BARRETT
     mubintvec ans(*this);
     if (this->m_modulus != b.m_modulus) {
-        PALISADE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different moduli");
+        OPENFHE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different moduli");
     }
     else if (this->m_data.size() != b.m_data.size()) {
-        PALISADE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different lengths");
+        OPENFHE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different lengths");
     }
     else {
         for (usint i = 0; i < ans.m_data.size(); i++) {
@@ -515,7 +516,7 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModMul(const mubintvec& b) const {
     }
 #else  // bartett way
     if ((this->m_data.size() != b.m_data.size()) || this->m_modulus != b.m_modulus) {
-        PALISADE_THROW(lbcrypto::math_error, "ModMul called on mubintvecs with different parameters.");
+        OPENFHE_THROW(lbcrypto::math_error, "ModMul called on mubintvecs with different parameters.");
     }
 
     mubintvec ans(*this);
@@ -535,10 +536,10 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModMul(const mubintvec& b) const {
 template <class ubint_el_t>
 const mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModMulEq(const mubintvec& b) {
     if (this->m_modulus != b.m_modulus) {
-        PALISADE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different moduli");
+        OPENFHE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different moduli");
     }
     else if (this->m_data.size() != b.m_data.size()) {
-        PALISADE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different lengths");
+        OPENFHE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different lengths");
     }
     else {
         for (usint i = 0; i < this->m_data.size(); i++) {

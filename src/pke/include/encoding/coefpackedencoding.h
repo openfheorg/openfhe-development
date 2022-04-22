@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Represents and defines packing integers of plaintext objects into polynomial coefficients in Palisade
+  Represents and defines packing integers of plaintext objects into polynomial coefficients in OpenFHE
  */
 
 #ifndef SRC_CORE_LIB_ENCODING_COEFPACKEDENCODING_H_

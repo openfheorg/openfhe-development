@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code runs unit tests for the FHEW methods of the PALISADE lattice encryption library
+  This code runs unit tests for the FHEW methods of the OpenFHE lattice encryption library
  */
 
 #include "binfhecontext.h"

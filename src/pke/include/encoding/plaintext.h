@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Represents and defines plaintext objects in Palisade
+  Represents and defines plaintext objects in OpenFHE
  */
 
 #ifndef LBCRYPTO_UTILS_PLAINTEXT_H
@@ -82,7 +82,7 @@ typedef std::shared_ptr<const PlaintextImpl> ConstPlaintext;
 
 /**
  * @class PlaintextImpl
- * @brief This class represents plaintext in the Palisade library.
+ * @brief This class represents plaintext in the OpenFHE library.
  *
  * PlaintextImpl is primarily intended to be
  * used as a container and in conjunction with specific encodings which inherit
@@ -247,12 +247,12 @@ class PlaintextImpl {
    */
   template <typename Element>
   Element& GetElement() {
-      PALISADE_THROW(not_implemented_error, "Generic GetElement() is not implemented");
+      OPENFHE_THROW(not_implemented_error, "Generic GetElement() is not implemented");
   }
 
   template <typename Element>
   const Element& GetElement() const {
-      PALISADE_THROW(not_implemented_error, "Generic GetElement() is not implemented");
+      OPENFHE_THROW(not_implemented_error, "Generic GetElement() is not implemented");
   }
 
   /**
@@ -291,7 +291,7 @@ class PlaintextImpl {
    * @param newSize
    */
   virtual void SetLength(size_t newSize) {
-    PALISADE_THROW(not_implemented_error, "resize not supported");
+    OPENFHE_THROW(not_implemented_error, "resize not supported");
   }
 
   /*
@@ -319,35 +319,35 @@ class PlaintextImpl {
   void SetLevel(size_t l) { level = l; }
 
   virtual double GetLogError() const {
-    PALISADE_THROW(not_available_error,
+    OPENFHE_THROW(not_available_error,
                    "no estimate of noise available for the current scheme");
   }
 
   virtual double GetLogPrecision() const {
-    PALISADE_THROW(not_available_error,
+    OPENFHE_THROW(not_available_error,
                    "no estimate of precision available for the current scheme");
   }
 
   virtual const std::string& GetStringValue() const {
-    PALISADE_THROW(type_error, "not a string");
+    OPENFHE_THROW(type_error, "not a string");
   }
   virtual const std::vector<int64_t>& GetCoefPackedValue() const {
-    PALISADE_THROW(type_error, "not a packed coefficient vector");
+    OPENFHE_THROW(type_error, "not a packed coefficient vector");
   }
   virtual const std::vector<int64_t>& GetPackedValue() const {
-    PALISADE_THROW(type_error, "not a packed coefficient vector");
+    OPENFHE_THROW(type_error, "not a packed coefficient vector");
   }
   virtual const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
-    PALISADE_THROW(type_error, "not a packed vector of complex numbers");
+    OPENFHE_THROW(type_error, "not a packed vector of complex numbers");
   }
   virtual const std::vector<double> GetRealPackedValue() const {
-    PALISADE_THROW(type_error, "not a packed vector of real numbers");
+    OPENFHE_THROW(type_error, "not a packed vector of real numbers");
   }
   virtual void SetStringValue(const std::string&) {
-    PALISADE_THROW(type_error, "does not support a string");
+    OPENFHE_THROW(type_error, "does not support a string");
   }
   virtual void SetIntVectorValue(const std::vector<int64_t>&) {
-    PALISADE_THROW(type_error, "does not support an int vector");
+    OPENFHE_THROW(type_error, "does not support an int vector");
   }
 
   /**

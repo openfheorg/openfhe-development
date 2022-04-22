@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  all supported encodings of plaintext objects in Palisade
+  all supported encodings of plaintext objects in OpenFHE
  */
 
 #ifndef SRC_CORE_LIB_ENCODING_ENCODINGS_H_

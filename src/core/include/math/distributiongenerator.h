@@ -51,16 +51,16 @@
 
 namespace lbcrypto {
 
-// Defines the PRNG implementation used by PALISADE.
-// The cryptographically secure PRNG used by PALISADE is based on BLAKE2 hash
+// Defines the PRNG implementation used by OpenFHE.
+// The cryptographically secure PRNG used by OpenFHE is based on BLAKE2 hash
 // functions. A user can replace it with a different PRNG if desired by defining
 // the same methods as for the Blake2Engine class.
 typedef Blake2Engine PRNG;
 
 /**
  * @brief The class providing the PRNG capability to all random distribution
- * generators in PALISADE. THe security of Ring Learning With Errors (used for
- * all crypto capabilities in PALISADE) depends on the randomness of uniform,
+ * generators in OpenFHE. THe security of Ring Learning With Errors (used for
+ * all crypto capabilities in OpenFHE) depends on the randomness of uniform,
  * ternary, and Gaussian distributions, which derive their randomness from the
  * PRNG.
  */
@@ -71,7 +71,7 @@ public:
    */
 
     static void InitPRNG() {
-        int threads = PalisadeParallelControls.GetNumThreads();
+        int threads = OpenFHEParallelControls.GetNumThreads();
         if (threads == 0) {
             threads = 1;
         }

@@ -53,7 +53,7 @@ int CryptoContextFactory<Element>::GetContextCount() {
 template <typename Element>
 CryptoContext<Element> CryptoContextFactory<Element>::GetSingleContext() {
   if (GetContextCount() == 1) return AllContexts[0];
-  PALISADE_THROW(config_error, "More than one context");
+  OPENFHE_THROW(config_error, "More than one context");
 }
 
 template <typename Element>
@@ -109,7 +109,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBFVrns(
   if (numKeyswitches > 0) nonZeroCount++;
 
   if (nonZeroCount > 1)
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "only one of (numAdds,numMults,numKeyswitches) can be "
                    "nonzero in BFVrns context constructor");
 
@@ -158,7 +158,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBFVrns(
   if (numKeyswitches > 0) nonZeroCount++;
 
   if (nonZeroCount > 1)
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "only one of (numAdds,numMults,numKeyswitches) can be "
                    "nonzero in BFVrns context constructor");
 
@@ -192,7 +192,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextBFVrns(
   if (numKeyswitches > 0) nonZeroCount++;
 
   if (nonZeroCount > 1)
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                    "only one of (numAdds,numMults,numKeyswitches) can be "
                    "nonzero in BFVrns context constructor");
 
@@ -359,7 +359,7 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextCKKSrns(
     RescalingTechnique rsTech) {
 #if NATIVEINT == 128
   if (rsTech == FLEXIBLEAUTO)
-    PALISADE_THROW(
+    OPENFHE_THROW(
         config_error,
         "128-bit CKKS is not supported for the FLEXIBLEAUTO method.");
 #endif

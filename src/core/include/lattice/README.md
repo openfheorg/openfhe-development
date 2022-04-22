@@ -1,4 +1,4 @@
-# PALISADE Lattice Cryptography Library
+# OpenFHE Lattice Cryptography Library
 
 We provide a brief description of the lattice layer, the various classes of polynomial representations that we support,
 and a brief overview of the files present. However, we recommend referring to

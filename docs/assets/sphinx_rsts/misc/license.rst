@@ -1,9 +1,9 @@
-Palisade License
+OpenFHE License
 ================
 
 BSD 2-Clause License
 
-Copyright (c) 2021, PALISADE
+Copyright (c) 2021, OpenFHE
 
 All rights reserved.
 

@@ -96,7 +96,7 @@ public:
             /* Obtain thread number */
             tid = omp_get_thread_num();
 
-            /* Only master thread does this */
+            /* Only main thread does this */
             if (tid == 0) {
                 nthreads = omp_get_num_threads();
             }
@@ -123,7 +123,7 @@ public:
     }
 };
 
-extern ParallelControls PalisadeParallelControls;
+extern ParallelControls OpenFHEParallelControls;
 
 }  // namespace lbcrypto
 

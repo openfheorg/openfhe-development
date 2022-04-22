@@ -35,7 +35,7 @@
 
 #define PROFILE  // turns on the reporting of timing results
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 

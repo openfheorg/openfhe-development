@@ -1,4 +1,4 @@
-# Palisade Code Components
+# OpenFHE Code Components
 
 ```mermaid
 flowchart BT

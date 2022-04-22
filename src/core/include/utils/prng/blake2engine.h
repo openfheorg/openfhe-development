@@ -51,12 +51,12 @@ namespace lbcrypto {
 const uint32_t PRNG_BUFFER_SIZE = 1024;
 
 /**
- * @brief Defines the PRNG engine used by PALISADE. It is based on BLAKE2. Use
- * this as a template for adding other PRNG engines to PALISADE.
+ * @brief Defines the PRNG engine used by OpenFHE. It is based on BLAKE2. Use
+ * this as a template for adding other PRNG engines to OpenFHE.
  */
 class Blake2Engine {
  public:
-  // all C++11 distributions used in PALISADE work by default with uint32_t
+  // all C++11 distributions used in OpenFHE work by default with uint32_t
   // a different data type can be specified if needed for a particular
   // architecture
   using result_type = uint32_t;
@@ -143,7 +143,7 @@ class Blake2Engine {
     if (blake2xb(m_buffer.begin(), m_buffer.size() * sizeof(result_type),
                  &m_counter, sizeof(m_counter), m_seed.cbegin(),
                  m_seed.size() * sizeof(result_type)) != 0) {
-      PALISADE_THROW(math_error, "PRNG: blake2xb failed");
+      OPENFHE_THROW(math_error, "PRNG: blake2xb failed");
     }
     m_counter++;
     return;

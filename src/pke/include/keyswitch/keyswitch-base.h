@@ -70,20 +70,20 @@ class KeySwitchBase {
   virtual EvalKey<Element> KeySwitchGen(
       const PrivateKey<Element> oldPrivateKey,
       const PrivateKey<Element> newPrivateKey) const {
-    PALISADE_THROW(config_error, "KeySwitchGen is not supported");
+    OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
   }
 
   virtual EvalKey<Element> KeySwitchGen(
       const PrivateKey<Element> oldPrivateKey,
       const PrivateKey<Element> newPrivateKey,
       const EvalKey<Element> evalKey) const {
-    PALISADE_THROW(config_error, "KeySwitchGen is not supported");
+    OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
   }
 
   virtual EvalKey<Element> KeySwitchGen(
       const PrivateKey<Element> oldPrivateKey,
       const PublicKey<Element> newPublicKey) const {
-    PALISADE_THROW(config_error, "KeySwitchGen is not supported");
+    OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
   }
 
   virtual Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext,
@@ -95,7 +95,7 @@ class KeySwitchBase {
 
   virtual void KeySwitchInPlace(Ciphertext<Element> &ciphertext,
                                 const EvalKey<Element> evalKey) const {
-    PALISADE_THROW(config_error, "KeySwitch is not supported");
+    OPENFHE_THROW(config_error, "KeySwitch is not supported");
   }
 
   /////////////////////////////////////////
@@ -104,18 +104,18 @@ class KeySwitchBase {
 
   virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(
       Element a, const EvalKey<Element> evalKey) const {
-    PALISADE_THROW(config_error, "KeySwitchCore is not supported");
+    OPENFHE_THROW(config_error, "KeySwitchCore is not supported");
   }
 
   virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
       Element c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
-    PALISADE_THROW(config_error, "EvalKeySwitchPrecomputeCore is not supported");
+    OPENFHE_THROW(config_error, "EvalKeySwitchPrecomputeCore is not supported");
   }
 
   virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
       const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
       const std::shared_ptr<ParmType> paramsQl) const {
-    PALISADE_THROW(config_error, "EvalFastKeySwitchCore is not supported");
+    OPENFHE_THROW(config_error, "EvalFastKeySwitchCore is not supported");
   }
 };
 

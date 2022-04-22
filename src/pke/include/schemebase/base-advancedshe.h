@@ -89,7 +89,7 @@ public:
   virtual Ciphertext<Element> EvalLinearWSum(
       std::vector<ConstCiphertext<Element>>& ciphertextVec, const std::vector<double> &weights) const {
     std::string errMsg = "EvalLinearWSum is not implemented for this scheme.";
-    PALISADE_THROW(not_implemented_error, errMsg);
+    OPENFHE_THROW(not_implemented_error, errMsg);
   }
 
   /**
@@ -105,7 +105,7 @@ public:
       std::vector<Ciphertext<Element>>& ciphertextVec, const std::vector<double> &weights) const {
     std::string errMsg =
         "EvalLinearWSumMutable is not implemented for this scheme.";
-    PALISADE_THROW(not_implemented_error, errMsg);
+    OPENFHE_THROW(not_implemented_error, errMsg);
   }
 
   /**
@@ -133,7 +133,7 @@ public:
   virtual Ciphertext<Element> EvalPoly(
       ConstCiphertext<Element> ciphertext,
       const std::vector<double> &coefficients) const {
-    PALISADE_THROW(config_error, "EvalPoly is not supported for the scheme.");
+    OPENFHE_THROW(config_error, "EvalPoly is not supported for the scheme.");
   }
 
   /**

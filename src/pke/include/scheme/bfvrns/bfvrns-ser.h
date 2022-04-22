@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_CRYPTO_BFVRNSSER_H
 #define LBCRYPTO_CRYPTO_BFVRNSSER_H
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "utils/serial.h"
 
 CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersBFVRNS);

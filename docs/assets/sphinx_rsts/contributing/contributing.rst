@@ -1,4 +1,4 @@
-Contributing to PALISADE
+Contributing to OpenFHE
 ====================================
 
 .. toctree::

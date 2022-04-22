@@ -39,7 +39,7 @@
 #include <iterator>
 #include <random>
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "math/hal.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"

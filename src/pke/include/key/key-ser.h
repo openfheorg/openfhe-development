@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_KEY_SER_H
 #define LBCRYPTO_CRYPTO_KEY_KEY_SER_H
 
-#include "palisade.h"
+#include "openfhe.h"
 #include "utils/serial.h"
 #include "key/key.h"
 

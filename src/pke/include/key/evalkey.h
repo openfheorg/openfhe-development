@@ -71,7 +71,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual void SetAVector(const std::vector<Element> &a) {
-    PALISADE_THROW(not_implemented_error,
+    OPENFHE_THROW(not_implemented_error,
                    "SetAVector copy operation not supported");
   }
 
@@ -83,7 +83,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual void SetAVector(std::vector<Element> &&a) {
-    PALISADE_THROW(not_implemented_error,
+    OPENFHE_THROW(not_implemented_error,
                    "SetAVector move operation not supported");
   }
 
@@ -95,7 +95,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual const std::vector<Element> &GetAVector() const {
-    PALISADE_THROW(not_implemented_error, "GetAVector operation not supported");
+    OPENFHE_THROW(not_implemented_error, "GetAVector operation not supported");
   }
 
   /**
@@ -106,7 +106,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual void SetBVector(const std::vector<Element> &b) {
-    PALISADE_THROW(not_implemented_error,
+    OPENFHE_THROW(not_implemented_error,
                    "SetBVector copy operation not supported");
   }
 
@@ -118,7 +118,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual void SetBVector(std::vector<Element> &&b) {
-    PALISADE_THROW(not_implemented_error,
+    OPENFHE_THROW(not_implemented_error,
                    "SetBVector move operation not supported");
   }
 
@@ -130,7 +130,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual const std::vector<Element> &GetBVector() const {
-    PALISADE_THROW(not_implemented_error, "GetBVector operation not supported");
+    OPENFHE_THROW(not_implemented_error, "GetBVector operation not supported");
   }
 
   /**
@@ -141,7 +141,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual void SetA(const Element &a) {
-    PALISADE_THROW(not_implemented_error, "SetA copy operation not supported");
+    OPENFHE_THROW(not_implemented_error, "SetA copy operation not supported");
   }
 
   /**
@@ -151,7 +151,7 @@ class EvalKeyImpl : public Key<Element> {
    * @param &&a is the Element to be moved.
    */
   virtual void SetA(Element &&a) {
-    PALISADE_THROW(not_implemented_error, "SetA move operation not supported");
+    OPENFHE_THROW(not_implemented_error, "SetA move operation not supported");
   }
 
   /**
@@ -162,7 +162,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual const Element &GetA() const {
-    PALISADE_THROW(not_implemented_error, "GetA operation not supported");
+    OPENFHE_THROW(not_implemented_error, "GetA operation not supported");
   }
 
   /**
@@ -173,7 +173,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual void SetAinDCRT(const DCRTPoly &a) {
-    PALISADE_THROW(not_implemented_error,
+    OPENFHE_THROW(not_implemented_error,
                    "SetAinDCRT copy operation not supported");
   }
 
@@ -184,7 +184,7 @@ class EvalKeyImpl : public Key<Element> {
    * @param &&a is the Element to be moved.
    */
   virtual void SetAinDCRT(DCRTPoly &&a) {
-    PALISADE_THROW(not_implemented_error,
+    OPENFHE_THROW(not_implemented_error,
                    "SetAinDCRT move operation not supported");
   }
 
@@ -196,7 +196,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual const DCRTPoly &GetAinDCRT() const {
-    PALISADE_THROW(not_implemented_error, "GetAinDCRT operation not supported");
+    OPENFHE_THROW(not_implemented_error, "GetAinDCRT operation not supported");
   }
 
   /**
@@ -207,7 +207,7 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual void SetBinDCRT(const DCRTPoly &b) {
-    PALISADE_THROW(not_implemented_error,
+    OPENFHE_THROW(not_implemented_error,
                    "SetAinDCRT copy operation not supported");
   }
 
@@ -218,7 +218,7 @@ class EvalKeyImpl : public Key<Element> {
    * @param &&b is the Element to be moved.
    */
   virtual void SetBinDCRT(DCRTPoly &&b) {
-    PALISADE_THROW(not_implemented_error,
+    OPENFHE_THROW(not_implemented_error,
                    "SetAinDCRT move operation not supported");
   }
 
@@ -230,11 +230,11 @@ class EvalKeyImpl : public Key<Element> {
    */
 
   virtual const DCRTPoly &GetBinDCRT() const {
-    PALISADE_THROW(not_implemented_error, "GetAinDCRT operation not supported");
+    OPENFHE_THROW(not_implemented_error, "GetAinDCRT operation not supported");
   }
 
   virtual void ClearKeys() {
-    PALISADE_THROW(not_implemented_error,
+    OPENFHE_THROW(not_implemented_error,
                    "ClearKeys operation is not supported");
   }
 

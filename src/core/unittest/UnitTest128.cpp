@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This file contains google test code that exercises the big int vector library of the PALISADE lattice encryption library.
+  This file contains google test code that exercises the big int vector library of the OpenFHE lattice encryption library.
  */
 
 #include "include/gtest/gtest.h"

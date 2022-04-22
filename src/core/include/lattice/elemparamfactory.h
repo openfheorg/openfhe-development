@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Creates ElemParams objects for PALISADE
+  Creates ElemParams objects for OpenFHE
  */
 
 #ifndef SRC_CORE_LIB_LATTICE_ELEMPARAMFACTORY_H_

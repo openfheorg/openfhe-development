@@ -74,7 +74,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const DCRTPolyImpl& element) {
 template <typename VecType>
 const DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const PolyLargeType& element) {
     if (element.GetModulus() > this->m_params->GetModulus()) {
-        PALISADE_THROW(math_error,
+        OPENFHE_THROW(math_error,
                        "Modulus of element passed to constructor is bigger that "
                        "DCRT big modulus");
     }
@@ -110,7 +110,7 @@ const DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const PolyLargeTyp
 template <typename VecType>
 const DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const PolyType& element) {
     if (typename Params::Integer(element.GetModulus()) > this->m_params->GetModulus()) {
-        PALISADE_THROW(math_error,
+        OPENFHE_THROW(math_error,
                        "Modulus of element passed to constructor is bigger that "
                        "DCRT big modulus");
     }
@@ -145,13 +145,13 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const PolyLargeType& element, const std::sha
         format = element.GetFormat();
     }
     catch (const std::exception& e) {
-        PALISADE_THROW(type_error,
+        OPENFHE_THROW(type_error,
                        "There is an issue with the format of the Poly passed to "
                        "the constructor of DCRTPolyImpl");
     }
 
     if (element.GetCyclotomicOrder() != params->GetCyclotomicOrder()) {
-        PALISADE_THROW(math_error, "Cyclotomic order mismatch on input vector and parameters");
+        OPENFHE_THROW(math_error, "Cyclotomic order mismatch on input vector and parameters");
     }
 
     this->m_format = format;
@@ -170,13 +170,13 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const PolyType& element, const std::shared_p
         format = element.GetFormat();
     }
     catch (const std::exception& e) {
-        PALISADE_THROW(type_error,
+        OPENFHE_THROW(type_error,
                        "There is an issue with the format of the PolyType passed "
                        "to the constructor of DCRTPolyImpl");
     }
 
     if (element.GetCyclotomicOrder() != params->GetCyclotomicOrder())
-        PALISADE_THROW(math_error, "Cyclotomic order mismatch on input vector and parameters");
+        OPENFHE_THROW(math_error, "Cyclotomic order mismatch on input vector and parameters");
 
     this->m_format = format;
     this->m_params = params;
@@ -193,7 +193,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const std::vector<PolyType>& towers) {
     std::vector<std::shared_ptr<ILNativeParams>> parms;
     for (usint i = 0; i < towers.size(); i++) {
         if (towers[i].GetCyclotomicOrder() != cyclotomicOrder) {
-            PALISADE_THROW(math_error, "Polys provided to constructor must have the same ring dimension");
+            OPENFHE_THROW(math_error, "Polys provided to constructor must have the same ring dimension");
         }
         parms.push_back(towers[i].GetParams());
     }
@@ -382,9 +382,9 @@ DCRTPolyImpl<VecType>::~DCRTPolyImpl() {}
 template <typename VecType>
 const typename DCRTPolyImpl<VecType>::PolyType& DCRTPolyImpl<VecType>::GetElementAtIndex(usint i) const {
     if (m_vectors.empty())
-        PALISADE_THROW(config_error, "DCRTPolyImpl's towers are not initialized.");
+        OPENFHE_THROW(config_error, "DCRTPolyImpl's towers are not initialized.");
     if (i > m_vectors.size() - 1)
-        PALISADE_THROW(math_error, "Index: " + std::to_string(i) + " is out of range for vector of size " +
+        OPENFHE_THROW(math_error, "Index: " + std::to_string(i) + " is out of range for vector of size " +
                                        std::to_string(m_vectors.size()) + ".");
     return m_vectors[i];
 }
@@ -579,7 +579,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::MultiplicativeInverse() const {
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Plus(const DCRTPolyImpl& element) const {
     if (m_vectors.size() != element.m_vectors.size()) {
-        PALISADE_THROW(math_error, "tower size mismatch; cannot add");
+        OPENFHE_THROW(math_error, "tower size mismatch; cannot add");
     }
     DCRTPolyImpl<VecType> tmp(*this);
 
@@ -605,7 +605,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Negate() const {
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Minus(const DCRTPolyImpl& element) const {
     if (m_vectors.size() != element.m_vectors.size()) {
-        PALISADE_THROW(math_error, "tower size mismatch; cannot subtract");
+        OPENFHE_THROW(math_error, "tower size mismatch; cannot subtract");
     }
     DCRTPolyImpl<VecType> tmp(*this);
 
@@ -861,7 +861,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Minus(const std::vector<Integer>& c
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const DCRTPolyImpl& element) const {
     if (m_vectors.size() != element.m_vectors.size()) {
-        PALISADE_THROW(math_error, "tower size mismatch; cannot multiply");
+        OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
     }
     DCRTPolyImpl<VecType> tmp(*this);
 
@@ -939,7 +939,7 @@ void DCRTPolyImpl<VecType>::SetValuesToZero() {
 template <typename VecType>
 void DCRTPolyImpl<VecType>::AddILElementOne() {
     if (this->GetFormat() != Format::EVALUATION)
-        PALISADE_THROW(not_available_error,
+        OPENFHE_THROW(not_available_error,
                        "DCRTPolyImpl<VecType>::AddILElementOne cannot be called on "
                        "a DCRTPolyImpl in COEFFICIENT format.");
     for (usint i = 0; i < m_vectors.size(); i++) {
@@ -966,7 +966,7 @@ bool DCRTPolyImpl<VecType>::IsEmpty() const {
 template <typename VecType>
 void DCRTPolyImpl<VecType>::DropLastElement() {
     if (m_vectors.size() == 0) {
-        PALISADE_THROW(math_error, "Last element being removed from empty list");
+        OPENFHE_THROW(math_error, "Last element being removed from empty list");
     }
     m_vectors.resize(m_vectors.size() - 1);
 
@@ -978,7 +978,7 @@ void DCRTPolyImpl<VecType>::DropLastElement() {
 template <typename VecType>
 void DCRTPolyImpl<VecType>::DropLastElements(size_t i) {
     if (m_vectors.size() < i) {
-        PALISADE_THROW(config_error,
+        OPENFHE_THROW(config_error,
                        "There are not enough towers in the current ciphertext to "
                        "perform the modulus reduction");
     }
@@ -1102,9 +1102,10 @@ void DCRTPolyImpl<VecType>::ModReduce(const NativeInteger& t, const std::vector<
 template <typename VecType>
 typename DCRTPolyImpl<VecType>::Integer& DCRTPolyImpl<VecType>::at(usint i) {
     if (m_vectors.size() == 0)
-        PALISADE_THROW(math_error, "No values in DCRTPolyImpl");
+        OPENFHE_THROW(math_error, "No values in DCRTPolyImpl");
     if (i >= this->GetLength())
-        PALISADE_THROW(math_error, "out of range in  DCRTPolyImpl.at()");
+        OPENFHE_THROW(math_error, "out of range in  DCRTPolyImpl.at()");
+
     PolyLargeType tmp(CRTInterpolateIndex(i));
     return tmp[i];
 }
@@ -1112,9 +1113,10 @@ typename DCRTPolyImpl<VecType>::Integer& DCRTPolyImpl<VecType>::at(usint i) {
 template <typename VecType>
 const typename DCRTPolyImpl<VecType>::Integer& DCRTPolyImpl<VecType>::at(usint i) const {
     if (m_vectors.size() == 0)
-        PALISADE_THROW(math_error, "No values in DCRTPolyImpl");
+        OPENFHE_THROW(math_error, "No values in DCRTPolyImpl");
     if (i >= this->GetLength())
-        PALISADE_THROW(math_error, "out of range in  DCRTPolyImpl.at()");
+        OPENFHE_THROW(math_error, "out of range in  DCRTPolyImpl.at()");
+
     PolyLargeType tmp(CRTInterpolateIndex(i));
     return tmp[i];
 }
@@ -2827,7 +2829,7 @@ void DCRTPolyImpl<VecType>::SwitchModulusAtIndex(usint index, const Integer& mod
         std::string errMsg;
         errMsg = "DCRTPolyImpl is of size = " + std::to_string(m_vectors.size()) +
                  " but SwitchModulus for tower at index " + std::to_string(index) + "is called.";
-        PALISADE_THROW(math_error, errMsg);
+        OPENFHE_THROW(math_error, errMsg);
     }
 
     m_vectors[index].SwitchModulus(PolyType::Integer(modulus.ConvertToInt()),

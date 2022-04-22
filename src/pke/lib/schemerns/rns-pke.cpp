@@ -114,7 +114,7 @@ DecryptResult PKERNS::Decrypt(
   } else if (sizeQl == 1) {
     *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
   } else {
-    PALISADE_THROW(
+    OPENFHE_THROW(
         math_error,
         "Decryption failure: No towers left; consider increasing the depth.");
   }
@@ -135,7 +135,7 @@ DecryptResult PKERNS::Decrypt(
   if (sizeQl == 1)
     *plaintext = b.GetElementAtIndex(0);
   else
-    PALISADE_THROW(
+    OPENFHE_THROW(
         math_error,
         "Decryption failure: No towers left; consider increasing the depth.");
 
@@ -202,7 +202,7 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
   // check other files if "tug" is properly assigned
     //std::cerr << __FILE__ << ":l." << __LINE__ << std::endl;
     //if (cryptoParams->GetMode() != RLWE) {
-    //    PALISADE_THROW(math_error, "TugType tug must be assigned");
+    //    OPENFHE_THROW(math_error, "TugType tug must be assigned");
     //}
   DCRTPoly v = cryptoParams->GetMode() == RLWE
                    ? DCRTPoly(dgg, elementParams, Format::EVALUATION)

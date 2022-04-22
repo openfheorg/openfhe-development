@@ -414,7 +414,7 @@ PolyImpl<VecType>::~PolyImpl() {}
 template <typename VecType>
 const VecType& PolyImpl<VecType>::GetValues() const {
     if (m_values == 0)
-        PALISADE_THROW(not_available_error, "No values in PolyImpl");
+        OPENFHE_THROW(not_available_error, "No values in PolyImpl");
     return *m_values;
 }
 
@@ -426,14 +426,14 @@ Format PolyImpl<VecType>::GetFormat() const {
 template <typename VecType>
 typename PolyImpl<VecType>::Integer& PolyImpl<VecType>::at(usint i) {
     if (m_values == 0)
-        PALISADE_THROW(not_available_error, "No values in PolyImpl");
+        OPENFHE_THROW(not_available_error, "No values in PolyImpl");
     return m_values->at(i);
 }
 
 template <typename VecType>
 const typename PolyImpl<VecType>::Integer& PolyImpl<VecType>::at(usint i) const {
     if (m_values == 0)
-        PALISADE_THROW(not_available_error, "No values in PolyImpl");
+        OPENFHE_THROW(not_available_error, "No values in PolyImpl");
     return m_values->at(i);
 }
 
@@ -450,17 +450,18 @@ const typename PolyImpl<VecType>::Integer& PolyImpl<VecType>::operator[](usint i
 template <typename VecType>
 usint PolyImpl<VecType>::GetLength() const {
     if (m_values == 0)
-        PALISADE_THROW(not_available_error, "No values in PolyImpl");
+        OPENFHE_THROW(not_available_error, "No values in PolyImpl");
     return m_values->GetLength();
 }
 
 template <typename VecType>
 void PolyImpl<VecType>::SetValues(const VecType& values, Format format) {
     if (m_params->GetRootOfUnity() == Integer(0)) {
-        PALISADE_THROW(type_error, "Polynomial has a 0 root of unity");
+        OPENFHE_THROW(type_error, "Polynomial has a 0 root of unity");
     }
     if (m_params->GetRingDimension() != values.GetLength() || m_params->GetModulus() != values.GetModulus()) {
-        PALISADE_THROW(type_error, "Parameter mismatch on SetValues for Polynomial");
+        OPENFHE_THROW(type_error, "Parameter mismatch on SetValues for Polynomial");
+
     }
     m_values = make_unique<VecType>(values);
     m_format = format;
@@ -469,10 +470,11 @@ void PolyImpl<VecType>::SetValues(const VecType& values, Format format) {
 template <typename VecType>
 void PolyImpl<VecType>::SetValues(VecType&& values, Format format) {
     if (m_params->GetRootOfUnity() == Integer(0)) {
-        PALISADE_THROW(type_error, "Polynomial has a 0 root of unity");
+        OPENFHE_THROW(type_error, "Polynomial has a 0 root of unity");
     }
     if (m_params->GetRingDimension() != values.GetLength() || m_params->GetModulus() != values.GetModulus()) {
-        PALISADE_THROW(type_error, "Parameter mismatch on SetValues for Polynomial");
+        OPENFHE_THROW(type_error, "Parameter mismatch on SetValues for Polynomial");
+
     }
     m_values = make_unique<VecType>(std::move(values));
     m_format = format;
@@ -554,7 +556,8 @@ PolyImpl<VecType> PolyImpl<VecType>::DivideAndRound(const Integer& q) const {
 template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Negate() const {
     //    if (m_format != Format::EVALUATION)
-    //      PALISADE_THROW(not_implemented_error, "Negate for
+    //      OPENFHE_THROW(not_implemented_error, "Negate for
+
     // PolyImpl is supported only in Format::EVALUATION format.\n");
 
     PolyImpl<VecType> tmp(*this);
@@ -581,12 +584,12 @@ PolyImpl<VecType> PolyImpl<VecType>::Minus(const PolyImpl& element) const {
 template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Times(const PolyImpl& element) const {
     if (m_format != Format::EVALUATION || element.m_format != Format::EVALUATION)
-        PALISADE_THROW(not_implemented_error,
+        OPENFHE_THROW(not_implemented_error,
                        "operator* for PolyImpl is supported only in "
                        "Format::EVALUATION format.\n");
 
     if (!(*this->m_params == *element.m_params))
-        PALISADE_THROW(type_error, "operator* called on PolyImpl's with different params.");
+        OPENFHE_THROW(type_error, "operator* called on PolyImpl's with different params.");
 
     PolyImpl tmp = *this;
     tmp.m_values->ModMulEq(*element.m_values);
@@ -602,7 +605,7 @@ const PolyImpl<VecType>& PolyImpl<VecType>::operator+=(const PolyImpl& element) 
     if (!(*this->m_params == *element.m_params)) {
         DEBUGEXP(*this->m_params);
         DEBUGEXP(*element.m_params);
-        PALISADE_THROW(type_error, "operator+= called on PolyImpl's with different params.");
+        OPENFHE_THROW(type_error, "operator+= called on PolyImpl's with different params.");
     }
 
     if (m_values == nullptr) {
@@ -619,7 +622,7 @@ const PolyImpl<VecType>& PolyImpl<VecType>::operator+=(const PolyImpl& element) 
 template <typename VecType>
 const PolyImpl<VecType>& PolyImpl<VecType>::operator-=(const PolyImpl& element) {
     if (!(*this->m_params == *element.m_params))
-        PALISADE_THROW(type_error, "operator-= called on PolyImpl's with different params.");
+        OPENFHE_THROW(type_error, "operator-= called on PolyImpl's with different params.");
     if (m_values == nullptr) {
         // act as tho this is 0
         m_values = make_unique<VecType>(m_params->GetRingDimension(), m_params->GetModulus());
@@ -631,12 +634,12 @@ const PolyImpl<VecType>& PolyImpl<VecType>::operator-=(const PolyImpl& element) 
 template <typename VecType>
 const PolyImpl<VecType>& PolyImpl<VecType>::operator*=(const PolyImpl& element) {
     if (m_format != Format::EVALUATION || element.m_format != Format::EVALUATION)
-        PALISADE_THROW(not_implemented_error,
+        OPENFHE_THROW(not_implemented_error,
                        "operator*= for PolyImpl is supported only in "
                        "Format::EVALUATION format.\n");
 
     if (!(*this->m_params == *element.m_params))
-        PALISADE_THROW(type_error, "operator*= called on PolyImpl's with different params.");
+        OPENFHE_THROW(type_error, "operator*= called on PolyImpl's with different params.");
 
     if (m_values == nullptr) {
         // act as tho it's 0
@@ -670,7 +673,7 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(const usint& k) const
         if (!m_params->OrderIsPowerOfTwo()) {
             // Add a test based on the inverse totient hash table
             // if (i % 2 == 0)
-            //  PALISADE_THROW(math_error, "automorphism index should be
+            //  OPENFHE_THROW(math_error, "automorphism index should be
             // odd\n");
 
             const auto& modulus = this->m_params->GetModulus();
@@ -696,7 +699,7 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(const usint& k) const
         }
         else {  // power of two cyclotomics
             if (k % 2 == 0) {
-                PALISADE_THROW(math_error, "automorphism index should be odd\n");
+                OPENFHE_THROW(math_error, "automorphism index should be odd\n");
             }
             usint logm = std::round(log2(m));
             usint logn = std::round(log2(n));
@@ -711,13 +714,13 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(const usint& k) const
     else {
         // automorphism in Format::COEFFICIENT representation
         if (!m_params->OrderIsPowerOfTwo()) {
-            PALISADE_THROW(not_implemented_error,
+            OPENFHE_THROW(not_implemented_error,
                            "Automorphism in Format::COEFFICIENT representation is not currently "
                            "supported for non-power-of-two polynomials");
         }
         else {  // power of two cyclotomics
             if (k % 2 == 0) {
-                PALISADE_THROW(math_error, "automorphism index should be odd\n");
+                OPENFHE_THROW(math_error, "automorphism index should be odd\n");
             }
 
             for (usint j = 1; j < n; j++) {
@@ -741,7 +744,7 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(usint k, const std::v
     PolyImpl result(*this);
     if ((this->m_format == Format::EVALUATION) && (m_params->OrderIsPowerOfTwo())) {
         if (k % 2 == 0) {
-            PALISADE_THROW(math_error, "automorphism index should be odd\n");
+            OPENFHE_THROW(math_error, "automorphism index should be odd\n");
         }
         usint n = this->m_params->GetRingDimension();
 
@@ -750,7 +753,7 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(usint k, const std::v
         }
     }
     else {
-        PALISADE_THROW(
+        OPENFHE_THROW(
             not_implemented_error,
             "Precomputed automorphism is implemented only for power-of-two polynomials in the EVALUATION representation");
     }
@@ -760,7 +763,7 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(usint k, const std::v
 template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Transpose() const {
     if (m_format == Format::COEFFICIENT)
-        PALISADE_THROW(not_implemented_error,
+        OPENFHE_THROW(not_implemented_error,
                        "PolyImpl element transposition is currently implemented "
                        "only in the Format::EVALUATION representation.");
 
@@ -775,7 +778,7 @@ PolyImpl<VecType> PolyImpl<VecType>::MultiplicativeInverse() const {
         tmp.SetValues(GetValues().ModInverse(), this->m_format);
         return tmp;
     }
-    PALISADE_THROW(math_error, "PolyImpl has no inverse\n");
+    OPENFHE_THROW(math_error, "PolyImpl has no inverse\n");
 }
 
 template <typename VecType>
@@ -807,7 +810,7 @@ void PolyImpl<VecType>::SwitchFormat() {
     DEBUG_FLAG(false);
     if (m_values == nullptr) {
         std::string errMsg = "Poly switch format to empty values";
-        PALISADE_THROW(not_available_error, errMsg);
+        OPENFHE_THROW(not_available_error, errMsg);
     }
 
     if (m_params->OrderIsPowerOfTwo() == false) {
@@ -840,7 +843,7 @@ void PolyImpl<VecType>::ArbitrarySwitchFormat() {
 
     if (m_values == nullptr) {
         std::string errMsg = "Poly switch format to empty values";
-        PALISADE_THROW(not_available_error, errMsg);
+        OPENFHE_THROW(not_available_error, errMsg);
     }
 
     if (m_format == Format::COEFFICIENT) {

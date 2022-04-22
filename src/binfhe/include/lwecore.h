@@ -83,7 +83,7 @@ public:
 
         if (Q.GetMSB() > MAX_MODULUS_SIZE) {
             std::string errMsg = "ERROR: Maximum size of Q supported for FHEW is 60 bits.";
-            PALISADE_THROW(config_error, errMsg);
+            OPENFHE_THROW(config_error, errMsg);
         }
 
         PreCompute();
@@ -205,7 +205,7 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
 
@@ -330,7 +330,7 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
 
@@ -401,7 +401,7 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
 
@@ -474,7 +474,7 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
-            PALISADE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
 

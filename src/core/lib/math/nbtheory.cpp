@@ -291,7 +291,7 @@ IntType RootOfUnity(usint m, const IntType& modulo) {
             "satisfying the condition: (q-1)/m is an integer. The values of "
             "primeModulus = " +
             modulo.ToString() + " and m = " + std::to_string(m) + " do not satisfy this condition";
-        PALISADE_THROW(math_error, errMsg);
+        OPENFHE_THROW(math_error, errMsg);
     }
     IntType result;
     DEBUG("calling FindGenerator");
@@ -481,7 +481,7 @@ template <typename IntType>
 IntType FirstPrime(uint64_t nBits, uint64_t m) {
 #if (NATIVEINT == 64 && !defined(HAVE_INT128)) || (NATIVEINT == 128)
     if ((typeid(IntType) == typeid(NativeInteger)) && (nBits >= MAX_MODULUS_SIZE)) {
-        PALISADE_THROW(math_error, "Requested modulus size " + std::to_string(nBits + 1) +
+        OPENFHE_THROW(math_error, "Requested modulus size " + std::to_string(nBits + 1) +
                                        " exceeds maximum allowed size " + std::to_string(MAX_MODULUS_SIZE));
     }
 #endif
@@ -494,20 +494,20 @@ IntType FirstPrime(uint64_t nBits, uint64_t m) {
         double d2    = std::pow(2, static_cast<double>(nBits));
         if ((qNew == IntType(0)) || (std::llround(std::log2(d1)) < std::llround(std::log2(d2)))) {
             // too big for IntType
-            PALISADE_THROW(math_error,
+            OPENFHE_THROW(math_error,
                            "FirstPrime parameters are too large for this integer "
                            "implementation");
         }
         IntType qNew2 = (r > IntType(0)) ? (qNew + (IntType(m) - r) + IntType(1)) : (qNew + IntType(1));  // if r == 0
         if (qNew2 < qNew) {
-            PALISADE_THROW(math_error, "FirstPrime parameters overflow this integer implementation");
+            OPENFHE_THROW(math_error, "FirstPrime parameters overflow this integer implementation");
         }
         qNew = qNew2;
 
         while (!MillerRabinPrimalityTest(qNew)) {
             qNew2 = qNew + IntType(m);
             if (qNew2 < qNew) {
-                PALISADE_THROW(math_error, "FirstPrime overflow growing candidate");
+                OPENFHE_THROW(math_error, "FirstPrime overflow growing candidate");
             }
             qNew = qNew2;
         }
@@ -515,7 +515,7 @@ IntType FirstPrime(uint64_t nBits, uint64_t m) {
         return qNew;
     }
     catch (...) {
-        PALISADE_THROW(math_error, "FirstPrime math exception");
+        OPENFHE_THROW(math_error, "FirstPrime math exception");
     }
     //  try {
     //    DEBUG_FLAG(false);
@@ -527,7 +527,7 @@ IntType FirstPrime(uint64_t nBits, uint64_t m) {
     //    if ((qNew == IntType(0)) || (std::llround(std::log2(d1)) <
     // std::llround(std::log2(d2)))) {
     //      // too big for IntType
-    //      PALISADE_THROW(math_error, "FirstPrime parameters are
+    //      OPENFHE_THROW(math_error, "FirstPrime parameters are
     // too large for this integer implementation");
     //    }
     //    IntType mint = IntType(m);
@@ -538,7 +538,7 @@ IntType FirstPrime(uint64_t nBits, uint64_t m) {
     //    }
     //    return qNew;
     //  } catch (...) {
-    //    PALISADE_THROW(math_error, "FirstPrime math exception");
+    //    OPENFHE_THROW(math_error, "FirstPrime math exception");
     //  }
 }
 
@@ -550,7 +550,7 @@ IntType NextPrime(const IntType& q, uint64_t m) {
     do {
         qNew += M;
         if (qNew < qOld)
-            PALISADE_THROW(math_error, "NextPrime overflow growing candidate");
+            OPENFHE_THROW(math_error, "NextPrime overflow growing candidate");
     } while (!MillerRabinPrimalityTest(qNew));
 
     return qNew;

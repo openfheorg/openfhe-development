@@ -1,7 +1,7 @@
-PALISADE Style Guide
+OpenFHE Style Guide
 ========================
 
-PALISADE coding style is based on the official
+OpenFHE coding style is based on the official
  `Google C++ Coding Style Guide <https://google.github.io/styleguide/cppguide.html/>`_.
 
 Of particular note on the documentation style:
@@ -34,6 +34,6 @@ With regards to naming conventions:
 
 We also follow these design principles:
 
-* cout should never be used for exception handling and should never be used in committed code in the core PALISADE library.
+* cout should never be used for exception handling and should never be used in committed code in the core OpenFHE library.
 
-* ``std::logic_error`` is the standard exception for all exceptions not caught by the PALISADE exception handling subsystem (which has not yet been universally implemented in the library at this time).
+* ``std::logic_error`` is the standard exception for all exceptions not caught by the OpenFHE exception handling subsystem (which has not yet been universally implemented in the library at this time).
