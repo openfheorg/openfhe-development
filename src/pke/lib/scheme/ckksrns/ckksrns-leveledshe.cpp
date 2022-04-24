@@ -285,40 +285,6 @@ void LeveledSHECKKSRNS::LevelReduceInternalInPlace(
 // Compress
 /////////////////////////////////////
 
-#if 0
-Ciphertext<DCRTPoly> LeveledSHECKKSRNS::Compress(
-    ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          ciphertext->GetCryptoParameters());
-
-  Ciphertext<DCRTPoly> result =
-      std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
-
-  while (result->GetDepth() > 1) {
-    ModReduceInternalInPlace(result);
-  }
-  const std::vector<DCRTPoly> &cv = result->GetElements();
-  usint sizeQl = cv[0].GetNumOfElements();
-
-  if (towersLeft >= sizeQl) {
-    return result;
-  }
-
-#if 0
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO) {
-    const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
-    usint sizeQ = paramsQ->GetParams().size();
-    AdjustLevelWithRescaleInPlace(result, sizeQ - towersLeft);
-    return result;
-  }
-#endif
-
-  LevelReduceInternalInPlace(result, nullptr, sizeQl - towersLeft);
-  return result;
-}
-
-#endif
 
 /////////////////////////////////////
 // CKKS Core

@@ -143,8 +143,6 @@ public:
   // Compress
   /////////////////////////////////////
 
-//  virtual Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly> ciphertext,
-//                                        size_t towersLeft = 1) const override;
 
   /////////////////////////////////////
   // CKKS Core

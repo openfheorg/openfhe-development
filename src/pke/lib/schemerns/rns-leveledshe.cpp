@@ -601,14 +601,12 @@ Ciphertext<DCRTPoly> LeveledSHERNS::Compress(
     return result;
   }
 
-#if 0
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO) {
-    const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
-    usint sizeQ = paramsQ->GetParams().size();
-    AdjustLevelWithRescaleInPlace(result, sizeQ - towersLeft);
-    return result;
-  }
-#endif
+//  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO) {
+//    const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
+//    usint sizeQ = paramsQ->GetParams().size();
+//    AdjustLevelWithRescaleInPlace(result, sizeQ - towersLeft);
+//    return result;
+//  }
 
   LevelReduceInternalInPlace(result, nullptr, sizeQl - towersLeft);
   return result;
