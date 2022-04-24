@@ -187,9 +187,9 @@ static std::vector<TEST_CASE_UTBGVRNS> testCasesUTBGVRNS = {
     // ==========================================
     // TestType,          Descr, Scheme,      RDim,     MultDepth,  SFBits,     RWin,  BatchSz, Mode, Depth, MDepth,    ModSize,        SecLvl,  KSTech, RSTech,       LDigits, PtMod, StdDev,   EvalAddCt, EvalMultCt, KSCt, MultTech
     //{ COMPRESS_UTBGVRNS, "1", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ COMPRESS_UTBGVRNS, "2", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
+    { COMPRESS_UTBGVRNS, "2", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
     //{ COMPRESS_UTBGVRNS, "3", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ COMPRESS_UTBGVRNS, "4", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
+    { COMPRESS_UTBGVRNS, "4", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
     // ==========================================
     // TestType,                 Descr, Scheme,         RDim,     MultDepth,  SFBits,     RWin,  BatchSz, Mode, Depth, MDepth,    ModSize,        SecLvl,  KSTech, RSTech,       LDigits, PtMod, StdDev,   EvalAddCt, EvalMultCt, KSCt, MultTech
     //{ EVAL_FAST_ROTATION_UTBGVRNS, "1", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },

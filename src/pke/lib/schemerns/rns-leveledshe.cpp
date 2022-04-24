@@ -585,6 +585,35 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly> ciphertext,
 // SHE LEVELED Compress
 /////////////////////////////////////////
 
+Ciphertext<DCRTPoly> LeveledSHERNS::Compress(
+    ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
+
+  Ciphertext<DCRTPoly> result =
+      std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
+
+  while (result->GetDepth() > 1) {
+    ModReduceInternalInPlace(result);
+  }
+  const std::vector<DCRTPoly> &cv = result->GetElements();
+  usint sizeQl = cv[0].GetNumOfElements();
+
+  if (towersLeft >= sizeQl) {
+    return result;
+  }
+
+#if 0
+  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO) {
+    const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
+    usint sizeQ = paramsQ->GetParams().size();
+    AdjustLevelWithRescaleInPlace(result, sizeQ - towersLeft);
+    return result;
+  }
+#endif
+
+  LevelReduceInternalInPlace(result, nullptr, sizeQl - towersLeft);
+  return result;
+}
+
 /////////////////////////////////////////
 // SHE CORE OPERATION
 /////////////////////////////////////////

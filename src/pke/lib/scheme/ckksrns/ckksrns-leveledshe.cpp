@@ -285,6 +285,7 @@ void LeveledSHECKKSRNS::LevelReduceInternalInPlace(
 // Compress
 /////////////////////////////////////
 
+#if 0
 Ciphertext<DCRTPoly> LeveledSHECKKSRNS::Compress(
     ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
   const auto cryptoParams =
@@ -316,6 +317,8 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::Compress(
   LevelReduceInternalInPlace(result, nullptr, sizeQl - towersLeft);
   return result;
 }
+
+#endif
 
 /////////////////////////////////////
 // CKKS Core
