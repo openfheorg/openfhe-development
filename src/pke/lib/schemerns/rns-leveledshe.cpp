@@ -154,19 +154,17 @@ void LeveledSHERNS::EvalAddInPlace(
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
           ciphertext->GetCryptoParameters());
-  DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  pt.SetFormat(EVALUATION);
 
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
+    pt.SetFormat(EVALUATION);
     EvalAddCoreInPlace(ciphertext, pt);
     return;
   }
 
-  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-    AdjustLevelsInPlace(ciphertext, pt, plaintext->GetDepth());
-  } else {
-    AdjustLevelsAndDepthInPlace(ciphertext, pt, plaintext->GetDepth());
-  }
+  DCRTPoly pt = cryptoParams->GetRescalingTechnique() == FIXEDMANUAL ?
+      AdjustLevelsInPlace(ciphertext, plaintext) :
+      AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
 
   EvalAddCoreInPlace(ciphertext, pt);
 }
@@ -177,18 +175,17 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalAddMutable(
       std::static_pointer_cast<CryptoParametersRNS>(
           ciphertext->GetCryptoParameters());
 
-  DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  pt.SetFormat(EVALUATION);
+
 
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
+    pt.SetFormat(EVALUATION);
     return EvalAddCore(ciphertext, pt);
   }
 
-  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-    AdjustLevelsInPlace(ciphertext, pt, plaintext->GetDepth());
-  } else {
-    AdjustLevelsAndDepthInPlace(ciphertext, pt, plaintext->GetDepth());
-  }
+  DCRTPoly pt = cryptoParams->GetRescalingTechnique() == FIXEDMANUAL ?
+      AdjustLevelsInPlace(ciphertext, plaintext) :
+      AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
 
   return EvalAddCore(ciphertext, pt);
 }
@@ -199,19 +196,16 @@ void LeveledSHERNS::EvalAddMutableInPlace(Ciphertext<DCRTPoly> &ciphertext,
       std::static_pointer_cast<CryptoParametersRNS>(
           ciphertext->GetCryptoParameters());
 
-  DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  pt.SetFormat(EVALUATION);
-
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
+    pt.SetFormat(EVALUATION);
     EvalAddCoreInPlace(ciphertext, pt);
     return;
   }
 
-  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-    AdjustLevelsInPlace(ciphertext, pt, plaintext->GetDepth());
-  } else {
-    AdjustLevelsAndDepthInPlace(ciphertext, pt, plaintext->GetDepth());
-  }
+  DCRTPoly pt = cryptoParams->GetRescalingTechnique() == FIXEDMANUAL ?
+      AdjustLevelsInPlace(ciphertext, plaintext) :
+      AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
 
   EvalAddCoreInPlace(ciphertext, pt);
 }
@@ -313,19 +307,18 @@ void LeveledSHERNS::EvalSubInPlace(
       std::static_pointer_cast<CryptoParametersRNS>(
           ciphertext->GetCryptoParameters());
 
-  DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  pt.SetFormat(EVALUATION);
+
 
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
+    pt.SetFormat(EVALUATION);
     EvalSubCoreInPlace(ciphertext, pt);
     return;
   }
 
-  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-    AdjustLevelsInPlace(ciphertext, pt, plaintext->GetDepth());
-  } else {
-    AdjustLevelsAndDepthInPlace(ciphertext, pt, plaintext->GetDepth());
-  }
+  DCRTPoly pt = cryptoParams->GetRescalingTechnique() == FIXEDMANUAL ?
+      AdjustLevelsInPlace(ciphertext, plaintext) :
+      AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
 
   EvalSubCoreInPlace(ciphertext, pt);
 }
@@ -336,20 +329,21 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSubMutable(
       std::static_pointer_cast<CryptoParametersRNS>(
           ciphertext->GetCryptoParameters());
 
-  DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  pt.SetFormat(EVALUATION);
+
 
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
+    pt.SetFormat(EVALUATION);
     return EvalSubCore(ciphertext, pt);
   }
 
   if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
     Ciphertext<DCRTPoly> c = ciphertext->Clone();
-    AdjustLevelsInPlace(c, pt, plaintext->GetDepth());
+    DCRTPoly pt =  AdjustLevelsInPlace(c, plaintext);
     return EvalSubCore(c, pt);
   }
 
-  AdjustLevelsAndDepthInPlace(ciphertext, pt, plaintext->GetDepth());
+  DCRTPoly pt = AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
   return EvalSubCore(ciphertext, pt);
 }
 
@@ -359,21 +353,20 @@ void LeveledSHERNS::EvalSubMutableInPlace(Ciphertext<DCRTPoly> &ciphertext,
       std::static_pointer_cast<CryptoParametersRNS>(
           ciphertext->GetCryptoParameters());
 
-  DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  pt.SetFormat(EVALUATION);
-
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
+    pt.SetFormat(EVALUATION);
     EvalSubCoreInPlace(ciphertext, pt);
     return;
   }
 
   if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-    AdjustLevelsInPlace(ciphertext, pt, plaintext->GetDepth());
+    DCRTPoly pt = AdjustLevelsInPlace(ciphertext, plaintext);
     EvalSubCoreInPlace(ciphertext, pt);
     return;
   }
 
-  AdjustLevelsAndDepthInPlace(ciphertext, pt, plaintext->GetDepth());
+  DCRTPoly pt = AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
   EvalSubCoreInPlace(ciphertext, pt);
 }
 
@@ -440,16 +433,15 @@ void LeveledSHERNS::EvalMultInPlace(
       std::static_pointer_cast<CryptoParametersRNS>(
           ciphertext->GetCryptoParameters());
 
-  DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  pt.SetFormat(EVALUATION);
-
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
+    pt.SetFormat(EVALUATION);
     EvalMultCoreInPlace(ciphertext, pt);
     return;
   }
 
   if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-    AdjustLevelsInPlace(ciphertext, pt, plaintext->GetDepth());
+    DCRTPoly pt = AdjustLevelsInPlace(ciphertext, plaintext);
     EvalMultCoreInPlace(ciphertext, pt);
     ciphertext->SetDepth(ciphertext->GetDepth() + plaintext->GetDepth());
     ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
@@ -457,7 +449,7 @@ void LeveledSHERNS::EvalMultInPlace(
     return;
   }
 
-  AdjustLevelsAndDepthToOneInPlace(ciphertext, pt, plaintext->GetDepth());
+  DCRTPoly pt = AdjustLevelsAndDepthToOneInPlace(ciphertext, plaintext);
   EvalMultCoreInPlace(ciphertext, pt);
   ciphertext->SetDepth(ciphertext->GetDepth() + 1);
   ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
@@ -472,27 +464,27 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(
       std::static_pointer_cast<CryptoParametersRNS>(
           ciphertext->GetCryptoParameters());
 
-  DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  pt.SetFormat(EVALUATION);
-
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
+    pt.SetFormat(EVALUATION);
     return EvalMultCore(ciphertext, pt);
   }
 
   if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
     Ciphertext<DCRTPoly> c = ciphertext->Clone();
-    AdjustLevelsInPlace(c, pt, plaintext->GetDepth());
+    DCRTPoly pt = AdjustLevelsInPlace(c, plaintext);
     auto result = EvalMultCore(c, pt);
     result->SetScalingFactor(c->GetScalingFactor() * plaintext->GetScalingFactor());
     result->SetDepth(c->GetDepth() + plaintext->GetDepth());
     return result;
   }
 
-  AdjustLevelsAndDepthToOneInPlace(ciphertext, pt, plaintext->GetDepth());
+  DCRTPoly pt = AdjustLevelsAndDepthToOneInPlace(ciphertext, plaintext);
 
   auto result = EvalMultCore(ciphertext, pt);
-  result->SetScalingFactor(ciphertext->GetScalingFactor() * cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()));
   result->SetDepth(ciphertext->GetDepth() + 1);
+  result->SetScalingFactor(ciphertext->GetScalingFactor()
+      * cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()));
   return result;
 }
 
@@ -503,16 +495,15 @@ void LeveledSHERNS::EvalMultMutableInPlace(
       std::static_pointer_cast<CryptoParametersRNS>(
           ciphertext->GetCryptoParameters());
 
-  DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  pt.SetFormat(EVALUATION);
-
   if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
+    pt.SetFormat(EVALUATION);
     EvalMultCoreInPlace(ciphertext, pt);
     return;
   }
 
   if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-    AdjustLevelsInPlace(ciphertext, pt, plaintext->GetDepth());
+    DCRTPoly pt = AdjustLevelsInPlace(ciphertext, plaintext);
     EvalMultCoreInPlace(ciphertext, pt);
     ciphertext->SetDepth(ciphertext->GetDepth() + plaintext->GetDepth());
     ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
@@ -520,7 +511,7 @@ void LeveledSHERNS::EvalMultMutableInPlace(
     return;
   }
 
-  AdjustLevelsAndDepthToOneInPlace(ciphertext, pt, plaintext->GetDepth());
+  DCRTPoly pt = AdjustLevelsAndDepthToOneInPlace(ciphertext, plaintext);
   EvalMultCoreInPlace(ciphertext, pt);
   ciphertext->SetDepth(ciphertext->GetDepth() + 1);
   ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
@@ -627,9 +618,10 @@ void LeveledSHERNS::AdjustLevelsInPlace(
   }
 }
 
-void LeveledSHERNS::AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                        DCRTPoly &pt, usint ptDepth) const {
+DCRTPoly LeveledSHERNS::AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
+    ConstPlaintext plaintext) const {
   auto sizeQlc = ciphertext->GetElements()[0].GetNumOfElements();
+  DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
   auto sizeQlp = pt.GetNumOfElements();
 
   if (sizeQlc < sizeQlp) {
@@ -637,6 +629,8 @@ void LeveledSHERNS::AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
   } else if (sizeQlc > sizeQlp) {
     LevelReduceInternalInPlace(ciphertext, nullptr, sizeQlc - sizeQlp);
   }
+  pt.SetFormat(Format::EVALUATION);
+  return pt;
 }
 
 }  // namespace lbcrypto

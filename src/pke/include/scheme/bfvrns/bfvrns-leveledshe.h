@@ -54,7 +54,7 @@ public:
    * @param plaintext the input plaintext.
    */
   virtual void EvalAddInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                              ConstPlaintext plaintext) const override;
+      ConstPlaintext plaintext) const override;
 
   using LeveledSHERNS::EvalSubInPlace;
 

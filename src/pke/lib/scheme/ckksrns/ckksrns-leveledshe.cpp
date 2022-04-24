@@ -753,15 +753,22 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(
   }
 }
 
-void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
-    Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &pt, usint ptDepth) const {
-  //TODO implement
+DCRTPoly LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
+    Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const {
+  CryptoContext<DCRTPoly> cc = ciphertext->GetCryptoContext();
+  auto values = plaintext->GetCKKSPackedValue();
+  Plaintext ptx = cc->MakeCKKSPackedPlaintext(values, ciphertext->GetDepth(),
+                                                  ciphertext->GetLevel());
+  return ptx->GetElement<DCRTPoly>();
 }
 
 
-void LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(
-    Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &pt, usint ptDepth) const {
-  //TODO implement
+DCRTPoly LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(
+    Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const {
+  if(ciphertext->GetDepth() == 2) {
+      ModReduceInternalInPlace(ciphertext);
+  }
+  return AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
 }
 
 void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly> &ciphertext, double constant) const {

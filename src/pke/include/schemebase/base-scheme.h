@@ -1237,32 +1237,39 @@ class SchemeBase {
     }
   }
 
-  virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &pt, usint ptDepth) const {
+  virtual DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
 
-      return m_LeveledSHE->AdjustLevelsInPlace(ciphertext, pt, ptDepth);
+      return m_LeveledSHE->AdjustLevelsInPlace(ciphertext, plaintext);
     }
+    PALISADE_THROW(config_error,
+                       "AdjustLevelsInPlace has not been enabled for this scheme.");
   }
 
-  virtual void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &pt, usint ptDepth) const {
+  virtual DCRTPoly AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly> &ciphertext,
+      ConstPlaintext plaintext) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
 
-      return m_LeveledSHE->AdjustLevelsAndDepthInPlace(ciphertext, pt, ptDepth);
+      return m_LeveledSHE->AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
     }
+    PALISADE_THROW(config_error,
+                       "AdjustLevelsAndDepthInPlace has not been enabled for this scheme.");
   }
 
-  virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ciphertext,
-      DCRTPoly &pt, usint ptDepth) const {
+  virtual DCRTPoly AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ciphertext,
+      ConstPlaintext plaintext) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
 
-      return m_LeveledSHE->AdjustLevelsAndDepthToOneInPlace(ciphertext, pt, ptDepth);
+      return m_LeveledSHE->AdjustLevelsAndDepthToOneInPlace(ciphertext, plaintext);
     }
+    PALISADE_THROW(config_error,
+                           "AdjustLevelsAndDepthToOneInPlace has not been enabled for this scheme.");
   }
 
   /////////////////////////////////////////

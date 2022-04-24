@@ -258,15 +258,21 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ci
   }
 }
 
-void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(
-    Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &pt, usint ptDepth) const {
-  //TODO implement
+DCRTPoly LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(
+    Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const {
+  CryptoContext<DCRTPoly> cc = ciphertext->GetCryptoContext();
+  auto values = plaintext->GetPackedValue();
+  Plaintext ptx = cc->MakePackedPlaintext(values);
+  return ptx->GetElement<DCRTPoly>();
 }
 
 
-void LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(
-    Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &pt, usint ptDepth) const {
-  //TODO implement
+DCRTPoly LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(
+    Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const {
+  if(ciphertext->GetDepth() == 2) {
+      ModReduceInternalInPlace(ciphertext);
+  }
+  return AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
 }
 
 void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly> &ciphertext, const NativeInteger& constant) const {
