@@ -1244,7 +1244,7 @@ class SchemeBase {
 
       return m_LeveledSHE->AdjustLevelsInPlace(ciphertext, plaintext);
     }
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                        "AdjustLevelsInPlace has not been enabled for this scheme.");
   }
 
@@ -1256,7 +1256,7 @@ class SchemeBase {
 
       return m_LeveledSHE->AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
     }
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                        "AdjustLevelsAndDepthInPlace has not been enabled for this scheme.");
   }
 
@@ -1268,7 +1268,7 @@ class SchemeBase {
 
       return m_LeveledSHE->AdjustLevelsAndDepthToOneInPlace(ciphertext, plaintext);
     }
-    PALISADE_THROW(config_error,
+    OPENFHE_THROW(config_error,
                            "AdjustLevelsAndDepthToOneInPlace has not been enabled for this scheme.");
   }
 
