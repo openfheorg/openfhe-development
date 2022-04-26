@@ -31,7 +31,7 @@
 #include "utils/demangle.h"
 #include <memory>
 
-#ifdef __GNUG__
+#if defined(__clang__) || defined(__GNUG__)
 #include <cxxabi.h>
 
 std::string demangle(const char* name) {
