@@ -71,14 +71,14 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> params =
-      cryptoContext->GetCryptoParameters()->GetElementParams();
+        cryptoContext->GetCryptoParameters()->GetElementParams();
 
-  const auto cryptoParamsBFVrns =
-      std::static_pointer_cast<CryptoParametersBFVRNS>(
-          cryptoContext->GetCryptoParameters());
+    const auto cryptoParamsBFVrns =
+        std::static_pointer_cast<CryptoParametersBFVRNS>(
+            cryptoContext->GetCryptoParameters());
 
-  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR =
-      cryptoParamsBFVrns->GetParamsRl(0);
+    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR =
+        cryptoParamsBFVrns->GetParamsRl();
 
   typename DCRTPoly::DugType dug;
 
@@ -87,23 +87,23 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
 
   Poly resultA = a.CRTInterpolate();
 
-  const DCRTPoly b = a.SwitchCRTBasis(
-      paramsR, cryptoParamsBFVrns->GetQlHatInvModq(0),
-      cryptoParamsBFVrns->GetQlHatInvModqPrecon(0),
-      cryptoParamsBFVrns->GetQlHatModr(0), cryptoParamsBFVrns->GetalphaQlModr(0),
-      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
+    const DCRTPoly b = a.SwitchCRTBasis(
+        paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+        cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
+        cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
+        cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
 
-  Poly resultB = b.CRTInterpolate();
+    Poly resultB = b.CRTInterpolate();
 
   BigInteger A0 = resultA.at(0);
 
-  if (A0 > (params->GetModulus() >> 1)) A0 = params->GetModulus() - A0;
+    if (A0 > (params->GetModulus() >> 1)) A0 = params->GetModulus() - A0;
 
   BigInteger B0 = resultB.at(0);
 
-  if (B0 > (paramsR->GetModulus() >> 1)) B0 = paramsR->GetModulus() - B0;
+    if (B0 > (paramsR->GetModulus() >> 1)) B0 = paramsR->GetModulus() - B0;
 
-  EXPECT_EQ(A0, B0) << "SwitchCRTBasis produced incorrect results";
+    EXPECT_EQ(A0, B0) << "SwitchCRTBasis produced incorrect results";
 }
 
 // TESTING POLYNOMIAL MULTIPLICATION - ONE TERM IS CONSTANT POLYNOMIAL
@@ -127,10 +127,10 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
           cryptoContext->GetCryptoParameters());
 
   const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR =
-      cryptoParamsBFVrns->GetParamsRl(0);
+      cryptoParamsBFVrns->GetParamsRl();
 
   const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQR =
-      cryptoParamsBFVrns->GetParamsQlRl(0);
+      cryptoParamsBFVrns->GetParamsQlRl();
 
   typename DCRTPoly::DugType dug;
 
@@ -147,15 +147,15 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
   Poly bPoly = b.CRTInterpolate();
 
   a.ExpandCRTBasis(
-      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(0),
-      cryptoParamsBFVrns->GetQlHatInvModqPrecon(0),
-      cryptoParamsBFVrns->GetQlHatModr(0), cryptoParamsBFVrns->GetalphaQlModr(0),
+      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+      cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
+      cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
       cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
 
   b.ExpandCRTBasis(
-      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(0),
-      cryptoParamsBFVrns->GetQlHatInvModqPrecon(0),
-      cryptoParamsBFVrns->GetQlHatModr(0), cryptoParamsBFVrns->GetalphaQlModr(0),
+      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+      cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
+      cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
       cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
 
   Poly resultExpandedB = b.CRTInterpolate();
@@ -216,13 +216,13 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
 
   DCRTPoly rounded =
       c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
-                      cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(),
-                      cryptoParamsBFVrns->GetModrBarrettMu());
+          cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(),
+          cryptoParamsBFVrns->GetModrBarrettMu());
 
   DCRTPoly roundedQ = rounded.SwitchCRTBasis(
-      paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(0),
-      cryptoParamsBFVrns->GetRlHatInvModrPrecon(0),
-      cryptoParamsBFVrns->GetRlHatModq(0), cryptoParamsBFVrns->GetalphaRlModq(0),
+      paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
+      cryptoParamsBFVrns->GetRlHatInvModrPrecon(),
+      cryptoParamsBFVrns->GetRlHatModq(), cryptoParamsBFVrns->GetalphaRlModq(),
       cryptoParamsBFVrns->GetModqBarrettMu(), cryptoParamsBFVrns->GetrInv());
 
   Poly resultRoundedQ = roundedQ.CRTInterpolate();
@@ -265,10 +265,10 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
           cryptoContext->GetCryptoParameters());
 
   const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR =
-      cryptoParamsBFVrns->GetParamsRl(0);
+      cryptoParamsBFVrns->GetParamsRl();
 
   const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQR =
-      cryptoParamsBFVrns->GetParamsQlRl(0);
+      cryptoParamsBFVrns->GetParamsQlRl();
 
   typename DCRTPoly::DugType dug;
 
@@ -286,15 +286,15 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
   Poly bPoly = b.CRTInterpolate();
 
   a.ExpandCRTBasis(
-      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(0),
-      cryptoParamsBFVrns->GetQlHatInvModqPrecon(0),
-      cryptoParamsBFVrns->GetQlHatModr(0), cryptoParamsBFVrns->GetalphaQlModr(0),
+      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+      cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
+      cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
       cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
 
   b.ExpandCRTBasis(
-      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(0),
-      cryptoParamsBFVrns->GetQlHatInvModqPrecon(0),
-      cryptoParamsBFVrns->GetQlHatModr(0), cryptoParamsBFVrns->GetalphaQlModr(0),
+      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+      cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
+      cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
       cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
 
   Poly resultExpandedB = b.CRTInterpolate();
@@ -360,9 +360,9 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
           cryptoParamsBFVrns->GetModrBarrettMu());
 
   DCRTPoly roundedQ = rounded.SwitchCRTBasis(
-      paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(0),
-      cryptoParamsBFVrns->GetRlHatInvModrPrecon(0),
-      cryptoParamsBFVrns->GetRlHatModq(0), cryptoParamsBFVrns->GetalphaRlModq(0),
+      paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
+      cryptoParamsBFVrns->GetRlHatInvModrPrecon(),
+      cryptoParamsBFVrns->GetRlHatModq(), cryptoParamsBFVrns->GetalphaRlModq(),
       cryptoParamsBFVrns->GetModqBarrettMu(), cryptoParamsBFVrns->GetrInv());
 
   Poly resultRoundedQ = roundedQ.CRTInterpolate();
