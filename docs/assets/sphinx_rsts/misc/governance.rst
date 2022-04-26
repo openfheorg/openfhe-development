@@ -1,27 +1,21 @@
-Governance Document
+OpenFHE Governance
 =========================================
 
 Policies and procedures governing the OpenFHE community
 
-OpenFHE Governance
--------------------
-
-This document outlines the policies and procedures that manage the
-OpenFHE community.
-
 Revision History
-^^^^^^^^^^^^^^^^
+-----------------
 
 This is a living document and is expected to be updated in order to
 meet the changing needs as the OpenFHE organization evolves over
 time.
 
-* Version 0.1 Prerelease Placeholder 9/20/2019
-* Version 0.2 Draft for Steering Team Approval 10/28/2019
-* Version 1.0 Adopted by Steering Team 1/28/2020
 * Version 2.0 Adopted by Steering Team 3/21/21
 
   * addition of Crypto Team and Advisory Board
+
+.. note:: Refer to `PALISADE Governance <https://gitlab.com/palisade/palisade-development/-/blob/master/Governance.md>`_ to view previous iterations of this document
+
 
 NumFOCUS Affiliation
 ----------------------

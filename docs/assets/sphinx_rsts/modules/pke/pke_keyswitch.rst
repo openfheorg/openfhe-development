@@ -41,7 +41,7 @@ File Listings
 
 ``Key-switch BV``
 
-- Implements BV scheme from `Fully Homomorphic Encryption from Ring-LWE and Security for Key Dependent Messages (BV Scheme)]<https://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf>`_
+- Implements BV scheme from `Fully Homomorphic Encryption from Ring-LWE and Security for Key Dependent Messages (BV Scheme) <https://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf>`_
 - Requires the computation of a quadratic number of NTTs.
 
 ``Key-switch Hybrid``

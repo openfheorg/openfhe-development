@@ -92,7 +92,7 @@ File Listings
 -  Number theory utilities
 -  Check if two numbers are coprime
 -  GCD of two numbers
--  If a number, i, is prime
+-  Primality testing
 -  witness function to test if a number is prime
 -  Eulers Totient function phin(n)
 -  Generator Algorithm

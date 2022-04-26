@@ -137,7 +137,7 @@ Trapdoors
 ``trapdoor.h``:
 
 -  Provides the utility for sampling trapdoor lattices as described in `Implementing Conjunction Obfuscation under Entropic Ring LWE <https://eprint.iacr.org/2017/844.pdf>`__, `Building an Efficient Lattice Gadget Toolkit: Subgaussian Sampling and More <https://eprint.iacr.org/2018/946>`__, and `Implementing Token-Based Obfuscation under (Ring) LWE <https://eprint.iacr.org/2018/1222.pdf>`__
--  NOTE: Uses ``dgsampling.h``to implement the algorithms in the aforementioned papers
+-  NOTE: Uses ``dgsampling.h`` to implement the algorithms in the aforementioned papers
 
 ``trapdoorparameters.h``
 

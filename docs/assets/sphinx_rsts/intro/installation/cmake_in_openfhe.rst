@@ -15,7 +15,6 @@ CMake is run in the build tree. The source tree is passed to CMake as an argumen
 Therefore the basic steps are:
 
 .. code-block:: bash
-    :linenos:
 
     cd build-tree-location
     cmake {other CMake arguments} source-tree-location
@@ -186,12 +185,12 @@ Location of Build Products
 
 - Examples (of basic OpenFHE features) are placed in bin/examples, and additional examples (more complicated and research-oriented examples) are placed in bin/extras. Note demos are built as part of each sub-component of the library (core, pke, trapdoor, etc.)
 
-- Documentation (built in the build directory under <BUILD_LOCATION>/docs/doxygen/ for DOXYGEN builds, and <BUILD_LOCATION>/docs/sphinx for Sphinx builds)
+- Documentation (built in the build directory under ``<BUILD_LOCATION>/docs/doxygen/`` for DOXYGEN builds, and ``<BUILD_LOCATION>/docs/sphinx`` for Sphinx builds)
 
 Installing OpenFHE on your system for use by applications external to the OpenFHE source tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Running `make install` will install all libraries and header files in the directories designated by `CMAKE_INSTALL_PREFIX`. Demos, unittests, benchmarks, examples and extras are not installed.
+Running `make install` will install all libraries and header files in the directories designated by ``CMAKE_INSTALL_PREFIX``. Demos, unittests, benchmarks, examples and extras are not installed.
 
 Building applications with an installed OpenFHE library
 ************************************************************
