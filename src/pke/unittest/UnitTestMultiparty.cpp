@@ -39,6 +39,7 @@
 #include <sstream>
 #include <vector>
 #include <cxxabi.h>
+#include "utils/demangle.h"
 
 
 using namespace lbcrypto;
@@ -140,10 +141,10 @@ static std::vector<TEST_CASE_UTMultiparty> testCases = {
     { BGVRNS_TEST, "22", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "23", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "24", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
-    //{ BGVRNS_TEST, "25", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "26", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "25", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "26", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
     // ==========================================
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
     { BFVRNS_TEST_EXTRA, "29", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     3.2,    DFLT,      2,          DFLT, HPS},     false },
@@ -456,10 +457,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -591,10 +590,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }

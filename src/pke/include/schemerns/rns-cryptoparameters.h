@@ -626,7 +626,7 @@ public:
    *
    * @return the precomputed CRT params
    */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsRl(usint l) const {
+  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsRl(usint l = 0) const {
     return m_paramsRl[l];
   }
 
@@ -636,7 +636,7 @@ public:
    *
    * @return the precomputed CRT params
    */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlRl(usint l) const {
+  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlRl(usint l = 0) const {
     return m_paramsQlRl[l];
   }
 
@@ -645,7 +645,7 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetQlHatInvModq(usint l) const {
+  const std::vector<NativeInteger> &GetQlHatInvModq(usint l = 0) const {
     return m_QlHatInvModq[l];
   }
 
@@ -654,7 +654,7 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetQlHatInvModqPrecon(usint l) const {
+  const std::vector<NativeInteger> &GetQlHatInvModqPrecon(usint l = 0) const {
     return m_QlHatInvModqPrecon[l];
   }
 
@@ -663,7 +663,7 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GetQlHatModr(usint l) const {
+  const std::vector<std::vector<NativeInteger>> &GetQlHatModr(usint l = 0) const {
     return m_QlHatModr[l];
   }
 
@@ -672,7 +672,7 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GetalphaQlModr(usint l) const {
+  const std::vector<std::vector<NativeInteger>> &GetalphaQlModr(usint l = 0) const {
     return m_alphaQlModr[l];
   }
 
@@ -712,8 +712,7 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GettRSHatInvModsDivsModr()
-      const {
+  const std::vector<std::vector<NativeInteger>> &GettRSHatInvModsDivsModr() const {
     return m_tRSHatInvModsDivsModr;
   }
 
@@ -726,7 +725,7 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetRlHatInvModr(usint l) const {
+  const std::vector<NativeInteger> &GetRlHatInvModr(usint l = 0) const {
     return m_RlHatInvModr[l];
   }
 
@@ -735,7 +734,7 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetRlHatInvModrPrecon(usint l) const {
+  const std::vector<NativeInteger> &GetRlHatInvModrPrecon(usint l = 0) const {
     return m_RlHatInvModrPrecon[l];
   }
 
@@ -744,7 +743,7 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GetRlHatModq(usint l) const {
+  const std::vector<std::vector<NativeInteger>> &GetRlHatModq(usint l = 0) const {
     return m_RlHatModq[l];
   }
 
@@ -753,7 +752,7 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GetalphaRlModq(usint l) const {
+  const std::vector<std::vector<NativeInteger>> &GetalphaRlModq(usint l = 0) const {
     return m_alphaRlModq[l];
   }
 

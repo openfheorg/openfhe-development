@@ -41,6 +41,7 @@
 #include <vector>
 #include "gtest/gtest.h"
 #include <cxxabi.h>
+#include "utils/demangle.h"
 
 
 using namespace lbcrypto;
@@ -180,22 +181,22 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // ==========================================
     // TestType,               Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     //{ SCALE_FACTOR_ADJUSTMENTS, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ SCALE_FACTOR_ADJUSTMENTS, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { SCALE_FACTOR_ADJUSTMENTS, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     //{ SCALE_FACTOR_ADJUSTMENTS, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ SCALE_FACTOR_ADJUSTMENTS, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { SCALE_FACTOR_ADJUSTMENTS, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    //{ SCALE_FACTOR_ADJUSTMENTS, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ SCALE_FACTOR_ADJUSTMENTS, "6", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { SCALE_FACTOR_ADJUSTMENTS, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { SCALE_FACTOR_ADJUSTMENTS, "6", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType,        Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     //{ AUTO_LEVEL_REDUCE, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ AUTO_LEVEL_REDUCE, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { AUTO_LEVEL_REDUCE, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     //{ AUTO_LEVEL_REDUCE, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ AUTO_LEVEL_REDUCE, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { AUTO_LEVEL_REDUCE, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    //{ AUTO_LEVEL_REDUCE, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ AUTO_LEVEL_REDUCE, "6", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { AUTO_LEVEL_REDUCE, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { AUTO_LEVEL_REDUCE, "6", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType, Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
@@ -249,10 +250,10 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
 #endif
     // ==========================================
     // TestType,     Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    //{ RE_ENCRYPTION, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ RE_ENCRYPTION, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { RE_ENCRYPTION, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { RE_ENCRYPTION, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    //{ RE_ENCRYPTION, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { RE_ENCRYPTION, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType, Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
@@ -289,7 +290,9 @@ class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
     // This is necessary because CKKS works for approximate numbers.
     const double eps = EPSILON;
 
-    const double epsHigh = EPSILON_HIGH;
+    const double epsHigh = 0.0001;
+
+    const double epsHuge = 0.01;
 
     const std::vector<std::complex<double>> vectorOfInts0_7{ 0, 1, 2, 3, 4, 5, 6, 7 };
     const std::vector<std::complex<double>> vectorOfInts0_7neg{ 0,-1,-2,-3,-4,-5,-6,-7 };
@@ -408,10 +411,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -481,10 +482,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -652,10 +651,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -822,15 +819,17 @@ protected:
             auto ct10 = cc->EvalSub(ctRed3, ct);
             cc->Decrypt(kp.secretKey, ct10, &results);
             results->SetLength(plaintextCt10->GetLength());
-            checkEquality(plaintextCt10->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+            checkEquality(plaintextCt10->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
                 failmsg + " in-place addition with tower diff > 1 fails");
 
             // Multiplication with more than 1 level difference
             auto ct11 = cc->EvalMult(ctRed3, ct);
             cc->Decrypt(kp.secretKey, ct11, &results);
             results->SetLength(plaintextCt11->GetLength());
-            checkEquality(plaintextCt11->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                failmsg + " multiplication with tower diff > 1 fails");
+            std::stringstream buffer;
+            buffer << plaintextCt11->GetCKKSPackedValue() << " - we get: " << results->GetCKKSPackedValue();
+            checkEquality(plaintextCt11->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
+                failmsg + " multiplication with tower diff > 1 fails" + buffer.str());
 
             // Addition with more than 1 level difference (inputs reversed)
             auto ct12 = cc->EvalAdd(ct, ctRed3);
@@ -858,7 +857,7 @@ protected:
             auto ct14 = cc->EvalMult(ct, ctRed3);
             cc->Decrypt(kp.secretKey, ct14, &results);
             results->SetLength(plaintextCt14->GetLength());
-            checkEquality(plaintextCt14->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+            checkEquality(plaintextCt14->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
                 failmsg + " multiplication (reverse) with tower diff > 1 fails");
 
             // This scenario tests for operations on ciphertext and plaintext that differ on
@@ -886,7 +885,7 @@ protected:
             auto ct_7 = cc->EvalMult(ct_4, plaintext2);
             cc->Decrypt(kp.secretKey, ct_7, &results);
             results->SetLength(plaintextCt_7->GetLength());
-            checkEquality(plaintextCt_7->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+            checkEquality(plaintextCt_7->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
                 failmsg + " multiplication with plaintext and tower diff = 1 fails");
         }
         catch (std::exception& e) {
@@ -895,10 +894,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -937,10 +934,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -1015,10 +1010,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -1085,10 +1078,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -1166,10 +1157,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -1226,10 +1215,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -1268,7 +1255,7 @@ protected:
             auto tmp_b = plaintextInt->GetCKKSPackedValue();
             std::stringstream buffer;
             buffer << tmp_b << " - we get: " << tmp_a;
-            checkEquality(tmp_a, tmp_b, eps, failmsg + " ReEncrypt integer plaintext " + buffer.str());
+            checkEquality(tmp_a, tmp_b, epsHuge, failmsg + " ReEncrypt integer plaintext " + buffer.str());
 
             Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintextInt);
             Ciphertext<Element> reCiphertext2 = cc->ReEncrypt(ciphertext2, evalKey, kp.publicKey);
@@ -1279,7 +1266,7 @@ protected:
             tmp_b = plaintextInt->GetCKKSPackedValue();
             std::stringstream buffer2;
             buffer2 << tmp_b << " - we get: " << tmp_a;
-            checkEquality(tmp_a, tmp_b, eps, failmsg + " HRA-secure ReEncrypt integer plaintext " + buffer2.str());
+            checkEquality(tmp_a, tmp_b, epsHuge, failmsg + " HRA-secure ReEncrypt integer plaintext " + buffer2.str());
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -1287,10 +1274,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -1398,10 +1383,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
@@ -1554,10 +1537,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }

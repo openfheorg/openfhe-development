@@ -285,37 +285,6 @@ void LeveledSHECKKSRNS::LevelReduceInternalInPlace(
 // Compress
 /////////////////////////////////////
 
-Ciphertext<DCRTPoly> LeveledSHECKKSRNS::Compress(
-    ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          ciphertext->GetCryptoParameters());
-
-  Ciphertext<DCRTPoly> result =
-      std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
-
-  while (result->GetDepth() > 1) {
-    ModReduceInternalInPlace(result);
-  }
-  const std::vector<DCRTPoly> &cv = result->GetElements();
-  usint sizeQl = cv[0].GetNumOfElements();
-
-  if (towersLeft >= sizeQl) {
-    return result;
-  }
-
-#if 0
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO) {
-    const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
-    usint sizeQ = paramsQ->GetParams().size();
-    AdjustLevelWithRescaleInPlace(result, sizeQ - towersLeft);
-    return result;
-  }
-#endif
-
-  LevelReduceInternalInPlace(result, nullptr, sizeQl - towersLeft);
-  return result;
-}
 
 /////////////////////////////////////
 // CKKS Core
@@ -753,15 +722,22 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(
   }
 }
 
-void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
-    Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &pt, usint ptDepth) const {
-  //TODO implement
+DCRTPoly LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
+    Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const {
+  CryptoContext<DCRTPoly> cc = ciphertext->GetCryptoContext();
+  auto values = plaintext->GetCKKSPackedValue();
+  Plaintext ptx = cc->MakeCKKSPackedPlaintext(values, ciphertext->GetDepth(),
+                                                  ciphertext->GetLevel());
+  return ptx->GetElement<DCRTPoly>();
 }
 
 
-void LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(
-    Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &pt, usint ptDepth) const {
-  //TODO implement
+DCRTPoly LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(
+    Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const {
+  if(ciphertext->GetDepth() == 2) {
+      ModReduceInternalInPlace(ciphertext);
+  }
+  return AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
 }
 
 void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly> &ciphertext, double constant) const {

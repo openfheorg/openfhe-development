@@ -109,24 +109,24 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
   if (cryptoParams->GetMultiplicationTechnique() == HPS) {
     for (size_t i = 0; i < cv1Size; i++) {
       cv1[i].ExpandCRTBasis(
-          cryptoParams->GetParamsQlRl(0),
-          cryptoParams->GetParamsRl(0),
-          cryptoParams->GetQlHatInvModq(0),
-          cryptoParams->GetQlHatInvModqPrecon(0),
-          cryptoParams->GetQlHatModr(0),
-          cryptoParams->GetalphaQlModr(0),
+          cryptoParams->GetParamsQlRl(),
+          cryptoParams->GetParamsRl(),
+          cryptoParams->GetQlHatInvModq(),
+          cryptoParams->GetQlHatInvModqPrecon(),
+          cryptoParams->GetQlHatModr(),
+          cryptoParams->GetalphaQlModr(),
           cryptoParams->GetModrBarrettMu(),
           cryptoParams->GetqInv());
     }
 
     for (size_t i = 0; i < cv2Size; i++) {
       cv2[i].ExpandCRTBasis(
-          cryptoParams->GetParamsQlRl(0),
-          cryptoParams->GetParamsRl(0),
-          cryptoParams->GetQlHatInvModq(0),
-          cryptoParams->GetQlHatInvModqPrecon(0),
-          cryptoParams->GetQlHatModr(0),
-          cryptoParams->GetalphaQlModr(0),
+          cryptoParams->GetParamsQlRl(),
+          cryptoParams->GetParamsRl(),
+          cryptoParams->GetQlHatInvModq(),
+          cryptoParams->GetQlHatInvModqPrecon(),
+          cryptoParams->GetQlHatModr(),
+          cryptoParams->GetalphaQlModr(),
           cryptoParams->GetModrBarrettMu(),
           cryptoParams->GetqInv());
     }
@@ -224,7 +224,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
       // Performs the scaling by t/Q followed by rounding; the result is in the
       // CRT basis P
       cvMult[i] = cvMult[i].ScaleAndRound(
-          cryptoParams->GetParamsRl(0),
+          cryptoParams->GetParamsRl(),
           cryptoParams->GettRSHatInvModsDivsModr(),
           cryptoParams->GettRSHatInvModsDivsFrac(),
           cryptoParams->GetModrBarrettMu());
@@ -232,10 +232,10 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
       // Converts from the CRT basis P to Q
       cvMult[i] = cvMult[i].SwitchCRTBasis(
           cryptoParams->GetElementParams(),
-          cryptoParams->GetRlHatInvModr(0),
-          cryptoParams->GetRlHatInvModrPrecon(0),
-          cryptoParams->GetRlHatModq(0),
-          cryptoParams->GetalphaRlModq(0),
+          cryptoParams->GetRlHatInvModr(),
+          cryptoParams->GetRlHatInvModrPrecon(),
+          cryptoParams->GetRlHatModq(),
+          cryptoParams->GetalphaRlModq(),
           cryptoParams->GetModqBarrettMu(),
           cryptoParams->GetrInv());
     }

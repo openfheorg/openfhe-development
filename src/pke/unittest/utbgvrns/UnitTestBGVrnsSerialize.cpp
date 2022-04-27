@@ -45,6 +45,7 @@
 #include <sstream>
 #include <vector>
 #include <cxxabi.h>
+#include "utils/demangle.h"
 
 
 using namespace lbcrypto;
@@ -137,14 +138,10 @@ static std::vector<TEST_CASE_UTBGVRNS_SER> testCases = {
     { CONTEXT, "4", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
     // ==========================================
     // TestType,          Descr, Scheme,         RDim,     MultDepth,  SFBits,     RWin,  BatchSz, Mode, Depth, MDepth,    ModSize,        SecLvl,  KSTech, RSTech,       LDigits, PtMod, StdDev,   EvalAddCt, EvalMultCt, KSCt, MultTech
-    //{ KEYS_AND_CIPHERTEXTS, "1", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ KEYS_AND_CIPHERTEXTS, "2", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ KEYS_AND_CIPHERTEXTS, "3", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ KEYS_AND_CIPHERTEXTS, "4", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ KEYS_AND_CIPHERTEXTS, "5", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ KEYS_AND_CIPHERTEXTS, "6", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ KEYS_AND_CIPHERTEXTS, "7", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ KEYS_AND_CIPHERTEXTS, "8", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "1", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "2", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "3", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "4", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
     // ==========================================
 };
 //===========================================================================================================
@@ -344,10 +341,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }

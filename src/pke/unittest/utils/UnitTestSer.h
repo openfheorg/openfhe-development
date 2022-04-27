@@ -43,6 +43,7 @@
 #include <string>
 #include <iostream>
 #include <cxxabi.h>
+#include "utils/demangle.h"
 /*
 #include "math/nbtheory.h"
 #include "openfhe.h"
@@ -101,10 +102,8 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype, co
         EXPECT_TRUE(0 == 1) << failmsg;
     }
     catch (...) {
-        int status = 0;
-        char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+        std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
         std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-        std::free(name);
         // make it fail
         EXPECT_TRUE(0 == 1) << failmsg;
     }

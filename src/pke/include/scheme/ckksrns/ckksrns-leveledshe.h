@@ -143,8 +143,6 @@ public:
   // Compress
   /////////////////////////////////////
 
-  virtual Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly> ciphertext,
-                                        size_t towersLeft = 1) const override;
 
   /////////////////////////////////////
   // CKKS Core
@@ -158,11 +156,11 @@ public:
   virtual void AdjustLevelsAndDepthToOneInPlace(
       Ciphertext<DCRTPoly> &ciphertext1, Ciphertext<DCRTPoly> &ciphertext2) const override;
 
-  virtual void AdjustLevelsAndDepthInPlace(
-      Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &plaintext, usint ptDepth) const override;
+  virtual DCRTPoly AdjustLevelsAndDepthInPlace(
+      Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const override;
 
-  virtual void AdjustLevelsAndDepthToOneInPlace(
-      Ciphertext<DCRTPoly> &ciphertext, DCRTPoly &plaintext, usint ptDepth) const override;
+  virtual DCRTPoly AdjustLevelsAndDepthToOneInPlace(
+      Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const override;
 
   std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(
       ConstCiphertext<DCRTPoly> ciphertext, double constant) const;

@@ -120,7 +120,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param plaintext the input plaintext.
    */
   virtual void EvalAddInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                              ConstPlaintext plaintext) const override;
+      ConstPlaintext plaintext) const override;
 
   /**
    * Virtual function to define the interface for homomorphic addition of
@@ -310,6 +310,9 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
   // SHE LEVELED Compress
   /////////////////////////////////////////
 
+  virtual Ciphertext<DCRTPoly> Compress(
+      ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft = 1) const override;
+
  protected:
 
   /////////////////////////////////////
@@ -372,8 +375,8 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
   virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext1,
                            Ciphertext<DCRTPoly> &ciphertext2) const override;
 
-  virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                          DCRTPoly &pt, usint ptDepth) const override;
+  virtual DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
+                                          ConstPlaintext plaintext) const override;
 
   /////////////////////////////////////
   // SERIALIZATION

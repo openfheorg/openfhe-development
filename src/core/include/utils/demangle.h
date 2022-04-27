@@ -28,46 +28,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#ifndef __DEMANGLE_H__
+#define __DEMANGLE_H__
 
-#include "UnitTestSer.h"
-#include "gtest/gtest.h"
+#include <string>
 
-#include "scheme/bfvrns/bfvrns-ser.h"
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "gen-cryptocontext.h"
 
-using namespace lbcrypto;
+std::string demangle(const char* name);
 
-class UTPKESer : public ::testing::Test {
-protected:
-    void SetUp() {}
+#endif // __DEMANGLE_H__
 
-    void TearDown() {
-        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
-        CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
-        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-    }
-};
-
-template <typename T>
-void UnitTestContext(CryptoContext<T> cc) {
-    UnitTestContextWithSertype(cc, SerType::JSON, "json");
-    UnitTestContextWithSertype(cc, SerType::BINARY, "binary");
-}
-
-TEST_F(UTPKESer, BFVrns_DCRTPoly_Serial) {
-    CCParams<CryptoContextBFVRNS> parameters;
-    parameters.SetPlaintextModulus(16);
-    parameters.SetStandardDeviation(4);
-    parameters.SetRootHermiteFactor(1.006);
-    parameters.SetEvalMultCount(1);
-    parameters.SetScalingFactorBits(60);
-
-    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-    cc->Enable(ADVANCEDSHE);
-
-    UnitTestContext<DCRTPoly>(cc);
-}

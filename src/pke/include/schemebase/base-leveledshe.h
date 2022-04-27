@@ -147,7 +147,7 @@ class LeveledSHEBase {
    * @param plaintext the input plaintext.
    */
   virtual void EvalAddInPlace(Ciphertext<Element> &ciphertext,
-                              ConstPlaintext plaintext) const;
+      ConstPlaintext plaintext) const;
 
   /**
    * Virtual function to define the interface for homomorphic addition of
@@ -769,20 +769,20 @@ class LeveledSHEBase {
                    "Mutable Operations are not supported for this scheme");
   }
 
-  virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                          DCRTPoly &pt, usint ptDepth) const {
+  virtual DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
+      ConstPlaintext plaintext) const {
     OPENFHE_THROW(config_error,
                    "Leveled Operations are not supported for this scheme");
   }
 
-  virtual void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly> &ciphertext,
-      DCRTPoly &pt, usint ptDepth) const {
+  virtual DCRTPoly AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly> &ciphertext,
+      ConstPlaintext plaintext) const {
     OPENFHE_THROW(config_error,
                    "Mutable Operations are not supported for this scheme");
   }
 
-  virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ciphertext,
-      DCRTPoly &pt, usint ptDepth) const {
+  virtual DCRTPoly AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ciphertext,
+      ConstPlaintext plaintext) const {
     OPENFHE_THROW(config_error,
                    "Mutable Operations are not supported for this scheme");
   }

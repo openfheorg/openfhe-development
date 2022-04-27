@@ -40,6 +40,7 @@
 #include "gtest/gtest.h"
 #include <iostream>
 #include <vector>
+#include "utils/demangle.h"
 
 
 using namespace lbcrypto;
@@ -210,10 +211,8 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }

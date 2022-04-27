@@ -113,7 +113,7 @@ public:
                         m_numPartQ, m_auxBits, m_extraBits);
   }
 
-  std::string SerializedObjectName() const override { return "SchemeParametersCKKSRNS"; }
+  std::string SerializedObjectName() const override { return "CryptoParametersCKKSRNS"; }
   static uint32_t SerializedVersion() { return 1; }
 };
 
