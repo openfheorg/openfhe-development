@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -33,8 +32,9 @@
 #include "UnitTestSer.h"
 #include "gtest/gtest.h"
 
-#include "cryptocontexthelper.h"
 #include "scheme/bfvrns/bfvrns-ser.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -49,17 +49,6 @@ protected:
     }
 };
 
-CryptoContext<DCRTPoly> GenerateTestDCRTCryptoContext(const std::string& parmsetName, usint nTower, usint pbits) {
-    // TODO (dsuponit): getNewDCRTContext() should be replaced with a context generator function call
-    // in order to remove the class CryptoContextHelper
-    CryptoContext<DCRTPoly> cc = CryptoContextHelper::getNewDCRTContext(parmsetName, nTower, pbits);
-    cc->Enable(PKE);
-    cc->Enable(KEYSWITCH);
-    cc->Enable(LEVELEDSHE);
-    cc->Enable(ADVANCEDSHE);
-    return cc;
-}
-
 template <typename T>
 void UnitTestContext(CryptoContext<T> cc) {
     UnitTestContextWithSertype(cc, SerType::JSON, "json");
@@ -67,8 +56,18 @@ void UnitTestContext(CryptoContext<T> cc) {
 }
 
 TEST_F(UTPKESer, BFVrns_DCRTPoly_Serial) {
-    CryptoContext<DCRTPoly> cc = GenerateTestDCRTCryptoContext("BFVrns2", 3, 20);
+    CCParams<CryptoContextBFVRNS> parameters;
+    parameters.SetPlaintextModulus(16);
+    parameters.SetStandardDeviation(4);
+    parameters.SetRootHermiteFactor(1.006);
+    parameters.SetEvalMultCount(1);
+    parameters.SetScalingFactorBits(60);
+
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+    cc->Enable(ADVANCEDSHE);
+
     UnitTestContext<DCRTPoly>(cc);
 }
-#endif
-

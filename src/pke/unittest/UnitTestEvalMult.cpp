@@ -626,47 +626,6 @@ namespace {
 } // anonymous namespace
 
 //===================================================================
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many) {
-//    PackedEncoding::Destroy();
-//    RunEvalMultManyTest(MakeBFVPolyCC());
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_MAX_DEPTH) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(INVALID_MAX_DEPTH)));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_PRIVATE_KEY) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_PRIVATE_KEY));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_PUBLIC_KEY) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_PUBLIC_KEY));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_PLAINTEXT_ENCRYPT) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_PLAINTEXT_ENCRYPT));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_CIPHERTEXT_ERROR1) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_CIPHERTEXT_ERROR1));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_CIPHERTEXT_ERROR2) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_CIPHERTEXT_ERROR2));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_CIPHERTEXT_ERROR3) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_CIPHERTEXT_ERROR3));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_CIPHERTEXT_ERROR4) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_CIPHERTEXT_ERROR4));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_CIPHER_TEXT_LIST) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_CIPHER_TEXT_LIST));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_CIPHERTEXT_DECRYPT) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_CIPHERTEXT_DECRYPT));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_PLAINTEXT_DECRYPT) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_PLAINTEXT_DECRYPT));
-//}
-//TEST_F(UnitTestEvalMult, Test_BFV_Eval_Mult_Many_INVALID_PRIVATE_KEY_DECRYPT) {
-//    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVPolyCC(), INVALID_PRIVATE_KEY_DECRYPT));
-//}
-//===================================================================
 TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many) {
     PackedEncoding::Destroy();
     RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC());
