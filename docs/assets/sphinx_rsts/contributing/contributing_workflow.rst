@@ -6,28 +6,38 @@ issue and milestone tracking.
 
 We classify contributions as *Major* or *Minor*.
 
-A Major contribution would be adding a new scheme, or capability to the
-library. Modifications that would require users to change existing
-OpenFHE API code are also considered Major and would not be scheduled
-for inclusion except for a Major release (2.0 is the next scheduled
-major release). We usually require such contributions to be done in
-their own fork of the repository to minimize disruption to the ongoing
-release schedule.
+- **Major** contributions include adding a new scheme, or capability to the
+library.
 
-Minor contributions are less broad in scope, and usually are limited to
-a few files at a time. These are usually done on a branch in the
-development repository, and are usuall incorporated into the next minor
-release cycle.
+  - These contributions would require users to change existing
+    OpenFHE API code
 
-Sometimes a seemingly minor improvement may affect a large number of
-files. Formatting changes are an example of this. Changes to a large
-number of files can be disruptive if done in the wrong point of a
-release cycle.
+  - Major contributions would not be scheduled
+    for inclusion except for a Major release.
 
-If you discover a problem or identify a useful enhancement, do feel free
-to create a new issue in github. Major enhancements should be discussed
-with the OpenFHE team ahead of time before undertaking any work (see
-below).
+  - We usually require such contributions to be done in
+    their own fork of the repository to minimize disruption to the ongoing
+    release schedule.
+
+- **Minor** contributions are less broad in scope, and usually are limited to
+  a few files at a time.
+
+  - These are usually done on a branch in the
+    development repository, and are usuall incorporated into the next minor
+    release cycle.
+
+
+.. attention:
+   Sometimes a seemingly minor improvement may affect a large number of
+   files. Formatting changes are an example of this. Changes to a large
+   number of files can be disruptive if done in the wrong point of a
+   release cycle.
+
+.. note::
+   If you discover a problem or identify a useful enhancement, do feel free
+   to create a new issue in github. Major enhancements should be discussed
+   with the OpenFHE team ahead of time before undertaking any work (see
+   below).
 
 Workflow for Minor Contributions
 ----------------------------------
@@ -74,7 +84,7 @@ v9.0.0 or later. Then using ``git bash`` run
 
 
 .. note:: ``clang-format`` is not backwards compatible; the current format has
-been tested using ``clang-format`` version 9.0.0.
+   been tested using ``clang-format`` version 9.0.0.
 
 Setup
 ^^^^^^^^^^^^^^^
@@ -104,29 +114,30 @@ We request that you conform to the following workflow:
 3. Create a new branch with the a unique name:
    ``git checkout -b <your new branch name>``.
 
--  Note that we recommend naming feature branches by appending your name
-   with an issue number. If your last name is Rohloff and you’re fixing
-   a bug documented in issue 233, then one would create a branch named
-   ``Rohloff_issue233``.
--  This command will create the branch and move you into it.
+  -  Note that we recommend naming feature branches by appending your name
+     with an issue number. If your last name is Rohloff and you’re fixing
+     a bug documented in issue 233, then one would create a branch named
+     ``Rohloff_issue233``.
+
+  -  This command will create the branch and move you into it.
 
 4. Make any changes you want to in the branch.
 5. Commit your changes to the local repo:
    ``git commit -am "commit message"``
 
--  Note the commit message should be succinct yet meaningful and
-   indicate the issue you’re addressing, and discussion of things you
-   weren’t able to address.
--  Be sure the ``pre-commit`` hooks run, to ensure the code meets the
-   style guidelines. As a check, running
-   ``./scripts/maint/apply-code-format.sh`` to apply clang-format should not
-   result in any additional formatting changes in the code.
--  For a more granular control, you can first add files using
-   ``git add`` and then run ``git commit -m "commit message"``. In this
-   case, the changes made by pre-commit will not automatically be added
-   to the commit. Review the changes using ``git diff``. If all looks
-   well, run ``git add``, and then retry
-   ``git commit -m "commit message"``.
+  -  Note the commit message should be succinct yet meaningful and
+     indicate the issue you’re addressing, and discussion of things you
+     weren’t able to address.
+  -  Be sure the ``pre-commit`` hooks run, to ensure the code meets the
+     style guidelines. As a check, running
+     ``./scripts/maint/apply-code-format.sh`` to apply clang-format should not
+     result in any additional formatting changes in the code.
+  -  For a more granular control, you can first add files using
+     ``git add`` and then run ``git commit -m "commit message"``. In this
+     case, the changes made by pre-commit will not automatically be added
+     to the commit. Review the changes using ``git diff``. If all looks
+     well, run ``git add``, and then retry
+     ``git commit -m "commit message"``.
 
 6.  Push your local commit to the server in your branch:
     ``git push origin <your local branch name>``
@@ -139,9 +150,9 @@ We request that you conform to the following workflow:
     needed for features you’ve added.
 
 9.  Before creating merge requests, developers should rebase their
-    branch from main and test that their code works properly. `This page
+    branch from main and test that their code works properly. :ref:`This page
     describes a workflow to rebase a branch from a main
-    branch. <https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/contributing/rebasing_off_main.html>`__
+    branch. <rebasing>`
 
 10. Submit a merge request so project owners can review your commits
     here. You should include the text ``Fixes #issue`` in your merge
@@ -153,9 +164,9 @@ We request that you conform to the following workflow:
 12. When your merge request is accepted, your changes will be merged
     into main and your branch will be deleted.
 
--  All additions to the released versions of ~ are subject to approval
-   by the OpenFHE governance team as outlined in the `OpenFHE Governance
-   document. <https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/misc/governance.html>`__
+  -  All additions to the released versions of OpenFHE are subject to approval
+     by the OpenFHE governance team as outlined in the :ref:`OpenFHE Governance
+     document. <governance>`
 
 Workflow for Major Contributions
 ----------------------------------
@@ -213,9 +224,9 @@ requested procedure or a Major change.
       that your changes are not causing any test failures.
 
 -  Major additions may require changes to the OpenFHE CMAKE files. Refer
-   to the wiki page
-   `Use-of-CMake-in-OpenFHE <https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/installation/cmake_in_openfhe.html>`__
-   for details.
+   to the
+   :ref:`Use-of-CMake-in-OpenFHE <cmake_in_openfhe>`
+   page for details.
 
 -  Submit a Pull Request on GitLab. Check the results of the continuous-
    integration tests pipelines and resolve any issues that arise.
@@ -233,9 +244,8 @@ requested procedure or a Major change.
    add your name to the ``AUTHORS.md`` file.
 
 -  All additions to the released versions of OpenFHE are subject to
-   approval by the OpenFHE governance team as outlined in the `OpenFHE
-   Governance
-   document. <https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/misc/governance.html>`__
+   approval by the OpenFHE governance team as outlined in the :ref:`OpenFHE
+   Governance document. <governance>`
 
 Acknowlegement
 --------------

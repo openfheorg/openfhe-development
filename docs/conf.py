@@ -1,7 +1,7 @@
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
-# list see the documentation:
+#   list see the documentation (scroll to the bottom for an example)
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Path setup --------------------------------------------------------------
@@ -16,7 +16,7 @@
 import subprocess
 
 # -- Project information -----------------------------------------------------
-from typing import Union
+from typing import Union, Dict
 
 project = 'OpenFHE'
 copyright = '2022, OpenFHE'
@@ -32,15 +32,17 @@ import subprocess, os
 
 extensions = [
     'sphinx.ext.autodoc',
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.autosummary",
     'sphinx.ext.doctest',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.imgmath',
     'sphinx.ext.duration',
-    'sphinx.ext.todo',
+    'sphinx.ext.graphviz',
+    'sphinx.ext.imgmath',
+    'sphinx.ext.mathjax',
     'breathe',
     'sphinxcontrib.mermaid'
 ]
+autosummary_generate = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['assets/sphinx_builds/_templates']
@@ -49,6 +51,8 @@ templates_path = ['assets/sphinx_builds/_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+master_doc = 'index'
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -66,20 +70,34 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['assets/sphinx_builds/_static']
+html_static_path = ['_static']
+html_domain_indices = True
 
 # -- Breathe ---------------------------------------------------
 
 breathe_default_project = "OpenFHE"
-breathe_default_members = ('members', 'undoc-members', "private-members")
+breathe_default_members = ('members', "protected-members")
 breathe_implementation_filename_extensions = ['.c', '.cc', '.cpp']
+breathe_domain_by_extension = {
+    "h": "cpp",
+}
+breathe_show_include = False
+breathe_separate_member_pages = False
+breathe_doxygen_config_options = {
+    "QUIET": "YES",
+    "WARN_IF_UNDOCUMENTED": "NO",
+    "WARNINGS": "NO",
+    "WARN_IF_DOC_ERROR": "NO",
+    "WARN_IF_INCOMPLETE_DOC": "NO",
+    "WARN_NO_PARAMDOC": "NO"
+}
 
 ##############################################################################3
 # Generate the breathe_sources
 accumulator = []
 
-def scan_dir(prefix, append_print, fixed):
 
+def scan_dir(prefix, append_print, fixed):
     fmt_path = lambda a: a
     files = []
     horizon = []
@@ -96,19 +114,15 @@ def scan_dir(prefix, append_print, fixed):
     for el in horizon:
         scan_dir(prefix + f"/{el}", append_print + f"_{el}", fixed)
 
+
 # Location of the modules
 for module in MODULE_LIST:
     scan_dir(f"../src/{module}/include", module, module)
 
 breathe_projects_source = {k: (v1, v2) for (k, v1, v2) in accumulator}
 
+
 ##############################################################################3
-
-breathe_domain_by_extension = {
-    "h": "cpp",
-}
-breathe_show_include = False
-
 
 ########################################
 # Read the docs deployment
@@ -171,6 +185,9 @@ def read_version_number(pth="../CMakeLists.txt"):
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 breathe_projects = {}
+
+def setup(app):
+    app.add_css_file('my_theme.css')
 
 if read_the_docs_build:
     """According to:

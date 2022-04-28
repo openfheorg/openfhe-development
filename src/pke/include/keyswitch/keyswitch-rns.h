@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+/*
+ * Abstract interface class for RNS LBC SHE algorithms
+ */
+
 #ifndef LBCRYPTO_CRYPTO_KEYSWITCH_RNS_H
 #define LBCRYPTO_CRYPTO_KEYSWITCH_RNS_H
 

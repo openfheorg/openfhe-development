@@ -1,13 +1,20 @@
+.. _quickstart:
+
 Examples
 ====================================
 
 OpenFHE provides the following examples which should provide the reader with a basic understanding of how to use the
 library for various purposes.
 
-Binary FHE
+
+.. contents:: Page Contents
+   :local:
+
+
+Boolean FHE
 ----------------------------
 
-`Binary Fully Homomorphic Encryption Examples <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples>`_
+`Boolean Fully Homomorphic Encryption Examples <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples>`_
 
 At a high level:
 
@@ -66,7 +73,7 @@ At a high level:
 Core
 ----------------------------
 
-`Implementation core of the OpenFHE library <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples>`_ Examples include:
+`Core OpenFHE Examples <https://github.com/openfheorg/openfhe-development/tree/main/src/core/examples>`_:
 
 - `parallel.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/core/examples/parallel.cpp>`_:
 
@@ -77,44 +84,71 @@ Core
 
   - provides an example of doing integer Gaussian sampling using `OpenFHE samplers <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/math>`_.
 
-  - For more information on sampling, read `<https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/core/math/sampling.html>`_
+  - For more information on sampling, read :ref:`sampling documentation <sampling>`
 
 
 Public-Key Encryption (PKE)
 ----------------------------
 
-Generalized Fully Homomorphic Encryption
+`Generalized Fully Homomorphic Encryption Examples <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/examples>`_:
 
--  `advanced-real-numbers-128.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers-128.cpp>`_:
+Basic Homomorphic Encryption
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   - demonstates the advanced operations on **high-precision** real number vectors using ``CKKS``:
+Demonstrates basic homomorphic encryption using the various schemes:
 
-     - High-precision CKKS
-     - Rescaling (automatic and manual)
-     - hybrid key-switching
-     - hoisting
+- `BFV-rns B (depth-bfvrns-b.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bfvrns-b.cpp>`_
 
--  `advanced-real-numbers.cpp: Advanced examples of how to use the CKKS framework <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers.cpp>`__:
+- `BFV-rns (depth-bfvrns.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bfvrns.cpp>`_
 
-   - demonstates the advanced operations on real number vectors using ``CKKS``:
-
-     - Rescaling (automatic and manual)
-     - hybrid key-switching
-     - hoisting
-
--  `depth-bfvrns-b.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bfvrns-b.cpp>`__:
-
-   - demonstrates use of the ``BFVrnsB`` scheme for basic homomorphic encryption
-
--  `depth-bfvrns.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bfvrns.cpp>`__:
-
-   - demonstrates use of the ``BFVrns`` scheme for basic homomorphic encryption
+- `BGV-rns depth-bgvrns.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bgvrns.cpp>`_
 
 
--  `depth-bgvrns.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bgvrns.cpp>`__:
+Simple Mathematical Operations and Serialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   - demonstrates use of the ``BGVrns`` scheme for basic homomorphic encryption
+Demonstrates the following mathematical operations on vectors of appropriate type (integers in the case of `BGV` and `BFV`, and real numbers in `CKKS`):
 
+- homomorphic additions,
+- homomorphic multiplications
+- homomorphic rotations
+
+Additionally, we include the variants detailing how to do serialization-deserialization.
+
+**Schemes**:
+
+- `Standard BGV-rns (simple-integers-bgvrns.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-bgvrns.cpp>`_
+
+- `BGV-rns with Serialization/Deserialization (simple-integers-serial-bgvrns.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial-bgvrns.cpp>`_
+
+
+- `Standard BFV-rns (simple-integers.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers.cpp>`_
+
+- `BFV-rns with Serialization/Deserialization (simple-integers-serial.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial.cpp>`_
+
+
+- `Standard CKKS-rns (simple-real-numbers.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers>`__:
+
+- `CKKS-rns with Serialization/Deserialization (simple-real-numbers-serial.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers-serial.cpp>`_
+
+Advanced CKKS Usage
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Demonstates advanced operations on real-number vectors using ``CKKS``:
+
+- High-precision CKKS
+- Rescaling (automatic and manual)
+- hybrid key-switching
+- hoisting
+
+**Formats**
+
+-  `Standard-precision Advanced CKKS Examples (advanced-real-numbers.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers.cpp>`__:
+
+-  `High-precision Advanced CKKS Examples (advanced-real-numbers.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers-128.cpp>`__:
+
+Misc. Operations across Schemes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  `evalatindex.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/evalatindex.cpp>`__:
 
@@ -134,63 +168,6 @@ Generalized Fully Homomorphic Encryption
 
    - demonstrates use of OpenFHE for encryption, re-encryption and decryption of packed vector of binary data
 
-
--  `simple-integers-bgvrns.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-bgvrns.cpp>`__:
-
-   - demonstates the following mathematical operations on vectors of integers using ``BGVrns``:
-
-     - homomorphic additions,
-     - homomorphic multiplications
-     - homomorphic rotations
-
-
--  `simple-integers-serial-bgvrns.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial-bgvrns.cpp>`__:
-
-   - demonstates the following mathematical operations on vectors of integers using ``BGVrns``:
-
-     - homomorphic additions,
-     - homomorphic multiplications
-     - homomorphic rotations
-
-   - Additionally demonstrates the typical serialization/deserialization calls
-
-
--  `simple-integers-serial.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial.cpp>`__:
-
-   - demonstates the following mathematical operations on vectors of integers using ``BFVrns``:
-
-     - homomorphic additions,
-     - homomorphic multiplications
-     - homomorphic rotations
-
-   - Additionally demonstrates the typical serialization/deserialization calls
-
--  `simple-integers.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers.cpp>`__:
-
-   - demonstates the following mathematical operations on vectors of integers  using ``BFVrns``:
-
-     - homomorphic additions,
-     - homomorphic multiplications
-     - homomorphic rotations
-
--  `simple-real-numbers-serial.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers-serial.cpp>`__:
-
-   - demonstates the following mathematical operations on real number vectors using ``CKKS``:
-
-     - homomorphic additions,
-     - homomorphic multiplications
-     - homomorphic rotations
-
-   - Additionally demonstrates the typical serialization/deserialization calls
-
-
--  `simple-real-numbers.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers>`__:
-
-   - demonstrates the following mathematical operations on real number vectors using ``CKKS``:
-
-     - homomorphic additions,
-     - homomorphic multiplications
-     - homomorphic rotations
 
 -  `threshold-fhe.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/threshold-fhe.cpp>`__:
 

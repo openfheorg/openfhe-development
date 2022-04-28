@@ -1,3 +1,5 @@
+.. _cmake_in_openfhe:
+
 CMAKE in OpenFHE
 =================
 
@@ -125,7 +127,7 @@ By default OpenFHE builds without external dependencies. If you wish to use the 
 We have tested OpenFHE with ``GMP 6.1.2`` and ``6.2.1``, and ``NTL 10.5.0`` and ``11.4.4``.
 
 .. note:: A regular binary install (using tools like ``apt-get``) will not work
-   Special compilation flags need to be passed. See `Instructions for installing GMP and NTL <https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/installation/gmp_ntl.html?highlight=gmp>`_
+   Special compilation flags need to be passed. See :ref:`Instructions for installing GMP and NTL <gmp_ntl_install>`
 
 
 

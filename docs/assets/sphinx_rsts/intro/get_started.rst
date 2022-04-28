@@ -3,7 +3,7 @@ Getting Started
 
 Welcome to the OpenFHE webpage!
 
-.. note:: If you're looking to get up to speed quickly, visit our `quickstart <https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/quickstart.html>`_ page.
+.. note:: If you're looking to get up to speed quickly, visit our :ref:`quickstart <quickstart>` page.
 
 .. toctree::
    :maxdepth: 1

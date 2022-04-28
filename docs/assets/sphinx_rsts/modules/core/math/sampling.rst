@@ -1,3 +1,5 @@
+.. _sampling:
+
 Sampling in OpenFHE
 ===================
 

@@ -54,7 +54,7 @@ We use CMake to build OpenFHE.
 
 6. Install OpenFHE to a system directory (if desired or for production purposes) ::
 
-   make install
+    make install
 
 You would probably need to run ``sudo make install`` unless you are specifying some other install location. You can change the install location by running
 ``cmake -DCMAKE_INSTALL_PREFIX=/your/path ..``.

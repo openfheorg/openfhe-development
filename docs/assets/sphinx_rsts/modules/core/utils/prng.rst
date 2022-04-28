@@ -1,7 +1,7 @@
 Pseudorandom Number Generator (PRNG)
 =====================================
 
-Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/utils/prng>`_. Additionally, we refer users to ``
+Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/utils/prng>`_. Additionally, we refer users to :ref:`our sampling documentation<sampling>`
 
 .. contents:: Page Contents
    :local:
@@ -22,3 +22,4 @@ Core PRNG Generated Docs
 
 .. autodoxygenindex::
    :project: core_utils_prng
+   :allow-dot-graphs:

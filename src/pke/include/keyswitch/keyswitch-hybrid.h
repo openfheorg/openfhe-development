@@ -28,7 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+/**
+ * Uses a mix of the GHS key - switching with the BV key - switching to produce more efficient key -switching.
+ * Was introduced in Homomorphic Evaluation of the AES Circuit(GHS Scheme) (https://eprint.iacr.org/2012/099.pdf)
 
+* GHS Keyswitching :
+    Pros : Smaller noise growth than BV and is more efficient as it only
+               requires a linear number of NTTs
+               Cons : need to double dimension,N, or reduce size of ciphertext modulus, Q, by a factor of 2
+
+*/
 #ifndef LBCRYPTO_CRYPTO_KEYSWITCH_HYBRID_H
 #define LBCRYPTO_CRYPTO_KEYSWITCH_HYBRID_H
 

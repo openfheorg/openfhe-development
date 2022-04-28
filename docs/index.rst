@@ -27,7 +27,7 @@ A major focus is on the usability of the schemes. For instance, all HE schemes w
 
 OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve high performance, e.g., OpenFHE (called PALISADE at the time) was used as the library for a winning genome-wide association studies solution at iDASH’18.
 
-.. note:: For a quick introduction to OpenFHE, visit our `quickstart <https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/quickstart.html>`_ page.
+.. note:: For a quick introduction to OpenFHE, visit our :ref:`quickstart <quickstart>` page.
 
 .. toctree::
    :maxdepth: 2
@@ -35,7 +35,6 @@ OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve h
 
    assets/sphinx_rsts/intro/get_started.rst
    assets/sphinx_rsts/modules/modules.rst
-   assets/sphinx_rsts/contributing/contributing.rst
 
 ..
    [COMMENT]: we separated the above TOC tree and the below to make them list at different depths.
@@ -46,8 +45,8 @@ OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve h
    :maxdepth: 1
    :glob:
 
+   assets/sphinx_rsts/contributing/contributing.rst
    assets/sphinx_rsts/misc/*
-
 
 Components
 -------------
@@ -66,7 +65,7 @@ The library is based on modular architecture with the following layers:
 OpenFHE Extensions
 -------------------
 
-   - `Intel HEXL Acceleration <https://github.com/openfheorg/openfhe-hexl>`_
+- `Intel HEXL Acceleration <https://github.com/openfheorg/openfhe-hexl>`_
 
 License
 -----------
@@ -79,7 +78,7 @@ Additional Resources
 `OpenFHE/PALISADE Webinars <https://www.youtube.com/channel/UC1qByOsQina1rpZ8AGl5TZw>`_
 
 
-Indices and tables
-==================
-* :ref:`genindex`
-* :ref:`search`
+.. toctree::
+   :caption: Appendix
+
+   genindex.rst

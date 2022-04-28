@@ -5,10 +5,14 @@ Documentation for `core/include/utils/ <https://github.com/openfheorg/openfhe-de
 
 .. toctree::
    :maxdepth: 3
-   :caption: Contents:
+   :caption: Sub-Contents:
 
    block_allocator.rst
    prng.rst
+
+.. contents:: Page Contents
+   :local:
+
 
 Core Utils
 ------------------------
@@ -28,3 +32,4 @@ Core Utils Generated Docs
 
 .. autodoxygenindex::
    :project: core_utils
+   :allow-dot-graphs:

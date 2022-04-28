@@ -43,7 +43,7 @@ if (DOXYGEN_FOUND)
                 ${SPHINX_EXECUTABLE} -j 6 -Q -b html
                 # Tell Breathe where to find the Doxygen output
                 -Dbreathe_projects.OpenFHE=${DOXYGEN_OUTPUT_DIR}/xml
-                ${SPHINX_SOURCE} ${SPHINX_BUILD} 2> errors.txt
+                ${SPHINX_SOURCE} ${SPHINX_BUILD}
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             DEPENDS
                 ${CMAKE_CURRENT_SOURCE_DIR}/index.rst
@@ -52,22 +52,6 @@ if (DOXYGEN_FOUND)
             COMMENT "Generating documentation with Sphinx")
 
         add_custom_target(Sphinx ALL DEPENDS ${SPHINX_INDEX_FILE})
-#
-#        add_custom_command(OUTPUT ${SPHINX_DEBUG_INDEX_FILE}
-#                COMMAND
-#                ${SPHINX_EXECUTABLE} -j 6 -Q -b html
-#                # Tell Breathe where to find the Doxygen output
-#                -Dbreathe_projects.OpenFHE=${DOXYGEN_OUTPUT_DIR}/xml
-#                ${SPHINX_SOURCE} ${SPHINX_BUILD}
-#                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#                DEPENDS
-#                ${CMAKE_CURRENT_SOURCE_DIR}/index.rst
-#                ${DOXYGEN_INDEX_FILE}
-#                MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
-#                COMMENT "Generating documentation with Sphinx")
-#
-#        # Nice named target so we can run the job easily
-#        add_custom_target(SphinxDebug ALL DEPENDS ${SPHINX_DEBUG_INDEX_FILE})
 
         include(GNUInstallDirs)
         install(DIRECTORY ${SPHINX_BUILD}
