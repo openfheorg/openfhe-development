@@ -28,19 +28,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#ifndef LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_C
-#define LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_C
-
 #include "cryptocontext.h"
 #include "key/privatekey.h"
 
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
+// the code below is from privatekey-impl.cpp
 namespace lbcrypto {
+    //template class PrivateKeyImpl<Poly>;
+    //template class PrivateKeyImpl<NativePoly>;
+    template class PrivateKeyImpl<DCRTPoly>;
+}  // namespace lbcrypto
 
-}
-
-#endif

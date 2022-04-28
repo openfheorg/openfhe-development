@@ -50,13 +50,14 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 1118.
  */
 
-#ifndef LBCRYPTO_CRYPTO_BASE_SCHEME_C
-#define LBCRYPTO_CRYPTO_BASE_SCHEME_C
-
 #include "schemebase/base-scheme.h"
 
+// the code below is from base-scheme-impl.cpp
 namespace lbcrypto {
 
-}
+    //template class SchemeBase<Poly>;
+    //template class SchemeBase<NativePoly>;
+    template class SchemeBase<DCRTPoly>;
 
-#endif
+}  // namespace lbcrypto
+

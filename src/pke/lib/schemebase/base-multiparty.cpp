@@ -50,9 +50,6 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 1118.
  */
 
-#ifndef LBCRYPTO_CRYPTO_BASE_MULTIPARTY_C
-#define LBCRYPTO_CRYPTO_BASE_MULTIPARTY_C
-
 #include "cryptocontext.h"
 #include "schemebase/base-pke.h"
 #include "schemebase/base-multiparty.h"
@@ -461,4 +458,10 @@ MultipartyBase<Element>::MultiAddEvalSumKeys(
 
 }  // namespace lbcrypto
 
-#endif
+// the code below is from base-multiparty-impl.cpp
+namespace lbcrypto {
+    //template class MultipartyBase<Poly>;
+    //template class MultipartyBase<NativePoly>;
+    template class MultipartyBase<DCRTPoly>;
+}  // namespace lbcrypto
+

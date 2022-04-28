@@ -33,9 +33,6 @@
   Control for encryption operations
  */
 
-#ifndef LBCRYPTO_CRYPTO_CRYPTOCONTEXT_C
-#define LBCRYPTO_CRYPTO_CRYPTOCONTEXT_C
-
 #include "cryptocontext.h"
 #include "schemerns/rns-scheme.h"
 
@@ -612,4 +609,148 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
 
 }  // namespace lbcrypto
 
-#endif
+// the code below is from cryptocontext-impl.cpp
+namespace lbcrypto {
+
+    template <>
+    Plaintext CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(
+        PlaintextEncodings pte, std::shared_ptr<ParmType> evp, EncodingParams ep) {
+        if ((pte == CKKSPacked) && (evp->GetParams().size() > 1)) {
+            auto vp = std::make_shared<typename Poly::Params>(
+                evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
+            return PlaintextFactory::MakePlaintext(pte, vp, ep);
+        }
+        else {
+            auto vp = std::make_shared<typename NativePoly::Params>(
+                evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
+            return PlaintextFactory::MakePlaintext(pte, vp, ep);
+        }
+    }
+
+    template <>
+    DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(
+        ConstCiphertext<DCRTPoly> ciphertext,
+        const PrivateKey<DCRTPoly> privateKey,
+        Plaintext* plaintext) {
+        if (ciphertext == nullptr)
+            OPENFHE_THROW(config_error, "ciphertext passed to Decrypt is empty");
+        if (plaintext == nullptr)
+            OPENFHE_THROW(config_error, "plaintext passed to Decrypt is empty");
+        if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext()))
+            OPENFHE_THROW(config_error,
+                "Information passed to Decrypt was not generated with "
+                "this crypto context");
+
+        // determine which type of plaintext that you need to decrypt into
+        // Plaintext decrypted =
+        // GetPlaintextForDecrypt(ciphertext->GetEncodingType(),
+        // this->GetElementParams(), this->GetEncodingParams());
+        Plaintext decrypted = GetPlaintextForDecrypt(
+            ciphertext->GetEncodingType(), ciphertext->GetElements()[0].GetParams(),
+            this->GetEncodingParams());
+
+        DecryptResult result;
+
+        if ((ciphertext->GetEncodingType() == CKKSPacked) &&
+            (ciphertext->GetElements()[0].GetParams()->GetParams().size() >
+                1))  // only one tower in DCRTPoly
+            result = GetScheme()->Decrypt(ciphertext, privateKey,
+                &decrypted->GetElement<Poly>());
+        else
+            result = GetScheme()->Decrypt(
+                ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
+
+        if (result.isValid == false) return result;
+
+        if (ciphertext->GetEncodingType() == CKKSPacked) {
+            auto decryptedCKKS =
+                std::static_pointer_cast<CKKSPackedEncoding>(decrypted);
+            decryptedCKKS->SetDepth(ciphertext->GetDepth());
+            decryptedCKKS->SetLevel(ciphertext->GetLevel());
+            decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
+
+            const auto cryptoParamsCKKS =
+                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+                    this->GetCryptoParameters());
+
+            decryptedCKKS->Decode(ciphertext->GetDepth(),
+                ciphertext->GetScalingFactor(),
+                cryptoParamsCKKS->GetRescalingTechnique());
+
+        }
+        else {
+            decrypted->Decode();
+        }
+
+        *plaintext = std::move(decrypted);
+        return result;
+    }
+
+    template <>
+    DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
+        const std::vector<Ciphertext<DCRTPoly>>& partialCiphertextVec,
+        Plaintext* plaintext) const {
+        DecryptResult result;
+
+        // Make sure we're processing ciphertexts.
+        size_t last_ciphertext = partialCiphertextVec.size();
+        if (last_ciphertext < 1) return result;
+
+        for (size_t i = 0; i < last_ciphertext; i++) {
+            if (partialCiphertextVec[i] == nullptr ||
+                Mismatched(partialCiphertextVec[i]->GetCryptoContext()))
+                OPENFHE_THROW(config_error,
+                    "A ciphertext passed to MultipartyDecryptFusion was not "
+                    "generated with this crypto context");
+            if (partialCiphertextVec[i]->GetEncodingType() !=
+                partialCiphertextVec[0]->GetEncodingType())
+                OPENFHE_THROW(type_error,
+                    "Ciphertexts passed to MultipartyDecryptFusion have "
+                    "mismatched encoding types");
+        }
+
+        // determine which type of plaintext that you need to decrypt into
+        Plaintext decrypted = GetPlaintextForDecrypt(
+            partialCiphertextVec[0]->GetEncodingType(),
+            partialCiphertextVec[0]->GetElements()[0].GetParams(),
+            this->GetEncodingParams());
+
+        if ((partialCiphertextVec[0]->GetEncodingType() == CKKSPacked) &&
+            (partialCiphertextVec[0]
+                ->GetElements()[0]
+                .GetParams()
+                ->GetParams()
+                .size() > 1))
+            result = GetScheme()->MultipartyDecryptFusion(
+                partialCiphertextVec, &decrypted->GetElement<Poly>());
+        else
+            result = GetScheme()->MultipartyDecryptFusion(
+                partialCiphertextVec, &decrypted->GetElement<NativePoly>());
+
+        if (result.isValid == false) return result;
+
+        if (partialCiphertextVec[0]->GetEncodingType() == CKKSPacked) {
+            auto decryptedCKKS =
+                std::static_pointer_cast<CKKSPackedEncoding>(decrypted);
+            const auto cryptoParamsCKKS =
+                std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+                    this->GetCryptoParameters());
+            decryptedCKKS->Decode(partialCiphertextVec[0]->GetDepth(),
+                partialCiphertextVec[0]->GetScalingFactor(),
+                cryptoParamsCKKS->GetRescalingTechnique());
+        }
+        else {
+            decrypted->Decode();
+        }
+
+        *plaintext = std::move(decrypted);
+
+        return result;
+    }
+
+    //template class CryptoContextImpl<Poly>;
+    //template class CryptoContextImpl<NativePoly>;
+    template class CryptoContextImpl<DCRTPoly>;
+
+}  // namespace lbcrypto
+
