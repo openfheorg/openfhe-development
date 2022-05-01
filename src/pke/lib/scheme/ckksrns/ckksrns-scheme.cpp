@@ -55,41 +55,41 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 #include "cryptocontext.h"
 #include "keyswitch/keyswitch-hybrid.h"
 #include "scheme/ckksrns/ckksrns-scheme.h"
+#include <iosfwd>
 
 namespace lbcrypto {
 
-void SchemeCKKSRNS::Enable(PKESchemeFeature feature) {
-  switch (feature) {
-    case PKE:
-      if (m_PKE == nullptr)
-        m_PKE = std::make_shared<PKECKKSRNS>();
-      break;
-    case KEYSWITCH:
-      if (m_KeySwitch == nullptr) {
-//          m_KeySwitch = std::make_shared<KeySwitchBV>();
-        m_KeySwitch = std::make_shared<KeySwitchHYBRID>();
-      }
-      break;
-    case PRE:
-      if (m_PRE == nullptr)
-        m_PRE = std::make_shared<PRECKKSRNS>();
-      break;
-    case LEVELEDSHE:
-      if (m_LeveledSHE == nullptr)
-        m_LeveledSHE = std::make_shared<LeveledSHECKKSRNS>();
-      break;
-    case MULTIPARTY:
-      if (m_Multiparty == nullptr)
-        m_Multiparty = std::make_shared<MultipartyCKKSRNS>();
-      break;
-    case ADVANCEDSHE:
-      if (m_AdvancedSHE == nullptr)
-        m_AdvancedSHE = std::make_shared<AdvancedSHECKKSRNS>();
-      break;
-    case FHE:
-      OPENFHE_THROW(not_implemented_error,
-                     "FHE feature not supported for CKKSRNS scheme");
-  }
-}
+    void SchemeCKKSRNS::Enable(PKESchemeFeature feature) {
+        switch (feature) {
+        case PKE:
+            if (m_PKE == nullptr)
+                m_PKE = std::make_shared<PKECKKSRNS>();
+            break;
+        case KEYSWITCH:
+            // m_KeySwitch is to be initialized by calling SetKeySwitchingTechnique() with the value of key switching technique from cryptoparams
+            break;
+        case PRE:
+            if (m_PRE == nullptr)
+                m_PRE = std::make_shared<PRECKKSRNS>();
+            break;
+        case LEVELEDSHE:
+            if (m_LeveledSHE == nullptr)
+                m_LeveledSHE = std::make_shared<LeveledSHECKKSRNS>();
+            break;
+        case MULTIPARTY:
+            if (m_Multiparty == nullptr)
+                m_Multiparty = std::make_shared<MultipartyCKKSRNS>();
+            break;
+        case ADVANCEDSHE:
+            if (m_AdvancedSHE == nullptr)
+                m_AdvancedSHE = std::make_shared<AdvancedSHECKKSRNS>();
+            break;
+        case FHE:
+        default:
+            std::stringstream ss;
+            ss << feature;
+            OPENFHE_THROW(not_implemented_error, std::string("This feature [") + ss.str() + "] is not supported for CKKSRNS scheme");
+        }
+    }
 
 }
