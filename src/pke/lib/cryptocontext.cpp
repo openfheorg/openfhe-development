@@ -49,14 +49,13 @@ void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
     // check if the scheme is an RNS scheme
     auto schemeRNSPtr = dynamic_cast<SchemeRNS*>(&(*scheme));
     if (schemeRNSPtr != nullptr) {
-        // check if the parameter object is an RNS-based
+        // check if the parameter object is RNS-based
         auto elPtr = dynamic_cast<const CryptoParametersRNS*>(&(*params));
         if (elPtr != nullptr) {
             schemeRNSPtr->SetKeySwitchingTechnique(elPtr->GetKeySwitchTechnique());
             return;
         }
-        // TODO: add a log trace saying something like this: 
-        // std::cerr << "Can not set KeySwitchingTechnique" << std::endl;
+        OPENFHE_THROW(type_error, "Cannot set KeySwitchingTechnique as the parameter object is not RNS-based");
     }
 }
 

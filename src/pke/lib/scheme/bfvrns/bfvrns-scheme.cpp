@@ -66,7 +66,7 @@ namespace lbcrypto {
                 m_PKE = std::make_shared<PKEBFVRNS>();
             break;
         case KEYSWITCH:
-            // m_KeySwitch is to be initialized by calling SetKeySwitchingTechnique() with the value of key switching technique from cryptoparams
+            // m_KeySwitch must be initialized later by calling SetKeySwitchingTechnique() with the value of key switching technique from cryptoparams
             break;
         case PRE:
             if (m_PRE == nullptr)
