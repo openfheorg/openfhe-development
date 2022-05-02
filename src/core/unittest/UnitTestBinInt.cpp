@@ -951,7 +951,7 @@ TEST_F(UTBinInt, mod_arithmetic) {
 
 template <typename T>
 void big_modexp(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     TimeVar t;
 
     TIC(t);
@@ -964,7 +964,7 @@ void big_modexp(const std::string& msg) {
 
     EXPECT_EQ(expectedResult, calculatedResult) << msg << " Failure testing very big mod_exp_test";
 
-    DEBUG("big_modexp time ns " << TOC_NS(t));
+    OPENFHE_DEBUG("big_modexp time ns " << TOC_NS(t));
 }
 
 TEST_F(UTBinInt, big_modexp) {
@@ -1229,7 +1229,7 @@ TEST_F(UTBinInt, GetBitAtIndex) {
 
 template <typename T>
 void GetInternalRepresentation(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     T x(1);
 
     x <<= 100;  // x has one bit at 128
@@ -1239,9 +1239,9 @@ void GetInternalRepresentation(const std::string& msg) {
 
 #if !defined(NDEBUG)
     if (dbg_flag) {
-        DEBUG(x_limbs);
-        DEBUG("x_limbs " << x_limbs);
-        DEBUG("x " << x);
+        OPENFHE_DEBUG(x_limbs);
+        OPENFHE_DEBUG("x_limbs " << x_limbs);
+        OPENFHE_DEBUG("x " << x);
     }
 #endif
 

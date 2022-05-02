@@ -312,7 +312,7 @@ void PackedEncoding::SetParams(usint m, EncodingParams params) {
 
 template <typename P>
 void PackedEncoding::Pack(P *ring, const PlaintextModulus &modulus) const {
-  DEBUG_FLAG(false);
+  OPENFHE_DEBUG_FLAG(false);
 
   usint m = ring->GetCyclotomicOrder();  // cyclotomic order
   NativeInteger modulusNI(modulus);      // native int modulus
@@ -326,7 +326,7 @@ void PackedEncoding::Pack(P *ring, const PlaintextModulus &modulus) const {
 
   usint phim = ring->GetRingDimension();
 
-  DEBUG("Pack for order " << m << " phim " << phim << " modulus " << modulusNI);
+  OPENFHE_DEBUG("Pack for order " << m << " phim " << phim << " modulus " << modulusNI);
 
   // copy values from ring to the vector
   NativeVector slotValues(phim, modulusNI);
@@ -334,8 +334,8 @@ void PackedEncoding::Pack(P *ring, const PlaintextModulus &modulus) const {
     slotValues[i] = (*ring)[i].ConvertToInt();
   }
 
-  DEBUG(*ring);
-  DEBUG(slotValues);
+  OPENFHE_DEBUG(*ring);
+  OPENFHE_DEBUG(slotValues);
 
   // Transform Eval to Coeff
   if (IsPowerOfTwo(m)) {
@@ -361,17 +361,17 @@ void PackedEncoding::Pack(P *ring, const PlaintextModulus &modulus) const {
       permutedSlots[i] = slotValues[m_toCRTPerm[m][i]];
     }
 
-    DEBUG("permutedSlots " << permutedSlots);
-    DEBUG("m_initRoot[modulusM] " << m_initRoot[modulusM]);
-    DEBUG("m_bigModulus[modulusM] " << m_bigModulus[modulusM]);
-    DEBUG("m_bigRoot[modulusM] " << m_bigRoot[modulusM]);
+    OPENFHE_DEBUG("permutedSlots " << permutedSlots);
+    OPENFHE_DEBUG("m_initRoot[modulusM] " << m_initRoot[modulusM]);
+    OPENFHE_DEBUG("m_bigModulus[modulusM] " << m_bigModulus[modulusM]);
+    OPENFHE_DEBUG("m_bigRoot[modulusM] " << m_bigRoot[modulusM]);
 
     slotValues = ChineseRemainderTransformArb<NativeVector>().InverseTransform(
         permutedSlots, m_initRoot[modulusM], m_bigModulus[modulusM],
         m_bigRoot[modulusM], m);
   }
 
-  DEBUG("slotvalues now " << slotValues);
+  OPENFHE_DEBUG("slotvalues now " << slotValues);
   // copy values into the slotValuesRing
   typename P::Vector slotValuesRing(phim, ring->GetModulus());
   for (usint i = 0; i < phim; i++) {
@@ -379,12 +379,12 @@ void PackedEncoding::Pack(P *ring, const PlaintextModulus &modulus) const {
   }
 
   ring->SetValues(std::move(slotValuesRing), Format::COEFFICIENT);
-  DEBUG(*ring);
+  OPENFHE_DEBUG(*ring);
 }
 
 template <typename P>
 void PackedEncoding::Unpack(P *ring, const PlaintextModulus &modulus) const {
-  DEBUG_FLAG(false);
+  OPENFHE_DEBUG_FLAG(false);
 
   usint m = ring->GetCyclotomicOrder();  // cyclotomic order
   NativeInteger modulusNI(modulus);      // native int modulus
@@ -398,7 +398,7 @@ void PackedEncoding::Unpack(P *ring, const PlaintextModulus &modulus) const {
 
   usint phim = ring->GetRingDimension();  // ring dimension
 
-  DEBUG("Unpack for order " << m << " phim " << phim << " modulus "
+  OPENFHE_DEBUG("Unpack for order " << m << " phim " << phim << " modulus "
                             << modulusNI);
 
   // copy aggregate plaintext values
@@ -407,7 +407,7 @@ void PackedEncoding::Unpack(P *ring, const PlaintextModulus &modulus) const {
     packedVector[i] = NativeInteger((*ring)[i].ConvertToInt());
   }
 
-  DEBUG(packedVector);
+  OPENFHE_DEBUG(packedVector);
 
   // Transform Coeff to Eval
   NativeVector permutedSlots(phim, modulusNI);
@@ -430,7 +430,7 @@ void PackedEncoding::Unpack(P *ring, const PlaintextModulus &modulus) const {
     packedVector = permutedSlots;
   }
 
-  DEBUG(packedVector);
+  OPENFHE_DEBUG(packedVector);
 
   // copy values into the slotValuesRing
   typename P::Vector packedVectorRing(phim, ring->GetModulus());

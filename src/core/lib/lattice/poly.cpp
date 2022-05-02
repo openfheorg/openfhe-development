@@ -138,20 +138,20 @@ PolyImpl<VecType>::PolyImpl(const TernaryUniformGeneratorImpl<VecType>& tug,
 template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const PolyImpl& element, std::shared_ptr<PolyImpl::Params>)
     : m_format(element.m_format), m_params(element.m_params) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     if (!IsEmpty()) {
-        DEBUG("in ctor & m_values was " << *m_values);
+        OPENFHE_DEBUG("in ctor & m_values was " << *m_values);
     }
     else {
-        DEBUG("in ctor & m_values are empty ");
+        OPENFHE_DEBUG("in ctor & m_values are empty ");
     }
     if (element.m_values == nullptr) {
-        DEBUG("in ctor & m_values copy nullptr ");
+        OPENFHE_DEBUG("in ctor & m_values copy nullptr ");
         m_values = nullptr;
     }
     else {
         m_values = make_unique<VecType>(*element.m_values);  // this is a copy
-        DEBUG("in ctor & m_values now " << *m_values);
+        OPENFHE_DEBUG("in ctor & m_values now " << *m_values);
     }
 }
 
@@ -180,19 +180,19 @@ PolyImpl<VecType>::PolyImpl(PolyImpl&& element, std::shared_ptr<PolyImpl::Params
     : m_format(element.m_format), m_params(element.m_params) {
     // m_values(element.m_values) //note this becomes move below
 
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     if (!IsEmpty()) {
-        DEBUG("in ctor && m_values was " << *m_values);
+        OPENFHE_DEBUG("in ctor && m_values was " << *m_values);
     }
     else {
-        DEBUG("in ctor && m_values was empty");
+        OPENFHE_DEBUG("in ctor && m_values was empty");
     }
     if (!element.IsEmpty()) {
         m_values = std::move(element.m_values);
-        DEBUG("in ctor && m_values was " << *m_values);
+        OPENFHE_DEBUG("in ctor && m_values was " << *m_values);
     }
     else {
-        DEBUG("in ctor && m_values remains empty");
+        OPENFHE_DEBUG("in ctor && m_values remains empty");
         m_values = nullptr;
     }
 }
@@ -601,10 +601,10 @@ PolyImpl<VecType> PolyImpl<VecType>::Times(const PolyImpl& element) const {
 
 template <typename VecType>
 const PolyImpl<VecType>& PolyImpl<VecType>::operator+=(const PolyImpl& element) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     if (!(*this->m_params == *element.m_params)) {
-        DEBUGEXP(*this->m_params);
-        DEBUGEXP(*element.m_params);
+        OPENFHE_DEBUGEXP(*this->m_params);
+        OPENFHE_DEBUGEXP(*element.m_params);
         OPENFHE_THROW(type_error, "operator+= called on PolyImpl's with different params.");
     }
 
@@ -807,7 +807,7 @@ void PolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer& roo
 
 template <typename VecType>
 void PolyImpl<VecType>::SwitchFormat() {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     if (m_values == nullptr) {
         std::string errMsg = "Poly switch format to empty values";
         OPENFHE_THROW(not_available_error, errMsg);
@@ -821,25 +821,25 @@ void PolyImpl<VecType>::SwitchFormat() {
     if (m_format == Format::COEFFICIENT) {
         m_format = Format::EVALUATION;
 
-        DEBUG("transform to Format::EVALUATION m_values was" << *m_values);
+        OPENFHE_DEBUG("transform to Format::EVALUATION m_values was" << *m_values);
 
         ChineseRemainderTransformFTT<VecType>().ForwardTransformToBitReverseInPlace(
             m_params->GetRootOfUnity(), m_params->GetCyclotomicOrder(), &(*m_values));
-        DEBUG("m_values now in Format::COEFFICIENT " << *m_values);
+        OPENFHE_DEBUG("m_values now in Format::COEFFICIENT " << *m_values);
     }
     else {
         m_format = Format::COEFFICIENT;
-        DEBUG("transform to Format::COEFFICIENT m_values was" << *m_values);
+        OPENFHE_DEBUG("transform to Format::COEFFICIENT m_values was" << *m_values);
 
         ChineseRemainderTransformFTT<VecType>().InverseTransformFromBitReverseInPlace(
             m_params->GetRootOfUnity(), m_params->GetCyclotomicOrder(), &(*m_values));
-        DEBUG("m_values now in Format::EVALUATION " << *m_values);
+        OPENFHE_DEBUG("m_values now in Format::EVALUATION " << *m_values);
     }
 }
 
 template <typename VecType>
 void PolyImpl<VecType>::ArbitrarySwitchFormat() {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
 
     if (m_values == nullptr) {
         std::string errMsg = "Poly switch format to empty values";
@@ -849,21 +849,21 @@ void PolyImpl<VecType>::ArbitrarySwitchFormat() {
     if (m_format == Format::COEFFICIENT) {
         m_format = Format::EVALUATION;
         // todo:: does this have an extra copy?
-        DEBUG("transform to Format::EVALUATION m_values was" << *m_values);
+        OPENFHE_DEBUG("transform to Format::EVALUATION m_values was" << *m_values);
 
         m_values = make_unique<VecType>(ChineseRemainderTransformArb<VecType>().ForwardTransform(
             *m_values, m_params->GetRootOfUnity(), m_params->GetBigModulus(), m_params->GetBigRootOfUnity(),
             m_params->GetCyclotomicOrder()));
-        DEBUG("m_values now " << *m_values);
+        OPENFHE_DEBUG("m_values now " << *m_values);
     }
     else {
         m_format = Format::COEFFICIENT;
-        DEBUG("transform to Format::COEFFICIENT m_values was" << *m_values);
+        OPENFHE_DEBUG("transform to Format::COEFFICIENT m_values was" << *m_values);
 
         m_values = make_unique<VecType>(ChineseRemainderTransformArb<VecType>().InverseTransform(
             *m_values, m_params->GetRootOfUnity(), m_params->GetBigModulus(), m_params->GetBigRootOfUnity(),
             m_params->GetCyclotomicOrder()));
-        DEBUG("m_values now " << *m_values);
+        OPENFHE_DEBUG("m_values now " << *m_values);
     }
 }
 template <typename VecType>
@@ -940,9 +940,9 @@ double PolyImpl<VecType>::Norm() const {
 
 template <typename VecType>
 std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(usint baseBits, bool evalModeAnswer) const {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
 
-    DEBUG("PolyImpl::BaseDecompose");
+    OPENFHE_DEBUG("PolyImpl::BaseDecompose");
     usint nBits = m_params->GetModulus().GetLengthForBase(2);
 
     usint nWindows = nBits / baseBits;
@@ -958,38 +958,38 @@ std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(usint baseBits, 
     PolyImpl<VecType> x(*this);
     x.SetFormat(Format::COEFFICIENT);
 
-    DEBUG("<x>");
+    OPENFHE_DEBUG("<x>");
     // for( auto i : x ){
-    DEBUG(x);
+    OPENFHE_DEBUG(x);
     //}
-    DEBUG("</x>");
+    OPENFHE_DEBUG("</x>");
 
     // TP: x is same for BACKEND 2 and 6
 
     for (usint i = 0; i < nWindows; ++i) {
-        DEBUG("VecType is '" << type_name<VecType>() << "'");
+        OPENFHE_DEBUG("VecType is '" << type_name<VecType>() << "'");
 
         xDigit.SetValues(x.GetValues().GetDigitAtIndexForBase(i + 1, 1 << baseBits), x.GetFormat());
-        DEBUG("x.GetValue().GetDigitAtIndexForBase(i="
+        OPENFHE_DEBUG("x.GetValue().GetDigitAtIndexForBase(i="
               << i << ")" << std::endl
               << x.GetValues().GetDigitAtIndexForBase(i * baseBits + 1, 1 << baseBits));
-        DEBUG("x.GetFormat()" << x.GetFormat());
+        OPENFHE_DEBUG("x.GetFormat()" << x.GetFormat());
         // TP: xDigit is all zeros for BACKEND=6, but not for BACKEND-2
         // *********************************************************
-        DEBUG("<xDigit." << i << ">" << std::endl << xDigit << "</xDigit." << i << ">");
+        OPENFHE_DEBUG("<xDigit." << i << ">" << std::endl << xDigit << "</xDigit." << i << ">");
         if (evalModeAnswer)
             xDigit.SwitchFormat();
         result.push_back(xDigit);
-        DEBUG("<xDigit.SwitchFormat." << i << ">" << std::endl << xDigit << "</xDigit.SwitchFormat." << i << ">");
+        OPENFHE_DEBUG("<xDigit.SwitchFormat." << i << ">" << std::endl << xDigit << "</xDigit.SwitchFormat." << i << ">");
     }
 
 #if !defined(NDEBUG)
-    DEBUG("<result>");
+    OPENFHE_DEBUG("<result>");
     for (auto i : result) {
-        DEBUG(i);
+        OPENFHE_DEBUG(i);
     }
 #endif
-    DEBUG("</result>");
+    OPENFHE_DEBUG("</result>");
 
     return result;
 }

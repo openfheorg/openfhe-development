@@ -60,11 +60,11 @@ using namespace lbcrypto;
  */
 template <typename I>
 inline std::shared_ptr<ILDCRTParams<I>> GenerateDCRTParams(usint m, usint numOfTower, usint pbits) {
-    DEBUG_FLAG(false);
-    DEBUG("in GenerateDCRTParams");
-    DEBUGEXP(m);
-    DEBUGEXP(numOfTower);
-    DEBUGEXP(pbits);
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("in GenerateDCRTParams");
+    OPENFHE_DEBUGEXP(m);
+    OPENFHE_DEBUGEXP(numOfTower);
+    OPENFHE_DEBUGEXP(pbits);
     if (numOfTower == 0) {
         OPENFHE_THROW(math_error, "Can't make parms with numOfTower == 0");
     }
@@ -76,13 +76,13 @@ inline std::shared_ptr<ILDCRTParams<I>> GenerateDCRTParams(usint m, usint numOfT
     I modulus(1);
 
     usint j = 0;
-    DEBUGEXP(q);
+    OPENFHE_DEBUGEXP(q);
 
     for (;;) {
         moduli[j]       = q;
         rootsOfUnity[j] = RootOfUnity(m, q);
         modulus         = modulus * I(q.ConvertToInt());
-        DEBUG("j " << j << " modulus " << q << " rou " << rootsOfUnity[j]);
+        OPENFHE_DEBUG("j " << j << " modulus " << q << " rou " << rootsOfUnity[j]);
         if (++j == numOfTower)
             break;
 

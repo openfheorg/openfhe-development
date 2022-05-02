@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
                 res = (fn);                                                                         \
             }                                                                                       \
             time2 = TOC(t);                                                                         \
-            DEBUG(#t << ": " << nloop << " loops " << #res << " = " << #fn << " computation time: " \
+            OPENFHE_DEBUG(#t << ": " << nloop << " loops " << #res << " = " << #fn << " computation time: " \
                      << "\t" << time2 << " us");                                                    \
             if (res != testval) {                                                                   \
                 std::cout << "Bad " << #res << " = " << #fn << std::endl;                           \

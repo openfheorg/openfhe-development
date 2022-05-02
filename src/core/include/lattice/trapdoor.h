@@ -214,7 +214,7 @@ public:
     static void ZSampleSigmaP(size_t n, double s, double sigma, const RLWETrapdoorPair<Element>& Tprime,
                               const DggType& dgg, const DggType& dggLargeSigma,
                               std::shared_ptr<Matrix<Element>> perturbationVector) {
-        DEBUG_FLAG(false);
+        OPENFHE_DEBUG_FLAG(false);
         TimeVar t1, t1_tot;
 
         TIC(t1);
@@ -226,7 +226,7 @@ public:
         size_t k = Tprime0.GetCols();
 
         const std::shared_ptr<ParmType> params = Tprime0(0, 0).GetParams();
-        DEBUG("z1a: " << TOC(t1));  // 0
+        OPENFHE_DEBUG("z1a: " << TOC(t1));  // 0
         TIC(t1);
         // all three Polynomials are initialized with "0" coefficients
         Element va(params, Format::EVALUATION, 1);
@@ -238,7 +238,7 @@ public:
             vb += Tprime1(0, i) * Tprime0(0, i).Transpose();
             vd += Tprime1(0, i) * Tprime1(0, i).Transpose();
         }
-        DEBUG("z1b: " << TOC(t1));  // 9
+        OPENFHE_DEBUG("z1b: " << TOC(t1));  // 9
         TIC(t1);
 
         // Switch the ring elements (Polynomials) to coefficient representation
@@ -246,7 +246,7 @@ public:
         vb.SetFormat(Format::COEFFICIENT);
         vd.SetFormat(Format::COEFFICIENT);
 
-        DEBUG("z1c: " << TOC(t1));  // 5
+        OPENFHE_DEBUG("z1c: " << TOC(t1));  // 5
         TIC(t1);
 
         // Create field elements from ring elements
@@ -260,14 +260,14 @@ public:
 
         a = a + s * s;
         d = d + s * s;
-        DEBUG("z1d: " << TOC(t1));  // 0
+        OPENFHE_DEBUG("z1d: " << TOC(t1));  // 0
         TIC(t1);
 
         // converts the field elements to DFT representation
         a.SetFormat(Format::EVALUATION);
         b.SetFormat(Format::EVALUATION);
         d.SetFormat(Format::EVALUATION);
-        DEBUG("z1e: " << TOC(t1));  // 0
+        OPENFHE_DEBUG("z1e: " << TOC(t1));  // 0
         TIC(t1);
 
         Matrix<int64_t> p2ZVector([]() { return 0; }, n * k, 1);
@@ -290,18 +290,18 @@ public:
                 p2ZVector(i, 0) = (dggVector.get())[i];
             }
         }
-        DEBUG("z1f1: " << TOC(t1));
+        OPENFHE_DEBUG("z1f1: " << TOC(t1));
         TIC(t1);
 
         // create k ring elements in coefficient representation
         Matrix<Element> p2 = SplitInt64IntoElements<Element>(p2ZVector, n, va.GetParams());
-        DEBUG("z1f2: " << TOC(t1));
+        OPENFHE_DEBUG("z1f2: " << TOC(t1));
         TIC(t1);
 
         // now converting to Format::EVALUATION representation before multiplication
         p2.SetFormat(Format::EVALUATION);
 
-        DEBUG("z1g: " << TOC(t1));  // 17
+        OPENFHE_DEBUG("z1g: " << TOC(t1));  // 17
 
         TIC(t1);
 
@@ -311,11 +311,11 @@ public:
         Tp2(0, 0) = (Tprime0 * p2)(0, 0);
         Tp2(1, 0) = (Tprime1 * p2)(0, 0);
 
-        DEBUG("z1h2: " << TOC(t1));
+        OPENFHE_DEBUG("z1h2: " << TOC(t1));
         TIC(t1);
         // change to coefficient representation before converting to field elements
         Tp2.SetFormat(Format::COEFFICIENT);
-        DEBUG("z1h3: " << TOC(t1));
+        OPENFHE_DEBUG("z1h3: " << TOC(t1));
         TIC(t1);
 
         Matrix<Field2n> c([]() { return Field2n(); }, 2, 1);
@@ -324,25 +324,25 @@ public:
         c(1, 0) = Field2n(Tp2(1, 0)).ScalarMult(-sigma * sigma / (s * s - sigma * sigma));
 
         auto p1ZVector = std::make_shared<Matrix<int64_t>>([]() { return 0; }, n * 2, 1);
-        DEBUG("z1i: " << TOC(t1));
+        OPENFHE_DEBUG("z1i: " << TOC(t1));
         TIC(t1);
         LatticeGaussSampUtility<Element>::ZSampleSigma2x2(a, b, d, c, dgg, p1ZVector);
-        DEBUG("z1j1: " << TOC(t1));  // 14
+        OPENFHE_DEBUG("z1j1: " << TOC(t1));  // 14
         TIC(t1);
 
         // create 2 ring elements in coefficient representation
         Matrix<Element> p1 = SplitInt64IntoElements<Element>(*p1ZVector, n, va.GetParams());
-        DEBUG("z1j2: " << TOC(t1));
+        OPENFHE_DEBUG("z1j2: " << TOC(t1));
         TIC(t1);
 
         p1.SetFormat(Format::EVALUATION);
-        DEBUG("z1j3: " << TOC(t1));
+        OPENFHE_DEBUG("z1j3: " << TOC(t1));
         TIC(t1);
 
         *perturbationVector = p1.VStack(p2);
-        DEBUG("z1j4: " << TOC(t1));
+        OPENFHE_DEBUG("z1j4: " << TOC(t1));
         TIC(t1);
-        DEBUG("z1tot: " << TOC(t1_tot));
+        OPENFHE_DEBUG("z1tot: " << TOC(t1_tot));
     }
 
     /**

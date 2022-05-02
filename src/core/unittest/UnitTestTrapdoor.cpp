@@ -256,8 +256,8 @@ TEST(UTTrapdoor, TrapDoorMultTestSquareMat) {
 }
 
 TEST(UTTrapdoor, TrapDoorGaussGqSampTest) {
-    DEBUG_FLAG(false);
-    DEBUG("start tests");
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("start tests");
     usint m = 16;
     usint n = m / 2;
     BigInteger modulus("67108913");
@@ -276,9 +276,9 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTest) {
     Poly::DugType dug = Poly::DugType();
     dug.SetModulus(modulus);
 
-    DEBUG("1");
+    OPENFHE_DEBUG("1");
     Poly u(dug, params, Format::COEFFICIENT);
-    DEBUG("2");
+    OPENFHE_DEBUG("2");
     double val = modulus.ConvertToDouble();  // TODO get the next few lines
                                              // working in a single instance.
     // YSP check logTwo computation
@@ -287,17 +287,17 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTest) {
 
     Matrix<int64_t> zHatBBI([]() { return 0; }, k, m / 2);
 
-    DEBUG("3");
-    DEBUG("u " << u);
-    DEBUG("sigma " << sigma);
-    DEBUG("k " << k);
-    DEBUG("modulus " << modulus);
+    OPENFHE_DEBUG("3");
+    OPENFHE_DEBUG("u " << u);
+    OPENFHE_DEBUG("sigma " << sigma);
+    OPENFHE_DEBUG("k " << k);
+    OPENFHE_DEBUG("modulus " << modulus);
 
     LatticeGaussSampUtility<Poly>::GaussSampGq(u, sigma, k, modulus, base, dgg, &zHatBBI);
 
     EXPECT_EQ(k, zHatBBI.GetRows()) << "Failure testing number of rows";
     EXPECT_EQ(u.GetLength(), zHatBBI.GetCols()) << "Failure testing number of colums";
-    DEBUG("4");
+    OPENFHE_DEBUG("4");
     Matrix<Poly> z = SplitInt64AltIntoElements<Poly>(zHatBBI, n, params);
     z.SwitchFormat();
 
@@ -306,7 +306,7 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTest) {
     uEst.SwitchFormat();
 
     EXPECT_EQ(u, uEst);
-    DEBUG("end tests");
+    OPENFHE_DEBUG("end tests");
 }
 
 // this test does not work correctly in the web assembly configuration
@@ -378,8 +378,8 @@ TEST(UTTrapdoor, TrapDoorGaussSampTestDCRT) {
 #endif
 
 TEST(UTTrapdoor, TrapDoorGaussGqSampTestBase1024) {
-    DEBUG_FLAG(false);
-    DEBUG("start tests");
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("start tests");
 
     usint m = 1024;
     usint n = m / 2;
@@ -399,9 +399,9 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTestBase1024) {
     Poly::DugType dug = Poly::DugType();
     dug.SetModulus(modulus);
 
-    DEBUG("1");
+    OPENFHE_DEBUG("1");
     Poly u(dug, params, Format::COEFFICIENT);
-    DEBUG("2");
+    OPENFHE_DEBUG("2");
     // double val = modulus.ConvertToDouble(); //TODO get the next few lines
     // working in a single instance. YSP check logTwo computation
 
@@ -413,18 +413,18 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTestBase1024) {
 
     Matrix<int64_t> zHatBBI([]() { return 0; }, k, m / 2);
 
-    DEBUG("3");
-    DEBUG("u " << u);
-    DEBUG("sigma " << sigma);
-    DEBUG("k " << k);
-    DEBUG("modulus " << modulus);
-    DEBUG("base = " << base);
+    OPENFHE_DEBUG("3");
+    OPENFHE_DEBUG("u " << u);
+    OPENFHE_DEBUG("sigma " << sigma);
+    OPENFHE_DEBUG("k " << k);
+    OPENFHE_DEBUG("modulus " << modulus);
+    OPENFHE_DEBUG("base = " << base);
 
     LatticeGaussSampUtility<Poly>::GaussSampGq(u, sigma, k, modulus, base, dgg, &zHatBBI);
 
     EXPECT_EQ(k, zHatBBI.GetRows()) << "Failure testing number of rows";
     EXPECT_EQ(u.GetLength(), zHatBBI.GetCols()) << "Failure testing number of colums";
-    DEBUG("4");
+    OPENFHE_DEBUG("4");
 
     // int32_t maxValue = 0;
 
@@ -436,7 +436,7 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTestBase1024) {
     // std::cout << maxValue << std::endl;
 
     Matrix<Poly> z = SplitInt64AltIntoElements<Poly>(zHatBBI, n, params);
-    DEBUG("4.5");
+    OPENFHE_DEBUG("4.5");
     // TODO for some reason I must do this before calling switchformat (which
     // uses omp for parallel execution)
     // TODO my guess is there is a race in the calculation/caching of factors
@@ -447,7 +447,7 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTestBase1024) {
 
     z.SwitchFormat();
 
-    DEBUG("5");
+    OPENFHE_DEBUG("5");
     Poly uEst;
     uEst = (Matrix<Poly>(zero_alloc, 1, k).GadgetVector(base) * z)(0, 0);
     uEst.SwitchFormat();
@@ -455,14 +455,14 @@ TEST(UTTrapdoor, TrapDoorGaussGqSampTestBase1024) {
     // std::cout << u - uEst << std::endl;
 
     EXPECT_EQ(u, uEst);
-    DEBUG("end tests");
+    OPENFHE_DEBUG("end tests");
 }
 
 // Test of Gaussian Sampling using the UCSD integer perturbation sampling
 // algorithm
 TEST(UTTrapdoor, TrapDoorGaussSampTest) {
-    DEBUG_FLAG(false);
-    DEBUG("in test");
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("in test");
     usint m = 16;
     usint n = m / 2;
 
@@ -475,11 +475,11 @@ TEST(UTTrapdoor, TrapDoorGaussSampTest) {
     double logTwo = log(val - 1.0) / log(2) + 1.0;
     usint k       = (usint)floor(logTwo);  // = this->m_cryptoParameters.GetModulus();
 
-    DEBUG("k = " << k);
-    DEBUG("sigma = " << sigma);
-    DEBUG("m = " << m);
-    DEBUG("modulus = " << modulus);
-    DEBUG("root = " << rootOfUnity);
+    OPENFHE_DEBUG("k = " << k);
+    OPENFHE_DEBUG("sigma = " << sigma);
+    OPENFHE_DEBUG("m = " << m);
+    OPENFHE_DEBUG("modulus = " << modulus);
+    OPENFHE_DEBUG("root = " << rootOfUnity);
 
     auto params = std::make_shared<ILParams>(m, modulus, rootOfUnity);
 
@@ -501,9 +501,9 @@ TEST(UTTrapdoor, TrapDoorGaussSampTest) {
 
     Poly u(dug, params, Format::COEFFICIENT);
 
-    DEBUG("u " << u);
+    OPENFHE_DEBUG("u " << u);
     u.SwitchFormat();
-    DEBUG("u " << u);
+    OPENFHE_DEBUG("u " << u);
 
     Matrix<Poly> z =
         RLWETrapdoorUtility<Poly>::GaussSamp(m / 2, k, trapPair.first, trapPair.second, u, dgg, dggLargeSigma);
@@ -515,11 +515,11 @@ TEST(UTTrapdoor, TrapDoorGaussSampTest) {
 
     Poly uEst = (trapPair.first * z)(0, 0);
 
-    DEBUG("uEst " << uEst);
-    DEBUG("u " << u);
+    OPENFHE_DEBUG("uEst " << uEst);
+    OPENFHE_DEBUG("u " << u);
 
-    DEBUG("uEst.GetModulus() " << uEst.GetModulus());
-    DEBUG("u.GetModulus() " << u.GetModulus());
+    OPENFHE_DEBUG("uEst.GetModulus() " << uEst.GetModulus());
+    OPENFHE_DEBUG("u.GetModulus() " << u.GetModulus());
 
     uEst.SwitchFormat();
     u.SwitchFormat();
@@ -531,8 +531,8 @@ TEST(UTTrapdoor, TrapDoorGaussSampTest) {
 
 // Test of Gaussian Sampling for matrices from 2x2 to 5x5
 TEST(UTTrapdoor, TrapDoorGaussSampTestSquareMatrices) {
-    DEBUG_FLAG(false);
-    DEBUG("in test");
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("in test");
     usint m = 16;
     usint n = m / 2;
 

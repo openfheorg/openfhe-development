@@ -51,22 +51,22 @@ namespace lbcrypto {
 #ifdef WITH_NTL
 // native NTL version
 NTL::myZZ RNG(const NTL::myZZ& modulus) {
-    DEBUG_FLAG(false);
-    DEBUG("in NTL RNG");
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("in NTL RNG");
     return RandomBnd(modulus);
 }
 
 // define an NTL native implementation
 NTL::myZZ GreatestCommonDivisor(const NTL::myZZ& a, const NTL::myZZ& b) {
-    DEBUG_FLAG(false);
-    DEBUG("NTL::GCD a " << a << " b " << b);
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("NTL::GCD a " << a << " b " << b);
     return GCD(a, b);
 }
 
 // NTL native version
 bool MillerRabinPrimalityTest(const NTL::myZZ& p, const usint niter) {
-    DEBUG_FLAG(false);
-    DEBUG("in NTL MRPT");
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("in NTL MRPT");
     if (p < NTL::myZZ(2) || ((p != NTL::myZZ(2)) && (p.Mod(NTL::myZZ(2)) == NTL::myZZ(0))))
         return false;
     if (p == NTL::myZZ(2) || p == NTL::myZZ(3) || p == NTL::myZZ(5))

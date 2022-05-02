@@ -112,7 +112,7 @@ TEST_F(UTSHEAdvanced, test_eval_mult_single_crt) {
 }
 
 TEST_F(UTSHEAdvanced, test_eval_add_single_crt) {
-  DEBUG_FLAG(false);
+  OPENFHE_DEBUG_FLAG(false);
   CCParams<CryptoContextBGVRNS> parameters;
   parameters.SetCyclotomicOrder(16);
   parameters.SetPlaintextModulus(20);
@@ -128,30 +128,30 @@ TEST_F(UTSHEAdvanced, test_eval_add_single_crt) {
   // Initialize the public key containers.
   KeyPair<TYPE> kp;
 
-  DEBUG("Filling 1");
+  OPENFHE_DEBUG("Filling 1");
   std::vector<int64_t> vectorOfInts1 = {2, 3, 1, 4};
   Plaintext intArray1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
 
-  DEBUG("Filling 2");
+  OPENFHE_DEBUG("Filling 2");
   std::vector<int64_t> vectorOfInts2 = {3, 6, 3, 1};
   Plaintext intArray2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
 
-  DEBUG("getting pairs");
+  OPENFHE_DEBUG("getting pairs");
   kp = cc->KeyGen();
 
-  DEBUG("got pairs");
+  OPENFHE_DEBUG("got pairs");
   Ciphertext<TYPE> ciphertext1;
   Ciphertext<TYPE> ciphertext2;
 
   ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
-  DEBUG("after crypt 1");
+  OPENFHE_DEBUG("after crypt 1");
   ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
-  DEBUG("after crypt 2");
+  OPENFHE_DEBUG("after crypt 2");
 
   Ciphertext<TYPE> cResult;
-  DEBUG("before EA");
+  OPENFHE_DEBUG("before EA");
   cResult = cc->EvalAdd(ciphertext1, ciphertext2);
-  DEBUG("after");
+  OPENFHE_DEBUG("after");
 
   Ciphertext<TYPE> ciphertextResults({cResult});
   Plaintext results;

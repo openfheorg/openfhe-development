@@ -401,21 +401,21 @@ const std::vector<typename DCRTPolyImpl<VecType>::PolyType>& DCRTPolyImpl<VecTyp
 
 template <typename VecType>
 std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::BaseDecompose(usint baseBits, bool evalModeAnswer) const {
-    DEBUG_FLAG(false);
-    DEBUG("...::BaseDecompose");
-    DEBUG("baseBits=" << baseBits);
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("...::BaseDecompose");
+    OPENFHE_DEBUG("baseBits=" << baseBits);
 
     PolyLargeType v(CRTInterpolate());
 
-    DEBUG("<v>" << std::endl << v << "</v>");
+    OPENFHE_DEBUG("<v>" << std::endl << v << "</v>");
 
     std::vector<PolyLargeType> bdV = v.BaseDecompose(baseBits, false);
 
 #if !defined(NDEBUG)
-    DEBUG("<bdV>");
+    OPENFHE_DEBUG("<bdV>");
     for (auto i : bdV)
-        DEBUG(i);
-    DEBUG("</bdV>");
+        OPENFHE_DEBUG(i);
+    OPENFHE_DEBUG("</bdV>");
 #endif
 
     std::vector<DCRTPolyImpl<VecType>> result;
@@ -431,10 +431,10 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::BaseDecompose(usint ba
     }
 
 #if !defined(NDEBUG)
-    DEBUG("<BaseDecompose.result>");
+    OPENFHE_DEBUG("<BaseDecompose.result>");
     for (auto i : result)
-        DEBUG(i);
-    DEBUG("</BaseDecompose.result>");
+        OPENFHE_DEBUG(i);
+    OPENFHE_DEBUG("</BaseDecompose.result>");
 #endif
 
     return result;
@@ -521,7 +521,7 @@ PolyImpl<NativeVector>& DCRTPolyImpl<VecType>::ElementAtIndex(usint i) {
 
 template <typename VecType>
 std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::PowersOfBase(usint baseBits) const {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
 
     std::vector<DCRTPolyImpl<VecType>> result;
 
@@ -538,7 +538,7 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::PowersOfBase(usint bas
     std::vector<Integer> mods(this->m_params->GetParams().size());
     for (usint i = 0; i < this->m_params->GetParams().size(); i++) {
         mods[i] = Integer(this->m_params->GetParams()[i]->GetModulus().ConvertToInt());
-        DEBUG("DCRTPolyImpl::PowersOfBase.mods[" << i << "] = " << mods[i]);
+        OPENFHE_DEBUG("DCRTPolyImpl::PowersOfBase.mods[" << i << "] = " << mods[i]);
     }
 
     for (usint i = 0; i < nWindows; i++) {
@@ -546,17 +546,17 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::PowersOfBase(usint bas
 
         // Shouldn't this be Integer twoPow ( Integer::ONE << (i*baseBits)  ??
         Integer twoPow(Integer(2).Exp(i * baseBits));
-        DEBUG("DCRTPolyImpl::PowersOfBase.twoPow (" << i << ") = " << twoPow);
+        OPENFHE_DEBUG("DCRTPolyImpl::PowersOfBase.twoPow (" << i << ") = " << twoPow);
         for (usint t = 0; t < this->m_params->GetParams().size(); t++) {
-            DEBUG("@(" << i << ", " << t << ")");
-            DEBUG("twoPow= " << twoPow << ", mods[" << t << "]" << mods[t]);
+            OPENFHE_DEBUG("@(" << i << ", " << t << ")");
+            OPENFHE_DEBUG("twoPow= " << twoPow << ", mods[" << t << "]" << mods[t]);
             Integer pI(twoPow % mods[t]);
-            DEBUG("twoPow= " << twoPow << ", mods[" << t << "]" << mods[t]
+            OPENFHE_DEBUG("twoPow= " << twoPow << ", mods[" << t << "]" << mods[t]
                              << ";   pI.ConvertToInt=" << NativeInteger(pI.ConvertToInt()) << ";   pI=" << pI);
-            DEBUG("m_vectors= " << m_vectors[t]);
+            OPENFHE_DEBUG("m_vectors= " << m_vectors[t]);
 
             x.m_vectors[t] = m_vectors[t] * pI.ConvertToInt();
-            DEBUG("DCRTPolyImpl::PowersOfBase.x.m_vectors[" << t << ", " << i << "]" << x.m_vectors[t]);
+            OPENFHE_DEBUG("DCRTPolyImpl::PowersOfBase.x.m_vectors[" << t << ", " << i << "]" << x.m_vectors[t]);
         }
         result.push_back(std::move(x));
     }
@@ -685,27 +685,27 @@ const DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(DCRTPolyImpl&& rhs
 
 template <typename VecType>
 DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(std::initializer_list<uint64_t> rhs) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     usint len = rhs.size();
     static PolyType::Integer ZERO(0);
     if (!IsEmpty()) {
         usint vectorLength = this->m_vectors[0].GetLength();
-        DEBUGEXP(vectorLength);
+        OPENFHE_DEBUGEXP(vectorLength);
         for (usint i = 0; i < m_vectors.size(); ++i) {  // this loops over each tower
             for (usint j = 0; j < vectorLength; ++j) {  // loops within a tower
                 if (j < len) {
                     this->m_vectors[i][j] = PolyType::Integer(*(rhs.begin() + j));
-                    DEBUGEXP(this->m_vectors[i][j]);
+                    OPENFHE_DEBUGEXP(this->m_vectors[i][j]);
                 }
                 else {
                     this->m_vectors[i][j] = ZERO;
-                    DEBUGEXP(ZERO);
+                    OPENFHE_DEBUGEXP(ZERO);
                 }
             }
         }
     }
     else {
-        DEBUGEXP(m_vectors.size());
+        OPENFHE_DEBUGEXP(m_vectors.size());
         for (size_t i = 0; i < m_vectors.size(); i++) {
             NativeVector temp(this->GetRingDimension());
             temp.SetModulus(m_vectors[i].GetModulus());
@@ -1149,19 +1149,19 @@ const typename DCRTPolyImpl<VecType>::Integer& DCRTPolyImpl<VecType>::operator[]
  */
 template <typename VecType>
 typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpolate() const {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
 
     usint ringDimension = this->GetRingDimension();
     usint nTowers       = m_vectors.size();
 
-    DEBUG("in Interpolate ring " << ringDimension << " towers " << nTowers);
+    OPENFHE_DEBUG("in Interpolate ring " << ringDimension << " towers " << nTowers);
 
     for (usint vi = 0; vi < nTowers; vi++)
-        DEBUG("tower " << vi << " is " << m_vectors[vi]);
+        OPENFHE_DEBUG("tower " << vi << " is " << m_vectors[vi]);
 
     Integer bigModulus(this->GetModulus());  // qT
 
-    DEBUG("bigModulus " << bigModulus);
+    OPENFHE_DEBUG("bigModulus " << bigModulus);
 
     // this is the resulting vector of coefficients
     VecType coefficients(ringDimension, bigModulus);
@@ -1177,7 +1177,7 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
         Integer modInv = divBy.ModInverse(qj).Mod(qj);
         multiplier[vi] = divBy * modInv;
 
-        DEBUG("multiplier " << vi << " " << qj << " " << multiplier[vi]);
+        OPENFHE_DEBUG("multiplier " << vi << " " << qj << " " << multiplier[vi]);
     }
 
     // if the vectors are not in COEFFICIENT form, they need to be, so we will
@@ -1195,7 +1195,7 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
     }
 
     for (usint vi = 0; vi < nTowers; vi++)
-        DEBUG("tower " << vi << " is " << (*vecs)[vi]);
+        OPENFHE_DEBUG("tower " << vi << " is " << (*vecs)[vi]);
 
     // Precompute the Barrett mu parameter
     Integer mu = bigModulus.ComputeMu();
@@ -1207,18 +1207,18 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
         for (usint vi = 0; vi < nTowers; vi++) {
             coefficients[ri] += (Integer((*vecs)[vi].GetValues()[ri].ConvertToInt()) * multiplier[vi]);
         }
-        DEBUG((*vecs)[0].GetValues()[ri] << " * " << multiplier[0] << " == " << coefficients[ri]);
+        OPENFHE_DEBUG((*vecs)[0].GetValues()[ri] << " * " << multiplier[0] << " == " << coefficients[ri]);
         coefficients[ri].ModEq(bigModulus, mu);
     }
 
-    DEBUG("passed loops");
-    DEBUG(coefficients);
+    OPENFHE_DEBUG("passed loops");
+    OPENFHE_DEBUG(coefficients);
 
     // Create an Poly for this BigVector
 
-    DEBUG("elementing after vectoring");
-    DEBUG("m_cyclotomicOrder " << this->GetCyclotomicOrder());
-    DEBUG("modulus " << bigModulus);
+    OPENFHE_DEBUG("elementing after vectoring");
+    OPENFHE_DEBUG("m_cyclotomicOrder " << this->GetCyclotomicOrder());
+    OPENFHE_DEBUG("modulus " << bigModulus);
 
     // Setting the root of unity to ONE as the calculation is expensive and not
     // required.
@@ -1226,7 +1226,7 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
         std::make_shared<ILParamsImpl<Integer>>(this->GetCyclotomicOrder(), bigModulus, 1));
     polynomialReconstructed.SetValues(std::move(coefficients), COEFFICIENT);
 
-    DEBUG("answer: " << polynomialReconstructed);
+    OPENFHE_DEBUG("answer: " << polynomialReconstructed);
 
     return polynomialReconstructed;
 }
@@ -1249,19 +1249,19 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
  */
 template <typename VecType>
 typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpolateIndex(usint i) const {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
 
     usint ringDimension = this->GetRingDimension();
     usint nTowers       = m_vectors.size();
 
-    DEBUG("in Interpolate ring " << ringDimension << " towers " << nTowers);
+    OPENFHE_DEBUG("in Interpolate ring " << ringDimension << " towers " << nTowers);
 
     for (usint vi = 0; vi < nTowers; vi++)
-        DEBUG("tower " << vi << " is " << m_vectors[vi]);
+        OPENFHE_DEBUG("tower " << vi << " is " << m_vectors[vi]);
 
     Integer bigModulus(this->GetModulus());  // qT
 
-    DEBUG("bigModulus " << bigModulus);
+    OPENFHE_DEBUG("bigModulus " << bigModulus);
 
     // this is the resulting vector of coefficients
     VecType coefficients(ringDimension, bigModulus);
@@ -1277,7 +1277,7 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
         Integer modInv = divBy.ModInverse(qj).Mod(qj);
         multiplier[vi] = divBy * modInv;
 
-        DEBUG("multiplier " << vi << " " << qj << " " << multiplier[vi]);
+        OPENFHE_DEBUG("multiplier " << vi << " " << qj << " " << multiplier[vi]);
     }
 
     // if the vectors are not in COEFFICIENT form, they need to be, so we will
@@ -1295,7 +1295,7 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
     }
 
     for (usint vi = 0; vi < nTowers; vi++)
-        DEBUG("tower " << vi << " is " << (*vecs)[vi]);
+        OPENFHE_DEBUG("tower " << vi << " is " << (*vecs)[vi]);
 
     // Precompute the Barrett mu parameter
     Integer mu = bigModulus.ComputeMu();
@@ -1308,19 +1308,19 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
             for (usint vi = 0; vi < nTowers; vi++) {
                 coefficients[ri] += (Integer((*vecs)[vi].GetValues()[ri].ConvertToInt()) * multiplier[vi]);
             }
-            DEBUG((*vecs)[0].GetValues()[ri] << " * " << multiplier[0] << " == " << coefficients[ri]);
+            OPENFHE_DEBUG((*vecs)[0].GetValues()[ri] << " * " << multiplier[0] << " == " << coefficients[ri]);
             coefficients[ri].ModEq(bigModulus, mu);
         }
     }
 
-    DEBUG("passed loops");
-    DEBUG(coefficients);
+    OPENFHE_DEBUG("passed loops");
+    OPENFHE_DEBUG(coefficients);
 
     // Create an Poly for this BigVector
 
-    DEBUG("elementing after vectoring");
-    DEBUG("m_cyclotomicOrder " << this->GetCyclotomicOrder());
-    DEBUG("modulus " << bigModulus);
+    OPENFHE_DEBUG("elementing after vectoring");
+    OPENFHE_DEBUG("m_cyclotomicOrder " << this->GetCyclotomicOrder());
+    OPENFHE_DEBUG("modulus " << bigModulus);
 
     // Setting the root of unity to ONE as the calculation is expensive and not
     // required.
@@ -1328,7 +1328,7 @@ typename DCRTPolyImpl<VecType>::PolyLargeType DCRTPolyImpl<VecType>::CRTInterpol
         std::make_shared<ILParamsImpl<Integer>>(this->GetCyclotomicOrder(), bigModulus, 1));
     polynomialReconstructed.SetValues(std::move(coefficients), COEFFICIENT);
 
-    DEBUG("answer: " << polynomialReconstructed);
+    OPENFHE_DEBUG("answer: " << polynomialReconstructed);
 
     return polynomialReconstructed;
 }

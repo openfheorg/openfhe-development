@@ -251,7 +251,7 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
     usint size                  = 50000;
     // usint size = omp_get_max_threads() * 4;
 
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     std::vector<typename V::Integer> randBigVector;
     #pragma omp parallel  // this is executed in parallel
     {
@@ -272,10 +272,10 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
         for (int i = 0; i < omp_get_num_threads(); i++) {
     #pragma omp ordered
             {
-                DEBUG("thread #" << omp_get_thread_num() << " moving " << (int)randBigVectorPvt.size()
+                OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " moving " << (int)randBigVectorPvt.size()
                                  << " to starting point " << (int)randBigVector.size());
                 randBigVector.insert(randBigVector.end(), randBigVectorPvt.begin(), randBigVectorPvt.end());
-                DEBUG("thread #" << omp_get_thread_num() << " moved");
+                OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " moved");
             }
         }
     }
@@ -484,7 +484,7 @@ TEST(UTDistrGen, DiscreteGaussianGenerator) {
 template <typename V>
 void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
     // mean test
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
 
     {
         int stdev  = 5;
@@ -511,7 +511,7 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
             for (int i = 0; i < omp_get_num_threads(); i++) {
     #pragma omp ordered
                 {
-                    DEBUG("thread #" << omp_get_thread_num() << " "
+                    OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " "
                                      << "moving " << (int)dggCharVectorPvt.size() << " to starting point"
                                      << (int)dggCharVector.size());
                     dggCharVector.insert(dggCharVector.end(), dggCharVectorPvt.begin(), dggCharVectorPvt.end());
@@ -555,7 +555,7 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
             for (int i = 0; i < omp_get_num_threads(); i++) {
     #pragma omp ordered
                 {
-                    DEBUG("thread #" << omp_get_thread_num() << " "
+                    OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " "
                                      << "moving " << (int)dggBigVectorPvt.size() << " to starting point"
                                      << (int)dggBigVector.size());
                     dggBigVector.insert(dggBigVector.end(), dggBigVectorPvt.begin(), dggBigVectorPvt.end());

@@ -988,10 +988,10 @@ void ChineseRemainderTransformArbDyn<VecType>::SetPreComputedNTTDivisionModulus(
                                                                                 const IntType& modulus,
                                                                                 const IntType& nttMod,
                                                                                 const IntType& nttRootBig) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
 
     usint n = lbcrypto::GetTotient(cyclotoOrder);
-    DEBUG("GetTotient(" << cyclotoOrder << ")= " << n);
+    OPENFHE_DEBUG("GetTotient(" << cyclotoOrder << ")= " << n);
 
     usint power                    = cyclotoOrder - n;
     m_nttDivisionDim[cyclotoOrder] = 2 * std::pow(2, ceil(log2(power)));

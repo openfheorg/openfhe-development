@@ -130,13 +130,13 @@ static IntType RNG(const IntType& modulus) {
  */
 template <typename IntType>
 static bool WitnessFunction(const IntType& a, const IntType& d, usint s, const IntType& p) {
-    DEBUG_FLAG(false);
-    DEBUG("calling modexp a " << a << " d " << d << " p " << p);
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("calling modexp a " << a << " d " << d << " p " << p);
     IntType mod = a.ModExp(d, p);
-    DEBUG("mod " << mod);
+    OPENFHE_DEBUG("mod " << mod);
     bool prevMod = false;
     for (usint i = 1; i < s + 1; i++) {
-        DEBUG("wf " << i);
+        OPENFHE_DEBUG("wf " << i);
         if (mod != IntType(1) && mod != p - IntType(1)) {
             prevMod = true;
         }
@@ -157,17 +157,17 @@ static bool WitnessFunction(const IntType& a, const IntType& d, usint s, const I
  */
 template <typename IntType>
 static IntType FindGenerator(const IntType& q) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     std::set<IntType> primeFactors;
-    DEBUG("FindGenerator(" << q << "),calling PrimeFactorize");
+    OPENFHE_DEBUG("FindGenerator(" << q << "),calling PrimeFactorize");
 
     IntType qm1 = q - IntType(1);
     IntType qm2 = q - IntType(2);
     PrimeFactorize<IntType>(qm1, primeFactors);
-    DEBUG("prime factors of " << qm1);
+    OPENFHE_DEBUG("prime factors of " << qm1);
 #if !defined(NDEBUG)
     for (auto& v : primeFactors)
-        DEBUG(v << " ");
+        OPENFHE_DEBUG(v << " ");
 #endif
     bool generatorFound = false;
     IntType gen;
@@ -176,11 +176,11 @@ static IntType FindGenerator(const IntType& q) {
 
         // gen = RNG(qm2).ModAdd(IntType::ONE, q); //modadd note needed
         gen = RNG(qm2) + IntType(1);
-        DEBUG("generator " << gen);
-        DEBUG("cycling thru prime factors");
+        OPENFHE_DEBUG("generator " << gen);
+        OPENFHE_DEBUG("cycling thru prime factors");
 
         for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it) {
-            DEBUG(qm1 << " / " << *it << " " << gen.ModExp(qm1 / (*it), q));
+            OPENFHE_DEBUG(qm1 << " / " << *it << " " << gen.ModExp(qm1 / (*it), q));
 
             if (gen.ModExp(qm1 / (*it), q) == IntType(1))
                 break;
@@ -200,20 +200,20 @@ static IntType FindGenerator(const IntType& q) {
  */
 template <typename IntType>
 IntType FindGeneratorCyclic(const IntType& q) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     std::set<IntType> primeFactors;
-    DEBUG("calling PrimeFactorize");
+    OPENFHE_DEBUG("calling PrimeFactorize");
 
     IntType phi_q    = IntType(GetTotient(q.ConvertToInt()));
     IntType phi_q_m1 = IntType(GetTotient(q.ConvertToInt()));
 
     PrimeFactorize<IntType>(phi_q, primeFactors);
-    DEBUG("done");
+    OPENFHE_DEBUG("done");
     bool generatorFound = false;
     IntType gen;
     while (!generatorFound) {
         usint count = 0;
-        DEBUG("count " << count);
+        OPENFHE_DEBUG("count " << count);
 
         gen = RNG(phi_q_m1) + IntType(1);  // gen is random in [1, phi(q)]
         if (GreatestCommonDivisor<IntType>(gen, q) != IntType(1)) {
@@ -223,8 +223,8 @@ IntType FindGeneratorCyclic(const IntType& q) {
 
         // Order of a generator cannot divide any co-factor
         for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it) {
-            DEBUG("in set");
-            DEBUG("divide " << phi_q << " by " << *it);
+            OPENFHE_DEBUG("in set");
+            OPENFHE_DEBUG("divide " << phi_q << " by " << *it);
 
             if (gen.ModExp(phi_q / (*it), q) == IntType(1))
                 break;
@@ -245,20 +245,20 @@ IntType FindGeneratorCyclic(const IntType& q) {
  */
 template <typename IntType>
 bool IsGenerator(const IntType& g, const IntType& q) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     std::set<IntType> primeFactors;
-    DEBUG("calling PrimeFactorize");
+    OPENFHE_DEBUG("calling PrimeFactorize");
 
     IntType qm1 = IntType(GetTotient(q.ConvertToInt()));
 
     PrimeFactorize<IntType>(qm1, primeFactors);
-    DEBUG("done");
+    OPENFHE_DEBUG("done");
 
     usint count = 0;
 
     for (auto it = primeFactors.begin(); it != primeFactors.end(); ++it) {
-        DEBUG("in set");
-        DEBUG("divide " << qm1 << " by " << *it);
+        OPENFHE_DEBUG("in set");
+        OPENFHE_DEBUG("divide " << qm1 << " by " << *it);
 
         if (g.ModExp(qm1 / (*it), q) == IntType(1))
             break;
@@ -282,8 +282,8 @@ bool IsGenerator(const IntType& g, const IntType& q) {
  */
 template <typename IntType>
 IntType RootOfUnity(usint m, const IntType& modulo) {
-    DEBUG_FLAG(false);
-    DEBUG("in Root of unity m :" << m << " modulo " << modulo.ToString());
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("in Root of unity m :" << m << " modulo " << modulo.ToString());
     IntType M(m);
     if ((modulo - IntType(1)).Mod(M) != IntType(0)) {
         std::string errMsg =
@@ -294,16 +294,16 @@ IntType RootOfUnity(usint m, const IntType& modulo) {
         OPENFHE_THROW(math_error, errMsg);
     }
     IntType result;
-    DEBUG("calling FindGenerator");
+    OPENFHE_DEBUG("calling FindGenerator");
     IntType gen = FindGenerator(modulo);
-    DEBUG("gen = " << gen.ToString());
+    OPENFHE_DEBUG("gen = " << gen.ToString());
 
-    DEBUG("calling gen.ModExp( " << ((modulo - IntType(1)).DividedBy(M)).ToString() << ", modulus "
+    OPENFHE_DEBUG("calling gen.ModExp( " << ((modulo - IntType(1)).DividedBy(M)).ToString() << ", modulus "
                                  << modulo.ToString());
     result = gen.ModExp((modulo - IntType(1)).DividedBy(M), modulo);
-    DEBUG("result = " << result.ToString());
+    OPENFHE_DEBUG("result = " << result.ToString());
     if (result == IntType(1)) {
-        DEBUG("LOOP?");
+        OPENFHE_DEBUG("LOOP?");
         result = RootOfUnity(m, modulo);
     }
 
@@ -353,20 +353,20 @@ std::vector<IntType> RootsOfUnity(usint m, const std::vector<IntType> moduli) {
 
 template <typename IntType>
 IntType GreatestCommonDivisor(const IntType& a, const IntType& b) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     IntType m_a, m_b, m_t;
     m_a = a;
     m_b = b;
-    DEBUG("GCD a " << a << " b " << b);
+    OPENFHE_DEBUG("GCD a " << a << " b " << b);
     while (m_b != IntType(0)) {
         m_t = m_b;
-        DEBUG("GCD m_a.Mod(b) " << m_a << "( " << m_b << ")");
+        OPENFHE_DEBUG("GCD m_a.Mod(b) " << m_a << "( " << m_b << ")");
         m_b = m_a % m_b;
 
         m_a = m_t;
-        DEBUG("GCD m_a " << m_b << " m_b " << m_b);
+        OPENFHE_DEBUG("GCD m_a " << m_b << " m_b " << m_b);
     }
-    DEBUG("GCD ret " << m_a);
+    OPENFHE_DEBUG("GCD ret " << m_a);
     return m_a;
 }
 
@@ -378,7 +378,7 @@ IntType GreatestCommonDivisor(const IntType& a, const IntType& b) {
  */
 template <typename IntType>
 bool MillerRabinPrimalityTest(const IntType& p, const usint niter) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     if (p < IntType(2) || ((p != IntType(2)) && (p.Mod(2) == IntType(0))))
         return false;
     if (p == IntType(2) || p == IntType(3) || p == IntType(5))
@@ -386,22 +386,22 @@ bool MillerRabinPrimalityTest(const IntType& p, const usint niter) {
 
     IntType d = p - IntType(1);
     usint s   = 0;
-    DEBUG("start while d " << d);
+    OPENFHE_DEBUG("start while d " << d);
     while (d.Mod(2) == IntType(0)) {
         d.DividedByEq(2);
         s++;
     }
-    DEBUG("end while s " << s);
+    OPENFHE_DEBUG("end while s " << s);
     bool composite = true;
     for (usint i = 0; i < niter; i++) {
-        DEBUG(".1");
+        OPENFHE_DEBUG(".1");
         IntType a = RNG(p - IntType(3)).ModAdd(2, p);
-        DEBUG(".2");
+        OPENFHE_DEBUG(".2");
         composite = (WitnessFunction(a, d, s, p));
         if (composite)
             break;
     }
-    DEBUG("done composite " << composite);
+    OPENFHE_DEBUG("done composite " << composite);
     return (!composite);
 }
 
@@ -412,7 +412,7 @@ bool MillerRabinPrimalityTest(const IntType& p, const usint niter) {
  */
 template <typename IntType>
 const IntType PollardRhoFactorization(const IntType& n) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     IntType divisor(1);
 
     IntType c(RNG(n));
@@ -433,7 +433,7 @@ const IntType PollardRhoFactorization(const IntType& n) {
 
         divisor = GreatestCommonDivisor((x > xx) ? x - xx : xx - x, n);
 
-        DEBUG("PRF divisor " << divisor.ToString());
+        OPENFHE_DEBUG("PRF divisor " << divisor.ToString());
     } while (divisor == IntType(1));
 
     return divisor;
@@ -446,33 +446,33 @@ const IntType PollardRhoFactorization(const IntType& n) {
  */
 template <typename IntType>
 void PrimeFactorize(IntType n, std::set<IntType>& primeFactors) {
-    DEBUG_FLAG(false);
-    DEBUG("PrimeFactorize " << n);
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("PrimeFactorize " << n);
 
     // primeFactors.clear();
-    DEBUG("In PrimeFactorize n " << n);
-    DEBUG("set size " << primeFactors.size());
+    OPENFHE_DEBUG("In PrimeFactorize n " << n);
+    OPENFHE_DEBUG("set size " << primeFactors.size());
 
     if (n == IntType(0) || n == IntType(1))
         return;
-    DEBUG("calling MillerRabinPrimalityTest(" << n << ")");
+    OPENFHE_DEBUG("calling MillerRabinPrimalityTest(" << n << ")");
     if (MillerRabinPrimalityTest(n)) {
-        DEBUG("Miller true");
+        OPENFHE_DEBUG("Miller true");
         primeFactors.insert(n);
         return;
     }
 
-    DEBUG("calling PrFact n " << n);
+    OPENFHE_DEBUG("calling PrFact n " << n);
     IntType divisor(PollardRhoFactorization(n));
 
-    DEBUG("calling PF " << divisor);
+    OPENFHE_DEBUG("calling PF " << divisor);
     PrimeFactorize(divisor, primeFactors);
 
-    DEBUG("calling div " << divisor);
+    OPENFHE_DEBUG("calling div " << divisor);
     // IntType reducedN = n.DividedBy(divisor);
     n /= divisor;
 
-    DEBUG("calling PF reduced n " << n);
+    OPENFHE_DEBUG("calling PF reduced n " << n);
     PrimeFactorize(n, primeFactors);
 }
 
@@ -486,9 +486,9 @@ IntType FirstPrime(uint64_t nBits, uint64_t m) {
     }
 #endif
     try {
-        DEBUG_FLAG(false);
+        OPENFHE_DEBUG_FLAG(false);
         IntType r = IntType(2).ModExp(nBits, m);
-        DEBUG("r " << r);
+        OPENFHE_DEBUG("r " << r);
         IntType qNew = (IntType(1) << nBits);
         double d1    = qNew.ConvertToDouble();
         double d2    = std::pow(2, static_cast<double>(nBits));
@@ -518,9 +518,9 @@ IntType FirstPrime(uint64_t nBits, uint64_t m) {
         OPENFHE_THROW(math_error, "FirstPrime math exception");
     }
     //  try {
-    //    DEBUG_FLAG(false);
+    //    OPENFHE_DEBUG_FLAG(false);
     //    IntType r = IntType(2).ModExp(nBits, m);
-    //    DEBUG("r "<<r);
+    //    OPENFHE_DEBUG("r "<<r);
     //    IntType qNew = (IntType(1) << nBits);
     //    double d1 = qNew.ConvertToDouble();
     //    double d2 = std::pow(2, double(nBits));

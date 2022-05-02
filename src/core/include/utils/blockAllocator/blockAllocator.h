@@ -150,13 +150,13 @@ private:
 #define DECLARE_ALLOCATOR                           \
 public:                                             \
     void* operator new(size_t size) {               \
-        DEBUG_FLAG(false);                          \
-        DEBUG("allocating   " << size << " bytes"); \
+        OPENFHE_DEBUG_FLAG(false);                          \
+        OPENFHE_DEBUG("allocating   " << size << " bytes"); \
         return _allocator.Allocate(size);           \
     }                                               \
     void operator delete(void* pObject) {           \
-        DEBUG_FLAG(false);                          \
-        DEBUG("deallocating  ");                    \
+        OPENFHE_DEBUG_FLAG(false);                          \
+        OPENFHE_DEBUG("deallocating  ");                    \
         _allocator.Deallocate(pObject);             \
     }                                               \
                                                     \

@@ -111,32 +111,32 @@ TEST(UTMatrix, basic_int_math) {
 
 template <typename V>
 void basic_intvec_math(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
 
     typename V::Integer modulus("67108913");
-    DEBUG("1");
+    OPENFHE_DEBUG("1");
     auto singleAlloc = [=]() {
         return V(1, modulus);
     };
-    DEBUG("2");
+    OPENFHE_DEBUG("2");
     Matrix<V> z(singleAlloc, 2, 2);
-    DEBUG("3");
+    OPENFHE_DEBUG("3");
     Matrix<V> n = Matrix<V>(singleAlloc, 2, 2).Ones();
-    DEBUG("4");
+    OPENFHE_DEBUG("4");
     Matrix<V> I = Matrix<V>(singleAlloc, 2, 2).Identity();
-    DEBUG("5");
-    DEBUG("z mod 00 " << z(0, 0).GetModulus().ToString());
-    DEBUG("z mod 01 " << z(0, 1).GetModulus().ToString());
-    DEBUG("z mod 10 " << z(1, 0).GetModulus().ToString());
-    DEBUG("z mod 1 1 " << z(1, 1).GetModulus().ToString());
-    DEBUG("n mod " << n(0, 0).GetModulus().ToString());
-    DEBUG("I mod " << I(0, 0).GetModulus().ToString());
+    OPENFHE_DEBUG("5");
+    OPENFHE_DEBUG("z mod 00 " << z(0, 0).GetModulus().ToString());
+    OPENFHE_DEBUG("z mod 01 " << z(0, 1).GetModulus().ToString());
+    OPENFHE_DEBUG("z mod 10 " << z(1, 0).GetModulus().ToString());
+    OPENFHE_DEBUG("z mod 1 1 " << z(1, 1).GetModulus().ToString());
+    OPENFHE_DEBUG("n mod " << n(0, 0).GetModulus().ToString());
+    OPENFHE_DEBUG("I mod " << I(0, 0).GetModulus().ToString());
     EXPECT_EQ(n, I * n) << msg;
-    DEBUG("6");
+    OPENFHE_DEBUG("6");
     n = n - n;
-    DEBUG("7");
+    OPENFHE_DEBUG("7");
     EXPECT_EQ(n, z) << msg;
-    DEBUG("8");
+    OPENFHE_DEBUG("8");
 }
 
 TEST(UTMatrix, basic_intvec_math) {
@@ -239,7 +239,7 @@ inline void expect_close(double a, double b) {
 }
 
 TEST(UTMatrix, cholesky) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     Matrix<int32_t> m([]() { return 0; }, 2, 2);
     m(0, 0) = 20;
     m(0, 1) = 4;
@@ -247,7 +247,7 @@ TEST(UTMatrix, cholesky) {
     m(1, 1) = 10;
 
     auto c = Cholesky(m);
-    DEBUGEXP(c);
+    OPENFHE_DEBUGEXP(c);
     EXPECT_LE(fabs(4.47213595 - c(0, 0)), 1e-8);
     EXPECT_LE(fabs(0 - c(0, 1)), 1e-8);
     EXPECT_LE(fabs(.89442719 - c(1, 0)), 1e-8);
@@ -257,7 +257,7 @@ TEST(UTMatrix, cholesky) {
     EXPECT_LE(fabs(m(0, 1) - cc(0, 1)), 1e-8);
     EXPECT_LE(fabs(m(1, 0) - cc(1, 0)), 1e-8);
     EXPECT_LE(fabs(m(1, 1) - cc(1, 1)), 1e-8);
-    DEBUGEXP(cc);
+    OPENFHE_DEBUGEXP(cc);
 }
 
 template <typename Element>

@@ -144,7 +144,7 @@ template <>
 Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSamp(size_t n, size_t k, const Matrix<DCRTPoly>& A,
                                                           const RLWETrapdoorPair<DCRTPoly>& T, const DCRTPoly& u,
                                                           DggType& dgg, DggType& dggLargeSigma, int64_t base) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     TimeVar t1, t1_tot, t2, t2_tot;
     TIC(t1);
     TIC(t1_tot);
@@ -156,28 +156,28 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSamp(size_t n, size_t k, co
     // spectral bound s
     double s = SPECTRAL_BOUND(n, k, base);
 
-    DEBUG("c " << c << " s " << s);
+    OPENFHE_DEBUG("c " << c << " s " << s);
 
     // perturbation vector in evaluation representation
     auto pHat = std::make_shared<Matrix<DCRTPoly>>(zero_alloc, k + 2, 1);
-    DEBUG("t1a: " << TOC(t1));
+    OPENFHE_DEBUG("t1a: " << TOC(t1));
     TIC(t1);
     ZSampleSigmaP(n, s, c, T, dgg, dggLargeSigma, pHat);
-    DEBUG("t1b: " << TOC(t1));  // this takes the most time 61
+    OPENFHE_DEBUG("t1b: " << TOC(t1));  // this takes the most time 61
     TIC(t1);
     // It is assumed that A has dimension 1 x (k + 2) and pHat has the dimension
     // of (k + 2) x 1 perturbedSyndrome is in the evaluation representation
     DCRTPoly perturbedSyndrome = u - (A.Mult(*pHat))(0, 0);
 
-    DEBUG("t1c: " << TOC(t1));  // takes 2
+    OPENFHE_DEBUG("t1c: " << TOC(t1));  // takes 2
     TIC(t1);
-    DEBUG("t1d: " << TOC(t1));  // takes 0
+    OPENFHE_DEBUG("t1d: " << TOC(t1));  // takes 0
     Matrix<int64_t> zHatBBI([]() { return 0; }, k, n);
-    DEBUG("t1: " << TOC(t1_tot));  // takes 64
+    OPENFHE_DEBUG("t1: " << TOC(t1_tot));  // takes 64
     TIC(t2);
     TIC(t2_tot);
     perturbedSyndrome.SetFormat(Format::COEFFICIENT);
-    DEBUG("t2a: " << TOC(t2));  // takes 1
+    OPENFHE_DEBUG("t2a: " << TOC(t2));  // takes 1
     TIC(t2);
 
     size_t size = perturbedSyndrome.GetNumOfElements();
@@ -197,17 +197,17 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSamp(size_t n, size_t k, co
         }
     }
 
-    DEBUG("t2b: " << TOC(t2));  // takes 36
+    OPENFHE_DEBUG("t2b: " << TOC(t2));  // takes 36
     TIC(t2);
     // Convert zHat from a matrix of BBI to a vector of Element ring elements
     // zHat is in the coefficient representation
     Matrix<DCRTPoly> zHat = SplitInt64AltIntoElements<DCRTPoly>(zHatBBI, n, params);
 
-    DEBUG("t2c: " << TOC(t2));  // takes 0
+    OPENFHE_DEBUG("t2c: " << TOC(t2));  // takes 0
     // Now converting it to the evaluation representation before multiplication
     zHat.SetFormat(Format::EVALUATION);
-    DEBUG("t2d: " << TOC(t2));  // takes 17
-    DEBUG("t2: " << TOC(t2_tot));
+    OPENFHE_DEBUG("t2d: " << TOC(t2));  // takes 17
+    OPENFHE_DEBUG("t2: " << TOC(t2_tot));
 
     Matrix<DCRTPoly> zHatPrime(zero_alloc, k + 2, 1);
 
