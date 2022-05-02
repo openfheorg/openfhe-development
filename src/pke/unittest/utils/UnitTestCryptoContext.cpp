@@ -89,6 +89,15 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
         parameters.SetMultiplicationTechnique(
             static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
     }
+    if (!isDefaultValue(params.evalAddCount)) {
+        parameters.SetEvalAddCount(static_cast<usint>(std::round(params.evalAddCount)));
+    }
+    if (!isDefaultValue(params.evalMultCount)) {
+        parameters.SetEvalMultCount(static_cast<usint>(std::round(params.evalMultCount)));
+    }
+    if (!isDefaultValue(params.keySwitchCount)) {
+        parameters.SetKeySwitchCount(static_cast<usint>(std::round(params.keySwitchCount)));
+    }
 }
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
@@ -102,16 +111,6 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
     else if (BFVRNS_SCHEME == params.schemeId) {
         CCParams<CryptoContextBFVRNS> parameters;
         setCryptoContextParametersFromUnitTestCCParams(params, parameters);
-        // set additional values
-        if (!isDefaultValue(params.evalAddCount)) {
-            parameters.SetEvalAddCount(static_cast<usint>(std::round(params.evalAddCount)));
-        }
-        if (!isDefaultValue(params.evalMultCount)) {
-            parameters.SetEvalMultCount(static_cast<usint>(std::round(params.evalMultCount)));
-        }
-        if (!isDefaultValue(params.keySwitchCount)) {
-            parameters.SetKeySwitchCount(static_cast<usint>(std::round(params.keySwitchCount)));
-        }
 
         cc = GenCryptoContext(parameters);
     }

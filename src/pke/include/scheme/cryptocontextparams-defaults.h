@@ -73,6 +73,9 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr usint                scalingFactorBits   = 0;
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
+    constexpr usint                evalAddCount        = 0;
+    constexpr usint                evalMultCount       = 0;
+    constexpr usint                keySwitchCount      = 0;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPS;
     constexpr usint                multiHopQModulusLowerBound = 0;
@@ -100,6 +103,9 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr usint                scalingFactorBits   = 0;
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic; // set to avoid compiler errors
     constexpr usint                ringDim             = 0;
+    constexpr usint                evalAddCount        = 0;
+    constexpr usint                evalMultCount       = 0;
+    constexpr usint                keySwitchCount      = 0;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPS;
     constexpr usint                multiHopQModulusLowerBound = 0;
@@ -127,6 +133,9 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr usint                scalingFactorBits   = 0;
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
+    constexpr usint                evalAddCount        = 0;
+    constexpr usint                evalMultCount       = 0;
+    constexpr usint                keySwitchCount      = 0;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPS;
     constexpr usint                multiHopQModulusLowerBound = 0;
