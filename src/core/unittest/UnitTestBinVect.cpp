@@ -66,7 +66,7 @@ using namespace lbcrypto;
 */
 template <typename V>
 void AtAndSetModulusTest(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     usint len = 10;
     V m(len);
 
@@ -86,9 +86,9 @@ void AtAndSetModulusTest(const std::string& msg) {
 
     m.SetModulus(q);
 
-    DEBUG("m" << m);
+    OPENFHE_DEBUG("m" << m);
     V calculatedResult = m.Mod(q);
-    DEBUG("calculated result" << m);
+    OPENFHE_DEBUG("calculated result" << m);
     uint64_t expectedResult[] = {48, 53, 7, 178, 190, 120, 79, 108, 60, 12};
     for (usint i = 0; i < len; i++) {
         EXPECT_EQ(expectedResult[i], calculatedResult[i].ConvertToInt()) << msg << " Mod failed";
@@ -107,7 +107,7 @@ void AtAndSetModulusTest(const std::string& msg) {
     n.at(8) = typename V::Integer("325328");
     n.at(9) = typename V::Integer("7698798");
 
-    DEBUG("n" << n);
+    OPENFHE_DEBUG("n" << n);
     for (usint i = 0; i < len; i++) {
         if (i != 6) {  // value at 6 is < q
             EXPECT_NE(expectedResult[i], n[i].ConvertToInt()) << msg << " at no mod failed";
@@ -120,7 +120,7 @@ void AtAndSetModulusTest(const std::string& msg) {
     V l(len, q);
     // note list assignment does take modulus
     l = {"987968", "587679", "456454", "234343", "769789", "465654", "79", "346346", "325328", "7698798"};
-    DEBUG("l" << l);
+    OPENFHE_DEBUG("l" << l);
     for (usint i = 0; i < len; i++) {
         EXPECT_EQ(expectedResult[i], l[i].ConvertToInt()) << msg << " Mod on list assignment failed";
     }
@@ -199,15 +199,15 @@ TEST(UTBinVect, ModAddBigModulus) {
 
 template <typename V>
 void ModAddSmallerModulus(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
 
     typename V::Integer q("3534");  // constructor calling to set mod value
     // calling constructor to create a vector of length 5 and passing value of q
     V m(5, q);
     typename V::Integer n("34365");
 
-    DEBUG("m " << m);
-    DEBUG("m's modulus " << m.GetModulus());
+    OPENFHE_DEBUG("m " << m);
+    OPENFHE_DEBUG("m's modulus " << m.GetModulus());
     // at() does not apply mod.
     m.at(0) = typename V::Integer("9868");
     m.at(1) = typename V::Integer("5879");
@@ -217,8 +217,8 @@ void ModAddSmallerModulus(const std::string& msg) {
 
     V calculatedResult = m.ModAdd(n);
 
-    DEBUG("m " << m);
-    DEBUG("calculated result  " << calculatedResult);
+    OPENFHE_DEBUG("m " << m);
+    OPENFHE_DEBUG("calculated result  " << calculatedResult);
     uint64_t expectedResult[5] = {1825, 1370, 45, 1368, 1746};
 
     for (usint i = 0; i < 5; i++) {
@@ -334,7 +334,7 @@ TEST(UTBinVect, ModMulTest) {
 */
 template <typename V>
 void ModExpTest(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     typename V::Integer q("3534");  // constructor calling to set mod value
 
     // calling constructor to create a vector of length 5 and passing value of q
@@ -346,7 +346,7 @@ void ModExpTest(const std::string& msg) {
     m.at(2) = typename V::Integer("4");
     m.at(3) = typename V::Integer("2343");
     m.at(4) = typename V::Integer("97");
-    DEBUG("m's modulus " << m.GetModulus());
+    OPENFHE_DEBUG("m's modulus " << m.GetModulus());
 
     V calculatedResult = m.ModExp(n);
 
@@ -439,7 +439,7 @@ TEST(UTBinVect, modadd_vector_result_smaller_modulus) {
 
 template <typename V>
 void modadd_vector_result_greater_modulus(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     typename V::Integer q("657");  // constructor calling to set mod value
     // calling constructor to create a vector of length 5 and passing value of q
     V m(5, q);
@@ -449,14 +449,14 @@ void modadd_vector_result_greater_modulus(const std::string& msg) {
 
     n = {"4533", "4549", "6756", "1233", "7897"};
 
-    DEBUG("m " << m);
-    DEBUG("m mod" << m.GetModulus());
-    DEBUG("n " << n);
-    DEBUG("n mod " << n.GetModulus());
+    OPENFHE_DEBUG("m " << m);
+    OPENFHE_DEBUG("m mod" << m.GetModulus());
+    OPENFHE_DEBUG("n " << n);
+    OPENFHE_DEBUG("n mod " << n.GetModulus());
 
     V calculatedResult = m.ModAdd(n);
 
-    DEBUG("result mod " << calculatedResult.GetModulus());
+    OPENFHE_DEBUG("result mod " << calculatedResult.GetModulus());
     uint64_t expectedResult[5] = {604, 573, 141, 291, 604};
 
     for (usint i = 0; i < 5; i++) {
@@ -474,7 +474,7 @@ TEST(UTBinVect, modadd_vector_result_greater_modulus) {
 */
 template <typename V>
 void method_add_equals_vector_operation(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     typename V::Integer q("657");
     // calling constructor to create a vector of length 5 and passing value of q
     V m(5, q);
@@ -489,11 +489,11 @@ void method_add_equals_vector_operation(const std::string& msg) {
     n.at(3) = typename V::Integer("33");
     n.at(4) = typename V::Integer("7");
 
-    DEBUG("m " << m);
-    DEBUG("n " << n);
+    OPENFHE_DEBUG("m " << m);
+    OPENFHE_DEBUG("n " << n);
 
     m += n;
-    DEBUG("m" << m);
+    OPENFHE_DEBUG("m" << m);
     uint64_t expectedResult[5] = {17, 632, 21, 405, 598};
 
     for (usint i = 0; i < 5; i++) {

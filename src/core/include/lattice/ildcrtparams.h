@@ -93,13 +93,13 @@ public:
         if (cyclotomic_order == 0)
             return;
 
-        DEBUG_FLAG(false);
-        DEBUG(
+        OPENFHE_DEBUG_FLAG(false);
+        OPENFHE_DEBUG(
             "in ILDCRTParams(const usint cyclotomic_order, const IntType &modulus, "
             "const IntType& rootOfUnity");
-        DEBUGEXP(cyclotomic_order);
-        DEBUGEXP(modulus);
-        DEBUGEXP(rootOfUnity);
+        OPENFHE_DEBUGEXP(cyclotomic_order);
+        OPENFHE_DEBUGEXP(modulus);
+        OPENFHE_DEBUGEXP(rootOfUnity);
         usint numOfTower = 1;
         std::vector<NativeInteger> moduli;
         std::vector<NativeInteger> rootsOfUnity;
@@ -118,16 +118,16 @@ public:
             numOfTower++;
         }
         originalModulus = modulus;
-        DEBUGEXP(compositeModulus);
-        DEBUGEXP(moduli);
-        DEBUGEXP(rootsOfUnity);
-        DEBUGEXP(m_parms.size());
+        OPENFHE_DEBUGEXP(compositeModulus);
+        OPENFHE_DEBUGEXP(moduli);
+        OPENFHE_DEBUGEXP(rootsOfUnity);
+        OPENFHE_DEBUGEXP(m_parms.size());
         for (size_t i = 0; i < moduli.size(); i++) {
             m_parms.push_back(std::make_shared<ILNativeParams>(cyclotomic_order, moduli[i], rootsOfUnity[i]));
         }
 
         RecalculateModulus();
-        DEBUGEXP(m_parms.size());
+        OPENFHE_DEBUGEXP(m_parms.size());
     }
 
     /**

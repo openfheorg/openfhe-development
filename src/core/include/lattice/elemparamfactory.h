@@ -82,8 +82,8 @@ public:
    */
     template <typename P>
     static std::shared_ptr<P> GenElemParams(ElementOrder o) {
-        DEBUG_FLAG(false);
-        DEBUG("in GenElemParams(ElementOrder o)");
+        OPENFHE_DEBUG_FLAG(false);
+        OPENFHE_DEBUG("in GenElemParams(ElementOrder o)");
         return std::make_shared<P>(DefaultSet[static_cast<int>(o)].m,
                                    typename P::Integer(DefaultSet[static_cast<int>(o)].q),
                                    typename P::Integer(DefaultSet[static_cast<int>(o)].ru));
@@ -98,8 +98,8 @@ public:
    */
     template <typename P>
     static std::shared_ptr<P> GenElemParams(usint m) {
-        DEBUG_FLAG(false);
-        DEBUG("in GenElemParams(usint m)");
+        OPENFHE_DEBUG_FLAG(false);
+        OPENFHE_DEBUG("in GenElemParams(usint m)");
         size_t sIdx = GetNearestIndex(m);
 
         return std::make_shared<P>(DefaultSet[sIdx].m, typename P::Integer(DefaultSet[sIdx].q),
@@ -117,8 +117,8 @@ public:
    */
     template <typename P>
     static std::shared_ptr<P> GenElemParams(usint m, usint bits, usint towersize = 1) {
-        DEBUG_FLAG(false);
-        DEBUG("in GenElemParams(usint m, usint bits, usint towers)");
+        OPENFHE_DEBUG_FLAG(false);
+        OPENFHE_DEBUG("in GenElemParams(usint m, usint bits, usint towers)");
         typename P::Integer q  = FirstPrime<typename P::Integer>(bits, m);
         typename P::Integer ru = RootOfUnity<typename P::Integer>(m, q);
         return std::make_shared<P>(m, q, ru);
@@ -135,8 +135,8 @@ public:
     template <typename P>
     static std::shared_ptr<P> GenElemParams(usint m, const typename P::Integer& ctModulus,
                                             const typename P::Integer& rootUnity) {
-        DEBUG_FLAG(false);
-        DEBUG("in GenElemParams(usint m, const typename P::Integer etc)");
+        OPENFHE_DEBUG_FLAG(false);
+        OPENFHE_DEBUG("in GenElemParams(usint m, const typename P::Integer etc)");
         return std::make_shared<P>(m, ctModulus, rootUnity);
     }
 };
@@ -144,39 +144,39 @@ public:
 template <>
 inline std::shared_ptr<ILDCRTParams<M2Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M2Integer>>(
     usint m, usint bits, usint towersize) {
-    DEBUG_FLAG(false);
-    DEBUG(
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG(
         "in GenElemParams<ILDCRTParams<M2Integer>>(usint m, usint bits, usint "
         "towersize)");
-    DEBUGEXP(m);
-    DEBUGEXP(bits);
-    DEBUGEXP(towersize);
+    OPENFHE_DEBUGEXP(m);
+    OPENFHE_DEBUGEXP(bits);
+    OPENFHE_DEBUGEXP(towersize);
     return GenerateDCRTParams<M2Integer>(m, towersize, bits);
 }
 
 template <>
 inline std::shared_ptr<ILDCRTParams<M4Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M4Integer>>(
     usint m, usint bits, usint towersize) {
-    DEBUG_FLAG(false);
-    DEBUG(
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG(
         "in GenElemParams<ILDCRTParams<M4Integer>>(usint m, usint bits, usint "
         "towersize)");
-    DEBUGEXP(m);
-    DEBUGEXP(bits);
-    DEBUGEXP(towersize);
+    OPENFHE_DEBUGEXP(m);
+    OPENFHE_DEBUGEXP(bits);
+    OPENFHE_DEBUGEXP(towersize);
     return GenerateDCRTParams<M4Integer>(m, towersize, bits);
 }
 #ifdef WITH_NTL
 template <>
 inline std::shared_ptr<ILDCRTParams<M6Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M6Integer>>(
     usint m, usint bits, usint towersize) {
-    DEBUG_FLAG(false);
-    DEBUG(
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG(
         "in GenElemParams<ILDCRTParams<M6Integer>>(usint m, usint bits, usint "
         "towersize)");
-    DEBUGEXP(m);
-    DEBUGEXP(bits);
-    DEBUGEXP(towersize);
+    OPENFHE_DEBUGEXP(m);
+    OPENFHE_DEBUGEXP(bits);
+    OPENFHE_DEBUGEXP(towersize);
     return GenerateDCRTParams<M6Integer>(m, towersize, bits);
 }
 #endif

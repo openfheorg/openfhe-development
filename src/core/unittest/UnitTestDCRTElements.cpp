@@ -52,7 +52,7 @@ void testDCRTPolyConstructorNegative(std::vector<NativePoly>& towers);
 
 template <typename Element>
 void DCRT_constructors(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     usint m         = 8;
     usint towersize = 3;
 
@@ -88,7 +88,7 @@ void DCRT_constructors(const std::string& msg) {
     ilvector2nVector.push_back(ilv1);
     ilvector2nVector.push_back(ilv2);
 
-    DEBUG("1");
+    OPENFHE_DEBUG("1");
     float stdDev = 4.0;
     typename Element::DggType dgg(stdDev);
 
@@ -101,17 +101,17 @@ void DCRT_constructors(const std::string& msg) {
         EXPECT_EQ(towersize, ilva.GetNumOfElements()) << msg << " Failure: ildcrtparams ctor ilva.GetNumOfElements()";
     }
 
-    DEBUG("2");
+    OPENFHE_DEBUG("2");
     {
         Element ilva(ilvector2nVector);
 
-        DEBUG("2.0");
+        OPENFHE_DEBUG("2.0");
         EXPECT_EQ(Format::EVALUATION, ilva.GetFormat()) << msg << " Failure: ctor ilva.GetFormat()";
         EXPECT_EQ(modulus, ilva.GetModulus()) << msg << " Failure: ctor ilva.GetModulus()";
         EXPECT_EQ(m, ilva.GetCyclotomicOrder()) << msg << " Failure: ctor ilva.GetCyclotomicOrder()";
         EXPECT_EQ(towersize, ilva.GetNumOfElements()) << msg << " Failure: ctor ilva.GetNumOfElements()";
 
-        DEBUG("2.1");
+        OPENFHE_DEBUG("2.1");
         std::vector<NativePoly> ilvector2nVectorInconsistent(towersize);
         auto ilparamsNegativeTestCase =
             std::make_shared<ILNativeParams>(128, NativeInteger("1231"), NativeInteger("213"));
@@ -120,15 +120,15 @@ void DCRT_constructors(const std::string& msg) {
         ilvector2nVectorInconsistent[1] = ilv1;
         ilvector2nVectorInconsistent[2] = ilv2;
 
-        DEBUG("2.2");
+        OPENFHE_DEBUG("2.2");
         for (size_t ii = 0; ii < ilvector2nVectorInconsistent.size(); ii++) {
-            DEBUG(ii << " item " << ilvector2nVectorInconsistent.at(ii).GetParams().use_count());
+            OPENFHE_DEBUG(ii << " item " << ilvector2nVectorInconsistent.at(ii).GetParams().use_count());
         }
         EXPECT_THROW(testDCRTPolyConstructorNegative(ilvector2nVectorInconsistent), math_error)
             << msg << " Failure: ilvector2nVectorInconsistent";
     }
 
-    DEBUG("4");
+    OPENFHE_DEBUG("4");
     {
         Element ilva0;
         Element ilva1(ildcrtparams);
@@ -163,9 +163,9 @@ void DCRT_constructors(const std::string& msg) {
         }
     }
 
-    DEBUG("5");
+    OPENFHE_DEBUG("5");
     {
-        DEBUG("ild mod " << ildcrtparams->GetModulus());
+        OPENFHE_DEBUG("ild mod " << ildcrtparams->GetModulus());
         Element ilva(dgg, ildcrtparams);
 
         EXPECT_EQ(Format::EVALUATION, ilva.GetFormat()) << msg << " Failure: ctor(dgg, ldcrtparams) ilva.GetFormat()";
@@ -175,7 +175,7 @@ void DCRT_constructors(const std::string& msg) {
             << msg << " Failure: ctor(dgg, ildcrtparams) ilva.GetNumOfElements()";
     }
 
-    DEBUG("6");
+    OPENFHE_DEBUG("6");
     {
         Element ilva(dgg, ildcrtparams);
         Element ilvaClone(ilva.CloneParametersOnly());

@@ -215,9 +215,9 @@ static inline void* get_block_ptr(void* block) {
 /// @return Allocator instance handling requested block size or nullptr
 /// if no allocator exists.
 static inline Allocator* find_allocator(size_t size) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     for (usint i = 0; i < MAX_ALLOCATORS; i++) {
-        DEBUG("allocator " << i << " " << _allocators[i]);
+        OPENFHE_DEBUG("allocator " << i << " " << _allocators[i]);
 
         if (_allocators[i] == 0)
             break;
@@ -324,7 +324,7 @@ extern "C" Allocator* xallocator_get_allocator(size_t size) {
     // within the block memory region. Most blocks are powers of two,
     // however some common allocator block sizes can be explicitly defined
     // to minimize wasted storage. This offers application specific tuning.
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     size_t blockSize = size + sizeof(Allocator*);
     if (blockSize > 256 && blockSize <= 396)
         blockSize = 396;
@@ -332,7 +332,7 @@ extern "C" Allocator* xallocator_get_allocator(size_t size) {
         blockSize = 768;
     else
         blockSize = nexthigher<size_t>(blockSize);
-    DEBUG("finding allocator for blockSize " << blockSize);
+    OPENFHE_DEBUG("finding allocator for blockSize " << blockSize);
     Allocator* allocator = find_allocator(blockSize);
 
 #ifdef STATIC_POOLS
@@ -360,7 +360,7 @@ extern "C" Allocator* xallocator_get_allocator(size_t size) {
 ///  @param[in] size - the client requested size of the block.
 /// @return  A pointer to the client's memory block.
 extern "C" void* xmalloc(size_t size) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
 
     Allocator* allocator;
     void* blockMemoryPtr;
@@ -370,7 +370,7 @@ extern "C" void* xmalloc(size_t size) {
         // Allocate a raw memory block
         allocator      = xallocator_get_allocator(size);
         blockMemoryPtr = allocator->Allocate(sizeof(Allocator*) + size);
-        DEBUG("xmalloc " << size);
+        OPENFHE_DEBUG("xmalloc " << size);
     }
     lock_release();
 
@@ -384,8 +384,8 @@ extern "C" void* xmalloc(size_t size) {
 ///  to the fixed block allocator that originally created it.
 ///  @param[in] ptr - a pointer to a block created with xalloc.
 extern "C" void xfree(void* ptr) {
-    DEBUG_FLAG(false);
-    DEBUG("xfree ");
+    OPENFHE_DEBUG_FLAG(false);
+    OPENFHE_DEBUG("xfree ");
     if (ptr == 0)
         return;
 

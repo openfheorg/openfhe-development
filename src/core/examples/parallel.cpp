@@ -65,15 +65,15 @@ void verify(float* foo, uint32_t array_size) {
 }
 
 int main(int argc, char* argv[]) {
-    // note if you set dbg_flag = true then all  the following DEBUG() statments
+    // note if you set dbg_flag = true then all  the following OPENFHE_DEBUG() statments
     // print to stdout.
-    DEBUG_FLAG(true);
+    OPENFHE_DEBUG_FLAG(true);
 
     lbcrypto::OpenFHEParallelControls.Enable();
 
     uint32_t array_size = 1000;
-    DEBUGEXP(argc);
-    DEBUGEXP(argv[0]);
+    OPENFHE_DEBUGEXP(argc);
+    OPENFHE_DEBUGEXP(argv[0]);
 
     if (argc < 2) {
         std::cout << "running " << argv[0] << " with default array size of 1000" << std::endl;
@@ -121,18 +121,18 @@ int main(int argc, char* argv[]) {
     }
 
     // demonstrate debug functions (only active when dbg_flag = true)
-    std::cout << "demonstrating DEBUG()" << std::endl;
-    DEBUG("array_size = " << array_size);
-    DEBUGEXP(array_size);
-    DEBUGWHERE(array_size);
+    std::cout << "demonstrating OPENFHE_DEBUG()" << std::endl;
+    OPENFHE_DEBUG("array_size = " << array_size);
+    OPENFHE_DEBUGEXP(array_size);
+    OPENFHE_DEBUGWHERE(array_size);
 
 #if !defined(NDEBUG)
     dbg_flag = false;
 #endif
     // these three no longer report any value
-    DEBUG("array_size = " << array_size);
-    DEBUGEXP(array_size);
-    DEBUGWHERE(array_size);
+    OPENFHE_DEBUG("array_size = " << array_size);
+    OPENFHE_DEBUGEXP(array_size);
+    OPENFHE_DEBUGWHERE(array_size);
 
     std::cout << std::endl;
     // now run the parallel job

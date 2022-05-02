@@ -342,7 +342,7 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
 
     // Exception handling
     {
-        DEBUG_FLAG(false);
+        OPENFHE_DEBUG_FLAG(false);
         int m = 32;
         T modulus1("67108913"), modulus2("17729"), modulus3("2097169"), modulus4("8353"), modulus5("8369");
 
@@ -369,8 +369,8 @@ void method_primitive_root_of_unity_VERY_LONG(const std::string& msg) {
             primitiveRootOfUnity2 = lbcrypto::RootOfUnity<T>(m, modulus2);)
             << msg << " RootOfUnity threw an error and should not have";
 
-        DEBUG("RootOfUnity for " << modulus1 << " is " << primitiveRootOfUnity1);
-        DEBUG("RootOfUnity for " << modulus2 << " is " << primitiveRootOfUnity2);
+        OPENFHE_DEBUG("RootOfUnity for " << modulus1 << " is " << primitiveRootOfUnity1);
+        OPENFHE_DEBUG("RootOfUnity for " << modulus2 << " is " << primitiveRootOfUnity2);
     }
 }
 

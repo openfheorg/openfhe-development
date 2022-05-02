@@ -54,7 +54,7 @@ using namespace lbcrypto;
 
 template <typename Element>
 static void common_basic_ops(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     // using VecType = typename Element::Vector;
     using ParmType = typename Element::Params;
     // using IntType = typename Element::Vector::Integer;
@@ -82,17 +82,17 @@ static void common_basic_ops(const std::string& msg) {
     // ElemParamFactory::GenElemParams<ParmType>(m,60,2);
 
     // GenerateDCRTParams<typename Element::Integer>(8, 3, 20) );
-    DEBUGEXP(*ilparams);
+    OPENFHE_DEBUGEXP(*ilparams);
     Element ilvector2n1(ilparams);
     ilvector2n1 = {"1", "2", "0", "1"};
     // test for bug where length was 0
     EXPECT_EQ(ilvector2n1.GetLength(), m / 2) << msg << " Failure: ={init list string}";
 
-    DEBUGEXP(ilvector2n1);
+    OPENFHE_DEBUGEXP(ilvector2n1);
     Element ilvector2n2(ilparams);
     ilvector2n2 = {1, 2, 0, 1};
     EXPECT_EQ(ilvector2n2.GetLength(), m / 2) << msg << " Failure: ={init list int}";
-    DEBUGEXP(ilvector2n2);
+    OPENFHE_DEBUGEXP(ilvector2n2);
 
     // test ctor(ilparams), ==
     EXPECT_EQ(ilvector2n1, ilvector2n2) << msg << " Failure:  ctor(ilparams) or op ==";
@@ -106,28 +106,28 @@ static void common_basic_ops(const std::string& msg) {
         Element ilv1 = ilvector2n1;
         EXPECT_EQ(ilvector2n1, ilv1) << msg << " Failure: op=";
     }
-    DEBUGEXP(ilvector2n1);
+    OPENFHE_DEBUGEXP(ilvector2n1);
     // TODO move += -= to arithmetic ops
     {  // test operator-=
         Element ilv1 = ilvector2n1;
-        DEBUGEXP(ilvector2n1);
-        DEBUGEXP(ilv1);
+        OPENFHE_DEBUGEXP(ilvector2n1);
+        OPENFHE_DEBUGEXP(ilv1);
         Element zero(ilparams);
         zero = {0, 0, 0, 0};
-        DEBUGEXP(zero);
+        OPENFHE_DEBUGEXP(zero);
         ilv1 -= ilvector2n1;
-        DEBUGEXP(ilv1);
+        OPENFHE_DEBUGEXP(ilv1);
         EXPECT_EQ(zero, ilv1) << msg << "Failure: Operator-=";
 
         // test !=
         EXPECT_NE(ilvector2n1, zero) << msg << " Failure: Operator!= value comparison";
-        DEBUGEXP(ilvector2n1);
-        DEBUGEXP(ilv1);
+        OPENFHE_DEBUGEXP(ilvector2n1);
+        OPENFHE_DEBUGEXP(ilv1);
     }
 
     {  // test operator+=
         Element ilv1 = ilvector2n1;
-        DEBUGEXP(ilv1);
+        OPENFHE_DEBUGEXP(ilv1);
         Element two(ilparams);
         two = {2, 2, 2, 2};
         ilv1 += ilvector2n1;
@@ -146,7 +146,7 @@ TEST(UTDCRTPoly, common_basic_ops) {
 // template for common_set_format()
 template <typename Element>
 void common_set_format(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
@@ -165,12 +165,12 @@ void common_set_format(const std::string& msg) {
 
     Element ilvector2n(ilparams, Format::COEFFICIENT);
     ilvector2n = {"3", "0", "0", "0"};
-    DEBUGEXP(ilvector2n);
+    OPENFHE_DEBUGEXP(ilvector2n);
     // test for bug where length was 0
     EXPECT_EQ(ilvector2n.GetLength(), m / 2) << msg << " Failure: ={init list string}";
     Element ilvector2nInEval(ilparams, Format::EVALUATION);
     ilvector2nInEval = {"3", "3", "3", "3"};
-    DEBUGEXP(ilvector2nInEval);
+    OPENFHE_DEBUGEXP(ilvector2nInEval);
     {  // test SetFormat()
         Element ilv(ilvector2n);
 
@@ -195,7 +195,7 @@ TEST(UTDCRTPoly, common_set_format) {
 // template for common_setters_getters()
 template <typename Element>
 void common_setters_getters(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
@@ -211,8 +211,8 @@ void common_setters_getters(const std::string& msg) {
         ilvector2n = {"1", "2", "0", "1"};
         Element bbv(ilparams);
         bbv = {"1", "2", "0", "1"};
-        DEBUGEXP(ilvector2n);
-        DEBUGEXP(bbv);
+        OPENFHE_DEBUGEXP(ilvector2n);
+        OPENFHE_DEBUGEXP(bbv);
 
         // test for bug where length was 0
         EXPECT_EQ(ilvector2n.GetLength(), m / 2) << msg << " Failure: ={init list string}";
@@ -237,7 +237,7 @@ TEST(UTDCRTPoly, common_setters_getters) {
 // template for common_binary_ops()
 template <typename Element>
 void common_binary_ops(const std::string& msg) {
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
     using IntType  = typename Element::Vector::Integer;
@@ -254,35 +254,35 @@ void common_binary_ops(const std::string& msg) {
 
     Element ilvector2n1(ilparams);
     ilvector2n1 = {"2", "1", "1", "1"};
-    DEBUGEXP(ilvector2n1);
+    OPENFHE_DEBUGEXP(ilvector2n1);
 
     // test for bug where length was 0
     EXPECT_EQ(ilvector2n1.GetLength(), m / 2) << msg << " Failure: ={init list string}";
 
     Element ilvector2n2(ilparams);
     ilvector2n2 = {"1", "0", "1", "1"};
-    DEBUGEXP(ilvector2n2);
+    OPENFHE_DEBUGEXP(ilvector2n2);
 
     Element ilvector2n3(ilparams, Format::COEFFICIENT);
     ilvector2n3 = {"2", "1", "1", "1"};
-    DEBUGEXP(ilvector2n3);
+    OPENFHE_DEBUGEXP(ilvector2n3);
 
     Element ilvector2n4(ilparams, Format::COEFFICIENT);
     ilvector2n4 = {"1", "0", "1", "1"};
-    DEBUGEXP(ilvector2n4);
+    OPENFHE_DEBUGEXP(ilvector2n4);
 
     {  // test Plus
         Element ilv1(ilvector2n1);
-        DEBUGEXP(ilv1);
+        OPENFHE_DEBUGEXP(ilv1);
         Element ilv2 = ilv1.Plus(ilvector2n2);
-        DEBUGEXP(ilv2);
+        OPENFHE_DEBUGEXP(ilv2);
         Element expected(ilparams, Format::EVALUATION);
         expected = {"3", "1", "2", "2"};
         EXPECT_EQ(expected, ilv2) << msg << " Failure: Plus()";
     }
     {  // test Minus
         Element ilv1(ilvector2n1);
-        DEBUGEXP(ilv1);
+        OPENFHE_DEBUGEXP(ilv1);
         Element ilv2 = ilv1.Minus(ilvector2n2);
         Element expected(ilparams, Format::EVALUATION);
         expected = {"1", "1", "0", "0"};
@@ -291,7 +291,7 @@ void common_binary_ops(const std::string& msg) {
 
     {  // test times
         Element ilv1(ilvector2n1);
-        DEBUGEXP(ilv1);
+        OPENFHE_DEBUGEXP(ilv1);
         Element ilv2 = ilv1.Times(ilvector2n2);
         Element expected(ilparams, Format::EVALUATION);
         expected = {"2", "0", "1", "1"};
@@ -300,17 +300,17 @@ void common_binary_ops(const std::string& msg) {
 
     {  // test SwitchFormat()
         ilvector2n3.SwitchFormat();
-        DEBUGEXP(ilvector2n3);
+        OPENFHE_DEBUGEXP(ilvector2n3);
         ilvector2n4.SwitchFormat();
-        DEBUGEXP(ilvector2n4);
+        OPENFHE_DEBUGEXP(ilvector2n4);
 
         Element ilv3(ilvector2n3);
         Element ilv4 = ilv3.Times(ilvector2n4);
-        DEBUGEXP(ilv3);
-        DEBUGEXP(ilv4);
+        OPENFHE_DEBUGEXP(ilv3);
+        OPENFHE_DEBUGEXP(ilv4);
 
         ilv4.SwitchFormat();
-        DEBUGEXP(ilv4);
+        OPENFHE_DEBUGEXP(ilv4);
         Element expected(ilparams, Format::COEFFICIENT);
         std::stringstream tmpstr;
         tmpstr << (ilv4.GetModulus() - IntType(1));
@@ -460,7 +460,7 @@ void common_other_methods(const std::string& msg) {
     using VecType  = typename Element::Vector;
     using ParmType = typename Element::Params;
 
-    DEBUG_FLAG(false);
+    OPENFHE_DEBUG_FLAG(false);
     usint m = 8;
     typename VecType::Integer primeModulus("73");
     typename VecType::Integer primitiveRootOfUnity("22");
@@ -472,7 +472,7 @@ void common_other_methods(const std::string& msg) {
     // test for bug where length was 0
     EXPECT_EQ(ilvector2n.GetLength(), m / 2) << msg << " Failure: ={init list string}";
 
-    DEBUG("AddILElementOne");
+    OPENFHE_DEBUG("AddILElementOne");
     {
         Element ilv(ilvector2n);
 
@@ -482,7 +482,7 @@ void common_other_methods(const std::string& msg) {
         EXPECT_EQ(expected, ilv) << msg << " Failure: AddILElementOne()";
     }
 
-    DEBUG("ModByTwo");
+    OPENFHE_DEBUG("ModByTwo");
     {
         Element ilv(ilvector2n);
         ilv = ilv.ModByTwo();
@@ -491,7 +491,7 @@ void common_other_methods(const std::string& msg) {
         EXPECT_EQ(expected, ilv) << msg << " Failure: ModByTwo()";
     }
 
-    DEBUG("MakeSparse(2)");
+    OPENFHE_DEBUG("MakeSparse(2)");
     {
         Element ilv(ilvector2n);
         ilv.MakeSparse(2);
@@ -506,7 +506,7 @@ void common_other_methods(const std::string& msg) {
         EXPECT_EQ(expected, ilv1) << msg << " Failure: MakeSparse(3)";
     }
 
-    DEBUG("InverseExists");
+    OPENFHE_DEBUG("InverseExists");
     {
         Element ilv(ilparams, Format::COEFFICIENT);
         ilv = {"2", "4", "3", "2"};
