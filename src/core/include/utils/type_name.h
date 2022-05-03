@@ -34,6 +34,7 @@
 #include "utils/demangle.h"
 #include <typeinfo>
 #include <iostream>
+#include <memory>
 
 // define my own "is_shared_pointer"
 template <typename T>

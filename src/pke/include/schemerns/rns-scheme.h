@@ -46,6 +46,8 @@
 
 #include "keyswitch/keyswitch-hybrid.h"
 #include "keyswitch/keyswitch-bv.h"
+#include "constants.h"
+#include "utils/exception.h"
 
 /**
  * @namespace lbcrypto
@@ -64,11 +66,14 @@ public:
   virtual ~SchemeRNS() {}
 
   void SetKeySwitchingTechnique(KeySwitchTechnique ksTech) {
-    if (ksTech == BV) {
-      m_KeySwitch = std::make_shared<KeySwitchBV>();
-    } else {
-      m_KeySwitch = std::make_shared<KeySwitchHYBRID>();
-    }
+      if (ksTech == BV) {
+          m_KeySwitch = std::make_shared<KeySwitchBV>();
+      }
+      else if (ksTech == HYBRID) {
+          m_KeySwitch = std::make_shared<KeySwitchHYBRID>();
+      }
+      else
+          OPENFHE_THROW(config_error, "ksTech is invalid");
   }
 
   /////////////////////////////////////

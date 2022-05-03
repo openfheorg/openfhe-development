@@ -37,12 +37,27 @@
 #define LBCRYPTO_CRYPTO_CRYPTOCONTEXT_C
 
 #include "cryptocontext.h"
+#include "schemerns/rns-scheme.h"
 
 namespace lbcrypto {
 
 // Initialize global config variable
 bool SERIALIZE_PRECOMPUTE = true;
 
+template <typename Element>
+void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
+    // check if the scheme is an RNS scheme
+    auto schemeRNSPtr = dynamic_cast<SchemeRNS*>(&(*scheme));
+    if (schemeRNSPtr != nullptr) {
+        // check if the parameter object is RNS-based
+        auto elPtr = dynamic_cast<const CryptoParametersRNS*>(&(*params));
+        if (elPtr != nullptr) {
+            schemeRNSPtr->SetKeySwitchingTechnique(elPtr->GetKeySwitchTechnique());
+            return;
+        }
+        OPENFHE_THROW(type_error, "Cannot set KeySwitchingTechnique as the parameter object is not RNS-based");
+    }
+}
 
 /////////////////////////////////////////
 // SHE MULTIPLICATION

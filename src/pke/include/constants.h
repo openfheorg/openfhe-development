@@ -64,7 +64,7 @@ enum RescalingTechnique {
 };
 std::ostream& operator<<(std::ostream& s, RescalingTechnique t);
 
-enum KeySwitchTechnique { BV, HYBRID };
+enum KeySwitchTechnique { INVALID_KS_TECH, BV, HYBRID };
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t);
 
 enum EncryptionTechnique { STANDARD, POVERQ };

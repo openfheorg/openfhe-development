@@ -84,6 +84,8 @@ class CryptoContextImpl : public Serializable {
 
   friend class CryptoContextFactory<Element>;
 
+  void SetKSTechniqueInScheme();
+
  protected:
   // crypto parameters used for this context
   std::shared_ptr<CryptoParametersBase<Element>> params;
@@ -2393,6 +2395,7 @@ class CryptoContextImpl : public Serializable {
     ar(cereal::make_nvp("cc", params));
     ar(cereal::make_nvp("kt", scheme));
     ar(cereal::make_nvp("si", m_schemeId));
+    SetKSTechniqueInScheme();
 
     // NOTE: a pointer to this object will be wrapped in a shared_ptr, and is a
     // "CryptoContext". OpenFHE relies on the notion that identical
