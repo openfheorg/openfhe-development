@@ -144,6 +144,15 @@ class Params {
     // ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1)
     usint ringDim;
 
+    // TODO (dsuponit): add description
+    usint evalAddCount;
+
+    // TODO (dsuponit): add description
+    usint evalMultCount;
+
+    // TODO (dsuponit): add description
+    usint keySwitchCount;
+
     // not sure, some parameter used in BGV
     usint multiHopQModulusLowerBound;
 
@@ -237,6 +246,15 @@ public:
     usint GetRingDim() const {
         return ringDim;
     }
+    usint GetEvalAddCount() const {
+        return evalAddCount;
+    }
+    usint GetEvalMultCount() const {
+        return evalMultCount;
+    }
+    usint GetKeySwitchCount() const {
+        return keySwitchCount;
+    }
     EncryptionTechnique GetEncryptionTechnique() const {
         return encryptionTechnique;
     }
@@ -307,6 +325,15 @@ public:
     }
     void SetRingDim(usint ringDim0) {
         ringDim = ringDim0;
+    }
+    void SetEvalAddCount(usint evalAddCount0) {
+        evalAddCount = evalAddCount0;
+    }
+    void SetEvalMultCount(usint evalMultCount0) {
+        evalMultCount = evalMultCount0;
+    }
+    void SetKeySwitchCount(usint keySwitchCount0) {
+        keySwitchCount = keySwitchCount0;
     }
     void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) {
         encryptionTechnique = encryptionTechnique0;
