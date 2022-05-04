@@ -55,7 +55,6 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 #include "math/dftransform.h"
 #include "cryptocontext.h"
 #include "schemerns/rns-cryptoparameters.h"
-#include "globals.h"
 
 namespace lbcrypto {
 
@@ -66,9 +65,6 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
                                               uint32_t numPartQ,
                                               uint32_t auxBits,
                                               uint32_t extraBits) {
-  if (!SERIALIZE_PRECOMPUTE)
-     return;
-
   // Set the key switching technique.
   m_ksTechnique = ksTech;
   // Set the rescaling technique.

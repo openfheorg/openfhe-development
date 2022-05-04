@@ -29,33 +29,26 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  config.h created by Matthew Triplett to add a configuration parameter
-  which allows toggling of CRT precomputations during deserialization of a CryptoContext.
- */
-
-#ifndef __GLOBALS_H__
-#define __GLOBALS_H__
+#include "globals.h"
 
 namespace lbcrypto {
-    /**
-     * PrecomuteCRTTablesAfterDeserializaton() will be executed during CryptoContext deserialization.
-     * Deserializing without this precomputation can speed up the procedure by a factor of 100.
-     * function's return values:
-     * true (default value): PrecomputeCRTTables() will be executed during deserialization
-     * false:                PrecomputeCRTTables() will not be executed during deserialization
-     */
-    bool PrecomuteCRTTablesAfterDeserializaton();
 
-    /**
-     * Calling EnablePrecomuteCRTTablesAfterDeserializaton() and DisablePrecomuteCRTTablesAfterDeserializaton()
-     * changes the boolean value returned by PrecomuteCRTTablesAfterDeserializaton()
-     */
-    void EnablePrecomuteCRTTablesAfterDeserializaton();
-    void DisablePrecomuteCRTTablesAfterDeserializaton();
+struct GLOBALS {
+    static bool precomputeCRTTables;
+};
+bool GLOBALS::precomputeCRTTables = true;
+//=============================================================================
+void EnablePrecomuteCRTTablesAfterDeserializaton() {
+    GLOBALS::precomputeCRTTables = true;
+}
+//=============================================================================
+void DisablePrecomuteCRTTablesAfterDeserializaton() {
+    GLOBALS::precomputeCRTTables = false;
+}
+//=============================================================================
+bool PrecomuteCRTTablesAfterDeserializaton() {
+    return GLOBALS::precomputeCRTTables;
+}
+//=============================================================================
 
 }  // namespace lbcrypto
-
-
-#endif // __GLOBALS_H__
-

@@ -41,9 +41,6 @@
 
 namespace lbcrypto {
 
-// Initialize global config variable
-bool SERIALIZE_PRECOMPUTE = true;
-
 template <typename Element>
 void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
     // check if the scheme is an RNS scheme
