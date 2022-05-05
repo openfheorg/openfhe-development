@@ -101,20 +101,20 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_Encrypt_Decryp
 constexpr usint BATCH = 16;
 static std::vector<TEST_CASE_Encrypt_Decrypt> testCases = {
     // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin, BatchSz, Mode,      Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,      LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { STRING_TEST,  "1", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   RLWE,      DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL, DFLT,    256,   3.2,    DFLT,      0,          DFLT, DFLT,} },
-    { STRING_TEST,  "2", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   OPTIMIZED, DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL, DFLT,    256,   3.2,    DFLT,      0,          DFLT, DFLT,} },
-    { STRING_TEST,  "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    256,   3.2,    DFLT,      2,          DFLT, HPS},  },
-    { STRING_TEST,  "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    256,   3.2,    DFLT,      2,          DFLT, HPS},  },
-    { STRING_TEST,  "5", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    256,   3.2,    DFLT,      2,          DFLT, BEHZ}, },
-    { STRING_TEST,  "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    256,   3.2,    DFLT,      2,          DFLT, BEHZ}, },
+    { STRING_TEST,  "1", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   RLWE,      DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL, DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
+    { STRING_TEST,  "2", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   OPTIMIZED, DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL, DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
+    { STRING_TEST,  "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPS},  },
+    { STRING_TEST,  "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPS},  },
+    { STRING_TEST,  "5", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    256,   DFLT,   DFLT,      2,          DFLT, BEHZ}, },
+    { STRING_TEST,  "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    256,   DFLT,   DFLT,      2,          DFLT, BEHZ}, },
 
     // TestType,       Descr, Scheme,         RDim, MultDepth, SFBits, RWin, BatchSz, Mode,      Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,      LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { COEF_PACKED_TEST,  "1", {BGVRNS_SCHEME, 64,   2,         59,     DFLT, BATCH,   RLWE,      DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL, DFLT,    512,   3.2,    DFLT,      0,          DFLT, DFLT,} },
-    { COEF_PACKED_TEST,  "2", {BGVRNS_SCHEME, 64,   2,         59,     DFLT, BATCH,   OPTIMIZED, DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL, DFLT,    512,   3.2,    DFLT,      0,          DFLT, DFLT,} },
-    { COEF_PACKED_TEST,  "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    512,   3.2,    DFLT,      2,          DFLT, HPS},  },
-    { COEF_PACKED_TEST,  "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    512,   3.2,    DFLT,      2,          DFLT, HPS},  },
-    { COEF_PACKED_TEST,  "5", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    512,   3.2,    DFLT,      2,          DFLT, BEHZ}, },
-    { COEF_PACKED_TEST,  "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    512,   3.2,    DFLT,      2,          DFLT, BEHZ}, },
+    { COEF_PACKED_TEST,  "1", {BGVRNS_SCHEME, 64,   2,         59,     DFLT, BATCH,   RLWE,      DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL, DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
+    { COEF_PACKED_TEST,  "2", {BGVRNS_SCHEME, 64,   2,         59,     DFLT, BATCH,   OPTIMIZED, DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL, DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
+    { COEF_PACKED_TEST,  "3", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    512,   DFLT,   DFLT,      2,          DFLT, HPS},  },
+    { COEF_PACKED_TEST,  "4", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    512,   DFLT,   DFLT,      2,          DFLT, HPS},  },
+    { COEF_PACKED_TEST,  "5", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    512,   DFLT,   DFLT,      2,          DFLT, BEHZ}, },
+    { COEF_PACKED_TEST,  "6", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL, DFLT,    512,   DFLT,   DFLT,      2,          DFLT, BEHZ}, },
 };
 //===========================================================================================================
 class Encrypt_Decrypt : public ::testing::TestWithParam<TEST_CASE_Encrypt_Decrypt> {

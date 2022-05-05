@@ -61,7 +61,6 @@ usint mult_depth = 3;
 CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetStandardDeviation(3.19);
     parameters.SetEvalMultCount(mult_depth);
     parameters.SetScalingFactorBits(60);
 

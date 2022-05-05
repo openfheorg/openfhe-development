@@ -75,7 +75,6 @@ int main(int argc, char *argv[]) {
   CCParams<CryptoContextBGVRNS> parameters;
   parameters.SetMultiplicativeDepth(3);
   parameters.SetPlaintextModulus(536903681);
-  parameters.SetStandardDeviation(3.2);
   parameters.SetMaxDepth(3);
   parameters.SetRescalingTechnique(FIXEDAUTO);
 

@@ -83,7 +83,6 @@ void BFVrnsEvalAtIndex2n() {
 
   parameters.SetPlaintextModulus(65537);
   parameters.SetRootHermiteFactor(1.006);
-  parameters.SetStandardDeviation(3.2);
   parameters.SetEvalMultCount(1);
   parameters.SetMaxDepth(3);
 
@@ -188,7 +187,6 @@ void BFVrnsEvalMerge2n() {
 
   parameters.SetPlaintextModulus(65537);
   parameters.SetRootHermiteFactor(1.006);
-  parameters.SetStandardDeviation(3.2);
   parameters.SetEvalMultCount(2);
   parameters.SetMaxDepth(3);
 

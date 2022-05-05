@@ -72,7 +72,6 @@ bool run_demo_pre(void) {
 
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(plaintextModulus);
-  parameters.SetStandardDeviation(3.2);
   parameters.SetEvalMultCount(1);
   parameters.SetScalingFactorBits(60);
 

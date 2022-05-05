@@ -54,7 +54,6 @@
 using namespace lbcrypto;
 
 usint mult_depth = 3;
-double sigma     = 3.19;
 static std::vector<usint> ptm_args{2, 65537};
 static std::vector<usint> dcrtbit_args{30, 60};
 static std::vector<usint> logn_args{12, 14};
@@ -84,7 +83,6 @@ static void DecBFVArguments(benchmark::internal::Benchmark* b) {
 CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint dcrtBits) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetStandardDeviation(sigma);
     parameters.SetEvalMultCount(mult_depth);
     parameters.SetScalingFactorBits(dcrtBits);
 
@@ -108,7 +106,6 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint dcrtBits) {
 CryptoContext<DCRTPoly> GenerateBFVrnsBContext(usint ptm, usint dcrtBits) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetStandardDeviation(sigma);
     parameters.SetEvalMultCount(mult_depth);
     parameters.SetScalingFactorBits(dcrtBits);
     parameters.SetMultiplicationTechnique(BEHZ);
@@ -133,7 +130,6 @@ CryptoContext<DCRTPoly> GenerateBFVrnsBContext(usint ptm, usint dcrtBits) {
 CryptoContext<DCRTPoly> GenerateFlatBFVrnsContext(usint ptm, usint dcrtBits, usint n) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetStandardDeviation(sigma);
     parameters.SetMaxDepth(0);
     parameters.SetScalingFactorBits(dcrtBits);
     parameters.SetRingDim(n);
@@ -148,7 +144,6 @@ CryptoContext<DCRTPoly> GenerateFlatBFVrnsContext(usint ptm, usint dcrtBits, usi
 CryptoContext<DCRTPoly> GenerateFlatBFVrnsBContext(usint ptm, usint dcrtBits, usint n) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetStandardDeviation(sigma);
     parameters.SetMaxDepth(0);
     parameters.SetScalingFactorBits(dcrtBits);
     parameters.SetRingDim(n);

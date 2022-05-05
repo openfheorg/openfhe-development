@@ -127,30 +127,30 @@ static std::vector<TEST_CASE_UTMultiparty> testCases = {
 #endif
     // ==========================================
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
-    { BFVRNS_TEST, "13", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, HPS},     false },
-    { BFVRNS_TEST, "14", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, HPS},     false },
-    { BFVRNS_TEST, "15", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, BEHZ},    false },
-    { BFVRNS_TEST, "16", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, BEHZ},    false },
-    { BFVRNS_TEST, "17", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, HPS},     true },
-    { BFVRNS_TEST, "18", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, HPS},     true },
-    { BFVRNS_TEST, "19", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, BEHZ},    true },
-    { BFVRNS_TEST, "20", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, 3.2,    DFLT,      2,          DFLT, BEHZ},    true },
+    { BFVRNS_TEST, "13", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, HPS},     false },
+    { BFVRNS_TEST, "14", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, HPS},     false },
+    { BFVRNS_TEST, "15", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, BEHZ},    false },
+    { BFVRNS_TEST, "16", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, BEHZ},    false },
+    { BFVRNS_TEST, "17", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, HPS},     true },
+    { BFVRNS_TEST, "18", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, HPS},     true },
+    { BFVRNS_TEST, "19", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, BEHZ},    true },
+    { BFVRNS_TEST, "20", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, BEHZ},    true },
     // ==========================================
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
-    { BGVRNS_TEST, "21", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
-    { BGVRNS_TEST, "22", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
-    { BGVRNS_TEST, "23", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
-    { BGVRNS_TEST, "24", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    false },
-    { BGVRNS_TEST, "25", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    { BGVRNS_TEST, "26", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    { BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
-    { BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, 3.2,    DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "21", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "22", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "23", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "24", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "25", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "26", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
     // ==========================================
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
-    { BFVRNS_TEST_EXTRA, "29", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     3.2,    DFLT,      2,          DFLT, HPS},     false },
-    { BFVRNS_TEST_EXTRA, "30", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    16,    3.2,    DFLT,      2,          DFLT, HPS},     false },
-    { BFVRNS_TEST_EXTRA, "31", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     3.2,    DFLT,      2,          DFLT, BEHZ},    false },
-    { BFVRNS_TEST_EXTRA, "32", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    16,    3.2,    DFLT,      2,          DFLT, BEHZ},    false },
+    { BFVRNS_TEST_EXTRA, "29", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     DFLT,   DFLT,      2,          DFLT, HPS},     false },
+    { BFVRNS_TEST_EXTRA, "30", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    16,    DFLT,   DFLT,      2,          DFLT, HPS},     false },
+    { BFVRNS_TEST_EXTRA, "31", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     DFLT,   DFLT,      2,          DFLT, BEHZ},    false },
+    { BFVRNS_TEST_EXTRA, "32", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    OPTIMIZED, DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    16,    DFLT,   DFLT,      2,          DFLT, BEHZ},    false },
 };
 // clang-format on
 //===========================================================================================================
