@@ -33,6 +33,7 @@
 #define LBCRYPTO_CRYPTO_BGVRNS_CRYPTOPARAMETERS_H
 
 #include "schemerns/rns-cryptoparameters.h"
+#include "globals.h"
 
 /**
  * @namespace lbcrypto
@@ -109,8 +110,10 @@ public:
     }
     ar(cereal::base_class<CryptoParametersRNS>(this));
 
-    PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
-                        m_numPartQ, m_auxBits, m_extraBits);
+    if(PrecomuteCRTTablesAfterDeserializaton()) {
+        PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
+                            m_numPartQ, m_auxBits, m_extraBits);
+    }
   }
 
   std::string SerializedObjectName() const override { return "CryptoParametersBGVRNS"; }
