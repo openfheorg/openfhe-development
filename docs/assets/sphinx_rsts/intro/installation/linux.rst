@@ -1,9 +1,9 @@
 Installing OpenFHE on Linux
 ====================================
 
-.. topic:: Quick Note for CentOS CentOS Installation
+.. note:: CentOS Installation
 
-    The installation process is the same as in Ubuntu except for using yum instead of apt-get in Step 1. Here we provide additional notes specific to CentOS.
+    The installation process is the same as in Ubuntu except for using ``yum`` instead of ``apt-get`` in Step 1. Here we provide additional notes specific to CentOS.
 
     You may need to install cmake v3.x using the following commands:
 

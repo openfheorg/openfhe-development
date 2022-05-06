@@ -31,11 +31,9 @@ TL;DR replaces `malloc` and `free` with `xmalloc` and `xfree` which take advanta
 
 TL;DR describes how to create a STL-compatible version of the above code.
 
-Documentation
--------------
-
 Core Block Allocator Generated Docs
 -----------------------------------
 
 .. autodoxygenindex::
    :project: core_utils_blockAllocator
+   :allow-dot-graphs:

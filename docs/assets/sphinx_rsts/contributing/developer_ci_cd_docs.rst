@@ -176,7 +176,8 @@ kickoff a single ``default_builder`` action with the corresponding
 option values. This workflow essentially gives the UI direct access to
 the ``default_builder``.
 
-   ⚠ There is a limit of 10 inputs.
+
+.. note:: There is a limit of 10 inputs.
 
 JSON Maps
 ^^^^^^^^^
@@ -193,11 +194,11 @@ override argument is used to set the desired compiler. For more info on
 the compiler map visit section `Compiler
 Selection <#compiler-selection>`__
 
-   ⚠ Before adding new compiler options developers must ensure that the
+.. warning:: Before adding new compiler options developers must ensure that the
    server as the compiler installed and match the path correctly in the
    JSON map.
 
-*example JSON map definition*
+**example JSON map definition**
 
 .. code:: yml
 
@@ -209,7 +210,7 @@ Selection <#compiler-selection>`__
                "NTL"     : "6"
            }
 
-*Passing json map’s value to custom action*
+**Passing json map’s value to custom action**
 
 .. code:: yml
 
@@ -225,7 +226,7 @@ Selection <#compiler-selection>`__
 
 ..
 
-   ⚠ The map’s keys are not linked to the inputs options, this must be
+.. warning:: The map’s keys are not linked to the inputs options, this must be
    manually kept in sync.
 
 .. figure:: ci_cd_assets/github_openfhe_custom_workflow_options.png

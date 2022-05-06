@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+/**
+Base class for Lattice-based cryptography(LBC) Somewhat Homomorphic Encryption(SHE) algorithms.
+ */
+
 #ifndef LBCRYPTO_CRYPTO_KEYSWITCH_BASE_H
 #define LBCRYPTO_CRYPTO_KEYSWITCH_BASE_H
 

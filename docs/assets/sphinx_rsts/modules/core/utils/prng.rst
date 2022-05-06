@@ -1,7 +1,7 @@
 Pseudorandom Number Generator (PRNG)
 =====================================
 
-Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/utils/prng>`_
+Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfhe-development/tree/main/src/core/include/utils/prng>`_. Additionally, we refer users to :ref:`our sampling documentation<sampling>`
 
 .. contents:: Page Contents
    :local:
@@ -10,7 +10,7 @@ Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfh
 Implemented PRNG hash function
 -----------------------------
 
-- Our cryptographic hash function which is based off of `Blake2b <https://blake2.net>`_, which allows fast hashing.
+- Our cryptographic hash function is based off of `Blake2b <https://blake2.net>`_, which allows fast hashing.
 
 Using your own PRNG engine
 -----------------------------------
@@ -22,3 +22,4 @@ Core PRNG Generated Docs
 
 .. autodoxygenindex::
    :project: core_utils_prng
+   :allow-dot-graphs:

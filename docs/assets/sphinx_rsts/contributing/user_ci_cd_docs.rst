@@ -46,11 +46,7 @@ Features
 -  The benchmark outputs are exported as artifacts
 -  Runs on a self-hosted runners
 
-Limitation ⚠
-------------
-
-We need to Add multiple runner to support concurrent Job [One
-self-hosted runner can only run one job at a time]
+.. warning: We need to add multiple runners to support concurrent jobs (one self-hosted runner can only run one job at a time)
 
 Pull request Workflow
 ---------------------

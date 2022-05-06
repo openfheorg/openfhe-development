@@ -78,7 +78,7 @@ else()
 endif()
 
 option( BUILD_EXTRAS "Set to ON to build extras for the library"                OFF )
-option( BUILD_DOCS "Set to ON to build documentation for the library"           OFF )
+option( BUILD_DOCS "Set to ON to build documentation for the library"           ON )
 option( GIT_SUBMOD_AUTO "Submodules auto-update"                                ON  )
 option( WITH_BE2 "Include Backend 2 in build by setting WITH_BE2 to ON"         ON  )
 option( WITH_BE4 "Include Backend 4 in build by setting WITH_BE4 to ON"         ON  )

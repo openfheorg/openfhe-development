@@ -1,9 +1,12 @@
 PKE Key-Switching documentation
 ====================================
 
-`Github Source <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/keyswitch>`_:  This folder contains the header files of the key-switching methods present in``Open-FHE``.
+`Github Source <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/keyswitch>`_:  This folder contains the header files of the key-switching methods present in ``Open-FHE``.
 
-The documentation is largely based on `Revisiting Homomorphic Encryption Schemes for Finite Fields <https://eprint.iacr.org/2021/204.pdf>`_
+The documentation is based on `Revisiting Homomorphic Encryption Schemes for Finite Fields <https://eprint.iacr.org/2021/204.pdf>`_
+
+.. contents:: Page Contents
+   :local:
 
 Intuition
 ---------
@@ -18,7 +21,7 @@ Key switching
 
 
 Key-Switching Class Inheritance
------------------------
+---------------------------------
 
 .. mermaid::
 
@@ -31,20 +34,20 @@ Key-Switching Class Inheritance
 File Listings
 -----------------------
 
-``Key-switch Base``
+`Key-Switch Base (keyswitch-base.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/keyswitch/keyswitch-base.h>`_
 
 - Base class for Lattice-based cryptography(LBC) Somewhat Homomorphic Encryption(SHE) algorithms.
 
-``Key-switch RNS``
+`Key-Switch RNS (keyswitch-rns.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/keyswitch/keyswitch-rns.h>`_
 
 - Abstract interface class for RNS LBC SHE algorithms
 
-``Key-switch BV``
+`Key-Switch BV (keyswitch-bv.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/keyswitch/keyswitch-bv.h>`_
 
-- Implements BV scheme from `Fully Homomorphic Encryption from Ring-LWE and Security for Key Dependent Messages (BV Scheme)]<https://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf>`_
+- Implements BV scheme from `Fully Homomorphic Encryption from Ring-LWE and Security for Key Dependent Messages (BV Scheme) <https://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf>`_
 - Requires the computation of a quadratic number of NTTs.
 
-``Key-switch Hybrid``
+`Key-switch Hybrid (keyswitch-hybrid.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/keyswitch/keyswitch-hybrid.h>`_
 
 - Uses a mix of the GHS key-switching with the BV key-switching to produce more efficient key-switching.
 - Was introduced in `Homomorphic Evaluation of the AES Circuit(GHS Scheme) <https://eprint.iacr.org/2012/099.pdf>`_
@@ -58,3 +61,4 @@ PKE Key-Switching Generated Docs
 
 .. autodoxygenindex::
    :project: pke_keyswitch
+   :allow-dot-graphs:

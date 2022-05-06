@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Operations for the reoresentation of ciphertext in OpenFHE
+  Operations for the representation of ciphertext in OpenFHE
  */
 
 #ifndef LBCRYPTO_CRYPTO_CIPHERTEXT_H

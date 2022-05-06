@@ -20,7 +20,7 @@ At a high level, this can be thought of as:
       B[Scheme RNS] --> |Inherited by|F[Scheme: BFV-RNS];
 
 
-.. contents:: Table of Contents for PKE Scheme
+.. contents:: Page Contents
    :depth: 2
    :local:
    :backlinks: none
@@ -32,12 +32,14 @@ PKE Scheme
 
 .. autodoxygenindex::
    :project: pke_scheme
+   :allow-dot-graphs:
 
 PKE Scheme Base
 -------------------------------
 
 .. autodoxygenindex::
    :project: pke_schemebase
+   :allow-dot-graphs:
 
 
 PKE RNS Scheme
@@ -45,6 +47,7 @@ PKE RNS Scheme
 
 .. autodoxygenindex::
    :project: pke_schemerns
+   :allow-dot-graphs:
 
 
 PKE RNS - CKKS Scheme
@@ -52,16 +55,19 @@ PKE RNS - CKKS Scheme
 
 .. autodoxygenindex::
    :project: pke_scheme_ckksrns
-
+   :allow-dot-graphs:
 
 PKE RNS - BGVRNS Scheme
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autodoxygenindex::
    :project: pke_scheme_bgvrns
+   :allow-dot-graphs:
+
 
 PKE RNS - BFVRNS Scheme
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autodoxygenindex::
    :project: pke_scheme_bfvrns
+   :allow-dot-graphs:
