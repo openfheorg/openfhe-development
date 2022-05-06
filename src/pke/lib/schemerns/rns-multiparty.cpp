@@ -89,6 +89,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(
   result->SetDepth(ciphertext->GetDepth());
   result->SetLevel(ciphertext->GetLevel());
   result->SetScalingFactor(ciphertext->GetScalingFactor());
+  result->SetScalingFactorInt(ciphertext->GetScalingFactorInt());
 
   return result;
 }
@@ -124,6 +125,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(
   result->SetDepth(ciphertext->GetDepth());
   result->SetLevel(ciphertext->GetLevel());
   result->SetScalingFactor(ciphertext->GetScalingFactor());
+  result->SetScalingFactorInt(ciphertext->GetScalingFactorInt());
 
   return result;
 }

@@ -446,6 +446,8 @@ void LeveledSHERNS::EvalMultInPlace(
     ciphertext->SetDepth(ciphertext->GetDepth() + plaintext->GetDepth());
     ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
         * plaintext->GetScalingFactor());
+    ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt()
+        * plaintext->GetScalingFactorInt());
     return;
   }
 
@@ -454,6 +456,8 @@ void LeveledSHERNS::EvalMultInPlace(
   ciphertext->SetDepth(ciphertext->GetDepth() + 1);
   ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
       * cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()));
+  ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt()
+      * cryptoParams->GetScalingFactorInt(ciphertext->GetLevel()));
   return;
 }
 
@@ -475,6 +479,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(
     DCRTPoly pt = AdjustLevelsInPlace(c, plaintext);
     auto result = EvalMultCore(c, pt);
     result->SetScalingFactor(c->GetScalingFactor() * plaintext->GetScalingFactor());
+    result->SetScalingFactorInt(c->GetScalingFactorInt() * plaintext->GetScalingFactorInt());
     result->SetDepth(c->GetDepth() + plaintext->GetDepth());
     return result;
   }
@@ -485,6 +490,8 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(
   result->SetDepth(ciphertext->GetDepth() + 1);
   result->SetScalingFactor(ciphertext->GetScalingFactor()
       * cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()));
+  result->SetScalingFactorInt(ciphertext->GetScalingFactorInt()
+      * cryptoParams->GetScalingFactorInt(ciphertext->GetLevel()));
   return result;
 }
 
@@ -508,6 +515,8 @@ void LeveledSHERNS::EvalMultMutableInPlace(
     ciphertext->SetDepth(ciphertext->GetDepth() + plaintext->GetDepth());
     ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
         * plaintext->GetScalingFactor());
+    ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt()
+        * plaintext->GetScalingFactorInt());
     return;
   }
 
@@ -516,6 +525,8 @@ void LeveledSHERNS::EvalMultMutableInPlace(
   ciphertext->SetDepth(ciphertext->GetDepth() + 1);
   ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
       * cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()));
+  ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt()
+      * cryptoParams->GetScalingFactorInt(ciphertext->GetLevel()));
   return;
 }
 

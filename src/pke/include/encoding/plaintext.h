@@ -108,6 +108,7 @@ class PlaintextImpl {
   static const int vecuintCTOR = 0x08;
 
   double scalingFactor;
+  NativeInteger scalingFactorInt;
   size_t level;
   size_t depth;
 
@@ -119,6 +120,7 @@ class PlaintextImpl {
         encodingParams(ep),
         encodedVector(vp, Format::COEFFICIENT),
         scalingFactor(1),
+        scalingFactorInt(1),
         level(0),
         depth(1) {}
 
@@ -129,6 +131,7 @@ class PlaintextImpl {
         encodingParams(ep),
         encodedNativeVector(vp, Format::COEFFICIENT),
         scalingFactor(1),
+        scalingFactorInt(1),
         level(0),
         depth(1) {}
 
@@ -140,6 +143,7 @@ class PlaintextImpl {
         encodedVector(vp, Format::COEFFICIENT),
         encodedVectorDCRT(vp, Format::COEFFICIENT),
         scalingFactor(1),
+        scalingFactorInt(1),
         level(0),
         depth(1) {}
 
@@ -150,6 +154,7 @@ class PlaintextImpl {
         encodedVector(rhs.encodedVector),
         encodedVectorDCRT(rhs.encodedVectorDCRT),
         scalingFactor(rhs.scalingFactor),
+        scalingFactorInt(rhs.scalingFactorInt),
         level(rhs.level),
         depth(rhs.depth) {}
 
@@ -160,6 +165,7 @@ class PlaintextImpl {
         encodedVector(std::move(rhs.encodedVector)),
         encodedVectorDCRT(std::move(rhs.encodedVectorDCRT)),
         scalingFactor(rhs.scalingFactor),
+        scalingFactorInt(rhs.scalingFactorInt),
         level(rhs.level),
         depth(rhs.depth) {}
 
@@ -172,14 +178,24 @@ class PlaintextImpl {
   virtual PlaintextEncodings GetEncodingType() const = 0;
 
   /**
-   * Get the scaling factor of the plaintext.
+   * Get the scaling factor of the plaintext for CKKS-based plaintexts.
    */
   double GetScalingFactor() const { return scalingFactor; }
 
   /**
-   * Set the scaling factor of the plaintext.
+   * Set the scaling factor of the plaintext for CKKS-based plaintexts.
    */
   void SetScalingFactor(double sf) { scalingFactor = sf; }
+
+  /**
+   * Get the scaling factor of the plaintext for BGV-based plaintexts.
+   */
+  const NativeInteger GetScalingFactorInt() const { return scalingFactorInt; }
+
+  /**
+   * Set the scaling factor of the plaintext for BGV-based plaintexts.
+   */
+  void SetScalingFactorInt(NativeInteger sf) { scalingFactorInt = sf; }
 
   /**
    * IsEncoded

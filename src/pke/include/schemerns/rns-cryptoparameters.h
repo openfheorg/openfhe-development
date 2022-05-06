@@ -580,13 +580,7 @@ public:
   double GetScalingFactorReal(uint32_t l = 0) const {
     if (m_rsTechnique == FLEXIBLEAUTO) {
       if (l >= m_scalingFactorsReal.size()) {
-        OPENFHE_THROW(math_error,
-                       "CryptoParametersCKKS::GetScalingFactorOfLevel - Cannot "
-                       "return scaling factor of level " +
-                           std::to_string(l) +
-                           ". Current settings have up to " +
-                           std::to_string(m_scalingFactorsReal.size()) +
-                           " levels, starting from 0.");
+        return m_approxSF;
       }
 
       return m_scalingFactorsReal[l];
@@ -826,6 +820,9 @@ public:
 
   const NativeInteger &GetScalingFactorInt(usint l) const {
     if (m_rsTechnique == FLEXIBLEAUTO) {
+      if (l >= m_scalingFactorsInt.size()) {
+        return m_fixedSF;
+      }
       return m_scalingFactorsInt[l];
     }
     return m_fixedSF;
