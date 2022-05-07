@@ -214,9 +214,18 @@ public:
     return m_multTechnique;
   }
 
+
+
   uint32_t GetAuxBits() const { return m_auxBits; }
 
   uint32_t GetExtraBits() const { return m_extraBits; }
+
+  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
+    if (m_ksTechnique == HYBRID) {
+      return m_paramsQP;
+    }
+    return m_params;
+  }
 
   /////////////////////////////////////
   // BGVrns : ModReduce

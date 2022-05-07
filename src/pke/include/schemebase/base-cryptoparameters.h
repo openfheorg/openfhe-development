@@ -77,6 +77,8 @@ class CryptoParametersBase : public Serializable {
     return m_params;
   }
 
+  virtual const std::shared_ptr<typename Element::Params> GetParamsPK() const = 0;
+
   /**
    * Returns the reference to encoding params
    *

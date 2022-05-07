@@ -220,8 +220,89 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(
 EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(
     const PrivateKey<DCRTPoly> oldKey,
     const PublicKey<DCRTPoly> newKey) const {
-  // TODO (Andrey) implement method for ReEncrypt
-  OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
+  auto cc = newKey->GetCryptoContext();
+  EvalKeyRelin<DCRTPoly> ek =
+      std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(cc);
+
+  const auto cryptoParams =
+      std::static_pointer_cast<CryptoParametersRNS>(
+          newKey->GetCryptoParameters());
+
+  const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
+
+  usint sizeQ = paramsQ->GetParams().size();
+  usint sizeQP = paramsQP->GetParams().size();
+
+  DCRTPoly sOld = oldKey->GetPrivateElement();
+
+  DCRTPoly newp0 = newKey->GetPublicElements().at(0);
+  DCRTPoly newp1 = newKey->GetPublicElements().at(1);
+
+  const auto ns = cryptoParams->GetNoiseScale();
+  const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
+  DugType dug;
+  TugType tug;
+
+  auto numPartQ = cryptoParams->GetNumPartQ();
+
+  std::vector<DCRTPoly> av(numPartQ);
+  std::vector<DCRTPoly> bv(numPartQ);
+
+  std::vector<NativeInteger> PModq = cryptoParams->GetPModq();
+  std::vector<std::vector<NativeInteger>> PartQHatModq = cryptoParams->GetPartQHatModq();
+
+  for (usint part = 0; part < numPartQ; part++) {
+    DCRTPoly u = (cryptoParams->GetMode() == RLWE) ?
+        DCRTPoly(dgg, paramsQP, Format::EVALUATION) :
+        DCRTPoly(tug, paramsQP, Format::EVALUATION);
+
+    DCRTPoly e0(dgg, paramsQP, Format::EVALUATION);
+    DCRTPoly e1(dgg, paramsQP, Format::EVALUATION);
+
+    DCRTPoly a(paramsQP, Format::EVALUATION, true);
+    DCRTPoly b(paramsQP, Format::EVALUATION, true);
+
+    // The part with basis Q
+    for (usint i = 0; i < sizeQ; i++) {
+      const NativeInteger &qi = paramsQ->GetParams()[i]->GetModulus();
+      auto e0i = e0.GetElementAtIndex(i);
+      auto e1i = e1.GetElementAtIndex(i);
+
+      auto ui = u.GetElementAtIndex(i);
+
+      auto newp0i = newp0.GetElementAtIndex(i);
+      auto newp1i = newp1.GetElementAtIndex(i);
+
+      auto sOldi = sOld.GetElementAtIndex(i);
+      auto factor = PModq[i].ModMulFast(PartQHatModq[part][i], qi);
+
+      a.SetElementAtIndex(i, newp1i * ui + ns * e1i);
+      b.SetElementAtIndex(i, newp0i * ui + ns * e0i + factor * sOldi);
+    }
+
+    // The part with basis P
+    for (usint j = sizeQ; j < sizeQP; j++) {
+      auto e0j = e0.GetElementAtIndex(j);
+      auto e1j = e1.GetElementAtIndex(j);
+
+      auto uj = u.GetElementAtIndex(j);
+
+      auto newp0j = newp0.GetElementAtIndex(j);
+      auto newp1j = newp1.GetElementAtIndex(j);
+
+      a.SetElementAtIndex(j, newp1j * uj + ns * e1j);
+      b.SetElementAtIndex(j, newp0j * uj + ns * e0j);
+    }
+
+    av[part] = a;
+    bv[part] = b;
+  }
+
+  ek->SetAVector(std::move(av));
+  ek->SetBVector(std::move(bv));
+
+  return ek;
 }
 
 void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly> &ciphertext,

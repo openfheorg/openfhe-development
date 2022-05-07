@@ -175,9 +175,8 @@ static std::vector<TEST_CASE_UTBGVRNS> testCasesUTBGVRNS = {
     // TestType,            Descr, Scheme,         RDim,     MultDepth,  SFBits,     RWin,  BatchSz, Mode, Depth, MDepth,    ModSize,        SecLvl,  KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     //{ RE_ENCRYPTION_UTBGVRNS, "1", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO, DFLT,    PTM,   DFLT,     DFLT,      DFLT,     DFLT, DFLT}, },
     { RE_ENCRYPTION_UTBGVRNS, "2", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,  DFLT,    PTM,   DFLT,     DFLT,      DFLT,     DFLT, DFLT}, },
-    // TODO (dsuponit): not sure why the test for HYBRID was skipped in the original code
-    //{ RE_ENCRYPTION_UTBGVRNS, "3", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO, DFLT,    PTM,   DFLT,     DFLT,      DFLT,     DFLT, DFLT}, },
-    //{ RE_ENCRYPTION_UTBGVRNS, "4", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   DFLT,     DFLT,      DFLT,     DFLT, DFLT}, },
+    //{ RE_ENCRYPTION_UTBGVRNS, "3", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO, DFLT,    PTM,   DFLT,  DFLT,      DFLT,     DFLT, DFLT}, },
+    { RE_ENCRYPTION_UTBGVRNS, "4", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   DFLT,  DFLT,      DFLT,     DFLT, DFLT}, },
     // ==========================================
     // TestType,                Descr, Scheme,         RDim,     MultDepth,  SFBits,     RWin,  BatchSz, Mode, Depth, MDepth,    ModSize,        SecLvl,  KSTech, RSTech,       LDigits, PtMod, StdDev,   EvalAddCt, EvalMultCt, KSCt, MultTech
     //{ AUTO_LEVEL_REDUCE_UTBGVRNS, "1", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO, DFLT,    PTM,   DFLT,     DFLT,      DFLT,       DFLT, DFLT}, },
