@@ -1,3 +1,5 @@
+.. _cmake_in_openfhe:
+
 CMAKE in OpenFHE
 =================
 
@@ -15,7 +17,6 @@ CMake is run in the build tree. The source tree is passed to CMake as an argumen
 Therefore the basic steps are:
 
 .. code-block:: bash
-    :linenos:
 
     cd build-tree-location
     cmake {other CMake arguments} source-tree-location
@@ -126,7 +127,7 @@ By default OpenFHE builds without external dependencies. If you wish to use the 
 We have tested OpenFHE with ``GMP 6.1.2`` and ``6.2.1``, and ``NTL 10.5.0`` and ``11.4.4``.
 
 .. note:: A regular binary install (using tools like ``apt-get``) will not work
-   Special compilation flags need to be passed. See `Instructions for installing GMP and NTL <https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/installation/gmp_ntl.html?highlight=gmp>`_
+   Special compilation flags need to be passed. See :ref:`Instructions for installing GMP and NTL <gmp_ntl_install>`
 
 
 
@@ -186,12 +187,12 @@ Location of Build Products
 
 - Examples (of basic OpenFHE features) are placed in bin/examples, and additional examples (more complicated and research-oriented examples) are placed in bin/extras. Note demos are built as part of each sub-component of the library (core, pke, trapdoor, etc.)
 
-- Documentation (built in the build directory under <BUILD_LOCATION>/docs/doxygen/ for DOXYGEN builds, and <BUILD_LOCATION>/docs/sphinx for Sphinx builds)
+- Documentation (built in the build directory under ``<BUILD_LOCATION>/docs/doxygen/`` for DOXYGEN builds, and ``<BUILD_LOCATION>/docs/sphinx`` for Sphinx builds)
 
 Installing OpenFHE on your system for use by applications external to the OpenFHE source tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Running `make install` will install all libraries and header files in the directories designated by `CMAKE_INSTALL_PREFIX`. Demos, unittests, benchmarks, examples and extras are not installed.
+Running `make install` will install all libraries and header files in the directories designated by ``CMAKE_INSTALL_PREFIX``. Demos, unittests, benchmarks, examples and extras are not installed.
 
 Building applications with an installed OpenFHE library
 ************************************************************

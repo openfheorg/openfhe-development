@@ -1,3 +1,5 @@
+.. _gmp_ntl_install:
+
 Instructions for installing GMP and NTL
 =======================================
 
