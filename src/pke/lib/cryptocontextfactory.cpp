@@ -28,10 +28,6 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#ifndef LBCRYPTO_CRYPTO_CRYPTOCONTEXTFACTORY_C
-#define LBCRYPTO_CRYPTO_CRYPTOCONTEXTFACTORY_C
-
 #include "cryptocontext.h"
 #include "cryptocontextfactory.h"
 
@@ -386,4 +382,12 @@ CryptoContext<T> CryptoContextFactory<T>::genCryptoContextCKKSrns(
 
 }  // namespace lbcrypto
 
-#endif
+// the code below is from pke/lib/cryptocontextfactory-impl.cpp
+namespace lbcrypto {
+
+    //template class CryptoContextFactory<Poly>;
+    //template class CryptoContextFactory<NativePoly>;
+    template class CryptoContextFactory<DCRTPoly>;
+
+}
+

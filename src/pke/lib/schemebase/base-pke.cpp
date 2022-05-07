@@ -50,9 +50,6 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 1118.
  */
 
-#ifndef LBCRYPTO_CRYPTO_BASE_PKE_C
-#define LBCRYPTO_CRYPTO_BASE_PKE_C
-
 #include "cryptocontext.h"
 #include "schemebase/base-pke.h"
 #include "schemebase/rlwe-cryptoparameters.h"
@@ -224,5 +221,12 @@ Element PKEBase<Element>::DecryptCore(
 
 }  // namespace lbcrypto
 
-#endif
+// the code below is from base-pke-impl.cpp
+namespace lbcrypto {
+
+    //template class PKEBase<Poly>;
+    //template class PKEBase<NativePoly>;
+    template class PKEBase<DCRTPoly>;
+
+}  // namespace lbcrypto
 
