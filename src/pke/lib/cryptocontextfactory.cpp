@@ -47,12 +47,6 @@ int CryptoContextFactory<Element>::GetContextCount() {
 }
 
 template <typename Element>
-CryptoContext<Element> CryptoContextFactory<Element>::GetSingleContext() {
-  if (GetContextCount() == 1) return AllContexts[0];
-  OPENFHE_THROW(config_error, "More than one context");
-}
-
-template <typename Element>
 CryptoContext<Element> CryptoContextFactory<Element>::GetContext(
     std::shared_ptr<CryptoParametersBase<Element>> params,
     std::shared_ptr<SchemeBase<Element>> scheme,
@@ -74,15 +68,6 @@ CryptoContext<Element> CryptoContextFactory<Element>::GetContext(
   }
 
   return cc;
-}
-
-template <typename Element>
-CryptoContext<Element> CryptoContextFactory<Element>::GetContextForPointer(
-    CryptoContextImpl<Element>* cc) {
-  for (CryptoContext<Element> ctx : AllContexts) {
-    if (ctx.get() == cc) return ctx;
-  }
-  return 0;
 }
 
 template <typename T>

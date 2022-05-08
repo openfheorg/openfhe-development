@@ -29,14 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  Control for encryption operations
- */
-
 #ifndef SRC_PKE_CRYPTOCONTEXTFACTORY_H_
 #define SRC_PKE_CRYPTOCONTEXTFACTORY_H_
 
-#include "utils/serial.h"
+// TODO (dsuponit): remove/refactor allscheme.h as it contains information on ALL schemes. we don't need this all together anymore
 #include "scheme/allscheme.h"
 
 namespace lbcrypto {
@@ -44,16 +40,10 @@ namespace lbcrypto {
 /**
  * @brief CryptoContextFactory
  *
- * A class that contains static methods to generate new crypto contexts from
- * user parameters
- *
+ * A class that contains all generated contexts and static methods to access/release them
  */
 template <typename Element>
 class CryptoContextFactory {
-  using ParmType = typename Element::Params;
-  using IntType = typename Element::Integer;
-
- protected:
   static std::vector<CryptoContext<Element>> AllContexts;
 
  public:
@@ -61,18 +51,11 @@ class CryptoContextFactory {
 
   static int GetContextCount();
 
-  static CryptoContext<Element> GetSingleContext();
-
   static CryptoContext<Element> GetContext(
       std::shared_ptr<CryptoParametersBase<Element>> params,
       std::shared_ptr<SchemeBase<Element>> scheme, const std::string& schemeId = "Not");
 
-  static CryptoContext<Element> GetContextForPointer(
-      CryptoContextImpl<Element>* cc);
-
   static const std::vector<CryptoContext<Element>>& GetAllContexts();
-
-
 };
 }
 

@@ -74,7 +74,7 @@ using CryptoContext = std::shared_ptr<CryptoContextImpl<Element>>;
  * are implemented to make certain that only valid objects that have been
  * created in the context are used
  *
- * Contexts are created using the CryptoContextFactory, and can be serialized
+ * Contexts are created using GenCryptoContext(), and can be serialized
  * and recovered from a serialization
  */
 template <typename Element>
@@ -82,11 +82,18 @@ class CryptoContextImpl : public Serializable {
   using IntType = typename Element::Integer;
   using ParmType = typename Element::Params;
 
-  friend class CryptoContextFactory<Element>;
-
   void SetKSTechniqueInScheme();
 
- protected:
+  CryptoContext<Element> GetContextForPointer(const CryptoContextImpl<Element>* cc) const {
+      auto contexts = CryptoContextFactory<Element>::GetAllContexts();
+      for (CryptoContext<Element> ctx : contexts) {
+          if (cc == ctx.get())
+              return ctx;
+      }
+      OPENFHE_THROW(type_error, "Cannot find context for the given pointer to CryptoContextImpl");
+  }
+
+protected:
   // crypto parameters used for this context
   std::shared_ptr<CryptoParametersBase<Element>> params;
   // algorithm used; accesses all crypto methods
@@ -925,7 +932,7 @@ class CryptoContextImpl : public Serializable {
    * @return a public/secret key pair
    */
   KeyPair<Element> KeyGen() {
-    return GetScheme()->KeyGen(CryptoContextFactory<Element>::GetContextForPointer(this), false);
+    return GetScheme()->KeyGen(GetContextForPointer(this), false);
   }
 
   /**
@@ -934,7 +941,7 @@ class CryptoContextImpl : public Serializable {
    * @return a public/secret key pair
    */
   KeyPair<Element> SparseKeyGen() {
-    return GetScheme()->KeyGen(CryptoContextFactory<Element>::GetContextForPointer(this), true);
+    return GetScheme()->KeyGen(GetContextForPointer(this), true);
   }
 
   /**
@@ -2075,9 +2082,7 @@ class CryptoContextImpl : public Serializable {
       const std::vector<PrivateKey<Element>>& privateKeyVec) {
     if (!privateKeyVec.size())
       OPENFHE_THROW(config_error, "Input private key vector is empty");
-    return GetScheme()->MultipartyKeyGen(
-        CryptoContextFactory<Element>::GetContextForPointer(this),
-        privateKeyVec, false);
+    return GetScheme()->MultipartyKeyGen(GetContextForPointer(this), privateKeyVec, false);
   }
 
   /**
@@ -2096,10 +2101,9 @@ class CryptoContextImpl : public Serializable {
   KeyPair<Element> MultipartyKeyGen(const PublicKey<Element> publicKey,
                                     bool makeSparse = false,
                                     bool fresh = false) {
-    if (!publicKey) OPENFHE_THROW(config_error, "Input public key is empty");
-    return GetScheme()->MultipartyKeyGen(
-        CryptoContextFactory<Element>::GetContextForPointer(this), publicKey,
-        makeSparse, fresh);
+    if (!publicKey)
+        OPENFHE_THROW(config_error, "Input public key is empty");
+    return GetScheme()->MultipartyKeyGen(GetContextForPointer(this), publicKey, makeSparse, fresh);
   }
 
   /**
