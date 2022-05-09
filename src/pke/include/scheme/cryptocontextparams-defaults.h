@@ -85,7 +85,7 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr SCHEME               scheme              = BFVRNS_SCHEME;
     constexpr PlaintextModulus     ptModulus           = 0;
     constexpr usint                relinWindow         = 0;
-    constexpr float                standardDeviation   = 0.0;
+    constexpr float                standardDeviation   = 3.19;
     constexpr float                rootHermiteFactor   = 0.0;
     constexpr float                assuranceMeasure    = 36.0;
     constexpr MODE                 mode                = OPTIMIZED;

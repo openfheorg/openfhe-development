@@ -88,7 +88,6 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetMultiplicativeDepth(0);
     parameters.SetPlaintextModulus(plaintextModulus);
-    parameters.SetStandardDeviation(3.2);
     parameters.SetKeySwitchTechnique(BV);
     parameters.SetRingDim(ringDimension);
     parameters.SetFirstModSize(firstqmod);

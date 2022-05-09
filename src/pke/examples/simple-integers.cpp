@@ -44,7 +44,6 @@ int main() {
 
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
-    parameters.SetStandardDeviation(3.2);
     parameters.SetEvalMultCount(2);
     parameters.SetScalingFactorBits(60);
     parameters.SetRelinWindow(10);

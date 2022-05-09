@@ -84,7 +84,6 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
 
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(ptm);
-  parameters.SetStandardDeviation(3.19);
   parameters.SetScalingFactorBits(dcrtBits);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);

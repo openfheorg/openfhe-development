@@ -57,7 +57,6 @@ int main() {
   CCParams<CryptoContextBGVRNS> parameters;
   parameters.SetMultiplicativeDepth(2);
   parameters.SetPlaintextModulus(65537);
-  parameters.SetStandardDeviation(3.2);
   parameters.SetKeySwitchTechnique(BV);
   parameters.SetRescalingTechnique(FIXEDAUTO);
 
