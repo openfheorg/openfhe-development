@@ -1,5 +1,6 @@
+.. _rebasing:
 
-Contributing to OpenFHE
+Rebasing
 ====================================
 
 When working on the library one should be working on a feature branch, and submit merge requests to move one's code onto the main branch.

@@ -28,19 +28,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#ifndef LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_C
-#define LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_C
-
 #include "cryptocontext.h"
 #include "key/evalkeyrelin.h"
 
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
+// the code below is from evalkeyrelin-impl.cpp
 namespace lbcrypto {
+    //template class EvalKeyRelinImpl<Poly>;
+    //template class EvalKeyRelinImpl<NativePoly>;
+    template class EvalKeyRelinImpl<DCRTPoly>;
+}  // namespace lbcrypto
 
-}
-
-#endif

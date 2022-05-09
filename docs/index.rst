@@ -25,19 +25,28 @@ OpenFHE is a general lattice cryptography library that currently includes effici
 
 A major focus is on the usability of the schemes. For instance, all HE schemes with packing use the same common API, and are implemented using runtime polymorphism.
 
-OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve high performance, e.g., OpenFHE(called PALISADE at the time) was used as the library for a winning genome-wide association studies solution at iDASH’18.
+OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve high performance, e.g., OpenFHE (called PALISADE at the time) was used as the library for a winning genome-wide association studies solution at iDASH’18.
+
+.. note:: For a quick introduction to OpenFHE, visit our :ref:`quickstart <quickstart>` page.
 
 .. toctree::
    :maxdepth: 2
-   :glob:
-   :numbered:
    :caption: Contents:
 
    assets/sphinx_rsts/intro/get_started.rst
    assets/sphinx_rsts/modules/modules.rst
+
+..
+   [COMMENT]: we separated the above TOC tree and the below to make them list at different depths.
+   Meaning sub-sections in the get_started.rst will be listed, but sub-sections in any given
+   /misc/ file will not appear
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
    assets/sphinx_rsts/contributing/contributing.rst
    assets/sphinx_rsts/misc/*
-
 
 Components
 -------------
@@ -53,18 +62,10 @@ The library is based on modular architecture with the following layers:
 * Crypto layer containing efficient implementations of lattice cryptography schemes.
 * Encoding layer supporting multiple plaintext encodings for cryptographic schemes.
 
-Important Notes
----------------
+OpenFHE Extensions
+-------------------
 
-
-.. note:: Note as of version 1.11, the following features have been moved to their own repositories in the PALISADE group.
-
-
-   - `Digital Signature <https://gitlab.com/palisade/palisade-signature/>`_
-   - `Identity-Based Encryption <https://gitlab.com/palisade/palisade-abe/>`_
-   - `Ciphertext-Policy Attribute-Based Encryption <https://gitlab.com/palisade/palisade-abe/>`_
-
-All the research prototypes for Key-Policy Attributed-Based Encryption and Program Obfuscation have been moved to `Palisade-Trapdoor <https://gitlab.com/palisade/palisade-trapdoor/>`_
+- `Intel HEXL Acceleration <https://github.com/openfheorg/openfhe-hexl>`_
 
 License
 -----------
@@ -77,7 +78,7 @@ Additional Resources
 `OpenFHE/PALISADE Webinars <https://www.youtube.com/channel/UC1qByOsQina1rpZ8AGl5TZw>`_
 
 
-Indices and tables
-==================
-* :ref:`genindex`
-* :ref:`search`
+.. toctree::
+   :caption: Appendix
+
+   genindex.rst

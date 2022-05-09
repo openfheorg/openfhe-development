@@ -17,7 +17,14 @@ Contains the underlying primitives that are used in both `pke` and `binfhe`.
 
 ## [Math](math)
 
-- TODO
+Contains various files describing the mathematical functionality supported in OpenFHE. For example:
+
+- sampling functions
+- matrix class definition
+
+
+In addition, the various hardware abstraction layer (HAL) backends are defined here.
+
 
 ## [Utils](utils)
 

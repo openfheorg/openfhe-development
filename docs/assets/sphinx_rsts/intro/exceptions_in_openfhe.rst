@@ -41,7 +41,7 @@ not_available_error
 This exception is thrown if a method is not available for a given configuration. For example, an arbitrary cyclotomics method is not available for a power-of-2 configuration.
 
 Exceptions in critical regions and OMP threads
---------------------------------------------------------
+-----------------------------------------------
 
 An exception that is thrown in a critical region, or that is thrown within an OMP thread, must be caught in the same region where it is thrown. The program will abort if this is not done.
 

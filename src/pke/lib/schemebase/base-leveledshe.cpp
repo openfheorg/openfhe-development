@@ -50,9 +50,6 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 1118.
  */
 
-#ifndef LBCRYPTO_CRYPTO_BASE_LEVELEDSHE_C
-#define LBCRYPTO_CRYPTO_BASE_LEVELEDSHE_C
-
 #include "cryptocontext.h"
 #include "schemebase/base-leveledshe.h"
 
@@ -696,4 +693,12 @@ void LeveledSHEBase<Element>::EvalMultCoreInPlace(
 
 }  // namespace lbcrypto
 
-#endif
+// the code below is from base-leveledshe-impl.cpp
+namespace lbcrypto {
+
+    //template class LeveledSHEBase<Poly>;
+    //template class LeveledSHEBase<NativePoly>;
+    template class LeveledSHEBase<DCRTPoly>;
+
+}  // namespace lbcrypto
+

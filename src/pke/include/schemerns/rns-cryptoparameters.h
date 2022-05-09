@@ -35,6 +35,7 @@
 #include "lattice/lat-hal.h"
 
 #include "schemebase/rlwe-cryptoparameters.h"
+#include "globals.h"
 
 /**
  * @namespace lbcrypto
@@ -1562,8 +1563,10 @@ public:
     ar(cereal::make_nvp("ab", m_auxBits));
     ar(cereal::make_nvp("eb", m_extraBits));
 
-    PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
-                        m_numPartQ, m_auxBits, m_extraBits);
+    if(PrecomuteCRTTablesAfterDeserializaton()) {
+        PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
+                            m_numPartQ, m_auxBits, m_extraBits);
+    }
   }
 
   virtual std::string SerializedObjectName() const override { return "SchemeParametersRNS"; }

@@ -84,4 +84,3 @@ Adaptations:
 `Homepage of Contributor Covenant <https://www.contributor-covenant.org/>`_
 
 For answers to common questions about this code of conduct, see `Contributor Covenant FAQ <https://www.contributor-covenant.org/faq/>`_
-

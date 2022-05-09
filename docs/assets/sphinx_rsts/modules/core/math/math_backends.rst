@@ -4,6 +4,17 @@ Math Backends
 .. contents:: Page Contents
    :local:
 
+
+Design
+------
+
+**Goal**: Support choosing, at **run-time**, which math backend to use.
+
+**Currently**: **Compile-time** choice of which backend to use
+
+.. note:: All implementations for Big/Native Integer/Vector are based on
+   ``integer.h (integer.h)``
+
 -  By selecting a particular ``MATHBACKEND``, we are choosing a default
    implementation for:
 
@@ -14,15 +25,6 @@ Math Backends
 -  For native arithmetic, ``NativeInteger`` and ``NativeVector`` is
    available.
 
--  All implementations for Big/Native Integer/Vector are based on
-   ``integer.h (integer.h)``
-
-Design
-------
-
-**Goal**: Support choosing, at **run-time**, which math backend to use.
-
-**Currently**: **Compile-time** choice of which backend to use
 
 Choosing a Backend
 ------------------
@@ -77,10 +79,10 @@ This is an integration of the NTL library with OpenFHE, and is only
 available when NTL/GMP is enabled using CMAKE.
 
 Supported Math Operations
-=========================
+---------------------------
 
 Modular Multiplication
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 We use the following naming conventions:
 
@@ -112,59 +114,51 @@ We use the following naming conventions:
    -  The fastest method.
 
 Other Modular Operations
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-+----+--------+----------+----------+------------+-------------------+
-| V  | Naive  | Barrett  | Fast     | Fast       | Fast Const        |
-| ar |        |          | Naive    | Barrett    |                   |
-| ia |        |          |          |            |                   |
-| nt |        |          |          |            |                   |
-+====+========+==========+==========+============+===================+
-| M  | Mo     | Mod(mod, | -        | -          | -                 |
-| od | d(mod) | mu)      |          |            |                   |
-+----+--------+----------+----------+------------+-------------------+
-| Mo | Mod    | M        | ModAd    | -          | -                 |
-| dA | Add(b, | odAdd(b, | dFast(b, |            |                   |
-| dd | mod)   | mod, mu) | mod)     |            |                   |
-+----+--------+----------+----------+------------+-------------------+
-| Mo | Mod    | M        | ModSu    | -          | -                 |
-| dS | Sub(b, | odSub(b, | bFast(b, |            |                   |
-| ub | mod)   | mod, mu) | mod)     |            |                   |
-+----+--------+----------+----------+------------+-------------------+
-| Mo | Mod    | M        | ModMu    | Mod        | M                 |
-| dM | Mul(b, | odMul(b, | lFast(b, | MulFast(b, | odMulFastConst(b, |
-| ul | mod)   | mod, mu) | mod)     | mod, mu)   | mod, bPrecomp)    |
-+----+--------+----------+----------+------------+-------------------+
-
-
++----------+-----------------+---------------------+---------------------+-------------------------+------------------------------------+
+| Variant  | Naive           | Barrett             | Fast Naive          | Fast Barrett            | Fast Const                         |
++==========+=================+=====================+=====================+=========================+====================================+
+| Mod      | Mod(mod)        | Mod(mod, mu)        | -                   | -                       | -                                  |
++----------+-----------------+---------------------+---------------------+-------------------------+------------------------------------+
+| ModAdd   | ModAdd(b, mod)  | ModAdd(b, mod, mu)  | ModAddFast(b, mod)  | -                       | -                                  |
++----------+-----------------+---------------------+---------------------+-------------------------+------------------------------------+
+| ModSub   | ModSub(b, mod)  | ModSub(b, mod, mu)  | ModSubFast(b, mod)  | -                       | -                                  |
++----------+-----------------+---------------------+---------------------+-------------------------+------------------------------------+
+| ModMul   | ModMul(b, mod)  | ModMul(b, mod, mu)  | ModMulFast(b, mod)  | ModMulFast(b, mod, mu)  | ModMulFastConst(b, mod, bPrecomp)  |
++----------+-----------------+---------------------+---------------------+-------------------------+------------------------------------+
 
 Core Math Hal Backend documentation
 -------------------------------------
 
 .. autodoxygenindex::
    :project: core_math_hal
+   :allow-dot-graphs:
 
 Core Math HAL Integer Nat Backend documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autodoxygenindex::
    :project: core_math_hal_intnat
+   :allow-dot-graphs:
 
 Core Math HAL Integer Dyn Backend documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
 .. autodoxygenindex::
    :project: core_math_hal_bigintdyn
+   :allow-dot-graphs:
 
 Core Math HAL Integer Fxd Backend documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autodoxygenindex::
    :project: core_math_hal_bigintfxd
+   :allow-dot-graphs:
 
 Core Math Integer NTL Backend documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autodoxygenindex::
    :project: core_math_hal_bigintntl
+   :allow-dot-graphs:

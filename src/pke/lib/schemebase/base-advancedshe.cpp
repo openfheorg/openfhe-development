@@ -50,9 +50,6 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 1118.
  */
 
-#ifndef LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_C
-#define LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_C
-
 #include "cryptocontext.h"
 #include "schemebase/base-advancedshe.h"
 
@@ -711,4 +708,12 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum2nComplexCols(
 
 }  // namespace lbcrypto
 
-#endif
+// the code below is from base-advancedshe-impl.cpp
+namespace lbcrypto {
+
+    //template class AdvancedSHEBase<Poly>;
+    //template class AdvancedSHEBase<NativePoly>;
+    template class AdvancedSHEBase<DCRTPoly>;
+
+}  // namespace lbcrypto
+

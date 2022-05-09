@@ -30,8 +30,8 @@
 //==================================================================================
 
 /*
-  Former config.h created by Matthew Triplett to add global configuration parameter SERIALIZE_PRECOMPUTE,
-  which allows toggling of CRT precomputations during deserialization of a CryptoContext
+  config.h created by Matthew Triplett to add a configuration parameter
+  which allows toggling of CRT precomputations during deserialization of a CryptoContext.
  */
 
 #ifndef __GLOBALS_H__
@@ -39,14 +39,20 @@
 
 namespace lbcrypto {
     /**
-     * Global config variable to determine if PrecomputeCRTTables()
-     * will be executed during CryptoContext deserialization.
+     * PrecomuteCRTTablesAfterDeserializaton() will be executed during CryptoContext deserialization.
      * Deserializing without this precomputation can speed up the procedure by a factor of 100.
-     *
+     * function's return values:
      * true (default value): PrecomputeCRTTables() will be executed during deserialization
      * false:                PrecomputeCRTTables() will not be executed during deserialization
      */
-    extern bool SERIALIZE_PRECOMPUTE;
+    bool PrecomuteCRTTablesAfterDeserializaton();
+
+    /**
+     * Calling EnablePrecomuteCRTTablesAfterDeserializaton() and DisablePrecomuteCRTTablesAfterDeserializaton()
+     * changes the boolean value returned by PrecomuteCRTTablesAfterDeserializaton()
+     */
+    void EnablePrecomuteCRTTablesAfterDeserializaton();
+    void DisablePrecomuteCRTTablesAfterDeserializaton();
 
 }  // namespace lbcrypto
 

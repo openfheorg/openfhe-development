@@ -29,12 +29,26 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "schemebase/base-advancedshe.cpp"
+#include "globals.h"
 
 namespace lbcrypto {
 
-//template class AdvancedSHEBase<Poly>;
-//template class AdvancedSHEBase<NativePoly>;
-template class AdvancedSHEBase<DCRTPoly>;
+struct GLOBALS {
+    static bool precomputeCRTTables;
+};
+bool GLOBALS::precomputeCRTTables = true;
+//=============================================================================
+void EnablePrecomuteCRTTablesAfterDeserializaton() {
+    GLOBALS::precomputeCRTTables = true;
+}
+//=============================================================================
+void DisablePrecomuteCRTTablesAfterDeserializaton() {
+    GLOBALS::precomputeCRTTables = false;
+}
+//=============================================================================
+bool PrecomuteCRTTablesAfterDeserializaton() {
+    return GLOBALS::precomputeCRTTables;
+}
+//=============================================================================
 
 }  // namespace lbcrypto

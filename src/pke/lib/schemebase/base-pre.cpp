@@ -50,9 +50,6 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 1118.
  */
 
-#ifndef LBCRYPTO_CRYPTO_BASE_PRE_C
-#define LBCRYPTO_CRYPTO_BASE_PRE_C
-
 #include "cryptocontext.h"
 #include "schemebase/base-pke.h"
 #include "schemebase/base-pre.h"
@@ -90,4 +87,12 @@ Ciphertext<Element> PREBase<Element>::ReEncrypt(
 
 }
 
-#endif
+// the code below is from base-pre-impl.cpp
+namespace lbcrypto {
+
+    //template class PREBase<Poly>;
+    //template class PREBase<NativePoly>;
+    template class PREBase<DCRTPoly>;
+
+}  // namespace lbcrypto
+

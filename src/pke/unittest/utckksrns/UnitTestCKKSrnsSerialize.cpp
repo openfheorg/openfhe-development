@@ -155,13 +155,13 @@ static std::vector<TEST_CASE_UTCKKSSer> testCases = {
 #endif
     // ==========================================
     // TestType,    Descr,  Scheme,        RDim,     MultDepth,  SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    //{ NO_CRT_TABLES, "1", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ NO_CRT_TABLES, "2", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ NO_CRT_TABLES, "3", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ NO_CRT_TABLES, "4", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { NO_CRT_TABLES, "1", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { NO_CRT_TABLES, "2", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { NO_CRT_TABLES, "3", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { NO_CRT_TABLES, "4", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    //{ NO_CRT_TABLES, "5", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ NO_CRT_TABLES, "6", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { NO_CRT_TABLES, "5", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { NO_CRT_TABLES, "6", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
 };
@@ -375,6 +375,11 @@ protected:
     template <typename ST>
     void TestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSSer& testData, const ST& sertype, const std::string& failmsg = std::string()) {
         try {
+            CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+            CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             KeyPair<Element> kp = cc->KeyGen();
@@ -387,8 +392,12 @@ protected:
             std::stringstream s;
             Serial::Serialize(cc, s, sertype);
 
+            CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
             CryptoContextFactory<Element>::ReleaseAllContexts();
-            SERIALIZE_PRECOMPUTE = false;
+
+            DisablePrecomuteCRTTablesAfterDeserializaton();
 
             CryptoContext<Element> newcc;
 
@@ -417,6 +426,13 @@ protected:
             result->SetLength(plaintextShort->GetLength());
             checkEquality(plaintextShort->GetCKKSPackedValue(), result->GetCKKSPackedValue(), eps,
                 failmsg + " Decryption Failed");
+
+            EnablePrecomuteCRTTablesAfterDeserializaton();
+
+            CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
+            CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+            CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;

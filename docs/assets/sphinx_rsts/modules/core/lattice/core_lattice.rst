@@ -9,7 +9,7 @@ Documentation for `core/include/lattice/ <https://github.com/openfheorg/openfhe-
 Hardware Abstraction Layer
 ---------------------------
 
-Note: Refer to :ref:`hal` to learn more about the hardware abstraction layer. HAL allows users to use a variety of backends while still allowing for high performance.
+.. note:: Refer to :ref:`HAL Documentation<hal>` to learn more about the hardware abstraction layer. HAL allows users to use a variety of backends while still allowing for high performance.
 
 The Lattice Layer
 -----------------
@@ -59,8 +59,8 @@ The coefficients of the polynomial ring, in their initial form, are just coeffic
 ``DCRTPoly``, can be simply seen as vector's representing polynomial ring elements.
 
 
-.. note:: We internally represent polynomial ring elements as being either in ``COEFFICIENT`` or ``EVALUATION`` format
-   It is generally computationally less expensive to carry on all operations in the evaluation form
+.. note:: We internally represent polynomial ring elements as being either in ``COEFFICIENT`` or ``EVALUATION`` format. It is generally computationally less expensive to carry on all operations in the evaluation form
+
    However, the CRT and inverse CRT operations take ``O(nlogn)`` time using current best known algorithms, where n is the ring dimension.
 
 
@@ -78,6 +78,7 @@ EVALUATION FORM
 File Listing
 ---------------
 
+
 Parameter Classes
 ^^^^^^^^^^^^^^^^^^
 
@@ -90,20 +91,24 @@ The interactions can be summarized as:
        B[ILParamsImpl <br> - Ideal Lattice Params </br>] --> C[ILDCRTParams <br> - Ideal Lattice Double-CRT Params</br>]
 
 
-``elemparams.h``:
+`Lattice Element Parameters (elemparams.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/elemparams.h>`_
 
 -  a simple class to contain ring element parameters.
 - ``elemparamfactory`` is a factory that creates ``elemparams`` objects
 
-``ilparams.h``:
+`Integer Lattice Parameters (ilparams.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/ilparams.h>`_
 
 -  parameter class for basic single-CRT lattice parameters.
 -  Inherits from ``elemparams.h``
 
-``ildcrtparams.h``:
+`Integer Lattice Double CRT Params (ildcrtparams.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/ildcrtparams.h>`_
 
 -  parameter class for double-CRT lattice parameters.
 -  Inherits from ``ilparams.h``
+
+`Element Parameter Factory (elemparamfactory.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/elemparamfactory.h>`_
+
+- Creates `ElemParams``
 
 Element Classes
 ^^^^^^^^^^^^^^^^^^
@@ -114,39 +119,34 @@ Element Classes
        A[ILElement<br> - Ideal Lattice Elements </br>] --> B[PolyImpl <br> - elements from ideal lattices using a single-CRT representation </br>];
        A[ILElement<br> - Ideal Lattice Elements </br>] --> C[DCRTPolyImpl <br> - elements from ideal lattices using a double-CRT representation</br>]
 
-``ilelement.h``:
+`Integer Lattice Elements (ilelement.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/ilelement.h>`_
 
 -  This file presents a basic interface class for elements from ideal lattices.
 
-``poly.h``:
+`Ideal Lattice using Vector Representation (poly.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/poly.h>`_
 
 -  These files present a basic class for ``Poly``, elements from ideal lattices using a single-CRT representation.
 -  This class inherits from the class in ``ilelement.h``.
 -  This file also defines a ``NativePoly``, which is simply a ``Poly`` using ``NativeInteger`` coefficients. A ``NativePoly`` is an important part of a DCRTPoly.
 
-``dcrtpoly.h``
-
--  This file presents a basic class for ``DCRTPoly`` (elements from ideal lattices using a double-CRT representation).
--  This class inherits from the class in ``ilelement.h``.
--  NOTE: this is backend-dependent. To get more information, visit the :ref:`HAL Documentation<Core Lattice Hardware Abstraction Layer Documentation>``
--  NOTE: ``lat-hal.h`` provides functionality to swap between our different lattice backends.
-
 Trapdoors
 ^^^^^^^^^^
 
-``trapdoor.h``:
+`Trapdoor (trapdoor.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/trapdoor.h>`_
 
 -  Provides the utility for sampling trapdoor lattices as described in `Implementing Conjunction Obfuscation under Entropic Ring LWE <https://eprint.iacr.org/2017/844.pdf>`__, `Building an Efficient Lattice Gadget Toolkit: Subgaussian Sampling and More <https://eprint.iacr.org/2018/946>`__, and `Implementing Token-Based Obfuscation under (Ring) LWE <https://eprint.iacr.org/2018/1222.pdf>`__
--  NOTE: Uses ``dgsampling.h``to implement the algorithms in the aforementioned papers
 
-``trapdoorparameters.h``
+.. note:: Uses `Discrete Gaussian Sampling (dgsampling.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/dgsampling.h>`_ to implement the algorithms in the aforementioned papers
+
+`Trapdoor Parameters (trapdoorparameters.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/trapdoorparameters.h>`_
 
 -  Parameter definitions for trapdoor-related schemes (GPV signature, IBE, ABE)
 -  Uses ``trapdoor.h``
 
 Misc.
 ^^^^^
-``dgsampling.h``
+
+`Discrete Gaussian Sampling (dgsampling.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/dgsampling.h>`_
 
 -  Provides detailed algorithms for G-sampling and perturbation sampling
    as described in `Implementing Conjunction Obfuscation under Entropic
@@ -156,15 +156,23 @@ Misc.
    Token-Based Obfuscation under (Ring)
    LWE <https://eprint.iacr.org/2018/1222.pdf>`__
 
-``field2n.h``
+.. note:: Sampling:
+   - Refer to :ref:`our sampling documentation for more information<sampling>`
+
+`Power-of-2 fields (field2n.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/field2n.h>`_
 
 -  Represents and defines power-of-2 fields
 
-``stdlatticeparms.h``
+`Standard Values for Lattice Params (stdlatticeparms.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/stdlatticeparms.h>`_
 
 -  Header for the standard values for Lattice Parms, as determined by `Homomorphic Encryption Org <homomorphicencryption.org>`__
 
 -  Given (distribution type, security level), we can get a ``maxQ`` for a given ring dimension, or get a ring dimension given some ``maxQ``
+
+`Hal Lattice BAckend Switcher (lat-hal.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/lat-hal.h>`_
+
+- contains functionality to switch between lattice backends
+
 
 Assumptions
 -----------
@@ -178,3 +186,4 @@ Core Lattice Documentation
 
 .. autodoxygenindex::
    :project: core_lattice
+   :allow-dot-graphs:

@@ -21,13 +21,13 @@ documentation about this library.
 
 **Documentation**  [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/)
 
-**Source Code** [OpenFHE Development Branch](https://github.com/openfheorg/openfhe-development)
+**Quickstart** [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/quickstart.html)
 
 **License** OpenFHE is released under the BSD 2-Clause License. See [here](LICENSE)
 
-**Contributing** [Contributing to OpenFHE](docs/static_docs/Contributing.md)
+**Contributing** [Contributing to OpenFHE](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/contributing/contributing_workflow.html)
 
-**Reporting bugs** [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development)
+**Reporting bugs** [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development/issues)
 
 **Reporting security vulnerabilities** Please email us at contact@openfhe.org
 

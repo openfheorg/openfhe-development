@@ -258,7 +258,8 @@ and add it to your launch options in ``launch.json``
 .. note:: this goes at the same level as ``name``, ``type``, etc.
 
 
-<!-- References -->
+References
+--------------------
 
 - `GitLens <https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens/>`_.
 
