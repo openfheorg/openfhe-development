@@ -274,7 +274,7 @@ DCRTPoly LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(
     // Level reduce the ciphertext
     ciphertext = LevelReduceInternal(ciphertext, nullptr, sizeQlc - sizeQlp);
   } // else do nothing
-
+  ptxt.SetFormat(Format::EVALUATION);
   return ptxt;
 }
 
