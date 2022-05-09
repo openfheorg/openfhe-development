@@ -100,7 +100,6 @@ std::vector<int64_t> BGVrnsAutomorphismPackedArray(usint i,
   parameters.SetMultiplicativeDepth(1);
   parameters.SetPlaintextModulus(17);
   parameters.SetSecurityLevel(HEStd_NotSet);
-  parameters.SetStandardDeviation(3.2);
   parameters.SetKeySwitchTechnique(BV);
   parameters.SetRingDim(8);
   parameters.SetRelinWindow(1);

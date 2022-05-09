@@ -62,7 +62,6 @@ using namespace lbcrypto;
 CryptoContext<DCRTPoly> GenerateBFVrnsContext() {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
-    parameters.SetStandardDeviation(3.2);
     parameters.SetEvalMultCount(1);
     parameters.SetScalingFactorBits(60);
 
@@ -94,7 +93,6 @@ CryptoContext<DCRTPoly> GenerateBGVrnsContext() {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetMultiplicativeDepth(1);
     parameters.SetPlaintextModulus(65537);
-    parameters.SetStandardDeviation(3.2);
     parameters.SetMaxDepth(1);
     parameters.SetRescalingTechnique(FIXEDMANUAL);
 
