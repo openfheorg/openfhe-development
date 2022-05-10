@@ -961,6 +961,7 @@ protected:
     if (ciphertext) {
       ciphertext->SetEncodingType(plaintext->GetEncodingType());
       ciphertext->SetScalingFactor(plaintext->GetScalingFactor());
+      ciphertext->SetScalingFactorInt(plaintext->GetScalingFactorInt());
       ciphertext->SetDepth(plaintext->GetDepth());
       ciphertext->SetLevel(plaintext->GetLevel());
     }
@@ -989,6 +990,7 @@ protected:
     if (ciphertext) {
       ciphertext->SetEncodingType(plaintext->GetEncodingType());
       ciphertext->SetScalingFactor(plaintext->GetScalingFactor());
+      ciphertext->SetScalingFactorInt(plaintext->GetScalingFactorInt());
       ciphertext->SetDepth(plaintext->GetDepth());
       ciphertext->SetLevel(plaintext->GetLevel());
     }

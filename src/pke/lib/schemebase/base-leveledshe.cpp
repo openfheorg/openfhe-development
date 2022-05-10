@@ -634,6 +634,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(
   result->SetElements(std::move(cvMult));
   result->SetDepth(ciphertext1->GetDepth() + ciphertext2->GetDepth());
   result->SetScalingFactor(ciphertext1->GetScalingFactor() * ciphertext2->GetScalingFactor());
+  result->SetScalingFactorInt(ciphertext1->GetScalingFactorInt() * ciphertext2->GetScalingFactorInt());
   return result;
 }
 
