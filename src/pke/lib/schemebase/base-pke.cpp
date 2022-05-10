@@ -68,6 +68,8 @@ KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc,
           cc->GetCryptoParameters());
 
   const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
+  const std::shared_ptr<ParmType> paramsPK = cryptoParams->GetParamsPK();
+
   const auto ns = cryptoParams->GetNoiseScale();
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   DugType dug;
@@ -78,13 +80,13 @@ KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc,
   Element s;
   switch (cryptoParams->GetMode()) {
     case RLWE:
-      s = Element(dgg, elementParams, Format::EVALUATION);
+      s = Element(dgg, paramsPK, Format::EVALUATION);
       break;
     case OPTIMIZED:
-      s = Element(tug, elementParams, Format::EVALUATION);
+      s = Element(tug, paramsPK, Format::EVALUATION);
       break;
     case SPARSE:
-      s = Element(tug, elementParams, Format::EVALUATION, 64);
+      s = Element(tug, paramsPK, Format::EVALUATION, 64);
       break;
     default:
       break;
@@ -92,10 +94,16 @@ KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc,
 
   // Public Key Generation
 
-  Element a(dug, elementParams, Format::EVALUATION);
-  Element e(dgg, elementParams, Format::EVALUATION);
+  Element a(dug, paramsPK, Format::EVALUATION);
+  Element e(dgg, paramsPK, Format::EVALUATION);
 
   Element b = ns * e - a * s;
+
+  usint sizeQ = elementParams->GetParams().size();
+  usint sizePK = paramsPK->GetParams().size();
+  if (sizePK > sizeQ) {
+    s.DropLastElements(sizePK - sizeQ);
+  }
 
   keyPair.secretKey->SetPrivateElement(std::move(s));
   keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
@@ -178,8 +186,16 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
 
   const std::vector<Element> &pk = publicKey->GetPublicElements();
 
-  const Element &p0 = pk[0];
-  const Element &p1 = pk[1];
+  Element p0 = pk[0];
+  Element p1 = pk[1];
+
+  usint sizeQ = elementParams->GetParams().size();
+  usint sizePK = p0.GetParams()->GetParams().size();
+
+  if (sizePK > sizeQ) {
+    p0.DropLastElements(sizePK - sizeQ);
+    p1.DropLastElements(sizePK - sizeQ);
+  }
 
   Element v = cryptoParams->GetMode() == RLWE
                   ? Element(dgg, elementParams, Format::EVALUATION)

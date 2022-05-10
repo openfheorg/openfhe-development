@@ -251,9 +251,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // ==========================================
     // TestType,     Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { RE_ENCRYPTION, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { RE_ENCRYPTION, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { RE_ENCRYPTION, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,  DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { RE_ENCRYPTION, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { RE_ENCRYPTION, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    { RE_ENCRYPTION, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { RE_ENCRYPTION, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType, Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
