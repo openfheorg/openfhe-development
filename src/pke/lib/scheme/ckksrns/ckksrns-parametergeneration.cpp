@@ -68,6 +68,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
           EncryptionTechnique encTech,
           MultiplicationTechnique multTech) const {
 
+  usint extraModSize = 0;
+  if (rsTech == FLEXIBLEAUTOEXT) {
+    // TODO: Allow the user to specify this?
+    extraModSize = 20;
+  }
+
   const auto cryptoParamsCKKSRNS =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
 
@@ -78,14 +84,29 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
   uint32_t qBound = 0;
   // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
   if (ksTech == BV) {
-    qBound = firstModSize + (numPrimes - 1) * scaleExp;
+    qBound = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
   } else if (ksTech == HYBRID) {
-    qBound = firstModSize + (numPrimes - 1) * scaleExp;
+    qBound = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
     qBound +=
         ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits) *
         auxBits;
   }
 
+  uint32_t qBoundExact = 0;
+  uint32_t auxBitsExact = 0;
+
+  if (rsTech == FLEXIBLEAUTOEXT) {
+      qBoundExact = firstModSize + (numPrimes - 1) * scaleExp;
+    if (ksTech == BV) {
+      qBoundExact += ceil(static_cast<double>(qBoundExact) / auxBits) * auxBits;
+    } else if (ksTech == HYBRID) {
+      auxBitsExact = ceil(ceil(static_cast<double>(qBoundExact) / numPartQ) /
+	       auxBits);
+      qBoundExact += ceil(ceil(static_cast<double>(qBoundExact) / numPartQ) /
+	       auxBits) * auxBits;
+    }
+
+  }
   // RLWE security constraint
   DistributionType distType =
       (cryptoParamsCKKSRNS->GetMode() == RLWE) ? HEStd_error : HEStd_ternary;
@@ -100,6 +121,18 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
 
       // Choose ring dimension based on security standards
       n = nRLWE(qBound);
+      if (extraModSize > 0) {
+        usint nExact = nRLWE(qBoundExact);
+        //std::cerr << "n = " << n << std::endl;
+        //std::cerr << "nExact = " << nExact << std::endl;
+        while (n > nExact) {
+            qBound = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
+            usint PBound = qBoundExact - qBound;
+            auxBits = (uint32_t)std::floor(PBound / auxBitsExact);
+            qBound += auxBitsExact * auxBits;
+            n = nRLWE(qBound);
+        }
+      }
       cyclOrder = 2 * n;
     } else {  // if (n!=0)
       // Case 3: Both SecurityLevel and ring dimension specified
@@ -123,9 +156,15 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
 
   usint dcrtBits = scaleExp;
 
-  std::vector<NativeInteger> moduliQ(numPrimes);
-  std::vector<NativeInteger> rootsQ(numPrimes);
-
+  std::vector<NativeInteger> moduliQ;
+  std::vector<NativeInteger> rootsQ;
+  if (extraModSize == 0) {
+    moduliQ.resize(numPrimes);
+    rootsQ.resize(numPrimes);
+  } else {
+    moduliQ.resize(numPrimes + 1);
+    rootsQ.resize(numPrimes + 1);
+  }
   NativeInteger q = FirstPrime<NativeInteger>(dcrtBits, cyclOrder);
   moduliQ[numPrimes - 1] = q;
   rootsQ[numPrimes - 1] = RootOfUnity(cyclOrder, moduliQ[numPrimes - 1]);
@@ -213,6 +252,18 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
   }
   rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
 
+  if (rsTech == FLEXIBLEAUTOEXT) {
+    if (extraModSize == dcrtBits || extraModSize == firstModSize) {
+      moduliQ[numPrimes] = PreviousPrime<NativeInteger>(moduliQ[0], cyclOrder);
+    } else {
+      NativeInteger extraInteger =
+          FirstPrime<NativeInteger>(extraModSize, cyclOrder);
+      moduliQ[numPrimes] =
+          PreviousPrime<NativeInteger>(extraInteger, cyclOrder);
+    }
+    rootsQ[numPrimes] = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
+  }
+
   auto paramsDCRT =
       std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
 
@@ -232,7 +283,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
     cryptoParamsCKKSRNS->SetEncodingParams(encodingParamsNew);
   }
 
-  cryptoParamsCKKSRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, 0);
+  cryptoParamsCKKSRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, extraModSize);
 
   return true;
 }

@@ -216,6 +216,12 @@ class PlaintextImpl {
   virtual bool Encode() = 0;
 
   /**
+   * Encode the plaintext into a polynomial in FLEXIBLEAUTOEXT mode.
+   * @return true on success
+   */
+  virtual bool EncodeWithExtra() { return false; }
+
+  /**
    * Decode the polynomial into the plaintext
    * @return
    */

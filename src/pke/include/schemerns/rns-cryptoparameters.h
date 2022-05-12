@@ -588,8 +588,9 @@ public:
    * @return the scaling factor.
    */
   double GetScalingFactorReal(uint32_t l = 0) const {
-    if (m_rsTechnique == FLEXIBLEAUTO) {
+    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
       if (l >= m_scalingFactorsReal.size()) {
+        // TODO: Return an error here.
         return m_approxSF;
       }
 
@@ -613,7 +614,7 @@ public:
    * @return the precomputed table
    */
   double GetModReduceFactor(uint32_t l = 0) const {
-    if (m_rsTechnique == FLEXIBLEAUTO) {
+    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
       return m_dmoduliQ[l];
     }
 
@@ -829,8 +830,9 @@ public:
   }
 
   const NativeInteger &GetScalingFactorInt(usint l) const {
-    if (m_rsTechnique == FLEXIBLEAUTO) {
+    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
       if (l >= m_scalingFactorsInt.size()) {
+        // TODO: Return an error here.
         return m_fixedSF;
       }
       return m_scalingFactorsInt[l];
@@ -841,7 +843,7 @@ public:
   const NativeInteger &GetScalingFactorIntBig(usint l) const { return m_scalingFactorsIntBig[l]; }
 
   const NativeInteger &GetModReduceFactorInt(uint32_t l = 0) const {
-    if (m_rsTechnique == FLEXIBLEAUTO) {
+    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
       return m_qModt[l];
     }
     return m_fixedSF;

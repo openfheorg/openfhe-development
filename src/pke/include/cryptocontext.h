@@ -865,8 +865,14 @@ protected:
     const auto cryptoParams =
         std::dynamic_pointer_cast<CryptoParametersRNS>(
             GetCryptoParameters());
+    double scFact;
 
-    double scFact = cryptoParams->GetScalingFactorReal(level);
+    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+      scFact = cryptoParams->GetScalingFactorRealBig(level);
+      depth = 2;
+    } else {
+      scFact = cryptoParams->GetScalingFactorReal(level);
+    }
 
     if (params == nullptr) {
       std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
@@ -890,7 +896,12 @@ protected:
           params, this->GetEncodingParams(), value, depth, level, scFact));
     }
 
-    p->Encode();
+    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+      p->EncodeWithExtra();
+    } else {
+      p->Encode();
+    }
+  
     return p;
   }
 
