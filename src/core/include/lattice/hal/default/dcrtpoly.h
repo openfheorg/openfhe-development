@@ -900,9 +900,8 @@ public:
         const std::vector<NativeInteger>& PInvModq, const std::vector<NativeInteger>& PInvModqPrecon,
         const std::vector<NativeInteger>& PHatInvModp, const std::vector<NativeInteger>& PHatInvModpPrecon,
         const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
-        const std::vector<NativeInteger>& tInvModp       = std::vector<NativeInteger>(),
-        const std::vector<NativeInteger>& tInvModpPrecon = std::vector<NativeInteger>(), const NativeInteger& t = 0,
-        const std::vector<NativeInteger>& tModqPrecon = std::vector<NativeInteger>()) const override;
+        const std::vector<NativeInteger>& tInvModp, const std::vector<NativeInteger>& tInvModpPrecon,
+        const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const override;
 
     /**
    * @brief Performs CRT basis switching:

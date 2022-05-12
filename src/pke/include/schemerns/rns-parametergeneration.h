@@ -66,7 +66,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param n ring dimension in case the user wants to use a custom ring
    * dimension
    */
-  virtual bool ParamsGenBFVRNS(
+  bool ParamsGenBFVRNS(
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
       int32_t evalAddCount,
       int32_t evalMultCount,
@@ -98,7 +98,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param rsTech the rescaling technique used (e.g., FIXEDMANUAL or
    * FLEXIBLEAUTO)
    */
-  virtual bool ParamsGenCKKSRNS(
+  bool ParamsGenCKKSRNS(
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
       usint cyclOrder,
       usint numPrimes,
@@ -129,7 +129,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param firstModSize the bit-size of the first modulus
    * @param dcrtBits the bit-width of moduli.
    */
-  virtual bool ParamsGenBGVRNS(
+  bool ParamsGenBGVRNS(
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
       usint ptm, usint numPrimes, usint relinWindow, MODE mode,
       usint firstModSize,

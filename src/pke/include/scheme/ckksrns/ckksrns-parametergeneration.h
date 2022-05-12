@@ -45,7 +45,7 @@ public:
 
   virtual ~ParameterGenerationCKKSRNS() {}
 
-  virtual bool ParamsGenCKKSRNS(
+  bool ParamsGenCKKSRNS(
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
       usint numPrimes, usint scaleExp, usint relinWindow, MODE mode,
       usint firstModSize,
