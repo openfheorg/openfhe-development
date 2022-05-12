@@ -178,7 +178,7 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(
       NativeInteger pj = paramsQP->GetParams()[j]->GetModulus();
       NativeInteger rooti = paramsQP->GetParams()[j]->GetRootOfUnity();
       auto sNew0 = s.GetElementAtIndex(0);
-      sNew0.SwitchModulus(pj, rooti);
+      sNew0.SwitchModulus(pj, rooti, 0, 0);
       sExt.SetElementAtIndex(j, std::move(sNew0));
     }
     sExt.SetFormat(Format::EVALUATION);

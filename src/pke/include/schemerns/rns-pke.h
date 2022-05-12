@@ -66,7 +66,7 @@ class PKERNS : public PKEBase<DCRTPoly> {
    * cryptocontext if false
    * @param *ciphertext ciphertext which results from encryption.
    */
-  virtual Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext,
+  Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext,
       const PublicKey<DCRTPoly> publicKey) const override;
 
   /**
@@ -79,7 +79,7 @@ class PKERNS : public PKEBase<DCRTPoly> {
    * cryptocontext if false
    * @param *ciphertext ciphertext which results from encryption.
    */
-  virtual Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext,
+  Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext,
       const PrivateKey<DCRTPoly> privateKey) const override;
 
   /**
@@ -103,7 +103,7 @@ class PKERNS : public PKEBase<DCRTPoly> {
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-  virtual DecryptResult Decrypt(
+  DecryptResult Decrypt(
       ConstCiphertext<DCRTPoly> ciphertext,
       const PrivateKey<DCRTPoly> privateKey,
       Poly *plaintext) const override;
@@ -112,15 +112,15 @@ class PKERNS : public PKEBase<DCRTPoly> {
   // CORE OPERATIONS
   /////////////////////////////////////
 
-  virtual std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(
+  std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(
       const PrivateKey<DCRTPoly> privateKey,
-      const std::shared_ptr<ParmType> params = nullptr) const override;
+      const std::shared_ptr<ParmType> params) const override;
 
-  virtual std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(
+  std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(
       const PublicKey<DCRTPoly> publicKey,
-      const std::shared_ptr<ParmType> params = nullptr) const override;
+      const std::shared_ptr<ParmType> params) const override;
 
-  virtual DCRTPoly DecryptCore(const std::vector<DCRTPoly> &cv,
+  DCRTPoly DecryptCore(const std::vector<DCRTPoly> &cv,
                        const PrivateKey<DCRTPoly> privateKey) const override;
 
   /////////////////////////////////////

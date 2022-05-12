@@ -43,6 +43,14 @@
 namespace lbcrypto {
 
 /**
+ * @brief  BASE_NUM_LEVELS_TO_DROP is the most common value for levels/towers to drop (do not make it a default argument
+ * as default arguments work differently for virtual functions)
+ */
+ enum {
+     BASE_NUM_LEVELS_TO_DROP = 1,
+     BASE_TARGET_NUM_LEVELS  = 1,
+ };
+/**
  * @brief Abstract interface class for LBC SHE algorithms
  * @tparam Element a ring element.
  */
@@ -626,7 +634,7 @@ class LeveledSHEBase {
    * @param levels the number of towers to drop.
    */
   virtual Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext,
-                                        size_t levels = 1) const  {
+                                        size_t levels) const  {
     OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
   }
 
@@ -637,7 +645,7 @@ class LeveledSHEBase {
    * @param levels the number of towers to drop.
    */
   virtual void ModReduceInPlace(Ciphertext<Element> &ciphertext,
-                                size_t levels = 1) const {
+                                size_t levels) const {
     OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
   }
 
@@ -690,7 +698,7 @@ class LeveledSHEBase {
   }
 
   virtual Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext,
-                                       size_t towersLeft = 1) const {
+                                       size_t towersLeft) const {
     OPENFHE_THROW(config_error, "Compress is not supported for this scheme");
   }
 
@@ -702,7 +710,7 @@ class LeveledSHEBase {
    * @return ciphertext after the modulus reduction performed.
    */
   virtual Ciphertext<DCRTPoly> ModReduceInternal(
-      ConstCiphertext<DCRTPoly> ciphertext, size_t levels = 1) const {
+      ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
     OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
   }
 
@@ -714,7 +722,7 @@ class LeveledSHEBase {
    * @details \p cipherText will have modulus reduction performed in-place.
    */
   virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                        size_t levels = 1) const {
+                                        size_t levels) const {
     OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
   }
 

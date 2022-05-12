@@ -52,7 +52,7 @@ public:
    * @details \p cipherText will have modulus reduction performed in-place.
    */
   virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                        size_t levels = 1) const override;
+                                        size_t levels) const override;
 
   virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                           const EvalKey<DCRTPoly> evalKey,

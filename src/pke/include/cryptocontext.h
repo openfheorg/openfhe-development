@@ -1753,7 +1753,7 @@ protected:
   Ciphertext<Element> Rescale(ConstCiphertext<Element> ciphertext) const {
     CheckCiphertext(ciphertext);
 
-    return GetScheme()->ModReduce(ciphertext);
+    return GetScheme()->ModReduce(ciphertext, BASE_NUM_LEVELS_TO_DROP);
   }
 
   /**
@@ -1765,7 +1765,7 @@ protected:
   void RescaleInPlace(Ciphertext<Element>& ciphertext) const {
     CheckCiphertext(ciphertext);
 
-    GetScheme()->ModReduceInPlace(ciphertext);
+    GetScheme()->ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
   }
 
   /**
@@ -1776,7 +1776,7 @@ protected:
   Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext) const {
     CheckCiphertext(ciphertext);
 
-    return GetScheme()->ModReduce(ciphertext);
+    return GetScheme()->ModReduce(ciphertext, BASE_NUM_LEVELS_TO_DROP);
   }
 
   /**
@@ -1786,7 +1786,7 @@ protected:
   void ModReduceInPlace(Ciphertext<Element>& ciphertext) const {
     CheckCiphertext(ciphertext);
 
-    GetScheme()->ModReduceInPlace(ciphertext);
+    GetScheme()->ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
   }
 
   /**

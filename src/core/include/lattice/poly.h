@@ -703,8 +703,8 @@ public:
    * ASSUMPTION: This method assumes that the caller provides the correct
    * rootOfUnity for the modulus.
    */
-    void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb = Integer(0),
-                       const Integer& rootOfUnityArb = Integer(0));
+    void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
+                       const Integer& rootOfUnityArb);
 
     /**
    * @brief Convert from Coefficient to Format::EVALUATION or vice versa; calls
@@ -761,7 +761,7 @@ public:
    * 2^{baseBits} \f$.
    * @return is the pointer where the base decomposition vector is stored
    */
-    std::vector<PolyImpl> BaseDecompose(usint baseBits, bool evalModeAnswer = true) const;
+    std::vector<PolyImpl> BaseDecompose(usint baseBits, bool evalModeAnswer) const;
 
     /**
    * @brief Generate a vector of PolyImpl's as \f$ \left\{x, {base}*x,

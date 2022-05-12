@@ -100,8 +100,8 @@ void rounding_ops(const std::string& msg) {
     Element roundingCorrect2(ilparams2, Format::COEFFICIENT);
     roundingCorrect2 = {"16316", "16320", "60", "286"};
 
-    ilvector2n1.SwitchModulus(q2, primitiveRootOfUnity2);
-    ilvector2n2.SwitchModulus(q2, primitiveRootOfUnity2);
+    ilvector2n1.SwitchModulus(q2, primitiveRootOfUnity2, 0, 0);
+    ilvector2n2.SwitchModulus(q2, primitiveRootOfUnity2, 0, 0);
     OPENFHE_DEBUGEXP(ilvector2n1);
     OPENFHE_DEBUGEXP(ilvector2n2);
 
@@ -122,7 +122,7 @@ void rounding_ops(const std::string& msg) {
     OPENFHE_DEBUG("makes sure the result is correct after");
     OPENFHE_DEBUG("going back to the original modulus");
 
-    rounding2.SwitchModulus(q, primitiveRootOfUnity);
+    rounding2.SwitchModulus(q, primitiveRootOfUnity, 0, 0);
     OPENFHE_DEBUGEXP(rounding2);
 
     Element roundingCorrect3(ilparams, Format::COEFFICIENT);
@@ -285,7 +285,7 @@ void switch_modulus(const std::string& msg) {
         typename VecType::Integer modulus("17");
         typename VecType::Integer rootOfUnity("15");
 
-        ilv.SwitchModulus(modulus, rootOfUnity);
+        ilv.SwitchModulus(modulus, rootOfUnity, 0, 0);
 
         auto ilparams2 = std::make_shared<ParmType>(m, modulus, rootOfUnity);
         Element expected(ilparams2, Format::COEFFICIENT);
@@ -297,7 +297,7 @@ void switch_modulus(const std::string& msg) {
         typename VecType::Integer modulus1("193");
         typename VecType::Integer rootOfUnity1("150");
 
-        ilv1.SwitchModulus(modulus1, rootOfUnity1);
+        ilv1.SwitchModulus(modulus1, rootOfUnity1, 0, 0);
         auto ilparams3 = std::make_shared<ParmType>(m, modulus1, rootOfUnity1);
         Element expected2(ilparams3, Format::COEFFICIENT);
         expected2 = {"176", "163", "35", "28"};

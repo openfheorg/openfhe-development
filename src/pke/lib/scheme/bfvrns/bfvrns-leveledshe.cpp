@@ -116,7 +116,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
           cryptoParams->GetQlHatModr(),
           cryptoParams->GetalphaQlModr(),
           cryptoParams->GetModrBarrettMu(),
-          cryptoParams->GetqInv());
+          cryptoParams->GetqInv(),
+          Format::EVALUATION);
     }
 
     for (size_t i = 0; i < cv2Size; i++) {
@@ -128,7 +129,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
           cryptoParams->GetQlHatModr(),
           cryptoParams->GetalphaQlModr(),
           cryptoParams->GetModrBarrettMu(),
-          cryptoParams->GetqInv());
+          cryptoParams->GetqInv(),
+          Format::EVALUATION);
     }
   } else {
     for (size_t i = 0; i < cv1Size; i++) {

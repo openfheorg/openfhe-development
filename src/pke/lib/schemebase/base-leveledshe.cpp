@@ -513,7 +513,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::ComposedEvalMult(
   auto algo = ciphertext1->GetCryptoContext()->GetScheme();
   Ciphertext<Element> ciphertext = EvalMult(ciphertext1, ciphertext2);
   algo->KeySwitchInPlace(ciphertext, evalKey);
-  ModReduceInPlace(ciphertext);
+  ModReduceInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
   return ciphertext;
 }
 

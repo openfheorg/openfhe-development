@@ -140,13 +140,13 @@ public:
    * @param rsTech the technique to use for rescaling (e.g., FLEXIBLEAUTO or
    * FIXEDMANUAL).
    */
-  virtual void PrecomputeCRTTables(KeySwitchTechnique ksTech = BV,
-                                   RescalingTechnique rsTech = FIXEDMANUAL,
-                                   EncryptionTechnique encTech = STANDARD,
-                                   MultiplicationTechnique multTech = HPS,
-                                   uint32_t numPartQ = 0,
-                                   uint32_t auxBits = 0,
-                                   uint32_t extraBits = 0);
+  virtual void PrecomputeCRTTables(KeySwitchTechnique ksTech,
+                                   RescalingTechnique rsTech,
+                                   EncryptionTechnique encTech,
+                                   MultiplicationTechnique multTech,
+                                   uint32_t numPartQ,
+                                   uint32_t auxBits,
+                                   uint32_t extraBits);
 
   virtual uint64_t FindAuxPrimeStep() const;
 

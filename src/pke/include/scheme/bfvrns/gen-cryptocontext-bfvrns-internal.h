@@ -37,6 +37,7 @@
 #define _GEN_CRYPTOCONTEXT_BFVRNS_INTERNAL_H_
 
 #include "encoding/encodingparams.h"
+#include "constants.h"
 
 namespace lbcrypto {
 
@@ -102,7 +103,11 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 		parameters.GetEvalMultCount(),
 		parameters.GetKeySwitchCount(),
 		parameters.GetFirstModSize(),
-		parameters.GetRingDim());
+		parameters.GetRingDim(),
+		KeySwitchTechnique::BV,
+		RescalingTechnique::FIXEDMANUAL,
+		EncryptionTechnique::STANDARD,
+		MultiplicationTechnique::HPS);
 
 	auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
 	cc->setSchemeId("BFVRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::BFVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string

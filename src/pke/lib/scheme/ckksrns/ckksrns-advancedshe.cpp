@@ -101,7 +101,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(
 
     if (ciphertexts[maxIdx]->GetDepth() == 2) {
       for (uint32_t i = 0; i < ciphertexts.size(); i++) {
-        algo->ModReduceInternalInPlace(ciphertexts[i]);
+        algo->ModReduceInternalInPlace(ciphertexts[i], BASE_NUM_LEVELS_TO_DROP);
       }
     }
   }

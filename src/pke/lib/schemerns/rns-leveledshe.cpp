@@ -603,7 +603,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::Compress(
       std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
 
   while (result->GetDepth() > 1) {
-    ModReduceInternalInPlace(result);
+    ModReduceInternalInPlace(result, BASE_NUM_LEVELS_TO_DROP);
   }
   const std::vector<DCRTPoly> &cv = result->GetElements();
   usint sizeQl = cv[0].GetNumOfElements();

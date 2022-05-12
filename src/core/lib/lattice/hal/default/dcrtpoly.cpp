@@ -129,7 +129,7 @@ const DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const PolyType& el
     for (usint i = 1; i < vecCount; i++) {
         PolyType newvec(element);
         newvec.SwitchModulus(this->m_params->GetParams()[i]->GetModulus(),
-                             this->m_params->GetParams()[i]->GetRootOfUnity());
+                             this->m_params->GetParams()[i]->GetRootOfUnity(), 0, 0);
         m_vectors.push_back(std::move(newvec));
     }
 
@@ -291,7 +291,7 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const BugType& bug, const std::shared_ptr<DC
     for (usint i = 0; i < numberOfTowers; i++) {
         if (i > 0)
             ilvector.SwitchModulus(dcrtParams->GetParams()[i]->GetModulus(),
-                                   dcrtParams->GetParams()[i]->GetRootOfUnity());
+                                   dcrtParams->GetParams()[i]->GetRootOfUnity(), 0, 0);
 
         auto newVector = ilvector;
         // set the format to what the caller asked for.
@@ -477,7 +477,7 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::CRTDecompose(uint32_t 
             for (usint k = 0; k < m_vectors.size(); k++) {
                 PolyType temp(input.m_vectors[i]);
                 if (i != k) {
-                    temp.SwitchModulus(input.m_vectors[k].GetModulus(), input.m_vectors[k].GetRootOfUnity());
+                    temp.SwitchModulus(input.m_vectors[k].GetModulus(), input.m_vectors[k].GetRootOfUnity(), 0, 0);
                     temp.SetFormat(Format::EVALUATION);
                     currentDCRTPoly.m_vectors[k] = std::move(temp);
                 }
@@ -500,7 +500,7 @@ std::vector<DCRTPolyImpl<VecType>> DCRTPolyImpl<VecType>::CRTDecompose(uint32_t 
                 for (usint k = 0; k < m_vectors.size(); k++) {
                     PolyType temp(decomposed[j]);
                     if (i != k)
-                        temp.SwitchModulus(input.m_vectors[k].GetModulus(), input.m_vectors[k].GetRootOfUnity());
+                        temp.SwitchModulus(input.m_vectors[k].GetModulus(), input.m_vectors[k].GetRootOfUnity(), 0, 0);
                     currentDCRTPoly.m_vectors[k] = std::move(temp);
                 }
 
@@ -1010,7 +1010,7 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
 #pragma omp parallel for
     for (usint i = 0; i < extra.m_vectors.size(); i++) {
         auto temp = lastPoly;
-        temp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity());
+        temp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity(), 0, 0);
         extra.m_vectors[i] = (temp *= QlQlInvModqlDivqlModq[i]);
     }
 
@@ -1070,7 +1070,7 @@ void DCRTPolyImpl<VecType>::ModReduce(const NativeInteger& t, const std::vector<
 #pragma omp parallel for
         for (usint i = 0; i < m_vectors.size(); i++) {
             auto temp = delta;
-            temp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity());
+            temp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity(), 0, 0);
             extra.m_vectors[i] = temp;
         }
 
@@ -1088,7 +1088,7 @@ void DCRTPolyImpl<VecType>::ModReduce(const NativeInteger& t, const std::vector<
 #pragma omp parallel for
         for (usint i = 0; i < m_vectors.size(); i++) {
             auto temp = delta;
-            temp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity());
+            temp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity(), 0, 0);
             m_vectors[i] += (temp *= t);
             m_vectors[i] *= qlInvModq[i];
         }
@@ -1424,7 +1424,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
     #pragma omp parallel for
         for (usint j = 0; j < sizeP; j++) {
             auto temp = xQHatInvModqi;
-            temp.SwitchModulus(ans.m_vectors[j].GetModulus(), ans.m_vectors[j].GetRootOfUnity());
+            temp.SwitchModulus(ans.m_vectors[j].GetModulus(), ans.m_vectors[j].GetRootOfUnity(), 0, 0);
             ans.m_vectors[j] += (temp *= QHatModp[i][j]);
         }
     }
@@ -2817,7 +2817,7 @@ void DCRTPolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer&
     for (usint i = 0; i < m_vectors.size(); ++i) {
         auto mod  = modulus % Integer((*this->m_params)[i]->GetModulus().ConvertToInt());
         auto root = rootOfUnity % Integer((*this->m_params)[i]->GetModulus().ConvertToInt());
-        m_vectors[i].SwitchModulus(mod.ConvertToInt(), root.ConvertToInt());
+        m_vectors[i].SwitchModulus(mod.ConvertToInt(), root.ConvertToInt(), 0, 0);
         m_modulus = m_modulus * mod;
     }
 }
@@ -2833,7 +2833,7 @@ void DCRTPolyImpl<VecType>::SwitchModulusAtIndex(usint index, const Integer& mod
     }
 
     m_vectors[index].SwitchModulus(PolyType::Integer(modulus.ConvertToInt()),
-                                   PolyType::Integer(rootOfUnity.ConvertToInt()));
+                                   PolyType::Integer(rootOfUnity.ConvertToInt()), 0, 0);
     this->m_params->RecalculateModulus();
 }
 

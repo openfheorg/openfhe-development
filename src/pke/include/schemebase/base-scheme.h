@@ -129,15 +129,15 @@ class SchemeBase {
   /////////////////////////////////////////
 
   virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
-                         int32_t evalAddCount = 0,
-                         int32_t evalMultCount = 0,
-                         int32_t keySwitchCount = 0,
-                         size_t dcrtBits = 0,
-                         uint32_t n = 0,
-                         enum KeySwitchTechnique ksTech = BV,
-                         enum RescalingTechnique rsTech = FIXEDMANUAL,
-                         enum EncryptionTechnique encTech = STANDARD,
-                         enum MultiplicationTechnique multTech = HPS) const {
+                         int32_t evalAddCount,
+                         int32_t evalMultCount,
+                         int32_t keySwitchCount,
+                         size_t dcrtBits,
+                         uint32_t n,
+                         enum KeySwitchTechnique ksTech,
+                         enum RescalingTechnique rsTech,
+                         enum EncryptionTechnique encTech,
+                         enum MultiplicationTechnique multTech) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, evalMultCount,
                                     keySwitchCount, dcrtBits, n,
@@ -155,10 +155,10 @@ class SchemeBase {
                          MODE mode,
                          usint firstModSize,
                          uint32_t numPartQ,
-                         enum KeySwitchTechnique ksTech = BV,
-                         enum RescalingTechnique rsTech = FIXEDMANUAL,
-                         enum EncryptionTechnique encTech = STANDARD,
-                         enum MultiplicationTechnique multTech = HPS) const {
+                         enum KeySwitchTechnique ksTech,
+                         enum RescalingTechnique rsTech,
+                         enum EncryptionTechnique encTech,
+                         enum MultiplicationTechnique multTech) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes,
                                     scaleExp, relinWindow, mode, firstModSize, numPartQ,
@@ -179,10 +179,10 @@ class SchemeBase {
                          usint dcrtBits,
                          uint32_t numPartQ,
                          usint multihopQBound,
-                         enum KeySwitchTechnique ksTech = BV,
-                         enum RescalingTechnique rsTech = FIXEDMANUAL,
-                         enum EncryptionTechnique encTech = STANDARD,
-                         enum MultiplicationTechnique multTech = HPS) const {
+                         enum KeySwitchTechnique ksTech,
+                         enum RescalingTechnique rsTech,
+                         enum EncryptionTechnique encTech,
+                         enum MultiplicationTechnique multTech) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, cyclOrder, ptm, numPrimes,
                                     relinWindow, mode, firstModSize,
@@ -265,7 +265,7 @@ class SchemeBase {
       if (!privateKey)
         OPENFHE_THROW(config_error, "Input private key is nullptr");
 
-      return m_PKE->EncryptZeroCore(privateKey);
+      return m_PKE->EncryptZeroCore(privateKey, nullptr);
     }
     OPENFHE_THROW(config_error,
                    "EncryptZeroCore operation has not been enabled");
@@ -276,7 +276,7 @@ class SchemeBase {
       if (!publicKey)
         OPENFHE_THROW(config_error, "Input public key is nullptr");
 
-      return m_PKE->EncryptZeroCore(publicKey);
+      return m_PKE->EncryptZeroCore(publicKey, nullptr);
     }
     OPENFHE_THROW(config_error,
                    "EncryptZeroCore operation has not been enabled");
@@ -1086,7 +1086,7 @@ class SchemeBase {
                    "ComposedEvalMult operation has not been enabled");
   }
 
-  virtual Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext, size_t levels = 1) const {
+  virtual Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext, size_t levels) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1098,7 +1098,7 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "ModReduce operation has not been enabled");
   }
 
-  virtual void ModReduceInPlace(Ciphertext<Element> &ciphertext, size_t levels = 1) const {
+  virtual void ModReduceInPlace(Ciphertext<Element> &ciphertext, size_t levels) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1109,7 +1109,7 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "ModReduce operation has not been enabled");
   }
 
-  virtual Ciphertext<Element> ModReduceInternal(ConstCiphertext<Element> ciphertext, size_t levels = 1) const {
+  virtual Ciphertext<Element> ModReduceInternal(ConstCiphertext<Element> ciphertext, size_t levels) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1120,7 +1120,7 @@ class SchemeBase {
                    "ModReduceInternal has not been enabled for this scheme.");
   }
 
-  virtual void ModReduceInternalInPlace(Ciphertext<Element> &ciphertext, size_t levels = 1) const {
+  virtual void ModReduceInternalInPlace(Ciphertext<Element> &ciphertext, size_t levels) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1188,7 +1188,7 @@ class SchemeBase {
         "LevelReduceInternalInPlace has not been enabled for this scheme.");
   }
 
-  virtual Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext, size_t towersLeft = 1) const {
+  virtual Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext, size_t towersLeft) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");

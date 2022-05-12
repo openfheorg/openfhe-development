@@ -350,7 +350,7 @@ public:
    * base > 0
    * @return is the pointer where the resulting vector is stored
    */
-    virtual std::vector<DerivedType> CRTDecompose(uint32_t baseBits = 0) const = 0;
+    virtual std::vector<DerivedType> CRTDecompose(uint32_t baseBits) const = 0;
 
     // VECTOR OPERATIONS
 
