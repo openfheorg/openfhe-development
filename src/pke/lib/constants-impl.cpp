@@ -91,6 +91,9 @@ std::ostream &operator<<(std::ostream &s, RescalingTechnique t) {
     case FLEXIBLEAUTO:
       s << "FLEXIBLEAUTO";
       break;
+    case FLEXIBLEAUTOEXT:
+      s << "FLEXIBLEAUTOEXT";
+      break;
     case NORESCALE:
       s << "NORESCALE";
       break;

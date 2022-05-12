@@ -59,6 +59,7 @@ enum RescalingTechnique {
   FIXEDMANUAL,
   FIXEDAUTO,
   FLEXIBLEAUTO,
+  FLEXIBLEAUTOEXT,
   NORESCALE,
   INVALID_RS_TECHNIQUE  // TODO (dsuponit): make this the first value
 };
