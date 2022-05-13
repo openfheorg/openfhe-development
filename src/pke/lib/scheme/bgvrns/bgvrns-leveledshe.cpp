@@ -187,7 +187,7 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly> &ciphert
         NativeInteger scf2Inv = scf2.ModInverse(t);
         NativeInteger scfInv = scf.ModInverse(t);
 
-        EvalMultInPlace(ciphertext2, scf1.ModMul(scf2Inv, t).ModMul(ql2Modt, t).ModMul(scfInv, t).ConvertToInt());
+        EvalMultCoreInPlace(ciphertext2, scf1.ModMul(scf2Inv, t).ModMul(ql2Modt, t).ModMul(scfInv, t).ConvertToInt());
         ModReduceInternalInPlace(ciphertext2);
         if (c2lvl + 1 < c1lvl) {
           LevelReduceInternalInPlace(ciphertext2, nullptr, c1lvl - c2lvl - 1);
