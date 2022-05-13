@@ -252,11 +252,31 @@ bool CKKSPackedEncoding::Encode() {
     DiscreteFourierTransform::FFTSpecialInv(inverse);
     double powP = scalingFactor;
 
+    // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
+    int32_t MAX_BITS_IN_WORD = 62;
+
+    int32_t logc = 0;
+    for (size_t i = 0; i < Nh; ++i) {
+      inverse[i] *= powP;
+      int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
+      if (logc < logci) logc = logci;
+      logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
+      if (logc < logci) logc = logci;
+    }
+    if (logc < 0) {
+      OPENFHE_THROW(math_error, "Too small scaling factor");
+    }
+    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox = logc - logValid;
+    double approxFactor = pow(2, logApprox);
+
     std::vector<int64_t> temp(2 * Nh);
     for (size_t i = 0; i < Nh; ++i) {
-      // Check for possible overflow in llround function
-      double dre = inverse[i].real() * powP;
-      double dim = inverse[i].imag() * powP;
+      // Scale down by approxFactor in case the value exceeds a 64-bit integer.
+      double dre = inverse[i].real() / approxFactor;
+      double dim = inverse[i].imag() / approxFactor;
+
+      // Check for possible overflow
       if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
         // IFFT formula:
         // x[n] = (1/N) * \Sum^(N-1)_(k=0) X[k] * exp( j*2*pi*n*k/N )
@@ -316,7 +336,6 @@ bool CKKSPackedEncoding::Encode() {
                << std::endl;
         buffer << "Scaled input is " << scaledInputSize << " bits "
                << std::endl;
-
         OPENFHE_THROW(math_error, buffer.str());
       }
 
@@ -360,6 +379,24 @@ bool CKKSPackedEncoding::Encode() {
 
     if (depth > 1) {
       this->encodedVectorDCRT = this->encodedVectorDCRT.Times(currPowP);
+    }
+
+    // Scale back up by the approxFactor to get the correct encoding.
+    int32_t MAX_LOG_STEP = 60;
+    if (logApprox > 0) {
+      int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+      DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+      std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
+      logApprox -= logStep;
+
+      while (logApprox > 0) {
+        int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+        DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+        std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
+        crtApprox = CRTMult(crtApprox, crtSF, moduli);
+        logApprox -= logStep;
+      }
+      encodedVectorDCRT = encodedVectorDCRT.Times(crtApprox);
     }
 
     this->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
@@ -452,67 +489,6 @@ bool CKKSPackedEncoding::EncodeWithExtra() {
     }
 
     this->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
-
-  } else if (this->typeFlag == IsNativePoly) {
-    double p = this->encodingParams->GetPlaintextModulus();
-    double powP = pow(2, p * depth);
-
-    int64_t q = this->GetElementModulus().ConvertToInt();
-    NativeVector temp(this->GetElementRingDimension(), q);
-
-    for (size_t i = 0, jdx = Nh, idx = 0; i < Nh; ++i, jdx++, idx++) {
-      double dre = inverse[i].real() * powP;
-      double dim = inverse[i].imag() * powP;
-      // Check for possible overflow in llround function
-      if (std::abs(dre) >= q || std::abs(dim) >= q) {
-        OPENFHE_THROW(math_error,
-                       "Overflow, try to decrease depth or plaintext modulus");
-      }
-
-      int64_t re = std::llround(dre);
-      int64_t im = std::llround(dim);
-
-      temp[idx] = (re < 0) ? NativeInteger(q + re) : NativeInteger(re);
-      temp[jdx] = (im < 0) ? NativeInteger(q + im) : NativeInteger(im);
-    }
-
-    // output was in coefficient format
-    this->GetElement<NativePoly>().SetValues(std::move(temp),
-                                             Format::COEFFICIENT);
-    this->GetElement<NativePoly>().SetFormat(Format::EVALUATION);
-
-  } else {
-    // Scale inverse by scaling factor
-    double p = this->encodingParams->GetPlaintextModulus();
-    double powP = pow(2, p * depth);
-
-    const BigInteger &q = this->GetElementModulus();
-    // min of q and 2^63-2^9-1 - max value
-    // that could be round to int64_t
-    double dq = std::min(9223372036854775295., q.ConvertToDouble());
-
-    BigVector temp(this->GetElementRingDimension(), this->GetElementModulus());
-
-    for (size_t i = 0, jdx = Nh, idx = 0; i < Nh; ++i, jdx++, idx++) {
-      double dre = inverse[i].real() * powP;
-      double dim = inverse[i].imag() * powP;
-      // Check for possible overflow in llround function
-      if (std::fabs(dre) >= dq - std::numeric_limits<double>::epsilon() ||
-          std::fabs(dim) >= dq - std::numeric_limits<double>::epsilon()) {
-        OPENFHE_THROW(math_error,
-                       "Overflow, try to decrease depth or plaintext modulus");
-      }
-
-      int64_t re = std::llround(dre);
-      int64_t im = std::llround(dim);
-
-      temp[idx] = (re < 0) ? q - BigInteger(llabs(re)) : BigInteger(re);
-      temp[jdx] = (im < 0) ? q - BigInteger(llabs(im)) : BigInteger(im);
-    }
-
-    // output was in coefficient format
-    this->GetElement<Poly>().SetValues(std::move(temp), Format::COEFFICIENT);
-    this->GetElement<Poly>().SetFormat(Format::EVALUATION);
   }
   this->isEncoded = true;
   return true;

@@ -869,7 +869,10 @@ protected:
 
     if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
       scFact = cryptoParams->GetScalingFactorRealBig(level);
-      depth = 2;
+      // In FLEXIBLEAUTOEXT mode at level 0, we don't use the depth
+      // in our encoding function, so we set it to 1 to make sure it
+      // has no effect on the encoding.
+      depth = 1;
     } else {
       scFact = cryptoParams->GetScalingFactorReal(level);
     }
@@ -896,10 +899,11 @@ protected:
           params, this->GetEncodingParams(), value, depth, level, scFact));
     }
 
+    p->Encode();
+
+    // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has depth 2.
     if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
-      p->EncodeWithExtra();
-    } else {
-      p->Encode();
+      p->SetDepth(2);
     }
   
     return p;
