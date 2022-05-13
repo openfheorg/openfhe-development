@@ -808,9 +808,34 @@ protected:
    * @param value
    * @return plaintext
    */
-  Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value) const {
-    return PlaintextFactory::MakePlaintext(CoefPacked, this->GetElementParams(),
-                                           this->GetEncodingParams(), value);
+  Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1,
+      uint32_t level = 0) const {
+    const auto cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersRNS>(
+            GetCryptoParameters());
+    Plaintext p;
+    if (getSchemeId() == "BGVRNS" && (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO
+        || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)) {
+      NativeInteger scf;
+      NativeInteger t(cryptoParams->GetPlaintextModulus());
+      if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+        scf = cryptoParams->GetScalingFactorIntBig(level);
+        p = PlaintextFactory::MakePlaintext(CoefPacked, this->GetElementParams(),
+                                                 this->GetEncodingParams(), value, 2, level, scf);
+      } else {
+        scf = cryptoParams->GetScalingFactorInt(level);
+        for (usint i = 1; i < depth; i++) {
+          scf = scf.ModMul(scf, t);
+        }
+        p = PlaintextFactory::MakePlaintext(CoefPacked, this->GetElementParams(),
+                                                 this->GetEncodingParams(), value, depth, level, scf);
+      }
+    } else {
+      p = PlaintextFactory::MakePlaintext(CoefPacked, this->GetElementParams(),
+                                               this->GetEncodingParams(), value);
+    }
+
+    return p;
   }
 
   /**
@@ -818,9 +843,34 @@ protected:
    * @param value
    * @return plaintext
    */
-  Plaintext MakePackedPlaintext(const std::vector<int64_t>& value) const {
-    return PlaintextFactory::MakePlaintext(Packed, this->GetElementParams(),
-                                           this->GetEncodingParams(), value);
+  Plaintext MakePackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1,
+      uint32_t level = 0) const {
+    const auto cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersRNS>(
+            GetCryptoParameters());
+    Plaintext p;
+    if (getSchemeId() == "BGVRNS" && (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO
+        || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)) {
+      NativeInteger scf;
+      if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+        scf = cryptoParams->GetScalingFactorIntBig(level);
+        p = PlaintextFactory::MakePlaintext(Packed, this->GetElementParams(),
+                                                 this->GetEncodingParams(), value, 2, level, scf);
+      } else {
+        scf = cryptoParams->GetScalingFactorInt(level);
+        NativeInteger t(cryptoParams->GetPlaintextModulus());
+        for (usint i = 1; i < depth; i++) {
+          scf = scf.ModMul(scf, t);
+        }
+        p = PlaintextFactory::MakePlaintext(Packed, this->GetElementParams(),
+                                                 this->GetEncodingParams(), value, depth, level, scf);
+      }
+    } else {
+      p = PlaintextFactory::MakePlaintext(Packed, this->GetElementParams(),
+                                               this->GetEncodingParams(), value);
+    }
+
+    return p;
   }
 
   /**
