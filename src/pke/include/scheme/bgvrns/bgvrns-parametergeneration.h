@@ -44,17 +44,17 @@ class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
 public:
   virtual ~ParameterGenerationBGVRNS() {}
 
-  virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+  bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                  usint cyclOrder, usint ptm, usint numPrimes, usint relinWindow,
                  MODE mode,
-                 usint firstModSize = 0,
-                 usint dcrtBits = 0,
-                 uint32_t numPartQ = 4,
-                 usint multihopQBound = 0,
-                 enum KeySwitchTechnique ksTech = BV,
-                 enum RescalingTechnique rsTech = FIXEDMANUAL,
-                 enum EncryptionTechnique encTech = STANDARD,
-                 enum MultiplicationTechnique multTech = HPS) const override;
+                 usint firstModSize,
+                 usint dcrtBits,
+                 uint32_t numPartQ,
+                 usint multihopQBound,
+                 enum KeySwitchTechnique ksTech,
+                 enum RescalingTechnique rsTech,
+                 enum EncryptionTechnique encTech,
+                 enum MultiplicationTechnique multTech) const override;
 
 
   /////////////////////////////////////

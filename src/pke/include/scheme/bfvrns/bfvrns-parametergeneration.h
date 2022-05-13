@@ -44,16 +44,16 @@ class ParameterGenerationBFVRNS : public ParameterGenerationRNS {
 public:
   virtual ~ParameterGenerationBFVRNS() {}
 
-  virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                 int32_t evalAddCount = 0,
-                 int32_t evalMultCount = 0,
-                 int32_t keySwitchCount = 0,
-                 size_t dcrBits = 60,
-                 uint32_t n = 0,
-                 KeySwitchTechnique ksTech = BV,
-                 RescalingTechnique rsTech = FIXEDMANUAL,
-                 EncryptionTechnique encTech = STANDARD,
-                 MultiplicationTechnique multTech = HPS) const override;
+  bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                 int32_t evalAddCount,
+                 int32_t evalMultCount,
+                 int32_t keySwitchCount,
+                 size_t dcrBits,
+                 uint32_t n,
+                 KeySwitchTechnique ksTech,
+                 RescalingTechnique rsTech,
+                 EncryptionTechnique encTech,
+                 MultiplicationTechnique multTech) const override;
 
   /////////////////////////////////////
   // SERIALIZATION

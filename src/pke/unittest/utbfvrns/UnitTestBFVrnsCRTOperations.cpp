@@ -148,13 +148,13 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
       paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
       cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
       cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
+      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
   b.ExpandCRTBasis(
       paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
       cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
       cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
+      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
   Poly resultExpandedB = b.CRTInterpolate();
 
@@ -188,8 +188,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
 
   auto paramsPoly = std::make_shared<ILParams>(m, modulus, root);
 
-  aPoly.SwitchModulus(modulus, root);
-  bPoly.SwitchModulus(modulus, root);
+  aPoly.SwitchModulus(modulus, root, 0, 0);
+  bPoly.SwitchModulus(modulus, root, 0, 0);
 
   aPoly.SetFormat(Format::EVALUATION);
   bPoly.SetFormat(Format::EVALUATION);
@@ -286,13 +286,13 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
       paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
       cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
       cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
+      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
   b.ExpandCRTBasis(
       paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
       cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
       cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
+      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
   Poly resultExpandedB = b.CRTInterpolate();
 
@@ -326,8 +326,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
 
   auto paramsPoly = std::make_shared<ILParams>(m, modulus, root);
 
-  aPoly.SwitchModulus(modulus, root);
-  bPoly.SwitchModulus(modulus, root);
+  aPoly.SwitchModulus(modulus, root, 0, 0);
+  bPoly.SwitchModulus(modulus, root, 0, 0);
 
   aPoly.SetFormat(Format::EVALUATION);
   bPoly.SetFormat(Format::EVALUATION);

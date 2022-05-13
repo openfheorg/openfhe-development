@@ -83,7 +83,7 @@ public:
    * @return new Element
    */
     virtual Element CloneWithNoise(const DiscreteGaussianGeneratorImpl<VecType>& dgg,
-                                   Format format = Format::EVALUATION) const = 0;
+                                   Format format) const = 0;
 
     /**
    * @brief Standard destructor
@@ -336,7 +336,7 @@ public:
    * evaluation mode
    * @result is the pointer where the base decomposition vector is stored
    */
-    virtual std::vector<Element> BaseDecompose(usint baseBits, bool evalModeAnswer = true) const = 0;
+    virtual std::vector<Element> BaseDecompose(usint baseBits, bool evalModeAnswer) const = 0;
 
     /**
    * @brief Scalar division followed by rounding operation - operation on all
@@ -432,8 +432,8 @@ public:
    * rootOfUnity for the modulus.
    */
     virtual void SwitchModulus(const IntType& modulus, const IntType& rootOfUnity,
-                               const IntType& modulusArb     = IntType::ZERO,
-                               const IntType& rootOfUnityArb = IntType::ZERO) = 0;
+                               const IntType& modulusArb,
+                               const IntType& rootOfUnityArb) = 0;
 
     /**
    * @brief onvert from Coefficient to CRT or vice versa; calls FFT and inverse

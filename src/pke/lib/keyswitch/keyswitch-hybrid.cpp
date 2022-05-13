@@ -77,7 +77,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(
     const NativeInteger &pj = paramsQP->GetParams()[j]->GetModulus();
     const NativeInteger &rootj = paramsQP->GetParams()[j]->GetRootOfUnity();
     auto sNew0 = sNew.GetElementAtIndex(0);
-    sNew0.SwitchModulus(pj, rootj);
+    sNew0.SwitchModulus(pj, rootj, 0, 0);
     sNewExt.SetElementAtIndex(j, std::move(sNew0));
   }
 
@@ -163,7 +163,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(
     const NativeInteger &pj = paramsQP->GetParams()[j]->GetModulus();
     const NativeInteger &rootj = paramsQP->GetParams()[j]->GetRootOfUnity();
     auto sNew0 = sNew.GetElementAtIndex(0);
-    sNew0.SwitchModulus(pj, rootj);
+    sNew0.SwitchModulus(pj, rootj, 0, 0);
     sNewExt.SetElementAtIndex(j, std::move(sNew0));
   }
 

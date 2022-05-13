@@ -283,7 +283,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
   /////////////////////////////////////////
 
   virtual Ciphertext<DCRTPoly> ModReduce(ConstCiphertext<DCRTPoly> ciphertext,
-                                size_t levels = 1) const override;
+                                size_t levels) const override;
 
   /**
    * Method for In-place Modulus Reduction.
@@ -292,7 +292,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param levels the number of towers to drop.
    */
   virtual void ModReduceInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                size_t levels = 1) const override;
+                                size_t levels) const override;
 
   /////////////////////////////////////////
   // SHE LEVELED Level Reduce
@@ -311,7 +311,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
   /////////////////////////////////////////
 
   virtual Ciphertext<DCRTPoly> Compress(
-      ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft = 1) const override;
+      ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const override;
 
  protected:
 
@@ -328,7 +328,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @return ciphertext after the modulus reduction performed.
    */
   virtual Ciphertext<DCRTPoly> ModReduceInternal(
-      ConstCiphertext<DCRTPoly> ciphertext, size_t levels = 1) const override;
+      ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const override;
 
   /**
    * Method for rescaling in-place.
@@ -338,7 +338,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @details \p cipherText will have modulus reduction performed in-place.
    */
   virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                        size_t levels = 1) const override {
+                                        size_t levels) const override {
     OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
   }
 

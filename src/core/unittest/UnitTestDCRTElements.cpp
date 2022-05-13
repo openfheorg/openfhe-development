@@ -76,10 +76,10 @@ void DCRT_constructors(const std::string& msg) {
     ilv0.SetValues(bbv0, Format::EVALUATION);
 
     NativePoly ilv1(ilv0);
-    ilv1.SwitchModulus(moduli[1], rootsOfUnity[1]);
+    ilv1.SwitchModulus(moduli[1], rootsOfUnity[1], 0, 0);
 
     NativePoly ilv2(ilv0);
-    ilv2.SwitchModulus(moduli[2], rootsOfUnity[2]);
+    ilv2.SwitchModulus(moduli[2], rootsOfUnity[2], 0, 0);
 
     auto ildcrtparams = std::make_shared<ILDCRTParams<typename Element::Integer>>(m, moduli, rootsOfUnity);
 
@@ -220,10 +220,10 @@ void DCRT_getters_and_ops(const std::string& msg) {
     ilv0.SetValues(bbv0, Format::EVALUATION);
 
     NativePoly ilv1(ilv0);
-    ilv1.SwitchModulus(moduli[1], rootsOfUnity[1]);
+    ilv1.SwitchModulus(moduli[1], rootsOfUnity[1], 0, 0);
 
     NativePoly ilv2(ilv0);
-    ilv2.SwitchModulus(moduli[2], rootsOfUnity[2]);
+    ilv2.SwitchModulus(moduli[2], rootsOfUnity[2], 0, 0);
 
     auto ildcrtparams = std::make_shared<ILDCRTParams<typename Element::Integer>>(m, moduli, rootsOfUnity);
 
@@ -264,10 +264,10 @@ void DCRT_getters_and_ops(const std::string& msg) {
         ilvect0.SetValues(bbv1, Format::EVALUATION);
 
         NativePoly ilvect1(ilvect0);
-        ilvect1.SwitchModulus(moduli[1], rootsOfUnity[1]);
+        ilvect1.SwitchModulus(moduli[1], rootsOfUnity[1], 0, 0);
 
         NativePoly ilvect2(ilvect0);
-        ilvect2.SwitchModulus(moduli[2], rootsOfUnity[2]);
+        ilvect2.SwitchModulus(moduli[2], rootsOfUnity[2], 0, 0);
 
         std::vector<NativePoly> ilvector2nVector1(towersize);
         ilvector2nVector1 = {ilvect0, ilvect1, ilvect2};
@@ -307,10 +307,10 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
     ilv0.SetValues(bbv0, Format::EVALUATION);
 
     NativePoly ilv1(ilv0);
-    ilv1.SwitchModulus(moduli[1], rootsOfUnity[1]);
+    ilv1.SwitchModulus(moduli[1], rootsOfUnity[1], 0, 0);
 
     NativePoly ilv2(ilv0);
-    ilv2.SwitchModulus(moduli[2], rootsOfUnity[2]);
+    ilv2.SwitchModulus(moduli[2], rootsOfUnity[2], 0, 0);
 
     auto ildcrtparams = std::make_shared<ILDCRTParams<typename Element::Integer>>(m, moduli, rootsOfUnity);
 
@@ -327,10 +327,10 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
     ilvect0.SetValues(bbv1, Format::EVALUATION);
 
     NativePoly ilvect1(ilvect0);
-    ilvect1.SwitchModulus(moduli[1], rootsOfUnity[1]);
+    ilvect1.SwitchModulus(moduli[1], rootsOfUnity[1], 0, 0);
 
     NativePoly ilvect2(ilvect0);
-    ilvect2.SwitchModulus(moduli[2], rootsOfUnity[2]);
+    ilvect2.SwitchModulus(moduli[2], rootsOfUnity[2], 0, 0);
 
     std::vector<NativePoly> ilvector2nVector1(towersize);
     ilvector2nVector1[0] = ilvect0;
@@ -478,9 +478,9 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
         NativePoly ilvS1(ilvS0);
         NativePoly ilvS2(ilvS0);
 
-        ilvS0.SwitchModulus(moduli[0], rootsOfUnity[0]);
-        ilvS1.SwitchModulus(moduli[1], rootsOfUnity[1]);
-        ilvS2.SwitchModulus(moduli[2], rootsOfUnity[2]);
+        ilvS0.SwitchModulus(moduli[0], rootsOfUnity[0], 0, 0);
+        ilvS1.SwitchModulus(moduli[1], rootsOfUnity[1], 0, 0);
+        ilvS2.SwitchModulus(moduli[2], rootsOfUnity[2], 0, 0);
 
         std::vector<NativePoly> ilvector2nVectorS(towersize);
         ilvector2nVectorS[0] = ilvS0;
@@ -491,7 +491,7 @@ void DCRT_arithmetic_ops_element(const std::string& msg) {
         typename Element::Integer modulus2("113");
         typename Element::Integer rootOfUnity2(lbcrypto::RootOfUnity<typename Element::Integer>(m, modulus2));
 
-        ilvaS.SwitchModulus(modulus2, rootOfUnity2);
+        ilvaS.SwitchModulus(modulus2, rootOfUnity2, 0, 0);
 
         NativePoly ilvectS0 = ilvaS.GetElementAtIndex(0);
         NativePoly ilvectS1 = ilvaS.GetElementAtIndex(1);

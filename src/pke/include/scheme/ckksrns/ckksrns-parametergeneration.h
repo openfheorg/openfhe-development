@@ -45,15 +45,15 @@ public:
 
   virtual ~ParameterGenerationCKKSRNS() {}
 
-  virtual bool ParamsGenCKKSRNS(
+  bool ParamsGenCKKSRNS(
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
       usint numPrimes, usint scaleExp, usint relinWindow, MODE mode,
-      usint firstModSize = 60,
-      uint32_t mulPartQ = 4,
-      KeySwitchTechnique ksTech = BV,
-      RescalingTechnique rsTech = FIXEDMANUAL,
-      EncryptionTechnique encTech = STANDARD,
-      MultiplicationTechnique multTech = HPS) const override;
+      usint firstModSize,
+      uint32_t mulPartQ,
+      KeySwitchTechnique ksTech,
+      RescalingTechnique rsTech,
+      EncryptionTechnique encTech,
+      MultiplicationTechnique multTech) const override;
 
 
   /////////////////////////////////////

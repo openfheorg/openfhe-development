@@ -81,13 +81,13 @@ public:
   virtual ~CryptoParametersBFVRNS() {}
 
   virtual void PrecomputeCRTTables(
-      KeySwitchTechnique ksTech = BV,
-      RescalingTechnique rsTech = FIXEDMANUAL,
-      EncryptionTechnique encTech = STANDARD,
-      MultiplicationTechnique multTech = HPS,
-      uint32_t numPartQ = 0,
-      uint32_t auxBits = 0,
-      uint32_t extraBits = 0) override;
+      KeySwitchTechnique ksTech,
+      RescalingTechnique rsTech,
+      EncryptionTechnique encTech,
+      MultiplicationTechnique multTech,
+      uint32_t numPartQ,
+      uint32_t auxBits,
+      uint32_t extraBits) override;
 
   virtual uint64_t FindAuxPrimeStep() const override;
 

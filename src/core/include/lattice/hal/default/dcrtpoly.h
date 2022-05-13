@@ -277,7 +277,7 @@ public:
    * Coefficient representation. It is defined in inttypes.h.
    */
     DCRTPolyType CloneWithNoise(const DiscreteGaussianGeneratorImpl<VecType>& dgg,
-                                Format format = EVALUATION) const override;
+                                Format format) const override;
 
     /**
    * @brief Destructor.
@@ -336,7 +336,7 @@ public:
    * 2^{baseBits} \f$.
    * @return is the pointer where the base decomposition vector is stored
    */
-    std::vector<DCRTPolyType> BaseDecompose(usint baseBits, bool evalModeAnswer = true) const override;
+    std::vector<DCRTPolyType> BaseDecompose(usint baseBits, bool evalModeAnswer) const override;
 
     /**
    * @brief Generate a vector of PolyImpl's as \f$ \left\{x, {base}*x,
@@ -358,7 +358,7 @@ public:
    * base > 0
    * @return is the pointer where the resulting vector is stored
    */
-    std::vector<DCRTPolyType> CRTDecompose(uint32_t baseBits = 0) const override;
+    std::vector<DCRTPolyType> CRTDecompose(uint32_t baseBits) const override;
 
     // VECTOR OPERATIONS
 
@@ -900,9 +900,8 @@ public:
         const std::vector<NativeInteger>& PInvModq, const std::vector<NativeInteger>& PInvModqPrecon,
         const std::vector<NativeInteger>& PHatInvModp, const std::vector<NativeInteger>& PHatInvModpPrecon,
         const std::vector<std::vector<NativeInteger>>& PHatModq, const std::vector<DoubleNativeInt>& modqBarrettMu,
-        const std::vector<NativeInteger>& tInvModp       = std::vector<NativeInteger>(),
-        const std::vector<NativeInteger>& tInvModpPrecon = std::vector<NativeInteger>(), const NativeInteger& t = 0,
-        const std::vector<NativeInteger>& tModqPrecon = std::vector<NativeInteger>()) const override;
+        const std::vector<NativeInteger>& tInvModp, const std::vector<NativeInteger>& tInvModpPrecon,
+        const NativeInteger& t, const std::vector<NativeInteger>& tModqPrecon) const override;
 
     /**
    * @brief Performs CRT basis switching:
@@ -969,7 +968,7 @@ public:
                         const std::vector<std::vector<NativeInteger>>& QHatModp,
                         const std::vector<std::vector<NativeInteger>>& alphaQModp,
                         const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv,
-                        Format resultFormat = EVALUATION) override;
+                        Format resultFormat) override;
 
     /**
    * @brief Performs scale and round:
@@ -1213,8 +1212,8 @@ public:
    * ASSUMPTION: This method assumes that the caller provides the correct
    * rootOfUnity for the modulus
    */
-    void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb = Integer(0),
-                       const Integer& rootOfUnityArb = Integer(0)) override {
+    void SwitchModulus(const Integer& modulus, const Integer& rootOfUnity, const Integer& modulusArb,
+                       const Integer& rootOfUnityArb) override {
         OPENFHE_THROW(not_implemented_error, "SwitchModulus not implemented on DCRTPoly");
     }
 

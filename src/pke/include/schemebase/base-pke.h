@@ -174,11 +174,11 @@ class PKEBase {
 
   virtual std::shared_ptr< std::vector<Element> > EncryptZeroCore(
       const PrivateKey<Element> privateKey,
-      const std::shared_ptr<ParmType> params = nullptr) const;
+      const std::shared_ptr<ParmType> params) const;
 
   virtual std::shared_ptr< std::vector<Element> > EncryptZeroCore(
       const PublicKey<Element> publicKey,
-      const std::shared_ptr<ParmType> params = nullptr) const;
+      const std::shared_ptr<ParmType> params) const;
 
   virtual Element DecryptCore(const std::vector<Element> &cv,
                       const PrivateKey<Element> privateKey) const;

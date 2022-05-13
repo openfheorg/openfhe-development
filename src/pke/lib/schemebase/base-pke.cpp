@@ -117,7 +117,7 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(
     Element plaintext, const PrivateKey<Element> privateKey) const {
   Ciphertext<Element> ciphertext =
       std::make_shared<CiphertextImpl<Element>>(privateKey);
-  std::shared_ptr<std::vector<Element>> ba = EncryptZeroCore(privateKey);
+  std::shared_ptr<std::vector<Element>> ba = EncryptZeroCore(privateKey, nullptr);
   (*ba)[0] += plaintext;
 
   ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
@@ -131,7 +131,7 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(
     Element plaintext, const PublicKey<Element> publicKey) const {
   Ciphertext<Element> ciphertext =
       std::make_shared<CiphertextImpl<Element>>(publicKey);
-  std::shared_ptr<std::vector<Element>> ba = EncryptZeroCore(publicKey);
+  std::shared_ptr<std::vector<Element>> ba = EncryptZeroCore(publicKey, nullptr);
 
   (*ba)[0] += plaintext;
 

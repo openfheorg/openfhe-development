@@ -77,15 +77,15 @@ public:
    */
   virtual bool ParamsGenBFVRNS(
       std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
-      int32_t evalAddCount = 0,
-      int32_t evalMultCount = 0,
-      int32_t keySwitchCount = 0,
-      size_t dcrtBits = 0,
-      uint32_t n = 0,
-      enum KeySwitchTechnique ksTech = BV,
-      enum RescalingTechnique rsTech = FIXEDMANUAL,
-      enum EncryptionTechnique encTech = STANDARD,
-      enum MultiplicationTechnique multTech = HPS) const {
+      int32_t evalAddCount,
+      int32_t evalMultCount,
+      int32_t keySwitchCount,
+      size_t dcrtBits,
+      uint32_t n,
+      enum KeySwitchTechnique ksTech,
+      enum RescalingTechnique rsTech,
+      enum EncryptionTechnique encTech,
+      enum MultiplicationTechnique multTech) const {
     OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");
@@ -114,12 +114,12 @@ public:
       usint scaleExp,
       usint relinWindow,
       enum MODE mode,
-      usint firstModSize = 60,
-      uint32_t mulPartQ = 4,
-      enum KeySwitchTechnique ksTech = BV,
-      enum RescalingTechnique rsTech = FIXEDMANUAL,
-      enum EncryptionTechnique encTech = STANDARD,
-      enum MultiplicationTechnique multTech = HPS) const {
+      usint firstModSize,
+      uint32_t mulPartQ,
+      enum KeySwitchTechnique ksTech,
+      enum RescalingTechnique rsTech,
+      enum EncryptionTechnique encTech,
+      enum MultiplicationTechnique multTech) const {
     OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");
@@ -141,14 +141,14 @@ public:
   virtual bool ParamsGenBGVRNS(
       std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
       usint ptm, usint numPrimes, usint relinWindow, MODE mode,
-      usint firstModSize = 60,
-      usint dcrtBits = 60,
-      uint32_t numPartQ = 4,
-      usint multihopQBound = 0,
-      enum KeySwitchTechnique ksTech = BV,
-      enum RescalingTechnique rsTech = FIXEDMANUAL,
-      enum EncryptionTechnique encTech = STANDARD,
-      enum MultiplicationTechnique multTech = HPS) const {
+      usint firstModSize,
+      usint dcrtBits,
+      uint32_t numPartQ,
+      usint multihopQBound,
+      enum KeySwitchTechnique ksTech,
+      enum RescalingTechnique rsTech,
+      enum EncryptionTechnique encTech,
+      enum MultiplicationTechnique multTech) const {
     OPENFHE_THROW(
         not_implemented_error,
         "This signature for ParamsGen is not supported for this scheme.");
