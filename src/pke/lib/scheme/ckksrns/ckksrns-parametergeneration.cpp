@@ -81,12 +81,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
   SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
   uint32_t auxBits = 60;
   uint32_t n = cyclOrder / 2;
-  uint32_t qBound = 0;
+  uint32_t qBound = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
   // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
-  if (ksTech == BV) {
-    qBound = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
-  } else if (ksTech == HYBRID) {
-    qBound = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
+  if (ksTech == HYBRID) {
     qBound +=
         ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits) *
         auxBits;
@@ -100,10 +97,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
     if (ksTech == BV) {
       qBoundExact += ceil(static_cast<double>(qBoundExact) / auxBits) * auxBits;
     } else if (ksTech == HYBRID) {
-      auxBitsExact = ceil(ceil(static_cast<double>(qBoundExact) / numPartQ) /
-	       auxBits);
-      qBoundExact += ceil(ceil(static_cast<double>(qBoundExact) / numPartQ) /
-	       auxBits) * auxBits;
+      uint32_t tmp = ceil(ceil(static_cast<double>(qBoundExact) / numPartQ) / auxBits);
+      auxBitsExact = tmp;
+      qBoundExact += tmp * auxBits;
     }
 
   }
@@ -156,15 +152,10 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
 
   usint dcrtBits = scaleExp;
 
-  std::vector<NativeInteger> moduliQ;
-  std::vector<NativeInteger> rootsQ;
-  if (extraModSize == 0) {
-    moduliQ.resize(numPrimes);
-    rootsQ.resize(numPrimes);
-  } else {
-    moduliQ.resize(numPrimes + 1);
-    rootsQ.resize(numPrimes + 1);
-  }
+  uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
+  std::vector<NativeInteger> moduliQ(vecSize);
+  std::vector<NativeInteger> rootsQ(vecSize);
+
   NativeInteger q = FirstPrime<NativeInteger>(dcrtBits, cyclOrder);
   moduliQ[numPrimes - 1] = q;
   rootsQ[numPrimes - 1] = RootOfUnity(cyclOrder, moduliQ[numPrimes - 1]);

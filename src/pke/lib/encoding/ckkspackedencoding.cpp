@@ -396,12 +396,12 @@ bool CKKSPackedEncoding::EncodeWithExtra() {
       moduli[i] = nativeParams[i]->GetModulus();
     }
 
-    int32_t logc = 0, logci;
+    int32_t logc = 0;
     for (size_t i = 0; i < Nh; ++i) {
       inverse[i] *= scalingFactor;
-      logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
+      int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
       if (logc < logci) logc = logci;
-      logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
+      int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
       if (logc < logci) logc = logci;
     }
 
@@ -413,22 +413,19 @@ bool CKKSPackedEncoding::EncodeWithExtra() {
     int32_t logApprox = logc - logValid;
     double approxFactor = pow(2, logApprox);
     std::vector<int64_t> temp(N);
-    size_t i, jdx, idx;
-    int64_t re, im;
-    double dre, dim;
-    for (i = 0, jdx = Nh, idx = 0; i < Nh; ++i, jdx++, idx++) {
+    for (size_t i = 0, jdx = Nh, idx = 0; i < Nh; ++i, jdx++, idx++) {
       // Check for possible overflow in llround function
-      dre = inverse[i].real() / approxFactor;
-      dim = inverse[i].imag() / approxFactor;
+      double dre = inverse[i].real() / approxFactor;
+      double dim = inverse[i].imag() / approxFactor;
 
-      re = static_cast<int64_t>(dre + 0.5);
-      im = static_cast<int64_t>(dim + 0.5);
+      int64_t re = static_cast<int64_t>(dre + 0.5);
+      int64_t im = static_cast<int64_t>(dim + 0.5);
 
       temp[idx] = (re < 0) ? q + re : re;
       temp[jdx] = (im < 0) ? q + im : im;
     }
 
-    for (i = 0; i < nativeParams.size(); i++) {
+    for (size_t i = 0; i < nativeParams.size(); i++) {
       NativeVector nativeVec(this->GetElementRingDimension(),
                              nativeParams[i]->GetModulus());
       FitToNativeVector(temp, q, &nativeVec);
@@ -460,25 +457,20 @@ bool CKKSPackedEncoding::EncodeWithExtra() {
     double p = this->encodingParams->GetPlaintextModulus();
     double powP = pow(2, p * depth);
 
-    int64_t q;
-    q = this->GetElementModulus().ConvertToInt();
+    int64_t q = this->GetElementModulus().ConvertToInt();
     NativeVector temp(this->GetElementRingDimension(), q);
 
-    double dq = q;
-    size_t i, jdx, idx;
-    int64_t re, im;
-    double dre, dim;
-    for (i = 0, jdx = Nh, idx = 0; i < Nh; ++i, jdx++, idx++) {
-      dre = inverse[i].real() * powP;
-      dim = inverse[i].imag() * powP;
+    for (size_t i = 0, jdx = Nh, idx = 0; i < Nh; ++i, jdx++, idx++) {
+      double dre = inverse[i].real() * powP;
+      double dim = inverse[i].imag() * powP;
       // Check for possible overflow in llround function
-      if (std::abs(dre) >= dq || std::abs(dim) >= dq) {
+      if (std::abs(dre) >= q || std::abs(dim) >= q) {
         OPENFHE_THROW(math_error,
                        "Overflow, try to decrease depth or plaintext modulus");
       }
 
-      re = std::llround(dre);
-      im = std::llround(dim);
+      int64_t re = std::llround(dre);
+      int64_t im = std::llround(dim);
 
       temp[idx] = (re < 0) ? NativeInteger(q + re) : NativeInteger(re);
       temp[jdx] = (im < 0) ? NativeInteger(q + im) : NativeInteger(im);
@@ -501,20 +493,18 @@ bool CKKSPackedEncoding::EncodeWithExtra() {
 
     BigVector temp(this->GetElementRingDimension(), this->GetElementModulus());
 
-    int64_t re, im;
-    size_t i, jdx, idx;
-    double dre, dim;
-    for (i = 0, jdx = Nh, idx = 0; i < Nh; ++i, jdx++, idx++) {
-      dre = inverse[i].real() * powP;
-      dim = inverse[i].imag() * powP;
+    for (size_t i = 0, jdx = Nh, idx = 0; i < Nh; ++i, jdx++, idx++) {
+      double dre = inverse[i].real() * powP;
+      double dim = inverse[i].imag() * powP;
       // Check for possible overflow in llround function
-      if (std::abs(dre) >= dq || std::abs(dim) >= dq) {
+      if (std::fabs(dre) >= dq - std::numeric_limits<double>::epsilon() ||
+          std::fabs(dim) >= dq - std::numeric_limits<double>::epsilon()) {
         OPENFHE_THROW(math_error,
                        "Overflow, try to decrease depth or plaintext modulus");
       }
 
-      re = std::llround(dre);
-      im = std::llround(dim);
+      int64_t re = std::llround(dre);
+      int64_t im = std::llround(dim);
 
       temp[idx] = (re < 0) ? q - BigInteger(llabs(re)) : BigInteger(re);
       temp[jdx] = (im < 0) ? q - BigInteger(llabs(im)) : BigInteger(im);
