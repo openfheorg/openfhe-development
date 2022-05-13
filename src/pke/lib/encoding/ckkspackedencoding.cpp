@@ -401,7 +401,7 @@ bool CKKSPackedEncoding::EncodeWithExtra() {
       inverse[i] *= scalingFactor;
       int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
       if (logc < logci) logc = logci;
-      int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
+      logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
       if (logc < logci) logc = logci;
     }
 
