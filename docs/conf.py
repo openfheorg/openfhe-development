@@ -89,7 +89,12 @@ breathe_doxygen_config_options = {
     "WARNINGS": "NO",
     "WARN_IF_DOC_ERROR": "NO",
     "WARN_IF_INCOMPLETE_DOC": "NO",
-    "WARN_NO_PARAMDOC": "NO"
+    "WARN_NO_PARAMDOC": "NO",
+    "EXTRACT_ALL":  "NO",
+    "EXTRACT_PRIVATE": "NO",
+    "EXTRACT_PRIV_VIRTUAL": "NO",
+    "EXTRACT_LOCAL_CLASSES": "NO"
+
 }
 
 ##############################################################################3
