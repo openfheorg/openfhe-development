@@ -1315,9 +1315,6 @@ public:
         ar(::cereal::make_nvp("p", this->m_params));
     }
 
-    std::string SerializedObjectName() const override {
-        return "DCRTPoly";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

@@ -93,7 +93,6 @@ public:
     ar(cereal::base_class<PKERNS>(this));
   }
 
-  std::string SerializedObjectName() const { return "PKEBGVRNS"; }
 };
 }  // namespace lbcrypto
 

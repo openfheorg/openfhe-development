@@ -2467,7 +2467,6 @@ protected:
     // does NOT exist, add this to the cache of all contexts
   }
 
-  virtual std::string SerializedObjectName() const { return "CryptoContext"; }
   static uint32_t SerializedVersion() { return 1; }
 };
 

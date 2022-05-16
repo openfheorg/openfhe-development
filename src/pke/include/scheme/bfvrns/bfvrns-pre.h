@@ -58,7 +58,6 @@ public:
     ar(cereal::base_class<PRERNS>(this));
   }
 
-  std::string SerializedObjectName() const { return "PREBFVRNS"; }
 };
 }  // namespace lbcrypto
 

@@ -921,9 +921,6 @@ public:
         ar(::cereal::make_nvp("p", m_params));
     }
 
-    std::string SerializedObjectName() const {
-        return "Poly";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

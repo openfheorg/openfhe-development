@@ -70,7 +70,6 @@ public:
     ar(cereal::base_class<PREBase<DCRTPoly>>(this));
   }
 
-  std::string SerializedObjectName() const { return "PRERNS"; }
 };
 
 } // namespace lbcrypto

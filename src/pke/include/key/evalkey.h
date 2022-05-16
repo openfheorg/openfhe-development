@@ -257,7 +257,6 @@ class EvalKeyImpl : public Key<Element> {
   void load(Archive &ar, std::uint32_t const version) {
     ar(::cereal::base_class<Key<Element>>(this));
   }
-  std::string SerializedObjectName() const { return "EvalKey"; }
 };
 
 }  // namespace lbcrypto

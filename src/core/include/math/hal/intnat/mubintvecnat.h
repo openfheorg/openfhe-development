@@ -633,9 +633,6 @@ public:
         ar(::cereal::make_nvp("m", m_modulus));
     }
 
-    std::string SerializedObjectName() const {
-        return "NativeVectorT";
-    }
 
     static uint32_t SerializedVersion() {
         return 1;

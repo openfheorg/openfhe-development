@@ -160,7 +160,6 @@ class CryptoParametersBase : public Serializable {
     ar(::cereal::make_nvp("enp", m_encodingParams));
   }
 
-  std::string SerializedObjectName() const { return "CryptoParametersBase"; }
   static uint32_t SerializedVersion() { return 1; }
 
  protected:

@@ -69,7 +69,6 @@ public:
     ar(cereal::base_class<AdvancedSHERNS>(this));
   }
 
-  std::string SerializedObjectName() const { return "AdvancedSHECKKSRNS"; }
 };
 
 }  // namespace lbcrypto

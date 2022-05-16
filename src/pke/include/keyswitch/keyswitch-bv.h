@@ -104,7 +104,6 @@ class KeySwitchBV : public KeySwitchRNS {
     ar(cereal::base_class<KeySwitchRNS>(this));
   }
 
-  virtual std::string SerializedObjectName() const override { return "KeySwitchBV"; }
 };
 
 }  // namespace lbcrypto

@@ -575,9 +575,6 @@ public:
         }
     }
 
-    std::string SerializedObjectName() const {
-        return "FXDInteger";
-    }
 
     static uint32_t SerializedVersion() {
         return 1;

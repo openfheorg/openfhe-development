@@ -113,7 +113,6 @@ public:
           m_numPartQ, m_auxBits, m_extraBits);
   }
 
-  std::string SerializedObjectName() const override { return "CryptoParametersBFVRNS"; }
   static uint32_t SerializedVersion() { return 1; }
 };
 

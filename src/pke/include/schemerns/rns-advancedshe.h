@@ -64,7 +64,6 @@ class AdvancedSHERNS : public AdvancedSHEBase<DCRTPoly> {
     ar(cereal::base_class<AdvancedSHEBase<DCRTPoly>>(this));
   }
 
-  std::string SerializedObjectName() const { return "AdvancedSHERNS"; }
 };
 
 }  // namespace lbcrypto

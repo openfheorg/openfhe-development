@@ -569,7 +569,6 @@ class CiphertextImpl : public CryptoObject<Element> {
     ar(cereal::make_nvp("m", m_metadataMap));
   }
 
-  std::string SerializedObjectName() const { return "Ciphertext"; }
   static uint32_t SerializedVersion() { return 1; }
 
  private:

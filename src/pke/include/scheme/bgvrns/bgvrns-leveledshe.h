@@ -84,7 +84,6 @@ public:
     ar(cereal::base_class<LeveledSHERNS>(this));
   }
 
-  std::string SerializedObjectName() const { return "LeveledSHEBGVRNS"; }
 };
 
 }  // namespace lbcrypto

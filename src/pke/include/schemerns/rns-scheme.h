@@ -90,7 +90,6 @@ public:
     ar(cereal::base_class<SchemeBase<DCRTPoly>>(this));
   }
 
-  virtual std::string SerializedObjectName() const override { return "SchemeRNS"; }
 };
 
 }  // namespace lbcrypto

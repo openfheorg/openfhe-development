@@ -595,9 +595,6 @@ public:
         ar(::cereal::make_nvp("ms", m_modulus_state));
     }
 
-    std::string SerializedObjectName() const {
-        return "ExpVector";
-    }
 
     static uint32_t SerializedVersion() {
         return 1;

@@ -160,8 +160,6 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {}
 
-  std::string SerializedObjectName() const { return "ParameterGenerationRNS"; }
-
   protected:
     enum DCRT_MODULUS {
       DEFAULT_EXTRA_MOD_SIZE = 20,

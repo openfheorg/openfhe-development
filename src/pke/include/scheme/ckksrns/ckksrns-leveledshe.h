@@ -179,7 +179,6 @@ public:
     ar(cereal::base_class<LeveledSHERNS>(this));
   }
 
-  std::string SerializedObjectName() const { return "LeveledSHECKKSRNS"; }
 };
 
 }  // namespace lbcrypto

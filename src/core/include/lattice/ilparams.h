@@ -154,9 +154,6 @@ public:
         ar(::cereal::base_class<ElemParams<IntType>>(this));
     }
 
-    std::string SerializedObjectName() const {
-        return "ILParms";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

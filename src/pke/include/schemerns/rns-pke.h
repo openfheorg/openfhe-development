@@ -137,7 +137,6 @@ class PKERNS : public PKEBase<DCRTPoly> {
     ar(cereal::base_class<PKEBase<DCRTPoly>>(this));
   }
 
-  std::string SerializedObjectName() const { return "PKERNS"; }
 };
 
 }  // namespace lbcrypto

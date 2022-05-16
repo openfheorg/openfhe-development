@@ -167,7 +167,6 @@ class PrivateKeyImpl : public Key<Element> {
     ar(::cereal::make_nvp("s", m_sk));
   }
 
-  std::string SerializedObjectName() const { return "PrivateKey"; }
   static uint32_t SerializedVersion() { return 1; }
 
  private:

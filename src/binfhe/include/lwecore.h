@@ -225,9 +225,6 @@ public:
         this->PreCompute();
     }
 
-    std::string SerializedObjectName() const {
-        return "LWECryptoParams";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }
@@ -338,9 +335,6 @@ public:
         ar(::cereal::make_nvp("b", m_b));
     }
 
-    std::string SerializedObjectName() const {
-        return "LWECiphertext";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }
@@ -408,9 +402,6 @@ public:
         ar(::cereal::make_nvp("s", m_s));
     }
 
-    std::string SerializedObjectName() const {
-        return "LWEPrivateKey";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }
@@ -481,9 +472,6 @@ public:
         ar(::cereal::make_nvp("k", m_key));
     }
 
-    std::string SerializedObjectName() const {
-        return "LWEPrivateKey";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

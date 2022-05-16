@@ -1181,9 +1181,6 @@ public:
         ar(::cereal::make_nvp("s", m_state));
     }
 
-    std::string SerializedObjectName() const {
-        return "DYNInteger";
-    }
 
     static uint32_t SerializedVersion() {
         return 1;

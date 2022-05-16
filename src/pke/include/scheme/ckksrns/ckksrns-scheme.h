@@ -80,7 +80,6 @@ public:
     ar(cereal::base_class<SchemeRNS>(this));
   }
 
-  virtual std::string SerializedObjectName() const override { return "SchemeCKKSRNS"; }
 };
 
 }  // namespace lbcrypto

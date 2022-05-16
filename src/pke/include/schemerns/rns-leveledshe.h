@@ -386,7 +386,6 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
     ar(cereal::base_class<LeveledSHEBase<DCRTPoly>>(this));
   }
 
-  std::string SerializedObjectName() const { return "LeveledSHERNS"; }
 };
 
 }  // namespace lbcrypto

@@ -123,9 +123,6 @@ public:
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {}
 
-  std::string SerializedObjectName() const {
-    return "ParameterGenerationBGVRNS";
-  }
 };
 
 }  // namespace lbcrypto

@@ -66,7 +66,6 @@ class KeySwitchRNS : public KeySwitchBase<DCRTPoly> {
     ar(cereal::base_class<KeySwitchBase<DCRTPoly>>(this));
   }
 
-  virtual std::string SerializedObjectName() const { return "KeySwitchRNS"; }
 };
 
 }  // namespace lbcrypto

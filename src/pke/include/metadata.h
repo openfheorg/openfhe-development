@@ -122,11 +122,6 @@ class Metadata {
   }
 
   /**
-   * SerializedObjectName method for serialization
-   */
-  virtual std::string SerializedObjectName() const { return "Metadata"; }
-
-  /**
    * SerializedVersion method for serialization
    */
   static uint32_t SerializedVersion() { return 1; }
