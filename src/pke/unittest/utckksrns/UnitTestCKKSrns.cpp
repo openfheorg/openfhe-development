@@ -184,7 +184,7 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
 #endif
     // ==========================================
     // TestType,               Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { SCALE_FACTOR_ADJUSTMENTS, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },    //{ SCALE_FACTOR_ADJUSTMENTS, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { SCALE_FACTOR_ADJUSTMENTS, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { SCALE_FACTOR_ADJUSTMENTS, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
     { SCALE_FACTOR_ADJUSTMENTS, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -278,15 +278,15 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
 #endif
     // ==========================================
     // TestType, Descr, Scheme,        RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { EVAL_POLY, "1", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,     RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_POLY, "2", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,     RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_POLY, "3", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,     RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_POLY, "4", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,     RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_POLY, "1", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_POLY, "2", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_POLY, "3", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_POLY, "4", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    { EVAL_POLY, "5", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,     RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_POLY, "6", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,     RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_POLY, "7", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,     RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_POLY, "8", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,     RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_POLY, "5", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_POLY, "6", {CKKSRNS_SCHEME, RING_DIM, 5,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_POLY, "7", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_POLY, "8", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType, Descr, Scheme,       RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
