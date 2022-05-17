@@ -89,20 +89,6 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
         auxBits;
   }
 
-  uint32_t qBoundExact = 0;
-  uint32_t auxBitsExact = 0;
-
-  if (rsTech == FLEXIBLEAUTOEXT) {
-      qBoundExact = firstModSize + (numPrimes - 1) * scaleExp;
-    if (ksTech == BV) {
-      qBoundExact += ceil(static_cast<double>(qBoundExact) / auxBits) * auxBits;
-    } else if (ksTech == HYBRID) {
-      uint32_t tmp = ceil(ceil(static_cast<double>(qBoundExact) / numPartQ) / auxBits);
-      auxBitsExact = tmp;
-      qBoundExact += tmp * auxBits;
-    }
-
-  }
   // RLWE security constraint
   DistributionType distType =
       (cryptoParamsCKKSRNS->GetMode() == RLWE) ? HEStd_error : HEStd_ternary;
@@ -117,18 +103,6 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
 
       // Choose ring dimension based on security standards
       n = nRLWE(qBound);
-      if (extraModSize > 0) {
-        usint nExact = nRLWE(qBoundExact);
-        //std::cerr << "n = " << n << std::endl;
-        //std::cerr << "nExact = " << nExact << std::endl;
-        while (n > nExact) {
-            qBound = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
-            usint PBound = qBoundExact - qBound;
-            auxBits = (uint32_t)std::floor(PBound / auxBitsExact);
-            qBound += auxBitsExact * auxBits;
-            n = nRLWE(qBound);
-        }
-      }
       cyclOrder = 2 * n;
     } else {  // if (n!=0)
       // Case 3: Both SecurityLevel and ring dimension specified
@@ -163,7 +137,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
   NativeInteger qNext = q;
   NativeInteger qPrev = q;
   if (numPrimes > 1) {
-    if (rsTech != FLEXIBLEAUTO) {
+    if (rsTech != FLEXIBLEAUTO && rsTech != FLEXIBLEAUTOEXT) {
       uint32_t cnt = 0;
       for (usint i = numPrimes - 2; i >= 1; i--) {
         if ((cnt % 2) == 0) {
