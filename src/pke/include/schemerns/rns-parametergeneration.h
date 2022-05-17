@@ -121,6 +121,8 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * parameters. This is intended for BGVrns
    * @param *cryptoParams the crypto parameters object to be populated with
    * parameters.
+   * @param evalAddCount number of EvalAdds per level.
+   * @param keySwitchCount number of KeySwitch operations per level.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
    * @param relinWindow the relinearization window
@@ -130,7 +132,9 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param dcrtBits the bit-width of moduli.
    */
   virtual bool ParamsGenBGVRNS(
-      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
+      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+      int32_t evalAddCount, int32_t keySwitchCount,
+      usint cyclOrder,
       usint ptm, usint numPrimes, usint relinWindow, MODE mode,
       usint firstModSize = 60,
       usint dcrtBits = 60,

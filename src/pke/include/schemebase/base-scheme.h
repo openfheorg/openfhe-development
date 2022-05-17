@@ -170,6 +170,8 @@ class SchemeBase {
   }
 
   virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
+                         int32_t evalAddCount,
+                         int32_t keySwitchCount,
                          usint cyclOrder,
                          usint ptm,
                          usint numPrimes,
@@ -184,7 +186,9 @@ class SchemeBase {
                          enum EncryptionTechnique encTech = STANDARD,
                          enum MultiplicationTechnique multTech = HPS) const {
     if (m_ParamsGen) {
-      return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, cyclOrder, ptm, numPrimes,
+      return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount,
+                                    keySwitchCount,
+                                    cyclOrder, ptm, numPrimes,
                                     relinWindow, mode, firstModSize,
                                     dcrtBits, numPartQ, multihopQBound,
                                     ksTech, rsTech, encTech, multTech);

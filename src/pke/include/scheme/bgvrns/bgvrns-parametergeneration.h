@@ -45,6 +45,7 @@ public:
   virtual ~ParameterGenerationBGVRNS() {}
 
   virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                 int32_t evalAddCount, int32_t keySwitchCount,
                  usint cyclOrder, usint ptm, usint numPrimes, usint relinWindow,
                  MODE mode,
                  usint firstModSize = 0,
@@ -56,6 +57,16 @@ public:
                  enum EncryptionTechnique encTech = STANDARD,
                  enum MultiplicationTechnique multTech = HPS) const override;
 
+  bool computeModuli(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                     uint32_t ringDimension,
+                     int32_t evalAddCount,
+                     int32_t keySwitchCount,
+                     usint relinWindow,
+                     enum KeySwitchTechnique ksTech,
+                     enum RescalingTechnique rsTech,
+                     uint32_t vecSize,
+                     std::vector<NativeInteger> moduliQ,
+                     std::vector<NativeInteger> rootsQ);
 
   /////////////////////////////////////
   // SERIALIZATION

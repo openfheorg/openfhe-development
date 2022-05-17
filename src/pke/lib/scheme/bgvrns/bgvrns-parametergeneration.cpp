@@ -58,8 +58,70 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 
 namespace lbcrypto {
 
+bool ParameterGenerationBGVRNS::computeModuli(
+  std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+  uint32_t ringDimension,
+  int32_t evalAddCount, int32_t keySwitchCount,
+  usint relinWindow,
+  enum KeySwitchTechnique ksTech,
+  enum RescalingTechnique rsTech,
+  uint32_t vecSize,
+  std::vector<NativeInteger> moduliQ,
+  std::vector<NativeInteger> rootsQ) {
+  
+  const auto cryptoParamsBGVRNS =
+      std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+  
+  double sigma = cryptoParamsBGVRNS->GetDistributionParameter();
+  double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
+  double p = static_cast<double>(cryptoParamsBGVRNS->GetPlaintextModulus());
+  SecurityLevel stdLevel = cryptoParamsBGVRNS->GetStdLevel();
+
+  // Bound of the Gaussian error polynomial
+  double Berr = sigma * sqrt(alpha);
+
+  // Bound of the key polynomial
+  double Bkey;
+
+  DistributionType distType;
+
+  // supports both discrete Gaussian (RLWE) and ternary uniform distribution
+  // (OPTIMIZED) cases
+  if (cryptoParamsBGVRNS->GetMode() == RLWE) {
+    Bkey = sigma * sqrt(alpha);
+    distType = HEStd_error;
+  } else {
+    Bkey = 1;
+    distType = HEStd_ternary;
+  }
+
+  // delta
+  auto expansionFactor = 2. * sqrt(ringDimension);
+
+  // Vnorm
+  auto freshEncryptionNoise = Berr * (1. + 2. * expansionFactor * Bkey);
+
+  double keySwitchingNoise;
+
+  if (ksTech == BV) {
+    int numRelinWindows = floor(log(q_i) / log(relinWindow)) + 1;
+    keySwitchingNoise = numRelinWindows * (vecSize + 1) * expansionFactor * relinWindow * Berr / 2.0;
+  } else if (ksTech == HYBRID) {
+    double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
+    int numDigits = cryptoParamsBGVRNS->GetNumPartQ();
+    keySwitchingNoise = numTowersPerDigit * numDigits * expansionFactor * Berr / 2.0;
+    size_t sizeP = cryptoParamsBGVRNS->GetParamsP()->GetParams().size();
+    keySwitchingNoise += sizeP * (1 + expansionFactor * Bkey) / 2.0;
+  }
+
+
+  return true;
+
+}
+
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
-    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
+    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
+    int32_t keySwitchCount, usint cyclOrder,
     usint ptm, usint numPrimes, usint relinWindow, MODE mode,
     usint firstModSize, usint dcrtBits,
     uint32_t numPartQ, usint multihopQBound,
@@ -67,6 +129,13 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     enum RescalingTechnique rsTech,
     enum EncryptionTechnique encTech,
     enum MultiplicationTechnique multTech) const {
+
+  usint extraModSize = 0;
+  if (rsTech == FLEXIBLEAUTOEXT) {
+    // TODO: Allow the user to specify this?
+    extraModSize = 20;
+  }
+
   const auto cryptoParamsBGVRNS =
       std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
@@ -89,7 +158,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   uint32_t n = cyclOrder / 2;
   uint32_t qBound = 0;
   // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
-  qBound = firstModSize + (numPrimes - 1) * dcrtBits;
+  qBound = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;
   if (ksTech == HYBRID)
     qBound +=
         ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits) *
@@ -140,8 +209,12 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   }
   //// End HE Standards compliance logic/check
 
-  std::vector<NativeInteger> moduliQ(numPrimes);
-  std::vector<NativeInteger> rootsQ(numPrimes);
+  uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
+  std::vector<NativeInteger> moduliQ(vecSize);
+  std::vector<NativeInteger> rootsQ(vecSize);
+
+  computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, ksTech, rsTech,
+                vecSize, &moduliQ, &rootsQ);
 
   // For ModulusSwitching to work we need the moduli to be also congruent to 1
   // modulo ptm
