@@ -67,8 +67,8 @@ With NTL:
 
 Alternatively, add the path(s) to ORIGINAL_PATH variable in c:\msys64\etc\profile to make this change permanent.
 
-Testing and cleaning the build
--------------------------------
+Testing and cleaning the Windows build
+--------------------------------------
 
 Run unit tests to make sure all capabilities operate as expected
 
@@ -88,8 +88,8 @@ To remove the files built by make, you can execute
 
     make clean
 
-Installing pre-requisites for doxygen
--------------------------------------
+Installing Windows pre-requisites for doxygen
+----------------------------------------------
 To generate doxygen documentation, doxygen and graphviz dot need to be installed:
 
 ::

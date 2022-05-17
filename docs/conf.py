@@ -93,7 +93,11 @@ breathe_doxygen_config_options = {
     "EXTRACT_ALL":  "NO",
     "EXTRACT_PRIVATE": "NO",
     "EXTRACT_PRIV_VIRTUAL": "NO",
-    "EXTRACT_LOCAL_CLASSES": "NO"
+    "EXTRACT_LOCAL_CLASSES": "NO",
+    "EXTRACT_PACKAGE": "NO",
+    "EXTRACT_STATIC": "NO",
+    "EXTRACT_LOCAL_METHODS": "NO",
+    "EXTRACT_ANON_NSPACES": "NO"
 
 }
 

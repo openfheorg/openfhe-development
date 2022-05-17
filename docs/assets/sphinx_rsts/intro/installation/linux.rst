@@ -91,8 +91,8 @@ Installing OpenFHE on Linux
 You would probably need to run "sudo make install" unless you are specifying some other install location. You can change the install location by running
 ``cmake -DCMAKE_INSTALL_PREFIX=/your/path ..``
 
-Testing and cleaning the build
-------------------------------
+Testing and cleaning the Linux build
+------------------------------------
 
 Run unit tests to make sure all capabilities operate as expected
 
