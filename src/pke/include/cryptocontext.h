@@ -865,8 +865,17 @@ protected:
     const auto cryptoParams =
         std::dynamic_pointer_cast<CryptoParametersRNS>(
             GetCryptoParameters());
+    double scFact;
 
-    double scFact = cryptoParams->GetScalingFactorReal(level);
+    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+      scFact = cryptoParams->GetScalingFactorRealBig(level);
+      // In FLEXIBLEAUTOEXT mode at level 0, we don't use the depth
+      // in our encoding function, so we set it to 1 to make sure it
+      // has no effect on the encoding.
+      depth = 1;
+    } else {
+      scFact = cryptoParams->GetScalingFactorReal(level);
+    }
 
     if (params == nullptr) {
       std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
@@ -891,6 +900,12 @@ protected:
     }
 
     p->Encode();
+
+    // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has depth 2.
+    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+      p->SetDepth(2);
+    }
+  
     return p;
   }
 

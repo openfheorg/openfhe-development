@@ -252,11 +252,31 @@ bool CKKSPackedEncoding::Encode() {
     DiscreteFourierTransform::FFTSpecialInv(inverse);
     double powP = scalingFactor;
 
+    // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
+    int32_t MAX_BITS_IN_WORD = 62;
+
+    int32_t logc = 0;
+    for (size_t i = 0; i < Nh; ++i) {
+      inverse[i] *= powP;
+      int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
+      if (logc < logci) logc = logci;
+      logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
+      if (logc < logci) logc = logci;
+    }
+    if (logc < 0) {
+      OPENFHE_THROW(math_error, "Too small scaling factor");
+    }
+    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox = logc - logValid;
+    double approxFactor = pow(2, logApprox);
+
     std::vector<int64_t> temp(2 * Nh);
     for (size_t i = 0; i < Nh; ++i) {
-      // Check for possible overflow in llround function
-      double dre = inverse[i].real() * powP;
-      double dim = inverse[i].imag() * powP;
+      // Scale down by approxFactor in case the value exceeds a 64-bit integer.
+      double dre = inverse[i].real() / approxFactor;
+      double dim = inverse[i].imag() / approxFactor;
+
+      // Check for possible overflow
       if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
         // IFFT formula:
         // x[n] = (1/N) * \Sum^(N-1)_(k=0) X[k] * exp( j*2*pi*n*k/N )
@@ -316,7 +336,6 @@ bool CKKSPackedEncoding::Encode() {
                << std::endl;
         buffer << "Scaled input is " << scaledInputSize << " bits "
                << std::endl;
-
         OPENFHE_THROW(math_error, buffer.str());
       }
 
@@ -362,6 +381,24 @@ bool CKKSPackedEncoding::Encode() {
       this->encodedVectorDCRT = this->encodedVectorDCRT.Times(currPowP);
     }
 
+    // Scale back up by the approxFactor to get the correct encoding.
+    int32_t MAX_LOG_STEP = 60;
+    if (logApprox > 0) {
+      int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+      DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+      std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
+      logApprox -= logStep;
+
+      while (logApprox > 0) {
+        int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+        DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+        std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
+        crtApprox = CRTMult(crtApprox, crtSF, moduli);
+        logApprox -= logStep;
+      }
+      encodedVectorDCRT = encodedVectorDCRT.Times(crtApprox);
+    }
+
     this->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
 
     scalingFactor = pow(scalingFactor, depth);
@@ -384,7 +421,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
   std::vector<std::complex<double>> curValues(Nh);
 
   if (this->typeFlag == IsNativePoly) {
-    if (rsTech == FLEXIBLEAUTO)
+    if (rsTech == FLEXIBLEAUTO || rsTech == FLEXIBLEAUTOEXT)
       powP = pow(scalingFactor, -1);
     else
       powP = pow(2, -p);
@@ -412,7 +449,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
 
     // we will bring down the scaling factor to 2^p
     double scalingFactorPre = 0.0;
-    if (rsTech == FLEXIBLEAUTO)
+    if (rsTech == FLEXIBLEAUTO || rsTech == FLEXIBLEAUTOEXT)
       scalingFactorPre = pow(scalingFactor, -1) * pow(2, p);
     else
       scalingFactorPre = pow(2, -p * (depth - 1));

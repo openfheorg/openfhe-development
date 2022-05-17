@@ -124,7 +124,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(
     }
   }
 
-  if (m_rsTechnique == FLEXIBLEAUTO) {
+  if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
     m_scalingFactorsInt.resize(sizeQ);
     m_scalingFactorsInt[0] = 1;
     if (extraBits == 0) {

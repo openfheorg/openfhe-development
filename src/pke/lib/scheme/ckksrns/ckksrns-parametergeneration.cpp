@@ -68,6 +68,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
           EncryptionTechnique encTech,
           MultiplicationTechnique multTech) const {
 
+  usint extraModSize = 0;
+  if (rsTech == FLEXIBLEAUTOEXT) {
+    // TODO: Allow the user to specify this?
+    extraModSize = 20;
+  }
+
   const auto cryptoParamsCKKSRNS =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
 
@@ -75,12 +81,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
   SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
   uint32_t auxBits = 60;
   uint32_t n = cyclOrder / 2;
-  uint32_t qBound = 0;
+  uint32_t qBound = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
   // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
-  if (ksTech == BV) {
-    qBound = firstModSize + (numPrimes - 1) * scaleExp;
-  } else if (ksTech == HYBRID) {
-    qBound = firstModSize + (numPrimes - 1) * scaleExp;
+  if (ksTech == HYBRID) {
     qBound +=
         ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits) *
         auxBits;
@@ -123,8 +126,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
 
   usint dcrtBits = scaleExp;
 
-  std::vector<NativeInteger> moduliQ(numPrimes);
-  std::vector<NativeInteger> rootsQ(numPrimes);
+  uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
+  std::vector<NativeInteger> moduliQ(vecSize);
+  std::vector<NativeInteger> rootsQ(vecSize);
 
   NativeInteger q = FirstPrime<NativeInteger>(dcrtBits, cyclOrder);
   moduliQ[numPrimes - 1] = q;
@@ -133,7 +137,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
   NativeInteger qNext = q;
   NativeInteger qPrev = q;
   if (numPrimes > 1) {
-    if (rsTech != FLEXIBLEAUTO) {
+    if (rsTech != FLEXIBLEAUTO && rsTech != FLEXIBLEAUTOEXT) {
       uint32_t cnt = 0;
       for (usint i = numPrimes - 2; i >= 1; i--) {
         if ((cnt % 2) == 0) {
@@ -213,6 +217,18 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
   }
   rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
 
+  if (rsTech == FLEXIBLEAUTOEXT) {
+    if (extraModSize == dcrtBits || extraModSize == firstModSize) {
+      moduliQ[numPrimes] = PreviousPrime<NativeInteger>(moduliQ[0], cyclOrder);
+    } else {
+      NativeInteger extraInteger =
+          FirstPrime<NativeInteger>(extraModSize, cyclOrder);
+      moduliQ[numPrimes] =
+          PreviousPrime<NativeInteger>(extraInteger, cyclOrder);
+    }
+    rootsQ[numPrimes] = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
+  }
+
   auto paramsDCRT =
       std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
 
@@ -232,7 +248,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
     cryptoParamsCKKSRNS->SetEncodingParams(encodingParamsNew);
   }
 
-  cryptoParamsCKKSRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, 0);
+  cryptoParamsCKKSRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, extraModSize);
 
   return true;
 }

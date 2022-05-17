@@ -108,7 +108,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(
 
   // Pre-compute scaling factors for each level (used in EXACT rescaling
   // technique)
-  if (m_rsTechnique == FLEXIBLEAUTO) {
+  if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
     m_scalingFactorsReal.resize(sizeQ);
     m_scalingFactorsReal[0] = moduliQ[sizeQ - 1].ConvertToDouble();
 

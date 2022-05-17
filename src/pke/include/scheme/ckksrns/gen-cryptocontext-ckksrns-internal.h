@@ -49,8 +49,8 @@ class CCParams;
 template<typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const CCParams<ContextGeneratorType>& parameters) {
 #if NATIVEINT == 128
-    if (parameters.GetRescalingTechnique() == FLEXIBLEAUTO) {
-        OPENFHE_THROW(config_error, "128-bit CKKS is not supported for the FLEXIBLEAUTO method.");
+    if (parameters.GetRescalingTechnique() == FLEXIBLEAUTO || parameters.GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
+        OPENFHE_THROW(config_error, "128-bit CKKS is not supported for the FLEXIBLEAUTO or FLEXIBLEAUTOEXT methods.");
     }
 #endif
     using ParmType = typename Element::Params;
