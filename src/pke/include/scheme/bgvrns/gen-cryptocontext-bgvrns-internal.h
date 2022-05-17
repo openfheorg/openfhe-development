@@ -86,6 +86,8 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
     scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
     scheme->ParamsGenBGVRNS(
         params,
+        parameters.GetEvalAddCount(),
+		parameters.GetKeySwitchCount(),
         2 * parameters.GetRingDim(),
         parameters.GetPlaintextModulus(),
         parameters.GetMultiplicativeDepth() + 1,
