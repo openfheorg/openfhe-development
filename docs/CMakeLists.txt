@@ -38,24 +38,13 @@ if (DOXYGEN_FOUND)
         set(SPHINX_DEBUG_INDEX_FILE ${SPHINX_BUILD}/index.html)
         set(SPHINX_INDEX_FILE_PDF ${SPHINX_BUILD}/OpenFHE_documentation.pdf)
 
-#        message(STATUS "################################")
-#        message(STATUS "DOXYGEN OUTPUT DIR: ${DOXYGEN_OUTPUT_DIR}")
-#        message(STATUS "SPHINX SOURCE: ${SPHINX_SOURCE}")
-#        message(STATUS "SPHINX BUILD: ${SPHINX_BUILD}")
-#        message(STATUS "CMAKE Binary Directory: ${CMAKE_CURRENT_BINARY_DIR}")
-#        message(STATUS "Sphinx Executable: ${SPHINX_EXECUTABLE}")
-#        message(STATUS "################################")
-
         add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
             COMMAND
                 ${SPHINX_EXECUTABLE} -Q -j 6 -b html
-                # Tell Breathe where to find the Doxygen output
-#                -Dbreathe_projects.OpenFHE=${DOXYGEN_OUTPUT_DIR}/xml
                 ${SPHINX_SOURCE} ${SPHINX_BUILD}
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             DEPENDS
                 ${CMAKE_CURRENT_SOURCE_DIR}/index.rst
-#                ${DOXYGEN_INDEX_FILE}
             MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
             COMMENT "Generating documentation with Sphinx")
 
