@@ -197,18 +197,18 @@ breathe_projects = {}
 
 def setup(app):
     app.add_css_file('my_theme.css')
-
-if read_the_docs_build:
-    """According to:
-    https://devblogs.microsoft.com/cppblog/clear-functional-c-documentation-with-sphinx-breathe-doxygen-cmake/
-    
-    we need to hardcode the paths....
-    """
-    input_dir = '../src'
-    output_dir = '../build/doxygen'
-    main_page = "../README.md"
-    project_number = read_version_number()
-    style_sheet = "./assets/doxygen-style/doxygen-awesome.css"
-    configureDoxyfile(input_dir, output_dir, main_page, project_number, style_sheet)
-    subprocess.call('doxygen', shell=True)
-    # breathe_projects['OpenFHE'] = output_dir + '/xml'
+#
+# if read_the_docs_build:
+#     """According to:
+#     https://devblogs.microsoft.com/cppblog/clear-functional-c-documentation-with-sphinx-breathe-doxygen-cmake/
+#
+#     we need to hardcode the paths....
+#     """
+#     input_dir = '../src'
+#     output_dir = '../build/doxygen'
+#     main_page = "../README.md"
+#     project_number = read_version_number()
+#     style_sheet = "./assets/doxygen-style/doxygen-awesome.css"
+#     configureDoxyfile(input_dir, output_dir, main_page, project_number, style_sheet)
+#     subprocess.call('doxygen', shell=True)
+#     # breathe_projects['OpenFHE'] = output_dir + '/xml'
