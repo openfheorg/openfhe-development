@@ -196,7 +196,7 @@ static std::vector<TEST_CASE_UTSHE> testCases = {
     // TestType,          Descr, Scheme,       RDim,      MultDepth, SFBits, RWin, BatchSz,   Mode,  Depth, MDepth, ModSize, SecLvl, KSTech, RSTech,    LDigits, PtMod,   StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
     { EVALSUM_ALL,        "1", {BFVRNS_SCHEME, BATCH_LRG, DFLT,      60,     20,   BATCH_LRG, DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, DFLT,    DFLT,      2,          DFLT, DFLT},  },
     { KS_SINGLE_CRT,      "1", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL, DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    //{ KS_MOD_REDUCE_DCRT, "1", {BGVRNS_SCHEME, 1<<13,     1,         30,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL, DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_MOD_REDUCE_DCRT, "1", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL, DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
 };
 // clang-format on
 //===========================================================================================================
@@ -813,7 +813,7 @@ protected:
 
             cc->Decrypt(kp2.secretKey, newCt, &plaintextNew);
 
-            EXPECT_EQ(plaintext->GetStringValue(), plaintextNew->GetStringValue());
+            EXPECT_EQ(plaintext->GetStringValue(), plaintextNew->GetStringValue()) << "Key-Switched Decrypt fails";
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -865,6 +865,7 @@ protected:
             EXPECT_EQ(plaintext->GetStringValue(),
                 plaintextNewModReduce->GetStringValue())
                 << "Mod Reduced Decrypt fails";
+
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -900,9 +901,9 @@ TEST_P(UTSHE, SHE) {
     else if (test.testCaseType == EVALSUM_ALL)
         UnitTest_EvalSum_BFVrns_All(test, test.buildTestName());
     else if (test.testCaseType == KS_SINGLE_CRT)
-        UnitTest_Keyswitch_ModReduce_DCRT(test, test.buildTestName());
+        UnitTest_Keyswitch_SingleCRT(test, test.buildTestName());
     else if (test.testCaseType == KS_MOD_REDUCE_DCRT)
-        UnitTest_EvalSum(test, test.buildTestName());
+    	UnitTest_Keyswitch_ModReduce_DCRT(test, test.buildTestName());
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTSHE, ::testing::ValuesIn(testCases), testName);
