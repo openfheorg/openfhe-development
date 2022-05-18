@@ -732,15 +732,11 @@ class LeveledSHEBase {
    * plaintext.
    *
    * @param cipherText1 is the original ciphertext to be level reduced.
-   * @param linearKeySwitchHint not used in the CKKS scheme.
    * @param levels the number of towers to drop.
    * @return resulting ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> LevelReduceInternal(
-      ConstCiphertext<DCRTPoly> ciphertext, const EvalKey<DCRTPoly> evalKey,
-      size_t levels) const {
-    OPENFHE_THROW(config_error,
-                   "LevelReduce is not supported for this scheme");
+  virtual Ciphertext<DCRTPoly> LevelReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
+    OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
   }
 
   /**
@@ -749,14 +745,10 @@ class LeveledSHEBase {
    * underlying plaintext.
    *
    * @param cipherText1 is the ciphertext to be level reduced in-place
-   * @param linearKeySwitchHint not used in the CKKS scheme.
    * @param levels the number of towers to drop.
    */
-  virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                          const EvalKey<DCRTPoly> evalKey,
-                                          size_t levels) const {
-    OPENFHE_THROW(config_error,
-                   "LevelReduce is not supported for this scheme");
+  virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext, size_t levels) const {
+    OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
   }
 
   virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext1,

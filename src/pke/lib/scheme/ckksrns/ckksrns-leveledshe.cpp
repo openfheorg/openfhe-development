@@ -271,9 +271,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(
 // Level Reduce
 /////////////////////////////////////
 
-void LeveledSHECKKSRNS::LevelReduceInternalInPlace(
-    Ciphertext<DCRTPoly> &ciphertext, const EvalKey<DCRTPoly> evalKey,
-    size_t levels) const {
+void LeveledSHECKKSRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext, size_t levels) const {
   std::vector<DCRTPoly> &elements = ciphertext->GetElements();
   for (auto &element : elements) {
     element.DropLastElements(levels);
@@ -682,7 +680,7 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
         EvalMultCoreInPlace(ciphertext1, scf2 / scf1 * q1 / scf);
         ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
         if (c1lvl + 1 < c2lvl) {
-          LevelReduceInternalInPlace(ciphertext1, nullptr, c2lvl - c1lvl - 1);
+          LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl - 1);
         }
         ciphertext1->SetScalingFactor(ciphertext2->GetScalingFactor());
       } else {
@@ -696,7 +694,7 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
           EvalMultCoreInPlace(ciphertext1, scf2 / scf1 * q1 / scf);
           ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
           if (c1lvl + 2 < c2lvl) {
-            LevelReduceInternalInPlace(ciphertext1, nullptr, c2lvl - c1lvl - 2);
+            LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl - 2);
           }
           ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
           ciphertext1->SetScalingFactor(ciphertext2->GetScalingFactor());
@@ -708,7 +706,7 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
         double scf2 = ciphertext2->GetScalingFactor();
         double scf = cryptoParams->GetScalingFactorReal(c1lvl);
         EvalMultCoreInPlace(ciphertext1, scf2 / scf1 / scf);
-        LevelReduceInternalInPlace(ciphertext1, nullptr, c2lvl - c1lvl);
+        LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl);
         ciphertext1->SetScalingFactor(scf2);
       } else {
         double scf1 = ciphertext1->GetScalingFactor();
@@ -716,7 +714,7 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
         double scf = cryptoParams->GetScalingFactorReal(c1lvl);
         EvalMultCoreInPlace(ciphertext1, scf2 / scf1 / scf);
         if (c1lvl + 1 < c2lvl) {
-          LevelReduceInternalInPlace(ciphertext1, nullptr, c2lvl - c1lvl - 1);
+          LevelReduceInternalInPlace(ciphertext1, c2lvl - c1lvl - 1);
         }
         ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
         ciphertext1->SetScalingFactor(ciphertext2->GetScalingFactor());
@@ -732,7 +730,7 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
         EvalMultCoreInPlace(ciphertext2, scf1 / scf2 * q2 / scf);
         ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
         if (c2lvl + 1 < c1lvl) {
-          LevelReduceInternalInPlace(ciphertext2, nullptr, c1lvl - c2lvl - 1);
+          LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl - 1);
         }
         ciphertext2->SetScalingFactor(ciphertext1->GetScalingFactor());
       } else {
@@ -746,7 +744,7 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
           EvalMultCoreInPlace(ciphertext2, scf1 / scf2 * q2 / scf);
           ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
           if (c2lvl + 2 < c1lvl) {
-            LevelReduceInternalInPlace(ciphertext2, nullptr, c1lvl - c2lvl - 2);
+            LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl - 2);
           }
           ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
           ciphertext2->SetScalingFactor(ciphertext1->GetScalingFactor());
@@ -758,7 +756,7 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
         double scf1 = ciphertext1->GetScalingFactor();
         double scf = cryptoParams->GetScalingFactorReal(c2lvl);
         EvalMultCoreInPlace(ciphertext2, scf1 / scf2 / scf);
-        LevelReduceInternalInPlace(ciphertext2, nullptr, c1lvl - c2lvl);
+        LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl);
         ciphertext2->SetScalingFactor(scf1);
       } else {
         double scf2 = ciphertext2->GetScalingFactor();
@@ -766,7 +764,7 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
         double scf = cryptoParams->GetScalingFactorReal(c2lvl);
         EvalMultCoreInPlace(ciphertext2, scf1 / scf2 / scf);
         if (c2lvl + 1 < c1lvl) {
-          LevelReduceInternalInPlace(ciphertext2, nullptr, c1lvl - c2lvl - 1);
+          LevelReduceInternalInPlace(ciphertext2, c1lvl - c2lvl - 1);
         }
         ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
         ciphertext2->SetScalingFactor(ciphertext1->GetScalingFactor());
