@@ -185,12 +185,15 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // ==========================================
     // TestType,               Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { SCALE_FACTOR_ADJUSTMENTS, "1", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { SCALE_FACTOR_ADJUSTMENTS, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    // TODO (dsuponit): review 2 commented tests below with FIXEDMANUAL
+    //{ SCALE_FACTOR_ADJUSTMENTS, "2", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { SCALE_FACTOR_ADJUSTMENTS, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    //{ SCALE_FACTOR_ADJUSTMENTS, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #if NATIVEINT != 128
-    { SCALE_FACTOR_ADJUSTMENTS, "3", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { SCALE_FACTOR_ADJUSTMENTS, "4", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { SCALE_FACTOR_ADJUSTMENTS, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { SCALE_FACTOR_ADJUSTMENTS, "6", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { SCALE_FACTOR_ADJUSTMENTS, "5", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { SCALE_FACTOR_ADJUSTMENTS, "6", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { SCALE_FACTOR_ADJUSTMENTS, "7", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { SCALE_FACTOR_ADJUSTMENTS, "8", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
     // TestType,        Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
@@ -1623,30 +1626,46 @@ TEST_P(UTCKKSRNS, CKKSRNS) {
     setupSignals();
     auto test = GetParam();
 
-    if (test.testCaseType == ADD_PACKED)
+    switch (test.testCaseType) {
+    case ADD_PACKED:
         UnitTest_Add_Packed(test, test.buildTestName());
-    else if (test.testCaseType == MULT_PACKED)
+        break;
+    case MULT_PACKED:
         UnitTest_Mult_Packed(test, test.buildTestName());
-    else if (test.testCaseType == SCALE_FACTOR_ADJUSTMENTS)
+        break;
+    case SCALE_FACTOR_ADJUSTMENTS:
         UnitTest_ScaleFactorAdjustments(test, test.buildTestName());
-    else if (test.testCaseType == AUTO_LEVEL_REDUCE)
+        break;
+    case AUTO_LEVEL_REDUCE:
         UnitTest_AutoLevelReduce(test, test.buildTestName());
-    else if (test.testCaseType == COMPRESS)
+        break;
+    case COMPRESS:
         UnitTest_Compress(test, test.buildTestName());
-    else if (test.testCaseType == EVAL_FAST_ROTATION)
+        break;
+    case EVAL_FAST_ROTATION:
         UnitTest_EvalFastRotation(test, test.buildTestName());
-    else if (test.testCaseType == EVALATINDEX)
+        break;
+    case EVALATINDEX:
         UnitTest_EvalAtIndex(test, test.buildTestName());
-    else if (test.testCaseType == EVALMERGE)
+        break;
+    case EVALMERGE:
         UnitTest_EvalMerge(test, test.buildTestName());
-    else if (test.testCaseType == EVAL_LINEAR_WSUM)
+        break;
+    case EVAL_LINEAR_WSUM:
         UnitTest_EvalLinearWSum(test, test.buildTestName());
-    else if (test.testCaseType == RE_ENCRYPTION)
+        break;
+    case RE_ENCRYPTION:
         UnitTest_ReEncryption(test, test.buildTestName());
-    else if (test.testCaseType == EVAL_POLY)
+        break;
+    case EVAL_POLY:
         UnitTest_EvalPoly(test, test.buildTestName());
-    else if (test.testCaseType == METADATA)
+        break;
+    case METADATA:
         UnitTest_Metadata(test, test.buildTestName());
+        break;
+    default:
+        break;
+    }
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS, ::testing::ValuesIn(testCases), testName);

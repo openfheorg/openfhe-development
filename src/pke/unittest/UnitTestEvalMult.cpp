@@ -28,123 +28,176 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
-
-#include <fstream>
-#include <iostream>
 #include "UnitTestUtils.h"
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+
+#include <iostream>
+#include <vector>
 #include "gtest/gtest.h"
-
-#include "cryptocontext.h"
-
-#include "encoding/encodings.h"
-#include <exception>
+#include <cxxabi.h>
+#include "utils/demangle.h"
 
 
 using namespace lbcrypto;
 
-namespace {
-    class UnitTestEvalMult : public ::testing::Test {
-        protected:
-            virtual void SetUp() {}
+//===========================================================================================================
+enum TEST_CASE_TYPE {
+    EVAL_MULT_ERROR_HANDLING,
+    EVAL_MULT_MANY_ERROR_HANDLING,
+    RELIN_TEST
+};
 
-            virtual void TearDown() {
-//                CryptoContextFactory<Poly>::ReleaseAllContexts();
-                CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-            }
-
-        public:
-    };
-
-    enum TEST_ESTIMATED_RESULT {
-        SUCCESS,
-        INVALID_MAX_DEPTH,
-        INVALID_PRIVATE_KEY,
-        INVALID_PUBLIC_KEY,
-        INVALID_PLAINTEXT_ENCRYPT,
-        INVALID_CIPHERTEXT_ERROR1,
-        INVALID_CIPHERTEXT_ERROR2,
-        INVALID_CIPHERTEXT_ERROR3,
-        INVALID_CIPHERTEXT_ERROR4,
-        INVALID_CIPHERTEXT_DECRYPT,
-        INVALID_PLAINTEXT_DECRYPT,
-        INVALID_PRIVATE_KEY_DECRYPT,
-        INVALID_CIPHER_TEXT_LIST
-    };
-
-    static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC(TEST_ESTIMATED_RESULT testResult = SUCCESS) {
-        CCParams<CryptoContextBFVRNS> parameters;
-        parameters.SetPlaintextModulus(256);
-        parameters.SetRootHermiteFactor(1.03);
-        parameters.SetStandardDeviation(4);
-        parameters.SetEvalMultCount(3);
-        parameters.SetMaxDepth((testResult != INVALID_MAX_DEPTH) ? 4 : 3);
-        parameters.SetScalingFactorBits(60);
-
-        CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
-        cryptoContext->Enable(PKE);
-        cryptoContext->Enable(KEYSWITCH);
-        cryptoContext->Enable(LEVELEDSHE);
-        cryptoContext->Enable(ADVANCEDSHE);
-
-        return cryptoContext;
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
+    std::string typeName;
+    switch (type) {
+    case EVAL_MULT_ERROR_HANDLING:
+        typeName = "EVAL_MULT_ERROR_HANDLING";
+        break;
+    case EVAL_MULT_MANY_ERROR_HANDLING:
+        typeName = "EVAL_MULT_MANY_ERROR_HANDLING";
+        break;
+    case RELIN_TEST:
+        typeName = "RELIN_TEST";
+        break;
+    default:
+        typeName = "UNKNOWN_UTEVALMULT";
+        break;
     }
+    return os << typeName;
+}
 
-    static CryptoContext<DCRTPoly> MakeBGVrnsDCRTPolyCC(TEST_ESTIMATED_RESULT testResult = SUCCESS) {
-        CCParams<CryptoContextBGVRNS> parameters;
-        parameters.SetMultiplicativeDepth(4);
-        parameters.SetPlaintextModulus(65537);
-        parameters.SetSecurityLevel(HEStd_NotSet);
-        parameters.SetMaxDepth((testResult != INVALID_MAX_DEPTH) ? 4 : 3);
-        parameters.SetRingDim(16);
-        parameters.SetRescalingTechnique(FIXEDAUTO);
+enum TEST_CASE_ERROR {
+    SUCCESS,
+    INVALID_MAX_DEPTH,
+    INVALID_PRIVATE_KEY,
+    INVALID_PUBLIC_KEY,
+    INVALID_PLAINTEXT_ENCRYPT,
+    INVALID_CIPHERTEXT_ERROR1,
+    INVALID_CIPHERTEXT_ERROR2,
+    INVALID_CIPHERTEXT_ERROR3,
+    INVALID_CIPHERTEXT_ERROR_MANY,
+    INVALID_CIPHERTEXT_DECRYPT,
+    INVALID_PLAINTEXT_DECRYPT,
+    INVALID_PRIVATE_KEY_DECRYPT,
+    INVALID_CIPHER_TEXT_LIST_MANY
+};
 
-        CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
-        cryptoContext->Enable(PKE);
-        cryptoContext->Enable(KEYSWITCH);
-        cryptoContext->Enable(LEVELEDSHE);
-        cryptoContext->Enable(ADVANCEDSHE);
+struct TEST_CASE_UTEVALMULT {
+    TEST_CASE_TYPE testCaseType;
+    // test case description - MUST BE UNIQUE
+    std::string description;
 
-        return cryptoContext;
+    UnitTestCCParams  params;
+
+    // additional test case data
+    TEST_CASE_ERROR error;
+
+    std::string buildTestName() const {
+        std::stringstream ss;
+        //std::cout << "======= testCaseType: " << testCaseType << "; description: " << description << std::endl;
+        ss << testCaseType << "_" << description;
+        return ss.str();
     }
+    std::string toString() const {
+        std::stringstream ss;
+        ss << "testCaseType [" << testCaseType << "], " << params.toString();
+        return ss.str();
+    }
+};
 
-    static CryptoContext<DCRTPoly> MakeCKKSDCRTPolyCC(TEST_ESTIMATED_RESULT testResult = SUCCESS) {
-        CCParams<CryptoContextCKKSRNS> parameters;
-        parameters.SetMultiplicativeDepth(4);
+// this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
+// the name MUST be constructed from digits, letters and '_' only
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTEVALMULT>& test) {
+    return test.param.buildTestName();
+};
+
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTEVALMULT& test) {
+    return os << test.toString();
+}
+//===========================================================================================================
 #if NATIVEINT == 128
-        parameters.SetScalingFactorBits(78);
+constexpr usint SCALE = 78;
 #else
-        parameters.SetScalingFactorBits(50);
+constexpr usint SCALE = 50;
 #endif
-        parameters.SetBatchSize(8);
-        parameters.SetSecurityLevel(HEStd_NotSet);
-        parameters.SetRingDim(16);
-        parameters.SetMaxDepth(3);
+constexpr usint RING_DIM = 16;
+constexpr usint BATCH = 8;
+constexpr usint MULT_DEPTH = 4;
+constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
+constexpr usint PTM = 65537;
 
-        CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
-        cryptoContext->Enable(PKE);
-        cryptoContext->Enable(KEYSWITCH);
-        cryptoContext->Enable(LEVELEDSHE);
-        cryptoContext->Enable(ADVANCEDSHE);
+static std::vector<TEST_CASE_UTEVALMULT> testCasesUTEVALMULT = {
+    // TestType,               Descr,  Scheme,         RDim,     MultDepth,  SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,  KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
+    { EVAL_MULT_ERROR_HANDLING, "01", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    SUCCESS },
+    { EVAL_MULT_ERROR_HANDLING, "02", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY },
+    { EVAL_MULT_ERROR_HANDLING, "03", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PUBLIC_KEY },
+    { EVAL_MULT_ERROR_HANDLING, "04", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PLAINTEXT_ENCRYPT },
+    { EVAL_MULT_ERROR_HANDLING, "05", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_ERROR1 },
+    { EVAL_MULT_ERROR_HANDLING, "06", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_ERROR2 },
+    { EVAL_MULT_ERROR_HANDLING, "07", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_ERROR3 },
+    { EVAL_MULT_ERROR_HANDLING, "08", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_DECRYPT },
+    { EVAL_MULT_ERROR_HANDLING, "09", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PLAINTEXT_DECRYPT },
+    { EVAL_MULT_ERROR_HANDLING, "10", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY_DECRYPT },
+    // ==========================================
+    // TestType,               Descr,  Scheme,        RDim,     MultDepth,  SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,  KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
+    { EVAL_MULT_ERROR_HANDLING, "11", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    SUCCESS },
+    { EVAL_MULT_ERROR_HANDLING, "12", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY },
+    { EVAL_MULT_ERROR_HANDLING, "13", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PUBLIC_KEY },
+    { EVAL_MULT_ERROR_HANDLING, "14", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PLAINTEXT_ENCRYPT },
+    { EVAL_MULT_ERROR_HANDLING, "15", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_ERROR1 },
+    { EVAL_MULT_ERROR_HANDLING, "16", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_ERROR2 },
+    { EVAL_MULT_ERROR_HANDLING, "17", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_ERROR3 },
+    { EVAL_MULT_ERROR_HANDLING, "18", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_DECRYPT },
+    { EVAL_MULT_ERROR_HANDLING, "19", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PLAINTEXT_DECRYPT },
+    { EVAL_MULT_ERROR_HANDLING, "20", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY_DECRYPT },
+    // ==========================================
+    // TestType,                    Descr,  Scheme,        RDim,     MultDepth,  SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,  KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
+    { EVAL_MULT_MANY_ERROR_HANDLING, "21", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    SUCCESS },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "22", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_MAX_DEPTH },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "23", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "24", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PUBLIC_KEY },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "25", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PLAINTEXT_ENCRYPT },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "26", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_ERROR1 },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "27", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_ERROR2 },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "28", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_ERROR3 },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "29", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_ERROR_MANY },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "30", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHERTEXT_DECRYPT },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "31", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PLAINTEXT_DECRYPT },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "32", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY_DECRYPT },
+    { EVAL_MULT_MANY_ERROR_HANDLING, "33", {BFVRNS_SCHEME, RING_DIM, MULT_DEPTH, 60,     DFLT, BATCH,   DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_CIPHER_TEXT_LIST_MANY },
+    // ==========================================
+    // TestType, Descr, Scheme,         RDim,     MultDepth,  SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,  KSTech, RSTech,    LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
+    { RELIN_TEST, "1", {BGVRNS_SCHEME,  RING_DIM, MULT_DEPTH, DFLT,   DFLT, DFLT,    DFLT, DFLT,  4,      DFLT,    SEC_LVL, DFLT,   FIXEDAUTO, DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { RELIN_TEST, "2", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,  3,      DFLT,    SEC_LVL, DFLT,   DFLT,      DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    // ==========================================
+};
+//===========================================================================================================
 
-        return cryptoContext;
+class UTEVALMULT : public ::testing::TestWithParam<TEST_CASE_UTEVALMULT> {
+    using Element = DCRTPoly;
+    const double eps = EPSILON;
+
+protected:
+    void SetUp() {}
+
+    void TearDown() {
+        PackedEncoding::Destroy();
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
 
-    template <typename Element>
-        static void RunEvalMultManyTest(CryptoContext<Element> cryptoContext,
-                TEST_ESTIMATED_RESULT testResult = SUCCESS) {
+    void UnitTest_EvalMultManyErrorHandling(const TEST_CASE_UTEVALMULT& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cryptoContext(UnitTestGenerateContext(testData.params));
+
             ////////////////////////////////////////////////////////////
             // Perform the key generation operation.
             ////////////////////////////////////////////////////////////
             auto keyPair = cryptoContext->KeyGen();
             ASSERT_TRUE(keyPair.good()) << "Key generation failed!";
             // Create evaluation key vector to be used in keyswitching
-            if( INVALID_PRIVATE_KEY == testResult )
+            if (INVALID_PRIVATE_KEY == testData.error)
                 cryptoContext->EvalMultKeysGen(nullptr);
             else
                 cryptoContext->EvalMultKeysGen(keyPair.secretKey);
@@ -153,36 +206,30 @@ namespace {
             // Plaintext
             ////////////////////////////////////////////////////////////
 
-            std::vector<int64_t> vectorOfInts1 = {5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0};
-            std::vector<int64_t> vectorOfInts2 = {2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-            std::vector<int64_t> vectorOfInts3 = {3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-            std::vector<int64_t> vectorOfInts4 = {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            std::vector<int64_t> vectorOfInts1 = { 5, 4, 3, 2, 1, 0, 5, 4, 3, 2, 1, 0 };
+            std::vector<int64_t> vectorOfInts2 = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            std::vector<int64_t> vectorOfInts3 = { 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            std::vector<int64_t> vectorOfInts4 = { 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-            std::vector<int64_t> vectorOfInts5 = {10, 8, 6, 4, 2, 0,
-                10, 8, 6, 4, 2, 0};
-            std::vector<int64_t> vectorOfInts6 = {30, 24, 18, 12, 6, 0,
-                30, 24, 18, 12, 6, 0};
-            std::vector<int64_t> vectorOfInts7 = {120, 96, 72, 48, 24, 0,
-                120, 96, 72, 48, 24, 0};
+            std::vector<int64_t> vectorOfInts5 = { 10, 8, 6, 4, 2, 0, 10, 8, 6, 4, 2, 0 };
+            std::vector<int64_t> vectorOfInts6 = { 30, 24, 18, 12, 6, 0, 30, 24, 18, 12, 6, 0 };
+            std::vector<int64_t> vectorOfInts7 = { 120, 96, 72, 48, 24, 0, 120, 96, 72, 48, 24, 0 };
             Plaintext plaintext1 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts1);
             Plaintext plaintext2 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts2);
             Plaintext plaintext3 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts3);
             Plaintext plaintext4 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts4);
 
-            Plaintext plaintextResult1 =
-                cryptoContext->MakeCoefPackedPlaintext(vectorOfInts5);
-            Plaintext plaintextResult2 =
-                cryptoContext->MakeCoefPackedPlaintext(vectorOfInts6);
-            Plaintext plaintextResult3 =
-                cryptoContext->MakeCoefPackedPlaintext(vectorOfInts7);
+            Plaintext plaintextResult1 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts5);
+            Plaintext plaintextResult2 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts6);
+            Plaintext plaintextResult3 = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts7);
 
             ////////////////////////////////////////////////////////////
             // Encryption
             ////////////////////////////////////////////////////////////
-            auto ciphertext1 = (INVALID_PUBLIC_KEY == testResult) ?
+            auto ciphertext1 = (INVALID_PUBLIC_KEY == testData.error) ?
                 cryptoContext->Encrypt(static_cast<const PublicKey<Element>>(nullptr), plaintext1) :
                 cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
-            auto ciphertext2 = (INVALID_PLAINTEXT_ENCRYPT == testResult) ?
+            auto ciphertext2 = (INVALID_PLAINTEXT_ENCRYPT == testData.error) ?
                 cryptoContext->Encrypt(keyPair.publicKey, nullptr) :
                 cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
             auto ciphertext3 = cryptoContext->Encrypt(keyPair.publicKey, plaintext3);
@@ -192,16 +239,16 @@ namespace {
             // EvalMult Operation
             ////////////////////////////////////////////////////////////
             // Perform consecutive multiplications and do a keyswtiching at the end.
-            auto ciphertextMul12 = (INVALID_CIPHERTEXT_ERROR1 == testResult) ?
+            auto ciphertextMul12 = (INVALID_CIPHERTEXT_ERROR1 == testData.error) ?
                 cryptoContext->EvalMultNoRelin(nullptr, ciphertext2) :
                 cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
-            auto ciphertextMul123 = (INVALID_CIPHERTEXT_ERROR2 == testResult) ?
+            auto ciphertextMul123 = (INVALID_CIPHERTEXT_ERROR2 == testData.error) ?
                 cryptoContext->EvalMultNoRelin(ciphertextMul12, nullptr) :
                 cryptoContext->EvalMultNoRelin(ciphertextMul12, ciphertext3);
             Ciphertext<Element> ciphertextMul1234 = nullptr;
-            if(INVALID_CIPHERTEXT_ERROR3 == testResult)
+            if (INVALID_CIPHERTEXT_ERROR3 == testData.error)
                 ciphertextMul1234 = cryptoContext->EvalMultAndRelinearize(nullptr, ciphertext4);
-            else if(INVALID_CIPHERTEXT_ERROR4 == testResult)
+            else if (INVALID_CIPHERTEXT_ERROR_MANY == testData.error)
                 ciphertextMul1234 = cryptoContext->EvalMultAndRelinearize(ciphertextMul123, nullptr);
             else
                 ciphertextMul1234 = cryptoContext->EvalMultAndRelinearize(ciphertextMul123, ciphertext4);
@@ -210,68 +257,83 @@ namespace {
             // Decryption of multiplicative results with and without keyswtiching (depends
             // on the level)
             ////////////////////////////////////////////////////////////
-
             Plaintext plaintextMul1;
             Plaintext plaintextMul2;
             Plaintext plaintextMul3;
-            if(INVALID_CIPHERTEXT_DECRYPT == testResult)
+            if (INVALID_CIPHERTEXT_DECRYPT == testData.error)
                 cryptoContext->Decrypt(keyPair.secretKey, nullptr, &plaintextMul1);
-            else if(INVALID_PLAINTEXT_DECRYPT == testResult)
+            else if (INVALID_PLAINTEXT_DECRYPT == testData.error)
                 cryptoContext->Decrypt(keyPair.secretKey, ciphertextMul12, nullptr);
-            else if(INVALID_PRIVATE_KEY_DECRYPT == testResult)
+            else if (INVALID_PRIVATE_KEY_DECRYPT == testData.error)
                 cryptoContext->Decrypt(nullptr, ciphertextMul12, &plaintextMul1);
             else
                 cryptoContext->Decrypt(keyPair.secretKey, ciphertextMul12, &plaintextMul1);
+
             cryptoContext->Decrypt(keyPair.secretKey, ciphertextMul123, &plaintextMul2);
             cryptoContext->Decrypt(keyPair.secretKey, ciphertextMul1234, &plaintextMul3);
-
             ////////////////////////////////////////////////////////////
             // Prepare EvalMultMany
             ////////////////////////////////////////////////////////////
-
-            std::vector<Ciphertext<Element>> cipherTextList =
-            { ciphertext1, ciphertext2, ciphertext3, ciphertext4 };
+            std::vector<Ciphertext<Element>> cipherTextList = { ciphertext1, ciphertext2, ciphertext3, ciphertext4 };
 
             ////////////////////////////////////////////////////////////
             // Compute EvalMultMany
             ////////////////////////////////////////////////////////////
-
-            auto ciphertextMul12345 = (INVALID_CIPHER_TEXT_LIST == testResult) ?
+            auto ciphertextMul12345 = (INVALID_CIPHER_TEXT_LIST_MANY == testData.error) ?
                 cryptoContext->EvalMultMany(std::vector<Ciphertext<Element>>()) :
                 cryptoContext->EvalMultMany(cipherTextList);
 
             ////////////////////////////////////////////////////////////
             // Decrypt EvalMultMany
             ////////////////////////////////////////////////////////////
-
             Plaintext plaintextMulMany;
-            cryptoContext->Decrypt(keyPair.secretKey, ciphertextMul12345,
-                    &plaintextMulMany);
+            cryptoContext->Decrypt(keyPair.secretKey, ciphertextMul12345, &plaintextMulMany);
 
             plaintextResult1->SetLength(plaintextMul1->GetLength());
             plaintextResult2->SetLength(plaintextMul2->GetLength());
             plaintextResult3->SetLength(plaintextMul3->GetLength());
 
-            EXPECT_EQ(*plaintextMul1, *plaintextResult1)
-                << ".EvalMult gives incorrect results.\n";
-            EXPECT_EQ(*plaintextMul2, *plaintextResult2)
-                << ".EvalMult gives incorrect results.\n";
-            EXPECT_EQ(*plaintextMul3, *plaintextResult3)
-                << ".EvalMultAndRelinearize gives incorrect results.\n";
-            EXPECT_EQ(*plaintextMulMany, *plaintextResult3)
-                << ".EvalMultMany gives incorrect results.\n";
-        }
+            std::string errMsg("EvalMult gives incorrect results");
+            checkEquality(plaintextMul1->GetPackedValue(), plaintextResult1->GetPackedValue(), eps, errMsg);
 
-    template <typename Element>
-        static void RunEvalMultTestCKKS(CryptoContext<Element> cryptoContext,
-                TEST_ESTIMATED_RESULT testResult = SUCCESS) {
+            errMsg = "EvalMultAndRelinearize gives incorrect results";
+            checkEquality(plaintextMul2->GetPackedValue(), plaintextResult2->GetPackedValue(), eps, errMsg);
+
+            errMsg = "EvalMultAndRelinearize gives incorrect results";
+            checkEquality(plaintextMul3->GetPackedValue(), plaintextResult3->GetPackedValue(), eps, errMsg);
+
+            errMsg = "EvalMultAndRelinearize gives incorrect results";
+            checkEquality(plaintextMulMany->GetPackedValue(), plaintextResult3->GetPackedValue(), eps, errMsg);
+
+            if (SUCCESS != testData.error) {
+                // make it fail
+                EXPECT_EQ(0, 1);
+            }
+        }
+        catch (std::exception& e) {
+            // std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_EQ(1, 1);
+        }
+        catch (...) {
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_EvalMultErrorHandling(const TEST_CASE_UTEVALMULT& testData, const std::string& failmsg = std::string()) {
+        try {
+            // std::cout << __FILE__ << ":l." << __LINE__ << std::endl;
+            CryptoContext<Element> cryptoContext(UnitTestGenerateContext(testData.params));
+
             ////////////////////////////////////////////////////////////
             // Perform the key generation operation.
             ////////////////////////////////////////////////////////////
             auto keyPair = cryptoContext->KeyGen();
             ASSERT_TRUE(keyPair.good()) << "Key generation failed!";
             // Create evaluation key vector to be used in keyswitching
-            if( INVALID_PRIVATE_KEY == testResult )
+            if (INVALID_PRIVATE_KEY == testData.error)
                 cryptoContext->EvalMultKeyGen(nullptr);
             else
                 cryptoContext->EvalMultKeyGen(keyPair.secretKey);
@@ -279,40 +341,56 @@ namespace {
             ////////////////////////////////////////////////////////////
             // Plaintext
             ////////////////////////////////////////////////////////////
+            Plaintext plaintext1(nullptr);
+            Plaintext plaintext2(nullptr);
 
-            std::vector<std::complex<double>> vectorOfInts1 = { 0, 1, 2, 3, 4, 5, 6, 7 };
-            std::vector<std::complex<double>> vectorOfInts2 = { 7, 6, 5, 4, 3, 2, 1, 0 };
+            Plaintext plaintextResult(nullptr);
+            if (CKKSRNS_SCHEME == testData.params.schemeId) {
+                std::vector<std::complex<double>> vectorOfInts1 = { 0, 1, 2, 3, 4, 5, 6, 7 };
+                std::vector<std::complex<double>> vectorOfInts2 = { 7, 6, 5, 4, 3, 2, 1, 0 };
 
-            std::vector<std::complex<double>> vectorOfIntsResult = { 0, 6, 10, 12, 12, 10, 6, 0 };
+                plaintext1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfInts1);
+                plaintext2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfInts2);
 
-            Plaintext plaintext1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfInts1);
-            Plaintext plaintext2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfInts2);
+                std::vector<std::complex<double>> vectorOfIntsResult = { 0, 6, 10, 12, 12, 10, 6, 0 };
 
-            Plaintext plaintextResult =
-                cryptoContext->MakeCKKSPackedPlaintext(vectorOfIntsResult);
+                plaintextResult = cryptoContext->MakeCKKSPackedPlaintext(vectorOfIntsResult);
+            }
+            else {
+                std::vector<int64_t> vectorOfInts1 = { 0, 1, 2, 3, 4, 5, 6, 7 };
+                std::vector<int64_t> vectorOfInts2 = { 7, 6, 5, 4, 3, 2, 1, 0 };
+
+                plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+                plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+
+                std::vector<int64_t> vectorOfIntsResult = { 0, 6, 10, 12, 12, 10, 6, 0 };
+
+                plaintextResult = cryptoContext->MakePackedPlaintext(vectorOfIntsResult);
+            }
 
             ////////////////////////////////////////////////////////////
             // Encryption
             ////////////////////////////////////////////////////////////
-            auto ciphertext1 = (INVALID_PUBLIC_KEY == testResult) ?
+            auto ciphertext1 = (INVALID_PUBLIC_KEY == testData.error) ?
                 cryptoContext->Encrypt(static_cast<const PublicKey<Element>>(nullptr), plaintext1) :
                 cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
-            auto ciphertext2 = (INVALID_PLAINTEXT_ENCRYPT == testResult) ?
+            auto ciphertext2 = (INVALID_PLAINTEXT_ENCRYPT == testData.error) ?
                 cryptoContext->Encrypt(keyPair.publicKey, nullptr) :
                 cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
+
             ////////////////////////////////////////////////////////////
             // EvalMult Operation
             ////////////////////////////////////////////////////////////
             // Perform consecutive multiplications and do a keyswtiching at the end.
             Ciphertext<Element> ciphertextMul12 = nullptr;
-            if(INVALID_CIPHERTEXT_ERROR1 == testResult)
+            if (INVALID_CIPHERTEXT_ERROR1 == testData.error)
                 ciphertextMul12 = cryptoContext->EvalMultNoRelin(nullptr, ciphertext2);
-            else if(INVALID_CIPHERTEXT_ERROR2 == testResult)
+            else if (INVALID_CIPHERTEXT_ERROR2 == testData.error)
                 ciphertextMul12 = cryptoContext->EvalMultNoRelin(ciphertext1, nullptr);
             else
                 ciphertextMul12 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
 
-            Ciphertext<Element> ciphertextMult = (INVALID_CIPHERTEXT_ERROR3 == testResult) ?
+            Ciphertext<Element> ciphertextMult = (INVALID_CIPHERTEXT_ERROR3 == testData.error) ?
                 cryptoContext->Relinearize(nullptr) :
                 cryptoContext->Relinearize(ciphertextMul12);
 
@@ -320,103 +398,45 @@ namespace {
             // Decryption of multiplicative results with and without keyswtiching (depends
             // on the level)
             ////////////////////////////////////////////////////////////
-
             Plaintext plaintextMult;
-
-            if(INVALID_CIPHERTEXT_DECRYPT == testResult)
+            if (INVALID_CIPHERTEXT_DECRYPT == testData.error)
                 cryptoContext->Decrypt(keyPair.secretKey, nullptr, &plaintextMult);
-            else if(INVALID_PLAINTEXT_DECRYPT == testResult)
+            else if (INVALID_PLAINTEXT_DECRYPT == testData.error)
                 cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult, nullptr);
-            else if(INVALID_PRIVATE_KEY_DECRYPT == testResult)
+            else if (INVALID_PRIVATE_KEY_DECRYPT == testData.error)
                 cryptoContext->Decrypt(nullptr, ciphertextMult, &plaintextMult);
             else
                 cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult, &plaintextMult);
 
             plaintextResult->SetLength(plaintextMult->GetLength());
 
-            EXPECT_TRUE(checkEquality(plaintextMult->GetCKKSPackedValue(),
-                        plaintextResult->GetCKKSPackedValue()));
+            std::string errMsg(failmsg);
+            if (CKKSRNS_SCHEME == testData.params.schemeId)
+                checkEquality(plaintextMult->GetCKKSPackedValue(), plaintextResult->GetCKKSPackedValue(), eps, errMsg);
+            else
+                checkEquality(plaintextMult->GetPackedValue(), plaintextResult->GetPackedValue(), eps, errMsg);
+
+            if (SUCCESS != testData.error) {
+                // make it fail
+                EXPECT_EQ(0, 1);
+            }
         }
-
-    template <typename Element>
-        static void RunEvalMultTestBGVrns(CryptoContext<Element> cryptoContext,
-                TEST_ESTIMATED_RESULT testResult = SUCCESS) {
-            ////////////////////////////////////////////////////////////
-            // Perform the key generation operation.
-            ////////////////////////////////////////////////////////////
-            auto keyPair = cryptoContext->KeyGen();
-            ASSERT_TRUE(keyPair.good()) << "Key generation failed!";
-            // Create evaluation key vector to be used in keyswitching
-            if( INVALID_PRIVATE_KEY == testResult )
-                cryptoContext->EvalMultKeyGen(nullptr);
-            else
-                cryptoContext->EvalMultKeyGen(keyPair.secretKey);
-
-            ////////////////////////////////////////////////////////////
-            // Plaintext
-            ////////////////////////////////////////////////////////////
-
-            std::vector<int64_t> vectorOfInts1 = { 0, 1, 2, 3, 4, 5, 6, 7 };
-            std::vector<int64_t> vectorOfInts2 = { 7, 6, 5, 4, 3, 2, 1, 0 };
-
-            std::vector<int64_t> vectorOfIntsResult = { 0, 6, 10, 12, 12, 10, 6, 0 };
-
-            Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
-            Plaintext plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
-
-            Plaintext plaintextResult =
-                cryptoContext->MakePackedPlaintext(vectorOfIntsResult);
-
-            ////////////////////////////////////////////////////////////
-            // Encryption
-            ////////////////////////////////////////////////////////////
-            auto ciphertext1 = (INVALID_PUBLIC_KEY == testResult) ?
-                cryptoContext->Encrypt(static_cast<const PublicKey<Element>>(nullptr), plaintext1) :
-                cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
-            auto ciphertext2 = (INVALID_PLAINTEXT_ENCRYPT == testResult) ?
-                cryptoContext->Encrypt(keyPair.publicKey, nullptr) :
-                cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
-            ////////////////////////////////////////////////////////////
-            // EvalMult Operation
-            ////////////////////////////////////////////////////////////
-            // Perform consecutive multiplications and do a keyswtiching at the end.
-            Ciphertext<Element> ciphertextMul12 = nullptr;
-            if(INVALID_CIPHERTEXT_ERROR1 == testResult)
-                ciphertextMul12 = cryptoContext->EvalMultNoRelin(nullptr, ciphertext2);
-            else if(INVALID_CIPHERTEXT_ERROR2 == testResult)
-                ciphertextMul12 = cryptoContext->EvalMultNoRelin(ciphertext1, nullptr);
-            else
-                ciphertextMul12 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
-
-            Ciphertext<Element> ciphertextMult = (INVALID_CIPHERTEXT_ERROR3 == testResult) ?
-                cryptoContext->Relinearize(nullptr) :
-                cryptoContext->Relinearize(ciphertextMul12);
-
-            ////////////////////////////////////////////////////////////
-            // Decryption of multiplicative results with and without keyswtiching (depends
-            // on the level)
-            ////////////////////////////////////////////////////////////
-
-            Plaintext plaintextMult;
-
-            if(INVALID_CIPHERTEXT_DECRYPT == testResult)
-                cryptoContext->Decrypt(keyPair.secretKey, nullptr, &plaintextMult);
-            else if(INVALID_PLAINTEXT_DECRYPT == testResult)
-                cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult, nullptr);
-            else if(INVALID_PRIVATE_KEY_DECRYPT == testResult)
-                cryptoContext->Decrypt(nullptr, ciphertextMult, &plaintextMult);
-            else
-                cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult, &plaintextMult);
-
-            plaintextResult->SetLength(plaintextMult->GetLength());
-
-            EXPECT_TRUE(checkEquality(plaintextMult->GetPackedValue(),
-                        plaintextResult->GetPackedValue()));
+        catch (std::exception& e) {
+            // std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_EQ(1, 1);
         }
+        catch (...) {
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
 
-    template <typename Element>
-        static void RunRelinTestBGVrns(CryptoContext<Element> cryptoContext,
-                TEST_ESTIMATED_RESULT testResult = SUCCESS) {
+    void UnitTest_Relinearization(const TEST_CASE_UTEVALMULT& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cryptoContext(UnitTestGenerateContext(testData.params));
+
             ////////////////////////////////////////////////////////////
             // Perform the key generation operation.
             ////////////////////////////////////////////////////////////
@@ -428,311 +448,138 @@ namespace {
             ////////////////////////////////////////////////////////////
             // Plaintext
             ////////////////////////////////////////////////////////////
+            Plaintext plaintext1(nullptr);
+            Plaintext plaintext2(nullptr);
 
-            std::vector<int64_t> vectorOfInts1 = { 0, 1, 2, 3, 4, 5, 6, 7 };
-            std::vector<int64_t> vectorOfInts2 = { 7, 6, 5, 4, 3, 2, 1, 0 };
+            Plaintext plaintextResult(nullptr);
+            Plaintext plaintextResult2(nullptr);
+            if (CKKSRNS_SCHEME == testData.params.schemeId) {
+                std::vector<std::complex<double>> vectorOfInts1 = { 0, 1, 2, 3, 4, 5, 6, 7 };
+                std::vector<std::complex<double>> vectorOfInts2 = { 7, 6, 5, 4, 3, 2, 1, 0 };
 
-            std::vector<int64_t> vectorOfIntsResult = { 0, 6, 10, 12, 12, 10, 6, 0 };
-            std::vector<int64_t> vectorOfIntsResult2 = { 0, 6, 20, 36, 48, 50, 36, 0 };
+                plaintext1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfInts1);
+                plaintext2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfInts2);
 
-            Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
-            Plaintext plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+                std::vector<std::complex<double>> vectorOfIntsResult = { 0, 6, 10, 12, 12, 10, 6, 0 };
+                std::vector<std::complex<double>> vectorOfIntsResult2 = { 0, 6, 20, 36, 48, 50, 36, 0 };
 
-            Plaintext plaintextResult =
-                cryptoContext->MakePackedPlaintext(vectorOfIntsResult);
+                plaintextResult = cryptoContext->MakeCKKSPackedPlaintext(vectorOfIntsResult);
+                plaintextResult2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfIntsResult2);
+            }
+            else {
+                std::vector<int64_t> vectorOfInts1 = { 0, 1, 2, 3, 4, 5, 6, 7 };
+                std::vector<int64_t> vectorOfInts2 = { 7, 6, 5, 4, 3, 2, 1, 0 };
 
-            Plaintext plaintextResult2 =
-                cryptoContext->MakePackedPlaintext(vectorOfIntsResult2);
+                plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+                plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
 
+                std::vector<int64_t> vectorOfIntsResult = { 0, 6, 10, 12, 12, 10, 6, 0 };
+                std::vector<int64_t> vectorOfIntsResult2 = { 0, 6, 20, 36, 48, 50, 36, 0 };
+
+                plaintextResult = cryptoContext->MakePackedPlaintext(vectorOfIntsResult);
+                plaintextResult2 = cryptoContext->MakePackedPlaintext(vectorOfIntsResult2);
+            }
             ////////////////////////////////////////////////////////////
             // Encryption
             ////////////////////////////////////////////////////////////
             auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
+
             ////////////////////////////////////////////////////////////
             // EvalMult Operation
             ////////////////////////////////////////////////////////////
             // Perform consecutive multiplications and do a keyswtiching at the end.
             auto  ciphertextMul12 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
-
             auto ciphertextMult = cryptoContext->Relinearize(ciphertextMul12);
 
             ////////////////////////////////////////////////////////////
             // Decryption of multiplicative results with and without keyswtiching (depends
             // on the level)
             ////////////////////////////////////////////////////////////
-
             Plaintext plaintextMult;
-
             cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult, &plaintextMult);
-
             plaintextMult->SetLength(plaintextResult->GetLength());
 
-            EXPECT_TRUE(checkEquality(plaintextMult->GetPackedValue(),
-                        plaintextResult->GetPackedValue()))
-                 << ".Relinearization after one multiplication failed.\n";
+            std::string errMsg = failmsg + " Relinearization after one multiplication failed.";
+            if (CKKSRNS_SCHEME == testData.params.schemeId)
+                checkEquality(plaintextMult->GetCKKSPackedValue(), plaintextResult->GetCKKSPackedValue(), eps, errMsg);
+            else
+                checkEquality(plaintextMult->GetPackedValue(), plaintextResult->GetPackedValue(), eps, errMsg);
 
             ciphertextMult = ciphertextMul12;
-
             cryptoContext->Relinearize(ciphertextMult);
-
             cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult, &plaintextMult);
-
             plaintextMult->SetLength(plaintextResult->GetLength());
 
-            EXPECT_TRUE(checkEquality(plaintextMult->GetPackedValue(),
-                        plaintextResult->GetPackedValue()))
-                 << ".In-place relinearization after one multiplication failed.\n";
+            errMsg = failmsg + " In-place relinearization after one multiplication failed.";
+            if (CKKSRNS_SCHEME == testData.params.schemeId)
+                checkEquality(plaintextMult->GetCKKSPackedValue(), plaintextResult->GetCKKSPackedValue(), eps, errMsg);
+            else
+                checkEquality(plaintextMult->GetPackedValue(), plaintextResult->GetPackedValue(), eps, errMsg);
 
             // Perform consecutive multiplications and do a keyswtiching at the end.
-            auto  ciphertextMul123 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertextMul12);
-
+            auto ciphertextMul123 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertextMul12);
             auto ciphertextMult2 = cryptoContext->Relinearize(ciphertextMul123);
 
             ////////////////////////////////////////////////////////////
             // Decryption of multiplicative results with and without keyswtiching (depends
             // on the level)
             ////////////////////////////////////////////////////////////
-
             Plaintext plaintextMult2;
-
             cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult2, &plaintextMult2);
-
             plaintextMult2->SetLength(plaintextResult2->GetLength());
 
-            EXPECT_TRUE(checkEquality(plaintextMult2->GetPackedValue(),
-                        plaintextResult2->GetPackedValue()))
-            << ".Relinearization after two multiplications failed.\n";
+            errMsg = failmsg + " Relinearization after two multiplications failed.";
+            if (CKKSRNS_SCHEME == testData.params.schemeId)
+                checkEquality(plaintextMult2->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps, errMsg);
+            else
+                checkEquality(plaintextMult2->GetPackedValue(), plaintextResult2->GetPackedValue(), eps, errMsg);
 
             ciphertextMult2 = ciphertextMul123;
-
             cryptoContext->Relinearize(ciphertextMult2);
-
             cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult2, &plaintextMult2);
-
             plaintextMult2->SetLength(plaintextResult2->GetLength());
 
-            EXPECT_TRUE(checkEquality(plaintextMult2->GetPackedValue(),
-                        plaintextResult2->GetPackedValue()))
-            << ".In-place relinearization after two multiplications failed.\n";
-
+            errMsg = failmsg + " In-place relinearization after two multiplications failed.";
+            if (CKKSRNS_SCHEME == testData.params.schemeId)
+                checkEquality(plaintextMult2->GetCKKSPackedValue(), plaintextResult2->GetCKKSPackedValue(), eps, errMsg);
+            else
+                checkEquality(plaintextMult2->GetPackedValue(), plaintextResult2->GetPackedValue(), eps, errMsg);
         }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
 
-    template <typename Element>
-         static void RunRelinTestCKKS(CryptoContext<Element> cryptoContext,
-                 TEST_ESTIMATED_RESULT testResult = SUCCESS) {
-             ////////////////////////////////////////////////////////////
-             // Perform the key generation operation.
-             ////////////////////////////////////////////////////////////
-             auto keyPair = cryptoContext->KeyGen();
-             ASSERT_TRUE(keyPair.good()) << "Key generation failed!";
-             // Create evaluation key vector to be used in keyswitching
-             cryptoContext->EvalMultKeysGen(keyPair.secretKey);
+};
+//===========================================================================================================
+TEST_P(UTEVALMULT, EvalMult) {
+    setupSignals();
+    auto test = GetParam();
 
-             ////////////////////////////////////////////////////////////
-             // Plaintext
-             ////////////////////////////////////////////////////////////
-
-             std::vector<std::complex<double>> vectorOfInts1 = { 0, 1, 2, 3, 4, 5, 6, 7 };
-             std::vector<std::complex<double>> vectorOfInts2 = { 7, 6, 5, 4, 3, 2, 1, 0 };
-
-             std::vector<std::complex<double>> vectorOfIntsResult = { 0, 6, 10, 12, 12, 10, 6, 0 };
-             std::vector<std::complex<double>> vectorOfIntsResult2 = { 0, 6, 20, 36, 48, 50, 36, 0 };
-
-             Plaintext plaintext1 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfInts1);
-             Plaintext plaintext2 = cryptoContext->MakeCKKSPackedPlaintext(vectorOfInts2);
-
-             Plaintext plaintextResult =
-                 cryptoContext->MakeCKKSPackedPlaintext(vectorOfIntsResult);
-
-             Plaintext plaintextResult2 =
-                 cryptoContext->MakeCKKSPackedPlaintext(vectorOfIntsResult2);
-
-             ////////////////////////////////////////////////////////////
-             // Encryption
-             ////////////////////////////////////////////////////////////
-             auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
-             auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
-             ////////////////////////////////////////////////////////////
-             // EvalMult Operation
-             ////////////////////////////////////////////////////////////
-             // Perform consecutive multiplications and do a keyswtiching at the end.
-             auto  ciphertextMul12 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertext2);
-
-             auto ciphertextMult = cryptoContext->Relinearize(ciphertextMul12);
-
-             ////////////////////////////////////////////////////////////
-             // Decryption of multiplicative results with and without keyswtiching (depends
-             // on the level)
-             ////////////////////////////////////////////////////////////
-
-             Plaintext plaintextMult;
-
-             cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult, &plaintextMult);
-
-             plaintextMult->SetLength(plaintextResult->GetLength());
-
-             EXPECT_TRUE(checkEquality(plaintextMult->GetCKKSPackedValue(),
-                         plaintextResult->GetCKKSPackedValue()))
-                  << ".Relinearization after one multiplication failed.\n";
-
-             ciphertextMult = ciphertextMul12;
-
-             cryptoContext->Relinearize(ciphertextMult);
-
-             cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult, &plaintextMult);
-
-             plaintextMult->SetLength(plaintextResult->GetLength());
-
-             EXPECT_TRUE(checkEquality(plaintextMult->GetCKKSPackedValue(),
-                         plaintextResult->GetCKKSPackedValue()))
-                  << ".In-place relinearization after one multiplication failed.\n";
-
-             // Perform consecutive multiplications and do a keyswtiching at the end.
-             auto  ciphertextMul123 = cryptoContext->EvalMultNoRelin(ciphertext1, ciphertextMul12);
-
-             auto ciphertextMult2 = cryptoContext->Relinearize(ciphertextMul123);
-
-             ////////////////////////////////////////////////////////////
-             // Decryption of multiplicative results with and without keyswtiching (depends
-             // on the level)
-             ////////////////////////////////////////////////////////////
-
-             Plaintext plaintextMult2;
-
-             cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult2, &plaintextMult2);
-
-             plaintextMult2->SetLength(plaintextResult2->GetLength());
-
-             EXPECT_TRUE(checkEquality(plaintextMult2->GetCKKSPackedValue(),
-                         plaintextResult2->GetCKKSPackedValue()))
-             << ".Relinearization after two multiplications failed.\n";
-
-             ciphertextMult2 = ciphertextMul123;
-
-             cryptoContext->Relinearize(ciphertextMult2);
-
-             cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult2, &plaintextMult2);
-
-             plaintextMult2->SetLength(plaintextResult2->GetLength());
-
-             EXPECT_TRUE(checkEquality(plaintextMult2->GetCKKSPackedValue(),
-                         plaintextResult2->GetCKKSPackedValue()))
-             << ".In-place relinearization after two multiplications failed.\n";
-
-         }
-
-
-} // anonymous namespace
-
-//===================================================================
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many) {
-    PackedEncoding::Destroy();
-    RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC());
+    switch (test.testCaseType) {
+    case EVAL_MULT_ERROR_HANDLING:
+        UnitTest_EvalMultErrorHandling(test, test.buildTestName());
+        break;
+    case EVAL_MULT_MANY_ERROR_HANDLING:
+        UnitTest_EvalMultManyErrorHandling(test, test.buildTestName());
+        break;
+    case RELIN_TEST:
+        UnitTest_Relinearization(test, test.buildTestName());
+        break;
+    default:
+        break;
+    }
 }
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_PRIVATE_KEY) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_PRIVATE_KEY));
-}
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_PUBLIC_KEY) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_PUBLIC_KEY));
-}
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_PLAINTEXT_ENCRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_PLAINTEXT_ENCRYPT));
-}
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_CIPHERTEXT_ERROR1) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_CIPHERTEXT_ERROR1));
-}
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_CIPHERTEXT_ERROR2) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_CIPHERTEXT_ERROR2));
-}
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_CIPHERTEXT_ERROR3) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_CIPHERTEXT_ERROR3));
-}
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_CIPHERTEXT_ERROR4) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_CIPHERTEXT_ERROR4));
-}
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_CIPHER_TEXT_LIST) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_CIPHER_TEXT_LIST));
-}
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_CIPHERTEXT_DECRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_CIPHERTEXT_DECRYPT));
-}
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_PLAINTEXT_DECRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_PLAINTEXT_DECRYPT));
-}
-TEST_F(UnitTestEvalMult, Test_BFVrns_Eval_Mult_Many_INVALID_PRIVATE_KEY_DECRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), INVALID_PRIVATE_KEY_DECRYPT));
-}
-//===================================================================
-TEST_F(UnitTestEvalMult, Test_CKKS_Eval_Mult) {
-    PackedEncoding::Destroy();
-    RunEvalMultTestCKKS(MakeCKKSDCRTPolyCC());
-}
-TEST_F(UnitTestEvalMult, Test_CKKS_Eval_Mult_INVALID_PRIVATE_KEY) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestCKKS(MakeCKKSDCRTPolyCC(), INVALID_PRIVATE_KEY));
-}
-TEST_F(UnitTestEvalMult, Test_CKKS_Eval_Mult_INVALID_PUBLIC_KEY) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestCKKS(MakeCKKSDCRTPolyCC(), INVALID_PUBLIC_KEY));
-}
-TEST_F(UnitTestEvalMult, Test_CKKS_Eval_Mult_INVALID_PLAINTEXT_ENCRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestCKKS(MakeCKKSDCRTPolyCC(), INVALID_PLAINTEXT_ENCRYPT));
-}
-TEST_F(UnitTestEvalMult, Test_CKKS_Eval_Mult_INVALID_CIPHERTEXT_ERROR1) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestCKKS(MakeCKKSDCRTPolyCC(), INVALID_CIPHERTEXT_ERROR1));
-}
-TEST_F(UnitTestEvalMult, Test_CKKS_Eval_Mult_INVALID_CIPHERTEXT_ERROR2) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestCKKS(MakeCKKSDCRTPolyCC(), INVALID_CIPHERTEXT_ERROR2));
-}
-TEST_F(UnitTestEvalMult, Test_CKKS_Eval_Mult_INVALID_CIPHERTEXT_ERROR3) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestCKKS(MakeCKKSDCRTPolyCC(), INVALID_CIPHERTEXT_ERROR3));
-}
-TEST_F(UnitTestEvalMult, Test_CKKS_Eval_Mult_INVALID_CIPHERTEXT_DECRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestCKKS(MakeCKKSDCRTPolyCC(), INVALID_CIPHERTEXT_DECRYPT));
-}
-TEST_F(UnitTestEvalMult, Test_CKKS_Eval_Mult_INVALID_PLAINTEXT_DECRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestCKKS(MakeCKKSDCRTPolyCC(), INVALID_PLAINTEXT_DECRYPT));
-}
-TEST_F(UnitTestEvalMult, Test_CKKS_Eval_Mult_INVALID_PRIVATE_KEY_DECRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestCKKS(MakeCKKSDCRTPolyCC(), INVALID_PRIVATE_KEY_DECRYPT));
-}
-//===================================================================
-TEST_F(UnitTestEvalMult, Test_BGVrns_Eval_Mult) {
-    PackedEncoding::Destroy();
-    RunEvalMultTestBGVrns(MakeBGVrnsDCRTPolyCC());
-}
-TEST_F(UnitTestEvalMult, Test_BGVrns_Eval_Mult_INVALID_PRIVATE_KEY) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestBGVrns(MakeBGVrnsDCRTPolyCC(), INVALID_PRIVATE_KEY));
-}
-TEST_F(UnitTestEvalMult, Test_BGVrns_Eval_Mult_INVALID_PUBLIC_KEY) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestBGVrns(MakeBGVrnsDCRTPolyCC(), INVALID_PUBLIC_KEY));
-}
-TEST_F(UnitTestEvalMult, Test_BGVrns_Eval_Mult_INVALID_PLAINTEXT_ENCRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestBGVrns(MakeBGVrnsDCRTPolyCC(), INVALID_PLAINTEXT_ENCRYPT));
-}
-TEST_F(UnitTestEvalMult, Test_BGVrns_Eval_Mult_INVALID_CIPHERTEXT_ERROR1) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestBGVrns(MakeBGVrnsDCRTPolyCC(), INVALID_CIPHERTEXT_ERROR1));
-}
-TEST_F(UnitTestEvalMult, Test_BGVrns_Eval_Mult_INVALID_CIPHERTEXT_ERROR2) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestBGVrns(MakeBGVrnsDCRTPolyCC(), INVALID_CIPHERTEXT_ERROR2));
-}
-TEST_F(UnitTestEvalMult, Test_BGVrns_Eval_Mult_INVALID_CIPHERTEXT_ERROR3) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestBGVrns(MakeBGVrnsDCRTPolyCC(), INVALID_CIPHERTEXT_ERROR3));
-}
-TEST_F(UnitTestEvalMult, Test_BGVrns_Eval_Mult_INVALID_CIPHERTEXT_DECRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestBGVrns(MakeBGVrnsDCRTPolyCC(), INVALID_CIPHERTEXT_DECRYPT));
-}
-TEST_F(UnitTestEvalMult, Test_BGVrns_Eval_Mult_INVALID_PLAINTEXT_DECRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestBGVrns(MakeBGVrnsDCRTPolyCC(), INVALID_PLAINTEXT_DECRYPT));
-}
-TEST_F(UnitTestEvalMult, Test_BGVrns_Eval_Mult_INVALID_PRIVATE_KEY_DECRYPT) {
-    UT_EXPECT_THROW_SIMPLE(RunEvalMultTestBGVrns(MakeBGVrnsDCRTPolyCC(), INVALID_PRIVATE_KEY_DECRYPT));
-}
-//===================================================================
-TEST_F(UnitTestEvalMult, Test_BGVrns_Relin) {
-    PackedEncoding::Destroy();
-    RunRelinTestBGVrns(MakeBGVrnsDCRTPolyCC());
-}
-TEST_F(UnitTestEvalMult, Test_CKKS_Relin) {
-    PackedEncoding::Destroy();
-    RunRelinTestCKKS(MakeCKKSDCRTPolyCC());
-}
+
+INSTANTIATE_TEST_SUITE_P(UnitTests, UTEVALMULT, ::testing::ValuesIn(testCasesUTEVALMULT), testName);
+
+
