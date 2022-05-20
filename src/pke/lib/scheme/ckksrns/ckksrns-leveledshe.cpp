@@ -413,11 +413,17 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(
 
   for (usint i = 0; i < numTowers; i++) {
     DCRTPoly::Integer modulus = cv[0].GetElementAtIndex(i).GetModulus();
-    __int128 reduced = scaled128 % modulus.ConvertToInt();
 
-    factors[i] = (reduced < 0) ?
-      static_cast<BasicInteger>(reduced + modulus.ConvertToInt()) :
-      static_cast<BasicInteger>(reduced);
+    if (scaled128 < 0) {
+    	DCRTPoly::Integer reducedUnsigned = static_cast<BasicInteger>(-scaled128);
+    	reducedUnsigned.ModEq(modulus);
+    	factors[i] = modulus - reducedUnsigned;
+    } else {
+    	DCRTPoly::Integer reducedUnsigned = static_cast<BasicInteger>(scaled128);
+    	reducedUnsigned.ModEq(modulus);
+    	factors[i] = reducedUnsigned;
+    }
+
   }
   return factors;
 }
