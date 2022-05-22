@@ -535,6 +535,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(
     decryptedCKKS->SetDepth(ciphertext->GetDepth());
     decryptedCKKS->SetLevel(ciphertext->GetLevel());
     decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
+    decryptedCKKS->SetSlots(ciphertext->GetSlots());
 
     const auto cryptoParamsCKKS =
         std::dynamic_pointer_cast<CryptoParametersRNS>(
@@ -672,6 +673,7 @@ namespace lbcrypto {
             decryptedCKKS->SetDepth(ciphertext->GetDepth());
             decryptedCKKS->SetLevel(ciphertext->GetLevel());
             decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
+            decryptedCKKS->SetSlots(ciphertext->GetSlots());
 
             const auto cryptoParamsCKKS =
                 std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(

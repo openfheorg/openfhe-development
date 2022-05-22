@@ -53,17 +53,17 @@ std::vector<std::complex<double>> Conjugate(
 
 double StdDev(const std::vector<std::complex<double>> &vec,
               const std::vector<std::complex<double>> &conjugate) {
-  uint32_t Nh = vec.size();
+  uint32_t slots = vec.size();
   // ring dimension
-  uint32_t n = Nh * 2;
+  uint32_t dslots = slots * 2;
 
   // extract the complex part using identity z - Conj(z) == 2*Im(z)
   // here we actually compute m(X) - m(1/X) corresponding to 2*Im(z).
   // we only need first Nh/2 + 1 components of the imaginary part
   // as the remaining Nh/2 - 1 components have a symmetry
   // w.r.t. components from 1 to Nh/2 - 1
-  std::vector<std::complex<double>> complexValues(Nh / 2 + 1);
-  for (size_t i = 0; i < Nh / 2 + 1; ++i) {
+  std::vector<std::complex<double>> complexValues(slots / 2 + 1);
+  for (size_t i = 0; i < slots / 2 + 1; ++i) {
     complexValues[i] = vec[i] - conjugate[i];
   }
 
@@ -75,12 +75,12 @@ double StdDev(const std::vector<std::complex<double>> &vec,
   // use the symmetry condition
   double mean =
       2 * std::accumulate(complexValues.begin() + 1,
-                          complexValues.begin() + Nh / 2, 0.0, mean_func);
+                          complexValues.begin() + slots / 2, 0.0, mean_func);
   // and then add values at indices 0 and Nh/2
   mean += complexValues[0].imag();
-  mean += 2 * complexValues[Nh / 2].real();
+  mean += 2 * complexValues[slots / 2].real();
   // exclude the real part at index 0 as it is always 0
-  mean /= static_cast<double>(n) - 1.0;
+  mean /= static_cast<double>(dslots) - 1.0;
 
   // Now calculate the variance
   auto variance_func = [&mean](double accumulator,
@@ -91,15 +91,15 @@ double StdDev(const std::vector<std::complex<double>> &vec,
 
   // use the symmetry condition
   double variance =
-      2 * accumulate(complexValues.begin() + 1, complexValues.begin() + Nh / 2,
+      2 * accumulate(complexValues.begin() + 1, complexValues.begin() + slots / 2,
                      0.0, variance_func);
   // and then add values at indices 0 and Nh/2
   variance +=
       (complexValues[0].imag() - mean) * (complexValues[0].imag() - mean);
-  variance += 2 * (complexValues[Nh / 2].real() - mean) *
-              (complexValues[Nh / 2].real() - mean);
+  variance += 2 * (complexValues[slots / 2].real() - mean) *
+              (complexValues[slots / 2].real() - mean);
   // exclude the real part at index 0 as it is always 0
-  variance /= static_cast<double>(n) - 2.0;
+  variance /= static_cast<double>(dslots) - 2.0;
   // scale down by 2 as we have worked with 2*Im(z) up to this point
   double stddev = 0.5 * std::sqrt(variance);
 
@@ -124,14 +124,14 @@ bool CKKSPackedEncoding::Encode() {
   if (this->isEncoded) return true;
 
   uint32_t ringDim = GetElementRingDimension();
-  uint32_t Nh = (ringDim >> 1);
+  usint slots = this->GetSlots();
 
   std::vector<std::complex<double>> inverse = this->GetCKKSPackedValue();
 
   // clears all imaginary values as CKKS for complex numbers
   for (size_t i = 0; i < inverse.size(); i++) inverse[i].imag(0.0);
 
-  inverse.resize(Nh);
+  inverse.resize(slots);
 
   if (this->typeFlag == IsDCRTPoly) {
     DiscreteFourierTransform::FFTSpecialInv(inverse);
@@ -146,8 +146,8 @@ bool CKKSPackedEncoding::Encode() {
     // into (input_mantissa * 2^52) * 2^(p - 52 + input_exponent)
     // to preserve 52-bit precision of doubles
     // when converting to 128-bit numbers
-    std::vector<__int128> temp(2 * Nh);
-    for (size_t i = 0; i < Nh; ++i) {
+    std::vector<__int128> temp(2 * slots);
+    for (size_t i = 0; i < slots; ++i) {
       // Check for possible overflow in llround function
       int32_t n1 = 0;
       // extract the mantissa of real part and multiply it by 2^52
@@ -182,7 +182,7 @@ bool CKKSPackedEncoding::Encode() {
       }
 
       temp[i] = (re < 0) ? Max128BitValue() + re : re;
-      temp[i + Nh] = (im < 0) ? Max128BitValue() + im : im;
+      temp[i + slots] = (im < 0) ? Max128BitValue() + im : im;
 
       if (is128BitOverflow(temp[i]) || is128BitOverflow(temp[i + Nh])) {
         OPENFHE_THROW(math_error, "Overflow, try to decrease scaling factor");
@@ -238,16 +238,13 @@ bool CKKSPackedEncoding::Encode() {
 #else  // NATIVEINT == 64
 bool CKKSPackedEncoding::Encode() {
   if (this->isEncoded) return true;
-
-  uint32_t ringDim = GetElementRingDimension();
-  uint32_t Nh = (ringDim >> 1);
-
+  usint ringDim = GetElementRingDimension();
+  usint slots = this->GetSlots();
   std::vector<std::complex<double>> inverse = this->GetCKKSPackedValue();
-
   // clears all imaginary values as CKKS for complex numbers
   for (size_t i = 0; i < inverse.size(); i++) inverse[i].imag(0.0);
 
-  inverse.resize(Nh);
+  inverse.resize(slots);
   if (this->typeFlag == IsDCRTPoly) {
     DiscreteFourierTransform::FFTSpecialInv(inverse);
     double powP = scalingFactor;
@@ -256,7 +253,7 @@ bool CKKSPackedEncoding::Encode() {
     int32_t MAX_BITS_IN_WORD = 62;
 
     int32_t logc = 0;
-    for (size_t i = 0; i < Nh; ++i) {
+    for (size_t i = 0; i < slots; ++i) {
       inverse[i] *= powP;
       int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
       if (logc < logci) logc = logci;
@@ -270,8 +267,8 @@ bool CKKSPackedEncoding::Encode() {
     int32_t logApprox = logc - logValid;
     double approxFactor = pow(2, logApprox);
 
-    std::vector<int64_t> temp(2 * Nh);
-    for (size_t i = 0; i < Nh; ++i) {
+    std::vector<int64_t> temp(2 * slots);
+    for (size_t i = 0; i < slots; ++i) {
       // Scale down by approxFactor in case the value exceeds a 64-bit integer.
       double dre = inverse[i].real() / approxFactor;
       double dim = inverse[i].imag() / approxFactor;
@@ -343,7 +340,7 @@ bool CKKSPackedEncoding::Encode() {
       int64_t im = std::llround(dim);
 
       temp[i] = (re < 0) ? Max64BitValue() + re : re;
-      temp[i + Nh] = (im < 0) ? Max64BitValue() + im : im;
+      temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
     const std::shared_ptr<ILDCRTParams<BigInteger>> params =
         this->encodedVectorDCRT.GetParams();
@@ -416,9 +413,10 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
   double p = encodingParams->GetPlaintextModulus();
   double powP = 0.0;
   uint32_t Nh = GetElementRingDimension() / 2;
+  uint32_t slots = this->GetSlots();
+  uint32_t gap = Nh/slots;
   value.clear();
-
-  std::vector<std::complex<double>> curValues(Nh);
+  std::vector<std::complex<double>> curValues(slots);
 
   if (this->typeFlag == IsNativePoly) {
     if (rsTech == FLEXIBLEAUTO || rsTech == FLEXIBLEAUTOEXT)
@@ -429,7 +427,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
     const NativeInteger &q = this->GetElementModulus().ConvertToInt();
     NativeInteger qHalf = q >> 1;
 
-    for (size_t i = 0, idx = 0; i < Nh; ++i, idx++) {
+    for (size_t i = 0, idx = 0; i < slots; ++i, idx+=gap) {
       std::complex<double> cur;
 
       if (GetElement<NativePoly>()[idx] > qHalf)
@@ -457,7 +455,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
     const BigInteger &q = GetElementModulus();
     BigInteger qHalf = q >> 1;
 
-    for (size_t i = 0, idx = 0; i < Nh; ++i, idx++) {
+    for (size_t i = 0, idx = 0; i < slots; ++i, idx+=gap) {
       std::complex<double> cur;
 
       if (GetElement<Poly>()[idx] > qHalf)
@@ -539,7 +537,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
   // TODO we can sample Nh integers instead of 2*Nh
   // We would add sampling only for even indices of i.
   // This change should be done together with the one below.
-  for (size_t i = 0; i < Nh; ++i) {
+  for (size_t i = 0; i < slots; ++i) {
     double real = scale * (curValues[i].real() + conjugate[i].real());
     // real += powP * dgg.GenerateIntegerKarney(0.0, stddev);
     real += powP * d(g);
@@ -560,7 +558,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
   for (size_t i = 0; i < realValues.size(); ++i) realValues[i].imag(0.0);
 
   // sets an estimate of the approximation error
-  m_logError = std::round(std::log2(stddev * std::sqrt(2 * Nh)));
+  m_logError = std::round(std::log2(stddev * std::sqrt(2 * slots)));
 
   value = realValues;
 
@@ -575,12 +573,15 @@ void CKKSPackedEncoding::FitToNativeVector(const std::vector<int64_t> &vec,
   NativeInteger bigValueHf(bigBound >> 1);
   NativeInteger modulus(nativeVec->GetModulus());
   NativeInteger diff = bigBound - modulus;
+  uint32_t ringDim = GetElementRingDimension();
+  uint32_t dslots = vec.size();
+  uint32_t gap = ringDim/dslots;
   for (usint i = 0; i < vec.size(); i++) {
     NativeInteger n(vec[i]);
     if (n > bigValueHf) {
-      (*nativeVec)[i] = n.ModSub(diff, modulus);
+      (*nativeVec)[gap * i] = n.ModSub(diff, modulus);
     } else {
-      (*nativeVec)[i] = n.Mod(modulus);
+      (*nativeVec)[gap * i] = n.Mod(modulus);
     }
   }
 }
@@ -592,12 +593,15 @@ void CKKSPackedEncoding::FitToNativeVector(const std::vector<__int128> &vec,
   NativeInteger bigValueHf((unsigned __int128)bigBound >> 1);
   NativeInteger modulus(nativeVec->GetModulus());
   NativeInteger diff = NativeInteger((unsigned __int128)bigBound) - modulus;
+  uint32_t ringDim = GetElementRingDimension();
+  uint32_t dslots = vec.size();
+  uint32_t gap = ringDim/dslots;
   for (usint i = 0; i < vec.size(); i++) {
     NativeInteger n((unsigned __int128)vec[i]);
     if (n > bigValueHf) {
-      (*nativeVec)[i] = n.ModSub(diff, modulus);
+      (*nativeVec)[gap * i] = n.ModSub(diff, modulus);
     } else {
-      (*nativeVec)[i] = n.Mod(modulus);
+      (*nativeVec)[gap * i] = n.Mod(modulus);
     }
   }
 }

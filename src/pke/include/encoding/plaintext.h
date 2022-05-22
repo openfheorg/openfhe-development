@@ -111,6 +111,7 @@ class PlaintextImpl {
   NativeInteger scalingFactorInt;
   size_t level;
   size_t depth;
+  usint slots;
 
  public:
   PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
@@ -122,7 +123,8 @@ class PlaintextImpl {
         scalingFactor(1),
         scalingFactorInt(1),
         level(0),
-        depth(1) {}
+        depth(1),
+        slots(0) {}
 
   PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
                 bool isEncoded = false)
@@ -133,7 +135,8 @@ class PlaintextImpl {
         scalingFactor(1),
         scalingFactorInt(1),
         level(0),
-        depth(1) {}
+        depth(1),
+        slots(0) {}
 
   PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
                 bool isEncoded = false)
@@ -145,7 +148,8 @@ class PlaintextImpl {
         scalingFactor(1),
         scalingFactorInt(1),
         level(0),
-        depth(1) {}
+        depth(1),
+        slots(0) {}
 
   PlaintextImpl(const PlaintextImpl& rhs)
       : isEncoded(rhs.isEncoded),
@@ -156,7 +160,8 @@ class PlaintextImpl {
         scalingFactor(rhs.scalingFactor),
         scalingFactorInt(rhs.scalingFactorInt),
         level(rhs.level),
-        depth(rhs.depth) {}
+        depth(rhs.depth),
+        slots(rhs.slots) {}
 
   PlaintextImpl(const PlaintextImpl&& rhs)
       : isEncoded(rhs.isEncoded),
@@ -167,7 +172,8 @@ class PlaintextImpl {
         scalingFactor(rhs.scalingFactor),
         scalingFactorInt(rhs.scalingFactorInt),
         level(rhs.level),
-        depth(rhs.depth) {}
+        depth(rhs.depth),
+        slots(rhs.slots) {}
 
   virtual ~PlaintextImpl() {}
 
@@ -333,6 +339,18 @@ class PlaintextImpl {
    * Method to set the level of a plaintext.
    */
   void SetLevel(size_t l) { level = l; }
+
+  /*
+   * Method to get the level of a plaintext.
+   *
+   * @return the level of the plaintext
+   */
+  usint GetSlots() const { return slots; }
+
+  /*
+   * Method to set the level of a plaintext.
+   */
+  void SetSlots(usint l) { slots = l; }
 
   virtual double GetLogError() const {
     OPENFHE_THROW(not_available_error,

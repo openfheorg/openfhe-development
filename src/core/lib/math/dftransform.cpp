@@ -210,8 +210,9 @@ void DiscreteFourierTransform::FFTSpecialInvLazy(std::vector<std::complex<double
         for (size_t i = 0; i < size; i += len) {
             size_t lenh = len >> 1;
             size_t lenq = len << 2;
+            size_t gap = m_M / lenq;
             for (size_t j = 0; j < lenh; ++j) {
-                size_t idx             = (lenq - (m_rotGroup[j] % lenq)) * m_M / lenq;
+                size_t idx             = (lenq - (m_rotGroup[j] % lenq)) * gap;
                 std::complex<double> u = vals[i + j] + vals[i + j + lenh];
                 std::complex<double> v = vals[i + j] - vals[i + j + lenh];
                 v *= m_ksiPows[idx];
@@ -225,8 +226,8 @@ void DiscreteFourierTransform::FFTSpecialInvLazy(std::vector<std::complex<double
 
 void DiscreteFourierTransform::FFTSpecialInv(std::vector<std::complex<double>>& vals) {
     // if the precomputed tables do not exist
-    if ((vals.size() != m_Nh) || (!m_isInitialized))
-        Initialize(vals.size() * 4, vals.size());
+    if ((!m_isInitialized))
+        Initialize(m_M, m_M / 4);
     FFTSpecialInvLazy(vals);
     uint32_t size = vals.size();
     for (size_t i = 0; i < size; ++i) {
@@ -236,16 +237,17 @@ void DiscreteFourierTransform::FFTSpecialInv(std::vector<std::complex<double>>& 
 
 void DiscreteFourierTransform::FFTSpecial(std::vector<std::complex<double>>& vals) {
     // if the precomputed tables do not exist
-    if ((vals.size() != m_Nh) || (!m_isInitialized))
-        Initialize(vals.size() * 4, vals.size());
+  if ((!m_isInitialized))
+      Initialize(m_M, m_M / 4);
     BitReverse(vals);
     uint32_t size = vals.size();
     for (size_t len = 2; len <= size; len <<= 1) {
         for (size_t i = 0; i < size; i += len) {
             size_t lenh = len >> 1;
             size_t lenq = len << 2;
+            size_t gap = m_M / lenq;
             for (size_t j = 0; j < lenh; ++j) {
-                int64_t idx            = ((m_rotGroup[j] % lenq)) * m_M / lenq;
+                int64_t idx            = ((m_rotGroup[j] % lenq)) * gap;
                 std::complex<double> u = vals[i + j];
                 std::complex<double> v = vals[i + j + lenh];
                 v *= m_ksiPows[idx];

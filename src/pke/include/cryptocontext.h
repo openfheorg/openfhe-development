@@ -899,7 +899,7 @@ protected:
    */
   virtual Plaintext MakeCKKSPackedPlaintext(
       const std::vector<std::complex<double>>& value, size_t depth = 1,
-      uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr) const {
+      uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr, usint slots = 0) const {
     Plaintext p;
     const auto cryptoParams =
         std::dynamic_pointer_cast<CryptoParametersRNS>(
@@ -932,10 +932,10 @@ protected:
 
       p = Plaintext(std::make_shared<CKKSPackedEncoding>(
           elemParamsPtr, this->GetEncodingParams(), value, depth, level,
-          scFact));
+          scFact, slots));
     } else {
       p = Plaintext(std::make_shared<CKKSPackedEncoding>(
-          params, this->GetEncodingParams(), value, depth, level, scFact));
+          params, this->GetEncodingParams(), value, depth, level, scFact, slots));
     }
 
     p->Encode();
@@ -944,7 +944,6 @@ protected:
     if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
       p->SetDepth(2);
     }
-  
     return p;
   }
 
@@ -959,12 +958,12 @@ protected:
    */
   virtual Plaintext MakeCKKSPackedPlaintext(
       const std::vector<double>& value, size_t depth = 1, uint32_t level = 0,
-      const std::shared_ptr<ParmType> params = nullptr) const {
+      const std::shared_ptr<ParmType> params = nullptr, usint slots = 0) const {
     std::vector<std::complex<double>> complexValue(value.size());
     std::transform(value.begin(), value.end(), complexValue.begin(),
                    [](double da) { return std::complex<double>(da); });
 
-    return MakeCKKSPackedPlaintext(complexValue, depth, level, params);
+    return MakeCKKSPackedPlaintext(complexValue, depth, level, params, slots);
   }
 
   /**
@@ -1018,6 +1017,7 @@ protected:
       ciphertext->SetScalingFactorInt(plaintext->GetScalingFactorInt());
       ciphertext->SetDepth(plaintext->GetDepth());
       ciphertext->SetLevel(plaintext->GetLevel());
+      ciphertext->SetSlots(plaintext->GetSlots());
     }
 
     return ciphertext;
@@ -1047,6 +1047,7 @@ protected:
       ciphertext->SetScalingFactorInt(plaintext->GetScalingFactorInt());
       ciphertext->SetDepth(plaintext->GetDepth());
       ciphertext->SetLevel(plaintext->GetLevel());
+      ciphertext->SetSlots(plaintext->GetSlots());
     }
 
     return ciphertext;

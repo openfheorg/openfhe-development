@@ -157,6 +157,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMultFixed(
   result->SetScalingFactor(ciphertext->GetScalingFactor() *
                            plaintext->GetScalingFactor());
   result->SetLevel(ciphertext->GetLevel());
+  result->SetSlots(ciphertext->GetSlots());
 
   return result;
 }
@@ -221,6 +222,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMultMutable(
   result->SetDepth(ciphertext->GetDepth() + ptxDepth);
   result->SetScalingFactor(ciphertext->GetScalingFactor() * ptxSF);
   result->SetLevel(ciphertext->GetLevel());
+  result->SetSlots(ciphertext->GetSlots());
 
   return result;
 }
@@ -594,6 +596,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalAddCore(
   result->SetDepth(ciphertext->GetDepth());
   result->SetLevel(ciphertext->GetLevel());
   result->SetScalingFactor(ciphertext->GetScalingFactor());
+  result->SetSlots(ciphertext->GetSlots());
 
   return result;
 }
@@ -653,6 +656,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalSubCore(
   result->SetDepth(ciphertext->GetDepth());
   result->SetLevel(ciphertext->GetLevel());
   result->SetScalingFactor(ciphertext->GetScalingFactor());
+  result->SetSlots(ciphertext->GetSlots());
 
   return result;
 }
