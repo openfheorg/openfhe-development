@@ -111,7 +111,7 @@ static std::vector<TEST_CASE_Encrypt_Decrypt> testCases = {
     { STRING_TEST, "08", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   OPTIMIZED, DFLT,  1,      60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
     { STRING_TEST, "09", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPS},  },
     { STRING_TEST, "10", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, BEHZ}, },
-
+    // ==========================================
     // TestType,       Descr, Scheme,         RDim, MultDepth, SFBits, RWin, BatchSz, Mode,      Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { COEF_PACKED_TEST, "01", {BGVRNS_SCHEME, 64,   2,         59,     DFLT, BATCH,   RLWE,      DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
     { COEF_PACKED_TEST, "02", {BGVRNS_SCHEME, 64,   2,         59,     DFLT, BATCH,   RLWE,      DFLT,  1,      60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
