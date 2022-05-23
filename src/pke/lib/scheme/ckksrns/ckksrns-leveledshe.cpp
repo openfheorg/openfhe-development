@@ -361,9 +361,11 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext->GetCryptoParameters());
 
-  double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
+  double scFactor = 0;
   if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && ciphertext->GetLevel() == 0) {
     scFactor = cryptoParams->GetScalingFactorRealBig(ciphertext->GetLevel());
+  } else {
+    scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
   }
 
   // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
