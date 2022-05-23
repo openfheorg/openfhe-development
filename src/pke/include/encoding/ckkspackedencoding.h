@@ -77,16 +77,26 @@ class CKKSPackedEncoding : public PlaintextImpl {
 
   CKKSPackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
                      const std::vector<std::complex<double>> &coeffs,
-                     size_t depth, uint32_t level, double scFact, size_t slots = 0)
+                     size_t depth, uint32_t level, double scFact, size_t slots)
       : PlaintextImpl(vp, ep), value(coeffs) {
     this->depth = depth;
     this->level = level;
     if (slots == 0) {
       this->slots = GetElementRingDimension() / 2;
-    } else if (slots < coeffs.size()) {
-      this->slots = 1 << (usint)std::ceil(std::log2(coeffs.size()));
     } else {
-      this->slots = 1 << (usint)std::ceil(std::log2(slots));
+      this->slots = slots;
+    }
+
+    if(this->slots < coeffs.size()) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots cannot be smaller than value vector size");
+    }
+
+    if((this->slots & (this->slots - 1)) != 0) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots should be a power of two");
     }
     this->scalingFactor = scFact;
     m_logError = 0.0;
@@ -94,16 +104,26 @@ class CKKSPackedEncoding : public PlaintextImpl {
 
   CKKSPackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
                      const std::vector<std::complex<double>> &coeffs,
-                     size_t depth, uint32_t level, double scFact, size_t slots = 0)
+                     size_t depth, uint32_t level, double scFact, size_t slots)
       : PlaintextImpl(vp, ep), value(coeffs) {
     this->depth = depth;
     this->level = level;
     if (slots == 0) {
       this->slots = GetElementRingDimension() / 2;
-    } else if (slots < coeffs.size()) {
-      this->slots = 1 << (usint)std::ceil(std::log2(coeffs.size()));
     } else {
-      this->slots = 1 << (usint)std::ceil(std::log2(slots));
+      this->slots = slots;
+    }
+
+    if(this->slots < coeffs.size()) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots cannot be smaller than value vector size");
+    }
+
+    if((this->slots & (this->slots - 1)) != 0) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots should be a power of two");
     }
     this->scalingFactor = scFact;
     m_logError = 0.0;
@@ -117,16 +137,26 @@ class CKKSPackedEncoding : public PlaintextImpl {
    */
   CKKSPackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
                      const std::vector<std::complex<double>> &coeffs,
-                     size_t depth, uint32_t level, double scFact, size_t slots = 0)
+                     size_t depth, uint32_t level, double scFact, size_t slots)
       : PlaintextImpl(vp, ep), value(coeffs) {
     this->depth = depth;
     this->level = level;
     if (slots == 0) {
       this->slots = GetElementRingDimension() / 2;
-    } else if (slots < coeffs.size()) {
-      this->slots = 1 << (usint)std::ceil(std::log2(coeffs.size()));
     } else {
-      this->slots = 1 << (usint)std::ceil(std::log2(slots));
+      this->slots = slots;
+    }
+
+    if(this->slots < coeffs.size()) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots cannot be smaller than value vector size");
+    }
+
+    if((this->slots & (this->slots - 1)) != 0) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots should be a power of two");
     }
     this->scalingFactor = scFact;
     m_logError = 0.0;
@@ -137,15 +167,25 @@ class CKKSPackedEncoding : public PlaintextImpl {
    * in the same order.
    * @param rhs - The input object to copy.
    */
-  explicit CKKSPackedEncoding(const std::vector<std::complex<double>> &rhs, size_t slots = 0)
+  explicit CKKSPackedEncoding(const std::vector<std::complex<double>> &rhs, size_t slots)
       : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(rhs) {
     depth = 1;
     if (slots == 0) {
       this->slots = GetElementRingDimension() / 2;
-    } else if (slots < rhs.size()) {
-      this->slots = 1 << (usint)std::ceil(std::log2(rhs.size()));
     } else {
-      this->slots = 1 << (usint)std::ceil(std::log2(slots));
+      this->slots = slots;
+    }
+
+    if(this->slots < rhs.size()) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots cannot be smaller than value vector size");
+    }
+
+    if((this->slots & (this->slots - 1)) != 0) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots should be a power of two");
     }
     m_logError = 0.0;
   }

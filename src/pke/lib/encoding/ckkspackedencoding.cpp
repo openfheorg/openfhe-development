@@ -184,7 +184,7 @@ bool CKKSPackedEncoding::Encode() {
       temp[i] = (re < 0) ? Max128BitValue() + re : re;
       temp[i + slots] = (im < 0) ? Max128BitValue() + im : im;
 
-      if (is128BitOverflow(temp[i]) || is128BitOverflow(temp[i + Nh])) {
+      if (is128BitOverflow(temp[i]) || is128BitOverflow(temp[i + slots])) {
         OPENFHE_THROW(math_error, "Overflow, try to decrease scaling factor");
       }
     }
@@ -521,7 +521,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
                    "too high. Check the parameters. ");
 
   // real values
-  std::vector<std::complex<double>> realValues(Nh);
+  std::vector<std::complex<double>> realValues(slots);
 
   // CKKS_M_FACTOR is a compile-level parameter
   // set to 1 by default

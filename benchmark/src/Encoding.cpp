@@ -193,7 +193,7 @@ void BM_encoding_PackedCKKSPlaintext(benchmark::State& state) {
     auto scalingFactor = cc->GetEncodingParams()->GetPlaintextModulus();
 
     while (state.KeepRunning()) {
-        plaintext.reset(new CKKSPackedEncoding(lp, ep, vectorOfComplex, 1, 0, scalingFactor));
+        plaintext.reset(new CKKSPackedEncoding(lp, ep, vectorOfComplex, 1, 0, scalingFactor, 0));
         plaintext->Encode();
     }
 }

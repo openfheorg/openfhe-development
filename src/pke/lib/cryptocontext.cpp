@@ -595,6 +595,7 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
   if (partialCiphertextVec[0]->GetEncodingType() == CKKSPacked) {
     auto decryptedCKKS =
         std::static_pointer_cast<CKKSPackedEncoding>(decrypted);
+    decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
     const auto cryptoParamsCKKS =
         std::dynamic_pointer_cast<CryptoParametersRNS>(
             this->GetCryptoParameters());
@@ -740,6 +741,7 @@ namespace lbcrypto {
         if (partialCiphertextVec[0]->GetEncodingType() == CKKSPacked) {
             auto decryptedCKKS =
                 std::static_pointer_cast<CKKSPackedEncoding>(decrypted);
+            decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
             const auto cryptoParamsCKKS =
                 std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
                     this->GetCryptoParameters());
