@@ -361,18 +361,14 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext->GetCryptoParameters());
 
-  double scFactor;
+  double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
   if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && ciphertext->GetLevel() == 0) {
     scFactor = cryptoParams->GetScalingFactorRealBig(ciphertext->GetLevel());
-  } else {
-    scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
   }
 
   // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-  int32_t MAX_BITS_IN_WORD = 62;
-
   int32_t logSF = static_cast<int32_t>(ceil(log2(fabs(scFactor))));
-  int32_t logValid = (logSF <= MAX_BITS_IN_WORD) ? logSF : MAX_BITS_IN_WORD;
+  int32_t logValid = (logSF <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ? logSF : LargeScalingFactorConstants::MAX_BITS_IN_WORD;
   int32_t logApprox = logSF - logValid;
   double approxFactor = pow(2, logApprox);
 
@@ -381,19 +377,18 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(
   std::vector<DCRTPoly::Integer> crtConstant(sizeQl, scConstant);
 
   // Scale back up by approxFactor within the CRT multiplications.
-  int32_t MAX_LOG_STEP = 60;
   if (logApprox > 0) {
-    int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+    int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ? logApprox : LargeScalingFactorConstants::MAX_LOG_STEP;
     DCRTPoly::Integer intStep = uint64_t(1) << logStep;
     std::vector<DCRTPoly::Integer> crtApprox(sizeQl, intStep);
     logApprox -= logStep;
 
     while (logApprox > 0) {
-      int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+      int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ? logApprox : LargeScalingFactorConstants::MAX_LOG_STEP;
       DCRTPoly::Integer intStep = uint64_t(1) << logStep;
       std::vector<DCRTPoly::Integer> crtSF(sizeQl, intStep);
       crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
-      logSF -= logStep;
+      logApprox -= logStep;
     }
     crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtApprox, moduli);
   }
@@ -485,7 +480,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(
   int32_t MAX_BITS_IN_WORD = 126;
 #else
   typedef int64_t DoubleInteger;
-  int32_t MAX_BITS_IN_WORD = 62;
+  int32_t MAX_BITS_IN_WORD = LargeScalingFactorConstants::MAX_BITS_IN_WORD;
 #endif
 
   // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
@@ -520,19 +515,18 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(
   }
 
   // Scale back up by approxFactor within the CRT multiplications.
-  int32_t MAX_LOG_STEP = 60;
   if (logApprox > 0) {
-    int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+    int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ? logApprox : LargeScalingFactorConstants::MAX_LOG_STEP;
     DCRTPoly::Integer intStep = uint64_t(1) << logStep;
     std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
     logApprox -= logStep;
 
     while (logApprox > 0) {
-      int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+      int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ? logApprox : LargeScalingFactorConstants::MAX_LOG_STEP;
       DCRTPoly::Integer intStep = uint64_t(1) << logStep;
       std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
       crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
-      logSF -= logStep;
+      logApprox -= logStep;
     }
     factors = CKKSPackedEncoding::CRTMult(factors, crtApprox, moduli);
   }

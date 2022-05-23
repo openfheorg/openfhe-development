@@ -74,5 +74,7 @@ std::ostream& operator<<(std::ostream& s, EncryptionTechnique t);
 enum MultiplicationTechnique { BEHZ, HPS, HPSPOVERQ, HPSPOVERQLEVELED };
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
+enum LargeScalingFactorConstants {MAX_BITS_IN_WORD = 62, MAX_LOG_STEP = 60};
+
 
 #endif  // _CONSTANTS_H_
