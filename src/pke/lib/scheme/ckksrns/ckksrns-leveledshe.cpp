@@ -360,15 +360,49 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext->GetCryptoParameters());
-  double scFactor =
-      cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
+
+  double scFactor = 0;
+  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && ciphertext->GetLevel() == 0) {
+    scFactor = cryptoParams->GetScalingFactorRealBig(ciphertext->GetLevel());
+  } else {
+    scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
+  }
+
+  // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
+  int32_t logSF = static_cast<int32_t>(ceil(log2(fabs(scFactor))));
+  int32_t logValid = (logSF <= LargeScalingFactorConstants::MAX_BITS_IN_WORD) ? logSF : LargeScalingFactorConstants::MAX_BITS_IN_WORD;
+  int32_t logApprox = logSF - logValid;
+  double approxFactor = pow(2, logApprox);
+
+  DCRTPoly::Integer scConstant =
+      static_cast<uint64_t>(constant * scFactor / approxFactor + 0.5);
+  std::vector<DCRTPoly::Integer> crtConstant(sizeQl, scConstant);
+
+  // Scale back up by approxFactor within the CRT multiplications.
+  if (logApprox > 0) {
+    int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ? logApprox : LargeScalingFactorConstants::MAX_LOG_STEP;
+    DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+    std::vector<DCRTPoly::Integer> crtApprox(sizeQl, intStep);
+    logApprox -= logStep;
+
+    while (logApprox > 0) {
+      int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ? logApprox : LargeScalingFactorConstants::MAX_LOG_STEP;
+      DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+      std::vector<DCRTPoly::Integer> crtSF(sizeQl, intStep);
+      crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
+      logApprox -= logStep;
+    }
+    crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtApprox, moduli);
+  }
+
+  // In FLEXIBLEAUTOEXT mode at level 0, we don't use the depth to calculate the scaling factor,
+  // so we return the value before taking the depth into account.
+  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && ciphertext->GetLevel() == 0) {
+    return crtConstant;
+  } 
 
   DCRTPoly::Integer intScFactor = static_cast<uint64_t>(scFactor + 0.5);
-  DCRTPoly::Integer scConstant =
-      static_cast<uint64_t>(constant * scFactor + 0.5);
-
   std::vector<DCRTPoly::Integer> crtScFactor(sizeQl, intScFactor);
-  std::vector<DCRTPoly::Integer> crtConstant(sizeQl, scConstant);
 
   for (usint i = 0; i < ciphertext->GetDepth() - 1; i++) {
     crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtScFactor, moduli);
@@ -413,11 +447,17 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(
 
   for (usint i = 0; i < numTowers; i++) {
     DCRTPoly::Integer modulus = cv[0].GetElementAtIndex(i).GetModulus();
-    __int128 reduced = scaled128 % modulus.ConvertToInt();
 
-    factors[i] = (reduced < 0) ?
-      static_cast<BasicInteger>(reduced + modulus.ConvertToInt()) :
-      static_cast<BasicInteger>(reduced);
+    if (scaled128 < 0) {
+    	DCRTPoly::Integer reducedUnsigned = static_cast<BasicInteger>(-scaled128);
+    	reducedUnsigned.ModEq(modulus);
+    	factors[i] = modulus - reducedUnsigned;
+    } else {
+    	DCRTPoly::Integer reducedUnsigned = static_cast<BasicInteger>(scaled128);
+    	reducedUnsigned.ModEq(modulus);
+    	factors[i] = reducedUnsigned;
+    }
+
   }
   return factors;
 }
@@ -429,41 +469,70 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(
           ciphertext->GetCryptoParameters());
 
   const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
+  uint32_t numTowers = cv[0].GetNumOfElements();
+  std::vector<DCRTPoly::Integer> moduli(numTowers);
+  for (usint i = 0; i < numTowers; i++) {
+    moduli[i] = cv[0].GetElementAtIndex(i).GetModulus();
+  }
+
   double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
 
 #if defined(HAVE_INT128)
   typedef int128_t DoubleInteger;
+  int32_t MAX_BITS_IN_WORD = 126;
 #else
   typedef int64_t DoubleInteger;
+  int32_t MAX_BITS_IN_WORD = LargeScalingFactorConstants::MAX_BITS_IN_WORD;
 #endif
 
-  DoubleInteger large = static_cast<DoubleInteger>(constant * scFactor + 0.5);
+  // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
+  int32_t logSF = static_cast<int32_t>(ceil(log2(fabs(scFactor))));
+  int32_t logValid = (logSF <= MAX_BITS_IN_WORD) ? logSF : MAX_BITS_IN_WORD;
+  int32_t logApprox = logSF - logValid;
+  double approxFactor = pow(2, logApprox);
+
+  DoubleInteger large = static_cast<DoubleInteger>(constant / approxFactor * scFactor + 0.5);
   DoubleInteger large_abs = (large < 0 ? -large : large);
   DoubleInteger bound = (uint64_t)1 << 63;
 
-  uint32_t numTowers = cv[0].GetNumOfElements();
   std::vector<DCRTPoly::Integer> factors(numTowers);
 
   if (large_abs > bound) {
     for (usint i = 0; i < numTowers; i++) {
-      DCRTPoly::Integer modulus = cv[0].GetElementAtIndex(i).GetModulus();
-      DoubleInteger reduced = large % modulus.ConvertToInt();
+      DoubleInteger reduced = large % moduli[i].ConvertToInt();
 
       factors[i] = (reduced < 0) ?
-        static_cast<uint64_t>(reduced + modulus.ConvertToInt()) :
+        static_cast<uint64_t>(reduced + moduli[i].ConvertToInt()) :
         static_cast<uint64_t>(reduced);
     }
   } else {
     int64_t scConstant = static_cast<int64_t>(large);
     for (usint i = 0; i < numTowers; i++) {
-      DCRTPoly::Integer modulus = cv[0].GetElementAtIndex(i).GetModulus();
-      int64_t reduced = scConstant % static_cast<int64_t>(modulus.ConvertToInt());
+      int64_t reduced = scConstant % static_cast<int64_t>(moduli[i].ConvertToInt());
 
       factors[i] = (reduced < 0) ?
-          reduced + modulus.ConvertToInt() :
+          reduced + moduli[i].ConvertToInt() :
           reduced;
     }
   }
+
+  // Scale back up by approxFactor within the CRT multiplications.
+  if (logApprox > 0) {
+    int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ? logApprox : LargeScalingFactorConstants::MAX_LOG_STEP;
+    DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+    std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
+    logApprox -= logStep;
+
+    while (logApprox > 0) {
+      int32_t logStep = (logApprox <= LargeScalingFactorConstants::MAX_LOG_STEP) ? logApprox : LargeScalingFactorConstants::MAX_LOG_STEP;
+      DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+      std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
+      crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
+      logApprox -= logStep;
+    }
+    factors = CKKSPackedEncoding::CRTMult(factors, crtApprox, moduli);
+  }
+
   return factors;
 }
 

@@ -58,6 +58,12 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 
 namespace lbcrypto {
 
+#if NATIVEINT == 128
+const size_t AUXMODSIZE = 119;
+#else
+const size_t AUXMODSIZE = 60;
+#endif
+
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
           std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
           usint numPrimes, usint scaleExp, usint relinWindow, MODE mode,
@@ -79,7 +85,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
 
   //// HE Standards compliance logic/check
   SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
-  uint32_t auxBits = 60;
+  uint32_t auxBits = AUXMODSIZE;
   uint32_t n = cyclOrder / 2;
   uint32_t qBound = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
   // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)

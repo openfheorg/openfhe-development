@@ -318,6 +318,9 @@ class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
     const double epsHigh = 0.00001;
 
     const std::vector<std::complex<double>> vectorOfInts0_7{ 0, 1, 2, 3, 4, 5, 6, 7 };
+    const std::vector<std::complex<double>> vectorOfInts0_7_Neg{ 0, -1, -2, -3, -4, -5, -6, -7 };
+    const std::vector<std::complex<double>> vectorOfInts0_7_Add{ 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5 };
+    const std::vector<std::complex<double>> vectorOfInts0_7_Sub{ -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5 };
     const std::vector<std::complex<double>> vectorOfInts0_7neg{ 0,-1,-2,-3,-4,-5,-6,-7 };
     const std::vector<std::complex<double>> vectorOfInts7_0{ 7, 6, 5, 4, 3, 2, 1, 0 };
 
@@ -339,6 +342,8 @@ protected:
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7);
+            Plaintext plaintext1AddScalar = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Add);
+            Plaintext plaintext1SubScalar = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Sub);
             Plaintext negatives1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7neg);
             Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0);
 
@@ -421,6 +426,34 @@ protected:
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub Ct and Pt fails fails");
 
+            // Testing EvalAdd ciphertext + double
+            cResult = cc->EvalAdd(ciphertext1, 0.5);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintext1AddScalar->GetLength());
+            checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                failmsg + " EvalAdd Ct and Double fails");
+
+            // Testing EvalAdd ciphertext - double
+            cResult = cc->EvalSub(ciphertext1, 0.5);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintext1SubScalar->GetLength());
+            checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                failmsg + " EvalSub Ct and Double fails");
+
+            // Testing EvalAdd ciphertext + negative double
+            cResult = cc->EvalAdd(ciphertext1, -0.5);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintext1SubScalar->GetLength());
+            checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                failmsg + " EvalAdd Ct and negative double fails");
+
+            // Testing EvalAdd ciphertext - negative double
+            cResult = cc->EvalSub(ciphertext1, -0.5);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintext1AddScalar->GetLength());
+            checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                failmsg + " EvalSub Ct and negative double fails");
+
             // Testing EvalNegate
             cResult = cc->EvalNegate(ciphertext1);
             cc->Decrypt(kp.secretKey, cResult, &results);
@@ -447,6 +480,7 @@ protected:
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7);
             Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0);
+            Plaintext plaintextNeg = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Neg);
             Plaintext plaintextMult =
                 cc->MakeCKKSPackedPlaintext(std::vector<std::complex<double>>({ 0, 6,10,12,12,10, 6, 0 }));
 
@@ -491,6 +525,22 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and Pt fails");
+
+            // Testing EvalMult ciphertext * positive double
+            cResult = cc->EvalMult(ciphertext1, 1.0);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintext1->GetLength());
+            checkEquality(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                failmsg + " EvalMult Ct and positive double fails");
+
+            // Testing EvalMult ciphertext * negative double
+            cResult = cc->EvalMult(ciphertext1, -1.0);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintextNeg->GetLength());
+            std::stringstream buffer1;
+            buffer1 << "should be: " << plaintextNeg->GetCKKSPackedValue() << " - we get: " << results->GetCKKSPackedValue();
+            checkEquality(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                failmsg + " EvalMult Ct and negative double fails; " + buffer1.str());
 
             // Testing EvalMultNoRelin ciphertext * ciphertext
             cResult = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
