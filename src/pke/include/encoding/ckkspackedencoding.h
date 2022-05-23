@@ -93,6 +93,12 @@ class CKKSPackedEncoding : public PlaintextImpl {
               "The number of slots cannot be smaller than value vector size");
     }
 
+    if(this->slots > (GetElementRingDimension() / 2)) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots cannot be larger than half of ring dimension");
+    }
+
     if((this->slots & (this->slots - 1)) != 0) {
       OPENFHE_THROW(
           config_error,
@@ -118,6 +124,12 @@ class CKKSPackedEncoding : public PlaintextImpl {
       OPENFHE_THROW(
           config_error,
               "The number of slots cannot be smaller than value vector size");
+    }
+
+    if(this->slots > (GetElementRingDimension() / 2)) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots cannot be larger than half of ring dimension");
     }
 
     if((this->slots & (this->slots - 1)) != 0) {
@@ -153,6 +165,12 @@ class CKKSPackedEncoding : public PlaintextImpl {
               "The number of slots cannot be smaller than value vector size");
     }
 
+    if(this->slots > (GetElementRingDimension() / 2)) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots cannot be larger than half of ring dimension");
+    }
+
     if((this->slots & (this->slots - 1)) != 0) {
       OPENFHE_THROW(
           config_error,
@@ -180,6 +198,12 @@ class CKKSPackedEncoding : public PlaintextImpl {
       OPENFHE_THROW(
           config_error,
               "The number of slots cannot be smaller than value vector size");
+    }
+
+    if(this->slots > (GetElementRingDimension() / 2)) {
+      OPENFHE_THROW(
+          config_error,
+              "The number of slots cannot be larger than half of ring dimension");
     }
 
     if((this->slots & (this->slots - 1)) != 0) {
