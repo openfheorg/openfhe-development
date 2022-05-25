@@ -232,16 +232,16 @@ static std::vector<TEST_CASE_UTSHE> testCases = {
     // TestType,          Descr, Scheme,        RDim,      MultDepth, SFBits, RWin, BatchSz,   Mode,  Depth, MDepth, ModSize, SecLvl, KSTech, RSTech,        LDigits, PtMod,   StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
     { EVALSUM_ALL,        "01", {BFVRNS_SCHEME, BATCH_LRG, DFLT,      60,     20,   BATCH_LRG, DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,    DFLT,      2,          DFLT, DFLT},  },
     // ==========================================
-    { KS_SINGLE_CRT,      "01", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL,     DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    { KS_SINGLE_CRT,      "02", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDAUTO,       DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    { KS_SINGLE_CRT,      "03", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTO,    DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    { KS_SINGLE_CRT,      "04", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTOEXT, DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_SINGLE_CRT,      "01", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL,     DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_SINGLE_CRT,      "02", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDAUTO,       DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_SINGLE_CRT,      "03", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTO,    DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_SINGLE_CRT,      "04", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTOEXT, DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
     // ==========================================
-    { KS_MOD_REDUCE_DCRT, "01", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL,     DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_MOD_REDUCE_DCRT, "01", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL,     DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
     // TODO (dsuponit): review 3 commented tests below as they fail
-    // { KS_MOD_REDUCE_DCRT, "02", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDAUTO,       DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    // { KS_MOD_REDUCE_DCRT, "03", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTO,    DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    // { KS_MOD_REDUCE_DCRT, "04", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTOEXT, DFLT,    256    , 4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    // { KS_MOD_REDUCE_DCRT, "02", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDAUTO,       DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    // { KS_MOD_REDUCE_DCRT, "03", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTO,    DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    // { KS_MOD_REDUCE_DCRT, "04", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTOEXT, DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
 };
 // clang-format on
 //===========================================================================================================

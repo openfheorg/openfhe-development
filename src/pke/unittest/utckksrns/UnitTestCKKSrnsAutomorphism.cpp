@@ -263,13 +263,18 @@ protected:
                 }
             }
             catch (std::exception& e) {
-                if (SUCCESS == testData.error) {
+                switch (testData.error) {
+                case SUCCESS:
+                case CORNER_CASES:
+                case INVALID_INPUT_DATA:
                     std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
                     // make it fail
                     EXPECT_EQ(0, 1);
-                }
-                else
+                    break;
+                default:
                     EXPECT_EQ(1, 1);
+                    break;
+                }
             }
             catch (...) {
                 std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
@@ -324,13 +329,18 @@ protected:
             }
         }
         catch (std::exception& e) {
-            if (SUCCESS == testData.error) {
+            switch (testData.error) {
+            case SUCCESS:
+            case CORNER_CASES:
+            case INVALID_INPUT_DATA:
                 std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
                 // make it fail
                 EXPECT_EQ(0, 1);
-            }
-            else
+                break;
+            default:
                 EXPECT_EQ(1, 1);
+                break;
+            }
         }
         catch (...) {
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
