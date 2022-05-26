@@ -113,35 +113,35 @@ names, contact info, and date of first inclusion into the team.
   pre-release is stable enough to be moved to the release repository
   according the the following suggested guidelines:
 
-    * The candidate pre-release has been tested independently by members
-       of the community and no severe issues have been reported. Also no
-       severe issues have been reported by the OpenFHE Maintainers team.
+  * The candidate pre-release has been tested independently by members
+    of the community and no severe issues have been reported. Also no
+    severe issues have been reported by the OpenFHE Maintainers team.
 
-    * Sufficient time has passed for such independent review to occur. The
-       duration of this review period is up to the judgement of the
-       stable-release team and should be based on the number of new
-       features and/or scope of patches applied since the last pre-release
-       update.
+  * Sufficient time has passed for such independent review to occur. The
+    duration of this review period is up to the judgement of the
+    stable-release team and should be based on the number of new
+    features and/or scope of patches applied since the last pre-release
+    update.
 
-    * These guidlines are meant to be flexible to the needs of the
-       community while maintaining overall software quality of the
-       OpenFHE release. As such, interested users may request an
-       expedited (i.e. shorter) testing period provided they can assist
-       with the required testing and evaluation. Such requests must be
-       reviewd and approved by both the Stable-release team and the
-       Steering team.
+  * These guidlines are meant to be flexible to the needs of the
+    community while maintaining overall software quality of the
+    OpenFHE release. As such, interested users may request an
+    expedited (i.e. shorter) testing period provided they can assist
+    with the required testing and evaluation. Such requests must be
+    reviewd and approved by both the Stable-release team and the
+    Steering team.
 
 * **Maintainers:** A Maintainer is an individual responsible for the
   management of the openfhe-development repository. Maintainers have
   the ability to commit/push source code and can handle merge/pull
   requests into the main branch of the repository with the following caveats:
 
-    * Merge/Pull requests from internal OpenFHE Maintatiners require the
-      review of one other member of the Maintainer team (i.e. a Maintainer
-      cannot Merge their own branches).
+  * Merge/Pull requests from internal OpenFHE Maintatiners require the
+    review of one other member of the Maintainer team (i.e. a Maintainer
+    cannot Merge their own branches).
 
-    * Merge/Pull requests from External contributors require an extra
-      level of review and approval from the entire Maintainer team.
+  * Merge/Pull requests from External contributors require an extra
+    level of review and approval from the entire Maintainer team.
 
 * **External contributors:** This group encompasses all others who are
   not on the Steering team, Pre-release, Release or Maintainers
@@ -226,14 +226,14 @@ Votes can happen on the following topics, with passing
 contingent on a 2/3 majority. All Steering team  members should vote, but abstentions
 are permitted. Sample voting topics are as follows (but are not limited to this list):
 
-  * Modifications of these governance procedures (including
-    permanently modifying these lists of sample voting topics).
-  * Adding/removing Steering team members Spending project funds
-  * Adding/removing people with commit rights to GitLab repositories
-  * Adding/removing moderators of OpenFHE online groups and forums
-  * Adding/removing people to private communication channels
-  * Adding/removing people with rights to post as OpenFHE on social
-  * media Establishing sub-committees and roles
+* Modifications of these governance procedures (including
+  permanently modifying these lists of sample voting topics).
+* Adding/removing Steering team members Spending project funds
+* Adding/removing people with commit rights to GitLab repositories
+* Adding/removing moderators of OpenFHE online groups and forums
+* Adding/removing people to private communication channels
+* Adding/removing people with rights to post as OpenFHE on social
+* media Establishing sub-committees and roles
 
 Votes can happen on the following topics with passing contingent on a majority.
 At least 2/3 of the Steering team  members should vote, but abstentions
@@ -246,22 +246,24 @@ The Steering team will maintain a Google Doc that records all votes
 (but not discussion). Access to the Google Doc will be limited to
 members of the Steering team.
 
-Release numbering
+Release Numbering
 ----------------------
 
 Releases shall be numbered sequentially using the following triple numbering:
 
-Major.minor.patch
+``Major.minor.patch``
 
-Major release number must be incremented when the OpenFHE user API
-changes, requiring user code rewrite.
+* Major release number must be incremented when the OpenFHE user API
+  changes, requiring user code rewrite.
 
-Minor release numbers must be incremented when a new capability is
-added, or old capability is deprecated, but existing user code would
-still operate without a rewrite.
+* Minor release numbers must be incremented when a new capability is
+  added, or old capability is deprecated, but existing user code would
+  still operate without a rewrite.
 
-Patch release numbers must be incremented when patches/bug fixes are required.
+* Patch release numbers must be incremented when patches/bug fixes are required.
 
+Additional Notes on Release Numbering
+--------------------------------------------
 
 When a Major pre-release is approved, the Major number is incremented
 from the last release and minor and patch are set to zero.
