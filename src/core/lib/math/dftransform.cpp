@@ -242,10 +242,10 @@ void DiscreteFourierTransform::FFTSpecial(std::vector<std::complex<double>>& val
     BitReverse(vals);
     uint32_t size = vals.size();
     for (size_t len = 2; len <= size; len <<= 1) {
-        size_t lenh = len >> 1;
-        size_t lenq = len << 2;
-        size_t gap = m_M / lenq;
         for (size_t i = 0; i < size; i += len) {
+            size_t lenh = len >> 1;
+            size_t lenq = len << 2;
+            size_t gap = m_M / lenq;
             for (size_t j = 0; j < lenh; ++j) {
                 int64_t idx            = ((m_rotGroup[j] % lenq)) * gap;
                 std::complex<double> u = vals[i + j];
