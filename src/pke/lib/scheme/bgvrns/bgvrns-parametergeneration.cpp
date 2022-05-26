@@ -58,64 +58,109 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 
 namespace lbcrypto {
 
-bool ParameterGenerationBGVRNS::computeModuli(
+std::vector<NativeInteger> ParameterGenerationBGVRNS::computeModuli(
   std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
   uint32_t ringDimension,
   int32_t evalAddCount, int32_t keySwitchCount,
-  usint relinWindow,
+  usint relinWindow, uint32_t auxBits,
   enum KeySwitchTechnique ksTech,
   enum RescalingTechnique rsTech,
-  uint32_t vecSize,
-  std::vector<NativeInteger> moduliQ,
-  std::vector<NativeInteger> rootsQ) {
+  usint numPrimes) const {
+
+  uint32_t vecSize = (rsTech != FLEXIBLEAUTOEXT) ? numPrimes : numPrimes + 1;
+  std::vector<NativeInteger> moduliQ(vecSize);
   
   const auto cryptoParamsBGVRNS =
       std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
-  
   double sigma = cryptoParamsBGVRNS->GetDistributionParameter();
   double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
-  double p = static_cast<double>(cryptoParamsBGVRNS->GetPlaintextModulus());
-  SecurityLevel stdLevel = cryptoParamsBGVRNS->GetStdLevel();
+  double plainModulus = static_cast<double>(cryptoParamsBGVRNS->GetPlaintextModulus());
 
   // Bound of the Gaussian error polynomial
   double Berr = sigma * sqrt(alpha);
-
   // Bound of the key polynomial
   double Bkey;
-
-  DistributionType distType;
 
   // supports both discrete Gaussian (RLWE) and ternary uniform distribution
   // (OPTIMIZED) cases
   if (cryptoParamsBGVRNS->GetMode() == RLWE) {
     Bkey = sigma * sqrt(alpha);
-    distType = HEStd_error;
   } else {
     Bkey = 1;
-    distType = HEStd_ternary;
   }
 
   // delta
   auto expansionFactor = 2. * sqrt(ringDimension);
-
   // Vnorm
   auto freshEncryptionNoise = Berr * (1. + 2. * expansionFactor * Bkey);
+  // V_c
+  auto noisePerLevel = 1 + expansionFactor * Bkey;
 
   double keySwitchingNoise;
-
   if (ksTech == BV) {
-    int numRelinWindows = floor(log(q_i) / log(relinWindow)) + 1;
-    keySwitchingNoise = numRelinWindows * (vecSize + 1) * expansionFactor * relinWindow * Berr / 2.0;
-  } else if (ksTech == HYBRID) {
+    relinWindow = 4;
+    if (relinWindow == 0) {
+      OPENFHE_THROW(config_error, "relinWindow is not allowed to be 0 for BV key switching in BGV.");
+    }
+    int relinBase = pow(2.0, relinWindow);
+    // TODO: Figure out how to estimate modSize.
+    int modSize = 60;
+    int numWindows = floor(modSize / log(relinBase)) + 1;
+    keySwitchingNoise = numWindows * (numPrimes + 1) * expansionFactor * relinBase * Berr / 2.0;
+  } else {
+    std::cout << "hybrid" << std::endl;
     double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
+    std::cout << "num towers per digit" << std::endl;
     int numDigits = cryptoParamsBGVRNS->GetNumPartQ();
+    std::cout << "num digits" << std::endl;
     keySwitchingNoise = numTowersPerDigit * numDigits * expansionFactor * Berr / 2.0;
-    size_t sizeP = cryptoParamsBGVRNS->GetParamsP()->GetParams().size();
+    std::cout << "first calc" << std::endl;
+    size_t sizeP = auxBits;
+    std::cout << "sizep" << std::endl;
     keySwitchingNoise += sizeP * (1 + expansionFactor * Bkey) / 2.0;
+    std::cout << "end hybrid" << std::endl;
   }
 
+  // Moduli need to be primes that are 1 (mod 2n)
+  usint cyclOrder = 2 * ringDimension;
+  double firstModLowerBound = 2 * plainModulus * noisePerLevel - plainModulus;
+  usint firstModSize = ceil(log(firstModLowerBound) / log(2.0));
+  firstModSize = 58;
+  moduliQ[0] = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
 
-  return true;
+  if (rsTech == FLEXIBLEAUTOEXT) {
+    double finalModLowerBound = freshEncryptionNoise / noisePerLevel * (evalAddCount + 1);
+    finalModLowerBound += keySwitchCount * keySwitchingNoise / noisePerLevel;
+    finalModLowerBound *= 2;
+    usint finalModSize = ceil(log(finalModLowerBound) / log(2.0));
+    finalModSize = 58;
+    moduliQ[numPrimes] = FirstPrime<NativeInteger>(finalModSize, cyclOrder);
+    if (moduliQ[numPrimes] == moduliQ[0]) {
+      moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
+    }
+  }
+
+  double modLowerBound = 2 * noisePerLevel + 2 + 1.0 / noisePerLevel;
+  modLowerBound *= expansionFactor * plainModulus * (evalAddCount + 1) / 2.0;
+  modLowerBound += (keySwitchCount + 1) * keySwitchingNoise / noisePerLevel;
+  modLowerBound *= 2;
+  usint modSize = ceil(log(modLowerBound) / log(2.0));
+  modSize = 55;
+
+  moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
+  while (moduliQ[1] == moduliQ[0] ||
+         (rsTech == FLEXIBLEAUTOEXT && moduliQ[1] == moduliQ[numPrimes])) {
+    moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
+  }
+  for (size_t i = 2; i < numPrimes; i++) {
+    moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i-1], cyclOrder);
+    while (moduliQ[i] == moduliQ[0] ||
+           (rsTech == FLEXIBLEAUTOEXT && moduliQ[1] == moduliQ[numPrimes])) {
+      moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i], cyclOrder);
+    }
+  }
+
+  return moduliQ;
 
 }
 
@@ -132,8 +177,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
 
   usint extraModSize = 0;
   if (rsTech == FLEXIBLEAUTOEXT) {
-    // TODO: Allow the user to specify this?
-    extraModSize = 20;
+    extraModSize = DRCT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
   }
 
   const auto cryptoParamsBGVRNS =
@@ -143,8 +187,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   // optimized the bounds).
   if (dcrtBits == 0) {
     dcrtBits = 28 + GetMSB64(ptm);
-    if (dcrtBits > 60) {
-      dcrtBits = 60;
+    if (dcrtBits > DRCT_MODULUS::MAX_SIZE) {
+      dcrtBits = DRCT_MODULUS::MAX_SIZE;
     }
   }
 
@@ -153,7 +197,9 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
 
   //// HE Standards compliance logic/check
   SecurityLevel stdLevel = cryptoParamsBGVRNS->GetStdLevel();
-  uint32_t auxBits = 60;
+
+  // Size of modulus P
+  uint32_t auxBits = DRCT_MODULUS::MAX_SIZE;
 
   uint32_t n = cyclOrder / 2;
   uint32_t qBound = 0;
@@ -209,52 +255,66 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   }
   //// End HE Standards compliance logic/check
 
-  uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
+  uint32_t vecSize = (rsTech != FLEXIBLEAUTOEXT) ? numPrimes : numPrimes + 1;
   std::vector<NativeInteger> moduliQ(vecSize);
   std::vector<NativeInteger> rootsQ(vecSize);
 
-  computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, ksTech, rsTech,
-                vecSize, &moduliQ, &rootsQ);
-
-  // For ModulusSwitching to work we need the moduli to be also congruent to 1
-  // modulo ptm
-  usint plaintextModulus = ptm;
-  usint pow2ptm = 1;  // The largest power of 2 dividing ptm (check whether it
-                      // is larger than cyclOrder or not)
-  while (plaintextModulus % 2 == 0) {
-    plaintextModulus >>= 1;
-    pow2ptm <<= 1;
-  }
-
-  if (pow2ptm < cyclOrder) pow2ptm = cyclOrder;
-
-  uint64_t lcmCyclOrderPtm = (uint64_t)pow2ptm * plaintextModulus;
-
-  // Get the largest prime with size less or equal to firstModSize bits.
-  NativeInteger firstInteger =
-      FirstPrime<NativeInteger>(firstModSize, lcmCyclOrderPtm);
-
-  while (firstInteger > ((uint64_t)1 << firstModSize))
-    firstInteger = PreviousPrime<NativeInteger>(firstInteger, lcmCyclOrderPtm);
-
-  moduliQ[0] = PreviousPrime<NativeInteger>(firstInteger, lcmCyclOrderPtm);
-  rootsQ[0] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[0]);
-
-  if (numPrimes > 1) {
-    NativeInteger q = (firstModSize != dcrtBits)
-                          ? FirstPrime<NativeInteger>(dcrtBits, lcmCyclOrderPtm)
-                          : moduliQ[0];
-
-    moduliQ[1] = PreviousPrime<NativeInteger>(q, lcmCyclOrderPtm);
-    rootsQ[1] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[1]);
-
-    for (size_t i = 2; i < numPrimes; i++) {
-      moduliQ[i] =
-          PreviousPrime<NativeInteger>(moduliQ[i - 1], lcmCyclOrderPtm);
+  if (rsTech == FLEXIBLEAUTO || rsTech == FLEXIBLEAUTOEXT) {
+    moduliQ = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, auxBits,
+                            ksTech, rsTech, numPrimes);
+    for (size_t i = 0; i < vecSize; i++) {
       rootsQ[i] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[i]);
     }
-  }
 
+  } else {
+
+    // For ModulusSwitching to work we need the moduli to be also congruent to 1
+    // modulo ptm
+    usint plaintextModulus = ptm;
+    usint pow2ptm = 1;  // The largest power of 2 dividing ptm (check whether it
+                        // is larger than cyclOrder or not)
+    while (plaintextModulus % 2 == 0) {
+      plaintextModulus >>= 1;
+      pow2ptm <<= 1;
+    }
+
+    if (pow2ptm < cyclOrder) pow2ptm = cyclOrder;
+
+    uint64_t lcmCyclOrderPtm = (uint64_t)pow2ptm * plaintextModulus;
+
+    // Get the largest prime with size less or equal to firstModSize bits.
+    NativeInteger firstInteger =
+        FirstPrime<NativeInteger>(firstModSize, lcmCyclOrderPtm);
+
+    while (firstInteger > ((uint64_t)1 << firstModSize))
+      firstInteger = PreviousPrime<NativeInteger>(firstInteger, lcmCyclOrderPtm);
+
+    moduliQ[0] = PreviousPrime<NativeInteger>(firstInteger, lcmCyclOrderPtm);
+    rootsQ[0] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[0]);
+
+    if (numPrimes > 1) {
+      NativeInteger q = (firstModSize != dcrtBits)
+                            ? FirstPrime<NativeInteger>(dcrtBits, lcmCyclOrderPtm)
+                            : moduliQ[0];
+
+      moduliQ[1] = PreviousPrime<NativeInteger>(q, lcmCyclOrderPtm);
+      rootsQ[1] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[1]);
+
+      for (size_t i = 2; i < numPrimes; i++) {
+        moduliQ[i] =
+            PreviousPrime<NativeInteger>(moduliQ[i - 1], lcmCyclOrderPtm);
+        rootsQ[i] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[i]);
+      }
+    }
+  }
+  std::cout << "Moduli Q:" << moduliQ << std::endl;
+  std::cout << "Moduli t: " << ptm << std::endl;
+  std::cout << "moduli (mod t): " << std::endl;
+  for (size_t i = 0; i < vecSize; i++) {
+    std::cout << moduliQ[i] % ptm << " ";
+  }
+  std::cout << std::endl;
+  std::cout << "Reached end of moduli" << std::endl;
   auto paramsDCRT =
       std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
 

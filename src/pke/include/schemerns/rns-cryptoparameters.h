@@ -601,7 +601,16 @@ public:
   }
 
   double GetScalingFactorRealBig(uint32_t l = 0) const {
-    return m_scalingFactorsRealBig[l];
+    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
+      if (l >= m_scalingFactorsRealBig.size()) {
+        // TODO: Return an error here.
+        return m_approxSF;
+      }
+
+      return m_scalingFactorsRealBig[l];
+    }
+
+    return m_approxSF;
   }
 
   /**
@@ -840,7 +849,16 @@ public:
     return m_fixedSF;
   }
 
-  const NativeInteger &GetScalingFactorIntBig(usint l) const { return m_scalingFactorsIntBig[l]; }
+  const NativeInteger &GetScalingFactorIntBig(usint l) const { 
+    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
+      if (l >= m_scalingFactorsIntBig.size()) {
+        // TODO: Return an error here.
+        return m_fixedSF;
+      }
+      return m_scalingFactorsIntBig[l];
+    }
+    return m_fixedSF;
+  }
 
   const NativeInteger &GetModReduceFactorInt(uint32_t l = 0) const {
     if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {

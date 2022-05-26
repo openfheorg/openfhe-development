@@ -614,6 +614,9 @@ protected:
 
             cc->Decrypt(kp.secretKey, cAddAfterMult2, &results);
             results->SetLength(plaintexAddAfterMult2->GetLength());
+
+            std::cout << "results: " << results->GetCKKSPackedValue() << std::endl;
+            std::cout << "actual: " << plaintexAddAfterMult2->GetCKKSPackedValue() << std::endl;
             checkEquality(plaintexAddAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " add after 2 multiplications fails");
 

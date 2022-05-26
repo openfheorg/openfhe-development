@@ -824,9 +824,6 @@ protected:
                                                  this->GetEncodingParams(), value, 2, level, scf);
       } else {
         scf = cryptoParams->GetScalingFactorInt(level);
-        for (usint i = 1; i < depth; i++) {
-          scf = scf.ModMul(scf, t);
-        }
         p = PlaintextFactory::MakePlaintext(CoefPacked, this->GetElementParams(),
                                                  this->GetEncodingParams(), value, depth, level, scf);
       }
@@ -855,13 +852,10 @@ protected:
       if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
         scf = cryptoParams->GetScalingFactorIntBig(level);
         p = PlaintextFactory::MakePlaintext(Packed, this->GetElementParams(),
-                                                 this->GetEncodingParams(), value, 2, level, scf);
+                                                 this->GetEncodingParams(), value, 1, level, scf);
+        p->SetDepth(2);
       } else {
         scf = cryptoParams->GetScalingFactorInt(level);
-        NativeInteger t(cryptoParams->GetPlaintextModulus());
-        for (usint i = 1; i < depth; i++) {
-          scf = scf.ModMul(scf, t);
-        }
         p = PlaintextFactory::MakePlaintext(Packed, this->GetElementParams(),
                                                  this->GetEncodingParams(), value, depth, level, scf);
       }

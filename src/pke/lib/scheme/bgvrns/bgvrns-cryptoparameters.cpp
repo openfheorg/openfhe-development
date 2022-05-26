@@ -126,7 +126,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(
 
   if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
     m_scalingFactorsInt.resize(sizeQ);
-    m_scalingFactorsInt[0] = 1;
+    m_scalingFactorsInt[0] = moduliQ[sizeQ - 1] % t;
     if (m_rsTechnique == FLEXIBLEAUTO) {
       for (uint32_t k = 1; k < sizeQ; k++) {
         NativeInteger prevSF = m_scalingFactorsInt[k - 1];
@@ -134,8 +134,8 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(
         m_scalingFactorsInt[k] = prevSF.ModMul(prevSF, t).ModMul(qInv, t);
       }
     } else {
-      m_scalingFactorsInt[1] = 1;
-      for (uint32_t k = 2; k < sizeQ; k++) {
+      m_scalingFactorsInt[1] = moduliQ[sizeQ - 2] % t;
+      for (uint32_t k = 2; k < sizeQ - 1; k++) {
         NativeInteger prevSF = m_scalingFactorsInt[k - 1];
         NativeInteger qInv = moduliQ[sizeQ - k].ModInverse(t);
         m_scalingFactorsInt[k] = prevSF.ModMul(prevSF, t).ModMul(qInv, t);

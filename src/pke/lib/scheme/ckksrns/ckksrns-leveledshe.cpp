@@ -593,6 +593,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalSubCore(
 
 void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
     Ciphertext<DCRTPoly> &ciphertext1, Ciphertext<DCRTPoly> &ciphertext2) const {
+  std::cout << "adjustlevelsanddepthinplace" << std::endl;
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext1->GetCryptoParameters());
@@ -602,6 +603,11 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
   usint c2depth = ciphertext2->GetDepth();
   auto sizeQl1 = ciphertext1->GetElements()[0].GetNumOfElements();
   auto sizeQl2 = ciphertext2->GetElements()[0].GetNumOfElements();
+
+  std::cout << "depth 1: " << c1depth << std::endl;
+  std::cout << "depth 2: " << c2depth << std::endl;
+  std::cout << "level 1: " << c1lvl << std::endl;
+  std::cout << "level 2: " << c2lvl << std::endl;
 
   if (c1lvl < c2lvl) {
     if (c1depth == 2) {
@@ -642,9 +648,13 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
         LevelReduceInternalInPlace(ciphertext1, nullptr, c2lvl - c1lvl);
         ciphertext1->SetScalingFactor(scf2);
       } else {
+        std::cout << "Here" << std::endl;
         double scf1 = ciphertext1->GetScalingFactor();
+        std::cout << "after scf1" << std::endl;
         double scf2 = cryptoParams->GetScalingFactorRealBig(c2lvl - 1);
+        std::cout << "after scf2" << std::endl;
         double scf = cryptoParams->GetScalingFactorReal(c1lvl);
+        std::cout << "after scf" << std::endl;
         EvalMultCoreInPlace(ciphertext1, scf2 / scf1 / scf);
         if (c1lvl + 1 < c2lvl) {
           LevelReduceInternalInPlace(ciphertext1, nullptr, c2lvl - c1lvl - 1);
@@ -715,7 +725,7 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
 void LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(
     Ciphertext<DCRTPoly> &ciphertext1, Ciphertext<DCRTPoly> &ciphertext2) const {
   AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
-
+  std::cout << "finished adjustlevelsanddepthinplace" << std::endl;
   if(ciphertext1->GetDepth() == 2) {
     ModReduceInternalInPlace(ciphertext1);
     ModReduceInternalInPlace(ciphertext2);
