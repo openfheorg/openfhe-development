@@ -16,6 +16,7 @@ import sys
 import os
 import shlex
 import textwrap
+import re
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -32,14 +33,24 @@ needs_sphinx = '1.0'
 # ones.
 # [[[ begin extensions marker ]]]
 # Tell Sphinx to use both the `breathe` and `exhale` extensions
+
 extensions = [
+    'sphinx.ext.autodoc',
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.autosummary",
+    'sphinx.ext.doctest',
+    'sphinx.ext.duration',
+    'sphinx.ext.graphviz',
+    'sphinx.ext.imgmath',
+    'sphinx.ext.mathjax',
     'breathe',
-    'exhale'
+    'exhale',
+    'sphinxcontrib.mermaid'
 ]
 
 # Setup the `breathe` extension
-breathe_projects = { "ExhaleCompanion": "./doxyoutput/xml" }
-breathe_default_project = "ExhaleCompanion"
+breathe_projects = { "OpenFHE": "./doxyoutput/xml" }
+breathe_default_project = "OpenFHE"
 
 # Setup the `exhale` extension
 import textwrap
@@ -49,19 +60,40 @@ __exhale_path = {
     # Binfhe
     f"{__exhale_base}/binfhe/include",
     f"{__exhale_base}/binfhe/lib",
-    # # Core
-    f"{__exhale_base}/core/extras",
-    f"{__exhale_base}/core/include",
-    f"{__exhale_base}/core/lib",
-    # # PKE
-    f"{__exhale_base}/pke/extras",
-    f"{__exhale_base}/pke/include",
-    f"{__exhale_base}/pke/lib",
+    # # # Core
+    # f"{__exhale_base}/core/extras",
+    # f"{__exhale_base}/core/include",
+    # f"{__exhale_base}/core/lib",
+    # # # PKE
+    # f"{__exhale_base}/pke/extras",
+    # f"{__exhale_base}/pke/include",
+    # f"{__exhale_base}/pke/lib",
 }
 
 container = "INPUT = "
 for path in __exhale_path:
     container += f"{path} "
+
+
+def specificationsForKind(kind):
+    '''
+    For a given input ``kind``, return the list of reStructuredText specifications
+    for the associated Breathe directive.
+    '''
+    # Change the defaults for .. doxygenclass:: and .. doxygenstruct::
+    if kind == "class" or kind == "struct":
+        return [
+          ":members:",
+          ":protected-members:",
+          ":undoc-members:",
+          ":allow-dot-graphs",
+        ]
+    # Change the defaults for .. doxygenenum::
+    elif kind == "enum":
+        return [":no-link:"]
+    # An empty list signals to Exhale to use the defaults
+    else:
+        return []
 
 exhale_args = {
     ############################################################################
@@ -89,50 +121,21 @@ exhale_args = {
     # Fix broken Sphinx RTD Theme 'Edit on GitHub' links
     # Search for 'Edit on GitHub' on the FAQ:
     #     http://exhale.readthedocs.io/en/latest/faq.html
-    "pageLevelConfigMeta": ":github_url: https://github.com/svenevs/exhale-companion",
+    "pageLevelConfigMeta": ":github_url: https://github.com/openfheorg/openfhe-development",
     ############################################################################
     # Main library page layout example configuration.                          #
     ############################################################################
     "afterTitleDescription": textwrap.dedent(u'''
-        Welcome to the developer reference to Exhale Companion.  The code being
-        documented here is largely meaningless and was only created to test
-        various corner cases e.g. nested namespaces and the like.
+        Welcome to the user-facing documentation for OpenFHE.
 
-        .. note::
+        .. top::
 
-            The text you are currently reading was fed to ``exhale_args`` using
-            the :py:data:`~exhale.configs.afterTitleDescription` key.  Full
-            reStructuredText syntax can be used.
-
-        .. tip::
-
-           Sphinx / Exhale support unicode!  You're ``conf.py`` already has
-           it's encoding declared as ``# -*- coding: utf-8 -*-`` **by
-           default**.  If you want to pass Unicode strings into Exhale, simply
-           prefix them with a ``u`` e.g. ``u"👽😱💥"`` (of course you would
-           actually do this because you are writing with åçćëñtß or
-           non-English 寫作 😉).
+            OpenFHE is a large library so we recommend using the sidebar to navigate around across the 
+            ``namespaces``, ``classes``, ``structs``, ``enums``, ``functions``, ``variables``, ``defines`` and the ``typedefs``. 
+            
+            We also recommend using the search functionality
     '''),
-    "afterHierarchyDescription": textwrap.dedent('''
-        Below the hierarchies comes the full API listing.
-
-        1. The text you are currently reading is provided by
-           :py:data:`~exhale.configs.afterHierarchyDescription`.
-        2. The Title of the next section *just below this* normally defaults to
-           ``Full API``, but the title was changed by providing an argument to
-           :py:data:`~exhale.configs.fullApiSubSectionTitle`.
-        3. You can control the number of bullet points for each linked item on
-           the remainder of the page using
-           :py:data:`~exhale.configs.fullToctreeMaxDepth`.
-    '''),
-    "fullApiSubSectionTitle": "Custom Full API SubSection Title",
-    "afterBodySummary": textwrap.dedent('''
-        You read all the way to the bottom?!  This text is specified by giving
-        an argument to :py:data:`~exhale.configs.afterBodySummary`.  As the docs
-        state, this summary gets put in after a **lot** of information.  It's
-        available for you to use if you want it, but from a design perspective
-        it's rather unlikely any of your users will even see this text.
-    '''),
+    "fullApiSubSectionTitle": "OpenFHE Documentation",
     ############################################################################
     # Individual page layout example configuration.                            #
     ############################################################################
@@ -173,9 +176,26 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'ExhaleCompanion'
-copyright = u'2017, Stephen McDowell'
-author = u'Stephen McDowell'
+project = u'OpenFHE'
+copyright = u'2022, OpenFHE'
+author = u'OpenFHE Team'
+
+
+def read_version_number(pth="../CMakeLists.txt"):
+    version = {"major": -1, "minor": -1, "patch": -1}
+    with open(pth, "r") as f:
+        data = f.readlines()
+
+    matcher = re.compile("set\(OPENFHE_VERSION_([a-zA-Z]+) (\d+)\)")
+    for ln in data:
+        result = matcher.match(ln)
+
+        if result:
+            mode = result.group(1)  # Major, minor, patch
+            version[mode.lower()] = result.group(2)  # The numeric
+
+    assert -1 not in version.values()
+    return f"{version['major']}.{version['minor']}.{version['patch']}"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -185,9 +205,8 @@ author = u'Stephen McDowell'
 import exhale
 # NOTE: this is the companion site for Exhale, which is why I'm setting the
 #       version to be the same.  For your own projects, you would NOT do this!
-version = exhale.__version__
+version = read_version_number()
 # The full version, including alpha/beta/rc tags.
-release = exhale.__version__
 
 # The language for content autogenerated by Sphinx. Refer to documentation
 # for a list of supported languages.
@@ -359,8 +378,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'ExhaleCompanion.tex', u'ExhaleCompanion Documentation',
-   u'Stephen McDowell', 'manual'),
+  (master_doc, 'OpenFHE.tex', u'OpenFHE Documentation',
+   u'OpenFHE Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
