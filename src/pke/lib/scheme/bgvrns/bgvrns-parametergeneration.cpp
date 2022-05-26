@@ -58,11 +58,54 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 
 namespace lbcrypto {
 
-std::vector<NativeInteger> ParameterGenerationBGVRNS::computeModuli(
+uint32_t ParameterGenerationBGVRNS::computeRingDimension(
+  std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+  uint32_t qBound, usint cyclOrder) const {
+  const auto cryptoParamsBGVRNS =
+    std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+    //// HE Standards compliance logic/check
+  SecurityLevel stdLevel = cryptoParamsBGVRNS->GetStdLevel();
+
+  uint32_t ringDimension = cyclOrder / 2;
+
+  // RLWE security constraint
+  DistributionType distType =
+      (cryptoParamsBGVRNS->GetMode() == RLWE) ? HEStd_error : HEStd_ternary;
+  auto nRLWE = [&](usint q) -> uint32_t {
+    return StdLatticeParm::FindRingDim(distType, stdLevel, q);
+  };
+
+  // Case 1: SecurityLevel specified as HEStd_NotSet -> Do nothing
+  if (stdLevel != HEStd_NotSet) {
+    if (ringDimension == 0) {
+      // Case 2: SecurityLevel specified, but ring dimension not specified
+      // Choose ring dimension based on security standards
+      ringDimension = nRLWE(qBound);
+    } else {
+      // Case 3: Both SecurityLevel and ring dimension specified
+      // Check whether particular selection is standards-compliant
+      auto he_std_n = nRLWE(qBound);
+      if (he_std_n > ringDimension) {
+        OPENFHE_THROW(
+            math_error,
+            "The specified ring dimension (" + std::to_string(ringDimension) +
+                ") does not comply with HE standards recommendation (" +
+                std::to_string(he_std_n) + ").");
+      }
+    }
+  } else if (ringDimension == 0) {
+    OPENFHE_THROW(
+        math_error,
+        "Please specify the ring dimension or desired security level.");
+  }
+  return ringDimension;
+}
+
+std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::computeModuli(
   std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
   uint32_t ringDimension,
   int32_t evalAddCount, int32_t keySwitchCount,
-  usint relinWindow, uint32_t auxBits,
+  usint relinWindow, usint firstModSize, uint32_t auxBits,
   enum KeySwitchTechnique ksTech,
   enum RescalingTechnique rsTech,
   usint numPrimes) const {
@@ -98,54 +141,50 @@ std::vector<NativeInteger> ParameterGenerationBGVRNS::computeModuli(
 
   double keySwitchingNoise;
   if (ksTech == BV) {
+    // TODO: Change tests to have this is a default for BV.
     relinWindow = 4;
     if (relinWindow == 0) {
       OPENFHE_THROW(config_error, "relinWindow is not allowed to be 0 for BV key switching in BGV.");
     }
     int relinBase = pow(2.0, relinWindow);
-    // TODO: Figure out how to estimate modSize.
-    int modSize = 60;
-    int numWindows = floor(modSize / log(relinBase)) + 1;
+    int modSizeEstimate = DRCT_MODULUS::MAX_SIZE;
+    int numWindows = floor(modSizeEstimate / log(relinBase)) + 1;
     keySwitchingNoise = numWindows * (numPrimes + 1) * expansionFactor * relinBase * Berr / 2.0;
   } else {
-    std::cout << "hybrid" << std::endl;
     double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
-    std::cout << "num towers per digit" << std::endl;
     int numDigits = cryptoParamsBGVRNS->GetNumPartQ();
-    std::cout << "num digits" << std::endl;
     keySwitchingNoise = numTowersPerDigit * numDigits * expansionFactor * Berr / 2.0;
-    std::cout << "first calc" << std::endl;
-    size_t sizeP = auxBits;
-    std::cout << "sizep" << std::endl;
-    keySwitchingNoise += sizeP * (1 + expansionFactor * Bkey) / 2.0;
-    std::cout << "end hybrid" << std::endl;
+    keySwitchingNoise += auxBits * (1 + expansionFactor * Bkey) / 2.0;
   }
 
   // Moduli need to be primes that are 1 (mod 2n)
   usint cyclOrder = 2 * ringDimension;
   double firstModLowerBound = 2 * plainModulus * noisePerLevel - plainModulus;
-  usint firstModSize = ceil(log(firstModLowerBound) / log(2.0));
-  firstModSize = 58;
-  moduliQ[0] = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
+  usint firstModBoundBits = ceil(log2(firstModLowerBound));
+  if (firstModBoundBits < firstModSize - 1) firstModBoundBits = firstModSize - 1;
+  uint32_t totalModSize = firstModBoundBits;
+  moduliQ[0] = FirstPrime<NativeInteger>(firstModBoundBits, cyclOrder);
 
   if (rsTech == FLEXIBLEAUTOEXT) {
-    double finalModLowerBound = freshEncryptionNoise / noisePerLevel * (evalAddCount + 1);
-    finalModLowerBound += keySwitchCount * keySwitchingNoise / noisePerLevel;
-    finalModLowerBound *= 2;
-    usint finalModSize = ceil(log(finalModLowerBound) / log(2.0));
-    finalModSize = 58;
-    moduliQ[numPrimes] = FirstPrime<NativeInteger>(finalModSize, cyclOrder);
+    // TODO: Should we have an additional minimum value for extraModSize?
+    double extraModLowerBound = freshEncryptionNoise / noisePerLevel * (evalAddCount + 1);
+    extraModLowerBound += keySwitchCount * keySwitchingNoise / noisePerLevel;
+    extraModLowerBound *= 2;
+    usint extraModSize = ceil(log2(extraModLowerBound));
+    totalModSize += extraModSize;
+    moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
     if (moduliQ[numPrimes] == moduliQ[0]) {
       moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
     }
   }
 
+  // TODO: Should we have an additional minimum value for modSize?
   double modLowerBound = 2 * noisePerLevel + 2 + 1.0 / noisePerLevel;
   modLowerBound *= expansionFactor * plainModulus * (evalAddCount + 1) / 2.0;
   modLowerBound += (keySwitchCount + 1) * keySwitchingNoise / noisePerLevel;
   modLowerBound *= 2;
-  usint modSize = ceil(log(modLowerBound) / log(2.0));
-  modSize = 55;
+  usint modSize = ceil(log2(modLowerBound));
+  totalModSize += modSize * (numPrimes - 1);
 
   moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
   while (moduliQ[1] == moduliQ[0] ||
@@ -160,7 +199,7 @@ std::vector<NativeInteger> ParameterGenerationBGVRNS::computeModuli(
     }
   }
 
-  return moduliQ;
+  return std::make_pair(moduliQ, totalModSize);
 
 }
 
@@ -195,16 +234,11 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   // Select firstModSize to be dcrtBits if no indicated otherwise
   if (firstModSize == 0) firstModSize = dcrtBits;
 
-  //// HE Standards compliance logic/check
-  SecurityLevel stdLevel = cryptoParamsBGVRNS->GetStdLevel();
-
   // Size of modulus P
   uint32_t auxBits = DRCT_MODULUS::MAX_SIZE;
 
-  uint32_t n = cyclOrder / 2;
-  uint32_t qBound = 0;
   // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
-  qBound = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;
+  uint32_t qBound = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;
   if (ksTech == HYBRID)
     qBound +=
         ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits) *
@@ -220,39 +254,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     numPrimes = (unsigned int)((qBound - firstModSize) / ((float)dcrtBits) + 1);
   }
 
-  // RLWE security constraint
-  DistributionType distType =
-      (cryptoParamsBGVRNS->GetMode() == RLWE) ? HEStd_error : HEStd_ternary;
-  auto nRLWE = [&](usint q) -> uint32_t {
-    return StdLatticeParm::FindRingDim(distType, stdLevel, q);
-  };
-
-  // Case 1: SecurityLevel specified as HEStd_NotSet -> Do nothing
-  if (stdLevel != HEStd_NotSet) {
-    if (n == 0) {
-      // Case 2: SecurityLevel specified, but ring dimension not specified
-
-      // Choose ring dimension based on security standards
-      n = nRLWE(qBound);
-      cyclOrder = 2 * n;
-    } else {  // if (n!=0)
-      // Case 3: Both SecurityLevel and ring dimension specified
-
-      // Check whether particular selection is standards-compliant
-      auto he_std_n = nRLWE(qBound);
-      if (he_std_n > n) {
-        OPENFHE_THROW(
-            math_error,
-            "The specified ring dimension (" + std::to_string(n) +
-                ") does not comply with HE standards recommendation (" +
-                std::to_string(he_std_n) + ").");
-      }
-    }
-  } else if (n == 0) {
-    OPENFHE_THROW(
-        math_error,
-        "Please specify the ring dimension or desired security level.");
-  }
+  uint32_t n = computeRingDimension(cryptoParams, qBound, cyclOrder);
   //// End HE Standards compliance logic/check
 
   uint32_t vecSize = (rsTech != FLEXIBLEAUTOEXT) ? numPrimes : numPrimes + 1;
@@ -260,14 +262,30 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   std::vector<NativeInteger> rootsQ(vecSize);
 
   if (rsTech == FLEXIBLEAUTO || rsTech == FLEXIBLEAUTOEXT) {
-    moduliQ = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, auxBits,
+    auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, firstModSize, auxBits,
                             ksTech, rsTech, numPrimes);
+    moduliQ = std::get<0>(moduliInfo);
+    uint32_t newQBound = std::get<1>(moduliInfo);
+    while (qBound < newQBound) {
+      qBound = newQBound;
+      n = computeRingDimension(cryptoParams, newQBound, cyclOrder);
+      auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, firstModSize, auxBits,
+                            ksTech, rsTech, numPrimes);
+      moduliQ = std::get<0>(moduliInfo);
+      newQBound = std::get<1>(moduliInfo);
+      if (ksTech == HYBRID)
+        newQBound +=
+            ceil(ceil(static_cast<double>(newQBound) / numPartQ) / auxBits) *
+            auxBits;
+    }
+    cyclOrder = 2 * n;
+    
     for (size_t i = 0; i < vecSize; i++) {
       rootsQ[i] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[i]);
     }
 
   } else {
-
+    cyclOrder = 2 * n;
     // For ModulusSwitching to work we need the moduli to be also congruent to 1
     // modulo ptm
     usint plaintextModulus = ptm;
@@ -307,14 +325,6 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
       }
     }
   }
-  std::cout << "Moduli Q:" << moduliQ << std::endl;
-  std::cout << "Moduli t: " << ptm << std::endl;
-  std::cout << "moduli (mod t): " << std::endl;
-  for (size_t i = 0; i < vecSize; i++) {
-    std::cout << moduliQ[i] % ptm << " ";
-  }
-  std::cout << std::endl;
-  std::cout << "Reached end of moduli" << std::endl;
   auto paramsDCRT =
       std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
 

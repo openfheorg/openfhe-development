@@ -77,12 +77,39 @@ public:
                  enum RescalingTechnique rsTech,
                  enum EncryptionTechnique encTech,
                  enum MultiplicationTechnique multTech) const override;
+  
+  /*
+   * Method that computes a security-compliant ring dimension.
+   *
+   * @param cryptoParams contains parameters input by the user
+   * @param qBound is the upper bound on the number of bits in the ciphertext modulus
+   * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
+   * @return The ring dimension.
+   */
+  uint32_t computeRingDimension(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                uint32_t qBound, usint cyclOrder) const;
 
-  std::vector<NativeInteger> computeModuli(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+  /*
+   * Method that generates parameters for the BGV RNS scheme.
+   *
+   * @param cryptoParams contains parameters input by the user
+   * @param ringDimension is the dimension of the ring (n)
+   * @param evalAddCount is the maximum number of additions per level.
+   * @param keySwitchCount is the maximum number of key switches per level.
+   * @param relinWindow The bit size of the base for BV key relinearization.
+   * @param firstModSize is the approximate bit size of the first CRT modulus.
+   * @param auxBits is the size of the additional modulus P, used for hybrid key-switching.
+   * @param ksTech is the key switching technique used, BV or Hybrid.
+   * @param rsTech is the rescaling technique used.
+   * @param numPrimes Number of CRT moduli.
+   * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
+   */
+  std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                      uint32_t ringDimension,
                      int32_t evalAddCount,
                      int32_t keySwitchCount,
                      usint relinWindow,
+                     usint firstModSize,
                      uint32_t auxBits,
                      enum KeySwitchTechnique ksTech,
                      enum RescalingTechnique rsTech,
