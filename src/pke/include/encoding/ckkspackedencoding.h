@@ -141,8 +141,6 @@ class CKKSPackedEncoding : public PlaintextImpl {
 
   bool Encode();
 
-  bool EncodeWithExtra();
-
   bool Decode() {
     OPENFHE_THROW(
         not_available_error,

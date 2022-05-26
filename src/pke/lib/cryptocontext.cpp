@@ -661,6 +661,7 @@ namespace lbcrypto {
         else
             result = GetScheme()->Decrypt(
                 ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
+
         if (result.isValid == false) return result;
         
         decrypted->SetScalingFactorInt(result.scalingFactorInt);

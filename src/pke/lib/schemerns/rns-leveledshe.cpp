@@ -558,7 +558,9 @@ void LeveledSHERNS::ModReduceInPlace(Ciphertext<DCRTPoly> &ciphertext,
         "ModReduce is not implemented for NORESCALE rescaling technique");
   }
 
-  ModReduceInternalInPlace(ciphertext, levels);
+  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+    ModReduceInternalInPlace(ciphertext, levels);
+  }
 }
 
 /////////////////////////////////////
