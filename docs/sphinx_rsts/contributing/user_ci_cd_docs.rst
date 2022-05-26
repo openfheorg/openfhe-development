@@ -118,7 +118,7 @@ Run manual workflow
 1. Go to the openfhe-development repository at this URL:
    https://github.com/openfheorg/openfhe-development
 
-2. Click on the Actions tab on the center of the upper menu ..
+2. Click on the Actions tab on the center of the upper menu.
 
 .. figure:: ci_cd_assets/run_manual_workflow_step2.png
    :alt: run_manual_workflow_step2

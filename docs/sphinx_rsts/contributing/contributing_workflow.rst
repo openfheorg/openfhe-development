@@ -6,8 +6,7 @@ issue and milestone tracking.
 
 We classify contributions as *Major* or *Minor*.
 
-- **Major** contributions include adding a new scheme, or capability to the
-library.
+- **Major** contributions include adding a new scheme, or capability to the library.
 
   - These contributions would require users to change existing
     OpenFHE API code
@@ -26,8 +25,8 @@ library.
     development repository, and are usuall incorporated into the next minor
     release cycle.
 
+.. attention::
 
-.. attention:
    Sometimes a seemingly minor improvement may affect a large number of
    files. Formatting changes are an example of this. Changes to a large
    number of files can be disruptive if done in the wrong point of a

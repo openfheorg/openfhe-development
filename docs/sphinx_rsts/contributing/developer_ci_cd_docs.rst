@@ -60,6 +60,8 @@ in first section of the
 `.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`_.
 These inputs can be used throughout the action.yml to change behaviour.
 
+.. note::
+
    For more info on *GitHub Actions* in general please visit `Learn
    GitHub
    Actions <https://docs.github.com/en/actions/learn-github-actions>`__.
@@ -146,6 +148,7 @@ all the configurations, etc. This required over 20GB of artifacts be
 passed around. This means that each conifguration must build and pass
 all tests before another build can be evaluated.
 
+.. note::
    For more general information on GitHub Workflows please visit `Using
    Workflows <https://docs.github.com/en/actions/using-workflows>`__
 
@@ -364,7 +367,7 @@ in the following way:
 
 .. _manual-workflow-1:
 
-manual workflow
+Manual workflow
 ~~~~~~~~~~~~~~~
 
 The manual workflow allows for more configurations to be tested and the
@@ -431,10 +434,9 @@ selected. This map uses the
 ``workflow_dispatch.inputs.compiler.options`` as the key, and the cmake
 equivalent option as the value.
 
-.. note:: This are linked by the definition of **COMPILERS_MAP** in the
-             jobs
-   Modifying the input will require modification of
-      all *env.COMPILERS_MAP*
+.. note:: This is linked by the definition of **COMPILERS_MAP** in the jobs
+
+   - Modifying the input will require modification of all *env.COMPILERS_MAP*
 
 Because we want to support many compilers and versions we will need to
 expose more pairs in the future. For now the key things to understand is
@@ -464,9 +466,8 @@ input
 
 ..
 
-   .. note:: this can’t be done in the
-                `.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`__,
-      - Access to the ``fromJson`` function isn't available in that scope.
+   .. note:: This can’t be done in the `.github/actions/default_builder/action.yml <https://github.com/openfheorg/openfhe-development/blob/main/.github/actions/default_builder/action.yml>`__,
+      as access to the ``fromJson`` function isn't available in that scope.
 
 Modifying or Adding New Workflows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

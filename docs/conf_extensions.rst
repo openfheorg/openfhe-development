@@ -28,19 +28,40 @@
        # Binfhe
        f"{__exhale_base}/binfhe/include",
        f"{__exhale_base}/binfhe/lib",
-       # # # Core
-       # f"{__exhale_base}/core/extras",
-       # f"{__exhale_base}/core/include",
-       # f"{__exhale_base}/core/lib",
-       # # # PKE
-       # f"{__exhale_base}/pke/extras",
-       # f"{__exhale_base}/pke/include",
-       # f"{__exhale_base}/pke/lib",
+       # Core
+       f"{__exhale_base}/core/extras",
+       f"{__exhale_base}/core/include",
+       f"{__exhale_base}/core/lib",
+       # PKE
+       f"{__exhale_base}/pke/extras",
+       f"{__exhale_base}/pke/include",
+       f"{__exhale_base}/pke/lib",
    }
    
    container = "INPUT = "
    for path in __exhale_path:
        container += f"{path} "
+   
+   
+   def specificationsForKind(kind):
+       '''
+       For a given input ``kind``, return the list of reStructuredText specifications
+       for the associated Breathe directive.
+       '''
+       # Change the defaults for .. doxygenclass:: and .. doxygenstruct::
+       if kind == "class" or kind == "struct":
+           return [
+             ":members:",
+             ":protected-members:",
+             ":undoc-members:",
+             ":allow-dot-graphs",
+           ]
+       # Change the defaults for .. doxygenenum::
+       elif kind == "enum":
+           return [":no-link:"]
+       # An empty list signals to Exhale to use the defaults
+       else:
+           return []
    
    exhale_args = {
        ############################################################################
@@ -50,6 +71,8 @@
        "rootFileName":          "library_root.rst",
        "rootFileTitle":         "Library API",
        "doxygenStripFromPath":  f"{__exhale_base}",
+       "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
+           specificationsForKind),
        ############################################################################
        # Suggested optional arguments.                                            #
        ############################################################################
