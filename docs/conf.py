@@ -47,11 +47,11 @@ import textwrap
 __exhale_base = "../src"
 __exhale_path = {
     # Binfhe
-    # f"{__exhale_base}/binfhe/include",
-    # f"{__exhale_base}/binfhe/lib",
+    f"{__exhale_base}/binfhe/include",
+    f"{__exhale_base}/binfhe/lib",
     # # Core
     # f"{__exhale_base}/core/extras",
-    f"{__exhale_base}/core/include",
+    # f"{__exhale_base}/core/include",
     # f"{__exhale_base}/core/lib",
     # # PKE
     # f"{__exhale_base}/pke/extras",
