@@ -44,6 +44,27 @@ class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
 public:
   virtual ~ParameterGenerationBGVRNS() {}
 
+  /*
+   * Method that generates parameters for the BGV RNS scheme.
+   *
+   * @param cryptoParams contains parameters input by the user
+   * @param evalAddCount is the maximum number of additions per level.
+   * @param keySwitchCount is the maximum number of key switches per level.
+   * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
+   * @param ptm is the plaintext modulus.
+   * @param numPrimes Number of CRT moduli.
+   * @param relinWindow The bit size of the base for BV key relinearization.
+   * @param mode
+   * @param firstModSize is the approximate bit size of the first CRT modulus.
+   * @param dcrtBits is the approximate bit size of the remaining CRT moduli.
+   * @param numPartQ is 
+   * @param multihopQBound 
+   * @param ksTech is the key switching technique used, BV or Hybrid.
+   * @param rsTech is the rescaling technique used.
+   * @param encTech is the encryption technique used.
+   * @param multTech is the multiplication technique used (BFV) only.
+   * @return A boolean.
+   */
   bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                  int32_t evalAddCount, int32_t keySwitchCount,
                  usint cyclOrder, usint ptm, usint numPrimes, usint relinWindow,
@@ -57,16 +78,15 @@ public:
                  enum EncryptionTechnique encTech,
                  enum MultiplicationTechnique multTech) const override;
 
-  bool computeModuli(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+  std::vector<NativeInteger> computeModuli(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                      uint32_t ringDimension,
                      int32_t evalAddCount,
                      int32_t keySwitchCount,
                      usint relinWindow,
+                     uint32_t auxBits,
                      enum KeySwitchTechnique ksTech,
                      enum RescalingTechnique rsTech,
-                     uint32_t vecSize,
-                     std::vector<NativeInteger> moduliQ,
-                     std::vector<NativeInteger> rootsQ);
+                     usint numPrimes) const;
 
   /////////////////////////////////////
   // SERIALIZATION

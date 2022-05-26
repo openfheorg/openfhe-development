@@ -60,6 +60,7 @@ namespace lbcrypto {
 
 DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
     const PrivateKey<DCRTPoly> privateKey, NativePoly *plaintext) const {
+  NativeInteger scalingFactorInt;
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersBGVRNS>(
           ciphertext->GetCryptoParameters());
@@ -67,6 +68,7 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
   size_t sizeQl = cv[0].GetParams()->GetParams().size();
 
   DCRTPoly b;
+  scalingFactorInt = ciphertext->GetScalingFactorInt();
   if (cv[0].GetFormat() == Format::EVALUATION) {
     b = PKERNS::DecryptCore(cv, privateKey);
     b.SetFormat(Format::COEFFICIENT);
@@ -78,6 +80,11 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
           cryptoParams->GetNegtInvModqPrecon(l),
           cryptoParams->GetqlInvModq(l),
           cryptoParams->GetqlInvModqPrecon(l));
+    }
+    for (usint i = 0; i < sizeQl - 1; ++i) {
+      NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+      NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+      scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
     }
   } else {
     std::vector<DCRTPoly> ct(cv);
@@ -92,12 +99,18 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
             cryptoParams->GetqlInvModqPrecon(l));
       }
     }
+    for (usint i = 0; i < sizeQl - 1; ++i) {
+      NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+      NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+      scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+    }
+
     b = PKERNS::DecryptCore(ct, privateKey);
     b.SetFormat(Format::COEFFICIENT);
   }
 
   *plaintext = b.GetElementAtIndex(0).Mod(cryptoParams->GetPlaintextModulus());
-  return DecryptResult(plaintext->GetLength());
+  return DecryptResult(plaintext->GetLength(), scalingFactorInt);
 }
 
 }  // namespace lbcrypto

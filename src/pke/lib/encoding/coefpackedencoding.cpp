@@ -76,12 +76,14 @@ bool CoefPackedEncoding::Encode() {
   if (this->typeFlag == IsNativePoly) {
     encodeVec(this->encodedNativeVector, mod, LowBound(), HighBound(),
               this->value);
+    encodedNativeVector = encodedNativeVector.Times(scalingFactorInt);
   } else {
     encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value);
   }
 
   if (this->typeFlag == IsDCRTPoly) {
     this->encodedVectorDCRT = this->encodedVector;
+    encodedVectorDCRT = encodedVectorDCRT.Times(scalingFactorInt);
   }
 
   this->isEncoded = true;
@@ -112,7 +114,9 @@ bool CoefPackedEncoding::Decode() {
   PlaintextModulus mod = this->encodingParams->GetPlaintextModulus();
 
   if (this->typeFlag == IsNativePoly) {
-    fillVec(this->encodedNativeVector, mod, this->value);
+    NativeInteger scfInv = scalingFactorInt.ModInverse(mod);
+    NativePoly temp = encodedNativeVector.Times(scfInv);
+    fillVec(temp, mod, this->value);
   } else {
     fillVec(this->encodedVector, mod, this->value);
   }
