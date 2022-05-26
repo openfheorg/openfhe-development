@@ -660,7 +660,6 @@ protected:
 
             cc->Decrypt(kp.secretKey, cAddAfterMult2, &results);
             results->SetLength(plaintexAddAfterMult2->GetLength());
-
             checkEquality(plaintexAddAfterMult2->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " add after 2 multiplications fails");
 
