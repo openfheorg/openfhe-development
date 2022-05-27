@@ -19,10 +19,10 @@ Installing OpenFHE on Linux
 
 .. topic:: g++
 
-    Note that "sudo apt-get install g++-<version>" can be used to install a specific version of the compiler. You can use "g++ --version" to check the version of g++ that is found by the system.
+    Note that ``sudo apt-get install g++-<version>`` can be used to install a specific version of the compiler. You can use "g++ --version" to check the version of g++ that is found by the system.
 
 
-    Install g++, cmake, make, and autoconf. Sample commands using apt-get are listed below. It is possible that these are already installed
+    Install ``g++``, ``cmake``, ``make``, and ``autoconf``. Sample commands using apt-get are listed below. It is possible that these are already installed
 
     ::
 
@@ -34,7 +34,7 @@ Installing OpenFHE on Linux
 
     Typically g++ is the default compiler for Linux but clang++ can also be installed.
 
-    First install clang++, e.g., "sudo apt-get install clang-9" to install clang 9.
+    First install clang++, e.g., ``sudo apt-get install clang-9`` to install clang 9.
 
     If installing an older version of clang, e.g., v6, you may also need to install OpenMP. The commands for this case are
 
@@ -71,12 +71,13 @@ Installing OpenFHE on Linux
         cd build
         cmake ..
 
+
 .. note:: Note that cmake will check for any system dependencies that are needed for the build process.
 
 
-4. The OpenFHE distribution includes some external libraries, such as GMP. NTL and tcmalloc. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
+4. The OpenFHE distribution includes some external libraries, such as ``GMP``. ``NTL`` and ``tcmalloc``. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
 
-5. Build OpenFHE by running the following command (this will take few minutes; using the -j<threads> make command-line flag is suggested to speed up the build)
+5. Build OpenFHE by running the following command (this will take few minutes; using the ``-j <threads>`` command-line flag is suggested to speed up the build)
 
     ::
 

@@ -2,13 +2,13 @@ Installing OpenFHE on MacOS
 ====================================
 These instructions were tested in macOS Mojave but should also work for other recent releases. It is assumed that the clang compiler that comes with Xcode is used for building OpenFHE.
 
-1. Install the Mac terminal command line functions if needed (type `git` at the command line to trigger the install). Then install home-brew if not already present:
+1. Install the Mac terminal command line functions if needed (type ``git`` at the command line to trigger the install). Then install home-brew if not already present:
 
 ::
 
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
-2. Install pre-requisites cmake, autoconf, and OpenMP library using Homebrew:
+2. Install pre-requisites ``cmake``, ``autoconf``, and ``OpenMP`` library using Homebrew:
 
 ::
 
@@ -18,7 +18,7 @@ These instructions were tested in macOS Mojave but should also work for other re
 
 3. Clone the repo.
 
-4. Create a directory where the binaries will be built. The typical choice is a subfolder "build".
+4. Create a directory where the binaries will be built. The typical choice is a subfolder ``build``.
 
 ::
 
@@ -31,14 +31,14 @@ Cmake will check for any system dependencies that are needed for the build proce
 
     cmake ..
 
-**If you get an error about a missing regular expression backend, run the following commands:**
+.. note:: If you get an error about a missing regular expression backend, run the following commands
 
-::
+    ::
 
-    cmake -DCMAKE_CROSSCOMPILING=1 -DRUN_HAVE_STD_REGEX=0 -DRUN_HAVE_POSIX_REGEX=0 ..
-    cmake ..
+        cmake -DCMAKE_CROSSCOMPILING=1 -DRUN_HAVE_STD_REGEX=0 -DRUN_HAVE_POSIX_REGEX=0 ..
+        cmake ..
 
-**If you get an error about OMP asking to rerun cmake, just run "cmake .." once more.**
+  If you get an error about OMP asking to rerun cmake, just run "cmake .." once more.
 
 5. The OpenFHE distribution includes some external libraries, such as GMP. NTL and tcmalloc. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
 

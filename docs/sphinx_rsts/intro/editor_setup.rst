@@ -90,7 +90,7 @@ OpenFHE uses markdown documents inside the repository to document details about 
 Setup Code Formatting
 ^^^^^^^^^^^^^^^^^^^^^
 
-Install the [Clang-Format] Extensions
+Install the `Clang Format <https://marketplace.visualstudio.com/items?itemName=xaver.clang-format/>`__ Extensions
 
 There are `.clang-format` files in the repository, the following setting will enable the formatter and point it to the configuration files.
 

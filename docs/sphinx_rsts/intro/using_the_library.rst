@@ -16,17 +16,18 @@ To use OpenFHE, you must
  * ``DCRTPoly``
 
 * select a scheme to use
-  * BFV
 
-  * BFVrns
+  * ``BFV``
 
-  * BFVrnsB
+  * ``BFVrns``
 
-  * BGVrns
+  * ``BFVrnsB``
 
-  * CKKS
+  * ``BGVrns``
 
-  * Null (a test scheme which does not actually encrypt/decrypt anything)
+  * ``CKKS``
+
+  * ``Null`` (a test scheme which does not actually encrypt/decrypt anything)
 
 * create a CryptoContext for the scheme and lattice element type. This requires that you:
 

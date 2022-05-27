@@ -28,14 +28,14 @@
        # Binfhe
        f"{__exhale_base}/binfhe/include",
        f"{__exhale_base}/binfhe/lib",
-       # Core
-       f"{__exhale_base}/core/extras",
-       f"{__exhale_base}/core/include",
-       f"{__exhale_base}/core/lib",
-       # PKE
-       f"{__exhale_base}/pke/extras",
-       f"{__exhale_base}/pke/include",
-       f"{__exhale_base}/pke/lib",
+       # # Core
+       # f"{__exhale_base}/core/extras",
+       # f"{__exhale_base}/core/include",
+       # f"{__exhale_base}/core/lib",
+       # # PKE
+       # f"{__exhale_base}/pke/extras",
+       # f"{__exhale_base}/pke/include",
+       # f"{__exhale_base}/pke/lib",
    }
    
    container = "INPUT = "
@@ -69,7 +69,7 @@
        ############################################################################
        "containmentFolder":     "./api",
        "rootFileName":          "library_root.rst",
-       "rootFileTitle":         "Library API",
+       "rootFileTitle":         "OpenFHE Library API",
        "doxygenStripFromPath":  f"{__exhale_base}",
        "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
            specificationsForKind),
@@ -98,7 +98,7 @@
        "afterTitleDescription": textwrap.dedent(u'''
            Welcome to the user-facing documentation for OpenFHE.
    
-           .. top::
+           .. tip::
    
                OpenFHE is a large library so we recommend using the sidebar to navigate around across the 
                ``namespaces``, ``classes``, ``structs``, ``enums``, ``functions``, ``variables``, ``defines`` and the ``typedefs``. 
