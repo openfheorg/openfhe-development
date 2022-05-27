@@ -139,8 +139,6 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
   double keySwitchingNoise;
   if (ksTech == BV) {
-    // TODO: Change tests to have this is a default for BV.
-    relinWindow = 4;
     if (relinWindow == 0) {
       OPENFHE_THROW(config_error, "relinWindow is not allowed to be 0 for BV key switching in BGV.");
     }
