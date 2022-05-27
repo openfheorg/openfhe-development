@@ -890,6 +890,7 @@ protected:
             Plaintext resultCompressed;
             auto algo = cc->GetScheme();
             size_t targetTowers = 1;
+            if (testData.params.rsTech == FLEXIBLEAUTOEXT) targetTowers = 2;
             auto ctCompressed = algo->Compress(ct, targetTowers);
 
             size_t towersLeft = ctCompressed->GetElements()[0].GetNumOfElements();

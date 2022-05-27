@@ -90,7 +90,7 @@ public:
                                 uint32_t qBound, usint cyclOrder) const;
 
   /*
-   * Method that generates parameters for the BGV RNS scheme.
+   * Method that generates moduli for FLEXIBLEAUTOEXT mode for the BGV RNS scheme.
    *
    * @param cryptoParams contains parameters input by the user
    * @param ringDimension is the dimension of the ring (n)
@@ -112,7 +112,6 @@ public:
                      usint firstModSize,
                      uint32_t auxBits,
                      enum KeySwitchTechnique ksTech,
-                     enum RescalingTechnique rsTech,
                      usint numPrimes) const;
 
   /////////////////////////////////////

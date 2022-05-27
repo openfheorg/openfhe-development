@@ -107,11 +107,9 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   int32_t evalAddCount, int32_t keySwitchCount,
   usint relinWindow, usint firstModSize, uint32_t auxBits,
   enum KeySwitchTechnique ksTech,
-  enum RescalingTechnique rsTech,
   usint numPrimes) const {
 
-  uint32_t vecSize = (rsTech != FLEXIBLEAUTOEXT) ? numPrimes : numPrimes + 1;
-  std::vector<NativeInteger> moduliQ(vecSize);
+  std::vector<NativeInteger> moduliQ(numPrimes + 1);
   
   const auto cryptoParamsBGVRNS =
       std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
@@ -159,26 +157,22 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
   // Moduli need to be primes that are 1 (mod 2n)
   usint cyclOrder = 2 * ringDimension;
-  double firstModLowerBound = 2 * plainModulus * noisePerLevel - plainModulus;
+  double firstModLowerBound = 2 * plainModulus * freshEncryptionNoise - plainModulus;
   usint firstModBoundBits = ceil(log2(firstModLowerBound));
-  if (firstModBoundBits < firstModSize - 1) firstModBoundBits = firstModSize - 1;
+  //if (firstModBoundBits < firstModSize - 1) firstModBoundBits = firstModSize - 1;
   uint32_t totalModSize = firstModBoundBits;
   moduliQ[0] = FirstPrime<NativeInteger>(firstModBoundBits, cyclOrder);
 
-  if (rsTech == FLEXIBLEAUTOEXT) {
-    // TODO: Should we have an additional minimum value for extraModSize?
-    double extraModLowerBound = freshEncryptionNoise / noisePerLevel * (evalAddCount + 1);
-    extraModLowerBound += keySwitchCount * keySwitchingNoise / noisePerLevel;
-    extraModLowerBound *= 2;
-    usint extraModSize = ceil(log2(extraModLowerBound));
-    totalModSize += extraModSize;
-    moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
-    if (moduliQ[numPrimes] == moduliQ[0]) {
-      moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
-    }
+  double extraModLowerBound = freshEncryptionNoise / noisePerLevel * (evalAddCount + 1);
+  extraModLowerBound += keySwitchCount * keySwitchingNoise / noisePerLevel;
+  extraModLowerBound *= 2;
+  usint extraModSize = ceil(log2(extraModLowerBound));
+  totalModSize += extraModSize;
+  moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
+  if (moduliQ[numPrimes] == moduliQ[0]) {
+    moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
   }
 
-  // TODO: Should we have an additional minimum value for modSize?
   double modLowerBound = 2 * noisePerLevel + 2 + 1.0 / noisePerLevel;
   modLowerBound *= expansionFactor * plainModulus * (evalAddCount + 1) / 2.0;
   modLowerBound += (keySwitchCount + 1) * keySwitchingNoise / noisePerLevel;
@@ -187,14 +181,13 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   totalModSize += modSize * (numPrimes - 1);
 
   moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
-  while (moduliQ[1] == moduliQ[0] ||
-         (rsTech == FLEXIBLEAUTOEXT && moduliQ[1] == moduliQ[numPrimes])) {
+  while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes]) {
     moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
   }
+  
   for (size_t i = 2; i < numPrimes; i++) {
     moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i-1], cyclOrder);
-    while (moduliQ[i] == moduliQ[0] ||
-           (rsTech == FLEXIBLEAUTOEXT && moduliQ[1] == moduliQ[numPrimes])) {
+    while (moduliQ[i] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes]) {
       moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i], cyclOrder);
     }
   }
@@ -261,16 +254,16 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   std::vector<NativeInteger> moduliQ(vecSize);
   std::vector<NativeInteger> rootsQ(vecSize);
 
-  if (rsTech == FLEXIBLEAUTO || rsTech == FLEXIBLEAUTOEXT) {
+  if (rsTech == FLEXIBLEAUTOEXT) {
     auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, firstModSize, auxBits,
-                            ksTech, rsTech, numPrimes);
+                            ksTech, numPrimes);
     moduliQ = std::get<0>(moduliInfo);
     uint32_t newQBound = std::get<1>(moduliInfo);
     while (qBound < newQBound) {
       qBound = newQBound;
       n = computeRingDimension(cryptoParams, newQBound, cyclOrder);
       auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, firstModSize, auxBits,
-                            ksTech, rsTech, numPrimes);
+                            ksTech, numPrimes);
       moduliQ = std::get<0>(moduliInfo);
       newQBound = std::get<1>(moduliInfo);
       if (ksTech == HYBRID)
@@ -298,7 +291,12 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
 
     if (pow2ptm < cyclOrder) pow2ptm = cyclOrder;
 
-    uint64_t lcmCyclOrderPtm = (uint64_t)pow2ptm * plaintextModulus;
+    uint64_t lcmCyclOrderPtm = (uint64_t)pow2ptm;
+    if (rsTech != FLEXIBLEAUTO) {
+      // In FLEXIBLEAUTO mode, we don't need the constraint that the ciphertext moduli q are 1 (mod t),
+      // since we keep track of the scaling factor.
+      lcmCyclOrderPtm *= plaintextModulus;
+    }
 
     // Get the largest prime with size less or equal to firstModSize bits.
     NativeInteger firstInteger =
