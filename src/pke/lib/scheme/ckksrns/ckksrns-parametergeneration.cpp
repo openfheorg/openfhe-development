@@ -77,7 +77,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
   usint extraModSize = 0;
   if (rsTech == FLEXIBLEAUTOEXT) {
     // TODO: Allow the user to specify this?
-    extraModSize = 20;
+    extraModSize = DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
   }
 
   const auto cryptoParamsCKKSRNS =

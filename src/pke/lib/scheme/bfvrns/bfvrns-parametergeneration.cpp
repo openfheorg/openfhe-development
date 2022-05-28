@@ -71,7 +71,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     OPENFHE_THROW(not_available_error,
                    "No crypto parameters are supplied to BFVrns ParamsGen");
 
-  if ((dcrtBits < 30) || (dcrtBits > 60))
+  if ((dcrtBits < DCRT_MODULUS::MIN_SIZE) || (dcrtBits > DCRT_MODULUS::MAX_SIZE))
     OPENFHE_THROW(math_error,
                    "BFVrns.ParamsGen: Number of bits in CRT moduli should be "
                    "in the range from 30 to 60");

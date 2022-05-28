@@ -817,7 +817,6 @@ protected:
     if (getSchemeId() == "BGVRNS" && (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO
         || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)) {
       NativeInteger scf;
-      NativeInteger t(cryptoParams->GetPlaintextModulus());
       if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
         scf = cryptoParams->GetScalingFactorIntBig(level);
         p = PlaintextFactory::MakePlaintext(CoefPacked, this->GetElementParams(),

@@ -120,15 +120,9 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   // Bound of the Gaussian error polynomial
   double Berr = sigma * sqrt(alpha);
   // Bound of the key polynomial
-  double Bkey;
-
   // supports both discrete Gaussian (RLWE) and ternary uniform distribution
   // (OPTIMIZED) cases
-  if (cryptoParamsBGVRNS->GetMode() == RLWE) {
-    Bkey = sigma * sqrt(alpha);
-  } else {
-    Bkey = 1;
-  }
+  double Bkey = (cryptoParamsBGVRNS->GetMode() == RLWE) ? sigma * sqrt(alpha) : 1;
 
   // delta
   auto expansionFactor = 2. * sqrt(ringDimension);
@@ -137,13 +131,13 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   // V_c
   auto noisePerLevel = 1 + expansionFactor * Bkey;
 
-  double keySwitchingNoise;
+  double keySwitchingNoise = 0;
   if (ksTech == BV) {
     if (relinWindow == 0) {
       OPENFHE_THROW(config_error, "relinWindow is not allowed to be 0 for BV key switching in BGV.");
     }
     int relinBase = pow(2.0, relinWindow);
-    int modSizeEstimate = DRCT_MODULUS::MAX_SIZE;
+    int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
     int numWindows = floor(modSizeEstimate / log(relinBase)) + 1;
     keySwitchingNoise = numWindows * (numPrimes + 1) * expansionFactor * relinBase * Berr / 2.0;
   } else {
@@ -207,7 +201,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
 
   usint extraModSize = 0;
   if (rsTech == FLEXIBLEAUTOEXT) {
-    extraModSize = DRCT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
+    extraModSize = DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
   }
 
   const auto cryptoParamsBGVRNS =
@@ -217,8 +211,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   // optimized the bounds).
   if (dcrtBits == 0) {
     dcrtBits = 28 + GetMSB64(ptm);
-    if (dcrtBits > DRCT_MODULUS::MAX_SIZE) {
-      dcrtBits = DRCT_MODULUS::MAX_SIZE;
+    if (dcrtBits > DCRT_MODULUS::MAX_SIZE) {
+      dcrtBits = DCRT_MODULUS::MAX_SIZE;
     }
   }
 
@@ -226,7 +220,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   if (firstModSize == 0) firstModSize = dcrtBits;
 
   // Size of modulus P
-  uint32_t auxBits = DRCT_MODULUS::MAX_SIZE;
+  uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
 
   // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
   uint32_t qBound = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;

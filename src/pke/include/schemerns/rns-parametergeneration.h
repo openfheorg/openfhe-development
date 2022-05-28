@@ -162,7 +162,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
   std::string SerializedObjectName() const { return "ParameterGenerationRNS"; }
 
   protected:
-    enum DRCT_MODULUS {
+    enum DCRT_MODULUS {
       DEFAULT_EXTRA_MOD_SIZE = 20,
       MIN_SIZE = 30,
       MAX_SIZE = 60,
