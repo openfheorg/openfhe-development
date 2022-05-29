@@ -54,6 +54,9 @@ std::vector<std::complex<double>> Conjugate(
 double StdDev(const std::vector<std::complex<double>> &vec,
               const std::vector<std::complex<double>> &conjugate) {
   uint32_t slots = vec.size();
+  if (1 == slots) {
+    return vec[0].imag();
+  }
   // ring dimension
   uint32_t dslots = slots * 2;
 

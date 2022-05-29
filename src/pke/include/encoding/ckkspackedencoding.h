@@ -85,7 +85,12 @@ class CKKSPackedEncoding : public PlaintextImpl {
           OPENFHE_THROW(config_error, "The number of slots should be a power of two");
       }
 
-      this->slots = (slots == 0) ? GetElementRingDimension() / 2 : slots;
+      if (0 == slots) {
+          auto batchSize = GetEncodingParams()->GetBatchSize();
+          this->slots = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
+      } else {
+        this->slots = slots;
+      }
       if (this->slots < coeffs.size()) {
           OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
       }
@@ -110,7 +115,12 @@ class CKKSPackedEncoding : public PlaintextImpl {
           OPENFHE_THROW(config_error, "The number of slots should be a power of two");
       }
 
-      this->slots = (slots == 0) ? GetElementRingDimension() / 2 : slots;
+      if (0 == slots) {
+          auto batchSize = GetEncodingParams()->GetBatchSize();
+          this->slots = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
+      } else {
+        this->slots = slots;
+      }
       if (this->slots < rhs.size()) {
           OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
       }
