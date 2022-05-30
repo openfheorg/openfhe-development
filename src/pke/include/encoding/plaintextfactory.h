@@ -48,174 +48,63 @@
 namespace lbcrypto {
 
 class PlaintextFactory {
-  PlaintextFactory() {}  // never construct one!
+    PlaintextFactory() = delete;  // never construct one!
 
  public:
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<Poly::Params> vp,
-                                 EncodingParams ep) {
-    Plaintext pt;
-
-    switch (encoding) {
-      case Unknown:
-        OPENFHE_THROW(type_error,
-                       "Unknown plaintext encoding type in MakePlaintext");
-        break;
+  template <typename T, typename std::enable_if<
+       std::is_same<T, Poly::Params>::value ||
+       std::is_same<T, NativePoly::Params>::value ||
+       std::is_same<T, DCRTPoly::Params>::value,
+       bool>::type = true>
+  static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep) {
+      switch (encoding) {
       case CoefPacked:
-        pt = std::make_shared<CoefPackedEncoding>(vp, ep);
-        break;
+          return std::make_shared<CoefPackedEncoding>(vp, ep);
       case Packed:
-        pt = std::make_shared<PackedEncoding>(vp, ep);
-        break;
+          return std::make_shared<PackedEncoding>(vp, ep);
       case String:
-        pt = std::make_shared<StringEncoding>(vp, ep);
-        break;
+          return std::make_shared<StringEncoding>(vp, ep);
       case CKKSPacked:
-        pt = std::make_shared<CKKSPackedEncoding>(vp, ep);
-        break;
-    }
-
-    return pt;
+          return std::make_shared<CKKSPackedEncoding>(vp, ep);
+      default:
+          OPENFHE_THROW(type_error, "Unknown plaintext encoding type in MakePlaintext");
+      }
   }
 
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<NativePoly::Params> vp,
-                                 EncodingParams ep) {
-    Plaintext pt;
+  template <typename T, typename std::enable_if<
+      std::is_same<T, Poly::Params>::value ||
+      std::is_same<T, NativePoly::Params>::value ||
+      std::is_same<T, DCRTPoly::Params>::value,
+      bool>::type = true>
+  static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
+      const std::vector<int64_t>& value,
+      size_t depth = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
 
-    switch (encoding) {
-      case Unknown:
-        OPENFHE_THROW(type_error,
-                       "Unknown plaintext encoding type in MakePlaintext");
-        break;
-      case CoefPacked:
-        pt = std::make_shared<CoefPackedEncoding>(vp, ep);
-        break;
-      case Packed:
-        pt = std::make_shared<PackedEncoding>(vp, ep);
-        break;
-      case String:
-        pt = std::make_shared<StringEncoding>(vp, ep);
-        break;
-      case CKKSPacked:
-        pt = std::make_shared<CKKSPackedEncoding>(vp, ep);
-        break;
-    }
-
-    return pt;
+      Plaintext pt = MakePlaintext(encoding, vp, ep);
+      pt->SetIntVectorValue(value);
+      pt->SetDepth(depth);
+      pt->SetLevel(level);
+      pt->SetScalingFactorInt(scalingFactor);
+      pt->Encode();
+      return pt;
   }
 
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<DCRTPoly::Params> vp,
-                                 EncodingParams ep) {
-    Plaintext pt;
+  template <typename T, typename std::enable_if<
+      std::is_same<T, Poly::Params>::value ||
+      std::is_same<T, NativePoly::Params>::value ||
+      std::is_same<T, DCRTPoly::Params>::value,
+      bool>::type = true>
+  static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
+      const std::string& value,
+      size_t depth = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
 
-    switch (encoding) {
-      case Unknown:
-        OPENFHE_THROW(type_error,
-                       "Unknown plaintext encoding type in MakePlaintext");
-        break;
-      case CoefPacked:
-        pt = std::make_shared<CoefPackedEncoding>(vp, ep);
-        break;
-      case Packed:
-        pt = std::make_shared<PackedEncoding>(vp, ep);
-        break;
-      case String:
-        pt = std::make_shared<StringEncoding>(vp, ep);
-        break;
-      case CKKSPacked:
-        pt = std::make_shared<CKKSPackedEncoding>(vp, ep);
-        break;
-    }
-
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<Poly::Params> vp, EncodingParams ep,
-                                 const std::vector<int64_t>& value,
-                                 size_t depth = 1, uint32_t level = 0,
-                                 NativeInteger scalingFactor = 1) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetIntVectorValue(value);
-    pt->SetDepth(depth);
-    pt->SetLevel(level);
-    pt->SetScalingFactorInt(scalingFactor);
-    pt->Encode();
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<NativePoly::Params> vp,
-                                 EncodingParams ep,
-                                 const std::vector<int64_t>& value,
-                                 size_t depth = 1, uint32_t level = 0,
-                                 NativeInteger scalingFactor = 1) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetIntVectorValue(value);
-    pt->SetDepth(depth);
-    pt->SetLevel(level);
-    pt->SetScalingFactorInt(scalingFactor);
-    pt->Encode();
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<DCRTPoly::Params> vp,
-                                 EncodingParams ep,
-                                 const std::vector<int64_t>& value,
-                                 size_t depth = 1, uint32_t level = 0,
-                                 NativeInteger scalingFactor = 1) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetIntVectorValue(value);
-    pt->SetDepth(depth);
-    pt->SetLevel(level);
-    pt->SetScalingFactorInt(scalingFactor);
-    pt->Encode();
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<Poly::Params> vp, EncodingParams ep,
-                                 const std::string& value,
-                                 size_t depth = 1, uint32_t level = 0,
-                                 NativeInteger scalingFactor = 1) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetStringValue(value);
-    pt->SetDepth(depth);
-    pt->SetLevel(level);
-    pt->SetScalingFactorInt(scalingFactor);
-    pt->Encode();
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<NativePoly::Params> vp,
-                                 EncodingParams ep, const std::string& value,
-                                 size_t depth = 1, uint32_t level = 0,
-                                 NativeInteger scalingFactor = 1) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetStringValue(value);
-    pt->SetDepth(depth);
-    pt->SetLevel(level);
-    pt->SetScalingFactorInt(scalingFactor);
-    pt->Encode();
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<DCRTPoly::Params> vp,
-                                 EncodingParams ep, const std::string& value,
-                                 size_t depth = 1, uint32_t level = 0,
-                                 NativeInteger scalingFactor = 1) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetStringValue(value);
-    pt->SetDepth(depth);
-    pt->SetLevel(level);
-    pt->SetScalingFactorInt(scalingFactor);
-    pt->Encode();
-    return pt;
+      Plaintext pt = MakePlaintext(encoding, vp, ep);
+      pt->SetStringValue(value);
+      pt->SetDepth(depth);
+      pt->SetLevel(level);
+      pt->SetScalingFactorInt(scalingFactor);
+      pt->Encode();
+      return pt;
   }
 };
 

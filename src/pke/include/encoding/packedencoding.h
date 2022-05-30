@@ -66,37 +66,28 @@ class PackedEncoding : public PlaintextImpl {
 
  public:
   // these two constructors are used inside of Decrypt
-  PackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep)
+  template <typename T, typename std::enable_if<
+      std::is_same<T, Poly::Params>::value ||
+      std::is_same<T, NativePoly::Params>::value ||
+      std::is_same<T, DCRTPoly::Params>::value,
+      bool>::type = true>
+  PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep)
       : PlaintextImpl(vp, ep) {}
 
-  PackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep)
-      : PlaintextImpl(vp, ep) {}
-
-  PackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
-      : PlaintextImpl(vp, ep) {}
-
-  PackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
-                 std::vector<int64_t> coeffs)
+  template <typename T, typename std::enable_if<
+      std::is_same<T, Poly::Params>::value ||
+      std::is_same<T, NativePoly::Params>::value ||
+      std::is_same<T, DCRTPoly::Params>::value,
+      bool>::type = true>
+  PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
-  PackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
-                 std::vector<int64_t> coeffs)
-      : PlaintextImpl(vp, ep), value(coeffs) {}
-
-  PackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
-                 std::vector<int64_t> coeffs)
-      : PlaintextImpl(vp, ep), value(coeffs) {}
-
-  PackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
-                 std::initializer_list<int64_t> coeffs)
-      : PlaintextImpl(vp, ep), value(coeffs) {}
-
-  PackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
-                 std::initializer_list<int64_t> coeffs)
-      : PlaintextImpl(vp, ep), value(coeffs) {}
-
-  PackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
-                 std::initializer_list<int64_t> coeffs)
+  template <typename T, typename std::enable_if<
+      std::is_same<T, Poly::Params>::value ||
+      std::is_same<T, NativePoly::Params>::value ||
+      std::is_same<T, DCRTPoly::Params>::value,
+      bool>::type = true>
+  PackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, std::initializer_list<int64_t> coeffs)
       : PlaintextImpl(vp, ep), value(coeffs) {}
 
   /**
