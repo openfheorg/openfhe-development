@@ -405,7 +405,7 @@ protected:
             CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
             CryptoContextFactory<Element>::ReleaseAllContexts();
 
-            DisablePrecomuteCRTTablesAfterDeserializaton();
+            DisablePrecomputeCRTTablesAfterDeserializaton();
 
             CryptoContext<Element> newcc;
 
@@ -435,7 +435,7 @@ protected:
             checkEquality(plaintextShort->GetCKKSPackedValue(), result->GetCKKSPackedValue(), eps,
                 failmsg + " Decryption Failed");
 
-            EnablePrecomuteCRTTablesAfterDeserializaton();
+            EnablePrecomputeCRTTablesAfterDeserializaton();
 
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();

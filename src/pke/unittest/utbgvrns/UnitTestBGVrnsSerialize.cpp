@@ -39,6 +39,7 @@
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "utils/exception.h"
+#include "globals.h" // for SERIALIZE_PRECOMPUTE
 
 #include "include/gtest/gtest.h"
 #include <iostream>

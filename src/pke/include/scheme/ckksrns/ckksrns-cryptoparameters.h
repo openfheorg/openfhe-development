@@ -110,7 +110,7 @@ public:
     }
     ar(cereal::base_class<CryptoParametersRNS>(this));
 
-    if(PrecomuteCRTTablesAfterDeserializaton()) {
+    if(PrecomputeCRTTablesAfterDeserializaton()) {
         PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
                             m_numPartQ, m_auxBits, m_extraBits);
     }

@@ -38,15 +38,15 @@ struct GLOBALS {
 };
 bool GLOBALS::precomputeCRTTables = true;
 //=============================================================================
-void EnablePrecomuteCRTTablesAfterDeserializaton() {
+void EnablePrecomputeCRTTablesAfterDeserializaton() {
     GLOBALS::precomputeCRTTables = true;
 }
 //=============================================================================
-void DisablePrecomuteCRTTablesAfterDeserializaton() {
+void DisablePrecomputeCRTTablesAfterDeserializaton() {
     GLOBALS::precomputeCRTTables = false;
 }
 //=============================================================================
-bool PrecomuteCRTTablesAfterDeserializaton() {
+bool PrecomputeCRTTablesAfterDeserializaton() {
     return GLOBALS::precomputeCRTTables;
 }
 //=============================================================================

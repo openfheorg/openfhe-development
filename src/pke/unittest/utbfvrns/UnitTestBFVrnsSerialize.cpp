@@ -35,6 +35,7 @@
 #include "scheme/bfvrns/bfvrns-ser.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
+#include "globals.h" // for SERIALIZE_PRECOMPUTE
 
 using namespace lbcrypto;
 

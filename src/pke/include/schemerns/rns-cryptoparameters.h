@@ -1592,7 +1592,7 @@ public:
     ar(cereal::make_nvp("ab", m_auxBits));
     ar(cereal::make_nvp("eb", m_extraBits));
 
-    if(PrecomuteCRTTablesAfterDeserializaton()) {
+    if(PrecomputeCRTTablesAfterDeserializaton()) {
         PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
                             m_numPartQ, m_auxBits, m_extraBits);
     }
