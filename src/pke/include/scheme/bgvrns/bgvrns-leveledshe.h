@@ -54,9 +54,7 @@ public:
   virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                         size_t levels) const override;
 
-  virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                          const EvalKey<DCRTPoly> evalKey,
-                                          size_t levels) const override;
+  virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext, size_t levels) const override;
 
   void EvalMultCoreInPlace(Ciphertext<DCRTPoly> &ciphertext, const NativeInteger& constant) const;
 
