@@ -588,7 +588,7 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly> ciphertext,
   }
 
   if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL && levels > 0) {
-    LevelReduceInternalInPlace(ciphertext, evalKey, levels);
+    LevelReduceInternalInPlace(ciphertext, levels);
   }
 }
 
@@ -619,7 +619,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::Compress(
 //    return result;
 //  }
 
-  LevelReduceInternalInPlace(result, nullptr, sizeQl - towersLeft);
+  LevelReduceInternalInPlace(result, sizeQl - towersLeft);
   return result;
 }
 
@@ -634,12 +634,9 @@ Ciphertext<DCRTPoly> LeveledSHERNS::ModReduceInternal(
   return result;
 }
 
-Ciphertext<DCRTPoly> LeveledSHERNS::LevelReduceInternal(
-    ConstCiphertext<DCRTPoly> ciphertext,
-    const EvalKey<DCRTPoly> evalKey,
-    size_t levels) const {
+Ciphertext<DCRTPoly> LeveledSHERNS::LevelReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
   auto result = ciphertext->Clone();
-  LevelReduceInternalInPlace(result, evalKey, levels);
+  LevelReduceInternalInPlace(result, levels);
   return result;
 }
 
@@ -650,9 +647,9 @@ void LeveledSHERNS::AdjustLevelsInPlace(
   auto sizeQl2 = ciphertext2->GetElements()[0].GetNumOfElements();
 
   if (sizeQl1 < sizeQl2) {
-    LevelReduceInternalInPlace(ciphertext2, nullptr, sizeQl2 - sizeQl1);
+    LevelReduceInternalInPlace(ciphertext2, sizeQl2 - sizeQl1);
   } else if (sizeQl1 > sizeQl2) {
-    LevelReduceInternalInPlace(ciphertext1, nullptr, sizeQl1 - sizeQl2);
+    LevelReduceInternalInPlace(ciphertext1, sizeQl1 - sizeQl2);
   }
 }
 
@@ -665,7 +662,7 @@ DCRTPoly LeveledSHERNS::AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
   if (sizeQlc < sizeQlp) {
     pt.DropLastElements(sizeQlp - sizeQlc);
   } else if (sizeQlc > sizeQlp) {
-    LevelReduceInternalInPlace(ciphertext, nullptr, sizeQlc - sizeQlp);
+    LevelReduceInternalInPlace(ciphertext, sizeQlc - sizeQlp);
   }
   pt.SetFormat(Format::EVALUATION);
   return pt;

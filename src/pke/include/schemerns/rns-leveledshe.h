@@ -348,13 +348,10 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * plaintext.
    *
    * @param cipherText1 is the original ciphertext to be level reduced.
-   * @param linearKeySwitchHint not used in the CKKS scheme.
    * @param levels the number of towers to drop.
    * @return resulting ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> LevelReduceInternal(
-      ConstCiphertext<DCRTPoly> ciphertext, const EvalKey<DCRTPoly> evalKey,
-      size_t levels) const override;
+  Ciphertext<DCRTPoly> LevelReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const override;
 
   /**
    * Method for in-place Level Reduction in the CKKS scheme. It just drops
@@ -365,11 +362,8 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param linearKeySwitchHint not used in the CKKS scheme.
    * @param levels the number of towers to drop.
    */
-  virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                          const EvalKey<DCRTPoly> evalKey,
-                                          size_t levels) const override {
-    OPENFHE_THROW(config_error,
-                   "LevelReduce is not supported for this scheme");
+  void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext, size_t levels) const override {
+    OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
   }
 
   virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext1,

@@ -1160,32 +1160,25 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "LevelReduce operation has not been enabled");
   }
 
-  virtual Ciphertext<Element> LevelReduceInternal(
-      ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-      size_t levels) const {
+  virtual Ciphertext<Element> LevelReduceInternal(ConstCiphertext<Element> ciphertext, size_t levels) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
 
-      return m_LeveledSHE->LevelReduceInternal(ciphertext, evalKey, levels);
+      return m_LeveledSHE->LevelReduceInternal(ciphertext, levels);
     }
-    OPENFHE_THROW(not_implemented_error,
-                   "LevelReduceInternal has not been enabled for this scheme.");
+    OPENFHE_THROW(not_implemented_error, "LevelReduceInternal has not been enabled for this scheme.");
   }
 
-  virtual void LevelReduceInternalInPlace(Ciphertext<Element> &ciphertext,
-                                          const EvalKey<Element> evalKey,
-                                          size_t levels) const {
+  virtual void LevelReduceInternalInPlace(Ciphertext<Element> &ciphertext, size_t levels) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
 
-      m_LeveledSHE->LevelReduceInternalInPlace(ciphertext, evalKey, levels);
+      m_LeveledSHE->LevelReduceInternalInPlace(ciphertext, levels);
       return;
     }
-    OPENFHE_THROW(
-        not_implemented_error,
-        "LevelReduceInternalInPlace has not been enabled for this scheme.");
+    OPENFHE_THROW(not_implemented_error, "LevelReduceInternalInPlace has not been enabled for this scheme.");
   }
 
   virtual Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext, size_t towersLeft) const {
