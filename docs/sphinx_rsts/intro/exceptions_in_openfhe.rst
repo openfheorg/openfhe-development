@@ -50,6 +50,7 @@ If an exception must be thrown in a critical region or OMP thread, but must be c
 For example, the following code will catch and rethrow an exception thrown inside of a thread
 
 .. code-block:: c++
+   :linenos:
 
     ThreadException e;
     #pragma omp parallel for

@@ -70,10 +70,3 @@ Key Pair File Listings
 `Private Key (privatekey.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/key/privatekey.h>`_
 
 `Public Key (publickey.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/key/publickey.h>`_
-
-PKE Keys Generated Docs
--------------------------------
-
-.. autodoxygenindex::
-   :project: pke_key
-   :allow-dot-graphs:

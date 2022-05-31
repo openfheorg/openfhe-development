@@ -100,7 +100,7 @@ that you want to use the new parameter.
 
 *Defining a new input*
 
-.. code:: yml
+.. code:: yaml
 
    name: 'Default Builder'
 
@@ -112,7 +112,7 @@ that you want to use the new parameter.
 
 *Using the input*
 
-.. code:: yml
+.. code:: yaml
 
    uses: ./.github/actions/default_builder
    with:
@@ -124,7 +124,7 @@ that you want to use the new parameter.
 
 *Using the input value in the action procedure*
 
-.. code:: yml
+.. code:: yaml
 
        runs:
            ...
@@ -203,7 +203,7 @@ Selection <#compiler-selection>`__
 
 **example JSON map definition**
 
-.. code:: yml
+.. code:: yaml
 
    env:
        MATHBACKEND_MAP: >-
@@ -215,7 +215,7 @@ Selection <#compiler-selection>`__
 
 **Passing json map’s value to custom action**
 
-.. code:: yml
+.. code:: yaml
 
    jobs:
        default:
@@ -248,7 +248,7 @@ whenever changes are pushed to that branch will the pull-request is
 open. The workflow runs on the branch linked to the pull-request. This
 is defined by the following code snippet.
 
-.. code:: yml
+.. code:: yaml
 
    on:
      pull_request:
@@ -274,7 +274,7 @@ The Main Workflow is also run when changes are pushed to the branch
 but this is for testing and development purposes of new CI/CD features.
 This is defined by the code snippet:
 
-.. code:: yml
+.. code:: yaml
 
    on:
      push:
@@ -304,7 +304,7 @@ encapuslates the bulk of the CI/CD that should be use in multiple
 workflows. This workflow is declared reuseable by the following code
 snippet:
 
-.. code:: yml
+.. code:: yaml
 
    on:
      workflow_call:
@@ -314,7 +314,7 @@ snippet:
 Where ``workflow_call`` property enables other workflows to run this
 entire workflow through the following calling squence:
 
-.. code:: yml
+.. code:: yaml
 
    jobs:
      call:
@@ -345,7 +345,7 @@ no inputs are given to cmake. This allows other workflows to turn off
 pieces of the workflow if not desired. This is done by using the inputs
 in the following way:
 
-.. code:: yml
+.. code:: yaml
 
      mb2_tcm:
        needs: [default, mb4_noflag, mb6_ntl_noflag]
@@ -396,7 +396,7 @@ the **debug_mb2**
 
 *input section*
 
-.. code:: yml
+.. code:: yaml
 
    debug_mb2:
            description: 'Run debug_mb2'
@@ -411,7 +411,7 @@ run.
 
 *job section*
 
-.. code:: yml
+.. code:: yaml
 
    debug_mb2:
        needs: default
@@ -447,7 +447,7 @@ so on multiple lines with ``>-`` operator.
 
 *Compiler map definition*
 
-.. code:: yml
+.. code:: yaml
 
    COMPILERS_MAP: >-
    {
@@ -460,7 +460,7 @@ input
 
 *Compiler map value access by key input*
 
-.. code:: yml
+.. code:: yaml
 
    cmake_args: ${{ fromJson(env.COMPILERS_MAP)[github.event.inputs.compiler] }}
 
@@ -493,7 +493,7 @@ YML file are related via the pattern:
 
 -  Workflow Name:
 
-   .. code:: yml
+   .. code:: yaml
 
       name: New Workflow
 

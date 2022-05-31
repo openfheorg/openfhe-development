@@ -89,11 +89,3 @@ File Listings
 `OpenFHE Top-Level Include (openfhe.h) <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/openfhe.h>`__
 
 - Top-level ``#include`` for access to all capabilities
-
-
-PKE Generated Docs
---------------------------------
-
-.. autodoxygenindex::
-   :project: pke
-   :allow-dot-graphs:

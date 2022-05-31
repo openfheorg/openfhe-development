@@ -127,38 +127,3 @@ Other Modular Operations
 +----------+-----------------+---------------------+---------------------+-------------------------+------------------------------------+
 | ModMul   | ModMul(b, mod)  | ModMul(b, mod, mu)  | ModMulFast(b, mod)  | ModMulFast(b, mod, mu)  | ModMulFastConst(b, mod, bPrecomp)  |
 +----------+-----------------+---------------------+---------------------+-------------------------+------------------------------------+
-
-Core Math Hal Backend documentation
--------------------------------------
-
-.. autodoxygenindex::
-   :project: core_math_hal
-   :allow-dot-graphs:
-
-Core Math HAL Integer Nat Backend documentation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autodoxygenindex::
-   :project: core_math_hal_intnat
-   :allow-dot-graphs:
-
-Core Math HAL Integer Dyn Backend documentation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autodoxygenindex::
-   :project: core_math_hal_bigintdyn
-   :allow-dot-graphs:
-
-Core Math HAL Integer Fxd Backend documentation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autodoxygenindex::
-   :project: core_math_hal_bigintfxd
-   :allow-dot-graphs:
-
-Core Math Integer NTL Backend documentation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autodoxygenindex::
-   :project: core_math_hal_bigintntl
-   :allow-dot-graphs:

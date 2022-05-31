@@ -100,10 +100,3 @@ File Listings
 `Ternary Uniform Generator (ternaryuniformgenerator.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/math/ternaryuniformgenerator.h>`_
 
 -  Provides generation of uniform distribution of binary values
-
-Core Math documentation
-------------------------
-
-.. autodoxygenindex::
-   :project: core_math
-   :allow-dot-graphs:

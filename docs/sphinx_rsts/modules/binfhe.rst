@@ -66,11 +66,3 @@ File Listings
   - ``RingGSWCiphertext``: two-dimensional vector of ring elements
 
   - ``RingGSWBTKey``: stores the refreshing key used in bootstrapping. Is a 3-d vector of ``RingGSW`` ciphertexts
-
-
-Boolean FHE Generated Docs
---------------------------------
-
-.. autodoxygenindex::
-   :project: binfhe
-   :allow-dot-graphs:

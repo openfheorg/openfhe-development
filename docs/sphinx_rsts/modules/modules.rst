@@ -17,7 +17,7 @@ Boolean FHE
 .. toctree::
    :maxdepth: 2
 
-   binfhe/binfhe.rst
+   binfhe.rst
 
 
 Core

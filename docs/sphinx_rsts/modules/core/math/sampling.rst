@@ -1,5 +1,3 @@
-.. _sampling:
-
 Sampling in OpenFHE
 ===================
 
@@ -111,7 +109,8 @@ How to Use Sampling Methods
 Rejection Sampling
 ~~~~~~~~~~~~~~~~~~
 
-.. code:: cpp
+.. code-block::
+   :linenos:
 
    /*Create the generator object, std is not important as we choose it arbitrarily during sampling*/
    DiscreteGaussianGenerator dggRejection;
@@ -121,7 +120,8 @@ Rejection Sampling
 Karney’s Method
 ~~~~~~~~~~~~~~~
 
-.. code:: cpp
+.. code-block::
+   :linenos:
 
    /*Create the generator object, std is not important as we choose it arbitrarily during sampling*/
    DiscreteGaussianGenerator dggKarney;
@@ -131,7 +131,8 @@ Karney’s Method
 Peikert’s Inversion Method (As defined in DiscreteGaussianGenerator)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: cpp
+.. code-block::
+   :linenos:
 
    /*Create the generator object, the parameter is the distribution parameter*/
    DiscreteGaussianGenerator dggPeikert(4);
@@ -141,7 +142,8 @@ Peikert’s Inversion Method (As defined in DiscreteGaussianGenerator)
 Peikert’s Inversion Method (As defined in DiscreteGaussianGeneratorGeneric)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: cpp
+.. code-block::
+   :linenos:
 
    /*Create a bit generator that will feed the random bits*/
    BitGenerator* bg = new BitGenerator();
@@ -159,7 +161,8 @@ Peikert’s Inversion Method (As defined in DiscreteGaussianGeneratorGeneric)
 Knuth-Yao’s Method (As defined in DiscreteGaussianGeneratorGeneric)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: cpp
+.. code-block::
+   :linenos:
 
    /*Create a bit generator that will feed the random bits*/
    BitGenerator* bg = new BitGenerator();
@@ -177,8 +180,8 @@ Knuth-Yao’s Method (As defined in DiscreteGaussianGeneratorGeneric)
 Generic Sampler
 ~~~~~~~~~~~~~~~
 
-.. code:: cpp
-
+.. code-block::
+   :linenos:
 
    /*Create a bit generator that will feed the random bits*/
    BitGenerator* bg = new BitGenerator();

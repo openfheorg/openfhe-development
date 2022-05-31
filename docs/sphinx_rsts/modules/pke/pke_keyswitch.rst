@@ -55,10 +55,3 @@ File Listings
 
   - **Pros**: Smaller noise growth than BV and is more efficient as it only requires a linear number of NTTs
   - **Cons**: need to double dimension, N, or reduce size of ciphertext modulus, Q, by a factor of 2
-
-PKE Key-Switching Generated Docs
---------------------------------
-
-.. autodoxygenindex::
-   :project: pke_keyswitch
-   :allow-dot-graphs:

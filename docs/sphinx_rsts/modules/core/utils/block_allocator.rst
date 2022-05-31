@@ -30,10 +30,3 @@ TL;DR replaces `malloc` and `free` with `xmalloc` and `xfree` which take advanta
 3) `A Custom STL std::allocator Replacement Improves Performance <https://www.codeproject.com/Articles/1089905/A-Custom-STL-std-allocator-Replacement-Improves-Pe>`_
 
 TL;DR describes how to create a STL-compatible version of the above code.
-
-Core Block Allocator Generated Docs
------------------------------------
-
-.. autodoxygenindex::
-   :project: core_utils_blockAllocator
-   :allow-dot-graphs:

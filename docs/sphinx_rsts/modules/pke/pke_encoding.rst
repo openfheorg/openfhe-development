@@ -55,10 +55,3 @@ File Listings
 
 `String Encoding (stringencoding.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/encoding/stringencoding.h>`_
     - Encodes strings
-
-PKE Encoding Generated Docs
---------------------------------
-
-.. autodoxygenindex::
-   :project: pke_encoding
-   :allow-dot-graphs:

@@ -33,7 +33,18 @@ OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve h
    :maxdepth: 2
    :caption: Contents:
 
+
+   sphinx_rsts/intro/quickstart.rst
    sphinx_rsts/intro/get_started.rst
+
+
+..
+   [COMMENT]: we separated the above TOC tree from the bottom in an attempt to split them up. For some
+   reason the library root was parsing all of the modules and creating duplicates
+
+.. toctree::
+   :maxdepth: 2
+
    api/library_root.rst
 
 ..

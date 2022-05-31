@@ -180,10 +180,3 @@ Assumptions
 -  It is assumed that any scalar or vector operation such as multiplication, addition etc. done on one or more operations contain the same params. Checks need to be added to the code to test the compatibility of parameters.
 
 -  Multiplication is currently only implemented in the ``EVALUATION`` format. Code needs to be added to implement ``COEFFICIENT`` format multiplication, if desired.
-
-Core Lattice Documentation
--------------------------------
-
-.. autodoxygenindex::
-   :project: core_lattice
-   :allow-dot-graphs:

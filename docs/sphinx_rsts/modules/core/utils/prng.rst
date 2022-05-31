@@ -16,10 +16,3 @@ Using your own PRNG engine
 -----------------------------------
 
 To define new ``PRNG`` engines, refer to `blake2engine.h <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/utils/prng/blake2.h>`_.
-
-Core PRNG Generated Docs
--------------------------------
-
-.. autodoxygenindex::
-   :project: core_utils_prng
-   :allow-dot-graphs:

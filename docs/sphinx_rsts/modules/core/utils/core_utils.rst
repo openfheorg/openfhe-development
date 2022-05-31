@@ -26,10 +26,3 @@ Contains utils for the underlying math layer including the following capabilitie
 - parallel operations
 
 - serialization
-
-Core Utils Generated Docs
--------------------------------
-
-.. autodoxygenindex::
-   :project: core_utils
-   :allow-dot-graphs:
