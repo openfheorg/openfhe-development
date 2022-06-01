@@ -128,7 +128,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS& test
 /***
  * ORDER:      Cyclotomic order. Must be a power of 2 for BGVrns. RING_DIM = cyclOrder / 2
  * SIZEMODULI: bit-length of the moduli composing the ciphertext modulus (or scaling factor bits).
- * 		       Should fit into a machine word, i.e., less than 64.
+ *             Should fit into a machine word, i.e., less than 64.
  * NUMPRIME:   Number of towers comprising the ciphertext modulus. MultDepth = NUMPRIME - 1
  * RELIN:      The bit decomposition count used in BV relinearization.
  * PTM:        The plaintext modulus.
