@@ -44,12 +44,7 @@
 #include <iostream>
 #include <cxxabi.h>
 #include "utils/demangle.h"
-/*
-#include "math/nbtheory.h"
-#include "openfhe.h"
-#include "utils/parmfactory.h"
-#include "utils/utilities.h"
-*/
+#include "globals.h" // for SERIALIZE_PRECOMPUTE
 
 
 using namespace lbcrypto;
@@ -66,6 +61,7 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype, co
 
         // std::cerr << " Output " << s.str() << std::endl;
 
+        DisablePrecomputeCRTTablesAfterDeserializaton();
         CryptoContext<Element> newcc;
         Serial::Deserialize(newcc, s, sertype);
 
@@ -95,13 +91,16 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype, co
 
         CryptoContext<Element> newccFromkey = newPub->GetCryptoContext();
         EXPECT_EQ(*cc, *newccFromkey) << failmsg << " Key deser has wrong context";
+        EnablePrecomputeCRTTablesAfterDeserializaton();
     }
     catch (std::exception& e) {
+        EnablePrecomputeCRTTablesAfterDeserializaton();
         std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
         // make it fail
         EXPECT_TRUE(0 == 1) << failmsg;
     }
     catch (...) {
+        EnablePrecomputeCRTTablesAfterDeserializaton();
         std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
         std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
         // make it fail
