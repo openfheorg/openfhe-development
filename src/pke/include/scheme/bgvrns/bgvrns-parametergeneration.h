@@ -97,7 +97,6 @@ public:
    * @param evalAddCount is the maximum number of additions per level.
    * @param keySwitchCount is the maximum number of key switches per level.
    * @param relinWindow The bit size of the base for BV key relinearization.
-   * @param firstModSize is the approximate bit size of the first CRT modulus.
    * @param auxBits is the size of the additional modulus P, used for hybrid key-switching.
    * @param ksTech is the key switching technique used, BV or Hybrid.
    * @param rsTech is the rescaling technique used.
@@ -109,7 +108,6 @@ public:
                      int32_t evalAddCount,
                      int32_t keySwitchCount,
                      usint relinWindow,
-                     usint firstModSize,
                      uint32_t auxBits,
                      enum KeySwitchTechnique ksTech,
                      usint numPrimes) const;

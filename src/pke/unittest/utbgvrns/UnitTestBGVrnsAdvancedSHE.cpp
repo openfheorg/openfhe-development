@@ -101,21 +101,22 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTSHEADVANCED&
 constexpr usint RING_DIM = 8192;
 constexpr usint SCALE = 50;
 constexpr usint PTM = 20;
-constexpr usint RELIN = 1;
+constexpr usint RELIN = 4;
 constexpr double STD_DEV = 4;
 
 static std::vector<TEST_CASE_UTSHEADVANCED> testCasesUTSHEADVANCED = {
     // TestType,       Descr,  Scheme,        RDim,     MultDepth, SFBits, RWin,  BatchSz, Mode, Depth, MDepth, ModSize, SecLvl, KSTech, RSTech,          LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
-    //{ EVAL_MULT_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      SCALE,  RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_MULT_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      SCALE,  RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
     { EVAL_MULT_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      SCALE,  RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
     { EVAL_MULT_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      SCALE,  RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
+    // TODO: Figure out why this test has too much noise to decrypt. Seems to work with firstModSize > 27.
     //{ EVAL_MULT_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      SCALE,  RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
     // ==========================================
     // TestType,      Descr,  Scheme,        RDim,     MultDepth, SFBits, RWin,  BatchSz, Mode, Depth, MDepth, ModSize, SecLvl, KSTech, RSTech,          LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
     { EVAL_ADD_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,   RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
     { EVAL_ADD_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,   RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
     { EVAL_ADD_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,   RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
-    //{ EVAL_ADD_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,   RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_ADD_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,   RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
 };
 //===========================================================================================================
 class UTSHEADVANCED : public ::testing::TestWithParam<TEST_CASE_UTSHEADVANCED> {

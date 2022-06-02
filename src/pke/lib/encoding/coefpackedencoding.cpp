@@ -119,7 +119,7 @@ bool CoefPackedEncoding::Decode() {
 
   if (this->typeFlag == IsNativePoly) {
     NativeInteger scfInv = scalingFactorInt.ModInverse(mod);
-    NativePoly temp = encodedNativeVector.Times(scfInv);
+    NativePoly temp = encodedNativeVector.Times(scfInv).Mod(mod);
     fillVec(temp, mod, this->value);
   } else {
     fillVec(this->encodedVector, mod, this->value);

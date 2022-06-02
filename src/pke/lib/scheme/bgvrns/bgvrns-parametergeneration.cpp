@@ -105,7 +105,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
   uint32_t ringDimension,
   int32_t evalAddCount, int32_t keySwitchCount,
-  usint relinWindow, usint firstModSize, uint32_t auxBits,
+  usint relinWindow, uint32_t auxBits,
   enum KeySwitchTechnique ksTech,
   usint numPrimes) const {
 
@@ -151,10 +151,9 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   // Moduli need to be primes that are 1 (mod 2n)
   usint cyclOrder = 2 * ringDimension;
   double firstModLowerBound = 2 * plainModulus * freshEncryptionNoise - plainModulus;
-  usint firstModBoundBits = ceil(log2(firstModLowerBound));
-  //if (firstModBoundBits < firstModSize - 1) firstModBoundBits = firstModSize - 1;
-  uint32_t totalModSize = firstModBoundBits;
-  moduliQ[0] = FirstPrime<NativeInteger>(firstModBoundBits, cyclOrder);
+  usint firstModSize = ceil(log2(firstModLowerBound));
+  uint32_t totalModSize = firstModSize;
+  moduliQ[0] = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
 
   double extraModLowerBound = freshEncryptionNoise / noisePerLevel * (evalAddCount + 1);
   extraModLowerBound += keySwitchCount * keySwitchingNoise / noisePerLevel;
@@ -162,7 +161,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   usint extraModSize = ceil(log2(extraModLowerBound));
   totalModSize += extraModSize;
   moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
-  if (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
+  while (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
     moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
   }
 
@@ -173,15 +172,17 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   usint modSize = ceil(log2(modLowerBound));
   totalModSize += modSize * (numPrimes - 1);
 
-  moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
-  while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {
-    moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
-  }
-  
-  for (size_t i = 2; i < numPrimes; i++) {
-    moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i-1], cyclOrder);
-    while (moduliQ[i] == moduliQ[0] || moduliQ[i] == moduliQ[numPrimes] || moduliQ[i] == plainModulusInt) {
-      moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i], cyclOrder);
+  if (numPrimes > 1) {
+    moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
+    while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {
+      moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
+    }
+    
+    for (size_t i = 2; i < numPrimes; i++) {
+      moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i-1], cyclOrder);
+      while (moduliQ[i] == moduliQ[0] || moduliQ[i] == moduliQ[numPrimes] || moduliQ[i] == plainModulusInt) {
+        moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i], cyclOrder);
+      }
     }
   }
 
@@ -247,14 +248,14 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   std::vector<NativeInteger> rootsQ(vecSize);
 
   if (rsTech == FLEXIBLEAUTOEXT) {
-    auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, firstModSize, auxBits,
+    auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, auxBits,
                             ksTech, numPrimes);
     moduliQ = std::get<0>(moduliInfo);
     uint32_t newQBound = std::get<1>(moduliInfo);
     while (qBound < newQBound) {
       qBound = newQBound;
       n = computeRingDimension(cryptoParams, newQBound, cyclOrder);
-      auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, firstModSize, auxBits,
+      auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, auxBits,
                             ksTech, numPrimes);
       moduliQ = std::get<0>(moduliInfo);
       newQBound = std::get<1>(moduliInfo);
