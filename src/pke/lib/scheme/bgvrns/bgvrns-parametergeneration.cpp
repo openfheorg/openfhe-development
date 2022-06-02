@@ -116,6 +116,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   double sigma = cryptoParamsBGVRNS->GetDistributionParameter();
   double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
   double plainModulus = static_cast<double>(cryptoParamsBGVRNS->GetPlaintextModulus());
+  NativeInteger plainModulusInt = NativeInteger((int)plainModulus);
 
   // Bound of the Gaussian error polynomial
   double Berr = sigma * sqrt(alpha);
@@ -161,7 +162,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   usint extraModSize = ceil(log2(extraModLowerBound));
   totalModSize += extraModSize;
   moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
-  if (moduliQ[numPrimes] == moduliQ[0]) {
+  if (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
     moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
   }
 
@@ -173,13 +174,13 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   totalModSize += modSize * (numPrimes - 1);
 
   moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
-  while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes]) {
+  while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {
     moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
   }
   
   for (size_t i = 2; i < numPrimes; i++) {
     moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i-1], cyclOrder);
-    while (moduliQ[i] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes]) {
+    while (moduliQ[i] == moduliQ[0] || moduliQ[i] == moduliQ[numPrimes] || moduliQ[i] == plainModulusInt) {
       moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i], cyclOrder);
     }
   }
@@ -198,7 +199,6 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     enum RescalingTechnique rsTech,
     enum EncryptionTechnique encTech,
     enum MultiplicationTechnique multTech) const {
-
   usint extraModSize = 0;
   if (rsTech == FLEXIBLEAUTOEXT) {
     extraModSize = DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
@@ -373,9 +373,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
         encodingParams->GetPlaintextModulus(), batchSize));
     cryptoParamsBGVRNS->SetEncodingParams(encodingParamsNew);
   }
-
   cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, 0);
-
   return true;
 }
 

@@ -244,8 +244,15 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ci
 DCRTPoly LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(
     Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const {
   CryptoContext<DCRTPoly> cc = ciphertext->GetCryptoContext();
-  auto values = plaintext->GetPackedValue();
-  Plaintext ptx = cc->MakePackedPlaintext(values, ciphertext->GetDepth(), ciphertext->GetLevel());
+  Plaintext ptx;
+  if (plaintext->GetEncodingType() == Packed) {
+    auto values = plaintext->GetPackedValue();
+    ptx = cc->MakePackedPlaintext(values, ciphertext->GetDepth(), ciphertext->GetLevel());
+  } else if (plaintext->GetEncodingType() == CoefPacked) {
+    auto values = plaintext->GetCoefPackedValue();
+    ptx = cc->MakeCoefPackedPlaintext(values, ciphertext->GetDepth(), ciphertext->GetLevel());
+  }
+
   ptx->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
   return ptx->GetElement<DCRTPoly>();
 }

@@ -72,6 +72,10 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
 bool CoefPackedEncoding::Encode() {
   if (this->isEncoded) return true;
   PlaintextModulus mod = this->encodingParams->GetPlaintextModulus();
+  NativeInteger originalSF = scalingFactorInt;
+  for (size_t j = 1; j < depth; j++) {
+    scalingFactorInt = scalingFactorInt.ModMul(originalSF, mod);
+  }
 
   if (this->typeFlag == IsNativePoly) {
     encodeVec(this->encodedNativeVector, mod, LowBound(), HighBound(),

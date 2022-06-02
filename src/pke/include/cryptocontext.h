@@ -820,7 +820,8 @@ protected:
       if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
         scf = cryptoParams->GetScalingFactorIntBig(level);
         p = PlaintextFactory::MakePlaintext(CoefPacked, this->GetElementParams(),
-                                                 this->GetEncodingParams(), value, 2, level, scf);
+                                                 this->GetEncodingParams(), value, 1, level, scf);
+        p->SetDepth(2);
       } else {
         scf = cryptoParams->GetScalingFactorInt(level);
         p = PlaintextFactory::MakePlaintext(CoefPacked, this->GetElementParams(),
