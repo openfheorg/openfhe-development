@@ -36,6 +36,7 @@ OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve h
 
    sphinx_rsts/intro/quickstart.rst
    sphinx_rsts/intro/get_started.rst
+   sphinx_rsts/modules/modules.rst
 
 
 ..
@@ -87,3 +88,8 @@ Additional Resources
 ----------------------
 
 `OpenFHE/PALISADE Webinars <https://www.youtube.com/channel/UC1qByOsQina1rpZ8AGl5TZw>`_
+
+.. toctree::
+   :caption: Appendix
+
+   genindex.rst

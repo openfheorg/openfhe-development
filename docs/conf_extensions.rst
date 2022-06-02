@@ -84,6 +84,13 @@
            # not for yours.
            PREDEFINED += NAMESPACE_BEGIN(arbitrary)="namespace arbitrary {"
            PREDEFINED += NAMESPACE_END(arbitrary)="}"
+           EXCLUDE_PATTERNS += *.md
+           
+           WARN_IF_UNDOCUMENTED = NO,
+           WARNINGS" = NO,
+           WARN_IF_DOC_ERROR: NO,
+           WARN_IF_INCOMPLETE_DOC: NO,
+           WARN_NO_PARAMDOC: NO
        '''),
        ############################################################################
        # HTML Theme specific configurations.                                      #
@@ -116,7 +123,7 @@
        "includeTemplateParamOrderList": True,
        ############################################################################
        # useful to see ;)
-       "verboseBuild": True
+       "verboseBuild": False
    }
    
    # Tell sphinx what the primary language being documented is.
