@@ -135,9 +135,11 @@ protected:
 
 public:
     /**
-   * Computes all tables needed for decryption, homomorphic multiplication,
-   * and key switching. Must not be called from CryptoParametersRNS::load(),
-   * only from derived classes' PrecomputeCRTTables().
+   * Computes all tables needed for decryption, homomorphic multiplication and
+   * key switching.
+   * Even though this is a pure virtual function and must be overriden in all derived classes,
+   * PrecomputeCRTTables() has its own implementation in the source file. It should be called from
+   * derived classes' PrecomputeCRTTables() only and must not be called from CryptoParametersRNS::load().
    * @param ksTech the technique to use for key switching (e.g., BV or GHS).
    * @param rsTech the technique to use for rescaling (e.g., FLEXIBLEAUTO or
    * FIXEDMANUAL).
@@ -148,7 +150,7 @@ public:
                                    MultiplicationTechnique multTech,
                                    uint32_t numPartQ,
                                    uint32_t auxBits,
-                                   uint32_t extraBits);
+                                   uint32_t extraBits) = 0;
 
   virtual uint64_t FindAuxPrimeStep() const;
 
