@@ -82,8 +82,7 @@ Supported Math Operations
 ---------------------------
 
 Modular Multiplication
-^^^^^^^^^^^^^^^^^^^^^^^^
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 We use the following naming conventions:
 
 -  ``ModMul(b, mod)``
@@ -114,7 +113,7 @@ We use the following naming conventions:
    -  The fastest method.
 
 Other Modular Operations
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 +----------+-----------------+---------------------+---------------------+-------------------------+------------------------------------+
 | Variant  | Naive           | Barrett             | Fast Naive          | Fast Barrett            | Fast Const                         |

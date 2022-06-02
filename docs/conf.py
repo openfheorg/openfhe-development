@@ -86,7 +86,7 @@ def specificationsForKind(kind):
           ":members:",
           ":protected-members:",
           ":undoc-members:",
-          ":allow-dot-graphs",
+          ":allow-dot-graphs:",
         ]
     # Change the defaults for .. doxygenenum::
     elif kind == "enum":
@@ -148,7 +148,7 @@ exhale_args = {
     "includeTemplateParamOrderList": True,
     ############################################################################
     # useful to see ;)
-    "verboseBuild": True
+    # "verboseBuild": True
 }
 
 # Tell sphinx what the primary language being documented is.

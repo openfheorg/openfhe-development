@@ -8,7 +8,7 @@ Documentation for `core/include/utils/prng <https://github.com/openfheorg/openfh
    :backlinks: none
 
 Implemented PRNG hash function
------------------------------
+-------------------------------
 
 - Our cryptographic hash function is based off of `Blake2b <https://blake2.net>`_, which allows fast hashing.
 

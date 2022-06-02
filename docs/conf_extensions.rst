@@ -33,9 +33,9 @@
        f"{__exhale_base}/core/include",
        f"{__exhale_base}/core/lib",
        # # PKE
-       # f"{__exhale_base}/pke/extras",
-       # f"{__exhale_base}/pke/include",
-       # f"{__exhale_base}/pke/lib",
+       f"{__exhale_base}/pke/extras",
+       f"{__exhale_base}/pke/include",
+       f"{__exhale_base}/pke/lib",
    }
    
    container = "INPUT = "
@@ -54,7 +54,7 @@
              ":members:",
              ":protected-members:",
              ":undoc-members:",
-             ":allow-dot-graphs",
+             ":allow-dot-graphs:",
            ]
        # Change the defaults for .. doxygenenum::
        elif kind == "enum":
