@@ -165,14 +165,14 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
   }
 
-  double modLowerBound = 2 * noisePerLevel + 2 + 1.0 / noisePerLevel;
-  modLowerBound *= expansionFactor * plainModulus * (evalAddCount + 1) / 2.0;
-  modLowerBound += (keySwitchCount + 1) * keySwitchingNoise / noisePerLevel;
-  modLowerBound *= 2;
-  usint modSize = ceil(log2(modLowerBound));
-  totalModSize += modSize * (numPrimes - 1);
-
   if (numPrimes > 1) {
+    double modLowerBound = 2 * noisePerLevel + 2 + 1.0 / noisePerLevel;
+    modLowerBound *= expansionFactor * plainModulus * (evalAddCount + 1) / 2.0;
+    modLowerBound += (keySwitchCount + 1) * keySwitchingNoise / noisePerLevel;
+    modLowerBound *= 2;
+    usint modSize = ceil(log2(modLowerBound));
+    totalModSize += modSize * (numPrimes - 1);
+
     moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
     while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {
       moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
