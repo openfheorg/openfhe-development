@@ -239,7 +239,8 @@ static std::vector<TEST_CASE_UTSHE> testCases = {
     { KS_SINGLE_CRT,      "04", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTOEXT, DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
     // ==========================================
     { KS_MOD_REDUCE_DCRT, "01", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,   DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL,     DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    // Calling ModReduce in the AUTO modes doesn't do anything because we automatically mod reduce before multiplication.
+    // Calling ModReduce in the AUTO modes doesn't do anything because we automatically mod reduce before multiplication,
+    // so we don't need unit tests for KS_MOD_REDUCE_DCRT in the AUTO modes.
  };
 // clang-format on
 //===========================================================================================================

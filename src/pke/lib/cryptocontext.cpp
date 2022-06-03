@@ -733,6 +733,8 @@ namespace lbcrypto {
 
         if (result.isValid == false) return result;
 
+        decrypted->SetScalingFactorInt(result.scalingFactorInt);
+
         if (partialCiphertextVec[0]->GetEncodingType() == CKKSPacked) {
             auto decryptedCKKS =
                 std::static_pointer_cast<CKKSPackedEncoding>(decrypted);

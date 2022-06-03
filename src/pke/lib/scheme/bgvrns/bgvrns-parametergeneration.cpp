@@ -109,6 +109,10 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   enum KeySwitchTechnique ksTech,
   usint numPrimes) const {
 
+  if (numPrimes < 1) {
+    OPENFHE_THROW(config_error, "numPrimes must be at least 1");
+  }
+
   std::vector<NativeInteger> moduliQ(numPrimes + 1);
   
   const auto cryptoParamsBGVRNS =

@@ -144,35 +144,35 @@ static std::vector<TEST_CASE_UTMultiparty> testCases = {
     { BGVRNS_TEST, "01", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "02", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "03", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
-    //{ BGVRNS_TEST, "04", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "04", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "05", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "06", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
-    //{ BGVRNS_TEST, "07", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
-    //{ BGVRNS_TEST, "08", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "07", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "08", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "09", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "10", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
-    //{ BGVRNS_TEST, "11", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
-    //{ BGVRNS_TEST, "12", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "11", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "12", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "13", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "14", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
-    //{ BGVRNS_TEST, "15", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
-    //{ BGVRNS_TEST, "16", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "15", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
+    { BGVRNS_TEST, "16", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    false },
     { BGVRNS_TEST, "17", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
     { BGVRNS_TEST, "18", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "19", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "20", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "19", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "20", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
     { BGVRNS_TEST, "21", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
     { BGVRNS_TEST, "22", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "23", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "24", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "23", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "24", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
     { BGVRNS_TEST, "25", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
     { BGVRNS_TEST, "26", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "27", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "28", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   OPTIMIZED, DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
     { BGVRNS_TEST, "29", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
     { BGVRNS_TEST, "30", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "31", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
-    //{ BGVRNS_TEST, "32", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "31", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
+    { BGVRNS_TEST, "32", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   RLWE,      DFLT, 1,  60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT},    true },
     // ==========================================
     // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, RWin, BatchSz, Mode, Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Star
     { BFVRNS_TEST_EXTRA, "01", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    RLWE,      DFLT, DFLT, DFLT,  DFLT,         DFLT,   DFLT,         DFLT,    4,     DFLT,   DFLT,      2,          DFLT, HPS},     false },
@@ -408,8 +408,10 @@ protected:
                     errMsg);
             }
             //====================================================================
-            if (BGVRNS_TEST == testData.testCaseType && testData.star) // TODO (dsuponit): is this necessary???
-                ciphertextMult = cc->Compress(ciphertextMult, 1);
+            if (BGVRNS_TEST == testData.testCaseType && testData.star) { // TODO (dsuponit): is this necessary???
+                uint32_t targetTowers = (testData.params.rsTech == FLEXIBLEAUTOEXT) ? 2 : 1;
+                ciphertextMult = cc->Compress(ciphertextMult, targetTowers);
+            }
             Plaintext plaintextMultipartyMult;
             ciphertextPartial1 = cc->MultipartyDecryptLead({ ciphertextMult }, kp1.secretKey);
             ciphertextPartial2 = cc->MultipartyDecryptMain({ ciphertextMult }, kp2.secretKey);

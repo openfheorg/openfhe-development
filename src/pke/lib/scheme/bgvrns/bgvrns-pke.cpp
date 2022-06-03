@@ -60,7 +60,6 @@ namespace lbcrypto {
 
 DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
     const PrivateKey<DCRTPoly> privateKey, NativePoly *plaintext) const {
-  NativeInteger scalingFactorInt;
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersBGVRNS>(
           ciphertext->GetCryptoParameters());
@@ -68,7 +67,7 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
   size_t sizeQl = cv[0].GetParams()->GetParams().size();
 
   DCRTPoly b;
-  scalingFactorInt = ciphertext->GetScalingFactorInt();
+  NativeInteger scalingFactorInt = ciphertext->GetScalingFactorInt();
   // TODO: Remove keepExtraModulus for FLEXIBLEAUTOEXT mode.
   // Do this by mod reducing all the way down to the last tower to avoid using multi-precision arithmetic.
   int keepExtraModulus = (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) ? 1 : 0;
