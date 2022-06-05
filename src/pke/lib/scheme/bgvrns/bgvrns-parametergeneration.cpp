@@ -204,10 +204,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     enum RescalingTechnique rsTech,
     enum EncryptionTechnique encTech,
     enum MultiplicationTechnique multTech) const {
-  usint extraModSize = 0;
-  if (rsTech == FLEXIBLEAUTOEXT) {
-    extraModSize = DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
-  }
+  if(!ptm)
+      OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
 
   const auto cryptoParamsBGVRNS =
       std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
@@ -228,6 +226,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
 
   // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
+  usint extraModSize = (rsTech == FLEXIBLEAUTOEXT) ?  DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;
   uint32_t qBound = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;
   if (ksTech == HYBRID)
     qBound +=
