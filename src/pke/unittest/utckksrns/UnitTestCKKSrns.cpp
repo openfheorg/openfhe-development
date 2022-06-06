@@ -764,6 +764,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing operator*
             cResult = ciphertext1 * ciphertext2;
@@ -771,6 +772,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator* fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing operator*=
             Ciphertext<Element> cmultInplace(ciphertext1);
@@ -779,6 +781,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator*= fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalMult ciphertext * plaintext
             cResult = cc->EvalMult(ciphertext1, plaintext2);
@@ -786,6 +789,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and Pt fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalMult ciphertext * positive double
             cResult = cc->EvalMult(ciphertext1, 1.0);
@@ -793,6 +797,7 @@ protected:
             results->SetLength(plaintext1->GetLength());
             checkEquality(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and positive double fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalMult ciphertext * negative double
             cResult = cc->EvalMult(ciphertext1, -1.0);
@@ -802,6 +807,7 @@ protected:
             buffer1 << "should be: " << plaintextNeg->GetCKKSPackedValue() << " - we get: " << results->GetCKKSPackedValue();
             checkEquality(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and negative double fails; " + buffer1.str());
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalMultNoRelin ciphertext * ciphertext
             cResult = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
@@ -809,6 +815,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMultNoRelin Ct fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             return true;
         }
