@@ -444,20 +444,18 @@ void LeveledSHERNS::EvalMultInPlace(
     DCRTPoly pt = AdjustLevelsInPlace(ciphertext, plaintext);
     EvalMultCoreInPlace(ciphertext, pt);
     ciphertext->SetDepth(ciphertext->GetDepth() + plaintext->GetDepth());
-    ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
-        * plaintext->GetScalingFactor());
-    ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt()
-        * plaintext->GetScalingFactorInt());
+    ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * plaintext->GetScalingFactor());
+    const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
+    ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(ciphertext->GetScalingFactorInt(), plainMod));
     return;
   }
 
   DCRTPoly pt = AdjustLevelsAndDepthToOneInPlace(ciphertext, plaintext);
   EvalMultCoreInPlace(ciphertext, pt);
   ciphertext->SetDepth(ciphertext->GetDepth() + 1);
-  ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
-      * cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()));
-  ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt()
-      * cryptoParams->GetScalingFactorInt(ciphertext->GetLevel()));
+  ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ciphertext->GetScalingFactor());
+  const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
+  ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(ciphertext->GetScalingFactorInt(), plainMod));
   return;
 }
 
@@ -479,7 +477,8 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(
     DCRTPoly pt = AdjustLevelsInPlace(c, plaintext);
     auto result = EvalMultCore(c, pt);
     result->SetScalingFactor(c->GetScalingFactor() * plaintext->GetScalingFactor());
-    result->SetScalingFactorInt(c->GetScalingFactorInt() * plaintext->GetScalingFactorInt());
+    const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
+    result->SetScalingFactorInt(c->GetScalingFactorInt().ModMul(plaintext->GetScalingFactorInt(), plainMod));
     result->SetDepth(c->GetDepth() + plaintext->GetDepth());
     return result;
   }
@@ -490,8 +489,8 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(
   result->SetDepth(ciphertext->GetDepth() + 1);
   result->SetScalingFactor(ciphertext->GetScalingFactor()
       * cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()));
-  result->SetScalingFactorInt(ciphertext->GetScalingFactorInt()
-      * cryptoParams->GetScalingFactorInt(ciphertext->GetLevel()));
+  const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
+  result->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(cryptoParams->GetScalingFactorInt(ciphertext->GetLevel()), plainMod));
   return result;
 }
 
@@ -525,8 +524,8 @@ void LeveledSHERNS::EvalMultMutableInPlace(
   ciphertext->SetDepth(ciphertext->GetDepth() + 1);
   ciphertext->SetScalingFactor(ciphertext->GetScalingFactor()
       * cryptoParams->GetScalingFactorReal(ciphertext->GetLevel()));
-  ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt()
-      * cryptoParams->GetScalingFactorInt(ciphertext->GetLevel()));
+  const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
+  ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(cryptoParams->GetScalingFactorInt(ciphertext->GetLevel()), plainMod));
   return;
 }
 

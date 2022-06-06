@@ -74,6 +74,11 @@ bool PackedEncoding::Encode() {
 
     size_t i;
 
+    NativeInteger originalSF = scalingFactorInt;
+    for (size_t j = 1; j < depth; j++) {
+      scalingFactorInt = scalingFactorInt.ModMul(originalSF, mod);
+    }
+
     for (i = 0; i < value.size(); i++) {
       NativeInteger entry;
 
@@ -92,7 +97,7 @@ bool PackedEncoding::Encode() {
         entry = NativeInteger(value[i]);
       }
 
-      temp[i] = entry;
+      temp[i] = entry.ModMul(scalingFactorInt, mod);
     }
 
     for (; i < this->GetElementRingDimension(); i++) temp[i] = NativeInteger(0);
@@ -200,13 +205,19 @@ bool PackedEncoding::Decode() {
   auto ptm = this->encodingParams->GetPlaintextModulus();
 
   if ((this->typeFlag == IsNativePoly) || (this->typeFlag == IsDCRTPoly)) {
+    NativeInteger scfInv = scalingFactorInt.ModInverse(ptm);
     if (this->typeFlag == IsNativePoly) {
       this->Unpack(&this->GetElement<NativePoly>(), ptm);
-      fillVec(this->encodedNativeVector, ptm, this->value);
+      NativePoly firstElement = encodedNativeVector;
+      firstElement = firstElement.Times(scfInv);
+      firstElement = firstElement.Mod(ptm);
+      fillVec(firstElement, ptm, this->value);
     } else {
       NativePoly firstElement =
           this->GetElement<DCRTPoly>().GetElementAtIndex(0);
       this->Unpack(&firstElement, ptm);
+      firstElement = firstElement.Times(scfInv);
+      firstElement = firstElement.Mod(ptm);
       fillVec(firstElement, ptm, this->value);
     }
   } else {

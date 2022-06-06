@@ -44,7 +44,29 @@ class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
 public:
   virtual ~ParameterGenerationBGVRNS() {}
 
+  /*
+   * Method that generates parameters for the BGV RNS scheme.
+   *
+   * @param cryptoParams contains parameters input by the user
+   * @param evalAddCount is the maximum number of additions per level.
+   * @param keySwitchCount is the maximum number of key switches per level.
+   * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
+   * @param ptm is the plaintext modulus.
+   * @param numPrimes Number of CRT moduli.
+   * @param relinWindow The bit size of the base for BV key relinearization.
+   * @param mode
+   * @param firstModSize is the approximate bit size of the first CRT modulus.
+   * @param dcrtBits is the approximate bit size of the remaining CRT moduli.
+   * @param numPartQ is 
+   * @param multihopQBound 
+   * @param ksTech is the key switching technique used, BV or Hybrid.
+   * @param rsTech is the rescaling technique used.
+   * @param encTech is the encryption technique used.
+   * @param multTech is the multiplication technique used (BFV) only.
+   * @return A boolean.
+   */
   bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                 int32_t evalAddCount, int32_t keySwitchCount,
                  usint cyclOrder, usint ptm, usint numPrimes, usint relinWindow,
                  MODE mode,
                  usint firstModSize,
@@ -55,7 +77,40 @@ public:
                  enum RescalingTechnique rsTech,
                  enum EncryptionTechnique encTech,
                  enum MultiplicationTechnique multTech) const override;
+  
+  /*
+   * Method that computes a security-compliant ring dimension.
+   *
+   * @param cryptoParams contains parameters input by the user
+   * @param qBound is the upper bound on the number of bits in the ciphertext modulus
+   * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
+   * @return The ring dimension.
+   */
+  uint32_t computeRingDimension(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                uint32_t qBound, usint cyclOrder) const;
 
+  /*
+   * Method that generates moduli for FLEXIBLEAUTOEXT mode for the BGV RNS scheme.
+   *
+   * @param cryptoParams contains parameters input by the user
+   * @param ringDimension is the dimension of the ring (n)
+   * @param evalAddCount is the maximum number of additions per level.
+   * @param keySwitchCount is the maximum number of key switches per level.
+   * @param relinWindow The bit size of the base for BV key relinearization.
+   * @param auxBits is the size of the additional modulus P, used for hybrid key-switching.
+   * @param ksTech is the key switching technique used, BV or Hybrid.
+   * @param rsTech is the rescaling technique used.
+   * @param numPrimes Number of CRT moduli.
+   * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
+   */
+  std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                     uint32_t ringDimension,
+                     int32_t evalAddCount,
+                     int32_t keySwitchCount,
+                     usint relinWindow,
+                     uint32_t auxBits,
+                     enum KeySwitchTechnique ksTech,
+                     usint numPrimes) const;
 
   /////////////////////////////////////
   // SERIALIZATION

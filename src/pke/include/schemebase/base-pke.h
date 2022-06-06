@@ -72,16 +72,24 @@ struct DecryptResult {
   /**
    * Constructor that initializes all message lengths to 0.
    */
-  DecryptResult() : isValid(false), messageLength(0) {}
+  DecryptResult() : isValid(false), messageLength(0), scalingFactorInt(1) {}
 
   /**
    * Constructor that initializes all message lengths.
    * @param len the new length.
    */
-  explicit DecryptResult(size_t len) : isValid(true), messageLength(len) {}
+  explicit DecryptResult(size_t len) : isValid(true), messageLength(len), scalingFactorInt(1) {}
 
-  bool isValid;        /**< whether the decryption was successful */
-  usint messageLength; /**< the length of the decrypted plaintext message */
+  /**
+   * Constructor that initializes all message lengths.
+   * @param len the new length.
+   * @param scf the new scaling factor.
+   */
+  explicit DecryptResult(size_t len, NativeInteger scf) : isValid(true), messageLength(len), scalingFactorInt(scf) {}
+
+  bool isValid;                   /**< whether the decryption was successful */
+  usint messageLength;            /**< the length of the decrypted plaintext message */
+  NativeInteger scalingFactorInt; /**< Scaling factor for BGV FlexibleAuto mode. */
 };
 
 /**

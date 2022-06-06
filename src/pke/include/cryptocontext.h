@@ -804,23 +804,62 @@ protected:
   }
 
   /**
-   * MakeCoefPackedPlaintext constructs a CoefPackedEncoding in this context
-   * @param value
+   * MakePlaintext constructs a CoefPackedEncoding or PackedEncoding in this context
+   * @param encoding is Packed or CoefPacked
+   * @param value is the value to encode
+   * @param depth is the multiplicative depth to encode the plaintext at
+   * @param level is the level to encode the plaintext at
    * @return plaintext
    */
-  Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value) const {
-    return PlaintextFactory::MakePlaintext(CoefPacked, this->GetElementParams(),
-                                           this->GetEncodingParams(), value);
+  Plaintext MakePlaintext(const PlaintextEncodings encoding, const std::vector<int64_t>& value,
+      size_t depth, uint32_t level) const {
+    const auto cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersRNS>(
+            GetCryptoParameters());
+    Plaintext p;
+    if (getSchemeId() == "BGVRNS" && (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO
+        || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)) {
+      NativeInteger scf;
+      if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+        scf = cryptoParams->GetScalingFactorIntBig(level);
+        p = PlaintextFactory::MakePlaintext(encoding, this->GetElementParams(),
+                                                 this->GetEncodingParams(), value, 1, level, scf);
+        p->SetDepth(2);
+      } else {
+        scf = cryptoParams->GetScalingFactorInt(level);
+        p = PlaintextFactory::MakePlaintext(encoding, this->GetElementParams(),
+                                                 this->GetEncodingParams(), value, depth, level, scf);
+      }
+    } else {
+      p = PlaintextFactory::MakePlaintext(encoding, this->GetElementParams(),
+                                               this->GetEncodingParams(), value);
+    }
+
+    return p;
+  }
+
+  /**
+   * MakeCoefPackedPlaintext constructs a CoefPackedEncoding in this context
+   * @param value
+   * @param depth is the multiplicative depth to encode the plaintext at
+   * @param level is the level to encode the plaintext at
+   * @return plaintext
+   */
+  Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1,
+      uint32_t level = 0) const {
+    return MakePlaintext(CoefPacked, value, depth, level);
   }
 
   /**
    * MakePackedPlaintext constructs a PackedEncoding in this context
    * @param value
+   * @param depth is the multiplicative depth to encode the plaintext at
+   * @param level is the level to encode the plaintext at
    * @return plaintext
    */
-  Plaintext MakePackedPlaintext(const std::vector<int64_t>& value) const {
-    return PlaintextFactory::MakePlaintext(Packed, this->GetElementParams(),
-                                           this->GetEncodingParams(), value);
+  Plaintext MakePackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1,
+      uint32_t level = 0) const {
+    return MakePlaintext(Packed, value, depth, level);
   }
 
   /**

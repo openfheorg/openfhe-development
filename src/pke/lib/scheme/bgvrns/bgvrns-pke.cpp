@@ -67,10 +67,15 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
   size_t sizeQl = cv[0].GetParams()->GetParams().size();
 
   DCRTPoly b;
+  NativeInteger scalingFactorInt = ciphertext->GetScalingFactorInt();
+  // TODO: Remove keepExtraModulus for FLEXIBLEAUTOEXT mode.
+  // Do this by mod reducing all the way down to the last tower to avoid using multi-precision arithmetic.
+  int keepExtraModulus = (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) ? 1 : 0;
   if (cv[0].GetFormat() == Format::EVALUATION) {
     b = PKERNS::DecryptCore(cv, privateKey);
     b.SetFormat(Format::COEFFICIENT);
-    for (usint l = sizeQl - 1; l > 0; l--) {
+    // TODO: Mod reduce all the way down to the last tower to avoid using multi-precision arithmetic.
+    for (int l = ((int)sizeQl) - 1; l > keepExtraModulus; l--) {
       b.ModReduce(
           cryptoParams->GetPlaintextModulus(),
           cryptoParams->GettModqPrecon(),
@@ -79,9 +84,15 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
           cryptoParams->GetqlInvModq(l),
           cryptoParams->GetqlInvModqPrecon(l));
     }
+    // TODO: Use pre-computed scaling factor at level L.
+    for (int i = 0; i < ((int)sizeQl) - 1 - keepExtraModulus; i++) {
+      NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+      NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+      scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+    }
   } else {
     std::vector<DCRTPoly> ct(cv);
-    for (usint l = sizeQl - 1; l > 0; l--) {
+    for (int l = ((int)sizeQl) - 1; l > keepExtraModulus; l--) {
       for (usint i = 0; i < ct.size(); i++) {
         ct[i].ModReduce(
             cryptoParams->GetPlaintextModulus(),
@@ -92,12 +103,24 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
             cryptoParams->GetqlInvModqPrecon(l));
       }
     }
+    for (usint i = 0; i < sizeQl - 1 - keepExtraModulus; ++i) {
+      NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+      NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+      scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+    }
+
     b = PKERNS::DecryptCore(ct, privateKey);
     b.SetFormat(Format::COEFFICIENT);
   }
 
-  *plaintext = b.GetElementAtIndex(0).Mod(cryptoParams->GetPlaintextModulus());
-  return DecryptResult(plaintext->GetLength());
+  if (keepExtraModulus && sizeQl > 1) {
+    // TODO: Remove keepExtraModulus.
+    Poly bbig = b.CRTInterpolate();
+    *plaintext = bbig.DecryptionCRTInterpolate(cryptoParams->GetPlaintextModulus());
+  } else {
+    *plaintext = b.GetElementAtIndex(0).Mod(cryptoParams->GetPlaintextModulus());
+  }
+  return DecryptResult(plaintext->GetLength(), scalingFactorInt);
 }
 
 }  // namespace lbcrypto

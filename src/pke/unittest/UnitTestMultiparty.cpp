@@ -408,8 +408,10 @@ protected:
                     errMsg);
             }
             //====================================================================
-            if (BGVRNS_TEST == testData.testCaseType && testData.star) // TODO (dsuponit): is this necessary???
-                ciphertextMult = cc->Compress(ciphertextMult, 1);
+            if (BGVRNS_TEST == testData.testCaseType && testData.star) { // TODO (dsuponit): is this necessary???
+                uint32_t targetTowers = (testData.params.rsTech == FLEXIBLEAUTOEXT) ? 2 : 1;
+                ciphertextMult = cc->Compress(ciphertextMult, targetTowers);
+            }
             Plaintext plaintextMultipartyMult;
             ciphertextPartial1 = cc->MultipartyDecryptLead({ ciphertextMult }, kp1.secretKey);
             ciphertextPartial2 = cc->MultipartyDecryptMain({ ciphertextMult }, kp2.secretKey);

@@ -527,6 +527,8 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(
 
   if (result.isValid == false) return result;
 
+  decrypted->SetScalingFactorInt(result.scalingFactorInt);
+
   if (ciphertext->GetEncodingType() == CKKSPacked) {
     auto decryptedCKKS =
         std::static_pointer_cast<CKKSPackedEncoding>(decrypted);
@@ -661,6 +663,8 @@ namespace lbcrypto {
                 ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
 
         if (result.isValid == false) return result;
+        
+        decrypted->SetScalingFactorInt(result.scalingFactorInt);
 
         if (ciphertext->GetEncodingType() == CKKSPacked) {
             auto decryptedCKKS =
@@ -728,6 +732,8 @@ namespace lbcrypto {
                 partialCiphertextVec, &decrypted->GetElement<NativePoly>());
 
         if (result.isValid == false) return result;
+
+        decrypted->SetScalingFactorInt(result.scalingFactorInt);
 
         if (partialCiphertextVec[0]->GetEncodingType() == CKKSPacked) {
             auto decryptedCKKS =
