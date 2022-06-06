@@ -811,6 +811,7 @@ protected:
    * @param level is the level to encode the plaintext at
    * @return plaintext
    */
+   // TODO (dsuponit): verify and make MakePlaintext() a private member function
   Plaintext MakePlaintext(const PlaintextEncodings encoding, const std::vector<int64_t>& value,
       size_t depth, uint32_t level) const {
     const auto cryptoParams =
