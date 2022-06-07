@@ -166,7 +166,7 @@ constexpr usint SCALE = 90;
 #else
 constexpr usint SCALE = 50;
 #endif
-
+constexpr uint32_t MIN_PRECISION_DIFF = 3; // this is the minimal difference expected between precisions for FLEXIBLEAUTO and FLEXIBLEAUTOEXT
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -499,7 +499,50 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
 };
 // clang-format on
 //===========================================================================================================
+/**
+ * Function to check minimal difference between 2 numeric values
+ *
+ * @param high    higher value
+ * @param low     lower value
+ * @param diff    minimal expected difference between high and low
+ */
+template<typename T>
+bool checkMinDiff(const T& high, const T& low, const uint32_t diff) {
+    if(high > low)
+        return ((high - low) >= diff);
+    return false;
+}
 
+/**
+ * Function to check minimal difference between elements of 2 vectors with numeric values
+ *
+ * @param high   vector with higher values
+ * @param low    vector with lower values
+ * @param diff   minimal expected difference between elements in high and low
+ */
+template<typename V>
+bool checkMinDiff(const std::vector<V>& high, const std::vector<V>& low, const uint32_t diff) {
+    if (high.size() != low.size())
+        return false;
+
+    return std::equal(high.begin(), high.end(), low.begin(),
+        [&diff](const V& high, const V& low) { return checkMinDiff(high, low, diff); });
+}
+
+/**
+ * Function to check minimal difference between elements of 2 vectors with numeric values
+ *
+ * @param high   vector with higher values
+ * @param low    vector with lower values
+ * @param errMsg Debug message to display upon failure
+ * @param diff   minimal expected difference between elements in high and low
+ */
+template<typename V>
+void checkMinDiff(const std::vector<V>& high, const std::vector<V>& low,
+    const uint32_t diff, const std::string& errMsg) {
+    EXPECT_TRUE(checkMinDiff(high, low, diff)) << errMsg;
+}
+//===========================================================================================================
 class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
     using Element = DCRTPoly;
 
@@ -707,32 +750,7 @@ protected:
         if(!UnitTest_Add_Packed(testDataLocal, highPrecisions, failmsg))
             return;
 
-        std::stringstream ss;
-        if (!lowPrecisions.empty() && !highPrecisions.empty()) {
-            if (lowPrecisions.size() == highPrecisions.size()) {
-                // check if the precision for FLEXIBLEAUTOEXT is higher than for FLEXIBLEAUTO
-                for (size_t i = 0; i < lowPrecisions.size(); ++i) {
-                    if (lowPrecisions[i] >= highPrecisions[i]) {
-                        std::string errMsg("FLEXIBLEAUTOEXT's precision is LESS than the precision for FLEXIBLEAUTO");
-                        EXPECT_TRUE(0 == 1) << errMsg;
-                    }
-                }
-            }
-            else {
-                ss << "Precision vectors are different in size:"
-                    << " low - " << lowPrecisions.size()
-                    << ", high - " << highPrecisions.size();
-                // make it fail
-                EXPECT_TRUE(0 == 1) << ss.str();
-            }
-        }
-        else {
-            ss << "Precision vectors are empty:"
-                << " low - " << lowPrecisions.size()
-                << ", high - " << highPrecisions.size();
-            // make it fail
-            EXPECT_TRUE(0 == 1) << ss.str();
-        }
+        checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Precision comparison failed");
     }
 
     bool UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& precisions, const std::string& failmsg = std::string()) {
@@ -853,33 +871,12 @@ protected:
         testDataLocal.params.rsTech = FLEXIBLEAUTOEXT;
         if (!UnitTest_Mult_Packed(testDataLocal, highPrecisions, failmsg))
             return;
-
-        std::stringstream ss;
-        if (!lowPrecisions.empty() && !highPrecisions.empty()) {
-            if (lowPrecisions.size() == highPrecisions.size()) {
-                // check if the precision for FLEXIBLEAUTOEXT is higher than for FLEXIBLEAUTO
-                for (size_t i = 0; i < lowPrecisions.size(); ++i) {
-                    if (lowPrecisions[i] >= highPrecisions[i]) {
-                        std::string errMsg("FLEXIBLEAUTOEXT's precision is LESS than the precision for FLEXIBLEAUTO");
-                        EXPECT_TRUE(0 == 1) << errMsg;
-                    }
-                }
-            }
-            else {
-                ss << "Precision vectors are different in size:"
-                    << " low - " << lowPrecisions.size()
-                    << ", high - " << highPrecisions.size();
-                // make it fail
-                EXPECT_TRUE(0 == 1) << ss.str();
-            }
-        }
-        else {
-            ss << "Precision vectors are empty:"
-                << " low - " << lowPrecisions.size()
-                << ", high - " << highPrecisions.size();
-            // make it fail
-            EXPECT_TRUE(0 == 1) << ss.str();
-        }
+        //std::cout << "======================== highPrecisions\n";
+        //std::copy(highPrecisions.begin(), highPrecisions.end(), std::ostream_iterator<uint32_t>(std::cout, " "));
+        //std::cout << "\n======================== lowPrecisions\n";
+        //std::copy(lowPrecisions.begin(), lowPrecisions.end(), std::ostream_iterator<uint32_t>(std::cout, " "));
+        //std::cout << "\n";
+        checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Precision comparison failed");
     }
 
     /**
