@@ -122,8 +122,9 @@ public:
       const std::vector<EvalKey<Element>> &evalKeyVec) const;
 
   /**
-   * Method for polynomial evaluation for polynomials represented as power
-   * series.
+   * Method for polynomial evaluation for polynomials represented in the power
+   * series. This uses a binary tree computation of
+   * the polynomial powers.
    *
    * @param &cipherText input ciphertext
    * @param &coefficients is the vector of coefficients in the polynomial; the
@@ -134,6 +135,25 @@ public:
       ConstCiphertext<Element> ciphertext,
       const std::vector<double> &coefficients) const {
     OPENFHE_THROW(config_error, "EvalPoly is not supported for the scheme.");
+  }
+
+  /**
+   * Method for evaluating Chebyshev polynomial interpolation;
+   * first the range [a,b] is mapped to [-1,1] using linear transformation 1 + 2
+   * (x-a)/(b-a) If the degree of the polynomial is less than 5, use
+   * EvalChebyshevSeriesLinear, otherwise, use EvalChebyshevSeriesPS.
+   *
+   * @param &cipherText input ciphertext
+   * @param &coefficients is the vector of coefficients in Chebyshev expansion
+   * @param a - lower bound of argument for which the coefficients were found
+   * @param b - upper bound of argument for which the coefficients were found
+   * @return the result of polynomial evaluation.
+   */
+  virtual Ciphertext<Element> EvalChebyshevSeries(
+      ConstCiphertext<Element> ciphertext,
+      const std::vector<double>& coefficients,
+      double a, double b) const {
+    OPENFHE_THROW(config_error, "EvalPolyLinear is not supported for the scheme.");
   }
 
   /**

@@ -529,6 +529,40 @@ void LeveledSHERNS::EvalMultMutableInPlace(
   return;
 }
 
+Ciphertext<DCRTPoly> LeveledSHERNS::MultByMonomial(
+    ConstCiphertext<DCRTPoly> ciphertext, usint power) const {
+
+  const auto elemParams = ciphertext->GetElements()[0].GetParams();
+  auto paramsNative = elemParams->GetParams()[0];
+  usint n = elemParams->GetRingDimension();
+  usint m = 2*n;
+
+  NativePoly monomial(paramsNative, Format::COEFFICIENT, true);
+
+  usint powerReduced = power % m;
+  usint index = power % n;
+  if (powerReduced < n)
+    monomial[index] = NativeInteger(1);
+  else
+    monomial[index] = paramsNative->GetModulus() - NativeInteger(1);
+
+  DCRTPoly monomialDCRT(elemParams,Format::COEFFICIENT, true);
+  monomialDCRT = monomial;
+  monomialDCRT.SetFormat(Format::EVALUATION);
+
+  std::vector<DCRTPoly> resultDCRT(ciphertext->GetElements().size());
+  for (usint i = 0; i < ciphertext->GetElements().size(); i++)
+    resultDCRT[i] = ciphertext->GetElements()[i]*monomialDCRT;
+
+  Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
+  result->SetElements(resultDCRT);
+  result->SetDepth(ciphertext->GetDepth());
+  result->SetLevel(ciphertext->GetLevel());
+  result->SetScalingFactor(ciphertext->GetScalingFactor());
+
+  return result;
+}
+
 /////////////////////////////////////////
 // SHE AUTOMORPHISM
 /////////////////////////////////////////
