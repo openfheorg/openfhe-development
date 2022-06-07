@@ -233,6 +233,99 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMultMutable(
 // Automorphisms
 /////////////////////////////////////
 
+EvalKey<DCRTPoly> LeveledSHECKKSRNS::ConjugateKeyGen(
+    const LPPrivateKey<DCRTPoly> privateKey) const {
+  const DCRTPoly &s = privateKey->GetPrivateElement();
+
+  usint n = s.GetRingDimension();
+
+  PrivateKey<DCRTPoly> privateKeyPermuted(
+      std::make_shared<PrivateKeyImpl<DCRTPoly>>(
+          privateKey->GetCryptoContext()));
+
+  usint index =  2 * n - 1;
+  std::vector<usint> map(n);
+  PrecomputeAutoMap(n, index, &map);
+
+  DCRTPoly sPermuted = s.AutomorphismTransform(index);
+
+  privateKeyPermuted->SetPrivateElement(sPermuted);
+  privateKeyPermuted->SetKeyTag(privateKey->GetKeyTag());
+
+  auto cc = privateKey->GetCryptoContext();
+  auto algo = cc->GetEncryptionAlgorithm();
+
+  return algo->KeySwitchGen(privateKey, privateKeyPermuted);
+
+}
+
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::Conjugate(
+    ConstCiphertext<DCRTPoly> ciphertext,
+    const std::map<usint, EvalKey<DCRTPoly>> &evalKeys,
+    CALLER_INFO_ARGS_CPP) const {
+  if (nullptr == ciphertext) {
+    std::string errorMsg(std::string("Input ciphertext is nullptr") +
+                         CALLER_INFO);
+    PALISADE_THROW(type_error, errorMsg);
+  }
+  usint n = ciphertext->GetElements()[0].GetRingDimension();
+  if (evalKeys.empty()) {
+    std::string errorMsg(std::string("Empty input key map") + CALLER_INFO);
+    PALISADE_THROW(type_error, errorMsg);
+  }
+  auto key = evalKeys.find(2 * n - 1);
+  if (key == evalKeys.end()) {
+    std::string errorMsg(std::string("Could not find an EvalKey for index ") +
+                         std::to_string(2 * n - 1) + CALLER_INFO);
+    PALISADE_THROW(type_error, errorMsg);
+  }
+  auto fk = key->second;
+  if (nullptr == fk) {
+    std::string errorMsg(std::string("Invalid evalKey") + CALLER_INFO);
+    PALISADE_THROW(type_error, errorMsg);
+  }
+  if (ciphertext->GetCryptoContext() != fk->GetCryptoContext()) {
+    std::string errorMsg(
+        std::string("Items were not created in the same CryptoContextImpl") +
+        CALLER_INFO);
+    PALISADE_THROW(type_error, errorMsg);
+  }
+  if (ciphertext->GetKeyTag() != fk->GetKeyTag()) {
+    std::string errorMsg(
+        std::string("Items were not encrypted with same keys") + CALLER_INFO);
+    PALISADE_THROW(type_error, errorMsg);
+  }
+
+  const std::vector<DCRTPoly> &c = ciphertext->GetElements();
+  if (c.size() < 2) {
+    std::string errorMsg(
+        std::string("Insufficient number of elements in ciphertext: ") +
+        std::to_string(c.size()) + CALLER_INFO);
+    PALISADE_THROW(config_error, errorMsg);
+  }
+
+  auto cc = ciphertext->GetCryptoContext();
+  auto algo = cc->GetEncryptionAlgorithm();
+
+  Ciphertext<DCRTPoly> permutedCiphertext = algo->KeySwitch(fk, ciphertext);
+
+  std::vector<usint> map(n);
+  PrecomputeAutoMap(n, 2 * n - 1, &map);
+
+  permutedCiphertext->SetElements(
+      {std::move(
+           permutedCiphertext->GetElements()[0].AutomorphismTransform(2 * n - 1, map)),
+       std::move(permutedCiphertext->GetElements()[1].AutomorphismTransform(
+           2 * n - 1, map))});
+
+  permutedCiphertext->SetDepth(ciphertext->GetDepth());
+  permutedCiphertext->SetLevel(ciphertext->GetLevel());
+  permutedCiphertext->SetScalingFactor(ciphertext->GetScalingFactor());
+
+  return permutedCiphertext;
+
+}
+
 /////////////////////////////////////
 // Mod Reduce
 /////////////////////////////////////
@@ -661,6 +754,22 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalSubCore(
   return result;
 }
 #endif
+
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::MultByInteger(
+    ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
+
+  std::vector<DCRTPoly> resultDCRT(ciphertext->GetElements().size());
+  for (usint i = 0; i < ciphertext->GetElements().size(); i++)
+    resultDCRT[i] = ciphertext->GetElements()[i]*NativeInteger(integer);
+
+  Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
+  result->SetElements(resultDCRT);
+  result->SetDepth(ciphertext->GetDepth());
+  result->SetLevel(ciphertext->GetLevel());
+  result->SetScalingFactor(ciphertext->GetScalingFactor());
+
+  return result;
+}
 
 void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(
     Ciphertext<DCRTPoly> &ciphertext1, Ciphertext<DCRTPoly> &ciphertext2) const {

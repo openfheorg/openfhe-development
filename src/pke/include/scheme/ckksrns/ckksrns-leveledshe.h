@@ -109,6 +109,18 @@ public:
                               double constant) const override;
 
   /////////////////////////////////////
+  // AUTOMORPHISM
+  /////////////////////////////////////
+
+  EvalKey<DCRTPoly> ConjugateKeyGen(
+      const PrivateKey<DCRTPoly> privateKey) const;
+
+  Ciphertext<DCRTPoly> Conjugate(
+      ConstCiphertext<DCRTPoly> ciphertext,
+      const std::map<usint, EvalKey<DCRTPoly>> &evalKeys,
+      CALLER_INFO_ARGS_CPP) const;
+
+  /////////////////////////////////////
   // Mod Reduce
   /////////////////////////////////////
 
