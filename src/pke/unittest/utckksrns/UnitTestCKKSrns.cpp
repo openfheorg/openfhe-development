@@ -60,6 +60,8 @@ enum TEST_CASE_TYPE {
     RE_ENCRYPTION,
     EVAL_POLY,
     METADATA,
+    ADD_PACKED_PRECISION,
+    MULT_PACKED_PRECISION,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -101,6 +103,12 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     case METADATA:
         typeName = "METADATA";
         break;
+    case ADD_PACKED_PRECISION:
+        typeName = "ADD_PACKED_PRECISION";
+        break;
+    case MULT_PACKED_PRECISION:
+        typeName = "MULT_PACKED_PRECISION";
+        break;
     default:
         typeName = "UNKNOWN";
         break;
@@ -117,6 +125,7 @@ struct TEST_CASE_UTCKKSRNS {
 
     // additional test case data
     // ........
+    uint32_t slots;
 
     std::string buildTestName() const {
         std::stringstream ss;
@@ -149,6 +158,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS& tes
  * BATCH: The length of the packed vectors to be used with CKKS.
  */
 constexpr usint RING_DIM = 512;
+constexpr usint RING_DIM_HALF = 256;
 constexpr usint RELIN    = 10;
 constexpr usint BATCH    = 8;
 #if NATIVEINT == 128
@@ -159,28 +169,130 @@ constexpr usint SCALE = 50;
 
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
-    // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { ADD_PACKED, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { ADD_PACKED, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { ADD_PACKED, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { ADD_PACKED, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { ADD_PACKED, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { ADD_PACKED, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { ADD_PACKED, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { ADD_PACKED, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
 #if NATIVEINT != 128
-    { ADD_PACKED, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { ADD_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { ADD_PACKED, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { ADD_PACKED, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { ADD_PACKED, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { ADD_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { ADD_PACKED, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { ADD_PACKED, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { ADD_PACKED_PRECISION, "09", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
 #endif
     // ==========================================
-    // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { MULT_PACKED, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { MULT_PACKED, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { MULT_PACKED, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { MULT_PACKED, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { ADD_PACKED, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { ADD_PACKED, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { ADD_PACKED, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { ADD_PACKED, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
 #if NATIVEINT != 128
-    { MULT_PACKED, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { MULT_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { MULT_PACKED, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { MULT_PACKED, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { ADD_PACKED, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { ADD_PACKED, "16", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { ADD_PACKED, "17", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { ADD_PACKED, "18", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { ADD_PACKED_PRECISION, "19", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+#endif
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { ADD_PACKED, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { ADD_PACKED, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { ADD_PACKED, "23", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { ADD_PACKED, "24", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+#if NATIVEINT != 128
+    { ADD_PACKED, "25", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { ADD_PACKED, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { ADD_PACKED, "27", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { ADD_PACKED, "28", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { ADD_PACKED_PRECISION, "29", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+#endif
+    // ==========================================
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { ADD_PACKED, "31", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { ADD_PACKED, "32", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { ADD_PACKED, "33", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { ADD_PACKED, "34", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+#if NATIVEINT != 128
+    { ADD_PACKED, "35", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { ADD_PACKED, "36", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { ADD_PACKED, "37", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { ADD_PACKED, "38", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { ADD_PACKED_PRECISION, "39", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+#endif
+    // ==========================================
+    // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { MULT_PACKED, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+#if NATIVEINT != 128
+    { MULT_PACKED, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { MULT_PACKED_PRECISION, "09", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+#endif
+    // ==========================================
+    // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { MULT_PACKED, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+#if NATIVEINT != 128
+    { MULT_PACKED, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "16", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "17", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { MULT_PACKED, "18", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { MULT_PACKED_PRECISION, "19", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+#endif
+    // ==========================================
+    // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { MULT_PACKED, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { MULT_PACKED, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { MULT_PACKED, "23", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { MULT_PACKED, "24", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+#if NATIVEINT != 128
+    { MULT_PACKED, "25", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { MULT_PACKED, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { MULT_PACKED, "27", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { MULT_PACKED, "28", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { MULT_PACKED_PRECISION, "29", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+#endif
+    // ==========================================
+    // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { MULT_PACKED, "31", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { MULT_PACKED, "32", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { MULT_PACKED, "33", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { MULT_PACKED, "34", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+#if NATIVEINT != 128
+    { MULT_PACKED, "35", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { MULT_PACKED, "36", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { MULT_PACKED, "37", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    { MULT_PACKED, "38", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { MULT_PACKED_PRECISION, "39", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32 },
+#endif
+    // ==========================================
+    // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { MULT_PACKED, "41", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { MULT_PACKED, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { MULT_PACKED, "43", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { MULT_PACKED, "44", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+#if NATIVEINT != 128
+    { MULT_PACKED, "45", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { MULT_PACKED, "46", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { MULT_PACKED, "47", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { MULT_PACKED, "48", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { MULT_PACKED_PRECISION, "49", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF },
 #endif
     // ==========================================
     // TestType,               Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
@@ -220,28 +332,108 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { COMPRESS,   "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
-    // TestType,         Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { EVAL_FAST_ROTATION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_FAST_ROTATION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_FAST_ROTATION, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_FAST_ROTATION, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    // TestType,         Descr,  Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { EVAL_FAST_ROTATION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVAL_FAST_ROTATION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVAL_FAST_ROTATION, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVAL_FAST_ROTATION, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
 #if NATIVEINT != 128
-    { EVAL_FAST_ROTATION, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_FAST_ROTATION, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_FAST_ROTATION, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_FAST_ROTATION, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_FAST_ROTATION, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVAL_FAST_ROTATION, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVAL_FAST_ROTATION, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVAL_FAST_ROTATION, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+#endif
+    { EVAL_FAST_ROTATION, "09", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    1},
+    { EVAL_FAST_ROTATION, "10", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    1},
+    { EVAL_FAST_ROTATION, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    1},
+    { EVAL_FAST_ROTATION, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    1},
+#if NATIVEINT != 128
+    { EVAL_FAST_ROTATION, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    1},
+    { EVAL_FAST_ROTATION, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    1},
+    { EVAL_FAST_ROTATION, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    1},
+    { EVAL_FAST_ROTATION, "16", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    1},
+#endif
+    { EVAL_FAST_ROTATION, "17", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    2},
+    { EVAL_FAST_ROTATION, "18", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    2},
+    { EVAL_FAST_ROTATION, "19", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    2},
+    { EVAL_FAST_ROTATION, "20", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    2},
+#if NATIVEINT != 128
+    { EVAL_FAST_ROTATION, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    2},
+    { EVAL_FAST_ROTATION, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    2},
+    { EVAL_FAST_ROTATION, "23", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    2},
+    { EVAL_FAST_ROTATION, "24", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    2},
+#endif
+    { EVAL_FAST_ROTATION, "25", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    4},
+    { EVAL_FAST_ROTATION, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    4},
+    { EVAL_FAST_ROTATION, "27", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    4},
+    { EVAL_FAST_ROTATION, "28", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    4},
+#if NATIVEINT != 128
+    { EVAL_FAST_ROTATION, "29", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    4},
+    { EVAL_FAST_ROTATION, "30", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    4},
+    { EVAL_FAST_ROTATION, "31", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    4},
+    { EVAL_FAST_ROTATION, "32", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    4},
+#endif
+    { EVAL_FAST_ROTATION, "33", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { EVAL_FAST_ROTATION, "34", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { EVAL_FAST_ROTATION, "35", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { EVAL_FAST_ROTATION, "36", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+#if NATIVEINT != 128
+    { EVAL_FAST_ROTATION, "37", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { EVAL_FAST_ROTATION, "38", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { EVAL_FAST_ROTATION, "39", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    { EVAL_FAST_ROTATION, "40", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+#endif
+    { EVAL_FAST_ROTATION, "41", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { EVAL_FAST_ROTATION, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { EVAL_FAST_ROTATION, "43", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { EVAL_FAST_ROTATION, "44", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+#if NATIVEINT != 128
+    { EVAL_FAST_ROTATION, "45", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { EVAL_FAST_ROTATION, "46", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { EVAL_FAST_ROTATION, "47", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    { EVAL_FAST_ROTATION, "48", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
 #endif
     // ==========================================
-    // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { EVALATINDEX, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVALATINDEX, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVALATINDEX, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVALATINDEX, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    // TestType,  Descr,  Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
+    { EVALATINDEX, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVALATINDEX, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVALATINDEX, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVALATINDEX, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
 #if NATIVEINT != 128
-    { EVALATINDEX, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVALATINDEX, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVALATINDEX, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVALATINDEX, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVALATINDEX, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVALATINDEX, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVALATINDEX, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    { EVALATINDEX, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+#endif
+    { EVALATINDEX, "09", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    8},
+    { EVALATINDEX, "10", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    8},
+    { EVALATINDEX, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    8},
+    { EVALATINDEX, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    8},
+#if NATIVEINT != 128
+    { EVALATINDEX, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    8},
+    { EVALATINDEX, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    8},
+    { EVALATINDEX, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    8},
+    { EVALATINDEX, "16", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    8},
+#endif
+    { EVALATINDEX, "17", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   16},
+    { EVALATINDEX, "18", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   16},
+    { EVALATINDEX, "19", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   16},
+    { EVALATINDEX, "20", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   16},
+#if NATIVEINT != 128
+    { EVALATINDEX, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   16},
+    { EVALATINDEX, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   16},
+    { EVALATINDEX, "23", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   16},
+    { EVALATINDEX, "24", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   16},
+#endif
+    { EVALATINDEX, "25", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   RING_DIM_HALF},
+    { EVALATINDEX, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   RING_DIM_HALF},
+    { EVALATINDEX, "27", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   RING_DIM_HALF},
+    { EVALATINDEX, "28", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   RING_DIM_HALF},
+#if NATIVEINT != 128
+    { EVALATINDEX, "29", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   RING_DIM_HALF},
+    { EVALATINDEX, "30", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   RING_DIM_HALF},
+    { EVALATINDEX, "31", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   RING_DIM_HALF},
+    { EVALATINDEX, "32", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},   RING_DIM_HALF},
 #endif
     // ==========================================
     // TestType, Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
@@ -340,18 +532,18 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_Add_Packed(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
+    bool UnitTest_Add_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& precisions, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7);
-            Plaintext plaintext1AddScalar = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Add);
-            Plaintext plaintext1SubScalar = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Sub);
-            Plaintext negatives1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7neg);
-            Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0);
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7, 1, 0, nullptr, testData.slots);
+            Plaintext plaintext1AddScalar = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Add, 1, 0, nullptr, testData.slots);
+            Plaintext plaintext1SubScalar = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Sub, 1, 0, nullptr, testData.slots);
+            Plaintext negatives1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7neg, 1, 0, nullptr, testData.slots);
+            Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0, 1, 0, nullptr, testData.slots);
 
-            Plaintext plaintextAdd = cc->MakeCKKSPackedPlaintext(std::vector<std::complex<double>>(VECTOR_SIZE, 7)); // vector of 7s
-            Plaintext plaintextSub = cc->MakeCKKSPackedPlaintext(std::vector<std::complex<double>>{ -7, -5, -3, -1, 1, 3, 5, 7 });
+            Plaintext plaintextAdd = cc->MakeCKKSPackedPlaintext(std::vector<std::complex<double>>(VECTOR_SIZE, 7), 1, 0, nullptr, testData.slots); // vector of 7s
+            Plaintext plaintextSub = cc->MakeCKKSPackedPlaintext(std::vector<std::complex<double>>{ -7, -5, -3, -1, 1, 3, 5, 7 }, 1, 0, nullptr, testData.slots);
 
             // Generate encryption keys
             KeyPair<Element> kp = cc->KeyGen();
@@ -370,6 +562,7 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalAddInPlace
             cc->EvalAddInPlace(ciphertext1_mutable, ciphertext2);
@@ -377,6 +570,7 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAddInPlace fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing operator+
             cResult = ciphertext1 + ciphertext2;
@@ -384,6 +578,7 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator+ fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing operator+=
             Ciphertext<Element> caddInplace(ciphertext1);
@@ -392,6 +587,7 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator+= fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalSub
             cResult = cc->EvalSub(ciphertext1, ciphertext2);
@@ -399,6 +595,7 @@ protected:
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing operator-
             cResult = ciphertext1 - ciphertext2;
@@ -406,6 +603,7 @@ protected:
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator- fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing operator-=
             Ciphertext<Element> csubInplace(ciphertext1);
@@ -414,6 +612,7 @@ protected:
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator-= fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalAdd ciphertext + plaintext
             cResult = cc->EvalAdd(ciphertext1, plaintext2);
@@ -421,6 +620,7 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd Ct and Pt fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalSub ciphertext - plaintext
             cResult = cc->EvalSub(ciphertext1, plaintext2);
@@ -428,6 +628,7 @@ protected:
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub Ct and Pt fails fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalAdd ciphertext + double
             cResult = cc->EvalAdd(ciphertext1, 0.5);
@@ -435,6 +636,7 @@ protected:
             results->SetLength(plaintext1AddScalar->GetLength());
             checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd Ct and Double fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalAdd ciphertext - double
             cResult = cc->EvalSub(ciphertext1, 0.5);
@@ -442,6 +644,7 @@ protected:
             results->SetLength(plaintext1SubScalar->GetLength());
             checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub Ct and Double fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalAdd ciphertext + negative double
             cResult = cc->EvalAdd(ciphertext1, -0.5);
@@ -449,6 +652,7 @@ protected:
             results->SetLength(plaintext1SubScalar->GetLength());
             checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd Ct and negative double fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalAdd ciphertext - negative double
             cResult = cc->EvalSub(ciphertext1, -0.5);
@@ -456,6 +660,7 @@ protected:
             results->SetLength(plaintext1AddScalar->GetLength());
             checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub Ct and negative double fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalNegate
             cResult = cc->EvalNegate(ciphertext1);
@@ -463,6 +668,9 @@ protected:
             results->SetLength(negatives1->GetLength());
             checkEquality(negatives1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalNegate fails");
+            precisions.emplace_back(results->GetLogPrecision());
+
+            return true;
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -475,17 +683,67 @@ protected:
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
+
+        return false;
     }
 
-    void UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Add_Packed(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
+        std::vector<uint32_t> precisions;
+        UnitTest_Add_Packed(testData, precisions, failmsg);
+    }
+
+    void UnitTest_Add_Packed_Precision(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
+        TEST_CASE_UTCKKSRNS testDataLocal(testData);
+        
+        std::vector<uint32_t> lowPrecisions;
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        testDataLocal.params.rsTech = FLEXIBLEAUTO;
+        if (!UnitTest_Add_Packed(testDataLocal, lowPrecisions, failmsg))
+            return;
+
+        std::vector<uint32_t> highPrecisions;
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        testDataLocal.params.rsTech = FLEXIBLEAUTOEXT;
+        if(!UnitTest_Add_Packed(testDataLocal, highPrecisions, failmsg))
+            return;
+
+        std::stringstream ss;
+        if (!lowPrecisions.empty() && !highPrecisions.empty()) {
+            if (lowPrecisions.size() == highPrecisions.size()) {
+                // check if the precision for FLEXIBLEAUTOEXT is higher than for FLEXIBLEAUTO
+                for (size_t i = 0; i < lowPrecisions.size(); ++i) {
+                    if (lowPrecisions[i] >= highPrecisions[i]) {
+                        std::string errMsg("FLEXIBLEAUTOEXT's precision is LESS than the precision for FLEXIBLEAUTO");
+                        EXPECT_TRUE(0 == 1) << errMsg;
+                    }
+                }
+            }
+            else {
+                ss << "Precision vectors are different in size:"
+                    << " low - " << lowPrecisions.size()
+                    << ", high - " << highPrecisions.size();
+                // make it fail
+                EXPECT_TRUE(0 == 1) << ss.str();
+            }
+        }
+        else {
+            ss << "Precision vectors are empty:"
+                << " low - " << lowPrecisions.size()
+                << ", high - " << highPrecisions.size();
+            // make it fail
+            EXPECT_TRUE(0 == 1) << ss.str();
+        }
+    }
+
+    bool UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& precisions, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7);
-            Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0);
-            Plaintext plaintextNeg = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Neg);
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7, 1, 0, nullptr, testData.slots);
+            Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0, 1, 0, nullptr, testData.slots);
+            Plaintext plaintextNeg = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Neg, 1, 0, nullptr, testData.slots);
             Plaintext plaintextMult =
-                cc->MakeCKKSPackedPlaintext(std::vector<std::complex<double>>({ 0, 6,10,12,12,10, 6, 0 }));
+                cc->MakeCKKSPackedPlaintext(std::vector<std::complex<double>>({ 0, 6,10,12,12,10, 6, 0 }), 1, 0, nullptr, testData.slots);
 
             // Generate encryption keys
             KeyPair<Element> kp = cc->KeyGen();
@@ -506,6 +764,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing operator*
             cResult = ciphertext1 * ciphertext2;
@@ -513,6 +772,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator* fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing operator*=
             Ciphertext<Element> cmultInplace(ciphertext1);
@@ -521,6 +781,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator*= fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalMult ciphertext * plaintext
             cResult = cc->EvalMult(ciphertext1, plaintext2);
@@ -528,6 +789,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and Pt fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalMult ciphertext * positive double
             cResult = cc->EvalMult(ciphertext1, 1.0);
@@ -535,6 +797,7 @@ protected:
             results->SetLength(plaintext1->GetLength());
             checkEquality(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and positive double fails");
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalMult ciphertext * negative double
             cResult = cc->EvalMult(ciphertext1, -1.0);
@@ -544,6 +807,7 @@ protected:
             buffer1 << "should be: " << plaintextNeg->GetCKKSPackedValue() << " - we get: " << results->GetCKKSPackedValue();
             checkEquality(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and negative double fails; " + buffer1.str());
+            precisions.emplace_back(results->GetLogPrecision());
 
             // Testing EvalMultNoRelin ciphertext * ciphertext
             cResult = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
@@ -551,6 +815,9 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMultNoRelin Ct fails");
+            precisions.emplace_back(results->GetLogPrecision());
+
+            return true;
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -562,6 +829,56 @@ protected:
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
+        }
+
+        return false;
+    }
+
+    void UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
+        std::vector<uint32_t> precisions;
+        UnitTest_Mult_Packed(testData, precisions, failmsg);
+    }
+
+    void UnitTest_Mult_Packed_Precision(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
+        TEST_CASE_UTCKKSRNS testDataLocal(testData);
+
+        std::vector<uint32_t> lowPrecisions;
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        testDataLocal.params.rsTech = FLEXIBLEAUTO;
+        if (!UnitTest_Mult_Packed(testDataLocal, lowPrecisions, failmsg))
+            return;
+
+        std::vector<uint32_t> highPrecisions;
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+        testDataLocal.params.rsTech = FLEXIBLEAUTOEXT;
+        if (!UnitTest_Mult_Packed(testDataLocal, highPrecisions, failmsg))
+            return;
+
+        std::stringstream ss;
+        if (!lowPrecisions.empty() && !highPrecisions.empty()) {
+            if (lowPrecisions.size() == highPrecisions.size()) {
+                // check if the precision for FLEXIBLEAUTOEXT is higher than for FLEXIBLEAUTO
+                for (size_t i = 0; i < lowPrecisions.size(); ++i) {
+                    if (lowPrecisions[i] >= highPrecisions[i]) {
+                        std::string errMsg("FLEXIBLEAUTOEXT's precision is LESS than the precision for FLEXIBLEAUTO");
+                        EXPECT_TRUE(0 == 1) << errMsg;
+                    }
+                }
+            }
+            else {
+                ss << "Precision vectors are different in size:"
+                    << " low - " << lowPrecisions.size()
+                    << ", high - " << highPrecisions.size();
+                // make it fail
+                EXPECT_TRUE(0 == 1) << ss.str();
+            }
+        }
+        else {
+            ss << "Precision vectors are empty:"
+                << " low - " << lowPrecisions.size()
+                << ", high - " << highPrecisions.size();
+            // make it fail
+            EXPECT_TRUE(0 == 1) << ss.str();
         }
     }
 
@@ -1023,25 +1340,26 @@ protected:
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             const uint32_t ringDim = cc->GetRingDimension();
-            const uint32_t Nh = ringDim >> 1;
+            uint32_t slots = (testData.slots != 0) ? testData.slots : (BATCH != 0) ? BATCH : cc->GetRingDimension() / 2;
 
-            std::vector<std::complex<double>> vectorOfInts1(Nh);
-            for (uint32_t i = 0; i < Nh; i++) {
+            std::vector<std::complex<double>> vectorOfInts1(slots);
+            for (uint32_t i = 0; i < slots; i++) {
                 vectorOfInts1[i] = rand() % 10;
             }
-            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1);
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1, 1, 0, nullptr, testData.slots);
 
-            std::vector<std::complex<double>> vIntsRightRotate2(Nh);
-            for (uint32_t i = 0; i < Nh; i++) {
-                vIntsRightRotate2[(i + Nh + 2) % Nh] = vectorOfInts1[i];
+            std::vector<std::complex<double>> vIntsRightRotate2(slots);
+            for (uint32_t i = 0; i < slots; i++) {
+                vIntsRightRotate2[(i + slots + 2) % slots] = vectorOfInts1[i];
             }
-            Plaintext plaintextRight2 = cc->MakeCKKSPackedPlaintext(vIntsRightRotate2);
+            Plaintext plaintextRight2 = cc->MakeCKKSPackedPlaintext(vIntsRightRotate2, 1, 0, nullptr, testData.slots);
 
-            std::vector<std::complex<double>> vIntsLeftRotate2(Nh);
-            for (uint32_t i = 0; i < Nh; i++) {
-                vIntsLeftRotate2[(i + Nh - 2) % Nh] = vectorOfInts1[i];
+            std::vector<std::complex<double>> vIntsLeftRotate2(slots);
+            for (uint32_t i = 0; i < slots; i++) {
+              // here 2*slots for the case if slots = 1, to avoid negative index
+                vIntsLeftRotate2[(i + 2*slots - 2) % slots] = vectorOfInts1[i];
             }
-            Plaintext plaintextLeft2 = cc->MakeCKKSPackedPlaintext(vIntsLeftRotate2);
+            Plaintext plaintextLeft2 = cc->MakeCKKSPackedPlaintext(vIntsLeftRotate2, 1, 0, nullptr, testData.slots);
 
             // Generate encryption keys
             KeyPair<Element> kp = cc->KeyGen();
@@ -1057,8 +1375,8 @@ protected:
              * This helps hide the rotation noise and get the correct result without
              * using a smaller relinWindow in BV (when creating the crypto context cc).
              */
-            std::vector<std::complex<double>> vOnes(Nh, 1); // all 1s
-            Plaintext pOnes = cc->MakeCKKSPackedPlaintext(vOnes);
+            std::vector<std::complex<double>> vOnes(slots, 1); // all 1s
+            Plaintext pOnes = cc->MakeCKKSPackedPlaintext(vOnes, 1, 0, nullptr, testData.slots);
             Ciphertext<Element> cOnes = cc->Encrypt(kp.publicKey, pOnes);
             ciphertext1 *= cOnes;
 
@@ -1098,21 +1416,32 @@ protected:
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1_8);
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1_8, 1, 0, nullptr, testData.slots);
 
-            // vIntsRightShift2 = { 0,0,1,2,3,4,5,6 };
+            // vIntsRightShift2 = { 0,0,1,2,3,4,5,6 } if slots > 8;
+            // vIntsRightShift2 = { 7,8,1,2,3,4,5,6 } if slots = 8;
             std::vector<std::complex<double>> vIntsRightShift2(VECTOR_SIZE);
+            uint32_t slots = (testData.slots != 0) ? testData.slots : (BATCH != 0) ? BATCH : cc->GetRingDimension() / 2;
             for (usint i = 0; i < VECTOR_SIZE; i++) {
-                vIntsRightShift2[i] = (i >= 2) ? vectorOfInts1_8[i - 2] : 0;
+              if ((slots + i - 2) % slots < VECTOR_SIZE) {
+                vIntsRightShift2[i] = vectorOfInts1_8[(slots + i - 2) % slots];
+              } else {
+                vIntsRightShift2[i] = 0;
+              }
             }
-            Plaintext plaintextRight2 = cc->MakeCKKSPackedPlaintext(vIntsRightShift2);
+            Plaintext plaintextRight2 = cc->MakeCKKSPackedPlaintext(vIntsRightShift2, 1, 0, nullptr, testData.slots);
 
-            // vIntsLeftShift2 = { 3,4,5,6,7,8,0,0 };
+            // vIntsRightShift2 = { 3,4,5,6,7,8,0,0 } if slots > 8;
+            // vIntsRightShift2 = { 3,4,5,6,7,8,1,2 } if slots = 8;
             std::vector<std::complex<double>> vIntsLeftShift2(VECTOR_SIZE);
             for (usint i = 0; i < VECTOR_SIZE; i++) {
-                vIntsLeftShift2[i] = (i < VECTOR_SIZE - 2) ? vectorOfInts1_8[i + 2] : 0;
+              if ((i + 2) % slots < VECTOR_SIZE) {
+                vIntsLeftShift2[i] = vectorOfInts1_8[(i + 2) % slots];
+              } else {
+                vIntsLeftShift2[i] = 0;
+              }
             }
-            Plaintext plaintextLeft2 = cc->MakeCKKSPackedPlaintext(vIntsLeftShift2);
+            Plaintext plaintextLeft2 = cc->MakeCKKSPackedPlaintext(vIntsLeftShift2, 1, 0, nullptr, testData.slots);
 
             // Generate encryption keys
             KeyPair<Element> kp = cc->KeyGen();
@@ -1128,7 +1457,7 @@ protected:
              * This helps hide the rotation noise and get the correct result without
              * using a smaller relinWindow in BV (when creating the crypto context cc).
              */
-            Plaintext pOnes = cc->MakeCKKSPackedPlaintext(vectorOfInts1s);
+            Plaintext pOnes = cc->MakeCKKSPackedPlaintext(vectorOfInts1s, 1, 0, nullptr, testData.slots);
             Ciphertext<Element> cOnes = cc->Encrypt(kp.publicKey, pOnes);
             ciphertext1 *= cOnes;
 
@@ -1312,7 +1641,7 @@ protected:
             for (size_t i = 0; i < max; ++i) {
                 intvec[i] = (rand() % (ptm / 2)) * (rand() % 2 ? 1 : -1);
             }
-            Plaintext plaintextInt = cc->MakeCKKSPackedPlaintext(intvec);
+            Plaintext plaintextInt = cc->MakeCKKSPackedPlaintext(intvec, 1, 0, nullptr, max);
 
             KeyPair<Element> kp = cc->KeyGen();
             EXPECT_EQ(kp.good(), true) << failmsg << " key generation for scalar encrypt/decrypt failed";
@@ -1662,6 +1991,12 @@ TEST_P(UTCKKSRNS, CKKSRNS) {
         break;
     case METADATA:
         UnitTest_Metadata(test, test.buildTestName());
+        break;
+    case ADD_PACKED_PRECISION:
+        UnitTest_Add_Packed_Precision(test, test.buildTestName());
+        break;
+    case MULT_PACKED_PRECISION:
+        UnitTest_Mult_Packed_Precision(test, test.buildTestName());
         break;
     default:
         break;

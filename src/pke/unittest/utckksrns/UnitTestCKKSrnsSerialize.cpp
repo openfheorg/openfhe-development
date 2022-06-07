@@ -121,7 +121,7 @@ constexpr usint RING_DIM = 512;
 constexpr usint SCALE    = 50;
 constexpr usint MULT_DEPTH = 3;
 constexpr usint RELIN    = 20;
-constexpr usint BATCH    = 8;
+constexpr usint BATCH    = 16;
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSSer> testCases = {
     // TestType,            Descr, Scheme,         RDim,     MultDepth,  SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech

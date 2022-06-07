@@ -77,7 +77,8 @@ class CiphertextImpl : public CryptoObject<Element> {
         m_scalingFactor(1),
         m_scalingFactorInt(1),
         m_level(0),
-        m_hopslevel(0) {
+        m_hopslevel(0),
+        m_slots(0) {
     m_metadataMap = std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
   }
 
@@ -94,7 +95,8 @@ class CiphertextImpl : public CryptoObject<Element> {
         m_scalingFactor(1),
         m_scalingFactorInt(1),
         m_level(0),
-        m_hopslevel(0) {
+        m_hopslevel(0),
+        m_slots(0) {
     m_metadataMap = std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
   }
 
@@ -110,7 +112,8 @@ class CiphertextImpl : public CryptoObject<Element> {
         m_scalingFactor(1),
         m_scalingFactorInt(1),
         m_level(0),
-        m_hopslevel(0) {
+        m_hopslevel(0),
+        m_slots(0) {
     m_metadataMap = std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
   }
 
@@ -126,6 +129,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     m_scalingFactor = ciphertext.m_scalingFactor;
     m_scalingFactorInt = ciphertext.m_scalingFactorInt;
     encodingType = ciphertext.encodingType;
+    m_slots = ciphertext.m_slots;
     m_metadataMap = ciphertext.m_metadataMap;
   }
 
@@ -138,6 +142,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     m_scalingFactor = ciphertext->m_scalingFactor;
     m_scalingFactorInt = ciphertext->m_scalingFactorInt;
     encodingType = ciphertext->encodingType;
+    m_slots = ciphertext->m_slots;
     m_metadataMap = ciphertext->m_metadataMap;
   }
 
@@ -153,6 +158,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     m_scalingFactor = std::move(ciphertext.m_scalingFactor);
     m_scalingFactorInt = std::move(ciphertext.m_scalingFactorInt);
     encodingType = std::move(ciphertext.encodingType);
+    m_slots = std::move(ciphertext.m_slots);
     m_metadataMap = std::move(ciphertext.m_metadataMap);
   }
 
@@ -165,6 +171,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     m_scalingFactor = std::move(ciphertext->m_scalingFactor);
     m_scalingFactorInt = std::move(ciphertext->m_scalingFactorInt);
     encodingType = std::move(ciphertext->encodingType);
+    m_slots = std::move(ciphertext->m_slots);
     m_metadataMap = std::move(ciphertext->m_metadataMap);
   }
 
@@ -219,6 +226,7 @@ class CiphertextImpl : public CryptoObject<Element> {
       this->m_scalingFactor = rhs.m_scalingFactor;
       this->m_scalingFactorInt = rhs.m_scalingFactorInt;
       this->encodingType = rhs.encodingType;
+      this->m_slots = rhs.m_slots;
       this->m_metadataMap = rhs.m_metadataMap;
     }
 
@@ -241,6 +249,7 @@ class CiphertextImpl : public CryptoObject<Element> {
       this->m_scalingFactor = std::move(rhs.m_scalingFactor);
       this->m_scalingFactorInt = std::move(rhs.m_scalingFactorInt);
       this->encodingType = std::move(rhs.encodingType);
+      this->m_slots = std::move(rhs.m_slots);
       this->m_metadataMap = std::move(rhs.m_metadataMap);
     }
 
@@ -377,6 +386,16 @@ class CiphertextImpl : public CryptoObject<Element> {
   void SetScalingFactorInt(const NativeInteger sf) { m_scalingFactorInt = sf; }
 
   /**
+   * Get the number of slots of the ciphertext.
+   */
+  size_t GetSlots() const { return m_slots; }
+
+  /**
+   * Set the number of slots of the ciphertext.
+   */
+  void SetSlots(usint slots) { m_slots = slots; }
+
+  /**
    * Get the Metadata map of the ciphertext.
    */
   MetadataMap GetMetadataMap() const { return this->m_metadataMap; }
@@ -447,6 +466,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     cRes->SetHopLevel(this->GetHopLevel());
     cRes->SetScalingFactor(this->GetScalingFactor());
     cRes->SetScalingFactorInt(this->GetScalingFactorInt());
+    cRes->SetSlots(this->GetSlots());
 
     return cRes;
   }
@@ -463,6 +483,8 @@ class CiphertextImpl : public CryptoObject<Element> {
     if (this->m_scalingFactor != rhs.m_scalingFactor) return false;
 
     if (this->m_scalingFactorInt != rhs.m_scalingFactorInt) return false;
+
+    if (this->m_slots != rhs.m_slots) return false;
 
     const std::vector<Element>& lhsE = this->GetElements();
     const std::vector<Element>& rhsE = rhs.GetElements();
@@ -524,6 +546,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     ar(cereal::make_nvp("s", m_scalingFactor));
     ar(cereal::make_nvp("si", m_scalingFactorInt));
     ar(cereal::make_nvp("e", encodingType));
+    ar(cereal::make_nvp("sl", m_slots));
     ar(cereal::make_nvp("m", m_metadataMap));
   }
 
@@ -542,6 +565,7 @@ class CiphertextImpl : public CryptoObject<Element> {
     ar(cereal::make_nvp("s", m_scalingFactor));
     ar(cereal::make_nvp("si", m_scalingFactorInt));
     ar(cereal::make_nvp("e", encodingType));
+    ar(cereal::make_nvp("sl", m_slots));
     ar(cereal::make_nvp("m", m_metadataMap));
   }
 
@@ -564,6 +588,7 @@ class CiphertextImpl : public CryptoObject<Element> {
 
   uint32_t m_hopslevel;  // Parameter for re-encryption to store the number of
                        // times the ciphertext has been re-encrypted.
+  uint32_t m_slots;
   // A map to hold different Metadata objects - used for flexible extensions of
   // Ciphertext
   MetadataMap m_metadataMap;

@@ -41,7 +41,6 @@
 
 #include "encoding/encodingparams.h"
 #include "encoding/plaintext.h"
-//#include "utils/inttypes.h"
 #include "constants.h"
 
 namespace lbcrypto {
@@ -57,42 +56,13 @@ namespace lbcrypto {
 class CKKSPackedEncoding : public PlaintextImpl {
  public:
   // these two constructors are used inside of Decrypt
-  CKKSPackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep)
-      : PlaintextImpl(vp, ep) {
-    depth = 1;
-    m_logError = 0.0;
-  }
-
-  CKKSPackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep)
-      : PlaintextImpl(vp, ep) {
-    depth = 1;
-    m_logError = 0.0;
-  }
-
-  CKKSPackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
-      : PlaintextImpl(vp, ep) {
-    depth = 1;
-    m_logError = 0.0;
-  }
-
-  CKKSPackedEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
-                     const std::vector<std::complex<double>> &coeffs,
-                     size_t depth, uint32_t level, double scFact)
-      : PlaintextImpl(vp, ep), value(coeffs) {
-    this->depth = depth;
-    this->level = level;
-    this->scalingFactor = scFact;
-    m_logError = 0.0;
-  }
-
-  CKKSPackedEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
-                     const std::vector<std::complex<double>> &coeffs,
-                     size_t depth, uint32_t level, double scFact)
-      : PlaintextImpl(vp, ep), value(coeffs) {
-    this->depth = depth;
-    this->level = level;
-    this->scalingFactor = scFact;
-    m_logError = 0.0;
+  template <typename T, typename std::enable_if<
+      std::is_same<T, Poly::Params>::value ||
+      std::is_same<T, NativePoly::Params>::value ||
+      std::is_same<T, DCRTPoly::Params>::value,
+      bool>::type = true>
+      CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep) {
+      depth = 1; // TODO (dsuponit): is depth supposed to be initialized to 1 in all constructors?
   }
 
   /*
@@ -101,14 +71,36 @@ class CKKSPackedEncoding : public PlaintextImpl {
    * @param scFact scaling factor of a plaintext of this level at depth 1.
    *
    */
-  CKKSPackedEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
-                     const std::vector<std::complex<double>> &coeffs,
-                     size_t depth, uint32_t level, double scFact)
+  template <typename T, typename std::enable_if<
+      std::is_same<T, Poly::Params>::value ||
+      std::is_same<T, NativePoly::Params>::value ||
+      std::is_same<T, DCRTPoly::Params>::value,
+      bool>::type = true>
+      CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep,
+          const std::vector<std::complex<double>>& coeffs,
+          size_t depth, uint32_t level, double scFact, size_t slots)
       : PlaintextImpl(vp, ep), value(coeffs) {
-    this->depth = depth;
-    this->level = level;
-    this->scalingFactor = scFact;
-    m_logError = 0.0;
+      // validate the number of slots
+      if ((slots & (slots - 1)) != 0) {
+          OPENFHE_THROW(config_error, "The number of slots should be a power of two");
+      }
+
+      if (0 == slots) {
+          auto batchSize = GetEncodingParams()->GetBatchSize();
+          this->slots = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
+      } else {
+        this->slots = slots;
+      }
+      if (this->slots < coeffs.size()) {
+          OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
+      }
+      else if (this->slots > (GetElementRingDimension() / 2)) {
+          OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+      }
+
+      this->depth = depth;
+      this->level = level;
+      this->scalingFactor = scFact;
   }
 
   /**
@@ -116,10 +108,27 @@ class CKKSPackedEncoding : public PlaintextImpl {
    * in the same order.
    * @param rhs - The input object to copy.
    */
-  explicit CKKSPackedEncoding(const std::vector<std::complex<double>> &rhs)
+  explicit CKKSPackedEncoding(const std::vector<std::complex<double>> &rhs, size_t slots)
       : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(rhs) {
-    depth = 1;
-    m_logError = 0.0;
+      // validate the number of slots
+      if ((slots & (slots - 1)) != 0) {
+          OPENFHE_THROW(config_error, "The number of slots should be a power of two");
+      }
+
+      if (0 == slots) {
+          auto batchSize = GetEncodingParams()->GetBatchSize();
+          this->slots = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
+      } else {
+        this->slots = slots;
+      }
+      if (this->slots < rhs.size()) {
+          OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
+      }
+      else if (this->slots > (GetElementRingDimension() / 2)) {
+          OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+      }
+
+      depth = 1;
   }
 
   /**
@@ -128,24 +137,19 @@ class CKKSPackedEncoding : public PlaintextImpl {
   CKKSPackedEncoding()
       : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value() {
     depth = 1;
-    m_logError = 0.0;
   }
 
   CKKSPackedEncoding(const CKKSPackedEncoding &rhs)
       : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
 
   CKKSPackedEncoding(const CKKSPackedEncoding &&rhs)
-      : PlaintextImpl(rhs),
-        value(std::move(rhs.value)),
-        m_logError(rhs.m_logError) {}
+      : PlaintextImpl(rhs), value(std::move(rhs.value)), m_logError(rhs.m_logError) {}
 
   bool Encode();
 
   bool Decode() {
-    OPENFHE_THROW(
-        not_available_error,
-        "CKKSPackedEncoding::Decode() is not implemented. "
-        "Use CKKSPackedEncoding::Decode(depth,scalingFactor,rstech) instead.");
+    OPENFHE_THROW(not_available_error,
+        "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(depth,scalingFactor,rstech) instead.");
   }
 
   bool Decode(size_t depth, double scalingFactor, RescalingTechnique rsTech);
@@ -247,7 +251,7 @@ class CKKSPackedEncoding : public PlaintextImpl {
  private:
   std::vector<std::complex<double>> value;
 
-  double m_logError;
+  double m_logError = 0;
 
  protected:
   /**
