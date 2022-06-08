@@ -40,7 +40,7 @@ std::string UnitTestCCParams::toString() const {
         << "ringDimension [" << ringDimension << "], "
         << "multiplicativeDepth [" << multiplicativeDepth << "], "
         << "scalingFactorBits [" << scalingFactorBits << "], "
-        << "relinWindow [" << relinWindow << "], "
+        << "digitSize [" << digitSize << "], "
         << "batchSize [" << batchSize << "], "
         << "mode [" << mode << "], "
         << "maxDepth [" << maxDepth << "], "

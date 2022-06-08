@@ -123,7 +123,7 @@ static const std::vector<int32_t> initIndexList{ 3, 5, 7, 9, 11, 13, 15 };
 static const std::vector<int32_t> cornerCaseIndexList{ 0 };
 
 static std::vector<TEST_CASE_UTCKKSRNS_AUTOMORPHISM> testCasesUTCKKSRNS_AUTOMORPHISM = {
-    // TestType,                Descr,  Scheme,         RDim,     MultDepth,  SFBits, RWin, BatchSz, Mode, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error,               indexList
+    // TestType,                Descr,  Scheme,         RDim,     MultDepth,  SFBits, DSize,BatchSz, Mode, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error,               indexList
     { EVAL_AT_INDX_PACKED_ARRAY, "01", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,   DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    SUCCESS,             initIndexList },
     { EVAL_AT_INDX_PACKED_ARRAY, "02", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,   DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    CORNER_CASES,        cornerCaseIndexList },
     { EVAL_AT_INDX_PACKED_ARRAY, "03", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,   DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_INPUT_DATA,  initIndexList },
@@ -158,7 +158,7 @@ static std::vector<TEST_CASE_UTCKKSRNS_AUTOMORPHISM> testCasesUTCKKSRNS_AUTOMORP
     { EVAL_AT_INDX_PACKED_ARRAY, "37", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,   DFLT,    SEC_LVL, DFLT,   FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_INDEX,       initIndexList },
 #endif
     // ==========================================
-    // TestType,            Descr,  Scheme,         RDim,     MultDepth,  SFBits, RWin, BatchSz, Mode, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error,               indexList
+    // TestType,            Descr,  Scheme,         RDim,     MultDepth,  SFBits, DSize,BatchSz, Mode, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error,               indexList
     { EVAL_SUM_PACKED_ARRAY, "01", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,   DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    SUCCESS },
     { EVAL_SUM_PACKED_ARRAY, "02", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,   DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY },
     { EVAL_SUM_PACKED_ARRAY, "03", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, DFLT,   DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PUBLIC_KEY },

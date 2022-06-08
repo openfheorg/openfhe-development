@@ -128,7 +128,7 @@ constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 constexpr usint PTM = 65537;
 
 static std::vector<TEST_CASE_UTEVALMULT> testCasesUTEVALMULT = {
-    // TestType,               Descr,  Scheme,         RDim,     MultDepth,  SFBits, RWin, BatchSz, Mode, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
+    // TestType,               Descr,  Scheme,         RDim,     MultDepth,  SFBits, DSize,BatchSz, Mode, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
     { EVAL_MULT_ERROR_HANDLING, "01", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, 3,      DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    SUCCESS },
     { EVAL_MULT_ERROR_HANDLING, "02", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, 3,      DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY },
     { EVAL_MULT_ERROR_HANDLING, "03", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, 3,      DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PUBLIC_KEY },
@@ -174,7 +174,7 @@ static std::vector<TEST_CASE_UTEVALMULT> testCasesUTEVALMULT = {
     { EVAL_MULT_ERROR_HANDLING, "40", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT, 3,      DFLT,    SEC_LVL, DFLT,   FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY_DECRYPT },
 #endif
     // ==========================================
-    // TestType,               Descr,  Scheme,        RDim,     MultDepth,  SFBits, RWin, BatchSz, Mode,  MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
+    // TestType,               Descr,  Scheme,        RDim,     MultDepth,  SFBits, DSize,BatchSz, Mode,  MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
     { EVAL_MULT_ERROR_HANDLING, "41", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT,  4,      DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    SUCCESS },
     { EVAL_MULT_ERROR_HANDLING, "42", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT,  4,      DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY },
     { EVAL_MULT_ERROR_HANDLING, "43", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT,  4,      DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PUBLIC_KEY },
@@ -219,7 +219,7 @@ static std::vector<TEST_CASE_UTEVALMULT> testCasesUTEVALMULT = {
     { EVAL_MULT_ERROR_HANDLING, "79", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT,  4,      DFLT,    SEC_LVL, DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PLAINTEXT_DECRYPT },
     { EVAL_MULT_ERROR_HANDLING, "80", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DFLT, BATCH,   DFLT,  4,      DFLT,    SEC_LVL, DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT},    INVALID_PRIVATE_KEY_DECRYPT },
     // ==========================================
-    // TestType,                    Descr,  Scheme,        RDim,     MultDepth,  SFBits, RWin, BatchSz, Mode, MDepth, ModSize, SecLvl,  KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
+    // TestType,                    Descr,  Scheme,        RDim,     MultDepth,  SFBits, DSize,BatchSz, Mode, MDepth, ModSize, SecLvl,  KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
     { EVAL_MULT_MANY_ERROR_HANDLING, "01", {BFVRNS_SCHEME, DFLT,     DFLT,       60,     DFLT, DFLT,    DFLT, 4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   4,      DFLT,      3,          DFLT, DFLT},    SUCCESS },
     { EVAL_MULT_MANY_ERROR_HANDLING, "02", {BFVRNS_SCHEME, DFLT,     DFLT,       60,     DFLT, DFLT,    DFLT, 3,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   4,      DFLT,      3,          DFLT, DFLT},    INVALID_MAX_DEPTH },
     { EVAL_MULT_MANY_ERROR_HANDLING, "03", {BFVRNS_SCHEME, DFLT,     DFLT,       60,     DFLT, DFLT,    DFLT, 4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   4,      DFLT,      3,          DFLT, DFLT},    INVALID_PRIVATE_KEY },
@@ -234,7 +234,7 @@ static std::vector<TEST_CASE_UTEVALMULT> testCasesUTEVALMULT = {
     { EVAL_MULT_MANY_ERROR_HANDLING, "12", {BFVRNS_SCHEME, DFLT,     DFLT,       60,     DFLT, DFLT,    DFLT, 4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   4,      DFLT,      3,          DFLT, DFLT},    INVALID_PRIVATE_KEY_DECRYPT },
     { EVAL_MULT_MANY_ERROR_HANDLING, "13", {BFVRNS_SCHEME, DFLT,     DFLT,       60,     DFLT, DFLT,    DFLT, 4,      DFLT,    SEC_LVL, DFLT,   DFLT,   DFLT,    256,   4,      DFLT,      3,          DFLT, DFLT},    INVALID_CIPHER_TEXT_LIST_MANY },
     // ==========================================
-    // TestType, Descr,  Scheme,         RDim,     MultDepth,  SFBits, RWin, BatchSz, Mode, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
+    // TestType, Descr,  Scheme,         RDim,     MultDepth,  SFBits, DSize,BatchSz, Mode, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Error
     { RELIN_TEST, "01", {BGVRNS_SCHEME,  RING_DIM, MULT_DEPTH, DFLT,   DFLT, DFLT,    DFLT, 4,      DFLT,    SEC_LVL, DFLT,   FIXEDMANUAL,     DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { RELIN_TEST, "02", {BGVRNS_SCHEME,  RING_DIM, MULT_DEPTH, DFLT,   DFLT, DFLT,    DFLT, 4,      DFLT,    SEC_LVL, DFLT,   FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { RELIN_TEST, "03", {BGVRNS_SCHEME,  RING_DIM, MULT_DEPTH, DFLT,   DFLT, DFLT,    DFLT, 4,      DFLT,    SEC_LVL, DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },

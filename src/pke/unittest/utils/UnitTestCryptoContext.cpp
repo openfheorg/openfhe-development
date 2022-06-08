@@ -49,8 +49,8 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.scalingFactorBits)) {
         parameters.SetScalingFactorBits(static_cast<usint>(std::round(params.scalingFactorBits)));
     }
-    if (!isDefaultValue(params.relinWindow)) {
-        parameters.SetRelinWindow(static_cast<usint>(std::round(params.relinWindow)));
+    if (!isDefaultValue(params.digitSize)) {
+        parameters.SetRelinWindow(static_cast<usint>(std::round(params.digitSize)));
     }
     if (!isDefaultValue(params.batchSize)) {
         parameters.SetBatchSize(static_cast<usint>(std::round(params.batchSize)));

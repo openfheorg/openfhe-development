@@ -100,7 +100,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_Encrypt_Decryp
 //===========================================================================================================
 constexpr usint BATCH = 16;
 static std::vector<TEST_CASE_Encrypt_Decrypt> testCases = {
-    // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin, BatchSz, Mode,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, DSize,BatchSz, Mode,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { STRING_TEST, "01", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   RLWE,      1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
     { STRING_TEST, "02", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   RLWE,      1,      60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
     { STRING_TEST, "03", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   RLWE,      1,      60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
@@ -114,7 +114,7 @@ static std::vector<TEST_CASE_Encrypt_Decrypt> testCases = {
     { STRING_TEST, "11", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQ},         },
     { STRING_TEST, "12", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,      DFLT,   DFLT,    DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED},  },
     // ==========================================
-    // TestType,       Descr, Scheme,         RDim, MultDepth, SFBits, RWin, BatchSz, Mode,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,       Descr, Scheme,         RDim, MultDepth, SFBits, DSize,BatchSz, Mode,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { COEF_PACKED_TEST, "01", {BGVRNS_SCHEME, 64,   2,         59,     DFLT, BATCH,   RLWE,      1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
     { COEF_PACKED_TEST, "02", {BGVRNS_SCHEME, 64,   2,         59,     DFLT, BATCH,   RLWE,      1,      60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
     { COEF_PACKED_TEST, "03", {BGVRNS_SCHEME, 64,   2,         59,     DFLT, BATCH,   RLWE,      1,      60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,} },
