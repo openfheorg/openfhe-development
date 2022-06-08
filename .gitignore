@@ -8,6 +8,11 @@ build*/
 cmake-build-debug
 docs/doxygen
 docs/sphinx
+_build/
+api/
+doxyoutput/
+
+
 .ipynb_checkpoints
 
 test/build
