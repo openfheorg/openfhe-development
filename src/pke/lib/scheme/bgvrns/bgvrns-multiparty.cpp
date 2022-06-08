@@ -64,9 +64,6 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersBGVRNS>(
           ciphertextVec[0]->GetCryptoParameters());
-  // TODO: Remove keepExtraModulus for FLEXIBLEAUTOEXT mode.
-  // Do this by mod reducing all the way down to the last tower to avoid using multi-precision arithmetic.
-  int keepExtraModulus = (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) ? 1 : 0;
 
   const std::vector<DCRTPoly> &cv0 = ciphertextVec[0]->GetElements();
   DCRTPoly b = cv0[0];
@@ -79,7 +76,7 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
   size_t sizeQl = b.GetNumOfElements();
 
   NativeInteger scalingFactorInt = ciphertextVec[0]->GetScalingFactorInt();
-  for (int l = ((int)sizeQl) - 1; l > keepExtraModulus; l--) {
+  for (int l = ((int)sizeQl) - 1; l > 0; l--) {
     b.ModReduce(
         cryptoParams->GetPlaintextModulus(),
         cryptoParams->GettModqPrecon(),
@@ -88,19 +85,14 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
         cryptoParams->GetqlInvModq(l),
         cryptoParams->GetqlInvModqPrecon(l));
   }
-  for (int i = 0; i < ((int)sizeQl) - 1 - keepExtraModulus; i++) {
+  for (int i = 0; i < ((int)sizeQl) - 1; i++) {
     NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
     NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
     scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
   }
 
-  if (keepExtraModulus && sizeQl > 1) {
-    // TODO: Remove keepExtraModulus.
-    Poly bbig = b.CRTInterpolate();
-    *plaintext = bbig.DecryptionCRTInterpolate(cryptoParams->GetPlaintextModulus());
-  } else {
-    *plaintext = b.GetElementAtIndex(0).Mod(cryptoParams->GetPlaintextModulus());
-  }
+  *plaintext = b.GetElementAtIndex(0).DecryptionCRTInterpolate(cryptoParams->GetPlaintextModulus());
+
   return DecryptResult(plaintext->GetLength(), scalingFactorInt);
 }
 
