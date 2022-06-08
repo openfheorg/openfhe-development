@@ -85,10 +85,12 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
         cryptoParams->GetqlInvModq(l),
         cryptoParams->GetqlInvModqPrecon(l));
   }
-  for (int i = 0; i < ((int)sizeQl) - 1; i++) {
-    NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
-    NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
-    scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
+    for (int i = 0; i < ((int)sizeQl) - 1; i++) {
+      NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+      NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+      scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+    }
   }
 
   *plaintext = b.GetElementAtIndex(0).DecryptionCRTInterpolate(cryptoParams->GetPlaintextModulus());

@@ -71,7 +71,6 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
   if (cv[0].GetFormat() == Format::EVALUATION) {
     b = PKERNS::DecryptCore(cv, privateKey);
     b.SetFormat(Format::COEFFICIENT);
-    // TODO: Mod reduce all the way down to the last tower to avoid using multi-precision arithmetic.
     for (int l = ((int)sizeQl) - 1; l > 0; l--) {
       b.ModReduce(
           cryptoParams->GetPlaintextModulus(),
@@ -82,10 +81,12 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
           cryptoParams->GetqlInvModqPrecon(l));
     }
     // TODO: Use pre-computed scaling factor at level L.
-    for (int i = 0; i < ((int)sizeQl) - 1; i++) {
-      NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
-      NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
-      scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
+      for (int i = 0; i < ((int)sizeQl) - 1; i++) {
+        NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+        NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+        scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+      }
     }
   } else {
     std::vector<DCRTPoly> ct(cv);
@@ -100,10 +101,12 @@ DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
             cryptoParams->GetqlInvModqPrecon(l));
       }
     }
-    for (usint i = 0; i < sizeQl - 1; ++i) {
-      NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
-      NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
-      scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
+      for (int i = 0; i < ((int)sizeQl) - 1; i++) {
+        NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+        NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+        scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+      }
     }
 
     b = PKERNS::DecryptCore(ct, privateKey);
