@@ -638,6 +638,19 @@ public:
   // BFVrns : Mult : ExpandCRTBasis
   /////////////////////////////////////
 
+  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQl(usint l) const {
+    return m_paramsQl[l];
+  }
+
+  const std::vector<double>& GetQlQHatInvModqDivqFrac(usint l) const {
+    return m_QlQHatInvModqDivqFrac[l];
+  }
+
+  const std::vector<std::vector<NativeInteger>>& GetQlQHatInvModqDivqModq(usint l)
+      const {
+    return m_QlQHatInvModqDivqModq[l];
+  }
+
   /**
    * Gets the Auxiliary CRT basis {R} = {r_1,...,r_k}
    * used in homomorphic multiplication
@@ -692,6 +705,18 @@ public:
    */
   const std::vector<std::vector<NativeInteger>> &GetalphaQlModr(usint l = 0) const {
     return m_alphaQlModr[l];
+  }
+
+  const std::vector<NativeInteger>& GetmNegRlQHatInvModq(usint l) const {
+    return m_negRlQHatInvModq[l];
+  }
+
+  const std::vector<NativeInteger>& GetmNegRlQHatInvModqPrecon(usint l) const {
+    return m_negRlQHatInvModqPrecon[l];
+  }
+
+  const std::vector<std::vector<NativeInteger>>& GetqInvModr() const {
+    return m_qInvModr;
   }
 
   /**
@@ -772,6 +797,23 @@ public:
    */
   const std::vector<std::vector<NativeInteger>> &GetalphaRlModq(usint l = 0) const {
     return m_alphaRlModq[l];
+  }
+
+  const std::vector<double>& GettQlSlHatInvModsDivsFrac(usint l) const {
+    return m_tQlSlHatInvModsDivsFrac[l];
+  }
+
+  const std::vector<std::vector<NativeInteger>>& GettQlSlHatInvModsDivsModq(usint l)
+      const {
+    return m_tQlSlHatInvModsDivsModq[l];
+  }
+
+  const std::vector<NativeInteger>& GetQlHatModq(usint l) const {
+    return m_QlHatModq[l];
+  }
+
+  const std::vector<NativeInteger>& GetQlHatModqPrecon(usint l) const {
+    return m_QlHatModqPrecon[l];
   }
 
   /**
@@ -1366,6 +1408,9 @@ public:
   // Auxiliary CRT basis {Ql} = {q_i}
   // used in homomorphic multiplication
   std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsQl;
+
+  std::vector<std::vector<double>> m_QlQHatInvModqDivqFrac;
+  std::vector<std::vector<std::vector<NativeInteger>>> m_QlQHatInvModqDivqModq;
 
   // Auxiliary CRT basis {Rl} = {r_k}
   // used in homomorphic multiplication

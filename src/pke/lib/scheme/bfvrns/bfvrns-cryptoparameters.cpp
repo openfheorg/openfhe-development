@@ -651,7 +651,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     // BFVrns : Mult : ScaleAndRoundQl
     /////////////////////////////////////
 
-#if 0
     m_QlQHatInvModqDivqModq.resize(sizeQ);
     m_QlQHatInvModqDivqFrac.resize(sizeQ);
     for (usint l = sizeQ; l > 0; l--) {
@@ -682,8 +681,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
             QlQHatInvModqDivq.Mod(qi).ConvertToInt());
       }
     }
-
-#endif
 
     /////////////////////////////////////
     // BFVrns : Mult : ExpandCRTBasisQlHat
