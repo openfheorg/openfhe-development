@@ -1708,6 +1708,101 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasis(
 }
 
 template <typename VecType>
+void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQlPl,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsPl,
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQl,
+    const std::vector<NativeInteger> &mPlQHatInvModq,
+    const std::vector<NativeInteger> &mPlQHatInvModqPrecon,
+    const std::vector<std::vector<NativeInteger>> &qInvModp,
+    const std::vector<DoubleNativeInt> &modpBarrettMu,
+    const std::vector<NativeInteger> &PlHatInvModp,
+    const std::vector<NativeInteger> &PlHatInvModpPrecon,
+    const std::vector<std::vector<NativeInteger>> &PlHatModq,
+    const std::vector<std::vector<NativeInteger>> &alphaPlModq,
+    const std::vector<DoubleNativeInt> &modqBarrettMu,
+    const std::vector<double> &pInv) {
+  usint ringDim = this->GetRingDimension();
+
+  size_t sizeQ = m_vectors.size();
+
+  DCRTPolyType partPl(paramsPl, this->m_format, true);
+  size_t sizePl = partPl.m_vectors.size();
+  size_t sizeQl = sizePl;
+  size_t sizeQlPl = sizePl + sizeQl;
+
+  // (k + kl)n
+#pragma omp parallel for
+  for (usint ri = 0; ri < ringDim; ri++) {
+    std::vector<DoubleNativeInt> sum(sizePl);
+    for (usint i = 0; i < sizeQ; i++) {
+      const NativeInteger &xi = m_vectors[i][ri];
+      const NativeInteger &qi = m_vectors[i].GetModulus();
+      const std::vector<NativeInteger> &qInvModpi = qInvModp[i];
+      NativeInteger xQHatInvModqi =
+          xi.ModMulFastConst(mPlQHatInvModq[i], qi, mPlQHatInvModqPrecon[i]);
+      for (usint j = 0; j < sizePl; j++) {
+        sum[j] +=
+            Mul128(xQHatInvModqi.ConvertToInt(), qInvModpi[j].ConvertToInt());
+      }
+    }
+
+    for (usint j = 0; j < sizePl; j++) {
+      const NativeInteger &pj = partPl.m_vectors[j].GetModulus();
+      partPl.m_vectors[j][ri] =
+          BarrettUint128ModUint64(sum[j], pj.ConvertToInt(), modpBarrettMu[j]);
+    }
+  }
+
+  // EMM: (l + ll)n
+  // EFP: ln
+  DCRTPolyType partQl =
+      partPl.SwitchCRTBasis(paramsQl, PlHatInvModp, PlHatInvModpPrecon, PlHatModq,
+                     alphaPlModq, modqBarrettMu, pInv);
+
+  // Expand with zeros as should be
+  m_vectors.resize(sizeQlPl);
+
+#pragma omp parallel for
+  for (size_t i = 0; i < sizeQl; i++) {
+    m_vectors[i] = partQl.m_vectors[i];
+  }
+
+  for (size_t j = 0; j < sizePl; j++) {
+    m_vectors[sizeQl + j] = partPl.m_vectors[j];
+  }
+
+  this->m_params = paramsQlPl;
+}
+
+template <typename VecType>
+void DCRTPolyImpl<VecType>::ExpandCRTBasisQlHat(
+      const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+      const std::vector<NativeInteger> &QlHatModq,
+      const std::vector<NativeInteger> &QlHatModqPrecon,
+      const usint sizeQ) {
+
+  size_t sizeQl = m_vectors.size();
+  usint ringDim = this->GetRingDimension();
+
+  #pragma omp parallel for
+  for (size_t i = 0; i < sizeQl; i++) {
+    const NativeInteger &qi = m_vectors[i].GetModulus();
+    const NativeInteger &QlHatModqi = QlHatModq[i];
+    const NativeInteger &QlHatModqiPrecon = QlHatModqPrecon[i];
+    for (usint ri = 0; ri < ringDim; ri++) {
+      m_vectors[i][ri].ModMulFastConstEq(QlHatModqi, qi, QlHatModqiPrecon);
+    }
+  }
+  m_vectors.resize(sizeQ);
+  for(size_t i = sizeQl; i < sizeQ; i++) {
+    PolyType newvec(paramsQ->GetParams()[i], this->m_format, true);
+    m_vectors[i] = std::move(newvec);
+  }
+  this->m_params = paramsQ;
+}
+
+template <typename VecType>
 PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
     const NativeInteger& t, const std::vector<NativeInteger>& tQHatInvModqDivqModt,
     const std::vector<NativeInteger>& tQHatInvModqDivqModtPrecon,
@@ -2157,6 +2252,131 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
     return ans;
 }
 #endif
+
+template <typename VecType>
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRoundP(
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+    const std::vector<std::vector<NativeInteger>> &tQSHatInvModsDivsModq,
+    const std::vector<double> &tQSHatInvModsDivsFrac,
+    const std::vector<DoubleNativeInt> &modqBarretMu) const {
+  DCRTPolyType ans(paramsQ, this->m_format, true);
+
+  usint ringDim = this->GetRingDimension();
+  size_t sizeQP = m_vectors.size();
+  size_t sizeQ = ans.m_vectors.size();
+  size_t sizeP = sizeQP - sizeQ;
+
+#pragma omp parallel for
+  for (usint ri = 0; ri < ringDim; ri++) {
+    double nu = 0.5;
+    for (usint j = 0; j < sizeP; j++) {
+    const NativeInteger &xj = m_vectors[j + sizeQ][ri];
+      nu += tQSHatInvModsDivsFrac[j] * xj.ConvertToInt();
+    }
+
+    NativeInteger alpha = static_cast<uint64_t>(nu);
+
+    for (usint i = 0; i < sizeQ; i++) {
+      DoubleNativeInt curValue = 0;
+
+      const NativeInteger &qi = paramsQ->GetParams()[i]->GetModulus();
+      const std::vector<NativeInteger> &tQSHatInvModsDivsModqi =
+          tQSHatInvModsDivsModq[i];
+
+      for (usint j = 0; j < sizeP; j++) {
+        const NativeInteger &xj = m_vectors[j + sizeQ][ri];
+        curValue +=
+            Mul128(xj.ConvertToInt(), tQSHatInvModsDivsModqi[j].ConvertToInt());
+      }
+
+      const NativeInteger &xi = m_vectors[i][ri];
+      curValue += Mul128(xi.ConvertToInt(),
+                         tQSHatInvModsDivsModqi[sizeP].ConvertToInt());
+
+      const NativeInteger &curNativeValue =
+          NativeInteger(BarrettUint128ModUint64(curValue, qi.ConvertToInt(),
+                                                modqBarretMu[i]));
+
+      ans.m_vectors[i][ri] = curNativeValue.ModAddFast(alpha, qi);
+    }
+  }
+
+  return ans;
+}
+
+template <typename VecType>
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRoundQl(
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQl,
+    const std::vector<std::vector<NativeInteger>> &QlQHatInvModqDivqModq,
+    const std::vector<double> &QlQHatInvModqDivqFrac,
+    const std::vector<DoubleNativeInt> &modqBarretMu) const {
+  DCRTPolyType ans(paramsQl, this->m_format, true);
+
+  usint ringDim = this->GetRingDimension();
+  size_t sizeQ = m_vectors.size();
+  size_t sizeQl = ans.m_vectors.size();
+  size_t sizeQlHat = sizeQ - sizeQl;
+
+#pragma omp parallel for
+  for (usint ri = 0; ri < ringDim; ri++) {
+    double nu = 0.5;
+
+    for (usint j = 0; j < sizeQlHat; j++) {
+      const NativeInteger &xj = m_vectors[sizeQl + j][ri];
+      nu += QlQHatInvModqDivqFrac[j] * xj.ConvertToInt();
+    }
+
+    NativeInteger alpha = static_cast<uint64_t>(nu);
+
+    for (usint i = 0; i < sizeQl; i++) {
+      DoubleNativeInt curValue = 0;
+
+      const NativeInteger &qi = paramsQl->GetParams()[i]->GetModulus();
+      const std::vector<NativeInteger> &QlQHatInvModqDivqModqi =
+          QlQHatInvModqDivqModq[i];
+
+      for (usint j = 0; j < sizeQlHat; j++) {
+        const NativeInteger &xj = m_vectors[sizeQl + j][ri];
+        curValue +=
+            Mul128(xj.ConvertToInt(), QlQHatInvModqDivqModqi[j].ConvertToInt());
+      }
+
+      const NativeInteger &xi = m_vectors[i][ri];
+      curValue += Mul128(xi.ConvertToInt(),
+          QlQHatInvModqDivqModqi[sizeQlHat].ConvertToInt());
+
+      const NativeInteger &curNativeValue =
+          NativeInteger(BarrettUint128ModUint64(curValue, qi.ConvertToInt(),
+                                                modqBarretMu[i]));
+
+      ans.m_vectors[i][ri] = curNativeValue.ModAddFast(alpha, qi);
+    }
+  }
+
+  return ans;
+}
+
+template <typename VecType>
+void DCRTPolyImpl<VecType>::ScaleAndRoundp(
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+    const std::vector<NativeInteger> &pInvModq,
+    const std::vector<NativeInteger> &pInvModqPrecon) {
+  usint sizeQ1 = m_vectors.size();
+  usint sizeQ = sizeQ1 - 1;
+  usint ringDim = this->GetRingDimension();
+  for (usint i = 0; i < sizeQ; i++) {
+    const NativeInteger &qi = paramsQ->GetParams()[i]->GetModulus();
+    const NativeInteger &pInvModqi = pInvModq[i];
+    const NativeInteger &pInvModqiPrecon = pInvModqPrecon[i];
+    for (usint ri = 0; ri < ringDim; ri++) {
+      m_vectors[i][ri].ModSubEq(m_vectors[sizeQ][ri], qi);
+      m_vectors[i][ri].ModMulFastConstEq(pInvModqi, qi, pInvModqiPrecon);
+    }
+  }
+  m_vectors.resize(sizeQ);
+  this->m_params = paramsQ;
+}
+
 
 template <typename VecType>
 PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(

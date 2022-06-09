@@ -970,6 +970,27 @@ public:
                         const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv,
                         Format resultFormat) override;
 
+    void FastExpandCRTBasisPloverQ(
+      const std::shared_ptr<DCRTPolyImpl::Params> paramsQlPl,
+      const std::shared_ptr<DCRTPolyImpl::Params> paramsPl,
+      const std::shared_ptr<DCRTPolyImpl::Params> paramsQl,
+      const std::vector<NativeInteger> &mPlQHatInvModq,
+      const std::vector<NativeInteger> &mPlQHatInvModqPrecon,
+      const std::vector<std::vector<NativeInteger>> &qInvModp,
+      const std::vector<DoubleNativeInt> &modpBarrettMu,
+      const std::vector<NativeInteger> &PlHatInvModp,
+      const std::vector<NativeInteger> &PlHatInvModpPrecon,
+      const std::vector<std::vector<NativeInteger>> &PlHatModq,
+      const std::vector<std::vector<NativeInteger>> &alphaPlModq,
+      const std::vector<DoubleNativeInt> &modqBarrettMu,
+      const std::vector<double> &pInv);
+
+  void ExpandCRTBasisQlHat(
+      const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+      const std::vector<NativeInteger> &QlHatModq,
+      const std::vector<NativeInteger> &QlHatModqPrecon,
+      const usint sizeQ);
+
     /**
    * @brief Performs scale and round:
    * {X}_{Q} -> {\round(t/Q*X)}_t
@@ -1059,6 +1080,22 @@ public:
                                const std::vector<std::vector<NativeInteger>>& tPSHatInvModsDivsModp,
                                const std::vector<double>& tPSHatInvModsDivsFrac,
                                const std::vector<DoubleNativeInt>& modpBarretMu) const override;
+
+    DCRTPolyType ScaleAndRoundP(
+      const std::shared_ptr<Params> paramsQ,
+      const std::vector<std::vector<NativeInteger>> &tQSHatInvModsDivsModq,
+      const std::vector<double> &tQSHatInvModsDivsFrac,
+      const std::vector<DoubleNativeInt> &modqBarretMu) const;
+
+    DCRTPolyType ScaleAndRoundQl(
+        const std::shared_ptr<Params> paramsQl,
+        const std::vector<std::vector<NativeInteger>> &QlQHatInvModqDivqModq,
+        const std::vector<double> &QlQHatInvModqDivqFrac,
+        const std::vector<DoubleNativeInt> &modqBarretMu) const;
+
+    void ScaleAndRoundp(const std::shared_ptr<Params> paramsQ,
+        const std::vector<NativeInteger> &pInvModq,
+        const std::vector<NativeInteger> &pInvModqPrecon);
 
     /**
    * @brief Computes scale and round for fast rounding:
