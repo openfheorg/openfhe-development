@@ -33,10 +33,11 @@
 
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
+#include "utils/polynomials.h"
 
 namespace lbcrypto {
 
-void FHECKKSRNS::BootstrapSetup(const DltCryptoContextImpl<DCRTPoly> &cc, uint32_t dim1, uint32_t numSlots)
+void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, uint32_t dim1, uint32_t numSlots)
 {
     LOG_DEBUG_ALL("Begin");
 
@@ -57,10 +58,10 @@ void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, const std
     const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
           std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
-      PALISADE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
+      OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
     if (cryptoParams->GetRescalingTechnique() == EXACTRESCALE)
-      PALISADE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the EXACTRESCALE method.");
+      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the EXACTRESCALE method.");
 #endif
 
   // the linear method is more efficient for a level budget of 1
@@ -196,10 +197,10 @@ shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::BootstrapKeyGen(
     const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
           std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
-      PALISADE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
+      OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
     if (cryptoParams->GetRescalingTechnique() == EXACTRESCALE)
-      PALISADE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the EXACTRESCALE method.");
+      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the EXACTRESCALE method.");
 #endif
 
   auto cc = privateKey->GetCryptoContext();
@@ -226,7 +227,7 @@ shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::BootstrapKeyGen(
 
 void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext,
   const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams,
-  const DltCryptoContext<DCRTPoly> cc,
+  const CryptoContextImpl<DCRTPoly> cc,
   double correction) const {
 
   auto algo = cc->GetEncryptionAlgorithm();
@@ -273,7 +274,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapEncoding(const CryptoContextImpl<D
   return EvalBTWithPrecompEncoding(cc, precomputedA, ct);
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalBTDecoding(const DltCryptoContextImpl<DCRTPoly> &cc,
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalBTDecoding(const CryptoContextImpl<DCRTPoly> &cc,
     const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
     ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale) {
     LOG_DEBUG_ALL("Begin");
@@ -377,8 +378,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchDown(
   const auto paramsQlP = ciphertext->GetElements()[0].GetParams();
 
   usint sizeQ = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-  vector<NativeInteger> moduliQ(sizeQ);
-  vector<NativeInteger> rootsQ(sizeQ);
+  std::vector<NativeInteger> moduliQ(sizeQ);
+  std::vector<NativeInteger> rootsQ(sizeQ);
   for (size_t i = 0; i < sizeQ; i++) {
     moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
     rootsQ[i] = paramsQlP->GetParams()[i]->GetRootOfUnity();
@@ -419,8 +420,8 @@ DCRTPoly FHECKKSRNS::KeySwitchDownFirstElement(
   const auto paramsQlP = ciphertext->GetElements()[0].GetParams();
 
   usint sizeQ = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-  vector<NativeInteger> moduliQ(sizeQ);
-  vector<NativeInteger> rootsQ(sizeQ);
+  std::vector<NativeInteger> moduliQ(sizeQ);
+  std::vector<NativeInteger> rootsQ(sizeQ);
   for (size_t i = 0; i < sizeQ; i++) {
     moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
     rootsQ[i] = paramsQlP->GetParams()[i]->GetRootOfUnity();
@@ -457,7 +458,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchExt(
 
   usint sizeCt = ciphertext->GetElements().size();
   std::vector<DCRTPoly> resultElements(sizeCt);
-  const vector<DCRTPoly> &c = ciphertext->GetElements();
+  const std::vector<DCRTPoly> &c = ciphertext->GetElements();
   for (usint k = 0; k < sizeCt; k++) {
     resultElements[k] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
     if ((addFirst) || (k > 0)) {
@@ -777,7 +778,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
-    const DltCryptoContextImpl<DCRTPoly> &cc,
+    const CryptoContextImpl<DCRTPoly> &cc,
     const std::vector<std::vector<ConstPlaintext>> &A, ConstCiphertext<DCRTPoly> ctxt) const {
     LOG_DEBUG_ALL("Begin");
 
@@ -965,7 +966,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
   return result;
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const DltCryptoContextImpl<DCRTPoly> &cc,
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoContextImpl<DCRTPoly> &cc,
     const std::vector<std::vector<ConstPlaintext>> &A, ConstCiphertext<DCRTPoly> ctxt) const {
     LOG_DEBUG_ALL("Begin");
 
@@ -1151,7 +1152,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const DltCrypt
 }
 
 std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeDecoding(
-  const DltCryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
+  const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
   bool flag_i, double scale, uint32_t L) {
     LOG_DEBUG_ALL("Begin");
 
@@ -1205,8 +1206,8 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeDecoding
   auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
   usint sizeP = paramsP.size();
 
-  vector<NativeInteger> moduli(sizeQ + sizeP);
-  vector<NativeInteger> roots(sizeQ + sizeP);
+  std::vector<NativeInteger> moduli(sizeQ + sizeP);
+  std::vector<NativeInteger> roots(sizeQ + sizeP);
   for (size_t i = 0; i < sizeQ; i++) {
     moduli[i] = paramsQ[i]->GetModulus();
     roots[i] = paramsQ[i]->GetRootOfUnity();
@@ -1320,7 +1321,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeDecoding
 }
 
 std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeEncoding(
-  const DltCryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A,const std::vector<uint32_t> &rotGroup,
+  const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A,const std::vector<uint32_t> &rotGroup,
   bool flag_i, double scale, uint32_t L) {
     LOG_DEBUG_ALL("Begin");
 
@@ -1377,8 +1378,8 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeEncoding
   auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
   usint sizeP = paramsP.size();
 
-  vector<NativeInteger> moduli(sizeQ + sizeP);
-  vector<NativeInteger> roots(sizeQ + sizeP);
+  std::vector<NativeInteger> moduli(sizeQ + sizeP);
+  std::vector<NativeInteger> roots(sizeQ + sizeP);
   for (size_t i = 0; i < sizeQ; i++) {
     moduli[i] = paramsQ[i]->GetModulus();
     roots[i] = paramsQ[i]->GetRootOfUnity();
@@ -1496,7 +1497,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeEncoding
 
 }
 
-uint32_t FHECKKSRNS::GetBootstrapDepth(const DltCryptoContextImpl<DCRTPoly> &cc, const std::vector<uint32_t> &levelBudget)
+uint32_t FHECKKSRNS::GetBootstrapDepth(const CryptoContextImpl<DCRTPoly> &cc, const std::vector<uint32_t> &levelBudget)
 {
   const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
         std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
