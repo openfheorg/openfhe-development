@@ -266,34 +266,34 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::Conjugate(
   if (nullptr == ciphertext) {
     std::string errorMsg(std::string("Input ciphertext is nullptr") +
                          CALLER_INFO);
-    PALISADE_THROW(type_error, errorMsg);
+    OPENFHE_THROW(type_error, errorMsg);
   }
   usint n = ciphertext->GetElements()[0].GetRingDimension();
   if (evalKeys.empty()) {
     std::string errorMsg(std::string("Empty input key map") + CALLER_INFO);
-    PALISADE_THROW(type_error, errorMsg);
+    OPENFHE_THROW(type_error, errorMsg);
   }
   auto key = evalKeys.find(2 * n - 1);
   if (key == evalKeys.end()) {
     std::string errorMsg(std::string("Could not find an EvalKey for index ") +
                          std::to_string(2 * n - 1) + CALLER_INFO);
-    PALISADE_THROW(type_error, errorMsg);
+    OPENFHE_THROW(type_error, errorMsg);
   }
   auto fk = key->second;
   if (nullptr == fk) {
     std::string errorMsg(std::string("Invalid evalKey") + CALLER_INFO);
-    PALISADE_THROW(type_error, errorMsg);
+    OPENFHE_THROW(type_error, errorMsg);
   }
   if (ciphertext->GetCryptoContext() != fk->GetCryptoContext()) {
     std::string errorMsg(
         std::string("Items were not created in the same CryptoContextImpl") +
         CALLER_INFO);
-    PALISADE_THROW(type_error, errorMsg);
+    OPENFHE_THROW(type_error, errorMsg);
   }
   if (ciphertext->GetKeyTag() != fk->GetKeyTag()) {
     std::string errorMsg(
         std::string("Items were not encrypted with same keys") + CALLER_INFO);
-    PALISADE_THROW(type_error, errorMsg);
+    OPENFHE_THROW(type_error, errorMsg);
   }
 
   const std::vector<DCRTPoly> &c = ciphertext->GetElements();
@@ -301,7 +301,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::Conjugate(
     std::string errorMsg(
         std::string("Insufficient number of elements in ciphertext: ") +
         std::to_string(c.size()) + CALLER_INFO);
-    PALISADE_THROW(config_error, errorMsg);
+    OPENFHE_THROW(config_error, errorMsg);
   }
 
   auto cc = ciphertext->GetCryptoContext();

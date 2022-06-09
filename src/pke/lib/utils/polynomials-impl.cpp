@@ -61,9 +61,9 @@ longDiv *LongDivisionPoly(
 	uint32_t k = Degree(g);
 
 	if (n !=  f.size()-1)
-        PALISADE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divident is zero.");
+	  OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divident is zero.");
 	if (k !=  g.size()-1)
-        PALISADE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
+	  OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
 
 	std::vector<double> q;
 	std::vector<double> r = f;
@@ -114,9 +114,9 @@ longDiv *LongDivisionChebyshev(
 	uint32_t k = Degree(g);
 
 	if (n !=  f.size()-1)
-        PALISADE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divident is zero.");
+	  OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divident is zero.");
 	if (k !=  g.size()-1)
-        PALISADE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
+	  OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
 
 	std::vector<double> q;
 	std::vector<double> r = f;
@@ -202,7 +202,7 @@ std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
     LOG_DEBUG_ALL("Begin");
 
 	if (n == 0)
-        PALISADE_THROW(math_error, "ComputeDegreesPS: The degree is zero. There is no need to evaluate the polynomial.");
+	  OPENFHE_THROW(math_error, "ComputeDegreesPS: The degree is zero. There is no need to evaluate the polynomial.");
 
 	std::vector<uint32_t> klist;
 	std::vector<uint32_t> mlist;

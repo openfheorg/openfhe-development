@@ -87,7 +87,7 @@ class KeySwitchHYBRID : public KeySwitchRNS {
 
   Ciphertext<DCRTPoly> EvalFastRotationExt(
       ConstCiphertext<DCRTPoly> ciphertext, usint index,
-      const std::shared_ptr<std::vector<DCRTPoly>> expandedCiphertext, bool addFirst,
+      const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
       const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const;
 
   Ciphertext<DCRTPoly> KeySwitchDown(
@@ -113,6 +113,11 @@ class KeySwitchHYBRID : public KeySwitchRNS {
       const std::shared_ptr<std::vector<DCRTPoly>> digits,
       const EvalKey<DCRTPoly> evalKey,
       const std::shared_ptr<ParmType> paramsQl) const override;
+
+  std::shared_ptr<std::vector<DCRTPoly>> EvalFastKeySwitchExtCore(
+      const std::shared_ptr<std::vector<DCRTPoly>> digits,
+      const EvalKey<DCRTPoly> evalKey,
+      const std::shared_ptr<ParmType> paramsQl) const;
 
   /////////////////////////////////////////
   // SERIALIZATION

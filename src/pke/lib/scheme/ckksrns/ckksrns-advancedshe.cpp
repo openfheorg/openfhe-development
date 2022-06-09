@@ -55,6 +55,7 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-advancedshe.h"
+#include "utils/polynomials.h"
 
 namespace lbcrypto {
 
@@ -260,8 +261,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
     }
     else {
 
-      vector<Ciphertext<DCRTPoly>> ctxs(dc);
-      vector<double> weights(dc);
+      std::vector<Ciphertext<DCRTPoly>> ctxs(dc);
+      std::vector<double> weights(dc);
 
       for (uint32_t i = 0; i < dc; i++) {
         ctxs[i] = powers[i];
@@ -295,8 +296,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
     qcopy.resize(k);
     if (Degree(qcopy) > 0){
 
-      vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
-      vector<double> weights(Degree(qcopy));
+      std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
+      std::vector<double> weights(Degree(qcopy));
 
       for (uint32_t i = 0; i < Degree(qcopy); i++) {
         ctxs[i] = powers[i];
@@ -334,8 +335,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
       scopy.resize(k);
       if (Degree(scopy) > 0){
 
-        vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
-        vector<double> weights(Degree(scopy));
+        std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
+        std::vector<double> weights(Degree(scopy));
 
         for (uint32_t i = 0; i < Degree(scopy); i++) {
           ctxs[i] = powers[i];
@@ -531,8 +532,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
     }
     else {
 
-      vector<Ciphertext<DCRTPoly>> ctxs(dc);
-      vector<double> weights(dc);
+      std::vector<Ciphertext<DCRTPoly>> ctxs(dc);
+      std::vector<double> weights(dc);
 
       for (uint32_t i = 0; i < dc; i++) {
         ctxs[i] = powers[i];
@@ -567,8 +568,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
     qcopy.resize(k);
     if (Degree(qcopy) > 0){
 
-      vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
-      vector<double> weights(Degree(qcopy));
+      std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
+      std::vector<double> weights(Degree(qcopy));
 
       for (uint32_t i = 0; i < Degree(qcopy); i++) {
         ctxs[i] = powers[i];
@@ -606,8 +607,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
       scopy.resize(k);
       if (Degree(scopy) > 0){
 
-        vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
-        vector<double> weights(Degree(scopy));
+        std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
+        std::vector<double> weights(Degree(scopy));
 
         for (uint32_t i = 0; i < Degree(scopy); i++) {
           ctxs[i] = powers[i];
@@ -844,8 +845,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
         cu = T.front();
     }
     else {
-      vector<Ciphertext<DCRTPoly>> ctxs(dc);
-      vector<double> weights(dc);
+      std::vector<Ciphertext<DCRTPoly>> ctxs(dc);
+      std::vector<double> weights(dc);
 
       for (uint32_t i = 0; i < dc; i++) {
         ctxs[i] = T[i];
@@ -888,8 +889,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
     qcopy.resize(k);
     if (Degree(qcopy) > 0){
 
-      vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
-      vector<double> weights(Degree(qcopy));
+      std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
+      std::vector<double> weights(Degree(qcopy));
 
       for (uint32_t i = 0; i < Degree(qcopy); i++) {
         ctxs[i] = T[i];
@@ -940,8 +941,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
     auto scopy = s2;
     scopy.resize(k);
     if (Degree(scopy) > 0){
-      vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
-      vector<double> weights(Degree(scopy));
+      std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
+      std::vector<double> weights(Degree(scopy));
 
       for (uint32_t i = 0; i < Degree(scopy); i++) {
         ctxs[i] = T[i];
@@ -1013,7 +1014,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
   // computes linear transformation y = -1 + 2 (x-a)/(b-a)
   // consumes one level when a <> -1 && b <> 1
 
-  auto cc = std::dynamic_pointer_cast<DltCryptoContextImpl<DCRTPoly>>(x->GetCryptoContext());
+  auto cc = x->GetCryptoContext();
 
   if ( (a - std::round(a) < 1e-10) && (b - std::round(b) < 1e-10) && (std::round(a) == -1) && (std::round(b) == 1) )
   { // no linear transformation is needed if a = -1, b = 1
@@ -1160,8 +1161,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
         cu = T.front();
     }
     else {
-      vector<Ciphertext<DCRTPoly>> ctxs(dc);
-      vector<double> weights(dc);
+      std::vector<Ciphertext<DCRTPoly>> ctxs(dc);
+      std::vector<double> weights(dc);
 
       for (uint32_t i = 0; i < dc; i++) {
         ctxs[i] = T[i];
@@ -1200,8 +1201,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
     qcopy.resize(k);
     if (Degree(qcopy) > 0){
 
-      vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
-      vector<double> weights(Degree(qcopy));
+      std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
+      std::vector<double> weights(Degree(qcopy));
 
       for (uint32_t i = 0; i < Degree(qcopy); i++) {
         ctxs[i] = T[i];
@@ -1247,8 +1248,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
     scopy.resize(k);
     if (Degree(scopy) > 0){
 
-      vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
-      vector<double> weights(Degree(scopy));
+      std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
+      std::vector<double> weights(Degree(scopy));
 
       for (uint32_t i = 0; i < Degree(scopy); i++) {
         ctxs[i] = T[i];
@@ -1318,8 +1319,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> AdvancedSHECKKSRNS::EvalLTKe
     int32_t bootstrapFlag, int32_t conjFlag ) {
     LOG_DEBUG_ALL("Begin");
 
-  auto cc = std::dynamic_pointer_cast<DltCryptoContextImpl<DCRTPoly>>
-      (privateKey->GetCryptoContext());
+  auto cc = privateKey->GetCryptoContext();
 
   uint32_t m = cc->GetCyclotomicOrder();
 
