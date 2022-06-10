@@ -67,9 +67,9 @@ EvalKey<Element> PREBase<Element>::ReKeyGen(
 template <class Element>
 Ciphertext<Element> PREBase<Element>::ReEncrypt(
   ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-  const PublicKey<Element> publicKey, usint noiseflooding) const {
+  const PublicKey<Element> publicKey) const {
   auto algo = ciphertext->GetCryptoContext()->GetScheme();
-
+  //const DggType &floodingdist = ciphertext->GetCryptoContext()->GetCryptoParameters()->GetFloodingDiscreteGaussianGenerator();
   Ciphertext<Element> result = ciphertext->Clone();
   if (publicKey != nullptr) {
     std::vector<Element> &cv = result->GetElements();

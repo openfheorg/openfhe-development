@@ -63,6 +63,13 @@ enum RescalingTechnique {
   NORESCALE,
   INVALID_RS_TECHNIQUE  // TODO (dsuponit): make this the first value
 };
+
+enum ProxyReEncryptionMode {
+  INDCPA,
+  FIXED_NOISE_HRA,
+  NOISE_FLOODING_HRA,
+  MODULUS_SWITCHING_HRA
+};
 std::ostream& operator<<(std::ostream& s, RescalingTechnique t);
 
 enum KeySwitchTechnique { INVALID_KS_TECH, BV, HYBRID };

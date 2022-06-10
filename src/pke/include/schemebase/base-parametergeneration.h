@@ -153,7 +153,8 @@ public:
       enum KeySwitchTechnique ksTech,
       enum RescalingTechnique rsTech,
       enum EncryptionTechnique encTech,
-      enum MultiplicationTechnique multTech) const {
+      enum MultiplicationTechnique multTech,
+      enum ProxyReEncryptionMode PREMode) const {
     OPENFHE_THROW(
         not_implemented_error,
         "This signature for ParamsGen is not supported for this scheme.");

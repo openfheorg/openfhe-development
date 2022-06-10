@@ -84,7 +84,7 @@ class PREBase {
    */
   virtual Ciphertext<Element> ReEncrypt(
       ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-      const PublicKey<Element> publicKey = nullptr, usint noiseflooding = 0) const;
+      const PublicKey<Element> publicKey = nullptr) const;
 };
 
 }  // namespace lbcrypto

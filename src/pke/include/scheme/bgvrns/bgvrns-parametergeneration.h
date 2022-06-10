@@ -76,7 +76,8 @@ public:
                  enum KeySwitchTechnique ksTech,
                  enum RescalingTechnique rsTech,
                  enum EncryptionTechnique encTech,
-                 enum MultiplicationTechnique multTech) const override;
+                 enum MultiplicationTechnique multTech,
+		         enum ProxyReEncryptionMode PREMode) const override;
   
   /*
    * Method that computes a security-compliant ring dimension.
