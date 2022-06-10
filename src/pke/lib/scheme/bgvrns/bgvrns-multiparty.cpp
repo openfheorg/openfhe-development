@@ -76,20 +76,22 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
   size_t sizeQl = b.GetNumOfElements();
 
   NativeInteger scalingFactorInt = ciphertextVec[0]->GetScalingFactorInt();
-  for (int l = ((int)sizeQl) - 1; l > 0; l--) {
-    b.ModReduce(
-        cryptoParams->GetPlaintextModulus(),
-        cryptoParams->GettModqPrecon(),
-        cryptoParams->GetNegtInvModq(l),
-        cryptoParams->GetNegtInvModqPrecon(l),
-        cryptoParams->GetqlInvModq(l),
-        cryptoParams->GetqlInvModqPrecon(l));
-  }
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
-    for (int i = 0; i < ((int)sizeQl) - 1; i++) {
-      NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
-      NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
-      scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+  if(sizeQl > 0) {
+    for (size_t i = sizeQl - 1; i > 0; --i) {
+      b.ModReduce(
+          cryptoParams->GetPlaintextModulus(),
+          cryptoParams->GettModqPrecon(),
+          cryptoParams->GetNegtInvModq(i),
+          cryptoParams->GetNegtInvModqPrecon(i),
+          cryptoParams->GetqlInvModq(i),
+          cryptoParams->GetqlInvModqPrecon(i));
+    }
+    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
+      for (size_t i = 0; i < sizeQl - 1; ++i) {
+        NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+        NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+        scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+      }
     }
   }
 

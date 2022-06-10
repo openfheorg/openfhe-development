@@ -69,14 +69,16 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(
   std::vector<DCRTPoly> &cv = ciphertext->GetElements();
   usint sizeQl = cv[0].GetNumOfElements();
 
-  for (auto &c : cv) {
-    for (size_t l = sizeQl - 1; l >= sizeQl - levels; --l) {
-      c.ModReduce(t,
-          cryptoParams->GettModqPrecon(),
-          cryptoParams->GetNegtInvModq(l),
-          cryptoParams->GetNegtInvModqPrecon(l),
-          cryptoParams->GetqlInvModq(l),
-          cryptoParams->GetqlInvModqPrecon(l));
+  if( sizeQl >= levels && sizeQl > 0) {
+    for (auto &c : cv) {
+      for (size_t i = sizeQl - 1; i >= sizeQl - levels; --i) {
+        c.ModReduce(t,
+            cryptoParams->GettModqPrecon(),
+            cryptoParams->GetNegtInvModq(i),
+            cryptoParams->GetNegtInvModqPrecon(i),
+            cryptoParams->GetqlInvModq(i),
+            cryptoParams->GetqlInvModqPrecon(i));
+      }
     }
   }
 
