@@ -93,7 +93,7 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
 
   uint32_t k = cryptoParamsBFVrns->GetNumPerPartQ();
   uint32_t numPartQ = cryptoParamsBFVrns->GetNumPartQ();
-  double Bkey = 1.0;
+  const double Bkey = 1.0;
 
   // Bound of the Gaussian error polynomial
   double Berr = sigma * sqrt(alpha);
@@ -145,11 +145,7 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   // get an estimate of the error q / (4t)
   double loge = logq / log(2) - 2 - log2(p);
 
-  double logExtra = 0.0;
-  if (!keySwitch)
-    logExtra = log2(delta(n));
-  else
-    logExtra = log2(noiseKS(n, logq));
+  double logExtra = keySwitch ? log2(noiseKS(n, logq)) : log2(delta(n));
 
   // error should be at least 2^10 * delta(n) larger than the levels we are dropping
   int32_t levels = std::floor((loge - 30 - logExtra) / dcrtBits);

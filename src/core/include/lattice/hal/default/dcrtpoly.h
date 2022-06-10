@@ -1093,10 +1093,6 @@ public:
         const std::vector<double> &QlQHatInvModqDivqFrac,
         const std::vector<DoubleNativeInt> &modqBarretMu) const;
 
-    void ScaleAndRoundp(const std::shared_ptr<Params> paramsQ,
-        const std::vector<NativeInteger> &pInvModq,
-        const std::vector<NativeInteger> &pInvModqPrecon);
-
     /**
    * @brief Computes scale and round for fast rounding:
    * {X}_{Q} -> {\round(t/Q * X)}_t
