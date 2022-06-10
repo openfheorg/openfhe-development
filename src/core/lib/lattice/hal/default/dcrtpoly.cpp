@@ -1768,6 +1768,7 @@ void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(
     m_vectors[i] = partQl.m_vectors[i];
   }
 
+#pragma omp parallel for
   for (size_t j = 0; j < sizePl; j++) {
     m_vectors[sizeQl + j] = partPl.m_vectors[j];
   }
@@ -2355,28 +2356,6 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRoundQl(
 
   return ans;
 }
-
-template <typename VecType>
-void DCRTPolyImpl<VecType>::ScaleAndRoundp(
-    const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
-    const std::vector<NativeInteger> &pInvModq,
-    const std::vector<NativeInteger> &pInvModqPrecon) {
-  usint sizeQ1 = m_vectors.size();
-  usint sizeQ = sizeQ1 - 1;
-  usint ringDim = this->GetRingDimension();
-  for (usint i = 0; i < sizeQ; i++) {
-    const NativeInteger &qi = paramsQ->GetParams()[i]->GetModulus();
-    const NativeInteger &pInvModqi = pInvModq[i];
-    const NativeInteger &pInvModqiPrecon = pInvModqPrecon[i];
-    for (usint ri = 0; ri < ringDim; ri++) {
-      m_vectors[i][ri].ModSubEq(m_vectors[sizeQ][ri], qi);
-      m_vectors[i][ri].ModMulFastConstEq(pInvModqi, qi, pInvModqiPrecon);
-    }
-  }
-  m_vectors.resize(sizeQ);
-  this->m_params = paramsQ;
-}
-
 
 template <typename VecType>
 PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
