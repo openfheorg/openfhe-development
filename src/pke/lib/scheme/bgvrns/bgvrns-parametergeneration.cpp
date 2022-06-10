@@ -203,7 +203,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     enum KeySwitchTechnique ksTech,
     enum RescalingTechnique rsTech,
     enum EncryptionTechnique encTech,
-    enum MultiplicationTechnique multTech) const {
+    enum MultiplicationTechnique multTech,
+    enum ProxyReEncryptionMode PREMode) const {
   if(!ptm)
       OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
 
@@ -377,6 +378,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     cryptoParamsBGVRNS->SetEncodingParams(encodingParamsNew);
   }
   cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, 0);
+
+  //compute the flooding distribution parameter based on the security mode for pre
   return true;
 }
 

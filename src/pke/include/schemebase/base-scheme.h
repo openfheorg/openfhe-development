@@ -185,14 +185,15 @@ class SchemeBase {
                          enum KeySwitchTechnique ksTech,
                          enum RescalingTechnique rsTech,
                          enum EncryptionTechnique encTech,
-                         enum MultiplicationTechnique multTech) const {
+                         enum MultiplicationTechnique multTech,
+                         enum ProxyReEncryptionMode PREMode) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount,
                                     keySwitchCount,
                                     cyclOrder, ptm, numPrimes,
                                     relinWindow, mode, firstModSize,
                                     dcrtBits, numPartQ, multihopQBound,
-                                    ksTech, rsTech, encTech, multTech);
+                                    ksTech, rsTech, encTech, multTech, PREMode);
     }
     OPENFHE_THROW(
         not_implemented_error,
@@ -442,8 +443,7 @@ class SchemeBase {
 
   virtual Ciphertext<Element> ReEncrypt(ConstCiphertext<Element> ciphertext,
                                         const EvalKey<Element> evalKey,
-                                        const PublicKey<Element> publicKey,
-                                        usint noiseflooding) const {
+                                        const PublicKey<Element> publicKey) const {
     if (m_PRE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -451,7 +451,7 @@ class SchemeBase {
         OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
 
       auto result =
-          m_PRE->ReEncrypt(ciphertext, evalKey, publicKey, noiseflooding);
+          m_PRE->ReEncrypt(ciphertext, evalKey, publicKey);
       result->SetKeyTag(evalKey->GetKeyTag());
       return result;
     }

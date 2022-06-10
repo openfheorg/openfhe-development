@@ -2116,12 +2116,11 @@ protected:
    */
   Ciphertext<Element> ReEncrypt(ConstCiphertext<Element> ciphertext,
                                 EvalKey<Element> evalKey,
-                                const PublicKey<Element> publicKey = nullptr,
-                                usint noiseflooding = 0) const {
+                                const PublicKey<Element> publicKey = nullptr) const {
     CheckCiphertext(ciphertext);
     CheckKey(evalKey);
 
-    return GetScheme()->ReEncrypt(ciphertext, evalKey, publicKey, noiseflooding);
+    return GetScheme()->ReEncrypt(ciphertext, evalKey, publicKey);
   }
 
   /////////////////////////////////////////

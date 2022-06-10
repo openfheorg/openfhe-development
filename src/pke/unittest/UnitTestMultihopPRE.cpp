@@ -62,6 +62,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     usint qmodulus = 27;
     usint firstqmod = 27;
 
+    CCParams<CryptoContextBGVRNS> parameters;
     if (security_model == 0) {	
       ringDimension = 1024;
       relinWindow = 9;
@@ -69,6 +70,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
 
       qmodulus = 27;
       firstqmod = 27;
+      parameters.SetPREMode(INDCPA);
     } else if (security_model == 1) {
       ringDimension = 2048;
       relinWindow = 18;
@@ -76,6 +78,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
 
       qmodulus = 54;
       firstqmod = 54;
+      parameters.SetPREMode(FIXED_NOISE_HRA);
     } else if (security_model == 2) {
       ringDimension = 8192;
       relinWindow = 1;
@@ -83,9 +86,9 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
 
       qmodulus = 218;
       firstqmod = 60;
+      parameters.SetPREMode(NOISE_FLOODING_HRA);
     }
 
-    CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetMultiplicativeDepth(0);
     parameters.SetPlaintextModulus(plaintextModulus);
     parameters.SetKeySwitchTechnique(BV);
@@ -179,7 +182,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
         reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey); //fixed bits noise HRA secure
       } else {
         //std::cout << "Provable HRA secure PRE" << std::endl;
-        reEncryptedCT1 = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey, 1); //HRA secure noiseflooding
+        reEncryptedCT1 = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey); //HRA secure noiseflooding
         reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1); //mod reduction for noise flooding
       }
       

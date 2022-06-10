@@ -201,9 +201,21 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
                   ? Element(dgg, elementParams, Format::EVALUATION)
                   : Element(tug, elementParams, Format::EVALUATION);
 
-  Element e0(dgg, elementParams, Format::EVALUATION);
-  Element e1(dgg, elementParams, Format::EVALUATION);
+  //Element e0(dgg, elementParams, Format::EVALUATION);
+  //Element e1(dgg, elementParams, Format::EVALUATION);
 
+  Element e0;
+  Element e1;
+
+  auto preMode = cryptoParams->GetPREMode();
+  if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
+    const DggType &dggf = cryptoParams->GetFloodingDiscreteGaussianGenerator();
+    e0 = Element(dggf, elementParams, Format::EVALUATION);
+    e1 = Element(dggf, elementParams, Format::EVALUATION);
+  } else {
+    e0 = Element(dgg, elementParams, Format::EVALUATION);
+    e1 = Element(dgg, elementParams, Format::EVALUATION);
+  }
   Element b(elementParams);
   Element a(elementParams);
 
