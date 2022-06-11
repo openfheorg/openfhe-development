@@ -611,6 +611,616 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
   return result;
 }
 
+template <typename Element>
+void CryptoContextImpl<Element>::EvalLTKeyGen(const PrivateKey<Element> privateKey, uint32_t dim1,
+                                                 int32_t bootstrapFlag, int32_t conjFlag) {
+  if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
+    OPENFHE_THROW(config_error, "Private key passed to EvalLTKeyGen was not generated with this crypto context");
+  }
+
+  auto evalKeys = this->GetScheme()
+                      ->EvalLTKeyGen(privateKey, dim1, bootstrapFlag,
+                                     conjFlag);  // if it is just for LT/encoding, we need
+                                                 // to pass dim1 too
+
+  auto ekv = GetAllEvalRotationKeys().find(privateKey->GetKeyTag());
+  if (ekv == GetAllEvalRotationKeys().end()) {
+    GetAllEvalRotationKeys()[privateKey->GetKeyTag()] = evalKeys;
+  } else {
+    auto& currRotMap = GetEvalRotationKeyMap(privateKey->GetKeyTag());
+    auto iterRowKeys = evalKeys->begin();
+    while (iterRowKeys != evalKeys->end()) {
+      auto idx = iterRowKeys->first;
+      // Search current rotation key map and add key
+      // only if it doesn't exist
+      if (currRotMap.find(idx) == currRotMap.end()) {
+        currRotMap.insert(*iterRowKeys);
+      }
+      iterRowKeys++;
+    }
+  }
+  // EvalAtIndexKeyGen(privateKey, indexList);
+}
+
+template <typename Element>
+std::vector<int32_t> CryptoContextImpl<Element>::FindLTRotationIndices(uint32_t dim1, int32_t bootstrapFlag, uint32_t m) {
+    // if it is just for LT/encoding, we need to pass dim1 too
+    return GetScheme()->FindLTRotationIndices(dim1, bootstrapFlag, m, m_blockDimension);
+
+}
+
+//#pragma clang diagnostic push
+//#pragma ide diagnostic ignored "openmp-use-default-none"
+template <typename Element>
+std::vector<ConstPlaintext> CryptoContextImpl<Element>::EvalLTPrecompute(
+    const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1, double scale, uint32_t L) const {
+  if (A[0].size() != A.size()) {
+    OPENFHE_THROW(math_error, "The matrix passed to EvalLTPrecompute is not square");
+  }
+
+  uint32_t slots = A.size();
+  uint32_t m = this->GetCyclotomicOrder();
+
+  // Computing the baby-step bStep and the giant-step gStep.
+  int bStep = (dim1 == 0) ? ceil(sqrt(slots)) : dim1;
+  int gStep = ceil(static_cast<double>(slots) / bStep);
+
+  // make sure the plaintext is created only with the necessary amount of moduli
+
+  const shared_ptr<CryptoParametersCKKSRNS> cryptoParamsCKKS =
+      std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
+
+  ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
+
+  uint32_t towersToDrop = 0;
+  if (L != 0) {
+    towersToDrop = elementParams.GetParams().size() - L - 1;
+    for (uint32_t i = 0; i < towersToDrop; i++) elementParams.PopLastParam();
+  }
+
+  auto paramsQ = elementParams.GetParams();
+  usint sizeQ = paramsQ.size();
+  auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
+  usint sizeP = paramsP.size();
+
+  std::vector<NativeInteger> moduli(sizeQ + sizeP);
+  std::vector<NativeInteger> roots(sizeQ + sizeP);
+  for (size_t i = 0; i < sizeQ; i++) {
+    moduli[i] = paramsQ[i]->GetModulus();
+    roots[i] = paramsQ[i]->GetRootOfUnity();
+  }
+
+  for (size_t i = 0; i < sizeP; i++) {
+      moduli[sizeQ + i] = paramsP[i]->GetModulus();
+      roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
+  }
+
+  auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(m, moduli, roots);
+  auto elementParamsPtr2 = std::dynamic_pointer_cast<typename Element::Params>(elementParamsPtr);
+  std::vector<ConstPlaintext> result(slots);
+#pragma omp parallel for
+  for (int j = 0; j < gStep; j++) {
+      int offset = -bStep * j;
+      for (int i = 0; i < bStep; i++) {
+      if (bStep*j + i < static_cast<int>(slots)) {
+        auto diag = ExtractShiftedDiagonal(A, bStep*j + i);
+        for (uint32_t k = 0; k < diag.size(); k++) diag[k] *= scale;
+
+        result[bStep * j + i] =
+          this->MakeCKKSPackedPlaintext(Rotate(Fill(diag, m / 4), offset), 1, towersToDrop, elementParamsPtr2);
+      }
+    }
+  }
+
+  return result;
+}
+//#pragma clang diagnostic pop
+
+template <typename Element>
+std::vector<ConstPlaintext> CryptoContextImpl<Element>::EvalLTPrecompute(
+    const std::vector<std::vector<std::complex<double>>>& A, const std::vector<std::vector<std::complex<double>>>& B,
+    uint32_t dim1, uint32_t orientation, double scale, uint32_t L) const {
+  uint32_t slots = A.size();
+  uint32_t m = this->GetCyclotomicOrder();
+
+  // Computing the baby-step bStep and the giant-step gStep.
+  int bStep = (dim1 == 0) ? ceil(sqrt(slots)) : dim1;
+  int gStep = ceil(static_cast<double>(slots) / bStep);
+
+  // make sure the plaintext is created only with the necessary amount of moduli
+
+  const shared_ptr<CryptoParametersCKKSRNS> cryptoParamsCKKS =
+      std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
+
+  ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
+
+  uint32_t towersToDrop = 0;
+  if (L != 0) {
+    towersToDrop = elementParams.GetParams().size() - L - 1;
+    for (uint32_t i = 0; i < towersToDrop; i++) elementParams.PopLastParam();
+  }
+
+  auto paramsQ = elementParams.GetParams();
+  usint sizeQ = paramsQ.size();
+  auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
+  usint sizeP = paramsP.size();
+
+  std::vector<NativeInteger> moduli(sizeQ + sizeP);
+  std::vector<NativeInteger> roots(sizeQ + sizeP);
+  for (size_t i = 0; i < sizeQ; i++) {
+    moduli[i] = paramsQ[i]->GetModulus();
+    roots[i] = paramsQ[i]->GetRootOfUnity();
+  }
+
+  for (size_t i = 0; i < sizeP; i++) {
+    moduli[sizeQ + i] = paramsP[i]->GetModulus();
+    roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
+  }
+
+  auto elementParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(m, moduli, roots);
+  auto elementParamsPtr2 = std::dynamic_pointer_cast<typename Element::Params>(elementParamsPtr);
+  std::vector<ConstPlaintext> result(slots);
+  if (orientation == 0) {  // vertical concatenation - used during homomorphic encoding
+    // #pragma omp parallel for
+    for (int j = 0; j < gStep; j++) {
+      int offset = -bStep * j;
+      for (int i = 0; i < bStep; i++) {
+        if (bStep * j + i < static_cast<int>(slots)) {
+          auto vecA = ExtractShiftedDiagonal(A, bStep * j + i);
+          auto vecB = ExtractShiftedDiagonal(B, bStep * j + i);
+
+          vecA.insert(vecA.end(), vecB.begin(), vecB.end());
+          for (uint32_t k = 0; k < vecA.size(); k++) vecA[k] *= scale;
+
+          result[bStep * j + i] =
+            this->MakeCKKSPackedPlaintext(Rotate(Fill(vecA, m / 4), offset), 1, towersToDrop, elementParamsPtr2);
+        }
+      }
+    }
+  } else {  // horizontal concatenation - used during homomorphic decoding
+    std::vector<std::vector<std::complex<double>>> newA(slots);
+
+    //  A and B are concatenated horizontally
+    for (uint32_t i = 0; i < A.size(); i++) {
+      auto vecA = A[i];
+      auto vecB = B[i];
+      vecA.insert(vecA.end(), vecB.begin(), vecB.end());
+      newA[i] = vecA;
+    }
+
+#pragma omp parallel for
+    for (int j = 0; j < gStep; j++) {
+        int offset = -bStep*j;
+        for (int i = 0; i < bStep; i++) {
+        if (bStep*j + i < static_cast<int>(slots)) {
+          // shifted diagonal is computed for rectangular map newA of dimension
+          // slots x 2*slots
+          auto vec = ExtractShiftedDiagonal(newA, bStep * j + i);
+          for (uint32_t k = 0; k < vec.size(); k++) vec[k] *= scale;
+
+          result[bStep * j + i] =
+              this->MakeCKKSPackedPlaintext(Rotate(Fill(vec, m / 4), offset), 1, towersToDrop, elementParamsPtr2);
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalLTWithPrecomp(const std::vector<ConstPlaintext>& A,
+                                                                     ConstCiphertext<Element> ct, uint32_t dim1) {
+  uint32_t slots = A.size();
+
+  // Computing the baby-step bStep and the giant-step gStep.
+  uint32_t bStep = (dim1 == 0) ? ceil(sqrt(slots)) : dim1;
+  uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
+
+  uint32_t m = this->GetCyclotomicOrder();
+  uint32_t n = this->GetRingDimension();
+
+  // computes the NTTs for each CRT limb (for the hoisted automorphisms used
+  // later on)
+  auto digits = this->EvalFastRotationPrecompute(ct);
+
+  std::vector<Ciphertext<Element>> fastRotation(bStep - 1);
+
+  // hoisted automorphisms
+#pragma omp parallel for
+  for (uint32_t j = 1; j < bStep; j++) {
+    fastRotation[j - 1] = this->EvalFastRotationExt(ct, j, digits, true);
+  }
+
+  Ciphertext<Element> result;
+  Element first;
+
+  for (uint32_t j = 0; j < gStep; j++) {
+    Ciphertext<Element> inner = this->EvalMult(KeySwitchExt(ct, true), A[bStep * j]);
+    for (uint32_t i = 1; i < bStep; i++) {
+      if (bStep * j + i < slots) {
+        inner = this->EvalAdd(inner, this->EvalMult(A[bStep * j + i], fastRotation[i - 1]));
+      }
+    }
+
+    if (j == 0) {
+      first = KeySwitchDownFirstElement(inner);
+      auto elements = inner->GetElements();
+      elements[0].SetValuesToZero();
+      inner->SetElements(elements);
+      result = inner;
+    } else {
+      inner = KeySwitchDown(inner);
+      // Find the automorphism index that corresponds to rotation index index.
+      usint autoIndex = FindAutomorphismIndex2nComplex(bStep * j, m);
+      std::vector<usint> map(n);
+      PrecomputeAutoMap(n, autoIndex, &map);
+      Element firstCurrent = inner->GetElements()[0].AutomorphismTransform(autoIndex, map);
+      first += firstCurrent;
+
+      auto innerDigits = this->EvalFastRotationPrecompute(inner);
+      result = this->EvalAdd(result, EvalFastRotationExt(inner, bStep * j, innerDigits, false));
+    }
+  }
+
+  result = KeySwitchDown(result);
+  auto elements = result->GetElements();
+  elements[0] += first;
+  result->SetElements(elements);
+
+  return result;
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalLT(const std::vector<std::vector<std::complex<double>>>& A,
+                                                          ConstCiphertext<Element> ct, uint32_t dim1, double scale) {
+  auto precomputedA = this->EvalLTPrecompute(A, dim1, scale);
+
+  return EvalLTWithPrecomp(precomputedA, ct, dim1);
+}
+
+//#pragma clang diagnostic push
+//#pragma ide diagnostic ignored "openmp-use-default-none"
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalLTWithPrecomp(const std::vector<Plaintext>& A,
+                                                                     ConstCiphertext<Element> ct, uint32_t dim1) {
+
+    uint32_t slots = A.size();
+//    cout<<"DIM1: "<<dim1<<endl;
+//    cout<<"SLOTS: "<<slots<<endl;
+
+    // Computing the baby-step g and the giant-step h.
+    uint32_t g = (dim1 == 0) ? ceil(sqrt(slots)) : dim1;
+//    uint32_t g = (dim1 == 0) ? 4 : dim1;
+    uint32_t h = ceil(static_cast<double>(slots) / g);
+
+    uint32_t m = this->GetCyclotomicOrder();
+    uint32_t n = this->GetRingDimension();
+
+    // computes the NTTs for each CRT limb (for the hoisted automorphisms used
+    // later on)
+    auto digits = this->EvalFastRotationPrecompute(ct);
+
+    std::vector<Ciphertext<Element>> fastRotation(g - 1);
+
+    // hoisted automorphisms
+#pragma omp parallel for
+for (uint32_t j = 1; j < g; j++) {
+    fastRotation[j - 1] = this->EvalFastRotationExt(ct, j, digits, true);
+}
+
+Ciphertext<Element> result;
+Element first;
+
+for (uint32_t j = 0; j < h; j++) {
+    Ciphertext<Element> inner = this->EvalMult(KeySwitchExt(ct, true), A[g * j]);
+    for (uint32_t i = 1; i < g; i++) {
+        if (g * j + i < slots) {
+            inner = this->EvalAdd(inner, this->EvalMult(A[g * j + i], fastRotation[i - 1]));
+        }
+    }
+
+    if (j == 0) {
+        first = KeySwitchDownFirstElement(inner);
+        auto elements = inner->GetElements();
+        elements[0].SetValuesToZero();
+        inner->SetElements(elements);
+        result = inner;
+    } else {
+        inner = KeySwitchDown(inner);
+        // Find the automorphism index that corresponds to rotation index index.
+        usint autoIndex = FindAutomorphismIndex2nComplex(g * j, m);
+        std::vector<usint> map(n);
+        PrecomputeAutoMap(n, autoIndex, &map);
+        Element firstCurrent = inner->GetElements()[0].AutomorphismTransform(autoIndex, map);
+        first += firstCurrent;
+
+        auto innerDigits = this->EvalFastRotationPrecompute(inner);
+        result = this->EvalAdd(result, EvalFastRotationExt(inner, g * j, innerDigits, false));
+    }
+}
+
+result = KeySwitchDown(result);
+auto elements = result->GetElements();
+elements[0] += first;
+result->SetElements(elements);
+
+return result;
+}
+//#pragma clang diagnostic pop
+
+// -----------THE CODE FOR LINEAR TRANSFORM ENDS HERE----------
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalBTSetup(uint32_t dim1, uint32_t numSlots, uint32_t debugFlag, bool precomp) {
+  GetScheme()->EvalBTSetup(*this, dim1, numSlots, debugFlag, precomp);
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalBTSetup(std::vector<uint32_t> levelBudget, std::vector<uint32_t> dim1,
+                                                uint32_t numSlots, uint32_t debugFlag, bool precomp) {
+  GetScheme()->EvalBTSetup(*this, levelBudget, dim1, numSlots, debugFlag, precomp);
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalBTPrecompute(uint32_t debugFlag) {
+  GetScheme()->EvalBTPrecompute(*this, debugFlag);
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalBTKeyGen(const PrivateKey<Element> privateKey, int32_t bootstrapFlag) {
+  if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
+    OPENFHE_THROW(config_error, "Private key passed to EvalBTKeyGen was not generated with this crypto context");
+  }
+
+  auto evalKeys = GetScheme()->EvalBTKeyGen(privateKey, bootstrapFlag);
+
+  auto ekv = GetAllEvalRotationKeys().find(privateKey->GetKeyTag());
+  if (ekv == GetAllEvalRotationKeys().end()) {
+    GetAllEvalRotationKeys()[privateKey->GetKeyTag()] = evalKeys;
+  } else {
+    auto& currRotMap = GetEvalRotationKeyMap(privateKey->GetKeyTag());
+    auto iterRowKeys = evalKeys->begin();
+    while (iterRowKeys != evalKeys->end()) {
+      auto idx = iterRowKeys->first;
+      // Search current rotation key map and add key
+      // only if it doesn't exist
+      if (currRotMap.find(idx) == currRotMap.end()) {
+        currRotMap.insert(*iterRowKeys);
+      }
+      iterRowKeys++;
+    }
+  }
+}
+
+template <typename Element>
+EvalKey<Element> CryptoContextImpl<Element>::ConjugateKeyGen(
+        const PrivateKey<Element> privateKey) const{
+    return GetScheme()->ConjugateKeyGen(privateKey);
+}
+
+template <typename Element>
+std::vector<int32_t> CryptoContextImpl<Element>::FindBTRotationIndices(int32_t bootstrapFlag, uint32_t m, uint32_t blockDimension) {
+    return GetScheme()->FindBTRotationIndices(bootstrapFlag, m, blockDimension);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalBT(ConstCiphertext<Element> ciphertext) const {
+  return GetScheme()->EvalBT(ciphertext);
+}
+
+template <typename Element>
+uint32_t CryptoContextImpl<Element>::GetNumRotationsEnc() const {
+  return GetScheme()->GetNumRotationsEnc();
+}
+
+template <typename Element>
+uint32_t CryptoContextImpl<Element>::GetGiantStepEnc() const {
+  return GetScheme()->GetGiantStepEnc();
+}
+
+template <typename Element>
+uint32_t CryptoContextImpl<Element>::GetNumRotationsRemEnc() const {
+  return GetScheme()->GetNumRotationsRemEnc();
+}
+
+template <typename Element>
+uint32_t CryptoContextImpl<Element>::GetGiantStepRemEnc() const {
+  return GetScheme()->GetGiantStepRemEnc();
+}
+
+template <typename Element>
+uint32_t CryptoContextImpl<Element>::GetNumRotationsDec() const {
+  return GetScheme()->GetNumRotationsDec();
+}
+
+template <typename Element>
+uint32_t CryptoContextImpl<Element>::GetGiantStepDec() const {
+  return GetScheme()->GetGiantStepDec();
+}
+
+template <typename Element>
+uint32_t CryptoContextImpl<Element>::GetNumRotationsRemDec() const {
+  return GetScheme()->GetNumRotationsRemDec();
+}
+
+template <typename Element>
+uint32_t CryptoContextImpl<Element>::GetGiantStepRemDec() const {
+  return GetScheme()->GetGiantStepRemDec();
+}
+
+template <typename Element>
+const std::vector<int32_t>& CryptoContextImpl<Element>::GetRotationIndicesBT() const {
+  return GetScheme()->GetRotationIndicesBT();
+}
+
+template <typename Element>
+uint32_t CryptoContextImpl<Element>::GetNumberOfRotationIndicesBT() const {
+  return GetScheme()->GetNumberOfRotationIndicesBT();
+}
+
+template <typename Element>
+const std::vector<int32_t>& CryptoContextImpl<Element>::GetRotationIndicesLT() const {
+  return GetScheme()->GetRotationIndicesLT();
+}
+
+template <typename Element>
+uint32_t CryptoContextImpl<Element>::GetNumberOfRotationIndicesLT() const {
+  return ->GetNumberOfRotationIndicesLT();
+}
+
+// -----------THE CODE FOR LINEAR TRANSFORM USINF FFT-LIKE METHODS ENDS
+// HERE----------
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalPermuteFullKeyGen(const PrivateKey<Element> privateKey, int slots) {
+  if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
+    OPENFHE_THROW(config_error,
+                   "Private key passed to EvalPermuteFullKeyGen was not generated with this crypto context");
+  }
+
+  usint ringN = this->GetRingDimension() / 2;
+  std::set<int, std::greater<int>> offsetSet;
+  // Using a double loop to identify all the possible rotations
+  // that can be performed during a permutation. The possible
+  // rotations are kept in offsetSet.
+  for (int i = 0; i < slots; i++) {
+    for (int j = 0; j < slots; j++) {
+      // If the rotation offset is negative (right rotation)
+      // we translate it to a positive rotation by adding the
+      // ring dimension.
+      if (j - i < 0) {
+        if (offsetSet.find(ringN + j - i) == offsetSet.end()) offsetSet.insert(ringN + j - i);
+      } else {
+        if (offsetSet.find(j - i) == offsetSet.end()) offsetSet.insert(j - i);
+      }
+    }
+  }
+
+  // For every rotation offset we identified, we add an entry in the
+  // index list.
+  std::vector<int32_t> indexList(offsetSet.size());
+  int j = 0;
+  for (auto it = offsetSet.begin(); it != offsetSet.end(); ++it) {
+    indexList[j] = *it;
+    j++;
+  }
+
+  this->EvalRotateKeyGen(privateKey, indexList);
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalPermuteBGStepKeyGen(const PrivateKey<Element> privateKey, int slots) {
+  if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
+    OPENFHE_THROW(config_error,
+                   "Private key passed to EvalPermuteBGStepKeyGen was not generated with this crypto context");
+  }
+
+  // Computing the baby-step bStep and the giant-step gStep.
+  int bStep = ceil(sqrt(slots));
+
+  usint ringN = this->GetRingDimension() / 2;
+  std::set<int, std::greater<int>> babyOffsetSet;
+  std::set<int, std::greater<int>> giantOffsetSet;
+  // Using a double loop to identify all the possible rotations
+  // that can be performed during a permutation. The baby/giant
+  // steps of the possible rotations are kept in babyOffsetSet
+  // and giantOffsetSet.
+  for (int i = 0; i < slots; i++) {
+    for (int j = 0; j < slots; j++) {
+      int gIdx = (j - i) % bStep;
+      int hIdx = (j - i) / bStep;
+      hIdx = bStep * hIdx;
+
+      // If baby/giant rotation steps are negative (right rotation)
+      // we translate it to a positive rotation by adding the
+      // ring dimension.
+      if (gIdx < 0) {
+        if (babyOffsetSet.find(ringN + gIdx) == babyOffsetSet.end()) babyOffsetSet.insert(ringN + gIdx);
+      } else if (gIdx > 0) {
+        if (babyOffsetSet.find(gIdx) == babyOffsetSet.end()) babyOffsetSet.insert(gIdx);
+      }
+
+      if (bStep * hIdx < 0) {
+        if (giantOffsetSet.find(ringN + hIdx) == giantOffsetSet.end()) giantOffsetSet.insert(ringN + hIdx);
+      } else if (bStep * hIdx > 0) {
+        if (giantOffsetSet.find(hIdx) == giantOffsetSet.end()) giantOffsetSet.insert(hIdx);
+      }
+    }
+  }
+
+  // For every rotation offset we identified, we add an entry in the
+  // index list.
+  std::vector<int32_t> indexList(babyOffsetSet.size() + giantOffsetSet.size());
+  int j = 0;
+  for (auto it = babyOffsetSet.begin(); it != babyOffsetSet.end(); ++it) {
+    indexList[j] = *it;
+    j++;
+  }
+  for (auto it = giantOffsetSet.begin(); it != giantOffsetSet.end(); ++it) {
+    indexList[j] = *it;
+    j++;
+  }
+
+  this->EvalRotateKeyGen(privateKey, indexList);
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalPermuteBBHKeyGen(const PrivateKey<Element> privateKey, int slots) {
+  if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
+    OPENFHE_THROW(config_error,
+                   "Private key passed to EvalPermuteBGStepKeyGen was not generated with this crypto context");
+  }
+
+  // Computing the baby-step bStep and the giant-step gStep.
+  int bStep = ceil(sqrt(slots));
+
+  std::set<int, std::greater<int>> babyOffsetSet;
+  std::set<int, std::greater<int>> giantOffsetSet;
+  // Using a double loop to identify all the possible rotations
+  // that can be performed during a permutation. The baby/giant
+  // steps of the possible rotations are kept in babyOffsetSet
+  // and giantOffsetSet.
+  for (int i = 0; i < slots; i++) {
+    for (int j = 0; j < slots; j++) {
+      int gIdx = (j - i) % bStep;
+      int hIdx = (j - i) / bStep;
+      hIdx = bStep * hIdx;
+
+      if (gIdx != 0 && babyOffsetSet.find(gIdx) == babyOffsetSet.end()) babyOffsetSet.insert(gIdx);
+
+      if (hIdx != 0 && giantOffsetSet.find(hIdx) == giantOffsetSet.end()) giantOffsetSet.insert(hIdx);
+    }
+  }
+
+  // For every rotation offset we identified, we add an entry in the
+  // index list.
+  std::vector<int32_t> indexList(babyOffsetSet.size() + giantOffsetSet.size());
+  int j = 0;
+  for (auto it = babyOffsetSet.begin(); it != babyOffsetSet.end(); ++it) {
+    indexList[j] = *it;
+    j++;
+  }
+  for (auto it = giantOffsetSet.begin(); it != giantOffsetSet.end(); ++it) {
+    indexList[j] = *it;
+    j++;
+  }
+
+  EvalRotateKeyGen(privateKey, indexList);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndexBGStep(ConstCiphertext<Element> ciphertext, int32_t index,
+                                                                     int32_t slots) const {
+  if (ciphertext == NULL || this->Mismatched(ciphertext->GetCryptoContext()))
+    OPENFHE_THROW(config_error, "Information passed to EvalAtIndexBGStep was not generated with this crypto context");
+
+  auto tag = ciphertext->GetKeyTag();
+  auto evalAutomorphismKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(tag);
+
+  return GetScheme()->EvalAtIndexBGStep(ciphertext, index, slots, evalAutomorphismKeys);
+}
+
 }  // namespace lbcrypto
 
 // the code below is from cryptocontext-impl.cpp

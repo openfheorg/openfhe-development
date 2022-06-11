@@ -116,6 +116,12 @@ class KeySwitchBase {
     OPENFHE_THROW(config_error, "EvalKeySwitchPrecomputeCore is not supported");
   }
 
+  virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchExtCore(
+      const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
+      const std::shared_ptr<ParmType> paramsQl) const {
+    OPENFHE_THROW(config_error, "EvalFastKeySwitchExtCore is not supported");
+  }
+
   virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
       const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
       const std::shared_ptr<ParmType> paramsQl) const {

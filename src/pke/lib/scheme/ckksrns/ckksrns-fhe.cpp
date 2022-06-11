@@ -39,8 +39,6 @@ namespace lbcrypto {
 
 void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, uint32_t dim1, uint32_t numSlots)
 {
-    LOG_DEBUG_ALL("Begin");
-
   uint32_t m = cc.GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
 
   m_slots = (numSlots == 0) ? m/4 : numSlots;
@@ -54,14 +52,13 @@ void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, uint32_t 
 void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, const std::vector<uint32_t> &levelBudget,
     const std::vector<uint32_t> &dim1, uint32_t numSlots)
 {
-    LOG_DEBUG_ALL("Begin");
     const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
           std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
-    if (cryptoParams->GetRescalingTechnique() == EXACTRESCALE)
-      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the EXACTRESCALE method.");
+    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO)
+      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the FLEXIBLEAUTO method.");
 #endif
 
   // the linear method is more efficient for a level budget of 1
@@ -193,14 +190,13 @@ void FHECKKSRNS::BootstrapPrecompute(const CryptoContextImpl<DCRTPoly> &cc, uint
 shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::BootstrapKeyGen(
     const PrivateKey<DCRTPoly> privateKey, int32_t bootstrapFlag
     ) {
-    LOG_DEBUG_ALL("Begin");
     const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
           std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
-    if (cryptoParams->GetRescalingTechnique() == EXACTRESCALE)
-      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the EXACTRESCALE method.");
+    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO)
+      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the FLEXIBLEAUTO method.");
 #endif
 
   auto cc = privateKey->GetCryptoContext();
@@ -214,7 +210,9 @@ shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::BootstrapKeyGen(
 
         indexListEvalBT = this->FindBTRotationIndices(bootstrapFlag, m);
 
-        auto evalKeys = cc->GetEncryptionAlgorithm()->EvalAtIndexKeyGen(nullptr, privateKey, indexListEvalBT);
+        auto algo = cc->GetScheme();
+
+        auto evalKeys = algo->EvalAtIndexKeyGen(nullptr, privateKey, indexListEvalBT);
 
         auto conjKey = ConjugateKeyGen(privateKey);
 
@@ -230,17 +228,17 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext,
   const CryptoContextImpl<DCRTPoly> cc,
   double correction) const {
 
-  auto algo = cc->GetEncryptionAlgorithm();
+  auto algo = cc->GetScheme();
 
-  if (cryptoParams->GetRescalingTechnique() == EXACTRESCALE) {
+  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO) {
     double targetSF = cryptoParams->GetScalingFactorOfLevel(0);
     double sourceSF = ciphertext->GetScalingFactor();
     uint32_t numTowers = ciphertext->GetElements()[0].GetNumOfElements();
     double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers - 1]->GetModulus().ConvertToDouble();
 
-    // in the case of EXACTRESCALE, we need to bring the ciphertext to the right scale using a
-    // a scaling multiplication. Note the at currently EXACTRESCALE is only supported for NATIVEINT = 64.
-    // So the other branch is for future purposes (in case we decide to add add the EXACTRESCALE support
+    // in the case of FLEXIBLEAUTO, we need to bring the ciphertext to the right scale using a
+    // a scaling multiplication. Note the at currently FLEXIBLEAUTO is only supported for NATIVEINT = 64.
+    // So the other branch is for future purposes (in case we decide to add add the FLEXIBLEAUTO support
     // for NATIVEINT = 128.
 #if NATIVEINT!=128
     // Scaling down the message by a correction factor to emulate using a larger q0.
@@ -249,17 +247,17 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext,
 #else
     double adjustmentFactor = (targetSF / sourceSF) * (modToDrop / sourceSF);
 #endif
-    ciphertext = cc->EvalMult(ciphertext, adjustmentFactor);
+    cc->EvalMultInPlace(ciphertext, adjustmentFactor);
 
-    ciphertext = algo->ModReduceInternal(ciphertext);
+    algo->ModReduceInternalInPlace(ciphertext);
     ciphertext->SetScalingFactor(targetSF);
   }
   else {
 #if NATIVEINT!=128
     // Scaling down the message by a correction factor to emulate using a larger q0.
     // This step is needed so we could use a scaling factor of up to 2^59 with q9 ~= 2^60.
-    ciphertext = cc->EvalMult(ciphertext, std::pow(2, -correction));
-    ciphertext = algo->ModReduceInternal(ciphertext);
+    cc->EvalMultInPlace(ciphertext, std::pow(2, -correction));
+    algo->ModReduceInternalInPlace(ciphertext);
 #endif
   }
 }
@@ -267,7 +265,6 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext,
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapEncoding(const CryptoContextImpl<DCRTPoly> &cc,
     const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
     ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale) {
-    LOG_DEBUG_ALL("Begin");
 
   auto precomputedA = EvalBTPrecomputeEncoding(cc,A,rotGroup,flag_i,scale);
 
@@ -277,7 +274,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapEncoding(const CryptoContextImpl<D
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBTDecoding(const CryptoContextImpl<DCRTPoly> &cc,
     const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
     ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale) {
-    LOG_DEBUG_ALL("Begin");
 
   auto precomputedA = EvalBTPrecomputeDecoding(cc,A,rotGroup,flag_i,scale);
 
@@ -288,10 +284,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBTDecoding(const CryptoContextImpl<DCRTPoly
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalFastRotationExt(
     ConstCiphertext<DCRTPoly> ciphertext, usint index,
-    const std::shared_ptr<vector<DCRTPoly>> expandedCiphertext, bool addFirst,
+    const std::shared_ptr<vector<DCRTPoly>> digits, bool addFirst,
     const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const {
 
-  const auto paramsQl = ciphertext->GetElements()[0].GetParams();
+  const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
+
+  const auto paramsQl = cv[0].GetParams();
   usint m = paramsQl->GetCyclotomicOrder();
 
   // Find the automorphism index that corresponds to rotation index index.
@@ -300,72 +298,38 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFastRotationExt(
   // Retrieve the automorphism key that corresponds to the auto index.
   auto evalKey = evalKeys.find(autoIndex)->second;
 
+  auto algo = cc->GetScheme();
+
+  std::shared_ptr<std::vector<DCRTPoly>> cTilda =
+      algo->EvalFastKeySwitchExtCore(digits, evalKey, paramsQl);
+
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           evalKey->GetCryptoParameters());
 
-  Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
-
-  std::vector<DCRTPoly> bv = evalKey->GetBVector();
-  std::vector<DCRTPoly> av = evalKey->GetAVector();
-
-  const auto paramsP = cryptoParams->GetParamsP();
-  const auto paramsQlP = (*expandedCiphertext)[0].GetParams();
-
-  size_t sizeQl = paramsQl->GetParams().size();
-  size_t sizeQlP = paramsQlP->GetParams().size();
-  size_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
-
-  DCRTPoly psiC0;
   if (addFirst) {
-    psiC0 = DCRTPoly(paramsQlP, Format::EVALUATION, true);
+    const auto paramsQlP = (*cTilda)[0].GetParams();
+    size_t sizeQl = paramsQl->GetParams().size();
+    DCRTPoly psiC0 = DCRTPoly(paramsQlP, Format::EVALUATION, true);
     auto cMult = ciphertext->GetElements()[0].Times(cryptoParams->GetPModq());
     for (usint i = 0; i < sizeQl; i++) {
-  psiC0.SetElementAtIndex(i,cMult.GetElementAtIndex(i));
+      psiC0.SetElementAtIndex(i, cMult.GetElementAtIndex(i));
     }
+    (*cTilda)[0] += psiC0;
   }
 
-  DCRTPoly cTilda0(paramsQlP, Format::EVALUATION, true);
-  DCRTPoly cTilda1(paramsQlP, Format::EVALUATION, true);
+  usint N = cryptoParams->GetElementParams()->GetRingDimension();
+  std::vector<usint> vec(N);
+  PrecomputeAutoMap(N, autoIndex, &vec);
 
-  for (uint32_t j = 0; j < expandedCiphertext->size(); j++) {
-    DCRTPoly cj((*expandedCiphertext)[j]);
-    const DCRTPoly &bj = bv[j];
-    const DCRTPoly &aj = av[j];
+  (*cTilda)[0] = (*cTilda)[0].AutomorphismTransform(autoIndex, vec);
+  (*cTilda)[1] = (*cTilda)[1].AutomorphismTransform(autoIndex, vec);
 
-    for (usint i = 0; i < sizeQl; i++) {
-      const auto &cji = cj.GetElementAtIndex(i);
-      const auto &aji = aj.GetElementAtIndex(i);
-      const auto &bji = bj.GetElementAtIndex(i);
+  Ciphertext<DCRTPoly> result = ciphertext->CloneDummy();
 
-      cTilda0.SetElementAtIndex(i, cTilda0.GetElementAtIndex(i) + cji * bji);
-      cTilda1.SetElementAtIndex(i, cTilda1.GetElementAtIndex(i) + cji * aji);
-    }
-    for (usint i = sizeQl, idx = sizeQ; i < sizeQlP; i++, idx++) {
-      const auto &cji = cj.GetElementAtIndex(i);
-      const auto &aji = aj.GetElementAtIndex(idx);
-      const auto &bji = bj.GetElementAtIndex(idx);
-
-      cTilda0.SetElementAtIndex(i, cTilda0.GetElementAtIndex(i) + cji * bji);
-      cTilda1.SetElementAtIndex(i, cTilda1.GetElementAtIndex(i) + cji * aji);
-    }
-  }
-
-  if (addFirst)
-      cTilda0 += psiC0;
-
-  usint n = cryptoParams->GetElementParams()->GetRingDimension();
-  std::vector<usint> map(n);
-  PrecomputeAutoMap(n, autoIndex, &map);
-
-  result->SetElements({cTilda0.AutomorphismTransform(autoIndex, map), cTilda1.AutomorphismTransform(autoIndex, map)});
-
-  result->SetDepth(ciphertext->GetDepth());
-  result->SetLevel(ciphertext->GetLevel());
-  result->SetScalingFactor(ciphertext->GetScalingFactor());
+  result->SetElements({std::move((*cTilda)[0]), std::move((*cTilda)[1])});
 
   return result;
-
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchDown(
@@ -498,8 +462,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
   if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
-    if (cryptoParams->GetRescalingTechnique() == EXACTRESCALE)
-      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the EXACTRESCALE method.");
+    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO)
+      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the FLEXIBLEAUTO method.");
 #endif
   EvalBTMethod method = (m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] == 1 && m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] == 1) ?
     EvalBTLinearMethod : EvalBTFFTMethod;
@@ -526,7 +490,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   CryptoContext<DCRTPoly> cc = std::dynamic_pointer_cast<CryptoContextImpl<DCRTPoly>>
       (ciphertext->GetCryptoContext());
 
-  auto algo = cc->GetEncryptionAlgorithm();
+  auto algo = cc->GetScheme();
   while (ciphertext->GetDepth() > 1)
     ciphertext = algo->ModReduceInternal(ciphertext);
 
@@ -547,7 +511,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
   // Increasing the modulus
 
-  // In EXACTRESCALE, raising the ciphertext to a larger number
+  // In FLEXIBLEAUTO, raising the ciphertext to a larger number
   // of towers is a bit more complex, because we need to adjust
   // it's scaling factor to the one that corresponds to the level
   // it's being raised to.
@@ -617,8 +581,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     TIC(t);
 #endif
 
-    // need to call internal modular reduction so it also works for EXACTRESCALE
-    raised = cc->GetEncryptionAlgorithm()->ModReduceInternal(raised);
+    // need to call internal modular reduction so it also works for FLEXIBLEAUTO
+    raised = cc->GetScheme()->ModReduceInternal(raised);
 
     // only one linear transform is needed as the other one can be derived
     auto ctxtEnc0 = (isEvalBTLinear) ?
@@ -632,7 +596,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     ctxtEnc[1] = MultByMonomial(ctxtEnc1, 3 * cyclOrder / 4);
 
     if (isEvalBTLinear) {
-      if (cryptoParams->GetRescalingTechnique() == APPROXRESCALE) {
+      if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
         for (uint32_t i = 0; i < 2; i++)
         {
           while (ctxtEnc[i]->GetDepth() > 1) {
@@ -678,10 +642,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     // scale the message back up after Chebyshev interpolation
     ctxtFused = MultByInteger(ctxtFused, scalar);
 
-    // In the case of EXACTRESCALE, we need one extra tower
-    // TODO: See if we can remove the extra level in EXACTRESCALE
-    if (cryptoParams->GetRescalingTechnique() != APPROXRESCALE)
-      ctxtFused = cc->GetEncryptionAlgorithm()->ModReduceInternal(ctxtFused);
+    // In the case of FLEXIBLEAUTO, we need one extra tower
+    // TODO: See if we can remove the extra level in FLEXIBLEAUTO
+    if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL)
+      auto algo = cc->GetScheme();
+      ctxtFused = algo->ModReduceInternal(ctxtFused);
 
     // Only one linear transform is needed
     ctxtDec = (isEvalBTLinear) ?
@@ -691,7 +656,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   else // sparsely-packed mode
   {
     if(isEvalBTLinear) {
-            raised = cc->GetEncryptionAlgorithm()->ModReduceInternal(raised);
+      auto algo = cc->GetScheme();
+      raised = algo->ModReduceInternal(raised);
     }
 
     Ciphertext<DCRTPoly> ctxt1 = raised;
@@ -709,7 +675,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
     // Running CoeffToSlot
     if(!isEvalBTLinear)
-      ctxt1 = cc->GetEncryptionAlgorithm()->ModReduceInternal(ctxt1);
+      auto algo = cc->GetScheme();
+      ctxt1 = algo->ModReduceInternal(ctxt1);
     auto ctxtEnc0 = (isEvalBTLinear) ?
       cc->EvalLTWithPrecomp(m_U0hatTPre,ctxt1,m_dim1) :
       EvalBTWithPrecompEncoding(*cc,m_U0hatTPreFFT,ctxt1);
@@ -749,10 +716,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     TIC(t);
 #endif
 
-    // In the case of EXACTRESCALE, we need one extra tower
-    // TODO: See if we can remove the extra level in EXACTRESCALE
-    if (cryptoParams->GetRescalingTechnique() != APPROXRESCALE)
-      ctxtEnc = cc->GetEncryptionAlgorithm()->ModReduceInternal(ctxtEnc);
+    // In the case of FLEXIBLEAUTO, we need one extra tower
+    // TODO: See if we can remove the extra level in FLEXIBLEAUTO
+    if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL)
+      auto algo = cc->GetScheme();
+      ctxtEnc = algo->ModReduceInternal(ctxtEnc);
 
     // linear transform for decoding
     auto ctxtDec0 = (isEvalBTLinear) ?
@@ -780,7 +748,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
     const CryptoContextImpl<DCRTPoly> &cc,
     const std::vector<std::vector<ConstPlaintext>> &A, ConstCiphertext<DCRTPoly> ctxt) const {
-    LOG_DEBUG_ALL("Begin");
 
   uint32_t m = cc.GetCyclotomicOrder();
   uint32_t n = cc.GetRingDimension();
@@ -894,7 +861,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
     outer->SetElements(elements);
 
 //    result = outer;
-    result = cc.GetEncryptionAlgorithm()->ModReduceInternal(outer);
+    auto algo = cc.GetScheme();
+    result = algo->ModReduceInternal(outer);
 
   }
 
@@ -957,8 +925,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
     auto elements = outer->GetElements();
     elements[0]+= first;
     outer->SetElements(elements);
-
-    result = cc.GetEncryptionAlgorithm()->ModReduceInternal(outer);
+    auto algo = cc.GetScheme();
+    result = algo->ModReduceInternal(outer);
    }
 
 //  No need for Encrypted Bit Reverse
@@ -968,7 +936,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoContextImpl<DCRTPoly> &cc,
     const std::vector<std::vector<ConstPlaintext>> &A, ConstCiphertext<DCRTPoly> ctxt) const {
-    LOG_DEBUG_ALL("Begin");
 
   uint32_t m = cc.GetCyclotomicOrder();
   uint32_t n = cc.GetRingDimension();
@@ -1079,7 +1046,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
     elements[0]+= first;
     outer->SetElements(elements);
 
-    result = cc.GetEncryptionAlgorithm()->ModReduceInternal(outer);
+    auto algo = cc.GetScheme();
+    result = algo->ModReduceInternal(outer);
 
   }
 
@@ -1142,8 +1110,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
     auto elements = outer->GetElements();
     elements[0]+= first;
     outer->SetElements(elements);
-
-    result = cc.GetEncryptionAlgorithm()->ModReduceInternal(outer);
+    auto algo = cc.GetScheme();
+    result = algo->ModReduceInternal(outer);
 
    }
 
@@ -1154,7 +1122,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
 std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeDecoding(
   const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
   bool flag_i, double scale, uint32_t L) {
-    LOG_DEBUG_ALL("Begin");
 
   uint32_t slots = rotGroup.size();
   uint32_t m = cc.GetCyclotomicOrder();
@@ -1323,7 +1290,6 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeDecoding
 std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeEncoding(
   const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A,const std::vector<uint32_t> &rotGroup,
   bool flag_i, double scale, uint32_t L) {
-    LOG_DEBUG_ALL("Begin");
 
   uint32_t slots = rotGroup.size();
   uint32_t m = cc.GetCyclotomicOrder();
@@ -1505,7 +1471,7 @@ uint32_t FHECKKSRNS::GetBootstrapDepth(const CryptoContextImpl<DCRTPoly> &cc, co
   uint32_t approxModDepth = 8;
 
   if (cryptoParams->GetMode() == OPTIMIZED) {
-      if (cryptoParams->GetRescalingTechnique() == APPROXRESCALE)
+      if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL)
         approxModDepth += R - 1;
       else
         approxModDepth += R;

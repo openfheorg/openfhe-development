@@ -325,56 +325,6 @@ void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly> &ciphertext,
   cv.resize(2);
 }
 
-Ciphertext<DCRTPoly> KeySwitchHYBRID::EvalFastRotationExt(
-    ConstCiphertext<DCRTPoly> ciphertext, usint index,
-    const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
-    const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const {
-
-  const auto paramsQl = ciphertext->GetElements()[0].GetParams();
-  usint m = paramsQl->GetCyclotomicOrder();
-
-  // Find the automorphism index that corresponds to rotation index index.
-  usint autoIndex = (ciphertext->GetCryptoContext()->getSchemeId() == "CKKSRNS")
-                        ? FindAutomorphismIndex2nComplex(index, m)
-                        : FindAutomorphismIndex2n(index, m);
-
-  // Retrieve the automorphism key that corresponds to the auto index.
-  auto evalKey = evalKeys.find(autoIndex)->second;
-
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          evalKey->GetCryptoParameters());
-
-  Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
-
-  std::shared_ptr<std::vector<DCRTPoly>> cTilda =
-      EvalFastKeySwitchExtCore(digits, evalKey, paramsQl);
-
-  if (addFirst) {
-    const auto paramsQlP = (*cTilda)[0].GetParams();
-    size_t sizeQl = paramsQl->GetParams().size();
-    DCRTPoly psiC0 = DCRTPoly(paramsQlP, Format::EVALUATION, true);
-    auto cMult = ciphertext->GetElements()[0].Times(cryptoParams->GetPModq());
-    for (usint i = 0; i < sizeQl; i++) {
-      psiC0.SetElementAtIndex(i, cMult.GetElementAtIndex(i));
-    }
-    (*cTilda)[0] += psiC0;
-  }
-
-  usint n = cryptoParams->GetElementParams()->GetRingDimension();
-  std::vector<usint> map(n);
-  PrecomputeAutoMap(n, autoIndex, &map);
-
-  result->SetElements({(*cTilda)[0].AutomorphismTransform(autoIndex, map), (*cTilda)[0].AutomorphismTransform(autoIndex, map)});
-
-  result->SetDepth(ciphertext->GetDepth());
-  result->SetLevel(ciphertext->GetLevel());
-  result->SetScalingFactor(ciphertext->GetScalingFactor());
-
-  return result;
-
-}
-
 Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(
     ConstCiphertext<DCRTPoly> ciphertext) const {
 

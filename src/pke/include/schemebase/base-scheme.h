@@ -388,6 +388,26 @@ class SchemeBase {
         "EvalKeySwitchPrecomputeCore operation has not been enabled");
   }
 
+  virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchExtCore(
+      const std::shared_ptr<std::vector<Element>> digits,
+      const EvalKey<Element> evalKey,
+      const std::shared_ptr<ParmType> params) const {
+    if (m_KeySwitch) {
+      if (nullptr == digits)
+        OPENFHE_THROW(config_error, "Input digits is nullptr");
+      if (digits->size() == 0)
+        OPENFHE_THROW(config_error, "Input digits size is 0");
+      if (!evalKey)
+        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+      if (!params)
+        OPENFHE_THROW(config_error, "Input params is nullptr");
+
+      return m_KeySwitch->EvalFastKeySwitchExtCore(digits, evalKey, params);
+    }
+    OPENFHE_THROW(config_error,
+                   "EvalFastKeySwitchCore operation has not been enabled");
+  }
+
   virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
       const std::shared_ptr<std::vector<Element>> digits,
       const EvalKey<Element> evalKey,
@@ -524,7 +544,21 @@ class SchemeBase {
 
       return m_LeveledSHE->EvalAddMutable(ciphertext1, ciphertext2);
     }
-    OPENFHE_THROW(config_error, "EvalAdd operation has not been enabled");
+    OPENFHE_THROW(config_error, "EvalAddMutable operation has not been enabled");
+  }
+
+  virtual void EvalAddMutableInPlace(
+      Ciphertext<Element> &ciphertext1,
+      Ciphertext<Element> &ciphertext2) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext1)
+        OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
+      if (!ciphertext2)
+        OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
+
+      m_LeveledSHE->EvalAddMutableInPlace(ciphertext1, ciphertext2);
+    }
+    OPENFHE_THROW(config_error, "EvalAddMutableInPlace operation has not been enabled");
   }
 
   virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext) const {
@@ -648,6 +682,20 @@ class SchemeBase {
         OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
 
       return m_LeveledSHE->EvalSubMutable(ciphertext1, ciphertext2);
+    }
+    OPENFHE_THROW(config_error, "EvalSub operation has not been enabled");
+  }
+
+  virtual Ciphertext<Element> EvalSubMutableInPlace(
+      Ciphertext<Element> &ciphertext1,
+      Ciphertext<Element> &ciphertext2) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext1)
+        OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
+      if (!ciphertext2)
+        OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
+
+      m_LeveledSHE->EvalSubMutableInPlace(ciphertext1, ciphertext2);
     }
     OPENFHE_THROW(config_error, "EvalSub operation has not been enabled");
   }

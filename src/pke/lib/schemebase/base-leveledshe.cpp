@@ -415,21 +415,21 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
   }
 
   const auto cc = ciphertext->GetCryptoContext();
-  const auto cryptoParams = ciphertext->GetCryptoParameters();
 
   usint autoIndex = (cc->getSchemeId() == "CKKSRNS")
                         ? FindAutomorphismIndex2nComplex(index, m)
                         : FindAutomorphismIndex2n(index, m);
 
-  auto algo = cc->GetScheme();
-
   auto evalKey = cc->GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag())
                      .find(autoIndex)->second;
 
+  auto algo = cc->GetScheme();
   const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
 
   std::shared_ptr<std::vector<Element>> ba =
       algo->EvalFastKeySwitchCore(digits, evalKey, cv[0].GetParams());
+
+  const auto cryptoParams = ciphertext->GetCryptoParameters();
 
   usint N = cryptoParams->GetElementParams()->GetRingDimension();
   std::vector<usint> vec(N);
