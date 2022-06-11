@@ -73,7 +73,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_assuranceMeasure = 0.0f;
     m_securityLevel = 0.0f;
     m_noiseScale = 1;
-    m_relinWindow = 1;
+    m_digitSize = 1;
     m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = 2;
     m_mode = RLWE;
@@ -91,7 +91,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_assuranceMeasure = rhs.m_assuranceMeasure;
     m_securityLevel = rhs.m_securityLevel;
     m_noiseScale = rhs.m_noiseScale;
-    m_relinWindow = rhs.m_relinWindow;
+    m_digitSize = rhs.m_digitSize;
     m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = rhs.m_maxDepth;
     m_mode = rhs.m_mode;
@@ -106,7 +106,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param distributionParameter noise distribution parameter.
    * @param assuranceMeasure assurance level.
    * @param securityLevel security level.
-   * @param relinWindow the size of the relinearization window.
+   * @param digitSize the size of the relinearization window.
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
    * @param mode mode for secret polynomial, defaults to RLWE.
@@ -114,7 +114,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint relinWindow,
+                       float securityLevel, usint digitSize,
                        int maxDepth = 2, MODE mode = RLWE,
                        PlaintextModulus noiseScale = 1)
       : CryptoParametersBase<Element>(params, encodingParams) {
@@ -122,7 +122,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_assuranceMeasure = assuranceMeasure;
     m_securityLevel = securityLevel;
     m_noiseScale = noiseScale;
-    m_relinWindow = relinWindow;
+    m_digitSize = digitSize;
     m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = maxDepth;
     m_mode = mode;
@@ -138,7 +138,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param distributionParameter noise distribution parameter.
    * @param assuranceMeasure assurance level.
    * @param securityLevel security level.
-   * @param relinWindow the size of the relinearization window.
+   * @param digitSize the size of the digit size.
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
    * @param mode mode for secret polynomial, defaults to RLWE.
@@ -146,7 +146,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
-                       SecurityLevel stdLevel, usint relinWindow,
+                       SecurityLevel stdLevel, usint digitSize,
                        int maxDepth = 2, MODE mode = RLWE,
                        PlaintextModulus noiseScale = 1)
       : CryptoParametersBase<Element>(params, encodingParams) {
@@ -154,7 +154,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_assuranceMeasure = assuranceMeasure;
     m_securityLevel = 0;
     m_noiseScale = noiseScale;
-    m_relinWindow = relinWindow;
+    m_digitSize = digitSize;
     m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = maxDepth;
     m_mode = mode;
@@ -196,11 +196,11 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   PlaintextModulus GetNoiseScale() const { return m_noiseScale; }
 
   /**
-   * Returns the value of relinearization window.
+   * Returns the value of digit size.
    *
-   * @return the relinearization window.
+   * @return the digit size.
    */
-  usint GetRelinWindow() const { return m_relinWindow; }
+  usint GetDigitSize() const { return m_digitSize; }
 
   /**
    * Returns the maximum homomorphic multiplication depth before performing
@@ -273,10 +273,10 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   void SetNoiseScale(PlaintextModulus noiseScale) { m_noiseScale = noiseScale; }
 
   /**
-   * Sets the value of relinearization window
-   * @param relinWindow
+   * Sets the value of digit size
+   * @param digitSize
    */
-  void SetRelinWindow(usint relinWindow) { m_relinWindow = relinWindow; }
+  void SetDigitSize(usint digitSize) { m_digitSize = digitSize; }
 
   /**
    * Sets the value of the maximum power of secret key for which the
@@ -309,7 +309,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
            m_assuranceMeasure == el->GetAssuranceMeasure() &&
            m_securityLevel == el->GetSecurityLevel() &&
            m_noiseScale == el->GetNoiseScale() &&
-           m_relinWindow == el->GetRelinWindow() && m_mode == el->GetMode() &&
+           m_digitSize == el->GetDigitSize() && m_mode == el->GetMode() &&
            m_stdLevel == el->GetStdLevel();
   }
 
@@ -319,7 +319,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     os << "Distrib parm " << GetDistributionParameter()
        << ", Assurance measure " << GetAssuranceMeasure() << ", Security level "
        << GetSecurityLevel() << ", Noise scale " << GetNoiseScale()
-       << ", Relin window " << GetRelinWindow()
+       << ", Digit Size " << GetDigitSize()
        << ", Mode " << GetMode() << ", Standard security level "
        << GetStdLevel() << std::endl;
   }
@@ -331,7 +331,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("am", m_assuranceMeasure));
     ar(::cereal::make_nvp("sl", m_securityLevel));
     ar(::cereal::make_nvp("ns", m_noiseScale));
-    ar(::cereal::make_nvp("rw", m_relinWindow));
+    ar(::cereal::make_nvp("rw", m_digitSize));
     ar(::cereal::make_nvp("md", m_maxDepth));
     ar(::cereal::make_nvp("mo", m_mode));
     ar(::cereal::make_nvp("slv", m_stdLevel));
@@ -345,7 +345,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("am", m_assuranceMeasure));
     ar(::cereal::make_nvp("sl", m_securityLevel));
     ar(::cereal::make_nvp("ns", m_noiseScale));
-    ar(::cereal::make_nvp("rw", m_relinWindow));
+    ar(::cereal::make_nvp("rw", m_digitSize));
     ar(::cereal::make_nvp("md", m_maxDepth));
     ar(::cereal::make_nvp("mo", m_mode));
     ar(::cereal::make_nvp("slv", m_stdLevel));
@@ -362,8 +362,8 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   float m_securityLevel;
   // noise scale
   PlaintextModulus m_noiseScale;
-  // relinearization window
-  usint m_relinWindow;
+  // digit size
+  usint m_digitSize;
   // maximum depth support of a ciphertext without keyswitching
   // corresponds to the highest power of secret key for which evaluation keys
   // are genererated

@@ -66,7 +66,7 @@ const size_t AUXMODSIZE = 60;
 
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
           std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-          usint numPrimes, usint scaleExp, usint relinWindow, MODE mode,
+          usint numPrimes, usint scaleExp, usint digitSize, MODE mode,
           usint firstModSize,
           uint32_t numPartQ,
           KeySwitchTechnique ksTech,

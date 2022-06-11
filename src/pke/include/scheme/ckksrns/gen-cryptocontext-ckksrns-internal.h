@@ -69,7 +69,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         parameters.GetStandardDeviation(),
         assuranceMeasure,
         parameters.GetRootHermiteFactor(),
-        parameters.GetRelinWindow(),
+        parameters.GetDigitSize(),
         parameters.GetMode(),
         parameters.GetMaxDepth());
 
@@ -86,7 +86,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         2 * parameters.GetRingDim(),
         parameters.GetMultiplicativeDepth() + 1,
         parameters.GetScalingFactorBits(),
-        parameters.GetRelinWindow(),
+        parameters.GetDigitSize(),
         parameters.GetMode(),
         parameters.GetFirstModSize(),
         numLargeDigits,

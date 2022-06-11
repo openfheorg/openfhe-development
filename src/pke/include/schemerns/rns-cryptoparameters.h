@@ -83,7 +83,7 @@ protected:
    * @param distributionParameter noise distribution parameter.
    * @param assuranceMeasure assurance level.
    * @param securityLevel security level.
-   * @param relinWindow the size of the relinearization window.
+   * @param digitSize the size of the relinearization window.
    * @param mode sets the mode of operation: RLWE or OPTIMIZED
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
@@ -93,7 +93,7 @@ protected:
   CryptoParametersRNS(std::shared_ptr<ParmType> params,
                        const PlaintextModulus &plaintextModulus,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint relinWindow, MODE mode,
+                       float securityLevel, usint digitSize, MODE mode,
                        int maxDepth = 2,
                        KeySwitchTechnique ksTech = BV,
                        RescalingTechnique rsTech = FIXEDMANUAL,
@@ -103,7 +103,7 @@ protected:
             params,
             EncodingParams(
                 std::make_shared<EncodingParamsImpl>(plaintextModulus)),
-            distributionParameter, assuranceMeasure, securityLevel, relinWindow,
+            distributionParameter, assuranceMeasure, securityLevel, digitSize,
             maxDepth, mode) {
     m_ksTechnique = ksTech;
     m_rsTechnique = rsTech;
@@ -114,7 +114,7 @@ protected:
   CryptoParametersRNS(std::shared_ptr<ParmType> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint relinWindow, MODE mode,
+                       float securityLevel, usint digitSize, MODE mode,
                        int maxDepth = 2,
                        KeySwitchTechnique ksTech = BV,
                        RescalingTechnique rsTech = FIXEDMANUAL,
@@ -122,7 +122,7 @@ protected:
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRLWE<DCRTPoly>(
             params, encodingParams, distributionParameter, assuranceMeasure,
-            securityLevel, relinWindow, maxDepth, mode) {
+            securityLevel, digitSize, maxDepth, mode) {
     m_ksTechnique = ksTech;
     m_rsTechnique = rsTech;
     m_encTechnique = encTech;

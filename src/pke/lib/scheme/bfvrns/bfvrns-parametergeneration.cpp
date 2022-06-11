@@ -85,7 +85,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   double alpha = cryptoParamsBFVRNS->GetAssuranceMeasure();
   double hermiteFactor = cryptoParamsBFVRNS->GetSecurityLevel();
   double p = static_cast<double>(cryptoParamsBFVRNS->GetPlaintextModulus());
-  uint32_t relinWindow = cryptoParamsBFVRNS->GetRelinWindow();
+  uint32_t digitSize = cryptoParamsBFVRNS->GetDigitSize();
   SecurityLevel stdLevel = cryptoParamsBFVRNS->GetStdLevel();
   KeySwitchTechnique rsTechnique = cryptoParamsBFVRNS->GetKeySwitchTechnique();
 
@@ -187,7 +187,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     // this case supports automorphism w/o any other operations
     // base for relinearization
 
-    double w = relinWindow == 0 ? pow(2, dcrtBits) : pow(2, relinWindow);
+    double w = digitSize == 0 ? pow(2, dcrtBits) : pow(2, digitSize);
 
     // Correctness constraint
     auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
@@ -247,7 +247,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
 	// is used
 
     // base for relinearization
-    double w = relinWindow == 0 ? pow(2, dcrtBits) : pow(2, relinWindow);
+    double w = digitSize == 0 ? pow(2, dcrtBits) : pow(2, digitSize);
 
     // function used in the EvalMult constraint
     auto C1 = [&](uint32_t n) -> double {

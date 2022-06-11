@@ -142,7 +142,7 @@ int main() {
    */
   auto keys = cc->KeyGen();
 
-  /* B2) Generate the relinearization key
+  /* B2) Generate the digit size
    * In CKKS, whenever someone multiplies two ciphertexts encrypted with key s,
    * we get a result with some components that are valid under key s, and
    * with an additional component that's valid under key s^2.

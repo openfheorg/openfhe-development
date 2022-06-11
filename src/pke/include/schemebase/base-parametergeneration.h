@@ -101,7 +101,7 @@ public:
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
    * @param scaleExp the bit-width for plaintexts and DCRTPoly's.
-   * @param relinWindow the relinearization window
+   * @param digitSize the digit size
    * @param mode
    * @param ksTech the key switching technique used (e.g., BV or GHS)
    * @param firstModSize the bit-size of the first modulus
@@ -113,7 +113,7 @@ public:
       usint cyclOrder,
       usint numPrimes,
       usint scaleExp,
-      usint relinWindow,
+      usint digitSize,
       enum MODE mode,
       usint firstModSize,
       uint32_t mulPartQ,
@@ -135,7 +135,7 @@ public:
    * @param keySwitchCount number of KeySwitch operations per level.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
-   * @param relinWindow the relinearization window
+   * @param digitSize the digit size
    * @param mode
    * @param ksTech the key switching technique used (e.g., BV or GHS)
    * @param firstModSize the bit-size of the first modulus
@@ -145,7 +145,7 @@ public:
       std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
       int32_t evalAddCount, int32_t keySwitchCount,
       usint cyclOrder,
-      usint ptm, usint numPrimes, usint relinWindow, MODE mode,
+      usint ptm, usint numPrimes, usint digitSize, MODE mode,
       usint firstModSize,
       usint dcrtBits,
       uint32_t numPartQ,

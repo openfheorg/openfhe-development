@@ -48,7 +48,7 @@ namespace lbcrypto {
 namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr SCHEME               scheme              = CKKSRNS_SCHEME;
     constexpr PlaintextModulus     ptModulus           = 0;
-    constexpr usint                relinWindow         = 0;
+    constexpr usint                digitSize           = 0;
     constexpr float                standardDeviation   = 3.19;
     constexpr float                rootHermiteFactor   = 1.006;
     constexpr MODE                 mode                = OPTIMIZED;
@@ -79,7 +79,7 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
 namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr SCHEME               scheme              = BFVRNS_SCHEME;
     constexpr PlaintextModulus     ptModulus           = 0;
-    constexpr usint                relinWindow         = 0;
+    constexpr usint                digitSize           = 0;
     constexpr float                standardDeviation   = 3.19;
     constexpr float                rootHermiteFactor   = 0.0;
     constexpr MODE                 mode                = OPTIMIZED;
@@ -104,7 +104,7 @@ namespace BFVRNS_SCHEME_DEFAULTS {
 namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr SCHEME               scheme              = BGVRNS_SCHEME;
     constexpr PlaintextModulus     ptModulus           = 0;
-    constexpr usint                relinWindow         = 0;
+    constexpr usint                digitSize           = 0;
     constexpr float                standardDeviation   = 3.19;
     constexpr float                rootHermiteFactor   = 1.006;
     constexpr MODE                 mode                = OPTIMIZED;

@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
    * Our implementation of CKKS supports three different algorithms
    * for key switching, namely BV, GHS, and HYBRID. BV corresponds to
    * a technique also known as digit decomposition (both RNS and based
-   * on a relinearization window). GHS corresponds to ciphertext
+   * on a digit size). GHS corresponds to ciphertext
    * modulus doubling, and HYBRID combines the characteristics of both
    * BV and GHS. Please refer to the documentation of KeySwitchBVGen,
    * KeySwitchGHSGen, and KeySwitchHybridGen in scheme/ckks/ckks.h for more
@@ -815,18 +815,18 @@ void FastRotationsDemo2() {
    */
   // uint32_t maxDepth = 2; - already default
   /*
-   * The relinearization window is only used in BV key switching and
+   * The digit size is only used in BV key switching and
    * it allows us to perform digit decomposition at a finer granularity.
    * Under normal circumstances, digit decomposition is what we call
    * RNS decomposition, i.e., each digit is roughly the size of the
    * qi's that comprise the ciphertext modulus Q. When using BV, in
    * certain cases like having to perform rotations without any
    * preceding multiplication, we need to have smaller digits to prevent
-   * noise from corrupting the result. In this case, using relinWin = 10
+   * noise from corrupting the result. In this case, using digitSize = 10
    * does the trick. Users are encouraged to set this to 0 (i.e., RNS
    * decomposition) and see how the results are incorrect.
    */
-  uint32_t relinWin = 10;
+  uint32_t digitSize = 10;
   // MODE mode = OPTIMIZED;  // Using ternary distribution - already default
 
   uint32_t batchSize = 8;
@@ -837,7 +837,7 @@ void FastRotationsDemo2() {
   parameters.SetRescalingTechnique(FLEXIBLEAUTO);
   parameters.SetKeySwitchTechnique(BV);
   parameters.SetFirstModSize(60);
-  parameters.SetRelinWindow(relinWin);
+  parameters.SetDigitSize(digitSize);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
@@ -895,7 +895,7 @@ void FastRotationsDemo2() {
    * Also, the benefits from hoisting should be more pronounced in this
    * case because we're using BV. Of course, we also observe less
    * accurate results than when using HYBRID, because of using
-   * relinWin = 10 (Users can decrease relinWin to see the accuracy
+   * digitSize = 10 (Users can decrease digitSize to see the accuracy
    * increase, and performance decrease).
    */
 

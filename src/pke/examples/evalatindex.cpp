@@ -134,7 +134,7 @@ void CKKSEvalAtIndex2n() {
   parameters.SetRingDim(cyclOrder / 2);
   parameters.SetMultiplicativeDepth(2);
   parameters.SetScalingFactorBits(40);
-  parameters.SetRelinWindow(10);
+  parameters.SetDigitSize(10);
   parameters.SetBatchSize(16);
   parameters.SetKeySwitchTechnique(BV);
   parameters.SetRescalingTechnique(FIXEDMANUAL);

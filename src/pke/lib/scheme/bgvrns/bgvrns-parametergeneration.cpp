@@ -105,7 +105,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
   uint32_t ringDimension,
   int32_t evalAddCount, int32_t keySwitchCount,
-  usint relinWindow, uint32_t auxBits,
+  usint digitSize, uint32_t auxBits,
   enum KeySwitchTechnique ksTech,
   usint numPrimes) const {
 
@@ -138,13 +138,13 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
   double keySwitchingNoise = 0;
   if (ksTech == BV) {
-    if (relinWindow == 0) {
-      OPENFHE_THROW(config_error, "relinWindow is not allowed to be 0 for BV key switching in BGV.");
+    if (digitSize == 0) {
+      OPENFHE_THROW(config_error, "digitSize is not allowed to be 0 for BV key switching in BGV.");
     }
-    int relinBase = pow(2.0, relinWindow);
+    int digitSize = pow(2.0, digitSize);
     int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
-    int numWindows = floor(modSizeEstimate / log(relinBase)) + 1;
-    keySwitchingNoise = numWindows * (numPrimes + 1) * expansionFactor * relinBase * Berr / 2.0;
+    int numWindows = floor(modSizeEstimate / log(digitSize)) + 1;
+    keySwitchingNoise = numWindows * (numPrimes + 1) * expansionFactor * digitSize * Berr / 2.0;
   } else {
     double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
     int numDigits = cryptoParamsBGVRNS->GetNumPartQ();
@@ -197,7 +197,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
     int32_t keySwitchCount, usint cyclOrder,
-    usint ptm, usint numPrimes, usint relinWindow, MODE mode,
+    usint ptm, usint numPrimes, usint digitSize, MODE mode,
     usint firstModSize, usint dcrtBits,
     uint32_t numPartQ, usint multihopQBound,
     enum KeySwitchTechnique ksTech,
@@ -251,14 +251,14 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   std::vector<NativeInteger> rootsQ(vecSize);
 
   if (rsTech == FLEXIBLEAUTOEXT) {
-    auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, auxBits,
+    auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, digitSize, auxBits,
                             ksTech, numPrimes);
     moduliQ = std::get<0>(moduliInfo);
     uint32_t newQBound = std::get<1>(moduliInfo);
     while (qBound < newQBound) {
       qBound = newQBound;
       n = computeRingDimension(cryptoParams, newQBound, cyclOrder);
-      auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, relinWindow, auxBits,
+      auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, digitSize, auxBits,
                             ksTech, numPrimes);
       moduliQ = std::get<0>(moduliInfo);
       newQBound = std::get<1>(moduliInfo);

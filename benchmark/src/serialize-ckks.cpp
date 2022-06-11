@@ -53,7 +53,7 @@ void CKKS_serialize(benchmark::State& state) {
     parameters.SetRingDim(512);
     parameters.SetMultiplicativeDepth(3);
     parameters.SetScalingFactorBits(50);
-    parameters.SetRelinWindow(20);
+    parameters.SetDigitSize(20);
     parameters.SetBatchSize(8);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);

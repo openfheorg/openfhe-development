@@ -48,7 +48,7 @@ int main() {
     parameters.SetKeySwitchTechnique(BV);
     parameters.SetRescalingTechnique(FIXEDAUTO);
 //    parameters.SetScalingFactorBits(60);
-//    parameters.SetRelinWindow(10);
+//    parameters.SetDigitSize(10);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use

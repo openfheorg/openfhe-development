@@ -95,7 +95,7 @@ bool run_demo_pre(void) {
                         ->GetModulus()
                         .ConvertToDouble())
             << std::endl;
-  std::cout << "r = " << cc->GetCryptoParameters()->GetRelinWindow()
+  std::cout << "r = " << cc->GetCryptoParameters()->GetDigitSize()
             << std::endl;
 
   auto ringsize = cc->GetRingDimension();

@@ -46,7 +46,7 @@ int main() {
     parameters.SetPlaintextModulus(65537);
     parameters.SetEvalMultCount(2);
     parameters.SetScalingFactorBits(60);
-    parameters.SetRelinWindow(10);
+    parameters.SetDigitSize(10);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // Enable features that you wish to use

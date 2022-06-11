@@ -92,7 +92,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     parameters.SetRingDim(ringDimension);
     parameters.SetFirstModSize(firstqmod);
     parameters.SetScalingFactorBits(dcrtbits);
-    parameters.SetRelinWindow(digitSize);
+    parameters.SetDigitSize(digitSize);
     parameters.SetRescalingTechnique(FIXEDAUTO);
     parameters.SetMultiHopQModulusLowerBound(qmodulus);
 
