@@ -211,7 +211,6 @@ shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::BootstrapKeyGen(
         indexListEvalBT = this->FindBTRotationIndices(bootstrapFlag, m);
 
         auto algo = cc->GetScheme();
-
         auto evalKeys = algo->EvalAtIndexKeyGen(nullptr, privateKey, indexListEvalBT);
 
         auto conjKey = ConjugateKeyGen(privateKey);
@@ -302,10 +301,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalFastRotationExt(
 
   std::shared_ptr<std::vector<DCRTPoly>> cTilda =
       algo->EvalFastKeySwitchExtCore(digits, evalKey, paramsQl);
-
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          evalKey->GetCryptoParameters());
 
   if (addFirst) {
     const auto paramsQlP = (*cTilda)[0].GetParams();
@@ -582,7 +577,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 #endif
 
     // need to call internal modular reduction so it also works for FLEXIBLEAUTO
-    raised = cc->GetScheme()->ModReduceInternal(raised);
+    cc->GetScheme()->ModReduceInternalInPlace(raised);
 
     // only one linear transform is needed as the other one can be derived
     auto ctxtEnc0 = (isEvalBTLinear) ?
@@ -644,9 +639,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
     // In the case of FLEXIBLEAUTO, we need one extra tower
     // TODO: See if we can remove the extra level in FLEXIBLEAUTO
-    if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL)
+    if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
       auto algo = cc->GetScheme();
       ctxtFused = algo->ModReduceInternal(ctxtFused);
+    }
 
     // Only one linear transform is needed
     ctxtDec = (isEvalBTLinear) ?
@@ -674,9 +670,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 #endif
 
     // Running CoeffToSlot
-    if(!isEvalBTLinear)
+    if(!isEvalBTLinear) {
       auto algo = cc->GetScheme();
       ctxt1 = algo->ModReduceInternal(ctxt1);
+    }
     auto ctxtEnc0 = (isEvalBTLinear) ?
       cc->EvalLTWithPrecomp(m_U0hatTPre,ctxt1,m_dim1) :
       EvalBTWithPrecompEncoding(*cc,m_U0hatTPreFFT,ctxt1);
@@ -718,9 +715,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
     // In the case of FLEXIBLEAUTO, we need one extra tower
     // TODO: See if we can remove the extra level in FLEXIBLEAUTO
-    if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL)
+    if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
       auto algo = cc->GetScheme();
-      ctxtEnc = algo->ModReduceInternal(ctxtEnc);
+      algo->ModReduceInternalInPlace(ctxtEnc);
+    }
 
     // linear transform for decoding
     auto ctxtDec0 = (isEvalBTLinear) ?

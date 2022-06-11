@@ -294,7 +294,6 @@ void LeveledSHEBFVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly> &ciphertext, con
   const NativeInteger t(cryptoParams->GetPlaintextModulus());
 
   ciphertext->SetDepth(ciphertext->GetDepth() + 1);
-  ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(constant, t));
 }
 
 }

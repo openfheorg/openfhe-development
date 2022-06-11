@@ -254,9 +254,7 @@ EvalKey<DCRTPoly> LeveledSHECKKSRNS::ConjugateKeyGen(
 
   auto cc = privateKey->GetCryptoContext();
   auto algo = cc->GetScheme();
-
   return algo->KeySwitchGen(privateKey, privateKeyPermuted);
-
 }
 
 Ciphertext<DCRTPoly> LeveledSHECKKSRNS::Conjugate(
@@ -306,7 +304,6 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::Conjugate(
 
   auto cc = ciphertext->GetCryptoContext();
   auto algo = cc->GetScheme();
-
   Ciphertext<DCRTPoly> permutedCiphertext = algo->KeySwitch(fk, ciphertext);
 
   std::vector<usint> map(n);
