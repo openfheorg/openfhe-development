@@ -227,23 +227,25 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
 
     size_t sizeQ = cv2[0].GetNumOfElements();
 
+    DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(
+        cryptoParams->GetParamsQlRl(sizeQ - 1),
+        cryptoParams->GetParamsRl(sizeQ - 1),
+        cryptoParams->GetParamsQl(sizeQ - 1),
+        cryptoParams->GetmNegRlQHatInvModq(sizeQ - 1),
+        cryptoParams->GetmNegRlQHatInvModqPrecon(sizeQ - 1),
+        cryptoParams->GetqInvModr(),
+        cryptoParams->GetModrBarrettMu(),
+        cryptoParams->GetRlHatInvModr(sizeQ - 1),
+        cryptoParams->GetRlHatInvModrPrecon(sizeQ - 1),
+        cryptoParams->GetRlHatModq(sizeQ - 1),
+        cryptoParams->GetalphaRlModq(sizeQ - 1),
+        cryptoParams->GetModqBarrettMu(),
+        cryptoParams->GetrInv()
+    );
     for (size_t i = 0; i < cv2Size; i++) {
       cv2[i].SetFormat(Format::COEFFICIENT);
       // Switch ciphertext2 from basis Q to P to PQ.
-      cv2[i].FastExpandCRTBasisPloverQ(
-          cryptoParams->GetParamsQlRl(sizeQ - 1),
-          cryptoParams->GetParamsRl(sizeQ - 1),
-          cryptoParams->GetParamsQl(sizeQ - 1),
-          cryptoParams->GetmNegRlQHatInvModq(sizeQ - 1),
-          cryptoParams->GetmNegRlQHatInvModqPrecon(sizeQ - 1),
-          cryptoParams->GetqInvModr(),
-          cryptoParams->GetModrBarrettMu(),
-          cryptoParams->GetRlHatInvModr(sizeQ - 1),
-          cryptoParams->GetRlHatInvModrPrecon(sizeQ - 1),
-          cryptoParams->GetRlHatModq(sizeQ - 1),
-          cryptoParams->GetalphaRlModq(sizeQ - 1),
-          cryptoParams->GetModqBarrettMu(),
-          cryptoParams->GetrInv());
+      cv2[i].FastExpandCRTBasisPloverQ(basisPQ);
       cv2[i].SetFormat(Format::EVALUATION);
     }
   } else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
@@ -280,23 +282,25 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
           Format::EVALUATION);
     }
 
+    DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(
+        cryptoParams->GetParamsQlRl(l),
+        cryptoParams->GetParamsRl(l),
+        cryptoParams->GetParamsQl(l),
+        cryptoParams->GetmNegRlQHatInvModq(l),
+        cryptoParams->GetmNegRlQHatInvModqPrecon(l),
+        cryptoParams->GetqInvModr(),
+        cryptoParams->GetModrBarrettMu(),
+        cryptoParams->GetRlHatInvModr(l),
+        cryptoParams->GetRlHatInvModrPrecon(l),
+        cryptoParams->GetRlHatModq(l),
+        cryptoParams->GetalphaRlModq(l),
+        cryptoParams->GetModqBarrettMu(),
+        cryptoParams->GetrInv()
+    );
     for (size_t i = 0; i < cv2Size; i++) {
       cv2[i].SetFormat(Format::COEFFICIENT);
       // Switch ciphertext2 from basis Q to P to PQ.
-      cv2[i].FastExpandCRTBasisPloverQ(
-          cryptoParams->GetParamsQlRl(l),
-          cryptoParams->GetParamsRl(l),
-          cryptoParams->GetParamsQl(l),
-          cryptoParams->GetmNegRlQHatInvModq(l),
-          cryptoParams->GetmNegRlQHatInvModqPrecon(l),
-          cryptoParams->GetqInvModr(),
-          cryptoParams->GetModrBarrettMu(),
-          cryptoParams->GetRlHatInvModr(l),
-          cryptoParams->GetRlHatInvModrPrecon(l),
-          cryptoParams->GetRlHatModq(l),
-          cryptoParams->GetalphaRlModq(l),
-          cryptoParams->GetModqBarrettMu(),
-          cryptoParams->GetrInv());
+      cv2[i].FastExpandCRTBasisPloverQ(basisPQ);
       cv2[i].SetFormat(Format::EVALUATION);
     }
   } else {
