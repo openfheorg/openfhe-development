@@ -1708,25 +1708,12 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasis(
 }
 
 template <typename VecType>
-void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(
-    const std::shared_ptr<DCRTPolyImpl::Params> paramsQlPl,
-    const std::shared_ptr<DCRTPolyImpl::Params> paramsPl,
-    const std::shared_ptr<DCRTPolyImpl::Params> paramsQl,
-    const std::vector<NativeInteger> &mPlQHatInvModq,
-    const std::vector<NativeInteger> &mPlQHatInvModqPrecon,
-    const std::vector<std::vector<NativeInteger>> &qInvModp,
-    const std::vector<DoubleNativeInt> &modpBarrettMu,
-    const std::vector<NativeInteger> &PlHatInvModp,
-    const std::vector<NativeInteger> &PlHatInvModpPrecon,
-    const std::vector<std::vector<NativeInteger>> &PlHatModq,
-    const std::vector<std::vector<NativeInteger>> &alphaPlModq,
-    const std::vector<DoubleNativeInt> &modqBarrettMu,
-    const std::vector<double> &pInv) {
+void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations& precomputed) {
   usint ringDim = this->GetRingDimension();
 
   size_t sizeQ = m_vectors.size();
 
-  DCRTPolyType partPl(paramsPl, this->m_format, true);
+  DCRTPolyType partPl(precomputed.paramsPl, this->m_format, true);
   size_t sizePl = partPl.m_vectors.size();
   size_t sizeQl = sizePl;
   size_t sizeQlPl = sizePl + sizeQl;
@@ -1738,27 +1725,25 @@ void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(
     for (usint i = 0; i < sizeQ; i++) {
       const NativeInteger &xi = m_vectors[i][ri];
       const NativeInteger &qi = m_vectors[i].GetModulus();
-      const std::vector<NativeInteger> &qInvModpi = qInvModp[i];
+      const std::vector<NativeInteger> &qInvModpi = precomputed.qInvModp[i];
       NativeInteger xQHatInvModqi =
-          xi.ModMulFastConst(mPlQHatInvModq[i], qi, mPlQHatInvModqPrecon[i]);
+          xi.ModMulFastConst(precomputed.mPlQHatInvModq[i], qi, precomputed.mPlQHatInvModqPrecon[i]);
       for (usint j = 0; j < sizePl; j++) {
-        sum[j] +=
-            Mul128(xQHatInvModqi.ConvertToInt(), qInvModpi[j].ConvertToInt());
+        sum[j] += Mul128(xQHatInvModqi.ConvertToInt(), qInvModpi[j].ConvertToInt());
       }
     }
 
     for (usint j = 0; j < sizePl; j++) {
       const NativeInteger &pj = partPl.m_vectors[j].GetModulus();
-      partPl.m_vectors[j][ri] =
-          BarrettUint128ModUint64(sum[j], pj.ConvertToInt(), modpBarrettMu[j]);
+      partPl.m_vectors[j][ri] = BarrettUint128ModUint64(sum[j], pj.ConvertToInt(), precomputed.modpBarrettMu[j]);
     }
   }
 
   // EMM: (l + ll)n
   // EFP: ln
-  DCRTPolyType partQl =
-      partPl.SwitchCRTBasis(paramsQl, PlHatInvModp, PlHatInvModpPrecon, PlHatModq,
-                     alphaPlModq, modqBarrettMu, pInv);
+  DCRTPolyType partQl = partPl.SwitchCRTBasis(
+      precomputed.paramsQl, precomputed.PlHatInvModp, precomputed.PlHatInvModpPrecon,
+      precomputed.PlHatModq, precomputed.alphaPlModq, precomputed.modqBarrettMu, precomputed.pInv);
 
   // Expand with zeros as should be
   m_vectors.resize(sizeQlPl);
@@ -1773,7 +1758,7 @@ void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(
     m_vectors[sizeQl + j] = partPl.m_vectors[j];
   }
 
-  this->m_params = paramsQlPl;
+  this->m_params = precomputed.paramsQlPl;
 }
 
 template <typename VecType>
