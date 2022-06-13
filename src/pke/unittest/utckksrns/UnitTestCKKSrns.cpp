@@ -41,6 +41,7 @@
 #include <vector>
 #include "gtest/gtest.h"
 #include <cxxabi.h>
+#include <iterator>
 #include "utils/demangle.h"
 
 
@@ -542,6 +543,53 @@ void checkMinDiff(const std::vector<V>& high, const std::vector<V>& low,
     const uint32_t diff, const std::string& errMsg) {
     EXPECT_TRUE(checkMinDiff(high, low, diff)) << errMsg;
 }
+
+/**
+ * Function to check minimal difference between the avarage element values of 2 vectors
+ *
+ * @param high   vector with higher values
+ * @param low    vector with lower values
+ * @param diff   minimal expected difference between the avarage element values for high and low
+ */
+template<typename V>
+bool checkMinDiffAverage(const std::vector<V>& high, const std::vector<V>& low, const uint32_t diff) {
+    if (high.size() != low.size())
+        return false;
+
+    V highSum = 0;
+    for(const V& v : high)
+        highSum += v;
+    
+
+    V lowSum = 0;
+    for(const V& v : low)
+        lowSum += v;
+
+    return checkMinDiff(static_cast<double>(highSum)/high.size(), static_cast<double>(lowSum)/low.size(), diff);
+}
+
+/**
+ * Function to check minimal difference between the avarage element values of 2 vectors
+ *
+ * @param high   vector with higher values
+ * @param low    vector with lower values
+ * @param errMsg Debug message to display upon failure
+ * @param diff   minimal expected difference between the avarage element values for high and low
+ */
+template<typename V>
+void checkMinDiffAverage(const std::vector<V>& high, const std::vector<V>& low,
+    const uint32_t diff, const std::string& errMsg) {
+    // print vector values to error message
+    std::stringstream ss;
+    ss << ": HIGH precision: ";
+    std::copy(high.begin(), high.end(), std::ostream_iterator<V>(ss, " "));
+    ss << "|| LOW precision: ";
+    std::copy(low.begin(), low.end(), std::ostream_iterator<V>(ss, " "));
+
+    std::string msg(errMsg);
+    msg += ss.str();
+    EXPECT_TRUE(checkMinDiffAverage(high, low, diff)) << msg;
+}
 //===========================================================================================================
 class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
     using Element = DCRTPoly;
@@ -750,7 +798,7 @@ protected:
         if(!UnitTest_Add_Packed(testDataLocal, highPrecisions, failmsg))
             return;
 
-        checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Precision comparison failed");
+        checkMinDiffAverage(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Precision comparison failed");
     }
 
     bool UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& precisions, const std::string& failmsg = std::string()) {
@@ -871,12 +919,8 @@ protected:
         testDataLocal.params.rsTech = FLEXIBLEAUTOEXT;
         if (!UnitTest_Mult_Packed(testDataLocal, highPrecisions, failmsg))
             return;
-        //std::cout << "======================== highPrecisions\n";
-        //std::copy(highPrecisions.begin(), highPrecisions.end(), std::ostream_iterator<uint32_t>(std::cout, " "));
-        //std::cout << "\n======================== lowPrecisions\n";
-        //std::copy(lowPrecisions.begin(), lowPrecisions.end(), std::ostream_iterator<uint32_t>(std::cout, " "));
-        //std::cout << "\n";
-        checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Precision comparison failed");
+
+        checkMinDiffAverage(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Precision comparison failed");
     }
 
     /**
