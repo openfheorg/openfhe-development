@@ -124,6 +124,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPS;
     constexpr usint                multiHopQModulusLowerBound = 0;
+    constexpr ProxyReEncryptionMode PREMode = INDCPA;
 }; // namespace BGVRNS_SCHEME_DEFAULTS
 
 //====================================================================================================================
