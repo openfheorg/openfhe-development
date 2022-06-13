@@ -52,10 +52,13 @@
 
 #include "utils/rotatablevector.h"
 #include "utils/lineartransform.h"
+#include "utils/logger.h"
 #include "utils/caller_info.h"
 #include "utils/serial.h"
 
 namespace lbcrypto {
+
+enum PermuteStrategy { NONE, FFN, FFH, BFN, BFH, BBH };
 
 template <typename Element>
 class CryptoContextImpl;
@@ -397,7 +400,7 @@ protected:
    *
    * @param ser - stream to serialize to
    * @param sertype - type of serialization
-   * @param id for key to serialize - if empty string, serialize them all
+   * @param id for key to serialize - if empty std::string, serialize them all
    * @return true on success
    */
   template <typename ST>
@@ -480,7 +483,7 @@ protected:
    *
    * @param ser - stream to serialize to
    * @param sertype - type of serialization
-   * @param id - key to serialize; empty string means all keys
+   * @param id - key to serialize; empty std::string means all keys
    * @return true on success
    */
   template <typename ST>
@@ -585,7 +588,7 @@ protected:
    *
    * @param ser - stream to serialize to
    * @param sertype - type of serialization
-   * @param id - key to serialize; empty string means all keys
+   * @param id - key to serialize; empty std::string means all keys
    * @return true on success
    */
   template <typename ST>
@@ -1458,6 +1461,27 @@ protected:
   }
 
   /**
+   * EvalMult - OpenFHE EvalMult method for a pair of ciphertexts - with key
+   * switching This is a mutable version - input ciphertexts may get
+   * automatically rescaled, or level-reduced.
+   *
+   * @param ct1
+   * @param ct2
+   * @return new ciphertext for ct1 * ct2
+   */
+  void EvalMultMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
+    TypeCheck(ciphertext1, ciphertext2);
+
+    const auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
+    if (!evalKeyVec.size()) {
+      OPENFHE_THROW(type_error, "Evaluation key has not been generated for EvalMultMutable");
+    }
+
+    GetScheme()->EvalMultMutableInPlace(ciphertext1, ciphertext2,
+                                        evalKeyVec[0]);
+  }
+
+  /**
    * EvalMult - OpenFHE EvalMult method for a pair of ciphertexts - no key
    * switching (relinearization)
    * @param ct1
@@ -2022,6 +2046,42 @@ protected:
   }
 
   /**
+   * Method for polynomial evaluation for polynomials represented in the power
+   * series. This uses EvalPolyLinear, which uses a binary tree computation of
+   * the polynomial powers.
+   *
+   * @param &cipherText input ciphertext
+   * @param &coefficients is the vector of coefficients in the polynomial; the
+   * size of the vector is the degree of the polynomial
+   * @return the result of polynomial evaluation.
+   */
+  Ciphertext<Element> EvalPolyLinear(ConstCiphertext<Element> ciphertext,
+                                     const std::vector<double>& coefficients) const {
+    CheckCiphertext(ciphertext);
+
+    return GetScheme()->EvalPolyLinear(ciphertext, coefficients);
+  }
+
+  /**
+   * Method for evaluating Chebyshev polynomial interpolation;
+   * first the range [a,b] is mapped to [-1,1] using linear transformation 1 + 2
+   * (x-a)/(b-a) If the degree of the polynomial is less than 5, use
+   * EvalChebyshevSeriesLinear, otherwise, use EvalChebyshevSeriesPS.
+   *
+   * @param &cipherText input ciphertext
+   * @param &coefficients is the vector of coefficients in Chebyshev expansion
+   * @param a - lower bound of argument for which the coefficients were found
+   * @param b - upper bound of argument for which the coefficients were found
+   * @return the result of polynomial evaluation.
+   */
+  Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element> ciphertext,
+      const std::vector<double>& coefficients, double a, double b) const {
+    CheckCiphertext(ciphertext);
+
+    return GetScheme()->EvalChebyshevSeries(ciphertext, coefficients, a, b);
+  }
+
+  /**
    * EvalSumKeyGen Generates the key map to be used by evalsum
    *
    * @param privateKey private key.
@@ -2093,9 +2153,89 @@ protected:
    */
   Ciphertext<Element> EvalMerge(const std::vector<Ciphertext<Element>>& ciphertextVec) const;
 
+  /**
+   * EvalSumKeyGen Generates the key map to be used by evalsum
+   *
+   * @param privateKey private key.
+   * @param indexList list of indices.
+   * @param publicKey public key (used in NTRU schemes).
+   */
+  void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
+                        const PublicKey<Element> publicKey = nullptr);
+
+  /**
+   * Calculate automorphism index for rotation key value
+   * @param idx
+   * @return
+   */
+  usint FindAutomorphismIndex(const usint idx) const;
+
+  /**
+   * Calculate automorphism indices for vector of rotation key values
+   * @param idxList
+   * @return
+   */
+  std::vector<usint> FindAutomorphismIndices(const std::vector<usint> idxList) const;
+
+  /**
+   * Moves i-th slot to slot 0
+   *
+   * @param ciphertext.
+   * @param i the index.
+   * @return resulting ciphertext
+   */
+  Ciphertext<Element> EvalRotate(ConstCiphertext<Element> ciphertext, int32_t index) const;
+
+  /**
+   * Only supported for hybrid key switching.
+   * Performs fast (hoisted) rotation and returns the results
+   * in the extended CRT basis P*Q
+   *
+   * @param ciphertext input ciphertext
+   * @param index the rotation index.
+   * @param precomp the precomputed digits for the ciphertext
+   * @param addFirst if true, the the first element c0 is also computed (otherwise ignored)
+   * @return resulting ciphertext
+   */
+  Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, usint index,
+                                          const std::shared_ptr<std::vector<Element>> precomp, bool addFirst) const;
+
+  /**
+   * Only supported for hybrid key switching.
+   * Takes a ciphertext in the extended basis P*Q
+   * and scales down to Q.
+   *
+   * @param ciphertext input ciphertext in the extended basis
+   * @return resulting ciphertext
+   */
+  Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element> ciphertext) const;
+
+  /**
+   * Only supported for hybrid key switching.
+   * Scales down the polynomial c0 from extended basis P*Q to Q.
+   *
+   * @param ciphertext input ciphertext in the extended basis
+   * @return resulting polynomial
+   */
+  Element KeySwitchDownFirstElement(ConstCiphertext<Element> ciphertext) const;
+
+  /**
+   * Only supported for hybrid key switching.
+   * Takes a ciphertext in the normal basis Q
+   * and and extends it to extended basis P*Q.
+   *
+   * @param ciphertext input ciphertext in basis Q
+   * @return resulting ciphertext in basis P*Q
+   */
+  Ciphertext<Element> KeySwitchExt(ConstCiphertext<Element> ciphertext, bool addFirst) const;
+
+
+
   /////////////////////////////////////////
   // PRE Wrapper
   /////////////////////////////////////////
+
+
 
   /**
    * ReKeyGen produces an Eval Key that OpenFHE can use for Proxy Re Encryption
@@ -2456,6 +2596,28 @@ protected:
     return GetScheme()->MultiAddEvalMultKeys(evalKey1, evalKey2, keyId);
   }
 
+
+
+  //////////////////////////////
+  // FHE
+  //////////////////////////////
+
+
+
+  /**
+    * This method retrieves the map that contains the rotation
+    * keys for this scheme.
+    *
+    * @param id the key tag to search for
+    */
+   static std::map<usint, EvalKey<Element>>& GetEvalRotationKeyMap(const std::string& id);
+
+   /**
+    * This method retrieves all the maps that contain rotation
+    * keys.
+    */
+   static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalRotationKeys();
+
   const PermuteStrategy GetPermuteStrategy() const {
     return permStrategy;
   }
@@ -2511,7 +2673,7 @@ protected:
    *
    *
    * Example usage (the following will inverse the slots in a packed ciphertext
-   * ct): int slots = 8; vector<int> permMap = { 7, 6, 5, 4, 3, 2, 1, 0 }; auto
+   * ct): int slots = 8; std::vector<int> permMap = { 7, 6, 5, 4, 3, 2, 1, 0 }; auto
    * keys = cc->KeyGen(); PermuteStrategy strategy = BFH;
    * cc->EvalPermuteKeyGen(keys.secretKey, slots, strategy);
    * auto ctPerm = cc->EvalPermute(ct, permMap, slots, strategy);
@@ -2571,11 +2733,11 @@ protected:
    * @param m
    * @return
    */
-  vector<int32_t> FindLTRotationIndices(uint32_t dim1 = 0,
+  std::vector<int32_t> FindLTRotationIndices(uint32_t dim1 = 0,
                   int32_t bootstrapFlag = 0, uint32_t m = 0);
 
 
-    LPEvalKey<Element> ConjugateKeyGen(const PrivateKey<Element> privateKey) const;
+  EvalKey<Element> ConjugateKeyGen(const PrivateKey<Element> privateKey) const;
   /**
    * Generates precomputed encoded rotated vectors for square linear map A
    * Speeds up EvalLT
@@ -2719,7 +2881,7 @@ protected:
      * @param m
      * @return
      */
-    vector<int32_t> FindBTRotationIndices(int32_t bootstrapFlag = 0, uint32_t m = 0, uint32_t blockDimension = 0);
+    std::vector<int32_t> FindBTRotationIndices(int32_t bootstrapFlag = 0, uint32_t m = 0, uint32_t blockDimension = 0);
 
   /**
    * Defines the bootstrapping evaluation of ciphertext using either the
@@ -2804,35 +2966,6 @@ protected:
    */
   uint32_t GetNumberOfRotationIndicesLT() const;
 
-  template <class Archive>
-  void save(Archive& ar, std::uint32_t const version) const {
-    ar(cereal::make_nvp("cc", params));
-    ar(cereal::make_nvp("kt", scheme));
-    ar(cereal::make_nvp("si", m_schemeId));
-  }
-
-  template <class Archive>
-  void load(Archive& ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      OPENFHE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
-    }
-    ar(cereal::make_nvp("cc", params));
-    ar(cereal::make_nvp("kt", scheme));
-    ar(cereal::make_nvp("si", m_schemeId));
-    SetKSTechniqueInScheme();
-
-    // NOTE: a pointer to this object will be wrapped in a shared_ptr, and is a
-    // "CryptoContext". OpenFHE relies on the notion that identical
-    // CryptoContextImpls are not duplicated in memory Once we deserialize this
-    // object, we must check to see if there is a matching object for this
-    // object that's already existing in memory if it DOES exist, use it. If it
-    // does NOT exist, add this to the cache of all contexts
-  }
-
-  virtual std::string SerializedObjectName() const { return "CryptoContext"; }
-  static uint32_t SerializedVersion() { return 1; }
 
   /**
    * Gets the giant step for baby-step-giant-step
@@ -2992,6 +3125,36 @@ protected:
    */
   Ciphertext<Element> EvalAtIndexBGStep(ConstCiphertext<Element> ciphertext, int32_t index, int32_t slots) const;
 
+  template <class Archive>
+  void save(Archive& ar, std::uint32_t const version) const {
+    ar(cereal::make_nvp("cc", params));
+    ar(cereal::make_nvp("kt", scheme));
+    ar(cereal::make_nvp("si", m_schemeId));
+  }
+
+  template <class Archive>
+  void load(Archive& ar, std::uint32_t const version) {
+    if (version > SerializedVersion()) {
+      OPENFHE_THROW(deserialize_error,
+                     "serialized object version " + std::to_string(version) +
+                         " is from a later version of the library");
+    }
+    ar(cereal::make_nvp("cc", params));
+    ar(cereal::make_nvp("kt", scheme));
+    ar(cereal::make_nvp("si", m_schemeId));
+    SetKSTechniqueInScheme();
+
+    // NOTE: a pointer to this object will be wrapped in a shared_ptr, and is a
+    // "CryptoContext". OpenFHE relies on the notion that identical
+    // CryptoContextImpls are not duplicated in memory Once we deserialize this
+    // object, we must check to see if there is a matching object for this
+    // object that's already existing in memory if it DOES exist, use it. If it
+    // does NOT exist, add this to the cache of all contexts
+  }
+
+  virtual std::string SerializedObjectName() const { return "CryptoContext"; }
+  static uint32_t SerializedVersion() { return 1; }
+
  protected:
   /**
      * This holds the permutation strategy as defined by a call to
@@ -2999,9 +3162,9 @@ protected:
      */
   PermuteStrategy permStrategy = NONE;
 
-  static std::map<string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalRotationKeyMap() {
+  static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalRotationKeyMap() {
     // cached rotation keys, by secret key UID
-    static std::map<string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalRotationKeyMap;
+    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalRotationKeyMap;
     return s_evalRotationKeyMap;
   }
 

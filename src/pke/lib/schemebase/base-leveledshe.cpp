@@ -272,6 +272,26 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultMutable(
 }
 
 template <class Element>
+void LeveledSHEBase<Element>::EvalMultMutableInPlace(
+    Ciphertext<Element> &ciphertext1, Ciphertext<Element> &ciphertext2,
+    const EvalKey<Element> evalKey) const {
+  EvalMultMutableInPlace(ciphertext1, ciphertext2);
+
+  std::vector<Element> &cv = ciphertext1->GetElements();
+  for (auto &c : cv) c.SetFormat(Format::EVALUATION);
+
+  auto algo = ciphertext1->GetCryptoContext()->GetScheme();
+
+  std::shared_ptr<std::vector<Element>> ab =
+      algo->KeySwitchCore(cv[2], evalKey);
+
+  cv[0] += (*ab)[0];
+  cv[1] += (*ab)[1];
+
+  cv.resize(2);
+}
+
+template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalMultAndRelinearize(
     ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2,
     const std::vector<EvalKey<Element>> &evalKeyVec) const {

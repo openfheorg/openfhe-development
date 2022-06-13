@@ -138,6 +138,22 @@ public:
   }
 
   /**
+   * Method for polynomial evaluation for polynomials represented in the power
+   * series. This uses a binary tree computation of
+   * the polynomial powers.
+   *
+   * @param &cipherText input ciphertext
+   * @param &coefficients is the vector of coefficients in the polynomial; the
+   * size of the vector is the degree of the polynomial + 1
+   * @return the result of polynomial evaluation.
+   */
+  virtual Ciphertext<Element> EvalPolyLinear(
+      ConstCiphertext<Element> ciphertext,
+      const std::vector<double> &coefficients) const {
+    OPENFHE_THROW(config_error, "EvalPolyLinear is not supported for the scheme.");
+  }
+
+  /**
    * Method for evaluating Chebyshev polynomial interpolation;
    * first the range [a,b] is mapped to [-1,1] using linear transformation 1 + 2
    * (x-a)/(b-a) If the degree of the polynomial is less than 5, use
@@ -298,6 +314,22 @@ public:
       const std::vector<Ciphertext<Element>> &ciphertextVector,
       const std::map<usint, EvalKey<Element>> &evalKeyMap) const;
 
+  virtual Ciphertext<Element> EvalAtIndexBGStep(
+      ConstCiphertext<Element> ciphertext, int32_t index, int32_t slots,
+      const std::map<usint, EvalKey<Element>> &evalAtIndexKeys) const;
+
+  virtual std::vector<int32_t> FindLTRotationIndices(uint32_t dim1 = 0, int32_t bootstrapFlag = 0, uint32_t m = 0,
+            uint32_t blockDimension = 0) {
+    OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalLTKeyGen(const PrivateKey<Element> privateKey,
+                                                                       uint32_t dim1 = 0,
+                                                                       int32_t bootstrapFlag = 0,
+                                                                       int32_t conjFlag = 0) {
+    OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
  protected:
   std::vector<usint> GenerateIndices_2n(usint batchSize, usint m) const;
 
@@ -323,6 +355,7 @@ public:
   Ciphertext<Element> EvalSum2nComplexCols(
       ConstCiphertext<Element> ciphertext, usint batchSize, usint m,
       const std::map<usint, EvalKey<Element>> &evalKeyMap) const;
+
 };
 
 }  // namespace lbcrypto

@@ -554,6 +554,40 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(
 }
 
 template <typename Element>
+void CryptoContextImpl<Element>::EvalRotateKeyGen(const PrivateKey<Element> privateKey,
+                                                     const std::vector<int32_t>& indexList,
+                                                     const PublicKey<Element> publicKey) {
+  if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
+    OPENFHE_THROW(config_error,
+                   "Private key passed to EvalRotateKeyGen were not generated "
+                   "with this crypto context");
+  }
+
+  if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
+    OPENFHE_THROW(config_error, "Public key passed to EvalRotateKeyGen does not match private key");
+  }
+
+  auto evalKeys = GetScheme()->EvalAtIndexKeyGen(publicKey, privateKey, indexList);
+
+  auto ekv = GetAllEvalRotationKeys().find(privateKey->GetKeyTag());
+  if (ekv == GetAllEvalRotationKeys().end()) {
+    GetAllEvalRotationKeys()[privateKey->GetKeyTag()] = evalKeys;
+  } else {
+    auto& currRotMap = GetEvalRotationKeyMap(privateKey->GetKeyTag());
+    auto iterRowKeys = evalKeys->begin();
+    while (iterRowKeys != evalKeys->end()) {
+      auto idx = iterRowKeys->first;
+      // Search current rotation key map and add key
+      // only if it doesn't exist
+      if (currRotMap.find(idx) == currRotMap.end()) {
+        currRotMap.insert(*iterRowKeys);
+      }
+      iterRowKeys++;
+    }
+  }
+}
+
+template <typename Element>
 DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
     const std::vector<Ciphertext<Element>>& partialCiphertextVec,
     Plaintext* plaintext) const {
@@ -667,10 +701,11 @@ std::vector<ConstPlaintext> CryptoContextImpl<Element>::EvalLTPrecompute(
 
   // make sure the plaintext is created only with the necessary amount of moduli
 
-  const shared_ptr<CryptoParametersCKKSRNS> cryptoParamsCKKS =
-      std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
+  const auto cryptoParams =
+      std::dynamic_pointer_cast<CryptoParametersRNS>(
+          this->GetCryptoParameters());
 
-  ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
+  ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
 
   uint32_t towersToDrop = 0;
   if (L != 0) {
@@ -680,7 +715,7 @@ std::vector<ConstPlaintext> CryptoContextImpl<Element>::EvalLTPrecompute(
 
   auto paramsQ = elementParams.GetParams();
   usint sizeQ = paramsQ.size();
-  auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
+  auto paramsP = cryptoParams->GetParamsP()->GetParams();
   usint sizeP = paramsP.size();
 
   std::vector<NativeInteger> moduli(sizeQ + sizeP);
@@ -729,7 +764,7 @@ std::vector<ConstPlaintext> CryptoContextImpl<Element>::EvalLTPrecompute(
 
   // make sure the plaintext is created only with the necessary amount of moduli
 
-  const shared_ptr<CryptoParametersCKKSRNS> cryptoParamsCKKS =
+  const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParamsCKKS =
       std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
 
   ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
@@ -1066,7 +1101,7 @@ const std::vector<int32_t>& CryptoContextImpl<Element>::GetRotationIndicesLT() c
 
 template <typename Element>
 uint32_t CryptoContextImpl<Element>::GetNumberOfRotationIndicesLT() const {
-  return ->GetNumberOfRotationIndicesLT();
+  return GetScheme()->GetNumberOfRotationIndicesLT();
 }
 
 // -----------THE CODE FOR LINEAR TRANSFORM USINF FFT-LIKE METHODS ENDS

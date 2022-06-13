@@ -145,14 +145,14 @@ public:
       const shared_ptr<vector<DCRTPoly>> expandedCiphertext, bool addFirst,
       const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const;
 
-  Ciphertext<DCRTPoly> KeySwitchDown(
-      ConstCiphertext<DCRTPoly> ciphertext) const;
-
-  DCRTPoly KeySwitchDownFirstElement(
-      ConstCiphertext<DCRTPoly> ciphertext) const;
-
-  Ciphertext<DCRTPoly> KeySwitchExt(
-      ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const;
+//  Ciphertext<DCRTPoly> KeySwitchDown(
+//      ConstCiphertext<DCRTPoly> ciphertext) const;
+//
+//  DCRTPoly KeySwitchDownFirstElement(
+//      ConstCiphertext<DCRTPoly> ciphertext) const;
+//
+//  Ciphertext<DCRTPoly> KeySwitchExt(
+//      ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const;
 
   void ApplyDoubleAngleIterations(CryptoContext<DCRTPoly>& cc,
     Ciphertext<DCRTPoly>& ciphertext) const;

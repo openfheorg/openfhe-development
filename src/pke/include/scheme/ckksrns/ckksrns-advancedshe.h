@@ -63,9 +63,9 @@ public:
       ConstCiphertext<DCRTPoly> ciphertext,
       const std::vector<double> &coefficients) const override;
 
-  Ciphertext<DCRTPoly> EvalPolyLinear(
+  virtual Ciphertext<DCRTPoly> EvalPolyLinear(
       ConstCiphertext<DCRTPoly> x,
-      const std::vector<double> &coefficients) const;
+      const std::vector<double> &coefficients) const override;
 
   Ciphertext<DCRTPoly> InnerEvalPolyPS(
       ConstCiphertext<DCRTPoly> x,
@@ -108,9 +108,11 @@ public:
   // LINEAR TRANSFORMATION
   /////////////////////////////////////
 
-  std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalLTKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalLTKeyGen(
       const PrivateKey<DCRTPoly> privateKey, uint32_t dim1,
-      int32_t bootstrapFlag, int32_t conjFlag );
+      int32_t bootstrapFlag, int32_t conjFlag) override;
+
+
 
   /////////////////////////////////////
   // SERIALIZATION

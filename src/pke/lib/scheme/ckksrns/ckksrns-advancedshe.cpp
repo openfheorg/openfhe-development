@@ -303,7 +303,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
       qu = powers[k-1];
     }
     // adds the free term (at x^0)
-    qu = cc->EvalAddInPlace(qu, divqr->q.front());
+    cc->EvalAddInPlace(qu, divqr->q.front());
   }
 
   uint32_t ds = Degree(s2);
@@ -338,7 +338,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
         su = powers[k-1];
       }
       // adds the free term (at x^0)
-      su = cc->EvalAddInPlace(su,s2.front());
+      cc->EvalAddInPlace(su,s2.front());
     }
   }
 
@@ -350,9 +350,9 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
   else
     result = cc->EvalAdd(powers2[m-1], divcs->q.front());
 
-  cc->EvalMultMutableInPlace(result,qu);
+  cc->EvalMultMutableInPlace(result, qu);
   cc->ModReduceInPlace(result);
-  cc->EvalAddMutableInPlace(result,su);
+  cc->EvalAddMutableInPlace(result, su);
 
   return result;
 
@@ -431,8 +431,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
     }
   }
 
-  const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
-    std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(powers[k-1]->GetCryptoParameters());
+  const auto cryptoParams =
+      std::static_pointer_cast<CryptoParametersCKKSRNS>(powers[k-1]->GetCryptoParameters());
 
   auto algo = cc->GetScheme();
 
@@ -440,9 +440,9 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
   if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
     for (uint32_t i = 1; i <= k; i++) {
       if (powers[i-1]->GetDepth() == 2)
-        algo->ModReduceInternalInPlace(powers[i-1]);
+        algo->ModReduceInternalInPlace(powers[i-1], BASE_NUM_LEVELS_TO_DROP);
       if (powers[i-1]->GetLevel() < powers[k-1]->GetLevel()) {
-        algo->AdjustLevelWithRescaleInPlace(powers[i-1], powers[k-1]->GetLevel());
+        algo->AdjustLevelsAndDepthToOneInPlace(powers[i-1], powers[k-1]);
       }
     }
   }
@@ -1000,9 +1000,9 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
 
     if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
       if (T[i-1]->GetDepth() == 2)
-        algo->ModReduceInternalInPlace(T[i-1]);
+        algo->ModReduceInternalInPlace(T[i-1], BASE_NUM_LEVELS_TO_DROP);
       if (T[i-1]->GetLevel() < T[k-1]->GetLevel()) {
-        algo->AdjustLevelWithRescaleInPlace(T[i-1], T[k-1]->GetLevel());
+        algo->AdjustLevelsAndDepthToOneInPlace(T[i-1], T[k-1]);
       }
     }
   }
@@ -1482,7 +1482,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
       if (powers[i-1]->GetDepth() == 2)
         powers[i-1] = algo->ModReduceInternal(powers[i-1]);
       if (powers[i-1]->GetLevel() < powers[k-1]->GetLevel()) {
-        algo->AdjustLevelWithRescale(powers[i-1], powers[k-1]->GetLevel());
+        algo->AdjustLevelsAndDepthToOneInPlace(powers[i-1], powers[k-1]);
       }
     }
   }
@@ -2104,7 +2104,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
       if (T[i-1]->GetDepth() == 2)
         T[i-1] = algo->ModReduceInternal(T[i-1]);
       if (T[i-1]->GetLevel() < T[k-1]->GetLevel()) {
-        algo->AdjustLevelWithRescale(T[i-1], T[k-1]->GetLevel());
+        algo->AdjustLevelsAndDepthToOneInPlace(T[i-1], T[k-1]);
       }
     }
   }

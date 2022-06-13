@@ -706,6 +706,44 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum2nComplexCols(
   return newCiphertext;
 }
 
+template <class Element>
+Ciphertext<Element> AdvancedSHEBase<Element>::EvalAtIndexBGStep(
+    ConstCiphertext<Element> ciphertext, int32_t index, int32_t slots,
+    const std::map<usint, EvalKey<Element>> &evalAtIndexKeys) const {
+
+  // Computing the baby-step g and the giant-step h.
+  int g = ceil(sqrt(slots));
+
+  int gIdx = index % g;
+  int hIdx = index / g;
+
+  Ciphertext<Element> tmp, result;
+
+  auto algo = ciphertext->GetCryptoContext()->GetScheme();
+
+  // With baby-step/giant-step, we have to do two rotations: one based on
+  // the baby step and one on the giant step. Unless some of the rotation
+  // indices are zero.
+  if (hIdx == 0) {
+    if (gIdx == 0) {
+      result = ciphertext->CloneEmpty();
+      result->SetElements(ciphertext->GetElements());
+      result->SetDepth(ciphertext->GetDepth());
+    } else {
+      result = algo->EvalAtIndex(ciphertext, gIdx, evalAtIndexKeys);
+    }
+  } else {
+    if (gIdx == 0) {
+      result = algo->EvalAtIndex(ciphertext, g * hIdx, evalAtIndexKeys);
+    } else {
+      tmp = algo->EvalAtIndex(ciphertext, g * hIdx, evalAtIndexKeys);
+      result = algo->EvalAtIndex(tmp, gIdx, evalAtIndexKeys);
+    }
+  }
+
+  return result;
+}
+
 }  // namespace lbcrypto
 
 // the code below is from base-advancedshe-impl.cpp

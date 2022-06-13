@@ -234,7 +234,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMultMutable(
 /////////////////////////////////////
 
 EvalKey<DCRTPoly> LeveledSHECKKSRNS::ConjugateKeyGen(
-    const LPPrivateKey<DCRTPoly> privateKey) const {
+    const PrivateKey<DCRTPoly> privateKey) const {
   const DCRTPoly &s = privateKey->GetPrivateElement();
 
   usint n = s.GetRingDimension();
