@@ -1074,7 +1074,7 @@ public:
    * @param &paramsP parameters for the CRT basis {p_1,...,p_k}
    * @param &tPSHatInvModsDivsModp precomputed values for
    * [\floor[t*P*[[SHatInv_k]_{s_k}/s_k]]_{p_j}
-   * @param &modpBarretMu 128-bit Barrett reduction precomputed values for
+   * @param &modoBarretMu 128-bit Barrett reduction precomputed values for
    * p_j
    * @return the result {\approx{t/Q * X}}_{P}
    */
@@ -1084,33 +1084,34 @@ public:
 
     /**
    * @brief Computes scale and round:
-   * {X}_{Q,P} -> {t/Q * X}_{P}
-   * {Q} = {q_1,...,q_l}
-   * {P} = {p_1,...,p_k}
+   * {X}_{I,O} -> {t/I * X}_{O}
+   * {I} = {i_1,...,i_l}
+   * {O} = {o_1,...,o_k}
+   * O, the output modulus can be either P or Q, and I is the other one.
    *
    * Brief algorithm:
-   * Let S = {Q,P}
-   * 1) [\sum_k x_k * alpha_k + Round(\sum_k beta_k * x_k)]_{p_j}
-   * 2) alpha_k = [Floor[t*P*[[SHatInv_k]_{s_k}/s_k]]_{p_j}
-   * 3) beta_k = {t*P*[[SHatInv_k]_{s_k}/s_k}
+   * Let S = {I,O}
+   * 1) [\sum_k x_k * alpha_k + Round(\sum_k beta_k * x_k)]_{o_j}
+   * 2) alpha_k = [Floor[t*O*[[SHatInv_k]_{s_k}/s_k]]_{o_j}
+   * 3) beta_k = {t*O*[[SHatInv_k]_{s_k}/s_k}
    *
    * Source: Halevi S., Polyakov Y., and Shoup V. An Improved RNS Variant of the
    * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report
    * 2018/117. (https://eprint.iacr.org/2018/117)
    *
-   * @param &paramsP parameters for the CRT basis {p_1,...,p_k}
-   * @param &tPSHatInvModsDivsModp precomputed values for
-   * [\floor[t*P*[[SHatInv_k]_{s_k}/s_k]]_{p_j}
+   * @param &paramsOutput parameters for the CRT basis {o_1,...,o_k}.
+   * @param &tOSHatInvModsDivsModo precomputed values for
+   * [\floor[t*O*[[SHatInv_k]_{s_k}/s_k]]_{o_j}
    * @param &tPSHatInvModsDivsFrac precomputed values for
-   * {t*P*[[SHatInv_k]_{s_k}/s_k}
-   * @param &modpBarretMu 128-bit Barrett reduction precomputed values for
-   * p_j
-   * @return the result {t/Q * X}_{P}
+   * {t*O*[[SHatInv_k]_{s_k}/s_k}
+   * @param &modoBarretMu 128-bit Barrett reduction precomputed values for
+   * o_j
+   * @return the result {t/I * X}_{O}
    */
-    DCRTPolyType ScaleAndRound(const std::shared_ptr<Params> paramsP,
-                               const std::vector<std::vector<NativeInteger>>& tPSHatInvModsDivsModp,
-                               const std::vector<double>& tPSHatInvModsDivsFrac,
-                               const std::vector<DoubleNativeInt>& modpBarretMu) const override;
+    DCRTPolyType ScaleAndRound(const std::shared_ptr<Params> paramsOutput,
+                               const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
+                               const std::vector<double>& tOSHatInvModsDivsFrac,
+                               const std::vector<DoubleNativeInt>& modoBarretMu) const override;
 
     DCRTPolyType ScaleAndRoundP(
       const std::shared_ptr<Params> paramsQ,
