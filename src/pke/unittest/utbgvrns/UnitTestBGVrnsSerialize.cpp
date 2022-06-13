@@ -39,6 +39,7 @@
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "utils/exception.h"
+#include "globals.h" // for SERIALIZE_PRECOMPUTE
 
 #include "include/gtest/gtest.h"
 #include <iostream>
@@ -205,6 +206,7 @@ protected:
                 ASSERT_TRUE(CryptoContextFactory<DCRTPoly>::GetContextCount() == 1);
             }
 
+            DisablePrecomputeCRTTablesAfterDeserializaton();
             KeyPair<DCRTPoly> kp = cc->KeyGen();
             KeyPair<DCRTPoly> kpnew;
 
@@ -345,17 +347,20 @@ protected:
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::GetAllEvalSumKeys().size(), 2U) << "all-key deser, keys";
 
             // ending cleanup
+            EnablePrecomputeCRTTablesAfterDeserializaton();
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
         }
         catch (std::exception& e) {
+            EnablePrecomputeCRTTablesAfterDeserializaton();
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+            EnablePrecomputeCRTTablesAfterDeserializaton();
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
