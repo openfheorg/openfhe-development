@@ -1113,18 +1113,6 @@ public:
                                const std::vector<double>& tOSHatInvModsDivsFrac,
                                const std::vector<DoubleNativeInt>& modoBarretMu) const override;
 
-    DCRTPolyType ScaleAndRoundP(
-      const std::shared_ptr<Params> paramsQ,
-      const std::vector<std::vector<NativeInteger>> &tQSHatInvModsDivsModq,
-      const std::vector<double> &tQSHatInvModsDivsFrac,
-      const std::vector<DoubleNativeInt> &modqBarretMu) const;
-
-    DCRTPolyType ScaleAndRoundQl(
-        const std::shared_ptr<Params> paramsQl,
-        const std::vector<std::vector<NativeInteger>> &QlQHatInvModqDivqModq,
-        const std::vector<double> &QlQHatInvModqDivqFrac,
-        const std::vector<DoubleNativeInt> &modqBarretMu) const;
-
     /**
    * @brief Computes scale and round for fast rounding:
    * {X}_{Q} -> {\round(t/Q * X)}_t
