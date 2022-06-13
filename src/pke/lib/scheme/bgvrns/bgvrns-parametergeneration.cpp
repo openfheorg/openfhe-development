@@ -380,6 +380,40 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, 0);
 
   //compute the flooding distribution parameter based on the security mode for pre
+  //getmodulus using ciphertext 
+  double stat_sec=30;
+  //get the re-encryption level and set the level after re-encryption
+  double sigma = cryptoParamsBGVRNS->GetDistributionParameter();
+  double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
+  uint32_t r = cryptoParamsBGVRNS->GetRelinWindow();
+  double log2q = cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble();
+
+  double B_e = alpha*sigma;
+  #if 0
+  if (rk_level == 0) {
+    noise_param = (pow(2,(stat_sec*(rk_level+1)))*3*(log2q/r+1)*sqrt(n)*(pow(2,r)-1)*B_e);//rk_level
+  } else {
+    noise_param = (pow(2,(stat_sec*(rk_level+1)))*3*(log2q/r+1)*sqrt(n)*(pow(2,r)-1)*B_e)/(pow(2,qfactor));
+  }
+  #endif
+
+  if (PREMode == FIXED_NOISE_HRA) {
+    auto &dggflooding = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
+
+    double noise_param = 1048576;
+    
+    //set the flooding distribution parameter to the distribution.
+    dggflooding.SetStd(noise_param);
+  } else if (PREMode == NOISE_FLOODING_HRA) {
+    //get the flooding discrete gaussian distribution
+    auto &dggflooding = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
+
+    double noise_param = pow(2,stat_sec)*3*(log2q/r+1)*sqrt(n)*(pow(2,r)-1)*B_e;
+    
+    //set the flooding distribution parameter to the distribution.
+    dggflooding.SetStd(noise_param);
+  }
+
   return true;
 }
 

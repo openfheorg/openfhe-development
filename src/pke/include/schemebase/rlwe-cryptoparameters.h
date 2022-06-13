@@ -74,7 +74,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_maxDepth = 2;
     m_mode = RLWE;
     m_stdLevel = HEStd_NotSet;
-    m_floodingdistributionParameter = 1048576;
+    m_floodingdistributionParameter = 0.0f;
     m_dggflooding.SetStd(m_floodingdistributionParameter);
     m_premode = INDCPA;
 }
@@ -256,7 +256,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    *
    * @return reference to Discrete Gaussian Generaror with flooding for PRE.
    */
-  const typename Element::DggType &GetFloodingDiscreteGaussianGenerator() const {
+  typename Element::DggType &GetFloodingDiscreteGaussianGenerator() { //check this later const {
     return m_dggflooding;
   }
   

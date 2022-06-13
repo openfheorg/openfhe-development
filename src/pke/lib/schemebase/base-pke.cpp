@@ -208,6 +208,9 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
   Element e1;
 
   auto preMode = cryptoParams->GetPREMode();
+  std::cout << "premode set " << preMode << std::endl;
+  std::cout << "noise distribution parameter " << cryptoParams->GetFloodingDistributionParameter();
+
   if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
     const DggType &dggf = cryptoParams->GetFloodingDiscreteGaussianGenerator();
     e0 = Element(dggf, elementParams, Format::EVALUATION);

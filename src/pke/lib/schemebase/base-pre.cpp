@@ -69,7 +69,11 @@ Ciphertext<Element> PREBase<Element>::ReEncrypt(
   ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
   const PublicKey<Element> publicKey) const {
   auto algo = ciphertext->GetCryptoContext()->GetScheme();
+
   //const DggType &floodingdist = ciphertext->GetCryptoContext()->GetCryptoParameters()->GetFloodingDiscreteGaussianGenerator();
+  
+  //auto premode = ciphertext->GetCryptoParameters()->GetPREMode();
+  //std::cout << "PRE mode " << premode << std::endl;
   Ciphertext<Element> result = ciphertext->Clone();
   if (publicKey != nullptr) {
     std::vector<Element> &cv = result->GetElements();

@@ -208,8 +208,27 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
                    ? DCRTPoly(dgg, elementParams, Format::EVALUATION)
                    : DCRTPoly(tug, elementParams, Format::EVALUATION);
 
-  DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-  DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
+  //DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
+  //DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
+
+  DCRTPoly e0;
+  DCRTPoly e1;
+
+  auto preMode = cryptoParams->GetPREMode();
+  std::cout << "premode set " << preMode << std::endl;
+  std::cout << "noise distribution parameter " << cryptoParams->GetDistributionParameter() << std::endl;
+  std::cout << "noise distribution parameter from m_dgg" << cryptoParams->GetDiscreteGaussianGenerator().GetStd() << std::endl;
+  std::cout << "noise distribution parameter flooding " << cryptoParams->GetFloodingDistributionParameter() << std::endl;
+  std::cout << "noise distribution parameter from m_dggflooding " << cryptoParams->GetFloodingDiscreteGaussianGenerator().GetStd() << std::endl;
+
+  if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
+    const DggType &dggf = cryptoParams->GetFloodingDiscreteGaussianGenerator();
+    e0 = DCRTPoly(dggf, elementParams, Format::EVALUATION);
+    e1 = DCRTPoly(dggf, elementParams, Format::EVALUATION);
+  } else {
+    e0 = DCRTPoly(dgg, elementParams, Format::EVALUATION);
+    e1 = DCRTPoly(dgg, elementParams, Format::EVALUATION);
+  }
 
   uint32_t sizeQ = pk[0].GetParams()->GetParams().size();
   uint32_t sizeQl = elementParams->GetParams().size();
