@@ -76,7 +76,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_digitSize = 1;
     m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = 2;
-    m_mode = RLWE;
+    m_secretKeyDist = RLWE;
     m_stdLevel = HEStd_NotSet;
   }
 
@@ -94,7 +94,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_digitSize = rhs.m_digitSize;
     m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = rhs.m_maxDepth;
-    m_mode = rhs.m_mode;
+    m_secretKeyDist = rhs.m_secretKeyDist;
     m_stdLevel = rhs.m_stdLevel;
   }
 
@@ -109,13 +109,13 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param digitSize the size of the relinearization window.
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
-   * @param mode mode for secret polynomial, defaults to RLWE.
+   * @param secretKeyDist mode for secret polynomial, defaults to RLWE.
    */
   CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint digitSize,
-                       int maxDepth = 2, MODE mode = RLWE,
+                       int maxDepth = 2, SecretKeyDist secretKeyDist = RLWE,
                        PlaintextModulus noiseScale = 1)
       : CryptoParametersBase<Element>(params, encodingParams) {
     m_distributionParameter = distributionParameter;
@@ -125,7 +125,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_digitSize = digitSize;
     m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = maxDepth;
-    m_mode = mode;
+    m_secretKeyDist = secretKeyDist;
     m_stdLevel = HEStd_NotSet;
   }
 
@@ -141,13 +141,13 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param digitSize the size of the digit size.
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
-   * @param mode mode for secret polynomial, defaults to RLWE.
+   * @param secretKeyDist mode for secret polynomial, defaults to RLWE.
    */
   CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        SecurityLevel stdLevel, usint digitSize,
-                       int maxDepth = 2, MODE mode = RLWE,
+                       int maxDepth = 2, SecretKeyDist secretKeyDist = RLWE,
                        PlaintextModulus noiseScale = 1)
       : CryptoParametersBase<Element>(params, encodingParams) {
     m_distributionParameter = distributionParameter;
@@ -157,7 +157,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_digitSize = digitSize;
     m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = maxDepth;
-    m_mode = mode;
+    m_secretKeyDist = secretKeyDist;
     m_stdLevel = stdLevel;
   }
 
@@ -211,11 +211,11 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   size_t GetMaxDepth() const { return m_maxDepth; }
 
   /**
-   * Gets the mode setting: RLWE or OPTIMIZED.
+   * Gets the secretKeyDist setting: RLWE or OPTIMIZED.
    *
-   * @return the mode setting.
+   * @return the secretKeyDist setting.
    */
-  MODE GetMode() const { return m_mode; }
+  SecretKeyDist GetSecretKeyDist() const { return m_secretKeyDist; }
 
   /**
    * Gets the standard security level
@@ -286,10 +286,10 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   void SetMaxDepth(size_t maxDepth) { m_maxDepth = maxDepth; }
 
   /**
-   * Configures the mode for generating the secret key polynomial
-   * @param mode is RLWE or OPTIMIZED.
+   * Configures the secretKeyDist for generating the secret key polynomial
+   * @param secretKeyDist is RLWE or OPTIMIZED.
    */
-  void SetMode(MODE mode) { m_mode = mode; }
+  void SetSecretKeyDist(SecretKeyDist secretKeyDist) { m_secretKeyDist = secretKeyDist; }
 
   /**
    * == operator to compare to this instance of CryptoParametersRLWE object.
@@ -309,7 +309,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
            m_assuranceMeasure == el->GetAssuranceMeasure() &&
            m_securityLevel == el->GetSecurityLevel() &&
            m_noiseScale == el->GetNoiseScale() &&
-           m_digitSize == el->GetDigitSize() && m_mode == el->GetMode() &&
+           m_digitSize == el->GetDigitSize() && m_secretKeyDist == el->GetSecretKeyDist() &&
            m_stdLevel == el->GetStdLevel();
   }
 
@@ -320,7 +320,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
        << ", Assurance measure " << GetAssuranceMeasure() << ", Security level "
        << GetSecurityLevel() << ", Noise scale " << GetNoiseScale()
        << ", Digit Size " << GetDigitSize()
-       << ", Mode " << GetMode() << ", Standard security level "
+       << ", SecretKeyDist " << GetSecretKeyDist() << ", Standard security level "
        << GetStdLevel() << std::endl;
   }
 
@@ -333,7 +333,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("ns", m_noiseScale));
     ar(::cereal::make_nvp("rw", m_digitSize));
     ar(::cereal::make_nvp("md", m_maxDepth));
-    ar(::cereal::make_nvp("mo", m_mode));
+    ar(::cereal::make_nvp("mo", m_secretKeyDist));
     ar(::cereal::make_nvp("slv", m_stdLevel));
   }
 
@@ -347,7 +347,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("ns", m_noiseScale));
     ar(::cereal::make_nvp("rw", m_digitSize));
     ar(::cereal::make_nvp("md", m_maxDepth));
-    ar(::cereal::make_nvp("mo", m_mode));
+    ar(::cereal::make_nvp("mo", m_secretKeyDist));
     ar(::cereal::make_nvp("slv", m_stdLevel));
   }
 
@@ -370,7 +370,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   uint32_t m_maxDepth;
   // specifies whether the secret polynomials are generated from discrete
   // Gaussian distribution or ternary distribution with the norm of unity
-  MODE m_mode;
+  SecretKeyDist m_secretKeyDist;
   // Security level according in the HomomorphicEncryption.org standard
   SecurityLevel m_stdLevel;
 

@@ -54,7 +54,7 @@ public:
    * @param ptm is the plaintext modulus.
    * @param numPrimes Number of CRT moduli.
    * @param digitSize The bit size of the base for BV key relinearization.
-   * @param mode
+   * @param secretKeyDist
    * @param firstModSize is the approximate bit size of the first CRT modulus.
    * @param dcrtBits is the approximate bit size of the remaining CRT moduli.
    * @param numPartQ is 
@@ -68,7 +68,7 @@ public:
   bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                  int32_t evalAddCount, int32_t keySwitchCount,
                  usint cyclOrder, usint ptm, usint numPrimes, usint digitSize,
-                 MODE mode,
+                 SecretKeyDist secretKeyDist,
                  usint firstModSize,
                  usint dcrtBits,
                  uint32_t numPartQ,

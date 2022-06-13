@@ -70,7 +70,7 @@ uint32_t ParameterGenerationBGVRNS::computeRingDimension(
 
   // RLWE security constraint
   DistributionType distType =
-      (cryptoParamsBGVRNS->GetMode() == RLWE) ? HEStd_error : HEStd_ternary;
+      (cryptoParamsBGVRNS->GetSecretKeyDist() == RLWE) ? HEStd_error : HEStd_ternary;
   auto nRLWE = [&](usint q) -> uint32_t {
     return StdLatticeParm::FindRingDim(distType, stdLevel, q);
   };
@@ -127,7 +127,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   // Bound of the key polynomial
   // supports both discrete Gaussian (RLWE) and ternary uniform distribution
   // (OPTIMIZED) cases
-  double Bkey = (cryptoParamsBGVRNS->GetMode() == RLWE) ? sigma * sqrt(alpha) : 1;
+  double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == RLWE) ? sigma * sqrt(alpha) : 1;
 
   // delta
   auto expansionFactor = 2. * sqrt(ringDimension);
@@ -197,7 +197,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
     int32_t keySwitchCount, usint cyclOrder,
-    usint ptm, usint numPrimes, usint digitSize, MODE mode,
+    usint ptm, usint numPrimes, usint digitSize, SecretKeyDist secretKeyDist,
     usint firstModSize, usint dcrtBits,
     uint32_t numPartQ, usint multihopQBound,
     enum KeySwitchTechnique ksTech,

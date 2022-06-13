@@ -70,7 +70,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         assuranceMeasure,
         parameters.GetRootHermiteFactor(),
         parameters.GetDigitSize(),
-        parameters.GetMode(),
+        parameters.GetSecretKeyDist(),
         parameters.GetMaxDepth());
 
     params->SetStdLevel(parameters.GetSecurityLevel()); // TODO (dsuponit): do we need this as we already have root hermit factor?
@@ -87,7 +87,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         parameters.GetMultiplicativeDepth() + 1,
         parameters.GetScalingFactorBits(),
         parameters.GetDigitSize(),
-        parameters.GetMode(),
+        parameters.GetSecretKeyDist(),
         parameters.GetFirstModSize(),
         numLargeDigits,
         parameters.GetKeySwitchTechnique(),

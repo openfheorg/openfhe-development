@@ -76,7 +76,7 @@ class Params {
     // OPTIMIZED means Ternary secret key distribution
     // SPARSE means sparse secret key distribution
     // both enum type and values should be renamed?
-    MODE mode;
+    SecretKeyDist secretKeyDist;
 
     // Max possible multiplicative depth of the scheme
     int maxDepth;
@@ -174,8 +174,8 @@ public:
     float GetRootHermiteFactor() const {
         return rootHermiteFactor;
     }
-    MODE GetMode() const {
-        return mode;
+    SecretKeyDist GetSecretKeyDist() const {
+        return secretKeyDist;
     }
     int GetMaxDepth() const {
         return maxDepth;
@@ -239,8 +239,8 @@ public:
     void SetRootHermiteFactor(float rootHermiteFactor0) {
         rootHermiteFactor = rootHermiteFactor0;
     }
-    void SetMode(MODE mode0) {
-        mode = mode0;
+    void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
+        secretKeyDist = secretKeyDist0;
     }
     void SetMaxDepth(int maxDepth0) {
         maxDepth = maxDepth0;

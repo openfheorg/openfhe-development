@@ -42,7 +42,7 @@ std::string UnitTestCCParams::toString() const {
         << "scalingFactorBits [" << scalingFactorBits << "], "
         << "digitSize [" << digitSize << "], "
         << "batchSize [" << batchSize << "], "
-        << "mode [" << mode << "], "
+        << "secretKeyDist [" << secretKeyDist << "], "
         << "maxDepth [" << maxDepth << "], "
         << "firstModSize [" << firstModSize << "], "
         << "securityLevel [" << securityLevel << "], "

@@ -55,8 +55,8 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.batchSize)) {
         parameters.SetBatchSize(static_cast<usint>(std::round(params.batchSize)));
     }
-    if (!isDefaultValue(params.mode)) {
-        parameters.SetMode(static_cast<MODE>(std::round(params.mode)));
+    if (!isDefaultValue(params.secretKeyDist)) {
+        parameters.SetSecretKeyDist(static_cast<SecretKeyDist>(std::round(params.secretKeyDist)));
     }
     if (!isDefaultValue(params.maxDepth)) {
         parameters.SetMaxDepth(static_cast<int>(std::round(params.maxDepth)));

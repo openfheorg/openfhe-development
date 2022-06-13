@@ -119,7 +119,7 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
   TugType tug;
 
   Element s;
-  switch (cryptoParams->GetMode()) {
+  switch (cryptoParams->GetSecretKeyDist()) {
     case RLWE:
       s = Element(dgg, paramsPK, Format::EVALUATION);
       break;

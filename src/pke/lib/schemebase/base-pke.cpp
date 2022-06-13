@@ -78,7 +78,7 @@ KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc,
   // Private Key Generation
 
   Element s;
-  switch (cryptoParams->GetMode()) {
+  switch (cryptoParams->GetSecretKeyDist()) {
     case RLWE:
       s = Element(dgg, paramsPK, Format::EVALUATION);
       break;
@@ -197,7 +197,7 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
     p1.DropLastElements(sizePK - sizeQ);
   }
 
-  Element v = cryptoParams->GetMode() == RLWE
+  Element v = cryptoParams->GetSecretKeyDist() == RLWE
                   ? Element(dgg, elementParams, Format::EVALUATION)
                   : Element(tug, elementParams, Format::EVALUATION);
 

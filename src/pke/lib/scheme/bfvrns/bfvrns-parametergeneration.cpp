@@ -99,7 +99,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
 
   // supports both discrete Gaussian (RLWE) and ternary uniform distribution
   // (OPTIMIZED) cases
-  if (cryptoParamsBFVRNS->GetMode() == RLWE) {
+  if (cryptoParamsBFVRNS->GetSecretKeyDist() == RLWE) {
     Bkey = sigma * sqrt(alpha);
     distType = HEStd_error;
   } else {

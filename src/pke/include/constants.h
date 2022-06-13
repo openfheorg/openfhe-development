@@ -52,8 +52,8 @@ std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
 /**
  * @brief Lists all modes for RLWE schemes, such as BGV and BFV
  */
-enum MODE { RLWE = 0, OPTIMIZED = 1, SPARSE = 2 };
-std::ostream& operator<<(std::ostream& s, MODE m);
+enum SecretKeyDist { RLWE = 0, OPTIMIZED = 1, SPARSE = 2 };
+std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
 enum RescalingTechnique {
   FIXEDMANUAL,

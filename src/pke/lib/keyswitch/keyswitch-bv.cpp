@@ -245,7 +245,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
         DCRTPoly filtered(elementParams, Format::EVALUATION, true);
         filtered.SetElementAtIndex(i, sOldDecomposed[k]);
 
-        DCRTPoly u = (cryptoParams->GetMode() == RLWE) ?
+        DCRTPoly u = (cryptoParams->GetSecretKeyDist() == RLWE) ?
             DCRTPoly(dgg, elementParams, Format::EVALUATION) :
             DCRTPoly(tug, elementParams, Format::EVALUATION);
 
@@ -265,7 +265,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
       DCRTPoly filtered(elementParams, Format::EVALUATION, true);
       filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
 
-      DCRTPoly u = (cryptoParams->GetMode() == RLWE) ?
+      DCRTPoly u = (cryptoParams->GetSecretKeyDist() == RLWE) ?
           DCRTPoly(dgg, elementParams, Format::EVALUATION) :
           DCRTPoly(tug, elementParams, Format::EVALUATION);
 

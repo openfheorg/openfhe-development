@@ -253,7 +253,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(
   std::vector<std::vector<NativeInteger>> PartQHatModq = cryptoParams->GetPartQHatModq();
 
   for (usint part = 0; part < numPartQ; part++) {
-    DCRTPoly u = (cryptoParams->GetMode() == RLWE) ?
+    DCRTPoly u = (cryptoParams->GetSecretKeyDist() == RLWE) ?
         DCRTPoly(dgg, paramsQP, Format::EVALUATION) :
         DCRTPoly(tug, paramsQP, Format::EVALUATION);
 

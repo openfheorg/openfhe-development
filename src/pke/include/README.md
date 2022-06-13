@@ -24,10 +24,10 @@
     - Threshold FHE (MULTIPARTY)
     - Fully Homomorphic Encryption (FHE)
   
-  - MODE 
-    - Ring Learning with Error (RLWE)
-    - Optimized (OPTIMIZED)
-    - Sparse (sparse)
+  - SecretKeyDistribution
+    - Ring Learning with Error (GAUSSIAN)
+    - Optimized (UNIFORM_TERNARY)
+    - Sparse (SPARSE_TERNARY; Hamming weight is 64)
     
   - Rescaling Technique 
     - Fixed Manual (FIXEDMANUAL)

@@ -140,7 +140,7 @@ constexpr usint PTM_LRG = 65537;
 constexpr usint BV_DSIZE = 4;
 // clang-format off
 static std::vector<TEST_CASE_UTSHE> testCases = {
-    // TestType,  Descr, Scheme,        RDim, MultDepth, SFBits, DSize,    BatchSz, Mode,      MDepth, ModSize, SecLvl,       KSTech, RSTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,  Descr, Scheme,        RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist,MDepth, ModSize, SecLvl,       KSTech, RSTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { ADD_PACKED, "01", {BGVRNS_SCHEME, 16,   2,         59,     BV_DSIZE, BATCH,   OPTIMIZED, 1,      60,      HEStd_NotSet, BV,   FIXEDMANUAL,     DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { ADD_PACKED, "02", {BGVRNS_SCHEME, 16,   2,         59,     BV_DSIZE, BATCH,   OPTIMIZED, 1,      60,      HEStd_NotSet, BV,   FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { ADD_PACKED, "03", {BGVRNS_SCHEME, 16,   2,         59,     BV_DSIZE, BATCH,   OPTIMIZED, 1,      60,      HEStd_NotSet, BV,   FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -165,9 +165,8 @@ static std::vector<TEST_CASE_UTSHE> testCases = {
     { ADD_PACKED, "22", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,      DFLT,   DFLT,    DFLT,     HYBRID,   DFLT,            DFLT,    PTM,   DFLT,      1,      0,          DFLT, HPSPOVERQ}, },
     { ADD_PACKED, "23", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED, DFLT,   DFLT,    DFLT,     HYBRID,   DFLT,            DFLT,    PTM,   DFLT,      1,      0,          DFLT, HPSPOVERQLEVELED}, },
     { ADD_PACKED, "24", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,      DFLT,   DFLT,    DFLT,     HYBRID,   DFLT,            DFLT,    PTM,   DFLT,      1,      0,          DFLT, HPSPOVERQLEVELED}, },
-
     // ==========================================
-    // TestType,        Descr, Scheme,        RDim, MultDepth, SFBits, DSize,    BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,        Descr, Scheme,        RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { MULT_COEF_PACKED, "01", {BGVRNS_SCHEME, 16,   2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { MULT_COEF_PACKED, "02", {BGVRNS_SCHEME, 16,   2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { MULT_COEF_PACKED, "03", {BGVRNS_SCHEME, 16,   2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -192,9 +191,8 @@ static std::vector<TEST_CASE_UTSHE> testCases = {
     { MULT_COEF_PACKED, "22", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,     HYBRID,     DFLT,            DFLT,    PTM,   DFLT,   DFLT,      1,          DFLT, HPSPOVERQ}, },
     { MULT_COEF_PACKED, "23", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,     HYBRID,     DFLT,            DFLT,    PTM,   DFLT,   DFLT,      1,          DFLT, HPSPOVERQLEVELED}, },
     { MULT_COEF_PACKED, "24", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,     HYBRID,     DFLT,            DFLT,    PTM,   DFLT,   DFLT,      1,          DFLT, HPSPOVERQLEVELED}, },
-
     // ==========================================
-    // TestType,   Descr, Scheme,        RDim, MultDepth, SFBits, DSize,    BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,        LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,   Descr, Scheme,        RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist,MDepth, ModSize, SecLvl,       KSTech, RSTech,        LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { MULT_PACKED, "01", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { MULT_PACKED, "02", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { MULT_PACKED, "03", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -219,9 +217,8 @@ static std::vector<TEST_CASE_UTSHE> testCases = {
     { MULT_PACKED, "22", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,     HYBRID,   DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQ}, },
     { MULT_PACKED, "23", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,     HYBRID,   DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
     { MULT_PACKED, "24", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,     HYBRID,   DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
-
 	// ==========================================
-    // TestType,   Descr, Scheme,        RDim, MultDepth, SFBits, DSize,    BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,        LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,   Descr, Scheme,        RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist,MDepth, ModSize, SecLvl,       KSTech, RSTech,        LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { EVALATINDEX, "01", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { EVALATINDEX, "02", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { EVALATINDEX, "03", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -247,7 +244,7 @@ static std::vector<TEST_CASE_UTSHE> testCases = {
     { EVALATINDEX, "23", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,     HYBRID,   DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      0,          1,    HPSPOVERQLEVELED}, },
     { EVALATINDEX, "24", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,     HYBRID,   DFLT,            DFLT,    PTM_LRG, DFLT,   DFLT,      0,          1,    HPSPOVERQLEVELED}, },
 	// ==========================================
-    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, DSize,    BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,        LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist,MDepth, ModSize, SecLvl,       KSTech, RSTech,        LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { EVALMERGE,  "01", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { EVALMERGE,  "02", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { EVALMERGE,  "03", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -265,43 +262,45 @@ static std::vector<TEST_CASE_UTSHE> testCases = {
     { EVALMERGE,  "15", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
     { EVALMERGE,  "16", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
     // ==========================================
-    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, DSize,BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,    LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { EVALSUM,    "01", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPS},  },
-    { EVALSUM,    "02", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPS},  },
-    { EVALSUM,    "03", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, BEHZ}, },
-    { EVALSUM,    "04", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, BEHZ}, },
-    { EVALSUM,    "05", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQ}, },
-    { EVALSUM,    "06", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQ}, },
-    { EVALSUM,    "07", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
-    { EVALSUM,    "08", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,   BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL, DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
+    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { EVALSUM,    "01", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPS},  },
+    { EVALSUM,    "02", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPS},  },
+    { EVALSUM,    "03", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, BEHZ}, },
+    { EVALSUM,    "04", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, BEHZ}, },
+    { EVALSUM,    "05", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQ}, },
+    { EVALSUM,    "06", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQ}, },
+    { EVALSUM,    "07", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
+    { EVALSUM,    "08", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
     // ==========================================
-    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, DSize,    BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,        LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
-    { METADATA,   "01", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { METADATA,   "02", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { METADATA,   "03", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { METADATA,   "04", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,   FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { METADATA,   "05", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   RLWE,       1,      60,      HEStd_NotSet, BV,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { METADATA,   "06", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   RLWE,       1,      60,      HEStd_NotSet, BV,   FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { METADATA,   "07", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   RLWE,       1,      60,      HEStd_NotSet, BV,   FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { METADATA,   "08", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   RLWE,       1,      60,      HEStd_NotSet, BV,   FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
-    { METADATA,   "09", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPS},  },
-    { METADATA,   "10", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPS},  },
-    { METADATA,   "11", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, BEHZ}, },
-    { METADATA,   "12", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, BEHZ}, },
-    { METADATA,   "13", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQ}, },
-    { METADATA,   "14", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQ}, },
-    { METADATA,   "15", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
-    { METADATA,   "16", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
+    // TestType,   Descr, Scheme,       RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { METADATA,   "01", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { METADATA,   "02", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { METADATA,   "03", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { METADATA,   "04", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   OPTIMIZED,  1,      60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { METADATA,   "05", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   RLWE,       1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { METADATA,   "06", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   RLWE,       1,      60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { METADATA,   "07", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   RLWE,       1,      60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { METADATA,   "08", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   RLWE,       1,      60,      HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
+    { METADATA,   "09", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPS},  },
+    { METADATA,   "10", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPS},  },
+    { METADATA,   "11", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, BEHZ}, },
+    { METADATA,   "12", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, BEHZ}, },
+    { METADATA,   "13", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQ}, },
+    { METADATA,   "14", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQ}, },
+    { METADATA,   "15", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   OPTIMIZED,  DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
+    { METADATA,   "16", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   RLWE,       DFLT,   DFLT,    DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
     // ==========================================
-    // TestType,          Descr, Scheme,        RDim,      MultDepth, SFBits, DSize,BatchSz,   Mode,  MDepth, ModSize, SecLvl, KSTech, RSTech,        LDigits, PtMod,   StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
-    { EVALSUM_ALL,        "01", {BFVRNS_SCHEME, BATCH_LRG, DFLT,      60,     20,   BATCH_LRG, DFLT,  DFLT,   DFLT,    DFLT,   DFLT, FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,    DFLT,      2,          DFLT, DFLT},  },
+    // TestType,    Descr, Scheme,       RDim,      MultDepth, SFBits, DSize, BatchSz,   SecKeyDist, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { EVALSUM_ALL, "01", {BFVRNS_SCHEME, BATCH_LRG, DFLT,      60,     20,    BATCH_LRG, DFLT,       DFLT,   DFLT,    DFLT,    DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      2,          DFLT, DFLT},  },
     // ==========================================
-    { KS_SINGLE_CRT,      "01", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL,     DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    { KS_SINGLE_CRT,      "02", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,    DFLT,   DFLT, FIXEDAUTO,       DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    { KS_SINGLE_CRT,      "03", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTO,    DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
-    { KS_SINGLE_CRT,      "04", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,    DFLT,   DFLT, FLEXIBLEAUTOEXT, DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    // TestType,      Descr, Scheme,       RDim,      MultDepth, SFBits, DSize, BatchSz, SecKeyDist, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { KS_SINGLE_CRT, "01", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,     DFLT,    DFLT,       DFLT,   DFLT,    DFLT,    DFLT,   FIXEDMANUAL,     DFLT,    256,     4,      DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_SINGLE_CRT, "02", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,     DFLT,    DFLT,       DFLT,   DFLT,    DFLT,    DFLT,   FIXEDAUTO,       DFLT,    256,     4,      DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_SINGLE_CRT, "03", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,     DFLT,    DFLT,       DFLT,   DFLT,    DFLT,    DFLT,   FLEXIBLEAUTO,    DFLT,    256,     4,      DFLT,      DFLT,       DFLT, DFLT},  },
+    { KS_SINGLE_CRT, "04", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,     DFLT,    DFLT,       DFLT,   DFLT,    DFLT,    DFLT,   FLEXIBLEAUTOEXT, DFLT,    256,     4,      DFLT,      DFLT,       DFLT, DFLT},  },
     // ==========================================
-    { KS_MOD_REDUCE_DCRT, "01", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,    DFLT,      DFLT,  DFLT,    DFLT,   DFLT, FIXEDMANUAL,     DFLT,    256,     4,       DFLT,      DFLT,       DFLT, DFLT},  },
+    // TestType,           Descr, Scheme,       RDim,      MultDepth, SFBits, DSize, BatchSz, SecKeyDist, MDepth, ModSize, SecLvl,  KSTech, RSTech,          LDigits, PtMod,   StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    { KS_MOD_REDUCE_DCRT, "01", {BGVRNS_SCHEME, 1<<13,     1,         50,     1,     DFLT,    DFLT,       DFLT,   DFLT,    DFLT,    DFLT,   FIXEDMANUAL,     DFLT,    256,     4,      DFLT,      DFLT,       DFLT, DFLT},  },
     // Calling ModReduce in the AUTO modes doesn't do anything because we automatically mod reduce before multiplication,
     // so we don't need unit tests for KS_MOD_REDUCE_DCRT in the AUTO modes.
  };
