@@ -107,7 +107,9 @@ static std::vector<TEST_CASE_ReEncrypt> testCases = {
     { RE_ENCRYPT, "3", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ},              },
     { RE_ENCRYPT, "4", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ},              },
     { RE_ENCRYPT, "5", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ},         },
-    { RE_ENCRYPT, "6", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED},  },
+    { RE_ENCRYPT, "6", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ},         },
+    { RE_ENCRYPT, "7", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   OPTIMIZED, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED},  },
+    { RE_ENCRYPT, "8", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   RLWE,      DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED},  },
     // ==========================================
 };
 // clang-format on
