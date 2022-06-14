@@ -41,6 +41,7 @@
 #include <vector>
 #include "gtest/gtest.h"
 #include <cxxabi.h>
+#include <iterator>
 #include "utils/demangle.h"
 
 
@@ -540,7 +541,17 @@ bool checkMinDiff(const std::vector<V>& high, const std::vector<V>& low, const u
 template<typename V>
 void checkMinDiff(const std::vector<V>& high, const std::vector<V>& low,
     const uint32_t diff, const std::string& errMsg) {
-    EXPECT_TRUE(checkMinDiff(high, low, diff)) << errMsg;
+    // print vector values to error message
+    std::stringstream ss;
+    ss << ": HIGHER precision/LOWER error: [";
+    std::copy(high.begin(), high.end(), std::ostream_iterator<V>(ss, " "));
+    ss << "]; LOWER precisions/HIGHER error: [";
+    std::copy(low.begin(), low.end(), std::ostream_iterator<V>(ss, " "));
+    ss << "]";
+
+    std::string msg(errMsg);
+    msg += ss.str();
+    EXPECT_TRUE(checkMinDiff(high, low, diff)) << msg;
 }
 //===========================================================================================================
 class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
@@ -568,6 +579,24 @@ class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
 
     const std::vector<std::complex<double>> vectorOfInts1s{1, 1, 1, 1, 1, 1, 1, 1}; // all 1's
 
+    // CalculateApproximationError() calculates the precision number (or approximation error).
+    // The higher the precision, the less the error.
+    uint32_t CalculateApproximationError(
+        const std::vector<std::complex<double>>& result,
+        const std::vector<std::complex<double>>& expectedResult) {
+        if (result.size() != expectedResult.size())
+            OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
+
+        // using the Euclidean norm
+        double avrg = 0;
+        for (size_t i = 0; i < result.size(); ++i) {
+            avrg += std::pow(std::abs(result[i].real() - expectedResult[i].real()), 2);
+        }
+
+        avrg = std::sqrt(avrg) / result.size(); // get the average
+        return std::round(std::abs(std::log2(avrg)) * 10) / 10; // should return an unsigned integer
+    }
+
 protected:
     void SetUp() {}
 
@@ -575,7 +604,8 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    bool UnitTest_Add_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& precisions, const std::string& failmsg = std::string()) {
+    // CalculateApproximationError() is called for Add routines only
+    bool UnitTest_Add_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& approximationErrors, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -605,15 +635,14 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
-            // Testing EvalAddInPlace
             cc->EvalAddInPlace(ciphertext1_mutable, ciphertext2);
             cc->Decrypt(kp.secretKey, ciphertext1_mutable, &results);
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAddInPlace fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator+
             cResult = ciphertext1 + ciphertext2;
@@ -621,7 +650,7 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator+ fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator+=
             Ciphertext<Element> caddInplace(ciphertext1);
@@ -630,15 +659,14 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator+= fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
-            // Testing EvalSub
             cResult = cc->EvalSub(ciphertext1, ciphertext2);
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator-
             cResult = ciphertext1 - ciphertext2;
@@ -646,7 +674,7 @@ protected:
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator- fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator-=
             Ciphertext<Element> csubInplace(ciphertext1);
@@ -655,7 +683,7 @@ protected:
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator-= fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext + plaintext
             cResult = cc->EvalAdd(ciphertext1, plaintext2);
@@ -663,7 +691,7 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd Ct and Pt fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalSub ciphertext - plaintext
             cResult = cc->EvalSub(ciphertext1, plaintext2);
@@ -671,7 +699,7 @@ protected:
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub Ct and Pt fails fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext + double
             cResult = cc->EvalAdd(ciphertext1, 0.5);
@@ -679,7 +707,7 @@ protected:
             results->SetLength(plaintext1AddScalar->GetLength());
             checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd Ct and Double fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext - double
             cResult = cc->EvalSub(ciphertext1, 0.5);
@@ -687,7 +715,7 @@ protected:
             results->SetLength(plaintext1SubScalar->GetLength());
             checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub Ct and Double fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext + negative double
             cResult = cc->EvalAdd(ciphertext1, -0.5);
@@ -695,7 +723,7 @@ protected:
             results->SetLength(plaintext1SubScalar->GetLength());
             checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd Ct and negative double fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext - negative double
             cResult = cc->EvalSub(ciphertext1, -0.5);
@@ -703,7 +731,7 @@ protected:
             results->SetLength(plaintext1AddScalar->GetLength());
             checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub Ct and negative double fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalNegate
             cResult = cc->EvalNegate(ciphertext1);
@@ -711,7 +739,7 @@ protected:
             results->SetLength(negatives1->GetLength());
             checkEquality(negatives1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalNegate fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(negatives1->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             return true;
         }
@@ -750,10 +778,10 @@ protected:
         if(!UnitTest_Add_Packed(testDataLocal, highPrecisions, failmsg))
             return;
 
-        checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Precision comparison failed");
+        checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Approximation errors' comparison failed");
     }
 
-    bool UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& precisions, const std::string& failmsg = std::string()) {
+    bool UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& approximationErrors, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -782,7 +810,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator*
             cResult = ciphertext1 * ciphertext2;
@@ -790,7 +818,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator* fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator*=
             Ciphertext<Element> cmultInplace(ciphertext1);
@@ -799,7 +827,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator*= fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMult ciphertext * plaintext
             cResult = cc->EvalMult(ciphertext1, plaintext2);
@@ -807,7 +835,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and Pt fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMult ciphertext * positive double
             cResult = cc->EvalMult(ciphertext1, 1.0);
@@ -815,7 +843,7 @@ protected:
             results->SetLength(plaintext1->GetLength());
             checkEquality(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and positive double fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMult ciphertext * negative double
             cResult = cc->EvalMult(ciphertext1, -1.0);
@@ -825,7 +853,7 @@ protected:
             buffer1 << "should be: " << plaintextNeg->GetCKKSPackedValue() << " - we get: " << results->GetCKKSPackedValue();
             checkEquality(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and negative double fails; " + buffer1.str());
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMultNoRelin ciphertext * ciphertext
             cResult = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
@@ -833,7 +861,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMultNoRelin Ct fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             return true;
         }
@@ -871,12 +899,8 @@ protected:
         testDataLocal.params.rsTech = FLEXIBLEAUTOEXT;
         if (!UnitTest_Mult_Packed(testDataLocal, highPrecisions, failmsg))
             return;
-        //std::cout << "======================== highPrecisions\n";
-        //std::copy(highPrecisions.begin(), highPrecisions.end(), std::ostream_iterator<uint32_t>(std::cout, " "));
-        //std::cout << "\n======================== lowPrecisions\n";
-        //std::copy(lowPrecisions.begin(), lowPrecisions.end(), std::ostream_iterator<uint32_t>(std::cout, " "));
-        //std::cout << "\n";
-        checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Precision comparison failed");
+
+        checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Approximation errors' comparison failed");
     }
 
     /**
