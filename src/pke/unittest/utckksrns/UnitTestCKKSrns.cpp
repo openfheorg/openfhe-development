@@ -167,7 +167,7 @@ constexpr usint SCALE = 90;
 #else
 constexpr usint SCALE = 50;
 #endif
-constexpr uint32_t MIN_PRECISION_DIFF = 3; // this is the minimal difference expected between precisions for FLEXIBLEAUTO and FLEXIBLEAUTOEXT
+constexpr uint32_t MIN_PRECISION_DIFF = 2; // this is the minimal difference expected between approximation error/precision for FLEXIBLEAUTO and FLEXIBLEAUTOEXT
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
