@@ -109,8 +109,7 @@ static std::vector<TEST_CASE_UTSHEADVANCED> testCasesUTSHEADVANCED = {
     { EVAL_MULT_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      SCALE,  RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
     { EVAL_MULT_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      SCALE,  RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
     { EVAL_MULT_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      SCALE,  RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
-    // FLEXIBLEAUTOEXT requires a depth of at least 1 to work because of an issue with modulus switching.
-    { EVAL_MULT_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, 1,         SCALE,  RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
+    { EVAL_MULT_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      SCALE,  RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
     // ==========================================
     // TestType,      Descr,  Scheme,        RDim,     MultDepth, SFBits, RWin,  BatchSz, Mode, Depth, MDepth, ModSize, SecLvl, KSTech, RSTech,          LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
     { EVAL_ADD_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,   RELIN, DFLT,    DFLT, DFLT,  DFLT,   DFLT,    DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },

@@ -33,7 +33,6 @@
 #define LBCRYPTO_CRYPTO_BGVRNS_CRYPTOPARAMETERS_H
 
 #include "schemerns/rns-cryptoparameters.h"
-#include "globals.h"
 
 /**
  * @namespace lbcrypto
@@ -102,18 +101,16 @@ public:
   }
 
   template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      OPENFHE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
-    }
-    ar(cereal::base_class<CryptoParametersRNS>(this));
+  void load(Archive& ar, std::uint32_t const version) {
+      if (version > SerializedVersion()) {
+          std::string errMsg("serialized object version " + std::to_string(version) +
+              " is from a later version of the library");
+          OPENFHE_THROW(deserialize_error, errMsg);
+      }
+      ar(cereal::base_class<CryptoParametersRNS>(this));
 
-    if(PrecomuteCRTTablesAfterDeserializaton()) {
-        PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
-                            m_numPartQ, m_auxBits, m_extraBits);
-    }
+      PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
+          m_numPartQ, m_auxBits, m_extraBits);
   }
 
   std::string SerializedObjectName() const override { return "CryptoParametersBGVRNS"; }

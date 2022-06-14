@@ -39,20 +39,20 @@
 
 namespace lbcrypto {
     /**
-     * PrecomuteCRTTablesAfterDeserializaton() will be executed during CryptoContext deserialization.
+     * PrecomputeCRTTablesAfterDeserializaton() will be executed during CryptoContext deserialization.
      * Deserializing without this precomputation can speed up the procedure by a factor of 100.
      * function's return values:
      * true (default value): PrecomputeCRTTables() will be executed during deserialization
      * false:                PrecomputeCRTTables() will not be executed during deserialization
      */
-    bool PrecomuteCRTTablesAfterDeserializaton();
+    bool PrecomputeCRTTablesAfterDeserializaton();
 
     /**
-     * Calling EnablePrecomuteCRTTablesAfterDeserializaton() and DisablePrecomuteCRTTablesAfterDeserializaton()
-     * changes the boolean value returned by PrecomuteCRTTablesAfterDeserializaton()
+     * Calling EnablePrecomputeCRTTablesAfterDeserializaton() and DisablePrecomputeCRTTablesAfterDeserializaton()
+     * changes the boolean value returned by PrecomputeCRTTablesAfterDeserializaton()
      */
-    void EnablePrecomuteCRTTablesAfterDeserializaton();
-    void DisablePrecomuteCRTTablesAfterDeserializaton();
+    void EnablePrecomputeCRTTablesAfterDeserializaton();
+    void DisablePrecomputeCRTTablesAfterDeserializaton();
 
 }  // namespace lbcrypto
 

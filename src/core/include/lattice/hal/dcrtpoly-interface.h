@@ -74,7 +74,7 @@ namespace lbcrypto {
  * @tparam LilVecType The underlaying RNS data structure, a vectors type structure, that will compose the CRT data
  * @tparam RNSContainer The container of LilVecType, a lbcrypto::PolyImpl or vector typically
  *
- * @example for the default DerivedType the template types would be...
+ * example for the default DerivedType the template types would be...
  *    DerivedType       - DCRTPolyImpl<BigVector>
  *    BigVecType        - BigVector
  *    LilVecType        - NativeVector

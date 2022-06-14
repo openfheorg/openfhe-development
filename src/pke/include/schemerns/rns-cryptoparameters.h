@@ -35,7 +35,6 @@
 #include "lattice/lat-hal.h"
 
 #include "schemebase/rlwe-cryptoparameters.h"
-#include "globals.h"
 
 /**
  * @namespace lbcrypto
@@ -45,14 +44,15 @@ namespace lbcrypto {
 
 /**
  * @brief main implementation class to capture essential cryptoparameters of
- * any LBC system
+ * any LBC system.
+ * As CryptoParametersRNS is not an abstract class and we don't want to
+ * instantiate, then we make all its constructors and the destructor protected
  * @tparam Element a ring element.
  */
 class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
   using ParmType = typename DCRTPoly::Params;
 
-public:
-
+protected:
   CryptoParametersRNS()
       : CryptoParametersRLWE<DCRTPoly>(),
         m_ksTechnique(BV),
@@ -133,9 +133,13 @@ public:
 
   virtual ~CryptoParametersRNS() {}
 
-  /**
-   * Computes all tables needed for decryption, homomorphic multiplication,
-   * and key switching
+public:
+    /**
+   * Computes all tables needed for decryption, homomorphic multiplication and
+   * key switching.
+   * Even though this is a pure virtual function and must be overriden in all derived classes,
+   * PrecomputeCRTTables() has its own implementation in the source file. It should be called from
+   * derived classes' PrecomputeCRTTables() only and must not be called from CryptoParametersRNS::load().
    * @param ksTech the technique to use for key switching (e.g., BV or GHS).
    * @param rsTech the technique to use for rescaling (e.g., FLEXIBLEAUTO or
    * FIXEDMANUAL).
@@ -146,7 +150,7 @@ public:
                                    MultiplicationTechnique multTech,
                                    uint32_t numPartQ,
                                    uint32_t auxBits,
-                                   uint32_t extraBits);
+                                   uint32_t extraBits) = 0;
 
   virtual uint64_t FindAuxPrimeStep() const;
 
@@ -1577,25 +1581,20 @@ public:
   }
 
   template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      OPENFHE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
-    }
-    ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));
-    ar(cereal::make_nvp("ks", m_ksTechnique));
-    ar(cereal::make_nvp("rs", m_rsTechnique));
-    ar(cereal::make_nvp("encs", m_encTechnique));
-    ar(cereal::make_nvp("muls", m_multTechnique));
-    ar(cereal::make_nvp("dnum", m_numPartQ));
-    ar(cereal::make_nvp("ab", m_auxBits));
-    ar(cereal::make_nvp("eb", m_extraBits));
-
-    if(PrecomuteCRTTablesAfterDeserializaton()) {
-        PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
-                            m_numPartQ, m_auxBits, m_extraBits);
-    }
+  void load(Archive& ar, std::uint32_t const version) {
+      if (version > SerializedVersion()) {
+          std::string errMsg("serialized object version " + std::to_string(version) +
+              " is from a later version of the library");
+          OPENFHE_THROW(deserialize_error, errMsg);
+      }
+      ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));
+      ar(cereal::make_nvp("ks", m_ksTechnique));
+      ar(cereal::make_nvp("rs", m_rsTechnique));
+      ar(cereal::make_nvp("encs", m_encTechnique));
+      ar(cereal::make_nvp("muls", m_multTechnique));
+      ar(cereal::make_nvp("dnum", m_numPartQ));
+      ar(cereal::make_nvp("ab", m_auxBits));
+      ar(cereal::make_nvp("eb", m_extraBits));
   }
 
   virtual std::string SerializedObjectName() const override { return "SchemeParametersRNS"; }
