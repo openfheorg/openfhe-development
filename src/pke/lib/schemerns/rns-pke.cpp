@@ -87,7 +87,7 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext,
 
   const std::shared_ptr<ParmType> ptxtParams = plaintext.GetParams();
   std::shared_ptr<std::vector<DCRTPoly>> ba =
-      EncryptZeroCore(publicKey, ptxtParams);
+      EncryptZeroCore(publicKey, ptxtParams, DggType());
 
   plaintext.SetFormat(EVALUATION);
 
@@ -185,14 +185,15 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
 
 std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
     const PublicKey<DCRTPoly> publicKey,
-    const std::shared_ptr<ParmType> params) const {
+    const std::shared_ptr<ParmType> params,
+    const DggType &dgg) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
           publicKey->GetCryptoParameters());
 
   const std::vector<DCRTPoly> &pk = publicKey->GetPublicElements();
   const auto ns = cryptoParams->GetNoiseScale();
-  const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
+  //const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   TugType tug;
 
   const std::shared_ptr<ParmType> elementParams = (params == nullptr)
@@ -220,12 +221,16 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
   std::cout << "noise distribution parameter from m_dgg" << cryptoParams->GetDiscreteGaussianGenerator().GetStd() << std::endl;
   std::cout << "noise distribution parameter flooding " << cryptoParams->GetFloodingDistributionParameter() << std::endl;
   std::cout << "noise distribution parameter from m_dggflooding " << cryptoParams->GetFloodingDiscreteGaussianGenerator().GetStd() << std::endl;
-
-  if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
-    const DggType &dggf = cryptoParams->GetFloodingDiscreteGaussianGenerator();
-    e0 = DCRTPoly(dggf, elementParams, Format::EVALUATION);
-    e1 = DCRTPoly(dggf, elementParams, Format::EVALUATION);
+  std::cout << "noise distribution parameter from dgg parameter " << dgg.GetStd() << std::endl;
+  
+  //if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
+  if (dgg.GetStd() == 1) {
+    std::cout << "here in rns-pke encryptzero core dgg" << std::endl;
+    const DggType &dggnormal = cryptoParams->GetDiscreteGaussianGenerator();
+    e0 = DCRTPoly(dggnormal, elementParams, Format::EVALUATION);
+    e1 = DCRTPoly(dggnormal, elementParams, Format::EVALUATION);
   } else {
+    std::cout << "here in rns-pke encryptzero core dggflooding" << std::endl;
     e0 = DCRTPoly(dgg, elementParams, Format::EVALUATION);
     e1 = DCRTPoly(dgg, elementParams, Format::EVALUATION);
   }
