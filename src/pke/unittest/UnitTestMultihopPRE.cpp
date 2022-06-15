@@ -63,6 +63,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     usint firstqmod = 27;
 
     CCParams<CryptoContextBGVRNS> parameters;
+    parameters.SetKeySwitchTechnique(BV);
     if (security_model == 0) {	
       ringDimension = 1024;
       relinWindow = 9;
@@ -81,17 +82,32 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
       parameters.SetPREMode(FIXED_NOISE_HRA);
     } else if (security_model == 2) {
       ringDimension = 8192;
+      relinWindow = 2;
+      dcrtbits = 31;
+
+      qmodulus = 218;
+      firstqmod = 60;
+      parameters.SetPREMode(NOISE_FLOODING_HRA);
+    } else if (security_model == 3) {
+      ringDimension = 8192;
       relinWindow = 1;
       dcrtbits = 30;
 
       qmodulus = 218;
       firstqmod = 60;
       parameters.SetPREMode(NOISE_FLOODING_HRA);
-    }
+      parameters.SetKeySwitchTechnique(HYBRID);
+    } else if (security_model == 4) {
+      ringDimension = 8192;
+      relinWindow = 1;
+      dcrtbits = 30;
 
+      qmodulus = 218;
+      firstqmod = 60;
+      parameters.SetPREMode(DIVIDE_AND_ROUND_HRA);
+    }
     parameters.SetMultiplicativeDepth(0);
     parameters.SetPlaintextModulus(plaintextModulus);
-    parameters.SetKeySwitchTechnique(BV);
     parameters.SetRingDim(ringDimension);
     parameters.SetFirstModSize(firstqmod);
     parameters.SetScalingFactorBits(dcrtbits);
@@ -218,7 +234,8 @@ TEST_P(UTMultihopPRE, MULTIHOP_PRE_TEST) {
     run_demo_pre(test);
 }
 
-int Security_Model_Options[3] = {0,1,2};
+int Security_Model_Options[5] = {0,1,2,3,4};
+//Todo: add hrbrid key switching for noise flooding hra - model option 2
 
 INSTANTIATE_TEST_SUITE_P(MULTIHOP_PRE_TEST, UTMultihopPRE, ::testing::ValuesIn(Security_Model_Options));
 

@@ -386,7 +386,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   double sigma = cryptoParamsBGVRNS->GetDistributionParameter();
   double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
   uint32_t r = cryptoParamsBGVRNS->GetRelinWindow();
-  double log2q = cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble();
+  double log2q = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
 
   double B_e = alpha*sigma;
   #if 0
@@ -404,12 +404,15 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     
     //set the flooding distribution parameter to the distribution.
     dggflooding.SetStd(noise_param);
+
   } else if (PREMode == NOISE_FLOODING_HRA) {
     //get the flooding discrete gaussian distribution
     auto &dggflooding = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
 
     double noise_param = pow(2,stat_sec)*3*(log2q/r+1)*sqrt(n)*(pow(2,r)-1)*B_e;
     
+    std::cout << "noise param flooding size " << log2(noise_param) << std::endl;
+    std::cout << "q modulus size " << log2(log2q) << std::endl;
     //set the flooding distribution parameter to the distribution.
     dggflooding.SetStd(noise_param);
   }

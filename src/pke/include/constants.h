@@ -68,7 +68,8 @@ enum ProxyReEncryptionMode {
   INDCPA,
   FIXED_NOISE_HRA,
   NOISE_FLOODING_HRA,
-  MODULUS_SWITCHING_HRA
+  MODULUS_SWITCHING_HRA,
+  DIVIDE_AND_ROUND_HRA
 };
 std::ostream& operator<<(std::ostream& s, RescalingTechnique t);
 

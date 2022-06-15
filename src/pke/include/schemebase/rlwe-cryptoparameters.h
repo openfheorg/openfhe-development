@@ -255,8 +255,9 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * Returns reference to Discrete Gaussian Generator with flooding for PRE
    *
    * @return reference to Discrete Gaussian Generaror with flooding for PRE.
+   * The Std dev for this generator changes based on the PRE mode, so it is not const
    */
-  typename Element::DggType &GetFloodingDiscreteGaussianGenerator() { //check this later const {
+  typename Element::DggType &GetFloodingDiscreteGaussianGenerator() {
     return m_dggflooding;
   }
   
