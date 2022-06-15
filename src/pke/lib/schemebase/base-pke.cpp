@@ -131,7 +131,7 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(
     Element plaintext, const PublicKey<Element> publicKey) const {
   Ciphertext<Element> ciphertext =
       std::make_shared<CiphertextImpl<Element>>(publicKey);
-  std::shared_ptr<std::vector<Element>> ba = EncryptZeroCore(publicKey, nullptr);
+  std::shared_ptr<std::vector<Element>> ba = EncryptZeroCore(publicKey, nullptr, DggType());
 
   (*ba)[0] += plaintext;
 
@@ -170,14 +170,15 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
 // makeSparse is not used by this scheme
 template <class Element>
 std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
-    const PublicKey<Element> publicKey,
-    const std::shared_ptr<ParmType> params) const {
+    const PublicKey<Element> publicKey, 
+    const std::shared_ptr<ParmType> params,
+    const DggType &dgg) const {
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRLWE<Element>>(
           publicKey->GetCryptoParameters());
 
   const auto ns = cryptoParams->GetNoiseScale();
-  const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
+  //const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   TugType tug;
 
   const std::shared_ptr<ParmType> elementParams = (params == nullptr)
@@ -211,14 +212,16 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
   std::cout << "premode set " << preMode << std::endl;
   std::cout << "noise distribution parameter " << cryptoParams->GetFloodingDistributionParameter();
 
-  if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
-    const DggType &dggf = cryptoParams->GetFloodingDiscreteGaussianGenerator();
-    e0 = Element(dggf, elementParams, Format::EVALUATION);
-    e1 = Element(dggf, elementParams, Format::EVALUATION);
+  //if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
+  if (dgg.GetStd() == 1) {
+    const DggType &dggnormal = cryptoParams->GetDiscreteGaussianGenerator();
+    e0 = Element(dggnormal, elementParams, Format::EVALUATION);
+    e1 = Element(dggnormal, elementParams, Format::EVALUATION);
   } else {
     e0 = Element(dgg, elementParams, Format::EVALUATION);
     e1 = Element(dgg, elementParams, Format::EVALUATION);
   }
+
   Element b(elementParams);
   Element a(elementParams);
 

@@ -185,7 +185,7 @@ public:
         return mode;
     }
 
-    ProxyReEncryptionMode GetProxyReEncryptionMode() const {
+    ProxyReEncryptionMode GetPREMode() const {
         return PREMode;
     }
     

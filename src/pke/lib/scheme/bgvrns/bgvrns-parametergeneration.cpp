@@ -389,13 +389,6 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   double log2q = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
 
   double B_e = alpha*sigma;
-  #if 0
-  if (rk_level == 0) {
-    noise_param = (pow(2,(stat_sec*(rk_level+1)))*3*(log2q/r+1)*sqrt(n)*(pow(2,r)-1)*B_e);//rk_level
-  } else {
-    noise_param = (pow(2,(stat_sec*(rk_level+1)))*3*(log2q/r+1)*sqrt(n)*(pow(2,r)-1)*B_e)/(pow(2,qfactor));
-  }
-  #endif
 
   if (PREMode == FIXED_NOISE_HRA) {
     auto &dggflooding = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
