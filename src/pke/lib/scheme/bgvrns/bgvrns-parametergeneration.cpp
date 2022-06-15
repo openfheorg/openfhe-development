@@ -298,8 +298,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     NativeInteger firstInteger =
         FirstPrime<NativeInteger>(firstModSize, lcmCyclOrderPtm);
 
-    while (firstInteger > ((uint64_t)1 << firstModSize))
-      firstInteger = PreviousPrime<NativeInteger>(firstInteger, lcmCyclOrderPtm);
+    firstInteger = PreviousPrime<NativeInteger>(firstInteger, lcmCyclOrderPtm);
 
     moduliQ[0] = PreviousPrime<NativeInteger>(firstInteger, lcmCyclOrderPtm);
     rootsQ[0] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[0]);
