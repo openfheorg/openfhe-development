@@ -63,6 +63,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     int32_t evalAddCount, int32_t evalMultCount,
     int32_t keySwitchCount, size_t dcrtBits,
     uint32_t nCustom,
+    uint32_t numPartQ,
     KeySwitchTechnique ksTech,
     RescalingTechnique rsTech,
     EncryptionTechnique encTech,
@@ -338,7 +339,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     cryptoParamsBFVRNS->SetEncodingParams(encodingParamsNew);
   }
 
-  cryptoParamsBFVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, 0, 60, 0);
+  cryptoParamsBFVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, 60, 0);
 
   return true;
 }

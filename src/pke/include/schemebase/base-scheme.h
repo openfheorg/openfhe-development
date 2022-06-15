@@ -134,13 +134,14 @@ class SchemeBase {
                          int32_t keySwitchCount,
                          size_t dcrtBits,
                          uint32_t n,
+                         uint32_t numPartQ,
                          enum KeySwitchTechnique ksTech,
                          enum RescalingTechnique rsTech,
                          enum EncryptionTechnique encTech,
                          enum MultiplicationTechnique multTech) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, evalMultCount,
-                                    keySwitchCount, dcrtBits, n,
+                                    keySwitchCount, dcrtBits, n, numPartQ,
                                     ksTech, rsTech, encTech, multTech);
     }
     OPENFHE_THROW(not_implemented_error,

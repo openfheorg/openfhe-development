@@ -82,6 +82,7 @@ public:
       int32_t keySwitchCount,
       size_t dcrtBits,
       uint32_t n,
+      uint32_t numPartQ,
       enum KeySwitchTechnique ksTech,
       enum RescalingTechnique rsTech,
       enum EncryptionTechnique encTech,

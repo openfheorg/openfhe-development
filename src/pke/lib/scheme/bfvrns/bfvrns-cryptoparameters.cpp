@@ -192,13 +192,16 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     // BFVrns : Mult : ExpandCRTBasis
     // Pre-compute values [Ql/q_i]_{r_j}
     // Pre-compute values [(Ql/q_i)^{-1}]_{q_i}
+
+    BigInteger tmpModulusQ = modulusQ;
+    
     if (multTech == HPSPOVERQLEVELED) {
       m_QlHatInvModq.resize(sizeQ);
       m_QlHatInvModqPrecon.resize(sizeQ);
       m_QlHatModr.resize(sizeQ);
 
       for (size_t l = 0; l < sizeQ; l++) {
-        if (l > 0) modulusQ = modulusQ / BigInteger(moduliQ[sizeQ - l]);
+        if (l > 0) tmpModulusQ = tmpModulusQ / BigInteger(moduliQ[sizeQ - l]);
 
         m_QlHatInvModq[sizeQ - l - 1].resize(sizeQ - l);
         m_QlHatInvModqPrecon[sizeQ - l - 1].resize(sizeQ - l);
@@ -206,7 +209,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
         for (size_t i = 0; i < sizeQ - l; i++) {
           m_QlHatModr[sizeQ - l - 1][i].resize(sizeR);
-          BigInteger QHati = modulusQ / BigInteger(moduliQ[i]);
+          BigInteger QHati = tmpModulusQ / BigInteger(moduliQ[i]);
           BigInteger QHatInvModqi = QHati.ModInverse(moduliQ[i]);
           m_QlHatInvModq[sizeQ - l - 1][i] = QHatInvModqi.ConvertToInt();
           m_QlHatInvModqPrecon[sizeQ - l - 1][i] =
@@ -245,8 +248,11 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
     // BFVrns : Mult : ExpandCRTBasis
     if (multTech == HPS || multTech == HPSPOVERQ) {
+      m_paramsQl.resize(1);
       m_paramsRl.resize(1);
       m_paramsQlRl.resize(1);
+      m_paramsQl[0] =
+            std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQ, rootsQ);
       m_paramsRl[0] =
           std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliR, rootsR);
       std::vector<NativeInteger> moduliQR(sizeQ + sizeR);
@@ -288,19 +294,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
         rootsQlRl.push_back(rootsR[l]);
         m_paramsQlRl[l] = std::make_shared<ILDCRTParams<BigInteger>>(
             2 * n, moduliQlRl, rootsQlRl);
-      }
-    }
-
-    // BFVrns : Mult : ExpandCRTBasis
-    if (multTech == HPS || multTech == HPSPOVERQ) {
-      m_alphaQlModr.resize(1);
-      m_alphaQlModr[0].resize(sizeQ + 1);
-      for (usint j = 0; j < sizeR; j++) {
-        NativeInteger QModrj = modulusQ.Mod(moduliR[j]).ConvertToInt();
-        for (usint i = 0; i < sizeQ + 1; i++) {
-          m_alphaQlModr[0][i].push_back(
-              QModrj.ModMul(NativeInteger(i), moduliR[j]));
-        }
       }
     }
 
@@ -399,6 +392,32 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
           for (usint i = 0; i < l + 1; i++) {
             m_alphaQlModr[l - 1][i].push_back(
                 QlModrj.ModMul(NativeInteger(i), rj));
+          }
+        }
+      }
+    }
+
+    // BFVrns : Mult : ExpandCRTBasis
+    if (multTech == HPS || multTech == HPSPOVERQ) {
+      m_alphaQlModr.resize(1);
+      m_alphaQlModr[0].resize(sizeQ + 1);
+      for (usint j = 0; j < sizeR; j++) {
+        NativeInteger QModrj = modulusQ.Mod(moduliR[j]).ConvertToInt();
+        for (usint i = 0; i < sizeQ + 1; i++) {
+          m_alphaQlModr[0][i].push_back(
+              QModrj.ModMul(NativeInteger(i), moduliR[j]));
+        }
+      }
+    } else if (multTech == HPSPOVERQLEVELED) {
+      m_alphaQlModr.resize(sizeQ);
+      for (usint l = sizeQ; l > 0; l--) {
+        m_alphaQlModr[l - 1].resize(l + 1);
+        for (usint j = 0; j < sizeR; j++) {
+          BigInteger ri(moduliR[j].ConvertToInt());
+          NativeInteger QlModrj = Ql[l].Mod(ri).ConvertToInt();
+          for (usint j = 0; j < l + 1; ++j) {
+            m_alphaQlModr[l - 1][j].push_back(
+                QlModrj.ModMul(NativeInteger(j), ri));
           }
         }
       }
@@ -546,7 +565,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     // BFVrns : Mult : FastExpandCRTBasisPloverQ
     /////////////////////////////////////
 
-    if (multTech == HPSPOVERQLEVELED) {
+    if (multTech == HPSPOVERQ || multTech == HPSPOVERQLEVELED) {
       m_negRlQHatInvModq.resize(sizeR);
       m_negRlQHatInvModqPrecon.resize(sizeR);
       for (usint l = sizeR; l > 0; l--) {

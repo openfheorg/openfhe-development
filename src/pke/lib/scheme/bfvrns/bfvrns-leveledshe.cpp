@@ -227,6 +227,35 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
 
     size_t sizeQ = cv2[0].GetNumOfElements();
 
+    auto param1 = cryptoParams->GetParamsQlRl();
+    auto param2 = cryptoParams->GetParamsRl();
+    auto param3 = cryptoParams->GetParamsQl();
+    auto param4 = cryptoParams->GetmNegRlQHatInvModq(sizeQ - 1);
+    auto param5 = cryptoParams->GetmNegRlQHatInvModqPrecon(sizeQ - 1);
+    auto param6 = cryptoParams->GetqInvModr();
+    auto param7 = cryptoParams->GetModrBarrettMu();
+    auto param8 = cryptoParams->GetRlHatInvModr();
+    auto param9 = cryptoParams->GetRlHatInvModrPrecon();
+    auto param10 = cryptoParams->GetRlHatModq();
+    auto param11 = cryptoParams->GetalphaRlModq();
+    auto param12 = cryptoParams->GetModqBarrettMu();
+    auto param13 = cryptoParams->GetrInv();
+    DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(
+		    param1,
+		    param2,
+		    param3,
+		    param4,
+		    param5,
+		    param6,
+		    param7,
+		    param8,
+		    param9,
+		    param10,
+		    param11,
+		    param12,
+		    param13
+    );
+	/*
     DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(
         cryptoParams->GetParamsQlRl(sizeQ - 1),
         cryptoParams->GetParamsRl(sizeQ - 1),
@@ -242,6 +271,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
         cryptoParams->GetModqBarrettMu(),
         cryptoParams->GetrInv()
     );
+    */
     for (size_t i = 0; i < cv2Size; i++) {
       cv2[i].SetFormat(Format::COEFFICIENT);
       // Switch ciphertext2 from basis Q to P to PQ.

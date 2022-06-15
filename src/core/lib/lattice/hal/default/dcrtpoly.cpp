@@ -1708,7 +1708,7 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasis(
 }
 
 template <typename VecType>
-void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations& precomputed) {
+void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations precomputed) {
   usint ringDim = this->GetRingDimension();
 
   size_t sizeQ = m_vectors.size();
@@ -1729,7 +1729,9 @@ void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPre
       NativeInteger xQHatInvModqi =
           xi.ModMulFastConst(precomputed.mPlQHatInvModq[i], qi, precomputed.mPlQHatInvModqPrecon[i]);
       for (usint j = 0; j < sizePl; j++) {
-        sum[j] += Mul128(xQHatInvModqi.ConvertToInt(), qInvModpi[j].ConvertToInt());
+        auto a = xQHatInvModqi.ConvertToInt();
+        auto b = qInvModpi[j].ConvertToInt();
+        sum[j] += Mul128(a, b);
       }
     }
 

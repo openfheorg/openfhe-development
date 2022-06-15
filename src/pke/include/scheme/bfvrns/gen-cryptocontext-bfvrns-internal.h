@@ -95,6 +95,16 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
     // for BFV scheme noise scale is always set to 1
     params->SetNoiseScale(1);
 
+	uint32_t numLargeDigits = parameters.GetNumLargeDigits();
+    if (!numLargeDigits) {  // Choose one of the default values
+        if (parameters.GetMultiplicativeDepth() > 3)        // If more than 4 towers, use 3 digits
+            numLargeDigits = 3;
+        else if (parameters.GetMultiplicativeDepth() == 0)  // if there is only 1 tower, use one digit
+            numLargeDigits = 1;
+        else                                // If 2, 3 or 4 towers, use 2 digits (1 <= multiplicativeDepth <=3 )
+            numLargeDigits = 2;
+    }
+
 	auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
 	scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
 	scheme->ParamsGenBFVRNS(
@@ -104,10 +114,11 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 		parameters.GetKeySwitchCount(),
 		parameters.GetFirstModSize(),
 		parameters.GetRingDim(),
-		KeySwitchTechnique::BV,
+		numLargeDigits,
+		parameters.GetKeySwitchTechnique(),
 		RescalingTechnique::FIXEDMANUAL,
 		EncryptionTechnique::STANDARD,
-		MultiplicationTechnique::HPS);
+		parameters.GetMultiplicationTechnique());
 
 	auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
 	cc->setSchemeId("BFVRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::BFVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string

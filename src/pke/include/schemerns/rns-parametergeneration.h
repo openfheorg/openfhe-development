@@ -72,6 +72,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
       int32_t evalMultCount,
       int32_t keySwitchCount,
       size_t dcrtBits,
+      uint32_t numPartQ,
       uint32_t n,
       enum KeySwitchTechnique ksTech,
       enum RescalingTechnique rsTech,

@@ -974,16 +974,16 @@ public:
         const std::shared_ptr<DCRTPolyImpl::Params> paramsQlPl;
         const std::shared_ptr<DCRTPolyImpl::Params> paramsPl;
         const std::shared_ptr<DCRTPolyImpl::Params> paramsQl;
-        const std::vector<NativeInteger>& mPlQHatInvModq;
-        const std::vector<NativeInteger>& mPlQHatInvModqPrecon;
-        const std::vector<std::vector<NativeInteger>>& qInvModp;
-        const std::vector<DoubleNativeInt>& modpBarrettMu;
-        const std::vector<NativeInteger>& PlHatInvModp;
-        const std::vector<NativeInteger>& PlHatInvModpPrecon;
-        const std::vector<std::vector<NativeInteger>>& PlHatModq;
-        const std::vector<std::vector<NativeInteger>>& alphaPlModq;
-        const std::vector<DoubleNativeInt>& modqBarrettMu;
-        const std::vector<double>& pInv;
+        const std::vector<NativeInteger> mPlQHatInvModq;
+        const std::vector<NativeInteger> mPlQHatInvModqPrecon;
+        const std::vector<std::vector<NativeInteger>> qInvModp;
+        const std::vector<DoubleNativeInt> modpBarrettMu;
+        const std::vector<NativeInteger> PlHatInvModp;
+        const std::vector<NativeInteger> PlHatInvModpPrecon;
+        const std::vector<std::vector<NativeInteger>> PlHatModq;
+        const std::vector<std::vector<NativeInteger>> alphaPlModq;
+        const std::vector<DoubleNativeInt> modqBarrettMu;
+        const std::vector<double> pInv;
 
         CRTBasisExtensionPrecomputations(
             const std::shared_ptr<DCRTPolyImpl::Params> paramsQlPl0,
@@ -1014,7 +1014,7 @@ public:
             pInv(pInv0) {}
 
     };
-    void FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations& precomputed);
+    void FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations precomputed);
 
   void ExpandCRTBasisQlHat(
       const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,

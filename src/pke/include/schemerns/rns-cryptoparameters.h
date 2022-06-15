@@ -638,7 +638,7 @@ public:
   // BFVrns : Mult : ExpandCRTBasis
   /////////////////////////////////////
 
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQl(usint l) const {
+  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQl(usint l = 0) const {
     return m_paramsQl[l];
   }
 
@@ -707,11 +707,11 @@ public:
     return m_alphaQlModr[l];
   }
 
-  const std::vector<NativeInteger>& GetmNegRlQHatInvModq(usint l) const {
+  const std::vector<NativeInteger>& GetmNegRlQHatInvModq(usint l = 0) const {
     return m_negRlQHatInvModq[l];
   }
 
-  const std::vector<NativeInteger>& GetmNegRlQHatInvModqPrecon(usint l) const {
+  const std::vector<NativeInteger>& GetmNegRlQHatInvModqPrecon(usint l = 0) const {
     return m_negRlQHatInvModqPrecon[l];
   }
 
