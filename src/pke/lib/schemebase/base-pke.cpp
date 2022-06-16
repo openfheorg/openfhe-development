@@ -209,8 +209,8 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
   Element e1;
 
   auto preMode = cryptoParams->GetPREMode();
-  std::cout << "premode set " << preMode << std::endl;
-  std::cout << "noise distribution parameter " << cryptoParams->GetFloodingDistributionParameter();
+  std::cout << "base-pke encryptzerocore premode set " << preMode << std::endl;
+  std::cout << "base-pke encryptzerocore noise distribution parameter " << cryptoParams->GetFloodingDistributionParameter();
 
   //if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
   if (dgg.GetStd() == 1) {

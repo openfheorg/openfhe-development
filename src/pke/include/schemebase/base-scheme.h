@@ -277,7 +277,8 @@ class SchemeBase {
                    "EncryptZeroCore operation has not been enabled");
   }
 
-  std::shared_ptr< std::vector<Element> > EncryptZeroCore(const PublicKey<Element> publicKey) const {
+  std::shared_ptr< std::vector<Element> > EncryptZeroCore(const PublicKey<Element> publicKey,
+  const std::shared_ptr<ParmType> params, const DggType &dgg) const {
     if (m_PKE) {
       if (!publicKey)
         OPENFHE_THROW(config_error, "Input public key is nullptr");

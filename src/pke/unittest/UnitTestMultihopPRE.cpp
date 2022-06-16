@@ -95,8 +95,10 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
 
       qmodulus = 218;
       firstqmod = 60;
+      uint32_t dnum = 2;
       parameters.SetPREMode(NOISE_FLOODING_HRA);
       parameters.SetKeySwitchTechnique(HYBRID);
+      parameters.SetNumLargeDigits(dnum);
     } else if (security_model == 4) {
       ringDimension = 8192;
       relinWindow = 1;

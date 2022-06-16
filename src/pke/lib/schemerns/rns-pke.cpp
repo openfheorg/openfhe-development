@@ -187,6 +187,8 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
     const PublicKey<DCRTPoly> publicKey,
     const std::shared_ptr<ParmType> params,
     const DggType &dgg) const {
+
+  std::cout << "start function noise distribution parameter from dgg parameter ===  " << dgg.GetStd() << std::endl;
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
           publicKey->GetCryptoParameters());
@@ -217,9 +219,6 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
 
   auto preMode = cryptoParams->GetPREMode();
   std::cout << "premode set " << preMode << std::endl;
-  std::cout << "noise distribution parameter " << cryptoParams->GetDistributionParameter() << std::endl;
-  std::cout << "noise distribution parameter from m_dgg" << cryptoParams->GetDiscreteGaussianGenerator().GetStd() << std::endl;
-  std::cout << "noise distribution parameter flooding " << cryptoParams->GetFloodingDistributionParameter() << std::endl;
   std::cout << "noise distribution parameter from m_dggflooding " << cryptoParams->GetFloodingDiscreteGaussianGenerator().GetStd() << std::endl;
   std::cout << "noise distribution parameter from dgg parameter " << dgg.GetStd() << std::endl;
   
