@@ -119,7 +119,8 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(
   for (usint i = 0; i < sizeQ; i++) {
     m_negtInvModq[i] = moduliQ[i] - t.ModInverse(moduliQ[i]);
     m_negtInvModqPrecon[i] = m_negtInvModq[i].PrepModMulConst(moduliQ[i]);
-    m_tModqPrecon[i] = t.PrepModMulConst(moduliQ[i]);
+    NativeInteger tModQi = t.Mod(moduliQ[i]);
+    m_tModqPrecon[i] = tModQi.PrepModMulConst(moduliQ[i]);
     m_qlInvModq[i].resize(i);
     m_qlInvModqPrecon[i].resize(i);
     for (usint j = 0; j < i; ++j) {
