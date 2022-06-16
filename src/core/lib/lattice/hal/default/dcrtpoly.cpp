@@ -1586,12 +1586,18 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_pt
             for (usint i = 0; i < sizeQ; i++) {
                 curValue += Mul128(xQHatInvModq[i].ConvertToInt(), QHatModpj[i].ConvertToInt());
             }
-
             const NativeInteger& curNativeValue =
                 NativeInteger(BarrettUint128ModUint64(curValue, pj.ConvertToInt(), modpBarrettMu[j]));
 
             // second round - remove q-overflows
             ans.m_vectors[j][ri] = curNativeValue.ModSubFast(alphaQModpri[j], pj);
+            if (ri == 0) {
+                std::cout << "alpha: " << alpha << std::endl;
+                std::cout << "alphaQmodp: " << alphaQModpri << std::endl;
+                std::cout << "QHatModpj[0]: " << QHatModpj[0] << std::endl;
+                std::cout << "j, curValue: " << j << ", " << curNativeValue << std::endl;
+                std::cout << "ans.m_vectors[j][0]: " << j << ", " << ans.m_vectors[j][ri] << std::endl;
+            }
         }
     }
 

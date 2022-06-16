@@ -185,6 +185,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
   std::vector<DCRTPoly> cvMult(cvMultSize);
 
   if (cryptoParams->GetMultiplicationTechnique() == HPS) {
+    std::cout << "cv2: " << cv2 << std::endl;
     for (size_t i = 0; i < cv1Size; i++) {
       cv1[i].ExpandCRTBasis(
           cryptoParams->GetParamsQlRl(),
@@ -210,7 +211,9 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
           cryptoParams->GetqInv(),
           Format::EVALUATION);
     }
+    std::cout << "cv2 after expanding basis HPS: " << cv2 << std::endl;
   } else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ) {
+    std::cout << "cv2: " << cv2 << std::endl;
     for (size_t i = 0; i < cv1Size; i++) {
       // Expand ciphertext1 from basis Q to PQ.
       cv1[i].ExpandCRTBasis(
@@ -278,6 +281,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
       cv2[i].FastExpandCRTBasisPloverQ(basisPQ);
       cv2[i].SetFormat(Format::EVALUATION);
     }
+    std::cout << "cv2 after expanding basis HPSPOVERQ: " << cv2 << std::endl;
   } else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
     size_t c1depth = ciphertext1->GetDepth();
     size_t c2depth = ciphertext2->GetDepth();

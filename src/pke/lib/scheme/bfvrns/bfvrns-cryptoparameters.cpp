@@ -76,6 +76,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
         numPartQ, auxBits, extraBits);
 
   size_t sizeQ = GetElementParams()->GetParams().size();
+  uint32_t n = GetElementParams()->GetRingDimension();
 
   std::vector<NativeInteger> moduliQ(sizeQ);
   std::vector<NativeInteger> rootsQ(sizeQ);
@@ -85,9 +86,13 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     rootsQ[i] = GetElementParams()->GetParams()[i]->GetRootOfUnity();
   }
 
-  uint32_t n = GetElementParams()->GetRingDimension();
+  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * n,
+                                                          moduliQ);
+
   BigInteger modulusQ = GetElementParams()->GetModulus();
+  std::cout << "modulusQ: " << modulusQ << std::endl;
   NativeInteger t = GetPlaintextModulus();
+  std::cout << "plaintext modulus: " << t << std::endl;
 
   const BigInteger BarrettBase128Bit(
       "340282366920938463463374607431768211456");       // 2^128
@@ -319,6 +324,8 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     const BigInteger modulusR = multTech == HPSPOVERQLEVELED
                                     ? m_paramsRl[sizeQ - 1]->GetModulus()
                                     : m_paramsRl[0]->GetModulus();
+
+    std::cout << "modulusR: " << modulusR << std::endl;
 
     const BigInteger modulusQR = multTech == HPSPOVERQLEVELED
                                      ? m_paramsQlRl[sizeQ - 1]->GetModulus()

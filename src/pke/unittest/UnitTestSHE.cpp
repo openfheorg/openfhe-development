@@ -133,7 +133,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTSHE& test) {
 }
 //===========================================================================================================
 // NOTE the SHE tests are all based on these
-constexpr usint BATCH     = 16;
+constexpr usint BATCH     = 8;
 constexpr usint BATCH_LRG = 1 << 12;
 constexpr usint PTM     = 64;
 constexpr usint PTM_LRG = 65537;
@@ -962,6 +962,8 @@ TEST_P(UTSHE, SHE) {
         UnitTest_Add_Packed(test, test.buildTestName());
         break;
     case MULT_COEF_PACKED:
+        test.params.ringDimension = 8;
+        test.params.securityLevel = HEStd_NotSet;
         UnitTest_Mult_CoefPacked(test, test.buildTestName());
         break;
     case MULT_PACKED:
