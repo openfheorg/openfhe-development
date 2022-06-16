@@ -56,4 +56,41 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 #include "scheme/bgvrns/bgvrns-pke.h"
 #include "scheme/bgvrns/bgvrns-pre.h"
 
-namespace lbcrypto {}
+namespace lbcrypto {
+#if 0
+Ciphertext<DCRTPoly> PREBGVRNS::ReEncrypt(
+  ConstCiphertext<DCRTPoly> ciphertext, const EvalKey<DCRTPoly> evalKey,
+  const PublicKey<DCRTPoly> publicKey) const {
+  //auto algo = ciphertext->GetCryptoContext()->GetScheme();
+
+  std::cout << "base pre" << std::endl;
+  const auto cryptoParamspre =
+      std::static_pointer_cast<CryptoParametersRNS>(
+          publicKey->GetCryptoParameters());
+
+  std::cout<< "base-pre after rnsparams" << std::endl;
+  //const DggType &floodingdist = ciphertext->GetCryptoContext()->GetCryptoParameters()->GetFloodingDiscreteGaussianGenerator();
+  
+  const DggType &floodingdist = cryptoParamspre->GetFloodingDiscreteGaussianGenerator();
+
+  //auto premode = ciphertext->GetCryptoParameters()->GetElementParams()->GetPREMode();
+  auto premode = cryptoParamspre->GetPREMode();
+  std::cout << "base-pre PRE mode " << premode << std::endl;
+  std::cout << "base-pre noise distribution parameter from floodingdist " << floodingdist.GetStd() << std::endl;
+
+  Ciphertext<DCRTPoly> result = ciphertext->Clone();
+  if (publicKey != nullptr) {
+    std::vector<DCRTPoly> &cv = result->GetElements();
+    std::shared_ptr<std::vector<DCRTPoly>> ba =
+        EncryptZeroCore(publicKey, nullptr, floodingdist);
+
+    cv[0] += (*ba)[0];
+    cv[1] += (*ba)[1];
+  }
+
+  algo->KeySwitchInPlace(result, evalKey);
+
+  return result;
+}
+#endif
+}
