@@ -283,7 +283,7 @@ class SchemeBase {
       if (!publicKey)
         OPENFHE_THROW(config_error, "Input public key is nullptr");
 
-      return m_PKE->EncryptZeroCore(publicKey, nullptr, DggType());
+      return m_PKE->EncryptZeroCore(publicKey, nullptr, dgg);
     }
     OPENFHE_THROW(config_error,
                    "EncryptZeroCore operation has not been enabled");

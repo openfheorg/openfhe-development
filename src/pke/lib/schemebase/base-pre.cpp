@@ -70,29 +70,15 @@ Ciphertext<Element> PREBase<Element>::ReEncrypt(
   const PublicKey<Element> publicKey) const {
   auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
-  std::cout << "base pre" << std::endl;
-  //const auto cryptoParams =
-  //    std::static_pointer_cast<CryptoParametersRLWE<Element>>(
-  //       publicKey->GetCryptoParameters());
-  
-  /*const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersRNS>(
-           ciphertext->GetCryptoContext()->GetCryptoParameters());8/*/
-
-  //std::cout<< "base-pre after rnsparams" << std::endl;
-  //const DggType &floodingdist = publicKey->GetCryptoContext()->GetCryptoParameters()->GetFloodingDiscreteGaussianGenerator();
-
   Ciphertext<Element> result = ciphertext->Clone();
   if (publicKey != nullptr) {
-    std::cout << "before cryptoparams base-pre" << std::endl;
     const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
          publicKey->GetCryptoParameters());
     std::vector<Element> &cv = result->GetElements();
 
-    const auto &floodingdist = cryptoParams->GetFloodingDiscreteGaussianGenerator();
+    const DggType &floodingdist = cryptoParams->GetFloodingDiscreteGaussianGenerator();
 
-    //auto premode = ciphertext->GetCryptoParameters()->GetElementParams()->GetPREMode();
     auto premode = cryptoParams->GetPREMode();
     std::cout << "base-pre PRE mode " << premode << std::endl;
     std::cout << "base-pre noise distribution parameter from floodingdist #### " << floodingdist.GetStd() << std::endl;
