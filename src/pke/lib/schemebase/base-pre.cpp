@@ -75,13 +75,10 @@ Ciphertext<Element> PREBase<Element>::ReEncrypt(
     const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
          publicKey->GetCryptoParameters());
-    std::vector<Element> &cv = result->GetElements();
 
     const DggType &floodingdist = cryptoParams->GetFloodingDiscreteGaussianGenerator();
-
-    auto premode = cryptoParams->GetPREMode();
-    std::cout << "base-pre PRE mode " << premode << std::endl;
-    std::cout << "base-pre noise distribution parameter from floodingdist #### " << floodingdist.GetStd() << std::endl;
+    
+    std::vector<Element> &cv = result->GetElements();
 
     std::shared_ptr<std::vector<Element>> ba =
         algo->EncryptZeroCore(publicKey, nullptr, floodingdist);

@@ -188,14 +188,12 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
     const std::shared_ptr<ParmType> params,
     const DggType &dgg) const {
 
-  std::cout << "start function noise distribution parameter from dgg parameter ===  " << dgg.GetStd() << std::endl;
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
           publicKey->GetCryptoParameters());
 
   const std::vector<DCRTPoly> &pk = publicKey->GetPublicElements();
   const auto ns = cryptoParams->GetNoiseScale();
-  //const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   TugType tug;
 
   const std::shared_ptr<ParmType> elementParams = (params == nullptr)
@@ -211,15 +209,9 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
                    ? DCRTPoly(dgg, elementParams, Format::EVALUATION)
                    : DCRTPoly(tug, elementParams, Format::EVALUATION);
 
-  //DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-  //DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
-
   DCRTPoly e0;
   DCRTPoly e1;
 
-  auto preMode = cryptoParams->GetPREMode();
-  std::cout << "premode set " << preMode << std::endl;
-  std::cout << "noise distribution parameter from m_dggflooding " << cryptoParams->GetFloodingDiscreteGaussianGenerator().GetStd() << std::endl;
   std::cout << "noise distribution parameter from dgg parameter " << dgg.GetStd() << std::endl;
   
   //if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
