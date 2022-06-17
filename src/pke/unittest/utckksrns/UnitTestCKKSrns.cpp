@@ -41,6 +41,7 @@
 #include <vector>
 #include "gtest/gtest.h"
 #include <cxxabi.h>
+#include <iterator>
 #include "utils/demangle.h"
 
 
@@ -126,6 +127,8 @@ struct TEST_CASE_UTCKKSRNS {
     // additional test case data
     // ........
     uint32_t slots;
+    RescalingTechnique lowerPrecisionTechnique;
+    RescalingTechnique higherPrecisionTechnique;
 
     std::string buildTestName() const {
         std::stringstream ss;
@@ -153,7 +156,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS& tes
  * ORDER: Cyclotomic order. Must be a power of 2 for CKKS. RING_DIM = cyclOrder / 2
  * NUMPRIME: Number of towers comprising the ciphertext modulus. MultDepth = NUMPRIME - 1
  * SCALE: Scaling factor bit-length.
- *       Should fit into a machine word, i.e., less than 64.
+ *UnitTestCKKSrns.cpp       Should fit into a machine word, i.e., less than 64.
  * RELIN: The bit decomposition count used in BV relinearization.
  * BATCH: The length of the packed vectors to be used with CKKS.
  */
@@ -166,7 +169,7 @@ constexpr usint SCALE = 90;
 #else
 constexpr usint SCALE = 50;
 #endif
-
+constexpr uint32_t MIN_PRECISION_DIFF = 2; // this is the minimal difference expected between approximation error/precision for FLEXIBLEAUTO and FLEXIBLEAUTOEXT
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -179,22 +182,9 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { ADD_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { ADD_PACKED, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { ADD_PACKED, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
-    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
-    { ADD_PACKED_PRECISION, "09", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
-#endif
-    // ==========================================
-    // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
-    { ADD_PACKED, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
-    { ADD_PACKED, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
-    { ADD_PACKED, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
-    { ADD_PACKED, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
-#if NATIVEINT != 128
-    { ADD_PACKED, "15", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
-    { ADD_PACKED, "16", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
-    { ADD_PACKED, "17", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
-    { ADD_PACKED, "18", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
-    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
-    { ADD_PACKED_PRECISION, "19", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { ADD_PACKED_PRECISION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { ADD_PACKED_PRECISION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -207,8 +197,9 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { ADD_PACKED, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
     { ADD_PACKED, "27", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
     { ADD_PACKED, "28", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
-    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
-    { ADD_PACKED_PRECISION, "29", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
+    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { ADD_PACKED_PRECISION, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { ADD_PACKED_PRECISION, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -221,8 +212,9 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { ADD_PACKED, "36", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
     { ADD_PACKED, "37", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
     { ADD_PACKED, "38", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
-    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
-    { ADD_PACKED_PRECISION, "39", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
+    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots,         LowPrec,      HighPrec
+    { ADD_PACKED_PRECISION, "31", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { ADD_PACKED_PRECISION, "32", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -235,8 +227,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { MULT_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { MULT_PACKED, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { MULT_PACKED, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
-    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
-    { MULT_PACKED_PRECISION, "09", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { MULT_PACKED_PRECISION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
+    { MULT_PACKED_PRECISION, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -249,8 +244,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { MULT_PACKED, "16", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { MULT_PACKED, "17", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { MULT_PACKED, "18", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
-    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
-    { MULT_PACKED_PRECISION, "19", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
+    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { MULT_PACKED_PRECISION, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
+    { MULT_PACKED_PRECISION, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -263,8 +261,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { MULT_PACKED, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
     { MULT_PACKED, "27", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
     { MULT_PACKED, "28", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
-    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
-    { MULT_PACKED_PRECISION, "29", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
+    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { MULT_PACKED_PRECISION, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "23", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FIXEDAUTO,    FLEXIBLEAUTO},
+    { MULT_PACKED_PRECISION, "24", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FIXEDAUTO,    FLEXIBLEAUTO},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -277,8 +278,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { MULT_PACKED, "36", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
     { MULT_PACKED, "37", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
     { MULT_PACKED, "38", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
-    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
-    { MULT_PACKED_PRECISION, "39", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32 },
+    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { MULT_PACKED_PRECISION, "31", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
+    { MULT_PACKED_PRECISION, "32", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
+    { MULT_PACKED_PRECISION, "33", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FIXEDAUTO,    FLEXIBLEAUTO },
+    { MULT_PACKED_PRECISION, "34", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FIXEDAUTO,    FLEXIBLEAUTO },
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -291,8 +295,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { MULT_PACKED, "46", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
     { MULT_PACKED, "47", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
     { MULT_PACKED, "48", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
-    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
-    { MULT_PACKED_PRECISION, "49", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF },
+    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots,         LowPrec,      HighPrec
+    { MULT_PACKED_PRECISION, "41", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
+    { MULT_PACKED_PRECISION, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
+    { MULT_PACKED_PRECISION, "43", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FIXEDAUTO,    FLEXIBLEAUTO },
+    { MULT_PACKED_PRECISION, "44", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FIXEDAUTO,    FLEXIBLEAUTO },
 #endif
     // ==========================================
     // TestType,               Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       Depth, MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
@@ -499,7 +506,60 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
 };
 // clang-format on
 //===========================================================================================================
+/**
+ * Function to check minimal difference between 2 numeric values
+ *
+ * @param high    higher value
+ * @param low     lower value
+ * @param diff    minimal expected difference between high and low
+ */
+template<typename T>
+bool checkMinDiff(const T& high, const T& low, const uint32_t diff) {
+    if(high > low)
+        return ((high - low) >= diff);
+    return false;
+}
 
+/**
+ * Function to check minimal difference between elements of 2 vectors with numeric values
+ *
+ * @param high   vector with higher values
+ * @param low    vector with lower values
+ * @param diff   minimal expected difference between elements in high and low
+ */
+template<typename V>
+bool checkMinDiff(const std::vector<V>& high, const std::vector<V>& low, const uint32_t diff) {
+    if (high.size() != low.size())
+        return false;
+
+    return std::equal(high.begin(), high.end(), low.begin(),
+        [&diff](const V& high, const V& low) { return checkMinDiff(high, low, diff); });
+}
+
+/**
+ * Function to check minimal difference between elements of 2 vectors with numeric values
+ *
+ * @param high   vector with higher values
+ * @param low    vector with lower values
+ * @param errMsg Debug message to display upon failure
+ * @param diff   minimal expected difference between elements in high and low
+ */
+template<typename V>
+void checkMinDiff(const std::vector<V>& high, const std::vector<V>& low,
+    const uint32_t diff, const std::string& errMsg) {
+    // print vector values to error message
+    std::stringstream ss;
+    ss << ": HIGHER precision/LOWER error: [";
+    std::copy(high.begin(), high.end(), std::ostream_iterator<V>(ss, " "));
+    ss << "]; LOWER precisions/HIGHER error: [";
+    std::copy(low.begin(), low.end(), std::ostream_iterator<V>(ss, " "));
+    ss << "]";
+
+    std::string msg(errMsg);
+    msg += ss.str();
+    EXPECT_TRUE(checkMinDiff(high, low, diff)) << msg;
+}
+//===========================================================================================================
 class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
     using Element = DCRTPoly;
 
@@ -525,6 +585,24 @@ class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
 
     const std::vector<std::complex<double>> vectorOfInts1s{1, 1, 1, 1, 1, 1, 1, 1}; // all 1's
 
+    // CalculateApproximationError() calculates the precision number (or approximation error).
+    // The higher the precision, the less the error.
+    uint32_t CalculateApproximationError(
+        const std::vector<std::complex<double>>& result,
+        const std::vector<std::complex<double>>& expectedResult) {
+        if (result.size() != expectedResult.size())
+            OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
+
+        // using the Euclidean norm
+        double avrg = 0;
+        for (size_t i = 0; i < result.size(); ++i) {
+            avrg += std::pow(std::abs(result[i].real() - expectedResult[i].real()), 2);
+        }
+
+        avrg = std::sqrt(avrg) / result.size(); // get the average
+        return std::round(std::abs(std::log2(avrg)) * 10) / 10; // should return an unsigned integer
+    }
+
 protected:
     void SetUp() {}
 
@@ -532,7 +610,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    bool UnitTest_Add_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& precisions, const std::string& failmsg = std::string()) {
+    bool UnitTest_Add_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& approximationErrors, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -562,15 +640,14 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
-            // Testing EvalAddInPlace
             cc->EvalAddInPlace(ciphertext1_mutable, ciphertext2);
             cc->Decrypt(kp.secretKey, ciphertext1_mutable, &results);
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAddInPlace fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator+
             cResult = ciphertext1 + ciphertext2;
@@ -578,7 +655,7 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator+ fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator+=
             Ciphertext<Element> caddInplace(ciphertext1);
@@ -587,15 +664,14 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator+= fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
-            // Testing EvalSub
             cResult = cc->EvalSub(ciphertext1, ciphertext2);
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator-
             cResult = ciphertext1 - ciphertext2;
@@ -603,7 +679,7 @@ protected:
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator- fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator-=
             Ciphertext<Element> csubInplace(ciphertext1);
@@ -612,7 +688,7 @@ protected:
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator-= fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext + plaintext
             cResult = cc->EvalAdd(ciphertext1, plaintext2);
@@ -620,7 +696,7 @@ protected:
             results->SetLength(plaintextAdd->GetLength());
             checkEquality(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd Ct and Pt fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextAdd->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalSub ciphertext - plaintext
             cResult = cc->EvalSub(ciphertext1, plaintext2);
@@ -628,7 +704,7 @@ protected:
             results->SetLength(plaintextSub->GetLength());
             checkEquality(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub Ct and Pt fails fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextSub->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext + double
             cResult = cc->EvalAdd(ciphertext1, 0.5);
@@ -636,7 +712,7 @@ protected:
             results->SetLength(plaintext1AddScalar->GetLength());
             checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd Ct and Double fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext - double
             cResult = cc->EvalSub(ciphertext1, 0.5);
@@ -644,7 +720,7 @@ protected:
             results->SetLength(plaintext1SubScalar->GetLength());
             checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub Ct and Double fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext + negative double
             cResult = cc->EvalAdd(ciphertext1, -0.5);
@@ -652,7 +728,7 @@ protected:
             results->SetLength(plaintext1SubScalar->GetLength());
             checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalAdd Ct and negative double fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalAdd ciphertext - negative double
             cResult = cc->EvalSub(ciphertext1, -0.5);
@@ -660,7 +736,7 @@ protected:
             results->SetLength(plaintext1AddScalar->GetLength());
             checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalSub Ct and negative double fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalNegate
             cResult = cc->EvalNegate(ciphertext1);
@@ -668,7 +744,7 @@ protected:
             results->SetLength(negatives1->GetLength());
             checkEquality(negatives1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalNegate fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(negatives1->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             return true;
         }
@@ -697,45 +773,20 @@ protected:
         
         std::vector<uint32_t> lowPrecisions;
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-        testDataLocal.params.rsTech = FLEXIBLEAUTO;
+        testDataLocal.params.rsTech = testDataLocal.lowerPrecisionTechnique;
         if (!UnitTest_Add_Packed(testDataLocal, lowPrecisions, failmsg))
             return;
 
         std::vector<uint32_t> highPrecisions;
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-        testDataLocal.params.rsTech = FLEXIBLEAUTOEXT;
+        testDataLocal.params.rsTech = testDataLocal.higherPrecisionTechnique;
         if(!UnitTest_Add_Packed(testDataLocal, highPrecisions, failmsg))
             return;
 
-        std::stringstream ss;
-        if (!lowPrecisions.empty() && !highPrecisions.empty()) {
-            if (lowPrecisions.size() == highPrecisions.size()) {
-                // check if the precision for FLEXIBLEAUTOEXT is higher than for FLEXIBLEAUTO
-                for (size_t i = 0; i < lowPrecisions.size(); ++i) {
-                    if (lowPrecisions[i] >= highPrecisions[i]) {
-                        std::string errMsg("FLEXIBLEAUTOEXT's precision is LESS than the precision for FLEXIBLEAUTO");
-                        EXPECT_TRUE(0 == 1) << errMsg;
-                    }
-                }
-            }
-            else {
-                ss << "Precision vectors are different in size:"
-                    << " low - " << lowPrecisions.size()
-                    << ", high - " << highPrecisions.size();
-                // make it fail
-                EXPECT_TRUE(0 == 1) << ss.str();
-            }
-        }
-        else {
-            ss << "Precision vectors are empty:"
-                << " low - " << lowPrecisions.size()
-                << ", high - " << highPrecisions.size();
-            // make it fail
-            EXPECT_TRUE(0 == 1) << ss.str();
-        }
+        checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Approximation errors' comparison failed");
     }
 
-    bool UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& precisions, const std::string& failmsg = std::string()) {
+    bool UnitTest_Mult_Packed(const TEST_CASE_UTCKKSRNS& testData, std::vector<uint32_t>& approximationErrors, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -764,7 +815,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator*
             cResult = ciphertext1 * ciphertext2;
@@ -772,7 +823,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator* fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing operator*=
             Ciphertext<Element> cmultInplace(ciphertext1);
@@ -781,7 +832,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " operator*= fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMult ciphertext * plaintext
             cResult = cc->EvalMult(ciphertext1, plaintext2);
@@ -789,7 +840,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and Pt fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMult ciphertext * positive double
             cResult = cc->EvalMult(ciphertext1, 1.0);
@@ -797,7 +848,7 @@ protected:
             results->SetLength(plaintext1->GetLength());
             checkEquality(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and positive double fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMult ciphertext * negative double
             cResult = cc->EvalMult(ciphertext1, -1.0);
@@ -807,7 +858,7 @@ protected:
             buffer1 << "should be: " << plaintextNeg->GetCKKSPackedValue() << " - we get: " << results->GetCKKSPackedValue();
             checkEquality(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMult Ct and negative double fails; " + buffer1.str());
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMultNoRelin ciphertext * ciphertext
             cResult = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
@@ -815,7 +866,7 @@ protected:
             results->SetLength(plaintextMult->GetLength());
             checkEquality(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                 failmsg + " EvalMultNoRelin Ct fails");
-            precisions.emplace_back(results->GetLogPrecision());
+            approximationErrors.emplace_back(CalculateApproximationError(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             return true;
         }
@@ -854,32 +905,7 @@ protected:
         if (!UnitTest_Mult_Packed(testDataLocal, highPrecisions, failmsg))
             return;
 
-        std::stringstream ss;
-        if (!lowPrecisions.empty() && !highPrecisions.empty()) {
-            if (lowPrecisions.size() == highPrecisions.size()) {
-                // check if the precision for FLEXIBLEAUTOEXT is higher than for FLEXIBLEAUTO
-                for (size_t i = 0; i < lowPrecisions.size(); ++i) {
-                    if (lowPrecisions[i] >= highPrecisions[i]) {
-                        std::string errMsg("FLEXIBLEAUTOEXT's precision is LESS than the precision for FLEXIBLEAUTO");
-                        EXPECT_TRUE(0 == 1) << errMsg;
-                    }
-                }
-            }
-            else {
-                ss << "Precision vectors are different in size:"
-                    << " low - " << lowPrecisions.size()
-                    << ", high - " << highPrecisions.size();
-                // make it fail
-                EXPECT_TRUE(0 == 1) << ss.str();
-            }
-        }
-        else {
-            ss << "Precision vectors are empty:"
-                << " low - " << lowPrecisions.size()
-                << ", high - " << highPrecisions.size();
-            // make it fail
-            EXPECT_TRUE(0 == 1) << ss.str();
-        }
+        checkMinDiff(highPrecisions, lowPrecisions, MIN_PRECISION_DIFF, failmsg + " Approximation errors' comparison failed");
     }
 
     /**
