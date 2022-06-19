@@ -43,12 +43,12 @@ void FHECKKSRNS::BootstrapSetup(
     uint32_t numSlots) {
   uint32_t m = cc.GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
 
-  m_slots = (numSlots == 0) ? m/4 : numSlots;
+  precom.m_slots = (numSlots == 0) ? m/4 : numSlots;
 
   // store the level budget
-  m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] = 1;
-  m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] = 1;
-  m_dim1 = dim1;
+  precom.m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] = 1;
+  precom.m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] = 1;
+  precom.m_dim1 = dim1;
 }
 
 void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, const std::vector<uint32_t> &levelBudget,
@@ -67,18 +67,17 @@ void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, const std
 
   // the linear method is more efficient for a level budget of 1
   if (levelBudget[0] == 1 && levelBudget[1] == 1){
-    EvalBTSetup( cc, dim1[0], numSlots);
-  }
-  else
-  {
+    EvalBootstrapSetup( cc, dim1[0], numSlots);
+  } else {
     uint32_t m = cc.GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
 
     uint32_t slots = (numSlots == 0) ? m/4 : numSlots;
 
     // Perform some checks on the level budget and compute parameters
     std::vector<uint32_t> newBudget = levelBudget;
-
-    if (levelBudget[0] > std::log2(slots)){
+    // TODO Andrey: logSlots precompute here
+    //    uint32_t logSlots = (uint32_t)std::log2(slots);
+    if (levelBudget[0] > std::log2(slots)) {
       std::cerr << "\nWarning, the level budget for encoding cannot be this large. The budget was changed to " << std::log2(slots) << std::endl;
         newBudget[0] = std::log2(slots);
     }
@@ -95,10 +94,10 @@ void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, const std
       newBudget[1] = 1;
     }
 
-    m_paramsEnc = GetCollapsedFFTParams( slots, newBudget[0], dim1[0] );
-    m_paramsDec = GetCollapsedFFTParams( slots, newBudget[1], dim1[1] );
+    precom.m_paramsEnc = GetCollapsedFFTParams( slots, newBudget[0], dim1[0] );
+    precom.m_paramsDec = GetCollapsedFFTParams( slots, newBudget[1], dim1[1] );
 
-    m_slots = slots;
+    precom.m_slots = slots;
   }
 
 }
@@ -108,13 +107,13 @@ void FHECKKSRNS::BootstrapPrecompute(const CryptoContextImpl<DCRTPoly> &cc, uint
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           cc.GetCryptoParameters());
 
-  uint32_t m = 4*m_slots;
+  uint32_t m = 4 * precom.m_slots;
   bool isSparse = (cryptoParams->GetElementParams()->GetCyclotomicOrder() != m) ? true : false;
 
   // computes indices for all primitive roots of unity
-  std::vector<uint32_t> rotGroup(m_slots);
+  std::vector<uint32_t> rotGroup(precom.m_slots);
   uint32_t fivePows = 1;
-  for (uint32_t i = 0; i < m_slots; ++i) {
+  for (uint32_t i = 0; i < precom.m_slots; ++i) {
           rotGroup[i] = fivePows;
           fivePows *= 5;
           fivePows %= m;
@@ -143,12 +142,12 @@ void FHECKKSRNS::BootstrapPrecompute(const CryptoContextImpl<DCRTPoly> &cc, uint
   double scaleDec = 1/pre;
 
   if (debugFlag == 0) {
-    if ((m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] == 1) && (m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] == 1)) {
+    if ((precom.m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] == 1) && (precom.m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] == 1)) {
       // allocate all vectors
-      std::vector<std::vector<std::complex<double>>> U0(m_slots, std::vector<std::complex<double>>(m_slots));
-      std::vector<std::vector<std::complex<double>>> U1(m_slots, std::vector<std::complex<double>>(m_slots));
-      std::vector<std::vector<std::complex<double>>> U0hatT(m_slots, std::vector<std::complex<double>>(m_slots));
-      std::vector<std::vector<std::complex<double>>> U1hatT(m_slots, std::vector<std::complex<double>>(m_slots));
+      std::vector<std::vector<std::complex<double>>> U0(precom.m_slots, std::vector<std::complex<double>>(precom.m_slots));
+      std::vector<std::vector<std::complex<double>>> U1(precom.m_slots, std::vector<std::complex<double>>(precom.m_slots));
+      std::vector<std::vector<std::complex<double>>> U0hatT(precom.m_slots, std::vector<std::complex<double>>(precom.m_slots));
+      std::vector<std::vector<std::complex<double>>> U1hatT(precom.m_slots, std::vector<std::complex<double>>(precom.m_slots));
 
       for (size_t i = 0; i < m_slots; i++) {
         for (size_t j = 0; j < m_slots; j++) {
@@ -160,35 +159,117 @@ void FHECKKSRNS::BootstrapPrecompute(const CryptoContextImpl<DCRTPoly> &cc, uint
         }
       }
 
-      uint32_t depthBT = GetBTDepth(cc, { 1,1 });
+      uint32_t depthBT = GetBootstrapDepth(cc, { 1,1 });
       uint32_t lEnc = L0 - 2;
       uint32_t lDec = L0 - depthBT;
 
-      if (!isSparse) //fully-packed mode
-      {
-        m_U0hatTPre = cc.EvalLTPrecompute(U0hatT, m_dim1, scaleEnc, lEnc);
-        m_U0Pre = cc.EvalLTPrecompute(U0, m_dim1, scaleDec, lDec);
-      }
-      else // sparse mode
-      {
-        m_U0hatTPre = cc.EvalLTPrecompute(U0hatT, U1hatT, m_dim1, 0, scaleEnc, lEnc);
-        m_U0Pre = cc.EvalLTPrecompute(U0, U1, m_dim1, 1, scaleDec, lDec);
+      if (!isSparse) {
+        //fully-packed mode
+        precom.m_U0hatTPre = cc.EvalLTPrecompute(U0hatT, precom.m_dim1, scaleEnc, lEnc);
+        precom.m_U0Pre = cc.EvalLTPrecompute(U0, precom.m_dim1, scaleDec, lDec);
+      } else {
+        // sparse mode
+        precom.m_U0hatTPre = cc.EvalLTPrecompute(U0hatT, U1hatT, precom.m_dim1, 0, scaleEnc, lEnc);
+        precom.m_U0Pre = cc.EvalLTPrecompute(U0, U1, precom.m_dim1, 1, scaleDec, lDec);
       }
       // The other case is for testing only encoding and decoding, without the approx. mod. reduction.
       // In that case, the precomputations are done directly in the demo/test.
-    }
-    else
-    {
-      std::vector<uint32_t> params = { (uint32_t)m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET],(uint32_t)m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] };
-      uint32_t depthBT = GetBTDepth(cc, params);
-      uint32_t lEnc = L0 - m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] - 1;
+    } else {
+      std::vector<uint32_t> params = { (uint32_t)precom.m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET],(uint32_t)precom.m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] };
+      uint32_t depthBT = GetBootstrapDepth(cc, params);
+      uint32_t lEnc = L0 - precom.m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] - 1;
       uint32_t lDec = L0 - depthBT;
 
-      m_U0hatTPreFFT = EvalBTPrecomputeEncoding(cc, ksiPows, rotGroup, false, scaleEnc, lEnc);
-      m_U0PreFFT = EvalBTPrecomputeDecoding(cc, ksiPows, rotGroup, false, scaleDec, lDec);
+      precom.m_U0hatTPreFFT = EvalBTPrecomputeEncoding(cc, ksiPows, rotGroup, false, scaleEnc, lEnc);
+      precom.m_U0PreFFT = EvalBTPrecomputeDecoding(cc, ksiPows, rotGroup, false, scaleDec, lDec);
     }
   }
+}
 
+vector<int32_t> FindBTRotationIndices(int32_t bootstrapFlag, uint32_t m,
+        uint32_t blockDimension = 0) {
+
+    uint32_t slotsFull = m/4;
+
+    std::vector<int32_t> levelBudget = { precom.m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET], precom.m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] };
+
+    if (levelBudget[0] == 1 && levelBudget[1] == 1) {
+        return FindLTRotationIndices(precom.m_dim1, bootstrapFlag, m, blockDimension);
+    } else {
+        std::vector<int32_t> layersCollapse = { precom.m_paramsEnc[FFT_PARAMS::LAYERS_COLL], precom.m_paramsDec[FFT_PARAMS::LAYERS_COLL] };
+        std::vector<int32_t> remCollapse = { precom.m_paramsEnc[FFT_PARAMS::LAYERS_REM], precom.m_paramsDec[FFT_PARAMS::LAYERS_REM] };
+        std::vector<int32_t> numRotations = { precom.m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS], precom.m_paramsDec[FFT_PARAMS::NUM_ROTATIONS] };
+        std::vector<int32_t> b = { precom.m_paramsEnc[FFT_PARAMS::BABY_STEP], precom.m_paramsDec[FFT_PARAMS::BABY_STEP] };
+        std::vector<int32_t> g = { precom.m_paramsEnc[FFT_PARAMS::GIANT_STEP], precom.m_paramsDec[FFT_PARAMS::GIANT_STEP] };
+        std::vector<int32_t> numRotationsRem = { precom.m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS_REM], precom.m_paramsDec[FFT_PARAMS::NUM_ROTATIONS_REM] };
+        std::vector<int32_t> bRem = { precom.m_paramsEnc[FFT_PARAMS::BABY_STEP_REM], precom.m_paramsDec[FFT_PARAMS::BABY_STEP_REM] };
+        std::vector<int32_t> gRem = { precom.m_paramsEnc[FFT_PARAMS::GIANT_STEP_REM], precom.m_paramsDec[FFT_PARAMS::GIANT_STEP_REM] };
+        std::vector<int32_t> stop = { -1,-1 };
+        std::vector<int32_t> flagRem(levelBudget.size());
+
+        for(uint32_t i=0;i<remCollapse.size();i++){
+            if(remCollapse[i]==0){
+                stop[i] = -1;
+                flagRem[i] = 0;
+            }
+            else{
+                stop[i] = 0;
+                flagRem[i] = 1;
+            }
+        }
+
+        // Computing all indices for baby-step giant-step procedure for encoding and decoding
+        if(flagRem[0] == 0)
+          precom.indexListEvalBT.reserve(b[0]+g[0]-2+b[1]+g[1]-2 + 1);
+        else
+          precom.indexListEvalBT.reserve(b[0]+g[0]-2+b[1]+g[1]-2 + bRem[0]+gRem[0]-2+bRem[1]+gRem[1]-2 + 1);
+
+        for(int32_t s = int32_t(levelBudget[0])-1; s > stop[0]; s--){
+            for(int32_t j = 0; j < g[0]; j++)
+              precom.indexListEvalBT.emplace_back(ReduceRotation((j-int32_t((numRotations[0]+1)/2) + 1)*(1<<((s-flagRem[0])*layersCollapse[0] + remCollapse[0])),m_slots)); // m/4
+            for(int32_t i = 0; i < b[0]; i++)
+              precom.indexListEvalBT.emplace_back(ReduceRotation((g[0]*i)*(1 << ((s-flagRem[0])*layersCollapse[0] + remCollapse[0])), slotsFull));
+        }
+
+        if(flagRem[0]){
+            for(int32_t j = 0; j < gRem[0]; j++)
+              precom.indexListEvalBT.emplace_back(ReduceRotation((j-int32_t((numRotationsRem[0]+1)/2) + 1),m_slots)); //m/4
+            for(int32_t i = 0; i < bRem[0]; i++)
+              precom.indexListEvalBT.emplace_back(ReduceRotation(gRem[0]*i, slotsFull));
+        }
+
+        for(int32_t s = 0; s < int32_t(levelBudget[1]); s++){
+            for(int32_t j = 0; j < g[1]; j++)
+              precom.indexListEvalBT.emplace_back(ReduceRotation((j-(numRotations[1]+1)/2 + 1)*(1<<(s*layersCollapse[1])), slotsFull));
+            for(int32_t i = 0; i < b[1]; i++)
+              precom.indexListEvalBT.emplace_back(ReduceRotation((g[1]*i)*(1<<(s*layersCollapse[1])), slotsFull));
+        }
+
+        if(flagRem[1]){
+            int32_t s = int32_t(levelBudget[1])-flagRem[1];
+            for(int32_t j = 0; j < gRem[1]; j++)
+              precom.indexListEvalBT.emplace_back(ReduceRotation((j-(numRotationsRem[1]+1)/2 + 1)*(1<<(s*layersCollapse[1])), slotsFull));
+            for(int32_t i = 0; i < bRem[1]; i++)
+              precom.indexListEvalBT.emplace_back(ReduceRotation((gRem[1]*i)*(1<<(s*layersCollapse[1])), slotsFull));
+        }
+
+        // additional automorphisms are needed for sparse bootstrapping
+        if (bootstrapFlag == 1){
+            for(int j = 0; j < int(std::log2(m/(4*m_slots))); j++){
+              precom.indexListEvalBT.emplace_back((1<<j)*m_slots);
+            }
+        }
+
+        // Remove possible duplicates
+        sort(precom.indexListEvalBT.begin(), precom.indexListEvalBT.end() );
+        precom.indexListEvalBT.erase( unique(precom.indexListEvalBT.begin(), precom.indexListEvalBT.end() ), precom.indexListEvalBT.end() );
+
+        //remove automorphisms corresponding to 0
+        precom.indexListEvalBT.erase(std::remove(precom.indexListEvalBT.begin(), precom.indexListEvalBT.end(), 0), precom.indexListEvalBT.end());
+        precom.indexListEvalBT.erase(std::remove(precom.indexListEvalBT.begin(), precom.indexListEvalBT.end(), slotsFull), precom.indexListEvalBT.end());
+
+        return precom.indexListEvalBT;
+    }
 }
 
 shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::BootstrapKeyGen(
@@ -206,14 +287,12 @@ shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::BootstrapKeyGen(
 
   auto cc = privateKey->GetCryptoContext();
   uint32_t m = cc->GetCyclotomicOrder();
-    std::vector<int32_t> levelBudget = { m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET], m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] };
+    std::vector<int32_t> levelBudget = { precom.m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET], precom.m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] };
 
     if (levelBudget[0] == 1 && levelBudget[1] == 1){
-        return EvalLTKeyGen( privateKey, m_dim1, bootstrapFlag, 1 ); // m_dim1 was set before
-    }
-    else {
-
-        indexListEvalBT = this->FindBTRotationIndices(bootstrapFlag, m);
+        return cc->EvalLTKeyGen( privateKey, precom.m_dim1, bootstrapFlag, 1 ); // m_dim1 was set before
+    } else {
+        std::vector<int32_t> indexListEvalBT = cc->FindBootstrapRotationIndices(bootstrapFlag, m);
 
         auto algo = cc->GetScheme();
         auto evalKeys = algo->EvalAtIndexKeyGen(nullptr, privateKey, indexListEvalBT);
@@ -225,6 +304,80 @@ shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::BootstrapKeyGen(
         return evalKeys;
     }
 
+}
+
+std::vector<int32_t> FHECKKSRNS::FindLTRotationIndices(
+    uint32_t dim1 = 0, int32_t bootstrapFlag = 0,
+    uint32_t m = 0, uint32_t blockDimension = 0) {
+
+  // m_slots and m_dim1 are not available when we call solely EvalLT
+  uint32_t slots;
+
+  if ((bootstrapFlag == 1) && (blockDimension > 0)) {
+      PALISADE_THROW(not_implemented_error, "bootstrapping with linear encoding/decoding "
+   " + matrix arithmetic are not currently supported.");
+  }
+
+  if (bootstrapFlag == 0) {
+    if (blockDimension > 0)
+      precom.m_slots = blockDimension;
+  }
+
+if ((precom.m_slots == 0) || (precom.m_slots == m/4)) // fully-packed mode
+slots = m/4;
+else //sparse mode
+slots = precom.m_slots;
+
+  // Computing the baby-step g and the giant-step h.
+  int g = (dim1 == 0) ? ceil(sqrt(slots)) : dim1;
+  int h =  ceil((double)slots/g);
+
+  // computing all indices for baby-step giant-step procedure
+  // ATTN: resize() is used as indexListEvalLT may be empty here
+  precom.indexListEvalLT.reserve(g + h - 2);
+  for(int i = 0; i < g; i++)
+    precom.indexListEvalLT.emplace_back(i + 1);
+  for(int i = 2; i < h; i++)
+    precom.indexListEvalLT.emplace_back(g*i);
+
+  // additional automorphisms are needed for sparse bootstrapping
+  if (bootstrapFlag == 1)
+  {
+    precom.indexListEvalLT.emplace_back(slots);
+
+      for(int j = 0; j < int(std::log2(m/(4*slots))); j++){
+        precom.indexListEvalLT.emplace_back((1<<j)*slots);
+      }
+
+      // remove any duplicate indices to avoid the generation of extra automorphism keys
+      sort(precom.indexListEvalLT.begin(), precom.indexListEvalLT.end() );
+      precom.indexListEvalLT.erase( std::unique(precom.indexListEvalLT.begin(), precom.indexListEvalLT.end() ), precom.indexListEvalLT.end() );
+  }
+
+  return precom.indexListEvalLT;
+}
+
+std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalLTKeyGen(
+    const PrivateKey<DCRTPoly> privateKey, uint32_t dim1,
+    int32_t bootstrapFlag, int32_t conjFlag ) {
+
+  auto cc = privateKey->GetCryptoContext();
+
+  uint32_t m = cc->GetCyclotomicOrder();
+
+  // computing all indices for baby-step giant-step procedure
+  std::vector<int32_t> indexListEvalLT = FindLTRotationIndices(dim1, bootstrapFlag, m, cc->GetBlockDimension());
+
+  auto algo = cc->GetScheme();
+  auto evalKeys = algo->EvalAtIndexKeyGen(nullptr, privateKey, indexListEvalLT);
+
+  // Add conjugation key
+  if (bootstrapFlag == 1 || conjFlag == 1){
+    auto conjKey = ConjugateKeyGen(privateKey);
+    (*evalKeys)[m - 1] = conjKey;
+  }
+
+  return evalKeys;
 }
 
 void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext,
@@ -270,9 +423,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapEncoding(const CryptoContextImpl<D
     const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
     ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale) {
 
-  auto precomputedA = EvalBTPrecomputeEncoding(cc,A,rotGroup,flag_i,scale);
+  auto precomputedA = EvalBootstrapPrecomputeEncoding(cc,A,rotGroup,flag_i,scale);
 
-  return EvalBTWithPrecompEncoding(cc, precomputedA, ct);
+  return EvalBootstrapWithPrecompEncoding(cc, precomputedA, ct);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapDecoding(const CryptoContextImpl<DCRTPoly> &cc,
@@ -291,9 +444,9 @@ void FHECKKSRNS::ApplyDoubleAngleIterations(CryptoContext<DCRTPoly>& cc,
   for (int32_t j = 1; j < r + 1; j++) {
     ciphertext = cc->EvalMult(ciphertext, ciphertext);
     ciphertext = cc->EvalAdd(ciphertext, ciphertext);
-    double scalar = 1.0 / std::pow((2.0 * M_PI), std::pow(2.0, j - r));
-    ciphertext = cc->EvalSub(ciphertext, scalar);
-    ciphertext = cc->ModReduce(ciphertext);
+    double scalar = -1.0 / std::pow((2.0 * M_PI), std::pow(2.0, j - r));
+    cc->EvalAddInPlace(ciphertext, scalar);
+    cc->ModReduceInPlace(ciphertext);
   }
 }
 
@@ -308,10 +461,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO)
       OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the FLEXIBLEAUTO method.");
 #endif
-  EvalBTMethod method = (m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] == 1 && m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] == 1) ?
+  EvalBTMethod method = (precom.m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] == 1 && precom.m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] == 1) ?
     EvalBTLinearMethod : EvalBTFFTMethod;
 
-  return EvalBTCore(method, ciphertext);
+  return EvalBootstrapCore(method, ciphertext);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
@@ -327,26 +480,24 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
   Ciphertext<DCRTPoly> ciphertext = ciphertext1->Clone();
 
-  uint32_t cyclOrder = ciphertext->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
-  size_t ringDim = ciphertext->GetCryptoParameters()->GetElementParams()->GetRingDimension();
-
-  CryptoContext<DCRTPoly> cc = ciphertext->GetCryptoContext();
-
-  auto algo = cc->GetScheme();
-  while (ciphertext->GetDepth() > 1)
-    ciphertext = algo->ModReduceInternal(ciphertext);
-
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext->GetCryptoParameters());
 
+  uint32_t cyclOrder = cryptoParams->GetElementParams()->GetCyclotomicOrder();
+  size_t ringDim = cryptoParams->GetElementParams()->GetRingDimension();
+
+  CryptoContext<DCRTPoly> cc = ciphertext->GetCryptoContext();
+  auto algo = cc->GetScheme();
+
+  algo->ModReduceInternalInPlace(ciphertext, ciphertext->GetDepth() - 1);
+
   NativeInteger q = cryptoParams->GetElementParams()->GetParams()[0]->GetModulus().ConvertToInt();
   double qDouble = q.ConvertToDouble();
 
-  const auto p = cryptoParams->GetPlaintextModulus();
-  double powP = pow(2,p);
+  const auto sf = cryptoParams->GetScalingFactorReal();
 
-  double deg = std::round(std::log2(qDouble/powP));
+  double deg = std::round(std::log2(qDouble/sf));
   double correction = 9.0 - deg;
   double post = std::pow(2,deg);
 
@@ -368,7 +519,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   // We only use the level 0 ciphertext here. All other towers are automatically ignored to make
   // CKKS bootstrapping faster.
   for (size_t i = 0; i < ctxtDCRT.size(); i++) {
-    DCRTPoly temp(ciphertext->GetCryptoParameters()->GetElementParams(), COEFFICIENT);
+    DCRTPoly temp(cryptoParams->GetElementParams(), COEFFICIENT);
     ctxtDCRT[i].SetFormat(COEFFICIENT);
     temp = ctxtDCRT[i].GetElementAtIndex(0);
     temp.SetFormat(EVALUATION);
@@ -377,7 +528,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
   raised->SetElements(ctxtDCRT);
   raised->SetDepth(ciphertext->GetDepth());
-  raised->SetLevel(ciphertext->GetCryptoParameters()->GetElementParams()->GetParams().size() -
+  raised->SetLevel(cryptoParams->GetElementParams()->GetParams().size() -
     ctxtDCRT[0].GetNumOfElements());
   raised->SetScalingFactor(ciphertext->GetScalingFactor());
 
@@ -403,11 +554,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
   // scale by 1/(cyclOrder/2) for the inverse DFT and divide by Kq/2^p to scale the encrypted integers to -1 .. 1
   double constantEvalMult = 0;
-  if (isEvalBTLinear || (m_slots == cyclOrder / 4))
+  if (isEvalBTLinear || (precom.m_slots == cyclOrder / 4))
     constantEvalMult = pre * (1.0 / (k * cyclOrder / 2));
   else
     constantEvalMult = pre * (1.0 / (k * ringDim));
-  raised = cc->EvalMult(raised, constantEvalMult);
+  cc->EvalMultInPlace(raised, constantEvalMult);
 
   // no linear transformations are needed for Chebyshev series as the range has been normalized to [-1,1]
   double coeffLowerBound = -1;
@@ -415,8 +566,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
   Ciphertext<DCRTPoly> ctxtDec;
 
-  if (m_slots == cyclOrder/4) // fully-packed mode
-  {
+  if (precom.m_slots == cyclOrder/4) {
+    // fully-packed mode
     std::vector<Ciphertext<DCRTPoly>> ctxtEnc(2);
 
     // Running CoeffToSlot
@@ -426,12 +577,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 #endif
 
     // need to call internal modular reduction so it also works for FLEXIBLEAUTO
-    cc->GetScheme()->ModReduceInternalInPlace(raised);
+    algo->ModReduceInternalInPlace(raised);
 
     // only one linear transform is needed as the other one can be derived
     auto ctxtEnc0 = (isEvalBTLinear) ?
       cc->EvalLTWithPrecomp(m_U0hatTPre, raised, m_dim1) :
-      EvalBTWithPrecompEncoding(*cc,m_U0hatTPreFFT,raised);
+      EvalBootstrapWithPrecompEncoding(*cc,m_U0hatTPreFFT,raised);
     auto evalKeys = cc->GetAllEvalRotationKeys()[ctxtEnc0->GetKeyTag()];
     auto conj = Conjugate(ctxtEnc0, *evalKeys);
     ctxtEnc[0] = cc->EvalAdd(ctxtEnc0,conj);
@@ -441,10 +592,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
     if (isEvalBTLinear) {
       if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-        for (uint32_t i = 0; i < 2; i++)
-        {
+        for (uint32_t i = 0; i < 2; i++) {
           while (ctxtEnc[i]->GetDepth() > 1) {
-            ctxtEnc[i] = cc->ModReduce(ctxtEnc[i]); // scaling power = 1
+            cc->ModReduceInPlace(ctxtEnc[i]); // scaling power = 1
           }
         }
       }
@@ -460,8 +610,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     TIC(t);
 #endif
 
-    for (uint32_t i = 0; i < 2; i++)
-    {
+    for (uint32_t i = 0; i < 2; i++) {
       // Evaluate Chebyshev series for the sine wave
       ctxtEnc[i] = cc->EvalChebyshevSeries(ctxtEnc[i], coefficients, coeffLowerBound, coeffUpperBound);
 
@@ -484,34 +633,30 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     auto ctxtFused = cc->EvalAdd(ctxtEnc[0], ctxtMultI);
 
     // scale the message back up after Chebyshev interpolation
-    ctxtFused = MultByInteger(ctxtFused, scalar);
+    algo->MultByIntegerInPlace(ctxtFused, scalar);
 
     // In the case of FLEXIBLEAUTO, we need one extra tower
     // TODO: See if we can remove the extra level in FLEXIBLEAUTO
     if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
-      auto algo = cc->GetScheme();
-      ctxtFused = algo->ModReduceInternal(ctxtFused);
+      algo->ModReduceInternalInPlace(ctxtFused);
     }
 
     // Only one linear transform is needed
     ctxtDec = (isEvalBTLinear) ?
       cc->EvalLTWithPrecomp(m_U0Pre, ctxtFused, m_dim1) :
-      EvalBTWithPrecompDecoding(*cc, m_U0PreFFT, ctxtFused);
-  }
-  else // sparsely-packed mode
-  {
+      EvalBootstrapWithPrecompDecoding(*cc, m_U0PreFFT, ctxtFused);
+  } else {
+    // sparsely-packed mode
     if(isEvalBTLinear) {
-      auto algo = cc->GetScheme();
-      raised = algo->ModReduceInternal(raised);
+      algo->ModReduceInternalInPlace(raised);
     }
 
     Ciphertext<DCRTPoly> ctxt1 = raised;
 
     // Running PartialSum
-    for(int j = 0; j < int(std::log2(ringDim/(2*m_slots))); j++)
-    {
+    for(int j = 0; j < int(std::log2(ringDim/(2*m_slots))); j++) {
       auto temp = cc->EvalRotate(ctxt1,(1<<j)*m_slots);
-      ctxt1 = cc->EvalAdd(ctxt1,temp);
+      cc->EvalAddInPlace(ctxt1, temp);
     }
 
 #ifdef BOOTSTRAPTIMING
@@ -520,17 +665,16 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
     // Running CoeffToSlot
     if(!isEvalBTLinear) {
-      auto algo = cc->GetScheme();
-      ctxt1 = algo->ModReduceInternal(ctxt1);
+      algo->ModReduceInternalInPlace(ctxt1);
     }
     auto ctxtEnc0 = (isEvalBTLinear) ?
       cc->EvalLTWithPrecomp(m_U0hatTPre,ctxt1,m_dim1) :
-      EvalBTWithPrecompEncoding(*cc,m_U0hatTPreFFT,ctxt1);
+      EvalBootstrapWithPrecompEncoding(*cc,m_U0hatTPreFFT,ctxt1);
     auto evalKeys = cc->GetAllEvalRotationKeys()[ctxtEnc0->GetKeyTag()];
     auto ctxtEnc = cc->EvalAdd(ctxtEnc0,Conjugate(ctxtEnc0, *evalKeys));
 
     if(isEvalBTLinear)
-      ctxtEnc = cc->ModReduce(ctxtEnc);
+      cc->ModReduceInPlace(ctxtEnc);
 
 #ifdef BOOTSTRAPTIMING
     timeEncode = TOC(t);
@@ -550,7 +694,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
       ApplyDoubleAngleIterations(cc, ctxtEnc);
 
     // scale the message back up after Chebyshev interpolation
-    ctxtEnc = MultByInteger(ctxtEnc, scalar);
+    algo->MultByIntegerInPlace(ctxtEnc, scalar);
 
 #ifdef BOOTSTRAPTIMING
     timeModReduce = TOC(t);
@@ -565,14 +709,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     // In the case of FLEXIBLEAUTO, we need one extra tower
     // TODO: See if we can remove the extra level in FLEXIBLEAUTO
     if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
-      auto algo = cc->GetScheme();
       algo->ModReduceInternalInPlace(ctxtEnc);
     }
 
     // linear transform for decoding
     auto ctxtDec0 = (isEvalBTLinear) ?
       cc->EvalLTWithPrecomp(m_U0Pre, ctxtEnc, m_dim1) :
-      EvalBTWithPrecompDecoding(*cc, m_U0PreFFT, ctxtEnc);
+      EvalBootstrapWithPrecompDecoding(*cc, m_U0PreFFT, ctxtEnc);
 
     ctxtDec = cc->EvalAdd(ctxtDec0, cc->EvalRotate(ctxtDec0, m_slots));
   }
@@ -580,7 +723,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 #if NATIVEINT!=128
   // 64-bit only: scale back the message to its original scale.
   uint64_t corFactor = (uint64_t)1 << std::llround(correction);
-  ctxtDec = MultByInteger(ctxtDec, corFactor);
+  algo->MultByIntegerInPlace(ctxtDec, corFactor);
 #endif
 
 #ifdef BOOTSTRAPTIMING
@@ -599,18 +742,20 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
   uint32_t m = cc.GetCyclotomicOrder();
   uint32_t n = cc.GetRingDimension();
 
-  int32_t levelBudget = m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET];
-  int32_t layersCollapse = m_paramsEnc[FFT_PARAMS::LAYERS_COLL];
-  int32_t remCollapse = m_paramsEnc[FFT_PARAMS::LAYERS_REM];
-  int32_t numRotations = m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS];
-  int32_t b = m_paramsEnc[FFT_PARAMS::BABY_STEP];
-  int32_t g = m_paramsEnc[FFT_PARAMS::GIANT_STEP];
-  int32_t numRotationsRem = m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS_REM];
-  int32_t bRem = m_paramsEnc[FFT_PARAMS::BABY_STEP_REM];
-  int32_t gRem = m_paramsEnc[FFT_PARAMS::GIANT_STEP_REM];
+  int32_t levelBudget = precom.m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET];
+  int32_t layersCollapse = precom.m_paramsEnc[FFT_PARAMS::LAYERS_COLL];
+  int32_t remCollapse = precom.m_paramsEnc[FFT_PARAMS::LAYERS_REM];
+  int32_t numRotations = precom.m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS];
+  int32_t b = precom.m_paramsEnc[FFT_PARAMS::BABY_STEP];
+  int32_t g = precom.m_paramsEnc[FFT_PARAMS::GIANT_STEP];
+  int32_t numRotationsRem = precom.m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS_REM];
+  int32_t bRem = precom.m_paramsEnc[FFT_PARAMS::BABY_STEP_REM];
+  int32_t gRem = precom.m_paramsEnc[FFT_PARAMS::GIANT_STEP_REM];
 
   int32_t stop = -1;
   int32_t flagRem = 0;
+
+  auto algo = cc.GetScheme();
 
   if(remCollapse!=0){
     stop = 0;
@@ -672,7 +817,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
       // continue the loop
       for (int32_t j=1; j < g; j++) {
         if ((G+j) != int32_t(numRotations))
-          inner = cc.EvalAdd(inner, cc.EvalMult(fastRotation[j],A[s][G + j]));
+          cc.EvalAddInPlace(inner, cc.EvalMult(fastRotation[j],A[s][G + j]));
       }
 
         if (i == 0) {
@@ -691,13 +836,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
             first += inner->GetElements()[0].AutomorphismTransform(autoIndex,map);
 
             auto innerDigits = cc.EvalFastRotationPrecompute(inner);
-            outer = cc.EvalAdd(outer,cc.EvalFastRotationExt(inner,rot_out[s][i],innerDigits,false));
+            cc.EvalAddInPlace(outer,cc.EvalFastRotationExt(inner,rot_out[s][i],innerDigits,false));
           } else {
             first += cc.KeySwitchDownFirstElement(inner);
             auto elements = inner->GetElements();
             elements[0].SetValuesToZero();
             inner->SetElements(elements);
-            outer = cc.EvalAdd(outer,inner);
+            cc.EvalAddInPlace(outer,inner);
           }
       }
     }
@@ -708,12 +853,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
     outer->SetElements(elements);
 
 //    result = outer;
-    auto algo = cc.GetScheme();
     result = algo->ModReduceInternal(outer);
-
   }
 
-   if(flagRem){
+   if (flagRem) {
     // computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
     auto digits = cc.EvalFastRotationPrecompute(result);
 
@@ -722,9 +865,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
     for (int32_t j=0; j < gRem; j++) {
       if (rot_in[stop][j] != 0) {
               fastRotation[j] = cc.EvalFastRotationExt(result,rot_in[stop][j],digits,true);
-      }
-      else
+      } else {
         fastRotation[j] = cc.KeySwitchExt(result,true);
+      }
     }
 
     Ciphertext<DCRTPoly> outer;
@@ -738,7 +881,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
       // continue the loop
       for (int32_t j=1; j < gRem; j++) {
         if ((GRem+j) != int32_t(numRotationsRem))
-          inner = cc.EvalAdd(inner, cc.EvalMult(fastRotation[j],A[stop][GRem+j]));
+          cc.EvalAddInPlace(inner, cc.EvalMult(fastRotation[j],A[stop][GRem+j]));
       }
 
         if (i == 0) {
@@ -757,13 +900,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
             first += inner->GetElements()[0].AutomorphismTransform(autoIndex,map);
 
             auto innerDigits = cc.EvalFastRotationPrecompute(inner);
-            outer = cc.EvalAdd(outer,cc.EvalFastRotationExt(inner,rot_out[stop][i],innerDigits,false));
+            cc.EvalAddInPlace(outer,cc.EvalFastRotationExt(inner,rot_out[stop][i],innerDigits,false));
           } else {
             first += cc.KeySwitchDownFirstElement(inner);
             auto elements = inner->GetElements();
             elements[0].SetValuesToZero();
             inner->SetElements(elements);
-            outer = cc.EvalAdd(outer,inner);
+            cc.EvalAddInPlace(outer,inner);
           }
       }
     }
@@ -772,7 +915,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
     auto elements = outer->GetElements();
     elements[0]+= first;
     outer->SetElements(elements);
-    auto algo = cc.GetScheme();
     result = algo->ModReduceInternal(outer);
    }
 
@@ -796,6 +938,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
   int32_t numRotationsRem = m_paramsDec[FFT_PARAMS::NUM_ROTATIONS_REM];
   int32_t bRem = m_paramsDec[FFT_PARAMS::BABY_STEP_REM];
   int32_t gRem = m_paramsDec[FFT_PARAMS::GIANT_STEP_REM];
+
+  auto algo = cc.GetScheme();
 
   int32_t flagRem = 0;
 
@@ -858,7 +1002,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
       // continue the loop
       for (int32_t j = 1; j < g; j++) {
         if ((G + j) != int32_t(numRotations))
-          inner = cc.EvalAdd(inner, cc.EvalMult(fastRotation[j], A[s][G + j]));
+          cc.EvalAddInPlace(inner, cc.EvalMult(fastRotation[j], A[s][G + j]));
       }
 
           if (i == 0) {
@@ -877,13 +1021,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
             first += inner->GetElements()[0].AutomorphismTransform(autoIndex,map);
 
             auto innerDigits = cc.EvalFastRotationPrecompute(inner);
-            outer = cc.EvalAdd(outer,cc.EvalFastRotationExt(inner,rot_out[s][i],innerDigits,false));
+            cc.EvalAddInPlace(outer,cc.EvalFastRotationExt(inner,rot_out[s][i],innerDigits,false));
           } else {
             first += cc.KeySwitchDownFirstElement(inner);
             auto elements = inner->GetElements();
             elements[0].SetValuesToZero();
             inner->SetElements(elements);
-            outer = cc.EvalAdd(outer,inner);
+            cc.EvalAddInPlace(outer,inner);
           }
       }
     }
@@ -893,7 +1037,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
     elements[0]+= first;
     outer->SetElements(elements);
 
-    auto algo = cc.GetScheme();
     result = algo->ModReduceInternal(outer);
 
   }
@@ -907,7 +1050,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
 #pragma omp parallel for
     for (int32_t j=0; j < gRem; j++) {
       if (rot_in[s][j] != 0)
-              fastRotation[j] = cc.EvalFastRotationExt(result,rot_in[s][j],digits,true);
+        fastRotation[j] = cc.EvalFastRotationExt(result,rot_in[s][j],digits,true);
       else
         fastRotation[j] = cc.KeySwitchExt(result,true);
     }
@@ -923,7 +1066,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
       // continue the loop
       for (int32_t j = 1; j < gRem; j++) {
         if ((GRem + j) != int32_t(numRotationsRem))
-          inner = cc.EvalAdd(inner, cc.EvalMult(fastRotation[j], A[s][GRem + j]));
+          cc.EvalAddInPlace(inner, cc.EvalMult(fastRotation[j], A[s][GRem + j]));
       }
 
           if (i == 0) {
@@ -942,13 +1085,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
             first += inner->GetElements()[0].AutomorphismTransform(autoIndex,map);
 
             auto innerDigits = cc.EvalFastRotationPrecompute(inner);
-            outer = cc.EvalAdd(outer,cc.EvalFastRotationExt(inner,rot_out[s][i],innerDigits,false));
+            cc.EvalAddInPlace(outer,cc.EvalFastRotationExt(inner,rot_out[s][i],innerDigits,false));
           } else {
             first += cc.KeySwitchDownFirstElement(inner);
             auto elements = inner->GetElements();
             elements[0].SetValuesToZero();
             inner->SetElements(elements);
-            outer = cc.EvalAdd(outer,inner);
+            cc.EvalAddInPlace(outer,inner);
           }
       }
     }
@@ -957,13 +1100,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
     auto elements = outer->GetElements();
     elements[0]+= first;
     outer->SetElements(elements);
-    auto algo = cc.GetScheme();
     result = algo->ModReduceInternal(outer);
-
-   }
+  }
 
   return result;
-
 }
 
 std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeDecoding(

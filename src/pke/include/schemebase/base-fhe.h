@@ -69,7 +69,11 @@ class FHEBase {
    * @param debugFlag - set to 1 when debugging encoding/decoding only
    * @param precomp - do linear transform precomputations
    */
-  void EvalBootstrapSetup(uint32_t dim1 = 0, uint32_t slots = 0, uint32_t debugFlag = 0, bool precomp = true);
+  virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc,
+      uint32_t dim1 = 0, uint32_t slots = 0,
+      uint32_t debugFlag = 0, bool precomp = true) {
+    OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
 
   /**
    * Sets all parameters for the linear method for the FFT-like method
@@ -82,8 +86,18 @@ class FHEBase {
    * @param debugFlag - set to 1 when debugging encoding/decoding only
    * @param precomp - do linear transform precomputations
    */
-  void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0,
-                   uint32_t debugFlag = 0, bool precomp = true);
+  virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc,
+      std::vector<uint32_t> levelBudget = {5, 4},
+      std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0,
+      uint32_t debugFlag = 0, bool precomp = true) {
+    OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalLTKeyGen(
+        const PrivateKey<Element> privateKey, uint32_t dim1,
+        int32_t bootstrapFlag, int32_t conjFlag) {
+    OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
 
   /**
    * Virtual function to define the generation of all automorphism keys for EvalBT (with FFT evaluation).
@@ -107,6 +121,15 @@ class FHEBase {
   virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
     OPENFHE_THROW(not_implemented_error,
         "EvalBootstrap is not implemented for this scheme");
+  }
+
+  virtual void EvalBootstrapPrecompute(const CryptoContextImpl<Element> &cc, uint32_t debugFlag) {
+    OPENFHE_THROW(not_implemented_error,
+        "EvalBootstrapPrecompute is not implemented for this scheme");
+  }
+
+  virtual EvalKey<Element> ConjugateKeyGen(const PrivateKey<Element> privateKey) const {
+    OPENFHE_THROW(not_implemented_error, "Not supported");
   }
 
 };

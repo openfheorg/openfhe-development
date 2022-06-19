@@ -223,17 +223,6 @@ CryptoContextImpl<Element>::GetEvalSumKeyMap(const std::string& keyID) {
 }
 
 template <typename Element>
-const std::map<usint, CKKSBootstrapPrecom>&
-CryptoContextImpl<Element>::GetCKKSBootstrapPrecomMap(const std::string& keyID) {
-  auto ekv = GetAllCKKSBootstrapPrecomMap().find(keyID);
-  if (ekv == GetAllCKKSBootstrapPrecomMap().end())
-    OPENFHE_THROW(not_available_error,
-                   "You need to use CKKSBootstrapPrecomMapGen so that you have CKKSBootstrapPrecomMap "
-                   "available for this ID");
-  return *ekv->second;
-}
-
-template <typename Element>
 std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
 CryptoContextImpl<Element>::GetAllEvalSumKeys() {
   return evalSumKeyMap();
@@ -667,10 +656,8 @@ void CryptoContextImpl<Element>::EvalLTKeyGen(const PrivateKey<Element> privateK
     OPENFHE_THROW(config_error, "Private key passed to EvalLTKeyGen was not generated with this crypto context");
   }
 
-  auto evalKeys = this->GetScheme()
-                      ->EvalLTKeyGen(privateKey, dim1, bootstrapFlag,
-                                     conjFlag);  // if it is just for LT/encoding, we need
-                                                 // to pass dim1 too
+  // if it is just for LT/encoding, we need to pass dim1 too
+  auto evalKeys = GetScheme()->EvalLTKeyGen(privateKey, dim1, bootstrapFlag, conjFlag);
 
   auto ekv = GetAllEvalRotationKeys().find(privateKey->GetKeyTag());
   if (ekv == GetAllEvalRotationKeys().end()) {
@@ -689,12 +676,6 @@ void CryptoContextImpl<Element>::EvalLTKeyGen(const PrivateKey<Element> privateK
     }
   }
   // EvalAtIndexKeyGen(privateKey, indexList);
-}
-
-template <typename Element>
-std::vector<int32_t> CryptoContextImpl<Element>::FindLTRotationIndices(uint32_t dim1, int32_t bootstrapFlag, uint32_t m) {
-    // if it is just for LT/encoding, we need to pass dim1 too
-    return GetScheme()->FindLTRotationIndices(dim1, bootstrapFlag, m, m_blockDimension);
 }
 
 //#pragma clang diagnostic push
@@ -1005,49 +986,28 @@ return result;
 //------------------------------------------------------------------------------
 
 template <typename Element>
-void CryptoContextImpl<Element>::CKKSBootstrapPrecomMapGen(
-    const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) {
-  if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
-    OPENFHE_THROW(config_error,
-                   "Private key passed to EvalSumKeyGen were not generated "
-                   "with this crypto context");
-  }
-
-  if (publicKey != nullptr &&
-      privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-    OPENFHE_THROW(
-        config_error,
-        "Public key passed to EvalSumKeyGen does not match private key");
-  }
-
-  auto evalKeys = GetScheme()->CKKSBootstrapPrecomMapGen(privateKey, publicKey);
-
-  GetAllCKKSBootstrapPrecomMap()[privateKey->GetKeyTag()] = evalKeys;
+void CryptoContextImpl<Element>::EvalBootstrapSetup(uint32_t dim1, uint32_t numSlots, uint32_t debugFlag, bool precomp) {
+  GetScheme()->EvalBootstrapSetup(*this, dim1, numSlots, debugFlag, precomp);
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalBTSetup(uint32_t dim1, uint32_t numSlots, uint32_t debugFlag, bool precomp) {
-  GetScheme()->EvalBTSetup(*this, dim1, numSlots, debugFlag, precomp);
-}
-
-template <typename Element>
-void CryptoContextImpl<Element>::EvalBTSetup(std::vector<uint32_t> levelBudget, std::vector<uint32_t> dim1,
+void CryptoContextImpl<Element>::EvalBootstrapSetup(std::vector<uint32_t> levelBudget, std::vector<uint32_t> dim1,
                                                 uint32_t numSlots, uint32_t debugFlag, bool precomp) {
-  GetScheme()->EvalBTSetup(*this, levelBudget, dim1, numSlots, debugFlag, precomp);
+  GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, numSlots, debugFlag, precomp);
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalBTPrecompute(uint32_t debugFlag) {
-  GetScheme()->EvalBTPrecompute(*this, debugFlag);
+void CryptoContextImpl<Element>::EvalBootstrapPrecompute(uint32_t debugFlag) {
+  GetScheme()->EvalBootstrapPrecompute(*this, debugFlag);
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalBTKeyGen(const PrivateKey<Element> privateKey, int32_t bootstrapFlag) {
+void CryptoContextImpl<Element>::EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, int32_t bootstrapFlag) {
   if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
-    OPENFHE_THROW(config_error, "Private key passed to EvalBTKeyGen was not generated with this crypto context");
+    OPENFHE_THROW(config_error, "Private key passed to EvalBootstapKeyGen was not generated with this crypto context");
   }
 
-  auto evalKeys = GetScheme()->EvalBTKeyGen(privateKey, bootstrapFlag);
+  auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, bootstrapFlag);
 
   auto ekv = GetAllEvalRotationKeys().find(privateKey->GetKeyTag());
   if (ekv == GetAllEvalRotationKeys().end()) {
@@ -1074,77 +1034,11 @@ EvalKey<Element> CryptoContextImpl<Element>::ConjugateKeyGen(
 }
 
 template <typename Element>
-std::vector<int32_t> CryptoContextImpl<Element>::FindBTRotationIndices(int32_t bootstrapFlag, uint32_t m, uint32_t blockDimension) {
-    return GetScheme()->FindBTRotationIndices(bootstrapFlag, m, blockDimension);
+Ciphertext<Element> CryptoContextImpl<Element>::EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
+  return GetScheme()->EvalBootstrap(ciphertext);
 }
 
-template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalBT(ConstCiphertext<Element> ciphertext) const {
-  return GetScheme()->EvalBT(ciphertext);
-}
 
-template <typename Element>
-uint32_t CryptoContextImpl<Element>::GetNumRotationsEnc() const {
-  return GetScheme()->GetNumRotationsEnc();
-}
-
-template <typename Element>
-uint32_t CryptoContextImpl<Element>::GetGiantStepEnc() const {
-  return GetScheme()->GetGiantStepEnc();
-}
-
-template <typename Element>
-uint32_t CryptoContextImpl<Element>::GetNumRotationsRemEnc() const {
-  return GetScheme()->GetNumRotationsRemEnc();
-}
-
-template <typename Element>
-uint32_t CryptoContextImpl<Element>::GetGiantStepRemEnc() const {
-  return GetScheme()->GetGiantStepRemEnc();
-}
-
-template <typename Element>
-uint32_t CryptoContextImpl<Element>::GetNumRotationsDec() const {
-  return GetScheme()->GetNumRotationsDec();
-}
-
-template <typename Element>
-uint32_t CryptoContextImpl<Element>::GetGiantStepDec() const {
-  return GetScheme()->GetGiantStepDec();
-}
-
-template <typename Element>
-uint32_t CryptoContextImpl<Element>::GetNumRotationsRemDec() const {
-  return GetScheme()->GetNumRotationsRemDec();
-}
-
-template <typename Element>
-uint32_t CryptoContextImpl<Element>::GetGiantStepRemDec() const {
-  return GetScheme()->GetGiantStepRemDec();
-}
-
-template <typename Element>
-const std::vector<int32_t>& CryptoContextImpl<Element>::GetRotationIndicesBT() const {
-  return GetScheme()->GetRotationIndicesBT();
-}
-
-template <typename Element>
-uint32_t CryptoContextImpl<Element>::GetNumberOfRotationIndicesBT() const {
-  return GetScheme()->GetNumberOfRotationIndicesBT();
-}
-
-template <typename Element>
-const std::vector<int32_t>& CryptoContextImpl<Element>::GetRotationIndicesLT() const {
-  return GetScheme()->GetRotationIndicesLT();
-}
-
-template <typename Element>
-uint32_t CryptoContextImpl<Element>::GetNumberOfRotationIndicesLT() const {
-  return GetScheme()->GetNumberOfRotationIndicesLT();
-}
-
-// -----------THE CODE FOR LINEAR TRANSFORM USINF FFT-LIKE METHODS ENDS
-// HERE----------
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndexBGStep(ConstCiphertext<Element> ciphertext, int32_t index,

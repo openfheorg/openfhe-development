@@ -696,7 +696,7 @@ protected:
    * Removes the entry from the rotation key map that stores the
    * keys for this key tag.
    */
-  static void ClearEvalRotationKeys(const string& id);
+  static void ClearEvalRotationKeys(const std::string& id);
 
   /**
    * Removes the rotation key map for this crypto context.
@@ -707,7 +707,7 @@ protected:
    * InsertEvalRotationKeys - adds new rotation keys to the context from an existing map
    * @param mapToInsert
    */
-  static void InsertEvalRotationKeys(const shared_ptr<std::map<usint, LPEvalKey<Element>>> mapToInsert);
+  static void InsertEvalRotationKeys(const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert);
 
   //------------------------------------------------------------------------------
   // TURN FEATURES ON
@@ -824,7 +824,7 @@ protected:
     *
     * @param id the key tag to search for
     */
-   static const std::map<usint, EvalKey<Element>>& GetEvalRotationKeyMap(
+   static std::map<usint, EvalKey<Element>>& GetEvalRotationKeyMap(
        const std::string& id);
 
   static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
@@ -837,16 +837,6 @@ protected:
    */
   static const std::map<usint, EvalKey<Element>>& GetEvalSumKeyMap(
       const std::string& id);
-
-  static std::map<std::string, std::shared_ptr<std::map<usint, CKKSBootstrapPrecom>>>&
-  GetAllCKKSBootstrapPrecomMap();
-
-  /**
-   * Gets the bootstrapping precom map (used for serialization).
-   *
-   * @return a shared pointer to the bootstrapping precom map
-   */
-  static const std::map<uint32_t, CKKSBootstrapPrecom>& GetCKKSBootstrapPrecomMap(const std::string& id);
 
   //------------------------------------------------------------------------------
   // PLAINTEXT FACTORY METHODS
@@ -2345,17 +2335,6 @@ protected:
    */
   void EvalLTKeyGen(const PrivateKey<Element> privateKey, uint32_t dim1 = 0,
                     int32_t bootstrapFlag = 0, int32_t conjFlag = 0);
-
-  /**
-   * Calculates automorphism indices for linear transform
-   * @param slots
-   * @param dim1
-   * @param bootstrapFlag
-   * @param m
-   * @return
-   */
-  std::vector<int32_t> FindLTRotationIndices(uint32_t dim1 = 0,
-                  int32_t bootstrapFlag = 0, uint32_t m = 0);
 
   /**
    * Generates precomputed encoded rotated vectors for square linear map A

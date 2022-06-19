@@ -367,18 +367,6 @@ public:
       ConstCiphertext<Element> ciphertext, int32_t index, int32_t slots,
       const std::map<usint, EvalKey<Element>> &evalAtIndexKeys) const;
 
-  virtual std::vector<int32_t> FindLTRotationIndices(uint32_t dim1 = 0, int32_t bootstrapFlag = 0, uint32_t m = 0,
-            uint32_t blockDimension = 0) {
-    OPENFHE_THROW(not_implemented_error, "Not supported");
-  }
-
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalLTKeyGen(const PrivateKey<Element> privateKey,
-                                                                       uint32_t dim1 = 0,
-                                                                       int32_t bootstrapFlag = 0,
-                                                                       int32_t conjFlag = 0) {
-    OPENFHE_THROW(not_implemented_error, "Not supported");
-  }
-
   //------------------------------------------------------------------------------
   // Other Methods for Bootstrap
   //------------------------------------------------------------------------------

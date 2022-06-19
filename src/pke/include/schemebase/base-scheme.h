@@ -871,6 +871,22 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }
 
+  virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext1,
+                                       ConstCiphertext<Element> ciphertext2,
+                                       const EvalKey<Element> evalKey) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext1)
+        OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
+      if (!ciphertext2)
+        OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
+      if (!evalKey)
+        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+      m_LeveledSHE->EvalMultInPlace(ciphertext1, ciphertext2, evalKey);
+      return;
+    }
+    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
+  }
+
   virtual Ciphertext<Element> EvalMultMutable(
       Ciphertext<Element> &ciphertext1, Ciphertext<Element> &ciphertext2,
       const EvalKey<Element> evalKey) const {
@@ -1033,6 +1049,29 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }
 
+  virtual Ciphertext<DCRTPoly> MultByInteger(
+      ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_LeveledSHE->MultByInteger(ciphertext, integer);
+    }
+    OPENFHE_THROW(MultByInteger, "EvalMult operation has not been enabled");
+  }
+
+  virtual void MultByIntegerInPlace(
+      Ciphertext<DCRTPoly> &ciphertext, uint64_t integer) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      m_LeveledSHE->MultByIntegerInPlace(ciphertext, integer);
+      return;
+    }
+    OPENFHE_THROW(MultByInteger, "EvalMult operation has not been enabled");
+  }
+
   /////////////////////////////////////////
   // SHE AUTOMORPHISM Wrapper
   /////////////////////////////////////////
@@ -1116,8 +1155,8 @@ class SchemeBase {
    */
   virtual Ciphertext<Element> EvalFastRotationExt(
       ConstCiphertext<Element> ciphertext, usint index,
-      const shared_ptr<vector<Element>> digits, bool addFirst,
-      const std::map<usint, LPEvalKey<Element>> &evalKeys) const {
+      const std::shared_ptr<std::vector<Element>> digits, bool addFirst,
+      const std::map<usint, EvalKey<Element>> &evalKeys) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1235,6 +1274,7 @@ class SchemeBase {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+      if (levels == 0) return;
 
       m_LeveledSHE->ModReduceInternalInPlace(ciphertext, levels);
       return;
@@ -1709,24 +1749,6 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalAtIndexBGStep operation has not been enabled");
   }
 
-  std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalLTKeyGen(const PrivateKey<Element> privateKey,
-      uint32_t dim1 = 0, int32_t bootstrapFlag = 0, int32_t conjFlag = 0) {
-    if (m_AdvancedSHE) {
-      return m_AdvancedSHE->EvalLTKeyGen(privateKey, dim1, bootstrapFlag, conjFlag);
-    }
-
-    OPENFHE_THROW(config_error, "EvalLTKeyGen operation has not been enabled");
-  }
-
-  std::vector<int32_t> FindLTRotationIndices(uint32_t dim1 = 0, int32_t bootstrapFlag = 0,
-          uint32_t m = 0, uint32_t blockDimension = 0) {
-    if (m_AdvancedSHE) {
-      return m_AdvancedSHE->FindLTRotationIndices(dim1, bootstrapFlag, m, blockDimension);
-    }
-
-    OPENFHE_THROW(config_error, "EvalLTKeyGen operation has not been enabled");
-  }
-
   /////////////////////////////////////
   // Other Methods for Bootstrap
   /////////////////////////////////////
@@ -2077,12 +2099,13 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalBootstrapKeyGen operation has not been enabled");
   }
 
-  std::vector<int32_t> FindBootstrapRotationIndices(int32_t bootstrapFlag = 0, uint32_t m = 0, uint32_t blockDimension = 0) {
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalLTKeyGen(const PrivateKey<Element> privateKey,
+      uint32_t dim1 = 0, int32_t bootstrapFlag = 0, int32_t conjFlag = 0) {
     if (m_FHE) {
-      return m_FHE->FindBootstrapRotationIndices(bootstrapFlag, m, blockDimension);
+      return m_FHE->EvalLTKeyGen(privateKey, dim1, bootstrapFlag, conjFlag);
     }
 
-    OPENFHE_THROW(config_error, "FindBootstrapRotationIndices operation has not been enabled");
+    OPENFHE_THROW(config_error, "EvalLTKeyGen operation has not been enabled");
   }
 
   Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
@@ -2099,102 +2122,6 @@ class SchemeBase {
     }
 
     OPENFHE_THROW(config_error, "ConjugateKeyGen operation has not been enabled");
-  }
-
-  uint32_t GetNumRotationsEnc() const {
-    if (m_FHE) {
-      return m_FHE->GetNumRotationsEnc();
-    }
-
-    OPENFHE_THROW(config_error, "GetNumRotationsEnc operation has not been enabled");
-  }
-
-  uint32_t GetGiantStepEnc() const {
-    if (m_FHE) {
-      return m_FHE->GetGiantStepEnc();
-    }
-
-    OPENFHE_THROW(config_error, "GetGiantStepEnc operation has not been enabled");
-  }
-
-  uint32_t GetNumRotationsRemEnc() const {
-    if (m_FHE) {
-      return m_FHE->GetNumRotationsRemEnc();
-    }
-
-    OPENFHE_THROW(config_error, "GetNumRotationsRemEnc operation has not been enabled");
-  }
-
-  uint32_t GetGiantStepRemEnc() const {
-    if (m_FHE) {
-      return m_FHE->GetGiantStepRemEnc();
-    }
-
-    OPENFHE_THROW(config_error, "GetGiantStepRemEnc operation has not been enabled");
-  }
-
-  uint32_t GetNumRotationsDec() const {
-    if (m_FHE) {
-      return m_FHE->GetNumRotationsDec();
-    }
-
-    OPENFHE_THROW(config_error, "GetNumRotationsDec operation has not been enabled");
-  }
-
-  uint32_t GetGiantStepDec() const {
-    if (m_FHE) {
-      return m_FHE->GetGiantStepDec();
-    }
-
-    OPENFHE_THROW(config_error, "GetGiantStepDec operation has not been enabled");
-  }
-
-  uint32_t GetNumRotationsRemDec() const {
-    if (m_FHE) {
-      return m_FHE->GetNumRotationsRemDec();
-    }
-
-    OPENFHE_THROW(config_error, "GetNumRotationsRemDec operation has not been enabled");
-  }
-
-  uint32_t GetGiantStepRemDec() const {
-    if (m_FHE) {
-      return m_FHE->GetGiantStepRemDec();
-    }
-
-    OPENFHE_THROW(config_error, "GetGiantStepRemDec operation has not been enabled");
-  }
-
-  const std::vector<int32_t>& GetRotationIndicesBootstrap() const {
-    if (m_FHE) {
-      return m_FHE->GetRotationIndicesBT();
-    }
-
-    OPENFHE_THROW(config_error, "GetRotationIndicesBootstrap operation has not been enabled");
-  }
-
-  uint32_t GetNumberOfRotationIndicesBootstrap() const {
-    if (m_FHE) {
-      return m_FHE->GetNumberOfRotationIndicesBootstrap();
-    }
-
-    OPENFHE_THROW(config_error, "GetNumberOfRotationIndicesBootstrap operation has not been enabled");
-  }
-
-  const std::vector<int32_t>& GetRotationIndicesLT() const {
-    if (m_FHE) {
-      return m_FHE->GetRotationIndicesLT();
-    }
-
-    OPENFHE_THROW(config_error, "GetRotationIndicesLT operation has not been enabled");
-  }
-
-  uint32_t GetNumberOfRotationIndicesLT() const {
-    if (m_FHE) {
-        return m_FHE->GetNumberOfRotationIndicesLT();
-    }
-
-    OPENFHE_THROW(config_error, "GetNumberOfRotationIndicesLT operation has not been enabled");
   }
 
   template <class Archive>

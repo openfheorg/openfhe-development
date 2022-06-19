@@ -810,15 +810,24 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalSubCore(
 Ciphertext<DCRTPoly> LeveledSHECKKSRNS::MultByInteger(
     ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
 
-  std::vector<DCRTPoly> resultDCRT(ciphertext->GetElements().size());
-  for (usint i = 0; i < ciphertext->GetElements().size(); i++)
-    resultDCRT[i] = ciphertext->GetElements()[i]*NativeInteger(integer);
+  std::vector<DCRTPoly> &cv = ciphertext->GetElements();
 
-  Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
+  std::vector<DCRTPoly> resultDCRT(cv.size());
+  for (usint i = 0; i < cv.size(); i++)
+    resultDCRT[i] = cv[i] * NativeInteger(integer);
+
+  Ciphertext<DCRTPoly> result = ciphertext->CloneDummy();
   result->SetElements(resultDCRT);
-  result->SetDepth(ciphertext->GetDepth());
-  result->SetLevel(ciphertext->GetLevel());
-  result->SetScalingFactor(ciphertext->GetScalingFactor());
+  return result;
+}
+
+void LeveledSHECKKSRNS::MultByIntegerInPlace(
+    Ciphertext<DCRTPoly> &ciphertext, uint64_t integer) const {
+
+  std::vector<DCRTPoly> &cv = ciphertext->GetElements();
+
+  for (usint i = 0; i < cv.size(); i++)
+    cv[i] = cv[i] * NativeInteger(integer);
 
   return result;
 }

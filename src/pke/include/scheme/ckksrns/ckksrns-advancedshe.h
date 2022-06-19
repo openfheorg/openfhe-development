@@ -74,9 +74,9 @@ public:
       std::vector<Ciphertext<DCRTPoly>> &powers,
       std::vector<Ciphertext<DCRTPoly>> &powers2) const;
 
-  Ciphertext<DCRTPoly> EvalPolyPS(
+  virtual Ciphertext<DCRTPoly> EvalPolyPS(
       ConstCiphertext<DCRTPoly> x,
-      const std::vector<double> &coefficients) const;
+      const std::vector<double> &coefficients) const override;
 
   //------------------------------------------------------------------------------
   // EVAL CHEBYSHEV SERIES
@@ -107,10 +107,6 @@ public:
   //------------------------------------------------------------------------------
   // EVAL LINEAR TRANSFORMATION
   //------------------------------------------------------------------------------
-
-  virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalLTKeyGen(
-      const PrivateKey<DCRTPoly> privateKey, uint32_t dim1,
-      int32_t bootstrapFlag, int32_t conjFlag) override;
 
   //------------------------------------------------------------------------------
   // SERIALIZATION

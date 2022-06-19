@@ -354,6 +354,10 @@ class LeveledSHEBase {
   virtual std::vector<EvalKey<Element>> EvalMultKeysGen(
       const PrivateKey<Element> privateKey) const;
 
+  //------------------------------------------------------------------------------
+  // EVAL MULTIPLICATION CIPHERTEXT & CIPHERTEXT
+  //------------------------------------------------------------------------------
+
   /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext.
@@ -368,6 +372,21 @@ class LeveledSHEBase {
     OPENFHE_THROW(not_implemented_error,
                    "EvalMult is not implemented for this scheme");
   }
+
+  /**
+    * Virtual function to define the interface for multiplicative homomorphic
+    * evaluation of ciphertext.
+    *
+    * @param ciphertext1 the input ciphertext.
+    * @param ciphertext2 the input ciphertext.
+    * @return the new ciphertext.
+    */
+   virtual void EvalMultInPlace(
+       Ciphertext<Element> ciphertext1,
+       ConstCiphertext<Element> ciphertext2) const {
+     OPENFHE_THROW(not_implemented_error,
+                    "EvalMultInPlace is not implemented for this scheme");
+   }
 
   /**
    * Virtual function to define the interface for multiplicative homomorphic
@@ -403,6 +422,10 @@ class LeveledSHEBase {
     OPENFHE_THROW(not_implemented_error,
                    "EvalMultMutable is not implemented for this scheme");
   }
+
+  //------------------------------------------------------------------------------
+  // EVAL MULTIPLICATION CIPHERTEXT & PLAINTEXT
+  //------------------------------------------------------------------------------
 
   /**
    * Virtual function to define the interface for multiplication of ciphertext
@@ -471,6 +494,18 @@ class LeveledSHEBase {
                               double constant) const {
     OPENFHE_THROW(not_implemented_error,
                    "double scalar multiplication is not implemented for this scheme");
+  }
+
+  virtual Ciphertext<DCRTPoly> MultByInteger(
+      ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
+    OPENFHE_THROW(not_implemented_error,
+                   "MultByInteger is not implemented for this scheme");
+  }
+
+  virtual void MultByIntegerInPlace(
+      Ciphertext<DCRTPoly> &ciphertext, uint64_t integer) const {
+    OPENFHE_THROW(not_implemented_error,
+                   "MultByIntegerInPlace is not implemented for this scheme");
   }
 
   /**
@@ -619,7 +654,7 @@ class LeveledSHEBase {
 
   virtual Ciphertext<Element> EvalFastRotationExt(
       ConstCiphertext<Element> ciphertext, usint index,
-      const std::shared_ptr<vector<Element>> expandedCiphertext, bool addFirst,
+      const std::shared_ptr<std::vector<Element>> expandedCiphertext, bool addFirst,
       const std::map<usint, EvalKey<Element>> &evalKeys) const {
     std::string errMsg =
         "EvalFastRotationExt is not implemented for this scheme.";
