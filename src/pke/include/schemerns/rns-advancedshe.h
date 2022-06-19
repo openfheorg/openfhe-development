@@ -35,6 +35,7 @@
 #include "lattice/lat-hal.h"
 
 #include "schemebase/base-advancedshe.h"
+#include "utils/serializable.h"
 
 /**
  * @namespace lbcrypto
@@ -46,7 +47,7 @@ namespace lbcrypto {
  * @brief Abstract base class for derived HE algorithms
  * @tparam Element a ring element.
  */
-class AdvancedSHERNS : public AdvancedSHEBase<DCRTPoly> {
+class AdvancedSHERNS : public AdvancedSHEBase<DCRTPoly>, public Serializable {
  public:
   virtual ~AdvancedSHERNS() {}
 
@@ -60,7 +61,11 @@ class AdvancedSHERNS : public AdvancedSHEBase<DCRTPoly> {
   }
 
   template <class Archive>
-  void load(Archive &ar) {
+  void load(Archive &ar, const std::uint32_t version) {
+    if (version > Serializable::SerializedVersion()) {
+        OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+            " is from a later version of the library");
+    }
     ar(cereal::base_class<AdvancedSHEBase<DCRTPoly>>(this));
   }
 

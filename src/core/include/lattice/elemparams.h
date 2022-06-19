@@ -234,7 +234,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > Serializable::SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
@@ -245,10 +245,6 @@ public:
         ar(::cereal::make_nvp("ru", rootOfUnity));
         ar(::cereal::make_nvp("bm", bigCiphertextModulus));
         ar(::cereal::make_nvp("br", bigRootOfUnity));
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 protected:

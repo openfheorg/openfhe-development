@@ -94,6 +94,10 @@ public:
     virtual std::string SerializedObjectName() const {
         return objectTypeName(this);
     }
+
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 };
 
 

@@ -256,7 +256,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > Serializable::SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
@@ -266,10 +266,6 @@ public:
         ar(::cereal::make_nvp("method", m_method));
 
         this->PreCompute();
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
     void SetQ(NativeInteger q) {
@@ -401,15 +397,11 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > Serializable::SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
         ar(::cereal::make_nvp("elements", m_elements));
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 private:
@@ -484,15 +476,11 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > Serializable::SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
         ar(::cereal::make_nvp("key", m_key));
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 private:

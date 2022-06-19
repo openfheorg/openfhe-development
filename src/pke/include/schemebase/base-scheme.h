@@ -33,6 +33,7 @@
 #define LBCRYPTO_CRYPTO_BASE_SCHEME_H
 
 #include "utils/caller_info.h"
+#include "utils/serializable.h"
 
 #include "key/allkey.h"
 
@@ -60,7 +61,7 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 template <typename Element>
-class SchemeBase {
+class SchemeBase : public Serializable {
   using ParmType = typename Element::Params;
   using IntType = typename Element::Integer;
   using DugType = typename Element::DugType;
@@ -1815,10 +1816,9 @@ class SchemeBase {
 
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      OPENFHE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
+    if (version > Serializable::SerializedVersion()) {
+      OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                    " is from a later version of the library");
     }
 
     usint enabled;
@@ -1826,9 +1826,7 @@ class SchemeBase {
     this->Enable(enabled);
   }
 
-  static uint32_t SerializedVersion() { return 1; }
-
-  friend std::ostream &operator<<(std::ostream &out,
+      friend std::ostream &operator<<(std::ostream &out,
                                   const SchemeBase<Element> &s) {
     out << typeid(s).name() << ":";
     out << " ParamsGen "

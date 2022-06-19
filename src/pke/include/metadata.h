@@ -45,7 +45,7 @@ using MetadataMap = std::shared_ptr<std::map<std::string, std::shared_ptr<Metada
 /**
  * @brief Empty metadata container
  */
-class Metadata {
+class Metadata : public Serializable {
  public:
   /**
    * Default constructor
@@ -114,17 +114,12 @@ class Metadata {
    */
   template <class Archive>
   void load(Archive& ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
+    if (version > Serializable::SerializedVersion()) {
       OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
     }
   }
-
-  /**
-   * SerializedVersion method for serialization
-   */
-  static uint32_t SerializedVersion() { return 1; }
 };
 
 /**
@@ -212,7 +207,7 @@ class MetadataTest : public Metadata {
    */
   template <class Archive>
   void load(Archive& ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
+    if (version > Serializable::SerializedVersion()) {
       OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");

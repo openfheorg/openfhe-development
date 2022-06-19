@@ -182,7 +182,7 @@ class PublicKeyImpl : public Key<Element> {
 
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
+    if (version > Serializable::SerializedVersion()) {
       OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
@@ -190,8 +190,6 @@ class PublicKeyImpl : public Key<Element> {
     ar(::cereal::base_class<Key<Element>>(this));
     ar(::cereal::make_nvp("h", m_h));
   }
-
-  static uint32_t SerializedVersion() { return 1; }
 
  private:
   std::vector<Element> m_h;

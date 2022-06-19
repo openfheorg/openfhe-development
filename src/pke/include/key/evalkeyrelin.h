@@ -259,7 +259,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
 
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
+    if (version > Serializable::SerializedVersion()) {
       OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
@@ -267,7 +267,6 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
     ar(::cereal::base_class<EvalKeyImpl<Element>>(this));
     ar(::cereal::make_nvp("k", m_rKey));
   }
-  static uint32_t SerializedVersion() { return 1; }
 
  private:
   // private member to store vector of vector of Element.

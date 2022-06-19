@@ -50,7 +50,7 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 template <class Element>
-class Key : public CryptoObject<Element>, public Serializable {
+class Key : public CryptoObject<Element> {
  public:
   explicit Key(CryptoContext<Element> cc = 0, const std::string &id = "")
       : CryptoObject<Element>(cc, id) {}
@@ -67,6 +67,10 @@ class Key : public CryptoObject<Element>, public Serializable {
 
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
+    if (version > Serializable::SerializedVersion()) {
+        OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+            " is from a later version of the library");
+    }
     ar(::cereal::base_class<CryptoObject<Element>>(this));
   }
 

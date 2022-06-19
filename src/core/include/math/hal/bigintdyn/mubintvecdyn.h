@@ -586,7 +586,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > Serializable::SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }
@@ -595,10 +595,6 @@ public:
         ar(::cereal::make_nvp("ms", m_modulus_state));
     }
 
-
-    static uint32_t SerializedVersion() {
-        return 1;
-    }
 
 private:
     ubint_el_t m_modulus;

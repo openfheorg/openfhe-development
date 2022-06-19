@@ -341,7 +341,7 @@ const double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of Log b
 // Definition starts here
 //////////////////////////////////////////////////////////////////////////////////////////////////
 template <typename limb_t>
-class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
+class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>>, public lbcrypto::Serializable {
 public:
     // CONSTRUCTORS
 
@@ -1172,7 +1172,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > Serializable::SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }
@@ -1181,10 +1181,6 @@ public:
         ar(::cereal::make_nvp("s", m_state));
     }
 
-
-    static uint32_t SerializedVersion() {
-        return 1;
-    }
 
 protected:
     /**
