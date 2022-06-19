@@ -394,7 +394,7 @@ class SchemeBase {
   virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCoreExt(
       const std::shared_ptr<std::vector<Element>> digits,
       const EvalKey<Element> evalKey,
-      const std::shared_ptr<ParmType> params, bool addFirst) const {
+      const std::shared_ptr<ParmType> params) const {
     if (m_KeySwitch) {
       if (nullptr == digits)
         OPENFHE_THROW(config_error, "Input digits is nullptr");
@@ -405,7 +405,7 @@ class SchemeBase {
       if (!params)
         OPENFHE_THROW(config_error, "Input params is nullptr");
 
-      return m_KeySwitch->EvalFastKeySwitchCoreExt(digits, evalKey, params, addFirst);
+      return m_KeySwitch->EvalFastKeySwitchCoreExt(digits, evalKey, params);
     }
     OPENFHE_THROW(config_error,
                    "EvalFastKeySwitchCore operation has not been enabled");
@@ -871,22 +871,6 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }
 
-  virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext1,
-                                       ConstCiphertext<Element> ciphertext2,
-                                       const EvalKey<Element> evalKey) const {
-    if (m_LeveledSHE) {
-      if (!ciphertext1)
-        OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
-      if (!ciphertext2)
-        OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-      if (!evalKey)
-        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
-      m_LeveledSHE->EvalMultInPlace(ciphertext1, ciphertext2, evalKey);
-      return;
-    }
-    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
-  }
-
   virtual Ciphertext<Element> EvalMultMutable(
       Ciphertext<Element> &ciphertext1, Ciphertext<Element> &ciphertext2,
       const EvalKey<Element> evalKey) const {
@@ -1057,7 +1041,7 @@ class SchemeBase {
 
       return m_LeveledSHE->MultByInteger(ciphertext, integer);
     }
-    OPENFHE_THROW(MultByInteger, "EvalMult operation has not been enabled");
+    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }
 
   virtual void MultByIntegerInPlace(
@@ -1069,7 +1053,7 @@ class SchemeBase {
       m_LeveledSHE->MultByIntegerInPlace(ciphertext, integer);
       return;
     }
-    OPENFHE_THROW(MultByInteger, "EvalMult operation has not been enabled");
+    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }
 
   /////////////////////////////////////////
@@ -1259,7 +1243,7 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "ModReduce operation has not been enabled");
   }
 
-  virtual Ciphertext<Element> ModReduceInternal(ConstCiphertext<Element> ciphertext, size_t levels) const {
+  virtual Ciphertext<Element> ModReduceInternal(ConstCiphertext<Element> ciphertext, size_t levels = 1) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1270,7 +1254,7 @@ class SchemeBase {
                    "ModReduceInternal has not been enabled for this scheme.");
   }
 
-  virtual void ModReduceInternalInPlace(Ciphertext<Element> &ciphertext, size_t levels) const {
+  virtual void ModReduceInternalInPlace(Ciphertext<Element> &ciphertext, size_t levels = 1) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");

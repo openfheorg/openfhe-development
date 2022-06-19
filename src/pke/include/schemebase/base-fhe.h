@@ -70,8 +70,7 @@ class FHEBase {
    * @param precomp - do linear transform precomputations
    */
   virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc,
-      uint32_t dim1 = 0, uint32_t slots = 0,
-      uint32_t debugFlag = 0, bool precomp = true) {
+      uint32_t dim1 = 0, uint32_t slots = 0) {
     OPENFHE_THROW(not_implemented_error, "Not supported");
   }
 
@@ -88,8 +87,7 @@ class FHEBase {
    */
   virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc,
       std::vector<uint32_t> levelBudget = {5, 4},
-      std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0,
-      uint32_t debugFlag = 0, bool precomp = true) {
+      std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0) {
     OPENFHE_THROW(not_implemented_error, "Not supported");
   }
 

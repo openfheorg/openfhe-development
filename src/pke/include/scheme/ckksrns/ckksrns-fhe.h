@@ -112,7 +112,15 @@ const std::vector<double> g_coefficientsUniform({0.15421426400235561, -0.0037671
        8.1701187638005194e-15, -1.0611736208855373e-13, \
       -8.9597492970451533e-16, 1.1421575296031385e-14});
 
-typedef struct {
+class CKKSBootstrapPrecom {
+public:
+  virtual ~CKKSBootstrapPrecom() {}
+  // the inner dimension in the baby-step giant-step strategy
+  uint32_t m_dim1 = 0;
+
+  // number of slots for which the bootstrapping is performed
+  uint32_t m_slots = 0;
+
   // level budget for homomorphic encoding, number of layers to collapse in one level,
   // number of layers remaining to be collapsed in one level to have exactly the number
   // of levels specified in the level budget, the number of rotations in one level,
@@ -141,38 +149,39 @@ typedef struct {
   // coefficients corresponding to conj(U0^T); used in encoding
   std::vector<std::vector<ConstPlaintext>> m_U0hatTPreFFT;
 
-  // the inner dimension in the baby-step giant-step strategy
-  uint32_t m_dim1;
-
-  // number of slots for which the bootstrapping is performed
-  uint32_t m_slots;
-
   // EvalBT (FFT evaluation) rotation indices
   std::vector<int32_t> indexListEvalBT;
 
   // EvalLT (linear evaluation) rotation indices
   std::vector<int32_t> indexListEvalLT;
-} CKKSBootstrapPrecom;
+
+};
 
 class FHECKKSRNS : public FHERNS {
 public:
 
+  CKKSBootstrapPrecom precom;
+
   virtual ~FHECKKSRNS() {}
 
-  virtual void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, uint32_t dim1 = 0, uint32_t slots = 0) override;
+  using FHEBase<DCRTPoly>::EvalBootstrapSetup;
+
+  virtual void EvalBootstrapSetup(
+      const CryptoContextImpl<DCRTPoly> &cc,
+      uint32_t dim1 = 0, uint32_t slots = 0) override;
 
   virtual void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
-                           const std::vector<uint32_t>& levelBudget = {5, 4},
-                           const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0) override;
+      std::vector<uint32_t> levelBudget = {5, 4},
+      std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0) override;
 
-  virtual std::vector<int32_t> FindBootstrapRotationIndices(int32_t bootstrapFlag = 0, uint32_t m = 0,
-                                                uint32_t blockDimension = 0);
+  virtual std::vector<int32_t> FindBootstrapRotationIndices(int32_t bootstrapFlag, uint32_t m,
+                                                uint32_t blockDimension);
 
   virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(
       const PrivateKey<DCRTPoly> privateKey, int32_t bootstrapFlag) override;
 
-  virtual std::vector<int32_t> FindLTRotationIndices(uint32_t dim1 = 0, int32_t bootstrapFlag = 0, uint32_t m = 0,
-            uint32_t blockDimension = 0);
+  virtual std::vector<int32_t> FindLTRotationIndices(uint32_t dim1, int32_t bootstrapFlag, uint32_t m,
+            uint32_t blockDimension);
 
   virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalLTKeyGen(
       const PrivateKey<DCRTPoly> privateKey, uint32_t dim1,
@@ -180,7 +189,7 @@ public:
 
   virtual Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-  void EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly> &cc, uint32_t debugFlag);
+  virtual void EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly> &cc, uint32_t debugFlag) override;
 
   Ciphertext<DCRTPoly> EvalBootstrapEncoding(const CryptoContextImpl<DCRTPoly> &cc,
       const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
@@ -206,11 +215,11 @@ public:
       const std::vector<std::vector<ConstPlaintext>> &A,
       ConstCiphertext<DCRTPoly> ctxt) const;
 
-  std::vector<std::vector<ConstPlaintext>> BootstrapPrecomputeEncoding(
+  std::vector<std::vector<ConstPlaintext>> EvalBootstrapPrecomputeEncoding(
     const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A,const std::vector<uint32_t> &rotGroup,
     bool flag_i, double scale, uint32_t L);
 
-  std::vector<std::vector<ConstPlaintext>> BootstrapPrecomputeDecoding(
+  std::vector<std::vector<ConstPlaintext>> EvalBootstrapPrecomputeDecoding(
     const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
     bool flag_i, double scale, uint32_t L);
 
@@ -327,8 +336,6 @@ public:
   uint32_t GetNumberOfRotationIndicesLT() const {
       OPENFHE_THROW(not_implemented_error, "Not supported");
   }
-
-  CKKSBootstrapPrecom precom;
 
   /////////////////////////////////////
   // SERIALIZATION
