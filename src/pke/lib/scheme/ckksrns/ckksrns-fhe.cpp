@@ -37,8 +37,10 @@
 
 namespace lbcrypto {
 
-void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, uint32_t dim1, uint32_t numSlots)
-{
+void FHECKKSRNS::BootstrapSetup(
+    const CryptoContextImpl<DCRTPoly> &cc,
+    uint32_t dim1,
+    uint32_t numSlots) {
   uint32_t m = cc.GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
 
   m_slots = (numSlots == 0) ? m/4 : numSlots;
@@ -52,8 +54,10 @@ void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, uint32_t 
 void FHECKKSRNS::BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, const std::vector<uint32_t> &levelBudget,
     const std::vector<uint32_t> &dim1, uint32_t numSlots)
 {
-    const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
-          std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+  const auto cryptoParams =
+      std::static_pointer_cast<CryptoParametersCKKSRNS>(
+          cc.GetCryptoParameters());
+
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
@@ -271,176 +275,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapEncoding(const CryptoContextImpl<D
   return EvalBTWithPrecompEncoding(cc, precomputedA, ct);
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalBTDecoding(const CryptoContextImpl<DCRTPoly> &cc,
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapDecoding(const CryptoContextImpl<DCRTPoly> &cc,
     const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
     ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale) {
 
-  auto precomputedA = EvalBTPrecomputeDecoding(cc,A,rotGroup,flag_i,scale);
+  auto precomputedA = EvalBootstrapPrecomputeDecoding(cc,A,rotGroup,flag_i,scale);
 
-  return EvalBTWithPrecompDecoding(cc, precomputedA, ct);
-
-}
-
-
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalFastRotationExt(
-    ConstCiphertext<DCRTPoly> ciphertext, usint index,
-    const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
-    const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const {
-
-  const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
-
-  const auto paramsQl = cv[0].GetParams();
-  usint m = paramsQl->GetCyclotomicOrder();
-
-  // Find the automorphism index that corresponds to rotation index index.
-  usint autoIndex = FindAutomorphismIndex2nComplex(index, m);
-
-  // Retrieve the automorphism key that corresponds to the auto index.
-  auto evalKey = evalKeys.find(autoIndex)->second;
-
-  auto algo = cc->GetScheme();
-
-  std::shared_ptr<std::vector<DCRTPoly>> cTilda =
-      algo->EvalFastKeySwitchExtCore(digits, evalKey, paramsQl);
-
-  if (addFirst) {
-    const auto paramsQlP = (*cTilda)[0].GetParams();
-    size_t sizeQl = paramsQl->GetParams().size();
-    DCRTPoly psiC0 = DCRTPoly(paramsQlP, Format::EVALUATION, true);
-    auto cMult = ciphertext->GetElements()[0].Times(cryptoParams->GetPModq());
-    for (usint i = 0; i < sizeQl; i++) {
-      psiC0.SetElementAtIndex(i, cMult.GetElementAtIndex(i));
-    }
-    (*cTilda)[0] += psiC0;
-  }
-
-  usint N = cryptoParams->GetElementParams()->GetRingDimension();
-  std::vector<usint> vec(N);
-  PrecomputeAutoMap(N, autoIndex, &vec);
-
-  (*cTilda)[0] = (*cTilda)[0].AutomorphismTransform(autoIndex, vec);
-  (*cTilda)[1] = (*cTilda)[1].AutomorphismTransform(autoIndex, vec);
-
-  Ciphertext<DCRTPoly> result = ciphertext->CloneDummy();
-
-  result->SetElements({std::move((*cTilda)[0]), std::move((*cTilda)[1])});
-
-  return result;
-}
-
-Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchDown(
-    ConstCiphertext<DCRTPoly> ciphertext) const {
-
-  Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
-
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          ciphertext->GetCryptoParameters());
-
-  const auto paramsP = cryptoParams->GetParamsP();
-  const auto paramsQlP = ciphertext->GetElements()[0].GetParams();
-
-  usint sizeQ = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-  std::vector<NativeInteger> moduliQ(sizeQ);
-  std::vector<NativeInteger> rootsQ(sizeQ);
-  for (size_t i = 0; i < sizeQ; i++) {
-    moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
-    rootsQ[i] = paramsQlP->GetParams()[i]->GetRootOfUnity();
-  }
-  auto paramsQl = std::make_shared<typename DCRTPoly::Params>(2*paramsQlP->GetRingDimension(),
-                                                  moduliQ, rootsQ);
-
-  auto cTilda = ciphertext->GetElements();
-
-  DCRTPoly ct0 = cTilda[0].ApproxModDown(
-    paramsQl, paramsP, cryptoParams->GetPInvModq(),
-    cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-    cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-    cryptoParams->GetModqBarrettMu());
-
-  DCRTPoly ct1 = cTilda[1].ApproxModDown(
-    paramsQl, paramsP, cryptoParams->GetPInvModq(),
-    cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-    cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-    cryptoParams->GetModqBarrettMu());
-
-  result->SetElements({ct0, ct1});
-
-  result->SetDepth(ciphertext->GetDepth());
-  result->SetLevel(ciphertext->GetLevel());
-  result->SetScalingFactor(ciphertext->GetScalingFactor());
-
-  return result;
-
-}
-
-DCRTPoly FHECKKSRNS::KeySwitchDownFirstElement(
-    ConstCiphertext<DCRTPoly> ciphertext) const {
-
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          ciphertext->GetCryptoParameters());
-
-  const auto paramsP = cryptoParams->GetParamsP();
-  const auto paramsQlP = ciphertext->GetElements()[0].GetParams();
-
-  usint sizeQ = paramsQlP->GetParams().size() - paramsP->GetParams().size();
-  std::vector<NativeInteger> moduliQ(sizeQ);
-  std::vector<NativeInteger> rootsQ(sizeQ);
-  for (size_t i = 0; i < sizeQ; i++) {
-    moduliQ[i] = paramsQlP->GetParams()[i]->GetModulus();
-    rootsQ[i] = paramsQlP->GetParams()[i]->GetRootOfUnity();
-  }
-  auto paramsQl = std::make_shared<typename DCRTPoly::Params>(2*paramsQlP->GetRingDimension(),
-                                                  moduliQ, rootsQ);
-
-  auto c0 = ciphertext->GetElements()[0];
-
-  DCRTPoly ct0 = c0.ApproxModDown(
-    paramsQl, paramsP, cryptoParams->GetPInvModq(),
-    cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
-    cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
-    cryptoParams->GetModqBarrettMu());
-
-  return ct0;
-
-}
-
-Ciphertext<DCRTPoly> FHECKKSRNS::KeySwitchExt(
-    ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const {
-
-  Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
-
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          ciphertext->GetCryptoParameters());
-
-  const auto paramsQl = ciphertext->GetElements()[0].GetParams();
-  const auto paramsP = cryptoParams->GetParamsP();
-  const auto paramsQlP = ciphertext->GetElements()[0].GetExtendedCRTBasis(paramsP);
-
-  size_t sizeQl = paramsQl->GetParams().size();
-
-  usint sizeCt = ciphertext->GetElements().size();
-  std::vector<DCRTPoly> resultElements(sizeCt);
-  const std::vector<DCRTPoly> &c = ciphertext->GetElements();
-  for (usint k = 0; k < sizeCt; k++) {
-    resultElements[k] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
-    if ((addFirst) || (k > 0)) {
-      auto cMult = c[k].Times(cryptoParams->GetPModq());
-      for (usint i = 0; i < sizeQl; i++) {
-          resultElements[k].SetElementAtIndex(i,cMult.GetElementAtIndex(i));
-      }
-    }
-  }
-
-  result->SetElements(resultElements);
-
-  result->SetDepth(ciphertext->GetDepth());
-  result->SetLevel(ciphertext->GetLevel());
-  result->SetScalingFactor(ciphertext->GetScalingFactor());
-
-  return result;
+  return EvalBootstrapWithPrecompDecoding(cc, precomputedA, ct);
 
 }
 

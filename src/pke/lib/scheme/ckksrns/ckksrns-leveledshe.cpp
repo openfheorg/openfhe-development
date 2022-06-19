@@ -383,8 +383,9 @@ void LeveledSHECKKSRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphert
 #if NATIVEINT == 128
 std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(
     ConstCiphertext<DCRTPoly> ciphertext, double constant) const {
+
   const auto cryptoParams =
-      std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+      std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext->GetCryptoParameters());
 
   uint32_t precision = 52;
@@ -505,8 +506,9 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(
 #if NATIVEINT == 128
 std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(
     ConstCiphertext<DCRTPoly> ciphertext, double constant) const {
+
   const auto cryptoParams =
-      std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+      std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext->GetCryptoParameters());
 
   uint32_t precision = 52;
@@ -554,8 +556,9 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(
 #else  // NATIVEINT == 64
 std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(
     ConstCiphertext<DCRTPoly> ciphertext, double constant) const {
+
   const auto cryptoParams =
-      std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+      std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext->GetCryptoParameters());
 
   const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
@@ -628,7 +631,59 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(
 
 #endif
 
+Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
+    ConstCiphertext<DCRTPoly> ciphertext, usint index,
+    const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
+    const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const {
+  if (index == 0) {
+    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+    return result;
+  }
 
+  const auto cc = ciphertext->GetCryptoContext();
+
+  const auto cryptoParams = ciphertext->GetCryptoParameters();
+  usint N = cryptoParams->GetElementParams()->GetRingDimension();
+  usint M = N << 1;
+
+  // Find the automorphism index that corresponds to rotation index index.
+  usint autoIndex = FindAutomorphismIndex2nComplex(index, M);
+s
+  // Retrieve the automorphism key that corresponds to the auto index.
+  auto evalKey = evalKeys.find(autoIndex)->second;
+
+  const std::vector<Element> &cv = ciphertext->GetElements();
+  const auto paramsQl = cv[0].GetParams();
+
+  auto algo = cc->GetScheme();
+
+
+  std::shared_ptr<std::vector<DCRTPoly>> cTilda =
+      algo->EvalFastKeySwitchCoreExt(digits, evalKey, paramsQl);
+
+  if (addFirst) {
+    const auto paramsQlP = (*cTilda)[0].GetParams();
+    size_t sizeQl = paramsQl->GetParams().size();
+    DCRTPoly psiC0 = DCRTPoly(paramsQlP, Format::EVALUATION, true);
+    auto cMult = ciphertext->GetElements()[0].Times(cryptoParams->GetPModq());
+    for (usint i = 0; i < sizeQl; i++) {
+      psiC0.SetElementAtIndex(i, cMult.GetElementAtIndex(i));
+    }
+    (*cTilda)[0] += psiC0;
+  }
+
+  std::vector<usint> vec(N);
+  PrecomputeAutoMap(N, autoIndex, &vec);
+
+  (*cTilda)[0] = (*cTilda)[0].AutomorphismTransform(autoIndex, vec);
+  (*cTilda)[1] = (*cTilda)[1].AutomorphismTransform(autoIndex, vec);
+
+  Ciphertext<DCRTPoly> result = ciphertext->CloneDummy();
+
+  result->SetElements({std::move((*cTilda)[0]), std::move((*cTilda)[1])});
+
+  return result;
+}
 
 
 #if 0

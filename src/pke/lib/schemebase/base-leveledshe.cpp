@@ -468,6 +468,51 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 }
 
 template <class Element>
+Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
+    ConstCiphertext<Element> ciphertext, const usint index, const usint m,
+    const std::shared_ptr<std::vector<Element>> digits) const {
+  if (index == 0) {
+    Ciphertext<Element> result = ciphertext->Clone();
+    return result;
+  }
+
+  const auto cc = ciphertext->GetCryptoContext();
+
+  const auto cryptoParams = ciphertext->GetCryptoParameters();
+  usint N = cryptoParams->GetElementParams()->GetRingDimension();
+  usint M = cryptoParams->GetElementParams()->GetCyclotomicOrder();
+
+  usint autoIndex = (cc->getSchemeId() == "CKKSRNS")
+                        ? FindAutomorphismIndex2nComplex(index, M)
+                        : FindAutomorphismIndex2n(index, M);
+
+  auto evalKey = cc->GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag())
+                     .find(autoIndex)->second;
+
+  const std::vector<Element> &cv = ciphertext->GetElements();
+  const auto paramsQl = cv[0].GetParams();
+
+  auto algo = cc->GetScheme();
+
+  std::shared_ptr<std::vector<Element>> ba =
+      algo->EvalFastKeySwitchCore(digits, evalKey, paramsQl);
+
+  std::vector<usint> vec(N);
+  PrecomputeAutoMap(N, autoIndex, &vec);
+
+  (*ba)[0] += cv[0];
+
+  (*ba)[0] = (*ba)[0].AutomorphismTransform(autoIndex, vec);
+  (*ba)[1] = (*ba)[1].AutomorphismTransform(autoIndex, vec);
+
+  Ciphertext<DCRTPoly> result = ciphertext->CloneDummy();
+
+  result->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
+
+  return result;
+}
+
+template <class Element>
 std::shared_ptr<std::map<usint, EvalKey<Element>>>
 LeveledSHEBase<Element>::EvalAtIndexKeyGen(
     const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,

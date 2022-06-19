@@ -102,6 +102,20 @@ class KeySwitchBase {
     OPENFHE_THROW(config_error, "KeySwitch is not supported");
   }
 
+  virtual Ciphertext<DCRTPoly> KeySwitchExt(
+      ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const {
+    OPENFHE_THROW(config_error, "KeySwitchExt is not supported");
+  }
+
+  virtual Ciphertext<DCRTPoly> KeySwitchDown(
+      ConstCiphertext<DCRTPoly> ciphertext) const {
+    OPENFHE_THROW(config_error, "KeySwitchDown is not supported");
+  }
+
+  virtual DCRTPoly KeySwitchDownFirstElement(
+      ConstCiphertext<DCRTPoly> ciphertext) const {
+    OPENFHE_THROW(config_error, "KeySwitchDownFirstElement is not supported");
+  }
   /////////////////////////////////////////
   // CORE OPERATIONS
   /////////////////////////////////////////
@@ -116,16 +130,16 @@ class KeySwitchBase {
     OPENFHE_THROW(config_error, "EvalKeySwitchPrecomputeCore is not supported");
   }
 
-  virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchExtCore(
-      const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
-      const std::shared_ptr<ParmType> paramsQl) const {
-    OPENFHE_THROW(config_error, "EvalFastKeySwitchExtCore is not supported");
-  }
-
   virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCore(
       const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
       const std::shared_ptr<ParmType> paramsQl) const {
     OPENFHE_THROW(config_error, "EvalFastKeySwitchCore is not supported");
+  }
+
+  virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCoreExt(
+      const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
+      const std::shared_ptr<ParmType> paramsQl) const {
+    OPENFHE_THROW(config_error, "EvalFastKeySwitchCoreExt is not supported");
   }
 };
 

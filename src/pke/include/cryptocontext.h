@@ -58,8 +58,6 @@
 
 namespace lbcrypto {
 
-enum PermuteStrategy { NONE, FFN, FFH, BFN, BFH, BBH };
-
 template <typename Element>
 class CryptoContextImpl;
 
@@ -687,7 +685,34 @@ protected:
   static void InsertEvalAutomorphismKey(
       const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap);
 
+  // ROTATION KEYS FOR BOOTSTRAPPING
+
+  /**
+   * Completely clears the rotation key map.
+   */
+  static void ClearEvalRotationKeys();
+
+  /**
+   * Removes the entry from the rotation key map that stores the
+   * keys for this key tag.
+   */
+  static void ClearEvalRotationKeys(const string& id);
+
+  /**
+   * Removes the rotation key map for this crypto context.
+   */
+  static void ClearEvalRotationKeys(const CryptoContext<Element> cc);
+
+  /**
+   * InsertEvalRotationKeys - adds new rotation keys to the context from an existing map
+   * @param mapToInsert
+   */
+  static void InsertEvalRotationKeys(const shared_ptr<std::map<usint, LPEvalKey<Element>>> mapToInsert);
+
+  //------------------------------------------------------------------------------
   // TURN FEATURES ON
+  //------------------------------------------------------------------------------
+
   /**
    * Enable a particular feature for use with this CryptoContextImpl
    * @param feature - the feature that should be enabled
@@ -771,7 +796,9 @@ protected:
     return params->GetElementParams()->GetRootOfUnity();
   }
 
+  //------------------------------------------------------------------------------
   // KEYS GETTERS
+  //------------------------------------------------------------------------------
 
   static std::map<std::string, std::vector<EvalKey<Element>>>& GetAllEvalMultKeys();
 
@@ -784,6 +811,22 @@ protected:
   static const std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(
       const std::string& id);
 
+  /**
+   * This method retrieves all the maps that contain rotation
+   * keys.
+   */
+  static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
+  GetAllEvalRotationKeys();
+
+  /**
+    * This method retrieves the map that contains the rotation
+    * keys for this scheme.
+    *
+    * @param id the key tag to search for
+    */
+   static const std::map<usint, EvalKey<Element>>& GetEvalRotationKeyMap(
+       const std::string& id);
+
   static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
   GetAllEvalSumKeys();
 
@@ -795,7 +838,19 @@ protected:
   static const std::map<usint, EvalKey<Element>>& GetEvalSumKeyMap(
       const std::string& id);
 
+  static std::map<std::string, std::shared_ptr<std::map<usint, CKKSBootstrapPrecom>>>&
+  GetAllCKKSBootstrapPrecomMap();
+
+  /**
+   * Gets the bootstrapping precom map (used for serialization).
+   *
+   * @return a shared pointer to the bootstrapping precom map
+   */
+  static const std::map<uint32_t, CKKSBootstrapPrecom>& GetCKKSBootstrapPrecomMap(const std::string& id);
+
+  //------------------------------------------------------------------------------
   // PLAINTEXT FACTORY METHODS
+  //------------------------------------------------------------------------------
 
   // TODO to be deprecated in 2.0
   /**
@@ -982,9 +1037,9 @@ protected:
    */
   static Plaintext GetPlaintextForDecrypt(PlaintextEncodings pte, std::shared_ptr<ParmType> evp, EncodingParams ep);
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // PKE Wrapper
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   /**
    * KeyGen generates a key pair using this algorithm's KeyGen method
@@ -1081,9 +1136,9 @@ protected:
     return Decrypt(ciphertext, privateKey, plaintext);
   }
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // KeySwitch Wrapper
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   /**
    * KeySwitchGen creates a key that can be used with the OpenFHE KeySwitch
@@ -1124,9 +1179,9 @@ protected:
     GetScheme()->KeySwitchInPlace(ciphertext, evalKey);
   }
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // SHE NEGATION Wrapper
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   /**
    * EvalSub - OpenFHE Negate method for a ciphertext
@@ -1145,9 +1200,9 @@ protected:
     GetScheme()->EvalNegateInPlace(ciphertext);
   }
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // SHE ADDITION Wrapper
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
     TypeCheck(ciphertext1, ciphertext2);
@@ -1279,9 +1334,9 @@ protected:
     EvalAddInPlace(ciphertext, constant);
   }
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // SHE SUBTRACTION Wrapper
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   /**
    * EvalSub - OpenFHE EvalSub method for a pair of ciphertexts
@@ -1398,9 +1453,9 @@ protected:
   //  EvalAddInPlace(ciphertext, constant);
   //}
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // SHE MULTIPLICATION Wrapper
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   /**
    * EvalMultKeyGen creates a key that can be used with the OpenFHE EvalMult
@@ -1495,36 +1550,6 @@ protected:
   }
 
   /**
-   * Function for evaluating multiplication on ciphertext followed by
-   * relinearization operation. Currently it assumes that the input arguments
-   * have total depth smaller than the supported depth. Otherwise, it throws an
-   * error.
-   *
-   * @param ct1 first input ciphertext.
-   * @param ct2 second input ciphertext.
-   *
-   * @return new ciphertext
-   */
-  Ciphertext<Element> EvalMultAndRelinearize(
-      ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
-    // input parameter check
-    if (!ciphertext1 || !ciphertext2)
-      OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
-
-    const auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
-
-    if (evalKeyVec.size() < (ciphertext1->GetElements().size() +
-                             ciphertext2->GetElements().size() - 3)) {
-      OPENFHE_THROW(type_error,
-                     "Insufficient value was used for maxDepth to generate "
-                     "keys for EvalMult");
-    }
-
-    return GetScheme()->EvalMultAndRelinearize(ciphertext1, ciphertext2,
-                                               evalKeyVec);
-  }
-
-  /**
    * Function for relinearization of a ciphertext.
    *
    * @param ct input ciphertext.
@@ -1565,6 +1590,36 @@ protected:
     }
 
     GetScheme()->RelinearizeInPlace(ciphertext, evalKeyVec);
+  }
+
+  /**
+   * Function for evaluating multiplication on ciphertext followed by
+   * relinearization operation. Currently it assumes that the input arguments
+   * have total depth smaller than the supported depth. Otherwise, it throws an
+   * error.
+   *
+   * @param ct1 first input ciphertext.
+   * @param ct2 second input ciphertext.
+   *
+   * @return new ciphertext
+   */
+  Ciphertext<Element> EvalMultAndRelinearize(
+      ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const {
+    // input parameter check
+    if (!ciphertext1 || !ciphertext2)
+      OPENFHE_THROW(type_error, "Input ciphertext is nullptr");
+
+    const auto evalKeyVec = GetEvalMultKeyVector(ciphertext1->GetKeyTag());
+
+    if (evalKeyVec.size() < (ciphertext1->GetElements().size() +
+                             ciphertext2->GetElements().size() - 3)) {
+      OPENFHE_THROW(type_error,
+                     "Insufficient value was used for maxDepth to generate "
+                     "keys for EvalMult");
+    }
+
+    return GetScheme()->EvalMultAndRelinearize(ciphertext1, ciphertext2,
+                                               evalKeyVec);
   }
 
   Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext) const {
@@ -1638,9 +1693,9 @@ protected:
     EvalMultInPlace(ciphertext, constant);
   }
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // SHE AUTOMORPHISM Wrapper
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   /**
    * Generate automophism keys for a given private key; Uses the private key for
@@ -1717,6 +1772,39 @@ protected:
   }
 
   /**
+   * Calculate automorphism index for rotation key value
+   * @param idx
+   * @return
+   */
+  usint FindAutomorphismIndex(const usint idx) const;
+
+  /**
+   * Calculate automorphism indices for vector of rotation key values
+   * @param idxList
+   * @return
+   */
+  std::vector<usint> FindAutomorphismIndices(const std::vector<usint> idxList) const;
+
+  /**
+   * EvalSumKeyGen Generates the key map to be used by evalsum
+   *
+   * @param privateKey private key.
+   * @param indexList list of indices.
+   * @param publicKey public key (used in NTRU schemes).
+   */
+  void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
+                        const PublicKey<Element> publicKey = nullptr);
+
+   /**
+    * Moves i-th slot to slot 0
+    *
+    * @param ciphertext.
+    * @param i the index.
+    * @return resulting ciphertext
+    */
+   Ciphertext<Element> EvalRotate(ConstCiphertext<Element> ciphertext, int32_t index) const;
+
+  /**
    * EvalFastRotationPrecompute implements the precomputation step of
    * hoisted automorphisms.
    *
@@ -1789,6 +1877,50 @@ protected:
     return GetScheme()->EvalFastRotation(ciphertext, index, m, digits);
   }
 
+
+  /**
+   * Only supported for hybrid key switching.
+   * Performs fast (hoisted) rotation and returns the results
+   * in the extended CRT basis P*Q
+   *
+   * @param ciphertext input ciphertext
+   * @param index the rotation index.
+   * @param digits the precomputed digits for the ciphertext
+   * @param addFirst if true, the the first element c0 is also computed (otherwise ignored)
+   * @return resulting ciphertext
+   */
+  Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, usint index,
+                                          const std::shared_ptr<std::vector<Element>> digits, bool addFirst) const;
+
+  /**
+   * Only supported for hybrid key switching.
+   * Takes a ciphertext in the extended basis P*Q
+   * and scales down to Q.
+   *
+   * @param ciphertext input ciphertext in the extended basis
+   * @return resulting ciphertext
+   */
+  Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element> ciphertext) const;
+
+  /**
+   * Only supported for hybrid key switching.
+   * Scales down the polynomial c0 from extended basis P*Q to Q.
+   *
+   * @param ciphertext input ciphertext in the extended basis
+   * @return resulting polynomial
+   */
+  Element KeySwitchDownFirstElement(ConstCiphertext<Element> ciphertext) const;
+
+  /**
+   * Only supported for hybrid key switching.
+   * Takes a ciphertext in the normal basis Q
+   * and and extends it to extended basis P*Q.
+   *
+   * @param ciphertext input ciphertext in basis Q
+   * @return resulting ciphertext in basis P*Q
+   */
+  Ciphertext<Element> KeySwitchExt(ConstCiphertext<Element> ciphertext, bool addFirst) const;
+
   /**
    * EvalAtIndexKeyGen generates evaluation keys for a list of indices
    *
@@ -1810,9 +1942,9 @@ protected:
   Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element> ciphertext,
                                   int32_t index) const;
 
-  /////////////////////////////////////////
-  // Leveled SHE Wrapper
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
+  // SHE Leveled Methods Wrapper
+  //------------------------------------------------------------------------------
 
   /**
    * ComposedEvalMult - OpenFHE composed evalmult
@@ -1920,9 +2052,9 @@ protected:
     return GetScheme()->Compress(ciphertext, towersLeft);
   }
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // Advanced SHE Wrapper
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   /**
    * EvalAddMany - Evaluate addition on a vector of ciphertexts.
@@ -1958,6 +2090,39 @@ protected:
 
     return GetScheme()->EvalAddManyInPlace(ciphertextVec);
   }
+
+  /**
+   * EvalMultMany - OpenFHE function for evaluating multiplication on
+   * ciphertext followed by relinearization operation (at the end). It computes
+   * the multiplication in a binary tree manner. Also, it reduces the number of
+   * elements in the ciphertext to two after each multiplication.
+   * Currently it assumes that the consecutive two input arguments have
+   * total depth smaller than the supported depth. Otherwise, it throws an
+   * error.
+   *
+   * @param cipherTextList  is the ciphertext list.
+   *
+   * @return new ciphertext.
+   */
+  Ciphertext<Element> EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
+    // input parameter check
+    if (!ciphertextVec.size()) {
+      OPENFHE_THROW(type_error, "Empty input ciphertext vector");
+    }
+
+    const auto evalKeyVec = GetEvalMultKeyVector(ciphertextVec[0]->GetKeyTag());
+    if (evalKeyVec.size() < (ciphertextVec[0]->GetElements().size() - 2)) {
+      OPENFHE_THROW(type_error,
+                     "Insufficient value was used for maxDepth to generate "
+                     "keys for EvalMult");
+    }
+
+    return GetScheme()->EvalMultMany(ciphertextVec, evalKeyVec);
+  }
+
+  //------------------------------------------------------------------------------
+  // Advanced SHE LINEAR WEIGHTED SUM
+  //------------------------------------------------------------------------------
 
   /**
    * EvalLinearWSum - OpenFHE EvalLinearWSum method to compute a linear
@@ -1999,34 +2164,9 @@ protected:
     return EvalLinearWSumMutable(ciphertextVec, constantsVec);
   }
 
-  /**
-   * EvalMultMany - OpenFHE function for evaluating multiplication on
-   * ciphertext followed by relinearization operation (at the end). It computes
-   * the multiplication in a binary tree manner. Also, it reduces the number of
-   * elements in the ciphertext to two after each multiplication.
-   * Currently it assumes that the consecutive two input arguments have
-   * total depth smaller than the supported depth. Otherwise, it throws an
-   * error.
-   *
-   * @param cipherTextList  is the ciphertext list.
-   *
-   * @return new ciphertext.
-   */
-  Ciphertext<Element> EvalMultMany(const std::vector<Ciphertext<Element>>& ciphertextVec) const {
-    // input parameter check
-    if (!ciphertextVec.size()) {
-      OPENFHE_THROW(type_error, "Empty input ciphertext vector");
-    }
-
-    const auto evalKeyVec = GetEvalMultKeyVector(ciphertextVec[0]->GetKeyTag());
-    if (evalKeyVec.size() < (ciphertextVec[0]->GetElements().size() - 2)) {
-      OPENFHE_THROW(type_error,
-                     "Insufficient value was used for maxDepth to generate "
-                     "keys for EvalMult");
-    }
-
-    return GetScheme()->EvalMultMany(ciphertextVec, evalKeyVec);
-  }
+  //------------------------------------------------------------------------------
+  // Advanced SHE EVAL POLYNOMIAL
+  //------------------------------------------------------------------------------
 
   /**
    * Method for polynomial evaluation for polynomials represented as power
@@ -2062,6 +2202,17 @@ protected:
     return GetScheme()->EvalPolyLinear(ciphertext, coefficients);
   }
 
+  Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element> ciphertext,
+                                     const std::vector<double>& coefficients) const {
+    CheckCiphertext(ciphertext);
+
+    return GetScheme()->EvalPolyPS(ciphertext, coefficients);
+  }
+
+  //------------------------------------------------------------------------------
+  // Advanced SHE EVAL CHEBYSHEV SERIES
+  //------------------------------------------------------------------------------
+
   /**
    * Method for evaluating Chebyshev polynomial interpolation;
    * first the range [a,b] is mapped to [-1,1] using linear transformation 1 + 2
@@ -2080,6 +2231,24 @@ protected:
 
     return GetScheme()->EvalChebyshevSeries(ciphertext, coefficients, a, b);
   }
+
+  Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element> ciphertext,
+      const std::vector<double>& coefficients, double a, double b) const {
+    CheckCiphertext(ciphertext);
+
+    return GetScheme()->EvalChebyshevSeriesLinear(ciphertext, coefficients, a, b);
+  }
+
+  Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element> ciphertext,
+      const std::vector<double>& coefficients, double a, double b) const {
+    CheckCiphertext(ciphertext);
+
+    return GetScheme()->EvalChebyshevSeriesPS(ciphertext, coefficients, a, b);
+  }
+
+  //------------------------------------------------------------------------------
+  // Advanced SHE EVAL SUM
+  //------------------------------------------------------------------------------
 
   /**
    * EvalSumKeyGen Generates the key map to be used by evalsum
@@ -2117,6 +2286,10 @@ protected:
       ConstCiphertext<Element> ciphertext, usint rowSize,
       const std::map<usint, EvalKey<Element>>& evalSumKeyMap) const;
 
+  //------------------------------------------------------------------------------
+  // Advanced SHE EVAL INNER PRODUCT
+  //------------------------------------------------------------------------------
+
   /**
    * Evaluates inner product in batched encoding
    *
@@ -2153,88 +2326,124 @@ protected:
    */
   Ciphertext<Element> EvalMerge(const std::vector<Ciphertext<Element>>& ciphertextVec) const;
 
+  //------------------------------------------------------------------------------
+  // Advanced SHE LINEAR TRANSFORMATION
+  //------------------------------------------------------------------------------
+
   /**
-   * EvalSumKeyGen Generates the key map to be used by evalsum
+   * Generates all automorphism keys for EvalLT.
+   * EvalLTKeyGen uses the baby-step/giant-step strategy.
    *
    * @param privateKey private key.
-   * @param indexList list of indices.
-   * @param publicKey public key (used in NTRU schemes).
+   * @param slots number of slots to support permutations on.
+   * @param dim1 inner dimension in the baby-step/giant-step strategy; here,
+   * slots = dim1*dim2
+   * @param bootstrapFlag - when set to 1, generates extra automorphism keys for
+   * sparse bootstrapping
+   * @param conjFlag - when set to 1, generates extra automorphism key for
+   * conjugation
    */
-  void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
-                        const PublicKey<Element> publicKey = nullptr);
+  void EvalLTKeyGen(const PrivateKey<Element> privateKey, uint32_t dim1 = 0,
+                    int32_t bootstrapFlag = 0, int32_t conjFlag = 0);
 
   /**
-   * Calculate automorphism index for rotation key value
-   * @param idx
+   * Calculates automorphism indices for linear transform
+   * @param slots
+   * @param dim1
+   * @param bootstrapFlag
+   * @param m
    * @return
    */
-  usint FindAutomorphismIndex(const usint idx) const;
+  std::vector<int32_t> FindLTRotationIndices(uint32_t dim1 = 0,
+                  int32_t bootstrapFlag = 0, uint32_t m = 0);
 
   /**
-   * Calculate automorphism indices for vector of rotation key values
-   * @param idxList
-   * @return
-   */
-  std::vector<usint> FindAutomorphismIndices(const std::vector<usint> idxList) const;
-
-  /**
-   * Moves i-th slot to slot 0
+   * Generates precomputed encoded rotated vectors for square linear map A
+   * Speeds up EvalLT
    *
-   * @param ciphertext.
-   * @param i the index.
-   * @return resulting ciphertext
+   * @param A a square map (for DFT, for example)
+   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
+   * size of one row/column = dim1*dim2
+   * @param scale parameter to multiply that should be embedded in A. For
+   * bootstrapping, this parameter is equal to 1.0/(m/2)*powP/(K*qDouble) --
+   * scales by 1/(m/2) for the encoding and divide by Kq/2^p to scale the
+   * encrypted integers to -1 .. 1
+   * @param L number of levels from which to start the plaintext coefficients
+   *
+   * @return the precomputation for linear map A
    */
-  Ciphertext<Element> EvalRotate(ConstCiphertext<Element> ciphertext, int32_t index) const;
+  std::vector<ConstPlaintext> EvalLTPrecompute(const std::vector<std::vector<std::complex<double>>>& A,
+                                               uint32_t dim1 = 0, double scale = 1, uint32_t L = 0) const;
 
   /**
-   * Only supported for hybrid key switching.
-   * Performs fast (hoisted) rotation and returns the results
-   * in the extended CRT basis P*Q
+   * Generates precomputed encoded rotated vectors for square linear maps A and
+   * B (used in sparse bootstrapping) Both linear maps are encoded in the same
+   * plaintext polynomials
    *
-   * @param ciphertext input ciphertext
-   * @param index the rotation index.
-   * @param precomp the precomputed digits for the ciphertext
-   * @param addFirst if true, the the first element c0 is also computed (otherwise ignored)
-   * @return resulting ciphertext
+   * @param A a square map (for DFT, for example)
+   * @param B a square map (for DFT, for example)
+   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
+   * size of one row/column = dim1*dim2
+   * @param orientation set to 0 for vertical concatenation (encoding) and set
+   * to 1 for horizontal concatenation (decoding)
+   * @param scale parameter to multiply that should be embedded in A. For
+   * bootstrapping, this parameter is equal to 1.0/(m/2)*powP/(K*qDouble) --
+   * scales by 1/(m/2) for the encoding and divide by Kq/2^p to scale the
+   * encrypted integers to -1 .. 1
+   * @param L number of levels from which to start the plaintext coefficients
+   *
+   * @return the precomputation for contatenated linear map A|B
    */
-  Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, usint index,
-                                          const std::shared_ptr<std::vector<Element>> precomp, bool addFirst) const;
+  std::vector<ConstPlaintext> EvalLTPrecompute(const std::vector<std::vector<std::complex<double>>>& A,
+                                               const std::vector<std::vector<std::complex<double>>>& B,
+                                               uint32_t dim1 = 0, uint32_t orientation = 0, double scale = 1,
+                                               uint32_t L = 0) const;
 
   /**
-   * Only supported for hybrid key switching.
-   * Takes a ciphertext in the extended basis P*Q
-   * and scales down to Q.
+   * Computes linear transformation using a pre-encoded map A
    *
-   * @param ciphertext input ciphertext in the extended basis
-   * @return resulting ciphertext
+   * @param A pre-encoded linear transformation map
+   * @param ct the ciphertex on which the linear transform is performed
+   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
+   * size of one row/column = dim1*dim2
+   *
+   * @return the linear transformation for ct
    */
-  Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element> ciphertext) const;
+  Ciphertext<Element> EvalLTWithPrecomp(const std::vector<ConstPlaintext>& A, ConstCiphertext<Element> ct,
+                                        uint32_t dim1 = 0);
 
   /**
-   * Only supported for hybrid key switching.
-   * Scales down the polynomial c0 from extended basis P*Q to Q.
+   * Computes linear transformation using a pre-encoded map A
    *
-   * @param ciphertext input ciphertext in the extended basis
-   * @return resulting polynomial
+   * @param A pre-encoded linear transformation map
+   * @param ct the ciphertex on which the linear transform is performed
+   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
+   * size of one row/column = dim1*dim2
+   *
+   * @return the linear transformation for ct
    */
-  Element KeySwitchDownFirstElement(ConstCiphertext<Element> ciphertext) const;
+  Ciphertext<Element> EvalLTWithPrecomp(const std::vector<Plaintext>& A, ConstCiphertext<Element> ct,
+                                        uint32_t dim1 = 0);
 
   /**
-   * Only supported for hybrid key switching.
-   * Takes a ciphertext in the normal basis Q
-   * and and extends it to extended basis P*Q.
+   * Computes linear transformation w/o precomputations
    *
-   * @param ciphertext input ciphertext in basis Q
-   * @return resulting ciphertext in basis P*Q
+   * @param A linear transformation map
+   * @param ct the ciphertex on which the linear transform is performed
+   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
+   * size of one row/column = dim1*dim2
+   * @param scale parameter to multiply that should be embedded in A. For
+   * bootstrapping, this parameter is equal to 1.0/(m/2)*powP/(K*qDouble) --
+   * scales by 1/(m/2) for the encoding and divide by Kq/2^p to scale the
+   * encrypted integers to -1 .. 1
+   * @return the linear transformation for ct
    */
-  Ciphertext<Element> KeySwitchExt(ConstCiphertext<Element> ciphertext, bool addFirst) const;
+  Ciphertext<Element> EvalLT(const std::vector<std::vector<std::complex<double>>>& A, ConstCiphertext<Element> ct,
+                             uint32_t dim1 = 0, double scale = 1);
 
-
-
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // PRE Wrapper
-  /////////////////////////////////////////
-
+  //------------------------------------------------------------------------------
 
 
   /**
@@ -2280,9 +2489,9 @@ protected:
     return GetScheme()->ReEncrypt(ciphertext, evalKey, publicKey, noiseflooding);
   }
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // Multiparty Wrapper
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   /**
    * Threshold FHE: Generates a public key from a vector of secret shares.
@@ -2596,231 +2805,9 @@ protected:
     return GetScheme()->MultiAddEvalMultKeys(evalKey1, evalKey2, keyId);
   }
 
-
-
-  //////////////////////////////
-  // FHE
-  //////////////////////////////
-
-
-
-  /**
-    * This method retrieves the map that contains the rotation
-    * keys for this scheme.
-    *
-    * @param id the key tag to search for
-    */
-   static std::map<usint, EvalKey<Element>>& GetEvalRotationKeyMap(const std::string& id);
-
-   /**
-    * This method retrieves all the maps that contain rotation
-    * keys.
-    */
-   static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalRotationKeys();
-
-  const PermuteStrategy GetPermuteStrategy() const {
-    return permStrategy;
-  }
-
-  /**
-   * EvalPermuteKeyGen generates the automorphism keys necessary
-   * to perform arbitrary permutations within a ciphertext. The
-   * number of keys created depends on the algorithm selected with
-   * the strategy input argument (See EvalPermute for more details).
-   *
-   * @param privateKey private key.
-   * @param slots number of slots to support permutations on.
-   * @param strategy this determines the algorithm to be used for key
-   *     switching.
-   */
-  void EvalPermuteKeyGen(const PrivateKey<Element> privateKey, int slots, enum PermuteStrategy strategy);
-
-  /**
-   * A convenience wrapper around EvalPermuteKeyGen(key, slots, strategy).
-   * This ones does not take strategy as an input and it follows a simple
-   * heuristic to decide the strategy on it's own: if slots are less or
-   * equal to 50, it uses FFH. Otherwise, it uses BBH.
-   *
-   * @param privateKey private key.
-   * @param slots number of slots to support permutations on.
-   */
-  void EvalPermuteKeyGen(const PrivateKey<Element> privateKey, int slots);
-
-  /**
-   * EvalPermute performs a permutation of the elements in the input ciphertext
-   * and returns a new ciphertext containing the elements with the order
-   * specified in the index list permMap.
-   *
-   * Permutations are performed as a set of rotations and a final merging step.
-   * An input ciphertext { 1, 2, 3 } is permutated with map { 0, 2, 1 } as
-   * follows:
-   *
-   * First, or every position i of the resulting output ciphertext, we compute
-   * how much we need to rotate the input ciphertext to get the correct element
-   * to the correct position, according to the permutation map. In this example,
-   * diff = permMap[i] - i, for each i in { 0, 1, 2 }, i.e., diff = { 0, 1, -1}.
-   *
-   * Second, we create N temporary ciphertexts, where N is the number of slots.
-   * Each tmp ciphertext is rotated by the corresponding offset in diff. Here,
-   * we get tmp ciphertexts for { 1, 2, 3 }, { 2, 3, 0}, and { 0, 1, 2 }.
-   *
-   * Third, we create a plaintext mask for each i, i.e., { 1, 0, 0 }, { 0, 1, 0
-   * }, and { 0, 0, 1 }. We multiply this mask with the corresponding tmp
-   * ciphertext to zero-out all non-pertinent elements. Here we get { 1, 0, 0 },
-   * { 0, 3, 0}, and { 0, 0, 2 }.
-   *
-   * Finally, we add the masked temporary ciphertexts to obtain { 1, 3, 2 }.
-   *
-   *
-   * Example usage (the following will inverse the slots in a packed ciphertext
-   * ct): int slots = 8; std::vector<int> permMap = { 7, 6, 5, 4, 3, 2, 1, 0 }; auto
-   * keys = cc->KeyGen(); PermuteStrategy strategy = BFH;
-   * cc->EvalPermuteKeyGen(keys.secretKey, slots, strategy);
-   * auto ctPerm = cc->EvalPermute(ct, permMap, slots, strategy);
-   *
-   * The strategy to follow when performing automorphisms is determined by the
-   * strategy argument used when EvalPermuteKeyGen was called for key
-   * generation. The different options available are defined in the enum
-   * PermutationStrategy, and described in Sections 2.5, 5, and 6 of Halevi and
-   * Shoup, "Faster Homomorphic linear transformations in HELib." for more
-   * details, link: https://eprint.iacr.org/2018/244.
-   *
-   * @param cIn input ciphertext.
-   * @param permMap a list of indices defining the desired permutation.
-   * @param slots the number of slots to apply the permutation to. The number of
-   * slots has to be more than 1, and less or equal to the half of the ring
-   * dimension.
-   */
-  Ciphertext<Element> EvalPermute(const Ciphertext<Element> cIn, const std::vector<int32_t>& permMap, int slots);
-
-  /**
-   * Generates all automorphism keys for EvalLT.
-   * EvalLTKeyGen uses the baby-step/giant-step strategy.
-   *
-   * @param privateKey private key.
-   * @param slots number of slots to support permutations on.
-   * @param dim1 inner dimension in the baby-step/giant-step strategy; here,
-   * slots = dim1*dim2
-   * @param bootstrapFlag - when set to 1, generates extra automorphism keys for
-   * sparse bootstrapping
-   * @param conjFlag - when set to 1, generates extra automorphism key for
-   * conjugation
-   */
-  void EvalLTKeyGen(const PrivateKey<Element> privateKey, uint32_t dim1 = 0,
-                    int32_t bootstrapFlag = 0, int32_t conjFlag = 0);
-
-//  /**
-// * Generates all automorphism keys for EvalLT.
-// * EvalLTKeyGen uses the baby-step/giant-step strategy.
-// *
-// * @param privateKey private key.
-// * @param slots number of slots to support permutations on.
-// * @param dim1 inner dimension in the baby-step/giant-step strategy; here,
-// * slots = dim1*dim2
-// * @param bootstrapFlag - when set to 1, generates extra automorphism keys for
-// * sparse bootstrapping
-// * @param conjFlag - when set to 1, generates extra automorphism key for
-// * conjugation
-// */
-//  void EvalLTKeyGenTall(const PrivateKey<Element> privateKey, uint32_t slots, uint32_t dim1 = 0,
-//                    int32_t bootstrapFlag = 0, int32_t conjFlag = 0);
-
-  /**
-   * Calculates automorphism indices for linear transform
-   * @param slots
-   * @param dim1
-   * @param bootstrapFlag
-   * @param m
-   * @return
-   */
-  std::vector<int32_t> FindLTRotationIndices(uint32_t dim1 = 0,
-                  int32_t bootstrapFlag = 0, uint32_t m = 0);
-
-
-  EvalKey<Element> ConjugateKeyGen(const PrivateKey<Element> privateKey) const;
-  /**
-   * Generates precomputed encoded rotated vectors for square linear map A
-   * Speeds up EvalLT
-   *
-   * @param A a square map (for DFT, for example)
-   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
-   * size of one row/column = dim1*dim2
-   * @param scale parameter to multiply that should be embedded in A. For
-   * bootstrapping, this parameter is equal to 1.0/(m/2)*powP/(K*qDouble) --
-   * scales by 1/(m/2) for the encoding and divide by Kq/2^p to scale the
-   * encrypted integers to -1 .. 1
-   * @param L number of levels from which to start the plaintext coefficients
-   *
-   * @return the precomputation for linear map A
-   */
-  std::vector<ConstPlaintext> EvalLTPrecompute(const std::vector<std::vector<std::complex<double>>>& A,
-                                               uint32_t dim1 = 0, double scale = 1, uint32_t L = 0) const;
-
-  /**
-   * Generates precomputed encoded rotated vectors for square linear maps A and
-   * B (used in sparse bootstrapping) Both linear maps are encoded in the same
-   * plaintext polynomials
-   *
-   * @param A a square map (for DFT, for example)
-   * @param B a square map (for DFT, for example)
-   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
-   * size of one row/column = dim1*dim2
-   * @param orientation set to 0 for vertical concatenation (encoding) and set
-   * to 1 for horizontal concatenation (decoding)
-   * @param scale parameter to multiply that should be embedded in A. For
-   * bootstrapping, this parameter is equal to 1.0/(m/2)*powP/(K*qDouble) --
-   * scales by 1/(m/2) for the encoding and divide by Kq/2^p to scale the
-   * encrypted integers to -1 .. 1
-   * @param L number of levels from which to start the plaintext coefficients
-   *
-   * @return the precomputation for contatenated linear map A|B
-   */
-  std::vector<ConstPlaintext> EvalLTPrecompute(const std::vector<std::vector<std::complex<double>>>& A,
-                                               const std::vector<std::vector<std::complex<double>>>& B,
-                                               uint32_t dim1 = 0, uint32_t orientation = 0, double scale = 1,
-                                               uint32_t L = 0) const;
-
-  /**
-   * Computes linear transformation using a pre-encoded map A
-   *
-   * @param A pre-encoded linear transformation map
-   * @param ct the ciphertex on which the linear transform is performed
-   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
-   * size of one row/column = dim1*dim2
-   *
-   * @return the linear transformation for ct
-   */
-  Ciphertext<Element> EvalLTWithPrecomp(const std::vector<ConstPlaintext>& A, ConstCiphertext<Element> ct,
-                                        uint32_t dim1 = 0);
-
-  /**
-   * Computes linear transformation using a pre-encoded map A
-   *
-   * @param A pre-encoded linear transformation map
-   * @param ct the ciphertex on which the linear transform is performed
-   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
-   * size of one row/column = dim1*dim2
-   *
-   * @return the linear transformation for ct
-   */
-  Ciphertext<Element> EvalLTWithPrecomp(const std::vector<Plaintext>& A, ConstCiphertext<Element> ct,
-                                        uint32_t dim1 = 0);
-
-  /**
-   * Computes linear transformation w/o precomputations
-   *
-   * @param A linear transformation map
-   * @param ct the ciphertex on which the linear transform is performed
-   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
-   * size of one row/column = dim1*dim2
-   * @param scale parameter to multiply that should be embedded in A. For
-   * bootstrapping, this parameter is equal to 1.0/(m/2)*powP/(K*qDouble) --
-   * scales by 1/(m/2) for the encoding and divide by Kq/2^p to scale the
-   * encrypted integers to -1 .. 1
-   * @return the linear transformation for ct
-   */
-  Ciphertext<Element> EvalLT(const std::vector<std::vector<std::complex<double>>>& A, ConstCiphertext<Element> ct,
-                             uint32_t dim1 = 0, double scale = 1);
+  //------------------------------------------------------------------------------
+  // FHE Bootstrap Methods
+  //------------------------------------------------------------------------------
 
   /**
    * Bootstrap functionality:
@@ -2840,7 +2827,7 @@ protected:
    * @param debugFlag - set to 1 when debugging encoding/decoding only
    * @param precomp - do linear transform precomputations
    */
-  void EvalBTSetup(uint32_t dim1 = 0, uint32_t slots = 0, uint32_t debugFlag = 0, bool precomp = true);
+  void EvalBootstrapSetup(uint32_t dim1 = 0, uint32_t slots = 0, uint32_t debugFlag = 0, bool precomp = true);
 
   /**
    * Sets all parameters for the linear method for the FFT-like method
@@ -2853,15 +2840,8 @@ protected:
    * @param debugFlag - set to 1 when debugging encoding/decoding only
    * @param precomp - do linear transform precomputations
    */
-  void EvalBTSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0,
+  void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0,
                    uint32_t debugFlag = 0, bool precomp = true);
-
-  /**
-   * Performs all precomputations for bootstrapping using the FFT-like method
-   *
-   * @param debugFlag - set to 1 when debugging encoding/decoding only
-   */
-  void EvalBTPrecompute(uint32_t debugFlag = 0);
 
   /**
    * Generates all automorphism keys for EvalBT.
@@ -2872,16 +2852,7 @@ protected:
    * @param bootstrapFlag - when set to 1, generates extra automorphism keys for
    * sparse bootstrapping
    */
-  void EvalBTKeyGen(const PrivateKey<Element> privateKey, int32_t bootstrapFlag = 0);
-
-    /**
-     * Calculate automorphism indices for bootstrapping
-     * @param slots
-     * @param bootstrapFlag
-     * @param m
-     * @return
-     */
-    std::vector<int32_t> FindBTRotationIndices(int32_t bootstrapFlag = 0, uint32_t m = 0, uint32_t blockDimension = 0);
+  void EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, int32_t bootstrapFlag = 0);
 
   /**
    * Defines the bootstrapping evaluation of ciphertext using either the
@@ -2890,7 +2861,27 @@ protected:
    * @param ciphertext the input ciphertext.
    * @return the refreshed ciphertext.
    */
-  Ciphertext<Element> EvalBT(ConstCiphertext<Element> ciphertext) const;
+  Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const;
+
+  //TODO remove?
+
+  EvalKey<Element> ConjugateKeyGen(const PrivateKey<Element> privateKey) const;
+
+  /**
+   * Performs all precomputations for bootstrapping using the FFT-like method
+   *
+   * @param debugFlag - set to 1 when debugging encoding/decoding only
+   */
+  void EvalBootstrapPrecompute(uint32_t debugFlag = 0);
+
+  /**
+   * Calculate automorphism indices for bootstrapping
+   * @param slots
+   * @param bootstrapFlag
+   * @param m
+   * @return
+   */
+  std::vector<int32_t> FindBootstrapRotationIndices(int32_t bootstrapFlag = 0, uint32_t m = 0, uint32_t blockDimension = 0);
 
   /**
    * Function to get the number of rotations in one level for homomorphic encoding
@@ -2946,13 +2937,13 @@ protected:
    * Function to get the FFT rotation indices
    * @return the number of rotation indices
    */
-  const std::vector<int32_t>& GetRotationIndicesBT() const;
+  const std::vector<int32_t>& GetRotationIndicesBootstrap() const;
 
   /**
    * Function to get the number of FFT rotation indices
    * @return the number of rotation indices
    */
-  uint32_t GetNumberOfRotationIndicesBT() const;
+  uint32_t GetNumberOfRotationIndicesBootstrap() const;
 
   /**
    * Function to get the linear evaluation rotation indices
@@ -2965,7 +2956,6 @@ protected:
    * @return the number of rotation indices
    */
   uint32_t GetNumberOfRotationIndicesLT() const;
-
 
   /**
    * Gets the giant step for baby-step-giant-step
@@ -2994,122 +2984,6 @@ protected:
   void SetBSGSDimension(uint32_t dim1) {m_BSGSDimension = dim1;};
 
  private:
-  /**
-   * EvalPermuteFullKeyGen implements the full strategy for
-   * generating automorphism keys.
-   *
-   * The full strategy generates one key perpossible rotation index, i.e.,
-   * one key for every possible rotation of a ciphertext of N slots. This
-   * means that it generates min(2*slots, ring_dimension) keys.
-   *
-   * The advantage of this strategy is that, since we have all possible
-   * keys, all possible rotations can be performed faster with a single
-   * automorphism. However, this strategy requires the creation and storage
-   * of many keys, which may become a bottleneck for certain environments.
-   *
-   * @param privateKey private key.
-   * @param slots number of slots to support permutations on.
-   */
-  void EvalPermuteFullKeyGen(const PrivateKey<Element> privateKey, int slots);
-
-  /**
-   * EvalPermuteBGStepKeyGen implements the baby-step/giant-step strategy for
-   * generating automorphism keys.
-   *
-   * Refer to Section 2.5 of Halevi and Shoup, "Faster Homomorphic linear
-   * transformations in HELib.", link: https://eprint.iacr.org/2018/244
-   *
-   * From the above paper, the baby step g is defined to be ceil(sqrt(D)),
-   * where D is the number of slots, and the giant step h is defined to be
-   * ceil(D/g). Since this has two steps, it will take two homomorphisms to
-   * perform a given rotation. However, we'll be saving in terms of storage
-   * space for keys: instead of storing D keys for all possible rotations,
-   * we only store sqrt(D) keys.
-   *
-   * TODO: Explore different tradeoffs when choosing g and h. Depending on
-   * how strict the storage space constraints are, one could use multiple
-   * levels of steps instead of just two. Using a power-of-two decomposition
-   * one would only require log2(D) keys.
-   *
-   * @param privateKey private key.
-   * @param slots number of slots to support permutations on.
-   */
-  void EvalPermuteBGStepKeyGen(const PrivateKey<Element> privateKey, int slots);
-
-  /**
-   * Generates the rotation keys necessary to perform BBH permutations.
-   * In particular, it uses the baby-step/giant-step key switching strategy
-   * as EvalPermuteBGStepKeyGen, but it generates keys for both positive
-   * and negative rotation indices.
-   *
-   * @param privateKey private key.
-   * @param slots number of slots to support permutations on.
-   */
-  void EvalPermuteBBHKeyGen(const PrivateKey<Element> privateKey, int slots);
-
-  /**
-   * Performs a permutation of the elements in the ciphertext, according to
-   * the permutation map permMap.
-   *
-   * Rotations are performed with regular automorphisms (the N in FFN and
-   * BFN). Depending on the permStrategy set with EvalPermuteKeyGen, this
-   * will operate using full key switching (FFN), or baby-step/giant-step
-   * key switching (BFN).
-   *
-   * Please refer to EvalPermute for an explanation of the input arguments.
-   */
-  Ciphertext<Element> EvalPermuteFFN_BFN(const Ciphertext<Element> cIn, const std::vector<int32_t>& permMap, int slots,
-                                         std::vector<RotatableVector>& masks, std::vector<Plaintext>& maskPlaintexts,
-                                         std::vector<bool>& isNotZeroMask);
-
-  /**
-   * Performs a permutation of the elements in the ciphertext, according to
-   * the permutation map permMap.
-   *
-   * Rotations are performed with hoisted automorphisms, and the method also
-   * assumes all possible rotation keys are available. Not to be used if only
-   * a subset of keys is available.
-   *
-   * Please refer to EvalPermute for an explanation of the input arguments.
-   */
-  Ciphertext<Element> EvalPermuteFFH(const Ciphertext<Element> cIn, const std::vector<int32_t>& permMap, int slots,
-                                     std::vector<RotatableVector>& masks, std::vector<Plaintext>& maskPlaintexts,
-                                     std::vector<bool>& isNotZeroMask);
-
-  /**
-   * Performs a permutation of the elements in the ciphertext, according to
-   * the permutation map permMap.
-   *
-   * Rotations are performed with hoisted automorphisms, and the method also
-   * assumes only baby-step/giant-step rotation keys are available (BFH).
-   *
-   * Please refer to EvalPermute for an explanation of the input arguments.
-   */
-  Ciphertext<Element> EvalPermuteBFH(const Ciphertext<Element> cIn, const std::vector<int32_t>& permMap, int slots,
-                                     std::vector<RotatableVector>& masks, std::vector<Plaintext>& maskPlaintexts,
-                                     std::vector<bool>& isNotZeroMask, std::vector<bool>& isGiantStepRequired);
-
-  /**
-   * Permutes cIn slots based on the permutation map described by permMap.
-   * It assumes baby-step/giant-step key switching, and it uses hoisting and
-   * baby-step/giant-step transformations.
-   *
-   * Refer to Sections 2.5 and 6.3 of Halevi and Shoup, "Faster Homomorphic
-   * linear transformations in HELib.", link: https://eprint.iacr.org/2018/244.
-   *
-   * @param ciphertext.
-   * @param permMap is a vector defining the permutaion. E.g., a vector {x1,
-   *     x2, x3, ...} means that the first position of the output
-   * ciphertext will contain the x1-th element of cIn, the second output slot
-   * will have the x2-th and so on.
-   * @param slots is the number of elements packed into the ciphertext. Max is
-   *     the cyclotomic order divided by 4. Min should be two (no need
-   * to permute a ciphertext of one slot).
-   * @return resulting ciphertext
-   */
-  Ciphertext<Element> EvalPermuteBBH(const Ciphertext<Element> cIn, const std::vector<int32_t>& permMap, int slots,
-                                     std::vector<RotatableVector>& masks, std::vector<Plaintext>& maskPlaintexts,
-                                     std::vector<bool>& isNotZeroMask, std::vector<int>& minOneIdx, std::vector<int>& maxOneIdx);
 
   /**
    * Rotates ciphertext slots by index positions, using the baby-step/giant-step
@@ -3156,11 +3030,6 @@ protected:
   static uint32_t SerializedVersion() { return 1; }
 
  protected:
-  /**
-     * This holds the permutation strategy as defined by a call to
-     * EvalPermuteKeyGen.
-     */
-  PermuteStrategy permStrategy = NONE;
 
   static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalRotationKeyMap() {
     // cached rotation keys, by secret key UID

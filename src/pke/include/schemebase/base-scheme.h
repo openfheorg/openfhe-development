@@ -127,9 +127,9 @@ class SchemeBase {
                          "Enable is not implemented");
   }
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // PARAMETER GENERATION WRAPPER
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                          int32_t evalAddCount,
@@ -391,10 +391,10 @@ class SchemeBase {
         "EvalKeySwitchPrecomputeCore operation has not been enabled");
   }
 
-  virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchExtCore(
+  virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCoreExt(
       const std::shared_ptr<std::vector<Element>> digits,
       const EvalKey<Element> evalKey,
-      const std::shared_ptr<ParmType> params) const {
+      const std::shared_ptr<ParmType> params, bool addFirst) const {
     if (m_KeySwitch) {
       if (nullptr == digits)
         OPENFHE_THROW(config_error, "Input digits is nullptr");
@@ -405,7 +405,7 @@ class SchemeBase {
       if (!params)
         OPENFHE_THROW(config_error, "Input params is nullptr");
 
-      return m_KeySwitch->EvalFastKeySwitchExtCore(digits, evalKey, params);
+      return m_KeySwitch->EvalFastKeySwitchCoreExt(digits, evalKey, params, addFirst);
     }
     OPENFHE_THROW(config_error,
                    "EvalFastKeySwitchCore operation has not been enabled");
@@ -1103,6 +1103,31 @@ class SchemeBase {
                    "EvalFastRotationPrecompute operation has not been enabled");
   }
 
+  /**
+   * Only supported for hybrid key switching.
+   * Performs fast (hoisted) rotation and returns the results
+   * in the extended CRT basis P*Q
+   *
+   * @param ciphertext input ciphertext
+   * @param index the rotation index.
+   * @param precomp the precomputed digits for the ciphertext
+   * @param addFirst if true, the the first element c0 is also computed (otherwise ignored)
+   * @return resulting ciphertext
+   */
+  virtual Ciphertext<Element> EvalFastRotationExt(
+      ConstCiphertext<Element> ciphertext, usint index,
+      const shared_ptr<vector<Element>> digits, bool addFirst,
+      const std::map<usint, LPEvalKey<Element>> &evalKeys) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_LeveledSHE->EvalFastRotationExt(ciphertext, index, digits, addFirst, evalKeys);
+    }
+    OPENFHE_THROW(config_error,
+                   "EvalFastRotationExt operation has not been enabled");
+  }
+
   virtual Ciphertext<Element> EvalFastRotation(
       ConstCiphertext<Element> ciphertext, const usint index, const usint m,
       const std::shared_ptr<std::vector<Element>> digits) const {
@@ -1376,16 +1401,23 @@ class SchemeBase {
                    "EvalAddManyInPlace operation has not been enabled");
   }
 
-  virtual Ciphertext<Element> AddRandomNoise(ConstCiphertext<Element> ciphertext) const {
+  virtual Ciphertext<Element> EvalMultMany(
+      const std::vector<Ciphertext<Element>> &ciphertextVec,
+      const std::vector<EvalKey<Element>> &evalKeyVec) const {
     if (m_AdvancedSHE) {
-      if (!ciphertext)
-        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+      if (!ciphertextVec.size())
+        OPENFHE_THROW(config_error, "Input ciphertext vector is empty");
+      if (!evalKeyVec.size())
+        OPENFHE_THROW(config_error, "Input evaluation key vector is empty");
 
-      return m_AdvancedSHE->AddRandomNoise(ciphertext);
+      return m_AdvancedSHE->EvalMultMany(ciphertextVec, evalKeyVec);
     }
-    OPENFHE_THROW(config_error,
-                   "AddRandomNoise operation has not been enabled");
+    OPENFHE_THROW(config_error, "EvalMultMany operation has not been enabled");
   }
+
+  /////////////////////////////////////
+  // Advanced SHE LINEAR WEIGHTED SUM
+  /////////////////////////////////////
 
   virtual Ciphertext<Element> EvalLinearWSum(
       std::vector<ConstCiphertext<Element>>& ciphertextVec,
@@ -1413,19 +1445,9 @@ class SchemeBase {
                    "EvalLinearWSumMutable operation has not been enabled");
   }
 
-  virtual Ciphertext<Element> EvalMultMany(
-      const std::vector<Ciphertext<Element>> &ciphertextVec,
-      const std::vector<EvalKey<Element>> &evalKeyVec) const {
-    if (m_AdvancedSHE) {
-      if (!ciphertextVec.size())
-        OPENFHE_THROW(config_error, "Input ciphertext vector is empty");
-      if (!evalKeyVec.size())
-        OPENFHE_THROW(config_error, "Input evaluation key vector is empty");
-
-      return m_AdvancedSHE->EvalMultMany(ciphertextVec, evalKeyVec);
-    }
-    OPENFHE_THROW(config_error, "EvalMultMany operation has not been enabled");
-  }
+  /////////////////////////////////////
+  // Advanced SHE EVAL POLYNOMIAL
+  /////////////////////////////////////
 
   Ciphertext<Element> EvalPoly(ConstCiphertext<Element> ciphertext, const std::vector<double> &coefficients) const {
     if (m_AdvancedSHE) {
@@ -1450,6 +1472,21 @@ class SchemeBase {
     }
   }
 
+  Ciphertext<Element> EvalPolyPS(ConstCiphertext<Element> ciphertext,
+      const std::vector<double> &coefficients) const {
+    if (m_AdvancedSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_AdvancedSHE->EvalPolyPS(ciphertext, coefficients);
+    }
+    OPENFHE_THROW(config_error, "EvalPolyPS operation has not been enabled");
+  }
+
+  /////////////////////////////////////
+  // Advanced SHE EVAL CHEBYSHEV SERIES
+  /////////////////////////////////////
+
   Ciphertext<Element> EvalChebyshevSeries(ConstCiphertext<Element> ciphertext,
       const std::vector<double> &coefficients, double a, double b) const {
     if (m_AdvancedSHE) {
@@ -1457,10 +1494,36 @@ class SchemeBase {
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
 
       return m_AdvancedSHE->EvalChebyshevSeries(ciphertext, coefficients, a, b);
-    } else {
-      OPENFHE_THROW(config_error, "EvalChebyshevSeries operation has not been enabled");
     }
+    OPENFHE_THROW(config_error, "EvalChebyshevSeries operation has not been enabled");
   }
+
+  Ciphertext<Element> EvalChebyshevSeriesLinear(ConstCiphertext<Element> ciphertext,
+      const std::vector<double> &coefficients, double a, double b) const {
+    if (m_AdvancedSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_AdvancedSHE->EvalChebyshevSeriesLinear(ciphertext, coefficients, a, b);
+    }
+    OPENFHE_THROW(config_error, "EvalChebyshevSeriesLinear operation has not been enabled");
+  }
+
+  Ciphertext<Element> EvalChebyshevSeriesPS(ConstCiphertext<Element> ciphertext,
+      const std::vector<double> &coefficients, double a, double b) const {
+    if (m_AdvancedSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_AdvancedSHE->EvalChebyshevSeriesPS(ciphertext, coefficients, a, b);
+    }
+    OPENFHE_THROW(config_error, "EvalChebyshevSeriesPS operation has not been enabled");
+  }
+
+  /////////////////////////////////////
+  // Advanced SHE EVAL SUM
+  /////////////////////////////////////
+
   virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumKeyGen(
       const PrivateKey<Element> privateKey,
       const PublicKey<Element> publicKey) const {
@@ -1560,6 +1623,10 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalSumCols operation has not been enabled");
   }
 
+  /////////////////////////////////////
+  // Advanced SHE EVAL INNER PRODUCT
+  /////////////////////////////////////
+
   virtual Ciphertext<Element> EvalInnerProduct(
       ConstCiphertext<Element> ciphertext1,
       ConstCiphertext<Element> ciphertext2, usint batchSize,
@@ -1603,6 +1670,17 @@ class SchemeBase {
                    "EvalInnerProduct operation has not been enabled");
   }
 
+  virtual Ciphertext<Element> AddRandomNoise(ConstCiphertext<Element> ciphertext) const {
+    if (m_AdvancedSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_AdvancedSHE->AddRandomNoise(ciphertext);
+    }
+    OPENFHE_THROW(config_error,
+                   "AddRandomNoise operation has not been enabled");
+  }
+
   virtual Ciphertext<Element> EvalMerge(
       const std::vector<Ciphertext<Element>> &ciphertextVec,
       const std::map<usint, EvalKey<Element>> &evalKeyMap) const {
@@ -1616,6 +1694,10 @@ class SchemeBase {
     }
     OPENFHE_THROW(config_error, "EvalMerge operation has not been enabled");
   }
+
+  /////////////////////////////////////
+  // Advanced SHE LINEAR TRANSFORMATION
+  /////////////////////////////////////
 
   virtual Ciphertext<Element> EvalAtIndexBGStep(
       ConstCiphertext<Element> ciphertext, usint i, int32_t slots,
@@ -1644,6 +1726,11 @@ class SchemeBase {
 
     OPENFHE_THROW(config_error, "EvalLTKeyGen operation has not been enabled");
   }
+
+  /////////////////////////////////////
+  // Other Methods for Bootstrap
+  /////////////////////////////////////
+
 
   /////////////////////////////////////////
   // MULTIPARTY WRAPPER
@@ -1938,59 +2025,72 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "Multiparty capability has not been enabled");
   }
 
-  const std::shared_ptr<PKEBase<Element>> getAlgorithm() const { return m_PKE; }
+  // FHE METHODS
 
-  // FHE
+  //TODO Andrey: do we need this method?
+//  const std::shared_ptr<PKEBase<Element>> getAlgorithm() const { return m_PKE; }
 
-  void EvalBTSetup(const CryptoContextImpl<Element> &cc, uint32_t dim1 = 0, uint32_t slots = 0, uint32_t debugFlag = 0, bool precomp = true) {
+  void EvalBootstrapSetup(const CryptoContextImpl<Element> &cc,
+      uint32_t dim1 = 0, uint32_t slots = 0,
+      uint32_t debugFlag = 0, bool precomp = true) {
     if (m_FHE) {
-      m_FHE->EvalBTSetup(cc,dim1,slots);
+      m_FHE->EvalBootstrapSetup(cc,dim1,slots);
       if (precomp) {
-        m_FHE->EvalBTPrecompute(cc,debugFlag);
+        m_FHE->EvalBootstrapPrecompute(cc, debugFlag);
       }
       return;
     }
 
-    OPENFHE_THROW(config_error, "EvalBTSetup operation has not been enabled");
+    OPENFHE_THROW(config_error, "EvalBootstrapSetup operation has not been enabled");
   }
 
-  void EvalBTSetup(const CryptoContextImpl<Element> &cc, const std::vector<uint32_t> &levelBudget = {5,4},
-      const std::vector<uint32_t> &dim1 = {0,0}, uint32_t slots = 0, uint32_t debugFlag = 0, bool precomp = true) {
+  void EvalBootstrapSetup(const CryptoContextImpl<Element> &cc,
+      const std::vector<uint32_t> &levelBudget = {5,4},
+      const std::vector<uint32_t> &dim1 = {0,0}, uint32_t slots = 0,
+      uint32_t debugFlag = 0, bool precomp = true) {
     if (m_FHE) {
-      m_FHE->EvalBTSetup(cc,levelBudget,dim1,slots);
+      m_FHE->EvalBootstrapSetup(cc,levelBudget,dim1,slots);
       if (precomp) {
-        m_FHE->EvalBTPrecompute(cc,debugFlag);
+        m_FHE->EvalBootstrapPrecompute(cc,debugFlag);
       }
       return;
     }
 
-    OPENFHE_THROW(config_error, "EvalBTSetup operation has not been enabled");
+    OPENFHE_THROW(config_error, "EvalBootstrapSetup operation has not been enabled");
   }
 
-  void EvalBTPrecompute(const CryptoContextImpl<Element> &cc, uint32_t debugFlag = 0) {
+  void EvalBootstrapPrecompute(const CryptoContextImpl<Element> &cc, uint32_t debugFlag = 0) {
     if (m_FHE) {
-      m_FHE->EvalBTPrecompute(cc,debugFlag);
+      m_FHE->EvalBootstrapPrecompute(cc,debugFlag);
       return;
     }
 
-    OPENFHE_THROW(config_error, "EvalBTPrecompute operation has not been enabled");
+    OPENFHE_THROW(config_error, "EvalBootstrapPrecompute operation has not been enabled");
   }
 
-  std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalBTKeyGen(const PrivateKey<Element> privateKey,
+  std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
       int32_t bootstrapFlag = 0) {
     if (m_FHE) {
-      return m_FHE->EvalBTKeyGen(privateKey, bootstrapFlag);
+      return m_FHE->EvalBootstrapKeyGen(privateKey, bootstrapFlag);
     }
 
-    OPENFHE_THROW(config_error, "EvalBTKeyGen operation has not been enabled");
+    OPENFHE_THROW(config_error, "EvalBootstrapKeyGen operation has not been enabled");
   }
 
-  std::vector<int32_t> FindBTRotationIndices(int32_t bootstrapFlag = 0, uint32_t m = 0, uint32_t blockDimension = 0) {
+  std::vector<int32_t> FindBootstrapRotationIndices(int32_t bootstrapFlag = 0, uint32_t m = 0, uint32_t blockDimension = 0) {
     if (m_FHE) {
-      return m_FHE->FindBTRotationIndices(bootstrapFlag, m, blockDimension);
+      return m_FHE->FindBootstrapRotationIndices(bootstrapFlag, m, blockDimension);
     }
 
-    OPENFHE_THROW(config_error, "FindBTRotationIndices operation has not been enabled");
+    OPENFHE_THROW(config_error, "FindBootstrapRotationIndices operation has not been enabled");
+  }
+
+  Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
+    if (m_FHE) {
+      return m_FHE->EvalBootstrap(ciphertext);
+    }
+
+    OPENFHE_THROW(config_error, "EvalBootstrap operation has not been enabled");
   }
 
   EvalKey<Element> ConjugateKeyGen(const PrivateKey<Element> privateKey) const {
@@ -1999,14 +2099,6 @@ class SchemeBase {
     }
 
     OPENFHE_THROW(config_error, "ConjugateKeyGen operation has not been enabled");
-  }
-
-  Ciphertext<Element> EvalBT(ConstCiphertext<Element> ciphertext) const {
-    if (m_FHE) {
-      return m_FHE->EvalBT(ciphertext);
-    }
-
-    OPENFHE_THROW(config_error, "EvalBT operation has not been enabled");
   }
 
   uint32_t GetNumRotationsEnc() const {
@@ -2073,20 +2165,20 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "GetGiantStepRemDec operation has not been enabled");
   }
 
-  const std::vector<int32_t>& GetRotationIndicesBT() const {
+  const std::vector<int32_t>& GetRotationIndicesBootstrap() const {
     if (m_FHE) {
       return m_FHE->GetRotationIndicesBT();
     }
 
-    OPENFHE_THROW(config_error, "GetRotationIndicesBT operation has not been enabled");
+    OPENFHE_THROW(config_error, "GetRotationIndicesBootstrap operation has not been enabled");
   }
 
-  uint32_t GetNumberOfRotationIndicesBT() const {
+  uint32_t GetNumberOfRotationIndicesBootstrap() const {
     if (m_FHE) {
-      return m_FHE->GetNumberOfRotationIndicesBT();
+      return m_FHE->GetNumberOfRotationIndicesBootstrap();
     }
 
-    OPENFHE_THROW(config_error, "GetNumberOfRotationIndicesBT operation has not been enabled");
+    OPENFHE_THROW(config_error, "GetNumberOfRotationIndicesBootstrap operation has not been enabled");
   }
 
   const std::vector<int32_t>& GetRotationIndicesLT() const {

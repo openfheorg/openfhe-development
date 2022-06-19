@@ -744,6 +744,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalAtIndexBGStep(
   return result;
 }
 
+
 }  // namespace lbcrypto
 
 // the code below is from base-advancedshe-impl.cpp

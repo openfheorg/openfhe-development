@@ -617,6 +617,15 @@ class LeveledSHEBase {
   virtual std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(
       ConstCiphertext<Element> ciphertext) const;
 
+  virtual Ciphertext<Element> EvalFastRotationExt(
+      ConstCiphertext<Element> ciphertext, usint index,
+      const std::shared_ptr<vector<Element>> expandedCiphertext, bool addFirst,
+      const std::map<usint, EvalKey<Element>> &evalKeys) const {
+    std::string errMsg =
+        "EvalFastRotationExt is not implemented for this scheme.";
+    OPENFHE_THROW(not_implemented_error, errMsg);
+  }
+
   /**
    * Virtual function for the automorphism and key switching step of
    * hoisted automorphisms.

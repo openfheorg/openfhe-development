@@ -112,13 +112,10 @@ public:
   // AUTOMORPHISM
   /////////////////////////////////////
 
-  EvalKey<DCRTPoly> ConjugateKeyGen(
-      const PrivateKey<DCRTPoly> privateKey) const;
-
-  Ciphertext<DCRTPoly> Conjugate(
-      ConstCiphertext<DCRTPoly> ciphertext,
-      const std::map<usint, EvalKey<DCRTPoly>> &evalKeys,
-      CALLER_INFO_ARGS_CPP) const;
+  virtual Ciphertext<DCRTPoly> EvalFastRotationExt(
+      ConstCiphertext<DCRTPoly> ciphertext, usint index,
+      const std::shared_ptr<vector<DCRTPoly>> digits, bool addFirst,
+      const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const override;
 
   /////////////////////////////////////
   // Mod Reduce

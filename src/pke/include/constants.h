@@ -76,7 +76,10 @@ std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
 enum LargeScalingFactorConstants {MAX_BITS_IN_WORD = 62, MAX_LOG_STEP = 60};
 
-enum CKKSBootstrapMethod {EvalBTLinearMethod, EvalBTFFTMethod};
+enum CKKSBootstrapMethod {
+  EvalBTLinearMethod,
+  EvalBTFFTMethod
+};
 std::ostream& operator<<(std::ostream& s, CKKSBootstrapMethod t);
 
 enum CKKS_FFT_PARAMS {
@@ -92,6 +95,5 @@ enum CKKS_FFT_PARAMS {
   TOTAL_ELEMENTS     // total number of elements in the vector
 };
 std::ostream& operator<<(std::ostream& s, CKKS_FFT_PARAMS t);
-
 
 #endif  // _CONSTANTS_H_

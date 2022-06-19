@@ -117,52 +117,35 @@ public:
 
   virtual ~FHECKKSRNS() {}
 
-  void BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, uint32_t dim1, uint32_t numSlots);
+  virtual void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, uint32_t dim1, uint32_t numSlots) override;
 
-  void BootstrapSetup(const CryptoContextImpl<DCRTPoly> &cc, const std::vector<uint32_t> &levelBudget,
-      const std::vector<uint32_t> &dim1, uint32_t numSlots);
+  virtual void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
+                           const std::vector<uint32_t>& levelBudget = {5, 4},
+                           const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0) override;
 
-  void BootstrapPrecompute(const CryptoContextImpl<DCRTPoly> &cc, uint32_t debugFlag);
+  virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(
+      const PrivateKey<DCRTPoly> privateKey, int32_t bootstrapFlag) override;
 
-  shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> BootstrapKeyGen(
-      const PrivateKey<DCRTPoly> privateKey, int32_t bootstrapFlag);
+  virtual Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-  void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext,
-    const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams,
-    const CryptoContext<DCRTPoly> cc,
-    double correction) const;
+
+  void EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly> &cc, uint32_t debugFlag);
 
   Ciphertext<DCRTPoly> EvalBootstrapEncoding(const CryptoContextImpl<DCRTPoly> &cc,
       const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
       ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale);
 
-  Ciphertext<DCRTPoly> EvalBTDecoding(const CryptoContextImpl<DCRTPoly> &cc,
+  Ciphertext<DCRTPoly> EvalBootstrapDecoding(const CryptoContextImpl<DCRTPoly> &cc,
       const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
       ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale);
-
-  Ciphertext<DCRTPoly> EvalFastRotationExt(
-      ConstCiphertext<DCRTPoly> ciphertext, usint index,
-      const shared_ptr<vector<DCRTPoly>> expandedCiphertext, bool addFirst,
-      const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const;
-
-//  Ciphertext<DCRTPoly> KeySwitchDown(
-//      ConstCiphertext<DCRTPoly> ciphertext) const;
-//
-//  DCRTPoly KeySwitchDownFirstElement(
-//      ConstCiphertext<DCRTPoly> ciphertext) const;
-//
-//  Ciphertext<DCRTPoly> KeySwitchExt(
-//      ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const;
 
   void ApplyDoubleAngleIterations(CryptoContext<DCRTPoly>& cc,
     Ciphertext<DCRTPoly>& ciphertext) const;
 
-  Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext) const;
-
   Ciphertext<DCRTPoly> EvalBootstrapCore(
       CKKSBootstrapMethod method, ConstCiphertext<DCRTPoly> ciphertext1) const;
 
-  Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompEncoding(
+  Ciphertext<DCRTPoly> EvalBootstrapWithPrecompEncoding(
       const CryptoContextImpl<DCRTPoly> &cc,
       const std::vector<std::vector<ConstPlaintext>> &A,
       ConstCiphertext<DCRTPoly> ctxt) const;
@@ -180,8 +163,141 @@ public:
     const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
     bool flag_i, double scale, uint32_t L);
 
+  /**
+   * Virtual function to do all precomputations for bootstrapping using the linear method
+   *
+   * @param cc current cryptocontext
+   * @param dim1 - inner dimension in the baby-step giant-step routine
+   * @param slots - number of slots to be bootstrapped
+   */
+  virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, uint32_t dim1 = 0, uint32_t slots = 0) {
+    OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext,
+    const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams,
+    const CryptoContext<DCRTPoly> cc,
+    double correction) const;
+
+  EvalKey<Element> ConjugateKeyGen(const PrivateKey<Element> privateKey) const {
+    OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  Ciphertext<DCRTPoly> Conjugate(
+      ConstCiphertext<DCRTPoly> ciphertext,
+      const std::map<usint, EvalKey<DCRTPoly>> &evalKeys,
+      CALLER_INFO_ARGS_CPP) const;
+
+  /**
+   * Function to calculate Bootstrapping automorphism indices
+   * @param bootstrapFlag
+   * @param m
+   * @return
+   */
+  virtual std::vector<int32_t> FindBootstrapRotationIndices(int32_t bootstrapFlag = 0, uint32_t m = 0,
+                                                uint32_t blockDimension = 0) {
+    OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
 
   uint32_t GetBootstrapDepth(const CryptoContextImpl<DCRTPoly> &cc, const std::vector<uint32_t> &levelBudget);
+
+ /**
+  * Function to get the number of rotations in one level for homomorphic encoding
+  * @return the number of rotations
+  */
+  uint32_t GetNumRotationsEnc() const {
+        OPENFHE_THROW(not_implemented_error, "Not supported");
+    }
+
+  /**
+   * Function to get the giant step in the baby-step giant-step strategy for homomorphic encoding
+   * @return the giant step
+   */
+  uint32_t GetGiantStepEnc() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  /**
+   * Function to get the number of rotations in the remaining level for homomorphic encoding
+   * @return the number of rotations
+   */
+  uint32_t GetNumRotationsRemEnc() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  /**
+   * Function to get the giant step in the baby-step giant-step strategy for the remaining level
+   * for homomorphic encoding
+   * @return the giant step
+   */
+  uint32_t GetGiantStepRemEnc() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  /**
+   * Function to get the number of rotations in one level for homomorphic decoding
+   * @return the number of rotations
+   */
+  uint32_t GetNumRotationsDec() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  /**
+   * Function to get the giant step in the baby-step giant-step strategy for homomorphic decoding
+   * @return the giant step
+   */
+  uint32_t GetGiantStepDec() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  /**
+   * Function to get the number of rotations in the remaining level for homomorphic decoding
+   * @return the number of rotations
+   */
+  uint32_t GetNumRotationsRemDec() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  /**
+   * Function to get the giant step in the baby-step giant-step strategy for the remaining level
+   * for homomorphic decoding
+   * @return the giant step
+   */
+  uint32_t GetGiantStepRemDec() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  /**
+   * Function to get the FFT rotation indices
+   * @return the number of rotation indices
+   */
+  const std::vector<int32_t>& GetRotationIndicesBootstrap() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  /**
+   * Function to get the number of FFT rotation indices
+   * @return the number of rotation indices
+   */
+  uint32_t GetNumberOfRotationIndicesBootstrap() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  /**
+   * Function to get the linear evaluation rotation indices
+   * @return the number of rotation indices
+   */
+  const std::vector<int32_t>& GetRotationIndicesLT() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
+
+  /**
+   * Function to get the number of linear evaluation rotation indices
+   * @return the number of rotation indices
+   */
+  uint32_t GetNumberOfRotationIndicesLT() const {
+      OPENFHE_THROW(not_implemented_error, "Not supported");
+  }
 
   /////////////////////////////////////
   // SERIALIZATION
@@ -199,6 +315,48 @@ public:
 
   std::string SerializedObjectName() const { return "FHECKKSRNS"; }
 };
+
+typedef struct {
+  // level budget for homomorphic encoding, number of layers to collapse in one level,
+  // number of layers remaining to be collapsed in one level to have exactly the number
+  // of levels specified in the level budget, the number of rotations in one level,
+  // the baby step and giant step in the baby-step giant-step strategy, the number of
+  // rotations in the remaining level, the baby step and giant step in the baby-step
+  // giant-step strategy for the remaining level
+  std::vector<int32_t> m_paramsEnc;
+
+  // level budget for homomorphic decoding, number of layers to collapse in one level,
+  // number of layers remaining to be collapsed in one level to have exactly the number
+  // of levels specified in the level budget, the number of rotations in one level,
+  // the baby step and giant step in the baby-step giant-step strategy, the number of
+  // rotations in the remaining level, the baby step and giant step in the baby-step
+  // giant-step strategy for the remaining level
+  std::vector<int32_t> m_paramsDec;
+
+  // Linear map U0; used in decoding
+  std::vector<ConstPlaintext> m_U0Pre;
+
+  // Conj(U0^T); used in encoding
+  std::vector<ConstPlaintext> m_U0hatTPre;
+
+  // coefficients corresponding to U0; used in decoding
+  std::vector<std::vector<ConstPlaintext>> m_U0PreFFT;
+
+  // coefficients corresponding to conj(U0^T); used in encoding
+  std::vector<std::vector<ConstPlaintext>> m_U0hatTPreFFT;
+
+  // the inner dimension in the baby-step giant-step strategy
+  uint32_t m_dim1;
+
+  // number of slots for which the bootstrapping is performed
+  uint32_t m_slots;
+
+  // EvalBT (FFT evaluation) rotation indices
+  std::vector<int32_t> indexListEvalBT;
+
+  // EvalLT (linear evaluation) rotation indices
+  std::vector<int32_t> indexListEvalLT;
+} CKKSBootstrapPrecom;
 
 }  // namespace lbcrypto
 

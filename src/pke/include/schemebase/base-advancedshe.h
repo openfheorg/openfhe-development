@@ -79,6 +79,25 @@ public:
       std::vector<Ciphertext<Element>> &ciphertextVec) const;
 
   /**
+   * Virtual function for evaluating multiplication of a ciphertext list which
+   * each multiplication is followed by relinearization operation.
+   *
+   * @param cipherTextList  is the ciphertext list.
+   * @param evalKeys is the evaluation key to make the newCiphertext
+   *  decryptable by the same secret key as that of ciphertext list.
+   * @param *newCiphertext the new resulting ciphertext.
+   */
+  virtual Ciphertext<Element> EvalMultMany(
+      const std::vector<Ciphertext<Element>> &ciphertextVec,
+      const std::vector<EvalKey<Element>> &evalKeyVec) const;
+
+
+  //------------------------------------------------------------------------------
+  // LINEAR WEIGHTED SUM
+  //------------------------------------------------------------------------------
+
+
+  /**
    * Virtual function for computing the linear weighted sum of a
    * vector of ciphertexts.
    *
@@ -108,18 +127,11 @@ public:
     OPENFHE_THROW(not_implemented_error, errMsg);
   }
 
-  /**
-   * Virtual function for evaluating multiplication of a ciphertext list which
-   * each multiplication is followed by relinearization operation.
-   *
-   * @param cipherTextList  is the ciphertext list.
-   * @param evalKeys is the evaluation key to make the newCiphertext
-   *  decryptable by the same secret key as that of ciphertext list.
-   * @param *newCiphertext the new resulting ciphertext.
-   */
-  virtual Ciphertext<Element> EvalMultMany(
-      const std::vector<Ciphertext<Element>> &ciphertextVec,
-      const std::vector<EvalKey<Element>> &evalKeyVec) const;
+
+  //------------------------------------------------------------------------------
+  // EVAL POLYNOMIAL
+  //------------------------------------------------------------------------------
+
 
   /**
    * Method for polynomial evaluation for polynomials represented in the power
@@ -153,6 +165,16 @@ public:
     OPENFHE_THROW(config_error, "EvalPolyLinear is not supported for the scheme.");
   }
 
+  virtual Ciphertext<Element> EvalPolyPS(
+      ConstCiphertext<Element> x,
+      const std::vector<double> &coefficients) const {
+    OPENFHE_THROW(config_error, "EvalPolyPS is not supported for the scheme.");
+  }
+
+  //------------------------------------------------------------------------------
+  // EVAL CHEBYSHEV SERIES
+  //------------------------------------------------------------------------------
+
   /**
    * Method for evaluating Chebyshev polynomial interpolation;
    * first the range [a,b] is mapped to [-1,1] using linear transformation 1 + 2
@@ -169,18 +191,26 @@ public:
       ConstCiphertext<Element> ciphertext,
       const std::vector<double>& coefficients,
       double a, double b) const {
-    OPENFHE_THROW(config_error, "EvalPolyLinear is not supported for the scheme.");
+    OPENFHE_THROW(config_error, "EvalChebyshevSeries is not supported for the scheme.");
   }
 
-  /**
-   * Function to add random noise to all plaintext slots except for the first
-   * one; used in EvalInnerProduct
-   *
-   * @param &ciphertext the input ciphertext.
-   * @return modified ciphertext
-   */
-  virtual Ciphertext<Element> AddRandomNoise(
-      ConstCiphertext<Element> ciphertext) const;
+  virtual Ciphertext<Element> EvalChebyshevSeriesLinear(
+      ConstCiphertext<Element> ciphertext,
+      const std::vector<double>& coefficients,
+      double a, double b) const {
+    OPENFHE_THROW(config_error, "EvalChebyshevSeriesLinear is not supported for the scheme.");
+  }
+
+  virtual Ciphertext<Element> EvalChebyshevSeriesPS(
+      ConstCiphertext<Element> ciphertext,
+      const std::vector<double>& coefficients,
+      double a, double b) const {
+    OPENFHE_THROW(config_error, "EvalChebyshevSeriesPS is not supported for the scheme.");
+  }
+
+  //------------------------------------------------------------------------------
+  // Advanced SHE EVAL SUM
+  //------------------------------------------------------------------------------
 
   /**
    * Virtual function to generate the automorphism keys for EvalSum; works
@@ -265,6 +295,11 @@ public:
       ConstCiphertext<Element> ciphertext, usint batchSize,
       const std::map<usint, EvalKey<Element>> &evalSumColsKeyMap,
       const std::map<usint, EvalKey<Element>> &rightEvalKeys) const;
+
+  //------------------------------------------------------------------------------
+  // Advanced SHE EVAL INNER PRODUCT
+  //------------------------------------------------------------------------------
+
   /**
    * Evaluates inner product in batched encoding
    *
@@ -301,6 +336,16 @@ public:
       const std::map<usint, EvalKey<Element>> &evalKeyMap) const;
 
   /**
+   * Function to add random noise to all plaintext slots except for the first
+   * one; used in EvalInnerProduct
+   *
+   * @param &ciphertext the input ciphertext.
+   * @return modified ciphertext
+   */
+  virtual Ciphertext<Element> AddRandomNoise(
+      ConstCiphertext<Element> ciphertext) const;
+
+  /**
    * Merges multiple ciphertexts with encrypted results in slot 0 into a
    * single ciphertext The slot assignment is done based on the order of
    * ciphertexts in the vector
@@ -313,6 +358,10 @@ public:
   virtual Ciphertext<Element> EvalMerge(
       const std::vector<Ciphertext<Element>> &ciphertextVector,
       const std::map<usint, EvalKey<Element>> &evalKeyMap) const;
+
+  //------------------------------------------------------------------------------
+  // LINEAR TRANSFORMATION
+  //------------------------------------------------------------------------------
 
   virtual Ciphertext<Element> EvalAtIndexBGStep(
       ConstCiphertext<Element> ciphertext, int32_t index, int32_t slots,
@@ -329,6 +378,10 @@ public:
                                                                        int32_t conjFlag = 0) {
     OPENFHE_THROW(not_implemented_error, "Not supported");
   }
+
+  //------------------------------------------------------------------------------
+  // Other Methods for Bootstrap
+  //------------------------------------------------------------------------------
 
  protected:
   std::vector<usint> GenerateIndices_2n(usint batchSize, usint m) const;
