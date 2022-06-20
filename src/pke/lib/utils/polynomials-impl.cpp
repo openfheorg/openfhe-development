@@ -19,7 +19,8 @@
 
 using namespace lbcrypto;
 
-constexpr double PREC = std::pow(2,-20);
+//constexpr double PREC = std::pow(2,-20);
+double PREC = std::pow(2,-20);
 inline bool IsNotEqualOne(double val)
 {
     LOG_DEBUG_ALL("Begin");

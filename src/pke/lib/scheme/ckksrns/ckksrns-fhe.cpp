@@ -34,6 +34,7 @@
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
 #include "utils/polynomials.h"
+#include "utils/caller_info.h"
 
 namespace lbcrypto {
 
@@ -381,7 +382,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalLTKeyGen(
 
 void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext,
   const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams,
-  const CryptoContextImpl<DCRTPoly> cc,
+  const CryptoContext<DCRTPoly> cc,
   double correction) const {
 
   auto algo = cc->GetScheme();
@@ -486,7 +487,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   uint32_t cyclOrder = cryptoParams->GetElementParams()->GetCyclotomicOrder();
   size_t ringDim = cryptoParams->GetElementParams()->GetRingDimension();
 
-  CryptoContext<DCRTPoly> cc = ciphertext->GetCryptoContext();
+  auto cc = ciphertext->GetCryptoContext();
   auto algo = cc->GetScheme();
 
   algo->ModReduceInternalInPlace(ciphertext, ciphertext->GetDepth() - 1);
@@ -587,7 +588,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     ctxtEnc[0] = cc->EvalAdd(ctxtEnc0,conj);
 
     auto ctxtEnc1 = cc->EvalSub(ctxtEnc0, conj);
-    ctxtEnc[1] = MultByMonomial(ctxtEnc1, 3 * cyclOrder / 4);
+    ctxtEnc[1] = algo->MultByMonomial(ctxtEnc1, 3 * cyclOrder / 4);
 
     if (isEvalBTLinear) {
       if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
@@ -628,7 +629,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     TIC(t);
 #endif
 
-    auto ctxtMultI = MultByMonomial(ctxtEnc[1], cyclOrder / 4);
+    auto ctxtMultI = algo->MultByMonomial(ctxtEnc[1], cyclOrder / 4);
     auto ctxtFused = cc->EvalAdd(ctxtEnc[0], ctxtMultI);
 
     // scale the message back up after Chebyshev interpolation
@@ -653,8 +654,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     Ciphertext<DCRTPoly> ctxt1 = raised;
 
     // Running PartialSum
-    for(int j = 0; j < int(std::log2(ringDim/(2*m_slots))); j++) {
-      auto temp = cc->EvalRotate(ctxt1,(1<<j)*m_slots);
+    for(int j = 0; j < int(std::log2(ringDim/(2*precom.m_slots))); j++) {
+      auto temp = cc->EvalRotate(ctxt1,(1<<j)*precom.m_slots);
       cc->EvalAddInPlace(ctxt1, temp);
     }
 
@@ -1105,7 +1106,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapWithPrecompDecoding(const CryptoCo
   return result;
 }
 
-std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeDecoding(
+std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalBootstrapPrecomputeDecoding(
   const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
   bool flag_i, double scale, uint32_t L) {
 
@@ -1172,7 +1173,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeDecoding
     roots[sizeQ + i] = paramsP[i]->GetRootOfUnity();
   }
 
-  std::vector<shared_ptr<ILDCRTParams<DCRTPoly::Integer>>> paramsVector(levelBudget - flagRem + 1);
+  std::vector<std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>> paramsVector(levelBudget - flagRem + 1);
   for (int32_t s = 0; s < levelBudget - flagRem + 1; s++) {
       paramsVector[s] = std::make_shared<typename DCRTPoly::Params>(m, moduli, roots);
       moduli.erase(moduli.begin() + sizeQ - 1);
@@ -1274,7 +1275,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeDecoding
   return result;
 }
 
-std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeEncoding(
+std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalBootstrapPrecomputeEncoding(
   const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A,const std::vector<uint32_t> &rotGroup,
   bool flag_i, double scale, uint32_t L) {
 
@@ -1329,7 +1330,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeEncoding
 
   auto paramsQ = elementParams.GetParams();
   usint sizeQ = paramsQ.size();
-  auto paramsP = cryptoParamsCKKS->GetParamsP()->GetParams();
+  auto paramsP = cryptoParams->GetParamsP()->GetParams();
   usint sizeP = paramsP.size();
 
   std::vector<NativeInteger> moduli(sizeQ + sizeP);
@@ -1345,7 +1346,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::BootstrapPrecomputeEncoding
   }
 
   // we need to pre-compute the plaintexts in the extended basis P*Q
-  std::vector<shared_ptr<ILDCRTParams<DCRTPoly::Integer>>> paramsVector(levelBudget - stop);
+  std::vector<std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>>> paramsVector(levelBudget - stop);
   for (int32_t s = levelBudget - 1; s >= stop; s--) {
       paramsVector[s - stop] = std::make_shared<typename DCRTPoly::Params>(m, moduli, roots);
       moduli.erase(moduli.begin() + sizeQ - 1);
@@ -1469,6 +1470,95 @@ uint32_t FHECKKSRNS::GetBootstrapDepth(
   }
 
   return approxModDepth + levelBudget[0] + levelBudget[1] + 1;
+}
+
+EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(
+    const PrivateKey<DCRTPoly> privateKey) const {
+  const DCRTPoly &s = privateKey->GetPrivateElement();
+
+  usint n = s.GetRingDimension();
+
+  PrivateKey<DCRTPoly> privateKeyPermuted(
+      std::make_shared<PrivateKeyImpl<DCRTPoly>>(
+          privateKey->GetCryptoContext()));
+
+  usint index =  2 * n - 1;
+  std::vector<usint> map(n);
+  PrecomputeAutoMap(n, index, &map);
+
+  DCRTPoly sPermuted = s.AutomorphismTransform(index);
+
+  privateKeyPermuted->SetPrivateElement(sPermuted);
+  privateKeyPermuted->SetKeyTag(privateKey->GetKeyTag());
+
+  auto cc = privateKey->GetCryptoContext();
+  auto algo = cc->GetScheme();
+  return algo->KeySwitchGen(privateKey, privateKeyPermuted);
+}
+
+Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(
+    ConstCiphertext<DCRTPoly> ciphertext,
+    const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const {
+  if (nullptr == ciphertext) {
+    std::string errorMsg(std::string("Input ciphertext is nullptr") +
+                         CALLER_INFO);
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  usint n = ciphertext->GetElements()[0].GetRingDimension();
+  if (evalKeys.empty()) {
+    std::string errorMsg(std::string("Empty input key map") + CALLER_INFO);
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  auto key = evalKeys.find(2 * n - 1);
+  if (key == evalKeys.end()) {
+    std::string errorMsg(std::string("Could not find an EvalKey for index ") +
+                         std::to_string(2 * n - 1) + CALLER_INFO);
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  auto fk = key->second;
+  if (nullptr == fk) {
+    std::string errorMsg(std::string("Invalid evalKey") + CALLER_INFO);
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  if (ciphertext->GetCryptoContext() != fk->GetCryptoContext()) {
+    std::string errorMsg(
+        std::string("Items were not created in the same CryptoContextImpl") +
+        CALLER_INFO);
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  if (ciphertext->GetKeyTag() != fk->GetKeyTag()) {
+    std::string errorMsg(
+        std::string("Items were not encrypted with same keys") + CALLER_INFO);
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+
+  const std::vector<DCRTPoly> &c = ciphertext->GetElements();
+  if (c.size() < 2) {
+    std::string errorMsg(
+        std::string("Insufficient number of elements in ciphertext: ") +
+        std::to_string(c.size()) + CALLER_INFO);
+    OPENFHE_THROW(config_error, errorMsg);
+  }
+
+  auto cc = ciphertext->GetCryptoContext();
+  auto algo = cc->GetScheme();
+  Ciphertext<DCRTPoly> permutedCiphertext = algo->KeySwitch(ciphertext, fk);
+
+  std::vector<usint> map(n);
+  PrecomputeAutoMap(n, 2 * n - 1, &map);
+
+  permutedCiphertext->SetElements(
+      {std::move(
+           permutedCiphertext->GetElements()[0].AutomorphismTransform(2 * n - 1, map)),
+       std::move(permutedCiphertext->GetElements()[1].AutomorphismTransform(
+           2 * n - 1, map))});
+
+  permutedCiphertext->SetDepth(ciphertext->GetDepth());
+  permutedCiphertext->SetLevel(ciphertext->GetLevel());
+  permutedCiphertext->SetScalingFactor(ciphertext->GetScalingFactor());
+
+  return permutedCiphertext;
+
 }
 
 }

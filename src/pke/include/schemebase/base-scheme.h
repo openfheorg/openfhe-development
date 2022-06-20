@@ -988,6 +988,17 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }
 
+  virtual Ciphertext<Element> MultByMonomial(
+      ConstCiphertext<Element> ciphertext, usint power) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_LeveledSHE->MultByMonomial(ciphertext, power);
+    }
+    OPENFHE_THROW(config_error, "MultByMonomial operation has not been enabled");
+  }
+
   // TODO (dsuponit): commented the code below to avoid compiler errors
   //virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext,
   //                                     const NativeInteger &constant) const {

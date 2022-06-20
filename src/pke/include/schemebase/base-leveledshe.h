@@ -471,6 +471,12 @@ class LeveledSHEBase {
                    "EvalMultMutable is not implemented for this scheme");
   }
 
+  virtual Ciphertext<Element> MultByMonomial(
+      ConstCiphertext<Element> ciphertext, usint power) const {
+    OPENFHE_THROW(not_implemented_error,
+                   "MultByMonomial is not implemented for this scheme");
+
+  }
 
   virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext,
                                       const NativeInteger &constant) const {

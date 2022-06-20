@@ -233,96 +233,6 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMultMutable(
 // Automorphisms
 /////////////////////////////////////
 
-EvalKey<DCRTPoly> LeveledSHECKKSRNS::ConjugateKeyGen(
-    const PrivateKey<DCRTPoly> privateKey) const {
-  const DCRTPoly &s = privateKey->GetPrivateElement();
-
-  usint n = s.GetRingDimension();
-
-  PrivateKey<DCRTPoly> privateKeyPermuted(
-      std::make_shared<PrivateKeyImpl<DCRTPoly>>(
-          privateKey->GetCryptoContext()));
-
-  usint index =  2 * n - 1;
-  std::vector<usint> map(n);
-  PrecomputeAutoMap(n, index, &map);
-
-  DCRTPoly sPermuted = s.AutomorphismTransform(index);
-
-  privateKeyPermuted->SetPrivateElement(sPermuted);
-  privateKeyPermuted->SetKeyTag(privateKey->GetKeyTag());
-
-  auto cc = privateKey->GetCryptoContext();
-  auto algo = cc->GetScheme();
-  return algo->KeySwitchGen(privateKey, privateKeyPermuted);
-}
-
-Ciphertext<DCRTPoly> LeveledSHECKKSRNS::Conjugate(
-    ConstCiphertext<DCRTPoly> ciphertext,
-    const std::map<usint, EvalKey<DCRTPoly>> &evalKeys,
-    CALLER_INFO_ARGS_CPP) const {
-  if (nullptr == ciphertext) {
-    std::string errorMsg(std::string("Input ciphertext is nullptr") +
-                         CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-  usint n = ciphertext->GetElements()[0].GetRingDimension();
-  if (evalKeys.empty()) {
-    std::string errorMsg(std::string("Empty input key map") + CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-  auto key = evalKeys.find(2 * n - 1);
-  if (key == evalKeys.end()) {
-    std::string errorMsg(std::string("Could not find an EvalKey for index ") +
-                         std::to_string(2 * n - 1) + CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-  auto fk = key->second;
-  if (nullptr == fk) {
-    std::string errorMsg(std::string("Invalid evalKey") + CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-  if (ciphertext->GetCryptoContext() != fk->GetCryptoContext()) {
-    std::string errorMsg(
-        std::string("Items were not created in the same CryptoContextImpl") +
-        CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-  if (ciphertext->GetKeyTag() != fk->GetKeyTag()) {
-    std::string errorMsg(
-        std::string("Items were not encrypted with same keys") + CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-
-  const std::vector<DCRTPoly> &c = ciphertext->GetElements();
-  if (c.size() < 2) {
-    std::string errorMsg(
-        std::string("Insufficient number of elements in ciphertext: ") +
-        std::to_string(c.size()) + CALLER_INFO);
-    OPENFHE_THROW(config_error, errorMsg);
-  }
-
-  auto cc = ciphertext->GetCryptoContext();
-  auto algo = cc->GetScheme();
-  Ciphertext<DCRTPoly> permutedCiphertext = algo->KeySwitch(fk, ciphertext);
-
-  std::vector<usint> map(n);
-  PrecomputeAutoMap(n, 2 * n - 1, &map);
-
-  permutedCiphertext->SetElements(
-      {std::move(
-           permutedCiphertext->GetElements()[0].AutomorphismTransform(2 * n - 1, map)),
-       std::move(permutedCiphertext->GetElements()[1].AutomorphismTransform(
-           2 * n - 1, map))});
-
-  permutedCiphertext->SetDepth(ciphertext->GetDepth());
-  permutedCiphertext->SetLevel(ciphertext->GetLevel());
-  permutedCiphertext->SetScalingFactor(ciphertext->GetScalingFactor());
-
-  return permutedCiphertext;
-
-}
-
 /////////////////////////////////////
 // Mod Reduce
 /////////////////////////////////////
@@ -642,17 +552,20 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
 
   const auto cc = ciphertext->GetCryptoContext();
 
-  const auto cryptoParams = ciphertext->GetCryptoParameters();
+  const auto cryptoParams =
+      std::static_pointer_cast<CryptoParametersCKKSRNS>(
+          ciphertext->GetCryptoParameters());
+
   usint N = cryptoParams->GetElementParams()->GetRingDimension();
   usint M = N << 1;
 
   // Find the automorphism index that corresponds to rotation index index.
   usint autoIndex = FindAutomorphismIndex2nComplex(index, M);
-s
+
   // Retrieve the automorphism key that corresponds to the auto index.
   auto evalKey = evalKeys.find(autoIndex)->second;
 
-  const std::vector<Element> &cv = ciphertext->GetElements();
+  const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
   const auto paramsQl = cv[0].GetParams();
 
   auto algo = cc->GetScheme();
@@ -810,11 +723,11 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalSubCore(
 Ciphertext<DCRTPoly> LeveledSHECKKSRNS::MultByInteger(
     ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
 
-  std::vector<DCRTPoly> &cv = ciphertext->GetElements();
+  const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
 
   std::vector<DCRTPoly> resultDCRT(cv.size());
   for (usint i = 0; i < cv.size(); i++)
-    resultDCRT[i] = cv[i] * NativeInteger(integer);
+    resultDCRT[i] = cv[i].Times(NativeInteger(integer));
 
   Ciphertext<DCRTPoly> result = ciphertext->CloneDummy();
   result->SetElements(resultDCRT);
@@ -827,9 +740,7 @@ void LeveledSHECKKSRNS::MultByIntegerInPlace(
   std::vector<DCRTPoly> &cv = ciphertext->GetElements();
 
   for (usint i = 0; i < cv.size(); i++)
-    cv[i] = cv[i] * NativeInteger(integer);
-
-  return result;
+    cv[i] = cv[i].Times(NativeInteger(integer));
 }
 
 void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(

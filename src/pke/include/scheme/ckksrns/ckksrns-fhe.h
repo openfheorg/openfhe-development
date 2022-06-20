@@ -34,6 +34,7 @@
 
 #include "constants.h"
 #include "schemerns/rns-fhe.h"
+#include "utils/caller_info.h"
 
 /**
  * @namespace lbcrypto
@@ -217,27 +218,24 @@ public:
 
   std::vector<std::vector<ConstPlaintext>> EvalBootstrapPrecomputeEncoding(
     const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A,const std::vector<uint32_t> &rotGroup,
-    bool flag_i, double scale, uint32_t L);
+    bool flag_i, double scale = 1, uint32_t L = 0);
 
   std::vector<std::vector<ConstPlaintext>> EvalBootstrapPrecomputeDecoding(
     const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
-    bool flag_i, double scale, uint32_t L);
+    bool flag_i, double scale = 1, uint32_t L = 0);
 
   void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext,
     const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams,
     const CryptoContext<DCRTPoly> cc,
     double correction) const;
 
-  virtual EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) const override {
-    OPENFHE_THROW(not_implemented_error, "Not supported");
-  }
+  uint32_t GetBootstrapDepth(const CryptoContextImpl<DCRTPoly> &cc, const std::vector<uint32_t> &levelBudget);
+
+  virtual EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) const override;
 
   Ciphertext<DCRTPoly> Conjugate(
       ConstCiphertext<DCRTPoly> ciphertext,
-      const std::map<usint, EvalKey<DCRTPoly>> &evalKeys,
-      CALLER_INFO_ARGS_CPP) const;
-
-  uint32_t GetBootstrapDepth(const CryptoContextImpl<DCRTPoly> &cc, const std::vector<uint32_t> &levelBudget);
+      const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const;
 
  /**
   * Function to get the number of rotations in one level for homomorphic encoding
