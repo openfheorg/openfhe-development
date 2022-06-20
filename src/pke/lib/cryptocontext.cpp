@@ -212,6 +212,24 @@ CryptoContextImpl<Element>::EvalSumColsKeyGen(
 }
 
 template <typename Element>
+std::map<usint, EvalKey<Element>>&
+CryptoContextImpl<Element>::GetEvalRotationKeyMap(const std::string& keyID) {
+  auto ekv = GetAllEvalRotationKeys().find(keyID);
+  if (ekv == GetAllEvalRotationKeys().end()) {
+    OPENFHE_THROW(not_available_error,
+                   "You need to use EvalRotateKeyGen so that "
+                   "you have EvalKeys available for this ID");
+  }
+  return *ekv->second;
+}
+
+template <typename Element>
+std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
+CryptoContextImpl<Element>::GetAllEvalRotationKeys() {
+  return evalRotationKeyMap();
+}
+
+template <typename Element>
 const std::map<usint, EvalKey<Element>>&
 CryptoContextImpl<Element>::GetEvalSumKeyMap(const std::string& keyID) {
   auto ekv = GetAllEvalSumKeys().find(keyID);

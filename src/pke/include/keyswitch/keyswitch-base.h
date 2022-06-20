@@ -102,18 +102,18 @@ class KeySwitchBase {
     OPENFHE_THROW(config_error, "KeySwitch is not supported");
   }
 
-  virtual Ciphertext<DCRTPoly> KeySwitchExt(
-      ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const {
+  virtual Ciphertext<Element> KeySwitchExt(
+      ConstCiphertext<Element> ciphertext, bool addFirst) const {
     OPENFHE_THROW(config_error, "KeySwitchExt is not supported");
   }
 
-  virtual Ciphertext<DCRTPoly> KeySwitchDown(
-      ConstCiphertext<DCRTPoly> ciphertext) const {
+  virtual Ciphertext<Element> KeySwitchDown(
+      ConstCiphertext<Element> ciphertext) const {
     OPENFHE_THROW(config_error, "KeySwitchDown is not supported");
   }
 
-  virtual DCRTPoly KeySwitchDownFirstElement(
-      ConstCiphertext<DCRTPoly> ciphertext) const {
+  virtual Element KeySwitchDownFirstElement(
+      ConstCiphertext<Element> ciphertext) const {
     OPENFHE_THROW(config_error, "KeySwitchDownFirstElement is not supported");
   }
   /////////////////////////////////////////

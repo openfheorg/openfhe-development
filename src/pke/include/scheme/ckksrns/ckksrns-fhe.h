@@ -175,8 +175,8 @@ public:
       std::vector<uint32_t> levelBudget = {5, 4},
       std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0) override;
 
-  virtual std::vector<int32_t> FindBootstrapRotationIndices(int32_t bootstrapFlag, uint32_t m,
-                                                uint32_t blockDimension);
+  std::vector<int32_t> FindBootstrapRotationIndices(int32_t bootstrapFlag, uint32_t m,
+                                                uint32_t blockDimension = 0);
 
   virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(
       const PrivateKey<DCRTPoly> privateKey, int32_t bootstrapFlag) override;

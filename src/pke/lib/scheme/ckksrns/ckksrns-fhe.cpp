@@ -292,7 +292,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
     if (levelBudget[0] == 1 && levelBudget[1] == 1){
         return EvalLTKeyGen( privateKey, precom.m_dim1, bootstrapFlag, 1 ); // precom.m_dim1 was set before
     } else {
-        std::vector<int32_t> indexListEvalBT = cc->FindBootstrapRotationIndices(bootstrapFlag, m);
+        std::vector<int32_t> indexListEvalBT = FindBootstrapRotationIndices(bootstrapFlag, m);
 
         auto algo = cc->GetScheme();
         auto evalKeys = algo->EvalAtIndexKeyGen(nullptr, privateKey, indexListEvalBT);

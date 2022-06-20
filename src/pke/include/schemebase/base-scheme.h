@@ -381,6 +381,18 @@ class SchemeBase {
                    "KeySwitchInPlace operation has not been enabled");
   }
 
+  virtual Ciphertext<Element> KeySwitchDown(
+      ConstCiphertext<Element> ciphertext) const {
+    if (m_KeySwitch) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_KeySwitch->KeySwitchDown(ciphertext);
+    }
+    OPENFHE_THROW(config_error,
+                   "KeySwitchDown operation has not been enabled");
+  }
+
   virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
       Element c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
     if (m_KeySwitch) {
@@ -1160,6 +1172,35 @@ class SchemeBase {
     }
     OPENFHE_THROW(config_error,
                    "EvalFastRotationExt operation has not been enabled");
+  }
+
+  /**
+   * Only supported for hybrid key switching.
+   * Scales down the polynomial c0 from extended basis P*Q to Q.
+   *
+   * @param ciphertext input ciphertext in the extended basis
+   * @return resulting polynomial
+   */
+  Element KeySwitchDownFirstElement(ConstCiphertext<Element> ciphertext) const {
+    if (m_KeySwitch) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_KeySwitch->KeySwitchDownFirstElement(ciphertext);
+    }
+    OPENFHE_THROW(config_error,
+                   "KeySwitchDownFirstElement operation has not been enabled");
+  }
+
+  virtual Ciphertext<Element> KeySwitchExt(ConstCiphertext<Element> ciphertext, bool addFirst) const {
+    if (m_KeySwitch) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_KeySwitch->KeySwitchExt(ciphertext, addFirst);
+    }
+    OPENFHE_THROW(config_error,
+                   "KeySwitchExt operation has not been enabled");
   }
 
   virtual Ciphertext<Element> EvalFastRotation(

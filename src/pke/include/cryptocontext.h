@@ -1880,7 +1880,11 @@ protected:
    * @return resulting ciphertext
    */
   Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, usint index,
-                                          const std::shared_ptr<std::vector<Element>> digits, bool addFirst) const;
+                                          const std::shared_ptr<std::vector<Element>> digits, bool addFirst) const {
+    auto evalAutomorphismKeys = CryptoContextImpl<Element>::GetEvalRotationKeyMap(ciphertext->GetKeyTag());
+
+    return GetScheme()->EvalFastRotationExt(ciphertext, index, digits, addFirst, evalAutomorphismKeys);
+  }
 
   /**
    * Only supported for hybrid key switching.
@@ -1890,7 +1894,9 @@ protected:
    * @param ciphertext input ciphertext in the extended basis
    * @return resulting ciphertext
    */
-  Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element> ciphertext) const;
+  Ciphertext<Element> KeySwitchDown(ConstCiphertext<Element> ciphertext) const {
+    return GetScheme()->KeySwitchDown(ciphertext);
+  }
 
   /**
    * Only supported for hybrid key switching.
@@ -1899,7 +1905,9 @@ protected:
    * @param ciphertext input ciphertext in the extended basis
    * @return resulting polynomial
    */
-  Element KeySwitchDownFirstElement(ConstCiphertext<Element> ciphertext) const;
+  Element KeySwitchDownFirstElement(ConstCiphertext<Element> ciphertext) const {
+    return GetScheme()->KeySwitchDownFirstElement(ciphertext);
+  }
 
   /**
    * Only supported for hybrid key switching.
@@ -1909,7 +1917,9 @@ protected:
    * @param ciphertext input ciphertext in basis Q
    * @return resulting ciphertext in basis P*Q
    */
-  Ciphertext<Element> KeySwitchExt(ConstCiphertext<Element> ciphertext, bool addFirst) const;
+  Ciphertext<Element> KeySwitchExt(ConstCiphertext<Element> ciphertext, bool addFirst) const {
+    return GetScheme()->KeySwitchExt(ciphertext, addFirst);
+  }
 
   /**
    * EvalAtIndexKeyGen generates evaluation keys for a list of indices
@@ -2852,15 +2862,6 @@ protected:
    * @param debugFlag - set to 1 when debugging encoding/decoding only
    */
   void EvalBootstrapPrecompute(uint32_t debugFlag = 0);
-
-  /**
-   * Calculate automorphism indices for bootstrapping
-   * @param slots
-   * @param bootstrapFlag
-   * @param m
-   * @return
-   */
-  std::vector<int32_t> FindBootstrapRotationIndices(int32_t bootstrapFlag = 0, uint32_t m = 0, uint32_t blockDimension = 0);
 
   /**
    * Function to get the number of rotations in one level for homomorphic encoding
