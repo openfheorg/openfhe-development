@@ -298,7 +298,7 @@ void CryptoContextImpl<Element>::EvalAtIndexKeyGen(
 }
 
 template <typename Element>
-const std::map<usint, EvalKey<Element>>&
+std::map<usint, EvalKey<Element>>&
 CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(const std::string& keyID) {
   auto ekv = evalAutomorphismKeyMap().find(keyID);
   if (ekv == evalAutomorphismKeyMap().end())

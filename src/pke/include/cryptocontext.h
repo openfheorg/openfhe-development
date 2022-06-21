@@ -783,7 +783,7 @@ protected:
   static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
   GetAllEvalAutomorphismKeys();
 
-  static const std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(
+  static std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(
       const std::string& id);
 
   static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
