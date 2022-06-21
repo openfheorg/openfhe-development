@@ -67,7 +67,7 @@ class Key : public CryptoObject<Element> {
 
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
-    if (version > Serializable::SerializedVersion()) {
+    if (version > this->SerializedVersion()) {
         OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
             " is from a later version of the library");
     }
