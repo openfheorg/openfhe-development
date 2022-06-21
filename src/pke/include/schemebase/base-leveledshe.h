@@ -327,9 +327,9 @@ class LeveledSHEBase {
                    "double scalar subtraction is not implemented for this scheme");
   }
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // SHE MULTIPLICATION
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   /**
    * Virtual function to define the interface for generating a evaluation key
@@ -602,9 +602,9 @@ class LeveledSHEBase {
       Ciphertext<Element> &ciphertext,
       const std::vector<EvalKey<Element>> &evalKeyVec) const;
 
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
   // SHE AUTOMORPHISM
-  /////////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   /**
    * Virtual function to generate automophism keys for a given private key;
@@ -649,6 +649,21 @@ class LeveledSHEBase {
       CALLER_INFO_ARGS_HDR) const;
 
   /**
+   * Virtual function for the automorphism and key switching step of
+   * hoisted automorphisms.
+   *
+   * @param ct the input ciphertext to perform the automorphism on
+   * @param index the index of the rotation. Positive indices correspond to
+   * left rotations and negative indices correspond to right rotations.
+   * @param m is the cyclotomic order
+   * @param digits the digit decomposition created by
+   * EvalFastRotationPrecompute at the precomputation step.
+   */
+  virtual Ciphertext<Element> EvalFastRotation(
+      ConstCiphertext<Element> ciphertext, const usint index, const usint m,
+      const std::shared_ptr<std::vector<Element>> digits) const;
+
+  /**
    * Virtual function for the precomputation step of hoisted
    * automorphisms.
    *
@@ -666,21 +681,6 @@ class LeveledSHEBase {
         "EvalFastRotationExt is not implemented for this scheme.";
     OPENFHE_THROW(not_implemented_error, errMsg);
   }
-
-  /**
-   * Virtual function for the automorphism and key switching step of
-   * hoisted automorphisms.
-   *
-   * @param ct the input ciphertext to perform the automorphism on
-   * @param index the index of the rotation. Positive indices correspond to
-   * left rotations and negative indices correspond to right rotations.
-   * @param m is the cyclotomic order
-   * @param digits the digit decomposition created by
-   * EvalFastRotationPrecompute at the precomputation step.
-   */
-  virtual Ciphertext<Element> EvalFastRotation(
-      ConstCiphertext<Element> ciphertext, const usint index, const usint m,
-      const std::shared_ptr<std::vector<Element>> digits) const;
 
   /**
    * Generates evaluation keys for a list of indices

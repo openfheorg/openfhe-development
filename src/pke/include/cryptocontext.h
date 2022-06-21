@@ -50,11 +50,10 @@
 
 #include "cryptocontextfactory.h"
 
+#include "utils/serial.h"
 #include "utils/rotatablevector.h"
 #include "utils/lineartransform.h"
-#include "utils/logger.h"
 #include "utils/caller_info.h"
-#include "utils/serial.h"
 
 namespace lbcrypto {
 
@@ -685,30 +684,6 @@ protected:
   static void InsertEvalAutomorphismKey(
       const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap);
 
-  // ROTATION KEYS FOR BOOTSTRAPPING
-
-  /**
-   * Completely clears the rotation key map.
-   */
-  static void ClearEvalRotationKeys();
-
-  /**
-   * Removes the entry from the rotation key map that stores the
-   * keys for this key tag.
-   */
-  static void ClearEvalRotationKeys(const std::string& id);
-
-  /**
-   * Removes the rotation key map for this crypto context.
-   */
-  static void ClearEvalRotationKeys(const CryptoContext<Element> cc);
-
-  /**
-   * InsertEvalRotationKeys - adds new rotation keys to the context from an existing map
-   * @param mapToInsert
-   */
-  static void InsertEvalRotationKeys(const std::shared_ptr<std::map<usint, EvalKey<Element>>> mapToInsert);
-
   //------------------------------------------------------------------------------
   // TURN FEATURES ON
   //------------------------------------------------------------------------------
@@ -810,22 +785,6 @@ protected:
 
   static const std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(
       const std::string& id);
-
-  /**
-   * This method retrieves all the maps that contain rotation
-   * keys.
-   */
-  static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
-  GetAllEvalRotationKeys();
-
-  /**
-    * This method retrieves the map that contains the rotation
-    * keys for this scheme.
-    *
-    * @param id the key tag to search for
-    */
-   static std::map<usint, EvalKey<Element>>& GetEvalRotationKeyMap(
-       const std::string& id);
 
   static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
   GetAllEvalSumKeys();
@@ -1761,38 +1720,32 @@ protected:
     return GetScheme()->EvalAutomorphism(ciphertext, i, evalKeyMap);
   }
 
-  /**
-   * Calculate automorphism index for rotation key value
-   * @param idx
-   * @return
-   */
-  usint FindAutomorphismIndex(const usint idx) const;
 
-  /**
-   * Calculate automorphism indices for vector of rotation key values
-   * @param idxList
-   * @return
-   */
-  std::vector<usint> FindAutomorphismIndices(const std::vector<usint> idxList) const;
+  usint FindAutomorphismIndex(const usint idx) const {
+      const auto cryptoParams = GetCryptoParameters();
+      const auto elementParams = cryptoParams->GetElementParams();
+      uint32_t m = elementParams->GetCyclotomicOrder();
+      if (this->getSchemeId() == "CKKSRNS")
+          return FindAutomorphismIndex2nComplex(idx, m);
+      else
+          return FindAutomorphismIndex2n(idx, m);
+  }
 
-  /**
-   * EvalSumKeyGen Generates the key map to be used by evalsum
-   *
-   * @param privateKey private key.
-   * @param indexList list of indices.
-   * @param publicKey public key (used in NTRU schemes).
-   */
-  void EvalRotateKeyGen(const PrivateKey<Element> privateKey, const std::vector<int32_t>& indexList,
-                        const PublicKey<Element> publicKey = nullptr);
+  std::vector<usint> FindAutomorphismIndices(const std::vector<usint> idxList) const {
+      std::vector<usint> newIndices;
+      newIndices.reserve(idxList.size());
+      for(const auto idx : idxList){
+          newIndices.emplace_back(FindAutomorphismIndex(idx));
+      }
+      return newIndices;
+  }
 
-   /**
-    * Moves i-th slot to slot 0
-    *
-    * @param ciphertext.
-    * @param i the index.
-    * @return resulting ciphertext
-    */
-   Ciphertext<Element> EvalRotate(ConstCiphertext<Element> ciphertext, int32_t index) const;
+  Ciphertext<Element> EvalRotate(ConstCiphertext<Element> ciphertext, int32_t index) const {
+    CheckCiphertext(ciphertext);
+
+    auto evalKeyMap = GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
+    return GetScheme()->EvalAtIndex(ciphertext, index, evalKeyMap);
+  }
 
   /**
    * EvalFastRotationPrecompute implements the precomputation step of
@@ -1881,9 +1834,9 @@ protected:
    */
   Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, usint index,
                                           const std::shared_ptr<std::vector<Element>> digits, bool addFirst) const {
-    auto evalAutomorphismKeys = CryptoContextImpl<Element>::GetEvalRotationKeyMap(ciphertext->GetKeyTag());
+    auto evalKeyMap = GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
 
-    return GetScheme()->EvalFastRotationExt(ciphertext, index, digits, addFirst, evalAutomorphismKeys);
+    return GetScheme()->EvalFastRotationExt(ciphertext, index, digits, addFirst, evalKeyMap);
   }
 
   /**
@@ -2937,47 +2890,7 @@ protected:
    */
   uint32_t GetNumberOfRotationIndicesLT() const;
 
-  /**
-   * Gets the giant step for baby-step-giant-step
-   * linear transform evaluation used for level-0 matrix arithmetic
-   * @return the block dimension
-   */
-  uint32_t GetBSGSDimension() const {return m_BSGSDimension;};
-
-  /**
-   * Gets the block dimension used for level-0
-   * matrix arithmetic
-   * @return the block dimension
-   */
-  uint32_t GetBlockDimension() const {return m_blockDimension;};
-
-  /**
-   * Sets the block dimension used for level-0
-   * matrix arithmetic
-   */
-  void SetBlockDimension(uint32_t blockDimension) {m_blockDimension = blockDimension;};
-
-  /**
-   * Sets the giant step for baby-step-giant-step
-   * linear transform evaluation used for level-0 matrix arithmetic
-   */
-  void SetBSGSDimension(uint32_t dim1) {m_BSGSDimension = dim1;};
-
  private:
-
-  /**
-   * Rotates ciphertext slots by index positions, using the baby-step/giant-step
-   * key switching strategy.
-   *
-   * Refer to Section 2.5 of Halevi and Shoup, "Faster Homomorphic linear
-   * transformations in HELib.", link: https://eprint.iacr.org/2018/244.
-   *
-   * @param ciphertext.
-   * @param index is the number of positions to shift. Negative indices indicate
-   *     right shifts.
-   * @return resulting ciphertext
-   */
-  Ciphertext<Element> EvalAtIndexBGStep(ConstCiphertext<Element> ciphertext, int32_t index, int32_t slots) const;
 
   template <class Archive>
   void save(Archive& ar, std::uint32_t const version) const {
@@ -3011,20 +2924,7 @@ protected:
 
  protected:
 
-  static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalRotationKeyMap() {
-    // cached rotation keys, by secret key UID
-    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalRotationKeyMap;
-    return s_evalRotationKeyMap;
-  }
-
-  /**
-   * This holds target automorphism indices
-   */
   std::vector<usint> m_autoIdxList;
-
-  uint32_t m_blockDimension; // for level 0 matrix arithmetic
-
-  uint32_t m_BSGSDimension; // for level 0 matrix arithmetic
 };
 
 }  // namespace lbcrypto

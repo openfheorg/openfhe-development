@@ -212,24 +212,6 @@ CryptoContextImpl<Element>::EvalSumColsKeyGen(
 }
 
 template <typename Element>
-std::map<usint, EvalKey<Element>>&
-CryptoContextImpl<Element>::GetEvalRotationKeyMap(const std::string& keyID) {
-  auto ekv = GetAllEvalRotationKeys().find(keyID);
-  if (ekv == GetAllEvalRotationKeys().end()) {
-    OPENFHE_THROW(not_available_error,
-                   "You need to use EvalRotateKeyGen so that "
-                   "you have EvalKeys available for this ID");
-  }
-  return *ekv->second;
-}
-
-template <typename Element>
-std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
-CryptoContextImpl<Element>::GetAllEvalRotationKeys() {
-  return evalRotationKeyMap();
-}
-
-template <typename Element>
 const std::map<usint, EvalKey<Element>>&
 CryptoContextImpl<Element>::GetEvalSumKeyMap(const std::string& keyID) {
   auto ekv = GetAllEvalSumKeys().find(keyID);
@@ -572,40 +554,6 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalRotateKeyGen(const PrivateKey<Element> privateKey,
-                                                     const std::vector<int32_t>& indexList,
-                                                     const PublicKey<Element> publicKey) {
-  if (privateKey == nullptr || Mismatched(privateKey->GetCryptoContext())) {
-    OPENFHE_THROW(config_error,
-                   "Private key passed to EvalRotateKeyGen were not generated "
-                   "with this crypto context");
-  }
-
-  if (publicKey != nullptr && privateKey->GetKeyTag() != publicKey->GetKeyTag()) {
-    OPENFHE_THROW(config_error, "Public key passed to EvalRotateKeyGen does not match private key");
-  }
-
-  auto evalKeys = GetScheme()->EvalAtIndexKeyGen(publicKey, privateKey, indexList);
-
-  auto ekv = GetAllEvalRotationKeys().find(privateKey->GetKeyTag());
-  if (ekv == GetAllEvalRotationKeys().end()) {
-    GetAllEvalRotationKeys()[privateKey->GetKeyTag()] = evalKeys;
-  } else {
-    auto& currRotMap = GetEvalRotationKeyMap(privateKey->GetKeyTag());
-    auto iterRowKeys = evalKeys->begin();
-    while (iterRowKeys != evalKeys->end()) {
-      auto idx = iterRowKeys->first;
-      // Search current rotation key map and add key
-      // only if it doesn't exist
-      if (currRotMap.find(idx) == currRotMap.end()) {
-        currRotMap.insert(*iterRowKeys);
-      }
-      iterRowKeys++;
-    }
-  }
-}
-
-template <typename Element>
 DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
     const std::vector<Ciphertext<Element>>& partialCiphertextVec,
     Plaintext* plaintext) const {
@@ -677,11 +625,11 @@ void CryptoContextImpl<Element>::EvalLTKeyGen(const PrivateKey<Element> privateK
   // if it is just for LT/encoding, we need to pass dim1 too
   auto evalKeys = GetScheme()->EvalLTKeyGen(privateKey, dim1, bootstrapFlag, conjFlag);
 
-  auto ekv = GetAllEvalRotationKeys().find(privateKey->GetKeyTag());
-  if (ekv == GetAllEvalRotationKeys().end()) {
-    GetAllEvalRotationKeys()[privateKey->GetKeyTag()] = evalKeys;
+  auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
+  if (ekv == GetAllEvalAutomorphismKeys().end()) {
+    GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
   } else {
-    auto& currRotMap = GetEvalRotationKeyMap(privateKey->GetKeyTag());
+    auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
     auto iterRowKeys = evalKeys->begin();
     while (iterRowKeys != evalKeys->end()) {
       auto idx = iterRowKeys->first;
@@ -1027,11 +975,11 @@ void CryptoContextImpl<Element>::EvalBootstrapKeyGen(const PrivateKey<Element> p
 
   auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, bootstrapFlag);
 
-  auto ekv = GetAllEvalRotationKeys().find(privateKey->GetKeyTag());
-  if (ekv == GetAllEvalRotationKeys().end()) {
-    GetAllEvalRotationKeys()[privateKey->GetKeyTag()] = evalKeys;
+  auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
+  if (ekv == GetAllEvalAutomorphismKeys().end()) {
+    GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
   } else {
-    auto& currRotMap = GetEvalRotationKeyMap(privateKey->GetKeyTag());
+    auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
     auto iterRowKeys = evalKeys->begin();
     while (iterRowKeys != evalKeys->end()) {
       auto idx = iterRowKeys->first;
@@ -1054,20 +1002,6 @@ EvalKey<Element> CryptoContextImpl<Element>::ConjugateKeyGen(
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
   return GetScheme()->EvalBootstrap(ciphertext);
-}
-
-
-
-template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalAtIndexBGStep(ConstCiphertext<Element> ciphertext, int32_t index,
-                                                                     int32_t slots) const {
-  if (ciphertext == NULL || this->Mismatched(ciphertext->GetCryptoContext()))
-    OPENFHE_THROW(config_error, "Information passed to EvalAtIndexBGStep was not generated with this crypto context");
-
-  auto tag = ciphertext->GetKeyTag();
-  auto evalAutomorphismKeys = CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(tag);
-
-  return GetScheme()->EvalAtIndexBGStep(ciphertext, index, slots, evalAutomorphismKeys);
 }
 
 }  // namespace lbcrypto

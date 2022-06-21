@@ -12,10 +12,10 @@
 
 #include "utils/rotatablevector.h"
 #include "utils/exception.h"
-#include "utils/logger.h"
+//#include "utils/logger.h"
 
 std::complex<double> RotatableVector::get(int index) {
-    LOG_DEBUG_ALL("Begin");
+
 	if (this->size > 0)
 		return vec[ (start + index) % this->size ];
 	else {
@@ -25,7 +25,7 @@ std::complex<double> RotatableVector::get(int index) {
 }
 
 void RotatableVector::set(int index, std::complex<double> val) {
-    LOG_DEBUG_ALL("Begin");
+
 	if (this->size > 0)
 		this->vec[ (start + index) % this->size ] = val;
 	else {
@@ -36,7 +36,7 @@ void RotatableVector::set(int index, std::complex<double> val) {
 
 // Positive offset corresponds to left rotation.
 void RotatableVector::rotate(int offset) {
-    LOG_DEBUG_ALL("Begin");
+
 	if (this->size > 0) {
 		this->start = (this->start - offset) % this->size;
 		if (this->start < 0)
@@ -48,7 +48,7 @@ void RotatableVector::rotate(int offset) {
 }
 
 std::vector<std::complex<double>> RotatableVector::getVector() {
-    LOG_DEBUG_ALL("Begin");
+
 	std::vector<std::complex<double>> newVec(this->size);
 	for (int i=0; i<this->size; i++) {
 		newVec[i] = this->vec[ (start + i) % this->size ];

@@ -122,6 +122,10 @@ public:
   // number of slots for which the bootstrapping is performed
   uint32_t m_slots = 0;
 
+  uint32_t m_blockDimension;
+
+  uint32_t m_BSGSDimension; // for level 0 matrix arithmetic
+
   // level budget for homomorphic encoding, number of layers to collapse in one level,
   // number of layers remaining to be collapsed in one level to have exactly the number
   // of levels specified in the level budget, the number of rotations in one level,

@@ -11,7 +11,7 @@
  ***/
 #include "utils/lineartransform.h"
 #include <cmath>
-#include "utils/logger.h"
+//#include "utils/logger.h"
 
 namespace lbcrypto {
 
@@ -20,7 +20,7 @@ const std::complex<double> I(0.0,1.0);
 std::vector<std::complex<double>> ExtractShiftedDiagonal(
 	const std::vector<std::vector<std::complex<double>>> &A,
 	int index) {
-    LOG_DEBUG_ALL("Begin");
+
 
 	uint32_t cols = A[0].size();
 	uint32_t rows = A.size();
@@ -39,7 +39,7 @@ std::vector<std::complex<double>> ExtractShiftedDiagonal(
 std::vector<std::complex<double>> Rotate(
 	const std::vector<std::complex<double>> &a,
 	int32_t index) {
-    LOG_DEBUG_ALL("Begin");
+
 
 	int32_t slots = a.size();
 
@@ -64,7 +64,7 @@ std::vector<std::complex<double>> Rotate(
 }
 
 uint32_t ReduceRotation(int32_t index, uint32_t slots){
-    LOG_DEBUG_ALL("Begin");
+
 
 	int32_t islots = int32_t(slots);
 
@@ -83,7 +83,7 @@ uint32_t ReduceRotation(int32_t index, uint32_t slots){
 std::vector<std::complex<double>> Fill(
 	const std::vector<std::complex<double>> &a,
 	int slots) {
-    LOG_DEBUG_ALL("Begin");
+
 
 	int usedSlots = a.size();
 
@@ -98,7 +98,7 @@ std::vector<std::complex<double>> Fill(
 std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(
 	const std::vector<std::complex<double>> &pows, const std::vector<uint32_t> &rotGroup,
 	bool flag_i) {
-    LOG_DEBUG_ALL("Begin");
+
 
 	uint32_t dim = pows.size() - 1;
 	uint32_t slots = rotGroup.size();
@@ -148,7 +148,7 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(
 std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(
 	const std::vector<std::complex<double>> &pows, const std::vector<uint32_t> &rotGroup,
 	bool flag_i){
-    LOG_DEBUG_ALL("Begin");
+
 
 	uint32_t dim = pows.size() - 1;
 	uint32_t slots = rotGroup.size();
@@ -198,7 +198,7 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollapse(
 	const std::vector<std::complex<double>> &pows, const std::vector<uint32_t> &rotGroup,
 	uint32_t levelBudget, bool flag_i){
-    LOG_DEBUG_ALL("Begin");
+
 
 	uint32_t slots = rotGroup.size();
 
@@ -316,7 +316,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollapse(
 	const std::vector<std::complex<double>> &pows, const std::vector<uint32_t> &rotGroup,
 	uint32_t levelBudget, bool flag_i){
-    LOG_DEBUG_ALL("Begin");
+
 
 	uint32_t slots = rotGroup.size();
 
@@ -434,7 +434,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
 
 
 std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget){
-    LOG_DEBUG_ALL("Begin");
+
 	uint32_t layers = ceil(double(logSlots)/double(budget));
 	uint32_t rows = logSlots/layers;
 	uint32_t rem = logSlots%layers;
@@ -468,7 +468,7 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget){
 }
 
 std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget, uint32_t dim1){
-    LOG_DEBUG_ALL("Begin");
+
 
 	// Need to compute how many layers are collapsed in each of the level from the budget.
 	// If there is no exact division between the maximum number of possible levels (log(slots)) and the

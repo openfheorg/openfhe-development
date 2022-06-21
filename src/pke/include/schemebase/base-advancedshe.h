@@ -363,10 +363,6 @@ public:
   // LINEAR TRANSFORMATION
   //------------------------------------------------------------------------------
 
-  virtual Ciphertext<Element> EvalAtIndexBGStep(
-      ConstCiphertext<Element> ciphertext, int32_t index, int32_t slots,
-      const std::map<usint, EvalKey<Element>> &evalAtIndexKeys) const;
-
   //------------------------------------------------------------------------------
   // Other Methods for Bootstrap
   //------------------------------------------------------------------------------

@@ -11,7 +11,7 @@
  ***/
 #include "utils/polynomials.h"
 #include "utils/exception.h"
-#include "utils/logger.h"
+//#include "utils/logger.h"
 #include <cmath>
 #include <algorithm>
 #include <functional>
@@ -23,7 +23,7 @@ using namespace lbcrypto;
 double PREC = std::pow(2,-20);
 inline bool IsNotEqualOne(double val)
 {
-    LOG_DEBUG_ALL("Begin");
+
     if( 1 - PREC >= val )
         return true;
     else if( 1 + PREC <= val )
@@ -36,7 +36,7 @@ inline bool IsNotEqualOne(double val)
 which is the index of the last non-zero element in the coefficients - 1. 
 Don't throw an error if all the coefficients are zero, but return 0. */
 uint32_t Degree(const std::vector<double> &coefficients) {
-    LOG_DEBUG_ALL("Begin");
+
 
 	uint32_t deg = 1;
 	for(int i = coefficients.size()-1;i>0;i--) {
@@ -56,7 +56,7 @@ vectors of coefficients for the quotient and rest. */
 longDiv *LongDivisionPoly(
 	const std::vector<double> &f,
 	const std::vector<double> &g) {
-    LOG_DEBUG_ALL("Begin");
+
 
 	uint32_t n = Degree(f);
 	uint32_t k = Degree(g);
@@ -109,7 +109,7 @@ the same format.*/
 longDiv *LongDivisionChebyshev(
 	const std::vector<double> &f,
 	const std::vector<double> &g) {
-    LOG_DEBUG_ALL("Begin");
+
 
 	uint32_t n = Degree(f);
 	uint32_t k = Degree(g);
@@ -200,7 +200,7 @@ longDiv *LongDivisionChebyshev(
 
 /* Compute positive integers k,m such that n < k(2^m-1) and k close to sqrt(n/2) */
 std::vector<uint32_t> ComputeDegreesPS(const uint32_t n) {
-    LOG_DEBUG_ALL("Begin");
+
 
 	if (n == 0)
 	  OPENFHE_THROW(math_error, "ComputeDegreesPS: The degree is zero. There is no need to evaluate the polynomial.");

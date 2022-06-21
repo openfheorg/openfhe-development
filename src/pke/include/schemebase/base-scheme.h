@@ -1138,6 +1138,19 @@ class SchemeBase {
     OPENFHE_THROW(config_error, errorMsg);
   }
 
+  virtual Ciphertext<Element> EvalFastRotation(
+      ConstCiphertext<Element> ciphertext, const usint index, const usint m,
+      const std::shared_ptr<std::vector<Element>> digits) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_LeveledSHE->EvalFastRotation(ciphertext, index, m, digits);
+    }
+    OPENFHE_THROW(config_error,
+                   "EvalFastRotation operation has not been enabled");
+  }
+
   virtual std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(ConstCiphertext<Element> ciphertext) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
@@ -1201,19 +1214,6 @@ class SchemeBase {
     }
     OPENFHE_THROW(config_error,
                    "KeySwitchExt operation has not been enabled");
-  }
-
-  virtual Ciphertext<Element> EvalFastRotation(
-      ConstCiphertext<Element> ciphertext, const usint index, const usint m,
-      const std::shared_ptr<std::vector<Element>> digits) const {
-    if (m_LeveledSHE) {
-      if (!ciphertext)
-        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
-      return m_LeveledSHE->EvalFastRotation(ciphertext, index, m, digits);
-    }
-    OPENFHE_THROW(config_error,
-                   "EvalFastRotation operation has not been enabled");
   }
 
   virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAtIndexKeyGen(
@@ -1774,16 +1774,6 @@ class SchemeBase {
   /////////////////////////////////////
   // Advanced SHE LINEAR TRANSFORMATION
   /////////////////////////////////////
-
-  virtual Ciphertext<Element> EvalAtIndexBGStep(
-      ConstCiphertext<Element> ciphertext, usint i, int32_t slots,
-      const std::map<usint, EvalKey<Element>> &evalKeys) const {
-    if (m_AdvancedSHE) {
-      return m_AdvancedSHE->EvalAtIndexBGStep(ciphertext, i, slots, evalKeys);
-    }
-
-    OPENFHE_THROW(config_error, "EvalAtIndexBGStep operation has not been enabled");
-  }
 
   /////////////////////////////////////
   // Other Methods for Bootstrap

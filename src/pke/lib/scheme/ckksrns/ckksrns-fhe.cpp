@@ -583,7 +583,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     auto ctxtEnc0 = (isEvalBTLinear) ?
       cc->EvalLTWithPrecomp(precom.m_U0hatTPre, raised, precom.m_dim1) :
       EvalBootstrapWithPrecompEncoding(*cc,precom.m_U0hatTPreFFT,raised);
-    auto evalKeys = cc->GetAllEvalRotationKeys()[ctxtEnc0->GetKeyTag()];
+    auto evalKeys = cc->GetAllEvalAutomorphismKeys()[ctxtEnc0->GetKeyTag()];
     auto conj = Conjugate(ctxtEnc0, *evalKeys);
     ctxtEnc[0] = cc->EvalAdd(ctxtEnc0,conj);
 
@@ -670,7 +670,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     auto ctxtEnc0 = (isEvalBTLinear) ?
       cc->EvalLTWithPrecomp(precom.m_U0hatTPre,ctxt1,precom.m_dim1) :
       EvalBootstrapWithPrecompEncoding(*cc,precom.m_U0hatTPreFFT,ctxt1);
-    auto evalKeys = cc->GetAllEvalRotationKeys()[ctxtEnc0->GetKeyTag()];
+    auto evalKeys = cc->GetAllEvalAutomorphismKeys()[ctxtEnc0->GetKeyTag()];
     auto ctxtEnc = cc->EvalAdd(ctxtEnc0,Conjugate(ctxtEnc0, *evalKeys));
 
     if(isEvalBTLinear)
