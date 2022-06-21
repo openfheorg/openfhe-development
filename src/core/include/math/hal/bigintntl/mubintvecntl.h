@@ -55,7 +55,6 @@
         #include "math/hal/bigintntl/ubintntl.h"
         #include "utils/exception.h"
         #include "utils/inttypes.h"
-        #include "utils/serializable.h"
 
 // defining this forces modulo when you write to the vector (except with at())
 // this is becuase NTL required inputs to modmath to be < modulus but BU does
@@ -87,8 +86,7 @@ using BigVector = myVecP<BigInteger>;
 
 template <typename myT>
 class myVecP : public NTL::Vec<myT>,
-               public lbcrypto::BigVectorInterface<myVecP<myT>, myT>,
-               public lbcrypto::Serializable {
+               public lbcrypto::BigVectorInterface<myVecP<myT>, myT> {
 public:
     // CONSTRUCTORS
 
@@ -620,7 +618,7 @@ public:
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }
@@ -652,7 +650,7 @@ public:
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }

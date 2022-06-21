@@ -58,7 +58,6 @@
 #include "utils/inttypes.h"
 #include "utils/memory.h"
 #include "utils/openfhebase64.h"
-#include "utils/serializable.h"
 
 #if NATIVEINT == 128
     // need the BigInteger to handle double 128-bit word
@@ -144,7 +143,7 @@ struct DoubleDataType<unsigned __int128> {
  * @tparam NativeInt native unsigned integer type
  */
 template <typename NativeInt>
-class NativeIntegerT : public lbcrypto::BigIntegerInterface<NativeIntegerT<NativeInt>>, public lbcrypto::Serializable {
+class NativeIntegerT : public lbcrypto::BigIntegerInterface<NativeIntegerT<NativeInt>> {
 public:
     using Integer         = NativeInt;
     using DNativeInt      = typename DoubleDataType<NativeInt>::DoubleType;
@@ -1952,7 +1951,7 @@ public:
     template <class Archive, typename T = void>
     typename std::enable_if<std::is_same<NativeInt, U64BITS>::value || std::is_same<NativeInt, U32BITS>::value, T>::type
     load(Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }
@@ -1964,7 +1963,7 @@ public:
     typename std::enable_if<
         std::is_same<NativeInt, U128BITS>::value && !cereal::traits::is_text_archive<Archive>::value, void>::type
     load(Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }
@@ -1980,7 +1979,7 @@ public:
     typename std::enable_if<std::is_same<NativeInt, U128BITS>::value && cereal::traits::is_text_archive<Archive>::value,
                             void>::type
     load(Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }

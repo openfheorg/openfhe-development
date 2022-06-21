@@ -45,7 +45,6 @@
 #include "math/hal/vector.h"
 
 #include "utils/inttypes.h"
-#include "utils/serializable.h"
 #include "utils/blockAllocator/xvector.h"
 
 // the following should be set to 1 in order to have native vector use block
@@ -113,8 +112,7 @@ bool operator!=(const NAlloc<T>&, const NAlloc<U>&) { return false; }
 #endif
 
 template <class IntegerType>
-class NativeVectorT : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>, IntegerType>,
-                      public lbcrypto::Serializable {
+class NativeVectorT : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>, IntegerType> {
 public:
     typedef IntegerType BVInt;
 
@@ -604,7 +602,7 @@ public:
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }
@@ -625,7 +623,7 @@ public:
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }

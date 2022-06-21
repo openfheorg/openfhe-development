@@ -40,7 +40,6 @@
 #include <string>
 
 #include "utils/inttypes.h"
-#include "utils/serializable.h"
 
 #include "math/hal/bigintfxd/ubintfxd.h"
 
@@ -60,8 +59,7 @@ using BigVector = BigVectorFixedT<BigInteger>;
  * @brief The class for representing vectors of big binary integers.
  */
 template <class IntegerType>
-class BigVectorFixedT : public lbcrypto::BigVectorInterface<BigVectorFixedT<IntegerType>, IntegerType>,
-                        public lbcrypto::Serializable {
+class BigVectorFixedT : public lbcrypto::BigVectorInterface<BigVectorFixedT<IntegerType>, IntegerType> {
 public:
     // CONSTRUCTORS
 
@@ -550,7 +548,7 @@ public:
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }
@@ -563,7 +561,7 @@ public:
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }

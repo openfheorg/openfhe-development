@@ -53,7 +53,6 @@
 #include "math/nbtheory.h"
 #include "utils/inttypes.h"
 #include "utils/memory.h"
-#include "utils/serializable.h"
 #include "utils/utilities.h"
 
 #include "math/hal/integer.h"
@@ -341,7 +340,7 @@ const double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of Log b
 // Definition starts here
 //////////////////////////////////////////////////////////////////////////////////////////////////
 template <typename limb_t>
-class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>>, public lbcrypto::Serializable {
+class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
 public:
     // CONSTRUCTORS
 
@@ -1172,7 +1171,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }

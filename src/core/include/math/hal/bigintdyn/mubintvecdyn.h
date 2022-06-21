@@ -44,7 +44,6 @@
 #include "math/hal/vector.h"
 #include "math/hal/bigintdyn/ubintdyn.h"
 #include "utils/inttypes.h"
-#include "utils/serializable.h"
 
 /**
  * @namespace bigintdyn
@@ -65,8 +64,7 @@ using BigVector  = xmubintvec;
  */
 
 template <class ubint_el_t>
-class mubintvec : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t>, ubint_el_t>,
-                  public lbcrypto::Serializable {
+class mubintvec : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t>, ubint_el_t> {
 public:
     // CONSTRUCTORS
 
@@ -586,7 +584,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > Serializable::SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }
