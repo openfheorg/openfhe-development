@@ -366,10 +366,10 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalLTKeyGen(
   uint32_t m = cc->GetCyclotomicOrder();
 
   // computing all indices for baby-step giant-step procedure
-  std::vector<int32_t> indexListEvalLT = FindLTRotationIndices(dim1, bootstrapFlag, m, cc->GetBlockDimension());
+  std::vector<int32_t> indexListEvalLT = FindLTRotationIndices(dim1, bootstrapFlag, m, precom.m_blockDimension);
 
   auto algo = cc->GetScheme();
-  auto evalKeys = algo->EvalAtIndexKeyGen(nullptr, privateKey, indexListEvalLT);
+  auto evalKeys = algo->EvalAtIndexKeyGen(nullptr, privateKey, precom.indexListEvalLT);
 
   // Add conjugation key
   if (bootstrapFlag == 1 || conjFlag == 1){
