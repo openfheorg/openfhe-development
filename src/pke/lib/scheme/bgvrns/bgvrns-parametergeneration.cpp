@@ -388,7 +388,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   uint32_t r = cryptoParamsBGVRNS->GetRelinWindow();
   double log2q = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
 
-  double B_e = alpha*sigma;
+  double B_e = sqrt(alpha)*sigma;
 
   if (PREMode == FIXED_NOISE_HRA) {
     auto &dggflooding = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
@@ -402,12 +402,35 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     //get the flooding discrete gaussian distribution
     auto &dggflooding = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
 
-    double noise_param = pow(2,stat_sec)*3*(log2q/r+1)*sqrt(n)*(pow(2,r)-1)*B_e;
-    
+    double noise_param=1;
+
+    if (ksTech == BV) {
+      if (r > 0) {
+        noise_param = pow(2,stat_sec)* 3 * (numPrimes + 1) * (log2q/r+1) * sqrt(n) * (pow(2,r)-1) * B_e;
+      } else {
+        OPENFHE_THROW(config_error, "Relinwindow value cannot be 0 for BV keyswitching");
+      }
+    } else if (ksTech == HYBRID) {
+      if (r == 0) {
+        double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
+        int numDigits = cryptoParamsBGVRNS->GetNumPartQ();
+        noise_param = numTowersPerDigit * numDigits * sqrt(n) * B_e;
+        noise_param += auxBits * (1 + sqrt(n));
+        noise_param = pow(2,stat_sec)* 3 * noise_param;
+      } else {
+        OPENFHE_THROW(config_error, "Relinwindow value can be non-zero only for BV keyswitching");
+      }
+    }
     std::cout << "noise param flooding size " << log2(noise_param) << std::endl;
     std::cout << "q modulus size " << log2(log2q) << std::endl;
+    
     //set the flooding distribution parameter to the distribution.
-    dggflooding.SetStd(noise_param);
+    if (noise_param == 1) {
+      OPENFHE_THROW(math_error, "parameter for noise flooding not set");
+    } else {
+      dggflooding.SetStd(noise_param);
+    }
+    
   }
 
   return true;
