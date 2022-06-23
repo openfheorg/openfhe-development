@@ -143,28 +143,29 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPoly(
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(
     ConstCiphertext<DCRTPoly> x,
     const std::vector<double> &coefficients) const {
-  if (coefficients[coefficients.size() - 1] == 0)
+  uint32_t k = coefficients.size() - 1;
+  if (coefficients[k] == 0)
     OPENFHE_THROW(
         math_error,
         "EvalPolyLinear: The highest-order coefficient cannot be set to 0.");
 
-  std::vector<Ciphertext<DCRTPoly>> powers(coefficients.size() - 1);
-  std::vector<int32_t> indices(coefficients.size() - 1, 0);
-
+  std::vector<int32_t> indices(k, 0);
   // set the indices for the powers of x that need to be computed to 1
-  for (size_t i = coefficients.size() - 1; i > 0; i--) {
-    // if i is a power of 2
-    if (!(i & (i-1))) {
+  for (size_t i = k; i > 0; i--) {
+    if (!(i & (i - 1))) {
+      // if i is a power of 2
       indices[i - 1] = 1;
-    } else {  // non-power of 2
+    } else {
+      // non-power of 2
       if (coefficients[i] != 0) {
         indices[i - 1] = 1;
         int64_t powerOf2 = 1 << (int64_t)std::floor(std::log2(i));
         int64_t rem = i % powerOf2;
         if (indices[rem - 1] == 0) indices[rem - 1] = 1;
-        // while rem is not a power of 2, set indices required to compute rem to
-        // 1
-        while ((rem & (rem-1))) {
+
+        // while rem is not a power of 2
+        // set indices required to compute rem to 1
+        while ((rem & (rem - 1))) {
           powerOf2 = 1 << (int64_t)std::floor(std::log2(rem));
           rem = rem % powerOf2;
           if (indices[rem - 1] == 0) indices[rem - 1] = 1;
@@ -173,20 +174,23 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(
     }
   }
 
+  std::vector<Ciphertext<DCRTPoly>> powers(k);
   powers[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x));
-
   auto cc = x->GetCryptoContext();
 
-  // computes all powers for x
-  for (size_t i = 2; i < coefficients.size(); i++) {
-    if (!(i & (i-1))) {
-      powers[i - 1] = cc->EvalMult(powers[i / 2 - 1], powers[i / 2 - 1]);
+  // computes all powers up to k for x
+  for (size_t i = 2; i <= k; i++) {
+    if (!(i & (i - 1))) {
+      // if i is a power of two
+      powers[i - 1] = cc->EvalMult(powers[i/2 - 1], powers[i/2 - 1]);
       cc->ModReduceInPlace(powers[i - 1]);
-    } else {  // non-power of 2
+    } else {
       if (indices[i - 1] == 1) {
+        // non-power of 2
         int64_t powerOf2 = 1 << (int64_t)std::floor(std::log2(i));
         int64_t rem = i % powerOf2;
-        cc->LevelReduceInPlace(powers[rem - 1], nullptr, powers[powerOf2 - 1]->GetLevel() - powers[rem - 1]->GetLevel());
+        usint levelDiff = powers[powerOf2 - 1]->GetLevel() - powers[rem - 1]->GetLevel();
+        cc->LevelReduceInPlace(powers[rem - 1], nullptr, levelDiff);
 
         powers[i - 1] = cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]);
         cc->ModReduceInPlace(powers[i - 1]);
@@ -194,19 +198,21 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(
     }
   }
 
+  // TODO: Andrey Logic different from Eval Poly PS, why?
+
   // brings all powers of x to the same level
-  for (size_t i = 1; i < coefficients.size() - 1; i++) {
+  for (size_t i = 1; i < k; i++) {
     if (indices[i - 1] == 1) {
-      cc->LevelReduceInPlace(powers[i - 1], nullptr, powers[coefficients.size() - 2]->GetLevel() - powers[i - 1]->GetLevel());
+      usint levelDiff = powers[k - 1]->GetLevel() - powers[i - 1]->GetLevel();
+      cc->LevelReduceInPlace(powers[i - 1], nullptr, levelDiff);
     }
   }
 
   // perform scalar multiplication for the highest-order term
-  auto result = cc->EvalMult(powers[coefficients.size() - 2],
-                             coefficients[coefficients.size() - 1]);
+  auto result = cc->EvalMult(powers[k - 1], coefficients[k]);
 
   // perform scalar multiplication for all other terms and sum them up
-  for (size_t i = 0; i < coefficients.size() - 2; i++) {
+  for (size_t i = 0; i < k - 1; i++) {
     if (coefficients[i + 1] != 0) {
       cc->EvalMultInPlace(powers[i], coefficients[i + 1]);
       cc->EvalAddInPlace(result, powers[i]);
@@ -232,21 +238,21 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
   auto cc = x->GetCryptoContext();
 
   // Compute k*2^m because we use it often
-  uint32_t k2m2k = k*(1<<(m-1)) - k;
+  uint32_t k2m2k = k * (1 << (m - 1)) - k;
 
   // Divide coefficients by x^{k*2^{m-1}}
-  std::vector<double> xkm(int32_t(k2m2k+k)+1, 0.0);
+  std::vector<double> xkm(int32_t(k2m2k + k) + 1, 0.0);
   xkm.back() = 1;
 
   longDiv *divqr = LongDivisionPoly(coefficients, xkm);
 
   // Subtract x^{k(2^{m-1} - 1)} from r
   std::vector<double> r2 = divqr->r;
-  if (int32_t(k2m2k-Degree(divqr->r)) <= 0) {
+  if (int32_t(k2m2k - Degree(divqr->r)) <= 0) {
     r2[int32_t(k2m2k)] -= 1;
     r2.resize(Degree(r2) + 1);
   } else {
-    r2.resize(int32_t(k2m2k+1), 0.0);
+    r2.resize(int32_t(k2m2k + 1), 0.0);
     r2.back() = -1;
   }
 
@@ -255,7 +261,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
 
   // Add x^{k(2^{m-1} - 1)} to s
   std::vector<double> s2 = divcs->r;
-  s2.resize(int32_t(k2m2k+1), 0.0);
+  s2.resize(int32_t(k2m2k + 1), 0.0);
   s2.back() = 1;
 
   Ciphertext<DCRTPoly> cu;
@@ -268,16 +274,16 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
         cu = cc->EvalMult(powers.front(), divcs->q[1]);
         // Do rescaling after scalar multiplication
         cc->ModReduceInPlace(cu);
-      }
-      else
+      } else {
         cu = powers.front();
+      }
     } else {
       std::vector<Ciphertext<DCRTPoly>> ctxs(dc);
       std::vector<double> weights(dc);
 
       for (uint32_t i = 0; i < dc; i++) {
         ctxs[i] = powers[i];
-        weights[i] = divcs->q[i+1];
+        weights[i] = divcs->q[i + 1];
       }
 
       cu = cc->EvalLinearWSumMutable(ctxs, weights);
@@ -286,7 +292,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
     }
 
     // adds the free term (at x^0)
-    cc->EvalAddInPlace(cu,divcs->q.front());
+    cc->EvalAddInPlace(cu, divcs->q.front());
     flag_c = true;
   }
 
@@ -294,29 +300,28 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
   Ciphertext<DCRTPoly> qu;
 
   if(Degree(divqr->q) > k) {
-    qu = InnerEvalPolyPS(x, divqr->q, k, m-1, powers, powers2);
+    qu = InnerEvalPolyPS(x, divqr->q, k, m - 1, powers, powers2);
   } else {
     // dq = k from construction
     // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
     auto qcopy = divqr->q;
     qcopy.resize(k);
-    if (Degree(qcopy) > 0){
-
+    if (Degree(qcopy) > 0) {
       std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
       std::vector<double> weights(Degree(qcopy));
 
       for (uint32_t i = 0; i < Degree(qcopy); i++) {
         ctxs[i] = powers[i];
-        weights[i] = divqr->q[i+1];
+        weights[i] = divqr->q[i + 1];
       }
 
       qu = cc->EvalLinearWSumMutable(ctxs, weights);
 
       cc->ModReduceInPlace(qu);
       // the highest order term will always be 1 because q is monic
-      cc->EvalAddMutableInPlace(qu, powers[k-1]);
+      cc->EvalAddMutableInPlace(qu, powers[k - 1]);
     } else {
-      qu = powers[k-1];
+      qu = powers[k - 1];
     }
     // adds the free term (at x^0)
     cc->EvalAddInPlace(qu, divqr->q.front());
@@ -329,42 +334,41 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
     su = qu;
   } else {
     if (ds > k) {
-      su = InnerEvalPolyPS(x, s2, k, m-1, powers, powers2);
+      su = InnerEvalPolyPS(x, s2, k, m - 1, powers, powers2);
     } else {
       // ds = k from construction
       // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
       auto scopy = s2;
       scopy.resize(k);
       if (Degree(scopy) > 0) {
-
         std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
         std::vector<double> weights(Degree(scopy));
 
         for (uint32_t i = 0; i < Degree(scopy); i++) {
           ctxs[i] = powers[i];
-          weights[i] = s2[i+1];
+          weights[i] = s2[i + 1];
         }
 
         su = cc->EvalLinearWSumMutable(ctxs, weights);
 
         cc->ModReduceInPlace(su);
         // the highest order term will always be 1 because q is monic
-        cc->EvalAddMutableInPlace(su,powers[k-1]);
+        cc->EvalAddMutableInPlace(su, powers[k - 1]);
       } else {
-        su = powers[k-1];
+        su = powers[k - 1];
       }
       // adds the free term (at x^0)
-      cc->EvalAddInPlace(su,s2.front());
+      cc->EvalAddInPlace(su, s2.front());
     }
   }
 
-
   Ciphertext<DCRTPoly> result;
 
-  if(flag_c)
-    result = cc->EvalAddMutable(powers2[m-1],cu);
-  else
-    result = cc->EvalAdd(powers2[m-1], divcs->q.front());
+  if(flag_c) {
+    result = cc->EvalAddMutable(powers2[m - 1], cu);
+  } else {
+    result = cc->EvalAdd(powers2[m - 1], divcs->q.front());
+  }
 
   cc->EvalMultMutableInPlace(result, qu);
   cc->ModReduceInPlace(result);
@@ -386,66 +390,60 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
     f2.resize(n+1);
 
   std::vector<uint32_t> degs = ComputeDegreesPS(n);
-  uint32_t k = degs[0]; uint32_t m = degs[1];
+  uint32_t k = degs[0];
+  uint32_t m = degs[1];
 
 //  std::cerr << "\n Degree: n = " << n << ", k = " << k << ", m = " << m << endl;
 
-  std::vector<Ciphertext<DCRTPoly>> powers(k);
-  std::vector<Ciphertext<DCRTPoly>> powers2(m);
-
-  powers.front() = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x));
-
-  auto cc = x->GetCryptoContext();
-
   // set the indices for the powers of x that need to be computed to 1
-  std::vector<int32_t> indices(n,0);
-
-  for (size_t i = k; i > 0; i--)
-  {
-    // if i is a power of 2
-    if (!(i & (i-1)))
+  std::vector<int32_t> indices(k, 0);
+  for (size_t i = k; i > 0; i--) {
+    if (!(i & (i - 1))) {
+      // if i is a power of 2
       indices[i - 1] = 1;
-    // non-power of 2
-    else
-    {
-      indices[i-1] = 1;
+    } else {
+      // non-power of 2
+      indices[i - 1] = 1;
       int64_t powerOf2 = 1<<(int64_t)std::floor(std::log2(i));
       int64_t rem = i % powerOf2;
-      if (indices[rem-1] == 0)
-        indices[rem-1] = 1;
-      while ((rem & (rem-1))){ // while rem is not a power of 2, set indices required to compute rem to 1
-        powerOf2 = 1<<(int64_t)std::floor(std::log2(rem));
+      if (indices[rem - 1] == 0) indices[rem - 1] = 1;
+
+      // while rem is not a power of 2
+      // set indices required to compute rem to 1
+      while ((rem & (rem - 1))) {
+        powerOf2 = 1 << (int64_t)std::floor(std::log2(rem));
         rem = rem % powerOf2;
-        if (indices[rem-1] == 0)
-          indices[rem-1] = 1;
+        if (indices[rem - 1] == 0) indices[rem - 1] = 1;
       }
     }
   }
+
+  std::vector<Ciphertext<DCRTPoly>> powers(k);
+  powers[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x));
+  auto cc = x->GetCryptoContext();
 
   // computes all powers up to k for x
   for (size_t i = 2; i <= k; i++) {
-    // if i is a power of two
-    if (!(i & (i-1)))
-    {
-      powers[i-1] = cc->EvalMultMutable(powers[i/2-1], powers[i/2-1]);
-      cc->ModReduceInPlace(powers[i-1]);
-    }
-    // non-power of 2
-    else
-    {
-      if (indices[i-1] == 1)
-      {
-        int64_t powerOf2 = 1<<(int64_t)std::floor(std::log2(i));
+    if (!(i & (i - 1))) {
+      // if i is a power of two
+      // TODO: (Andrey) can be just EvalMult?
+      powers[i - 1] = cc->EvalMultMutable(powers[i/2 - 1], powers[i/2 - 1]);
+      cc->ModReduceInPlace(powers[i - 1]);
+    } else {
+      if (indices[i - 1] == 1) {
+        // non-power of 2
+        int64_t powerOf2 = 1 << (int64_t)std::floor(std::log2(i));
         int64_t rem = i % powerOf2;
-        int levelDiff = powers[powerOf2-1]->GetElements()[0].GetNumOfElements() -
-            powers[rem-1]->GetElements()[0].GetNumOfElements();
-        cc->LevelReduceInPlace(powers[rem-1],nullptr, levelDiff);
-
-        powers[i-1] = cc->EvalMultMutable(powers[powerOf2-1],powers[rem-1]);
-        cc->ModReduceInPlace(powers[i-1]);
+        usint levelDiff = powers[rem - 1]->GetLevel() - powers[powerOf2 - 1]->GetLevel();
+        cc->LevelReduceInPlace(powers[rem - 1], nullptr, levelDiff);
+        // TODO: (Andrey) can be just EvalMult?
+        powers[i-1] = cc->EvalMultMutable(powers[powerOf2 - 1], powers[rem - 1]);
+        cc->ModReduceInPlace(powers[i - 1]);
       }
     }
   }
+
+  // TODO: Andrey Logic different from Eval Poly Linear, why?
 
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(powers[k-1]->GetCryptoParameters());
@@ -463,40 +461,42 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
     }
   }
 
+  std::vector<Ciphertext<DCRTPoly>> powers2(m);
+
   // computes powers of form k*2^i for x
   powers2.front() = powers.back();
   for (uint32_t i = 1; i < m; i++) {
-    powers2[i] = cc->EvalMultMutable(powers2[i-1],powers2[i-1]);
+    powers2[i] = cc->EvalMultMutable(powers2[i - 1], powers2[i - 1]);
     cc->ModReduceInPlace(powers2[i]);
   }
 
   // computes the product of the powers in power2, that yield x^{k(2*m - 1)}
   auto power2km1 = powers2.front();
   for (uint32_t i = 1; i < m; i++) {
-    power2km1 = cc->EvalMultMutable(power2km1, powers2[i]);
+    cc->EvalMultMutableInPlace(power2km1, powers2[i]);
     cc->ModReduceInPlace(power2km1);
   }
 
   // Compute k*2^{m-1}-k because we use it a lot
-  uint32_t k2m2k = k*(1<<(m-1)) - k;
+  uint32_t k2m2k = k * (1 << (m - 1)) - k;
 
   //Add x^{k(2^m - 1)} to the polynomial that has to be evaluated
   // std::vector<double> f2 = coefficients;
-  f2.resize(2*k2m2k+k+1, 0.0);
+  f2.resize(2 * k2m2k + k + 1, 0.0);
   f2.back() = 1;
 
   // Divide f2 by x^{k*2^{m-1}}
-  std::vector<double> xkm(int32_t(k2m2k+k)+1, 0.0);
+  std::vector<double> xkm(int32_t(k2m2k + k) + 1, 0.0);
   xkm.back() = 1;
   longDiv *divqr = LongDivisionPoly(f2, xkm);
 
   // Subtract x^{k(2^{m-1} - 1)} from r
   std::vector<double> r2 = divqr->r;
-  if (int32_t(k2m2k-Degree(divqr->r)) <= 0) {
+  if (int32_t(k2m2k - Degree(divqr->r)) <= 0) {
     r2[int32_t(k2m2k)] -= 1;
     r2.resize(Degree(r2) + 1);
   } else {
-    r2.resize(int32_t(k2m2k+1), 0.0);
+    r2.resize(int32_t(k2m2k + 1), 0.0);
     r2.back() = -1;
   }
 
@@ -505,7 +505,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
 
   // Add x^{k(2^{m-1} - 1)} to s
   std::vector<double> s2 = divcs->r;
-  s2.resize(int32_t(k2m2k+1), 0.0);
+  s2.resize(int32_t(k2m2k + 1), 0.0);
   s2.back() = 1;
 
   // Evaluate c at u
@@ -541,34 +541,32 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
     flag_c = true;
   }
 
-
   // Evaluate q and s2 at u. If their degrees are larger than k, then recursively apply the Paterson-Stockmeyer algorithm.
   Ciphertext<DCRTPoly> qu;
 
   if(Degree(divqr->q) > k) {
-    qu = InnerEvalPolyPS(x, divqr->q, k, m-1, powers, powers2);
+    qu = InnerEvalPolyPS(x, divqr->q, k, m - 1, powers, powers2);
   } else {
     // dq = k from construction
     // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
     auto qcopy = divqr->q;
     qcopy.resize(k);
     if (Degree(qcopy) > 0) {
-
       std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
       std::vector<double> weights(Degree(qcopy));
 
       for (uint32_t i = 0; i < Degree(qcopy); i++) {
         ctxs[i] = powers[i];
-        weights[i] = divqr->q[i+1];
+        weights[i] = divqr->q[i + 1];
       }
 
       qu = cc->EvalLinearWSumMutable(ctxs, weights);
 
       cc->ModReduceInPlace(qu);
       // the highest order term will always be 1 because q is monic
-      cc->EvalAddMutableInPlace(qu,powers[k-1]);
+      cc->EvalAddMutableInPlace(qu, powers[k - 1]);
     } else {
-      qu = powers[k-1];
+      qu = powers[k - 1];
     }
     // adds the free term (at x^0)
     cc->EvalAddInPlace(qu, divqr->q.front());
@@ -580,48 +578,47 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
   if (std::equal(s2.begin(), s2.end(), divqr->q.begin())) {
     su = qu;
   } else {
-    if(ds > k) {
-      su = InnerEvalPolyPS(x, s2, k, m-1, powers, powers2);
+    if (ds > k) {
+      su = InnerEvalPolyPS(x, s2, k, m - 1, powers, powers2);
     } else {
       // ds = k from construction
       // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
       auto scopy = s2;
       scopy.resize(k);
       if (Degree(scopy) > 0) {
-
         std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
         std::vector<double> weights(Degree(scopy));
 
         for (uint32_t i = 0; i < Degree(scopy); i++) {
           ctxs[i] = powers[i];
-          weights[i] = s2[i+1];
+          weights[i] = s2[i + 1];
         }
 
         su = cc->EvalLinearWSumMutable(ctxs, weights);
 
         cc->ModReduceInPlace(su);
         // the highest order term will always be 1 because q is monic
-        cc->EvalAddMutableInPlace(su,powers[k-1]);
+        cc->EvalAddMutableInPlace(su,powers[k - 1]);
       } else {
-        su = powers[k-1];
+        su = powers[k - 1];
       }
       // adds the free term (at x^0)
       cc->EvalAddInPlace(su, s2.front());
     }
   }
 
-
   Ciphertext<DCRTPoly> result;
 
-  if(flag_c) {
-    result = cc->EvalAddMutable(powers2[m-1], cu);
+  if (flag_c) {
+    result = cc->EvalAddMutable(powers2[m - 1], cu);
   } else {
-    result = cc->EvalAdd(powers2[m-1], divcs->q.front());
+    result = cc->EvalAdd(powers2[m - 1], divcs->q.front());
   }
 
   cc->EvalMultMutableInPlace(result, qu);
   cc->ModReduceInPlace(result);
   cc->EvalAddMutableInPlace(result, su);
+
   cc->EvalSubMutableInPlace(result, power2km1);
 
   return result;
@@ -649,95 +646,94 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesLinear(
     ConstCiphertext<DCRTPoly> x,
     const std::vector<double> &coefficients,
     double a, double b) const {
-
-  std::vector<Ciphertext<DCRTPoly>> T(coefficients.size()-1);
+  usint k = coefficients.size() - 1;
 
   // computes linear transformation y = -1 + 2 (x-a)/(b-a)
   // consumes one level when a <> -1 && b <> 1
-
   auto cc = x->GetCryptoContext();
-
-  if ( (a - std::round(a) < 1e-10)
+  std::vector<Ciphertext<DCRTPoly>> T(k);
+  if (   (a - std::round(a) < 1e-10)
       && (b - std::round(b) < 1e-10)
-      && (std::round(a) == -1) && (std::round(b) == 1) ) {
+      && (std::round(a) == -1)
+      && (std::round(b) == 1) ) {
     // no linear transformation is needed if a = -1, b = 1
-    T[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x)); //T_1(y) = y
+    //T_1(y) = y
+    T[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x));
   } else {
     // linear transformation is needed
+    double alpha = 2 / (b - a);
+    double beta = 2 * a / (b - a);
 
-    double alpha = 2/(b-a);
-    double beta = 2*a/(b-a);
-
-    Ciphertext<DCRTPoly> tmp1 = x->Clone();
-    auto y = cc->EvalMult(tmp1, alpha);
+    Ciphertext<DCRTPoly> xTmp = x->Clone();
+    auto y = cc->EvalMult(xTmp, alpha);
     cc->ModReduceInPlace(y);
-    cc->EvalSubInPlace(y, 1.0+beta);
-
-    T[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*y)); //T_1(y) = y
-
+    cc->EvalSubInPlace(y, 1.0 + beta);
+    //T_1(y) = y
+    T[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*y));
   }
 
   Ciphertext<DCRTPoly> yReduced(new CiphertextImpl<DCRTPoly>(*T[0]));
 
-  // computes all Chebyshev functions for y
+  // Computes Chebyshev polynomials up to degree k
+  // for y: T_1(y) = y, T_2(y), ... , T_k(y)
   // uses binary tree multiplication
-  for (size_t i = 2; i < coefficients.size(); i++) {
+  for (size_t i = 2; i <= k; i++) {
     // if i is a power of two
-    if (!(i & (i-1))) {
-
-      // compute T_2i(y) = 2*T_i(y)^2 - 1
-      auto square = cc->EvalMultMutable(T[i/2-1],T[i/2-1]);
-      if (i==2) {
-        cc->LevelReduceInPlace(T[i/2-1],nullptr);
-        cc->LevelReduceInPlace(yReduced,nullptr);
-      }
-      cc->LevelReduceInPlace(yReduced,nullptr); //depth log_2 i + 1
-      auto temp = cc->EvalAddMutable(square,square);
+    if (!(i & (i - 1))) {
+      // compute T_{2i}(y) = 2*T_i(y)^2 - 1
+      auto square = cc->EvalMultMutable(T[i/2 - 1], T[i/2 - 1]);
+      auto temp = cc->EvalAddMutable(square, square);
       cc->ModReduceInPlace(temp);
-      T[i-1] = cc->EvalSub(temp,1.0);
+      T[i - 1] = cc->EvalSub(temp, 1.0);
+      // TODO: (Andrey) Do we need this?
+      if (i == 2) {
+        cc->LevelReduceInPlace(T[i/2 - 1], nullptr);
+        cc->LevelReduceInPlace(yReduced, nullptr);
+      }
+      cc->LevelReduceInPlace(yReduced, nullptr); //depth log_2 i + 1
 
       // i/2 will now be used only at a lower level
       if (i/2 > 1) {
-        cc->LevelReduceInPlace(T[i/2-1],nullptr);
+        cc->LevelReduceInPlace(T[i/2 - 1], nullptr);
       }
+      // TODO: (Andrey) until here.
+      // If we need it, we can also add it in EvalChebyshevSeriesPS
     } else {
       // non-power of 2
-      if ( i % 2 == 1) {
+      if (i % 2 == 1) {
         // if i is odd
-        // compute T_2i+1(y) = 2*T_i(y)*T_i+1(y) - y
-        auto temp = cc->EvalMultMutable(T[i/2-1],T[i/2]);
+        // compute T_{2i+1}(y) = 2*T_i(y)*T_{i+1}(y) - y
+        auto temp = cc->EvalMultMutable(T[i/2 - 1], T[i/2]);
         cc->EvalAddMutableInPlace(temp,temp);
         cc->ModReduceInPlace(temp);
-        T[i-1] = cc->EvalSubMutable(temp,yReduced);
+        T[i - 1] = cc->EvalSubMutable(temp, yReduced);
       } else {
         // i is even but not power of 2
-        // compute T_2i(y) = 2*T_i(y)^2 - 1
-        auto square = cc->EvalMultMutable(T[i/2-1],T[i/2-1]);
-        auto temp = cc->EvalAddMutable(square,square);
+        // compute T_{2i}(y) = 2*T_i(y)^2 - 1
+        auto square = cc->EvalMultMutable(T[i/2 - 1], T[i/2 - 1]);
+        auto temp = cc->EvalAddMutable(square, square);
         cc->ModReduceInPlace(temp);
-        T[i-1] = cc->EvalSub(temp,1.0);
+        T[i - 1] = cc->EvalSub(temp, 1.0);
       }
     }
   }
 
-  //gets the highest depth (lowest number of CRT limbs)
-  int64_t limbs = T[coefficients.size()-2]->GetElements()[0].GetNumOfElements();
+  // TODO: Andrey Logic different from Chebyshev PS, why?
 
   // brings all powers of y to the same level
-  for (size_t i = 1; i < coefficients.size()-1; i++) {
-    int levelDiff = limbs -
-        T[i-1]->GetElements()[0].GetNumOfElements();
-    cc->LevelReduceInPlace(T[i-1],nullptr, levelDiff);
+  for (size_t i = 1; i < k; i++) {
+    usint levelDiff = T[k - 1]->GetLevel() - T[i - 1]->GetLevel();
+    cc->LevelReduceInPlace(T[i - 1], nullptr, levelDiff);
   }
 
   // perform scalar multiplication for the highest-order term
-  auto result = cc->EvalMult(T[coefficients.size()-2],coefficients[coefficients.size()-1]);
+  auto result = cc->EvalMult(T[k - 1], coefficients[k]);
 
   // perform scalar multiplication for all other terms and sum them up
-  for (size_t i = 0; i < coefficients.size()-2; i++) {
-    if (coefficients[i+1] != 0) {
-      Ciphertext<DCRTPoly> tmp2 = cc->EvalMult(T[i],coefficients[i+1]);
-      cc->EvalAddMutableInPlace(result, tmp2);
+  for (size_t i = 0; i < k - 1; i++) {
+    if (coefficients[i + 1] != 0) {
+      cc->EvalMultInPlace(T[i], coefficients[i + 1]);
+      cc->EvalAddMutableInPlace(result, T[i]);
     }
   }
 
@@ -745,10 +741,9 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesLinear(
   cc->ModReduceInPlace(result);
 
   // adds the free term (at x^0)
-  cc->EvalAddInPlace(result,coefficients[0]/2);
+  cc->EvalAddInPlace(result, coefficients[0]/2);
 
   return result;
-
 }
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
@@ -761,24 +756,20 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
   auto cc = x->GetCryptoContext();
 
   // Compute k*2^{m-1}-k because we use it a lot
-  uint32_t k2m2k = k*(1<<(m-1)) - k;
-
-  // number of levels of T2[m-1]
-  uint32_t Lm = T2[m-1]->GetElements()[0].GetNumOfElements();
+  uint32_t k2m2k = k * (1 << (m - 1)) - k;
 
   // Divide coefficients by T^{k*2^{m-1}}
-  std::vector<double> Tkm(int32_t(k2m2k+k)+1, 0.0);
+  std::vector<double> Tkm(int32_t(k2m2k + k) + 1, 0.0);
   Tkm.back() = 1;
   longDiv *divqr = LongDivisionChebyshev(coefficients, Tkm);
 
   // Subtract x^{k(2^{m-1} - 1)} from r
   std::vector<double> r2 = divqr->r;
-  if(int32_t(k2m2k-Degree(divqr->r)) <= 0){
+  if (int32_t(k2m2k - Degree(divqr->r)) <= 0) {
     r2[int32_t(k2m2k)] -= 1;
     r2.resize(Degree(r2) + 1);
-  }
-  else{
-    r2.resize(int32_t(k2m2k+1), 0.0);
+  } else {
+    r2.resize(int32_t(k2m2k + 1), 0.0);
     r2.back() = -1;
   }
 
@@ -787,9 +778,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
 
   // Add x^{k(2^{m-1} - 1)} to s
   std::vector<double> s2 = divcs->r;
-  s2.resize(int32_t(k2m2k+1), 0.0);
+  s2.resize(int32_t(k2m2k + 1), 0.0);
   s2.back() = 1;
-
 
   // Evaluate c at u
   Ciphertext<DCRTPoly> cu;
@@ -810,7 +800,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
 
       for (uint32_t i = 0; i < dc; i++) {
         ctxs[i] = T[i];
-        weights[i] = divcs->q[i+1];
+        weights[i] = divcs->q[i + 1];
       }
 
       cu = cc->EvalLinearWSumMutable(ctxs, weights);
@@ -820,59 +810,53 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
     }
 
     // adds the free term (at x^0)
-    cc->EvalAddInPlace(cu,divcs->q.front()/2);
-
+    cc->EvalAddInPlace(cu, divcs->q.front()/2);
     // Need to reduce levels up to the level of T2[m-1].
-    uint32_t limbs = cu->GetElements()[0].GetNumOfElements();
-    cc->LevelReduceInPlace(cu, nullptr, limbs - Lm);
+    usint levelDiff = T2[m - 1]->GetLevel() - cu->GetLevel();
+    cc->LevelReduceInPlace(cu, nullptr, levelDiff);
 
     flag_c = true;
   }
 
-
   // Evaluate q and s2 at u. If their degrees are larger than k, then recursively apply the Paterson-Stockmeyer algorithm.
   Ciphertext<DCRTPoly> qu;
 
-  if(Degree(divqr->q) > k){
-    qu = InnerEvalChebyshevPS(x, divqr->q, k, m-1, T, T2);
-  }
-  else{// dq = k from construction
+  if (Degree(divqr->q) > k) {
+    qu = InnerEvalChebyshevPS(x, divqr->q, k, m - 1, T, T2);
+  } else {
+    // dq = k from construction
     // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
     auto qcopy = divqr->q;
     qcopy.resize(k);
-    if (Degree(qcopy) > 0){
-
+    if (Degree(qcopy) > 0) {
       std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
       std::vector<double> weights(Degree(qcopy));
 
       for (uint32_t i = 0; i < Degree(qcopy); i++) {
         ctxs[i] = T[i];
-        weights[i] = divqr->q[i+1];
+        weights[i] = divqr->q[i + 1];
       }
 
       qu = cc->EvalLinearWSumMutable(ctxs, weights);
 
       cc->ModReduceInPlace(qu);
-
       // the highest order coefficient will always be a power of two up to 2^{m-1} because q is "monic" but the Chebyshev rule adds a factor of 2
       // we don't need to increase the depth by multiplying the highest order coefficient, but instead checking and summing, since we work with m <= 4.
-      Ciphertext<DCRTPoly> sum = T[k-1];
-      for (uint32_t i = 0; i < log2(divqr->q.back()); i ++){
-        cc->EvalAddMutableInPlace(sum,sum);
+      Ciphertext<DCRTPoly> sum = T[k - 1];
+      for (uint32_t i = 0; i < log2(divqr->q.back()); i++) {
+        cc->EvalAddMutableInPlace(sum, sum);
       }
       cc->EvalAddMutableInPlace(qu, sum);
-
-    }
-    else {
-      Ciphertext<DCRTPoly> sum = T[k-1];
-      for (uint32_t i = 0; i < log2(divqr->q.back()); i ++){
-        cc->EvalAddMutableInPlace(sum,sum);
+    } else {
+      Ciphertext<DCRTPoly> sum = T[k - 1];
+      for (uint32_t i = 0; i < log2(divqr->q.back()); i++) {
+        cc->EvalAddMutableInPlace(sum, sum);
       }
       qu = sum;
     }
 
     // adds the free term (at x^0)
-    cc->EvalAddInPlace(qu,divqr->q.front()/2);
+    cc->EvalAddInPlace(qu, divqr->q.front()/2);
     // The number of levels of qu is the same as the number of levels of T[k-1] or T[k-1] + 1.
     // No need to reduce it to T2[m-1] because it only reaches here when m = 2.
   }
@@ -880,7 +864,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
   Ciphertext<DCRTPoly> su;
 
   if (Degree(s2) > k) {
-    su = InnerEvalChebyshevPS(x, s2, k, m-1, T, T2);
+    su = InnerEvalChebyshevPS(x, s2, k, m - 1, T, T2);
   } else {
     // ds = k from construction
     // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
@@ -899,15 +883,13 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
 
       cc->ModReduceInPlace(su);
       // the highest order coefficient will always be 1 because s2 is monic.
-      cc->EvalAddMutableInPlace(su,T[k-1]);
-
+      cc->EvalAddMutableInPlace(su, T[k - 1]);
     } else {
-      su = T[k-1];
+      su = T[k - 1];
     }
 
     // adds the free term (at x^0)
-    cc->EvalAddInPlace(su,s2.front()/2);
-
+    cc->EvalAddInPlace(su, s2.front()/2);
     // The number of levels of su is the same as the number of levels of T[k-1] or T[k-1] + 1. Need to reduce it to T2[m-1] + 1.
     // su = cc->LevelReduce(su, nullptr, su->GetElements()[0].GetNumOfElements() - Lm + 1) ;
     cc->LevelReduceInPlace(su, nullptr);
@@ -915,17 +897,17 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(
 
   Ciphertext<DCRTPoly> result;
 
-  if(flag_c)
-    result = cc->EvalAddMutable(T2[m-1],cu);
-  else
-    result = cc->EvalAdd(T2[m-1],divcs->q.front()/2);
+  if (flag_c) {
+    result = cc->EvalAddMutable(T2[m - 1], cu);
+  } else {
+    result = cc->EvalAdd(T2[m - 1], divcs->q.front()/2);
+  }
 
-  cc->EvalMultMutableInPlace(result,qu);
+  cc->EvalMultMutableInPlace(result, qu);
   cc->ModReduceInPlace(result);
-  cc->EvalAddMutableInPlace(result,su);
+  cc->EvalAddMutableInPlace(result, su);
 
   return result;
-
 }
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
@@ -941,71 +923,69 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
     f2.resize(n+1);
 
   std::vector<uint32_t> degs = ComputeDegreesPS(n);
-  uint32_t k = degs[0]; uint32_t m = degs[1];
+  uint32_t k = degs[0];
+  uint32_t m = degs[1];
 
 //  std::cerr << "\n Degree: n = " << n << ", k = " << k << ", m = " << m << endl;
 
-  std::vector<Ciphertext<DCRTPoly>> T(k);
-  std::vector<Ciphertext<DCRTPoly>> T2(m);
-
   // computes linear transformation y = -1 + 2 (x-a)/(b-a)
   // consumes one level when a <> -1 && b <> 1
-
   auto cc = x->GetCryptoContext();
-
-  if ( (a - std::round(a) < 1e-10) && (b - std::round(b) < 1e-10) && (std::round(a) == -1) && (std::round(b) == 1) )
-  { // no linear transformation is needed if a = -1, b = 1
-    T[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x)); //T_1(y) = y
-  }
-  else
-  { // linear transformation is needed
-
-    double alpha = 2/(b-a);
-    double beta = 2*a/(b-a);
+  std::vector<Ciphertext<DCRTPoly>> T(k);
+  if (   (a - std::round(a) < 1e-10)
+      && (b - std::round(b) < 1e-10)
+      && (std::round(a) == -1)
+      && (std::round(b) == 1) ) {
+    // no linear transformation is needed if a = -1, b = 1
+    //T_1(y) = y
+    T[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x));
+  } else {
+    // linear transformation is needed
+    double alpha = 2 / (b - a);
+    double beta = 2 * a / (b - a);
 
     Ciphertext<DCRTPoly> xTmp = x->Clone();
-    auto y = cc->EvalMult(xTmp,alpha);
+    auto y = cc->EvalMult(xTmp, alpha);
     cc->ModReduceInPlace(y);
-    cc->EvalSubInPlace(y,1.0+beta);
-
-    T[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*y)); //T_1(y) = y
-
+    cc->EvalSubInPlace(y, 1.0 + beta);
+    //T_1(y) = y
+    T[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*y));
   }
 
   Ciphertext<DCRTPoly> yReduced(new CiphertextImpl<DCRTPoly>(*T[0]));
 
-  uint32_t L = yReduced->GetElements()[0].GetNumOfElements();
-
-  // Computes Chebyshev polynomials up to degree k for y: T_1(y) = y, T_2(y), ... , T_k(y)
+  // Computes Chebyshev polynomials up to degree k
+  // for y: T_1(y) = y, T_2(y), ... , T_k(y)
   // uses binary tree multiplication
   for (uint32_t i = 2; i <= k; i++) {
     // if i is a power of two
-    if (!(i & (i-1))) {
+    if (!(i & (i - 1))) {
       // compute T_{2i}(y) = 2*T_i(y)^2 - 1
-      auto square = cc->EvalMultMutable(T[i/2-1],T[i/2-1]);
-      auto temp = cc->EvalAddMutable(square,square);
+      auto square = cc->EvalMultMutable(T[i/2 - 1], T[i/2 - 1]);
+      auto temp = cc->EvalAddMutable(square, square);
       cc->ModReduceInPlace(temp);
-      T[i-1] = cc->EvalSub(temp,1.0);
+      T[i - 1] = cc->EvalSub(temp, 1.0);
     } else {
       // non-power of 2
-      if ( i % 2 == 1) {
+      if (i % 2 == 1) {
         // if i is odd
-        // compute T_{2i+1}(y) = 2*T_i(y)*T_i+1(y) - y
-        auto temp = cc->EvalMultMutable(T[i/2-1],T[i/2]);
-        temp = cc->EvalAddMutable(temp,temp);
+        // compute T_{2i+1}(y) = 2*T_i(y)*T_{i+1}(y) - y
+        auto temp = cc->EvalMultMutable(T[i/2 - 1], T[i/2]);
+        cc->EvalAddMutableInPlace(temp,temp);
         cc->ModReduceInPlace(temp);
-        T[i-1] = cc->EvalSubMutable(temp,yReduced);
+        T[i - 1] = cc->EvalSubMutable(temp, yReduced);
       } else {
         // i is even but not power of 2
         // compute T_{2i}(y) = 2*T_i(y)^2 - 1
-        auto square = cc->EvalMultMutable(T[i/2-1],T[i/2-1]);
-        auto temp = cc->EvalAddMutable(square,square);
+        auto square = cc->EvalMultMutable(T[i/2 - 1], T[i/2 - 1]);
+        auto temp = cc->EvalAddMutable(square, square);
         cc->ModReduceInPlace(temp);
-        T[i-1] = cc->EvalSub(temp,1.0);
+        T[i - 1] = cc->EvalSub(temp, 1.0);
       }
     }
   }
 
+  // TODO: Andrey Logic different from Chebyshev Linear, why?
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           T[k-1]->GetCryptoParameters());
@@ -1025,48 +1005,49 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
     }
   }
 
+  std::vector<Ciphertext<DCRTPoly>> T2(m);
   // Compute the Chebyshev polynomials T_{2k}(y), T_{4k}(y), ... , T_{2^{m-1}k}(y)
   T2.front() = T.back();
   for (uint32_t i = 1; i < m; i++) {
-    auto square = cc->EvalMultMutable(T2[i-1],T2[i-1]);
-    auto temp = cc->EvalAddMutable(square,square);
+    auto square = cc->EvalMultMutable(T2[i - 1], T2[i - 1]);
+    auto temp = cc->EvalAddMutable(square, square);
     cc->ModReduceInPlace(temp);
-    T2[i] = cc->EvalSub(temp,1.0);
+    T2[i] = cc->EvalSub(temp, 1.0);
   }
 
   // computes T_{k(2*m - 1)}(y)
   auto T2km1 = T2.front();
   for (uint32_t i = 1; i < m; i++) {
     // compute T_{k(2*m - 1)} = 2*T_{k(2^{m-1}-1)}(y)*T_{k*2^{m-1}}(y) - T_k(y)
-    auto temp = cc->EvalMultMutable(T2km1,T2[i]);
-    cc->EvalAddMutableInPlace(temp,temp);
+    auto temp = cc->EvalMultMutable(T2km1, T2[i]);
+    cc->EvalAddMutableInPlace(temp, temp);
     cc->ModReduceInPlace(temp);
-    T2km1 = cc->EvalSubMutable(temp,T2.front());
+    T2km1 = cc->EvalSubMutable(temp, T2.front());
   }
 
   // We also need to reduce the number of levels of T[k-1] and of T2[0] by another level.
-  cc->LevelReduceInPlace(T[k-1],nullptr);
-  cc->LevelReduceInPlace(T2.front(),nullptr);
+  cc->LevelReduceInPlace(T[k-1], nullptr);
+  cc->LevelReduceInPlace(T2.front(), nullptr);
 
   // Compute k*2^{m-1}-k because we use it a lot
-  uint32_t k2m2k = k*(1<<(m-1)) - k;
+  uint32_t k2m2k = k * (1 << (m - 1)) - k;
 
   //Add T^{k(2^m - 1)}(y) to the polynomial that has to be evaluated
-  f2.resize(2*k2m2k+k+1, 0.0);
+  f2.resize(2 * k2m2k + k + 1, 0.0);
   f2.back() = 1;
 
   // Divide f2 by T^{k*2^{m-1}}
-  std::vector<double> Tkm(int32_t(k2m2k+k)+1, 0.0);
+  std::vector<double> Tkm(int32_t(k2m2k + k) + 1, 0.0);
   Tkm.back() = 1;
   longDiv *divqr = LongDivisionChebyshev(f2, Tkm);
 
   // Subtract x^{k(2^{m-1} - 1)} from r
   std::vector<double> r2 = divqr->r;
-  if (int32_t(k2m2k-Degree(divqr->r)) <= 0) {
+  if (int32_t(k2m2k - Degree(divqr->r)) <= 0) {
     r2[int32_t(k2m2k)] -= 1;
     r2.resize(Degree(r2) + 1);
   } else {
-    r2.resize(int32_t(k2m2k+1), 0.0);
+    r2.resize(int32_t(k2m2k + 1), 0.0);
     r2.back() = -1;
   }
 
@@ -1075,7 +1056,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
 
   // Add x^{k(2^{m-1} - 1)} to s
   std::vector<double> s2 = divcs->r;
-  s2.resize(int32_t(k2m2k+1), 0.0);
+  s2.resize(int32_t(k2m2k + 1), 0.0);
   s2.back() = 1;
 
   // Evaluate c at u
@@ -1097,18 +1078,21 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
 
       for (uint32_t i = 0; i < dc; i++) {
         ctxs[i] = T[i];
-        weights[i] = divcs->q[i+1];
+        weights[i] = divcs->q[i + 1];
       }
 
       cu = cc->EvalLinearWSumMutable(ctxs, weights);
+
       // Do rescaling after scalar multiplication
       cc->ModReduceInPlace(cu);
     }
 
     // adds the free term (at x^0)
-    cc->EvalAddInPlace(cu,divcs->q.front()/2);
+    cc->EvalAddInPlace(cu, divcs->q.front()/2);
+    // TODO : Andrey why not T2[m-1]->GetLevel() instead?
     // Need to reduce levels to the level of T2[m-1].
-    cc->LevelReduceInPlace(cu, nullptr, cu->GetElements()[0].GetNumOfElements() - (L - ceil(log2(k)) - m) - 1) ;
+    usint levelDiff = yReduced->GetLevel() - cu->GetLevel() + ceil(log2(k)) + m - 1;
+    cc->LevelReduceInPlace(cu, nullptr, levelDiff);
 
     flag_c = true;
   }
@@ -1116,55 +1100,52 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
   // Evaluate q and s2 at u. If their degrees are larger than k, then recursively apply the Paterson-Stockmeyer algorithm.
   Ciphertext<DCRTPoly> qu;
 
-  if(Degree(divqr->q) > k){
-    qu = InnerEvalChebyshevPS(x, divqr->q, k, m-1, T, T2);
-  }
-  else{// dq = k from construction
+  if (Degree(divqr->q) > k) {
+    qu = InnerEvalChebyshevPS(x, divqr->q, k, m - 1, T, T2);
+  } else {
+    // dq = k from construction
     // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
     auto qcopy = divqr->q;
     qcopy.resize(k);
-    if (Degree(qcopy) > 0){
-
+    if (Degree(qcopy) > 0) {
       std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(qcopy));
       std::vector<double> weights(Degree(qcopy));
 
       for (uint32_t i = 0; i < Degree(qcopy); i++) {
         ctxs[i] = T[i];
-        weights[i] = divqr->q[i+1];
+        weights[i] = divqr->q[i + 1];
       }
 
       qu = cc->EvalLinearWSumMutable(ctxs, weights);
 
       cc->ModReduceInPlace(qu);
       // the highest order coefficient will always be 2 after one division because of the Chebyshev division rule
-      Ciphertext<DCRTPoly> sum = cc->EvalAddMutable(T[k-1],T[k-1]);
-      cc->EvalAddMutableInPlace(qu,sum);
-
+      Ciphertext<DCRTPoly> sum = cc->EvalAddMutable(T[k - 1], T[k - 1]);
+      cc->EvalAddMutableInPlace(qu, sum);
     } else {
-      qu = T[k-1];
+      qu = T[k - 1];
 
       for (uint32_t i = 1; i < divqr->q.back(); i ++) {
-        cc->EvalAddMutableInPlace(qu,T[k-1]);
+        cc->EvalAddMutableInPlace(qu, T[k-1]);
       }
     }
 
     // adds the free term (at x^0)
-    cc->EvalAddInPlace(qu,divqr->q.front()/2);
+    cc->EvalAddInPlace(qu, divqr->q.front()/2);
     // The number of levels of qu is the same as the number of levels of T[k-1] + 1.
     // Will only get here when m = 2, so the number of levels of qu and T2[m-1] will be the same.
   }
 
   Ciphertext<DCRTPoly> su;
 
-  if(Degree(s2) > k){
-    su = InnerEvalChebyshevPS(x, s2, k, m-1, T, T2);
-  }
-  else{// ds = k from construction
+  if (Degree(s2) > k) {
+    su = InnerEvalChebyshevPS(x, s2, k, m - 1, T, T2);
+  } else {
+    // ds = k from construction
     // perform scalar multiplication for all other terms and sum them up if there are non-zero coefficients
     auto scopy = s2;
     scopy.resize(k);
-    if (Degree(scopy) > 0){
-
+    if (Degree(scopy) > 0) {
       std::vector<Ciphertext<DCRTPoly>> ctxs(Degree(scopy));
       std::vector<double> weights(Degree(scopy));
 
@@ -1177,33 +1158,36 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
 
       cc->ModReduceInPlace(su);
       // the highest order coefficient will always be 1 because s2 is monic.
-      cc->EvalAddMutableInPlace(su,T[k-1]);
+      cc->EvalAddMutableInPlace(su, T[k - 1]);
     } else {
-      su = T[k-1];
+      su = T[k - 1];
     }
 
     // adds the free term (at x^0)
-    cc->EvalAddInPlace(su,s2.front()/2);
+    cc->EvalAddInPlace(su, s2.front()/2);
     // The number of levels of su is the same as the number of levels of T[k-1] + 1.
     // Will only get here when m = 2, so need to reduce the number of levels by 1.
   }
 
+  // TODO : Andrey : here is different from 895 line
   //Reduce number of levels of su to number of levels of T2km1.
-  cc->LevelReduceInPlace(su, nullptr) ;
+  cc->LevelReduceInPlace(su, nullptr);
 
   Ciphertext<DCRTPoly> result;
-  if(flag_c)
-    result = cc->EvalAddMutable(T2[m-1], cu);
-  else
-    result = cc->EvalAdd(T2[m-1], divcs->q.front()/2);
+
+  if (flag_c) {
+    result = cc->EvalAddMutable(T2[m - 1], cu);
+  } else {
+    result = cc->EvalAdd(T2[m - 1], divcs->q.front()/2);
+  }
 
   cc->EvalMultMutableInPlace(result, qu);
   cc->ModReduceInPlace(result);
   cc->EvalAddMutableInPlace(result, su);
+
   cc->EvalSubMutable(result, T2km1);
 
   return result;
-
 }
 
 //------------------------------------------------------------------------------

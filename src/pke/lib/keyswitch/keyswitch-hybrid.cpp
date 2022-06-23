@@ -388,7 +388,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(
       cryptoParams->GettInvModpPrecon(), t,
       cryptoParams->GettModqPrecon());
 
-  DCRTPoly ct1 = cTilda[0].ApproxModDown(
+  DCRTPoly ct1 = cTilda[1].ApproxModDown(
       paramsQl, cryptoParams->GetParamsP(), cryptoParams->GetPInvModq(),
       cryptoParams->GetPInvModqPrecon(), cryptoParams->GetPHatInvModp(),
       cryptoParams->GetPHatInvModpPrecon(), cryptoParams->GetPHatModq(),
