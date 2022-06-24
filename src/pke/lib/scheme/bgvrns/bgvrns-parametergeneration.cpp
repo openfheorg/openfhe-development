@@ -379,6 +379,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   }
   cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, 0);
 
+  std::cout << "ring dimension computed in paramsgen " << n << std::endl;
   //compute the flooding distribution parameter based on the security mode for pre
   //getmodulus using ciphertext 
   double stat_sec=30;
