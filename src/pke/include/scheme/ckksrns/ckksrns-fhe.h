@@ -169,73 +169,85 @@ public:
 
   virtual ~FHECKKSRNS() {}
 
-  using FHEBase<DCRTPoly>::EvalBootstrapSetup;
-
   virtual void EvalBootstrapSetup(
       const CryptoContextImpl<DCRTPoly> &cc,
-      uint32_t dim1 = 0, uint32_t slots = 0) override;
-
-  virtual void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc,
       std::vector<uint32_t> levelBudget = {5, 4},
       std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0) override;
 
-  std::vector<int32_t> FindBootstrapRotationIndices(int32_t bootstrapFlag, uint32_t m,
-                                                uint32_t blockDimension = 0);
+  virtual std::vector<int32_t> FindLTRotationIndices(
+      uint32_t dim1, int32_t bootstrapFlag,
+      uint32_t m, uint32_t blockDimension);
 
-  virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(
-      const PrivateKey<DCRTPoly> privateKey, int32_t bootstrapFlag) override;
+  std::vector<int32_t> FindBootstrapRotationIndices(
+      int32_t bootstrapFlag, uint32_t m,
+      uint32_t blockDimension = 0);
 
-  virtual std::vector<int32_t> FindLTRotationIndices(uint32_t dim1, int32_t bootstrapFlag, uint32_t m,
-            uint32_t blockDimension);
-
-  virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalLTKeyGen(
+  virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>>
+  EvalLTKeyGen(
       const PrivateKey<DCRTPoly> privateKey, uint32_t dim1,
       int32_t bootstrapFlag, int32_t conjFlag) override;
 
-  virtual Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext) const override;
+  virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>>
+  EvalBootstrapKeyGen(
+      const PrivateKey<DCRTPoly> privateKey,
+      int32_t bootstrapFlag) override;
 
-  virtual void EvalBootstrapPrecompute(const CryptoContextImpl<DCRTPoly> &cc, uint32_t debugFlag) override;
+  virtual Ciphertext<DCRTPoly> EvalBootstrap(
+      ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-  Ciphertext<DCRTPoly> EvalBootstrapEncoding(const CryptoContextImpl<DCRTPoly> &cc,
-      const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
+  virtual void EvalBootstrapPrecompute(
+      const CryptoContextImpl<DCRTPoly> &cc,
+      uint32_t debugFlag) override;
+
+  Ciphertext<DCRTPoly> EvalBootstrapEncoding(
+      const std::vector<std::complex<double>> &A,
+      const std::vector<uint32_t> &rotGroup,
       ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale);
 
-  Ciphertext<DCRTPoly> EvalBootstrapDecoding(const CryptoContextImpl<DCRTPoly> &cc,
-      const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
+  Ciphertext<DCRTPoly> EvalBootstrapDecoding(
+      const std::vector<std::complex<double>> &A,
+      const std::vector<uint32_t> &rotGroup,
       ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale);
 
-  void ApplyDoubleAngleIterations(CryptoContext<DCRTPoly>& cc,
+  void ApplyDoubleAngleIterations(
     Ciphertext<DCRTPoly>& ciphertext) const;
 
   Ciphertext<DCRTPoly> EvalBootstrapCore(
-      CKKSBootstrapMethod method, ConstCiphertext<DCRTPoly> ciphertext1) const;
+      CKKSBootstrapMethod method,
+      ConstCiphertext<DCRTPoly> ciphertext1) const;
 
   Ciphertext<DCRTPoly> EvalBootstrapWithPrecompEncoding(
-      const CryptoContextImpl<DCRTPoly> &cc,
       const std::vector<std::vector<ConstPlaintext>> &A,
       ConstCiphertext<DCRTPoly> ctxt) const;
 
   Ciphertext<DCRTPoly> EvalBootstrapWithPrecompDecoding(
-      const CryptoContextImpl<DCRTPoly> &cc,
       const std::vector<std::vector<ConstPlaintext>> &A,
       ConstCiphertext<DCRTPoly> ctxt) const;
 
-  std::vector<std::vector<ConstPlaintext>> EvalBootstrapPrecomputeEncoding(
-    const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A,const std::vector<uint32_t> &rotGroup,
-    bool flag_i, double scale = 1, uint32_t L = 0);
+  std::vector<std::vector<ConstPlaintext>>
+  EvalBootstrapPrecomputeEncoding(
+      const CryptoContextImpl<DCRTPoly> &cc,
+      const std::vector<std::complex<double>> &A,
+      const std::vector<uint32_t> &rotGroup,
+      bool flag_i, double scale = 1, uint32_t L = 0);
 
-  std::vector<std::vector<ConstPlaintext>> EvalBootstrapPrecomputeDecoding(
-    const CryptoContextImpl<DCRTPoly> &cc, const std::vector<std::complex<double>> &A, const std::vector<uint32_t> &rotGroup,
-    bool flag_i, double scale = 1, uint32_t L = 0);
+  std::vector<std::vector<ConstPlaintext>>
+  EvalBootstrapPrecomputeDecoding(
+      const CryptoContextImpl<DCRTPoly> &cc,
+      const std::vector<std::complex<double>> &A,
+      const std::vector<uint32_t> &rotGroup,
+      bool flag_i, double scale = 1, uint32_t L = 0);
 
-  void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext,
-    const std::shared_ptr<CryptoParametersCKKSRNS> cryptoParams,
-    const CryptoContext<DCRTPoly> cc,
-    double correction) const;
+  void AdjustCiphertext(
+      Ciphertext<DCRTPoly>& ciphertext,
+      double correction) const;
 
-  uint32_t GetBootstrapDepth(const CryptoContextImpl<DCRTPoly> &cc, const std::vector<uint32_t> &levelBudget);
+  uint32_t GetBootstrapDepth(
+      const CryptoContextImpl<DCRTPoly> &cc,
+      const std::vector<uint32_t> &levelBudget);
 
-  virtual EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) const override;
+  virtual EvalKey<DCRTPoly> ConjugateKeyGen(
+      const PrivateKey<DCRTPoly> privateKey) const override;
 
   Ciphertext<DCRTPoly> Conjugate(
       ConstCiphertext<DCRTPoly> ciphertext,

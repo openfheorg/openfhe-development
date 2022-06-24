@@ -607,7 +607,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::LevelReduce(ConstCiphertext<DCRTPoly> cipher
   return result;
 }
 
-void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly> ciphertext,
+void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                        const EvalKey<DCRTPoly> evalKey,
                                        size_t levels) const {
   const auto cryptoParams =

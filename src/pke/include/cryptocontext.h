@@ -2761,17 +2761,6 @@ protected:
    */
 
   /**
-   * Sets all parameters for the linear method
-   *
-   * @param cc current cryptocontext
-   * @param &dim1 - inner dimension in the baby-step giant-step routine
-   * @param &slots - number of slots to be bootstrapped
-   * @param debugFlag - set to 1 when debugging encoding/decoding only
-   * @param precomp - do linear transform precomputations
-   */
-  void EvalBootstrapSetup(uint32_t dim1 = 0, uint32_t slots = 0, uint32_t debugFlag = 0, bool precomp = true);
-
-  /**
    * Sets all parameters for the linear method for the FFT-like method
    *
    * @param levelBudget - vector of budgets for the amount of levels in encoding
@@ -2782,8 +2771,11 @@ protected:
    * @param debugFlag - set to 1 when debugging encoding/decoding only
    * @param precomp - do linear transform precomputations
    */
-  void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0,
-                   uint32_t debugFlag = 0, bool precomp = true);
+  void EvalBootstrapSetup(
+      std::vector<uint32_t> levelBudget = {5, 4},
+      std::vector<uint32_t> dim1 = {0, 0},
+      uint32_t slots = 0, uint32_t debugFlag = 0,
+      bool precomp = true);
 
   /**
    * Generates all automorphism keys for EvalBT.
@@ -2794,7 +2786,9 @@ protected:
    * @param bootstrapFlag - when set to 1, generates extra automorphism keys for
    * sparse bootstrapping
    */
-  void EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, int32_t bootstrapFlag = 0);
+  void EvalBootstrapKeyGen(
+      const PrivateKey<Element> privateKey,
+      int32_t bootstrapFlag = 0);
 
   /**
    * Defines the bootstrapping evaluation of ciphertext using either the
@@ -2803,11 +2797,13 @@ protected:
    * @param ciphertext the input ciphertext.
    * @return the refreshed ciphertext.
    */
-  Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const;
+  Ciphertext<Element> EvalBootstrap(
+      ConstCiphertext<Element> ciphertext) const;
 
   //TODO remove?
 
-  EvalKey<Element> ConjugateKeyGen(const PrivateKey<Element> privateKey) const;
+  EvalKey<Element> ConjugateKeyGen(
+      const PrivateKey<Element> privateKey) const;
 
   /**
    * Performs all precomputations for bootstrapping using the FFT-like method

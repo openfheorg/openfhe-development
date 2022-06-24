@@ -727,7 +727,7 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalSub operation has not been enabled");
   }
 
-  virtual void EvalSubInPlace(Ciphertext<Element> ciphertext, ConstPlaintext plaintext) const {
+  virtual void EvalSubInPlace(Ciphertext<Element> &ciphertext, ConstPlaintext plaintext) const {
     if (m_LeveledSHE) {
       if (!ciphertext)
         OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -2078,11 +2078,13 @@ class SchemeBase {
   //TODO Andrey: do we need this method?
 //  const std::shared_ptr<PKEBase<Element>> getAlgorithm() const { return m_PKE; }
 
-  void EvalBootstrapSetup(const CryptoContextImpl<Element> &cc,
-      uint32_t dim1 = 0, uint32_t slots = 0,
+  void EvalBootstrapSetup(
+      const CryptoContextImpl<Element> &cc,
+      const std::vector<uint32_t> &levelBudget = {5,4},
+      const std::vector<uint32_t> &dim1 = {0,0}, uint32_t slots = 0,
       uint32_t debugFlag = 0, bool precomp = true) {
     if (m_FHE) {
-      m_FHE->EvalBootstrapSetup(cc,dim1,slots);
+      m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots);
       if (precomp) {
         m_FHE->EvalBootstrapPrecompute(cc, debugFlag);
       }
@@ -2092,31 +2094,20 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalBootstrapSetup operation has not been enabled");
   }
 
-  void EvalBootstrapSetup(const CryptoContextImpl<Element> &cc,
-      const std::vector<uint32_t> &levelBudget = {5,4},
-      const std::vector<uint32_t> &dim1 = {0,0}, uint32_t slots = 0,
-      uint32_t debugFlag = 0, bool precomp = true) {
+  void EvalBootstrapPrecompute(
+      const CryptoContextImpl<Element> &cc,
+      uint32_t debugFlag = 0) {
     if (m_FHE) {
-      m_FHE->EvalBootstrapSetup(cc,levelBudget,dim1,slots);
-      if (precomp) {
-        m_FHE->EvalBootstrapPrecompute(cc,debugFlag);
-      }
-      return;
-    }
-
-    OPENFHE_THROW(config_error, "EvalBootstrapSetup operation has not been enabled");
-  }
-
-  void EvalBootstrapPrecompute(const CryptoContextImpl<Element> &cc, uint32_t debugFlag = 0) {
-    if (m_FHE) {
-      m_FHE->EvalBootstrapPrecompute(cc,debugFlag);
+      m_FHE->EvalBootstrapPrecompute(cc, debugFlag);
       return;
     }
 
     OPENFHE_THROW(config_error, "EvalBootstrapPrecompute operation has not been enabled");
   }
 
-  std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
+  std::shared_ptr<std::map<usint, EvalKey<Element>>>
+  EvalBootstrapKeyGen(
+      const PrivateKey<Element> privateKey,
       int32_t bootstrapFlag = 0) {
     if (m_FHE) {
       return m_FHE->EvalBootstrapKeyGen(privateKey, bootstrapFlag);
@@ -2125,8 +2116,11 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalBootstrapKeyGen operation has not been enabled");
   }
 
-  std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalLTKeyGen(const PrivateKey<Element> privateKey,
-      uint32_t dim1 = 0, int32_t bootstrapFlag = 0, int32_t conjFlag = 0) {
+  std::shared_ptr<std::map<usint, EvalKey<Element>>>
+  EvalLTKeyGen(
+      const PrivateKey<Element> privateKey,
+      uint32_t dim1 = 0, int32_t bootstrapFlag = 0,
+      int32_t conjFlag = 0) {
     if (m_FHE) {
       return m_FHE->EvalLTKeyGen(privateKey, dim1, bootstrapFlag, conjFlag);
     }
@@ -2134,7 +2128,8 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalLTKeyGen operation has not been enabled");
   }
 
-  Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
+  Ciphertext<Element> EvalBootstrap(
+      ConstCiphertext<Element> ciphertext) const {
     if (m_FHE) {
       return m_FHE->EvalBootstrap(ciphertext);
     }
@@ -2142,7 +2137,8 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalBootstrap operation has not been enabled");
   }
 
-  EvalKey<Element> ConjugateKeyGen(const PrivateKey<Element> privateKey) const {
+  EvalKey<Element> ConjugateKeyGen(
+      const PrivateKey<Element> privateKey) const {
     if (m_FHE) {
       return m_FHE->ConjugateKeyGen(privateKey);
     }

@@ -775,7 +775,7 @@ class LeveledSHEBase {
    * key switch operation.
    * @param &cipherTextResult is the resulting ciphertext.
    */
-  virtual void LevelReduceInPlace(Ciphertext<Element> ciphertext1,
+  virtual void LevelReduceInPlace(Ciphertext<Element> &ciphertext1,
                                   const EvalKey<Element> evalKey,
                                   size_t levels) const {
     OPENFHE_THROW(config_error,

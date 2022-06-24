@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 // OPTIMIZED - uniform ternary secrets
 
 // low-security examples
-//	BootstrapExample(SPARSE,1<<12,1<<11,10);
+	BootstrapExample(SPARSE,1<<12,1<<11,10);
 //	BootstrapExample(SPARSE,1<<12,1<<10,10);
 //	BootstrapExample(OPTIMIZED,1<<12,1<<11,10);
 //	BootstrapExample(OPTIMIZED,1<<12,1<<10,10);
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
 
 //	BootstrapExample(SPARSE,1<<17,1<<16,10);
 //	BootstrapExample(SPARSE,1<<17,1<<15,10);
-	BootstrapExample(OPTIMIZED,1<<17,1<<16,10);
+//	BootstrapExample(OPTIMIZED,1<<17,1<<16,10);
 //	BootstrapExample(OPTIMIZED,1<<17,1<<15,10);
 
 	return 0;

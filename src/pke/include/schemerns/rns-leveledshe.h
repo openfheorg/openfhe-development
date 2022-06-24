@@ -304,7 +304,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
                                   const EvalKey<DCRTPoly> evalKey,
                                   size_t levels) const override;
 
-  virtual void LevelReduceInPlace(Ciphertext<DCRTPoly> ciphertext,
+  virtual void LevelReduceInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                   const EvalKey<DCRTPoly> evalKey,
                                   size_t levels) const override;
 

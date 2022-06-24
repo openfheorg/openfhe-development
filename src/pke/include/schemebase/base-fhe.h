@@ -61,20 +61,6 @@ class FHEBase {
    */
 
   /**
-   * Sets all parameters for the linear method
-   *
-   * @param cc current cryptocontext
-   * @param &dim1 - inner dimension in the baby-step giant-step routine
-   * @param &slots - number of slots to be bootstrapped
-   * @param debugFlag - set to 1 when debugging encoding/decoding only
-   * @param precomp - do linear transform precomputations
-   */
-  virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc,
-      uint32_t dim1 = 0, uint32_t slots = 0) {
-    OPENFHE_THROW(not_implemented_error, "Not supported");
-  }
-
-  /**
    * Sets all parameters for the linear method for the FFT-like method
    *
    * @param levelBudget - vector of budgets for the amount of levels in encoding
@@ -85,7 +71,8 @@ class FHEBase {
    * @param debugFlag - set to 1 when debugging encoding/decoding only
    * @param precomp - do linear transform precomputations
    */
-  virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc,
+  virtual void EvalBootstrapSetup(
+      const CryptoContextImpl<Element> &cc,
       std::vector<uint32_t> levelBudget = {5, 4},
       std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0) {
     OPENFHE_THROW(not_implemented_error, "Not supported");
@@ -105,8 +92,9 @@ class FHEBase {
    * @param bootstrapFlag - when set to 1, generates extra automorphism keys for sparse bootstrapping.
    * @return the dictionary of evaluation key indices.
    */
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
-                                                                       int32_t bootstrapFlag = 0) {
+  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>>
+  EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
+      int32_t bootstrapFlag = 0) {
     OPENFHE_THROW(not_implemented_error, "Not supported");
   }
 
@@ -116,17 +104,21 @@ class FHEBase {
    * @param ciphertext the input ciphertext.
    * @return the refreshed ciphertext.
    */
-  virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
+  virtual Ciphertext<Element> EvalBootstrap(
+      ConstCiphertext<Element> ciphertext) const {
     OPENFHE_THROW(not_implemented_error,
         "EvalBootstrap is not implemented for this scheme");
   }
 
-  virtual void EvalBootstrapPrecompute(const CryptoContextImpl<Element> &cc, uint32_t debugFlag) {
+  virtual void EvalBootstrapPrecompute(
+      const CryptoContextImpl<Element> &cc,
+      uint32_t debugFlag) {
     OPENFHE_THROW(not_implemented_error,
         "EvalBootstrapPrecompute is not implemented for this scheme");
   }
 
-  virtual EvalKey<Element> ConjugateKeyGen(const PrivateKey<Element> privateKey) const {
+  virtual EvalKey<Element> ConjugateKeyGen(
+      const PrivateKey<Element> privateKey) const {
     OPENFHE_THROW(not_implemented_error, "Not supported");
   }
 
