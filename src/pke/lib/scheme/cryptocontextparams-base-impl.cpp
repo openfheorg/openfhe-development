@@ -54,7 +54,6 @@ namespace lbcrypto {
     SET_TO_SCHEME_DEFAULT(SCHEME, rootHermiteFactor);          \
     SET_TO_SCHEME_DEFAULT(SCHEME, assuranceMeasure);           \
     SET_TO_SCHEME_DEFAULT(SCHEME, mode);                       \
-    SET_TO_SCHEME_DEFAULT(SCHEME, depth);                      \
     SET_TO_SCHEME_DEFAULT(SCHEME, maxDepth);                   \
     SET_TO_SCHEME_DEFAULT(SCHEME, ksTech);                     \
     SET_TO_SCHEME_DEFAULT(SCHEME, rsTech);                     \
@@ -105,7 +104,6 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; rootHermiteFactor: " << obj.rootHermiteFactor
         << "; assuranceMeasure: " << obj.assuranceMeasure
         << "; mode: " << obj.mode
-        << "; depth: " << obj.depth
         << "; maxDepth: " << obj.maxDepth
         << "; ksTech: " << obj.ksTech
         << "; rsTech: " << obj.rsTech

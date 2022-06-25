@@ -43,7 +43,6 @@ std::string UnitTestCCParams::toString() const {
         << "relinWindow [" << relinWindow << "], "
         << "batchSize [" << batchSize << "], "
         << "mode [" << mode << "], "
-        << "depth [" << depth << "], "
         << "maxDepth [" << maxDepth << "], "
         << "firstModSize [" << firstModSize << "], "
         << "securityLevel [" << securityLevel << "], "

@@ -51,7 +51,6 @@ struct UnitTestCCParams {
     double   relinWindow; // CKKSRNS, BFVRNS, BGVRNS
     double   batchSize; // CKKSRNS, BFVRNS, BGVRNS
     double   mode; // CKKSRNS, BFVRNS, BGVRNS
-    double   depth; // CKKSRNS, 
     double   maxDepth; // CKKSRNS, BFVRNS, BGVRNS
     double   firstModSize; // BGVRNS
     double   securityLevel; // BFVRNS, BGVRNS

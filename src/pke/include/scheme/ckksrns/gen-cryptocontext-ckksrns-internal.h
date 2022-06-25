@@ -69,7 +69,6 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         parameters.GetRootHermiteFactor(),
         parameters.GetRelinWindow(),
         parameters.GetMode(),
-        parameters.GetDepth(),
         parameters.GetMaxDepth());
 
     params->SetStdLevel(parameters.GetSecurityLevel()); // TODO (dsuponit): do we need this as we already have root hermit factor?

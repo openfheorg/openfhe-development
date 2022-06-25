@@ -89,9 +89,6 @@ class Params {
     // both enum type and values should be renamed?
     MODE mode;
 
-    // multiplicative depth of the scheme
-    int depth;
-
     // Max possible multiplicative depth of the scheme
     int maxDepth;
 
@@ -130,7 +127,7 @@ class Params {
     // see KeySwitchTechnique
     usint numLargeDigits;
 
-    // TODO (dsuponit): multiplicative depth again? (this comment was added by Andrey)
+    // multiplicative depth of the scheme
     usint multiplicativeDepth;
 
     // see numPrimes
@@ -203,9 +200,6 @@ public:
     }
     MODE GetMode() const {
         return mode;
-    }
-    int GetDepth() const {
-        return depth;
     }
     int GetMaxDepth() const {
         return maxDepth;
@@ -283,9 +277,6 @@ public:
     }
     void SetMode(MODE mode0) {
         mode = mode0;
-    }
-    void SetDepth(int depth0) {
-        depth = depth0;
     }
     void SetMaxDepth(int maxDepth0) {
         maxDepth = maxDepth0;
