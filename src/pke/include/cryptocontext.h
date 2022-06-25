@@ -2280,113 +2280,8 @@ protected:
   Ciphertext<Element> EvalMerge(const std::vector<Ciphertext<Element>>& ciphertextVec) const;
 
   //------------------------------------------------------------------------------
-  // Advanced SHE LINEAR TRANSFORMATION
-  //------------------------------------------------------------------------------
-
-  /**
-   * Generates all automorphism keys for EvalLT.
-   * EvalLTKeyGen uses the baby-step/giant-step strategy.
-   *
-   * @param privateKey private key.
-   * @param slots number of slots to support permutations on.
-   * @param dim1 inner dimension in the baby-step/giant-step strategy; here,
-   * slots = dim1*dim2
-   * @param bootstrapFlag - when set to 1, generates extra automorphism keys for
-   * sparse bootstrapping
-   * @param conjFlag - when set to 1, generates extra automorphism key for
-   * conjugation
-   */
-  void EvalLTKeyGen(const PrivateKey<Element> privateKey, uint32_t dim1 = 0,
-                    int32_t bootstrapFlag = 0, int32_t conjFlag = 0);
-
-  /**
-   * Generates precomputed encoded rotated vectors for square linear map A
-   * Speeds up EvalLT
-   *
-   * @param A a square map (for DFT, for example)
-   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
-   * size of one row/column = dim1*dim2
-   * @param scale parameter to multiply that should be embedded in A. For
-   * bootstrapping, this parameter is equal to 1.0/(m/2)*powP/(K*qDouble) --
-   * scales by 1/(m/2) for the encoding and divide by Kq/2^p to scale the
-   * encrypted integers to -1 .. 1
-   * @param L number of levels from which to start the plaintext coefficients
-   *
-   * @return the precomputation for linear map A
-   */
-  std::vector<ConstPlaintext> EvalLTPrecompute(const std::vector<std::vector<std::complex<double>>>& A,
-                                               uint32_t dim1 = 0, double scale = 1, uint32_t L = 0) const;
-
-  /**
-   * Generates precomputed encoded rotated vectors for square linear maps A and
-   * B (used in sparse bootstrapping) Both linear maps are encoded in the same
-   * plaintext polynomials
-   *
-   * @param A a square map (for DFT, for example)
-   * @param B a square map (for DFT, for example)
-   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
-   * size of one row/column = dim1*dim2
-   * @param orientation set to 0 for vertical concatenation (encoding) and set
-   * to 1 for horizontal concatenation (decoding)
-   * @param scale parameter to multiply that should be embedded in A. For
-   * bootstrapping, this parameter is equal to 1.0/(m/2)*powP/(K*qDouble) --
-   * scales by 1/(m/2) for the encoding and divide by Kq/2^p to scale the
-   * encrypted integers to -1 .. 1
-   * @param L number of levels from which to start the plaintext coefficients
-   *
-   * @return the precomputation for contatenated linear map A|B
-   */
-  std::vector<ConstPlaintext> EvalLTPrecompute(const std::vector<std::vector<std::complex<double>>>& A,
-                                               const std::vector<std::vector<std::complex<double>>>& B,
-                                               uint32_t dim1 = 0, uint32_t orientation = 0, double scale = 1,
-                                               uint32_t L = 0) const;
-
-  /**
-   * Computes linear transformation using a pre-encoded map A
-   *
-   * @param A pre-encoded linear transformation map
-   * @param ct the ciphertex on which the linear transform is performed
-   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
-   * size of one row/column = dim1*dim2
-   *
-   * @return the linear transformation for ct
-   */
-  Ciphertext<Element> EvalLTWithPrecomp(const std::vector<ConstPlaintext>& A, ConstCiphertext<Element> ct,
-                                        uint32_t dim1 = 0);
-
-  /**
-   * Computes linear transformation using a pre-encoded map A
-   *
-   * @param A pre-encoded linear transformation map
-   * @param ct the ciphertex on which the linear transform is performed
-   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
-   * size of one row/column = dim1*dim2
-   *
-   * @return the linear transformation for ct
-   */
-  Ciphertext<Element> EvalLTWithPrecomp(const std::vector<Plaintext>& A, ConstCiphertext<Element> ct,
-                                        uint32_t dim1 = 0);
-
-  /**
-   * Computes linear transformation w/o precomputations
-   *
-   * @param A linear transformation map
-   * @param ct the ciphertex on which the linear transform is performed
-   * @param dim1 inner dimension in the baby-step-giant-step strategy; here,
-   * size of one row/column = dim1*dim2
-   * @param scale parameter to multiply that should be embedded in A. For
-   * bootstrapping, this parameter is equal to 1.0/(m/2)*powP/(K*qDouble) --
-   * scales by 1/(m/2) for the encoding and divide by Kq/2^p to scale the
-   * encrypted integers to -1 .. 1
-   * @return the linear transformation for ct
-   */
-  Ciphertext<Element> EvalLT(const std::vector<std::vector<std::complex<double>>>& A, ConstCiphertext<Element> ct,
-                             uint32_t dim1 = 0, double scale = 1);
-
-  //------------------------------------------------------------------------------
   // PRE Wrapper
   //------------------------------------------------------------------------------
-
 
   /**
    * ReKeyGen produces an Eval Key that OpenFHE can use for Proxy Re Encryption
@@ -2778,6 +2673,13 @@ protected:
       bool precomp = true);
 
   /**
+   * Performs all precomputations for bootstrapping using the FFT-like method
+   *
+   * @param debugFlag - set to 1 when debugging encoding/decoding only
+   */
+  void EvalBootstrapPrecompute(uint32_t debugFlag = 0);
+
+  /**
    * Generates all automorphism keys for EvalBT.
    * EvalBTKeyGen uses the baby-step/giant-step strategy.
    *
@@ -2799,19 +2701,6 @@ protected:
    */
   Ciphertext<Element> EvalBootstrap(
       ConstCiphertext<Element> ciphertext) const;
-
-  //TODO remove?
-
-  EvalKey<Element> ConjugateKeyGen(
-      const PrivateKey<Element> privateKey) const;
-
-  /**
-   * Performs all precomputations for bootstrapping using the FFT-like method
-   *
-   * @param debugFlag - set to 1 when debugging encoding/decoding only
-   */
-  void EvalBootstrapPrecompute(uint32_t debugFlag = 0);
-
 
   template <class Archive>
   void save(Archive& ar, std::uint32_t const version) const {

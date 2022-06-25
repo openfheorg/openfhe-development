@@ -78,10 +78,11 @@ class FHEBase {
     OPENFHE_THROW(not_implemented_error, "Not supported");
   }
 
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalLTKeyGen(
-        const PrivateKey<Element> privateKey, uint32_t dim1,
-        int32_t bootstrapFlag, int32_t conjFlag) {
-    OPENFHE_THROW(not_implemented_error, "Not supported");
+  virtual void EvalBootstrapPrecompute(
+      const CryptoContextImpl<Element> &cc,
+      uint32_t debugFlag) {
+    OPENFHE_THROW(not_implemented_error,
+        "EvalBootstrapPrecompute is not implemented for this scheme");
   }
 
   /**
@@ -108,18 +109,6 @@ class FHEBase {
       ConstCiphertext<Element> ciphertext) const {
     OPENFHE_THROW(not_implemented_error,
         "EvalBootstrap is not implemented for this scheme");
-  }
-
-  virtual void EvalBootstrapPrecompute(
-      const CryptoContextImpl<Element> &cc,
-      uint32_t debugFlag) {
-    OPENFHE_THROW(not_implemented_error,
-        "EvalBootstrapPrecompute is not implemented for this scheme");
-  }
-
-  virtual EvalKey<Element> ConjugateKeyGen(
-      const PrivateKey<Element> privateKey) const {
-    OPENFHE_THROW(not_implemented_error, "Not supported");
   }
 
 };

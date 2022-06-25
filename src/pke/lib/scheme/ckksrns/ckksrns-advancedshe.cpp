@@ -919,8 +919,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
   std::vector<double> f2 = coefficients;
 
   // Make sure the coefficients do not have the zero dominant terms
-  if (coefficients[coefficients.size()-1] == 0)
-    f2.resize(n+1);
+  if (coefficients[coefficients.size() - 1] == 0)
+    f2.resize(n + 1);
 
   std::vector<uint32_t> degs = ComputeDegreesPS(n);
   uint32_t k = degs[0];
@@ -971,7 +971,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
         // if i is odd
         // compute T_{2i+1}(y) = 2*T_i(y)*T_{i+1}(y) - y
         auto temp = cc->EvalMultMutable(T[i/2 - 1], T[i/2]);
-        cc->EvalAddMutableInPlace(temp,temp);
+        cc->EvalAddMutableInPlace(temp, temp);
         cc->ModReduceInPlace(temp);
         T[i - 1] = cc->EvalSubMutable(temp, yReduced);
       } else {

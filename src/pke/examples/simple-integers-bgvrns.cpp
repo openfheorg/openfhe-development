@@ -97,12 +97,9 @@ int main() {
   // Homomorphic multiplications
   // modulus switching is done automatically because by default the modulus
   // switching method is set to AUTO (rather than MANUAL)
-  std::cerr << 1 << std::endl;
   auto ciphertextMul12 = cryptoContext->EvalMult(ciphertext1, ciphertext2);
-  std::cerr << 1 << std::endl;
   auto ciphertextMultResult =
       cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
-  std::cerr << 1 << std::endl;
   // Homomorphic rotations
   auto ciphertextRot1 = cryptoContext->EvalAtIndex(ciphertext1, 1);
   auto ciphertextRot2 = cryptoContext->EvalAtIndex(ciphertext1, 2);

@@ -572,6 +572,7 @@ class SchemeBase {
         OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
 
       m_LeveledSHE->EvalAddMutableInPlace(ciphertext1, ciphertext2);
+      return;
     }
     OPENFHE_THROW(config_error, "EvalAddMutableInPlace operation has not been enabled");
   }
@@ -701,7 +702,7 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalSub operation has not been enabled");
   }
 
-  virtual Ciphertext<Element> EvalSubMutableInPlace(
+  virtual void EvalSubMutableInPlace(
       Ciphertext<Element> &ciphertext1,
       Ciphertext<Element> &ciphertext2) const {
     if (m_LeveledSHE) {
@@ -711,6 +712,7 @@ class SchemeBase {
         OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
 
       m_LeveledSHE->EvalSubMutableInPlace(ciphertext1, ciphertext2);
+      return;
     }
     OPENFHE_THROW(config_error, "EvalSub operation has not been enabled");
   }
@@ -911,6 +913,7 @@ class SchemeBase {
         OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
 
       m_LeveledSHE->EvalMultMutableInPlace(ciphertext1, ciphertext2, evalKey);
+      return;
     }
     OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }
@@ -1386,7 +1389,8 @@ class SchemeBase {
       if (!ciphertext2)
         OPENFHE_THROW(config_error, "Input ciphertext2 is nullptr");
 
-      return m_LeveledSHE->AdjustLevelsInPlace(ciphertext1, ciphertext2);
+      m_LeveledSHE->AdjustLevelsInPlace(ciphertext1, ciphertext2);
+      return;
     }
     OPENFHE_THROW(config_error,
                    "Compress has not been enabled for this scheme.");
@@ -1401,7 +1405,8 @@ class SchemeBase {
       if (!ciphertext2)
         OPENFHE_THROW(config_error, "Input ciphertext2 is nullptr");
 
-      return m_LeveledSHE->AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
+      m_LeveledSHE->AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
+      return;
     }
   }
 
@@ -1413,8 +1418,10 @@ class SchemeBase {
       if (!ciphertext2)
         OPENFHE_THROW(config_error, "Input ciphertext2 is nullptr");
 
-      return m_LeveledSHE->AdjustLevelsAndDepthToOneInPlace(ciphertext1, ciphertext2);
+      m_LeveledSHE->AdjustLevelsAndDepthToOneInPlace(ciphertext1, ciphertext2);
+      return;
     }
+    OPENFHE_THROW(config_error, "AdjustLevelsAndDepthToOneInPlace has not been enabled for this scheme.");
   }
 
   virtual DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const {
@@ -1771,15 +1778,6 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalMerge operation has not been enabled");
   }
 
-  /////////////////////////////////////
-  // Advanced SHE LINEAR TRANSFORMATION
-  /////////////////////////////////////
-
-  /////////////////////////////////////
-  // Other Methods for Bootstrap
-  /////////////////////////////////////
-
-
   /////////////////////////////////////////
   // MULTIPARTY WRAPPER
   /////////////////////////////////////////
@@ -2096,13 +2094,14 @@ class SchemeBase {
 
   void EvalBootstrapPrecompute(
       const CryptoContextImpl<Element> &cc,
-      uint32_t debugFlag = 0) {
+      uint32_t debugFlag) {
     if (m_FHE) {
       m_FHE->EvalBootstrapPrecompute(cc, debugFlag);
       return;
     }
 
-    OPENFHE_THROW(config_error, "EvalBootstrapPrecompute operation has not been enabled");
+    OPENFHE_THROW(not_implemented_error,
+        "EvalBootstrapPrecompute is not implemented for this scheme");
   }
 
   std::shared_ptr<std::map<usint, EvalKey<Element>>>
@@ -2116,18 +2115,6 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalBootstrapKeyGen operation has not been enabled");
   }
 
-  std::shared_ptr<std::map<usint, EvalKey<Element>>>
-  EvalLTKeyGen(
-      const PrivateKey<Element> privateKey,
-      uint32_t dim1 = 0, int32_t bootstrapFlag = 0,
-      int32_t conjFlag = 0) {
-    if (m_FHE) {
-      return m_FHE->EvalLTKeyGen(privateKey, dim1, bootstrapFlag, conjFlag);
-    }
-
-    OPENFHE_THROW(config_error, "EvalLTKeyGen operation has not been enabled");
-  }
-
   Ciphertext<Element> EvalBootstrap(
       ConstCiphertext<Element> ciphertext) const {
     if (m_FHE) {
@@ -2135,15 +2122,6 @@ class SchemeBase {
     }
 
     OPENFHE_THROW(config_error, "EvalBootstrap operation has not been enabled");
-  }
-
-  EvalKey<Element> ConjugateKeyGen(
-      const PrivateKey<Element> privateKey) const {
-    if (m_FHE) {
-      return m_FHE->ConjugateKeyGen(privateKey);
-    }
-
-    OPENFHE_THROW(config_error, "ConjugateKeyGen operation has not been enabled");
   }
 
   template <class Archive>

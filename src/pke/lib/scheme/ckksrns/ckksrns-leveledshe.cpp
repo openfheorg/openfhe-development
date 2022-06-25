@@ -405,7 +405,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(
   DCRTPoly::Integer intScFactor = static_cast<uint64_t>(scFactor + 0.5);
   std::vector<DCRTPoly::Integer> crtScFactor(sizeQl, intScFactor);
 
-  for (usint i = 0; i < ciphertext->GetDepth() - 1; i++) {
+  for (usint i = 1; i < ciphertext->GetDepth(); i++) {
     crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtScFactor, moduli);
   }
 

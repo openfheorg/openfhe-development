@@ -420,7 +420,7 @@ class LeveledSHEBase {
       Ciphertext<Element> &ciphertext1,
       Ciphertext<Element> &ciphertext2) const {
     OPENFHE_THROW(not_implemented_error,
-                   "EvalMultMutable is not implemented for this scheme");
+                   "EvalMultMutableInPlace is not implemented for this scheme");
   }
 
   //------------------------------------------------------------------------------
@@ -453,7 +453,7 @@ class LeveledSHEBase {
   virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element> &ciphertext,
                                               Plaintext plaintext) const {
     OPENFHE_THROW(not_implemented_error,
-                   "EvalMultMutable is not implemented for this scheme");
+                   "EvalMultMutable C,P is not implemented for this scheme");
   }
 
   /**
@@ -468,7 +468,7 @@ class LeveledSHEBase {
   virtual void EvalMultMutableInPlace(
       Ciphertext<Element> &ciphertext, Plaintext plaintext) const {
     OPENFHE_THROW(not_implemented_error,
-                   "EvalMultMutable is not implemented for this scheme");
+                   "EvalMultMutableInPlace C P is not implemented for this scheme");
   }
 
   virtual Ciphertext<Element> MultByMonomial(
