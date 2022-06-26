@@ -420,6 +420,45 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(
   return EvalMultCore(ciphertext1, ciphertext2);
 }
 
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquare(
+    ConstCiphertext<DCRTPoly> ciphertext) const {
+  const auto cryptoParams =
+      std::static_pointer_cast<CryptoParametersRNS>(
+          ciphertext->GetCryptoParameters());
+
+  if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    return EvalSquareCore(ciphertext);
+  }
+
+  Ciphertext<DCRTPoly> c = ciphertext->Clone();
+
+  if ((cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) && (c->GetDepth() == 2)) {
+    ModReduceInternalInPlace(c, 1);
+  }
+
+  return EvalSquareCore(c);
+}
+
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquareMutable(
+    Ciphertext<DCRTPoly> &ciphertext) const {
+  const auto cryptoParams =
+      std::static_pointer_cast<CryptoParametersRNS>(
+          ciphertext->GetCryptoParameters());
+
+  if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    return EvalSquareCore(ciphertext);
+  }
+
+  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+    Ciphertext<DCRTPoly> c = ciphertext->Clone();
+    return EvalSquareCore(c);
+  }
+  if(ciphertext->GetDepth() == 2) {
+    ModReduceInternalInPlace(ciphertext, 1);
+  }
+  return EvalSquareCore(ciphertext);
+}
+
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(
     ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const {
   Ciphertext<DCRTPoly> result = ciphertext->Clone();

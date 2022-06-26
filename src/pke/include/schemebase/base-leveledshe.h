@@ -389,6 +389,35 @@ class LeveledSHEBase {
                    "EvalMultMutable is not implemented for this scheme");
   }
 
+  /**
+   * Virtual function to define the interface for multiplicative homomorphic
+   * evaluation of ciphertext.
+   *
+   * @param ciphertext1 the input ciphertext.
+   * @param ciphertext2 the input ciphertext.
+   * @return the new ciphertext.
+   */
+  virtual Ciphertext<Element> EvalSquare(
+      ConstCiphertext<Element> ciphertext1) const {
+    OPENFHE_THROW(not_implemented_error,
+                   "EvalSquare is not implemented for this scheme");
+  }
+
+  /**
+   * Virtual function to define the interface for multiplicative homomorphic
+   * evaluation of ciphertext. This is the mutable version - input ciphertexts
+   * may change (automatically rescaled, or towers dropped).
+   *
+   * @param ciphertext1 the input ciphertext.
+   * @param ciphertext2 the input ciphertext.
+   * @return the new ciphertext.
+   */
+  virtual Ciphertext<Element> EvalSquareMutable(
+      Ciphertext<Element> &ciphertext1) const {
+    OPENFHE_THROW(not_implemented_error,
+                   "EvalSquareMutable is not implemented for this scheme");
+  }
+
   //------------------------------------------------------------------------------
   // EVAL MULTIPLICATION CIPHERTEXT & PLAINTEXT
   //------------------------------------------------------------------------------
@@ -494,6 +523,10 @@ class LeveledSHEBase {
                                        ConstCiphertext<Element> ciphertext2,
                                        const EvalKey<Element> evalKey) const;
 
+  virtual void EvalMultInPlace(Ciphertext<Element> &ciphertext1,
+                               ConstCiphertext<Element> ciphertext2,
+                               const EvalKey<Element> evalKey) const;
+
   /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext using the evaluation key. This is the mutable
@@ -526,6 +559,16 @@ class LeveledSHEBase {
       Ciphertext<Element> &ciphertext1, Ciphertext<Element> &ciphertext2,
       const EvalKey<Element> evalKey) const;
 
+  virtual Ciphertext<Element> EvalSquare(ConstCiphertext<Element> ciphertext,
+                                         const EvalKey<Element> evalKey) const;
+
+  virtual void EvalSquareInPlace(
+      Ciphertext<Element> &ciphertext1,
+      const EvalKey<Element> evalKey) const;
+
+  virtual Ciphertext<Element> EvalSquareMutable(
+      Ciphertext<Element> &ciphertext,
+      const EvalKey<Element> evalKey) const;
   /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext using the evaluation key.
@@ -899,6 +942,8 @@ class LeveledSHEBase {
    */
   Ciphertext<Element> EvalMultCore(ConstCiphertext<Element> ciphertext1,
                                    ConstCiphertext<Element> ciphertext2) const;
+
+  Ciphertext<Element> EvalSquareCore(ConstCiphertext<Element> ciphertext) const;
 
   virtual Ciphertext<Element> EvalAddCore(
       ConstCiphertext<Element> ciphertext,

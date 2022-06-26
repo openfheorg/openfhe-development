@@ -257,6 +257,12 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
       Ciphertext<DCRTPoly> &ciphertext1,
       Ciphertext<DCRTPoly> &ciphertext2) const override;
 
+  virtual Ciphertext<DCRTPoly> EvalSquare(
+      ConstCiphertext<DCRTPoly> ciphertext) const override;
+
+  virtual Ciphertext<DCRTPoly> EvalSquareMutable(
+      Ciphertext<DCRTPoly> &ciphertext) const override;
+
   virtual Ciphertext<DCRTPoly> EvalMult(
       ConstCiphertext<DCRTPoly> ciphertext,
       ConstPlaintext plaintext) const override;

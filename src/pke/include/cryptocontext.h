@@ -1485,6 +1485,39 @@ protected:
                                         evalKeyVec[0]);
   }
 
+  Ciphertext<Element> EvalSquare(ConstCiphertext<Element> ciphertext) const {
+    CheckCiphertext(ciphertext);
+
+    const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
+    if (!evalKeyVec.size()) {
+      OPENFHE_THROW(type_error, "Evaluation key has not been generated for EvalMult");
+    }
+
+    return GetScheme()->EvalSquare(ciphertext, evalKeyVec[0]);
+  }
+
+  Ciphertext<Element> EvalSquareMutable(Ciphertext<Element>& ciphertext) const {
+    CheckCiphertext(ciphertext);
+
+    const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
+    if (!evalKeyVec.size()) {
+      OPENFHE_THROW(type_error, "Evaluation key has not been generated for EvalMultMutable");
+    }
+
+    return GetScheme()->EvalSquareMutable(ciphertext, evalKeyVec[0]);
+  }
+
+  void EvalSquareInPlace(Ciphertext<Element>& ciphertext) const {
+    CheckCiphertext(ciphertext);
+
+    const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
+    if (!evalKeyVec.size()) {
+      OPENFHE_THROW(type_error, "Evaluation key has not been generated for EvalMultMutable");
+    }
+
+    GetScheme()->EvalSquareInPlace(ciphertext, evalKeyVec[0]);
+  }
+
   /**
    * EvalMult - OpenFHE EvalMult method for a pair of ciphertexts - no key
    * switching (relinearization)

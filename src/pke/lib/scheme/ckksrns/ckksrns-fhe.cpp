@@ -594,7 +594,7 @@ void FHECKKSRNS::ApplyDoubleAngleIterations(
 
   int32_t r = R;
   for (int32_t j = 1; j < r + 1; j++) {
-    ciphertext = cc->EvalMult(ciphertext, ciphertext);
+    cc->EvalSquareInPlace(ciphertext);
     ciphertext = cc->EvalAdd(ciphertext, ciphertext);
     double scalar = -1.0 / std::pow((2.0 * M_PI), std::pow(2.0, j - r));
     cc->EvalAddInPlace(ciphertext, scalar);
@@ -610,7 +610,7 @@ uint32_t FHECKKSRNS::GetBootstrapDepth(
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           cc.GetCryptoParameters());
 
-  uint32_t approxModDepth = 8;
+  uint32_t approxModDepth = 11;
 
   if (cryptoParams->GetMode() == OPTIMIZED) {
       if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL)
@@ -1902,6 +1902,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(
     c *= pt;
   }
   result->SetDepth(result->GetDepth() + 1);
+  result->SetScalingFactor(result->GetScalingFactor() * plaintext->GetScalingFactor());
   return result;
 }
 

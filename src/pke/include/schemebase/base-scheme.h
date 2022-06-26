@@ -854,6 +854,32 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }
 
+  virtual Ciphertext<Element> EvalSquare(
+      ConstCiphertext<Element> ciphertext) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_LeveledSHE->EvalSquare(ciphertext);
+    }
+    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
+  }
+
+  virtual Ciphertext<Element> EvalSquareMutable(
+      Ciphertext<Element> &ciphertext) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+
+      return m_LeveledSHE->EvalSquareMutable(ciphertext);
+    }
+    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
+  }
+
+  /////////////////////////////////////////
+  // MULTIPLICATION With Eval Key
+  /////////////////////////////////////////
+
   virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext1,
                                        ConstCiphertext<Element> ciphertext2,
                                        const EvalKey<Element> evalKey) const {
@@ -870,9 +896,25 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }
 
-  virtual Ciphertext<Element> EvalMultMutable(
-      Ciphertext<Element> &ciphertext1, Ciphertext<Element> &ciphertext2,
-      const EvalKey<Element> evalKey) const {
+  virtual void EvalMultInPlace(Ciphertext<Element> &ciphertext1,
+                                       ConstCiphertext<Element> ciphertext2,
+                                       const EvalKey<Element> evalKey) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext1)
+        OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
+      if (!ciphertext2)
+        OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
+      if (!evalKey)
+        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+      m_LeveledSHE->EvalMultInPlace(ciphertext1, ciphertext2, evalKey);
+      return;
+    }
+    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
+  }
+
+  virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element> &ciphertext1,
+                                       Ciphertext<Element> &ciphertext2,
+                                       const EvalKey<Element> evalKey) const {
     if (m_LeveledSHE) {
       if (!ciphertext1)
         OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
@@ -899,6 +941,48 @@ class SchemeBase {
 
       m_LeveledSHE->EvalMultMutableInPlace(ciphertext1, ciphertext2, evalKey);
       return;
+    }
+    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
+  }
+
+  virtual Ciphertext<Element> EvalSquare(ConstCiphertext<Element> ciphertext,
+                                       const EvalKey<Element> evalKey) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+      if (!evalKey)
+        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+
+      return m_LeveledSHE->EvalSquare(ciphertext, evalKey);
+    }
+    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
+  }
+
+  virtual void EvalSquareInPlace(
+      Ciphertext<Element> &ciphertext,
+      const EvalKey<Element> evalKey) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+      if (!evalKey)
+        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+
+      m_LeveledSHE->EvalSquareInPlace(ciphertext, evalKey);
+      return;
+    }
+    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
+  }
+
+  virtual Ciphertext<Element> EvalSquareMutable(
+      Ciphertext<Element> &ciphertext,
+      const EvalKey<Element> evalKey) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+      if (!evalKey)
+        OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
+
+      return m_LeveledSHE->EvalSquareMutable(ciphertext, evalKey);
     }
     OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }

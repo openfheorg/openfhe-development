@@ -249,6 +249,27 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMult(
   return ciphertext;
 }
 
+
+template <class Element>
+void LeveledSHEBase<Element>::EvalMultInPlace(
+    Ciphertext<Element> &ciphertext1, ConstCiphertext<Element> ciphertext2,
+    const EvalKey<Element> evalKey) const {
+  ciphertext1 = EvalMult(ciphertext1, ciphertext2);
+
+  std::vector<Element> &cv = ciphertext1->GetElements();
+  for (auto &c : cv) c.SetFormat(Format::EVALUATION);
+
+  auto algo = ciphertext1->GetCryptoContext()->GetScheme();
+
+  std::shared_ptr<std::vector<Element>> ab =
+      algo->KeySwitchCore(cv[2], evalKey);
+
+  cv[0] += (*ab)[0];
+  cv[1] += (*ab)[1];
+
+  cv.resize(2);
+}
+
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalMultMutable(
     Ciphertext<Element> &ciphertext1, Ciphertext<Element> &ciphertext2,
@@ -269,6 +290,72 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultMutable(
   cv.resize(2);
 
   return ciphertext;
+}
+
+
+template <class Element>
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSquare(
+    ConstCiphertext<Element> ciphertext,
+    const EvalKey<Element> evalKey) const {
+  Ciphertext<Element> csquare = EvalSquare(ciphertext);
+
+  std::vector<Element> &cv = csquare->GetElements();
+  for (auto &c : cv) c.SetFormat(Format::EVALUATION);
+
+  auto algo = csquare->GetCryptoContext()->GetScheme();
+
+  std::shared_ptr<std::vector<Element>> ab =
+      algo->KeySwitchCore(cv[2], evalKey);
+
+  cv[0] += (*ab)[0];
+  cv[1] += (*ab)[1];
+
+  cv.resize(2);
+
+  return csquare;
+}
+
+
+template <class Element>
+void LeveledSHEBase<Element>::EvalSquareInPlace(
+    Ciphertext<Element> &ciphertext,
+    const EvalKey<Element> evalKey) const {
+  ciphertext = EvalSquare(ciphertext);
+
+  std::vector<Element> &cv = ciphertext->GetElements();
+  for (auto &c : cv) c.SetFormat(Format::EVALUATION);
+
+  auto algo = ciphertext->GetCryptoContext()->GetScheme();
+
+  std::shared_ptr<std::vector<Element>> ab =
+      algo->KeySwitchCore(cv[2], evalKey);
+
+  cv[0] += (*ab)[0];
+  cv[1] += (*ab)[1];
+
+  cv.resize(2);
+}
+
+template <class Element>
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareMutable(
+    Ciphertext<Element> &ciphertext,
+    const EvalKey<Element> evalKey) const {
+  Ciphertext<Element> csquare = EvalSquareMutable(ciphertext);
+
+  std::vector<Element> &cv = csquare->GetElements();
+  for (auto &c : cv) c.SetFormat(Format::EVALUATION);
+
+  auto algo = csquare->GetCryptoContext()->GetScheme();
+
+  std::shared_ptr<std::vector<Element>> ab =
+      algo->KeySwitchCore(cv[2], evalKey);
+
+  cv[0] += (*ab)[0];
+  cv[1] += (*ab)[1];
+
+  cv.resize(2);
+
+  return csquare;
 }
 
 template <class Element>
@@ -656,6 +743,57 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(
   result->SetScalingFactor(ciphertext1->GetScalingFactor() * ciphertext2->GetScalingFactor());
   const auto plainMod = ciphertext1->GetCryptoParameters()->GetPlaintextModulus();
   result->SetScalingFactorInt(ciphertext1->GetScalingFactorInt().ModMul(ciphertext2->GetScalingFactorInt(), plainMod));
+  return result;
+}
+
+template <class Element>
+Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(
+    ConstCiphertext<Element> ciphertext) const {
+  Ciphertext<Element> result = ciphertext->Clone();
+
+  std::vector<Element> cv = ciphertext->GetElements();
+
+  size_t cResultSize = 2 * cv.size() - 1;
+  std::vector<Element> cvSquare(cResultSize);
+
+  if (cv.size() == 2) {
+    cvSquare[2]  = (cv[1] * cv[1]);
+    cvSquare[0]  = (cv[0] * cv[0]);
+    cvSquare[1] = (cv[0] * cv[1]);
+    cvSquare[1] += cvSquare[1];
+  } else {
+    bool isFirstAdd[cResultSize];
+    std::fill_n(isFirstAdd, cResultSize, true);
+    Element cvtemp;
+
+    for (size_t i = 0; i < cv.size(); i++) {
+      for (size_t j = i; j < cv.size(); j++) {
+        if (isFirstAdd[i + j] == true) {
+          if (j == i) {
+            cvSquare[i + j] = cv[i] * cv[j];
+          } else {
+            cvSquare[i + j] = cv[i] * cv[j];
+            cvSquare[i + j] += cvSquare[i + j];
+          }
+          isFirstAdd[i + j] = false;
+        } else {
+          if (j == i) {
+            cvSquare[i + j] += cv[i] * cv[j];
+          } else {
+            cvtemp = cv[i] * cv[j];
+            cvSquare[i + j] += cvtemp;
+            cvSquare[i + j] += cvtemp;
+          }
+        }
+      }
+    }
+  }
+
+  result->SetElements(std::move(cvSquare));
+  result->SetDepth(2 * ciphertext->GetDepth());
+  result->SetScalingFactor(ciphertext->GetScalingFactor() * ciphertext->GetScalingFactor());
+  const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
+  result->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(ciphertext->GetScalingFactorInt(), plainMod));
   return result;
 }
 

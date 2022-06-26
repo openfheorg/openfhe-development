@@ -239,8 +239,11 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 					- ciphertextAfter->GetDepth() << std::endl;
 
 	Plaintext result;
-
+  std::cerr << "ciphertextAfter level: " << ciphertextAfter->GetLevel() << std::endl;
+  std::cerr << "ciphertextAfter depth: " << ciphertextAfter->GetDepth() << std::endl;
+  std::cerr << "ciphertextAfter    sf: " << ciphertextAfter->GetScalingFactor() << std::endl;
 	cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
+  std::cerr << "encodedLength: " << encodedLength << std::endl;
 
 	result->SetLength(encodedLength);
 	plaintext1->SetLength(encodedLength);
