@@ -374,21 +374,6 @@ class LeveledSHEBase {
   }
 
   /**
-    * Virtual function to define the interface for multiplicative homomorphic
-    * evaluation of ciphertext.
-    *
-    * @param ciphertext1 the input ciphertext.
-    * @param ciphertext2 the input ciphertext.
-    * @return the new ciphertext.
-    */
-   virtual void EvalMultInPlace(
-       Ciphertext<Element> ciphertext1,
-       ConstCiphertext<Element> ciphertext2) const {
-     OPENFHE_THROW(not_implemented_error,
-                    "EvalMultInPlace is not implemented for this scheme");
-   }
-
-  /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext. This is the mutable version - input ciphertexts
    * may change (automatically rescaled, or towers dropped).
@@ -402,25 +387,6 @@ class LeveledSHEBase {
       Ciphertext<Element> &ciphertext2) const {
     OPENFHE_THROW(not_implemented_error,
                    "EvalMultMutable is not implemented for this scheme");
-  }
-
-  /**
-   * Virtual function to define the interface for multiplicative homomorphic
-   * evaluation of ciphertext using the evaluation key. This is the mutable
-   * version - input ciphertext may change (automatically rescaled, or towers
-   * dropped).
-   *
-   * @param &ciphertext1 first input ciphertext.
-   * @param &ciphertext2 second input ciphertext.
-   * @param &ek is the evaluation key to make the newCiphertext decryptable by
-   * the same secret key as that of ciphertext1 and ciphertext2.
-   * @return the new ciphertext.
-   */
-  virtual void EvalMultMutableInPlace(
-      Ciphertext<Element> &ciphertext1,
-      Ciphertext<Element> &ciphertext2) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalMultMutableInPlace is not implemented for this scheme");
   }
 
   //------------------------------------------------------------------------------

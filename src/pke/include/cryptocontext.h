@@ -1079,7 +1079,7 @@ protected:
                         const PrivateKey<Element> privateKey,
                         Plaintext* plaintext);
 
-  DecryptResult Decrypt(const PrivateKey<Element> privateKey,
+  inline DecryptResult Decrypt(const PrivateKey<Element> privateKey,
                         ConstCiphertext<Element> ciphertext,
                         Plaintext* plaintext) {
     return Decrypt(ciphertext, privateKey, plaintext);

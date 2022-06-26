@@ -397,6 +397,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(
   return EvalMultCore(c1, c2);
 }
 
+
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(
     Ciphertext<DCRTPoly> &ciphertext1,
     Ciphertext<DCRTPoly> &ciphertext2) const {

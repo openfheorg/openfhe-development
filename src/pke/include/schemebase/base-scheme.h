@@ -854,21 +854,6 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
   }
 
-  virtual void EvalMultMutableInPlace(
-      Ciphertext<Element> &ciphertext1,
-      Ciphertext<Element> &ciphertext2) const {
-    if (m_LeveledSHE) {
-      if (!ciphertext1)
-        OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
-      if (!ciphertext2)
-        OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
-      m_LeveledSHE->EvalMultMutableInPlace(ciphertext1, ciphertext2);
-      return;
-    }
-    OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
-  }
-
   virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext1,
                                        ConstCiphertext<Element> ciphertext2,
                                        const EvalKey<Element> evalKey) const {

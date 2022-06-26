@@ -275,7 +275,7 @@ template <class Element>
 void LeveledSHEBase<Element>::EvalMultMutableInPlace(
     Ciphertext<Element> &ciphertext1, Ciphertext<Element> &ciphertext2,
     const EvalKey<Element> evalKey) const {
-  EvalMultMutableInPlace(ciphertext1, ciphertext2);
+  ciphertext1 = EvalMultMutable(ciphertext1, ciphertext2);
 
   std::vector<Element> &cv = ciphertext1->GetElements();
   for (auto &c : cv) c.SetFormat(Format::EVALUATION);
