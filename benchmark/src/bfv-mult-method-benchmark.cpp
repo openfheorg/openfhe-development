@@ -60,11 +60,11 @@ constexpr usint DCRT_BITS            = 60;
 constexpr KeySwitchTechnique KS_TECH = HYBRID;
 constexpr usint RELIN                = 3;
 
-static std::vector<MultiplicationTechnique> mult_method_args{HPS, HPSPOVERQ, HPSPOVERQLEVELED};
+static std::vector<MultiplicationTechnique> MULT_METHOD_ARGS = {HPS, HPSPOVERQ, HPSPOVERQLEVELED};
 
 static void MultBFVArguments(benchmark::internal::Benchmark* b) {
-    for (MultiplicationTechnique mult_method : mult_method_args) {
-        b->ArgNames({"mult_method"})->Args({mult_method})->MinTime(10);
+    for (MultiplicationTechnique multMethod : MULT_METHOD_ARGS) {
+        b->ArgNames({"mult_method"})->Args({multMethod})->MinTime(10);
     }
 }
 
@@ -78,8 +78,8 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(MultiplicationTechnique multMethod
     parameters.SetPlaintextModulus(PTM);
     parameters.SetEvalMultCount(MULT_DEPTH);
     parameters.SetScalingFactorBits(DCRT_BITS);
-    //parameters.SetKeySwitchTechnique(KS_TECH);
-    //parameters.SetRelinWindow(RELIN);
+    parameters.SetKeySwitchTechnique(KS_TECH);
+    parameters.SetRelinWindow(RELIN);
     parameters.SetMultiplicationTechnique(multMethod);
     parameters.SetSecurityLevel(HEStd_NotSet);
 
@@ -104,7 +104,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(MultiplicationTechnique multMethod
  * benchmarks
  */
 void BFVrns_EvalMultMany(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(HPS);
+    CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(MULT_METHOD_ARGS[state.range(0) - 1]);
 
     // KeyGen
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();

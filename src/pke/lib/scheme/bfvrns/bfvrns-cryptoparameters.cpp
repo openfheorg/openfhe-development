@@ -76,7 +76,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
         numPartQ, auxBits, extraBits);
 
   size_t sizeQ = GetElementParams()->GetParams().size();
-  uint32_t n = GetElementParams()->GetRingDimension();
 
   std::vector<NativeInteger> moduliQ(sizeQ);
   std::vector<NativeInteger> rootsQ(sizeQ);
@@ -86,9 +85,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     rootsQ[i] = GetElementParams()->GetParams()[i]->GetRootOfUnity();
   }
 
-  ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * n,
-                                                          moduliQ);
-
+  uint32_t n = GetElementParams()->GetRingDimension();
   BigInteger modulusQ = GetElementParams()->GetModulus();
   NativeInteger t = GetPlaintextModulus();
 
