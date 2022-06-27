@@ -280,7 +280,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   // it's being raised to.
   // Increasing the modulus
 
-  Ciphertext<DCRTPoly> raised = ciphertext->CloneEmpty();
+  Ciphertext<DCRTPoly> raised = ciphertext->CloneDummy();
   AdjustCiphertext(ciphertext, correction);
   auto ctxtDCRT = ciphertext->GetElements();
 
@@ -295,10 +295,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   }
 
   raised->SetElements(ctxtDCRT);
-  raised->SetDepth(ciphertext->GetDepth());
   raised->SetLevel(cryptoParams->GetElementParams()->GetParams().size() -
     ctxtDCRT[0].GetNumOfElements());
-  raised->SetScalingFactor(ciphertext->GetScalingFactor());
 
 #ifdef BOOTSTRAPTIMING
   std::cerr << "\nNumber of levels at the beginning of bootstrapping: " << raised->GetElements()[0].GetNumOfElements() - 1 << std::endl;
@@ -1901,7 +1899,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(
   for (auto &c : cv) {
     c *= pt;
   }
-  result->SetDepth(result->GetDepth() + 1);
+  result->SetDepth(result->GetDepth() + plaintext->GetDepth());
   result->SetScalingFactor(result->GetScalingFactor() * plaintext->GetScalingFactor());
   return result;
 }
@@ -1927,91 +1925,49 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalAddExt(
 
 EvalKey<DCRTPoly> FHECKKSRNS::ConjugateKeyGen(
     const PrivateKey<DCRTPoly> privateKey) const {
+
+  const auto cc = privateKey->GetCryptoContext();
+  auto algo = cc->GetScheme();
+
   const DCRTPoly &s = privateKey->GetPrivateElement();
+  usint N = s.GetRingDimension();
 
-  usint n = s.GetRingDimension();
+  PrivateKey<DCRTPoly> privateKeyPermuted =
+      std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
 
-  PrivateKey<DCRTPoly> privateKeyPermuted(
-      std::make_shared<PrivateKeyImpl<DCRTPoly>>(
-          privateKey->GetCryptoContext()));
+  usint index =  2 * N - 1;
+  std::vector<usint> vec(N);
+  PrecomputeAutoMap(N, index, &vec);
 
-  usint index =  2 * n - 1;
-  std::vector<usint> map(n);
-  PrecomputeAutoMap(n, index, &map);
-
-  DCRTPoly sPermuted = s.AutomorphismTransform(index);
+  DCRTPoly sPermuted = s.AutomorphismTransform(index, vec);
 
   privateKeyPermuted->SetPrivateElement(sPermuted);
   privateKeyPermuted->SetKeyTag(privateKey->GetKeyTag());
 
-  auto cc = privateKey->GetCryptoContext();
-  auto algo = cc->GetScheme();
   return algo->KeySwitchGen(privateKey, privateKeyPermuted);
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(
     ConstCiphertext<DCRTPoly> ciphertext,
-    const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const {
-  if (nullptr == ciphertext) {
-    std::string errorMsg(std::string("Input ciphertext is nullptr") +
-                         CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-  usint n = ciphertext->GetElements()[0].GetRingDimension();
-  if (evalKeys.empty()) {
-    std::string errorMsg(std::string("Empty input key map") + CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-  auto key = evalKeys.find(2 * n - 1);
-  if (key == evalKeys.end()) {
-    std::string errorMsg(std::string("Could not find an EvalKey for index ") +
-                         std::to_string(2 * n - 1) + CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-  auto fk = key->second;
-  if (nullptr == fk) {
-    std::string errorMsg(std::string("Invalid evalKey") + CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-  if (ciphertext->GetCryptoContext() != fk->GetCryptoContext()) {
-    std::string errorMsg(
-        std::string("Items were not created in the same CryptoContextImpl") +
-        CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
-  if (ciphertext->GetKeyTag() != fk->GetKeyTag()) {
-    std::string errorMsg(
-        std::string("Items were not encrypted with same keys") + CALLER_INFO);
-    OPENFHE_THROW(type_error, errorMsg);
-  }
+    const std::map<usint, EvalKey<DCRTPoly>> &evalKeyMap) const {
+  const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
+  usint N = cv[0].GetRingDimension();
 
-  const std::vector<DCRTPoly> &c = ciphertext->GetElements();
-  if (c.size() < 2) {
-    std::string errorMsg(
-        std::string("Insufficient number of elements in ciphertext: ") +
-        std::to_string(c.size()) + CALLER_INFO);
-    OPENFHE_THROW(config_error, errorMsg);
-  }
+  std::vector<usint> vec(N);
+  PrecomputeAutoMap(N, 2 * N - 1, &vec);
 
-  auto cc = ciphertext->GetCryptoContext();
-  auto algo = cc->GetScheme();
-  Ciphertext<DCRTPoly> permutedCiphertext = algo->KeySwitch(ciphertext, fk);
+  auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
-  std::vector<usint> map(n);
-  PrecomputeAutoMap(n, 2 * n - 1, &map);
+  Ciphertext<DCRTPoly> result = ciphertext->Clone();
 
-  permutedCiphertext->SetElements(
-      {std::move(
-           permutedCiphertext->GetElements()[0].AutomorphismTransform(2 * n - 1, map)),
-       std::move(permutedCiphertext->GetElements()[1].AutomorphismTransform(
-           2 * n - 1, map))});
+  algo->KeySwitchInPlace(result, evalKeyMap.at(2 * N - 1));
 
-  permutedCiphertext->SetDepth(ciphertext->GetDepth());
-  permutedCiphertext->SetLevel(ciphertext->GetLevel());
-  permutedCiphertext->SetScalingFactor(ciphertext->GetScalingFactor());
+  std::vector<DCRTPoly> &rcv = result->GetElements();
 
-  return permutedCiphertext;
+  rcv[0] = rcv[0].AutomorphismTransform(2 * N - 1, vec);
+  rcv[1] = rcv[1].AutomorphismTransform(2 * N - 1, vec);
 
+  return result;
 }
 
 }

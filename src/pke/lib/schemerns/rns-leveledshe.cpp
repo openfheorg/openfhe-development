@@ -594,12 +594,8 @@ Ciphertext<DCRTPoly> LeveledSHERNS::MultByMonomial(
   for (usint i = 0; i < ciphertext->GetElements().size(); i++)
     resultDCRT[i] = ciphertext->GetElements()[i]*monomialDCRT;
 
-  Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
+  Ciphertext<DCRTPoly> result = ciphertext->CloneDummy();
   result->SetElements(resultDCRT);
-  result->SetDepth(ciphertext->GetDepth());
-  result->SetLevel(ciphertext->GetLevel());
-  result->SetScalingFactor(ciphertext->GetScalingFactor());
-
   return result;
 }
 
