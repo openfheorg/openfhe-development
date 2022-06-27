@@ -1591,13 +1591,6 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_pt
 
             // second round - remove q-overflows
             ans.m_vectors[j][ri] = curNativeValue.ModSubFast(alphaQModpri[j], pj);
-            if (ri == 0) {
-                std::cout << "alpha: " << alpha << std::endl;
-                std::cout << "alphaQmodp: " << alphaQModpri << std::endl;
-                std::cout << "QHatModpj[0]: " << QHatModpj[0] << std::endl;
-                std::cout << "j, curValue: " << j << ", " << curNativeValue << std::endl;
-                std::cout << "ans.m_vectors[j][0]: " << j << ", " << ans.m_vectors[j][ri] << std::endl;
-            }
         }
     }
 

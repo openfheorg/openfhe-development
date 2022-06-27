@@ -90,9 +90,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
                                                           moduliQ);
 
   BigInteger modulusQ = GetElementParams()->GetModulus();
-  std::cout << "modulusQ: " << modulusQ << std::endl;
   NativeInteger t = GetPlaintextModulus();
-  std::cout << "plaintext modulus: " << t << std::endl;
 
   const BigInteger BarrettBase128Bit(
       "340282366920938463463374607431768211456");       // 2^128
@@ -200,7 +198,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
     BigInteger tmpModulusQ = modulusQ;
     
-    if (multTech == HPSPOVERQLEVELED) {
+    if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
       m_QlHatInvModq.resize(sizeQ);
       m_QlHatInvModqPrecon.resize(sizeQ);
       m_QlHatModr.resize(sizeQ);
@@ -210,7 +208,11 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
         m_QlHatInvModq[sizeQ - l - 1].resize(sizeQ - l);
         m_QlHatInvModqPrecon[sizeQ - l - 1].resize(sizeQ - l);
-        m_QlHatModr[sizeQ - l - 1].resize(sizeQ - l);
+        m_QlHatModr[sizeQ - l - 1].resize(sizeR);
+
+        for (size_t j = 0; j < sizeR; j++) {
+          m_QlHatModr[sizeQ - l - 1][j].resize(sizeQ - l);
+        }
 
         for (size_t i = 0; i < sizeQ - l; i++) {
           m_QlHatModr[sizeQ - l - 1][i].resize(sizeR);
@@ -221,7 +223,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
               m_QlHatInvModq[sizeQ - l - 1][i].PrepModMulConst(moduliQ[i]);
           for (size_t j = 0; j < sizeR; j++) {
             BigInteger QlHatModrij = QHati.Mod(moduliR[j]);
-            m_QlHatModr[sizeQ - l - 1][i][j] = QlHatModrij.ConvertToInt();
+            m_QlHatModr[sizeQ - l - 1][j][i] = QlHatModrij.ConvertToInt();
           }
         }
       }
@@ -252,7 +254,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     }
 
     // BFVrns : Mult : ExpandCRTBasis
-    if (multTech == HPS || multTech == HPSPOVERQ) {
+    if (multTech == HPS) {
       m_paramsQl.resize(1);
       m_paramsRl.resize(1);
       m_paramsQlRl.resize(1);
@@ -272,7 +274,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
       }
       m_paramsQlRl[0] =
           std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQR, rootsQR);
-    } else if (multTech == HPSPOVERQLEVELED) {
+    } else if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
       m_paramsQl.resize(sizeQ);
       m_paramsRl.resize(sizeQ);
       m_paramsQlRl.resize(sizeQ);
@@ -321,13 +323,11 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     // BFVrns : Mult : ScaleAndRound
     /////////////////////////////////////
 
-    const BigInteger modulusR = multTech == HPSPOVERQLEVELED
+    const BigInteger modulusR = multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ
                                     ? m_paramsRl[sizeQ - 1]->GetModulus()
                                     : m_paramsRl[0]->GetModulus();
 
-    std::cout << "modulusR: " << modulusR << std::endl;
-
-    const BigInteger modulusQR = multTech == HPSPOVERQLEVELED
+    const BigInteger modulusQR = multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ
                                      ? m_paramsQlRl[sizeQ - 1]->GetModulus()
                                      : m_paramsQlRl[0]->GetModulus();
 
@@ -373,7 +373,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     std::vector<BigInteger> QlHat(sizeQ + 1);
     std::vector<BigInteger> RlHat(sizeQ + 1);
 
-    if (multTech == HPSPOVERQLEVELED) {
+    if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
       Ql[0] = 1;
       Rl[0] = 1;
       QlRl[0] = 1;
@@ -389,23 +389,10 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
         QlHat[l + 1] = QlHat[l] / ql;
         RlHat[l + 1] = RlHat[l] / rl;
       }
-
-      m_alphaQlModr.resize(sizeQ);
-      for (usint l = sizeQ; l > 0; l--) {
-        m_alphaQlModr[l - 1].resize(l + 1);
-        for (usint j = 0; j < sizeR; j++) {
-          BigInteger rj(moduliR[j].ConvertToInt());
-          NativeInteger QlModrj = Ql[l].Mod(rj).ConvertToInt();
-          for (usint i = 0; i < l + 1; i++) {
-            m_alphaQlModr[l - 1][i].push_back(
-                QlModrj.ModMul(NativeInteger(i), rj));
-          }
-        }
-      }
     }
 
     // BFVrns : Mult : ExpandCRTBasis
-    if (multTech == HPS || multTech == HPSPOVERQ) {
+    if (multTech == HPS) {
       m_alphaQlModr.resize(1);
       m_alphaQlModr[0].resize(sizeQ + 1);
       for (usint j = 0; j < sizeR; j++) {
@@ -415,16 +402,16 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
               QModrj.ModMul(NativeInteger(i), moduliR[j]));
         }
       }
-    } else if (multTech == HPSPOVERQLEVELED) {
+    } else if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
       m_alphaQlModr.resize(sizeQ);
       for (usint l = sizeQ; l > 0; l--) {
         m_alphaQlModr[l - 1].resize(l + 1);
         for (usint j = 0; j < sizeR; j++) {
-          BigInteger ri(moduliR[j].ConvertToInt());
-          NativeInteger QlModrj = Ql[l].Mod(ri).ConvertToInt();
+          BigInteger rj(moduliR[j].ConvertToInt());
+          NativeInteger QlModrj = Ql[l].Mod(rj).ConvertToInt();
           for (usint j = 0; j < l + 1; ++j) {
             m_alphaQlModr[l - 1][j].push_back(
-                QlModrj.ModMul(NativeInteger(j), ri));
+                QlModrj.ModMul(NativeInteger(j), rj));
           }
         }
       }
@@ -432,7 +419,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
     // Pre-compute values [Rl/r_j]_{q_i}
     // Pre-compute values [(Rl/r_j)^{-1}]_{r_j}
-    if (multTech == HPS || multTech == HPSPOVERQ) {
+    if (multTech == HPS) {
       m_RlHatInvModr.resize(1);
       m_RlHatInvModrPrecon.resize(1);
 
@@ -454,7 +441,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
           m_RlHatModq[0][i][j] = RHatj.Mod(moduliQ[i]).ConvertToInt();
         }
       }
-    } else if (multTech == HPSPOVERQLEVELED) {
+    } else if (multTech == HPSPOVERQ || multTech == HPSPOVERQLEVELED) {
       m_RlHatInvModr.resize(sizeR);
       m_RlHatInvModrPrecon.resize(sizeR);
       m_RlHatModq.resize(sizeR);
@@ -463,16 +450,18 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
         m_RlHatInvModr[l - 1].resize(l);
         m_RlHatInvModrPrecon[l - 1].resize(l);
         m_RlHatModq[l - 1].resize(l);
+        for (size_t i = 0; i < l; i++) {
+          m_RlHatModq[l - 1][i].resize(l);
+        }
         for (size_t j = 0; j < l; j++) {
           BigInteger RlHatj = Rl[l] / BigInteger(moduliR[j]);
           BigInteger RlHatInvModrj = RlHatj.ModInverse(moduliR[j]);
           m_RlHatInvModr[l - 1][j] = RlHatInvModrj.ConvertToInt();
           m_RlHatInvModrPrecon[l - 1][j] =
               m_RlHatInvModr[l - 1][j].PrepModMulConst(moduliR[j]);
-          m_RlHatModq[l - 1][j].resize(l);
           for (size_t i = 0; i < l; i++) {
             BigInteger RlHatModqji = RlHatj.Mod(moduliQ[i]);
-            m_RlHatModq[l - 1][j][i] = RlHatModqji.ConvertToInt();
+            m_RlHatModq[l - 1][i][j] = RlHatModqji.ConvertToInt();
           }
         }
       }
@@ -480,7 +469,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
     // compute [\alpha*Rl]_{q_i} for 0 <= alpha <= sizeRl
     // used for homomorphic multiplication
-    if (multTech == HPS || multTech == HPSPOVERQ) {
+    if (multTech == HPS) {
       m_alphaRlModq.resize(1);
       m_alphaRlModq[0].resize(sizeR + 1);
       for (usint i = 0; i < sizeQ; i++) {
@@ -489,7 +478,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
           m_alphaRlModq[0][j].push_back(RModqi.ModMul(NativeInteger(j), moduliQ[i]));
         }
       }
-    } else if (multTech == HPSPOVERQLEVELED) {
+    } else if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
       m_alphaRlModq.resize(sizeR);
       for (usint l = sizeR; l > 0; l--) {
         m_alphaRlModq[l - 1].resize(l + 1);

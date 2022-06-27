@@ -185,7 +185,6 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
   std::vector<DCRTPoly> cvMult(cvMultSize);
 
   if (cryptoParams->GetMultiplicationTechnique() == HPS) {
-    std::cout << "cv2: " << cv2 << std::endl;
     for (size_t i = 0; i < cv1Size; i++) {
       cv1[i].ExpandCRTBasis(
           cryptoParams->GetParamsQlRl(),
@@ -211,18 +210,16 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
           cryptoParams->GetqInv(),
           Format::EVALUATION);
     }
-    std::cout << "cv2 after expanding basis HPS: " << cv2 << std::endl;
   } else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ) {
-    std::cout << "cv2: " << cv2 << std::endl;
     for (size_t i = 0; i < cv1Size; i++) {
       // Expand ciphertext1 from basis Q to PQ.
       cv1[i].ExpandCRTBasis(
-          cryptoParams->GetParamsQlRl(),
-          cryptoParams->GetParamsRl(),
-          cryptoParams->GetQlHatInvModq(),
-          cryptoParams->GetQlHatInvModqPrecon(),
-          cryptoParams->GetQlHatModr(),
-          cryptoParams->GetalphaQlModr(),
+          cryptoParams->GetParamsQlRl(sizeQ - 1),
+          cryptoParams->GetParamsRl(sizeQ - 1),
+          cryptoParams->GetQlHatInvModq(sizeQ - 1),
+          cryptoParams->GetQlHatInvModqPrecon(sizeQ - 1),
+          cryptoParams->GetQlHatModr(sizeQ - 1),
+          cryptoParams->GetalphaQlModr(sizeQ - 1),
           cryptoParams->GetModrBarrettMu(),
           cryptoParams->GetqInv(),
           Format::EVALUATION);
@@ -230,17 +227,17 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
 
     size_t sizeQ = cv2[0].GetNumOfElements();
 
-    auto param1 = cryptoParams->GetParamsQlRl();
-    auto param2 = cryptoParams->GetParamsRl();
-    auto param3 = cryptoParams->GetParamsQl();
+    auto param1 = cryptoParams->GetParamsQlRl(sizeQ - 1);
+    auto param2 = cryptoParams->GetParamsRl(sizeQ - 1);
+    auto param3 = cryptoParams->GetParamsQl(sizeQ - 1);
     auto param4 = cryptoParams->GetmNegRlQHatInvModq(sizeQ - 1);
     auto param5 = cryptoParams->GetmNegRlQHatInvModqPrecon(sizeQ - 1);
     auto param6 = cryptoParams->GetqInvModr();
     auto param7 = cryptoParams->GetModrBarrettMu();
-    auto param8 = cryptoParams->GetRlHatInvModr();
-    auto param9 = cryptoParams->GetRlHatInvModrPrecon();
-    auto param10 = cryptoParams->GetRlHatModq();
-    auto param11 = cryptoParams->GetalphaRlModq();
+    auto param8 = cryptoParams->GetRlHatInvModr(sizeQ - 1);
+    auto param9 = cryptoParams->GetRlHatInvModrPrecon(sizeQ - 1);
+    auto param10 = cryptoParams->GetRlHatModq(sizeQ - 1);
+    auto param11 = cryptoParams->GetalphaRlModq(sizeQ - 1);
     auto param12 = cryptoParams->GetModqBarrettMu();
     auto param13 = cryptoParams->GetrInv();
     DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(
@@ -281,7 +278,6 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
       cv2[i].FastExpandCRTBasisPloverQ(basisPQ);
       cv2[i].SetFormat(Format::EVALUATION);
     }
-    std::cout << "cv2 after expanding basis HPSPOVERQ: " << cv2 << std::endl;
   } else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
     size_t c1depth = ciphertext1->GetDepth();
     size_t c2depth = ciphertext2->GetDepth();
