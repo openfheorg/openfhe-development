@@ -67,7 +67,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     parameters.schemeId = BFVRNS_SCHEME;
     parameters.plaintextModulus = 65537;
     parameters.standardDeviation = 3.19;
-    parameters.depth = 1;
     parameters.maxDepth = 2;
     parameters.rsTech = NORESCALE;
     parameters.numLargeDigits = 0;
