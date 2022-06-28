@@ -56,7 +56,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
 
     int plaintextModulus = 2;
     usint ringDimension = 1024;
-    usint relinWindow = 1;
+    usint relinWindow = 9;
     usint dcrtbits = 0;
 
     usint qmodulus = 27;
@@ -82,15 +82,15 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
       parameters.SetPREMode(FIXED_NOISE_HRA);
     } else if (security_model == 2) {
       ringDimension = 8192;
-      relinWindow = 2;
-      dcrtbits = 31;
+      relinWindow = 1;
+      dcrtbits = 30;
 
       qmodulus = 218;
       firstqmod = 60;
       parameters.SetPREMode(NOISE_FLOODING_HRA);
     } else if (security_model == 3) {
       ringDimension = 8192;
-      relinWindow = 1;
+      relinWindow = 0;
       dcrtbits = 30;
 
       qmodulus = 218;
@@ -99,22 +99,15 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
       parameters.SetPREMode(NOISE_FLOODING_HRA);
       parameters.SetKeySwitchTechnique(HYBRID);
       parameters.SetNumLargeDigits(dnum);
-    } else if (security_model == 4) {
-      ringDimension = 8192;
-      relinWindow = 1;
-      dcrtbits = 30;
-
-      qmodulus = 218;
-      firstqmod = 60;
-      parameters.SetPREMode(DIVIDE_AND_ROUND_HRA);
     }
+
     parameters.SetMultiplicativeDepth(0);
     parameters.SetPlaintextModulus(plaintextModulus);
     parameters.SetRingDim(ringDimension);
     parameters.SetFirstModSize(firstqmod);
     parameters.SetScalingFactorBits(dcrtbits);
     parameters.SetRelinWindow(relinWindow);
-    parameters.SetRescalingTechnique(FIXEDAUTO);
+    parameters.SetRescalingTechnique(FIXEDMANUAL);
     parameters.SetMultiHopQModulusLowerBound(qmodulus);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
@@ -236,7 +229,7 @@ TEST_P(UTMultihopPRE, MULTIHOP_PRE_TEST) {
     run_demo_pre(test);
 }
 
-int Security_Model_Options[5] = {0,1,2,3,4};
+int Security_Model_Options[4] = {0,1,2,3};
 //Todo: add hrbrid key switching for noise flooding hra - model option 2
 
 INSTANTIATE_TEST_SUITE_P(MULTIHOP_PRE_TEST, UTMultihopPRE, ::testing::ValuesIn(Security_Model_Options));

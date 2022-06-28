@@ -66,7 +66,7 @@ uint32_t multDepth = 0;
 double sigma = 3.2;		
 SecurityLevel securityLevel = HEStd_128_classic;
 usint ringDimension = 1024;
-usint relinWindow = 1;//1;//9;
+usint relinWindow = 3;
 usint dcrtbits = 0;
 
 usint qmodulus = 27;
@@ -150,10 +150,6 @@ void PRE_ReEncrypt(benchmark::State &state) {
             //std::cout << "Provable HRA secure PRE" << std::endl;
             benchmark::DoNotOptimize(reEncryptedCT1 = cryptoContext->ReEncrypt(ciphertext1, reencryptionKey, keyPairproducer.publicKey)); //HRA secure noiseflooding
             benchmark::DoNotOptimize(reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1)); //mod reduction for noise flooding
-        } else if (security_model == 4) {
-            //std::cout << "Provable HRA secure PRE" << std::endl;
-            benchmark::DoNotOptimize(reEncryptedCT1 = cryptoContext->ReEncrypt(ciphertext1, reencryptionKey, keyPairproducer.publicKey)); //HRA secure noiseflooding
-            benchmark::DoNotOptimize(reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1)); //mod reduction for noise flooding
         } else {
             std::cerr << "Not a valid security mode" << std::endl;
             exit(EXIT_FAILURE);
@@ -199,20 +195,20 @@ int main(int argc, char** argv)
 
     //0 - CPA secure PRE, 1 - fixed 20 bits noise, 2 - provable secure HRA noise flooding
     parameters.SetPREMode(INDCPA);
+    parameters.SetKeySwitchTechnique(BV);
      if (security_model == 0) {
        plaintextModulus = 2;
        multDepth = 0;
        sigma = 3.2;		
        securityLevel = HEStd_128_classic;
        ringDimension = 1024;
-       relinWindow = 1;//6;//1;//9;
+       relinWindow = 3;
        dcrtbits = 0;
 
        qmodulus = 27;
        firstqmod = 27;
        security_model = 0;
        parameters.SetPREMode(INDCPA);
-       parameters.SetKeySwitchTechnique(BV);
     } else if (security_model == 1) {
         plaintextModulus = 2;
         multDepth = 0;
@@ -226,7 +222,6 @@ int main(int argc, char** argv)
         firstqmod = 54;
         security_model = 1; 
         parameters.SetPREMode(FIXED_NOISE_HRA);
-        parameters.SetKeySwitchTechnique(BV);
     } else if (security_model == 2) {
         plaintextModulus = 2;
         multDepth = 0;
@@ -240,7 +235,6 @@ int main(int argc, char** argv)
         firstqmod = 60;
         security_model = 2;
         parameters.SetPREMode(NOISE_FLOODING_HRA);
-        parameters.SetKeySwitchTechnique(BV);
     } else if (security_model == 3) {
         ringDimension = 16384;
         relinWindow = 0;
@@ -252,15 +246,6 @@ int main(int argc, char** argv)
         parameters.SetPREMode(NOISE_FLOODING_HRA);
         parameters.SetKeySwitchTechnique(HYBRID);
         parameters.SetNumLargeDigits(dnum);
-    } else if (security_model == 4) {
-        ringDimension = 16384;
-        relinWindow = 1;
-        dcrtbits = 30;
-
-        qmodulus = 438;
-        firstqmod = 60;
-        parameters.SetPREMode(DIVIDE_AND_ROUND_HRA);
-        parameters.SetKeySwitchTechnique(BV);
     }
 
     parameters.SetMultiplicativeDepth(multDepth);
