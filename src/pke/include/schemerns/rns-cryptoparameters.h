@@ -85,7 +85,6 @@ protected:
    * @param securityLevel security level.
    * @param relinWindow the size of the relinearization window.
    * @param mode sets the mode of operation: RLWE or OPTIMIZED
-   * @param depth depth which is set to 1.
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
    * @param ksTech key switching method
@@ -95,7 +94,7 @@ protected:
                        const PlaintextModulus &plaintextModulus,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint relinWindow, MODE mode,
-                       int depth = 1, int maxDepth = 2,
+                       int maxDepth = 2,
                        KeySwitchTechnique ksTech = BV,
                        RescalingTechnique rsTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
@@ -105,7 +104,7 @@ protected:
             EncodingParams(
                 std::make_shared<EncodingParamsImpl>(plaintextModulus)),
             distributionParameter, assuranceMeasure, securityLevel, relinWindow,
-            depth, maxDepth, mode) {
+            maxDepth, mode) {
     m_ksTechnique = ksTech;
     m_rsTechnique = rsTech;
     m_encTechnique = encTech;
@@ -116,14 +115,14 @@ protected:
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint relinWindow, MODE mode,
-                       int depth = 1, int maxDepth = 2,
+                       int maxDepth = 2,
                        KeySwitchTechnique ksTech = BV,
                        RescalingTechnique rsTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRLWE<DCRTPoly>(
             params, encodingParams, distributionParameter, assuranceMeasure,
-            securityLevel, relinWindow, depth, maxDepth, mode) {
+            securityLevel, relinWindow, maxDepth, mode) {
     m_ksTechnique = ksTech;
     m_rsTechnique = rsTech;
     m_encTechnique = encTech;

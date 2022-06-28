@@ -137,7 +137,6 @@ void CKKSEvalAtIndex2n() {
   parameters.SetScalingFactorBits(40);
   parameters.SetRelinWindow(10);
   parameters.SetBatchSize(16);
-  parameters.SetDepth(3);
   parameters.SetKeySwitchTechnique(BV);
   parameters.SetRescalingTechnique(FIXEDMANUAL);
   parameters.SetNumLargeDigits(4);

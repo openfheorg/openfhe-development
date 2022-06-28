@@ -62,7 +62,6 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
         parameters.GetRootHermiteFactor(),
         parameters.GetRelinWindow(),
         parameters.GetMode(),
-        parameters.GetDepth(),
         parameters.GetMaxDepth(),
         parameters.GetKeySwitchTechnique(),
         parameters.GetRescalingTechnique(),

@@ -118,7 +118,6 @@ class CryptoParametersBase : public Serializable {
 
   virtual usint GetRelinWindow() const { return 0; }
 
-  virtual int GetDepth() const { return 0; }
   virtual size_t GetMaxDepth() const { return 0; }
 
   virtual const typename Element::DggType &GetDiscreteGaussianGenerator()

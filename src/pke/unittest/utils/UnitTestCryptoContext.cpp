@@ -58,9 +58,6 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.mode)) {
         parameters.SetMode(static_cast<MODE>(std::round(params.mode)));
     }
-    if (!isDefaultValue(params.depth)) {
-        parameters.SetDepth(static_cast<int>(std::round(params.depth)));
-    }
     if (!isDefaultValue(params.maxDepth)) {
         parameters.SetMaxDepth(static_cast<int>(std::round(params.maxDepth)));
     }

@@ -55,27 +55,27 @@ public:
                        const PlaintextModulus &plaintextModulus,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint relinWindow, MODE mode,
-                       int depth = 1, int maxDepth = 2,
+                       int maxDepth = 2,
                        KeySwitchTechnique ksTech = BV,
                        RescalingTechnique rsTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRNS(params, plaintextModulus, distributionParameter,
-          assuranceMeasure, securityLevel, relinWindow, mode, depth, maxDepth,
+          assuranceMeasure, securityLevel, relinWindow, mode, maxDepth,
           ksTech, rsTech, encTech, multTech) {}
 
   CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint relinWindow, MODE mode,
-                       int depth = 1, int maxDepth = 2,
+                       int maxDepth = 2,
                        KeySwitchTechnique ksTech = BV,
                        RescalingTechnique rsTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRNS(
             params, encodingParams, distributionParameter, assuranceMeasure,
-            securityLevel, relinWindow, mode, depth, maxDepth,
+            securityLevel, relinWindow, mode, maxDepth,
             ksTech, rsTech, encTech, multTech) {}
 
   virtual ~CryptoParametersCKKSRNS() {}

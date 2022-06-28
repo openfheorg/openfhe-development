@@ -75,7 +75,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_noiseScale = 1;
     m_relinWindow = 1;
     m_dgg.SetStd(m_distributionParameter);
-    m_depth = 0;
     m_maxDepth = 2;
     m_mode = RLWE;
     m_stdLevel = HEStd_NotSet;
@@ -94,7 +93,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_noiseScale = rhs.m_noiseScale;
     m_relinWindow = rhs.m_relinWindow;
     m_dgg.SetStd(m_distributionParameter);
-    m_depth = rhs.m_depth;
     m_maxDepth = rhs.m_maxDepth;
     m_mode = rhs.m_mode;
     m_stdLevel = rhs.m_stdLevel;
@@ -109,8 +107,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param assuranceMeasure assurance level.
    * @param securityLevel security level.
    * @param relinWindow the size of the relinearization window.
-   * @param depth is the depth of computation circuit supported for these
-   * parameters (not used now; for future use).
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
    * @param mode mode for secret polynomial, defaults to RLWE.
@@ -118,7 +114,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint relinWindow, int depth = 1,
+                       float securityLevel, usint relinWindow,
                        int maxDepth = 2, MODE mode = RLWE,
                        PlaintextModulus noiseScale = 1)
       : CryptoParametersBase<Element>(params, encodingParams) {
@@ -128,7 +124,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_noiseScale = noiseScale;
     m_relinWindow = relinWindow;
     m_dgg.SetStd(m_distributionParameter);
-    m_depth = depth;
     m_maxDepth = maxDepth;
     m_mode = mode;
     m_stdLevel = HEStd_NotSet;
@@ -144,8 +139,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param assuranceMeasure assurance level.
    * @param securityLevel security level.
    * @param relinWindow the size of the relinearization window.
-   * @param depth is the depth of computation circuit supported for these
-   * parameters (not used now; for future use).
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
    * @param mode mode for secret polynomial, defaults to RLWE.
@@ -153,7 +146,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
-                       SecurityLevel stdLevel, usint relinWindow, int depth = 1,
+                       SecurityLevel stdLevel, usint relinWindow,
                        int maxDepth = 2, MODE mode = RLWE,
                        PlaintextModulus noiseScale = 1)
       : CryptoParametersBase<Element>(params, encodingParams) {
@@ -163,7 +156,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_noiseScale = noiseScale;
     m_relinWindow = relinWindow;
     m_dgg.SetStd(m_distributionParameter);
-    m_depth = depth;
     m_maxDepth = maxDepth;
     m_mode = mode;
     m_stdLevel = stdLevel;
@@ -209,14 +201,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @return the relinearization window.
    */
   usint GetRelinWindow() const { return m_relinWindow; }
-
-  /**
-   * Returns the depth of computation circuit supported for these parameters
-   * (not used now; for future use).
-   *
-   * @return the computation depth supported d.
-   */
-  int GetDepth() const { return m_depth; }
 
   /**
    * Returns the maximum homomorphic multiplication depth before performing
@@ -295,13 +279,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   void SetRelinWindow(usint relinWindow) { m_relinWindow = relinWindow; }
 
   /**
-   * Sets the depth of computation circuit supported for these parameters (not
-   * used now; for future use).
-   * @param depth
-   */
-  void SetDepth(int depth) { m_depth = depth; }
-
-  /**
    * Sets the value of the maximum power of secret key for which the
    * relinearization key is generated
    * @param depth
@@ -342,7 +319,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     os << "Distrib parm " << GetDistributionParameter()
        << ", Assurance measure " << GetAssuranceMeasure() << ", Security level "
        << GetSecurityLevel() << ", Noise scale " << GetNoiseScale()
-       << ", Relin window " << GetRelinWindow() << ", Depth " << GetDepth()
+       << ", Relin window " << GetRelinWindow()
        << ", Mode " << GetMode() << ", Standard security level "
        << GetStdLevel() << std::endl;
   }
@@ -355,7 +332,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("sl", m_securityLevel));
     ar(::cereal::make_nvp("ns", m_noiseScale));
     ar(::cereal::make_nvp("rw", m_relinWindow));
-    ar(::cereal::make_nvp("d", m_depth));
     ar(::cereal::make_nvp("md", m_maxDepth));
     ar(::cereal::make_nvp("mo", m_mode));
     ar(::cereal::make_nvp("slv", m_stdLevel));
@@ -370,7 +346,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("sl", m_securityLevel));
     ar(::cereal::make_nvp("ns", m_noiseScale));
     ar(::cereal::make_nvp("rw", m_relinWindow));
-    ar(::cereal::make_nvp("d", m_depth));
     ar(::cereal::make_nvp("md", m_maxDepth));
     ar(::cereal::make_nvp("mo", m_mode));
     ar(::cereal::make_nvp("slv", m_stdLevel));
@@ -389,8 +364,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   PlaintextModulus m_noiseScale;
   // relinearization window
   usint m_relinWindow;
-  // depth of computations; used for FHE
-  int m_depth;
   // maximum depth support of a ciphertext without keyswitching
   // corresponds to the highest power of secret key for which evaluation keys
   // are genererated
