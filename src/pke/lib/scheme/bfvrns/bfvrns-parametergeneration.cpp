@@ -300,8 +300,10 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     }
   }
 
-  size_t sizeQ =
+  const size_t sizeQ =
       static_cast<size_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
+  if (sizeQ < 1)
+    OPENFHE_THROW(config_error, "sizeQ must be greater than 0.");
 
   std::vector<NativeInteger> moduliQ(sizeQ);
   std::vector<NativeInteger> rootsQ(sizeQ);
