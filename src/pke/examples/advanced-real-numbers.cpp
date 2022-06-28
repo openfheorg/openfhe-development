@@ -185,8 +185,7 @@ void AutomaticRescaleDemo(RescalingTechnique rsTech) {
   cc->EvalMultKeyGen(keys.secretKey);
 
   // Input
-  std::vector<double> x = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7};
-//  std::vector<double> x = {1.0, 1.01, 1.02, 1.03, 1.04, 1.05, 1.06, 1.07};
+  std::vector<double> x = {1.0, 1.01, 1.02, 1.03, 1.04, 1.05, 1.06, 1.07};
   Plaintext ptxt = cc->MakeCKKSPackedPlaintext(x);
 
   std::cout << "Input x: " << ptxt << std::endl;
@@ -356,7 +355,7 @@ void ManualRescaleDemo(RescalingTechnique rsTech) {
   cc->EvalMultKeyGen(keys.secretKey);
 
   // Input
-  std::vector<double> x = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7};
+  std::vector<double> x = {1.0, 1.01, 1.02, 1.03, 1.04, 1.05, 1.06, 1.07};
   Plaintext ptxt = cc->MakeCKKSPackedPlaintext(x);
 
   std::cout << "Input x: " << ptxt << std::endl;
