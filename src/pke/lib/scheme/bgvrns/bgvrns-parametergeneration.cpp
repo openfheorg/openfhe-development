@@ -379,10 +379,9 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   }
   cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, 0);
 
-  std::cout << "ring dimension computed in paramsgen " << n << std::endl;
   //compute the flooding distribution parameter based on the security mode for pre
-  //getmodulus using ciphertext 
-  double stat_sec=30;
+  double stat_sec=30; //statistical security parameter for noise flooding
+
   //get the re-encryption level and set the level after re-encryption
   double sigma = cryptoParamsBGVRNS->GetDistributionParameter();
   double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
@@ -422,8 +421,6 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
         OPENFHE_THROW(config_error, "Relinwindow value can be non-zero only for BV keyswitching");
       }
     }
-    std::cout << "noise param flooding size " << log2(noise_param) << std::endl;
-    std::cout << "q modulus size " << log2(log2q) << std::endl;
     
     //set the flooding distribution parameter to the distribution.
     if (noise_param == 1) {

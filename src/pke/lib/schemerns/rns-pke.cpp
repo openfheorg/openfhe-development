@@ -211,17 +211,12 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
 
   DCRTPoly e0;
   DCRTPoly e1;
-
-  std::cout << "noise distribution parameter from dgg parameter " << dgg.GetStd() << std::endl;
   
-  //if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
   if (dgg.GetStd() == 1) {
-    std::cout << "here in rns-pke encryptzero core dgg" << std::endl;
     const DggType &dggnormal = cryptoParams->GetDiscreteGaussianGenerator();
     e0 = DCRTPoly(dggnormal, elementParams, Format::EVALUATION);
     e1 = DCRTPoly(dggnormal, elementParams, Format::EVALUATION);
   } else {
-    std::cout << "here in rns-pke encryptzero core dggflooding" << std::endl;
     e0 = DCRTPoly(dgg, elementParams, Format::EVALUATION);
     e1 = DCRTPoly(dgg, elementParams, Format::EVALUATION);
   }
