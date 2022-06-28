@@ -53,12 +53,21 @@
 
 using namespace lbcrypto;
 
-constexpr usint RING_DIM             = 1 << 15;
-constexpr usint MULT_DEPTH           = 3;
-constexpr usint PTM                  = 65537;
+constexpr usint RING_DIM             = 16384;
+constexpr usint MULT_DEPTH           = 7;
+constexpr usint PTM                  = 2;
 constexpr usint DCRT_BITS            = 60;
-constexpr KeySwitchTechnique KS_TECH = HYBRID;
-constexpr usint RELIN                = 3;
+constexpr KeySwitchTechnique KS_TECH = BV;
+
+/*
+These are the results we obtained for the above parameters immediately after implementing HPSPOVERQLEVELED.
+--------------------------------------------------------------------------------------------
+Benchmark                                                  Time             CPU   Iterations
+--------------------------------------------------------------------------------------------
+BFVrns_EvalMultMany/mult_method:1/min_time:10.000       6590 ms         6578 ms            2
+BFVrns_EvalMultMany/mult_method:2/min_time:10.000       5140 ms         5132 ms            3
+BFVrns_EvalMultMany/mult_method:3/min_time:10.000       3382 ms         3376 ms            4
+*/
 
 static std::vector<MultiplicationTechnique> MULT_METHOD_ARGS = {HPS, HPSPOVERQ, HPSPOVERQLEVELED};
 
@@ -74,14 +83,16 @@ static void MultBFVArguments(benchmark::internal::Benchmark* b) {
 
 CryptoContext<DCRTPoly> GenerateBFVrnsContext(MultiplicationTechnique multMethod) {
     CCParams<CryptoContextBFVRNS> parameters;
-    parameters.SetRingDim(RING_DIM);
     parameters.SetPlaintextModulus(PTM);
     parameters.SetEvalMultCount(MULT_DEPTH);
     parameters.SetScalingFactorBits(DCRT_BITS);
     parameters.SetKeySwitchTechnique(KS_TECH);
-    parameters.SetRelinWindow(RELIN);
+    parameters.SetRingDim(RING_DIM);
     parameters.SetMultiplicationTechnique(multMethod);
-    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetSecurityLevel(HEStd_128_classic);
+    parameters.SetMode(OPTIMIZED);
+    parameters.SetMaxDepth(2);
+    parameters.SetStandardDeviation(3.19);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);
@@ -95,7 +106,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(MultiplicationTechnique multMethod
 /*
  * benchmarks
  */
-void BFVrns_EvalMultMany(benchmark::State& state) {
+void BFVrns_EvalMult(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateBFVrnsContext(MULT_METHOD_ARGS[state.range(0) - 1]);
 
     // KeyGen
@@ -108,7 +119,9 @@ void BFVrns_EvalMultMany(benchmark::State& state) {
     plaintext = cc->MakeCoefPackedPlaintext(vectorOfInts);
 
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
-    for (int i = 0; i < (1 << MULT_DEPTH); i++)
+    int treeSize = 1 << MULT_DEPTH;
+    
+    for (int i = 0; i < treeSize; i++)
         ciphertexts.push_back(cc->Encrypt(keyPair.publicKey, plaintext));
 
     Ciphertext<DCRTPoly> ciphertextMult;
@@ -116,8 +129,17 @@ void BFVrns_EvalMultMany(benchmark::State& state) {
         ciphertextMult = cc->EvalMultMany(ciphertexts);
     }
 
+    Ciphertext<DCRTPoly> cRes;
+    for (usint i = (treeSize >> 1); i >= 1; i >>= 1) {
+        for (usint j = 0; j < i; ++j) {
+            ciphertexts[j] = cc->EvalMult(ciphertexts[j], ciphertexts[j + i]);
+        }
+    }
+
+    cRes = ciphertexts[0]->Clone();
+    
     Plaintext plaintextDec;
-    cc->Decrypt(keyPair.secretKey, ciphertextMult, &plaintextDec);
+    cc->Decrypt(keyPair.secretKey, cRes, &plaintextDec);
     plaintextDec->SetLength(plaintext->GetLength());
 
     if (plaintext != plaintextDec) {
@@ -125,7 +147,6 @@ void BFVrns_EvalMultMany(benchmark::State& state) {
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
 }
-
-BENCHMARK(BFVrns_EvalMultMany)->Unit(benchmark::kMillisecond)->Apply(MultBFVArguments);
+BENCHMARK(BFVrns_EvalMult)->Unit(benchmark::kMillisecond)->Apply(MultBFVArguments);
 
 BENCHMARK_MAIN();

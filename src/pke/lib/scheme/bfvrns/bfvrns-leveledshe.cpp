@@ -90,6 +90,7 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   double alpha = cryptoParamsBFVrns->GetAssuranceMeasure();
   double p = static_cast<double>(cryptoParamsBFVrns->GetPlaintextModulus());
   uint32_t n = cryptoParamsBFVrns->GetElementParams()->GetRingDimension();
+  int sizeQ = cryptoParamsBFVrns->GetElementParams()->GetParams().size();
 
   uint32_t k = cryptoParamsBFVrns->GetNumPerPartQ();
   uint32_t numPartQ = cryptoParamsBFVrns->GetNumPartQ();
@@ -152,6 +153,8 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
 
   if (levels < 0)
     levels = 0;
+  if (levels > sizeQ - 1)
+    levels = sizeQ - 1;
   
   return levels;
 
