@@ -81,6 +81,82 @@ void LeveledSHEBFVRNS::EvalSubInPlace(
   cv[0] -= pt.Times(cryptoParams->GetQDivtModq());
 }
 
+uint32_t FindLevelsToDrop(usint evalMultCount,
+                          std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                          uint32_t dcrtBits, bool keySwitch = false) {
+  const auto cryptoParamsBFVrns =
+      std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
+  double sigma = cryptoParamsBFVrns->GetDistributionParameter();
+  double alpha = cryptoParamsBFVrns->GetAssuranceMeasure();
+  double p = static_cast<double>(cryptoParamsBFVrns->GetPlaintextModulus());
+  uint32_t n = cryptoParamsBFVrns->GetElementParams()->GetRingDimension();
+
+  uint32_t k = cryptoParamsBFVrns->GetNumPerPartQ();
+  uint32_t numPartQ = cryptoParamsBFVrns->GetNumPartQ();
+  const double Bkey = 1.0;
+
+  // Bound of the Gaussian error polynomial
+  double Berr = sigma * sqrt(alpha);
+
+  // expansion factor delta
+  auto delta = [](uint32_t n) -> double { return (2. * sqrt(n)); };
+
+  // norm of fresh ciphertext polynomial
+  auto Vnorm = [&](uint32_t n) -> double {
+    return Berr * (1. + 2. * delta(n) * Bkey);
+  };
+
+  // function used in the EvalMult constraint
+  auto epsilon1 = [&](uint32_t n) -> double { return 5 / (delta(n) * Bkey); };
+
+  auto noiseKS = [&](uint32_t n, double logqPrev) -> double {
+    return numPartQ * k * ( delta(n) * (Berr + Bkey) + 1.0 )/2;
+  };
+
+  // function used in the EvalMult constraint
+  auto C1 = [&](uint32_t n) -> double {
+    return (1 + epsilon1(n)) * delta(n) * delta(n) * p * Bkey;
+  };
+
+  // function used in the EvalMult constraint
+  // Yuriy: removed the term p^2 as we reduced the noise
+  auto C2 = [&](uint32_t n, double logqPrev) -> double {
+    return delta(n) * delta(n) * Bkey * ((1 + 0.5) * Bkey) + noiseKS(n, logqPrev);
+  };
+
+  // main correctness constraint
+  auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
+    if (evalMultCount > 0) {
+      return log(4 * p) + (evalMultCount - 1) * log(C1(n)) +
+      log(C1(n) * Vnorm(n) + evalMultCount * C2(n, logqPrev));
+    }
+    return log(p * (4 * (Vnorm(n))));
+  };
+
+  // initial values
+  double logqPrev = 6. * log(10);
+  double logq = logqBFV(n, logqPrev);
+
+  while (fabs(logq - logqPrev) > log(1.001)) {
+    logqPrev = logq;
+    logq = logqBFV(n, logqPrev);
+  }
+
+  // get an estimate of the error q / (4t)
+  double loge = logq / log(2) - 2 - log2(p);
+
+  double logExtra = keySwitch ? log2(noiseKS(n, logq)) : log2(delta(n));
+
+  // error should be at least 2^10 * delta(n) larger than the levels we are dropping
+  int32_t levels = std::floor((loge - 30 - logExtra) / dcrtBits);
+
+  if (levels < 0)
+    levels = 0;
+  
+  return levels;
+
+};
+
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
     ConstCiphertext<DCRTPoly> ciphertext1,
     ConstCiphertext<DCRTPoly> ciphertext2) const {
@@ -103,6 +179,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
   size_t cv1Size = cv1.size();
   size_t cv2Size = cv2.size();
   size_t cvMultSize = cv1Size + cv2Size - 1;
+  size_t sizeQ = cv1[0].GetNumOfElements();
+  size_t l = 0;
 
   std::vector<DCRTPoly> cvMult(cvMultSize);
 
@@ -131,6 +209,100 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
           cryptoParams->GetModrBarrettMu(),
           cryptoParams->GetqInv(),
           Format::EVALUATION);
+    }
+  } else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ) {
+    for (size_t i = 0; i < cv1Size; i++) {
+      // Expand ciphertext1 from basis Q to PQ.
+      cv1[i].ExpandCRTBasis(
+          cryptoParams->GetParamsQlRl(sizeQ - 1),
+          cryptoParams->GetParamsRl(sizeQ - 1),
+          cryptoParams->GetQlHatInvModq(sizeQ - 1),
+          cryptoParams->GetQlHatInvModqPrecon(sizeQ - 1),
+          cryptoParams->GetQlHatModr(sizeQ - 1),
+          cryptoParams->GetalphaQlModr(sizeQ - 1),
+          cryptoParams->GetModrBarrettMu(),
+          cryptoParams->GetqInv(),
+          Format::EVALUATION);
+    }
+
+    size_t sizeQ = cv2[0].GetNumOfElements();
+    
+    DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(
+        cryptoParams->GetParamsQlRl(sizeQ - 1),
+        cryptoParams->GetParamsRl(sizeQ - 1),
+        cryptoParams->GetParamsQl(sizeQ - 1),
+        cryptoParams->GetmNegRlQHatInvModq(sizeQ - 1),
+        cryptoParams->GetmNegRlQHatInvModqPrecon(sizeQ - 1),
+        cryptoParams->GetqInvModr(),
+        cryptoParams->GetModrBarrettMu(),
+        cryptoParams->GetRlHatInvModr(sizeQ - 1),
+        cryptoParams->GetRlHatInvModrPrecon(sizeQ - 1),
+        cryptoParams->GetRlHatModq(sizeQ - 1),
+        cryptoParams->GetalphaRlModq(sizeQ - 1),
+        cryptoParams->GetModqBarrettMu(),
+        cryptoParams->GetrInv()
+    );
+
+    for (size_t i = 0; i < cv2Size; i++) {
+      cv2[i].SetFormat(Format::COEFFICIENT);
+      // Switch ciphertext2 from basis Q to P to PQ.
+      cv2[i].FastExpandCRTBasisPloverQ(basisPQ);
+      cv2[i].SetFormat(Format::EVALUATION);
+    }
+  } else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+    size_t c1depth = ciphertext1->GetDepth();
+    size_t c2depth = ciphertext2->GetDepth();
+
+    size_t levels = std::max(c1depth, c2depth) - 1;
+    double dcrtBits = cv1[0].GetElementAtIndex(0).GetModulus().GetMSB();
+
+    //how many levels to drop
+    uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, false);
+    l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped: sizeQ - 1;
+
+    for (size_t i = 0; i < cv1Size; i++) {
+      cv1[i].SetFormat(Format::COEFFICIENT);
+      if(l < sizeQ - 1) {
+        // Drop from basis Q to Q_l.
+        cv1[i] = cv1[i].ScaleAndRound(
+            cryptoParams->GetParamsQl(l),
+            cryptoParams->GetQlQHatInvModqDivqModq(l),
+            cryptoParams->GetQlQHatInvModqDivqFrac(l),
+            cryptoParams->GetModqBarrettMu());
+      }
+      // Expand ciphertext1 from basis Q_l to PQ_l.
+      cv1[i].ExpandCRTBasis(
+          cryptoParams->GetParamsQlRl(l),
+          cryptoParams->GetParamsRl(l),
+          cryptoParams->GetQlHatInvModq(l),
+          cryptoParams->GetQlHatInvModqPrecon(l),
+          cryptoParams->GetQlHatModr(l),
+          cryptoParams->GetalphaQlModr(l),
+          cryptoParams->GetModrBarrettMu(),
+          cryptoParams->GetqInv(),
+          Format::EVALUATION);
+    }
+
+    DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(
+        cryptoParams->GetParamsQlRl(l),
+        cryptoParams->GetParamsRl(l),
+        cryptoParams->GetParamsQl(l),
+        cryptoParams->GetmNegRlQHatInvModq(l),
+        cryptoParams->GetmNegRlQHatInvModqPrecon(l),
+        cryptoParams->GetqInvModr(),
+        cryptoParams->GetModrBarrettMu(),
+        cryptoParams->GetRlHatInvModr(l),
+        cryptoParams->GetRlHatInvModrPrecon(l),
+        cryptoParams->GetRlHatModq(l),
+        cryptoParams->GetalphaRlModq(l),
+        cryptoParams->GetModqBarrettMu(),
+        cryptoParams->GetrInv()
+    );
+    for (size_t i = 0; i < cv2Size; i++) {
+      cv2[i].SetFormat(Format::COEFFICIENT);
+      // Switch ciphertext2 from basis Q to P to PQ.
+      cv2[i].FastExpandCRTBasisPloverQ(basisPQ);
+      cv2[i].SetFormat(Format::EVALUATION);
     }
   } else {
     for (size_t i = 0; i < cv1Size; i++) {
@@ -240,6 +412,33 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
           cryptoParams->GetalphaRlModq(),
           cryptoParams->GetModqBarrettMu(),
           cryptoParams->GetrInv());
+    }
+  } else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ) {
+    for (size_t i = 0; i < cvMultSize; i++) {
+      cvMult[i].SetFormat(COEFFICIENT);
+      // Performs the scaling by t/P followed by rounding; the result is in the
+      // CRT basis Q
+      cvMult[i] = cvMult[i].ScaleAndRound(
+          cryptoParams->GetElementParams(), cryptoParams->GettQlSlHatInvModsDivsModq(0),
+          cryptoParams->GettQlSlHatInvModsDivsFrac(0),
+          cryptoParams->GetModqBarrettMu());
+    }
+  } else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+    for (size_t i = 0; i < cvMultSize; i++) {
+      cvMult[i].SetFormat(COEFFICIENT);
+      // Performs the scaling by t/P followed by rounding; the result is in the
+      // CRT basis Q
+      cvMult[i] = cvMult[i].ScaleAndRound(
+          cryptoParams->GetParamsQl(l), cryptoParams->GettQlSlHatInvModsDivsModq(l),
+          cryptoParams->GettQlSlHatInvModsDivsFrac(l),
+          cryptoParams->GetModqBarrettMu());
+
+      if(l < sizeQ - 1) {
+        // Expand back to basis Q.
+        cvMult[i].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(),
+            cryptoParams->GetQlHatModq(l),
+            cryptoParams->GetQlHatModqPrecon(l), sizeQ);
+      }
     }
   } else {
     const NativeInteger &t = cryptoParams->GetPlaintextModulus();

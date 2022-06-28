@@ -50,6 +50,7 @@ public:
                  int32_t keySwitchCount,
                  size_t dcrBits,
                  uint32_t n,
+                 uint32_t numPartQ,
                  KeySwitchTechnique ksTech,
                  RescalingTechnique rsTech,
                  EncryptionTechnique encTech,

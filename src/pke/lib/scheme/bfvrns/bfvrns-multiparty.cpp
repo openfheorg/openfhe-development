@@ -75,7 +75,9 @@ DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(
 
   b.SetFormat(Format::COEFFICIENT);
 
-  if (cryptoParams->GetMultiplicationTechnique() == HPS) {
+  if (cryptoParams->GetMultiplicationTechnique() == HPS
+   || cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ
+   || cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
     *plaintext = b.ScaleAndRound(cryptoParams->GetPlaintextModulus(),
                                  cryptoParams->GettQHatInvModqDivqModt(),
                                  cryptoParams->GettQHatInvModqDivqModtPrecon(),

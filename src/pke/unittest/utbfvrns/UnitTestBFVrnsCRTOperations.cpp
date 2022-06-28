@@ -44,6 +44,10 @@
 #include "utils/debug.h"
 #include "utils/parmfactory.h"
 
+#include "UnitTestUtils.h"
+#include "UnitTestCCParams.h"
+#include "UnitTestCryptoContext.h"
+
 using namespace lbcrypto;
 
 class UTBFVRNS_CRT : public ::testing::Test {
@@ -57,6 +61,116 @@ class UTBFVRNS_CRT : public ::testing::Test {
  public:
 };
 // TODO (dsuponit): review and fix multiple errors in this file
+TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
+
+    UnitTestCCParams parameters;
+    parameters.schemeId = BFVRNS_SCHEME;
+    parameters.plaintextModulus = 65537;
+    parameters.standardDeviation = 3.19;
+    parameters.depth = 1;
+    parameters.maxDepth = 2;
+    parameters.rsTech = NORESCALE;
+    parameters.numLargeDigits = 0;
+    parameters.evalMultCount = 2;
+    parameters.multiplicativeDepth = 2;
+    parameters.scalingFactorBits = 60;
+    parameters.ksTech = BV;
+    parameters.relinWindow = 20;
+    parameters.securityLevel = HEStd_NotSet;
+    parameters.ringDimension = 8;
+    parameters.firstModSize = 60;
+    parameters.batchSize = 8;
+    parameters.mode = OPTIMIZED;
+    parameters.multiplicationTechnique = HPSPOVERQ;
+    
+    CryptoContext<Element> cc(UnitTestGenerateContext(parameters));
+
+    const std::shared_ptr<ILDCRTParams<BigInteger>> params =
+        cc->GetCryptoParameters()->GetElementParams();
+
+    const auto cryptoParamsBFVrns =
+        std::static_pointer_cast<CryptoParametersBFVRNS>(
+            cc->GetCryptoParameters());
+
+    size_t sizeQ = 2;
+
+    // Generate the element "a" of the public key
+    DCRTPoly a(params, Format::COEFFICIENT);
+
+    usint m1              = 16;
+    NativeInteger modulus0 = 1152921504606846577;
+    NativeInteger modulus1 = 1152921504606846097;
+    NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
+    NativeInteger rootOfUnity1(RootOfUnity(m1, modulus1));
+
+    ILNativeParams polyParams0(m1, modulus0, rootOfUnity0);
+    ILNativeParams polyParams1(m1, modulus1, rootOfUnity1);
+    std::shared_ptr<ILNativeParams> x0p(new ILNativeParams(polyParams0));
+    std::shared_ptr<ILNativeParams> x1p(new ILNativeParams(polyParams1));
+
+    NativePoly poly0(x0p, Format::COEFFICIENT);
+    NativePoly poly1(x1p, Format::COEFFICIENT);
+    poly0 = {242947838436205858, 458804958636264704, 813208723994158017, 738376275125875131, 269337450701982501, 633721177525656427, 406635995163024073, 763204304316606329};
+    poly1 = {1024863409567898083, 845721255474383902, 537504300724180111, 1018489837930110795, 112800627588840746, 1119710169440476902, 77894506676832730, 34149187620514595};
+
+    a.SetElementAtIndex(0, poly0);
+    a.SetElementAtIndex(1, poly1);
+
+    auto param1 = cryptoParamsBFVrns->GetParamsQlRl(sizeQ - 1);
+    auto param2 = cryptoParamsBFVrns->GetParamsRl(sizeQ - 1);
+    auto param3 = cryptoParamsBFVrns->GetParamsQl(sizeQ - 1);
+    auto param4 = cryptoParamsBFVrns->GetmNegRlQHatInvModq(sizeQ - 1);
+    auto param5 = cryptoParamsBFVrns->GetmNegRlQHatInvModqPrecon(sizeQ - 1);
+    auto param6 = cryptoParamsBFVrns->GetqInvModr();
+    auto param7 = cryptoParamsBFVrns->GetModrBarrettMu();
+    auto param8 = cryptoParamsBFVrns->GetRlHatInvModr(sizeQ - 1);
+    auto param9 = cryptoParamsBFVrns->GetRlHatInvModrPrecon(sizeQ - 1);
+    auto param10 = cryptoParamsBFVrns->GetRlHatModq(sizeQ - 1);
+    auto param11 = cryptoParamsBFVrns->GetalphaRlModq(sizeQ - 1);
+    auto param12 = cryptoParamsBFVrns->GetModqBarrettMu();
+    auto param13 = cryptoParamsBFVrns->GetrInv();
+    DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(
+        param1,
+        param2,
+        param3,
+        param4,
+        param5,
+        param6,
+        param7,
+        param8,
+        param9,
+        param10,
+        param11,
+        param12,
+        param13
+    );
+
+    a.FastExpandCRTBasisPloverQ(basisPQ);
+
+    NativeInteger modulus2 = 1152921504606845777;
+    NativeInteger modulus3 = 1152921504606845473;
+    NativeInteger rootOfUnity2(RootOfUnity(m1, modulus2));
+    NativeInteger rootOfUnity3(RootOfUnity(m1, modulus3));
+
+    ILNativeParams polyParams2(m1, modulus2, rootOfUnity2);
+    ILNativeParams polyParams3(m1, modulus3, rootOfUnity3);
+    std::shared_ptr<ILNativeParams> x2p(new ILNativeParams(polyParams2));
+    std::shared_ptr<ILNativeParams> x3p(new ILNativeParams(polyParams3));
+    NativePoly ans0(x0p, Format::COEFFICIENT);
+    NativePoly ans1(x1p, Format::COEFFICIENT);
+    NativePoly ans2(x2p, Format::COEFFICIENT);
+    NativePoly ans3(x3p, Format::COEFFICIENT);
+    ans0 = {805568738929329616, 1078766251747424582, 785656076316475932, 599125608237504784, 541576441836927290, 152721755350883626, 574857357780891061, 1081393409810468825};
+    ans1 = {434562805454153184, 312761043978375123, 509951653046700586, 879239171041671808, 385039618723450975, 638710747265582661, 246115869294473638, 352338293114574371};
+    ans2 = {955839852875274614, 186398073668078476, 710455872402389881, 1065981546244475424, 1049296073052489283, 578396240339812092, 26954876970280156, 1019223053257416912};
+    ans3 = {874592295621923164, 585167928946466637, 612704504638527027, 551633899923050545, 758002500979691774, 694035684451390662, 625796987487151016, 96319544173820807};
+
+    EXPECT_EQ(a.GetElementAtIndex(0), ans0);
+    EXPECT_EQ(a.GetElementAtIndex(1), ans1);
+    EXPECT_EQ(a.GetElementAtIndex(2), ans2);
+    EXPECT_EQ(a.GetElementAtIndex(3), ans3);
+}
+
 TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
 
     CCParams<CryptoContextBFVRNS> parameters;
