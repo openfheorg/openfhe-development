@@ -89,14 +89,6 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(MultiplicationTechnique multMethod
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
 
-    // std::cout << "\nParameters BFVrns for depth " << mult_depth << std::endl;
-    // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
-    // std::endl; std::cout << "n = " <<
-    // cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2 <<
-    // std::endl; std::cout << "log2 q = " <<
-    // log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
-    // << "\n" << std::endl;
-
     return cc;
 }
 
