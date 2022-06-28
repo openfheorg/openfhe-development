@@ -38,6 +38,7 @@
 
 #include "encoding/encodingparams.h"
 #include "constants.h"
+#include "scheme/scheme-utils.h"
 
 namespace lbcrypto {
 
@@ -92,15 +93,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
     // for BFV scheme noise scale is always set to 1
     params->SetNoiseScale(1);
 
-	uint32_t numLargeDigits = parameters.GetNumLargeDigits();
-    if (!numLargeDigits) {  // Choose one of the default values
-        if (parameters.GetMultiplicativeDepth() > 3)        // If more than 4 towers, use 3 digits
-            numLargeDigits = 3;
-        else if (parameters.GetMultiplicativeDepth() == 0)  // if there is only 1 tower, use one digit
-            numLargeDigits = 1;
-        else                                // If 2, 3 or 4 towers, use 2 digits (1 <= multiplicativeDepth <=3 )
-            numLargeDigits = 2;
-    }
+	uint32_t numLargeDigits = ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
 
 	auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
 	scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
