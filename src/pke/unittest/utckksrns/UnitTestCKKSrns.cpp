@@ -153,15 +153,15 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS& tes
 }
 //===========================================================================================================
 /***
- * ORDER: Cyclotomic order. Must be a power of 2 for CKKS. RING_DIM = cyclOrder / 2
  * NUMPRIME: Number of towers comprising the ciphertext modulus. MultDepth = NUMPRIME - 1
  * SCALE: Scaling factor bit-length.
- *UnitTestCKKSrns.cpp       Should fit into a machine word, i.e., less than 64.
+ *        Should fit into a machine word, i.e., less than 64.
  * RELIN: The bit decomposition count used in BV relinearization.
  * BATCH: The length of the packed vectors to be used with CKKS.
  */
 constexpr usint RING_DIM = 512;
 constexpr usint RING_DIM_HALF = 256;
+constexpr usint RING_DIM_PREC = 4096; // for test cases with approximation error comparison only
 constexpr usint RELIN    = 10;
 constexpr usint BATCH    = 8;
 #if NATIVEINT == 128
@@ -182,9 +182,9 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { ADD_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { ADD_PACKED, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { ADD_PACKED, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
-    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
-    { ADD_PACKED_PRECISION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
-    { ADD_PACKED_PRECISION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    // TestType,            Descr, Scheme,         RDim,      MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { ADD_PACKED_PRECISION, "01", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { ADD_PACKED_PRECISION, "02", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -197,9 +197,9 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { ADD_PACKED, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
     { ADD_PACKED, "27", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
     { ADD_PACKED, "28", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
-    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
-    { ADD_PACKED_PRECISION, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
-    { ADD_PACKED_PRECISION, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    // TestType,            Descr, Scheme,         RDim,      MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { ADD_PACKED_PRECISION, "21", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { ADD_PACKED_PRECISION, "22", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -212,9 +212,9 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { ADD_PACKED, "36", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
     { ADD_PACKED, "37", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
     { ADD_PACKED, "38", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
-    // TestType,            Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots,         LowPrec,      HighPrec
-    { ADD_PACKED_PRECISION, "31", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
-    { ADD_PACKED_PRECISION, "32", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    // TestType,            Descr, Scheme,         RDim,      MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots,         LowPrec,      HighPrec
+    { ADD_PACKED_PRECISION, "31", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { ADD_PACKED_PRECISION, "32", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -227,11 +227,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { MULT_PACKED, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { MULT_PACKED, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { MULT_PACKED, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
-    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
-    { MULT_PACKED_PRECISION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
-    { MULT_PACKED_PRECISION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
-    { MULT_PACKED_PRECISION, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
-    { MULT_PACKED_PRECISION, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
+    // TestType,             Descr, Scheme,         RDim,      MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { MULT_PACKED_PRECISION, "01", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "02", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "03", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
+    { MULT_PACKED_PRECISION, "04", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -244,11 +244,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { MULT_PACKED, "16", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { MULT_PACKED, "17", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
     { MULT_PACKED, "18", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0},
-    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
-    { MULT_PACKED_PRECISION, "11", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
-    { MULT_PACKED_PRECISION, "12", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
-    { MULT_PACKED_PRECISION, "13", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
-    { MULT_PACKED_PRECISION, "14", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
+    // TestType,             Descr, Scheme,         RDim,      MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { MULT_PACKED_PRECISION, "11", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "12", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "13", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
+    { MULT_PACKED_PRECISION, "14", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    0,     FIXEDAUTO,    FLEXIBLEAUTO},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -261,11 +261,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { MULT_PACKED, "26", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
     { MULT_PACKED, "27", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
     { MULT_PACKED, "28", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH},
-    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
-    { MULT_PACKED_PRECISION, "21", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
-    { MULT_PACKED_PRECISION, "22", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
-    { MULT_PACKED_PRECISION, "23", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FIXEDAUTO,    FLEXIBLEAUTO},
-    { MULT_PACKED_PRECISION, "24", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FIXEDAUTO,    FLEXIBLEAUTO},
+    // TestType,             Descr, Scheme,         RDim,      MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { MULT_PACKED_PRECISION, "21", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "22", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FLEXIBLEAUTO, FLEXIBLEAUTOEXT},
+    { MULT_PACKED_PRECISION, "23", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FIXEDAUTO,    FLEXIBLEAUTO},
+    { MULT_PACKED_PRECISION, "24", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    BATCH, FIXEDAUTO,    FLEXIBLEAUTO},
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -278,11 +278,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { MULT_PACKED, "36", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
     { MULT_PACKED, "37", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
     { MULT_PACKED, "38", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32},
-    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
-    { MULT_PACKED_PRECISION, "31", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
-    { MULT_PACKED_PRECISION, "32", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
-    { MULT_PACKED_PRECISION, "33", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FIXEDAUTO,    FLEXIBLEAUTO },
-    { MULT_PACKED_PRECISION, "34", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FIXEDAUTO,    FLEXIBLEAUTO },
+    // TestType,             Descr, Scheme,         RDim,      MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots, LowPrec,      HighPrec
+    { MULT_PACKED_PRECISION, "31", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
+    { MULT_PACKED_PRECISION, "32", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
+    { MULT_PACKED_PRECISION, "33", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FIXEDAUTO,    FLEXIBLEAUTO },
+    { MULT_PACKED_PRECISION, "34", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    32,    FIXEDAUTO,    FLEXIBLEAUTO },
 #endif
     // ==========================================
     // TestType,  Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots
@@ -295,11 +295,11 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { MULT_PACKED, "46", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
     { MULT_PACKED, "47", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
     { MULT_PACKED, "48", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF},
-    // TestType,             Descr, Scheme,         RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots,         LowPrec,      HighPrec
-    { MULT_PACKED_PRECISION, "41", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
-    { MULT_PACKED_PRECISION, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
-    { MULT_PACKED_PRECISION, "43", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FIXEDAUTO,    FLEXIBLEAUTO },
-    { MULT_PACKED_PRECISION, "44", {CKKSRNS_SCHEME, RING_DIM, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FIXEDAUTO,    FLEXIBLEAUTO },
+    // TestType,             Descr, Scheme,         RDim,      MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech, LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, Slots,         LowPrec,      HighPrec
+    { MULT_PACKED_PRECISION, "41", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
+    { MULT_PACKED_PRECISION, "42", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FLEXIBLEAUTO, FLEXIBLEAUTOEXT },
+    { MULT_PACKED_PRECISION, "43", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, HYBRID, DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FIXEDAUTO,    FLEXIBLEAUTO },
+    { MULT_PACKED_PRECISION, "44", {CKKSRNS_SCHEME, RING_DIM_PREC, 7,     SCALE,  RELIN, BATCH,   OPTIMIZED,  DFLT,   DFLT,    HEStd_NotSet, BV,     DFLT,   DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    RING_DIM_HALF, FIXEDAUTO,    FLEXIBLEAUTO },
 #endif
     // ==========================================
     // TestType,               Descr, Scheme,          RDim, MultDepth, SFBits, RWin,  BatchSz, Mode,       MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
