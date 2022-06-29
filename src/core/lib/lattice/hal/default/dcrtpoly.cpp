@@ -2209,7 +2209,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsOutput,
     const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
     const std::vector<double>& tOSHatInvModsDivsFrac, const std::vector<DoubleNativeInt>& modoBarretMu) const {
-    DCRTPolyType ans(paramsP, this->GetFormat(), true);
+    DCRTPolyType ans(paramsOutput, this->GetFormat(), true);
 
     usint ringDim = this->GetRingDimension();
     size_t sizeQP = m_vectors.size();
@@ -2243,7 +2243,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
         NativeInteger alpha = static_cast<uint64_t>(nu);
 
         for (usint j = 0; j < sizeO; j++) {
-            const NativeInteger& pj                                  = paramsOutput->GetParams()[j]->GetModulus();
+            const NativeInteger& oj                                  = paramsOutput->GetParams()[j]->GetModulus();
             const std::vector<NativeInteger>& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
 
             for (usint i = 0; i < sizeI; i++) {
