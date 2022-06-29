@@ -149,9 +149,12 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
 
   // error should be at least 2^10 * delta(n) larger than the levels we are dropping
   int32_t levels = std::floor((loge - 30 - logExtra) / dcrtBits);
+  size_t sizeQ = cryptoParamsBFVrns->GetElementParams()->GetParams().size();
 
   if (levels < 0)
     levels = 0;
+  else if (levels > static_cast<int32_t>(sizeQ) - 1)
+    levels = sizeQ - 1;
   
   return levels;
 

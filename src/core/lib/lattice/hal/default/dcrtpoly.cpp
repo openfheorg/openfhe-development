@@ -1714,9 +1714,7 @@ void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPre
   size_t sizeQ = m_vectors.size();
 
   DCRTPolyType partPl(precomputed.paramsPl, this->m_format, true);
-  size_t sizePl = partPl.m_vectors.size();
-  size_t sizeQl = sizePl;
-  size_t sizeQlPl = sizePl + sizeQl;
+  const size_t sizePl = partPl.m_vectors.size();
 
   // (k + kl)n
 #pragma omp parallel for
@@ -1747,6 +1745,8 @@ void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPre
       precomputed.paramsQl, precomputed.PlHatInvModp, precomputed.PlHatInvModpPrecon,
       precomputed.PlHatModq, precomputed.alphaPlModq, precomputed.modqBarrettMu, precomputed.pInv);
 
+  const size_t sizeQl = sizePl;
+  const size_t sizeQlPl = sizePl + sizeQl;
   // Expand with zeros as should be
   m_vectors.resize(sizeQlPl);
 
@@ -1755,6 +1755,7 @@ void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPre
     m_vectors[i] = partQl.m_vectors[i];
   }
 
+// We cannot use two indices in one for loop with omp parallel for.
 #pragma omp parallel for
   for (size_t j = 0; j < sizePl; j++) {
     m_vectors[sizeQl + j] = partPl.m_vectors[j];
@@ -2208,7 +2209,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsOutput,
     const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
     const std::vector<double>& tOSHatInvModsDivsFrac, const std::vector<DoubleNativeInt>& modoBarretMu) const {
-    DCRTPolyType ans(paramsP, this->GetFormat(), true);
+    DCRTPolyType ans(paramsOutput, this->GetFormat(), true);
 
     usint ringDim = this->GetRingDimension();
     size_t sizeQP = m_vectors.size();
@@ -2242,7 +2243,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
         NativeInteger alpha = static_cast<uint64_t>(nu);
 
         for (usint j = 0; j < sizeO; j++) {
-            const NativeInteger& pj                                  = paramsOutput->GetParams()[j]->GetModulus();
+            const NativeInteger& oj                                  = paramsOutput->GetParams()[j]->GetModulus();
             const std::vector<NativeInteger>& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
 
             for (usint i = 0; i < sizeI; i++) {
