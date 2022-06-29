@@ -263,7 +263,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(
   ciphertext->SetLevel(ciphertext->GetLevel() + levels);
 
   for (usint i = 0; i < levels; ++i) {
-    double modReduceFactor = cryptoParams->GetModReduceFactor(sizeQl - 1 + i);
+    double modReduceFactor = cryptoParams->GetModReduceFactor(sizeQl - 1 - i);
     ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() /
                                  modReduceFactor);
   }
@@ -545,10 +545,10 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
     ConstCiphertext<DCRTPoly> ciphertext, usint index,
     const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
     const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const {
-  if (index == 0) {
-    Ciphertext<DCRTPoly> result = ciphertext->Clone();
-    return result;
-  }
+//  if (index == 0) {
+//    Ciphertext<DCRTPoly> result = ciphertext->Clone();
+//    return result;
+//  }
 
   const auto cc = ciphertext->GetCryptoContext();
 
@@ -557,7 +557,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(
           ciphertext->GetCryptoParameters());
 
   usint N = cryptoParams->GetElementParams()->GetRingDimension();
-  usint M = N << 1;
+  usint M = cryptoParams->GetElementParams()->GetCyclotomicOrder();
 
   // Find the automorphism index that corresponds to rotation index index.
   usint autoIndex = FindAutomorphismIndex2nComplex(index, M);

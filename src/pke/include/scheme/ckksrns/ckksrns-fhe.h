@@ -35,6 +35,7 @@
 #include "constants.h"
 #include "schemerns/rns-fhe.h"
 #include "utils/caller_info.h"
+#include "utils/lineartransform.h"
 
 /**
  * @namespace lbcrypto
@@ -122,17 +123,13 @@ public:
   // number of slots for which the bootstrapping is performed
   uint32_t m_slots = 0;
 
-  uint32_t m_blockDimension;
-
-  uint32_t m_BSGSDimension; // for level 0 matrix arithmetic
-
   // level budget for homomorphic encoding, number of layers to collapse in one level,
   // number of layers remaining to be collapsed in one level to have exactly the number
   // of levels specified in the level budget, the number of rotations in one level,
   // the baby step and giant step in the baby-step giant-step strategy, the number of
   // rotations in the remaining level, the baby step and giant step in the baby-step
   // giant-step strategy for the remaining level
-  std::vector<int32_t> m_paramsEnc;
+  std::vector<int32_t> m_paramsEnc = std::vector<int32_t>(FFT_PARAMS::TOTAL_ELEMENTS, 0);
 
   // level budget for homomorphic decoding, number of layers to collapse in one level,
   // number of layers remaining to be collapsed in one level to have exactly the number
@@ -140,7 +137,7 @@ public:
   // the baby step and giant step in the baby-step giant-step strategy, the number of
   // rotations in the remaining level, the baby step and giant step in the baby-step
   // giant-step strategy for the remaining level
-  std::vector<int32_t> m_paramsDec;
+  std::vector<int32_t> m_paramsDec = std::vector<int32_t>(FFT_PARAMS::TOTAL_ELEMENTS, 0);
 
   // Linear map U0; used in decoding
   std::vector<ConstPlaintext> m_U0Pre;
@@ -155,16 +152,17 @@ public:
   std::vector<std::vector<ConstPlaintext>> m_U0hatTPreFFT;
 
   // EvalBT (FFT evaluation) rotation indices
-  std::vector<int32_t> indexListEvalBT;
+  std::vector<int32_t> m_indexListEvalBT;
 
   // EvalLT (linear evaluation) rotation indices
-  std::vector<int32_t> indexListEvalLT;
+  std::vector<int32_t> m_indexListEvalLT;
 
 };
 
 class FHECKKSRNS : public FHERNS {
 public:
-
+  //TODO temporary added
+  PrivateKey<DCRTPoly> secretKey;
   CKKSBootstrapPrecom precom;
 
   virtual ~FHECKKSRNS() {}

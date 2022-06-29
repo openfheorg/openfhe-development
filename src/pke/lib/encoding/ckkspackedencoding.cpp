@@ -517,11 +517,13 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
   //  }
   // }
 
+  std::cerr << "logstd: " << logstd << std::endl;
+  std::cerr << "p: " << p << std::endl;
   // If less than 5 bits of precision is observed
-  if (logstd > p - 5.0)
-    OPENFHE_THROW(math_error,
-                   "The decryption failed because the approximation error is "
-                   "too high. Check the parameters. ");
+//  if (logstd > p - 5.0)
+//    OPENFHE_THROW(math_error,
+//                   "The decryption failed because the approximation error is "
+//                   "too high. Check the parameters. ");
 
   // real values
   std::vector<std::complex<double>> realValues(slots);
@@ -532,8 +534,9 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
 
   double scale = 0.5 * powP;
 
-  std::normal_distribution<> d(0, stddev);
-  PRNG &g = PseudoRandomNumberGenerator::GetPRNG();
+  // TODO temporary removed errors
+//  std::normal_distribution<> d(0, stddev);
+//  PRNG &g = PseudoRandomNumberGenerator::GetPRNG();
   // Alternative way to do Gaussian sampling
   // DiscreteGaussianGenerator dgg;
 
@@ -543,10 +546,10 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
   for (size_t i = 0; i < slots; ++i) {
     double real = scale * (curValues[i].real() + conjugate[i].real());
     // real += powP * dgg.GenerateIntegerKarney(0.0, stddev);
-    real += powP * d(g);
+//    real += powP * d(g);
     double imag = scale * (curValues[i].imag() + conjugate[i].imag());
     // imag += powP * dgg.GenerateIntegerKarney(0.0, stddev);
-    imag += powP * d(g);
+//    imag += powP * d(g);
     realValues[i].real(real);
     realValues[i].imag(imag);
   }

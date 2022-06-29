@@ -173,16 +173,16 @@ namespace FFT_PARAMS {
 	 * Enums representing indices for the vector returned by GetCollapsedFFTParams()
 	 */
 	enum {
-		LEVEL_BUDGET,      // the level budget
-		LAYERS_COLL,       // the number of layers to collapse in one level
-		LAYERS_REM,        // the number of layers remaining to be collapsed in one level to have exactly the number of levels specified in the level budget
-		NUM_ROTATIONS,     // the number of rotations in one level
-		BABY_STEP,         // the baby step in the baby-step giant-step strategy
-		GIANT_STEP,        // the giant step in the baby-step giant-step strategy
-		NUM_ROTATIONS_REM, // the number of rotations in the remaining level
-		BABY_STEP_REM,     // the baby step in the baby-step giant-step strategy for the remaining level
-		GIANT_STEP_REM,    // the giant step in the baby-step giant-step strategy for the remaining level
-		TOTAL_ELEMENTS     // total number of elements in the vector
+    LEVEL_BUDGET,      // the level budget
+    LAYERS_COLL,       // the number of layers to collapse in one level
+    LAYERS_REM,        // the number of layers remaining to be collapsed in one level to have exactly the number of levels specified in the level budget
+    NUM_ROTATIONS,     // the number of rotations in one level
+    BABY_STEP,         // the baby step in the baby-step giant-step strategy
+    GIANT_STEP,        // the giant step in the baby-step giant-step strategy
+    NUM_ROTATIONS_REM, // the number of rotations in the remaining level
+    BABY_STEP_REM,     // the baby step in the baby-step giant-step strategy for the remaining level
+    GIANT_STEP_REM,    // the giant step in the baby-step giant-step strategy for the remaining level
+    TOTAL_ELEMENTS     // total number of elements in the vector
 	};
 }
 }
