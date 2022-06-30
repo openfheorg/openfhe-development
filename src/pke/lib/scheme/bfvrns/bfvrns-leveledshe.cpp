@@ -90,10 +90,14 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   double alpha = cryptoParamsBFVrns->GetAssuranceMeasure();
   double p = static_cast<double>(cryptoParamsBFVrns->GetPlaintextModulus());
   uint32_t n = cryptoParamsBFVrns->GetElementParams()->GetRingDimension();
+  uint32_t relinWindow = cryptoParamsBFVrns->GetRelinWindow();
+  KeySwitchTechnique rsTechnique = cryptoParamsBFVrns->GetKeySwitchTechnique();
 
   uint32_t k = cryptoParamsBFVrns->GetNumPerPartQ();
   uint32_t numPartQ = cryptoParamsBFVrns->GetNumPartQ();
   const double Bkey = 1.0;
+
+  double w = relinWindow == 0 ? pow(2, dcrtBits) : pow(2, relinWindow);
 
   // Bound of the Gaussian error polynomial
   double Berr = sigma * sqrt(alpha);
@@ -106,22 +110,23 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
     return Berr * (1. + 2. * delta(n) * Bkey);
   };
 
-  // function used in the EvalMult constraint
-  auto epsilon1 = [&](uint32_t n) -> double { return 5 / (delta(n) * Bkey); };
-
-  auto noiseKS = [&](uint32_t n, double logqPrev) -> double {
-    return numPartQ * k * ( delta(n) * (Berr + Bkey) + 1.0 )/2;
+  auto noiseKS = [&](uint32_t n, double logqPrev, double w) -> double {
+	if (rsTechnique == HYBRID)
+      return  k * ( numPartQ * delta(n) * Berr + delta(n) * Bkey + 1.0 )/2;
+	else
+	  return delta(n) *
+              (floor(logqPrev / (log(2) * dcrtBits)) + 1) * w * Berr;
   };
 
   // function used in the EvalMult constraint
   auto C1 = [&](uint32_t n) -> double {
-    return (1 + epsilon1(n)) * delta(n) * delta(n) * p * Bkey;
+    return delta(n) * delta(n) * p * Bkey;
   };
 
   // function used in the EvalMult constraint
-  // Yuriy: removed the term p^2 as we reduced the noise
   auto C2 = [&](uint32_t n, double logqPrev) -> double {
-    return delta(n) * delta(n) * Bkey * ((1 + 0.5) * Bkey) + noiseKS(n, logqPrev);
+    return delta(n) * delta(n) * Bkey * Bkey / 2.0 +
+  		  noiseKS(n, logqPrev, w);
   };
 
   // main correctness constraint
@@ -145,7 +150,7 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   // get an estimate of the error q / (4t)
   double loge = logq / log(2) - 2 - log2(p);
 
-  double logExtra = keySwitch ? log2(noiseKS(n, logq)) : log2(delta(n));
+  double logExtra = keySwitch ? log2(noiseKS(n, logqPrev, w)) : log2(delta(n));
 
   // error should be at least 2^10 * delta(n) larger than the levels we are dropping
   int32_t levels = std::floor((loge - 30 - logExtra) / dcrtBits);
