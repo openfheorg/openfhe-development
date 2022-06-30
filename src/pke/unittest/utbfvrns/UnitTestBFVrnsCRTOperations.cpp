@@ -60,6 +60,105 @@ class UTBFVRNS_CRT : public ::testing::Test {
 
  public:
 };
+
+TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
+
+    UnitTestCCParams parameters;
+    parameters.schemeId = BFVRNS_SCHEME;
+    parameters.plaintextModulus = 65537;
+    parameters.standardDeviation = 3.19;
+    parameters.maxDepth = 2;
+    parameters.rsTech = NORESCALE;
+    parameters.numLargeDigits = 0;
+    parameters.evalMultCount = 2;
+    parameters.multiplicativeDepth = 2;
+    parameters.scalingFactorBits = 60;
+    parameters.ksTech = BV;
+    parameters.relinWindow = 20;
+    parameters.securityLevel = HEStd_NotSet;
+    parameters.ringDimension = 8;
+    parameters.firstModSize = 60;
+    parameters.batchSize = 8;
+    parameters.mode = OPTIMIZED;
+    parameters.multiplicationTechnique = BEHZ;
+    
+    CryptoContext<Element> cc(UnitTestGenerateContext(parameters));
+
+    const std::shared_ptr<ILDCRTParams<BigInteger>> params =
+        cc->GetCryptoParameters()->GetElementParams();
+
+    const auto cryptoParams =
+        std::static_pointer_cast<CryptoParametersBFVRNS>(
+            cc->GetCryptoParameters());
+
+    // Generate the element "a" of the public key
+    DCRTPoly a(params, Format::EVALUATION);
+
+    usint m1              = 16;
+    NativeInteger modulus0 = 1152921504606846577;
+    NativeInteger modulus1 = 1152921504606846097;
+    NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
+    NativeInteger rootOfUnity1(RootOfUnity(m1, modulus1));
+
+    ILNativeParams polyParams0(m1, modulus0, rootOfUnity0);
+    ILNativeParams polyParams1(m1, modulus1, rootOfUnity1);
+    std::shared_ptr<ILNativeParams> x0p(new ILNativeParams(polyParams0));
+    std::shared_ptr<ILNativeParams> x1p(new ILNativeParams(polyParams1));
+
+    NativePoly poly0(x0p, Format::EVALUATION);
+    NativePoly poly1(x1p, Format::EVALUATION);
+    poly0 = {611651427055975783, 739811248882229946, 790810915716521716, 536363726228107588, 647651536262422014, 322042217691169971, 138609670727909932, 793736138075446811};
+    poly1 = {846754661443099927, 602279558317502186, 342175723088143584, 904036735987820179, 1124341799555345257, 885339199454111253, 417243638107713607, 548811148460128084};
+
+    a.SetElementAtIndex(0, poly0);
+    a.SetElementAtIndex(1, poly1);
+
+    a.FastBaseConvqToBskMontgomery(
+          cryptoParams->GetParamsBsk(),
+          cryptoParams->GetModuliQ(),
+          cryptoParams->GetModuliBsk(),
+          cryptoParams->GetModbskBarrettMu(),
+          cryptoParams->GetmtildeQHatInvModq(),
+          cryptoParams->GetmtildeQHatInvModqPrecon(),
+          cryptoParams->GetQHatModbsk(),
+          cryptoParams->GetQHatModmtilde(),
+          cryptoParams->GetQModbsk(),
+          cryptoParams->GetQModbskPrecon(),
+          cryptoParams->GetNegQInvModmtilde(),
+          cryptoParams->GetmtildeInvModbsk(),
+          cryptoParams->GetmtildeInvModbskPrecon());
+
+    NativeInteger modulus2 = 1152921504606845777;
+    NativeInteger modulus3 = 1152921504606845473;
+    NativeInteger modulus4 = 1152921504606844913;
+    NativeInteger rootOfUnity2(RootOfUnity(m1, modulus2));
+    NativeInteger rootOfUnity3(RootOfUnity(m1, modulus3));
+    NativeInteger rootOfUnity4(RootOfUnity(m1, modulus4));
+
+    ILNativeParams polyParams2(m1, modulus2, rootOfUnity2);
+    ILNativeParams polyParams3(m1, modulus3, rootOfUnity3);
+    ILNativeParams polyParams4(m1, modulus4, rootOfUnity4);
+    std::shared_ptr<ILNativeParams> x2p(new ILNativeParams(polyParams2));
+    std::shared_ptr<ILNativeParams> x3p(new ILNativeParams(polyParams3));
+    std::shared_ptr<ILNativeParams> x4p(new ILNativeParams(polyParams4));
+    NativePoly ans0(x0p, Format::EVALUATION);
+    NativePoly ans1(x1p, Format::EVALUATION);
+    NativePoly ans2(x2p, Format::EVALUATION);
+    NativePoly ans3(x3p, Format::EVALUATION);
+    NativePoly ans4(x4p, Format::EVALUATION);
+    ans0 = {611651427055975783, 739811248882229946, 790810915716521716, 536363726228107588, 647651536262422014, 322042217691169971, 138609670727909932, 793736138075446811};
+    ans1 = {846754661443099927, 602279558317502186, 342175723088143584, 904036735987820179, 1124341799555345257, 885339199454111253, 417243638107713607, 548811148460128084};
+    ans2 = {524228833460429474, 692928367413813885, 465662343623521646, 107498520099165490, 81602760285107383, 482417615916109741, 249076385001962496, 719980682178715834};
+    ans3 = {474506930637362424, 723790960760608304, 7991172453764409, 738286918217632692, 933904287195446155, 98490114749039532, 293617451261147895, 1050780276990075548};
+    ans4 = {612459830520599999, 273948808875966259, 276211279884817131, 805184382328000673, 605603488049806384, 756318612975583592, 1014214483788531002, 480836070509458175};
+
+    EXPECT_EQ(a.GetElementAtIndex(0), ans0);
+    EXPECT_EQ(a.GetElementAtIndex(1), ans1);
+    EXPECT_EQ(a.GetElementAtIndex(2), ans2);
+    EXPECT_EQ(a.GetElementAtIndex(3), ans3);
+    EXPECT_EQ(a.GetElementAtIndex(4), ans4);
+}
+
 // TODO (dsuponit): review and fix multiple errors in this file
 TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 

@@ -1226,6 +1226,7 @@ public:
    *
    * Note in the source paper, B is referred to by M.
    *
+   * @param &paramsQ: Params for Q
    * @param &moduliQ: basis Q = {q_1,...,q_l}
    * @param &modqBarrettMu precomputed Barrett Mu for q_i
    * @param &moduliBsk: basis {Bsk} = {bsk_1,...,bsk_k}
@@ -1239,7 +1240,8 @@ public:
    * @param &BModq: [B]_{q_i}
    * @param &BModqPrecon NTL precomptations for [B]_{q_i}
    */
-    void FastBaseConvSK(const std::vector<NativeInteger>& moduliQ, const std::vector<DoubleNativeInt>& modqBarrettMu,
+    void FastBaseConvSK(const std::shared_ptr<Params> paramsQ,
+                        const std::vector<NativeInteger>& moduliQ, const std::vector<DoubleNativeInt>& modqBarrettMu,
                         const std::vector<NativeInteger>& moduliBsk,
                         const std::vector<DoubleNativeInt>& modbskBarrettMu,
                         const std::vector<NativeInteger>& BHatInvModb,
