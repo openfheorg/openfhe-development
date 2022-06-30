@@ -2697,8 +2697,7 @@ void DCRTPolyImpl<VecType>::FastRNSFloorq(
 #if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastBaseConvSK(
-    const std::shared_ptr<Params> paramsQ,
-    const std::vector<NativeInteger>& moduliQ, const std::vector<DoubleNativeInt>& modqBarrettMu,
+    const std::shared_ptr<Params> paramsQ, const std::vector<DoubleNativeInt>& modqBarrettMu,
     const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
     const std::vector<NativeInteger>& BHatInvModb, const std::vector<NativeInteger>& BHatInvModbPrecon,
     const std::vector<NativeInteger>& BHatModmsk, const NativeInteger& BInvModmsk,
@@ -2708,8 +2707,13 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
     // Output: poly in basis q
 
     this->m_params = paramsQ;
+    size_t sizeQ   = paramsQ->GetParams().size();
+
+    std::vector<NativeInteger> moduliQ(sizeQ);
+    for (size_t i = 0; i < sizeQ; i++) {
+        moduliQ[i] = paramsQ->GetParams()[i]->GetModulus();
+    }
     // FastBaseconv(x, B, q)
-    size_t sizeQ   = moduliQ.size();
     size_t sizeBsk = moduliBsk.size();
 
     uint32_t n = this->GetLength();
@@ -2797,8 +2801,7 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
 #else
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastBaseConvSK(
-    const std::shared_ptr<Params> paramsQ,
-    const std::vector<NativeInteger>& moduliQ, const std::vector<DoubleNativeInt>& modqBarrettMu,
+    const std::shared_ptr<Params> paramsQ, const std::vector<DoubleNativeInt>& modqBarrettMu,
     const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
     const std::vector<NativeInteger>& BHatInvModb, const std::vector<NativeInteger>& BHatInvModbPrecon,
     const std::vector<NativeInteger>& BHatModmsk, const NativeInteger& BInvModmsk,
@@ -2808,8 +2811,15 @@ void DCRTPolyImpl<VecType>::FastBaseConvSK(
     // Output: poly in basis q
 
     this->m_params = paramsQ;
+
+    size_t sizeQ   = paramsQ->GetParams().size();
+
+    std::vector<NativeInteger> moduliQ(sizeQ);
+    for (size_t i = 0; i < sizeQ; i++) {
+        moduliQ[i] = paramsQ->GetParams()[i]->GetModulus();
+    }
+
     // FastBaseconv(x, B, q)
-    size_t sizeQ   = moduliQ.size();
     size_t sizeBsk = moduliBsk.size();
 
     uint32_t n = this->GetLength();
