@@ -52,13 +52,6 @@
 namespace lbcrypto {
 
 //====================================================================================================================
-/*
-TODO (dsuponit): Do we need to keep these pairs cyclOrder / ringDimention and numPrimes / multDepth in Params?
-    We should remove one variable from each pair.Otherwise we will complicate the code by comparing these parameters and
-    making a decision for the user who sets both of them at the same time.it is going to be very ambiguousand will
-    lead us to confusions and bugs.Either way, we must stay with just ONE set of these parameters.It doesn't really matter
-    what 2 of them are chosen as cyclOrder = 2 * ringDimention and numPrimes = multDepth + 1.
-    */
 class Params {
     // NOTE: if any data member (below) is added/removed then update
     // cryptocontextparams-case.cpp and cryptocontextparams-defaults.h
@@ -102,10 +95,6 @@ class Params {
 
     // rescaling technique used in CKKS/BGV
     RescalingTechnique rsTech;
-
-    // cyclotomic order. For power of two case
-    // cyclotomic order = 2 * ring dimension
-    usint cyclOrder;
 
     // number of primes in ciphertext modulus of the scheme
     // The ciphertext modulus should be seen as:
@@ -210,9 +199,6 @@ public:
     RescalingTechnique GetRescalingTechnique() const {
         return rsTech;
     }
-    usint GetCyclotomicOrder() const {
-        return cyclOrder;
-    }
     usint GetNumPrimes() const {
         return numPrimes;
     }
@@ -286,9 +272,6 @@ public:
     }
     void SetRescalingTechnique(RescalingTechnique rsTech0) {
         rsTech = rsTech0;
-    }
-    void SetCyclotomicOrder(usint cyclOrder0) {
-        cyclOrder = cyclOrder0;
     }
     void SetNumPrimes(usint numPrimes0) {
         numPrimes = numPrimes0;

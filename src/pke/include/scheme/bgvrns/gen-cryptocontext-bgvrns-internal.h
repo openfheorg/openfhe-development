@@ -49,9 +49,9 @@ template<typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const CCParams<ContextGeneratorType>& parameters) {
 
     using ParmType = typename Element::Params;
-    using IntType = typename Element::Integer;
+    // using IntType = typename Element::Integer;
 
-    auto ep = std::make_shared<ParmType>(parameters.GetCyclotomicOrder(), parameters.GetNumPrimes(), IntType(0));
+    auto ep = std::make_shared<ParmType>(0, parameters.GetNumPrimes(), 0);
     EncodingParams encodingParams(
         std::make_shared<EncodingParamsImpl>(parameters.GetPlaintextModulus(), parameters.GetBatchSize()));
 
