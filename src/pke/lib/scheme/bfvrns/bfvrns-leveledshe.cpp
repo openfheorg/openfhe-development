@@ -463,7 +463,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
 
       // Converts from the CRT basis {Bsk} to {Q}
       cvMult[i].FastBaseConvSK(
-          cryptoParams->GetModuliQ(),
+          cryptoParams->GetElementParams(),
           cryptoParams->GetModqBarrettMu(),
           cryptoParams->GetModuliBsk(),
           cryptoParams->GetModbskBarrettMu(),
