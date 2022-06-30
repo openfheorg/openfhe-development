@@ -97,20 +97,17 @@ class Params {
     RescalingTechnique rsTech;
 
     // number of primes in ciphertext modulus of the scheme
-    // The ciphertext modulus should be seen as:
-    // Q = q_0 * q_1 * ... * q_n * q'
-    // where q_0 is first prime, and it's number of bits is firstModSize
-    // other q_i have sanme number of bits and is equal to scalingFactorBits
-    // the prime q' is currently not exist, but it will be used in CKKS and BGV schemes as extraBits
-    usint numPrimes;
-
-    // number of primes in ciphertext modulus of the scheme
     usint scaleExp;
 
     // max batch size of messages to be packed in encoding
     usint batchSize;
 
-    // see numPrimes
+    // number of primes in ciphertext modulus of the scheme
+    // The ciphertext modulus should be seen as:
+    // Q = q_0 * q_1 * ... * q_n * q'
+    // where q_0 is first prime, and it's number of bits is firstModSize
+    // other q_i have sanme number of bits and is equal to scalingFactorBits
+    // the prime q' is currently not exist, but it will be used in CKKS and BGV schemes as extraBits
     usint firstModSize;
 
     // see KeySwitchTechnique
@@ -119,7 +116,7 @@ class Params {
     // multiplicative depth of the scheme
     usint multiplicativeDepth;
 
-    // see numPrimes
+    // see firstModSize
     usint scalingFactorBits;  // or dcrtBits
 
     // security level:
@@ -199,9 +196,6 @@ public:
     RescalingTechnique GetRescalingTechnique() const {
         return rsTech;
     }
-    usint GetNumPrimes() const {
-        return numPrimes;
-    }
     usint GetScaleExp() const {
         return scaleExp;
     }
@@ -272,9 +266,6 @@ public:
     }
     void SetRescalingTechnique(RescalingTechnique rsTech0) {
         rsTech = rsTech0;
-    }
-    void SetNumPrimes(usint numPrimes0) {
-        numPrimes = numPrimes0;
     }
     void SetScaleExp(usint scaleExp0) {
         scaleExp = scaleExp0;

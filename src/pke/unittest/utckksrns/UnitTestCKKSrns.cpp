@@ -153,7 +153,6 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS& tes
 }
 //===========================================================================================================
 /***
- * NUMPRIME: Number of towers comprising the ciphertext modulus. MultDepth = NUMPRIME - 1
  * SCALE: Scaling factor bit-length.
  *        Should fit into a machine word, i.e., less than 64.
  * RELIN: The bit decomposition count used in BV relinearization.

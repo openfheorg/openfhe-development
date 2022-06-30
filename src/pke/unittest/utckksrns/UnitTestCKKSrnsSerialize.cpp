@@ -108,8 +108,6 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSSer& tes
 //===========================================================================================================
 /* *
  * ORDER: Cyclotomic order. Must be a power of 2 for CKKS. RING_DIM = ORDER/2
- * NUMPRIME: Number of co-primes comprising the ciphertext modulus.
- *          It is equal to the desired depth of the computation. MultDepth = NUMPRIME - 1
  * SCALE: Scaling parameter 2^p. Also, Size of each co-prime in bits.
  *       Should fit into a machine word, i.e., less than 64.
  * RELIN: The bit decomposition count used in relinearization.

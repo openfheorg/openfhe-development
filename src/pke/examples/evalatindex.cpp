@@ -129,11 +129,10 @@ void BFVrnsEvalAtIndex2n() {
 
 void CKKSEvalAtIndex2n() {
   usint cyclOrder = 8192;
-  usint numPrimes = 3;
 
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetRingDim(cyclOrder / 2);
-  parameters.SetMultiplicativeDepth(numPrimes-1);
+  parameters.SetMultiplicativeDepth(2);
   parameters.SetScalingFactorBits(40);
   parameters.SetRelinWindow(10);
   parameters.SetBatchSize(16);
