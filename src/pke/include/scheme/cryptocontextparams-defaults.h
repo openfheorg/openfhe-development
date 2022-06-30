@@ -63,7 +63,6 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr RescalingTechnique   rsTech              = FLEXIBLEAUTO;
     constexpr usint                firstModSize        = 60;
 #endif
-    constexpr usint                numPrimes           = 0;
     constexpr usint                scaleExp            = 0;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
@@ -91,7 +90,6 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr KeySwitchTechnique   ksTech              = BV;          // set to avoid compiler errors
     constexpr RescalingTechnique   rsTech              = NORESCALE; // set to avoid compiler errors
     constexpr usint                firstModSize        = 60;
-    constexpr usint                numPrimes           = 0;
     constexpr usint                scaleExp            = 0;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
@@ -119,7 +117,6 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
     constexpr RescalingTechnique   rsTech              = FIXEDMANUAL; // set to avoid compiler errors
     constexpr usint                firstModSize        = 0;
-    constexpr usint                numPrimes           = 0;
     constexpr usint                scaleExp            = 0;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;

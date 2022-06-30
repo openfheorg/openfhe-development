@@ -109,16 +109,13 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& 
  * SIZEMODULI: bit-length of the moduli composing the ciphertext modulus (size of each co-prime in bits or
  *             scaling factor bits).
  * 		       Should fit into a machine word, i.e., less than 64.
- * NUMPRIME:   Number of towers comprising the ciphertext modulus. It is equal to the desired depth of the computation.
- *             MultDepth = NUMPRIME - 1
  * RELIN:      The bit decomposition count used in relinearization.
  *  	       Use 0 to go with max possible. Use small values (3-4?) if you need rotations before any multiplications.
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
 constexpr usint RING_DIM = 512;
-constexpr usint NUMPRIME = 4;
-constexpr usint MULT_DEPTH = NUMPRIME - 1;
+constexpr usint MULT_DEPTH = 3;
 constexpr usint MAX_DEPTH = 1;
 constexpr usint SIZEMODULI = 50; // scaling factor bits
 constexpr usint RELIN = 20;
