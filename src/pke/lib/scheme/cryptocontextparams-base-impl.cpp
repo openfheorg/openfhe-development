@@ -57,7 +57,6 @@ namespace lbcrypto {
     SET_TO_SCHEME_DEFAULT(SCHEME, maxDepth);                   \
     SET_TO_SCHEME_DEFAULT(SCHEME, ksTech);                     \
     SET_TO_SCHEME_DEFAULT(SCHEME, rsTech);                     \
-    SET_TO_SCHEME_DEFAULT(SCHEME, cyclOrder);                  \
     SET_TO_SCHEME_DEFAULT(SCHEME, numPrimes);                  \
     SET_TO_SCHEME_DEFAULT(SCHEME, scaleExp);                   \
     SET_TO_SCHEME_DEFAULT(SCHEME, batchSize);                  \
@@ -107,7 +106,6 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; maxDepth: " << obj.maxDepth
         << "; ksTech: " << obj.ksTech
         << "; rsTech: " << obj.rsTech
-        << "; cyclOrder: " << obj.cyclOrder
         << "; numPrimes: " << obj.numPrimes
         << "; scaleExp: " << obj.scaleExp
         << "; batchSize: " << obj.batchSize

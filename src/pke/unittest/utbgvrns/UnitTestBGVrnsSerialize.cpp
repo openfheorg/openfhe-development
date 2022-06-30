@@ -106,7 +106,6 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& 
 }
 //===========================================================================================================
 /***
- * ORDER:      Cyclotomic order. Must be a power of 2 for BGVrns. RING_DIM = cyclOrder / 2
  * SIZEMODULI: bit-length of the moduli composing the ciphertext modulus (size of each co-prime in bits or
  *             scaling factor bits).
  * 		       Should fit into a machine word, i.e., less than 64.
@@ -117,8 +116,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& 
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
-constexpr usint ORDER = 1024;  // 16384;
-constexpr usint RING_DIM = ORDER / 2;
+constexpr usint RING_DIM = 512;
 constexpr usint NUMPRIME = 4;
 constexpr usint MULT_DEPTH = NUMPRIME - 1;
 constexpr usint MAX_DEPTH = 1;
