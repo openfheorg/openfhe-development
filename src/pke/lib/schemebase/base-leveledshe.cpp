@@ -751,20 +751,20 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(
     ConstCiphertext<Element> ciphertext) const {
   Ciphertext<Element> result = ciphertext->CloneDummy();
 
-  std::vector<Element> cv = ciphertext->GetElements();
+  const std::vector<Element> &cv = ciphertext->GetElements();
 
   size_t cResultSize = 2 * cv.size() - 1;
   std::vector<Element> cvSquare(cResultSize);
-
+  Element cvtemp;
   if (cv.size() == 2) {
-    cvSquare[2]  = (cv[1] * cv[1]);
-    cvSquare[0]  = (cv[0] * cv[0]);
-    cvSquare[1] = (cv[0] * cv[1]);
-    cvSquare[1] += cvSquare[1];
+    cvSquare[0]  = cv[0] * cv[0];
+    cvSquare[2]  = cv[1] * cv[1];
+    cvtemp       = cv[0] * cv[1];
+    cvSquare[1]  = cvtemp;
+    cvSquare[1] += cvtemp;
   } else {
     bool isFirstAdd[cResultSize];
     std::fill_n(isFirstAdd, cResultSize, true);
-    Element cvtemp;
 
     for (size_t i = 0; i < cv.size(); i++) {
       for (size_t j = i; j < cv.size(); j++) {
@@ -772,8 +772,9 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(
           if (j == i) {
             cvSquare[i + j] = cv[i] * cv[j];
           } else {
-            cvSquare[i + j] = cv[i] * cv[j];
-            cvSquare[i + j] += cvSquare[i + j];
+            cvtemp = cv[i] * cv[j];
+            cvSquare[i + j] = cvtemp;
+            cvSquare[i + j] += cvtemp;
           }
           isFirstAdd[i + j] = false;
         } else {
