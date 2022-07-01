@@ -50,6 +50,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
 
     using ParmType = typename Element::Params;
     // using IntType = typename Element::Integer;
+    constexpr float assuranceMeasure = 9;
 
     auto ep = std::make_shared<ParmType>(0, 0, 0);
     EncodingParams encodingParams(
@@ -59,7 +60,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
         ep,
         encodingParams,
         parameters.GetStandardDeviation(),
-        parameters.GetAssuranceMeasure(),
+        assuranceMeasure,
         parameters.GetRootHermiteFactor(),
         parameters.GetRelinWindow(),
         parameters.GetMode(),

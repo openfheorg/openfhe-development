@@ -72,10 +72,6 @@ class Params {
     // Currently used in BFV parameter generation
     float rootHermiteFactor;
 
-    // Related to gaussian error parameter
-    // Currently used in BFV parameter generation
-    float assuranceMeasure;
-
     // RLWE means Gaussian secret key distribution
     // OPTIMIZED means Ternary secret key distribution
     // SPARSE means sparse secret key distribution
@@ -96,9 +92,6 @@ class Params {
     // rescaling technique used in CKKS/BGV
     RescalingTechnique rsTech;
 
-    // number of primes in ciphertext modulus of the scheme
-    usint scaleExp;
-
     // max batch size of messages to be packed in encoding
     usint batchSize;
 
@@ -106,7 +99,7 @@ class Params {
     // The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
-    // other q_i have sanme number of bits and is equal to scalingFactorBits
+    // other q_i have same number of bits and is equal to scalingFactorBits
     // the prime q' is currently not exist, but it will be used in CKKS and BGV schemes as extraBits
     usint firstModSize;
 
@@ -181,9 +174,6 @@ public:
     float GetRootHermiteFactor() const {
         return rootHermiteFactor;
     }
-    float GetAssuranceMeasure() const {
-        return assuranceMeasure;
-    }
     MODE GetMode() const {
         return mode;
     }
@@ -195,9 +185,6 @@ public:
     }
     RescalingTechnique GetRescalingTechnique() const {
         return rsTech;
-    }
-    usint GetScaleExp() const {
-        return scaleExp;
     }
     usint GetBatchSize() const {
         return batchSize;
@@ -252,9 +239,6 @@ public:
     void SetRootHermiteFactor(float rootHermiteFactor0) {
         rootHermiteFactor = rootHermiteFactor0;
     }
-    void SetAssuranceMeasure(float assuranceMeasure0) {
-        assuranceMeasure = assuranceMeasure0;
-    }
     void SetMode(MODE mode0) {
         mode = mode0;
     }
@@ -266,9 +250,6 @@ public:
     }
     void SetRescalingTechnique(RescalingTechnique rsTech0) {
         rsTech = rsTech0;
-    }
-    void SetScaleExp(usint scaleExp0) {
-        scaleExp = scaleExp0;
     }
     void SetBatchSize(usint batchSize0) {
         batchSize = batchSize0;

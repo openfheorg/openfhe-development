@@ -52,12 +52,10 @@ namespace lbcrypto {
     SET_TO_SCHEME_DEFAULT(SCHEME, relinWindow);                \
     SET_TO_SCHEME_DEFAULT(SCHEME, standardDeviation);          \
     SET_TO_SCHEME_DEFAULT(SCHEME, rootHermiteFactor);          \
-    SET_TO_SCHEME_DEFAULT(SCHEME, assuranceMeasure);           \
     SET_TO_SCHEME_DEFAULT(SCHEME, mode);                       \
     SET_TO_SCHEME_DEFAULT(SCHEME, maxDepth);                   \
     SET_TO_SCHEME_DEFAULT(SCHEME, ksTech);                     \
     SET_TO_SCHEME_DEFAULT(SCHEME, rsTech);                     \
-    SET_TO_SCHEME_DEFAULT(SCHEME, scaleExp);                   \
     SET_TO_SCHEME_DEFAULT(SCHEME, batchSize);                  \
     SET_TO_SCHEME_DEFAULT(SCHEME, firstModSize);               \
     SET_TO_SCHEME_DEFAULT(SCHEME, numLargeDigits);             \
@@ -100,12 +98,10 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; relinWindow: " << obj.relinWindow
         << "; standardDeviation: " << obj.standardDeviation
         << "; rootHermiteFactor: " << obj.rootHermiteFactor
-        << "; assuranceMeasure: " << obj.assuranceMeasure
         << "; mode: " << obj.mode
         << "; maxDepth: " << obj.maxDepth
         << "; ksTech: " << obj.ksTech
         << "; rsTech: " << obj.rsTech
-        << "; scaleExp: " << obj.scaleExp
         << "; batchSize: " << obj.batchSize
         << "; firstModSize: " << obj.firstModSize
         << "; numLargeDigits: " << obj.numLargeDigits
