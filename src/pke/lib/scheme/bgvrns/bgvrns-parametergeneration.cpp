@@ -215,6 +215,7 @@ void ParameterGenerationBGVRNS::InitializeFloddingDgg(
 
   double B_e = sqrt(alpha)*sigma;
   uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
+  double Bkey = (cryptoParamsBGVRNS->GetMode() == RLWE) ? sigma * sqrt(alpha) : 1;
 
   if (PREMode == FIXED_NOISE_HRA) {
     auto &dggflooding = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
@@ -232,7 +233,7 @@ void ParameterGenerationBGVRNS::InitializeFloddingDgg(
 
     if (ksTech == BV) {
       if (r > 0) {
-        noise_param = pow(2,stat_sec)* 3 * (numPrimes + 1) * (log2q/r+1) * sqrt(ringDimension) * (pow(2,r)-1) * B_e;
+        noise_param = pow(2,stat_sec) * (1 + 2 * Bkey) * (numPrimes + 1) * (log2q/r+1) * sqrt(ringDimension) * (pow(2,r)-1) * B_e;
       } else {
         OPENFHE_THROW(config_error, "Relinwindow value cannot be 0 for BV keyswitching");
       }
@@ -240,9 +241,9 @@ void ParameterGenerationBGVRNS::InitializeFloddingDgg(
       if (r == 0) {
         double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
         int numDigits = cryptoParamsBGVRNS->GetNumPartQ();
-        noise_param = numTowersPerDigit * numDigits * sqrt(ringDimension) * B_e;
+        noise_param = numTowersPerDigit * numDigits * sqrt(ringDimension) * B_e * (1 + 2 * Bkey);
         noise_param += auxBits * (1 + sqrt(ringDimension));
-        noise_param = pow(2,stat_sec)* 3 * noise_param;
+        noise_param = pow(2,stat_sec) * noise_param;
       } else {
         OPENFHE_THROW(config_error, "Relinwindow value can be non-zero only for BV keyswitching");
       }
