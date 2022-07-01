@@ -55,6 +55,7 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 #include "cryptocontext.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "scheme/bfvrns/bfvrns-parametergeneration.h"
+#include "scheme/scheme-utils.h"
 
 namespace lbcrypto {
 
@@ -63,7 +64,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     int32_t evalAddCount, int32_t evalMultCount,
     int32_t keySwitchCount, size_t dcrtBits,
     uint32_t nCustom,
-    uint32_t numPartQ,
+    uint32_t numDigits,
     KeySwitchTechnique ksTech,
     RescalingTechnique rsTech,
     EncryptionTechnique encTech,
@@ -87,7 +88,6 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   uint32_t relinWindow = cryptoParamsBFVRNS->GetRelinWindow();
   SecurityLevel stdLevel = cryptoParamsBFVRNS->GetStdLevel();
   KeySwitchTechnique rsTechnique = cryptoParamsBFVRNS->GetKeySwitchTechnique();
-  uint32_t k = cryptoParamsBFVRNS->GetNumPerPartQ();
 
   // Bound of the Gaussian error polynomial
   double Berr = sigma * sqrt(alpha);
@@ -125,9 +125,14 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     }
   };
 
-  auto noiseKS = [&](uint32_t n, double logqPrev, double w) -> double {
-	if (rsTechnique == HYBRID)
-      return  k * ( numPartQ * delta(n) * Berr + delta(n) * Bkey + 1.0 )/2;
+  auto noiseKS = [&](uint32_t n, double logqPrev, double w, bool mult) -> double {
+	if ((rsTechnique == HYBRID) && (!mult))
+      return  (delta(n) * Berr + delta(n) * Bkey + 1.0 )/2;
+	else if ((rsTechnique == HYBRID) && (mult))
+	// conservative estimate for HYBRID to avoid the use of method of
+	// iterative approximations; we do not know the number
+	// of moduli at this point and use an upper bound for numDigits
+      return  (evalMultCount + 1) * delta(n) * Berr;
 	else
 	  return delta(n) *
               (floor(logqPrev / (log(2) * dcrtBits)) + 1) * w * Berr;
@@ -187,7 +192,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     // Correctness constraint
     auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
       return log(
-          p * (4 * (Vnorm(n) + keySwitchCount * noiseKS(n, logqPrev, w)) +
+          p * (4 * (Vnorm(n) + keySwitchCount * noiseKS(n, logqPrev, w, false)) +
                p));
     };
 
@@ -252,7 +257,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     // function used in the EvalMult constraint
     auto C2 = [&](uint32_t n, double logqPrev) -> double {
       return delta(n) * delta(n) * Bkey * Bkey / 2.0 +
-    		  noiseKS(n, logqPrev, w);
+    		  noiseKS(n, logqPrev, w, true);
     };
 
     // main correctness constraint
@@ -347,6 +352,8 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
         encodingParams->GetPlaintextModulus(), batchSize));
     cryptoParamsBFVRNS->SetEncodingParams(encodingParamsNew);
   }
+
+  uint32_t numPartQ = ComputeNumLargeDigits(numDigits, sizeQ - 1);
 
   cryptoParamsBFVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, 60, 0);
 

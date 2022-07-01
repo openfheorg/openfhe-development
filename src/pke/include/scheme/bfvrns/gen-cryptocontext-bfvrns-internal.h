@@ -94,8 +94,6 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
     // for BFV scheme noise scale is always set to 1
     params->SetNoiseScale(1);
 
-	uint32_t numLargeDigits = ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
-
 	auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
 	scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
 	scheme->ParamsGenBFVRNS(
@@ -105,7 +103,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 		parameters.GetKeySwitchCount(),
 		parameters.GetFirstModSize(),
 		parameters.GetRingDim(),
-		numLargeDigits,
+		parameters.GetNumLargeDigits(),
 		parameters.GetKeySwitchTechnique(),
 		RescalingTechnique::FIXEDMANUAL,
 		EncryptionTechnique::STANDARD,
