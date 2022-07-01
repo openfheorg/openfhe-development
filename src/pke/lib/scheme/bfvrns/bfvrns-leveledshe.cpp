@@ -150,7 +150,7 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   // get an estimate of the error q / (4t)
   double loge = logq / log(2) - 2 - log2(p);
 
-  double logExtra = keySwitch ? log2(noiseKS(n, logqPrev, w)) : log2(delta(n));
+  double logExtra = keySwitch ? log2(noiseKS(n, logq, w)) : log2(delta(n));
 
   // error should be at least 2^10 * delta(n) larger than the levels we are dropping
   int32_t levels = std::floor((loge - 30 - logExtra) / dcrtBits);
