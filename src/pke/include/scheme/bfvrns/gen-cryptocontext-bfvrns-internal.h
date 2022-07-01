@@ -51,6 +51,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 
     using ParmType = typename Element::Params;
     using IntType = typename Element::Integer;
+	constexpr float assuranceMeasure = 36;
 
 	auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
 	EncodingParams encodingParams(
@@ -62,7 +63,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 //			ep,
 //			encodingParams,
 //			parameters.GetStandardDeviation(),
-//			parameters.GetAssuranceMeasure(),
+//			assuranceMeasure,
 //			parameters.GetRootHermiteFactor(),  // TODO (dsuponit): find a way to get securityLevel of different types
 //			parameters.GetRelinWindow(),
 //			parameters.GetMode(),
@@ -71,7 +72,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 //			ep,
 //			encodingParams,
 //			parameters.GetStandardDeviation(),
-//			parameters.GetAssuranceMeasure(),
+//			assuranceMeasure,
 //			parameters.GetSecurityLevel(),
 //			parameters.GetRelinWindow(),
 //			parameters.GetMode(),
@@ -82,7 +83,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 			ep,
 			encodingParams,
 			parameters.GetStandardDeviation(),
-			parameters.GetAssuranceMeasure(),
+			assuranceMeasure,
 			parameters.GetRootHermiteFactor(),  // TODO (dsuponit): find a way to get securityLevel of different types
 			parameters.GetRelinWindow(),
 			parameters.GetMode(),

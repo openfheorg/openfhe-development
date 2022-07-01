@@ -51,7 +51,6 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr usint                relinWindow         = 0;
     constexpr float                standardDeviation   = 3.19;
     constexpr float                rootHermiteFactor   = 1.006;
-    constexpr float                assuranceMeasure    = 9.0;
     constexpr MODE                 mode                = OPTIMIZED;
     constexpr int                  maxDepth            = 2;
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
@@ -63,7 +62,6 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr RescalingTechnique   rsTech              = FLEXIBLEAUTO;
     constexpr usint                firstModSize        = 60;
 #endif
-    constexpr usint                scaleExp            = 0;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
     constexpr usint                multiplicativeDepth = 1;
@@ -84,13 +82,11 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr usint                relinWindow         = 0;
     constexpr float                standardDeviation   = 3.19;
     constexpr float                rootHermiteFactor   = 0.0;
-    constexpr float                assuranceMeasure    = 36.0;
     constexpr MODE                 mode                = OPTIMIZED;
     constexpr int                  maxDepth            = 2;
     constexpr KeySwitchTechnique   ksTech              = BV;          // set to avoid compiler errors
     constexpr RescalingTechnique   rsTech              = NORESCALE; // set to avoid compiler errors
     constexpr usint                firstModSize        = 60;
-    constexpr usint                scaleExp            = 0;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
     constexpr usint                multiplicativeDepth = 1;
@@ -111,13 +107,11 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr usint                relinWindow         = 0;
     constexpr float                standardDeviation   = 3.19;
     constexpr float                rootHermiteFactor   = 1.006;
-    constexpr float                assuranceMeasure    = 9.0;
     constexpr MODE                 mode                = OPTIMIZED;
     constexpr int                  maxDepth            = 2;
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
     constexpr RescalingTechnique   rsTech              = FIXEDMANUAL; // set to avoid compiler errors
     constexpr usint                firstModSize        = 0;
-    constexpr usint                scaleExp            = 0;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
     constexpr usint                multiplicativeDepth = 1;
