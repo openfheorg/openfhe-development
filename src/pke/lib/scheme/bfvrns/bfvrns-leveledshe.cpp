@@ -484,7 +484,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(
   }
 
   ciphertextMult->SetElements(std::move(cvMult));
-  ciphertextMult->SetDepth((ciphertext1->GetDepth() + ciphertext2->GetDepth()));
+  ciphertextMult->SetDepth(std::max(ciphertext1->GetDepth(), ciphertext2->GetDepth()) + 1);
 
   return ciphertextMult;
 }
