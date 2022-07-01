@@ -138,11 +138,12 @@ class SchemeBase {
                          enum KeySwitchTechnique ksTech,
                          enum RescalingTechnique rsTech,
                          enum EncryptionTechnique encTech,
-                         enum MultiplicationTechnique multTech) const {
+                         enum MultiplicationTechnique multTech,
+                         enum ProxyReEncryptionMode PREMode) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, evalMultCount,
                                     keySwitchCount, dcrtBits, n, numPartQ,
-                                    ksTech, rsTech, encTech, multTech);
+                                    ksTech, rsTech, encTech, multTech, PREMode);
     }
     OPENFHE_THROW(not_implemented_error,
                    "Parameter generation operation has not been implemented");
@@ -159,11 +160,12 @@ class SchemeBase {
                          enum KeySwitchTechnique ksTech,
                          enum RescalingTechnique rsTech,
                          enum EncryptionTechnique encTech,
-                         enum MultiplicationTechnique multTech) const {
+                         enum MultiplicationTechnique multTech,
+                         enum ProxyReEncryptionMode PREMode) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes,
                                     scaleExp, relinWindow, mode, firstModSize, numPartQ,
-                                    ksTech, rsTech, encTech, multTech);
+                                    ksTech, rsTech, encTech, multTech, PREMode);
     }
     OPENFHE_THROW(not_implemented_error,
                    "Parameter generation operation has not been implemented "

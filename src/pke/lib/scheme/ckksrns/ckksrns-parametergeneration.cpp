@@ -72,7 +72,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
           KeySwitchTechnique ksTech,
           RescalingTechnique rsTech,
           EncryptionTechnique encTech,
-          MultiplicationTechnique multTech) const {
+          MultiplicationTechnique multTech,
+          ProxyReEncryptionMode PREMode) const {
+
+  if (PREMode != INDCPA) {
+      OPENFHE_THROW(not_available_error, "HRA modes for PRE with CKKSRNS not implemented yet");
+  }
 
   usint extraModSize = 0;
   if (rsTech == FLEXIBLEAUTOEXT) {

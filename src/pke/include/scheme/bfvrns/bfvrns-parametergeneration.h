@@ -54,7 +54,8 @@ public:
                  KeySwitchTechnique ksTech,
                  RescalingTechnique rsTech,
                  EncryptionTechnique encTech,
-                 MultiplicationTechnique multTech) const override;
+                 MultiplicationTechnique multTech,
+                 ProxyReEncryptionMode PREMode) const override;
 
   /////////////////////////////////////
   // SERIALIZATION

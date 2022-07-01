@@ -107,7 +107,8 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 		parameters.GetKeySwitchTechnique(),
 		RescalingTechnique::FIXEDMANUAL,
 		EncryptionTechnique::STANDARD,
-		parameters.GetMultiplicationTechnique());
+		parameters.GetMultiplicationTechnique(),
+		parameters.GetPREMode());
 
 	auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
 	cc->setSchemeId("BFVRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::BFVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string

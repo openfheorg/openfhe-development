@@ -69,6 +69,7 @@ namespace lbcrypto {
     SET_TO_SCHEME_DEFAULT(SCHEME, encryptionTechnique);        \
     SET_TO_SCHEME_DEFAULT(SCHEME, multiplicationTechnique);    \
     SET_TO_SCHEME_DEFAULT(SCHEME, multiHopQModulusLowerBound); \
+    SET_TO_SCHEME_DEFAULT(SCHEME, PREMode);                    \
   }
 void Params::SetToDefaults(SCHEME scheme) {
   switch (scheme) {
@@ -114,7 +115,8 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; keySwitchCount: " << obj.keySwitchCount
         << "; encryptionTechnique: " << obj.encryptionTechnique
         << "; multiplicationTechnique: " << obj.multiplicationTechnique
-        << "; multiHopQModulusLowerBound: " << obj.multiHopQModulusLowerBound;
+        << "; multiHopQModulusLowerBound: " << obj.multiHopQModulusLowerBound
+        << "; PREMode: " << obj.PREMode;
 
   return os;
 }

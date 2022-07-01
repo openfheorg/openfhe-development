@@ -1,31 +1,33 @@
-// @file pre.cpp - Example of Proxy Re-Encryption.
-// @author TPOC: contact@palisade-crypto.org
+//==================================================================================
+// BSD 2-Clause License
 //
-// @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
+// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+//
 // All rights reserved.
+//
+// Author TPOC: contact@openfhe.org
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 1. Redistributions of source code must retain the above copyright notice,
-// this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-// this list of conditions and the following disclaimer in the documentation
-// and/or other materials provided with the distribution. THIS SOFTWARE IS
-// PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
-// IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-// EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// @section DESCRIPTION
-// Demo software for multiparty proxy reencryption operations for three different security modes -
-// IND_CPA_SECURE_PARAMS, BOUNDED_HRA_SECURE_PARAMS, PROVABLE_HRA_SECURE_PARAMS.
-// Default parameters set for each security mode is chosen using the multihop_params.py script 
-// to allow upto a minimum of 10 hops.
+// 1. Redistributions of source code must retain the above copyright notice, this
+//    list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//==================================================================================
 
 #include "benchmark/benchmark.h"
 
@@ -57,8 +59,7 @@ void usage() {
 
 //Default set to IND-CPA parameters
 //The parameters ring_dimension, relinWindow, qmodulus are chosen for a plaintext modulus of 2 to allow upto 10 hops 
-//without breaking decryption satisfying theoretical constraint inequalities using the python script multihop_params.py
-//changing the plaintext modulus would require running the python script to update these other parameters for correctness.
+//without breaking decryption. Changing the plaintext modulus would require updating these other parameters for correctness.
 lbcrypto::CCParams<lbcrypto::CryptoContextBGVRNS> parameters;
 
 int plaintextModulus = 2;

@@ -77,7 +77,8 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
       enum KeySwitchTechnique ksTech,
       enum RescalingTechnique rsTech,
       enum EncryptionTechnique encTech,
-      enum MultiplicationTechnique multTech) const override {
+      enum MultiplicationTechnique multTech,
+      enum ProxyReEncryptionMode PREMode) const override {
     OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");
@@ -111,7 +112,8 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
       enum KeySwitchTechnique ksTech,
       enum RescalingTechnique rsTech,
       enum EncryptionTechnique encTech,
-      enum MultiplicationTechnique multTech) const override {
+      enum MultiplicationTechnique multTech,
+      enum ProxyReEncryptionMode PREMode) const override {
     OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");

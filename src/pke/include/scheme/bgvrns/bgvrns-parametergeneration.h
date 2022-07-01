@@ -113,6 +113,12 @@ public:
                      enum KeySwitchTechnique ksTech,
                      usint numPrimes) const;
 
+  void InitializeFloddingDgg(
+    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, 
+    usint numPrimes,
+    enum KeySwitchTechnique ksTech,
+    enum ProxyReEncryptionMode PREMode) const;
+
   /////////////////////////////////////
   // SERIALIZATION
   /////////////////////////////////////
