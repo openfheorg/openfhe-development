@@ -282,6 +282,9 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
   virtual Ciphertext<DCRTPoly> MultByMonomial(
       ConstCiphertext<DCRTPoly> ciphertext, usint power) const override;
 
+  virtual void MultByMonomialInPlace(
+      Ciphertext<DCRTPoly> &ciphertext, usint power) const override;
+
   /////////////////////////////////////////
   // SHE AUTOMORPHISM
   /////////////////////////////////////////

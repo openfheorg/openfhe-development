@@ -1083,6 +1083,17 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "MultByMonomial operation has not been enabled");
   }
 
+  virtual void MultByMonomialInPlace(
+      Ciphertext<Element> &ciphertext, usint power) const {
+    if (m_LeveledSHE) {
+      if (!ciphertext)
+        OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
+      m_LeveledSHE->MultByMonomialInPlace(ciphertext, power);
+      return;
+    }
+    OPENFHE_THROW(config_error, "MultByMonomialInPlace operation has not been enabled");
+  }
+
   // TODO (dsuponit): commented the code below to avoid compiler errors
   //virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext,
   //                                     const NativeInteger &constant) const {

@@ -470,7 +470,12 @@ class LeveledSHEBase {
       ConstCiphertext<Element> ciphertext, usint power) const {
     OPENFHE_THROW(not_implemented_error,
                    "MultByMonomial is not implemented for this scheme");
+  }
 
+  virtual void MultByMonomialInPlace(
+      Ciphertext<Element> &ciphertext, usint power) const {
+    OPENFHE_THROW(not_implemented_error,
+                   "MultByMonomialInPlace is not implemented for this scheme");
   }
 
   virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext,

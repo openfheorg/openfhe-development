@@ -245,7 +245,7 @@ bool CKKSPackedEncoding::Encode() {
   usint slots = this->GetSlots();
   std::vector<std::complex<double>> inverse = this->GetCKKSPackedValue();
   // clears all imaginary values as CKKS for complex numbers
-  for (size_t i = 0; i < inverse.size(); i++) inverse[i].imag(0.0);
+//  for (size_t i = 0; i < inverse.size(); i++) inverse[i].imag(0.0);
 
   inverse.resize(slots);
   if (this->typeFlag == IsDCRTPoly) {

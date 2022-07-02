@@ -571,32 +571,35 @@ void LeveledSHERNS::EvalMultMutableInPlace(
 
 Ciphertext<DCRTPoly> LeveledSHERNS::MultByMonomial(
     ConstCiphertext<DCRTPoly> ciphertext, usint power) const {
+  Ciphertext<DCRTPoly> result = ciphertext->Clone();
+  MultByMonomialInPlace(result, power);
+  return result;
+}
 
-  const auto elemParams = ciphertext->GetElements()[0].GetParams();
+void LeveledSHERNS::MultByMonomialInPlace(
+    Ciphertext<DCRTPoly> &ciphertext, usint power) const {
+
+  std::vector<DCRTPoly> &cv = ciphertext->GetElements();
+  const auto elemParams = cv[0].GetParams();
   auto paramsNative = elemParams->GetParams()[0];
-  usint n = elemParams->GetRingDimension();
-  usint m = 2*n;
+  usint N = elemParams->GetRingDimension();
+  usint M = 2 * N;
 
   NativePoly monomial(paramsNative, Format::COEFFICIENT, true);
 
-  usint powerReduced = power % m;
-  usint index = power % n;
-  if (powerReduced < n)
-    monomial[index] = NativeInteger(1);
-  else
-    monomial[index] = paramsNative->GetModulus() - NativeInteger(1);
+  usint powerReduced = power % M;
+  usint index = power % N;
+  monomial[index] = powerReduced < N ?
+      NativeInteger(1) :
+      paramsNative->GetModulus() - NativeInteger(1);
 
-  DCRTPoly monomialDCRT(elemParams,Format::COEFFICIENT, true);
+  DCRTPoly monomialDCRT(elemParams, Format::COEFFICIENT, true);
   monomialDCRT = monomial;
   monomialDCRT.SetFormat(Format::EVALUATION);
 
-  std::vector<DCRTPoly> resultDCRT(ciphertext->GetElements().size());
-  for (usint i = 0; i < ciphertext->GetElements().size(); i++)
-    resultDCRT[i] = ciphertext->GetElements()[i]*monomialDCRT;
-
-  Ciphertext<DCRTPoly> result = ciphertext->CloneDummy();
-  result->SetElements(resultDCRT);
-  return result;
+  for (usint i = 0; i < ciphertext->GetElements().size(); i++) {
+    cv[i] *= monomialDCRT;
+  }
 }
 
 /////////////////////////////////////////

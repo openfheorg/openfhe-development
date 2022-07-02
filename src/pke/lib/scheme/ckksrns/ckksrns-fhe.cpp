@@ -132,13 +132,9 @@ void FHECKKSRNS::EvalBootstrapPrecompute(
 
   unsigned __int128 factor = ((unsigned __int128)1 << ((uint32_t)std::round(std::log2(qDouble))));
   double pre = qDouble / factor;
-  std::cerr << pre << std::endl;
   double k = (cryptoParams->GetMode() == SPARSE) ? K_SPARSE : 1.0;
-  std::cerr << k << std::endl;
   double scaleEnc = pre / k;
-  std::cerr << scaleEnc << std::endl;
   double scaleDec = 1 / pre;
-  std::cerr << scaleDec << std::endl;
 
   if (debugFlag == 0) {
     if (   (precom.m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] == 1)
@@ -202,8 +198,6 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(
 
 std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKeyGen(
     const PrivateKey<DCRTPoly> privateKey, int32_t bootstrapFlag) {
-  //TODO temporary added
-  this->secretKey = privateKey;
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           privateKey->GetCryptoParameters());
@@ -242,7 +236,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
-    CKKSBootstrapMethod method, ConstCiphertext<DCRTPoly> ciphertext1) const {
+    CKKSBootstrapMethod method, ConstCiphertext<DCRTPoly> ciphertext) const {
   bool isEvalBTLinear = (method == EvalBTLinearMethod);
 
 #ifdef BOOTSTRAPTIMING
@@ -252,7 +246,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   double timeDecode(0.0);
 #endif
 
-  Ciphertext<DCRTPoly> ciphertext = ciphertext1->Clone();
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext->GetCryptoParameters());
@@ -261,10 +254,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   uint32_t M = cc->GetCyclotomicOrder();
   size_t N = cc->GetRingDimension();
 
-  auto algo = cc->GetScheme();
-  algo->ModReduceInternalInPlace(ciphertext, ciphertext->GetDepth() - 1);
-
-  NativeInteger q = cryptoParams->GetElementParams()->GetParams()[0]->GetModulus().ConvertToInt();
+  auto elementParams = cryptoParams->GetElementParams();
+  NativeInteger q = elementParams->GetParams()[0]->GetModulus().ConvertToInt();
   double qDouble = q.ConvertToDouble();
 
   const auto p = cryptoParams->GetPlaintextModulus();
@@ -276,26 +267,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 
   double pre = 1. / post;
   uint64_t scalar = std::llround(post);
-  Plaintext ptxtFused;
-
-  cc->Decrypt(secretKey, ciphertext, &ptxtFused);
-  ptxtFused->SetLength(16);
-  std::cerr << "cipher: " << ptxtFused << std::endl;
-  {
-    double max = 0.;
-    double min = 0.;
-    for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-      if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-      if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-    }
-    std::cerr << "Max: " << max << std::endl;
-    std::cerr << "Min: " << min << std::endl;
-  }
-  std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-  std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-  std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-  std::cerr << "------------------------------------------------" << std::endl;
-  std::cerr << "Diff: " << ptxtFused->GetScalingFactor() - precom.m_U0hatTPreFFT[3][3]->GetScalingFactor() << std::endl;
 
   //------------------------------------------------------------------------------
   // RAISING THE MODULUS
@@ -308,13 +279,16 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   // Increasing the modulus
 
   Ciphertext<DCRTPoly> raised = ciphertext->Clone();
-  AdjustCiphertext(ciphertext, correction);
-  auto ctxtDCRT = ciphertext->GetElements();
+  auto algo = cc->GetScheme();
+  algo->ModReduceInternalInPlace(raised, raised->GetDepth() - 1);
+
+  AdjustCiphertext(raised, correction);
+  auto ctxtDCRT = raised->GetElements();
 
   // We only use the level 0 ciphertext here. All other towers are automatically ignored to make
   // CKKS bootstrapping faster.
   for (size_t i = 0; i < ctxtDCRT.size(); i++) {
-    DCRTPoly temp(cryptoParams->GetElementParams(), COEFFICIENT);
+    DCRTPoly temp(elementParams, COEFFICIENT);
     ctxtDCRT[i].SetFormat(COEFFICIENT);
     temp = ctxtDCRT[i].GetElementAtIndex(0);
     temp.SetFormat(EVALUATION);
@@ -322,30 +296,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   }
 
   raised->SetElements(ctxtDCRT);
-  raised->SetDepth(ciphertext->GetDepth());
-  raised->SetScalingFactor(ciphertext->GetScalingFactor());
-  raised->SetLevel(cryptoParams->GetElementParams()->GetParams().size() -
-    ctxtDCRT[0].GetNumOfElements());
-
-  cc->Decrypt(secretKey, raised, &ptxtFused);
-   ptxtFused->SetLength(16);
-   std::cerr << "raised: " << ptxtFused << std::endl;
-   {
-     double max = 0.;
-     double min = 0.;
-     for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-       if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-       if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-     }
-     std::cerr << "Max: " << max << std::endl;
-     std::cerr << "Min: " << min << std::endl;
-   }
-   std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-   std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-   std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-   std::cerr << "------------------------------------------------" << std::endl;
-   std::cerr << "Diff: " << ptxtFused->GetScalingFactor() - precom.m_U0hatTPreFFT[3][3]->GetScalingFactor() << std::endl;
-
+  raised->SetLevel(elementParams->GetParams().size() - ctxtDCRT[0].GetNumOfElements());
 
 #ifdef BOOTSTRAPTIMING
   std::cerr << "\nNumber of levels at the beginning of bootstrapping: " << raised->GetElements()[0].GetNumOfElements() - 1 << std::endl;
@@ -392,8 +343,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     // FULLY PACKED CASE
     //------------------------------------------------------------------------------
 
-    std::vector<Ciphertext<DCRTPoly>> ctxtEnc(2);
-
 #ifdef BOOTSTRAPTIMING
     TIC(t);
 #endif
@@ -405,144 +354,16 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     // need to call internal modular reduction so it also works for FLEXIBLEAUTO
     algo->ModReduceInternalInPlace(raised);
 
-    cc->Decrypt(secretKey, raised, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "raised: " << ptxtFused << std::endl;
-    {
-      double max = 0.;
-      double min = 0.;
-      for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-        if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-        if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-      }
-      std::cerr << "Max: " << max << std::endl;
-      std::cerr << "Min: " << min << std::endl;
-    }
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "Diff: " << ptxtFused->GetScalingFactor() - precom.m_U0hatTPreFFT[3][3]->GetScalingFactor() << std::endl;
-
     // only one linear transform is needed as the other one can be derived
-    auto ctxtEnc0 = (isEvalBTLinear) ?
+    auto ctxtEnc = (isEvalBTLinear) ?
       EvalLTWithPrecomp(precom.m_U0hatTPre, raised) :
       EvalBTWithPrecompEncoding(precom.m_U0hatTPreFFT, raised);
-    auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc0->GetKeyTag());
-    auto ctxtEnc0imag = algo->MultByMonomial(ctxtEnc0, 3 * M / 4);
 
-    cc->Decrypt(secretKey, ctxtEnc0, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "ctxtEnc0.real: " << ptxtFused << std::endl;
-    {
-      double max = 0.;
-      double min = 0.;
-      for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-        if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-        if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-      }
-      std::cerr << "Max: " << max << std::endl;
-      std::cerr << "Min: " << min << std::endl;
-    }
-    cc->Decrypt(secretKey, ctxtEnc0imag, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "ctxtEnc0.imag: " << ptxtFused << std::endl;
-    {
-      double max = 0.;
-      double min = 0.;
-      for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-        if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-        if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-      }
-      std::cerr << "Max: " << max << std::endl;
-      std::cerr << "Min: " << min << std::endl;
-    }
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-
-    auto conj = Conjugate(ctxtEnc0, evalKeyMap);
-    auto conjimag = algo->MultByMonomial(conj, 3 * M / 4);
-
-    cc->Decrypt(secretKey, conj, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "conj.real: " << ptxtFused << std::endl;
-    cc->Decrypt(secretKey, conjimag, &ptxtFused);
-    {
-      double max = 0.;
-      double min = 0.;
-      for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-        if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-        if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-      }
-      std::cerr << "Max: " << max << std::endl;
-      std::cerr << "Min: " << min << std::endl;
-    }
-    ptxtFused->SetLength(16);
-    std::cerr << "conj.imag: " << ptxtFused << std::endl;
-    {
-      double max = 0.;
-      double min = 0.;
-      for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-        if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-        if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-      }
-      std::cerr << "Max: " << max << std::endl;
-      std::cerr << "Min: " << min << std::endl;
-    }
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-
-    ctxtEnc[0] = cc->EvalAdd(ctxtEnc0, conj);
-
-    auto ctxtEnc1 = cc->EvalSub(ctxtEnc0, conj);
-    auto ctxtEnc1imag = algo->MultByMonomial(ctxtEnc1, 3 * M / 4);
-
-    cc->Decrypt(secretKey, ctxtEnc1, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "ctxtEnc1.real: " << ptxtFused << std::endl;
-    {
-      double max = 0.;
-      double min = 0.;
-      for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-        if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-        if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-      }
-      std::cerr << "Max: " << max << std::endl;
-      std::cerr << "Min: " << min << std::endl;
-    }
-    cc->Decrypt(secretKey, ctxtEnc1imag, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "ctxtEnc1.imag: " << ptxtFused << std::endl;
-    {
-      double max = 0.;
-      double min = 0.;
-      for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-        if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-        if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-      }
-      std::cerr << "Max: " << max << std::endl;
-      std::cerr << "Min: " << min << std::endl;
-    }
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-
-    ctxtEnc[1] = algo->MultByMonomial(ctxtEnc1, 3 * M / 4);
-
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
+    auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
+    auto conj = Conjugate(ctxtEnc, evalKeyMap);
+    auto ctxtEncI = cc->EvalSub(ctxtEnc, conj);
+    cc->EvalAddInPlace(ctxtEnc, conj);
+    algo->MultByMonomialInPlace(ctxtEncI, 3 * M / 4);
 
 //    if (isEvalBTLinear) {
 //      if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
@@ -554,165 +375,25 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
 //      }
 //    }
 
-#ifdef BOOTSTRAPTIMING
-    timeEncode = TOC(t);
-
-    std::cerr << "\nEncoding time: " << timeEncode/1000.0 << " s" << std::endl;
-
-    // Running Approximate Modulo Reduction
-
-    TIC(t);
-#endif
-
     //------------------------------------------------------------------------------
     // Running Approximate Mod Reduction
     //------------------------------------------------------------------------------
 
-    for (usint i = 0; i < 2; ++i) {
-      auto conji = algo->MultByMonomial(ctxtEnc[i], 3 * M / 4);
-      cc->Decrypt(secretKey, ctxtEnc[i], &ptxtFused);
-      std::cerr << "ctxtEnc[i].real: " << std::endl;
-      {
-        double max = 0.;
-        double min = 0.;
-        bool posvals[100];
-        bool negvals[100];
-        for (int i = 0; i < 100; ++i) {
-          posvals[i] = false;
-          negvals[i] = false;
-        }
-        for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-          if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-          if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-          int val = (int)(std::round(4. * ptxtFused->GetCKKSPackedValue()[i].real() / 0.0714286));
-          if (val >= 0 && val < 100) posvals[val] = true;
-          if (val < 0 && -val < 100) negvals[-val] = true;
-        }
-        std::cerr << "Max: " << max << std::endl;
-        std::cerr << "Min: " << min << std::endl;
-        for (int i = 0; i < 100; ++i) {
-          if (posvals[i]) std::cerr << i << ", ";
-          if (negvals[i]) std::cerr << -i << ", ";
-        }
-        std::cerr << std::endl;
-      }
-      ptxtFused->SetLength(16);
-      std::cerr << "ctxtEnc[i].real: " << i << ": " << ptxtFused << std::endl;
-      cc->Decrypt(secretKey, conji, &ptxtFused);
-      std::cerr << "ctxtEnc[i].imag: " << std::endl;
-      {
-        double max = 0.;
-        double min = 0.;
-        bool posvals[100];
-        bool negvals[100];
-        for (int i = 0; i < 100; ++i) {
-          posvals[i] = false;
-          negvals[i] = false;
-        }
-        for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-          if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-          if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-          int val = (int)(std::round(4. * ptxtFused->GetCKKSPackedValue()[i].real() / 0.0714286));
-          if (val >= 0 && val < 100) posvals[val] = true;
-          if (val < 0 && -val < 100) negvals[-val] = true;
-        }
-        std::cerr << "Max: " << max << std::endl;
-        std::cerr << "Min: " << min << std::endl;
+    // Evaluate Chebyshev series for the sine wave
+    ctxtEnc = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
+    ctxtEncI = cc->EvalChebyshevSeries(ctxtEncI, coefficients, coeffLowerBound, coeffUpperBound);
 
-        for (int i = 0; i < 100; ++i) {
-          if (posvals[i]) std::cerr << i << ", ";
-          if (negvals[i]) std::cerr << -i << ", ";
-        }
-        std::cerr << std::endl;
-      }
-      ptxtFused->SetLength(16);
-      std::cerr << "ctxtEnc[i].imag: " << i << ": " << ptxtFused << std::endl;
-      {
-        double max = 0.;
-        double min = 0.;
-        for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-          if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-          if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-        }
-        std::cerr << "Max: " << max << std::endl;
-        std::cerr << "Min: " << min << std::endl;
-      }
-      std::cerr << "------------------------------------------------" << std::endl;
-      std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-      std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-      std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-      std::cerr << "------------------------------------------------" << std::endl;
-      // Evaluate Chebyshev series for the sine wave
-      ctxtEnc[i] = cc->EvalChebyshevSeries(ctxtEnc[i], coefficients, coeffLowerBound, coeffUpperBound);
-
-      // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
-      if (cryptoParams->GetMode() == OPTIMIZED) {
-        ApplyDoubleAngleIterations(ctxtEnc[i]);
-      }
-
-      conji = algo->MultByMonomial(ctxtEnc[i], 3 * M / 4);
-
-      cc->Decrypt(secretKey, ctxtEnc[i], &ptxtFused);
-      ptxtFused->SetLength(16);
-      std::cerr << "CHEBYSHEV(ctxtEnc[i].real): " << i << ": " << ptxtFused << std::endl;
-      {
-        double max = 0.;
-        double min = 0.;
-        for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-          if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-          if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-        }
-        std::cerr << "Max: " << max << std::endl;
-        std::cerr << "Min: " << min << std::endl;
-      }
-      cc->Decrypt(secretKey, conji, &ptxtFused);
-      ptxtFused->SetLength(16);
-      std::cerr << "CHEBYSHEV(ctxtEnc[i].imag): " << i << ": " << ptxtFused << std::endl;
-      {
-        double max = 0.;
-        double min = 0.;
-        for (usint i = 0; i < ptxtFused->GetCKKSPackedValue().size(); ++i) {
-          if (max < ptxtFused->GetCKKSPackedValue()[i].real()) max = ptxtFused->GetCKKSPackedValue()[i].real();
-          if (min > ptxtFused->GetCKKSPackedValue()[i].real()) min = ptxtFused->GetCKKSPackedValue()[i].real();
-        }
-        std::cerr << "Max: " << max << std::endl;
-        std::cerr << "Min: " << min << std::endl;
-      }
-      std::cerr << "------------------------------------------------" << std::endl;
-      std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-      std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-      std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-      std::cerr << "------------------------------------------------" << std::endl;
+    // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
+    if (cryptoParams->GetMode() == OPTIMIZED) {
+      ApplyDoubleAngleIterations(ctxtEnc);
+      ApplyDoubleAngleIterations(ctxtEncI);
     }
 
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-
-    auto ctxtMultI = algo->MultByMonomial(ctxtEnc[1], M/4);
-    auto ctxtFused = cc->EvalAdd(ctxtEnc[0], ctxtMultI);
-
-    cc->Decrypt(secretKey, ctxtFused, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "Fused: " << ptxtFused << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
+    algo->MultByMonomialInPlace(ctxtEncI, M / 4);
+    cc->EvalAddInPlace(ctxtEnc, ctxtEncI);
 
     // scale the message back up after Chebyshev interpolation
-    algo->MultByIntegerInPlace(ctxtFused, scalar);
-
-    cc->Decrypt(secretKey, ctxtFused, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "Fused: " << ptxtFused << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
+    algo->MultByIntegerInPlace(ctxtEnc, scalar);
 
 #ifdef BOOTSTRAPTIMING
     timeModReduce = TOC(t);
@@ -731,29 +412,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     // In the case of FLEXIBLEAUTO, we need one extra tower
     // TODO: See if we can remove the extra level in FLEXIBLEAUTO
     if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
-      algo->ModReduceInternalInPlace(ctxtFused);
+      algo->ModReduceInternalInPlace(ctxtEnc);
     }
-
-    cc->Decrypt(secretKey, ctxtFused, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "Fused: " << ptxtFused << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-    std::cerr << "Diff: " << ptxtFused->GetScalingFactor() - precom.m_U0PreFFT[0][0]->GetScalingFactor() << std::endl;
 
     // Only one linear transform is needed
     ctxtDec = (isEvalBTLinear) ?
-      EvalLTWithPrecomp(precom.m_U0Pre, ctxtFused) :
-      EvalBTWithPrecompDecoding(precom.m_U0PreFFT, ctxtFused);
-    cc->Decrypt(secretKey, ctxtDec, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "ctxtDec: " << ptxtFused << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
+      EvalLTWithPrecomp(precom.m_U0Pre, ctxtEnc) :
+      EvalBTWithPrecompDecoding(precom.m_U0PreFFT, ctxtEnc);
+
   } else {
 
     //------------------------------------------------------------------------------
@@ -763,15 +429,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     if (isEvalBTLinear) {
       algo->ModReduceInternalInPlace(raised);
     }
-    Ciphertext<DCRTPoly> ctxt1 = raised;
 
     //------------------------------------------------------------------------------
     // Running PartialSum
     //------------------------------------------------------------------------------
 
     for (int j = 0; j < int(std::log2(N/(2 * precom.m_slots))); j++) {
-      auto temp = cc->EvalRotate(ctxt1, (1 << j) * precom.m_slots);
-      cc->EvalAddInPlace(ctxt1, temp);
+      auto temp = cc->EvalRotate(raised, (1 << j) * precom.m_slots);
+      cc->EvalAddInPlace(raised, temp);
     }
 
 #ifdef BOOTSTRAPTIMING
@@ -783,15 +448,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     //------------------------------------------------------------------------------
 
     if(!isEvalBTLinear) {
-      algo->ModReduceInternalInPlace(ctxt1);
+      algo->ModReduceInternalInPlace(raised);
     }
 
     auto ctxtEnc0 = (isEvalBTLinear) ?
-      EvalLTWithPrecomp(precom.m_U0hatTPre, ctxt1) :
-      EvalBTWithPrecompEncoding(precom.m_U0hatTPreFFT, ctxt1);
+      EvalLTWithPrecomp(precom.m_U0hatTPre, raised) :
+      EvalBTWithPrecompEncoding(precom.m_U0hatTPreFFT, raised);
 
     auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc0->GetKeyTag());
-
     auto conj = Conjugate(ctxtEnc0, evalKeyMap);
     auto ctxtEnc = cc->EvalAdd(ctxtEnc0, conj);
 
@@ -845,12 +509,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
     }
 
     // linear transform for decoding
-    auto ctxtDec0 = (isEvalBTLinear) ?
+    ctxtDec = (isEvalBTLinear) ?
       EvalLTWithPrecomp(precom.m_U0Pre, ctxtEnc) :
       EvalBTWithPrecompDecoding(precom.m_U0PreFFT, ctxtEnc);
 
-    ctxtDec = cc->EvalAdd(ctxtDec0,
-        cc->EvalRotate(ctxtDec0, precom.m_slots));
+    cc->EvalAddInPlace(ctxtDec, cc->EvalRotate(ctxtDec, precom.m_slots));
   }
 
 
@@ -859,15 +522,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrapCore(
   uint64_t corFactor = (uint64_t)1 << std::llround(correction);
   algo->MultByIntegerInPlace(ctxtDec, corFactor);
 #endif
-
-  cc->Decrypt(secretKey, ctxtDec, &ptxtFused);
-  ptxtFused->SetLength(16);
-  std::cerr << "corFactor: " << corFactor << std::endl;
-  std::cerr << "ctxtDec: " << ptxtFused << std::endl;
-  std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-  std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-  std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-  std::cerr << "------------------------------------------------" << std::endl;
 
 #ifdef BOOTSTRAPTIMING
     timeDecode = TOC(t);
@@ -2119,22 +1773,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBTWithPrecompDecoding(
     auto elements = outer->GetElements();
     elements[0] += first;
     outer->SetElements(elements);
-    cc->Decrypt(secretKey, outer, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "outer: " << ptxtFused << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-
     result = algo->ModReduceInternal(outer);
-    cc->Decrypt(secretKey, result, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "result: " << ptxtFused << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
   }
 
   if (flagRem) {
@@ -2197,23 +1836,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBTWithPrecompDecoding(
     auto elements = outer->GetElements();
     elements[0] += first;
     outer->SetElements(elements);
-    cc->Decrypt(secretKey, outer, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "outer: " << ptxtFused << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-
     result = algo->ModReduceInternal(outer);
-    cc->Decrypt(secretKey, result, &ptxtFused);
-    ptxtFused->SetLength(16);
-    std::cerr << "result: " << ptxtFused << std::endl;
-    std::cerr << "Level: " << ptxtFused->GetLevel() << std::endl;
-    std::cerr << "Depth: " << ptxtFused->GetDepth() << std::endl;
-    std::cerr << "Scale: " << ptxtFused->GetScalingFactor() << std::endl;
-    std::cerr << "------------------------------------------------" << std::endl;
-
   }
 
   return result;
