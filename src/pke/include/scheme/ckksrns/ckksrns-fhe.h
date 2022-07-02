@@ -116,6 +116,30 @@ const std::vector<double> g_coefficientsUniform({0.15421426400235561, -0.0037671
 
 class CKKSBootstrapPrecom {
 public:
+  CKKSBootstrapPrecom() {}
+
+  CKKSBootstrapPrecom(const CKKSBootstrapPrecom &rhs) {
+    m_dim1 = rhs.m_dim1;
+    m_slots = rhs.m_slots;
+    m_paramsEnc = rhs.m_paramsEnc;
+    m_paramsDec = rhs.m_paramsDec;
+    m_U0Pre = rhs.m_U0Pre;
+    m_U0hatTPre = rhs.m_U0hatTPre;
+    m_U0PreFFT = rhs.m_U0PreFFT;
+    m_U0hatTPreFFT = rhs.m_U0hatTPreFFT;
+  }
+
+  CKKSBootstrapPrecom(CKKSBootstrapPrecom &&rhs) {
+    m_dim1 = rhs.m_dim1;
+    m_slots = rhs.m_slots;
+    m_paramsEnc = std::move(rhs.m_paramsEnc);
+    m_paramsDec = std::move(rhs.m_paramsDec);
+    m_U0Pre = std::move(rhs.m_U0Pre);
+    m_U0hatTPre = std::move(rhs.m_U0hatTPre);
+    m_U0PreFFT = std::move(rhs.m_U0PreFFT);
+    m_U0hatTPreFFT = std::move(rhs.m_U0hatTPreFFT);
+  }
+
   virtual ~CKKSBootstrapPrecom() {}
   // the inner dimension in the baby-step giant-step strategy
   uint32_t m_dim1 = 0;
@@ -150,20 +174,13 @@ public:
 
   // coefficients corresponding to conj(U0^T); used in encoding
   std::vector<std::vector<ConstPlaintext>> m_U0hatTPreFFT;
-
-  // EvalBT (FFT evaluation) rotation indices
-  std::vector<int32_t> m_indexListEvalBT;
-
-  // EvalLT (linear evaluation) rotation indices
-  std::vector<int32_t> m_indexListEvalLT;
-
 };
 
 class FHECKKSRNS : public FHERNS {
 public:
-  //TODO temporary added
-  PrivateKey<DCRTPoly> secretKey;
-  CKKSBootstrapPrecom precom;
+
+  // key tuple is dim1, levelBudgetEnc, levelBudgetDec
+  std::map<uint32_t, std::shared_ptr<CKKSBootstrapPrecom>> m_bootPrecomMap;
 
   virtual ~FHECKKSRNS() {}
 
@@ -176,24 +193,13 @@ public:
       std::vector<uint32_t> levelBudget,
       std::vector<uint32_t> dim1, uint32_t slots) override;
 
-  virtual void EvalBootstrapPrecompute(
-      const CryptoContextImpl<DCRTPoly> &cc,
-      uint32_t debugFlag) override;
-
   virtual std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>>
   EvalBootstrapKeyGen(
       const PrivateKey<DCRTPoly> privateKey,
-      int32_t bootstrapFlag) override;
-
-  std::vector<int32_t> FindBootstrapRotationIndices(
-      int32_t bootstrapFlag, uint32_t m);
+      uint32_t slots) override;
 
   virtual Ciphertext<DCRTPoly> EvalBootstrap(
       ConstCiphertext<DCRTPoly> ciphertext) const override;
-
-  Ciphertext<DCRTPoly> EvalBootstrapCore(
-      CKKSBootstrapMethod method,
-      ConstCiphertext<DCRTPoly> ciphertext1) const;
 
   void AdjustCiphertext(
       Ciphertext<DCRTPoly>& ciphertext,
@@ -202,49 +208,41 @@ public:
   void ApplyDoubleAngleIterations(
     Ciphertext<DCRTPoly>& ciphertext) const;
 
-  uint32_t GetBootstrapDepth(
-      const CryptoContextImpl<DCRTPoly> &cc,
-      const std::vector<uint32_t> &levelBudget);
-
   //------------------------------------------------------------------------------
   // LT & BT Wrappers
   //------------------------------------------------------------------------------
 
-  // KeyGen
-
-  std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalLTKeyGen(
-      const PrivateKey<DCRTPoly> privateKey, int32_t bootstrapFlag);
-
-  std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalBTKeyGen(
-      const PrivateKey<DCRTPoly> privateKey, int32_t bootstrapFlag);
-
   // RotationIndices
 
-  std::vector<int32_t> FindLTRotationIndices(int32_t bootstrapFlag, uint32_t m);
+  std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
 
-  std::vector<int32_t> FindBTRotationIndices(int32_t bootstrapFlag, uint32_t m);
+  std::vector<int32_t> FindLinearTransformRotationIndices(uint32_t slots, uint32_t M);
+
+  std::vector<int32_t> FindCoeffsToSlotsRotationIndices(uint32_t slots, uint32_t M);
+
+  std::vector<int32_t> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
 
   // Precompute
 
-  std::vector<ConstPlaintext> EvalLTPrecompute(
+  std::vector<ConstPlaintext> EvalLinearTransformPrecompute(
       const CryptoContextImpl<DCRTPoly> &cc,
       const std::vector<std::vector<std::complex<double>>>& A,
       double scale = 1, uint32_t L = 0) const;
 
-  std::vector<ConstPlaintext> EvalLTPrecompute(
+  std::vector<ConstPlaintext> EvalLinearTransformPrecompute(
       const CryptoContextImpl<DCRTPoly> &cc,
       const std::vector<std::vector<std::complex<double>>>& A,
       const std::vector<std::vector<std::complex<double>>>& B,
       uint32_t orientation = 0, double scale = 1,
       uint32_t L = 0) const;
 
-  std::vector<std::vector<ConstPlaintext>> EvalBTPrecomputeEncoding(
+  std::vector<std::vector<ConstPlaintext>> EvalCoeffsToSlotsPrecompute(
       const CryptoContextImpl<DCRTPoly> &cc,
       const std::vector<std::complex<double>> &A,
       const std::vector<uint32_t> &rotGroup,
       bool flag_i, double scale = 1, uint32_t L = 0) const;
 
-  std::vector<std::vector<ConstPlaintext>> EvalBTPrecomputeDecoding(
+  std::vector<std::vector<ConstPlaintext>> EvalSlotsToCoeffsPrecompute(
       const CryptoContextImpl<DCRTPoly> &cc,
       const std::vector<std::complex<double>> &A,
       const std::vector<uint32_t> &rotGroup,
@@ -252,33 +250,17 @@ public:
 
   // Eval With Precompute
 
-  Ciphertext<DCRTPoly> EvalLTWithPrecomp(
+  Ciphertext<DCRTPoly> EvalLinearTransform(
       const std::vector<ConstPlaintext>& A,
       ConstCiphertext<DCRTPoly> ct) const;
 
-  Ciphertext<DCRTPoly> EvalBTWithPrecompEncoding(
+  Ciphertext<DCRTPoly> EvalCoeffsToSlots(
       const std::vector<std::vector<ConstPlaintext>> &A,
       ConstCiphertext<DCRTPoly> ctxt) const;
 
-  Ciphertext<DCRTPoly> EvalBTWithPrecompDecoding(
+  Ciphertext<DCRTPoly> EvalSlotsToCoeffs(
       const std::vector<std::vector<ConstPlaintext>> &A,
       ConstCiphertext<DCRTPoly> ctxt) const;
-
-  // Eval
-
-  Ciphertext<DCRTPoly> EvalLT(
-      const std::vector<std::vector<std::complex<double>>>& A,
-      ConstCiphertext<DCRTPoly> ct, double scale = 1);
-
-  Ciphertext<DCRTPoly> EvalBTEncoding(
-      const std::vector<std::complex<double>> &A,
-      const std::vector<uint32_t> &rotGroup,
-      ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale);
-
-  Ciphertext<DCRTPoly> EvalBTDecoding(
-      const std::vector<std::complex<double>> &A,
-      const std::vector<uint32_t> &rotGroup,
-      ConstCiphertext<DCRTPoly> ct, bool flag_i, double scale);
 
   //------------------------------------------------------------------------------
   // BT Wrapper

@@ -2682,10 +2682,10 @@ protected:
   /**
    * Bootstrap functionality:
    * There are three methods that have to be called in this specific order:
-   * 1. EvalBTSetup: computes and encodes the coefficients for encoding and
+   * 1. EvalBootstrapSetup: computes and encodes the coefficients for encoding and
    * decoding and stores the necessary parameters
-   * 2. EvalBTKeyGen: computes and stores the keys for rotations and conjugation
-   * 3. EvalBT: refreshes the given ciphertext
+   * 2. EvalBootstrapKeyGen: computes and stores the keys for rotations and conjugation
+   * 3. EvalBootstrap: refreshes the given ciphertext
    */
 
   /**
@@ -2696,34 +2696,22 @@ protected:
    * @param dim1 - vector of inner dimension in the baby-step giant-step routine
    * for encoding and decoding
    * @param slots - number of slots to be bootstrapped
-   * @param debugFlag - set to 1 when debugging encoding/decoding only
-   * @param precomp - do linear transform precomputations
    */
   void EvalBootstrapSetup(
       std::vector<uint32_t> levelBudget = {5, 4},
       std::vector<uint32_t> dim1 = {0, 0},
-      uint32_t slots = 0, uint32_t debugFlag = 0,
-      bool precomp = true);
-
-  /**
-   * Performs all precomputations for bootstrapping using the FFT-like method
-   *
-   * @param debugFlag - set to 1 when debugging encoding/decoding only
-   */
-  void EvalBootstrapPrecompute(uint32_t debugFlag = 0);
+      uint32_t slots = 0);
 
   /**
    * Generates all automorphism keys for EvalBT.
-   * EvalBTKeyGen uses the baby-step/giant-step strategy.
+   * EvalBootstrapKeyGen uses the baby-step/giant-step strategy.
    *
    * @param privateKey private key.
    * @param slots number of slots to support permutations on
-   * @param bootstrapFlag - when set to 1, generates extra automorphism keys for
-   * sparse bootstrapping
    */
   void EvalBootstrapKeyGen(
       const PrivateKey<Element> privateKey,
-      int32_t bootstrapFlag = 0);
+      uint32_t slots);
 
   /**
    * Defines the bootstrapping evaluation of ciphertext using either the

@@ -642,23 +642,18 @@ template <typename Element>
 void CryptoContextImpl<Element>::EvalBootstrapSetup(
     std::vector<uint32_t> levelBudget,
     std::vector<uint32_t> dim1,
-    uint32_t numSlots, uint32_t debugFlag, bool precomp) {
-  GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, numSlots, debugFlag, precomp);
-}
-
-template <typename Element>
-void CryptoContextImpl<Element>::EvalBootstrapPrecompute(uint32_t debugFlag) {
-  GetScheme()->EvalBootstrapPrecompute(*this, debugFlag);
+    uint32_t numSlots) {
+  GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, numSlots);
 }
 
 template <typename Element>
 void CryptoContextImpl<Element>::EvalBootstrapKeyGen(
-    const PrivateKey<Element> privateKey, int32_t bootstrapFlag) {
+    const PrivateKey<Element> privateKey, uint32_t slots) {
   if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
     OPENFHE_THROW(config_error, "Private key passed to EvalBootstapKeyGen was not generated with this crypto context");
   }
 
-  auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, bootstrapFlag);
+  auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, slots);
 
   auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
   if (ekv == GetAllEvalAutomorphismKeys().end()) {

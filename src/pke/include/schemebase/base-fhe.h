@@ -78,13 +78,6 @@ class FHEBase {
     OPENFHE_THROW(not_implemented_error, "Not supported");
   }
 
-  virtual void EvalBootstrapPrecompute(
-      const CryptoContextImpl<Element> &cc,
-      uint32_t debugFlag) {
-    OPENFHE_THROW(not_implemented_error,
-        "EvalBootstrapPrecompute is not implemented for this scheme");
-  }
-
   /**
    * Virtual function to define the generation of all automorphism keys for EvalBT (with FFT evaluation).
    * EvalBTKeyGen uses the baby-step/giant-step strategy.
@@ -95,7 +88,7 @@ class FHEBase {
    */
   virtual std::shared_ptr<std::map<usint, EvalKey<Element>>>
   EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
-      int32_t bootstrapFlag = 0) {
+      uint32_t slots) {
     OPENFHE_THROW(not_implemented_error, "Not supported");
   }
 
