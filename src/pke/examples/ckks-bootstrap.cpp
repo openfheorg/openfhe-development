@@ -82,7 +82,11 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 
 	// budget in levels for FFT for encoding and decoding, respectively
 	// Choose a number smaller than ceil(log2(slots))
-	std::vector<uint32_t> levelBudget = { 4, 4 };
+
+//	std::vector<uint32_t> levelBudget = { 4, 4 };
+  std::vector<uint32_t> levelBudget = { 2, 4 };
+//  std::vector<uint32_t> levelBudget = { 4, 1 };
+//  std::vector<uint32_t> levelBudget = { 5, 3 };
 
 #if NATIVEINT==128
   RescalingTechnique rescaleTech = FIXEDMANUAL;

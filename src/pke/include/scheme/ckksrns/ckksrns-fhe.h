@@ -177,6 +177,8 @@ public:
 };
 
 class FHECKKSRNS : public FHERNS {
+  using ParmType = typename DCRTPoly::Params;
+
 public:
 
   // key tuple is dim1, levelBudgetEnc, levelBudgetDec
@@ -201,18 +203,9 @@ public:
   virtual Ciphertext<DCRTPoly> EvalBootstrap(
       ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-  void AdjustCiphertext(
-      Ciphertext<DCRTPoly>& ciphertext,
-      double correction) const;
-
-  void ApplyDoubleAngleIterations(
-    Ciphertext<DCRTPoly>& ciphertext) const;
-
   //------------------------------------------------------------------------------
-  // LT & BT Wrappers
+  // Find Rotation Indices
   //------------------------------------------------------------------------------
-
-  // RotationIndices
 
   std::vector<int32_t> FindBootstrapRotationIndices(uint32_t slots, uint32_t M);
 
@@ -222,7 +215,9 @@ public:
 
   std::vector<int32_t> FindSlotsToCoeffsRotationIndices(uint32_t slots, uint32_t M);
 
-  // Precompute
+  //------------------------------------------------------------------------------
+  // Precomputations for CoeffsToSlots and SlotsToCoeffs
+  //------------------------------------------------------------------------------
 
   std::vector<ConstPlaintext> EvalLinearTransformPrecompute(
       const CryptoContextImpl<DCRTPoly> &cc,
@@ -248,7 +243,9 @@ public:
       const std::vector<uint32_t> &rotGroup,
       bool flag_i, double scale = 1, uint32_t L = 0) const;
 
-  // Eval With Precompute
+  //------------------------------------------------------------------------------
+  // EVALUATION: CoeffsToSlots and SlotsToCoeffs
+  //------------------------------------------------------------------------------
 
   Ciphertext<DCRTPoly> EvalLinearTransform(
       const std::vector<ConstPlaintext>& A,
@@ -263,12 +260,8 @@ public:
       ConstCiphertext<DCRTPoly> ctxt) const;
 
   //------------------------------------------------------------------------------
-  // BT Wrapper
-  //------------------------------------------------------------------------------
-
-  /////////////////////////////////////
   // SERIALIZATION
-  /////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   template <class Archive>
   void save(Archive &ar) const {
@@ -283,6 +276,24 @@ public:
   std::string SerializedObjectName() const { return "FHECKKSRNS"; }
 
 private:
+
+  //------------------------------------------------------------------------------
+  // Auxiliary Bootstrap Functions
+  //------------------------------------------------------------------------------
+
+  void AdjustCiphertext(
+      Ciphertext<DCRTPoly>& ciphertext,
+      double correction) const;
+
+  void ApplyDoubleAngleIterations(
+    Ciphertext<DCRTPoly>& ciphertext) const;
+
+  Plaintext MakeAuxPlaintext(
+      const CryptoContextImpl<DCRTPoly> &cc,
+      const std::shared_ptr<ParmType> params,
+      const std::vector<std::complex<double>>& value,
+      size_t depth, uint32_t level, usint slots) const;
+
   Ciphertext<DCRTPoly> EvalMultExt(
       ConstCiphertext<DCRTPoly> ciphertext,
       ConstPlaintext plaintext) const;
@@ -301,6 +312,51 @@ private:
   Ciphertext<DCRTPoly> Conjugate(
       ConstCiphertext<DCRTPoly> ciphertext,
       const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const;
+
+  /**
+   * Set modulus and recalculates the vector values to fit the modulus
+   *
+   * @param &vec input vector
+   * @param &bigValue big bound of the vector values.
+   * @param &modulus modulus to be set for vector.
+   */
+  void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t> &vec, int64_t bigBound,
+                         NativeVector *nativeVec) const;
+
+#if NATIVEINT == 128
+  /**
+   * Set modulus and recalculates the vector values to fit the modulus
+   *
+   * @param &vec input vector
+   * @param &bigValue big bound of the vector values.
+   * @param &modulus modulus to be set for vector.
+   */
+  void FitToNativeVector(uint32_t ringDim, const std::vector<__int128> &vec, __int128 bigBound,
+                         NativeVector *nativeVec) const;
+
+  constexpr __int128 Max128BitValue() const {
+    // 2^127-2^73-1 - max value that could be rounded to int128_t
+    return ((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) -
+           (unsigned __int128)1;
+  }
+
+  inline bool is128BitOverflow(double d) const {
+    const double EPSILON = 0.000001;
+
+    return EPSILON < (std::abs(d) - Max128BitValue());
+  }
+#else  // NATIVEINT == 64
+  constexpr int64_t Max64BitValue() const {
+    // 2^63-2^9-1 - max value that could be rounded to int64_t
+    return 9223372036854775295;
+  }
+
+  inline bool is64BitOverflow(double d) const {
+    const double EPSILON = 0.000001;
+
+    return EPSILON < (std::abs(d) - Max64BitValue());
+  }
+#endif
 
 };
 
