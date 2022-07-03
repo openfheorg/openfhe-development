@@ -29,17 +29,55 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_ALLRNS_H
-#define LBCRYPTO_CRYPTO_RNS_ALLRNS_H
+#ifndef LBCRYPTO_DUALITY_UTILS_POLYNOMIALS_H
+#define LBCRYPTO_DUALITY_UTILS_POLYNOMIALS_H
 
-#include "schemerns/rns-advancedshe.h"
-#include "schemerns/rns-cryptoparameters.h"
-#include "schemerns/rns-leveledshe.h"
-#include "schemerns/rns-multiparty.h"
-#include "schemerns/rns-parametergeneration.h"
-#include "schemerns/rns-pke.h"
-#include "schemerns/rns-pre.h"
-#include "schemerns/rns-fhe.h"
-#include "schemerns/rns-scheme.h"
+#include <vector>
+#include <stdint.h>
+
+/**
+ * Gets the degree of a polynomial specified by its coefficients.
+ *
+ * @param &coefficients vector of coefficients of a polynomial.
+ * @return the integer degree of the polynomial.
+ */
+uint32_t Degree(const std::vector<double> &coefficients);
+
+struct longDiv{
+	std::vector<double> q;
+	std::vector<double> r;
+};
+
+/**
+ * Computes the quotient and remainder of the long division of two polynomials in the power series basis.
+ *
+ * @param &f the vector of coefficients of the dividend.
+ * @param &g the vector of coefficients of the divisor.
+ * @return a struct with the coefficients for the quotient and remainder.
+ */
+longDiv *LongDivisionPoly(
+	const std::vector<double> &f,
+	const std::vector<double> &g);
+
+
+/**
+ * Computes the quotient and remainder of the long division of two polynomials in the Chebyshev series basis
+ *
+ * @param &f the vector of coefficients of the dividend.
+ * @param &g the vector of coefficients of the divisor.
+ * @return a struct with the coefficients for the quotient and remainder.
+ */
+longDiv *LongDivisionChebyshev(
+	const std::vector<double> &f,
+	const std::vector<double> &g);
+
+/**
+ * Computes the values of the internal degrees k and m needed in the Paterson-Stockmeyer algorithm
+ * such that k(2^m - 1} > n and k close to sqrt(n/2).
+ *
+ * @param n the degree of a polynomial.
+ * @return a vector containing k and m.
+ */
+std::vector<uint32_t> ComputeDegreesPS(const uint32_t n);
 
 #endif

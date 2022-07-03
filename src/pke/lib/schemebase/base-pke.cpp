@@ -86,7 +86,7 @@ KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc,
       s = Element(tug, paramsPK, Format::EVALUATION);
       break;
     case SPARSE_TERNARY:
-      s = Element(tug, paramsPK, Format::EVALUATION, 64);
+      s = Element(tug, paramsPK, Format::EVALUATION, 16);
       break;
     default:
       break;

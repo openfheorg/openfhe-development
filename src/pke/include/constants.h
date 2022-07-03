@@ -76,5 +76,24 @@ std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
 enum LargeScalingFactorConstants {MAX_BITS_IN_WORD = 62, MAX_LOG_STEP = 60};
 
+enum CKKSBootstrapMethod {
+  EvalBTLinearMethod,
+  EvalBTFFTMethod
+};
+std::ostream& operator<<(std::ostream& s, CKKSBootstrapMethod t);
+
+enum CKKS_FFT_PARAMS {
+  LEVEL_BUDGET,      // the level budget
+  LAYERS_COLL,       // the number of layers to collapse in one level
+  LAYERS_REM,        // the number of layers remaining to be collapsed in one level to have exactly the number of levels specified in the level budget
+  NUM_ROTATIONS,     // the number of rotations in one level
+  BABY_STEP,         // the baby step in the baby-step giant-step strategy
+  GIANT_STEP,        // the giant step in the baby-step giant-step strategy
+  NUM_ROTATIONS_REM, // the number of rotations in the remaining level
+  BABY_STEP_REM,     // the baby step in the baby-step giant-step strategy for the remaining level
+  GIANT_STEP_REM,    // the giant step in the baby-step giant-step strategy for the remaining level
+  TOTAL_ELEMENTS     // total number of elements in the vector
+};
+std::ostream& operator<<(std::ostream& s, CKKS_FFT_PARAMS t);
 
 #endif  // _CONSTANTS_H_

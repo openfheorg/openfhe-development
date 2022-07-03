@@ -29,17 +29,25 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_ALLRNS_H
-#define LBCRYPTO_CRYPTO_RNS_ALLRNS_H
+#ifndef _COMPARE_UTILS_H_
+#define _COMPARE_UTILS_H_
 
-#include "schemerns/rns-advancedshe.h"
-#include "schemerns/rns-cryptoparameters.h"
-#include "schemerns/rns-leveledshe.h"
-#include "schemerns/rns-multiparty.h"
-#include "schemerns/rns-parametergeneration.h"
-#include "schemerns/rns-pke.h"
-#include "schemerns/rns-pre.h"
-#include "schemerns/rns-fhe.h"
-#include "schemerns/rns-scheme.h"
+#include <cmath>
+
+namespace utils {
+    constexpr double EPSILON = 1.0E-08;
+
+    inline bool Equal(double a, double b, double eps = EPSILON) {
+        return (eps > fabs(a - b));
+    }
+
+    inline bool Less(double a, double b, double eps = EPSILON) {
+        return ((a - b) < (-eps));
+    }
+
+    inline bool Greater(double a, double b, double eps = EPSILON) {
+        return ((a - b) > eps);
+    }
+};
 
 #endif

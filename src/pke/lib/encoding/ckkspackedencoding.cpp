@@ -517,7 +517,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
   //  }
   // }
 
-  // If less than 5 bits of precision is observed
+//   If less than 5 bits of precision is observed
   if (logstd > p - 5.0)
     OPENFHE_THROW(math_error,
                    "The decryption failed because the approximation error is "
@@ -532,6 +532,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
 
   double scale = 0.5 * powP;
 
+  // TODO temporary removed errors
   std::normal_distribution<> d(0, stddev);
   PRNG &g = PseudoRandomNumberGenerator::GetPRNG();
   // Alternative way to do Gaussian sampling

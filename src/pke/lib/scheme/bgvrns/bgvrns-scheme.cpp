@@ -85,6 +85,9 @@ namespace lbcrypto {
                 m_AdvancedSHE = std::make_shared<AdvancedSHEBGVRNS>();
             break;
         case FHE:
+            if (m_FHE == nullptr)
+              m_FHE = std::make_shared<FHEBGVRNS>();
+            break;
         default:
             std::stringstream ss;
             ss << feature;

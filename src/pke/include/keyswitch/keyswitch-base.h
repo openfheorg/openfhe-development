@@ -102,6 +102,20 @@ class KeySwitchBase {
     OPENFHE_THROW(config_error, "KeySwitch is not supported");
   }
 
+  virtual Ciphertext<Element> KeySwitchExt(
+      ConstCiphertext<Element> ciphertext, bool addFirst) const {
+    OPENFHE_THROW(config_error, "KeySwitchExt is not supported");
+  }
+
+  virtual Ciphertext<Element> KeySwitchDown(
+      ConstCiphertext<Element> ciphertext) const {
+    OPENFHE_THROW(config_error, "KeySwitchDown is not supported");
+  }
+
+  virtual Element KeySwitchDownFirstElement(
+      ConstCiphertext<Element> ciphertext) const {
+    OPENFHE_THROW(config_error, "KeySwitchDownFirstElement is not supported");
+  }
   /////////////////////////////////////////
   // CORE OPERATIONS
   /////////////////////////////////////////
@@ -120,6 +134,12 @@ class KeySwitchBase {
       const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
       const std::shared_ptr<ParmType> paramsQl) const {
     OPENFHE_THROW(config_error, "EvalFastKeySwitchCore is not supported");
+  }
+
+  virtual std::shared_ptr<std::vector<Element>> EvalFastKeySwitchCoreExt(
+      const std::shared_ptr<std::vector<Element>> digits, const EvalKey<Element> evalKey,
+      const std::shared_ptr<ParmType> paramsQl) const {
+    OPENFHE_THROW(config_error, "EvalFastKeySwitchCoreExt is not supported");
   }
 };
 

@@ -29,17 +29,50 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_ALLRNS_H
-#define LBCRYPTO_CRYPTO_RNS_ALLRNS_H
 
-#include "schemerns/rns-advancedshe.h"
-#include "schemerns/rns-cryptoparameters.h"
-#include "schemerns/rns-leveledshe.h"
-#include "schemerns/rns-multiparty.h"
-#include "schemerns/rns-parametergeneration.h"
-#include "schemerns/rns-pke.h"
-#include "schemerns/rns-pre.h"
-#include "schemerns/rns-fhe.h"
-#include "schemerns/rns-scheme.h"
+#include "utils/rotatablevector.h"
+#include "utils/exception.h"
+//#include "utils/logger.h"
 
-#endif
+std::complex<double> RotatableVector::get(int index) {
+
+	if (this->size > 0)
+		return vec[ (start + index) % this->size ];
+	else {
+		std::string errMsg = "RotatableVector::get Cannot get from empty vector.";
+		OPENFHE_THROW(lbcrypto::math_error, errMsg);
+	}
+}
+
+void RotatableVector::set(int index, std::complex<double> val) {
+
+	if (this->size > 0)
+		this->vec[ (start + index) % this->size ] = val;
+	else {
+		std::string errMsg = "RotatableVector::set Cannot set element in empty vector.";
+		OPENFHE_THROW(lbcrypto::math_error, errMsg);
+	}
+}
+
+// Positive offset corresponds to left rotation.
+void RotatableVector::rotate(int offset) {
+
+	if (this->size > 0) {
+		this->start = (this->start - offset) % this->size;
+		if (this->start < 0)
+			this->start += this->size;
+	} else {
+		std::string errMsg = "RotatableVector::rotateRight Cannot rotate empty vector.";
+		OPENFHE_THROW(lbcrypto::math_error, errMsg);
+	}
+}
+
+std::vector<std::complex<double>> RotatableVector::getVector() {
+
+	std::vector<std::complex<double>> newVec(this->size);
+	for (int i=0; i<this->size; i++) {
+		newVec[i] = this->vec[ (start + i) % this->size ];
+	}
+	return newVec;
+}
+

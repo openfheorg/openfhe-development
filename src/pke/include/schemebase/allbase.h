@@ -39,6 +39,7 @@
 #include "schemebase/base-parametergeneration.h"
 #include "schemebase/base-pke.h"
 #include "schemebase/base-pre.h"
+#include "schemebase/base-fhe.h"
 #include "schemebase/base-scheme.h"
 
 #endif
