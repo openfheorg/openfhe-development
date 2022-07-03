@@ -29,17 +29,64 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_ALLRNS_H
-#define LBCRYPTO_CRYPTO_RNS_ALLRNS_H
+/**
+ * @file serial.h Serialization utilities.
+ */ 
+#ifndef LBCRYPTO_DUALITY_SERIAL_H
+#define LBCRYPTO_DUALITY_SERIAL_H
 
-#include "schemerns/rns-advancedshe.h"
-#include "schemerns/rns-cryptoparameters.h"
-#include "schemerns/rns-leveledshe.h"
-#include "schemerns/rns-multiparty.h"
-#include "schemerns/rns-parametergeneration.h"
-#include "schemerns/rns-pke.h"
-#include "schemerns/rns-pre.h"
-#include "schemerns/rns-fhe.h"
-#include "schemerns/rns-scheme.h"
+#include <memory>
+#include <string>
+#include <istream>
+
+#include "utils/sertype.h"
+
+namespace lbcrypto {
+
+template<typename Element>
+class CryptoContextImpl;
+
+namespace Serial
+{
+
+	/**
+	 * Deserialize a CryptoContext as a special case
+	 * @param obj - CryptoContext to deserialize into
+	 * @param stream - Stream to deserialize from
+	 * @param sertype - binary serialization
+	 */
+	template<typename T>
+	static void
+	Deserialize(std::shared_ptr<CryptoContextImpl<T>>& obj, std::istream& stream, const SerType::SERBINARY& st);
+
+	/**
+	 * Deserialize a CryptoContext as a special case
+	 * @param obj - CryptoContext to deserialize into
+	 * @param stream - Stream to deserialize from
+	 * @param sertype - JSON serialization
+	 */
+	template<typename T>
+	static void
+	Deserialize(std::shared_ptr<CryptoContextImpl<T>>& obj, std::istream& stream, const SerType::SERJSON& ser);
+
+	template <typename T>
+	static bool
+	SerializeToFile(std::string filename, const std::shared_ptr<CryptoContextImpl<T>>& obj, const SerType::SERJSON& ser);
+
+	template <typename T>
+	static bool
+	DeserializeFromFile(std::string filename, std::shared_ptr<CryptoContextImpl<T>>& obj, const SerType::SERJSON& ser);
+
+	template <typename T>
+	static bool
+	SerializeToFile(std::string filename, const std::shared_ptr<CryptoContextImpl<T>>& obj, const SerType::SERBINARY& ser);
+
+	template <typename T>
+	static bool
+	DeserializeFromFile(std::string filename, std::shared_ptr<CryptoContextImpl<T>>& obj, const SerType::SERBINARY& ser);
+
+}
+
+}
 
 #endif

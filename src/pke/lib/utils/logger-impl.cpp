@@ -29,17 +29,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_ALLRNS_H
-#define LBCRYPTO_CRYPTO_RNS_ALLRNS_H
+#include "utils/logger-impl.h"
+#include "utils/exception.h"
 
-#include "schemerns/rns-advancedshe.h"
-#include "schemerns/rns-cryptoparameters.h"
-#include "schemerns/rns-leveledshe.h"
-#include "schemerns/rns-multiparty.h"
-#include "schemerns/rns-parametergeneration.h"
-#include "schemerns/rns-pke.h"
-#include "schemerns/rns-pre.h"
-#include "schemerns/rns-fhe.h"
-#include "schemerns/rns-scheme.h"
+#include <fstream>
 
-#endif
+Logger& LOG = Logger::getInstance();
+
+
+void Logger::setLogFile(const std::string& fileName0)
+{
+	if( &std::cout != output )
+		OPENFHE_THROW(lbcrypto::config_error, "Already opened [" + fileName0 + "] for output");
+
+	fileName = fileName0;
+	auto filePtr = new std::ofstream(fileName, std::ios::out|std::ios::trunc|std::ios::binary);
+	if( !filePtr->good() )
+	  OPENFHE_THROW(lbcrypto::config_error, "Error opening output file [" + fileName0 + "]");
+
+	output = filePtr;
+}
+

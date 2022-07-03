@@ -45,19 +45,72 @@ public:
 
   virtual ~AdvancedSHECKKSRNS() {}
 
+  //------------------------------------------------------------------------------
+  // LINEAR WEIGHTED SUM
+  //------------------------------------------------------------------------------
+
   virtual Ciphertext<DCRTPoly> EvalLinearWSum(
       std::vector<ConstCiphertext<DCRTPoly>>& ciphertexts, const std::vector<double> &constants) const override;
 
   virtual Ciphertext<DCRTPoly> EvalLinearWSumMutable(
       std::vector<Ciphertext<DCRTPoly>>& ciphertexts, const std::vector<double> &constants) const override;
 
+  //------------------------------------------------------------------------------
+  // EVAL POLYNOMIAL
+  //------------------------------------------------------------------------------
+
   virtual Ciphertext<DCRTPoly> EvalPoly(
       ConstCiphertext<DCRTPoly> ciphertext,
       const std::vector<double> &coefficients) const override;
 
-  /////////////////////////////////////
+  virtual Ciphertext<DCRTPoly> EvalPolyLinear(
+      ConstCiphertext<DCRTPoly> x,
+      const std::vector<double> &coefficients) const override;
+
+  Ciphertext<DCRTPoly> InnerEvalPolyPS(
+      ConstCiphertext<DCRTPoly> x,
+      const std::vector<double> &coefficients,
+      uint32_t k, uint32_t m,
+      std::vector<Ciphertext<DCRTPoly>> &powers,
+      std::vector<Ciphertext<DCRTPoly>> &powers2) const;
+
+  virtual Ciphertext<DCRTPoly> EvalPolyPS(
+      ConstCiphertext<DCRTPoly> x,
+      const std::vector<double> &coefficients) const override;
+
+  //------------------------------------------------------------------------------
+  // EVAL CHEBYSHEV SERIES
+  //------------------------------------------------------------------------------
+
+  virtual Ciphertext<DCRTPoly> EvalChebyshevSeries(
+      ConstCiphertext<DCRTPoly> ciphertext,
+      const std::vector<double>& coefficients,
+      double a, double b) const override;
+
+  virtual Ciphertext<DCRTPoly> EvalChebyshevSeriesLinear(
+      ConstCiphertext<DCRTPoly> ciphertext,
+      const std::vector<double>& coefficients,
+      double a, double b) const override;
+
+  Ciphertext<DCRTPoly> InnerEvalChebyshevPS(
+      ConstCiphertext<DCRTPoly> x,
+      const std::vector<double> &coefficients,
+      uint32_t k, uint32_t m,
+      std::vector<Ciphertext<DCRTPoly>> &T,
+      std::vector<Ciphertext<DCRTPoly>> &T2) const;
+
+  virtual Ciphertext<DCRTPoly> EvalChebyshevSeriesPS(
+      ConstCiphertext<DCRTPoly> ciphertext,
+      const std::vector<double>& coefficients,
+      double a, double b) const override;
+
+  //------------------------------------------------------------------------------
+  // EVAL LINEAR TRANSFORMATION
+  //------------------------------------------------------------------------------
+
+  //------------------------------------------------------------------------------
   // SERIALIZATION
-  /////////////////////////////////////
+  //------------------------------------------------------------------------------
 
   template <class Archive>
   void save(Archive &ar) const {

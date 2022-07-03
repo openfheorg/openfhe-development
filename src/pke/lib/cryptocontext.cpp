@@ -294,11 +294,28 @@ void CryptoContextImpl<Element>::EvalAtIndexKeyGen(
   auto evalKeys = GetScheme()->EvalAtIndexKeyGen(
       publicKey, privateKey, indexList);
 
-  evalAutomorphismKeyMap()[privateKey->GetKeyTag()] = evalKeys;
+  auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
+  if (ekv == GetAllEvalAutomorphismKeys().end()) {
+    GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
+  } else {
+    auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
+    auto iterRowKeys = evalKeys->begin();
+    while (iterRowKeys != evalKeys->end()) {
+      auto idx = iterRowKeys->first;
+      // Search current rotation key map and add key
+      // only if it doesn't exist
+      if (currRotMap.find(idx) == currRotMap.end()) {
+        currRotMap.insert(*iterRowKeys);
+      }
+      iterRowKeys++;
+    }
+  }
+
+//  evalAutomorphismKeyMap()[privateKey->GetKeyTag()] = evalKeys;
 }
 
 template <typename Element>
-const std::map<usint, EvalKey<Element>>&
+std::map<usint, EvalKey<Element>>&
 CryptoContextImpl<Element>::GetEvalAutomorphismKeyMap(const std::string& keyID) {
   auto ekv = evalAutomorphismKeyMap().find(keyID);
   if (ekv == evalAutomorphismKeyMap().end())
@@ -609,6 +626,57 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
   *plaintext = std::move(decrypted);
 
   return result;
+}
+
+//------------------------------------------------------------------------------
+// Advanced SHE LINEAR TRANSFORMATION
+//------------------------------------------------------------------------------
+
+// TODO Andrey add from bootstrapping
+
+//------------------------------------------------------------------------------
+// FHE Bootstrap Methods
+//------------------------------------------------------------------------------
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalBootstrapSetup(
+    std::vector<uint32_t> levelBudget,
+    std::vector<uint32_t> dim1,
+    uint32_t numSlots) {
+  GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, numSlots);
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalBootstrapKeyGen(
+    const PrivateKey<Element> privateKey, uint32_t slots) {
+  if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
+    OPENFHE_THROW(config_error, "Private key passed to EvalBootstapKeyGen was not generated with this crypto context");
+  }
+
+  auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, slots);
+
+  auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
+  if (ekv == GetAllEvalAutomorphismKeys().end()) {
+    GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
+  } else {
+    auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
+    auto iterRowKeys = evalKeys->begin();
+    while (iterRowKeys != evalKeys->end()) {
+      auto idx = iterRowKeys->first;
+      // Search current rotation key map and add key
+      // only if it doesn't exist
+      if (currRotMap.find(idx) == currRotMap.end()) {
+        currRotMap.insert(*iterRowKeys);
+      }
+      iterRowKeys++;
+    }
+  }
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalBootstrap(
+    ConstCiphertext<Element> ciphertext) const {
+  return GetScheme()->EvalBootstrap(ciphertext);
 }
 
 }  // namespace lbcrypto

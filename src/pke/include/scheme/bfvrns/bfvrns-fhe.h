@@ -29,17 +29,37 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_RNS_ALLRNS_H
-#define LBCRYPTO_CRYPTO_RNS_ALLRNS_H
+#ifndef LBCRYPTO_CRYPTO_BFVRNS_FHE_H
+#define LBCRYPTO_CRYPTO_BFVRNS_FHE_H
 
-#include "schemerns/rns-advancedshe.h"
-#include "schemerns/rns-cryptoparameters.h"
-#include "schemerns/rns-leveledshe.h"
-#include "schemerns/rns-multiparty.h"
-#include "schemerns/rns-parametergeneration.h"
-#include "schemerns/rns-pke.h"
-#include "schemerns/rns-pre.h"
 #include "schemerns/rns-fhe.h"
-#include "schemerns/rns-scheme.h"
+
+/**
+ * @namespace lbcrypto
+ * The namespace of lbcrypto
+ */
+namespace lbcrypto {
+
+class FHEBFVRNS : public FHERNS {
+public:
+  virtual ~FHEBFVRNS() {}
+
+  /////////////////////////////////////
+  // SERIALIZATION
+  /////////////////////////////////////
+
+  template <class Archive>
+  void save(Archive &ar) const {
+    ar(cereal::base_class<FHERNS>(this));
+  }
+
+  template <class Archive>
+  void load(Archive &ar) {
+    ar(cereal::base_class<FHERNS>(this));
+  }
+
+  std::string SerializedObjectName() const { return "FHEBFVRNS"; }
+};
+}  // namespace lbcrypto
 
 #endif

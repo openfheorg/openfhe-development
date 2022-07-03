@@ -108,6 +108,21 @@ public:
   virtual void EvalMultInPlace(Ciphertext<DCRTPoly> &ciphertext,
                               double constant) const override;
 
+  virtual Ciphertext<DCRTPoly> MultByInteger(
+      ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const override;
+
+  virtual void MultByIntegerInPlace(
+      Ciphertext<DCRTPoly> &ciphertext, uint64_t integer) const override;
+
+  /////////////////////////////////////
+  // AUTOMORPHISM
+  /////////////////////////////////////
+
+  virtual Ciphertext<DCRTPoly> EvalFastRotationExt(
+      ConstCiphertext<DCRTPoly> ciphertext, usint index,
+      const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
+      const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const override;
+
   /////////////////////////////////////
   // Mod Reduce
   /////////////////////////////////////

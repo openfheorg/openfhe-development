@@ -397,6 +397,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(
   return EvalMultCore(c1, c2);
 }
 
+
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(
     Ciphertext<DCRTPoly> &ciphertext1,
     Ciphertext<DCRTPoly> &ciphertext2) const {
@@ -417,6 +418,45 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(
 
   AdjustLevelsAndDepthToOneInPlace(ciphertext1, ciphertext2);
   return EvalMultCore(ciphertext1, ciphertext2);
+}
+
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquare(
+    ConstCiphertext<DCRTPoly> ciphertext) const {
+  const auto cryptoParams =
+      std::static_pointer_cast<CryptoParametersRNS>(
+          ciphertext->GetCryptoParameters());
+
+  if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    return EvalSquareCore(ciphertext);
+  }
+
+  Ciphertext<DCRTPoly> c = ciphertext->Clone();
+
+  if ((cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) && (c->GetDepth() == 2)) {
+    ModReduceInternalInPlace(c, 1);
+  }
+
+  return EvalSquareCore(c);
+}
+
+Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquareMutable(
+    Ciphertext<DCRTPoly> &ciphertext) const {
+  const auto cryptoParams =
+      std::static_pointer_cast<CryptoParametersRNS>(
+          ciphertext->GetCryptoParameters());
+
+  if (cryptoParams->GetRescalingTechnique() == NORESCALE) {
+    return EvalSquareCore(ciphertext);
+  }
+
+  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+    Ciphertext<DCRTPoly> c = ciphertext->Clone();
+    return EvalSquareCore(c);
+  }
+  if(ciphertext->GetDepth() == 2) {
+    ModReduceInternalInPlace(ciphertext, 1);
+  }
+  return EvalSquareCore(ciphertext);
 }
 
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalMult(
@@ -529,6 +569,39 @@ void LeveledSHERNS::EvalMultMutableInPlace(
   return;
 }
 
+Ciphertext<DCRTPoly> LeveledSHERNS::MultByMonomial(
+    ConstCiphertext<DCRTPoly> ciphertext, usint power) const {
+  Ciphertext<DCRTPoly> result = ciphertext->Clone();
+  MultByMonomialInPlace(result, power);
+  return result;
+}
+
+void LeveledSHERNS::MultByMonomialInPlace(
+    Ciphertext<DCRTPoly> &ciphertext, usint power) const {
+
+  std::vector<DCRTPoly> &cv = ciphertext->GetElements();
+  const auto elemParams = cv[0].GetParams();
+  auto paramsNative = elemParams->GetParams()[0];
+  usint N = elemParams->GetRingDimension();
+  usint M = 2 * N;
+
+  NativePoly monomial(paramsNative, Format::COEFFICIENT, true);
+
+  usint powerReduced = power % M;
+  usint index = power % N;
+  monomial[index] = powerReduced < N ?
+      NativeInteger(1) :
+      paramsNative->GetModulus() - NativeInteger(1);
+
+  DCRTPoly monomialDCRT(elemParams, Format::COEFFICIENT, true);
+  monomialDCRT = monomial;
+  monomialDCRT.SetFormat(Format::EVALUATION);
+
+  for (usint i = 0; i < ciphertext->GetElements().size(); i++) {
+    cv[i] *= monomialDCRT;
+  }
+}
+
 /////////////////////////////////////////
 // SHE AUTOMORPHISM
 /////////////////////////////////////////
@@ -573,7 +646,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::LevelReduce(ConstCiphertext<DCRTPoly> cipher
   return result;
 }
 
-void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly> ciphertext,
+void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                        const EvalKey<DCRTPoly> evalKey,
                                        size_t levels) const {
   const auto cryptoParams =

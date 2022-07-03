@@ -42,6 +42,7 @@
 #include "scheme/bgvrns/bgvrns-leveledshe.h"
 #include "scheme/bgvrns/bgvrns-advancedshe.h"
 #include "scheme/bgvrns/bgvrns-multiparty.h"
+#include "scheme/bgvrns/bgvrns-fhe.h"
 #include "scheme/bgvrns/bgvrns-scheme.h"
 
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
@@ -51,6 +52,7 @@
 #include "scheme/bfvrns/bfvrns-leveledshe.h"
 #include "scheme/bfvrns/bfvrns-advancedshe.h"
 #include "scheme/bfvrns/bfvrns-multiparty.h"
+#include "scheme/bfvrns/bfvrns-fhe.h"
 #include "scheme/bfvrns/bfvrns-scheme.h"
 
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
@@ -60,6 +62,7 @@
 #include "scheme/ckksrns/ckksrns-leveledshe.h"
 #include "scheme/ckksrns/ckksrns-advancedshe.h"
 #include "scheme/ckksrns/ckksrns-multiparty.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-scheme.h"
 
 #endif /* SRC_PKE_INCLUDE_SCHEME_ALLSCHEME_H_ */

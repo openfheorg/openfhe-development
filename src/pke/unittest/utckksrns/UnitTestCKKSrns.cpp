@@ -1756,7 +1756,7 @@ protected:
 
             /* Testing EvalPoly
              */
-            Ciphertext<Element> cResult1 = cc->EvalPoly(ciphertext1, coefficients1);
+            Ciphertext<Element> cResult1 = cc->EvalPolyLinear(ciphertext1, coefficients1);
             Plaintext results1;
             cc->Decrypt(kp.secretKey, cResult1, &results1);
             results1->SetLength(encodedLength);
@@ -1765,7 +1765,7 @@ protected:
             checkEquality(plaintextResult1->GetCKKSPackedValue(), results1->GetCKKSPackedValue(), epsHigh,
                 failmsg + " EvalPoly with positive coefficients failed: " + buffer1.str());
 
-            Ciphertext<Element> cResult2 = cc->EvalPoly(ciphertext1, coefficients2);
+            Ciphertext<Element> cResult2 = cc->EvalPolyLinear(ciphertext1, coefficients2);
             Plaintext results2;
             cc->Decrypt(kp.secretKey, cResult2, &results2);
             results2->SetLength(encodedLength);
@@ -1774,7 +1774,7 @@ protected:
             checkEquality(plaintextResult2->GetCKKSPackedValue(), results2->GetCKKSPackedValue(), epsHigh,
                 failmsg + " EvalPoly with negative coefficients failed: " + buffer2.str());
 
-            Ciphertext<Element> cResult3 = cc->EvalPoly(ciphertext1, coefficients3);
+            Ciphertext<Element> cResult3 = cc->EvalPolyLinear(ciphertext1, coefficients3);
             Plaintext results3;
             cc->Decrypt(kp.secretKey, cResult3, &results3);
             results3->SetLength(encodedLength);
@@ -1783,7 +1783,7 @@ protected:
             checkEquality(plaintextResult3->GetCKKSPackedValue(), results3->GetCKKSPackedValue(), epsHigh,
                 failmsg + " EvalPoly for a power function failed: " + buffer3.str());
 
-            Ciphertext<Element> cResult4 = cc->EvalPoly(ciphertext1, coefficients4);
+            Ciphertext<Element> cResult4 = cc->EvalPolyLinear(ciphertext1, coefficients4);
             Plaintext results4;
             cc->Decrypt(kp.secretKey, cResult4, &results4);
             results4->SetLength(encodedLength);
@@ -1792,7 +1792,7 @@ protected:
             checkEquality(plaintextResult4->GetCKKSPackedValue(), results4->GetCKKSPackedValue(), epsHigh,
                 failmsg + " EvalPoly for negative coefficients with magnitude > 1 failed: " + buffer4.str());
 
-            Ciphertext<Element> cResult5 = cc->EvalPoly(ciphertext1, coefficients5);
+            Ciphertext<Element> cResult5 = cc->EvalPolyLinear(ciphertext1, coefficients5);
             Plaintext results5;
             cc->Decrypt(kp.secretKey, cResult5, &results5);
             results5->SetLength(encodedLength);

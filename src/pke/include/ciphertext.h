@@ -459,8 +459,14 @@ class CiphertextImpl : public CryptoObject<Element> {
   }
 
   virtual Ciphertext<Element> Clone() const {
-    Ciphertext<Element> cRes = this->CloneEmpty();
+    Ciphertext<Element> cRes = this->CloneDummy();
     cRes->SetElements(this->GetElements());
+
+    return cRes;
+  }
+
+  virtual Ciphertext<Element> CloneDummy() const {
+    Ciphertext<Element> cRes = this->CloneEmpty();
     cRes->SetDepth(this->GetDepth());
     cRes->SetLevel(this->GetLevel());
     cRes->SetHopLevel(this->GetHopLevel());
