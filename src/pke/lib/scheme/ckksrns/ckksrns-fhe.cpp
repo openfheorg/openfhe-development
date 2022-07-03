@@ -684,13 +684,10 @@ std::vector<int32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(
   int32_t bRem = precom->m_paramsDec[FFT_PARAMS::BABY_STEP_REM];
   int32_t gRem = precom->m_paramsDec[FFT_PARAMS::GIANT_STEP_REM];
 
-  int32_t stop;
   int32_t flagRem;
   if (remCollapse == 0) {
-    stop = -1;
     flagRem = 0;
   } else {
-    stop = 0;
     flagRem = 1;
   }
 
