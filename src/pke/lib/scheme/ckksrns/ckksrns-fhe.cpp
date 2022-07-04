@@ -66,36 +66,37 @@ void FHECKKSRNS::EvalBootstrapSetup(
   std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap[slots];
 
   precom->m_slots = slots;
-  // the linear method is more efficient for a level budget of 1
-  if (levelBudget[0] == 1 && levelBudget[1] == 1) {
-    // store the level budget
-    precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] = 1;
-    precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] = 1;
-    precom->m_dim1 = dim1[0];
-  } else {
-    double logSlots = std::log2(slots);
-    // Perform some checks on the level budget and compute parameters
-    std::vector<uint32_t> newBudget = levelBudget;
+  precom->m_dim1 = dim1[0];
 
-    if (levelBudget[0] > logSlots) {
-      std::cerr << "\nWarning, the level budget for encoding cannot be this large. The budget was changed to " << uint32_t(logSlots) << std::endl;
-      newBudget[0] = uint32_t(logSlots);
-    }
-    if (levelBudget[0] < 1) {
-      std::cerr << "\nWarning, the level budget for encoding has to be at least 1. The budget was changed to " << 1 << std::endl;
-      newBudget[0] = 1;
-    }
+  double logSlots = std::log2(slots);
+  // Perform some checks on the level budget and compute parameters
+  std::vector<uint32_t> newBudget = levelBudget;
 
-    if (levelBudget[1] > logSlots) {
-      std::cerr << "\nWarning, the level budget for decoding cannot be this large. The budget was changed to " << uint32_t(logSlots) << std::endl;
-      newBudget[1] = uint32_t(logSlots);
-    }
-    if (levelBudget[1] < 1) {
-      std::cerr << "\nWarning, the level budget for decoding has to be at least 1. The budget was changed to " << 1 << std::endl;
-      newBudget[1] = 1;
-    }
+  if (levelBudget[0] > logSlots) {
+    std::cerr << "\nWarning, the level budget for encoding cannot be this large. The budget was changed to " << uint32_t(logSlots) << std::endl;
+    newBudget[0] = uint32_t(logSlots);
+  }
+  if (levelBudget[0] < 1) {
+    std::cerr << "\nWarning, the level budget for encoding has to be at least 1. The budget was changed to " << 1 << std::endl;
+    newBudget[0] = 1;
+  }
 
+  if (levelBudget[1] > logSlots) {
+    std::cerr << "\nWarning, the level budget for decoding cannot be this large. The budget was changed to " << uint32_t(logSlots) << std::endl;
+    newBudget[1] = uint32_t(logSlots);
+  }
+  if (levelBudget[1] < 1) {
+    std::cerr << "\nWarning, the level budget for decoding has to be at least 1. The budget was changed to " << 1 << std::endl;
+    newBudget[1] = 1;
+  }
+
+  precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] = newBudget[0];
+  if (newBudget[0] > 1) {
     precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget[0], dim1[0]);
+  }
+
+  precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] = newBudget[1];
+  if (newBudget[1] > 1) {
     precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget[1], dim1[1]);
   }
 
@@ -138,6 +139,7 @@ void FHECKKSRNS::EvalBootstrapSetup(
       approxModDepth += R;
     }
   }
+
   uint32_t depthBT = approxModDepth + 1 +
       precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] +
       precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET];
@@ -182,7 +184,7 @@ void FHECKKSRNS::EvalBootstrapSetup(
       std::vector<std::vector<std::complex<double>>> U1(slots, std::vector<std::complex<double>>(slots));
       for (size_t i = 0; i < slots; i++) {
         for (size_t j = 0; j < slots; j++) {
-          U1[i][j] = std::complex<double>(0, 1) * U0[i][j];
+          U1[i][j] = std::complex<double>(0, 1) * ksiPows[(j * rotGroup[i]) % m];
         }
       }
       precom->m_U0Pre = EvalLinearTransformPrecompute(cc, U0, U1, 1, scaleDec, lDec);
@@ -807,7 +809,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
         result[bStep * j + i] =
             MakeAuxPlaintext(cc, elementParamsPtr,
-                Rotate(Fill(diag, M / 4), offset), 1, towersToDrop, M/4);
+                Rotate(diag, offset), 1, towersToDrop, diag.size());
       }
     }
   }
@@ -879,7 +881,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
           result[bStep * j + i] =
               MakeAuxPlaintext(cc, elementParamsPtr,
-                Rotate(Fill(vecA, M/4), offset), 1, towersToDrop, M/4);
+                Rotate(vecA, offset), 1, towersToDrop, vecA.size());
         }
       }
     }
@@ -907,7 +909,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
           result[bStep * j + i] =
               MakeAuxPlaintext(cc, elementParamsPtr,
-                  Rotate(Fill(vec, M/4), offset), 1, towersToDrop, M/4);
+                  Rotate(vec, offset), 1, towersToDrop, vec.size());
         }
       }
     }
@@ -1026,8 +1028,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
             auto rotateTemp = Rotate(coeff[s][g * i + j], rot);
 
             result[s][g * i + j] = MakeAuxPlaintext(
-                cc, paramsVector[s - stop],
-                Fill(rotateTemp, M/4), 1, level0 - s, M/4);
+                cc, paramsVector[s - stop], rotateTemp, 1, level0 - s, rotateTemp.size());
           }
         }
       }
@@ -1048,7 +1049,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
             auto rotateTemp = Rotate(coeff[stop][gRem * i + j], rot);
             result[stop][gRem * i + j] = MakeAuxPlaintext(
                 cc, paramsVector[0],
-                Fill(rotateTemp, M/4), 1, level0, M/4);
+                rotateTemp, 1, level0, rotateTemp.size());
           }
         }
       }
@@ -1083,7 +1084,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
             auto rotateTemp = Rotate(clearTemp, rot);
             result[s][g * i + j] = MakeAuxPlaintext(
                 cc, paramsVector[s - stop],
-                Fill(rotateTemp, M/4), 1, level0 - s, M/4);
+                rotateTemp, 1, level0 - s, rotateTemp.size());
           }
         }
       }
@@ -1107,8 +1108,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
 
             auto rotateTemp = Rotate(clearTemp, rot);
             result[stop][gRem * i + j] = MakeAuxPlaintext(
-                cc, paramsVector[0],
-                Fill(rotateTemp, M/4), 1, level0, M/4);
+                cc, paramsVector[0], rotateTemp, 1, level0, rotateTemp.size());
           }
         }
       }
@@ -1222,7 +1222,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
             auto rotateTemp = Rotate(coeff[s][g * i + j], rot);
             result[s][g * i + j] = MakeAuxPlaintext(
                 cc, paramsVector[s],
-                Fill(rotateTemp, M/4), 1, level0 + s, M/4);
+                rotateTemp, 1, level0 + s, rotateTemp.size());
           }
         }
       }
@@ -1244,7 +1244,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
             auto rotateTemp = Rotate(coeff[s][gRem * i + j], rot);
             result[s][gRem * i + j] = MakeAuxPlaintext(
                 cc, paramsVector[s],
-                Fill(rotateTemp, M/4), 1, level0 + s, M/4);
+                rotateTemp, 1, level0 + s, rotateTemp.size());
           }
         }
       }
@@ -1280,7 +1280,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
             auto rotateTemp = Rotate(clearTemp, rot);
             result[s][g * i + j] = MakeAuxPlaintext(
                 cc, paramsVector[s],
-                Fill(rotateTemp, M/4), 1, level0 + s, M/4);
+                rotateTemp, 1, level0 + s, rotateTemp.size());
           }
         }
       }
@@ -1306,7 +1306,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
             auto rotateTemp = Rotate(clearTemp, rot);
             result[s][gRem * i + j] = MakeAuxPlaintext(
                 cc, paramsVector[s],
-                Fill(rotateTemp, M/4), 1, level0 + s, M/4);
+                rotateTemp, 1, level0 + s, rotateTemp.size());
           }
         }
       }

@@ -83,10 +83,10 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 	// budget in levels for FFT for encoding and decoding, respectively
 	// Choose a number smaller than ceil(log2(slots))
 
-//	std::vector<uint32_t> levelBudget = { 4, 4 };
-  std::vector<uint32_t> levelBudget = { 2, 4 };
-//  std::vector<uint32_t> levelBudget = { 4, 1 };
-//  std::vector<uint32_t> levelBudget = { 5, 3 };
+	std::vector<uint32_t> levelBudget1 = { 4, 4 };
+  std::vector<uint32_t> levelBudget2 = { 2, 4 };
+  std::vector<uint32_t> levelBudget3 = { 3, 2 };
+  std::vector<uint32_t> levelBudget4 = { 1, 1 };
 
 #if NATIVEINT==128
   RescalingTechnique rescaleTech = FIXEDMANUAL;
@@ -108,7 +108,7 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 	      approxModDepth += r;
 	}
 
-	usint depth = levelsRemaining + approxModDepth + levelBudget[0] + levelBudget[1];
+	usint depth = levelsRemaining + approxModDepth + levelBudget1[0] + levelBudget1[1];
 
 
   CCParams<CryptoContextCKKSRNS> parameters;
@@ -170,12 +170,21 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 			<< std::endl;
 
 	std::cout << "dim1 = " << dim1 << std::endl;
-	std::cout << "level budget = " << levelBudget << std::endl;
+	std::cout << "level budget = " << levelBudget1 << std::endl;
 
 	TIC(t);
 
+	vector<uint32_t> slotsvec(4);
+	for (size_t i = 0; i < 4; ++i) {
+	  slotsvec[i] = slots / (1 << i);
+  }
+
 	// precomputations for bootstrapping
-	cc->EvalBootstrapSetup(levelBudget, dim1, slots);
+
+  cc->EvalBootstrapSetup(levelBudget1, dim1, slotsvec[0]);
+  cc->EvalBootstrapSetup(levelBudget2, dim1, slotsvec[1]);
+  cc->EvalBootstrapSetup(levelBudget3, dim1, slotsvec[2]);
+  cc->EvalBootstrapSetup(levelBudget4, dim1, slotsvec[3]);
 
 //	std::cout << "gEnc = " << cc->GetGiantStepEnc() << std::endl;
 //	std::cout << "# rot Enc = " << cc->GetNumRotationsEnc() << std::endl;
@@ -192,86 +201,75 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 			<< timePrecomp / 1000.0 << " s" << std::endl;
 
 	auto keyPair = cc->KeyGen();
-
-	// is the packing sparse or full?
-	int32_t sparseFlag = (slots < n/2) ? 1 : 0;
+  cc->EvalMultKeyGen(keyPair.secretKey);
 
 	// generation of all keys needed for bootstrapping
-	TIC(t);
 
-	cc->EvalBootstrapKeyGen(keyPair.secretKey, sparseFlag);
+	for (size_t i = 0; i < 4; ++i) {
+	  TIC(t);
+	  cc->EvalBootstrapKeyGen(keyPair.secretKey, slotsvec[i]);
+	  timeKeyGen = TOC(t);
+	  std::cout << "\nAutomorphism key generation time: " << timeKeyGen / 1000.0
+	      << " s" << std::endl;
+	  std::vector<std::complex<double>> a( {  0.111111, 0.222222, 0.333333,
+	      0.444444, 0.555555, 0.666666, 0.777777, 0.888888});
 
-	timeKeyGen = TOC(t);
+	  std::cerr << "slots: " << slotsvec[i] << std::endl;
 
-	std::cout << "\nAutomorphism key generation time: " << timeKeyGen / 1000.0
-			<< " s" << std::endl;
+	  size_t encodedLength = a.size();
 
-	cc->EvalMultKeyGen(keyPair.secretKey);
+	  std::vector<std::complex<double>> input(Fill(a, slotsvec[i]));
+	  Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, depth - 1, nullptr, slotsvec[i]);
+	  auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
-	std::vector<std::complex<double>> a( {  0.111111, 0.222222, 0.333333,
-			0.444444, 0.555555, 0.666666, 0.777777, 0.888888});
+    std::cerr << "slots: " << ciphertext->GetSlots() << std::endl;
 
-	size_t encodedLength = a.size();
+	  std::cerr << "\nNumber of levels before bootstrapping: "
+	      << ciphertext->GetElements()[0].GetNumOfElements() - 1
+	      << std::endl;
 
-	std::vector<std::complex<double>> input(Fill(a,n/2));
+	  TIC(t);
+	  auto ciphertextAfter = cc->EvalBootstrap(ciphertext);
+	  timeBootstrap = TOC(t);
+	  std::cout << "\nBootstrapping time: " << timeBootstrap / 1000.0 << " s"
+	      << std::endl;
+	  std::cerr << "\nNumber of levels consumed: "
+	      << depth - ciphertextAfter->GetElements()[0].GetNumOfElements()
+	          + ciphertextAfter->GetDepth() << std::endl;
+	  std::cerr << "\nNumber of levels remaining: "
+	      << ciphertextAfter->GetElements()[0].GetNumOfElements()
+	          - ciphertextAfter->GetDepth() << std::endl;
 
-	Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, depth - 1);
+	  Plaintext result;
+	  std::cerr << "ciphertextAfter level: " << ciphertextAfter->GetLevel() << std::endl;
+	  std::cerr << "ciphertextAfter depth: " << ciphertextAfter->GetDepth() << std::endl;
+	  std::cerr << "ciphertextAfter    sf: " << ciphertextAfter->GetScalingFactor() << std::endl;
+	  cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
+	  std::cerr << "encodedLength: " << encodedLength << std::endl;
 
-	auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
+	  result->SetLength(encodedLength);
+	  plaintext->SetLength(encodedLength);
 
-	std::cerr << "\nNumber of levels before bootstrapping: "
-			<< ciphertext1->GetElements()[0].GetNumOfElements() - 1
-			<< std::endl;
+	  std::cout << "\nEncrypted text before bootstrapping \n\t" << plaintext
+	      << std::endl;
 
-	// bootstrapping operation itself
+	  std::cout << "\nEncrypted text after bootstrapping \n\t" << result
+	      << std::endl;
 
-	TIC(t);
+	  double error = 0;
+	  for (size_t i = 0; i < encodedLength; i++) {
+	    error = error
+	        + std::fabs(
+	            (result->GetCKKSPackedValue()[i].real()
+	                - plaintext->GetCKKSPackedValue()[i].real())
+	                / plaintext->GetCKKSPackedValue()[i].real());
+	  }
 
-	auto ciphertextAfter = cc->EvalBootstrap(ciphertext1);
-
-	timeBootstrap = TOC(t);
-
-	std::cout << "\nBootstrapping time: " << timeBootstrap / 1000.0 << " s"
-			<< std::endl;
-
-	std::cerr << "\nNumber of levels consumed: "
-			<< depth - ciphertextAfter->GetElements()[0].GetNumOfElements()
-					+ ciphertextAfter->GetDepth() << std::endl;
-
-	std::cerr << "\nNumber of levels remaining: "
-			<< ciphertextAfter->GetElements()[0].GetNumOfElements()
-					- ciphertextAfter->GetDepth() << std::endl;
-
-	Plaintext result;
-  std::cerr << "ciphertextAfter level: " << ciphertextAfter->GetLevel() << std::endl;
-  std::cerr << "ciphertextAfter depth: " << ciphertextAfter->GetDepth() << std::endl;
-  std::cerr << "ciphertextAfter    sf: " << ciphertextAfter->GetScalingFactor() << std::endl;
-	cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
-  std::cerr << "encodedLength: " << encodedLength << std::endl;
-
-	result->SetLength(encodedLength);
-	plaintext1->SetLength(encodedLength);
-
-	std::cout << "\nEncrypted text before bootstrapping \n\t" << plaintext1
-			<< std::endl;
-
-	std::cout << "\nEncrypted text after bootstrapping \n\t" << result
-			<< std::endl;
-
-	double error = 0;
-	for (size_t i = 0; i < encodedLength; i++) {
-		error = error
-				+ std::fabs(
-						(result->GetCKKSPackedValue()[i].real()
-								- plaintext1->GetCKKSPackedValue()[i].real())
-								/ plaintext1->GetCKKSPackedValue()[i].real());
+	  std::cout << "\nAverage error: " << error / double(encodedLength)
+	      << std::endl;
+	  std::cout << "\nAverage error - in bits: "
+	      << std::log2(error / double(encodedLength)) << std::endl;
 	}
-
-	std::cout << "\nAverage error: " << error / double(encodedLength)
-			<< std::endl;
-	std::cout << "\nAverage error - in bits: "
-			<< std::log2(error / double(encodedLength)) << std::endl;
-
 }
 
 
@@ -355,8 +353,7 @@ void BootstrapExampleClean(MODE mode, uint32_t n, uint32_t slots, uint32_t level
 	auto keyPair = cc->KeyGen();
 
 	// generation of evaluation keys
-	int32_t sparseFlag = (slots < n/2) ? 1 : 0;
-	cc->EvalBootstrapKeyGen(keyPair.secretKey, sparseFlag);
+	cc->EvalBootstrapKeyGen(keyPair.secretKey, slots);
 
 	cc->EvalMultKeyGen(keyPair.secretKey);
 
@@ -365,9 +362,9 @@ void BootstrapExampleClean(MODE mode, uint32_t n, uint32_t slots, uint32_t level
 
 	size_t encodedLength = a.size();
 
-	std::vector<std::complex<double>> input(Fill(a,n/2));
+	std::vector<std::complex<double>> input(Fill(a, slots));
 
-	Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, depth - 1);
+	Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, depth - 1, nullptr, slots);
 
 	auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
 
