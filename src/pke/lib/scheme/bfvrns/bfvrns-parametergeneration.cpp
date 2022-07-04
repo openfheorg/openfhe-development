@@ -55,6 +55,7 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 #include "cryptocontext.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "scheme/bfvrns/bfvrns-parametergeneration.h"
+#include "scheme/scheme-utils.h"
 
 namespace lbcrypto {
 
@@ -63,7 +64,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     int32_t evalAddCount, int32_t evalMultCount,
     int32_t keySwitchCount, size_t dcrtBits,
     uint32_t nCustom,
-    uint32_t numPartQ,
+    uint32_t numDigits,
     KeySwitchTechnique ksTech,
     RescalingTechnique rsTech,
     EncryptionTechnique encTech,
@@ -86,6 +87,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   double p = static_cast<double>(cryptoParamsBFVRNS->GetPlaintextModulus());
   uint32_t relinWindow = cryptoParamsBFVRNS->GetRelinWindow();
   SecurityLevel stdLevel = cryptoParamsBFVRNS->GetStdLevel();
+  KeySwitchTechnique rsTechnique = cryptoParamsBFVRNS->GetKeySwitchTechnique();
 
   // Bound of the Gaussian error polynomial
   double Berr = sigma * sqrt(alpha);
@@ -123,6 +125,19 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     }
   };
 
+  auto noiseKS = [&](uint32_t n, double logqPrev, double w, bool mult) -> double {
+	if ((rsTechnique == HYBRID) && (!mult))
+      return  (delta(n) * Berr + delta(n) * Bkey + 1.0 )/2;
+	else if ((rsTechnique == HYBRID) && (mult))
+	// conservative estimate for HYBRID to avoid the use of method of
+	// iterative approximations; we do not know the number
+	// of moduli at this point and use an upper bound for numDigits
+      return  (evalMultCount + 1) * delta(n) * Berr;
+	else
+	  return delta(n) *
+              (floor(logqPrev / (log(2) * dcrtBits)) + 1) * w * Berr;
+  };
+
   // initial values
   uint32_t n = (nCustom > 0) ? nCustom : 512;
 
@@ -131,11 +146,13 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   // only public key encryption and EvalAdd (optional when evalAddCount = 0)
   // operations are supported the correctness constraint from section 3.5 of
   // https://eprint.iacr.org/2014/062.pdf is used
+  // optimization (noise reduction) from Section 3.1 of https://eprint.iacr.org/2021/204.pdf
+  // is also applied
   if ((evalMultCount == 0) && (keySwitchCount == 0)) {
     // Correctness constraint
     auto logqBFV = [&](uint32_t n) -> double {
       return log(p *
-                 (4 * ((evalAddCount + 1) * Vnorm(n) + evalAddCount * p) + p));
+                 (4 * ((evalAddCount + 1) * Vnorm(n) + evalAddCount) + p));
     };
 
     // initial value
@@ -175,9 +192,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     // Correctness constraint
     auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
       return log(
-          p * (4 * (Vnorm(n) + keySwitchCount * delta(n) *
-                                   (floor(logqPrev / (log(2) * dcrtBits)) + 1) *
-                                   w * Berr) +
+          p * (4 * (Vnorm(n) + keySwitchCount * noiseKS(n, logqPrev, w, false)) +
                p));
     };
 
@@ -228,24 +243,21 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   } else if ((evalAddCount == 0) && (evalMultCount > 0) &&
              (keySwitchCount == 0)) {
     // Only EvalMult operations are used in the correctness constraint
-    // the correctness constraint from section 3.5 of
-    // https://eprint.iacr.org/2014/062.pdf is used
+    // the correctness constraint from Section 3.1 of https://eprint.iacr.org/2021/204.pdf
+	// is used
 
     // base for relinearization
     double w = relinWindow == 0 ? pow(2, dcrtBits) : pow(2, relinWindow);
 
     // function used in the EvalMult constraint
-    auto epsilon1 = [&](uint32_t n) -> double { return 5 / (delta(n) * Bkey); };
-
-    // function used in the EvalMult constraint
     auto C1 = [&](uint32_t n) -> double {
-      return (1 + epsilon1(n)) * delta(n) * delta(n) * p * Bkey;
+      return delta(n) * delta(n) * p * Bkey;
     };
 
     // function used in the EvalMult constraint
     auto C2 = [&](uint32_t n, double logqPrev) -> double {
-      return delta(n) * delta(n) * Bkey * ((1 + 0.5) * Bkey + p * p) +
-             delta(n) * (floor(logqPrev / (log(2) * dcrtBits)) + 1) * w * Berr;
+      return delta(n) * delta(n) * Bkey * Bkey / 2.0 +
+    		  noiseKS(n, logqPrev, w, true);
     };
 
     // main correctness constraint
@@ -340,6 +352,8 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
         encodingParams->GetPlaintextModulus(), batchSize));
     cryptoParamsBFVRNS->SetEncodingParams(encodingParamsNew);
   }
+
+  uint32_t numPartQ = ComputeNumLargeDigits(numDigits, sizeQ - 1);
 
   cryptoParamsBFVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, 60, 0);
 
