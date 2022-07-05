@@ -56,10 +56,10 @@ class PlaintextFactory {
        std::is_same<T, NativePoly::Params>::value ||
        std::is_same<T, DCRTPoly::Params>::value,
        bool>::type = true>
-  static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep, bool pOverQ = false) {
+  static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep, EncryptionTechnique encTech = STANDARD) {
       switch (encoding) {
       case CoefPacked:
-          return std::make_shared<CoefPackedEncoding>(vp, ep, pOverQ);
+          return std::make_shared<CoefPackedEncoding>(vp, ep, encTech);
       case Packed:
           return std::make_shared<PackedEncoding>(vp, ep);
       case String:
@@ -77,10 +77,10 @@ class PlaintextFactory {
       std::is_same<T, DCRTPoly::Params>::value,
       bool>::type = true>
   static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
-      const std::vector<int64_t>& value, bool pOverQ = false,
+      const std::vector<int64_t>& value, EncryptionTechnique encTech = STANDARD,
       size_t depth = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
 
-      Plaintext pt = MakePlaintext(encoding, vp, ep, pOverQ);
+      Plaintext pt = MakePlaintext(encoding, vp, ep, encTech);
       pt->SetIntVectorValue(value);
       pt->SetDepth(depth);
       pt->SetLevel(level);
@@ -95,10 +95,10 @@ class PlaintextFactory {
       std::is_same<T, DCRTPoly::Params>::value,
       bool>::type = true>
   static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
-      const std::string& value, bool pOverQ = false,
+      const std::string& value, EncryptionTechnique encTech = STANDARD,
       size_t depth = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
 
-      Plaintext pt = MakePlaintext(encoding, vp, ep, pOverQ);
+      Plaintext pt = MakePlaintext(encoding, vp, ep, encTech);
       pt->SetStringValue(value);
       pt->SetDepth(depth);
       pt->SetLevel(level);

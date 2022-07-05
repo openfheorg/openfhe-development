@@ -639,6 +639,14 @@ public:
   // BFVrns : Encrypt : POverQ
   /////////////////////////////////////
 
+  const NativeInteger GetNegQModt() const {
+    return m_negQModt;
+  }
+
+  const NativeInteger GetNegQModtPrecon() const {
+    return m_negQModtPrecon;
+  }
+
   const NativeInteger GetNegQrModt() const {
     return m_negQrModt;
   }
