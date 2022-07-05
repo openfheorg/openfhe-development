@@ -52,8 +52,8 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
       std::static_pointer_cast<CryptoParametersRNS>(
           newKey->GetCryptoParameters());
 
-  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
   const DCRTPoly &sNew = newKey->GetPrivateElement();
+  auto elementParams = sNew.GetParams();
   const DCRTPoly &sOld = oldKey->GetPrivateElement();
 
   const auto ns = cryptoParams->GetNoiseScale();
@@ -124,12 +124,11 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
       std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
 
   const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(
+      std::static_pointer_cast<CryptoParametersRNS>(
           oldKey->GetCryptoParameters());
 
-  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
-
   const DCRTPoly &sNew = newKey->GetPrivateElement();
+  auto elementParams = sNew.GetParams();
   DCRTPoly sOld = oldKey->GetPrivateElement();
   sOld.DropLastElements(oldKey->GetCryptoContext()->GetKeyGenLevel());
 
@@ -216,10 +215,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
           newPk->GetCryptoParameters());
-
-  const std::shared_ptr<DCRTPoly::Params> elementParams =
-      cryptoParams->GetElementParams();
-
+  
   const auto ns = cryptoParams->GetNoiseScale();
   const DCRTPoly::DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   DCRTPoly::DugType dug;
@@ -234,6 +230,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
 
   const DCRTPoly &newp0 = newPk->GetPublicElements().at(0);
   const DCRTPoly &newp1 = newPk->GetPublicElements().at(1);
+  auto elementParams =newp0.GetParams();
 
   if (digitSize > 0) {
     for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
