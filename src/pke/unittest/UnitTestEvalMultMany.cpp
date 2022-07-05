@@ -75,7 +75,7 @@ template <typename Element>
 static void RunEvalMultManyTest(CryptoContext<Element> cc, std::string msg);
 
 // Tests EvalMult w/o keyswitching and EvalMultMany for BFVrns in the
-// OPTIMIZED mode
+// UNIFORM_TERNARY mode
 TEST(UTBFVrnsEVALMM, Poly_BFVrns_Eval_Mult_Many_Operations) {
   RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), "BFVrns");
 }

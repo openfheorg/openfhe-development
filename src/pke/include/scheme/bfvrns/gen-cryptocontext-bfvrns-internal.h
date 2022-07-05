@@ -65,8 +65,8 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 //			parameters.GetStandardDeviation(),
 //			assuranceMeasure,
 //			parameters.GetRootHermiteFactor(),  // TODO (dsuponit): find a way to get securityLevel of different types
-//			parameters.GetRelinWindow(),
-//			parameters.GetMode(),
+//			parameters.GetDigitSize(),
+//			parameters.GetSecretKeyDist(),
 //			parameters.GetMaxDepth()) :
 //		std::make_shared<typename ContextGeneratorType::CryptoParams>(
 //			ep,
@@ -74,8 +74,8 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 //			parameters.GetStandardDeviation(),
 //			assuranceMeasure,
 //			parameters.GetSecurityLevel(),
-//			parameters.GetRelinWindow(),
-//			parameters.GetMode(),
+//			parameters.GetDigitSize(),
+//			parameters.GetSecretKeyDist(),
 //			parameters.GetMaxDepth());
 
 	auto params =
@@ -85,8 +85,8 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 			parameters.GetStandardDeviation(),
 			assuranceMeasure,
 			parameters.GetRootHermiteFactor(),  // TODO (dsuponit): find a way to get securityLevel of different types
-			parameters.GetRelinWindow(),
-			parameters.GetMode(),
+			parameters.GetDigitSize(),
+			parameters.GetSecretKeyDist(),
 			parameters.GetMaxDepth());
 
 	params->SetStdLevel(parameters.GetSecurityLevel()); // TODO (dsuponit): do we need this as we already have root hermit factor?

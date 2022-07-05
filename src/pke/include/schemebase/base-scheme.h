@@ -152,8 +152,8 @@ class SchemeBase {
                          usint cyclOrder,
                          usint numPrimes,
                          usint scaleExp,
-                         usint relinWindow,
-                         MODE mode,
+                         usint digitSize,
+                         SecretKeyDist secretKeyDist,
                          usint firstModSize,
                          uint32_t numPartQ,
                          enum KeySwitchTechnique ksTech,
@@ -162,7 +162,7 @@ class SchemeBase {
                          enum MultiplicationTechnique multTech) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes,
-                                    scaleExp, relinWindow, mode, firstModSize, numPartQ,
+                                    scaleExp, digitSize, secretKeyDist, firstModSize, numPartQ,
                                     ksTech, rsTech, encTech, multTech);
     }
     OPENFHE_THROW(not_implemented_error,
@@ -176,8 +176,8 @@ class SchemeBase {
                          usint cyclOrder,
                          usint ptm,
                          usint numPrimes,
-                         usint relinWindow,
-                         MODE mode,
+                         usint digitSize,
+                         SecretKeyDist secretKeyDist,
                          usint firstModSize,
                          usint dcrtBits,
                          uint32_t numPartQ,
@@ -190,7 +190,7 @@ class SchemeBase {
       return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount,
                                     keySwitchCount,
                                     cyclOrder, ptm, numPrimes,
-                                    relinWindow, mode, firstModSize,
+                                    digitSize, secretKeyDist, firstModSize,
                                     dcrtBits, numPartQ, multihopQBound,
                                     ksTech, rsTech, encTech, multTech);
     }

@@ -92,8 +92,8 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
    * @param scaleExp the bit-width for plaintexts and DCRTPoly's.
-   * @param relinWindow the relinearization window
-   * @param mode
+   * @param digitSize the digit size
+   * @param secretKeyDist
    * @param ksTech the key switching technique used (e.g., BV or GHS)
    * @param firstModSize the bit-size of the first modulus
    * @param rsTech the rescaling technique used (e.g., FIXEDMANUAL or
@@ -104,8 +104,8 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
       usint cyclOrder,
       usint numPrimes,
       usint scaleExp,
-      usint relinWindow,
-      enum MODE mode,
+      usint digitSize,
+      enum SecretKeyDist secretKeyDist,
       usint firstModSize,
       uint32_t mulPartQ,
       enum KeySwitchTechnique ksTech,
@@ -126,8 +126,8 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param keySwitchCount number of KeySwitch operations per level.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
-   * @param relinWindow the relinearization window
-   * @param mode
+   * @param digitSize the digit size
+   * @param secretKeyDist
    * @param ksTech the key switching technique used (e.g., BV or GHS)
    * @param firstModSize the bit-size of the first modulus
    * @param dcrtBits the bit-width of moduli.
@@ -136,7 +136,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
       int32_t evalAddCount, int32_t keySwitchCount,
       usint cyclOrder,
-      usint ptm, usint numPrimes, usint relinWindow, MODE mode,
+      usint ptm, usint numPrimes, usint digitSize, SecretKeyDist secretKeyDist,
       usint firstModSize,
       usint dcrtBits,
       uint32_t numPartQ,

@@ -49,10 +49,10 @@ namespace lbcrypto {
   {                                                            \
     SET_TO_SCHEME_DEFAULT(SCHEME, scheme);                     \
     SET_TO_SCHEME_DEFAULT(SCHEME, ptModulus);                  \
-    SET_TO_SCHEME_DEFAULT(SCHEME, relinWindow);                \
+    SET_TO_SCHEME_DEFAULT(SCHEME, digitSize);                  \
     SET_TO_SCHEME_DEFAULT(SCHEME, standardDeviation);          \
     SET_TO_SCHEME_DEFAULT(SCHEME, rootHermiteFactor);          \
-    SET_TO_SCHEME_DEFAULT(SCHEME, mode);                       \
+    SET_TO_SCHEME_DEFAULT(SCHEME, secretKeyDist);              \
     SET_TO_SCHEME_DEFAULT(SCHEME, maxDepth);                   \
     SET_TO_SCHEME_DEFAULT(SCHEME, ksTech);                     \
     SET_TO_SCHEME_DEFAULT(SCHEME, rsTech);                     \
@@ -95,10 +95,10 @@ void Params::SetToDefaults(SCHEME scheme) {
 std::ostream& operator<<(std::ostream& os, const Params& obj) {
     os  << "scheme: " << obj.scheme
         << "; ptModulus: " << obj.ptModulus
-        << "; relinWindow: " << obj.relinWindow
+        << "; digitSize: " << obj.digitSize
         << "; standardDeviation: " << obj.standardDeviation
         << "; rootHermiteFactor: " << obj.rootHermiteFactor
-        << "; mode: " << obj.mode
+        << "; secretKeyDist: " << obj.secretKeyDist
         << "; maxDepth: " << obj.maxDepth
         << "; ksTech: " << obj.ksTech
         << "; rsTech: " << obj.rsTech

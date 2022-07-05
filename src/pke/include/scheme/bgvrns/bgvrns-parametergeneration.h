@@ -53,8 +53,8 @@ public:
    * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
    * @param ptm is the plaintext modulus.
    * @param numPrimes Number of CRT moduli.
-   * @param relinWindow The bit size of the base for BV key relinearization.
-   * @param mode
+   * @param digitSize The bit size of the base for BV key relinearization.
+   * @param secretKeyDist
    * @param firstModSize is the approximate bit size of the first CRT modulus.
    * @param dcrtBits is the approximate bit size of the remaining CRT moduli.
    * @param numPartQ is 
@@ -67,8 +67,8 @@ public:
    */
   bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                  int32_t evalAddCount, int32_t keySwitchCount,
-                 usint cyclOrder, usint ptm, usint numPrimes, usint relinWindow,
-                 MODE mode,
+                 usint cyclOrder, usint ptm, usint numPrimes, usint digitSize,
+                 SecretKeyDist secretKeyDist,
                  usint firstModSize,
                  usint dcrtBits,
                  uint32_t numPartQ,
@@ -96,7 +96,7 @@ public:
    * @param ringDimension is the dimension of the ring (n)
    * @param evalAddCount is the maximum number of additions per level.
    * @param keySwitchCount is the maximum number of key switches per level.
-   * @param relinWindow The bit size of the base for BV key relinearization.
+   * @param digitSize The bit size of the base for BV key relinearization.
    * @param auxBits is the size of the additional modulus P, used for hybrid key-switching.
    * @param ksTech is the key switching technique used, BV or Hybrid.
    * @param rsTech is the rescaling technique used.
@@ -107,7 +107,7 @@ public:
                      uint32_t ringDimension,
                      int32_t evalAddCount,
                      int32_t keySwitchCount,
-                     usint relinWindow,
+                     usint digitSize,
                      uint32_t auxBits,
                      enum KeySwitchTechnique ksTech,
                      usint numPrimes) const;

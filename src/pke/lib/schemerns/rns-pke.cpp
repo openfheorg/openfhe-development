@@ -201,10 +201,10 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
   // TODO (dsuponit): "tug" must be assigned with TernaryUniformGenerator. Otherwise the DCRTPoly constructor crashes.
   // check other files if "tug" is properly assigned
     //std::cerr << __FILE__ << ":l." << __LINE__ << std::endl;
-    //if (cryptoParams->GetMode() != RLWE) {
+    //if (cryptoParams->GetSecretKeyDist() != GAUSSIAN) {
     //    OPENFHE_THROW(math_error, "TugType tug must be assigned");
     //}
-  DCRTPoly v = cryptoParams->GetMode() == RLWE
+  DCRTPoly v = cryptoParams->GetSecretKeyDist() == GAUSSIAN
                    ? DCRTPoly(dgg, elementParams, Format::EVALUATION)
                    : DCRTPoly(tug, elementParams, Format::EVALUATION);
 

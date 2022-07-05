@@ -54,20 +54,20 @@ public:
   CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params,
                        const PlaintextModulus &plaintextModulus,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint relinWindow, MODE mode,
+                       float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
                        int maxDepth = 2,
                        KeySwitchTechnique ksTech = BV,
                        RescalingTechnique rsTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRNS(params, plaintextModulus, distributionParameter,
-          assuranceMeasure, securityLevel, relinWindow, mode, maxDepth,
+          assuranceMeasure, securityLevel, digitSize, secretKeyDist, maxDepth,
           ksTech, rsTech, encTech, multTech) {}
 
   CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint relinWindow, MODE mode,
+                       float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
                        int maxDepth = 2,
                        KeySwitchTechnique ksTech = BV,
                        RescalingTechnique rsTech = FIXEDMANUAL,
@@ -75,7 +75,7 @@ public:
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRNS(
             params, encodingParams, distributionParameter, assuranceMeasure,
-            securityLevel, relinWindow, mode, maxDepth,
+            securityLevel, digitSize, secretKeyDist, maxDepth,
             ksTech, rsTech, encTech, multTech) {}
 
   virtual ~CryptoParametersCKKSRNS() {}

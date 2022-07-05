@@ -116,7 +116,7 @@ class CryptoParametersBase : public Serializable {
     return out;
   }
 
-  virtual usint GetRelinWindow() const { return 0; }
+  virtual usint GetDigitSize() const { return 0; }
 
   virtual size_t GetMaxDepth() const { return 0; }
 

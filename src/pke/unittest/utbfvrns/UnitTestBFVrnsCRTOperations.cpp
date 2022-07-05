@@ -76,12 +76,12 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     parameters.multiplicativeDepth = 2;
     parameters.scalingFactorBits = 60;
     parameters.ksTech = BV;
-    parameters.relinWindow = 20;
+    parameters.digitSize = 20;
     parameters.securityLevel = HEStd_NotSet;
     parameters.ringDimension = 8;
     parameters.firstModSize = 60;
     parameters.batchSize = 8;
-    parameters.mode = OPTIMIZED;
+    parameters.secretKeyDist = UNIFORM_TERNARY;
     parameters.multiplicationTechnique = BEHZ;
     
     CryptoContext<Element> cc(UnitTestGenerateContext(parameters));
@@ -176,12 +176,12 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     parameters.multiplicativeDepth = 2;
     parameters.scalingFactorBits = 60;
     parameters.ksTech = BV;
-    parameters.relinWindow = 20;
+    parameters.digitSize = 20;
     parameters.securityLevel = HEStd_NotSet;
     parameters.ringDimension = 8;
     parameters.firstModSize = 60;
     parameters.batchSize = 8;
-    parameters.mode = OPTIMIZED;
+    parameters.secretKeyDist = UNIFORM_TERNARY;
     parameters.multiplicationTechnique = HPSPOVERQ;
     
     CryptoContext<Element> cc(UnitTestGenerateContext(parameters));

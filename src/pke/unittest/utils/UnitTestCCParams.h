@@ -48,9 +48,9 @@ struct UnitTestCCParams {
     double   ringDimension; // CKKSRNS, BFVRNS, BGVRNS
     double   multiplicativeDepth; // CKKSRNS, BGVRNS
     double   scalingFactorBits; // CKKSRNS, BFVRNS, BGVRNS
-    double   relinWindow; // CKKSRNS, BFVRNS, BGVRNS
+    double   digitSize; // CKKSRNS, BFVRNS, BGVRNS
     double   batchSize; // CKKSRNS, BFVRNS, BGVRNS
-    double   mode; // CKKSRNS, BFVRNS, BGVRNS
+    double   secretKeyDist; // CKKSRNS, BFVRNS, BGVRNS
     double   maxDepth; // CKKSRNS, BFVRNS, BGVRNS
     double   firstModSize; // BGVRNS
     double   securityLevel; // BFVRNS, BGVRNS

@@ -62,16 +62,16 @@ std::ostream &operator<<(std::ostream &s, PKESchemeFeature f) {
   return s;
 }
 
-std::ostream &operator<<(std::ostream &s, MODE m) {
+std::ostream &operator<<(std::ostream &s, SecretKeyDist m) {
   switch (m) {
-    case RLWE:
-      s << "RLWE";
+    case GAUSSIAN:
+      s << "GAUSSIAN";
       break;
-    case OPTIMIZED:
-      s << "OPTIMIZED";
+    case UNIFORM_TERNARY:
+      s << "UNIFORM_TERNARY";
       break;
-    case SPARSE:
-      s << "SPARSE";
+    case SPARSE_TERNARY:
+      s << "SPARSE_TERNARY";
       break;
     default:
       s << "UKNOWN";

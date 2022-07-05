@@ -78,14 +78,14 @@ KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc,
   // Private Key Generation
 
   Element s;
-  switch (cryptoParams->GetMode()) {
-    case RLWE:
+  switch (cryptoParams->GetSecretKeyDist()) {
+    case GAUSSIAN:
       s = Element(dgg, paramsPK, Format::EVALUATION);
       break;
-    case OPTIMIZED:
+    case UNIFORM_TERNARY:
       s = Element(tug, paramsPK, Format::EVALUATION);
       break;
-    case SPARSE:
+    case SPARSE_TERNARY:
       s = Element(tug, paramsPK, Format::EVALUATION, 64);
       break;
     default:
@@ -197,7 +197,7 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
     p1.DropLastElements(sizePK - sizeQ);
   }
 
-  Element v = cryptoParams->GetMode() == RLWE
+  Element v = cryptoParams->GetSecretKeyDist() == GAUSSIAN
                   ? Element(dgg, elementParams, Format::EVALUATION)
                   : Element(tug, elementParams, Format::EVALUATION);
 

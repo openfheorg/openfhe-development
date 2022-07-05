@@ -56,7 +56,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
 
     int plaintextModulus = 2;
     usint ringDimension = 1024;
-    usint relinWindow = 1;
+    usint digitSize = 1;
     usint dcrtbits = 0;
 
     usint qmodulus = 27;
@@ -64,21 +64,21 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
 
     if (security_model == 0) {	
       ringDimension = 1024;
-      relinWindow = 9;
+      digitSize = 9;
       dcrtbits = 0;
 
       qmodulus = 27;
       firstqmod = 27;
     } else if (security_model == 1) {
       ringDimension = 2048;
-      relinWindow = 18;
+      digitSize = 18;
       dcrtbits = 0;
 
       qmodulus = 54;
       firstqmod = 54;
     } else if (security_model == 2) {
       ringDimension = 8192;
-      relinWindow = 1;
+      digitSize = 1;
       dcrtbits = 30;
 
       qmodulus = 218;
@@ -92,7 +92,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     parameters.SetRingDim(ringDimension);
     parameters.SetFirstModSize(firstqmod);
     parameters.SetScalingFactorBits(dcrtbits);
-    parameters.SetRelinWindow(relinWindow);
+    parameters.SetDigitSize(digitSize);
     parameters.SetRescalingTechnique(FIXEDAUTO);
     parameters.SetMultiHopQModulusLowerBound(qmodulus);
 

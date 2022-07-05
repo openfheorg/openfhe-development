@@ -62,7 +62,7 @@ class Params {
 
     // Used in BV type Key Switching only (KeySwitchTechnique = BV)
     // Has impact on noise growth, thus has impact on parameger generation
-    usint relinWindow;
+    usint digitSize;
 
     // Used for Gaussian error generation
     // Has impact on parameger generation
@@ -72,11 +72,11 @@ class Params {
     // Currently used in BFV parameter generation
     float rootHermiteFactor;
 
-    // RLWE means Gaussian secret key distribution
-    // OPTIMIZED means Ternary secret key distribution
-    // SPARSE means sparse secret key distribution
+    // GAUSSIAN means Gaussian secret key distribution
+    // UNIFORM_TERNARY means Ternary secret key distribution
+    // SPARSE_TERNARY means sparse secret key distribution
     // both enum type and values should be renamed?
-    MODE mode;
+    SecretKeyDist secretKeyDist;
 
     // Max possible multiplicative depth of the scheme
     int maxDepth;
@@ -84,7 +84,7 @@ class Params {
     // key switching technique: BV or HYBRID currently
     // For BV we do not have extra modulus, so the security depends on ciphertext modulus Q.
     // For HYBRID we do have extra modulus P, so the security depends on modulus P*Q
-    // For BV we need relinWindow - digit size in digit decomposition
+    // For BV we need digitSize - digit size in digit decomposition
     // For HYBRID we need numLargeDigits - number of digits in digit decomposition
     // it is good to have alternative to numLargeDigits - numPrimesInDigit
     KeySwitchTechnique ksTech;
@@ -165,8 +165,8 @@ public:
     PlaintextModulus GetPlaintextModulus() const {
         return ptModulus;
     }
-    usint GetRelinWindow() const {
-        return relinWindow;
+    usint GetDigitSize() const {
+        return digitSize;
     }
     float GetStandardDeviation() const {
         return standardDeviation;
@@ -174,8 +174,8 @@ public:
     float GetRootHermiteFactor() const {
         return rootHermiteFactor;
     }
-    MODE GetMode() const {
-        return mode;
+    SecretKeyDist GetSecretKeyDist() const {
+        return secretKeyDist;
     }
     int GetMaxDepth() const {
         return maxDepth;
@@ -230,8 +230,8 @@ public:
     void SetPlaintextModulus(PlaintextModulus ptModulus0) {
         ptModulus = ptModulus0;
     }
-    void SetRelinWindow(usint relinWindow0) {
-        relinWindow = relinWindow0;
+    void SetDigitSize(usint digitSize0) {
+        digitSize = digitSize0;
     }
     void SetStandardDeviation(float standardDeviation0) {
         standardDeviation = standardDeviation0;
@@ -239,8 +239,8 @@ public:
     void SetRootHermiteFactor(float rootHermiteFactor0) {
         rootHermiteFactor = rootHermiteFactor0;
     }
-    void SetMode(MODE mode0) {
-        mode = mode0;
+    void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
+        secretKeyDist = secretKeyDist0;
     }
     void SetMaxDepth(int maxDepth0) {
         maxDepth = maxDepth0;

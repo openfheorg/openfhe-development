@@ -66,7 +66,7 @@ const size_t AUXMODSIZE = 60;
 
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
           std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-          usint numPrimes, usint scaleExp, usint relinWindow, MODE mode,
+          usint numPrimes, usint scaleExp, usint digitSize, SecretKeyDist secretKeyDist,
           usint firstModSize,
           uint32_t numPartQ,
           KeySwitchTechnique ksTech,
@@ -95,9 +95,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
         auxBits;
   }
 
-  // RLWE security constraint
+  // GAUSSIAN security constraint
   DistributionType distType =
-      (cryptoParamsCKKSRNS->GetMode() == RLWE) ? HEStd_error : HEStd_ternary;
+      (cryptoParamsCKKSRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;
   auto nRLWE = [&](usint q) -> uint32_t {
     return StdLatticeParm::FindRingDim(distType, stdLevel, q);
   };

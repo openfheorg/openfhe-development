@@ -98,18 +98,18 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_ReEncrypt& tes
 const usint PTMOD    = 256;
 const usint BATCH    = 16;
 const usint SBITS    = 60;
-const usint RWIN     = 20;
+const usint DSIZ     = 20;
 // clang-format off
 static std::vector<TEST_CASE_ReEncrypt> testCases = {
-    // TestType,  Descr, Scheme,       RDim, MultDepth, SFBits, RWin, BatchSz, Mode,      MDepth, ModSize, SecLvl, KSTech, RSTech, LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
-    { RE_ENCRYPT, "1", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   OPTIMIZED, DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS},               },
-    { RE_ENCRYPT, "2", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   RLWE,      DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS},               },
-    { RE_ENCRYPT, "3", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   OPTIMIZED, DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ},              },
-    { RE_ENCRYPT, "4", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   RLWE,      DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ},              },
-    { RE_ENCRYPT, "5", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   OPTIMIZED, DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ},         },
-    { RE_ENCRYPT, "6", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   RLWE,      DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ},         },
-    { RE_ENCRYPT, "7", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   OPTIMIZED, DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED},  },
-    { RE_ENCRYPT, "8", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  RWIN, BATCH,   RLWE,      DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED},  },
+    // TestType,  Descr, Scheme,       RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl, KSTech, RSTech, LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
+    { RE_ENCRYPT, "1", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS},              },
+    { RE_ENCRYPT, "2", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS},              },
+    { RE_ENCRYPT, "3", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ},             },
+    { RE_ENCRYPT, "4", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ},             },
+    { RE_ENCRYPT, "5", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ},        },
+    { RE_ENCRYPT, "6", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ},        },
+    { RE_ENCRYPT, "7", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
+    { RE_ENCRYPT, "8", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,   DFLT,    DFLT,   DFLT,   DFLT,   DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED}, },
     // ==========================================
 };
 // clang-format on

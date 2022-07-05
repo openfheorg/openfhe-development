@@ -221,7 +221,7 @@ void RunBFVrns() {
   parameters.SetPlaintextModulus(65537);
   parameters.SetBatchSize(batchSize);
   parameters.SetEvalMultCount(2);
-  parameters.SetRelinWindow(30);
+  parameters.SetDigitSize(30);
   parameters.SetRingDim(1 << 14);
   parameters.SetScalingFactorBits(60);
 
@@ -470,7 +470,7 @@ void RunCKKS() {
   parameters.SetKeySwitchTechnique(BV);
   parameters.SetNumLargeDigits(2);
   parameters.SetFirstModSize(60); // TODO (dsuponit): should this be set from the defaults?
-  parameters.SetRelinWindow(5);
+  parameters.SetDigitSize(5);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // enable features that you wish to use

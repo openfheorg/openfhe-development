@@ -60,18 +60,18 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   DugType dug;
 
-  usint relinWindow = cryptoParams->GetRelinWindow();
+  usint digitSize = cryptoParams->GetDigitSize();
 
   usint sizeSOld = sOld.GetNumOfElements();
   usint nWindows = 0;
   std::vector<usint> arrWindows;
-  if (relinWindow > 0) {
+  if (digitSize > 0) {
     // creates an array of digits up to a certain tower
     for (usint i = 0; i < sizeSOld; i++) {
       usint sOldMSB =
           sOld.GetElementAtIndex(i).GetModulus().GetLengthForBase(2);
-      usint curWindows = sOldMSB / relinWindow;
-      if (sOldMSB % relinWindow > 0) curWindows++;
+      usint curWindows = sOldMSB / digitSize;
+      if (sOldMSB % digitSize > 0) curWindows++;
       arrWindows.push_back(nWindows);
       nWindows += curWindows;
     }
@@ -82,10 +82,10 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
   std::vector<DCRTPoly> av(nWindows);
   std::vector<DCRTPoly> bv(nWindows);
 
-  if (relinWindow > 0) {
+  if (digitSize > 0) {
     for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
       std::vector<DCRTPoly::PolyType> sOldDecomposed =
-          sOld.GetElementAtIndex(i).PowersOfBase(relinWindow);
+          sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
 
       for (usint k = 0; k < sOldDecomposed.size(); k++) {
         DCRTPoly filtered(elementParams, Format::EVALUATION, true);
@@ -137,18 +137,18 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   DugType dug;
 
-  usint relinWindow = cryptoParams->GetRelinWindow();
+  usint digitSize = cryptoParams->GetDigitSize();
 
   usint sizeSOld = sOld.GetNumOfElements();
   usint nWindows = 0;
   std::vector<usint> arrWindows;
-  if (relinWindow > 0) {
+  if (digitSize > 0) {
     // creates an array of digits up to a certain tower
     for (usint i = 0; i < sizeSOld; i++) {
       usint sOldMSB =
           sOld.GetElementAtIndex(i).GetModulus().GetLengthForBase(2);
-      usint curWindows = sOldMSB / relinWindow;
-      if (sOldMSB % relinWindow > 0) curWindows++;
+      usint curWindows = sOldMSB / digitSize;
+      if (sOldMSB % digitSize > 0) curWindows++;
       arrWindows.push_back(nWindows);
       nWindows += curWindows;
     }
@@ -159,10 +159,10 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
   std::vector<DCRTPoly> av(nWindows);
   std::vector<DCRTPoly> bv(nWindows);
 
-  if (relinWindow > 0) {
+  if (digitSize > 0) {
     for (usint i = 0; i < sizeSOld; i++) {
       std::vector<DCRTPoly::PolyType> sOldDecomposed =
-          sOld.GetElementAtIndex(i).PowersOfBase(relinWindow);
+          sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
 
       for (usint k = 0; k < sOldDecomposed.size(); k++) {
         DCRTPoly filtered(elementParams, Format::EVALUATION, true);
@@ -230,22 +230,22 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
   std::vector<DCRTPoly> av;
   std::vector<DCRTPoly> bv;
 
-  uint32_t relinWindow = cryptoParams->GetRelinWindow();
+  uint32_t digitSize = cryptoParams->GetDigitSize();
 
   const DCRTPoly &newp0 = newPk->GetPublicElements().at(0);
   const DCRTPoly &newp1 = newPk->GetPublicElements().at(1);
 
-  if (relinWindow > 0) {
+  if (digitSize > 0) {
     for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
       std::vector<DCRTPoly::PolyType> sOldDecomposed =
-          sOld.GetElementAtIndex(i).PowersOfBase(relinWindow);
+          sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
 
       for (size_t k = 0; k < sOldDecomposed.size(); k++) {
         // Creates an element with all zeroes
         DCRTPoly filtered(elementParams, Format::EVALUATION, true);
         filtered.SetElementAtIndex(i, sOldDecomposed[k]);
 
-        DCRTPoly u = (cryptoParams->GetMode() == RLWE) ?
+        DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ?
             DCRTPoly(dgg, elementParams, Format::EVALUATION) :
             DCRTPoly(tug, elementParams, Format::EVALUATION);
 
@@ -265,7 +265,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
       DCRTPoly filtered(elementParams, Format::EVALUATION, true);
       filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
 
-      DCRTPoly u = (cryptoParams->GetMode() == RLWE) ?
+      DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ?
           DCRTPoly(dgg, elementParams, Format::EVALUATION) :
           DCRTPoly(tug, elementParams, Format::EVALUATION);
 
@@ -321,9 +321,9 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalKeySwitchPrecomputeCore(
         std::static_pointer_cast<CryptoParametersRNS>(
             cryptoParamsBase);
 
-  uint32_t relinWindow = cryptoParams->GetRelinWindow();
+  uint32_t digitSize = cryptoParams->GetDigitSize();
 
-  auto decomposed = c.CRTDecompose(relinWindow);
+  auto decomposed = c.CRTDecompose(digitSize);
   return std::make_shared<std::vector<DCRTPoly>>(decomposed.begin(), decomposed.end());
 }
 
