@@ -910,6 +910,9 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<Integer>& c
 
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<NativeInteger>& element) const {
+    if (m_vectors.size() != element.size()) {
+        OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
+    }
     DCRTPolyImpl<VecType> tmp(*this);
 
 #pragma omp parallel for
@@ -1374,6 +1377,29 @@ std::shared_ptr<typename DCRTPolyImpl<VecType>::Params> DCRTPolyImpl<VecType>::G
         rootsQP[i]  = paramsP->GetParams()[j]->GetRootOfUnity();
     }
     return std::make_shared<DCRTPolyImpl::Params>(2 * this->GetRingDimension(), moduliQP, rootsQP);
+}
+
+template <typename VecType>
+void DCRTPolyImpl<VecType>::TimesQovert(
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+    const std::vector<NativeInteger> &tInvModq,
+    const std::vector<NativeInteger> &tInvModqPrecon,
+    const NativeInteger &t,
+    const NativeInteger &MinusQModt,
+    const NativeInteger &MinusQModtPrecon) {
+  usint sizeQ = m_vectors.size();
+  usint ringDim = this->GetRingDimension();
+#pragma omp parallel for
+  for (size_t i = 0; i < sizeQ; i++) {
+    const NativeInteger &qi = paramsQ->GetParams()[i]->GetModulus();
+    const NativeInteger &tInvModqi = tInvModq[i];
+    const NativeInteger &tInvModqiPreconi = tInvModqPrecon[i];
+    for (usint ri = 0; ri < ringDim; ri++) {
+      NativeInteger &xi = m_vectors[i][ri];
+      xi.ModMulFastConstEq(MinusQModt, t, MinusQModtPrecon);
+      xi.ModMulFastConstEq(tInvModqi, qi, tInvModqiPreconi);
+    }
+  }
 }
 
 #if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
@@ -2306,6 +2332,27 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
     result.SetValues(std::move(coefficients), Format::COEFFICIENT);
 
     return result;
+}
+
+template <typename VecType>
+void DCRTPolyImpl<VecType>::ScaleAndRoundPOverQ(
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+    const std::vector<NativeInteger> &pInvModq,
+    const std::vector<NativeInteger> &pInvModqPrecon) {
+  usint sizeQ1 = m_vectors.size();
+  usint sizeQ = sizeQ1 - 1;
+  usint ringDim = this->GetRingDimension();
+  for (usint i = 0; i < sizeQ; i++) {
+    const NativeInteger &qi = paramsQ->GetParams()[i]->GetModulus();
+    const NativeInteger &pInvModqi = pInvModq[i];
+    const NativeInteger &pInvModqiPrecon = pInvModqPrecon[i];
+    for (usint ri = 0; ri < ringDim; ri++) {
+      this->m_vectors[i][ri].ModSubEq(m_vectors[sizeQ][ri], qi);
+      this->m_vectors[i][ri].ModMulFastConstEq(pInvModqi, qi, pInvModqiPrecon);
+    }
+  }
+  this->m_vectors.resize(sizeQ);
+  this->m_params = paramsQ;
 }
 
 #if defined(HAVE_INT128) && NATIVEINT == 64

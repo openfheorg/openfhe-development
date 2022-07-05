@@ -226,6 +226,8 @@ public:
   const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
     if (m_ksTechnique == HYBRID) {
       return m_paramsQP;
+    } else if (m_encTechnique == POVERQ) {
+      return m_paramsQr;
     }
     return m_params;
   }
@@ -634,6 +636,18 @@ public:
   }
 
   /////////////////////////////////////
+  // BFVrns : Encrypt : POverQ
+  /////////////////////////////////////
+
+  const NativeInteger GetNegQrModt() const {
+    return m_negQrModt;
+  }
+
+  const NativeInteger GetNegQrModtPrecon() const {
+    return m_negQrModtPrecon;
+  }
+
+  /////////////////////////////////////
   // BFVrns : Mult : ExpandCRTBasis
   /////////////////////////////////////
 
@@ -922,6 +936,30 @@ public:
    * @return the precomputed table
    */
   const std::vector<NativeInteger> &GetQDivtModq() const { return m_QDivtModq; }
+
+  /**
+   * Gets the precomputed table of 1./p_{q_i}
+   *
+   * @return the precomputed table
+   */
+  std::vector<NativeInteger> const &GetrInvModq() const { return m_rInvModq; }
+
+  /**
+   * Gets the NTL precomputations for 1./p_{q_i}
+   *
+   * @return the precomputed table
+   */
+  std::vector<NativeInteger> const &GetrInvModqPrecon() const { return m_rInvModqPrecon; }
+
+  /**
+   * Gets the Auxiliary CRT basis {Qr} = {Q U r}
+   * used in BFV encryption in mode POVERQ
+   *
+   * @return the precomputed CRT params
+   */
+  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQr() const {
+    return m_paramsQr;
+  }
 
   /////////////////////////////////////
   // BFVrnsB

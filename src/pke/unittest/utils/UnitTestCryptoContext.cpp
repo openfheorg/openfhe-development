@@ -107,6 +107,7 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
     }
     else if (BFVRNS_SCHEME == params.schemeId) {
         CCParams<CryptoContextBFVRNS> parameters;
+        parameters.SetEncryptionTechnique(POVERQ);
         setCryptoContextParametersFromUnitTestCCParams(params, parameters);
 
         cc = GenCryptoContext(parameters);

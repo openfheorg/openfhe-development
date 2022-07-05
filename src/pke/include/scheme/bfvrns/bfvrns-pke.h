@@ -50,6 +50,9 @@ class PKEBFVRNS : public PKERNS {
 public:
   virtual ~PKEBFVRNS() {}
 
+  virtual KeyPair<DCRTPoly> KeyGen(CryptoContext<DCRTPoly> cc,
+                                  bool makeSparse = false) override;
+
   /**
    * Method for encrypting plaintext using LBC
    *

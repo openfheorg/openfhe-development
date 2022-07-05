@@ -58,6 +58,8 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
                          std::to_string(mod));
 
     typename P::Integer entry = value[i];
+    std::cout << "value: " << value[i] << std::endl;
+    std::cout << "entry: " << entry << std::endl;
 
     if (value[i] < 0) {
       // It is more efficient to encode negative numbers using the ciphertext
@@ -66,7 +68,9 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
     }
 
     poly[i] = entry;
+    std::cout << "i: " << i << ", poly[i]: " << poly[i] << std::endl;
   }
+  std::cout << "poly: " << poly << std::endl;
 }
 
 bool CoefPackedEncoding::Encode() {
@@ -82,15 +86,19 @@ bool CoefPackedEncoding::Encode() {
               this->value);
     encodedNativeVector = encodedNativeVector.Times(scalingFactorInt);
   } else {
+    std::cout << "lowbound: " << LowBound() << std::endl;
+    std::cout << "highbound: " << HighBound() << std::endl;
     encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value);
   }
 
   if (this->typeFlag == IsDCRTPoly) {
+    std::cout << "this->encodedVector: " << this->encodedVector << std::endl;
     this->encodedVectorDCRT = this->encodedVector;
     encodedVectorDCRT = encodedVectorDCRT.Times(scalingFactorInt);
   }
 
   this->isEncoded = true;
+  std::cout << "encodedVec: " << encodedVectorDCRT << std::endl;
   return true;
 }
 

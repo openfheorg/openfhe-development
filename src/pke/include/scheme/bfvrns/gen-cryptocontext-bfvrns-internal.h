@@ -106,7 +106,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 		parameters.GetNumLargeDigits(),
 		parameters.GetKeySwitchTechnique(),
 		RescalingTechnique::FIXEDMANUAL,
-		EncryptionTechnique::STANDARD,
+		parameters.GetEncryptionTechnique(),
 		parameters.GetMultiplicationTechnique());
 
 	auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);

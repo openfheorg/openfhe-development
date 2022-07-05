@@ -117,6 +117,57 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     }
   }
 
+  NativeInteger modulusr = PreviousPrime<NativeInteger>(moduliQ[sizeQ - 1], 2 * n);
+  NativeInteger rootr = RootOfUnity<NativeInteger>(2 * n, modulusr);
+
+  // BFVrns : Encrypt : With extra
+    if (encTech == POVERQ) {
+      std::cout << "POVERQ encTech\n";
+      std::vector<NativeInteger> moduliQr(sizeQ + 1);
+      std::vector<NativeInteger> rootsQr(sizeQ + 1);
+      for (uint32_t i = 0; i < sizeQ; i++) {
+        moduliQr[i] = moduliQ[i];
+        rootsQr[i] = rootsQ[i];
+      }
+      moduliQr[sizeQ] = modulusr;
+      rootsQr[sizeQ] = rootr;
+      m_paramsQr =
+          std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQr, rootsQr);
+
+      m_tInvModq.resize(sizeQ + 1);
+      m_tInvModqPrecon.resize(sizeQ + 1);
+      for (usint i = 0; i < sizeQ; i++) {
+        m_tInvModq[i] = t.ModInverse(moduliQ[i]);
+        m_tInvModqPrecon[i] = m_tInvModq[i].PrepModMulConst(moduliQ[i]);
+      }
+
+      BigInteger modulusQr = modulusQ.Mul(modulusr);
+      std::cout << "Q % t: " << modulusQ.Mod(t);
+      std::cout << "Qr % t: " << modulusQr.Mod(t);
+      m_negQrModt = modulusQr.Mod(BigInteger(t)).ConvertToInt();
+      m_negQrModt = t.Sub(m_negQrModt);
+      m_negQrModtPrecon = m_negQrModt.PrepModMulConst(t);
+
+      m_tInvModq[sizeQ] = t.ModInverse(modulusr);
+      m_tInvModqPrecon[sizeQ] = m_tInvModq[sizeQ].PrepModMulConst(modulusr);
+
+      m_rInvModq.resize(sizeQ);
+      m_rInvModqPrecon.resize(sizeQ);
+      for (usint i = 0; i < sizeQ; i++) {
+        m_rInvModq[i] = modulusr.ModInverse(moduliQ[i]);
+        m_rInvModqPrecon[i] = m_rInvModq[i].PrepModMulConst(moduliQ[i]);
+      }
+
+      // compute [\floor{Q/t}]_{q_i}
+      const BigInteger QDivt = modulusQr.DividedBy(GetPlaintextModulus());
+      m_QDivtModq.resize(sizeQ + 1);
+      for (size_t i = 0; i < sizeQ + 1; i++) {
+        BigInteger qi(moduliQr[i].ConvertToInt());
+        BigInteger QDivtModqi = QDivt.Mod(qi);
+        m_QDivtModq[i] = NativeInteger(QDivtModqi.ConvertToInt());
+      }
+    }
+
   /////////////////////////////////////
   // HPS Precomputation
   /////////////////////////////////////
@@ -127,8 +178,8 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     std::vector<NativeInteger> moduliR(sizeR);
     std::vector<NativeInteger> rootsR(sizeR);
 
-    moduliR[0] = PreviousPrime<NativeInteger>(moduliQ[sizeQ - 1], 2 * n);
-    rootsR[0] = RootOfUnity<NativeInteger>(2 * n, moduliR[0]);
+    moduliR[0] = modulusr;
+    rootsR[0] = rootr;
 
     for (size_t j = 1; j < sizeR; j++) {
       moduliR[j] = PreviousPrime<NativeInteger>(moduliR[j - 1], 2 * n);
@@ -145,48 +196,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
       val[1] = mu.RShift(64).ConvertToInt();
 
       memcpy(&m_modrBarrettMu[i], val, sizeof(DoubleNativeInt));
-    }
-
-    // BFVrns : Encrypt : With extra
-    if (encTech == POVERQ) {
-      std::vector<NativeInteger> moduliQr(sizeQ + 1);
-      std::vector<NativeInteger> rootsQr(sizeQ + 1);
-      for (uint32_t i = 0; i < sizeQ; i++) {
-        moduliQr[i] = moduliQ[i];
-        rootsQr[i] = rootsQ[i];
-      }
-      moduliQr[sizeQ] = moduliR[0];
-      rootsQr[sizeQ] = rootsR[0];
-      m_paramsQr =
-          std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQr, rootsQr);
-
-      m_tInvModq.resize(sizeQ + 1);
-      m_tInvModqPrecon.resize(sizeQ + 1);
-      for (usint i = 0; i < sizeQ; i++) {
-        m_tInvModq[i] = t.ModInverse(moduliQ[i]);
-        m_tInvModqPrecon[i] = m_tInvModq[i].PrepModMulConst(moduliQ[i]);
-      }
-
-      if (extraBits == 0) {
-        m_negQModt = modulusQ.Mod(BigInteger(t)).ConvertToInt();
-        m_negQModt = t.Sub(m_negQModt);
-        m_negQModtPrecon = m_negQModt.PrepModMulConst(t);
-      } else {
-        BigInteger modulusQr = modulusQ.Mul(moduliR[0]);
-        m_negQrModt = modulusQr.Mod(BigInteger(t)).ConvertToInt();
-        m_negQrModt = t.Sub(m_negQrModt);
-        m_negQrModtPrecon = m_negQrModt.PrepModMulConst(t);
-
-        m_tInvModq[sizeQ] = t.ModInverse(moduliR[0]);
-        m_tInvModqPrecon[sizeQ] = m_tInvModq[sizeQ].PrepModMulConst(moduliR[0]);
-
-        m_rInvModq.resize(sizeQ);
-        m_rInvModqPrecon.resize(sizeQ);
-        for (usint i = 0; i < sizeQ; i++) {
-          m_rInvModq[i] = moduliR[0].ModInverse(moduliQ[i]);
-          m_rInvModqPrecon[i] = m_rInvModq[i].PrepModMulConst(moduliQ[i]);
-        }
-      }
     }
 
     // BFVrns : Mult : ExpandCRTBasis

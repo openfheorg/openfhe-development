@@ -58,6 +58,63 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 
 namespace lbcrypto {
 
+KeyPair<DCRTPoly> PKEBFVRNS::KeyGen(CryptoContext<DCRTPoly> cc,
+                                    bool makeSparse) {
+  KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
+                           std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
+
+  const auto cryptoParams =
+      std::static_pointer_cast<CryptoParametersBFVRNS>(
+          cc->GetCryptoParameters());
+
+  std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
+  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+    elementParams = cryptoParams->GetParamsQr();
+  }
+  const std::shared_ptr<ParmType> paramsPK = cryptoParams->GetParamsPK();
+
+  const auto ns = cryptoParams->GetNoiseScale();
+  const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
+  DugType dug;
+  TugType tug;
+
+  // Private Key Generation
+
+  DCRTPoly s;
+  switch (cryptoParams->GetSecretKeyDist()) {
+    case GAUSSIAN:
+      s = DCRTPoly(dgg, paramsPK, Format::EVALUATION);
+      break;
+    case UNIFORM_TERNARY:
+      s = DCRTPoly(tug, paramsPK, Format::EVALUATION);
+      break;
+    case SPARSE_TERNARY:
+      s = DCRTPoly(tug, paramsPK, Format::EVALUATION, 64);
+      break;
+    default:
+      break;
+  }
+
+  // Public Key Generation
+
+  DCRTPoly a(dug, paramsPK, Format::EVALUATION);
+  DCRTPoly e(dgg, paramsPK, Format::EVALUATION);
+
+  DCRTPoly b = ns * e - a * s;
+
+  usint sizeQ = elementParams->GetParams().size();
+  usint sizePK = paramsPK->GetParams().size();
+  if (sizePK > sizeQ) {
+    s.DropLastElements(sizePK - sizeQ);
+  }
+
+  keyPair.secretKey->SetPrivateElement(std::move(s));
+  keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
+  keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
+
+  return keyPair;
+}
+
 Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
     const PrivateKey<DCRTPoly> privateKey) const {
   Ciphertext<DCRTPoly> ciphertext(
@@ -68,14 +125,31 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
           privateKey->GetCryptoParameters());
 
   const auto elementParams = cryptoParams->GetElementParams();
+  auto encParams = elementParams;
+
+  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+    encParams = cryptoParams->GetParamsQr();
+    ptxt.SetFormat(Format::COEFFICIENT);
+    Poly bigPtxt = ptxt.CRTInterpolate();
+    DCRTPoly plain(bigPtxt, encParams);
+    ptxt = plain;
+  }
 
   std::shared_ptr<std::vector<DCRTPoly>> ba =
-      EncryptZeroCore(privateKey, elementParams);
-
-  ptxt.SetFormat(Format::EVALUATION);
+      EncryptZeroCore(privateKey, encParams);
 
   const std::vector<NativeInteger> &QDivtModq = cryptoParams->GetQDivtModq();
-  (*ba)[0] += ptxt.Times(QDivtModq);
+  DCRTPoly prod = ptxt.Times(QDivtModq);
+  prod.SetFormat(Format::EVALUATION);
+  (*ba)[0] += prod;
+
+  (*ba)[0].SetFormat(Format::COEFFICIENT);
+  (*ba)[1].SetFormat(Format::COEFFICIENT);
+
+  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+    (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq(), cryptoParams->GetrInvModqPrecon());
+    (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq(), cryptoParams->GetrInvModqPrecon());
+  }
 
   ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
   ciphertext->SetDepth(1);
@@ -93,14 +167,55 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
           publicKey->GetCryptoParameters());
 
   const auto elementParams = cryptoParams->GetElementParams();
+  auto encParams = elementParams;
+
+  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+    std::cout << "plaintext: " << ptxt << std::endl;
+    encParams = cryptoParams->GetParamsQr();
+    ptxt.SetFormat(Format::COEFFICIENT);
+    Poly bigPtxt = ptxt.CRTInterpolate();
+    std::cout << "bigPtxt: " << bigPtxt << std::endl;
+    DCRTPoly plain(bigPtxt, encParams);
+    ptxt = plain;
+    std::cout << "plain: " << ptxt << std::endl;
+    ptxt.SetFormat(Format::COEFFICIENT);
+  }
 
   std::shared_ptr<std::vector<DCRTPoly>> ba =
-      EncryptZeroCore(publicKey, elementParams);
+      EncryptZeroCore(publicKey, encParams);
 
-  ptxt.SetFormat(Format::EVALUATION);
+  if (0) {
+    const NativeInteger &MinusQpModt = cryptoParams->GetNegQrModt();
+    const NativeInteger &MinusQpModtPrecon = cryptoParams->GetNegQrModtPrecon();
+    const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
+    const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
+    const NativeInteger t = cryptoParams->GetPlaintextModulus();
 
-  const std::vector<NativeInteger> &QDivtModq = cryptoParams->GetQDivtModq();
-  (*ba)[0] += ptxt.Times(QDivtModq);
+    DCRTPoly prod = ptxt;
+    prod.TimesQovert(encParams, tInvModq, tInvModqPrecon, t, MinusQpModt, MinusQpModtPrecon);
+    std::cout << "prod: " << prod << std::endl;
+    prod.SetFormat(Format::EVALUATION);
+    (*ba)[0] += prod;
+    
+  } else {
+    const std::vector<NativeInteger> &QDivtModq = cryptoParams->GetQDivtModq();
+    DCRTPoly prod = ptxt.Times(QDivtModq);
+    std::cout << "prod: " << prod << std::endl;
+    prod.SetFormat(Format::EVALUATION);
+    (*ba)[0] += prod;
+  }
+
+  (*ba)[0].SetFormat(Format::COEFFICIENT);
+  (*ba)[1].SetFormat(Format::COEFFICIENT);
+
+  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+    (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq(), cryptoParams->GetrInvModqPrecon());
+    (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq(), cryptoParams->GetrInvModqPrecon());
+  }
+  std::cout << "ba[0]: " << (*ba)[0] << std::endl;
+
+  (*ba)[0].SetFormat(Format::EVALUATION);
+  (*ba)[1].SetFormat(Format::EVALUATION);
 
   ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
   ciphertext->SetDepth(1);
