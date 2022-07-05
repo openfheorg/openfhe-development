@@ -211,7 +211,7 @@ class PlaintextImpl {
   void SetScalingFactorInt(NativeInteger sf) { scalingFactorInt = sf; }
 
   /**
-   * Get the scaling factor of the plaintext for BGV-based plaintexts.
+   * Get the encryption technique of the plaintext for BFV-based plaintexts.
    */
   const EncryptionTechnique GetEncryptionTechnique() const { return encTech; }
 

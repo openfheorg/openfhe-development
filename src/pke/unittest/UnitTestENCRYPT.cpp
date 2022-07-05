@@ -98,7 +98,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_Encrypt_Decryp
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint BATCH = 8;
+constexpr usint BATCH = 16;
 static std::vector<TEST_CASE_Encrypt_Decrypt> testCases = {
     // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech
     { STRING_TEST, "01", {BGVRNS_SCHEME, 256,  2,         59,     DFLT, BATCH,   GAUSSIAN,        1,      60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
@@ -238,9 +238,8 @@ TEST_P(Encrypt_Decrypt, ENCRYPT) {
     auto test = GetParam();
     if (test.testCaseType == STRING_TEST)
         EncryptionString(test, test.buildTestName());
-    else if (test.testCaseType == COEF_PACKED_TEST) {
-        EncryptionCoefPacked(test, test.buildTestName());
-    }
+    else if (test.testCaseType == COEF_PACKED_TEST)
+        EncryptionCoefPacked(test, test.buildTestName());\
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, Encrypt_Decrypt, ::testing::ValuesIn(testCases), testName);

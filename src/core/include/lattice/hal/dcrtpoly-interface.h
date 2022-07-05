@@ -886,8 +886,8 @@ public:
       const std::vector<NativeInteger> &tInvModq,
       const std::vector<NativeInteger> &tInvModqPrecon,
       const NativeInteger &t,
-      const NativeInteger &MinusQModt,
-      const NativeInteger &MinusQModtPrecon) = 0;
+      const NativeInteger &NegQModt,
+      const NativeInteger &NegQModtPrecon) = 0;
 
     /**
    * @brief Performs approximate CRT basis switching:
