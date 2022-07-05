@@ -639,14 +639,6 @@ public:
   // BFVrns : Encrypt : POverQ
   /////////////////////////////////////
 
-  const NativeInteger GetNegQModt() const {
-    return m_negQModt;
-  }
-
-  const NativeInteger GetNegQModtPrecon() const {
-    return m_negQModtPrecon;
-  }
-
   const NativeInteger GetNegQrModt() const {
     return m_negQrModt;
   }
@@ -654,14 +646,6 @@ public:
   const NativeInteger GetNegQrModtPrecon() const {
     return m_negQrModtPrecon;
   }
-
-  /**
-   * Method that returns the precomputed values for [t^(-1)]_{a} where a is from {q_i} U r
-   * Used in ModulusSwitching.
-   *
-   * @return the pre-computed values.
-   */
-  const std::vector<NativeInteger> &GettInvModqr() const { return m_tInvModqr; }
 
   /////////////////////////////////////
   // BFVrns : Mult : ExpandCRTBasis
@@ -952,6 +936,30 @@ public:
    * @return the precomputed table
    */
   std::vector<NativeInteger> const &GetrInvModq() const { return m_rInvModq; }
+
+  /**
+   * Gets the Auxiliary CRT basis {Qr} = {Q U r}
+   * used in BFV encryption in mode POVERQ
+   *
+   * @return the precomputed CRT params
+   */
+  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQr() const {
+    return m_paramsQr;
+  }
+
+  /**
+   * Gets the precomputed table of 1./p_{q_i}
+   *
+   * @return the precomputed table
+   */
+  std::vector<NativeInteger> const &GetrInvModq() const { return m_rInvModq; }
+
+  /**
+   * Gets the NTL precomputations for 1./p_{q_i}
+   *
+   * @return the precomputed table
+   */
+  std::vector<NativeInteger> const &GetrInvModqPrecon() const { return m_rInvModqPrecon; }
 
   /**
    * Gets the Auxiliary CRT basis {Qr} = {Q U r}

@@ -126,6 +126,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
 
   const auto elementParams = cryptoParams->GetElementParams();
   auto encParams = elementParams;
+<<<<<<< HEAD
 
   std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
   if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
@@ -165,6 +166,32 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
 
   (*ba)[0].SetFormat(Format::EVALUATION);
   (*ba)[1].SetFormat(Format::EVALUATION);
+=======
+
+  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+    encParams = cryptoParams->GetParamsQr();
+    ptxt.SetFormat(Format::COEFFICIENT);
+    Poly bigPtxt = ptxt.CRTInterpolate();
+    DCRTPoly plain(bigPtxt, encParams);
+    ptxt = plain;
+  }
+
+  std::shared_ptr<std::vector<DCRTPoly>> ba =
+      EncryptZeroCore(privateKey, encParams);
+
+  const std::vector<NativeInteger> &QDivtModq = cryptoParams->GetQDivtModq();
+  DCRTPoly prod = ptxt.Times(QDivtModq);
+  prod.SetFormat(Format::EVALUATION);
+  (*ba)[0] += prod;
+
+  (*ba)[0].SetFormat(Format::COEFFICIENT);
+  (*ba)[1].SetFormat(Format::COEFFICIENT);
+
+  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+    (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq(), cryptoParams->GetrInvModqPrecon());
+    (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq(), cryptoParams->GetrInvModqPrecon());
+  }
+>>>>>>> Initial POVERQ changes.
 
   ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
   ciphertext->SetDepth(1);
@@ -184,41 +211,50 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   const auto elementParams = cryptoParams->GetElementParams();
   auto encParams = elementParams;
 
-  std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
   if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+    std::cout << "plaintext: " << ptxt << std::endl;
     encParams = cryptoParams->GetParamsQr();
     ptxt.SetFormat(Format::COEFFICIENT);
     Poly bigPtxt = ptxt.CRTInterpolate();
+    std::cout << "bigPtxt: " << bigPtxt << std::endl;
     DCRTPoly plain(bigPtxt, encParams);
     ptxt = plain;
-    tInvModq = cryptoParams->GettInvModqr();
+    std::cout << "plain: " << ptxt << std::endl;
+    ptxt.SetFormat(Format::COEFFICIENT);
   }
-  ptxt.SetFormat(Format::COEFFICIENT);
 
   std::shared_ptr<std::vector<DCRTPoly>> ba =
       EncryptZeroCore(publicKey, encParams);
 
-  NativeInteger NegQModt = cryptoParams->GetNegQModt();
-  NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
+  if (0) {
+    const NativeInteger &MinusQpModt = cryptoParams->GetNegQrModt();
+    const NativeInteger &MinusQpModtPrecon = cryptoParams->GetNegQrModtPrecon();
+    const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
+    const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
+    const NativeInteger t = cryptoParams->GetPlaintextModulus();
 
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
-    NegQModt = cryptoParams->GetNegQrModt();
-    NegQModtPrecon = cryptoParams->GetNegQrModtPrecon();
+    DCRTPoly prod = ptxt;
+    prod.TimesQovert(encParams, tInvModq, tInvModqPrecon, t, MinusQpModt, MinusQpModtPrecon);
+    std::cout << "prod: " << prod << std::endl;
+    prod.SetFormat(Format::EVALUATION);
+    (*ba)[0] += prod;
+    
+  } else {
+    const std::vector<NativeInteger> &QDivtModq = cryptoParams->GetQDivtModq();
+    DCRTPoly prod = ptxt.Times(QDivtModq);
+    std::cout << "prod: " << prod << std::endl;
+    prod.SetFormat(Format::EVALUATION);
+    (*ba)[0] += prod;
   }
-
-  const NativeInteger t = cryptoParams->GetPlaintextModulus();
-
-  ptxt.TimesQovert(encParams, tInvModq, t, NegQModt, NegQModtPrecon);
-  ptxt.SetFormat(Format::EVALUATION);
-  (*ba)[0] += ptxt;
 
   (*ba)[0].SetFormat(Format::COEFFICIENT);
   (*ba)[1].SetFormat(Format::COEFFICIENT);
 
   if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
-    (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
-    (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
+    (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq(), cryptoParams->GetrInvModqPrecon());
+    (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq(), cryptoParams->GetrInvModqPrecon());
   }
+  std::cout << "ba[0]: " << (*ba)[0] << std::endl;
 
   (*ba)[0].SetFormat(Format::EVALUATION);
   (*ba)[1].SetFormat(Format::EVALUATION);
