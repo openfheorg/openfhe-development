@@ -215,7 +215,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
           newPk->GetCryptoParameters());
-
+  
   const auto ns = cryptoParams->GetNoiseScale();
   const DCRTPoly::DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   DCRTPoly::DugType dug;
@@ -230,7 +230,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
 
   const DCRTPoly &newp0 = newPk->GetPublicElements().at(0);
   const DCRTPoly &newp1 = newPk->GetPublicElements().at(1);
-  auto elementParams = newp0.GetParams();
+  auto elementParams =newp0.GetParams();
 
   if (digitSize > 0) {
     for (usint i = 0; i < sOld.GetNumOfElements(); i++) {

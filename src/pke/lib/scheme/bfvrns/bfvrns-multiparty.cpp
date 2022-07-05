@@ -124,14 +124,14 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
   TugType tug;
 
   DCRTPoly s;
-  switch (cryptoParams->GetSecretKeyDist()) {
-    case GAUSSIAN:
+  switch (cryptoParams->GetMode()) {
+    case RLWE:
       s = DCRTPoly(dgg, paramsPK, Format::EVALUATION);
       break;
-    case UNIFORM_TERNARY:
+    case OPTIMIZED:
       s = DCRTPoly(tug, paramsPK, Format::EVALUATION);
       break;
-    case SPARSE_TERNARY:
+    case SPARSE:
       s = DCRTPoly(tug, paramsPK, Format::EVALUATION, 64);
       break;
     default:
