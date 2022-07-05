@@ -34,15 +34,15 @@
  */
 
 #include "encoding/coefpackedencoding.h"
+#include "constants.h"
 
 namespace lbcrypto {
 
 template <typename P>
 inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
-                             int64_t ub, const std::vector<int64_t>& value) {
+                             int64_t ub, const std::vector<int64_t>& value,
+                             bool isPoverQ = false) {
   poly.SetValuesToZero();
-
-  const typename P::Integer& q = poly.GetModulus();
 
   for (size_t i = 0; i < value.size() && i < poly.GetLength(); i++) {
     if (value[i] > INT32_MAX || value[i] < INT32_MIN) {
@@ -58,19 +58,20 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
                          std::to_string(mod));
 
     typename P::Integer entry = value[i];
-    std::cout << "value: " << value[i] << std::endl;
-    std::cout << "entry: " << entry << std::endl;
 
     if (value[i] < 0) {
       // It is more efficient to encode negative numbers using the ciphertext
       // modulus no noise growth occurs
-      entry = q - typename P::Integer(llabs(value[i]));
+      if (isPoverQ) {
+        entry = mod - typename P::Integer(llabs(value[i]));
+      } else {
+        const typename P::Integer& q = poly.GetModulus();
+        entry = q - typename P::Integer(llabs(value[i]));
+      }
     }
 
     poly[i] = entry;
-    std::cout << "i: " << i << ", poly[i]: " << poly[i] << std::endl;
   }
-  std::cout << "poly: " << poly << std::endl;
 }
 
 bool CoefPackedEncoding::Encode() {
@@ -83,22 +84,18 @@ bool CoefPackedEncoding::Encode() {
 
   if (this->typeFlag == IsNativePoly) {
     encodeVec(this->encodedNativeVector, mod, LowBound(), HighBound(),
-              this->value);
+              this->value, this->IsPoverQ());
     encodedNativeVector = encodedNativeVector.Times(scalingFactorInt);
   } else {
-    std::cout << "lowbound: " << LowBound() << std::endl;
-    std::cout << "highbound: " << HighBound() << std::endl;
-    encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value);
+    encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value, this->IsPoverQ());
   }
 
   if (this->typeFlag == IsDCRTPoly) {
-    std::cout << "this->encodedVector: " << this->encodedVector << std::endl;
     this->encodedVectorDCRT = this->encodedVector;
     encodedVectorDCRT = encodedVectorDCRT.Times(scalingFactorInt);
   }
 
   this->isEncoded = true;
-  std::cout << "encodedVec: " << encodedVectorDCRT << std::endl;
   return true;
 }
 

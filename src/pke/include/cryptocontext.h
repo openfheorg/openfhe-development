@@ -824,16 +824,22 @@ protected:
       if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
         scf = cryptoParams->GetScalingFactorIntBig(level);
         p = PlaintextFactory::MakePlaintext(encoding, this->GetElementParams(),
-                                                 this->GetEncodingParams(), value, 1, level, scf);
+                                                 this->GetEncodingParams(), value, false, 1, level, scf);
         p->SetDepth(2);
       } else {
         scf = cryptoParams->GetScalingFactorInt(level);
         p = PlaintextFactory::MakePlaintext(encoding, this->GetElementParams(),
-                                                 this->GetEncodingParams(), value, depth, level, scf);
+                                                 this->GetEncodingParams(), value, false, depth, level, scf);
       }
     } else {
-      p = PlaintextFactory::MakePlaintext(encoding, this->GetElementParams(),
-                                               this->GetEncodingParams(), value);
+      auto elementParams = this->GetElementParams();
+      bool pOverQ = false;
+      if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+        elementParams = cryptoParams->GetParamsQr();
+        pOverQ = true;
+      }
+      p = PlaintextFactory::MakePlaintext(encoding, elementParams,
+                                               this->GetEncodingParams(), value, pOverQ);
     }
 
     return p;

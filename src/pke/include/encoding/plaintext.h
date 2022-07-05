@@ -112,9 +112,10 @@ class PlaintextImpl {
   size_t level;
   size_t depth;
   usint slots;
+  bool pOverQ;
 
  public:
-  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
+  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, bool pOverQ = false,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsPoly),
@@ -124,9 +125,10 @@ class PlaintextImpl {
         scalingFactorInt(1),
         level(0),
         depth(1),
-        slots(0) {}
+        slots(0),
+        pOverQ(pOverQ) {}
 
-  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
+  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, bool pOverQ = false,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsNativePoly),
@@ -136,9 +138,10 @@ class PlaintextImpl {
         scalingFactorInt(1),
         level(0),
         depth(1),
-        slots(0) {}
+        slots(0),
+        pOverQ(pOverQ) {}
 
-  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
+  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, bool pOverQ = false,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsDCRTPoly),
@@ -149,7 +152,8 @@ class PlaintextImpl {
         scalingFactorInt(1),
         level(0),
         depth(1),
-        slots(0) {}
+        slots(0),
+        pOverQ(pOverQ) {}
 
   PlaintextImpl(const PlaintextImpl& rhs)
       : isEncoded(rhs.isEncoded),
@@ -161,7 +165,8 @@ class PlaintextImpl {
         scalingFactorInt(rhs.scalingFactorInt),
         level(rhs.level),
         depth(rhs.depth),
-        slots(rhs.slots) {}
+        slots(rhs.slots),
+        pOverQ(rhs.pOverQ) {}
 
   PlaintextImpl(const PlaintextImpl&& rhs)
       : isEncoded(rhs.isEncoded),
@@ -173,7 +178,8 @@ class PlaintextImpl {
         scalingFactorInt(rhs.scalingFactorInt),
         level(rhs.level),
         depth(rhs.depth),
-        slots(rhs.slots) {}
+        slots(rhs.slots),
+        pOverQ(rhs.pOverQ) {}
 
   virtual ~PlaintextImpl() {}
 
@@ -202,6 +208,11 @@ class PlaintextImpl {
    * Set the scaling factor of the plaintext for BGV-based plaintexts.
    */
   void SetScalingFactorInt(NativeInteger sf) { scalingFactorInt = sf; }
+
+  /**
+   * Get the scaling factor of the plaintext for BGV-based plaintexts.
+   */
+  const bool IsPoverQ() const { return pOverQ; }
 
   /**
    * IsEncoded

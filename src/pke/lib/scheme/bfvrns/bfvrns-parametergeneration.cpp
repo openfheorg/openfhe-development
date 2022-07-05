@@ -327,10 +327,6 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   moduliQ[0] = PreviousPrime<NativeInteger>(firstInteger, 2 * n);
   rootsQ[0] = RootOfUnity<NativeInteger>(2 * n, moduliQ[0]);
 
-  std::cout << "dcrtBits: " << dcrtBits << std::endl;
-  std::cout << "n: " << n << std::endl;
-  std::cout << "moduliQ[0]: " << moduliQ[0] << std::endl;
-
   for (size_t i = 1; i < sizeQ; i++) {
     moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], 2 * n);
     rootsQ[i] = RootOfUnity<NativeInteger>(2 * n, moduliQ[i]);

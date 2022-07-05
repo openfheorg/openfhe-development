@@ -53,16 +53,16 @@ class CoefPackedEncoding : public PlaintextImpl {
       std::is_same<T, NativePoly::Params>::value ||
       std::is_same<T, DCRTPoly::Params>::value,
       bool>::type = true>
-  CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep)
-      : PlaintextImpl(vp, ep) {}
+  CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, bool pOverQ = false)
+      : PlaintextImpl(vp, ep, pOverQ) {}
 
   template <typename T, typename std::enable_if<
       std::is_same<T, Poly::Params>::value ||
       std::is_same<T, NativePoly::Params>::value ||
       std::is_same<T, DCRTPoly::Params>::value,
       bool>::type = true>
-  CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs)
-      : PlaintextImpl(vp, ep), value(coeffs) {}
+  CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs, bool pOverQ = false)
+      : PlaintextImpl(vp, ep, pOverQ), value(coeffs) {}
 
   virtual ~CoefPackedEncoding() = default;
 

@@ -142,8 +142,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
       }
 
       BigInteger modulusQr = modulusQ.Mul(modulusr);
-      std::cout << "Q % t: " << modulusQ.Mod(t);
-      std::cout << "Qr % t: " << modulusQr.Mod(t);
       m_negQrModt = modulusQr.Mod(BigInteger(t)).ConvertToInt();
       m_negQrModt = t.Sub(m_negQrModt);
       m_negQrModtPrecon = m_negQrModt.PrepModMulConst(t);

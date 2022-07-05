@@ -182,8 +182,6 @@ protected:
             size_t intSize = cc->GetRingDimension();
             auto ptm = cc->GetCryptoParameters()->GetPlaintextModulus();
             int half = ptm / 2;
-            std::cout << "ptm: " << ptm << std::endl;
-            std::cout << "half: " << half << std::endl;
 
             std::vector<int64_t> intvec;
             for (size_t ii = 0; ii < intSize; ii++) intvec.push_back(rand() % half);
@@ -207,7 +205,6 @@ protected:
             EXPECT_EQ(*plaintextIntNew, *plaintextInt)
                 << failmsg << "coef packed encrypt/decrypt failed for integer plaintext";
 
-            std::cout << "signed plaintext: " << plaintextSInt << std::endl;
             Ciphertext<Element> ciphertext5 = cc->Encrypt(kp.publicKey, plaintextSInt);
             Plaintext plaintextSIntNew;
             cc->Decrypt(kp.secretKey, ciphertext5, &plaintextSIntNew);
@@ -234,8 +231,6 @@ TEST_P(Encrypt_Decrypt, ENCRYPT) {
     if (test.testCaseType == STRING_TEST)
         EncryptionString(test, test.buildTestName());
     else if (test.testCaseType == COEF_PACKED_TEST) {
-        test.params.ringDimension = 8;
-        test.params.securityLevel = HEStd_NotSet;
         EncryptionCoefPacked(test, test.buildTestName());
     }
 }
