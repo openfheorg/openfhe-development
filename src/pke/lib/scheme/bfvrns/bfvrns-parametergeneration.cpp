@@ -97,9 +97,9 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
 
   DistributionType distType;
 
-  // supports both discrete Gaussian (RLWE) and ternary uniform distribution
-  // (OPTIMIZED) cases
-  if (cryptoParamsBFVRNS->GetSecretKeyDist() == RLWE) {
+  // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
+  // (UNIFORM_TERNARY) cases
+  if (cryptoParamsBFVRNS->GetSecretKeyDist() == GAUSSIAN) {
     Bkey = sigma * sqrt(alpha);
     distType = HEStd_error;
   } else {
@@ -115,7 +115,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     return Berr * (1. + 2. * delta(n) * Bkey);
   };
 
-  // RLWE security constraint
+  // GAUSSIAN security constraint
   auto nRLWE = [&](double logq) -> double {
     if (stdLevel == HEStd_NotSet) {
       return (logq - log(sigma)) / (4. * log(hermiteFactor));

@@ -72,9 +72,9 @@ class Params {
     // Currently used in BFV parameter generation
     float rootHermiteFactor;
 
-    // RLWE means Gaussian secret key distribution
-    // OPTIMIZED means Ternary secret key distribution
-    // SPARSE means sparse secret key distribution
+    // GAUSSIAN means Gaussian secret key distribution
+    // UNIFORM_TERNARY means Ternary secret key distribution
+    // SPARSE_TERNARY means sparse secret key distribution
     // both enum type and values should be renamed?
     SecretKeyDist secretKeyDist;
 

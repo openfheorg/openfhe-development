@@ -90,7 +90,7 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   double alpha = cryptoParamsBFVrns->GetAssuranceMeasure();
   double p = static_cast<double>(cryptoParamsBFVrns->GetPlaintextModulus());
   uint32_t n = cryptoParamsBFVrns->GetElementParams()->GetRingDimension();
-  uint32_t relinWindow = cryptoParamsBFVrns->GetRelinWindow();
+  uint32_t relinWindow = cryptoParamsBFVrns->GetDigitSize();
   KeySwitchTechnique rsTechnique = cryptoParamsBFVrns->GetKeySwitchTechnique();
 
   uint32_t k = cryptoParamsBFVrns->GetNumPerPartQ();

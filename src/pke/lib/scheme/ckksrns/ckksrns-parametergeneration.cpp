@@ -95,9 +95,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
         auxBits;
   }
 
-  // RLWE security constraint
+  // GAUSSIAN security constraint
   DistributionType distType =
-      (cryptoParamsCKKSRNS->GetSecretKeyDist() == RLWE) ? HEStd_error : HEStd_ternary;
+      (cryptoParamsCKKSRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;
   auto nRLWE = [&](usint q) -> uint32_t {
     return StdLatticeParm::FindRingDim(distType, stdLevel, q);
   };

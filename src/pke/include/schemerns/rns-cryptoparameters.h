@@ -84,7 +84,7 @@ protected:
    * @param assuranceMeasure assurance level.
    * @param securityLevel security level.
    * @param digitSize the size of the relinearization window.
-   * @param secretKeyDist sets the secretKeyDist of operation: RLWE or OPTIMIZED
+   * @param secretKeyDist sets the secretKeyDist of operation: GAUSSIAN or UNIFORM_TERNARY
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
    * @param ksTech key switching method

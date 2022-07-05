@@ -827,9 +827,8 @@ void FastRotationsDemo2() {
    * decomposition) and see how the results are incorrect.
    */
   uint32_t digitSize = 10;
-  // SecretKeyDist secretKeyDist = OPTIMIZED;  // Using ternary distribution - already default
-
   uint32_t batchSize = 8;
+
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(1);
   parameters.SetScalingFactorBits(50);

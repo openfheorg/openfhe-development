@@ -76,7 +76,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_digitSize = 1;
     m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = 2;
-    m_secretKeyDist = RLWE;
+    m_secretKeyDist = GAUSSIAN;
     m_stdLevel = HEStd_NotSet;
   }
 
@@ -109,13 +109,13 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param digitSize the size of the relinearization window.
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
-   * @param secretKeyDist mode for secret polynomial, defaults to RLWE.
+   * @param secretKeyDist mode for secret polynomial, defaults to GAUSSIAN.
    */
   CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint digitSize,
-                       int maxDepth = 2, SecretKeyDist secretKeyDist = RLWE,
+                       int maxDepth = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
                        PlaintextModulus noiseScale = 1)
       : CryptoParametersBase<Element>(params, encodingParams) {
     m_distributionParameter = distributionParameter;
@@ -141,13 +141,13 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param digitSize the size of the digit size.
    * @param maxDepth the maximum power of secret key for which the
    * relinearization key is generated
-   * @param secretKeyDist mode for secret polynomial, defaults to RLWE.
+   * @param secretKeyDist mode for secret polynomial, defaults to GAUSSIAN.
    */
   CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        SecurityLevel stdLevel, usint digitSize,
-                       int maxDepth = 2, SecretKeyDist secretKeyDist = RLWE,
+                       int maxDepth = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
                        PlaintextModulus noiseScale = 1)
       : CryptoParametersBase<Element>(params, encodingParams) {
     m_distributionParameter = distributionParameter;
@@ -211,7 +211,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   size_t GetMaxDepth() const { return m_maxDepth; }
 
   /**
-   * Gets the secretKeyDist setting: RLWE or OPTIMIZED.
+   * Gets the secretKeyDist setting: GAUSSIAN or UNIFORM_TERNARY
    *
    * @return the secretKeyDist setting.
    */
@@ -287,7 +287,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
 
   /**
    * Configures the secretKeyDist for generating the secret key polynomial
-   * @param secretKeyDist is RLWE or OPTIMIZED.
+   * @param secretKeyDist is GAUSSIAN or UNIFORM_TERNARY
    */
   void SetSecretKeyDist(SecretKeyDist secretKeyDist) { m_secretKeyDist = secretKeyDist; }
 

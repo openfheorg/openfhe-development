@@ -51,7 +51,7 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr usint                digitSize           = 0;
     constexpr float                standardDeviation   = 3.19;
     constexpr float                rootHermiteFactor   = 1.006;
-    constexpr SecretKeyDist        secretKeyDist       = OPTIMIZED;
+    constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxDepth            = 2;
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
 // Backend-specific settings for CKKS
@@ -82,7 +82,7 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr usint                digitSize           = 0;
     constexpr float                standardDeviation   = 3.19;
     constexpr float                rootHermiteFactor   = 0.0;
-    constexpr SecretKeyDist        secretKeyDist       = OPTIMIZED;
+    constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxDepth            = 2;
     constexpr KeySwitchTechnique   ksTech              = BV;          // set to avoid compiler errors
     constexpr RescalingTechnique   rsTech              = NORESCALE; // set to avoid compiler errors
@@ -107,7 +107,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr usint                digitSize           = 0;
     constexpr float                standardDeviation   = 3.19;
     constexpr float                rootHermiteFactor   = 1.006;
-    constexpr SecretKeyDist        secretKeyDist       = OPTIMIZED;
+    constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxDepth            = 2;
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
     constexpr RescalingTechnique   rsTech              = FIXEDMANUAL; // set to avoid compiler errors

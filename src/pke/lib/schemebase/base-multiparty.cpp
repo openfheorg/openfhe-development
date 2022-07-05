@@ -120,13 +120,13 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(
 
   Element s;
   switch (cryptoParams->GetSecretKeyDist()) {
-    case RLWE:
+    case GAUSSIAN:
       s = Element(dgg, paramsPK, Format::EVALUATION);
       break;
-    case OPTIMIZED:
+    case UNIFORM_TERNARY:
       s = Element(tug, paramsPK, Format::EVALUATION);
       break;
-    case SPARSE:
+    case SPARSE_TERNARY:
       s = Element(tug, paramsPK, Format::EVALUATION, 64);
       break;
     default:
