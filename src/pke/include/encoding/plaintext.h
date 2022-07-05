@@ -108,38 +108,53 @@ class PlaintextImpl {
   static const int fracCTOR = 0x04;
   static const int vecuintCTOR = 0x08;
 
-  double scalingFactor = 1;
-  NativeInteger scalingFactorInt = 1;
-  size_t level= 0;
-  size_t depth = 1;
-  usint slots = 0;
-  std::string schemeID;
+  double scalingFactor;
+  NativeInteger scalingFactorInt;
+  size_t level;
+  size_t depth;
+  usint slots;
+  bool pOverQ;
 
  public:
-  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, std::string schemeID = "",
+  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, bool pOverQ = false,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsPoly),
         encodingParams(ep),
         encodedVector(vp, Format::COEFFICIENT),
-        schemeID(schemeID) {}
+        scalingFactor(1),
+        scalingFactorInt(1),
+        level(0),
+        depth(1),
+        slots(0),
+        pOverQ(pOverQ) {}
 
-  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, std::string schemeID = "",
+  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, bool pOverQ = false,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsNativePoly),
         encodingParams(ep),
         encodedNativeVector(vp, Format::COEFFICIENT),
-        schemeID(schemeID) {}
+        scalingFactor(1),
+        scalingFactorInt(1),
+        level(0),
+        depth(1),
+        slots(0),
+        pOverQ(pOverQ) {}
 
-  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, std::string schemeID = "",
+  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, bool pOverQ = false,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsDCRTPoly),
         encodingParams(ep),
         encodedVector(vp, Format::COEFFICIENT),
         encodedVectorDCRT(vp, Format::COEFFICIENT),
-        schemeID(schemeID) {}
+        scalingFactor(1),
+        scalingFactorInt(1),
+        level(0),
+        depth(1),
+        slots(0),
+        pOverQ(pOverQ) {}
 
   PlaintextImpl(const PlaintextImpl& rhs)
       : isEncoded(rhs.isEncoded),
@@ -152,7 +167,7 @@ class PlaintextImpl {
         level(rhs.level),
         depth(rhs.depth),
         slots(rhs.slots),
-        schemeID(rhs.schemeID) {}
+        pOverQ(rhs.pOverQ) {}
 
   PlaintextImpl(const PlaintextImpl&& rhs)
       : isEncoded(rhs.isEncoded),
@@ -165,7 +180,7 @@ class PlaintextImpl {
         level(rhs.level),
         depth(rhs.depth),
         slots(rhs.slots),
-        schemeID(rhs.schemeID) {}
+        pOverQ(rhs.pOverQ) {}
 
   virtual ~PlaintextImpl() {}
 
@@ -196,9 +211,9 @@ class PlaintextImpl {
   void SetScalingFactorInt(NativeInteger sf) { scalingFactorInt = sf; }
 
   /**
-   * Get the encryption technique of the plaintext for BFV-based plaintexts.
+   * Get the scaling factor of the plaintext for BGV-based plaintexts.
    */
-  const std::string GetSchemeID() const { return schemeID; }
+  const bool IsPoverQ() const { return pOverQ; }
 
   /**
    * IsEncoded
