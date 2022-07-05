@@ -94,6 +94,9 @@ class Params {
 
     // max batch size of messages to be packed in encoding
     usint batchSize;
+    
+    //PRE security mode
+    ProxyReEncryptionMode PREMode;
 
     // number of primes in ciphertext modulus of the scheme
     // The ciphertext modulus should be seen as:
@@ -177,6 +180,11 @@ public:
     MODE GetMode() const {
         return mode;
     }
+
+    ProxyReEncryptionMode GetPREMode() const {
+        return PREMode;
+    }
+    
     int GetMaxDepth() const {
         return maxDepth;
     }
@@ -242,6 +250,11 @@ public:
     void SetMode(MODE mode0) {
         mode = mode0;
     }
+
+    void SetPREMode(ProxyReEncryptionMode premode0) {
+        PREMode = premode0;
+    }
+
     void SetMaxDepth(int maxDepth0) {
         maxDepth = maxDepth0;
     }

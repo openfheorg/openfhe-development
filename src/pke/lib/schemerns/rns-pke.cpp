@@ -87,7 +87,7 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext,
 
   const std::shared_ptr<ParmType> ptxtParams = plaintext.GetParams();
   std::shared_ptr<std::vector<DCRTPoly>> ba =
-      EncryptZeroCore(publicKey, ptxtParams);
+      EncryptZeroCore(publicKey, ptxtParams, DggType());
 
   plaintext.SetFormat(EVALUATION);
 
@@ -185,14 +185,15 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
 
 std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
     const PublicKey<DCRTPoly> publicKey,
-    const std::shared_ptr<ParmType> params) const {
+    const std::shared_ptr<ParmType> params,
+    const DggType &dgg) const {
+
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersRNS>(
           publicKey->GetCryptoParameters());
 
   const std::vector<DCRTPoly> &pk = publicKey->GetPublicElements();
   const auto ns = cryptoParams->GetNoiseScale();
-  const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   TugType tug;
 
   const std::shared_ptr<ParmType> elementParams = (params == nullptr)
@@ -208,8 +209,17 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
                    ? DCRTPoly(dgg, elementParams, Format::EVALUATION)
                    : DCRTPoly(tug, elementParams, Format::EVALUATION);
 
-  DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-  DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
+  DCRTPoly e0;
+  DCRTPoly e1;
+  
+  if (dgg.GetStd() == 1) {
+    const DggType &dggnormal = cryptoParams->GetDiscreteGaussianGenerator();
+    e0 = DCRTPoly(dggnormal, elementParams, Format::EVALUATION);
+    e1 = DCRTPoly(dggnormal, elementParams, Format::EVALUATION);
+  } else {
+    e0 = DCRTPoly(dgg, elementParams, Format::EVALUATION);
+    e1 = DCRTPoly(dgg, elementParams, Format::EVALUATION);
+  }
 
   uint32_t sizeQ = pk[0].GetParams()->GetParams().size();
   uint32_t sizeQl = elementParams->GetParams().size();

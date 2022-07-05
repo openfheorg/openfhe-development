@@ -76,7 +76,8 @@ public:
                  enum KeySwitchTechnique ksTech,
                  enum RescalingTechnique rsTech,
                  enum EncryptionTechnique encTech,
-                 enum MultiplicationTechnique multTech) const override;
+                 enum MultiplicationTechnique multTech,
+		         enum ProxyReEncryptionMode PREMode) const override;
   
   /*
    * Method that computes a security-compliant ring dimension.
@@ -111,6 +112,12 @@ public:
                      uint32_t auxBits,
                      enum KeySwitchTechnique ksTech,
                      usint numPrimes) const;
+
+  void InitializeFloddingDgg(
+    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, 
+    usint numPrimes,
+    enum KeySwitchTechnique ksTech,
+    enum ProxyReEncryptionMode PREMode) const;
 
   /////////////////////////////////////
   // SERIALIZATION

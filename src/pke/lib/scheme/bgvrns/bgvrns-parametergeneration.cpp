@@ -194,6 +194,71 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
 }
 
+void ParameterGenerationBGVRNS::InitializeFloddingDgg(
+  std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, 
+  usint numPrimes,
+  enum KeySwitchTechnique ksTech,
+  enum ProxyReEncryptionMode PREMode) const {
+  
+  const auto cryptoParamsBGVRNS =
+      std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+
+  //compute the flooding distribution parameter based on the security mode for pre
+  //get the re-encryption level and set the level after re-encryption
+  usint ringDimension = cryptoParamsBGVRNS->GetElementParams()->GetRingDimension();
+  double sigma = cryptoParamsBGVRNS->GetDistributionParameter();
+  double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
+  uint32_t r = cryptoParamsBGVRNS->GetRelinWindow();
+  double log2q = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
+
+  double B_e = sqrt(alpha)*sigma;
+  uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
+  double Bkey = (cryptoParamsBGVRNS->GetMode() == RLWE) ? sigma * sqrt(alpha) : 1;
+
+  if (PREMode == FIXED_NOISE_HRA) {
+    auto &dggflooding = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
+
+    double noise_param = PRE_SD;
+    
+    //set the flooding distribution parameter to the distribution.
+    dggflooding.SetStd(noise_param);
+
+  } else if (PREMode == NOISE_FLOODING_HRA) {
+    //get the flooding discrete gaussian distribution
+    auto &dggflooding = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
+
+    double noise_param=1;
+
+    if (ksTech == BV) {
+      if (r > 0) {
+        noise_param = pow(2,STAT_SECURITY_FLOODING) * (1 + 2 * Bkey) * (numPrimes + 1) * (log2q/r+1) * sqrt(ringDimension) * (pow(2,r)-1) * B_e;
+      } else {
+        OPENFHE_THROW(config_error, "Relinwindow value cannot be 0 for BV keyswitching");
+      }
+    } else if (ksTech == HYBRID) {
+      if (r == 0) {
+        double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
+        int numDigits = cryptoParamsBGVRNS->GetNumPartQ();
+        noise_param = numTowersPerDigit * numDigits * sqrt(ringDimension) * B_e * (1 + 2 * Bkey);
+        noise_param += auxBits * (1 + sqrt(ringDimension));
+        noise_param = pow(2,STAT_SECURITY_FLOODING) * noise_param;
+      } else {
+        OPENFHE_THROW(config_error, "Relinwindow value can be non-zero only for BV keyswitching");
+      }
+    } else {
+      OPENFHE_THROW(config_error, "Key switching technique not available to set");
+    }
+    
+    //set the flooding distribution parameter to the distribution.
+    if (noise_param == 1) {
+      OPENFHE_THROW(math_error, "parameter for noise flooding not set");
+    } else {
+      dggflooding.SetStd(noise_param);
+    }
+    
+  }
+}
+
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
     int32_t keySwitchCount, usint cyclOrder,
@@ -203,9 +268,14 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     enum KeySwitchTechnique ksTech,
     enum RescalingTechnique rsTech,
     enum EncryptionTechnique encTech,
-    enum MultiplicationTechnique multTech) const {
+    enum MultiplicationTechnique multTech,
+    enum ProxyReEncryptionMode PREMode) const {
   if(!ptm)
       OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
+
+  if ((PREMode != INDCPA) && (PREMode != FIXED_NOISE_HRA) && (PREMode != NOISE_FLOODING_HRA)) {
+      OPENFHE_THROW(not_available_error, "other HRA modes for PRE with BGVRNS not implemented yet");
+  }
 
   const auto cryptoParamsBGVRNS =
       std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
@@ -377,6 +447,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     cryptoParamsBGVRNS->SetEncodingParams(encodingParamsNew);
   }
   cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, 0);
+
+  InitializeFloddingDgg(cryptoParams, numPrimes, ksTech, PREMode);
   return true;
 }
 

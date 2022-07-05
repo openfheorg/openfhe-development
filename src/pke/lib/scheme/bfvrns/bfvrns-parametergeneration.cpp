@@ -68,7 +68,8 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     KeySwitchTechnique ksTech,
     RescalingTechnique rsTech,
     EncryptionTechnique encTech,
-    MultiplicationTechnique multTech) const {
+    MultiplicationTechnique multTech,
+    ProxyReEncryptionMode PREMode) const {
   if (!cryptoParams)
     OPENFHE_THROW(not_available_error,
                    "No crypto parameters are supplied to BFVrns ParamsGen");
@@ -77,6 +78,11 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     OPENFHE_THROW(math_error,
                    "BFVrns.ParamsGen: Number of bits in CRT moduli should be "
                    "in the range from 30 to 60");
+
+
+  if (PREMode != INDCPA) {
+      OPENFHE_THROW(not_available_error, "HRA modes for PRE with BFVRNS not implemented yet");
+  }
 
   const auto cryptoParamsBFVRNS =
       std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);

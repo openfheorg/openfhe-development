@@ -55,8 +55,13 @@ namespace lbcrypto {
 const double MP_SD = 1048576;
 
 // noise flooding distribution parameter
-// for fixed 20 bits noise multihop PRE
-const double MPRE_SD = 1048576;
+// for distributed decryption in
+// PRE
+const double PRE_SD = 1048576;
+
+//statistical security parameter 
+//for noise flooding in PRE
+const double STAT_SECURITY_FLOODING = 30; 
 
 /**
  * @brief Template for crypto parameters.
@@ -78,7 +83,10 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_maxDepth = 2;
     m_mode = RLWE;
     m_stdLevel = HEStd_NotSet;
-  }
+    m_floodingdistributionParameter = 0.0f;
+    m_dggflooding.SetStd(m_floodingdistributionParameter);
+    m_premode = INDCPA;
+}
 
   /**
    * Copy constructor.
@@ -96,7 +104,10 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_maxDepth = rhs.m_maxDepth;
     m_mode = rhs.m_mode;
     m_stdLevel = rhs.m_stdLevel;
-  }
+    m_floodingdistributionParameter = rhs.m_floodingdistributionParameter;
+    m_dggflooding.SetStd(m_floodingdistributionParameter);
+    m_premode = rhs.m_premode;
+}
 
   /**
    * Constructor that initializes values.
@@ -174,7 +185,15 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    */
   float GetDistributionParameter() const { return m_distributionParameter; }
 
-  /**
+/**
+   * Returns the value of standard deviation r for discrete Gaussian
+   * distribution with flooding for PRE based on the security mode
+   *
+   * @return the standard deviation r.
+   */
+  float GetFloodingDistributionParameter() const { return m_floodingdistributionParameter; }
+
+   /**
    * Returns the values of assurance measure alpha
    *
    * @return the assurance measure.
@@ -217,6 +236,14 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    */
   MODE GetMode() const { return m_mode; }
 
+/**
+   * Gets the pre security mode setting: 
+   * INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or DIVIDE_AND_ROUND_HRA.
+   *
+   * @return the pre security mode setting.
+   */
+  ProxyReEncryptionMode GetPREMode() const { return m_premode; }
+
   /**
    * Gets the standard security level
    *
@@ -233,6 +260,16 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     return m_dgg;
   }
 
+  /**
+   * Returns reference to Discrete Gaussian Generator with flooding for PRE
+   *
+   * @return reference to Discrete Gaussian Generaror with flooding for PRE.
+   * The Std dev for this generator changes based on the PRE mode, so it is not const
+   */
+  typename Element::DggType &GetFloodingDiscreteGaussianGenerator() {
+    return m_dggflooding;
+  }
+  
   // @Set Properties
 
   /**
@@ -292,6 +329,12 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   void SetMode(MODE mode) { m_mode = mode; }
 
   /**
+   * Configures the security mode for pre
+   * @param premode is INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or DIVIDE_AND_ROUND_HRA.
+   */
+  void SetPREMode(ProxyReEncryptionMode premode) { m_premode = premode; }
+
+  /**
    * == operator to compare to this instance of CryptoParametersRLWE object.
    *
    * @param &rhs CryptoParameters to check equality against.
@@ -335,20 +378,25 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("md", m_maxDepth));
     ar(::cereal::make_nvp("mo", m_mode));
     ar(::cereal::make_nvp("slv", m_stdLevel));
-  }
+    ar(::cereal::make_nvp("pmo", m_premode));
+    ar(::cereal::make_nvp("fdp", m_floodingdistributionParameter));
+}
 
   template <class Archive>
   void load(Archive &ar, std::uint32_t const version) {
     ar(::cereal::base_class<CryptoParametersBase<Element>>(this));
     ar(::cereal::make_nvp("dp", m_distributionParameter));
-    m_dgg.SetStd(m_distributionParameter);
     ar(::cereal::make_nvp("am", m_assuranceMeasure));
     ar(::cereal::make_nvp("sl", m_securityLevel));
     ar(::cereal::make_nvp("ns", m_noiseScale));
     ar(::cereal::make_nvp("rw", m_relinWindow));
     ar(::cereal::make_nvp("md", m_maxDepth));
     ar(::cereal::make_nvp("mo", m_mode));
+    ar(::cereal::make_nvp("pmo", m_premode));
     ar(::cereal::make_nvp("slv", m_stdLevel));
+    ar(::cereal::make_nvp("fdp", m_floodingdistributionParameter));
+    m_dgg.SetStd(m_distributionParameter);
+    m_dggflooding.SetStd(m_floodingdistributionParameter);
   }
 
   std::string SerializedObjectName() const { return "CryptoParametersRLWE"; }
@@ -375,6 +423,14 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   SecurityLevel m_stdLevel;
 
   typename Element::DggType m_dgg;
+
+  // standard deviation in Discrete Gaussian Distribution
+  double m_floodingdistributionParameter;
+  typename Element::DggType m_dggflooding;
+
+  //specifies the security mode used for PRE
+  ProxyReEncryptionMode m_premode;
+
 };
 
 }  // namespace lbcrypto
