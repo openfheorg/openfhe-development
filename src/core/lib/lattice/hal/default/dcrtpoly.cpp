@@ -1385,8 +1385,8 @@ void DCRTPolyImpl<VecType>::TimesQovert(
     const std::vector<NativeInteger> &tInvModq,
     const std::vector<NativeInteger> &tInvModqPrecon,
     const NativeInteger &t,
-    const NativeInteger &MinusQModt,
-    const NativeInteger &MinusQModtPrecon) {
+    const NativeInteger &NegQModt,
+    const NativeInteger &NegQModtPrecon) {
   usint sizeQ = m_vectors.size();
   usint ringDim = this->GetRingDimension();
 #pragma omp parallel for
@@ -1396,7 +1396,7 @@ void DCRTPolyImpl<VecType>::TimesQovert(
     const NativeInteger &tInvModqiPreconi = tInvModqPrecon[i];
     for (usint ri = 0; ri < ringDim; ri++) {
       NativeInteger &xi = m_vectors[i][ri];
-      xi.ModMulFastConstEq(MinusQModt, t, MinusQModtPrecon);
+      xi.ModMulFastConstEq(NegQModt, t, NegQModtPrecon);
       xi.ModMulFastConstEq(tInvModqi, qi, tInvModqiPreconi);
     }
   }

@@ -884,16 +884,10 @@ public:
     virtual void TimesQovert(
       const std::shared_ptr<Params> paramsQ,
       const std::vector<NativeInteger> &tInvModq,
-<<<<<<< HEAD
+      const std::vector<NativeInteger> &tInvModqPrecon,
       const NativeInteger &t,
       const NativeInteger &NegQModt,
       const NativeInteger &NegQModtPrecon) = 0;
-=======
-      const std::vector<NativeInteger> &tInvModqPrecon,
-      const NativeInteger &t,
-      const NativeInteger &MinusQModt,
-      const NativeInteger &MinusQModtPrecon) = 0;
->>>>>>> Initial POVERQ changes.
 
     /**
    * @brief Performs approximate CRT basis switching:
