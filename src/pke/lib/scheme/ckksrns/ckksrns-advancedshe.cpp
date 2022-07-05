@@ -82,34 +82,34 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(
   auto cc = ciphertexts[0]->GetCryptoContext();
   auto algo = cc->GetScheme();
 
- // if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
+  if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
 
     // Check to see if input ciphertexts are of same level
     // and adjust if needed to the max level among them
-//    uint32_t maxLevel = ciphertexts[0]->GetLevel();
-//    uint32_t maxIdx = 0;
-//    for (uint32_t i = 1; i < ciphertexts.size(); i++) {
-//      if ((ciphertexts[i]->GetLevel() > maxLevel) ||
-//          ((ciphertexts[i]->GetLevel() == maxLevel) && (ciphertexts[i]->GetDepth() == 2))) {
-//        maxLevel = ciphertexts[i]->GetLevel();
-//        maxIdx = i;
-//      }
-//    }
+    uint32_t maxLevel = ciphertexts[0]->GetLevel();
+    uint32_t maxIdx = 0;
+    for (uint32_t i = 1; i < ciphertexts.size(); i++) {
+      if ((ciphertexts[i]->GetLevel() > maxLevel) ||
+          ((ciphertexts[i]->GetLevel() == maxLevel) && (ciphertexts[i]->GetDepth() == 2))) {
+        maxLevel = ciphertexts[i]->GetLevel();
+        maxIdx = i;
+      }
+    }
 
-//    for (uint32_t i = 0; i < maxIdx; i++) {
-//      algo->AdjustLevelsAndDepthInPlace(ciphertexts[i], ciphertexts[maxIdx]);
-//    }
+    for (uint32_t i = 0; i < maxIdx; i++) {
+      algo->AdjustLevelsAndDepthInPlace(ciphertexts[i], ciphertexts[maxIdx]);
+    }
 
-//    for (uint32_t i = maxIdx + 1; i < ciphertexts.size(); i++) {
-//      algo->AdjustLevelsAndDepthInPlace(ciphertexts[i], ciphertexts[maxIdx]);
-//    }
+    for (uint32_t i = maxIdx + 1; i < ciphertexts.size(); i++) {
+      algo->AdjustLevelsAndDepthInPlace(ciphertexts[i], ciphertexts[maxIdx]);
+    }
 
-//    if (ciphertexts[maxIdx]->GetDepth() == 2) {
-//      for (uint32_t i = 0; i < ciphertexts.size(); i++) {
-//        algo->ModReduceInternalInPlace(ciphertexts[i], BASE_NUM_LEVELS_TO_DROP);
-//      }
-//    }
-//  }
+    if (ciphertexts[maxIdx]->GetDepth() == 2) {
+      for (uint32_t i = 0; i < ciphertexts.size(); i++) {
+        algo->ModReduceInternalInPlace(ciphertexts[i], BASE_NUM_LEVELS_TO_DROP);
+      }
+    }
+  }
 
   Ciphertext<DCRTPoly> weightedSum = cc->EvalMult(ciphertexts[0], constants[0]);
 
@@ -175,7 +175,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyLinear(
   }
 
   std::vector<Ciphertext<DCRTPoly>> powers(k);
-  powers[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x));
+  powers[0] = x->Clone();
   auto cc = x->GetCryptoContext();
 
   // computes all powers up to k for x
@@ -363,7 +363,6 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(
 
   result = cc->EvalMult(result, qu);
   cc->ModReduceInPlace(result);
-
   cc->EvalAddInPlace(result, su);
 
   return result;
@@ -386,6 +385,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
 
 //  std::cerr << "\n Degree: n = " << n << ", k = " << k << ", m = " << m << endl;
 
+  // TODO: (Andrey) Below all indices are set to 1?
   // set the indices for the powers of x that need to be computed to 1
   std::vector<int32_t> indices(k, 0);
   for (size_t i = k; i > 0; i--) {
@@ -410,7 +410,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
   }
 
   std::vector<Ciphertext<DCRTPoly>> powers(k);
-  powers[0] = Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x));
+  powers[0] = x->Clone();
   auto cc = x->GetCryptoContext();
 
   // computes all powers up to k for x
@@ -432,28 +432,26 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
     }
   }
 
-  // TODO: Andrey Logic different from Eval Poly Linear, why?
-
   const auto cryptoParams =
       std::static_pointer_cast<CryptoParametersCKKSRNS>(powers[k-1]->GetCryptoParameters());
 
   auto algo = cc->GetScheme();
 
-  // brings all powers to the same level of powers[k-1] (in FLEXIBLEAUTO).
-//  if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
-//    for (uint32_t i = 0; i < k - 1; i++) {
-//      algo->AdjustLevelsAndDepthToOneInPlace(powers[i], powers[k - 1]);
-//    }
-
-//    for (uint32_t i = 0; i < k; i++) {
-//      if (powers[i]->GetDepth() == 2)
-//        algo->ModReduceInternalInPlace(powers[i], BASE_NUM_LEVELS_TO_DROP);
-//      if (powers[i]->GetLevel() < powers[k-1]->GetLevel()) {
-//        algo->AdjustLevelsAndDepthToOneInPlace(powers[i], powers[k]);
-//      }
-//    }
-
-//  }
+  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+    // brings all powers of x to the same level
+    for (size_t i = 1; i < k; i++) {
+      if (indices[i - 1] == 1) {
+        usint levelDiff = powers[k - 1]->GetLevel() - powers[i - 1]->GetLevel();
+        cc->LevelReduceInPlace(powers[i - 1], nullptr, levelDiff);
+      }
+    }
+  } else {
+    for (size_t i = 1; i < k; i++) {
+      if (indices[i - 1] == 1) {
+        algo->AdjustLevelsAndDepthInPlace(powers[i - 1], powers[k - 1]);
+      }
+    }
+  }
 
   std::vector<Ciphertext<DCRTPoly>> powers2(m);
 
@@ -606,8 +604,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
   result = cc->EvalMult(result, qu);
   cc->ModReduceInPlace(result);
   cc->EvalAddInPlace(result, su);
-
-  result = cc->EvalSub(result, power2km1);
+  cc->EvalSubInPlace(result, power2km1);
 
   return result;
 }
@@ -643,27 +640,18 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesLinear(
       && (b - std::round(b) < 1e-10)
       && (std::round(a) == -1)
       && (std::round(b) == 1) ) {
-    // no linear transformation is needed if a = -1, b = 1
-    //T_1(y) = y
-    //Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x));
     T[0] = x->Clone();
   } else {
     // linear transformation is needed
     double alpha = 2 / (b - a);
     double beta = 2 * a / (b - a);
 
-    Ciphertext<DCRTPoly> xTmp = x->Clone();
-    auto y = cc->EvalMult(xTmp, alpha);
-    cc->ModReduceInPlace(y);
-
-    cc->EvalAddInPlace(y, -1.0 - beta);
-    //T_1(y) = y
-    T[0] = y->Clone();
-    //= Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*y));
+    T[0] = cc->EvalMult(x, alpha);
+    cc->ModReduceInPlace(T[0]);
+    cc->EvalAddInPlace(T[0], -1.0 - beta);
   }
 
   Ciphertext<DCRTPoly> yReduced = T[0]->Clone();
-  //(new CiphertextImpl<DCRTPoly>(*T[0]));
 
   // Computes Chebyshev polynomials up to degree k
   // for y: T_1(y) = y, T_2(y), ... , T_k(y)
@@ -673,10 +661,9 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesLinear(
     if (!(i & (i - 1))) {
       // compute T_{2i}(y) = 2*T_i(y)^2 - 1
       auto square = cc->EvalSquare(T[i/2 - 1]);
-      auto temp = cc->EvalAdd(square, square);
-      cc->ModReduceInPlace(temp);
-
-      T[i - 1] = cc->EvalAdd(temp, -1.0);
+      T[i - 1] = cc->EvalAdd(square, square);
+      cc->ModReduceInPlace(T[i - 1]);
+      cc->EvalAddInPlace(T[i - 1], -1.0);
       // TODO: (Andrey) Do we need this?
       if (i == 2) {
         cc->LevelReduceInPlace(T[i/2 - 1], nullptr);
@@ -695,25 +682,20 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesLinear(
       if (i % 2 == 1) {
         // if i is odd
         // compute T_{2i+1}(y) = 2*T_i(y)*T_{i+1}(y) - y
-        auto temp = cc->EvalMult(T[i/2 - 1], T[i/2]);
-        temp = cc->EvalAdd(temp,temp);
-        cc->ModReduceInPlace(temp);
-
-        T[i - 1] = cc->EvalSub(temp, yReduced);
+        auto prod = cc->EvalMult(T[i/2 - 1], T[i/2]);
+        T[i - 1] = cc->EvalAdd(prod, prod);
+        cc->ModReduceInPlace(T[i - 1]);
+        cc->EvalSubInPlace(T[i - 1], yReduced);
       } else {
         // i is even but not power of 2
         // compute T_{2i}(y) = 2*T_i(y)^2 - 1
         auto square = cc->EvalSquare(T[i/2 - 1]);
-        auto temp = cc->EvalAdd(square, square);
-        cc->ModReduceInPlace(temp);
-        T[i - 1] = cc->EvalAdd(temp, -1.0);
+        T[i - 1] = cc->EvalAdd(square, square);
+        cc->ModReduceInPlace(T[i - 1]);
+        cc->EvalAddInPlace(T[i - 1], -1.0);
       }
     }
   }
-
-  // TODO: Andrey Logic different from Chebyshev PS, why?
-
-  // brings all powers of y to the same level
   for (size_t i = 1; i < k; i++) {
     usint levelDiff = T[k - 1]->GetLevel() - T[i - 1]->GetLevel();
     cc->LevelReduceInPlace(T[i - 1], nullptr, levelDiff);
@@ -925,24 +907,17 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
     // no linear transformation is needed if a = -1, b = 1
     //T_1(y) = y
     T[0] = x->Clone();
-    //Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*x));
   } else {
     // linear transformation is needed
     double alpha = 2 / (b - a);
     double beta = 2 * a / (b - a);
 
-    Ciphertext<DCRTPoly> xTmp = x->Clone();
-    auto y = cc->EvalMult(xTmp, alpha);
-    cc->ModReduceInPlace(y);
-
-    cc->EvalAddInPlace(y, -1.0 - beta);
-    //T_1(y) = y
-    T[0] = y->Clone();
-    //Ciphertext<DCRTPoly>(new CiphertextImpl<DCRTPoly>(*y));
+    T[0] = cc->EvalMult(x, alpha);
+    cc->ModReduceInPlace(T[0]);
+    cc->EvalAddInPlace(T[0], -1.0 - beta);
   }
 
-  Ciphertext<DCRTPoly> yReduced = T[0]->Clone();
-  //(new CiphertextImpl<DCRTPoly>(*T[0]));
+  Ciphertext<DCRTPoly> y = T[0]->Clone();
 
   // Computes Chebyshev polynomials up to degree k
   // for y: T_1(y) = y, T_2(y), ... , T_k(y)
@@ -952,78 +927,70 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
     if (!(i & (i - 1))) {
       // compute T_{2i}(y) = 2*T_i(y)^2 - 1
       auto square = cc->EvalSquare(T[i/2 - 1]);
-      auto temp = cc->EvalAdd(square, square);
-      cc->ModReduceInPlace(temp);
-
-      T[i - 1] = cc->EvalAdd(temp, -1.0);
+      T[i - 1] = cc->EvalAdd(square, square);
+      cc->ModReduceInPlace(T[i - 1]);
+      cc->EvalAddInPlace(T[i - 1], -1.0);
     } else {
       // non-power of 2
       if (i % 2 == 1) {
         // if i is odd
         // compute T_{2i+1}(y) = 2*T_i(y)*T_{i+1}(y) - y
-        auto temp = cc->EvalMult(T[i/2 - 1], T[i/2]);
-        temp = cc->EvalAdd(temp, temp);
-        cc->ModReduceInPlace(temp);
+        auto prod = cc->EvalMult(T[i/2 - 1], T[i/2]);
+        T[i - 1] = cc->EvalAdd(prod, prod);
 
-        T[i - 1] = cc->EvalSub(temp, yReduced);
+        cc->ModReduceInPlace(T[i - 1]);
+        cc->EvalSubInPlace(T[i - 1], y);
       } else {
         // i is even but not power of 2
         // compute T_{2i}(y) = 2*T_i(y)^2 - 1
         auto square = cc->EvalSquare(T[i/2 - 1]);
-        auto temp = cc->EvalAdd(square, square);
-        cc->ModReduceInPlace(temp);
-
-        T[i - 1] = cc->EvalAdd(temp, -1.0);
+        T[i - 1] = cc->EvalAdd(square, square);
+        cc->ModReduceInPlace(T[i - 1]);
+        cc->EvalAddInPlace(T[i - 1], -1.0);
       }
     }
   }
 
-  // TODO: Andrey Logic different from Chebyshev Linear, why?
   const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          T[k-1]->GetCryptoParameters());
+      std::static_pointer_cast<CryptoParametersCKKSRNS>(T[k-1]->GetCryptoParameters());
 
   auto algo = cc->GetScheme();
 
-  // brings all Chebyshev polynomials to the same level of T[k-1].
-//  for (uint32_t i = 0; i < k - 1; i++) {
-//    if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-//      cc->LevelReduceInPlace(T[i], nullptr, ceil(log2(k)) - ceil(log2(i + 1)));
-//    } else {
-//      algo->AdjustLevelsAndDepthToOneInPlace(T[i], T[k - 1]);
-//      if (T[i-1]->GetDepth() == 2)
-//        algo->ModReduceInternalInPlace(T[i-1], BASE_NUM_LEVELS_TO_DROP);
-//      if (T[i-1]->GetLevel() < T[k-1]->GetLevel()) {
-//        algo->AdjustLevelsAndDepthToOneInPlace(T[i-1], T[k-1]);
-//      }
-//    }
-//  }
+  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+    // brings all powers of x to the same level
+    for (size_t i = 1; i < k; i++) {
+      usint levelDiff = T[k - 1]->GetLevel() - T[i - 1]->GetLevel();
+      cc->LevelReduceInPlace(T[i - 1], nullptr, levelDiff);
+    }
+  } else {
+    for (size_t i = 1; i < k; i++) {
+      algo->AdjustLevelsAndDepthInPlace(T[i - 1], T[k - 1]);
+    }
+  }
 
   std::vector<Ciphertext<DCRTPoly>> T2(m);
   // Compute the Chebyshev polynomials T_{2k}(y), T_{4k}(y), ... , T_{2^{m-1}k}(y)
   T2.front() = T.back();
   for (uint32_t i = 1; i < m; i++) {
     auto square = cc->EvalSquare(T2[i - 1]);
-    auto temp = cc->EvalAdd(square, square);
-    cc->ModReduceInPlace(temp);
-
-    T2[i] = cc->EvalAdd(temp, -1.0);
+    T2[i] = cc->EvalAdd(square, square);
+    cc->ModReduceInPlace(T2[i]);
+    cc->EvalAddInPlace(T2[i], -1.0);
   }
 
   // computes T_{k(2*m - 1)}(y)
   auto T2km1 = T2.front();
   for (uint32_t i = 1; i < m; i++) {
     // compute T_{k(2*m - 1)} = 2*T_{k(2^{m-1}-1)}(y)*T_{k*2^{m-1}}(y) - T_k(y)
-    auto temp = cc->EvalMult(T2km1, T2[i]);
-    temp = cc->EvalAdd(temp, temp);
-    cc->ModReduceInPlace(temp);
-
-    T2km1 = cc->EvalSub(temp, T2.front());
+    auto prod = cc->EvalMult(T2km1, T2[i]);
+    T2km1 = cc->EvalAdd(prod, prod);
+    cc->ModReduceInPlace(T2km1);
+    cc->EvalSubInPlace(T2km1, T2.front());
   }
 
   // We also need to reduce the number of levels of T[k-1] and of T2[0] by another level.
-  cc->LevelReduceInPlace(T[k-1], nullptr);
-  cc->LevelReduceInPlace(T2.front(), nullptr);
+//  cc->LevelReduceInPlace(T[k-1], nullptr);
+//  cc->LevelReduceInPlace(T2.front(), nullptr);
 
   // Compute k*2^{m-1}-k because we use it a lot
   uint32_t k2m2k = k * (1 << (m - 1)) - k;
@@ -1083,8 +1050,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
     cc->EvalAddInPlace(cu, divcs->q.front()/2);
     // TODO : Andrey why not T2[m-1]->GetLevel() instead?
     // Need to reduce levels to the level of T2[m-1].
-    usint levelDiff = yReduced->GetLevel() - cu->GetLevel() + ceil(log2(k)) + m - 1;
-    cc->LevelReduceInPlace(cu, nullptr, levelDiff);
+//    usint levelDiff = y->GetLevel() - cu->GetLevel() + ceil(log2(k)) + m - 1;
+//    cc->LevelReduceInPlace(cu, nullptr, levelDiff);
 
     flag_c = true;
   }
@@ -1116,7 +1083,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
       qu = T[k - 1];
 
       for (uint32_t i = 1; i < divqr->q.back(); i ++) {
-        cc->EvalAddInPlace(qu, T[k-1]);
+        cc->EvalAddInPlace(qu, T[k - 1]);
       }
     }
 
@@ -1159,7 +1126,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
 
   // TODO : Andrey : here is different from 895 line
   //Reduce number of levels of su to number of levels of T2km1.
-  cc->LevelReduceInPlace(su, nullptr);
+//  cc->LevelReduceInPlace(su, nullptr);
 
   Ciphertext<DCRTPoly> result;
 
@@ -1173,7 +1140,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
   cc->ModReduceInPlace(result);
 
   cc->EvalAddInPlace(result, su);
-  result = cc->EvalSub(result, T2km1);
+  cc->EvalSubInPlace(result, T2km1);
 
   return result;
 }

@@ -133,11 +133,12 @@ void FHECKKSRNS::EvalBootstrapSetup(
 
   uint32_t approxModDepth = 8;
   if (cryptoParams->GetMode() == OPTIMIZED) {
-    if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-      approxModDepth += R - 1;
-    } else {
-      approxModDepth += R;
-    }
+    approxModDepth += R - 1;
+//    if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+//      approxModDepth += R - 1;
+//    } else {
+//      approxModDepth += R;
+//    }
   }
 
   uint32_t depthBT = approxModDepth + 1 +
@@ -354,21 +355,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         cc->ModReduceInPlace(ctxtEnc);
         cc->ModReduceInPlace(ctxtEncI);
       }
+    } else {
+      if (ctxtEnc->GetDepth() == 2) {
+        algo->ModReduceInternalInPlace(ctxtEnc);
+        algo->ModReduceInternalInPlace(ctxtEncI);
+      }
     }
-//    else {
-//      algo->ModReduceInternalInPlace(ctxtEnc);
-//      algo->ModReduceInternalInPlace(ctxtEncI);
-//    }
-
-//    if (isEvalBTLinear) {
-//      if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-//        for (uint32_t i = 0; i < 2; i++) {
-//          while (ctxtEnc[i]->GetDepth() > 1) {
-//            cc->ModReduceInPlace(ctxtEnc[i]); // scaling power = 1
-//          }
-//        }
-//      }
-//    }
 
     //------------------------------------------------------------------------------
     // Running Approximate Mod Reduction
@@ -380,6 +372,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
     if (cryptoParams->GetMode() == OPTIMIZED) {
+      if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
+        algo->ModReduceInternalInPlace(ctxtEnc);
+        algo->ModReduceInternalInPlace(ctxtEncI);
+      }
       ApplyDoubleAngleIterations(ctxtEnc);
       ApplyDoubleAngleIterations(ctxtEncI);
     }
@@ -409,6 +405,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
       algo->ModReduceInternalInPlace(ctxtEnc);
     }
+
     // Only one linear transform is needed
     ctxtDec = (precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] == 1) ?
       EvalLinearTransform(precom->m_U0Pre, ctxtEnc) :
@@ -446,7 +443,15 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     auto conj = Conjugate(ctxtEnc, evalKeyMap);
     cc->EvalAddInPlace(ctxtEnc, conj);
 
-    cc->ModReduceInPlace(ctxtEnc);
+    if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+      while(ctxtEnc->GetDepth() > 1) {
+        cc->ModReduceInPlace(ctxtEnc);
+      }
+    } else {
+      if (ctxtEnc->GetDepth() == 2) {
+        algo->ModReduceInternalInPlace(ctxtEnc);
+      }
+    }
 
 #ifdef BOOTSTRAPTIMING
     timeEncode = TOC(t);
@@ -467,6 +472,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
     if (cryptoParams->GetMode() == OPTIMIZED) {
+      if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
+        algo->ModReduceInternalInPlace(ctxtEnc);
+      }
       ApplyDoubleAngleIterations(ctxtEnc);
     }
 

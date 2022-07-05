@@ -351,7 +351,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(
     }
   }
 
-  Ciphertext<DCRTPoly> result = ciphertext->CloneDummy();
+  Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
   result->SetElements(resultElements);
   return result;
 }
@@ -396,7 +396,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(
       cryptoParams->GettInvModpPrecon(), t,
       cryptoParams->GettModqPrecon());
 
-  Ciphertext<DCRTPoly> result = ciphertext->CloneDummy();
+  Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
   result->SetElements({ct0, ct1});
   return result;
 }
