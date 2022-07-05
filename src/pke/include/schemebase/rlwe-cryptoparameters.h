@@ -58,6 +58,11 @@ const double MP_SD = 1048576;
 // for distributed decryption in
 // PRE
 const double PRE_SD = 1048576;
+
+//statistical security parameter 
+//for noise flooding in PRE
+const double STAT_SECURITY_FLOODING = 30; 
+
 /**
  * @brief Template for crypto parameters.
  * @tparam Element a ring element.
@@ -233,7 +238,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
 
 /**
    * Gets the pre security mode setting: 
-   * INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or MODULUS_SWITCHING_HRA.
+   * INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or DIVIDE_AND_ROUND_HRA.
    *
    * @return the pre security mode setting.
    */
@@ -325,7 +330,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
 
   /**
    * Configures the security mode for pre
-   * @param premode is INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or MODULUS_SWITCHING_HRA.
+   * @param premode is INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or DIVIDE_AND_ROUND_HRA.
    */
   void SetPREMode(ProxyReEncryptionMode premode) { m_premode = premode; }
 
@@ -381,7 +386,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   void load(Archive &ar, std::uint32_t const version) {
     ar(::cereal::base_class<CryptoParametersBase<Element>>(this));
     ar(::cereal::make_nvp("dp", m_distributionParameter));
-    m_dgg.SetStd(m_distributionParameter);
     ar(::cereal::make_nvp("am", m_assuranceMeasure));
     ar(::cereal::make_nvp("sl", m_securityLevel));
     ar(::cereal::make_nvp("ns", m_noiseScale));
@@ -391,6 +395,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("pmo", m_premode));
     ar(::cereal::make_nvp("slv", m_stdLevel));
     ar(::cereal::make_nvp("fdp", m_floodingdistributionParameter));
+    m_dgg.SetStd(m_distributionParameter);
     m_dggflooding.SetStd(m_floodingdistributionParameter);
   }
 

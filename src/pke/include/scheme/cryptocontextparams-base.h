@@ -97,10 +97,6 @@ class Params {
     
     //PRE security mode
     ProxyReEncryptionMode PREMode;
-    
-    // cyclotomic order. For power of two case
-    // cyclotomic order = 2 * ring dimension
-    usint cyclOrder;
 
     // number of primes in ciphertext modulus of the scheme
     // The ciphertext modulus should be seen as:
