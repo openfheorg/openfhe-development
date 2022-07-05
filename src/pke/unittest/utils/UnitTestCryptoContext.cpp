@@ -86,6 +86,10 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
         parameters.SetMultiplicationTechnique(
             static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
     }
+    if (!isDefaultValue(params.encryptionTechnique)) {
+        parameters.SetEncryptionTechnique(
+            static_cast<EncryptionTechnique>(std::round(params.encryptionTechnique)));
+    }
     if (!isDefaultValue(params.evalAddCount)) {
         parameters.SetEvalAddCount(static_cast<usint>(std::round(params.evalAddCount)));
     }
@@ -107,7 +111,6 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
     }
     else if (BFVRNS_SCHEME == params.schemeId) {
         CCParams<CryptoContextBFVRNS> parameters;
-        parameters.SetEncryptionTechnique(POVERQ);
         setCryptoContextParametersFromUnitTestCCParams(params, parameters);
 
         cc = GenCryptoContext(parameters);

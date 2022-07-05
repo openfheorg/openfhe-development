@@ -133,15 +133,30 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
     Poly bigPtxt = ptxt.CRTInterpolate();
     DCRTPoly plain(bigPtxt, encParams);
     ptxt = plain;
+    ptxt.SetFormat(Format::COEFFICIENT);
   }
 
   std::shared_ptr<std::vector<DCRTPoly>> ba =
       EncryptZeroCore(privateKey, encParams);
 
-  const std::vector<NativeInteger> &QDivtModq = cryptoParams->GetQDivtModq();
-  DCRTPoly prod = ptxt.Times(QDivtModq);
-  prod.SetFormat(Format::EVALUATION);
-  (*ba)[0] += prod;
+  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+    const NativeInteger &MinusQpModt = cryptoParams->GetNegQrModt();
+    const NativeInteger &MinusQpModtPrecon = cryptoParams->GetNegQrModtPrecon();
+    const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
+    const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
+    const NativeInteger t = cryptoParams->GetPlaintextModulus();
+
+    DCRTPoly prod = ptxt;
+    prod.TimesQovert(encParams, tInvModq, tInvModqPrecon, t, MinusQpModt, MinusQpModtPrecon);
+    prod.SetFormat(Format::EVALUATION);
+    (*ba)[0] += prod;
+    
+  } else {
+    const std::vector<NativeInteger> &QDivtModq = cryptoParams->GetQDivtModq();
+    DCRTPoly prod = ptxt.Times(QDivtModq);
+    prod.SetFormat(Format::EVALUATION);
+    (*ba)[0] += prod;
+  }
 
   (*ba)[0].SetFormat(Format::COEFFICIENT);
   (*ba)[1].SetFormat(Format::COEFFICIENT);
@@ -150,6 +165,9 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
     (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq(), cryptoParams->GetrInvModqPrecon());
     (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq(), cryptoParams->GetrInvModqPrecon());
   }
+
+  (*ba)[0].SetFormat(Format::EVALUATION);
+  (*ba)[1].SetFormat(Format::EVALUATION);
 
   ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
   ciphertext->SetDepth(1);

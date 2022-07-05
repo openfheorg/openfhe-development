@@ -63,6 +63,7 @@ struct UnitTestCCParams {
     double   evalMultCount; // BFVRNS, 
     double   keySwitchCount; // BFVRNS, 
     double   multiplicationTechnique; // BFVRNS, 
+    double   encryptionTechnique; // BFVRNS,
 
     std::string toString() const;
 };
