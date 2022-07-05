@@ -122,7 +122,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
 
   // BFVrns : Encrypt : With extra
     if (encTech == POVERQ) {
-      std::cout << "POVERQ encTech\n";
       std::vector<NativeInteger> moduliQr(sizeQ + 1);
       std::vector<NativeInteger> rootsQr(sizeQ + 1);
       for (uint32_t i = 0; i < sizeQ; i++) {
@@ -141,6 +140,10 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
         m_tInvModqPrecon[i] = m_tInvModq[i].PrepModMulConst(moduliQ[i]);
       }
 
+      m_negQModt = modulusQ.Mod(BigInteger(GetPlaintextModulus())).ConvertToInt();
+      m_negQModt = t.Sub(m_negQModt);
+      m_negQModtPrecon = m_negQModt.PrepModMulConst(t);
+
       BigInteger modulusQr = modulusQ.Mul(modulusr);
       m_negQrModt = modulusQr.Mod(BigInteger(t)).ConvertToInt();
       m_negQrModt = t.Sub(m_negQrModt);
@@ -154,15 +157,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
       for (usint i = 0; i < sizeQ; i++) {
         m_rInvModq[i] = modulusr.ModInverse(moduliQ[i]);
         m_rInvModqPrecon[i] = m_rInvModq[i].PrepModMulConst(moduliQ[i]);
-      }
-
-      // compute [\floor{Q/t}]_{q_i}
-      const BigInteger QDivt = modulusQr.DividedBy(GetPlaintextModulus());
-      m_QDivtModq.resize(sizeQ + 1);
-      for (size_t i = 0; i < sizeQ + 1; i++) {
-        BigInteger qi(moduliQr[i].ConvertToInt());
-        BigInteger QDivtModqi = QDivt.Mod(qi);
-        m_QDivtModq[i] = NativeInteger(QDivtModqi.ConvertToInt());
       }
     }
 

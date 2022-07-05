@@ -140,14 +140,14 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
       EncryptZeroCore(privateKey, encParams);
 
   if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
-    const NativeInteger &MinusQpModt = cryptoParams->GetNegQrModt();
-    const NativeInteger &MinusQpModtPrecon = cryptoParams->GetNegQrModtPrecon();
+    const NativeInteger &NegQrModt = cryptoParams->GetNegQrModt();
+    const NativeInteger &NegQrModtPrecon = cryptoParams->GetNegQrModtPrecon();
     const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
     const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
     const NativeInteger t = cryptoParams->GetPlaintextModulus();
 
     DCRTPoly prod = ptxt;
-    prod.TimesQovert(encParams, tInvModq, tInvModqPrecon, t, MinusQpModt, MinusQpModtPrecon);
+    prod.TimesQovert(encParams, tInvModq, tInvModqPrecon, t, NegQrModt, NegQrModtPrecon);
     prod.SetFormat(Format::EVALUATION);
     (*ba)[0] += prod;
     
@@ -200,14 +200,14 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
       EncryptZeroCore(publicKey, encParams);
 
   if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
-    const NativeInteger &MinusQpModt = cryptoParams->GetNegQrModt();
-    const NativeInteger &MinusQpModtPrecon = cryptoParams->GetNegQrModtPrecon();
+    const NativeInteger &NegQrModt = cryptoParams->GetNegQrModt();
+    const NativeInteger &NegQrModtPrecon = cryptoParams->GetNegQrModtPrecon();
     const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
     const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
     const NativeInteger t = cryptoParams->GetPlaintextModulus();
 
     DCRTPoly prod = ptxt;
-    prod.TimesQovert(encParams, tInvModq, tInvModqPrecon, t, MinusQpModt, MinusQpModtPrecon);
+    prod.TimesQovert(encParams, tInvModq, tInvModqPrecon, t, NegQrModt, NegQrModtPrecon);
     prod.SetFormat(Format::EVALUATION);
     (*ba)[0] += prod;
     

@@ -41,7 +41,7 @@ namespace lbcrypto {
 template <typename P>
 inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
                              int64_t ub, const std::vector<int64_t>& value,
-                             bool isPoverQ = false) {
+                             EncryptionTechnique encTech) {
   poly.SetValuesToZero();
 
   for (size_t i = 0; i < value.size() && i < poly.GetLength(); i++) {
@@ -60,7 +60,7 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
     typename P::Integer entry = value[i];
 
     if (value[i] < 0) {
-      if (isPoverQ) {
+      if (encTech == POVERQ) {
         // TODO: Investigate why this doesn't work with q instead of t.
         entry = mod - typename P::Integer(llabs(value[i]));
       } else {
@@ -85,10 +85,10 @@ bool CoefPackedEncoding::Encode() {
 
   if (this->typeFlag == IsNativePoly) {
     encodeVec(this->encodedNativeVector, mod, LowBound(), HighBound(),
-              this->value, this->IsPoverQ());
+              this->value, this->GetEncryptionTechnique());
     encodedNativeVector = encodedNativeVector.Times(scalingFactorInt);
   } else {
-    encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value, this->IsPoverQ());
+    encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value, this->GetEncryptionTechnique());
   }
 
   if (this->typeFlag == IsDCRTPoly) {

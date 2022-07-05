@@ -44,6 +44,7 @@
 
 #include "encoding/encodingparams.h"
 #include "lattice/lat-hal.h"
+#include "constants.h"
 
 namespace lbcrypto {
 
@@ -112,10 +113,10 @@ class PlaintextImpl {
   size_t level;
   size_t depth;
   usint slots;
-  bool pOverQ;
+  EncryptionTechnique encTech;
 
  public:
-  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, bool pOverQ = false,
+  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, EncryptionTechnique encTech = STANDARD,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsPoly),
@@ -126,9 +127,9 @@ class PlaintextImpl {
         level(0),
         depth(1),
         slots(0),
-        pOverQ(pOverQ) {}
+        encTech(encTech) {}
 
-  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, bool pOverQ = false,
+  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, EncryptionTechnique encTech = STANDARD,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsNativePoly),
@@ -139,9 +140,9 @@ class PlaintextImpl {
         level(0),
         depth(1),
         slots(0),
-        pOverQ(pOverQ) {}
+        encTech(encTech) {}
 
-  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, bool pOverQ = false,
+  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, EncryptionTechnique encTech = STANDARD,
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsDCRTPoly),
@@ -153,7 +154,7 @@ class PlaintextImpl {
         level(0),
         depth(1),
         slots(0),
-        pOverQ(pOverQ) {}
+        encTech(encTech) {}
 
   PlaintextImpl(const PlaintextImpl& rhs)
       : isEncoded(rhs.isEncoded),
@@ -166,7 +167,7 @@ class PlaintextImpl {
         level(rhs.level),
         depth(rhs.depth),
         slots(rhs.slots),
-        pOverQ(rhs.pOverQ) {}
+        encTech(rhs.encTech) {}
 
   PlaintextImpl(const PlaintextImpl&& rhs)
       : isEncoded(rhs.isEncoded),
@@ -179,7 +180,7 @@ class PlaintextImpl {
         level(rhs.level),
         depth(rhs.depth),
         slots(rhs.slots),
-        pOverQ(rhs.pOverQ) {}
+        encTech(rhs.encTech) {}
 
   virtual ~PlaintextImpl() {}
 
@@ -212,7 +213,7 @@ class PlaintextImpl {
   /**
    * Get the scaling factor of the plaintext for BGV-based plaintexts.
    */
-  const bool IsPoverQ() const { return pOverQ; }
+  const EncryptionTechnique GetEncryptionTechnique() const { return encTech; }
 
   /**
    * IsEncoded
