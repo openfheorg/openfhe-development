@@ -55,9 +55,9 @@ int main(int argc, char* argv[]) {
 // OPTIMIZED - uniform ternary secrets
 
 // low-security examples
-	BootstrapExample(SPARSE,1<<12,1<<11,10);
+//	BootstrapExample(SPARSE,1<<12,1<<11,10);
 //	BootstrapExample(SPARSE,1<<12,1<<10,10);
-//	BootstrapExample(OPTIMIZED,1<<12,1<<11,10);
+	BootstrapExample(OPTIMIZED,1<<12,1<<11,10);
 //	BootstrapExample(OPTIMIZED,1<<12,1<<10,10);
 
 
@@ -102,10 +102,11 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 	uint32_t approxModDepth = 9;
 	uint32_t r = 6;
 	if (mode == OPTIMIZED) {
-	    if (rescaleTech == FIXEDMANUAL)
-	      approxModDepth += r - 1;
-	    else
-	      approxModDepth += r;
+    approxModDepth += r - 1;
+//	    if (rescaleTech == FIXEDMANUAL)
+//	      approxModDepth += r - 1;
+//	    else
+//	      approxModDepth += r;
 	}
 
 	usint depth = levelsRemaining + approxModDepth + levelBudget1[0] + levelBudget1[1];
@@ -154,6 +155,8 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 
 	const shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
 				std::static_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+
+  std::cerr << "MODE: " << mode << std::endl;
 
 	std::cout << "p = " << cryptoParams->GetPlaintextModulus()
 			<< std::endl;
@@ -214,15 +217,13 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 	  std::vector<std::complex<double>> a( {  0.111111, 0.222222, 0.333333,
 	      0.444444, 0.555555, 0.666666, 0.777777, 0.888888});
 
-	  std::cerr << "slots: " << slotsvec[i] << std::endl;
-
 	  size_t encodedLength = a.size();
 
 	  std::vector<std::complex<double>> input(Fill(a, slotsvec[i]));
 	  Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input, 1, depth - 1, nullptr, slotsvec[i]);
 	  auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
-    std::cerr << "slots: " << ciphertext->GetSlots() << std::endl;
+    std::cerr << "ciphertext number of slots: " << ciphertext->GetSlots() << std::endl;
 
 	  std::cerr << "\nNumber of levels before bootstrapping: "
 	      << ciphertext->GetElements()[0].GetNumOfElements() - 1
@@ -297,10 +298,11 @@ void BootstrapExampleClean(MODE mode, uint32_t n, uint32_t slots, uint32_t level
 	uint32_t approxModDepth = 9;
 	uint32_t r = 6;
 	if (mode == OPTIMIZED) {
-	    if (rescaleTech == FIXEDMANUAL)
-	      approxModDepth += r - 1;
-	    else
-	      approxModDepth += r;
+    approxModDepth += r - 1;
+//	    if (rescaleTech == FIXEDMANUAL)
+//        approxModDepth += r - 1;
+//	    else
+//	      approxModDepth += r;
 	}
 
 	usint depth = levelsRemaining + approxModDepth + levelBudget[0] + levelBudget[1];

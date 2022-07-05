@@ -1393,9 +1393,9 @@ protected:
   //  return EvalAdd(EvalNegate(ciphertext), constant);
   //}
 
-  void EvalSubInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& constant) const {
-    GetScheme()->EvalSubInPlace(ciphertext, constant);
-  }
+//  void EvalSubInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& constant) const {
+//    GetScheme()->EvalSubInPlace(ciphertext, constant);
+//  }
 
   // TODO (dsuponit): commented the code below to avoid compiler errors
   //void EvalSubInPlace(const NativeInteger& constant, Ciphertext<Element>& ciphertext) const {

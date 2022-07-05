@@ -709,7 +709,7 @@ template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(
     ConstCiphertext<Element> ciphertext1,
     ConstCiphertext<Element> ciphertext2) const {
-  Ciphertext<Element> result = ciphertext1->CloneDummy();
+  Ciphertext<Element> result = ciphertext1->CloneZero();
 
   std::vector<Element> cv1 = ciphertext1->GetElements();
   const std::vector<Element> &cv2 = ciphertext2->GetElements();
@@ -749,7 +749,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(
 template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(
     ConstCiphertext<Element> ciphertext) const {
-  Ciphertext<Element> result = ciphertext->CloneDummy();
+  Ciphertext<Element> result = ciphertext->CloneZero();
 
   const std::vector<Element> &cv = ciphertext->GetElements();
 
