@@ -60,11 +60,12 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
     typename P::Integer entry = value[i];
 
     if (value[i] < 0) {
-      // It is more efficient to encode negative numbers using the ciphertext
-      // modulus no noise growth occurs
       if (isPoverQ) {
+        // TODO: Investigate why this doesn't work with q instead of t.
         entry = mod - typename P::Integer(llabs(value[i]));
       } else {
+        // It is more efficient to encode negative numbers using the ciphertext
+        // modulus no noise growth occurs
         const typename P::Integer& q = poly.GetModulus();
         entry = q - typename P::Integer(llabs(value[i]));
       }
