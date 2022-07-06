@@ -51,9 +51,6 @@
 #include "cryptocontextfactory.h"
 
 #include "utils/serial.h"
-#include "utils/rotatablevector.h"
-#include "utils/lineartransform.h"
-#include "utils/caller_info.h"
 
 namespace lbcrypto {
 

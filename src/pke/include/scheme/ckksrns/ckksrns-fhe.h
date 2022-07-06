@@ -34,8 +34,8 @@
 
 #include "constants.h"
 #include "schemerns/rns-fhe.h"
+#include "scheme/ckksrns/ckksrns-utils.h"
 #include "utils/caller_info.h"
-#include "utils/lineartransform.h"
 
 /**
  * @namespace lbcrypto
@@ -153,7 +153,7 @@ public:
   // the baby step and giant step in the baby-step giant-step strategy, the number of
   // rotations in the remaining level, the baby step and giant step in the baby-step
   // giant-step strategy for the remaining level
-  std::vector<int32_t> m_paramsEnc = std::vector<int32_t>(FFT_PARAMS::TOTAL_ELEMENTS, 0);
+  std::vector<int32_t> m_paramsEnc = std::vector<int32_t>(CKKS_BOOT_PARAMS::TOTAL_ELEMENTS, 0);
 
   // level budget for homomorphic decoding, number of layers to collapse in one level,
   // number of layers remaining to be collapsed in one level to have exactly the number
@@ -161,7 +161,7 @@ public:
   // the baby step and giant step in the baby-step giant-step strategy, the number of
   // rotations in the remaining level, the baby step and giant step in the baby-step
   // giant-step strategy for the remaining level
-  std::vector<int32_t> m_paramsDec = std::vector<int32_t>(FFT_PARAMS::TOTAL_ELEMENTS, 0);
+  std::vector<int32_t> m_paramsDec = std::vector<int32_t>(CKKS_BOOT_PARAMS::TOTAL_ELEMENTS, 0);
 
   // Linear map U0; used in decoding
   std::vector<ConstPlaintext> m_U0Pre;

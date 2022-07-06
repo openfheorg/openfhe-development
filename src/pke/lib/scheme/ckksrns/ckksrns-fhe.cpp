@@ -35,8 +35,6 @@
 
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
-#include "utils/polynomials.h"
-#include "utils/caller_info.h"
 
 namespace lbcrypto {
 
@@ -90,15 +88,8 @@ void FHECKKSRNS::EvalBootstrapSetup(
     newBudget[1] = 1;
   }
 
-  precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] = newBudget[0];
-  if (newBudget[0] > 1) {
-    precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget[0], dim1[0]);
-  }
-
-  precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] = newBudget[1];
-  if (newBudget[1] > 1) {
-    precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget[1], dim1[1]);
-  }
+  precom->m_paramsEnc = GetCollapsedFFTParams(slots, newBudget[0], dim1[0]);
+  precom->m_paramsDec = GetCollapsedFFTParams(slots, newBudget[1], dim1[1]);
 
   uint32_t m = 4 * slots;
   bool isSparse = (M != m) ? true : false;
@@ -127,71 +118,53 @@ void FHECKKSRNS::EvalBootstrapSetup(
 
   unsigned __int128 factor = ((unsigned __int128)1 << ((uint32_t)std::round(std::log2(qDouble))));
   double pre = qDouble / factor;
-  double k = (cryptoParams->GetMode() == SPARSE) ? K_SPARSE : 1.0;
+  double k = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
   double scaleEnc = pre / k;
   double scaleDec = 1 / pre;
 
   uint32_t approxModDepth = 8;
-  if (cryptoParams->GetMode() == OPTIMIZED) {
+  if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
     approxModDepth += R - 1;
-//    if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
-//      approxModDepth += R - 1;
-//    } else {
-//      approxModDepth += R;
-//    }
   }
 
   uint32_t depthBT = approxModDepth + 1 +
-      precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] +
-      precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET];
+      precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] +
+      precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
 
   // compute # of levels to remain when encoding the coefficients
   uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
-  uint32_t lEnc = L0 - precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] - 1;
+  uint32_t lEnc = L0 - precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] - 1;
   uint32_t lDec = L0 - depthBT;
 
-  if (precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] == 1) {
-    std::vector<std::vector<std::complex<double>>> U0hatT(slots, std::vector<std::complex<double>>(slots));
-    for (size_t i = 0; i < slots; i++) {
-      for (size_t j = 0; j < slots; j++) {
-        U0hatT[j][i] = std::conj(ksiPows[(j * rotGroup[i]) % m]);
-      }
-    }
-    if (!isSparse) {
-      precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, scaleEnc, lEnc);
-    } else {
-      std::vector<std::vector<std::complex<double>>> U1hatT(slots, std::vector<std::complex<double>>(slots));
-      for (size_t i = 0; i < slots; i++) {
-        for (size_t j = 0; j < slots; j++) {
-          U1hatT[j][i] = std::conj(std::complex<double>(0, 1) * ksiPows[(j * rotGroup[i]) % m]);
-        }
-      }
-      precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, U1hatT, 0, scaleEnc, lEnc);
-    }
-  } else {
-    precom->m_U0hatTPreFFT = EvalCoeffsToSlotsPrecompute(cc, ksiPows, rotGroup, false, scaleEnc, lEnc);
-  }
+  bool isLTBootstrap = (precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1)
+      && (precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1);
 
-  if (precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] == 1) {
+  if (isLTBootstrap) {
+    // allocate all vectors
     std::vector<std::vector<std::complex<double>>> U0(slots, std::vector<std::complex<double>>(slots));
+    std::vector<std::vector<std::complex<double>>> U1(slots, std::vector<std::complex<double>>(slots));
+    std::vector<std::vector<std::complex<double>>> U0hatT(slots, std::vector<std::complex<double>>(slots));
+    std::vector<std::vector<std::complex<double>>> U1hatT(slots, std::vector<std::complex<double>>(slots));
+
     for (size_t i = 0; i < slots; i++) {
       for (size_t j = 0; j < slots; j++) {
         U0[i][j] = ksiPows[(j * rotGroup[i]) % m];
+        U0hatT[j][i] = std::conj(U0[i][j]);
+        U1[i][j] = std::complex<double>(0, 1) * U0[i][j];
+        U1hatT[j][i] = std::conj(U1[i][j]);
       }
     }
+
     if (!isSparse) {
+      precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, scaleEnc, lEnc);
       precom->m_U0Pre = EvalLinearTransformPrecompute(cc, U0, scaleDec, lDec);
     } else {
-      std::vector<std::vector<std::complex<double>>> U1(slots, std::vector<std::complex<double>>(slots));
-      for (size_t i = 0; i < slots; i++) {
-        for (size_t j = 0; j < slots; j++) {
-          U1[i][j] = std::complex<double>(0, 1) * ksiPows[(j * rotGroup[i]) % m];
-        }
-      }
+      precom->m_U0hatTPre = EvalLinearTransformPrecompute(cc, U0hatT, U1hatT, 0, scaleEnc, lEnc);
       precom->m_U0Pre = EvalLinearTransformPrecompute(cc, U0, U1, 1, scaleDec, lDec);
     }
   } else {
-    precom->m_U0PreFFT = EvalSlotsToCoeffsPrecompute(cc, ksiPows, rotGroup, false, scaleDec, lDec);
+    precom->m_U0hatTPreFFT = EvalCoeffsToSlotsPrecompute(cc, ksiPows, rotGroup, false, scaleEnc, lEnc);
+    precom->m_U0PreFFT     = EvalSlotsToCoeffsPrecompute(cc, ksiPows, rotGroup, false, scaleDec, lDec);
   }
 }
 
@@ -304,7 +277,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
   std::vector<double> coefficients;
   double k = 0;
 
-  if (cryptoParams->GetMode() == SPARSE) {
+  if (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) {
     coefficients = g_coefficientsSparse;
     //k = K_SPARSE;
     k = 1.0; //do not divide by k as we already did it during precomputation
@@ -323,6 +296,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
   Ciphertext<DCRTPoly> ctxtDec;
 
+  bool isLTBootstrap = (precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1)
+        && (precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1);
   if (slots == M/4) {
     //------------------------------------------------------------------------------
     // FULLY PACKED CASE
@@ -340,7 +315,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     algo->ModReduceInternalInPlace(raised);
 
     // only one linear transform is needed as the other one can be derived
-    auto ctxtEnc = (precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] == 1) ?
+    auto ctxtEnc = (isLTBootstrap) ?
       EvalLinearTransform(precom->m_U0hatTPre, raised) :
       EvalCoeffsToSlots(precom->m_U0hatTPreFFT, raised);
 
@@ -371,7 +346,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     ctxtEncI = cc->EvalChebyshevSeries(ctxtEncI, coefficients, coeffLowerBound, coeffUpperBound);
 
     // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
-    if (cryptoParams->GetMode() == OPTIMIZED) {
+    if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
       if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
         algo->ModReduceInternalInPlace(ctxtEnc);
         algo->ModReduceInternalInPlace(ctxtEncI);
@@ -407,7 +382,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     }
 
     // Only one linear transform is needed
-    ctxtDec = (precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] == 1) ?
+    ctxtDec = (isLTBootstrap) ?
       EvalLinearTransform(precom->m_U0Pre, ctxtEnc) :
       EvalSlotsToCoeffs(precom->m_U0PreFFT, ctxtEnc);
   } else {
@@ -435,7 +410,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     algo->ModReduceInternalInPlace(raised);
 
-    auto ctxtEnc = (precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] == 1) ?
+    auto ctxtEnc = (isLTBootstrap) ?
       EvalLinearTransform(precom->m_U0hatTPre, raised) :
       EvalCoeffsToSlots(precom->m_U0hatTPreFFT, raised);
 
@@ -471,7 +446,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     ctxtEnc = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
 
     // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
-    if (cryptoParams->GetMode() == OPTIMIZED) {
+    if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
       if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
         algo->ModReduceInternalInPlace(ctxtEnc);
       }
@@ -502,7 +477,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     }
 
     // linear transform for decoding
-    ctxtDec = (precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] == 1) ?
+    ctxtDec = (isLTBootstrap) ?
       EvalLinearTransform(precom->m_U0Pre, ctxtEnc) :
       EvalSlotsToCoeffs(precom->m_U0PreFFT, ctxtEnc);
 
@@ -535,25 +510,18 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(
 
   const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
-  if (precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] == 1) {
+  bool isLTBootstrap = (precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1)
+        && (precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1);
+
+  if (isLTBootstrap) {
     std::vector<int32_t> indexList = FindLinearTransformRotationIndices(slots, M);
     fullIndexList.insert(fullIndexList.end(), indexList.begin(), indexList.end());
   } else {
-    std::vector<int32_t> indexList = FindCoeffsToSlotsRotationIndices(slots, M);
-    fullIndexList.insert(fullIndexList.end(), indexList.begin(), indexList.end());
-  }
+    std::vector<int32_t> indexListCtS = FindCoeffsToSlotsRotationIndices(slots, M);
+    std::vector<int32_t> indexListStC = FindSlotsToCoeffsRotationIndices(slots, M);
 
-  if (precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET] == 1) {
-    if (precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET] != 1) {
-      std::vector<int32_t> indexList = FindLinearTransformRotationIndices(slots, M);
-      fullIndexList.insert(fullIndexList.end(), indexList.begin(), indexList.end());
-      // Remove possible duplicates
-      sort(fullIndexList.begin(), fullIndexList.end());
-      fullIndexList.erase(unique(fullIndexList.begin(), fullIndexList.end()), fullIndexList.end());
-    }
-  } else {
-    std::vector<int32_t> indexList = FindSlotsToCoeffsRotationIndices(slots, M);
-    fullIndexList.insert(fullIndexList.end(), indexList.begin(), indexList.end());
+    fullIndexList.insert(fullIndexList.end(), indexListCtS.begin(), indexListCtS.end());
+    fullIndexList.insert(fullIndexList.end(), indexListStC.begin(), indexListStC.end());
   }
 
   // Remove possible duplicates
@@ -610,15 +578,15 @@ std::vector<int32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(
 
   const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
-  int32_t levelBudget = precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET];
-  int32_t layersCollapse = precom->m_paramsEnc[FFT_PARAMS::LAYERS_COLL];
-  int32_t remCollapse = precom->m_paramsEnc[FFT_PARAMS::LAYERS_REM];
-  int32_t numRotations = precom->m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS];
-  int32_t b = precom->m_paramsEnc[FFT_PARAMS::BABY_STEP];
-  int32_t g = precom->m_paramsEnc[FFT_PARAMS::GIANT_STEP];
-  int32_t numRotationsRem = precom->m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS_REM];
-  int32_t bRem = precom->m_paramsEnc[FFT_PARAMS::BABY_STEP_REM];
-  int32_t gRem = precom->m_paramsEnc[FFT_PARAMS::GIANT_STEP_REM];
+  int32_t levelBudget = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
+  int32_t layersCollapse = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LAYERS_COLL];
+  int32_t remCollapse = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LAYERS_REM];
+  int32_t numRotations = precom->m_paramsEnc[CKKS_BOOT_PARAMS::NUM_ROTATIONS];
+  int32_t b = precom->m_paramsEnc[CKKS_BOOT_PARAMS::BABY_STEP];
+  int32_t g = precom->m_paramsEnc[CKKS_BOOT_PARAMS::GIANT_STEP];
+  int32_t numRotationsRem = precom->m_paramsEnc[CKKS_BOOT_PARAMS::NUM_ROTATIONS_REM];
+  int32_t bRem = precom->m_paramsEnc[CKKS_BOOT_PARAMS::BABY_STEP_REM];
+  int32_t gRem = precom->m_paramsEnc[CKKS_BOOT_PARAMS::GIANT_STEP_REM];
 
   int32_t stop;
   int32_t flagRem;
@@ -684,15 +652,15 @@ std::vector<int32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(
   std::vector<int32_t> indexList;
   const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
-  int32_t levelBudget = precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET];
-  int32_t layersCollapse = precom->m_paramsDec[FFT_PARAMS::LAYERS_COLL];
-  int32_t remCollapse = precom->m_paramsDec[FFT_PARAMS::LAYERS_REM];
-  int32_t numRotations = precom->m_paramsDec[FFT_PARAMS::NUM_ROTATIONS];
-  int32_t b = precom->m_paramsDec[FFT_PARAMS::BABY_STEP];
-  int32_t g = precom->m_paramsDec[FFT_PARAMS::GIANT_STEP];
-  int32_t numRotationsRem = precom->m_paramsDec[FFT_PARAMS::NUM_ROTATIONS_REM];
-  int32_t bRem = precom->m_paramsDec[FFT_PARAMS::BABY_STEP_REM];
-  int32_t gRem = precom->m_paramsDec[FFT_PARAMS::GIANT_STEP_REM];
+  int32_t levelBudget = precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
+  int32_t layersCollapse = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_COLL];
+  int32_t remCollapse = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_REM];
+  int32_t numRotations = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS];
+  int32_t b = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP];
+  int32_t g = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP];
+  int32_t numRotationsRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS_REM];
+  int32_t bRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP_REM];
+  int32_t gRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP_REM];
 
   int32_t flagRem;
   if (remCollapse == 0) {
@@ -937,15 +905,15 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
 
   const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
-  int32_t levelBudget = precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET];
-  int32_t layersCollapse = precom->m_paramsEnc[FFT_PARAMS::LAYERS_COLL];
-  int32_t remCollapse = precom->m_paramsEnc[FFT_PARAMS::LAYERS_REM];
-  int32_t numRotations = precom->m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS];
-  int32_t b = precom->m_paramsEnc[FFT_PARAMS::BABY_STEP];
-  int32_t g = precom->m_paramsEnc[FFT_PARAMS::GIANT_STEP];
-  int32_t numRotationsRem = precom->m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS_REM];
-  int32_t bRem = precom->m_paramsEnc[FFT_PARAMS::BABY_STEP_REM];
-  int32_t gRem = precom->m_paramsEnc[FFT_PARAMS::GIANT_STEP_REM];
+  int32_t levelBudget = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
+  int32_t layersCollapse = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LAYERS_COLL];
+  int32_t remCollapse = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LAYERS_REM];
+  int32_t numRotations = precom->m_paramsEnc[CKKS_BOOT_PARAMS::NUM_ROTATIONS];
+  int32_t b = precom->m_paramsEnc[CKKS_BOOT_PARAMS::BABY_STEP];
+  int32_t g = precom->m_paramsEnc[CKKS_BOOT_PARAMS::GIANT_STEP];
+  int32_t numRotationsRem = precom->m_paramsEnc[CKKS_BOOT_PARAMS::NUM_ROTATIONS_REM];
+  int32_t bRem = precom->m_paramsEnc[CKKS_BOOT_PARAMS::BABY_STEP_REM];
+  int32_t gRem = precom->m_paramsEnc[CKKS_BOOT_PARAMS::GIANT_STEP_REM];
 
   int32_t stop = -1;
   int32_t flagRem = 0;
@@ -1136,15 +1104,15 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
 
   const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
-  int32_t levelBudget = precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET];
-  int32_t layersCollapse = precom->m_paramsDec[FFT_PARAMS::LAYERS_COLL];
-  int32_t remCollapse = precom->m_paramsDec[FFT_PARAMS::LAYERS_REM];
-  int32_t numRotations = precom->m_paramsDec[FFT_PARAMS::NUM_ROTATIONS];
-  int32_t b = precom->m_paramsDec[FFT_PARAMS::BABY_STEP];
-  int32_t g = precom->m_paramsDec[FFT_PARAMS::GIANT_STEP];
-  int32_t numRotationsRem = precom->m_paramsDec[FFT_PARAMS::NUM_ROTATIONS_REM];
-  int32_t bRem = precom->m_paramsDec[FFT_PARAMS::BABY_STEP_REM];
-  int32_t gRem = precom->m_paramsDec[FFT_PARAMS::GIANT_STEP_REM];
+  int32_t levelBudget = precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
+  int32_t layersCollapse = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_COLL];
+  int32_t remCollapse = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_REM];
+  int32_t numRotations = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS];
+  int32_t b = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP];
+  int32_t g = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP];
+  int32_t numRotationsRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS_REM];
+  int32_t bRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP_REM];
+  int32_t gRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP_REM];
 
   int32_t flagRem = 0;
 
@@ -1405,15 +1373,15 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(
   uint32_t slots = ctxt->GetSlots();
   const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
-  int32_t levelBudget = precom->m_paramsEnc[FFT_PARAMS::LEVEL_BUDGET];
-  int32_t layersCollapse = precom->m_paramsEnc[FFT_PARAMS::LAYERS_COLL];
-  int32_t remCollapse = precom->m_paramsEnc[FFT_PARAMS::LAYERS_REM];
-  int32_t numRotations = precom->m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS];
-  int32_t b = precom->m_paramsEnc[FFT_PARAMS::BABY_STEP];
-  int32_t g = precom->m_paramsEnc[FFT_PARAMS::GIANT_STEP];
-  int32_t numRotationsRem = precom->m_paramsEnc[FFT_PARAMS::NUM_ROTATIONS_REM];
-  int32_t bRem = precom->m_paramsEnc[FFT_PARAMS::BABY_STEP_REM];
-  int32_t gRem = precom->m_paramsEnc[FFT_PARAMS::GIANT_STEP_REM];
+  int32_t levelBudget = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
+  int32_t layersCollapse = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LAYERS_COLL];
+  int32_t remCollapse = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LAYERS_REM];
+  int32_t numRotations = precom->m_paramsEnc[CKKS_BOOT_PARAMS::NUM_ROTATIONS];
+  int32_t b = precom->m_paramsEnc[CKKS_BOOT_PARAMS::BABY_STEP];
+  int32_t g = precom->m_paramsEnc[CKKS_BOOT_PARAMS::GIANT_STEP];
+  int32_t numRotationsRem = precom->m_paramsEnc[CKKS_BOOT_PARAMS::NUM_ROTATIONS_REM];
+  int32_t bRem = precom->m_paramsEnc[CKKS_BOOT_PARAMS::BABY_STEP_REM];
+  int32_t gRem = precom->m_paramsEnc[CKKS_BOOT_PARAMS::GIANT_STEP_REM];
 
   int32_t stop = -1;
   int32_t flagRem = 0;
@@ -1611,15 +1579,15 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(
 
   const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
-  int32_t levelBudget = precom->m_paramsDec[FFT_PARAMS::LEVEL_BUDGET];
-  int32_t layersCollapse = precom->m_paramsDec[FFT_PARAMS::LAYERS_COLL];
-  int32_t remCollapse = precom->m_paramsDec[FFT_PARAMS::LAYERS_REM];
-  int32_t numRotations = precom->m_paramsDec[FFT_PARAMS::NUM_ROTATIONS];
-  int32_t b = precom->m_paramsDec[FFT_PARAMS::BABY_STEP];
-  int32_t g = precom->m_paramsDec[FFT_PARAMS::GIANT_STEP];
-  int32_t numRotationsRem = precom->m_paramsDec[FFT_PARAMS::NUM_ROTATIONS_REM];
-  int32_t bRem = precom->m_paramsDec[FFT_PARAMS::BABY_STEP_REM];
-  int32_t gRem = precom->m_paramsDec[FFT_PARAMS::GIANT_STEP_REM];
+  int32_t levelBudget = precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
+  int32_t layersCollapse = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_COLL];
+  int32_t remCollapse = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_REM];
+  int32_t numRotations = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS];
+  int32_t b = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP];
+  int32_t g = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP];
+  int32_t numRotationsRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::NUM_ROTATIONS_REM];
+  int32_t bRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::BABY_STEP_REM];
+  int32_t gRem = precom->m_paramsDec[CKKS_BOOT_PARAMS::GIANT_STEP_REM];
 
   auto algo = cc->GetScheme();
 

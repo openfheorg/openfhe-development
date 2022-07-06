@@ -29,18 +29,64 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_DUALITY_UTILS_LINEARTRANSFORM_H
-#define LBCRYPTO_DUALITY_UTILS_LINEARTRANSFORM_H
+#ifndef _CKKSRNS_UTILS_H_
+#define _CKKSRNS_UTILS_H_
 
 #include <vector>
 #include <complex>
 #include <iostream>
+#include <stdint.h>
 
 /*
  * Subroutines used by the linear transformation homomorphic capability
  */
 
 namespace lbcrypto {
+
+struct longDiv{
+  std::vector<double> q;
+  std::vector<double> r;
+};
+
+/**
+ * Gets the degree of a polynomial specified by its coefficients.
+ *
+ * @param &coefficients vector of coefficients of a polynomial.
+ * @return the integer degree of the polynomial.
+ */
+uint32_t Degree(const std::vector<double> &coefficients);
+
+/**
+ * Computes the quotient and remainder of the long division of two polynomials in the power series basis.
+ *
+ * @param &f the vector of coefficients of the dividend.
+ * @param &g the vector of coefficients of the divisor.
+ * @return a struct with the coefficients for the quotient and remainder.
+ */
+longDiv *LongDivisionPoly(
+  const std::vector<double> &f,
+  const std::vector<double> &g);
+
+
+/**
+ * Computes the quotient and remainder of the long division of two polynomials in the Chebyshev series basis
+ *
+ * @param &f the vector of coefficients of the dividend.
+ * @param &g the vector of coefficients of the divisor.
+ * @return a struct with the coefficients for the quotient and remainder.
+ */
+longDiv *LongDivisionChebyshev(
+  const std::vector<double> &f,
+  const std::vector<double> &g);
+
+/**
+ * Computes the values of the internal degrees k and m needed in the Paterson-Stockmeyer algorithm
+ * such that k(2^m - 1} > n and k close to sqrt(n/2).
+ *
+ * @param n the degree of a polynomial.
+ * @return a vector containing k and m.
+ */
+std::vector<uint32_t> ComputeDegreesPS(const uint32_t n);
 
 /**
  * Extracts shifted diagonal of matrix A.
@@ -51,8 +97,8 @@ namespace lbcrypto {
  * @return the vector corresponding to the shifted diagonal
  */
 std::vector<std::complex<double>> ExtractShiftedDiagonal(
-	const std::vector<std::vector<std::complex<double>>> &A,
-	int index);
+  const std::vector<std::vector<std::complex<double>>> &A,
+  int index);
 
 /**
  * Rotates a vector by an index - left rotation
@@ -63,8 +109,8 @@ std::vector<std::complex<double>> ExtractShiftedDiagonal(
  * @return the rotated vector
  */
 std::vector<std::complex<double>> Rotate(
-	const std::vector<std::complex<double>> &a,
-	int32_t index);
+  const std::vector<std::complex<double>> &a,
+  int32_t index);
 
 
 /**
@@ -76,8 +122,8 @@ std::vector<std::complex<double>> Rotate(
  * @return the vector with cloned values
  */
 std::vector<std::complex<double>> Fill(
-	const std::vector<std::complex<double>> &a,
-	int slots);
+  const std::vector<std::complex<double>> &a,
+  int slots);
 
 /**
  * Computes the coefficients for the FFT encoding for CoeffEncodingCollapse such that every
@@ -88,9 +134,9 @@ std::vector<std::complex<double>> Fill(
  * @param flag_i flag that is 0 when we compute the coefficients for conj(U_0^T) and is 1 for conj(i*U_0^T).
  */
 std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(
-	const std::vector<std::complex<double>> &pows,
-	const std::vector<uint32_t> &rotGroup,
-	bool flag_i);
+  const std::vector<std::complex<double>> &pows,
+  const std::vector<uint32_t> &rotGroup,
+  bool flag_i);
 
 /**
  * Computes the coefficients for the FFT decoding for CoeffDecodingCollapse such that every
@@ -101,9 +147,9 @@ std::vector<std::vector<std::complex<double>>> CoeffEncodingOneLevel(
  * @param flag_i flag that is 0 when we compute the coefficients for U_0 and is 1 for i*U_0.
  */
 std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(
-	const std::vector<std::complex<double>> &pows,
-	const std::vector<uint32_t> &rotGroup,
-	bool flag_i);
+  const std::vector<std::complex<double>> &pows,
+  const std::vector<uint32_t> &rotGroup,
+  bool flag_i);
 
 
 /**
@@ -116,10 +162,10 @@ std::vector<std::vector<std::complex<double>>> CoeffDecodingOneLevel(
  * @param flag_i flag that is 0 when we compute the coefficients for conj(U_0^T) and is 1 for conj(i*U_0^T).
  */
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollapse(
-	const std::vector<std::complex<double>> &pows,
-	const std::vector<uint32_t> &rotGroup,
-	uint32_t levelBudget,
-	bool flag_i);
+  const std::vector<std::complex<double>> &pows,
+  const std::vector<uint32_t> &rotGroup,
+  uint32_t levelBudget,
+  bool flag_i);
 
 /**
  * Computes the coefficients for the given level budget for the FFT decoding. Needed in
@@ -131,10 +177,10 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
  * @param flag_i flag that is 0 when we compute the coefficients for U_0 and is 1 for i*U_0.
  */
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollapse(
-	const std::vector<std::complex<double>> &pows,
-	const std::vector<uint32_t> &rotGroup,
-	uint32_t levelBudget,
-	bool flag_i);
+  const std::vector<std::complex<double>> &pows,
+  const std::vector<uint32_t> &rotGroup,
+  uint32_t levelBudget,
+  bool flag_i);
 
 
 /**
@@ -159,7 +205,7 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget = 4);
 /**
  * Computes all parameters needed for the homomorphic encoding and decoding in the bootstrapping
  * operation and returns them as a vector. The returned vector's data can be accessed using
- * enum'ed indices from FFT_PARAMS that are defined below.
+ * enum'ed indices from CKKS_BOOT_PARAMS that are defined below.
  *
  * @param slots number of slots.
  * @param levelBudget the allocated level budget for the computation.
@@ -168,11 +214,12 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget = 4);
  */
 std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget = 4, uint32_t dim1 = 0);
 
-namespace FFT_PARAMS {
-	/**
-	 * Enums representing indices for the vector returned by GetCollapsedFFTParams()
-	 */
-	enum {
+
+namespace CKKS_BOOT_PARAMS {
+  /**
+   * Enums representing indices for the vector returned by GetCollapsedFFTParams()
+   */
+  enum {
     LEVEL_BUDGET,      // the level budget
     LAYERS_COLL,       // the number of layers to collapse in one level
     LAYERS_REM,        // the number of layers remaining to be collapsed in one level to have exactly the number of levels specified in the level budget
@@ -183,8 +230,9 @@ namespace FFT_PARAMS {
     BABY_STEP_REM,     // the baby step in the baby-step giant-step strategy for the remaining level
     GIANT_STEP_REM,    // the giant step in the baby-step giant-step strategy for the remaining level
     TOTAL_ELEMENTS     // total number of elements in the vector
-	};
+  };
 }
+
 }
 
 #endif

@@ -141,7 +141,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     if (digitSize == 0) {
       OPENFHE_THROW(config_error, "digitSize is not allowed to be 0 for BV key switching in BGV.");
     }
-    int relinBase = pow(2.0, digitSize);
+//    int digitSize = pow(2.0, digitSize);
     int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
     int numWindows = floor(modSizeEstimate / log(relinBase)) + 1;
     keySwitchingNoise = numWindows * (numPrimes + 1) * expansionFactor * relinBase * Berr / 2.0;
