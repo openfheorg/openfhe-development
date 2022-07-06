@@ -1388,6 +1388,9 @@ void DCRTPolyImpl<VecType>::TimesQovert(
     const NativeInteger &NegQModt,
     const NativeInteger &NegQModtPrecon) {
   usint sizeQ = m_vectors.size();
+  if (tInvModq.size() < sizeQ || tInvModqPrecon.size() < sizeQ) {
+    OPENFHE_THROW(math_error, "Sizes of vectors do not match.");
+  }
   usint ringDim = this->GetRingDimension();
 #pragma omp parallel for
   for (size_t i = 0; i < sizeQ; i++) {

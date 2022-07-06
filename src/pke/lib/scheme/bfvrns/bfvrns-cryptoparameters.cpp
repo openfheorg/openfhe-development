@@ -121,44 +121,44 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
   NativeInteger rootr = RootOfUnity<NativeInteger>(2 * n, modulusr);
 
   // BFVrns : Encrypt : With extra
-    if (encTech == POVERQ) {
-      std::vector<NativeInteger> moduliQr(sizeQ + 1);
-      std::vector<NativeInteger> rootsQr(sizeQ + 1);
-      for (uint32_t i = 0; i < sizeQ; i++) {
-        moduliQr[i] = moduliQ[i];
-        rootsQr[i] = rootsQ[i];
-      }
-      moduliQr[sizeQ] = modulusr;
-      rootsQr[sizeQ] = rootr;
-      m_paramsQr =
-          std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQr, rootsQr);
+  if (encTech == POVERQ) {
+    std::vector<NativeInteger> moduliQr(sizeQ + 1);
+    std::vector<NativeInteger> rootsQr(sizeQ + 1);
 
-      m_tInvModq.resize(sizeQ + 1);
-      m_tInvModqPrecon.resize(sizeQ + 1);
-      for (usint i = 0; i < sizeQ; i++) {
-        m_tInvModq[i] = t.ModInverse(moduliQ[i]);
-        m_tInvModqPrecon[i] = m_tInvModq[i].PrepModMulConst(moduliQ[i]);
-      }
+    m_tInvModq.resize(sizeQ + 1);
+    m_tInvModqPrecon.resize(sizeQ + 1);
 
-      m_negQModt = modulusQ.Mod(BigInteger(GetPlaintextModulus())).ConvertToInt();
-      m_negQModt = t.Sub(m_negQModt);
-      m_negQModtPrecon = m_negQModt.PrepModMulConst(t);
+    m_rInvModq.resize(sizeQ);
+    m_rInvModqPrecon.resize(sizeQ);
 
-      BigInteger modulusQr = modulusQ.Mul(modulusr);
-      m_negQrModt = modulusQr.Mod(BigInteger(t)).ConvertToInt();
-      m_negQrModt = t.Sub(m_negQrModt);
-      m_negQrModtPrecon = m_negQrModt.PrepModMulConst(t);
+    for (uint32_t i = 0; i < sizeQ; i++) {
+      moduliQr[i] = moduliQ[i];
+      rootsQr[i] = rootsQ[i];
 
-      m_tInvModq[sizeQ] = t.ModInverse(modulusr);
-      m_tInvModqPrecon[sizeQ] = m_tInvModq[sizeQ].PrepModMulConst(modulusr);
+      m_tInvModq[i] = t.ModInverse(moduliQ[i]);
+      m_tInvModqPrecon[i] = m_tInvModq[i].PrepModMulConst(moduliQ[i]);
 
-      m_rInvModq.resize(sizeQ);
-      m_rInvModqPrecon.resize(sizeQ);
-      for (usint i = 0; i < sizeQ; i++) {
-        m_rInvModq[i] = modulusr.ModInverse(moduliQ[i]);
-        m_rInvModqPrecon[i] = m_rInvModq[i].PrepModMulConst(moduliQ[i]);
-      }
+      m_rInvModq[i] = modulusr.ModInverse(moduliQ[i]);
+      m_rInvModqPrecon[i] = m_rInvModq[i].PrepModMulConst(moduliQ[i]);
     }
+    moduliQr[sizeQ] = modulusr;
+    rootsQr[sizeQ] = rootr;
+    m_paramsQr =
+        std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQr, rootsQr);
+
+    m_tInvModq[sizeQ] = t.ModInverse(modulusr);
+    m_tInvModqPrecon[sizeQ] = m_tInvModq[sizeQ].PrepModMulConst(modulusr);
+
+    m_negQModt = modulusQ.Mod(BigInteger(GetPlaintextModulus())).ConvertToInt();
+    m_negQModt = t.Sub(m_negQModt);
+    m_negQModtPrecon = m_negQModt.PrepModMulConst(t);
+
+    BigInteger modulusQr = modulusQ.Mul(modulusr);
+    m_negQrModt = modulusQr.Mod(BigInteger(t)).ConvertToInt();
+    m_negQrModt = t.Sub(m_negQrModt);
+    m_negQrModtPrecon = m_negQrModt.PrepModMulConst(t);
+
+  }
 
   /////////////////////////////////////
   // HPS Precomputation
