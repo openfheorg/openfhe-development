@@ -215,7 +215,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 #endif
 
   uint32_t slots = ciphertext->GetSlots();
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
+
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup and then EvalBootstrapKeyGen to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
   auto cc = ciphertext->GetCryptoContext();
   uint32_t M = cc->GetCyclotomicOrder();
@@ -506,9 +513,15 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
 std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(
     uint32_t slots, uint32_t M) {
-  std::vector<int32_t> fullIndexList;
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
+  std::vector<int32_t> fullIndexList;
 
   bool isLTBootstrap = (precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1)
         && (precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET] == 1);
@@ -536,9 +549,15 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(
 }
 
 std::vector<int32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t slots, uint32_t M) {
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
+
   std::vector<int32_t> indexList;
-  // precom.m_slots and precom.m_dim1 are not available when we call solely EvalLT
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
   // Computing the baby-step g and the giant-step h.
   int g = (precom->m_dim1 == 0) ? ceil(sqrt(slots)) : precom->m_dim1;
@@ -574,9 +593,15 @@ std::vector<int32_t> FHECKKSRNS::FindLinearTransformRotationIndices(uint32_t slo
 
 std::vector<int32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(
     uint32_t slots, uint32_t M) {
-  std::vector<int32_t> indexList;
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
+  std::vector<int32_t> indexList;
 
   int32_t levelBudget = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
   int32_t layersCollapse = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LAYERS_COLL];
@@ -649,8 +674,15 @@ std::vector<int32_t> FHECKKSRNS::FindCoeffsToSlotsRotationIndices(
 
 std::vector<int32_t> FHECKKSRNS::FindSlotsToCoeffsRotationIndices(
     uint32_t slots, uint32_t M) {
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
+
   std::vector<int32_t> indexList;
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
   int32_t levelBudget = precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
   int32_t layersCollapse = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_COLL];
@@ -732,9 +764,17 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
   }
 
   uint32_t slots = A.size();
+
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
+
   uint32_t M = cc.GetCyclotomicOrder();
 
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
   // Computing the baby-step bStep and the giant-step gStep.
   int bStep = (precom->m_dim1 == 0) ? ceil(sqrt(slots)) : precom->m_dim1;
   int gStep = ceil(static_cast<double>(slots) / bStep);
@@ -798,9 +838,16 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     const std::vector<std::vector<std::complex<double>>>& B,
     uint32_t orientation, double scale, uint32_t L) const {
   uint32_t slots = A.size();
-  uint32_t M = cc.GetCyclotomicOrder();
 
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
+
+  uint32_t M = cc.GetCyclotomicOrder();
 
   // Computing the baby-step bStep and the giant-step gStep.
   int bStep = (precom->m_dim1 == 0) ? ceil(sqrt(slots)) : precom->m_dim1;
@@ -899,11 +946,17 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
     const std::vector<std::complex<double>> &A,
     const std::vector<uint32_t> &rotGroup,
     bool flag_i, double scale, uint32_t L) const {
-
   uint32_t slots = rotGroup.size();
-  uint32_t M = cc.GetCyclotomicOrder();
 
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
+
+  uint32_t M = cc.GetCyclotomicOrder();
 
   int32_t levelBudget = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
   int32_t layersCollapse = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LAYERS_COLL];
@@ -1098,11 +1151,17 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
     const std::vector<std::complex<double>> &A,
     const std::vector<uint32_t> &rotGroup,
     bool flag_i, double scale, uint32_t L) const {
-
   uint32_t slots = rotGroup.size();
-  uint32_t M = cc.GetCyclotomicOrder();
 
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
+
+  uint32_t M = cc.GetCyclotomicOrder();
 
   int32_t levelBudget = precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
   int32_t layersCollapse = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_COLL];
@@ -1298,11 +1357,17 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(
     const std::vector<ConstPlaintext>& A,
     ConstCiphertext<DCRTPoly> ct) const {
-  auto cc = ct->GetCryptoContext();
   uint32_t slots = A.size();
 
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup and EvalBootstrapKeyGen to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
+  auto cc = ct->GetCryptoContext();
   // Computing the baby-step bStep and the giant-step gStep.
   uint32_t bStep = (precom->m_dim1 == 0) ? ceil(sqrt(slots)) : precom->m_dim1;
   uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
@@ -1365,13 +1430,19 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(
     const std::vector<std::vector<ConstPlaintext>> &A, ConstCiphertext<DCRTPoly> ctxt) const {
+  uint32_t slots = ctxt->GetSlots();
+
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup and EvalBootstrapKeyGen to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
   auto cc = ctxt->GetCryptoContext();
   uint32_t M = cc->GetCyclotomicOrder();
   uint32_t N = cc->GetRingDimension();
-
-  uint32_t slots = ctxt->GetSlots();
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
   int32_t levelBudget = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
   int32_t layersCollapse = precom->m_paramsEnc[CKKS_BOOT_PARAMS::LAYERS_COLL];
@@ -1570,14 +1641,21 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(
     const std::vector<std::vector<ConstPlaintext>> &A,
     ConstCiphertext<DCRTPoly> ctxt) const {
+  uint32_t slots = ctxt->GetSlots();
+
+  auto pair = m_bootPrecomMap.find(slots);
+  if (pair == m_bootPrecomMap.end()) {
+    std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) + std::string(" slots were not generated") +
+                         std::string(" Need to call EvalBootstrapSetup and EvalBootstrapKeyGen to proceed"));
+    OPENFHE_THROW(type_error, errorMsg);
+  }
+
+  const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
 
   auto cc = ctxt->GetCryptoContext();
 
   uint32_t M = cc->GetCyclotomicOrder();
   uint32_t N = cc->GetRingDimension();
-  uint32_t slots = ctxt->GetSlots();
-
-  const std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap.at(slots);
 
   int32_t levelBudget = precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
   int32_t layersCollapse = precom->m_paramsDec[CKKS_BOOT_PARAMS::LAYERS_COLL];
