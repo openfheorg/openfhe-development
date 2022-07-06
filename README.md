@@ -1,7 +1,7 @@
-OpenFHE Lattice Cryptography Library
+OpenFHE - Open-Source Fully Homomorphic Encryption Library
 =====================================
 
-OpenFHE is a general lattice cryptography library that currently includes efficient implementations of the following lattice cryptography capabilities:
+OpenFHE is an open-source fully homomorphic encryption library that currently includes efficient implementations of the following lattice cryptography capabilities:
 
 * Fully Homomorphic Encryption (FHE)
   * Brakerski/Fan-Vercauteren (BFV) scheme for integer arithmetic
@@ -17,15 +17,13 @@ documentation about this library.
 
 ## Links and Resources
 
-**Website** [TODO: Migrate from palisade-crypto](https://palisade-crypto.org/)
-
 **Documentation**  [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/)
 
-**Quickstart** [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/quickstart.html)
+**Quickstart** [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/quickstart.html)
 
 **License** OpenFHE is released under the BSD 2-Clause License. See [here](LICENSE)
 
-**Contributing** [Contributing to OpenFHE](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/contributing/contributing_workflow.html)
+**Contributing** [Contributing to OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/contributing.html)
 
 **Reporting bugs** [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development/issues)
 
@@ -34,15 +32,15 @@ documentation about this library.
 
 ## Installation
 
-Refer to our General Installation Information: [readthedocs](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/installation/installation.html) for more information
+Refer to our General Installation Information: [readthedocs](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html) for more information
 
 Or refer to the following for your specific operating system:
 
-- [Linux](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/installation/linux.html)
+- [Linux](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/linux.html)
 
-- [MacOS](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/installation/macos.html)
+- [MacOS](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/macos.html)
 
-- [Windows](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/installation/windows.html)
+- [Windows](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/windows.html)
 
 
 ## Code of Conduct
@@ -54,9 +52,9 @@ socio-economic status, nationality, personal appearance, race, religion, or sexu
 
 
 OpenFHE is a community-driven open source project developed by a diverse group of
-[contributors](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/misc/contributors.html). The OpenFHE leadership has made a strong commitment to creating an open,
+[contributors](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/misc/contributors.html). The OpenFHE leadership has made a strong commitment to creating an open,
 inclusive, and positive community. Please read our
-[Code of Conduct](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/misc/code_of_conduct.html?highlight=code%20of%20) for guidance on how to interact with others in a way that
+[Code of Conduct](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/misc/code_of_conduct.html?highlight=code%20of%20) for guidance on how to interact with others in a way that
 makes our community thrive.
 
 ## Call for Contributions
