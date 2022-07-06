@@ -108,11 +108,11 @@ class PlaintextImpl {
   static const int fracCTOR = 0x04;
   static const int vecuintCTOR = 0x08;
 
-  double scalingFactor;
-  NativeInteger scalingFactorInt;
-  size_t level;
-  size_t depth;
-  usint slots;
+  double scalingFactor = 1;
+  NativeInteger scalingFactorInt = 1;
+  size_t level= 0;
+  size_t depth = 1;
+  usint slots = 0;
   EncryptionTechnique encTech;
 
  public:
@@ -122,11 +122,6 @@ class PlaintextImpl {
         typeFlag(IsPoly),
         encodingParams(ep),
         encodedVector(vp, Format::COEFFICIENT),
-        scalingFactor(1),
-        scalingFactorInt(1),
-        level(0),
-        depth(1),
-        slots(0),
         encTech(encTech) {}
 
   PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, EncryptionTechnique encTech = STANDARD,
@@ -135,11 +130,6 @@ class PlaintextImpl {
         typeFlag(IsNativePoly),
         encodingParams(ep),
         encodedNativeVector(vp, Format::COEFFICIENT),
-        scalingFactor(1),
-        scalingFactorInt(1),
-        level(0),
-        depth(1),
-        slots(0),
         encTech(encTech) {}
 
   PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, EncryptionTechnique encTech = STANDARD,
@@ -149,11 +139,6 @@ class PlaintextImpl {
         encodingParams(ep),
         encodedVector(vp, Format::COEFFICIENT),
         encodedVectorDCRT(vp, Format::COEFFICIENT),
-        scalingFactor(1),
-        scalingFactorInt(1),
-        level(0),
-        depth(1),
-        slots(0),
         encTech(encTech) {}
 
   PlaintextImpl(const PlaintextImpl& rhs)
