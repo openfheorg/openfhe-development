@@ -55,7 +55,7 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-advancedshe.h"
-#include "utils/polynomials.h"
+#include "scheme/ckksrns/ckksrns-utils.h"
 
 namespace lbcrypto {
 

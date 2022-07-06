@@ -44,9 +44,9 @@ Example for CKKS bootstrapping
 using namespace std;
 using namespace lbcrypto;
 
-void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRemaining);
+void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, uint32_t levelsRemaining);
 // same example with verbose console output removed
-void BootstrapExampleClean(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRemaining);
+void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, uint32_t levelsRemaining);
 
 int main(int argc, char* argv[]) {
 
@@ -55,21 +55,21 @@ int main(int argc, char* argv[]) {
 // OPTIMIZED - uniform ternary secrets
 
 // low-security examples
-//	BootstrapExample(SPARSE,1<<12,1<<11,10);
-//	BootstrapExample(SPARSE,1<<12,1<<10,10);
-	BootstrapExample(OPTIMIZED,1<<12,1<<11,10);
-//	BootstrapExample(OPTIMIZED,1<<12,1<<10,10);
+//	BootstrapExample(SPARSE_TERNARY, 1<<12, 1<<11, 10);
+//	BootstrapExample(SPARSE_TERNARY, 1<<12, 1<<10, 10);
+	BootstrapExample(UNIFORM_TERNARY, 1<<12, 1<<11, 10);
+//	BootstrapExample(UNIFORM_TERNARY, 1<<12, 1<<10, 10);
 
 
-//	BootstrapExample(SPARSE,1<<17,1<<16,10);
-//	BootstrapExample(SPARSE,1<<17,1<<15,10);
-//	BootstrapExample(OPTIMIZED,1<<17,1<<16,10);
-//	BootstrapExample(OPTIMIZED,1<<17,1<<15,10);
+//	BootstrapExample(SPARSE_TERNARY, 1<<17, 1<<16, 10);
+//	BootstrapExample(SPARSE_TERNARY, 1<<17, 1<<15, 10);
+//	BootstrapExample(UNIFORM_TERNARY, 1<<17, 1<<16, 10);
+//	BootstrapExample(UNIFORM_TERNARY, 1<<17, 1<<15, 10);
 
 	return 0;
 }
 
-void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRemaining) {
+void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, uint32_t levelsRemaining) {
 
 	TimeVar t;
 	double timeKeyGen(0.0);
@@ -87,6 +87,8 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
   std::vector<uint32_t> levelBudget2 = { 2, 4 };
   std::vector<uint32_t> levelBudget3 = { 3, 2 };
   std::vector<uint32_t> levelBudget4 = { 1, 1 };
+  std::vector<uint32_t> levelBudget5 = { 1, 2 };
+  std::vector<uint32_t> levelBudget6 = { 3, 1 };
 
 #if NATIVEINT==128
   RescalingTechnique rescaleTech = FIXEDMANUAL;
@@ -101,7 +103,7 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 	// computes how many levels are needed for
 	uint32_t approxModDepth = 9;
 	uint32_t r = 6;
-	if (mode == OPTIMIZED) {
+	if (secretKeyDist == UNIFORM_TERNARY) {
     approxModDepth += r - 1;
 //	    if (rescaleTech == FIXEDMANUAL)
 //	      approxModDepth += r - 1;
@@ -117,7 +119,7 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
   parameters.SetScalingFactorBits(dcrtBits);
   parameters.SetRescalingTechnique(rescaleTech);
   parameters.SetRingDim(n);
-  parameters.SetMode(mode);
+  parameters.SetSecretKeyDist(secretKeyDist);
   parameters.SetNumLargeDigits(3);
   parameters.SetSecurityLevel(HEStd_NotSet);
   parameters.SetKeySwitchTechnique(HYBRID);
@@ -156,7 +158,7 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 	const shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
 				std::static_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
-  std::cerr << "MODE: " << mode << std::endl;
+  std::cerr << "SecretKeyDist: " << secretKeyDist << std::endl;
 
 	std::cout << "p = " << cryptoParams->GetPlaintextModulus()
 			<< std::endl;
@@ -177,8 +179,8 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 
 	TIC(t);
 
-	vector<uint32_t> slotsvec(4);
-	for (size_t i = 0; i < 4; ++i) {
+	vector<uint32_t> slotsvec(6);
+	for (size_t i = 0; i < 6; ++i) {
 	  slotsvec[i] = slots / (1 << i);
   }
 
@@ -188,6 +190,8 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
   cc->EvalBootstrapSetup(levelBudget2, dim1, slotsvec[1]);
   cc->EvalBootstrapSetup(levelBudget3, dim1, slotsvec[2]);
   cc->EvalBootstrapSetup(levelBudget4, dim1, slotsvec[3]);
+  cc->EvalBootstrapSetup(levelBudget5, dim1, slotsvec[4]);
+  cc->EvalBootstrapSetup(levelBudget6, dim1, slotsvec[5]);
 
 //	std::cout << "gEnc = " << cc->GetGiantStepEnc() << std::endl;
 //	std::cout << "# rot Enc = " << cc->GetNumRotationsEnc() << std::endl;
@@ -208,7 +212,7 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 
 	// generation of all keys needed for bootstrapping
 
-	for (size_t i = 0; i < 4; ++i) {
+	for (size_t i = 0; i < 6; ++i) {
 	  TIC(t);
 	  cc->EvalBootstrapKeyGen(keyPair.secretKey, slotsvec[i]);
 	  timeKeyGen = TOC(t);
@@ -274,7 +278,7 @@ void BootstrapExample(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRema
 }
 
 
-void BootstrapExampleClean(MODE mode, uint32_t n, uint32_t slots, uint32_t levelsRemaining) {
+void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, uint32_t levelsRemaining) {
 
 	// giant step for baby-step-giant-step algorithm in linear transforms for encoding and decoding, respectively
 	// Choose this a power of 2 preferably, otherwise an exact divisor of the number of elements in the sum
@@ -297,7 +301,7 @@ void BootstrapExampleClean(MODE mode, uint32_t n, uint32_t slots, uint32_t level
 	// computes how many levels are needed for
 	uint32_t approxModDepth = 9;
 	uint32_t r = 6;
-	if (mode == OPTIMIZED) {
+	if (secretKeyDist == UNIFORM_TERNARY) {
     approxModDepth += r - 1;
 //	    if (rescaleTech == FIXEDMANUAL)
 //        approxModDepth += r - 1;
@@ -312,7 +316,7 @@ void BootstrapExampleClean(MODE mode, uint32_t n, uint32_t slots, uint32_t level
   parameters.SetScalingFactorBits(dcrtBits);
   parameters.SetRescalingTechnique(rescaleTech);
   parameters.SetRingDim(n);
-  parameters.SetMode(mode);
+  parameters.SetSecretKeyDist(secretKeyDist);
   parameters.SetNumLargeDigits(3);
   parameters.SetSecurityLevel(HEStd_NotSet);
   parameters.SetKeySwitchTechnique(HYBRID);
