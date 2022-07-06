@@ -239,7 +239,7 @@ TEST_P(Encrypt_Decrypt, ENCRYPT) {
     if (test.testCaseType == STRING_TEST)
         EncryptionString(test, test.buildTestName());
     else if (test.testCaseType == COEF_PACKED_TEST)
-        EncryptionCoefPacked(test, test.buildTestName());\
+        EncryptionCoefPacked(test, test.buildTestName());
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, Encrypt_Decrypt, ::testing::ValuesIn(testCases), testName);
