@@ -19,7 +19,7 @@ documentation about this library.
 
 **Documentation**  [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/)
 
-**Quickstart** [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/quickstart.html)
+**Quickstart** [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/quickstart.html)
 
 **License** OpenFHE is released under the BSD 2-Clause License. See [here](LICENSE)
 
