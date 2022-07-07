@@ -113,33 +113,33 @@ class PlaintextImpl {
   size_t level= 0;
   size_t depth = 1;
   usint slots = 0;
-  EncryptionTechnique encTech;
+  std::string schemeID;
 
  public:
-  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, EncryptionTechnique encTech = STANDARD,
+  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, std::string schemeID = "",
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsPoly),
         encodingParams(ep),
         encodedVector(vp, Format::COEFFICIENT),
-        encTech(encTech) {}
+        schemeID(schemeID) {}
 
-  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, EncryptionTechnique encTech = STANDARD,
+  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, std::string schemeID = "",
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsNativePoly),
         encodingParams(ep),
         encodedNativeVector(vp, Format::COEFFICIENT),
-        encTech(encTech) {}
+        schemeID(schemeID) {}
 
-  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, EncryptionTechnique encTech = STANDARD,
+  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, std::string schemeID = "",
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsDCRTPoly),
         encodingParams(ep),
         encodedVector(vp, Format::COEFFICIENT),
         encodedVectorDCRT(vp, Format::COEFFICIENT),
-        encTech(encTech) {}
+        schemeID(schemeID) {}
 
   PlaintextImpl(const PlaintextImpl& rhs)
       : isEncoded(rhs.isEncoded),
@@ -152,7 +152,7 @@ class PlaintextImpl {
         level(rhs.level),
         depth(rhs.depth),
         slots(rhs.slots),
-        encTech(rhs.encTech) {}
+        schemeID(rhs.schemeID) {}
 
   PlaintextImpl(const PlaintextImpl&& rhs)
       : isEncoded(rhs.isEncoded),
@@ -165,7 +165,7 @@ class PlaintextImpl {
         level(rhs.level),
         depth(rhs.depth),
         slots(rhs.slots),
-        encTech(rhs.encTech) {}
+        schemeID(rhs.schemeID) {}
 
   virtual ~PlaintextImpl() {}
 
@@ -198,7 +198,7 @@ class PlaintextImpl {
   /**
    * Get the encryption technique of the plaintext for BFV-based plaintexts.
    */
-  const EncryptionTechnique GetEncryptionTechnique() const { return encTech; }
+  const std::string GetSchemeID() const { return schemeID; }
 
   /**
    * IsEncoded

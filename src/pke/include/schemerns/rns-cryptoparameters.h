@@ -939,13 +939,6 @@ public:
   /////////////////////////////////////
 
   /**
-   * Gets the precomputed table of [\floor{Q/t}]_{q_i}
-   *
-   * @return the precomputed table
-   */
-  const std::vector<NativeInteger> &GetQDivtModq() const { return m_QDivtModq; }
-
-  /**
    * Gets the precomputed table of 1./p_{q_i}
    *
    * @return the precomputed table
@@ -1390,9 +1383,6 @@ public:
   /////////////////////////////////////
   // BFVrns : Encrypt
   /////////////////////////////////////
-
-  // Stores [\floor{Q/t}]_{q_i}
-  std::vector<NativeInteger> m_QDivtModq;
 
   std::vector<NativeInteger> m_scalingFactorsInt;
 

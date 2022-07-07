@@ -65,20 +65,15 @@ void LeveledSHEBFVRNS::EvalAddInPlace(
   std::vector<DCRTPoly> &cv = ciphertext->GetElements();
 
   DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
-    pt.SetFormat(COEFFICIENT);
-    const NativeInteger &NegQModt = cryptoParams->GetNegQModt();
-    const NativeInteger &NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
-    const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
-    const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
-    const NativeInteger t = cryptoParams->GetPlaintextModulus();
-    pt.TimesQovert(cryptoParams->GetElementParams(), tInvModq, tInvModqPrecon, t, NegQModt, NegQModtPrecon);
-    pt.SetFormat(EVALUATION);
-    cv[0] += pt;
-  } else {
-    pt.SetFormat(EVALUATION);
-    cv[0] += pt.Times(cryptoParams->GetQDivtModq());
-  }
+  pt.SetFormat(COEFFICIENT);
+  const NativeInteger &NegQModt = cryptoParams->GetNegQModt();
+  const NativeInteger &NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
+  const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
+  const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
+  const NativeInteger t = cryptoParams->GetPlaintextModulus();
+  pt.TimesQovert(cryptoParams->GetElementParams(), tInvModq, tInvModqPrecon, t, NegQModt, NegQModtPrecon);
+  pt.SetFormat(EVALUATION);
+  cv[0] += pt;
 }
 
 void LeveledSHEBFVRNS::EvalSubInPlace(
@@ -89,20 +84,15 @@ void LeveledSHEBFVRNS::EvalSubInPlace(
   std::vector<DCRTPoly> &cv = ciphertext->GetElements();
 
   DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
-    pt.SetFormat(COEFFICIENT);
-    const NativeInteger &NegQModt = cryptoParams->GetNegQModt();
-    const NativeInteger &NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
-    const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
-    const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
-    const NativeInteger t = cryptoParams->GetPlaintextModulus();
-    pt.TimesQovert(cryptoParams->GetElementParams(), tInvModq, tInvModqPrecon, t, NegQModt, NegQModtPrecon);
-    pt.SetFormat(EVALUATION);
-    cv[0] -= pt;
-  } else {
-    pt.SetFormat(EVALUATION);
-    cv[0] -= pt.Times(cryptoParams->GetQDivtModq());
-  }
+  pt.SetFormat(COEFFICIENT);
+  const NativeInteger &NegQModt = cryptoParams->GetNegQModt();
+  const NativeInteger &NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
+  const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
+  const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
+  const NativeInteger t = cryptoParams->GetPlaintextModulus();
+  pt.TimesQovert(cryptoParams->GetElementParams(), tInvModq, tInvModqPrecon, t, NegQModt, NegQModtPrecon);
+  pt.SetFormat(EVALUATION);
+  cv[0] -= pt;
 }
 
 uint32_t FindLevelsToDrop(usint evalMultCount,

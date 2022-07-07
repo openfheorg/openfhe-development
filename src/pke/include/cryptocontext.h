@@ -799,8 +799,8 @@ protected:
    * @return plaintext
    */
   Plaintext MakeStringPlaintext(const std::string& str) const {
-    return PlaintextFactory::MakePlaintext(String, this->GetElementParams(),
-                                           this->GetEncodingParams(), str);
+    return PlaintextFactory::MakePlaintext(str, String, this->GetElementParams(),
+                                           this->GetEncodingParams());
   }
 
   /**
@@ -823,18 +823,18 @@ protected:
       NativeInteger scf;
       if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
         scf = cryptoParams->GetScalingFactorIntBig(level);
-        p = PlaintextFactory::MakePlaintext(encoding, this->GetElementParams(),
-                                                 this->GetEncodingParams(), value, cryptoParams->GetEncryptionTechnique(), 1, level, scf);
+        p = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
+                                                 this->GetEncodingParams(), getSchemeId(), 1, level, scf);
         p->SetDepth(2);
       } else {
         scf = cryptoParams->GetScalingFactorInt(level);
-        p = PlaintextFactory::MakePlaintext(encoding, this->GetElementParams(),
-                                                 this->GetEncodingParams(), value, cryptoParams->GetEncryptionTechnique(), depth, level, scf);
+        p = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
+                                                 this->GetEncodingParams(), getSchemeId(), depth, level, scf);
       }
     } else {
       auto elementParams = this->GetElementParams();
-      p = PlaintextFactory::MakePlaintext(encoding, elementParams,
-                                               this->GetEncodingParams(), value, cryptoParams->GetEncryptionTechnique());
+      p = PlaintextFactory::MakePlaintext(value, encoding, elementParams,
+                                               this->GetEncodingParams(), getSchemeId());
     }
 
     return p;
@@ -875,8 +875,8 @@ protected:
   static Plaintext MakePlaintext(PlaintextEncodings encoding,
                                  CryptoContext<Element> cc,
                                  const Value1& value) {
-    return PlaintextFactory::MakePlaintext(encoding, cc->GetElementParams(),
-                                           cc->GetEncodingParams(), value);
+    return PlaintextFactory::MakePlaintext(value, encoding, cc->GetElementParams(),
+                                           cc->GetEncodingParams());
   }
 
   template <typename Value1, typename Value2>
