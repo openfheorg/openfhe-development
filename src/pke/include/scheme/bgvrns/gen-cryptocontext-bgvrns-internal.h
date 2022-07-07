@@ -73,6 +73,8 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
     // for BGV scheme noise scale is always set to plaintext modulus
     params->SetNoiseScale(parameters.GetPlaintextModulus());
 
+    uint32_t numLargeDigits = ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
+
     auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
     scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
     scheme->ParamsGenBGVRNS(
@@ -83,6 +85,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
         parameters.GetMultiplicativeDepth() + 1,
         parameters.GetFirstModSize(),
         parameters.GetScalingFactorBits(),
+        numLargeDigits,
         parameters.GetMultiHopQModulusLowerBound());
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);

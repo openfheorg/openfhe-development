@@ -88,7 +88,6 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   double p = static_cast<double>(cryptoParamsBFVRNS->GetPlaintextModulus());
   uint32_t digitSize = cryptoParamsBFVRNS->GetDigitSize();
   SecurityLevel stdLevel = cryptoParamsBFVRNS->GetStdLevel();
-  KeySwitchTechnique rsTechnique = cryptoParamsBFVRNS->GetKeySwitchTechnique();
 
   // Bound of the Gaussian error polynomial
   double Berr = sigma * sqrt(alpha);
@@ -127,9 +126,9 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   };
 
   auto noiseKS = [&](uint32_t n, double logqPrev, double w, bool mult) -> double {
-	if ((rsTechnique == HYBRID) && (!mult))
+	if ((ksTech == HYBRID) && (!mult))
       return  (delta(n) * Berr + delta(n) * Bkey + 1.0 )/2;
-	else if ((rsTechnique == HYBRID) && (mult))
+	else if ((ksTech == HYBRID) && (mult))
 	// conservative estimate for HYBRID to avoid the use of method of
 	// iterative approximations; we do not know the number
 	// of moduli at this point and use an upper bound for numDigits

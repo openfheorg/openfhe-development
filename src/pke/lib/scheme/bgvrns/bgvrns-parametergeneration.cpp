@@ -282,13 +282,12 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
     int32_t keySwitchCount, usint cyclOrder, usint numPrimes,
-    usint firstModSize, usint dcrtBits, usint multihopQBound) const {
+    usint firstModSize, usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
 
   const auto cryptoParamsBGVRNS =
       std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
   uint32_t ptm = cryptoParamsBGVRNS->GetPlaintextModulus();
-  uint32_t numPartQ = cryptoParamsBGVRNS->GetNumPartQ();
   KeySwitchTechnique ksTech = cryptoParamsBGVRNS->GetKeySwitchTechnique();
   RescalingTechnique rsTech = cryptoParamsBGVRNS->GetRescalingTechnique();
   EncryptionTechnique encTech = cryptoParamsBGVRNS->GetEncryptionTechnique();

@@ -134,7 +134,7 @@ public:
   virtual bool ParamsGenBGVRNS(
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
                        int32_t keySwitchCount, usint cyclOrder, usint numPrimes,
-                       usint firstModSize, usint dcrtBits, usint multihopQBound) const {
+                       usint firstModSize, usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
     OPENFHE_THROW(
         not_implemented_error,
         "This signature for ParamsGen is not supported for this scheme.");

@@ -87,7 +87,11 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 			parameters.GetRootHermiteFactor(),  // TODO (dsuponit): find a way to get securityLevel of different types
 			parameters.GetDigitSize(),
 			parameters.GetSecretKeyDist(),
-			parameters.GetMaxDepth());
+			parameters.GetMaxDepth(),
+			parameters.GetKeySwitchTechnique(),
+			parameters.GetRescalingTechnique(),
+			parameters.GetEncryptionTechnique(),
+			parameters.GetMultiplicationTechnique());
 
 	params->SetStdLevel(parameters.GetSecurityLevel()); // TODO (dsuponit): do we need this as we already have root hermit factor?
 

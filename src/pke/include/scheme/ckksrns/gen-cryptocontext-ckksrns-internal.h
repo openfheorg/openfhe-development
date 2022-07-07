@@ -71,7 +71,11 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         parameters.GetRootHermiteFactor(),
         parameters.GetDigitSize(),
         parameters.GetSecretKeyDist(),
-        parameters.GetMaxDepth());
+        parameters.GetMaxDepth(),
+        parameters.GetKeySwitchTechnique(),
+        parameters.GetRescalingTechnique(),
+        parameters.GetEncryptionTechnique(),
+        parameters.GetMultiplicationTechnique());
 
     params->SetStdLevel(parameters.GetSecurityLevel()); // TODO (dsuponit): do we need this as we already have root hermit factor?
     // for CKKS scheme noise scale is always set to 1

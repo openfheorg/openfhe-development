@@ -160,12 +160,12 @@ class SchemeBase {
 
   virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
                        int32_t keySwitchCount, usint cyclOrder, usint numPrimes,
-                       usint firstModSize, usint dcrtBits, usint multihopQBound) const {
+                       usint firstModSize, usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount,
                                     keySwitchCount,
                                     cyclOrder, numPrimes, firstModSize,
-                                    dcrtBits, multihopQBound);
+                                    dcrtBits, numPartQ, multihopQBound);
     }
     OPENFHE_THROW(
         not_implemented_error,
