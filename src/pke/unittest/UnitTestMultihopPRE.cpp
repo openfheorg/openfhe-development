@@ -198,10 +198,11 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     unpackedPT = plaintextDec1->GetCoefPackedValue();
     unpackedDecPT = plaintextDec->GetCoefPackedValue();
     for (unsigned int j = 0; j < unpackedPT.size(); j++) {
+        EXPECT_EQ(unpackedPT[j], unpackedDecPT[j]);
         if (unpackedPT[j] != unpackedDecPT[j]) {
-        std::cout << "Decryption failure" << std::endl;
-        std::cout << j << ", " << unpackedPT[j] << ", "
-              << unpackedDecPT[j] << std::endl;
+          std::cout << "Decryption failure" << std::endl;
+          std::cout << j << ", " << unpackedPT[j] << ", "
+                << unpackedDecPT[j] << std::endl;
         }
       }
 

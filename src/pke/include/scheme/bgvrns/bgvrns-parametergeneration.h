@@ -110,7 +110,23 @@ public:
                      usint digitSize,
                      uint32_t auxBits,
                      enum KeySwitchTechnique ksTech,
+                     enum RescalingTechnique rsTech,
                      usint numPrimes) const;
+
+  std::pair<std::vector<NativeInteger>, uint32_t> computeAutoModuli(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                    uint32_t ringDimension,
+                    int32_t evalAddCount, int32_t keySwitchCount,
+                    usint digitSize, uint32_t auxBits,
+                    enum KeySwitchTechnique ksTech,
+                    enum RescalingTechnique rsTech,
+                    usint numPrimes) const;
+
+  std::pair<std::vector<NativeInteger>, uint32_t> computeFlexibleAutoExtModuli(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                    uint32_t ringDimension,
+                    int32_t evalAddCount, int32_t keySwitchCount,
+                    usint digitSize, uint32_t auxBits,
+                    enum KeySwitchTechnique ksTech,
+                    usint numPrimes) const;
 
   /////////////////////////////////////
   // SERIALIZATION
