@@ -655,6 +655,14 @@ public:
     return m_negQrModtPrecon;
   }
 
+  /**
+   * Method that returns the precomputed values for [t^(-1)]_{a} where a is from {q_i} U r
+   * Used in ModulusSwitching.
+   *
+   * @return the pre-computed values.
+   */
+  const std::vector<NativeInteger> &GettInvModqr() const { return m_tInvModqr; }
+
   /////////////////////////////////////
   // BFVrns : Mult : ExpandCRTBasis
   /////////////////////////////////////
@@ -944,13 +952,6 @@ public:
    * @return the precomputed table
    */
   std::vector<NativeInteger> const &GetrInvModq() const { return m_rInvModq; }
-
-  /**
-   * Gets the NTL precomputations for 1./p_{q_i}
-   *
-   * @return the precomputed table
-   */
-  std::vector<NativeInteger> const &GetrInvModqPrecon() const { return m_rInvModqPrecon; }
 
   /**
    * Gets the Auxiliary CRT basis {Qr} = {Q U r}
@@ -1400,6 +1401,7 @@ public:
   NativeInteger m_negQModtPrecon;
   std::vector<NativeInteger> m_tInvModq;
   std::vector<NativeInteger> m_tInvModqPrecon;
+  std::vector<NativeInteger> m_tInvModqr;
 
   /////////////////////////////////////
   // BFVrns : Encrypt
@@ -1409,7 +1411,6 @@ public:
   NativeInteger m_negQrModt;
   NativeInteger m_negQrModtPrecon;
   std::vector<NativeInteger> m_rInvModq;
-  std::vector<NativeInteger> m_rInvModqPrecon;
 
   /////////////////////////////////////
   // BFVrns : Decrypt : ScaleAndRound

@@ -814,7 +814,6 @@ public:
     void TimesQovert(
       const std::shared_ptr<Params> paramsQ,
       const std::vector<NativeInteger> &tInvModq,
-      const std::vector<NativeInteger> &tInvModqPrecon,
       const NativeInteger &t,
       const NativeInteger &NegQModt,
       const NativeInteger &NegQModtPrecon) override;
@@ -1159,13 +1158,11 @@ public:
    *
    * @param &paramsQ Parameters for moduli {q_1,...,q_l}
    * @param &pInvModq p^{-1}_{q_i}
-   * @param &pInvmoqPrecon NTL-specific precomputations
    * @return
    */
     void ScaleAndRoundPOverQ(
         const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
-        const std::vector<NativeInteger> &pInvModq,
-        const std::vector<NativeInteger> &pInvModqPrecon) override;
+        const std::vector<NativeInteger> &pInvModq) override;
 
     /**
    * @brief Expands basis:

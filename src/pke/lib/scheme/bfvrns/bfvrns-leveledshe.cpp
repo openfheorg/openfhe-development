@@ -69,9 +69,8 @@ void LeveledSHEBFVRNS::EvalAddInPlace(
   const NativeInteger &NegQModt = cryptoParams->GetNegQModt();
   const NativeInteger &NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
   const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
-  const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
   const NativeInteger t = cryptoParams->GetPlaintextModulus();
-  pt.TimesQovert(cryptoParams->GetElementParams(), tInvModq, tInvModqPrecon, t, NegQModt, NegQModtPrecon);
+  pt.TimesQovert(cryptoParams->GetElementParams(), tInvModq, t, NegQModt, NegQModtPrecon);
   pt.SetFormat(EVALUATION);
   cv[0] += pt;
 }
@@ -88,9 +87,8 @@ void LeveledSHEBFVRNS::EvalSubInPlace(
   const NativeInteger &NegQModt = cryptoParams->GetNegQModt();
   const NativeInteger &NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
   const std::vector<NativeInteger> &tInvModq = cryptoParams->GettInvModq();
-  const std::vector<NativeInteger> &tInvModqPrecon = cryptoParams->GettInvModqPrecon();
   const NativeInteger t = cryptoParams->GetPlaintextModulus();
-  pt.TimesQovert(cryptoParams->GetElementParams(), tInvModq, tInvModqPrecon, t, NegQModt, NegQModtPrecon);
+  pt.TimesQovert(cryptoParams->GetElementParams(), tInvModq, t, NegQModt, NegQModtPrecon);
   pt.SetFormat(EVALUATION);
   cv[0] -= pt;
 }
