@@ -126,7 +126,6 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
 
   const auto elementParams = cryptoParams->GetElementParams();
   auto encParams = elementParams;
-<<<<<<< HEAD
 
   std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
   if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
@@ -163,47 +162,6 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
     (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
     (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
   }
-
-  (*ba)[0].SetFormat(Format::EVALUATION);
-  (*ba)[1].SetFormat(Format::EVALUATION);
-=======
-
-  std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
-    encParams = cryptoParams->GetParamsQr();
-    ptxt.SetFormat(Format::COEFFICIENT);
-    Poly bigPtxt = ptxt.CRTInterpolate();
-    DCRTPoly plain(bigPtxt, encParams);
-    ptxt = plain;
-    tInvModq = cryptoParams->GettInvModqr();
-  }
-  ptxt.SetFormat(Format::COEFFICIENT);
-
-  std::shared_ptr<std::vector<DCRTPoly>> ba =
-      EncryptZeroCore(privateKey, encParams);
-
-  NativeInteger NegQModt = cryptoParams->GetNegQModt();
-  NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
-
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
-    NegQModt = cryptoParams->GetNegQrModt();
-    NegQModtPrecon = cryptoParams->GetNegQrModtPrecon();
-  }
-
-  const NativeInteger t = cryptoParams->GetPlaintextModulus();
-
-  ptxt.TimesQovert(encParams, tInvModq, t, NegQModt, NegQModtPrecon);
-  ptxt.SetFormat(Format::EVALUATION);
-  (*ba)[0] += ptxt;
-
-  (*ba)[0].SetFormat(Format::COEFFICIENT);
-  (*ba)[1].SetFormat(Format::COEFFICIENT);
-
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
-    (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
-    (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
-  }
->>>>>>> Initial POVERQ changes.
 
   (*ba)[0].SetFormat(Format::EVALUATION);
   (*ba)[1].SetFormat(Format::EVALUATION);
