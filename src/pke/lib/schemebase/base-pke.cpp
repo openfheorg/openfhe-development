@@ -178,7 +178,6 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
           publicKey->GetCryptoParameters());
 
   const auto ns = cryptoParams->GetNoiseScale();
-  //const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
   TugType tug;
 
   const std::shared_ptr<ParmType> elementParams = (params == nullptr)
@@ -202,18 +201,10 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(
                   ? Element(dgg, elementParams, Format::EVALUATION)
                   : Element(tug, elementParams, Format::EVALUATION);
 
-  //Element e0(dgg, elementParams, Format::EVALUATION);
-  //Element e1(dgg, elementParams, Format::EVALUATION);
-
   Element e0;
   Element e1;
 
-  auto preMode = cryptoParams->GetPREMode();
-  std::cout << "base-pke encryptzerocore premode set " << preMode << std::endl;
-  std::cout << "base-pke encryptzerocore noise distribution parameter " << cryptoParams->GetFloodingDistributionParameter();
-
-  //if ((preMode == FIXED_NOISE_HRA) || (preMode == NOISE_FLOODING_HRA)) {
-  if (dgg.GetStd() == 1) {
+  if (!dgg.IsInitialized()) {
     const DggType &dggnormal = cryptoParams->GetDiscreteGaussianGenerator();
     e0 = Element(dggnormal, elementParams, Format::EVALUATION);
     e1 = Element(dggnormal, elementParams, Format::EVALUATION);

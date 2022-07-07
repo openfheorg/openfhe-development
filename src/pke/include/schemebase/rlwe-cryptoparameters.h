@@ -58,6 +58,9 @@ const double MP_SD = 1048576;
 // for distributed decryption in
 // PRE
 const double PRE_SD = 1048576;
+
+//statistical security parameter for noise flooding in PRE
+const double STAT_SECURITY_FLOODING = 30;
 /**
  * @brief Template for crypto parameters.
  * @tparam Element a ring element.
@@ -74,11 +77,11 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_securityLevel = 0.0f;
     m_noiseScale = 1;
     m_relinWindow = 1;
-    m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = 2;
     m_mode = RLWE;
     m_stdLevel = HEStd_NotSet;
-    m_floodingdistributionParameter = 0.0f;
+    m_floodingdistributionParameter = 0;
+    m_dgg.SetStd(m_distributionParameter);
     m_dggflooding.SetStd(m_floodingdistributionParameter);
     m_premode = INDCPA;
 }
@@ -95,11 +98,11 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_securityLevel = rhs.m_securityLevel;
     m_noiseScale = rhs.m_noiseScale;
     m_relinWindow = rhs.m_relinWindow;
-    m_dgg.SetStd(m_distributionParameter);
     m_maxDepth = rhs.m_maxDepth;
     m_mode = rhs.m_mode;
     m_stdLevel = rhs.m_stdLevel;
     m_floodingdistributionParameter = rhs.m_floodingdistributionParameter;
+    m_dgg.SetStd(m_distributionParameter);
     m_dggflooding.SetStd(m_floodingdistributionParameter);
     m_premode = rhs.m_premode;
 }

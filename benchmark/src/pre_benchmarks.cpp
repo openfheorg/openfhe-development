@@ -51,65 +51,29 @@ usint security_model = 0; //0 - CPA secure PRE, 1 - fixed 20 bits noise, 2 - pro
                           // 3 - provable secure HRA noise flooding with Hybrid key switching, 4 - provably secure HRA without noise flooding
 
 void usage() {
-  std::cout << "-m security model (0 CPA secure PRE, 1 Fixed 20 bits noise, 2 Provable secure HRA)"
-            << "-d number of hops"
+  std::cout << "-m security model (0 CPA secure PRE, 1 Fixed 20 bits noise, 2 Provable secure HRA with BV, 3 Provable secure HRA with Hybrid)"
             << std::endl;
 }
 
-
-//Default set to IND-CPA parameters
-//The parameters ring_dimension, relinWindow, qmodulus are chosen for a plaintext modulus of 2 to allow upto 10 hops 
-//without breaking decryption. Changing the plaintext modulus would require updating these other parameters for correctness.
-lbcrypto::CCParams<lbcrypto::CryptoContextBGVRNS> parameters;
-
-int plaintextModulus = 2;
-uint32_t multDepth = 0;
-double sigma = 3.2;		
-SecurityLevel securityLevel = HEStd_128_classic;
-usint ringDimension = 1024;
-usint relinWindow = 3;
-usint dcrtbits = 0;
-
-usint qmodulus = 27;
-usint firstqmod = 27;
-  
-lbcrypto::CryptoContext<lbcrypto::DCRTPoly> cryptoContext;
-// Initialize Key Pair Containers
-lbcrypto::KeyPair<lbcrypto::DCRTPoly> keyPairproducer, keyPairconsumer;
-
-vector<int64_t> vectorOfInts;
-unsigned int nShort=0;
-int ringsize=0;
-
-Plaintext plaintext, plaintextDecproducer, plaintextDecconsumer;
-lbcrypto::Ciphertext<DCRTPoly> ciphertext1, reEncryptedCT1, reEncryptedCT;
-
-lbcrypto::EvalKey<DCRTPoly> reencryptionKey;
-
-void PRE_keygen(benchmark::State &state) {
-    //std::cout << "\nRunning key generation (used for source data)..."
-    //            << std::endl;
-
+void PRE_keygen(benchmark::State &state, lbcrypto::KeyPair<lbcrypto::DCRTPoly>& keyPairproducer) {
     for (auto _ : state) {
         keyPairproducer = cryptoContext->KeyGen();
     }
 
     if (!keyPairproducer.good()) {
-        std::cout << "Key generation failed!" << std::endl;
-        exit(1);
+        OPENFHE_THROW(math_error, "Key generation failed!");
     }
 }
 void PRE_Encrypt(benchmark::State &state) {
-    //std::cout << "\nRunning encrypt (used for source data)..."
-    //            << std::endl;
-    ringsize = cryptoContext->GetRingDimension();
+    auto ringsize = cryptoContext->GetRingDimension();
+    auto plaintextModulus = cryptoContext->GetCryptoParameters()->GetPlaintextModulus();
     nShort = ringsize;
     for (size_t i = 0; i < nShort; i++){ //generate a random array of shorts
         if(plaintextModulus==2) {
             vectorOfInts.push_back(std::rand() % plaintextModulus);
         }
         else {
-            vectorOfInts.push_back((std::rand() % plaintextModulus) - (std::floor(plaintextModulus/2)-1));
+            vectorOfInts.push_back((std::rand() % plaintextModulus) - ((plaintextModulus/2)-1));
         }
     }
 
@@ -140,20 +104,23 @@ void PRE_Rekeygen(benchmark::State &state) {
 
 void PRE_ReEncrypt(benchmark::State &state) {
     for (auto _ : state) {
-        if (security_model == 0) {
-            //std::cout << "CPA secure PRE" << std::endl;
-            benchmark::DoNotOptimize(reEncryptedCT = cryptoContext->ReEncrypt(ciphertext1, reencryptionKey)); //IND-CPA secure
-        }
-        else if (security_model == 1) {
-            //std::cout << "Fixed noise (20 bits) practically secure PRE" << std::endl;
-            benchmark::DoNotOptimize(reEncryptedCT = cryptoContext->ReEncrypt(ciphertext1, reencryptionKey, keyPairproducer.publicKey)); //fixed bits noise HRA secure
-        } else if ((security_model == 2) || (security_model == 3)) {
-            //std::cout << "Provable HRA secure PRE" << std::endl;
-            benchmark::DoNotOptimize(reEncryptedCT1 = cryptoContext->ReEncrypt(ciphertext1, reencryptionKey, keyPairproducer.publicKey)); //HRA secure noiseflooding
-            benchmark::DoNotOptimize(reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1)); //mod reduction for noise flooding
-        } else {
-            std::cerr << "Not a valid security mode" << std::endl;
-            exit(EXIT_FAILURE);
+        switch(security_model) {
+            case 0:
+                //CPA secure PRE
+                benchmark::DoNotOptimize(reEncryptedCT = cryptoContext->ReEncrypt(ciphertext1, reencryptionKey));
+            case 1:
+                //Fixed noise (20 bits) practically secure PRE
+                benchmark::DoNotOptimize(reEncryptedCT = cryptoContext->ReEncrypt(ciphertext1, reencryptionKey, keyPairproducer.publicKey));
+            case 2:
+                //Provable HRA secure PRE with noise flooding with BV switching
+                benchmark::DoNotOptimize(reEncryptedCT1 = cryptoContext->ReEncrypt(ciphertext1, reencryptionKey, keyPairproducer.publicKey));
+                benchmark::DoNotOptimize(reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1)); //mod reduction for noise flooding
+            case 3:
+                //Provable HRA secure PRE with noise flooding with Hybrid switching
+                reEncryptedCT1 = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+                reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1); //mod reduction for noise flooding
+            default:
+                OPENFHE_THROW(config_error, "Not a valid security mode");
         }
     }
 }
@@ -184,19 +151,44 @@ int main(int argc, char** argv)
         case 'm':
             security_model = atoi(optarg);
             break;
-        case 'd':
-            num_of_hops = atoi(optarg);
-            break;
         case 'h':
             usage();
         default:
-            return false;
+            security_model = 0;
         }
     }
 
-    //0 - CPA secure PRE, 1 - fixed 20 bits noise, 2 - provable secure HRA noise flooding
-    parameters.SetPREMode(INDCPA);
-    parameters.SetKeySwitchTechnique(BV);
+    //Default set to IND-CPA parameters
+    //The parameters ring_dimension, relinWindow, qmodulus are chosen for a plaintext modulus of 2 to allow upto 10 hops 
+    //without breaking decryption. Changing the plaintext modulus would require updating these other parameters for correctness.
+    lbcrypto::CCParams<lbcrypto::CryptoContextBGVRNS> parameters;
+
+    int plaintextModulus = 2;
+    uint32_t multDepth = 0;
+    double sigma = 3.2;		
+    SecurityLevel securityLevel = HEStd_128_classic;
+    usint ringDimension = 1024;
+    usint relinWindow = 9;
+    usint dcrtbits = 0;
+
+    usint qmodulus = 27;
+    usint firstqmod = 27;
+    
+    lbcrypto::CryptoContext<lbcrypto::DCRTPoly> cryptoContext;
+    // Initialize Key Pair Containers
+    lbcrypto::KeyPair<lbcrypto::DCRTPoly> keyPairproducer, keyPairconsumer;
+
+    vector<int64_t> vectorOfInts;
+    unsigned int nShort=0;
+    int ringsize=0;
+
+    Plaintext plaintext, plaintextDecproducer, plaintextDecconsumer;
+    lbcrypto::Ciphertext<DCRTPoly> ciphertext1, reEncryptedCT1, reEncryptedCT;
+
+    lbcrypto::EvalKey<DCRTPoly> reencryptionKey;
+
+    //0 - CPA secure PRE, 1 - fixed 20 bits noise, 2 - provable secure HRA noise flooding with BV switching,
+    //3 - provable secure HRA noise flooding with Hybrid switching
      if (security_model == 0) {
        plaintextModulus = 2;
        multDepth = 0;
@@ -210,6 +202,7 @@ int main(int argc, char** argv)
        firstqmod = 27;
        security_model = 0;
        parameters.SetPREMode(INDCPA);
+       parameters.SetKeySwitchTechnique(BV);
     } else if (security_model == 1) {
         plaintextModulus = 2;
         multDepth = 0;
@@ -223,6 +216,7 @@ int main(int argc, char** argv)
         firstqmod = 54;
         security_model = 1; 
         parameters.SetPREMode(FIXED_NOISE_HRA);
+        parameters.SetKeySwitchTechnique(BV);
     } else if (security_model == 2) {
         plaintextModulus = 2;
         multDepth = 0;
@@ -236,6 +230,7 @@ int main(int argc, char** argv)
         firstqmod = 60;
         security_model = 2;
         parameters.SetPREMode(NOISE_FLOODING_HRA);
+        parameters.SetKeySwitchTechnique(BV);
     } else if (security_model == 3) {
         ringDimension = 16384;
         relinWindow = 0;
@@ -300,20 +295,14 @@ int main(int argc, char** argv)
     
     ::benchmark::RunSpecifiedBenchmarks();
 
-    vector<int64_t> unpackedPT, unpackedDecPT;
-    unpackedPT = plaintextDecproducer->GetCoefPackedValue();
-    unpackedDecPT = plaintextDecconsumer->GetCoefPackedValue();
+    std::vector<int64_t> unpackedPT = plaintextDecproducer->GetCoefPackedValue();
+    std::vector<int64_t> unpackedDecPT = plaintextDecconsumer->GetCoefPackedValue();
     for (unsigned int j = 0; j < unpackedPT.size(); j++) {
         if (unpackedPT[j] != unpackedDecPT[j]) {
-            std::cout << "Decryption failure" << std::endl;
-            std::cout << j << ", " << unpackedPT[j] << ", "
-                        << unpackedDecPT[j] << std::endl;
+            OPENFHE_THROW(math_error, "Decryption failure");
         }
     }
 
     ::benchmark::Shutdown();
     return 0;
 }
-
-
-//BENCHMARK_MAIN();

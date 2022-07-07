@@ -212,7 +212,7 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(
   DCRTPoly e0;
   DCRTPoly e1;
   
-  if (dgg.GetStd() == 1) {
+  if (!dgg.IsInitialized()) {
     const DggType &dggnormal = cryptoParams->GetDiscreteGaussianGenerator();
     e0 = DCRTPoly(dggnormal, elementParams, Format::EVALUATION);
     e1 = DCRTPoly(dggnormal, elementParams, Format::EVALUATION);

@@ -63,7 +63,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     usint firstqmod = 27;
 
     CCParams<CryptoContextBGVRNS> parameters;
-    parameters.SetKeySwitchTechnique(BV);
+    
     if (security_model == 0) {	
       ringDimension = 1024;
       relinWindow = 9;
@@ -72,6 +72,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
       qmodulus = 27;
       firstqmod = 27;
       parameters.SetPREMode(INDCPA);
+      parameters.SetKeySwitchTechnique(BV);
     } else if (security_model == 1) {
       ringDimension = 2048;
       relinWindow = 18;
@@ -80,6 +81,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
       qmodulus = 54;
       firstqmod = 54;
       parameters.SetPREMode(FIXED_NOISE_HRA);
+      parameters.SetKeySwitchTechnique(BV);
     } else if (security_model == 2) {
       ringDimension = 8192;
       relinWindow = 1;
@@ -88,6 +90,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
       qmodulus = 218;
       firstqmod = 60;
       parameters.SetPREMode(NOISE_FLOODING_HRA);
+      parameters.SetKeySwitchTechnique(BV);
     } else if (security_model == 3) {
       ringDimension = 8192;
       relinWindow = 0;
@@ -127,8 +130,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
 
 
     if (!keyPair1.good()) {
-      std::cout << "Key generation failed!" << std::endl;
-      exit(1);
+      OPENFHE_THROW(math_error, "Key generation failed!");
     }
 
     ////////////////////////////////////////////////////////////
@@ -146,7 +148,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
             vectorOfInts.push_back(std::rand() % plaintextModulus);
         }
         else{
-            vectorOfInts.push_back((std::rand() % plaintextModulus) - (std::floor(plaintextModulus/2)-1));
+            vectorOfInts.push_back((std::rand() % plaintextModulus) - ((plaintextModulus/2)-1));
         }
       }
 
@@ -184,19 +186,24 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
 
       auto reencryptionKey = cryptoContext->ReKeyGen(keyPairs[i].secretKey, keyPairs[i+1].publicKey);
 
-      if (security_model == 0) {
-        //std::cout << "CPA secure PRE" << std::endl;
-        reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey); //IND-CPA secure
-      }
-      else if (security_model == 1) {
-        //std::cout << "Fixed noise (20 bits) practically secure PRE" << std::endl;
-        reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey); //fixed bits noise HRA secure
-      } else {
-        //std::cout << "Provable HRA secure PRE" << std::endl;
-        reEncryptedCT1 = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey); //HRA secure noiseflooding
-        reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1); //mod reduction for noise flooding
-      }
-      
+      switch(security_model) {
+        case 0:
+          //CPA secure PRE
+          reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey); //IND-CPA secure
+        case 1:
+          //Fixed noise (20 bits) practically secure PRE
+          reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+        case 2:
+          //Provable HRA secure PRE with noise flooding with BV switching
+          reEncryptedCT1 = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+          reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1); //mod reduction for noise flooding
+        case 3:
+          //Provable HRA secure PRE with noise flooding with Hybrid switching
+          reEncryptedCT1 = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+          reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1); //mod reduction for noise flooding
+        default:
+          OPENFHE_THROW(config_error, "Not a valid security mode");
+      }    
       reEncryptedCTs.push_back(reEncryptedCT);
     }
 
@@ -208,14 +215,11 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     cryptoContext->Decrypt(keyPairs[kp_size_vec-1].secretKey, reEncryptedCTs[ct_size_vec-1], &plaintextDec);  
 
     //verification
-    std::vector<int64_t> unpackedPT, unpackedDecPT;
-    unpackedPT = plaintextDec1->GetCoefPackedValue();
-    unpackedDecPT = plaintextDec->GetCoefPackedValue();
+    std::vector<int64_t> unpackedPT = plaintextDec1->GetCoefPackedValue();
+    std::vector<int64_t> unpackedDecPT = plaintextDec->GetCoefPackedValue();
     for (unsigned int j = 0; j < unpackedPT.size(); j++) {
         if (unpackedPT[j] != unpackedDecPT[j]) {
-        std::cout << "Decryption failure" << std::endl;
-        std::cout << j << ", " << unpackedPT[j] << ", "
-              << unpackedDecPT[j] << std::endl;
+          OPENFHE_THROW(math_error, "Decryption failure");
         }
       }
 
