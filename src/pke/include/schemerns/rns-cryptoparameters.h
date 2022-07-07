@@ -655,6 +655,14 @@ public:
     return m_negQrModtPrecon;
   }
 
+  /**
+   * Method that returns the precomputed values for [t^(-1)]_{a} where a is from {q_i} U r
+   * Used in ModulusSwitching.
+   *
+   * @return the pre-computed values.
+   */
+  const std::vector<NativeInteger> &GettInvModqr() const { return m_tInvModqr; }
+
   /////////////////////////////////////
   // BFVrns : Mult : ExpandCRTBasis
   /////////////////////////////////////
@@ -944,13 +952,6 @@ public:
    * @return the precomputed table
    */
   std::vector<NativeInteger> const &GetrInvModq() const { return m_rInvModq; }
-
-  /**
-   * Gets the NTL precomputations for 1./p_{q_i}
-   *
-   * @return the precomputed table
-   */
-  std::vector<NativeInteger> const &GetrInvModqPrecon() const { return m_rInvModqPrecon; }
 
   /**
    * Gets the Auxiliary CRT basis {Qr} = {Q U r}

@@ -1383,26 +1383,22 @@ template <typename VecType>
 void DCRTPolyImpl<VecType>::TimesQovert(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
     const std::vector<NativeInteger> &tInvModq,
-    const std::vector<NativeInteger> &tInvModqPrecon,
     const NativeInteger &t,
     const NativeInteger &NegQModt,
     const NativeInteger &NegQModtPrecon) {
   usint sizeQ = m_vectors.size();
-  if (tInvModq.size() < sizeQ || tInvModqPrecon.size() < sizeQ) {
+  if (tInvModq.size() < sizeQ) {
     OPENFHE_THROW(math_error, "Sizes of vectors do not match.");
   }
   usint ringDim = this->GetRingDimension();
 #pragma omp parallel for
   for (size_t i = 0; i < sizeQ; i++) {
-    const NativeInteger &qi = paramsQ->GetParams()[i]->GetModulus();
-    const NativeInteger &tInvModqi = tInvModq[i];
-    const NativeInteger &tInvModqiPreconi = tInvModqPrecon[i];
     for (usint ri = 0; ri < ringDim; ri++) {
       NativeInteger &xi = m_vectors[i][ri];
       xi.ModMulFastConstEq(NegQModt, t, NegQModtPrecon);
-      xi.ModMulFastConstEq(tInvModqi, qi, tInvModqiPreconi);
     }
   }
+  *this = this->Times(tInvModq);
 }
 
 #if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
@@ -2340,34 +2336,18 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
 template <typename VecType>
 void DCRTPolyImpl<VecType>::ScaleAndRoundPOverQ(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
-<<<<<<< HEAD
     const std::vector<NativeInteger> &pInvModq) {
-=======
-    const std::vector<NativeInteger> &pInvModq,
-    const std::vector<NativeInteger> &pInvModqPrecon) {
->>>>>>> Initial POVERQ changes.
   usint sizeQ1 = m_vectors.size();
   usint sizeQ = sizeQ1 - 1;
   usint ringDim = this->GetRingDimension();
   for (usint i = 0; i < sizeQ; i++) {
     const NativeInteger &qi = paramsQ->GetParams()[i]->GetModulus();
-<<<<<<< HEAD
     for (usint ri = 0; ri < ringDim; ri++) {
       this->m_vectors[i][ri].ModSubEq(m_vectors[sizeQ][ri], qi);
     }
   }
   this->m_vectors.resize(sizeQ);
   *this = this->Times(pInvModq);
-=======
-    const NativeInteger &pInvModqi = pInvModq[i];
-    const NativeInteger &pInvModqiPrecon = pInvModqPrecon[i];
-    for (usint ri = 0; ri < ringDim; ri++) {
-      this->m_vectors[i][ri].ModSubEq(m_vectors[sizeQ][ri], qi);
-      this->m_vectors[i][ri].ModMulFastConstEq(pInvModqi, qi, pInvModqiPrecon);
-    }
-  }
-  this->m_vectors.resize(sizeQ);
->>>>>>> Initial POVERQ changes.
   this->m_params = paramsQ;
 }
 
