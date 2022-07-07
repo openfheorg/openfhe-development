@@ -140,7 +140,6 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(
   const auto ns = cryptoParams->GetNoiseScale();
 
   const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
-  const auto elementParams = cryptoParams->GetElementParams();
 
   EvalKey<DCRTPoly> evalKeyResult(
       new EvalKeyRelinImpl<DCRTPoly>(evalKey->GetCryptoContext()));
@@ -153,6 +152,7 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(
 
   if (cryptoParams->GetKeySwitchTechnique() == BV) {
     const DCRTPoly &s = privateKey->GetPrivateElement();
+    const auto elementParams = s.GetParams();
 
     for (usint i = 0; i < a0.size(); i++) {
       DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
@@ -161,6 +161,7 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(
       b.push_back(b0[i] * s + ns * e1);
     }
   } else {
+    const auto elementParams = cryptoParams->GetElementParams();
     const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
     const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
 

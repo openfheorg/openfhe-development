@@ -811,6 +811,13 @@ public:
    */
     std::shared_ptr<Params> GetExtendedCRTBasis(std::shared_ptr<Params> paramsP) const override;
 
+    void TimesQovert(
+      const std::shared_ptr<Params> paramsQ,
+      const std::vector<NativeInteger> &tInvModq,
+      const NativeInteger &t,
+      const NativeInteger &NegQModt,
+      const NativeInteger &NegQModtPrecon) override;
+
     /**
    * @brief Performs approximate CRT basis switching:
    * {X}_{Q} -> {X'}_{P}
@@ -1139,6 +1146,23 @@ public:
                            const std::vector<NativeInteger>& tgammaQHatModqPrecon,
                            const std::vector<NativeInteger>& negInvqModtgamma,
                            const std::vector<NativeInteger>& negInvqModtgammaPrecon) const override;
+
+    /**
+   * @brief Computes scale and round for BFV encryption mode POVERQ:
+   * {X}_{Qp} -> {\round(1/p * X)}_Q
+   * {Q} = {q_1,...,q_l}
+   *
+   * Source: Andrey Kim and Yuriy Polyakov and Vincent Zucca. Revisiting Homomorphic Encryption
+   * Schemes for Finite Fields. Cryptology ePrint Archive: Report 2021/204.
+   * (https://eprint.iacr.org/2021/204.pdf)
+   *
+   * @param &paramsQ Parameters for moduli {q_1,...,q_l}
+   * @param &pInvModq p^{-1}_{q_i}
+   * @return
+   */
+    void ScaleAndRoundPOverQ(
+        const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+        const std::vector<NativeInteger> &pInvModq) override;
 
     /**
    * @brief Expands basis:

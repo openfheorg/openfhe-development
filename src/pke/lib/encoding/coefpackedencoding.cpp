@@ -34,15 +34,15 @@
  */
 
 #include "encoding/coefpackedencoding.h"
+#include "constants.h"
 
 namespace lbcrypto {
 
 template <typename P>
 inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
-                             int64_t ub, const std::vector<int64_t>& value) {
+                             int64_t ub, const std::vector<int64_t>& value,
+                             std::string schemeID) {
   poly.SetValuesToZero();
-
-  const typename P::Integer& q = poly.GetModulus();
 
   for (size_t i = 0; i < value.size() && i < poly.GetLength(); i++) {
     if (value[i] > INT32_MAX || value[i] < INT32_MIN) {
@@ -60,9 +60,16 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb,
     typename P::Integer entry = value[i];
 
     if (value[i] < 0) {
-      // It is more efficient to encode negative numbers using the ciphertext
-      // modulus no noise growth occurs
-      entry = q - typename P::Integer(llabs(value[i]));
+      if (schemeID == "BFVRNS") {
+        // TODO: Investigate why this doesn't work with q instead of t.
+        uint64_t adjustedVal = mod - ((uint64_t)llabs(value[i]));
+        entry = typename P::Integer(adjustedVal);
+      } else {
+        // It is more efficient to encode negative numbers using the ciphertext
+        // modulus no noise growth occurs
+        const typename P::Integer& q = poly.GetModulus();
+        entry = q - typename P::Integer(llabs(value[i]));
+      }
     }
 
     poly[i] = entry;
@@ -79,10 +86,10 @@ bool CoefPackedEncoding::Encode() {
 
   if (this->typeFlag == IsNativePoly) {
     encodeVec(this->encodedNativeVector, mod, LowBound(), HighBound(),
-              this->value);
+              this->value, this->GetSchemeID());
     encodedNativeVector = encodedNativeVector.Times(scalingFactorInt);
   } else {
-    encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value);
+    encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value, this->GetSchemeID());
   }
 
   if (this->typeFlag == IsDCRTPoly) {

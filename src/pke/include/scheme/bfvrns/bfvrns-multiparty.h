@@ -40,8 +40,22 @@
  */
 namespace lbcrypto {
 class MultipartyBFVRNS : public MultipartyRNS {
+  using ParmType = typename DCRTPoly::Params;
+  using IntType = typename DCRTPoly::Integer;
+  using DugType = typename DCRTPoly::DugType;
+  using DggType = typename DCRTPoly::DggType;
+  using TugType = typename DCRTPoly::TugType;
+  
 public:
   virtual ~MultipartyBFVRNS() {}
+
+  virtual KeyPair<DCRTPoly> MultipartyKeyGen(
+    CryptoContext<DCRTPoly> cc, const std::vector<PrivateKey<DCRTPoly>> &privateKeyVec,
+    bool makeSparse) override;
+
+  virtual KeyPair<DCRTPoly> MultipartyKeyGen(
+    CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey,
+    bool makeSparse, bool fresh) override;
 
   virtual DecryptResult MultipartyDecryptFusion(
       const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,

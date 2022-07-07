@@ -44,6 +44,7 @@
 
 #include "encoding/encodingparams.h"
 #include "lattice/lat-hal.h"
+#include "constants.h"
 
 namespace lbcrypto {
 
@@ -107,49 +108,38 @@ class PlaintextImpl {
   static const int fracCTOR = 0x04;
   static const int vecuintCTOR = 0x08;
 
-  double scalingFactor;
-  NativeInteger scalingFactorInt;
-  size_t level;
-  size_t depth;
-  usint slots;
+  double scalingFactor = 1;
+  NativeInteger scalingFactorInt = 1;
+  size_t level= 0;
+  size_t depth = 1;
+  usint slots = 0;
+  std::string schemeID;
 
  public:
-  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep,
+  PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, std::string schemeID = "",
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsPoly),
         encodingParams(ep),
         encodedVector(vp, Format::COEFFICIENT),
-        scalingFactor(1),
-        scalingFactorInt(1),
-        level(0),
-        depth(1),
-        slots(0) {}
+        schemeID(schemeID) {}
 
-  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
+  PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, std::string schemeID = "",
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsNativePoly),
         encodingParams(ep),
         encodedNativeVector(vp, Format::COEFFICIENT),
-        scalingFactor(1),
-        scalingFactorInt(1),
-        level(0),
-        depth(1),
-        slots(0) {}
+        schemeID(schemeID) {}
 
-  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep,
+  PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, std::string schemeID = "",
                 bool isEncoded = false)
       : isEncoded(isEncoded),
         typeFlag(IsDCRTPoly),
         encodingParams(ep),
         encodedVector(vp, Format::COEFFICIENT),
         encodedVectorDCRT(vp, Format::COEFFICIENT),
-        scalingFactor(1),
-        scalingFactorInt(1),
-        level(0),
-        depth(1),
-        slots(0) {}
+        schemeID(schemeID) {}
 
   PlaintextImpl(const PlaintextImpl& rhs)
       : isEncoded(rhs.isEncoded),
@@ -161,7 +151,8 @@ class PlaintextImpl {
         scalingFactorInt(rhs.scalingFactorInt),
         level(rhs.level),
         depth(rhs.depth),
-        slots(rhs.slots) {}
+        slots(rhs.slots),
+        schemeID(rhs.schemeID) {}
 
   PlaintextImpl(const PlaintextImpl&& rhs)
       : isEncoded(rhs.isEncoded),
@@ -173,7 +164,8 @@ class PlaintextImpl {
         scalingFactorInt(rhs.scalingFactorInt),
         level(rhs.level),
         depth(rhs.depth),
-        slots(rhs.slots) {}
+        slots(rhs.slots),
+        schemeID(rhs.schemeID) {}
 
   virtual ~PlaintextImpl() {}
 
@@ -202,6 +194,11 @@ class PlaintextImpl {
    * Set the scaling factor of the plaintext for BGV-based plaintexts.
    */
   void SetScalingFactorInt(NativeInteger sf) { scalingFactorInt = sf; }
+
+  /**
+   * Get the encryption technique of the plaintext for BFV-based plaintexts.
+   */
+  const std::string GetSchemeID() const { return schemeID; }
 
   /**
    * IsEncoded

@@ -226,6 +226,8 @@ public:
   const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
     if (m_ksTechnique == HYBRID) {
       return m_paramsQP;
+    } else if (m_encTechnique == POVERQ) {
+      return m_paramsQr;
     }
     return m_params;
   }
@@ -634,6 +636,34 @@ public:
   }
 
   /////////////////////////////////////
+  // BFVrns : Encrypt : POverQ
+  /////////////////////////////////////
+
+  const NativeInteger GetNegQModt() const {
+    return m_negQModt;
+  }
+
+  const NativeInteger GetNegQModtPrecon() const {
+    return m_negQModtPrecon;
+  }
+
+  const NativeInteger GetNegQrModt() const {
+    return m_negQrModt;
+  }
+
+  const NativeInteger GetNegQrModtPrecon() const {
+    return m_negQrModtPrecon;
+  }
+
+  /**
+   * Method that returns the precomputed values for [t^(-1)]_{a} where a is from {q_i} U r
+   * Used in ModulusSwitching.
+   *
+   * @return the pre-computed values.
+   */
+  const std::vector<NativeInteger> &GettInvModqr() const { return m_tInvModqr; }
+
+  /////////////////////////////////////
   // BFVrns : Mult : ExpandCRTBasis
   /////////////////////////////////////
 
@@ -917,11 +947,21 @@ public:
   /////////////////////////////////////
 
   /**
-   * Gets the precomputed table of [\floor{Q/t}]_{q_i}
+   * Gets the precomputed table of 1./p_{q_i}
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetQDivtModq() const { return m_QDivtModq; }
+  std::vector<NativeInteger> const &GetrInvModq() const { return m_rInvModq; }
+
+  /**
+   * Gets the Auxiliary CRT basis {Qr} = {Q U r}
+   * used in BFV encryption in mode POVERQ
+   *
+   * @return the precomputed CRT params
+   */
+  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQr() const {
+    return m_paramsQr;
+  }
 
   /////////////////////////////////////
   // BFVrnsB
@@ -1345,9 +1385,6 @@ public:
   // BFVrns : Encrypt
   /////////////////////////////////////
 
-  // Stores [\floor{Q/t}]_{q_i}
-  std::vector<NativeInteger> m_QDivtModq;
-
   std::vector<NativeInteger> m_scalingFactorsInt;
 
   std::vector<NativeInteger> m_scalingFactorsIntBig;
@@ -1364,6 +1401,7 @@ public:
   NativeInteger m_negQModtPrecon;
   std::vector<NativeInteger> m_tInvModq;
   std::vector<NativeInteger> m_tInvModqPrecon;
+  std::vector<NativeInteger> m_tInvModqr;
 
   /////////////////////////////////////
   // BFVrns : Encrypt
@@ -1373,7 +1411,6 @@ public:
   NativeInteger m_negQrModt;
   NativeInteger m_negQrModtPrecon;
   std::vector<NativeInteger> m_rInvModq;
-  std::vector<NativeInteger> m_rInvModqPrecon;
 
   /////////////////////////////////////
   // BFVrns : Decrypt : ScaleAndRound
