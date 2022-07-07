@@ -64,11 +64,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     int32_t evalAddCount, int32_t evalMultCount,
     int32_t keySwitchCount, size_t dcrtBits,
     uint32_t nCustom,
-    uint32_t numDigits,
-    KeySwitchTechnique ksTech,
-    RescalingTechnique rsTech,
-    EncryptionTechnique encTech,
-    MultiplicationTechnique multTech) const {
+    uint32_t numDigits) const {
   if (!cryptoParams)
     OPENFHE_THROW(not_available_error,
                    "No crypto parameters are supplied to BFVrns ParamsGen");
@@ -80,6 +76,11 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
 
   const auto cryptoParamsBFVRNS =
       std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
+
+  KeySwitchTechnique ksTech = cryptoParamsBFVRNS->GetKeySwitchTechnique();
+  RescalingTechnique rsTech = cryptoParamsBFVRNS->GetRescalingTechnique();
+  EncryptionTechnique encTech = cryptoParamsBFVRNS->GetEncryptionTechnique();
+  MultiplicationTechnique multTech = cryptoParamsBFVRNS->GetMultiplicationTechnique();
 
   double sigma = cryptoParamsBFVRNS->GetDistributionParameter();
   double alpha = cryptoParamsBFVRNS->GetAssuranceMeasure();

@@ -86,14 +86,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         2 * parameters.GetRingDim(),
         parameters.GetMultiplicativeDepth() + 1,
         parameters.GetScalingFactorBits(),
-        parameters.GetDigitSize(),
-        parameters.GetSecretKeyDist(),
         parameters.GetFirstModSize(),
-        numLargeDigits,
-        parameters.GetKeySwitchTechnique(),
-        parameters.GetRescalingTechnique(),
-        STANDARD,
-        HPS);
+        numLargeDigits);
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
     cc->setSchemeId("CKKSRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::CKKSRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string

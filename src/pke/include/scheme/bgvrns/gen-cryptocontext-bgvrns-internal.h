@@ -73,8 +73,6 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
     // for BGV scheme noise scale is always set to plaintext modulus
     params->SetNoiseScale(parameters.GetPlaintextModulus());
 
-    uint32_t numLargeDigits = ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
-
     auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
     scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
     scheme->ParamsGenBGVRNS(
@@ -82,18 +80,10 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
         parameters.GetEvalAddCount(),
 		parameters.GetKeySwitchCount(),
         2 * parameters.GetRingDim(),
-        parameters.GetPlaintextModulus(),
         parameters.GetMultiplicativeDepth() + 1,
-        parameters.GetDigitSize(),
-        parameters.GetSecretKeyDist(),
         parameters.GetFirstModSize(),
         parameters.GetScalingFactorBits(),
-        numLargeDigits,
-        parameters.GetMultiHopQModulusLowerBound(),
-        parameters.GetKeySwitchTechnique(),
-        parameters.GetRescalingTechnique(),
-        parameters.GetEncryptionTechnique(),
-        parameters.GetMultiplicationTechnique());
+        parameters.GetMultiHopQModulusLowerBound());
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
     cc->setSchemeId("BGVRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::BGVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string

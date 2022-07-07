@@ -203,6 +203,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
           std::cout << "Decryption failure" << std::endl;
           std::cout << j << ", " << unpackedPT[j] << ", "
                 << unpackedDecPT[j] << std::endl;
+          return 0;
         }
       }
 

@@ -66,22 +66,23 @@ const size_t AUXMODSIZE = 60;
 
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
           std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-          usint numPrimes, usint scaleExp, usint digitSize, SecretKeyDist secretKeyDist,
+          usint numPrimes, usint scaleExp,
           usint firstModSize,
-          uint32_t numPartQ,
-          KeySwitchTechnique ksTech,
-          RescalingTechnique rsTech,
-          EncryptionTechnique encTech,
-          MultiplicationTechnique multTech) const {
+          uint32_t numPartQ) const {
+
+  const auto cryptoParamsCKKSRNS =
+      std::static_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
+
+  KeySwitchTechnique ksTech = cryptoParamsCKKSRNS->GetKeySwitchTechnique();
+  RescalingTechnique rsTech = cryptoParamsCKKSRNS->GetRescalingTechnique();
+  EncryptionTechnique encTech = cryptoParamsCKKSRNS->GetEncryptionTechnique();
+  MultiplicationTechnique multTech = cryptoParamsCKKSRNS->GetMultiplicationTechnique();
 
   usint extraModSize = 0;
   if (rsTech == FLEXIBLEAUTOEXT) {
     // TODO: Allow the user to specify this?
     extraModSize = DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
   }
-
-  const auto cryptoParamsCKKSRNS =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
 
   //// HE Standards compliance logic/check
   SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();

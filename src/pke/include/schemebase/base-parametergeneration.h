@@ -82,11 +82,7 @@ public:
       int32_t keySwitchCount,
       size_t dcrtBits,
       uint32_t n,
-      uint32_t numPartQ,
-      enum KeySwitchTechnique ksTech,
-      enum RescalingTechnique rsTech,
-      enum EncryptionTechnique encTech,
-      enum MultiplicationTechnique multTech) const {
+      uint32_t numPartQ) const {
     OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");
@@ -113,14 +109,8 @@ public:
       usint cyclOrder,
       usint numPrimes,
       usint scaleExp,
-      usint digitSize,
-      enum SecretKeyDist secretKeyDist,
       usint firstModSize,
-      uint32_t mulPartQ,
-      enum KeySwitchTechnique ksTech,
-      enum RescalingTechnique rsTech,
-      enum EncryptionTechnique encTech,
-      enum MultiplicationTechnique multTech) const {
+      uint32_t mulPartQ) const {
     OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");
@@ -142,18 +132,9 @@ public:
    * @param dcrtBits the bit-width of moduli.
    */
   virtual bool ParamsGenBGVRNS(
-      std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
-      int32_t evalAddCount, int32_t keySwitchCount,
-      usint cyclOrder,
-      usint ptm, usint numPrimes, usint digitSize, SecretKeyDist secretKeyDist,
-      usint firstModSize,
-      usint dcrtBits,
-      uint32_t numPartQ,
-      usint multihopQBound,
-      enum KeySwitchTechnique ksTech,
-      enum RescalingTechnique rsTech,
-      enum EncryptionTechnique encTech,
-      enum MultiplicationTechnique multTech) const {
+      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
+                       int32_t keySwitchCount, usint cyclOrder, usint numPrimes,
+                       usint firstModSize, usint dcrtBits, usint multihopQBound) const {
     OPENFHE_THROW(
         not_implemented_error,
         "This signature for ParamsGen is not supported for this scheme.");
