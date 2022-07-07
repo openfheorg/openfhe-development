@@ -946,23 +946,6 @@ public:
   std::vector<NativeInteger> const &GetrInvModq() const { return m_rInvModq; }
 
   /**
-   * Gets the Auxiliary CRT basis {Qr} = {Q U r}
-   * used in BFV encryption in mode POVERQ
-   *
-   * @return the precomputed CRT params
-   */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQr() const {
-    return m_paramsQr;
-  }
-
-  /**
-   * Gets the precomputed table of 1./p_{q_i}
-   *
-   * @return the precomputed table
-   */
-  std::vector<NativeInteger> const &GetrInvModq() const { return m_rInvModq; }
-
-  /**
    * Gets the NTL precomputations for 1./p_{q_i}
    *
    * @return the precomputed table
