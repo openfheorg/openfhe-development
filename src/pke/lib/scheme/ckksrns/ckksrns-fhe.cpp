@@ -1913,6 +1913,7 @@ void FHECKKSRNS::ApplyDoubleAngleIterations(
   }
 }
 
+#if NATIVEINT == 128
 Plaintext FHECKKSRNS::MakeAuxPlaintext(
     const CryptoContextImpl<DCRTPoly> &cc,
     const std::shared_ptr<ParmType> params,
@@ -1936,34 +1937,23 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(
   inverse.resize(slots);
 
   DiscreteFourierTransform::FFTSpecialInv(inverse);
-  double powP = scFact;
+  uint64_t pBits = cc.GetEncodingParams()->GetPlaintextModulus();
+  uint32_t precision = 52;
 
-  // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-  int32_t MAX_BITS_IN_WORD = 62;
+  double powP = std::pow(2, precision);
+  int32_t pCurrent = pBits - precision;
 
-  int32_t logc = 0;
+  std::vector<int128_t> temp(2 * slots);
   for (size_t i = 0; i < slots; ++i) {
-    inverse[i] *= powP;
-    int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
-    if (logc < logci) logc = logci;
-    logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
-    if (logc < logci) logc = logci;
-  }
-  if (logc < 0) {
-    OPENFHE_THROW(math_error, "Too small scaling factor");
-  }
-  int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-  int32_t logApprox = logc - logValid;
-  double approxFactor = pow(2, logApprox);
-
-  std::vector<int64_t> temp(2 * slots);
-  for (size_t i = 0; i < slots; ++i) {
-    // Scale down by approxFactor in case the value exceeds a 64-bit integer.
-    double dre = inverse[i].real() / approxFactor;
-    double dim = inverse[i].imag() / approxFactor;
+      // extract the mantissa of real part and multiply it by 2^52
+      int32_t n1 = 0;
+      double dre = std::frexp(inverse[i].real(), &n1) * powP;
+      // extract the mantissa of imaginary part and multiply it by 2^52
+      int32_t n2 = 0;
+      double dim = std::frexp(inverse[i].imag(), &n2) * powP;
 
     // Check for possible overflow
-    if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
+    if (is128BitOverflow(dre) || is128BitOverflow(dim)) {
       DiscreteFourierTransform::FFTSpecial(inverse);
 
       double invLen = static_cast<double>(inverse.size());
@@ -2013,11 +2003,34 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(
       OPENFHE_THROW(math_error, buffer.str());
     }
 
-    int64_t re = std::llround(dre);
-    int64_t im = std::llround(dim);
+    int64_t re64 = std::llround(dre);
+    int32_t pRemaining = pCurrent + n1;
+    __int128 re = 0;
+    if (pRemaining < 0) {
+        re = re64 >> (-pRemaining);
+    }
+    else {
+        __int128 pPowRemaining = ((__int128)1) << pRemaining;
+        re = pPowRemaining * re64;
+    }
 
-    temp[i] = (re < 0) ? Max64BitValue() + re : re;
-    temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
+    int64_t im64 = std::llround(dim);
+    pRemaining = pCurrent + n2;
+    __int128 im = 0;
+    if (pRemaining < 0) {
+        im = im64 >> (-pRemaining);
+    }
+    else {
+        __int128 pPowRemaining = ((int64_t)1) << pRemaining;
+        im = pPowRemaining * im64;
+    }
+
+    temp[i] = (re < 0) ? Max128BitValue() + re : re;
+    temp[i + slots] = (im < 0) ? Max128BitValue() + im : im;
+
+    if (is128BitOverflow(temp[i]) || is128BitOverflow(temp[i + slots])) {
+        OPENFHE_THROW(math_error, "Overflow, try to decrease scaling factor");
+    }
   }
 
   const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams =
@@ -2027,7 +2040,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(
 
   for (size_t i = 0; i < nativeParams.size(); i++) {
     NativeVector nativeVec(N, nativeParams[i]->GetModulus());
-    FitToNativeVector(N, temp, Max64BitValue(), &nativeVec);
+    FitToNativeVector(N, temp, Max128BitValue(), &nativeVec);
     NativePoly element = plainElement.GetElementAtIndex(i);
     element.SetValues(nativeVec, Format::COEFFICIENT);
     plainElement.SetElementAtIndex(i, element);
@@ -2039,7 +2052,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(
     moduli[i] = nativeParams[i]->GetModulus();
   }
 
-  DCRTPoly::Integer intPowP = std::llround(powP);
+  DCRTPoly::Integer intPowP = NativeInteger(1) << pBits;
   std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
 
   auto currPowP = crtPowP;
@@ -2055,29 +2068,178 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(
     plainElement = plainElement.Times(currPowP);
   }
 
-  // Scale back up by the approxFactor to get the correct encoding.
-  int32_t MAX_LOG_STEP = 60;
-  if (logApprox > 0) {
-    int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-    DCRTPoly::Integer intStep = uint64_t(1) << logStep;
-    std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
-    logApprox -= logStep;
-
-    while (logApprox > 0) {
-      int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-      DCRTPoly::Integer intStep = uint64_t(1) << logStep;
-      std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
-      crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
-      logApprox -= logStep;
-    }
-    plainElement = plainElement.Times(crtApprox);
-  }
-
   p->SetFormat(Format::EVALUATION);
   p->SetScalingFactor(pow(p->GetScalingFactor(), depth));
 
   return p;
 }
+#else
+Plaintext FHECKKSRNS::MakeAuxPlaintext(
+    const CryptoContextImpl<DCRTPoly>& cc,
+    const std::shared_ptr<ParmType> params,
+    const std::vector<std::complex<double>>& value,
+    size_t depth, uint32_t level, usint slots) const {
+    const auto cryptoParams =
+        std::static_pointer_cast<CryptoParametersCKKSRNS>(
+            cc.GetCryptoParameters());
+
+    double scFact = cryptoParams->GetScalingFactorReal(level);
+
+    Plaintext p = Plaintext(std::make_shared<CKKSPackedEncoding>(
+        params, cc.GetEncodingParams(), value, depth, level, scFact, slots));
+
+    DCRTPoly& plainElement = p->GetElement<DCRTPoly>();
+
+    usint N = cc.GetRingDimension();
+
+    std::vector<std::complex<double>> inverse = value;
+
+    inverse.resize(slots);
+
+    DiscreteFourierTransform::FFTSpecialInv(inverse);
+    double powP = scFact;
+
+    // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
+    int32_t MAX_BITS_IN_WORD = 62;
+
+    int32_t logc = 0;
+    for (size_t i = 0; i < slots; ++i) {
+        inverse[i] *= powP;
+        int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
+        if (logc < logci) logc = logci;
+        logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
+        if (logc < logci) logc = logci;
+    }
+    if (logc < 0) {
+        OPENFHE_THROW(math_error, "Too small scaling factor");
+    }
+    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox = logc - logValid;
+    double approxFactor = pow(2, logApprox);
+
+    std::vector<int64_t> temp(2 * slots);
+    for (size_t i = 0; i < slots; ++i) {
+        // Scale down by approxFactor in case the value exceeds a 64-bit integer.
+        double dre = inverse[i].real() / approxFactor;
+        double dim = inverse[i].imag() / approxFactor;
+
+        // Check for possible overflow
+        if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
+            DiscreteFourierTransform::FFTSpecial(inverse);
+
+            double invLen = static_cast<double>(inverse.size());
+            double factor = 2 * M_PI * i;
+
+            double realMax = -1, imagMax = -1;
+            uint32_t realMaxIdx = -1, imagMaxIdx = -1;
+
+            for (uint32_t idx = 0; idx < inverse.size(); idx++) {
+                // exp( j*2*pi*n*k/N )
+                std::complex<double> expFactor = { cos((factor * idx) / invLen),
+                                                  sin((factor * idx) / invLen) };
+
+                // X[k] * exp( j*2*pi*n*k/N )
+                std::complex<double> prodFactor = inverse[idx] * expFactor;
+
+                double realVal = prodFactor.real();
+                double imagVal = prodFactor.imag();
+
+                if (realVal > realMax) {
+                    realMax = realVal;
+                    realMaxIdx = idx;
+                }
+                if (imagVal > imagMax) {
+                    imagMax = imagVal;
+                    imagMaxIdx = idx;
+                }
+            }
+
+            auto scaledInputSize = ceil(log2(dre));
+
+            std::stringstream buffer;
+            buffer
+                << std::endl
+                << "Overflow in data encoding - scaled input is too large to fit "
+                "into a NativeInteger (60 bits). Try decreasing scaling factor."
+                << std::endl;
+            buffer << "Overflow at slot number " << i << std::endl;
+            buffer << "- Max real part contribution from input[" << realMaxIdx
+                << "]: " << realMax << std::endl;
+            buffer << "- Max imaginary part contribution from input[" << imagMaxIdx
+                << "]: " << imagMax << std::endl;
+            buffer << "Scaling factor is " << ceil(log2(powP)) << " bits "
+                << std::endl;
+            buffer << "Scaled input is " << scaledInputSize << " bits "
+                << std::endl;
+            OPENFHE_THROW(math_error, buffer.str());
+        }
+
+        int64_t re = std::llround(dre);
+        int64_t im = std::llround(dim);
+
+        temp[i] = (re < 0) ? Max64BitValue() + re : re;
+        temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
+    }
+
+    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams =
+        plainElement.GetParams();
+    const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams =
+        bigParams->GetParams();
+
+    for (size_t i = 0; i < nativeParams.size(); i++) {
+        NativeVector nativeVec(N, nativeParams[i]->GetModulus());
+        FitToNativeVector(N, temp, Max64BitValue(), &nativeVec);
+        NativePoly element = plainElement.GetElementAtIndex(i);
+        element.SetValues(nativeVec, Format::COEFFICIENT);
+        plainElement.SetElementAtIndex(i, element);
+    }
+
+    usint numTowers = nativeParams.size();
+    std::vector<DCRTPoly::Integer> moduli(numTowers);
+    for (usint i = 0; i < numTowers; i++) {
+        moduli[i] = nativeParams[i]->GetModulus();
+    }
+
+    DCRTPoly::Integer intPowP = std::llround(powP);
+    std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
+
+    auto currPowP = crtPowP;
+
+    // We want to scale temp by 2^(pd), and the loop starts from j=2
+    // because temp is already scaled by 2^p in the re/im loop above,
+    // and currPowP already is 2^p.
+    for (size_t i = 2; i < depth; i++) {
+        currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
+    }
+
+    if (depth > 1) {
+        plainElement = plainElement.Times(currPowP);
+    }
+
+    // Scale back up by the approxFactor to get the correct encoding.
+    int32_t MAX_LOG_STEP = 60;
+    if (logApprox > 0) {
+        int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+        DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+        std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
+        logApprox -= logStep;
+
+        while (logApprox > 0) {
+            int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+            DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+            std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
+            crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
+            logApprox -= logStep;
+        }
+        plainElement = plainElement.Times(crtApprox);
+    }
+
+    p->SetFormat(Format::EVALUATION);
+    p->SetScalingFactor(pow(p->GetScalingFactor(), depth));
+
+    return p;
+}
+#endif
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(
     ConstCiphertext<DCRTPoly> ciphertext,
