@@ -46,9 +46,7 @@ void FHECKKSRNS::EvalBootstrapSetup(
     const CryptoContextImpl<DCRTPoly> &cc,
     std::vector<uint32_t> levelBudget,
     std::vector<uint32_t> dim1, uint32_t numSlots) {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          cc.GetCryptoParameters());
+  const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
@@ -170,9 +168,7 @@ void FHECKKSRNS::EvalBootstrapSetup(
 
 std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKeyGen(
     const PrivateKey<DCRTPoly> privateKey, uint32_t slots) {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          privateKey->GetCryptoParameters());
+  const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
@@ -196,9 +192,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          ciphertext->GetCryptoParameters());
+  const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
   if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
@@ -781,9 +775,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
   // make sure the plaintext is created only with the necessary amount of moduli
 
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          cc.GetCryptoParameters());
+  const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
   ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
 
@@ -855,9 +847,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
   // make sure the plaintext is created only with the necessary amount of moduli
 
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          cc.GetCryptoParameters());
+  const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
   auto elementParams = *(cryptoParams->GetElementParams());
 
@@ -989,9 +979,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
 
   // make sure the plaintext is created only with the necessary amount of moduli
 
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          cc.GetCryptoParameters());
+  const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
   auto elementParams = *(cryptoParams->GetElementParams());
 
@@ -1192,9 +1180,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
 
   // make sure the plaintext is created only with the necessary amount of moduli
 
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          cc.GetCryptoParameters());
+  const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
   auto elementParams = *(cryptoParams->GetElementParams());
 
@@ -1857,13 +1843,19 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(
 //------------------------------------------------------------------------------
 // Auxiliary Bootstrap Functions
 //------------------------------------------------------------------------------
+uint32_t FHECKKSRNS::GetBTDepth(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<uint32_t>& levelBudget) {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
-void FHECKKSRNS::AdjustCiphertext(
-    Ciphertext<DCRTPoly>& ciphertext,
-    double correction) const {
-  const auto cryptoParams =
-       std::static_pointer_cast<CryptoParametersCKKSRNS>(
-           ciphertext->GetCryptoParameters());
+    uint32_t approxModDepth = 8;
+    if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
+        approxModDepth += (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) ? (R - 1) : R;
+    }
+
+    return approxModDepth + levelBudget[0] + levelBudget[1] + 1;
+}
+
+void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const {
+  const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
   auto cc = ciphertext->GetCryptoContext();
   auto algo = cc->GetScheme();
@@ -1919,9 +1911,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(
     const std::shared_ptr<ParmType> params,
     const std::vector<std::complex<double>>& value,
     size_t depth, uint32_t level, usint slots) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          cc.GetCryptoParameters());
+  const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
   double scFact = cryptoParams->GetScalingFactorReal(level);
 
@@ -2079,9 +2069,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(
     const std::shared_ptr<ParmType> params,
     const std::vector<std::complex<double>>& value,
     size_t depth, uint32_t level, usint slots) const {
-    const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersCKKSRNS>(
-            cc.GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     double scFact = cryptoParams->GetScalingFactorReal(level);
 
