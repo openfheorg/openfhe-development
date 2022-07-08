@@ -64,11 +64,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     int32_t evalAddCount, int32_t evalMultCount,
     int32_t keySwitchCount, size_t dcrtBits,
     uint32_t nCustom,
-    uint32_t numDigits,
-    KeySwitchTechnique ksTech,
-    RescalingTechnique rsTech,
-    EncryptionTechnique encTech,
-    MultiplicationTechnique multTech) const {
+    uint32_t numDigits) const {
   if (!cryptoParams)
     OPENFHE_THROW(not_available_error,
                    "No crypto parameters are supplied to BFVrns ParamsGen");
@@ -81,13 +77,17 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   const auto cryptoParamsBFVRNS =
       std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
 
+  KeySwitchTechnique ksTech = cryptoParamsBFVRNS->GetKeySwitchTechnique();
+  RescalingTechnique rsTech = cryptoParamsBFVRNS->GetRescalingTechnique();
+  EncryptionTechnique encTech = cryptoParamsBFVRNS->GetEncryptionTechnique();
+  MultiplicationTechnique multTech = cryptoParamsBFVRNS->GetMultiplicationTechnique();
+
   double sigma = cryptoParamsBFVRNS->GetDistributionParameter();
   double alpha = cryptoParamsBFVRNS->GetAssuranceMeasure();
   double hermiteFactor = cryptoParamsBFVRNS->GetSecurityLevel();
   double p = static_cast<double>(cryptoParamsBFVRNS->GetPlaintextModulus());
   uint32_t digitSize = cryptoParamsBFVRNS->GetDigitSize();
   SecurityLevel stdLevel = cryptoParamsBFVRNS->GetStdLevel();
-  KeySwitchTechnique rsTechnique = cryptoParamsBFVRNS->GetKeySwitchTechnique();
 
   // Bound of the Gaussian error polynomial
   double Berr = sigma * sqrt(alpha);
@@ -126,9 +126,9 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   };
 
   auto noiseKS = [&](uint32_t n, double logqPrev, double w, bool mult) -> double {
-	if ((rsTechnique == HYBRID) && (!mult))
+	if ((ksTech == HYBRID) && (!mult))
       return  (delta(n) * Berr + delta(n) * Bkey + 1.0 )/2;
-	else if ((rsTechnique == HYBRID) && (mult))
+	else if ((ksTech == HYBRID) && (mult))
 	// conservative estimate for HYBRID to avoid the use of method of
 	// iterative approximations; we do not know the number
 	// of moduli at this point and use an upper bound for numDigits

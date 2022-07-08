@@ -87,7 +87,11 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 			parameters.GetRootHermiteFactor(),  // TODO (dsuponit): find a way to get securityLevel of different types
 			parameters.GetDigitSize(),
 			parameters.GetSecretKeyDist(),
-			parameters.GetMaxDepth());
+			parameters.GetMaxDepth(),
+			parameters.GetKeySwitchTechnique(),
+			parameters.GetRescalingTechnique(),
+			parameters.GetEncryptionTechnique(),
+			parameters.GetMultiplicationTechnique());
 
 	params->SetStdLevel(parameters.GetSecurityLevel()); // TODO (dsuponit): do we need this as we already have root hermit factor?
 
@@ -103,11 +107,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 		parameters.GetKeySwitchCount(),
 		parameters.GetFirstModSize(),
 		parameters.GetRingDim(),
-		parameters.GetNumLargeDigits(),
-		parameters.GetKeySwitchTechnique(),
-		RescalingTechnique::FIXEDMANUAL,
-		parameters.GetEncryptionTechnique(),
-		parameters.GetMultiplicationTechnique());
+		parameters.GetNumLargeDigits());
 
 	auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
 	cc->setSchemeId("BFVRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::BFVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string

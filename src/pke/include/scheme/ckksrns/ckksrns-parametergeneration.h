@@ -47,13 +47,9 @@ public:
 
   bool ParamsGenCKKSRNS(
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-      usint numPrimes, usint scaleExp, usint digitSize, SecretKeyDist secretKeyDist,
+      usint numPrimes, usint scaleExp,
       usint firstModSize,
-      uint32_t mulPartQ,
-      KeySwitchTechnique ksTech,
-      RescalingTechnique rsTech,
-      EncryptionTechnique encTech,
-      MultiplicationTechnique multTech) const override;
+      uint32_t mulPartQ) const override;
 
 
   /////////////////////////////////////

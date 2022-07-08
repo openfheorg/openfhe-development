@@ -134,15 +134,10 @@ class SchemeBase {
                          int32_t keySwitchCount,
                          size_t dcrtBits,
                          uint32_t n,
-                         uint32_t numPartQ,
-                         enum KeySwitchTechnique ksTech,
-                         enum RescalingTechnique rsTech,
-                         enum EncryptionTechnique encTech,
-                         enum MultiplicationTechnique multTech) const {
+                         uint32_t numPartQ) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, evalMultCount,
-                                    keySwitchCount, dcrtBits, n, numPartQ,
-                                    ksTech, rsTech, encTech, multTech);
+                                    keySwitchCount, dcrtBits, n, numPartQ);
     }
     OPENFHE_THROW(not_implemented_error,
                    "Parameter generation operation has not been implemented");
@@ -152,47 +147,25 @@ class SchemeBase {
                          usint cyclOrder,
                          usint numPrimes,
                          usint scaleExp,
-                         usint digitSize,
-                         SecretKeyDist secretKeyDist,
                          usint firstModSize,
-                         uint32_t numPartQ,
-                         enum KeySwitchTechnique ksTech,
-                         enum RescalingTechnique rsTech,
-                         enum EncryptionTechnique encTech,
-                         enum MultiplicationTechnique multTech) const {
+                         uint32_t numPartQ) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes,
-                                    scaleExp, digitSize, secretKeyDist, firstModSize, numPartQ,
-                                    ksTech, rsTech, encTech, multTech);
+                                    scaleExp, firstModSize, numPartQ);
     }
     OPENFHE_THROW(not_implemented_error,
                    "Parameter generation operation has not been implemented "
                    "for this scheme.");
   }
 
-  virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
-                         int32_t evalAddCount,
-                         int32_t keySwitchCount,
-                         usint cyclOrder,
-                         usint ptm,
-                         usint numPrimes,
-                         usint digitSize,
-                         SecretKeyDist secretKeyDist,
-                         usint firstModSize,
-                         usint dcrtBits,
-                         uint32_t numPartQ,
-                         usint multihopQBound,
-                         enum KeySwitchTechnique ksTech,
-                         enum RescalingTechnique rsTech,
-                         enum EncryptionTechnique encTech,
-                         enum MultiplicationTechnique multTech) const {
+  virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
+                       int32_t keySwitchCount, usint cyclOrder, usint numPrimes,
+                       usint firstModSize, usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
     if (m_ParamsGen) {
       return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount,
                                     keySwitchCount,
-                                    cyclOrder, ptm, numPrimes,
-                                    digitSize, secretKeyDist, firstModSize,
-                                    dcrtBits, numPartQ, multihopQBound,
-                                    ksTech, rsTech, encTech, multTech);
+                                    cyclOrder, numPrimes, firstModSize,
+                                    dcrtBits, numPartQ, multihopQBound);
     }
     OPENFHE_THROW(
         not_implemented_error,

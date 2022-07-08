@@ -526,7 +526,7 @@ protected:
             }
             //====================================================================
             if (BGVRNS_TEST == testData.testCaseType && testData.star) { // TODO (dsuponit): is this necessary???
-                uint32_t targetTowers = (testData.params.rsTech == FLEXIBLEAUTOEXT) ? 2 : 1;
+                uint32_t targetTowers = (testData.params.rsTech == FIXEDMANUAL) ? 1 : 2;
                 ciphertextMult = cc->Compress(ciphertextMult, targetTowers);
             }
             Plaintext plaintextMultipartyMult;

@@ -101,26 +101,18 @@ uint32_t ParameterGenerationBGVRNS::computeRingDimension(
   return ringDimension;
 }
 
-std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::computeModuli(
-  std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-  uint32_t ringDimension,
-  int32_t evalAddCount, int32_t keySwitchCount,
-  usint digitSize, uint32_t auxBits,
-  enum KeySwitchTechnique ksTech,
-  usint numPrimes) const {
-
-  if (numPrimes < 1) {
-    OPENFHE_THROW(config_error, "numPrimes must be at least 1");
-  }
-
-  std::vector<NativeInteger> moduliQ(numPrimes + 1);
-  
+BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
+            std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+            uint32_t ringDimension,
+            int32_t evalAddCount, int32_t keySwitchCount, uint32_t auxBits,
+            usint numPrimes) const {
   const auto cryptoParamsBGVRNS =
-      std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+    std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+  usint digitSize = cryptoParamsBGVRNS->GetDigitSize();
+  KeySwitchTechnique ksTech = cryptoParamsBGVRNS->GetKeySwitchTechnique();
+  RescalingTechnique rsTech = cryptoParamsBGVRNS->GetRescalingTechnique();
   double sigma = cryptoParamsBGVRNS->GetDistributionParameter();
   double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
-  double plainModulus = static_cast<double>(cryptoParamsBGVRNS->GetPlaintextModulus());
-  NativeInteger plainModulusInt = NativeInteger((int)plainModulus);
 
   // Bound of the Gaussian error polynomial
   double Berr = sigma * sqrt(alpha);
@@ -133,8 +125,6 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   auto expansionFactor = 2. * sqrt(ringDimension);
   // Vnorm
   auto freshEncryptionNoise = Berr * (1. + 2. * expansionFactor * Bkey);
-  // V_c
-  auto noisePerLevel = 1 + expansionFactor * Bkey;
 
   double keySwitchingNoise = 0;
   if (ksTech == BV) {
@@ -144,6 +134,8 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     int relinBase = pow(2.0, digitSize);
     int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
     int numWindows = floor(modSizeEstimate / log(relinBase)) + 1;
+    // TODO: Figure out why this doesn't work.
+    //int numTowers = rsTech == FLEXIBLEAUTOEXT ? numPrimes + 1 : numPrimes;
     keySwitchingNoise = numWindows * (numPrimes + 1) * expansionFactor * relinBase * Berr / 2.0;
   } else {
     double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
@@ -152,31 +144,125 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     keySwitchingNoise += auxBits * (1 + expansionFactor * Bkey) / 2.0;
   }
 
+  // V_ms
+  auto modSwitchingNoise = (1 + expansionFactor * Bkey) / 2.;
+
+  // V_c
+  double noisePerLevel = 0;
+  if (rsTech == FLEXIBLEAUTOEXT) {
+    noisePerLevel = 1 + expansionFactor * Bkey;
+  } else {
+    noisePerLevel = (evalAddCount + 1) * freshEncryptionNoise + (keySwitchCount + 1) * keySwitchingNoise;
+  }
+
+  return BGVNoiseEstimates(Berr, Bkey, expansionFactor, freshEncryptionNoise, keySwitchingNoise, modSwitchingNoise, noisePerLevel);
+}
+
+uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension,
+                        const int plainModulus,
+                        const RescalingTechnique rsTech) const {
   // Moduli need to be primes that are 1 (mod 2n)
   usint cyclOrder = 2 * ringDimension;
-  double firstModLowerBound = 2 * plainModulus * freshEncryptionNoise - plainModulus;
+  uint64_t lcmCyclOrderPtm = 0;
+
+  if (rsTech == FIXEDAUTO) {
+    // In FIXEDAUTO, moduli also need to be 1 (mod t)
+    usint plaintextModulus = plainModulus;
+    usint pow2ptm = 1;  // The largest power of 2 dividing ptm (check whether it
+                        // is larger than cyclOrder or not)
+    while (plaintextModulus % 2 == 0) {
+      plaintextModulus >>= 1;
+      pow2ptm <<= 1;
+    }
+
+    if (pow2ptm < cyclOrder) pow2ptm = cyclOrder;
+
+    lcmCyclOrderPtm = (uint64_t)pow2ptm * plaintextModulus;
+  } else {
+    lcmCyclOrderPtm = cyclOrder;
+  }
+  return lcmCyclOrderPtm;
+}
+
+std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::computeModuli(
+  std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+  uint32_t ringDimension,
+  int32_t evalAddCount, int32_t keySwitchCount,
+  uint32_t auxBits,
+  usint numPrimes) const {
+
+  if (numPrimes < 1) {
+    OPENFHE_THROW(config_error, "numPrimes must be at least 1");
+  }
+
+  const auto cryptoParamsBGVRNS =
+    std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+  RescalingTechnique rsTech = cryptoParamsBGVRNS->GetRescalingTechnique();
+
+  size_t numModuli = rsTech == FLEXIBLEAUTOEXT ? numPrimes + 1 : numPrimes;
+  std::vector<NativeInteger> moduliQ(numModuli);
+
+  double plainModulus = static_cast<double>(cryptoParamsBGVRNS->GetPlaintextModulus());
+  NativeInteger plainModulusInt = NativeInteger((int)plainModulus);
+
+  BGVNoiseEstimates noiseEstimates = computeNoiseEstimates(cryptoParams, ringDimension, evalAddCount, keySwitchCount,
+                                                           auxBits, numPrimes);
+  uint64_t cyclOrder = getCyclicOrder(ringDimension, (int)plainModulus, rsTech);
+
+  double firstModLowerBound = 0;
+  if (rsTech == FLEXIBLEAUTOEXT)
+    firstModLowerBound = 2 * plainModulus * noiseEstimates.freshEncryptionNoise - plainModulus;
+  else
+    firstModLowerBound = 2 * plainModulus * noiseEstimates.noisePerLevel - plainModulus;
   usint firstModSize = ceil(log2(firstModLowerBound));
+  if (firstModSize >= DCRT_MODULUS::MAX_SIZE) {
+    OPENFHE_THROW(config_error, "Change parameters! Try reducing the number of additions per level, " \
+      "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
+  }
   uint32_t totalModSize = firstModSize;
   moduliQ[0] = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
 
-  double extraModLowerBound = freshEncryptionNoise / noisePerLevel * (evalAddCount + 1);
-  extraModLowerBound += keySwitchCount * keySwitchingNoise / noisePerLevel;
-  extraModLowerBound *= 2;
-  usint extraModSize = ceil(log2(extraModLowerBound));
-  totalModSize += extraModSize;
-  moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
-  while (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
-    moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
+  if (rsTech == FLEXIBLEAUTOEXT) {
+    double extraModLowerBound = noiseEstimates.freshEncryptionNoise / noiseEstimates.noisePerLevel * (evalAddCount + 1);
+    extraModLowerBound += keySwitchCount * noiseEstimates.keySwitchingNoise / noiseEstimates.noisePerLevel;
+    extraModLowerBound *= 2;
+    usint extraModSize = ceil(log2(extraModLowerBound));
+    if (extraModSize >= DCRT_MODULUS::MAX_SIZE) {
+      OPENFHE_THROW(config_error, "Change parameters! Try reducing the number of additions per level, " \
+        "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
+    }
+    totalModSize += extraModSize;
+    moduliQ[numPrimes] = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
+    while (moduliQ[numPrimes] == moduliQ[0] || moduliQ[numPrimes] == plainModulusInt) {
+      moduliQ[numPrimes] = NextPrime<NativeInteger>(moduliQ[0], cyclOrder);
+    }
   }
 
   if (numPrimes > 1) {
-    double modLowerBound = 2 * noisePerLevel + 2 + 1.0 / noisePerLevel;
-    modLowerBound *= expansionFactor * plainModulus * (evalAddCount + 1) / 2.0;
-    modLowerBound += (keySwitchCount + 1) * keySwitchingNoise / noisePerLevel;
-    modLowerBound *= 2;
+    // Compute bounds.
+    double modLowerBound = 0;
+    if (rsTech == FLEXIBLEAUTOEXT) {
+      modLowerBound = 2 * noiseEstimates.noisePerLevel + 2 + 1.0 / noiseEstimates.noisePerLevel;
+      modLowerBound *= noiseEstimates.expansionFactor * plainModulus * (evalAddCount + 1) / 2.0;
+      modLowerBound += (keySwitchCount + 1) * noiseEstimates.keySwitchingNoise / noiseEstimates.noisePerLevel;
+      modLowerBound *= 2;
+    } else {
+      double modLowerBoundNumerator = 2 * noiseEstimates.noisePerLevel * noiseEstimates.noisePerLevel + \
+                                    2 * noiseEstimates.noisePerLevel + 1;
+      modLowerBoundNumerator *= noiseEstimates.expansionFactor * plainModulus / 2. * (evalAddCount + 1);
+      modLowerBoundNumerator += (keySwitchCount + 1) * noiseEstimates.keySwitchingNoise; 
+      double modLowerBoundDenom = noiseEstimates.noisePerLevel - noiseEstimates.modSwitchingNoise;
+      modLowerBound = modLowerBoundNumerator / modLowerBoundDenom;
+    }
+
     usint modSize = ceil(log2(modLowerBound));
+    if (modSize >= DCRT_MODULUS::MAX_SIZE) {
+      OPENFHE_THROW(config_error, "Change parameters! Try reducing the number of additions per level, " \
+        "number of key switches per level, or the digit size. We cannot support moduli greater than 60 bits.");
+    }
     totalModSize += modSize * (numPrimes - 1);
 
+    // Compute moduli.
     moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
     while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {
       moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
@@ -191,24 +277,24 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   }
 
   return std::make_pair(moduliQ, totalModSize);
-
 }
 
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
     std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
-    int32_t keySwitchCount, usint cyclOrder,
-    usint ptm, usint numPrimes, usint digitSize, SecretKeyDist secretKeyDist,
-    usint firstModSize, usint dcrtBits,
-    uint32_t numPartQ, usint multihopQBound,
-    enum KeySwitchTechnique ksTech,
-    enum RescalingTechnique rsTech,
-    enum EncryptionTechnique encTech,
-    enum MultiplicationTechnique multTech) const {
-  if(!ptm)
-      OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
+    int32_t keySwitchCount, usint cyclOrder, usint numPrimes,
+    usint firstModSize, usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
 
   const auto cryptoParamsBGVRNS =
       std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+
+  uint32_t ptm = cryptoParamsBGVRNS->GetPlaintextModulus();
+  KeySwitchTechnique ksTech = cryptoParamsBGVRNS->GetKeySwitchTechnique();
+  RescalingTechnique rsTech = cryptoParamsBGVRNS->GetRescalingTechnique();
+  EncryptionTechnique encTech = cryptoParamsBGVRNS->GetEncryptionTechnique();
+  MultiplicationTechnique multTech = cryptoParamsBGVRNS->GetMultiplicationTechnique();
+
+  if(!ptm)
+      OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
 
   // Select the size of moduli according to the plaintext modulus (TODO:
   // optimized the bounds).
@@ -250,16 +336,14 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   std::vector<NativeInteger> moduliQ(vecSize);
   std::vector<NativeInteger> rootsQ(vecSize);
 
-  if (rsTech == FLEXIBLEAUTOEXT) {
-    auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, digitSize, auxBits,
-                            ksTech, numPrimes);
+  if (rsTech == FIXEDAUTO || rsTech == FLEXIBLEAUTO || rsTech == FLEXIBLEAUTOEXT) {
+    auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxBits, numPrimes);
     moduliQ = std::get<0>(moduliInfo);
     uint32_t newQBound = std::get<1>(moduliInfo);
     while (qBound < newQBound) {
       qBound = newQBound;
       n = computeRingDimension(cryptoParams, newQBound, cyclOrder);
-      auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, digitSize, auxBits,
-                            ksTech, numPrimes);
+      auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxBits, numPrimes);
       moduliQ = std::get<0>(moduliInfo);
       newQBound = std::get<1>(moduliInfo);
       if (ksTech == HYBRID)
@@ -287,12 +371,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
 
     if (pow2ptm < cyclOrder) pow2ptm = cyclOrder;
 
-    uint64_t lcmCyclOrderPtm = (uint64_t)pow2ptm;
-    if (rsTech != FLEXIBLEAUTO) {
-      // In FLEXIBLEAUTO mode, we don't need the constraint that the ciphertext moduli q are 1 (mod t),
-      // since we keep track of the scaling factor.
-      lcmCyclOrderPtm *= plaintextModulus;
-    }
+    uint64_t lcmCyclOrderPtm = (uint64_t)pow2ptm * plaintextModulus;
 
     // Get the largest prime with size less or equal to firstModSize bits.
     NativeInteger firstInteger =
