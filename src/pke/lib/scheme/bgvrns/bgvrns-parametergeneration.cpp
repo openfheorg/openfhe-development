@@ -134,8 +134,6 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     int relinBase = pow(2.0, digitSize);
     int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
     int numWindows = floor(modSizeEstimate / log(relinBase)) + 1;
-    // TODO: Figure out why this doesn't work.
-    //int numTowers = rsTech == FLEXIBLEAUTOEXT ? numPrimes + 1 : numPrimes;
     keySwitchingNoise = numWindows * (numPrimes + 1) * expansionFactor * relinBase * Berr / 2.0;
   } else {
     double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
