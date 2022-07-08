@@ -110,7 +110,7 @@ class FHECKKSRNS : public FHERNS {
 
   const double K_SPARSE = 14.0; // upper bound for the number of overflows in the sparse secret case
   const double K_UNIFORM = 512.0; // upper bound for the number of overflows in the uniform secret case
-  const int32_t R = 6; // number of double-angle iterations in CKKS bootsrtrapping
+  static const int32_t R = 6; // number of double-angle iterations in CKKS bootsrtrapping
 
   // Chebyshev series coefficients for the SPARSE case
   const std::vector<double> g_coefficientsSparse{ 0, -0.0190665676962401, 0, -0.0181773905007824, 0,
@@ -273,6 +273,12 @@ public:
     ar(cereal::base_class<FHERNS>(this));
   }
 
+  static uint32_t GetBootstrapDepth(
+      uint32_t approxModDepth,
+      const std::vector<uint32_t>& levelBudget,
+      SecretKeyDist secretKeyDist,
+      RescalingTechnique rsTech);
+
   std::string SerializedObjectName() const { return "FHECKKSRNS"; }
 
 private:
@@ -280,7 +286,10 @@ private:
   //------------------------------------------------------------------------------
   // Auxiliary Bootstrap Functions
   //------------------------------------------------------------------------------
-    uint32_t GetBTDepth(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<uint32_t>& levelBudget);
+    uint32_t GetBootstrapDepth(
+        uint32_t approxModDepth,
+        const std::vector<uint32_t>& levelBudget,
+        const CryptoContextImpl<DCRTPoly>& cc);
 
     void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
 

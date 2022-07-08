@@ -48,11 +48,11 @@ void FHECKKSRNS::EvalBootstrapSetup(
     std::vector<uint32_t> dim1, uint32_t numSlots) {
   const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
-    if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
+  if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
-    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO)
-      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the FLEXIBLEAUTO method.");
+  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)
+      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 
   uint32_t M = cc.GetCyclotomicOrder();
@@ -64,7 +64,7 @@ void FHECKKSRNS::EvalBootstrapSetup(
   precom->m_slots = slots;
   precom->m_dim1 = dim1[0];
 
-  double logSlots = std::log2(slots);
+  double logSlots = std::log2(slots); // TODO (dsuponit): can logSlots be cast to uint32_t on this line?
   // Perform some checks on the level budget and compute parameters
   std::vector<uint32_t> newBudget = levelBudget;
 
@@ -170,11 +170,11 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
     const PrivateKey<DCRTPoly> privateKey, uint32_t slots) {
   const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(privateKey->GetCryptoParameters());
 
-    if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
+  if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
-    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO)
-      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the FLEXIBLEAUTO method.");
+  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)
+      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
     auto cc = privateKey->GetCryptoContext();
     uint32_t M = cc->GetCyclotomicOrder();
@@ -197,8 +197,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
   if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
-    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO)
-      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is not supported for the FLEXIBLEAUTO method.");
+  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)
+      OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 
 #ifdef BOOTSTRAPTIMING
@@ -1840,18 +1840,34 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(
   return result;
 }
 
-//------------------------------------------------------------------------------
-// Auxiliary Bootstrap Functions
-//------------------------------------------------------------------------------
-uint32_t FHECKKSRNS::GetBTDepth(const CryptoContextImpl<DCRTPoly>& cc, const std::vector<uint32_t>& levelBudget) {
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+uint32_t FHECKKSRNS::GetBootstrapDepth(
+    uint32_t approxModDepth,
+    const std::vector<uint32_t>& levelBudget,
+    SecretKeyDist secretKeyDist,
+    RescalingTechnique rsTech) {
 
-    uint32_t approxModDepth = 8;
-    if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
-        approxModDepth += (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) ? (R - 1) : R;
+    if (secretKeyDist == UNIFORM_TERNARY) {
+        approxModDepth += (rsTech == FIXEDMANUAL) ? (R - 1) : R;
     }
 
     return approxModDepth + levelBudget[0] + levelBudget[1] + 1;
+}
+
+
+//------------------------------------------------------------------------------
+// Auxiliary Bootstrap Functions
+//------------------------------------------------------------------------------
+uint32_t FHECKKSRNS::GetBootstrapDepth(
+    uint32_t approxModDepth,
+    const std::vector<uint32_t>& levelBudget,
+    const CryptoContextImpl<DCRTPoly>& cc) {
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+    return GetBootstrapDepth(
+        approxModDepth,
+        levelBudget,
+        cryptoParams->GetSecretKeyDist(),
+        cryptoParams->GetRescalingTechnique());
 }
 
 void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const {
