@@ -83,6 +83,7 @@ int main(int argc, char *argv[]) {
   cryptoContext->Enable(PKE);
   cryptoContext->Enable(KEYSWITCH);
   cryptoContext->Enable(LEVELEDSHE);
+  cryptoContext->Enable(ADVANCEDSHE);
 
   std::cout << "\np = "
             << cryptoContext->GetCryptoParameters()->GetPlaintextModulus()
