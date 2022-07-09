@@ -104,6 +104,7 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   uint32_t n = cryptoParamsBFVrns->GetElementParams()->GetRingDimension();
   uint32_t relinWindow = cryptoParamsBFVrns->GetDigitSize();
   KeySwitchTechnique rsTechnique = cryptoParamsBFVrns->GetKeySwitchTechnique();
+  EncryptionTechnique encTech = cryptoParamsBFVrns->GetEncryptionTechnique();
 
   uint32_t k = cryptoParamsBFVrns->GetNumPerPartQ();
   uint32_t numPartQ = cryptoParamsBFVrns->GetNumPartQ();
@@ -117,9 +118,12 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   // expansion factor delta
   auto delta = [](uint32_t n) -> double { return (2. * sqrt(n)); };
 
-  // norm of fresh ciphertext polynomial
+  // norm of fresh ciphertext polynomial (for POVERQ the noise is reduced to modulus switching noise)
   auto Vnorm = [&](uint32_t n) -> double {
-    return Berr * (1. + 2. * delta(n) * Bkey);
+	if (encTech == POVERQ)
+	  return (1. + delta(n) * Bkey)/2.;
+	else
+      return Berr * (1. + 2. * delta(n) * Bkey);
   };
 
   auto noiseKS = [&](uint32_t n, double logqPrev, double w) -> double {
@@ -164,8 +168,8 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
 
   double logExtra = keySwitch ? log2(noiseKS(n, logq, w)) : log2(delta(n));
 
-  // error should be at least 2^10 * delta(n) larger than the levels we are dropping
-  int32_t levels = std::floor((loge - 30 - logExtra) / dcrtBits);
+  // adding the cushon to the error (see Appendix D of https://eprint.iacr.org/2021/204.pdf for details)
+  int32_t levels = std::floor((loge - 2*evalMultCount - 4 - logExtra)/dcrtBits);
   size_t sizeQ = cryptoParamsBFVrns->GetElementParams()->GetParams().size();
 
   if (levels < 0)
