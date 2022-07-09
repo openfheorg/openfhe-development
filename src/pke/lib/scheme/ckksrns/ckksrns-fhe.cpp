@@ -1843,14 +1843,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(
 uint32_t FHECKKSRNS::GetBootstrapDepth(
     uint32_t approxModDepth,
     const std::vector<uint32_t>& levelBudget,
-    SecretKeyDist secretKeyDist,
-    RescalingTechnique rsTech) {
+    SecretKeyDist secretKeyDist) {
 
     if (secretKeyDist == UNIFORM_TERNARY) {
-        approxModDepth += (rsTech == FIXEDMANUAL) ? (R - 1) : R;
+        approxModDepth += R - 1;
     }
 
-    return approxModDepth + levelBudget[0] + levelBudget[1] + 1;
+    return approxModDepth + levelBudget[0] + levelBudget[1];
 }
 
 
@@ -1866,8 +1865,7 @@ uint32_t FHECKKSRNS::GetBootstrapDepth(
     return GetBootstrapDepth(
         approxModDepth,
         levelBudget,
-        cryptoParams->GetSecretKeyDist(),
-        cryptoParams->GetRescalingTechnique());
+        cryptoParams->GetSecretKeyDist());
 }
 
 void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const {

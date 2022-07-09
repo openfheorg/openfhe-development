@@ -101,7 +101,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
 #endif
 
 	// computes how many levels are needed for
-	usint depth = levelsRemaining + FHECKKSRNS::GetBootstrapDepth(9, levelBudget1, secretKeyDist, rescaleTech);
+	usint depth = levelsRemaining + FHECKKSRNS::GetBootstrapDepth(9, levelBudget1, secretKeyDist);
 
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(depth);
@@ -288,7 +288,7 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
 #endif
 
 	// computes how many levels are needed for
-	usint depth = levelsRemaining + FHECKKSRNS::GetBootstrapDepth(9, levelBudget, secretKeyDist, rescaleTech);
+	usint depth = levelsRemaining + FHECKKSRNS::GetBootstrapDepth(9, levelBudget, secretKeyDist);
 
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(depth);
