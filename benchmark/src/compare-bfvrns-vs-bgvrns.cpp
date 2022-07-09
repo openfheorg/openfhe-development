@@ -86,8 +86,6 @@ CryptoContext<DCRTPoly> GenerateBGVrnsContext(usint ptm) {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetMultiplicativeDepth(mult_depth);
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetKeySwitchTechnique(BV);
-    parameters.SetRescalingTechnique(FIXEDAUTO);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);

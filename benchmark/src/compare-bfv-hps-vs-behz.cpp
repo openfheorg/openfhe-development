@@ -103,7 +103,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint dcrtBits) {
     return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateBFVrnsBContext(usint ptm, usint dcrtBits) {
+CryptoContext<DCRTPoly> GenerateBEHZContext(usint ptm, usint dcrtBits) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetEvalMultCount(mult_depth);
@@ -116,7 +116,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsBContext(usint ptm, usint dcrtBits) {
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
 
-    // std::cout << "\nParameters BFVrnsB for depth " << mult_depth << std::endl;
+    // std::cout << "\nParameters BEHZ for depth " << mult_depth << std::endl;
     // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
     // std::endl; std::cout << "n = " <<
     // cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2 <<
@@ -141,7 +141,7 @@ CryptoContext<DCRTPoly> GenerateFlatBFVrnsContext(usint ptm, usint dcrtBits, usi
     return cc;
 }
 
-CryptoContext<DCRTPoly> GenerateFlatBFVrnsBContext(usint ptm, usint dcrtBits, usint n) {
+CryptoContext<DCRTPoly> GenerateFlatBEHZContext(usint ptm, usint dcrtBits, usint n) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMaxDepth(0);
@@ -195,8 +195,8 @@ void BFVrns_EvalMultMany(benchmark::State& state) {
 
 BENCHMARK(BFVrns_EvalMultMany)->Unit(benchmark::kMicrosecond)->Apply(MultBFVArguments);
 
-void BFVrnsB_EvalMultMany(benchmark::State& state) {
-    CryptoContext<DCRTPoly> cc = GenerateBFVrnsBContext(state.range(0), state.range(1));
+void BEHZ_EvalMultMany(benchmark::State& state) {
+    CryptoContext<DCRTPoly> cc = GenerateBEHZContext(state.range(0), state.range(1));
 
     // KeyGen
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -228,7 +228,7 @@ void BFVrnsB_EvalMultMany(benchmark::State& state) {
     }
 }
 
-BENCHMARK(BFVrnsB_EvalMultMany)->Unit(benchmark::kMicrosecond)->Apply(MultBFVArguments);
+BENCHMARK(BEHZ_EvalMultMany)->Unit(benchmark::kMicrosecond)->Apply(MultBFVArguments);
 
 void BFVrns_Decrypt(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext =
@@ -253,9 +253,9 @@ void BFVrns_Decrypt(benchmark::State& state) {
 
 BENCHMARK(BFVrns_Decrypt)->Unit(benchmark::kMicrosecond)->Apply(DecBFVArguments);
 
-void BFVrnsB_Decrypt(benchmark::State& state) {
+void BEHZ_Decrypt(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext =
-        GenerateFlatBFVrnsBContext(state.range(0), state.range(1), 1 << state.range(2));
+        GenerateFlatBEHZContext(state.range(0), state.range(1), 1 << state.range(2));
 
     KeyPair<DCRTPoly> keyPair = cryptoContext->KeyGen();
 
@@ -274,6 +274,6 @@ void BFVrnsB_Decrypt(benchmark::State& state) {
     }
 }
 
-BENCHMARK(BFVrnsB_Decrypt)->Unit(benchmark::kMicrosecond)->Apply(DecBFVArguments);
+BENCHMARK(BEHZ_Decrypt)->Unit(benchmark::kMicrosecond)->Apply(DecBFVArguments);
 
 BENCHMARK_MAIN();
