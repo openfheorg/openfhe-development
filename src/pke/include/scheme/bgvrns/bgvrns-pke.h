@@ -89,11 +89,14 @@ public:
   }
 
   template <class Archive>
-  void load(Archive &ar) {
+  void load(Archive &ar, const std::uint32_t version) {
+    if (version > this->SerializedVersion()) {
+        OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+            " is from a later version of the library");
+    }
     ar(cereal::base_class<PKERNS>(this));
   }
 
-  std::string SerializedObjectName() const { return "PKEBGVRNS"; }
 };
 }  // namespace lbcrypto
 

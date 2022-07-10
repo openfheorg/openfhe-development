@@ -38,11 +38,12 @@
 
 #include <string>
 #include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
 template <typename T, typename I>
-class BigVectorInterface {
+class BigVectorInterface : public Serializable {
 public:
     typedef I Integer;
 

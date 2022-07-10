@@ -40,6 +40,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "utils/type_name.h"
 
 #ifndef CEREAL_RAPIDJSON_HAS_STDSTRING
     #define CEREAL_RAPIDJSON_HAS_STDSTRING 1
@@ -90,8 +91,16 @@ class Serializable {
 public:
     virtual ~Serializable() {}
 
-    virtual std::string SerializedObjectName() const = 0;
+    virtual std::string SerializedObjectName() const {
+        return objectTypeName(this);
+    }
+
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 };
+
+
 
 // helper template to stream vector contents provided T has an stream operator<<
 template <typename T>

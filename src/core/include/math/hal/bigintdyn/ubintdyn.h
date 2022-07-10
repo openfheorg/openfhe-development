@@ -53,7 +53,6 @@
 #include "math/nbtheory.h"
 #include "utils/inttypes.h"
 #include "utils/memory.h"
-#include "utils/serializable.h"
 #include "utils/utilities.h"
 
 #include "math/hal/integer.h"
@@ -1172,7 +1171,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                             " is from a later version of the library");
         }
@@ -1181,13 +1180,6 @@ public:
         ar(::cereal::make_nvp("s", m_state));
     }
 
-    std::string SerializedObjectName() const {
-        return "DYNInteger";
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
-    }
 
 protected:
     /**

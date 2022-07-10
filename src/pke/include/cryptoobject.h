@@ -57,7 +57,7 @@ class CryptoContextFactory;
  * A class to aid in referring to the crypto context that an object belongs to
  */
 template <typename Element>
-class CryptoObject {
+class CryptoObject : public Serializable {
  protected:
   CryptoContext<Element> context;  // crypto context this object belongs to
                                    // tag used to find the evaluation key needed
@@ -119,7 +119,7 @@ class CryptoObject {
 
   template <class Archive>
   void load(Archive& ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
+    if (version > this->SerializedVersion()) {
       OPENFHE_THROW(deserialize_error,
                      "serialized object version " + std::to_string(version) +
                          " is from a later version of the library");
@@ -133,10 +133,6 @@ class CryptoObject {
         context->getSchemeId()
         );
   }
-
-
-  std::string SerializedObjectName() const { return "CryptoObject"; }
-  static uint32_t SerializedVersion() { return 1; }
 };
 
 }

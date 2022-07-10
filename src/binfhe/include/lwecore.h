@@ -204,7 +204,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
@@ -223,13 +223,6 @@ public:
         ar(::cereal::make_nvp("bKS", m_baseKS));
 
         this->PreCompute();
-    }
-
-    std::string SerializedObjectName() const {
-        return "LWECryptoParams";
-    }
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
     void SetQ(NativeInteger q) {
@@ -329,20 +322,13 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("a", m_a));
         ar(::cereal::make_nvp("b", m_b));
-    }
-
-    std::string SerializedObjectName() const {
-        return "LWECiphertext";
-    }
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 private:
@@ -400,7 +386,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
@@ -408,12 +394,6 @@ public:
         ar(::cereal::make_nvp("s", m_s));
     }
 
-    std::string SerializedObjectName() const {
-        return "LWEPrivateKey";
-    }
-    static uint32_t SerializedVersion() {
-        return 1;
-    }
     void switchModulus(NativeInteger q) {
         m_s.Mod(q);
         m_s.SetModulus(q);
@@ -473,19 +453,12 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                   " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("k", m_key));
-    }
-
-    std::string SerializedObjectName() const {
-        return "LWEPrivateKey";
-    }
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 private:

@@ -38,11 +38,12 @@
 
 #include <string>
 #include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
 
 template <typename T>
-class BigIntegerInterface {
+class BigIntegerInterface : public Serializable {
 public:
     // CONSTRUCTORS
 
