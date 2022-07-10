@@ -281,6 +281,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     parameters.SetEvalMultCount(7);
     parameters.SetMaxDepth(8);
     parameters.SetScalingFactorBits(60);
+    parameters.SetMultiplicationTechnique(HPS);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
@@ -329,6 +330,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
     parameters.SetRootHermiteFactor(1.006);
     parameters.SetEvalMultCount(1);
     parameters.SetScalingFactorBits(60);
+    parameters.SetMultiplicationTechnique(HPS);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
@@ -466,6 +468,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     parameters.SetRootHermiteFactor(1.006);
     parameters.SetEvalMultCount(1);
     parameters.SetScalingFactorBits(60);
+    parameters.SetMultiplicationTechnique(HPS);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 

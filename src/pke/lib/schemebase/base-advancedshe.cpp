@@ -114,8 +114,6 @@ template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(
     const std::vector<Ciphertext<Element>> &ciphertextVec,
     const std::vector<EvalKey<Element>> &evalKeys) const {
-  // TODO: seems that we can simply call EvalAddMany() here.
-  // TODO: see EvalAddMany() below
   if (ciphertextVec.size() < 1)
     OPENFHE_THROW(config_error,
                    "Input ciphertext vector size should be 1 or more");
@@ -129,10 +127,10 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMultMany(
   auto algo = ciphertextVec[0]->GetCryptoContext()->GetScheme();
 
   for (size_t i = 0; i < lim; i = i + 2) {
-    ciphertextMultVec[ctrIndex++] = algo->EvalMult(
+    ciphertextMultVec[ctrIndex++] = algo->EvalMultAndRelinearize(
         i < inSize ? ciphertextVec[i] : ciphertextMultVec[i - inSize],
         i + 1 < inSize ? ciphertextVec[i + 1]
-                       : ciphertextMultVec[i + 1 - inSize]);
+                       : ciphertextMultVec[i + 1 - inSize], evalKeys);
   }
 
   return ciphertextMultVec.back();

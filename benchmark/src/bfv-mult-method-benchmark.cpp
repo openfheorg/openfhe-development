@@ -69,7 +69,7 @@ BFVrns_EvalMultMany/mult_method:2/min_time:10.000       5140 ms         5132 ms 
 BFVrns_EvalMultMany/mult_method:3/min_time:10.000       3382 ms         3376 ms            4
 */
 
-static std::vector<MultiplicationTechnique> MULT_METHOD_ARGS = {HPS, HPSPOVERQ, HPSPOVERQLEVELED};
+static std::vector<MultiplicationTechnique> MULT_METHOD_ARGS = {BEHZ, HPS, HPSPOVERQ, HPSPOVERQLEVELED};
 
 static void MultBFVArguments(benchmark::internal::Benchmark* b) {
     for (MultiplicationTechnique multMethod : MULT_METHOD_ARGS) {

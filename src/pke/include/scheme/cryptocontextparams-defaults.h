@@ -59,7 +59,7 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr RescalingTechnique   rsTech              = FIXEDAUTO;
     constexpr usint                firstModSize        = 105;
 #else
-    constexpr RescalingTechnique   rsTech              = FLEXIBLEAUTO;
+    constexpr RescalingTechnique   rsTech              = FLEXIBLEAUTOEXT;
     constexpr usint                firstModSize        = 60;
 #endif
     constexpr usint                batchSize           = 0;
@@ -97,7 +97,7 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr usint                evalMultCount       = 0;
     constexpr usint                keySwitchCount      = 0;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
-    constexpr MultiplicationTechnique multiplicationTechnique = HPS;
+    constexpr MultiplicationTechnique multiplicationTechnique = HPSPOVERQLEVELED;
     constexpr usint                multiHopQModulusLowerBound = 0;
 }; // namespace BFVRNS_SCHEME_DEFAULTS
 
@@ -110,7 +110,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxDepth            = 2;
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
-    constexpr RescalingTechnique   rsTech              = FIXEDMANUAL; // set to avoid compiler errors
+    constexpr RescalingTechnique   rsTech              = FLEXIBLEAUTOEXT; // set to avoid compiler errors
     constexpr usint                firstModSize        = 0;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
