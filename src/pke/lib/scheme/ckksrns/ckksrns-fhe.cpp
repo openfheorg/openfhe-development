@@ -779,7 +779,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
   ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
 
-  uint32_t towersToDrop;
+  uint32_t towersToDrop = 0;
   if (L != 0) {
     towersToDrop = cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT ?
         elementParams.GetParams().size() - L : elementParams.GetParams().size() - L - 1;
