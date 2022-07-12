@@ -50,7 +50,6 @@ using namespace lbcrypto;
 //===========================================================================================================
 enum TEST_CASE_TYPE {
     BOOTSTRAP_FULL = 0,
-    BOOTSTRAP_FULL_FFT,
     BOOTSTRAP_SPARSE,
 
 };
@@ -60,9 +59,6 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     switch (type) {
     case BOOTSTRAP_FULL:
         typeName = "BOOTSTRAP_FULL";
-        break;
-    case BOOTSTRAP_FULL_FFT:
-        typeName = "BOOTSTRAP_FULL_FFT";
         break;
     case BOOTSTRAP_SPARSE:
         typeName = "BOOTSTRAP_SPARSE";
@@ -108,48 +104,67 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNSBOOT&
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint MULT_DEPTH = 32;
-constexpr usint SFBITS = 59;
+constexpr uint32_t MULT_DEPTH = 32;
 constexpr uint32_t RDIM = 512;
+
+#if NATIVEINT==128
+constexpr uint32_t SFBITS = 78;
+constexpr uint32_t FMODSIZE = 89;
+#else
+constexpr uint32_t SFBITS = 59;
+constexpr uint32_t FMODSIZE = 60;
+#endif
 
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
-    // TestType,     Descr, Scheme,          RDim, MultDepth,  SFBits, DSize, BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
-    { BOOTSTRAP_FULL, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    // TestType,     Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
+    { BOOTSTRAP_FULL, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
 #if NATIVEINT != 128
-    { BOOTSTRAP_FULL, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    //{ BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    //{ BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
 #endif
     // ==========================================
-    // TestType,         Descr, Scheme,          RDim, MultDepth,  SFBits, DSize, BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
-    { BOOTSTRAP_FULL_FFT, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    // TestType,     Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
+    { BOOTSTRAP_FULL, "11", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "12", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "13", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "14", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
 #if NATIVEINT != 128
-    { BOOTSTRAP_FULL_FFT, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "15", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "16", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    //{ BOOTSTRAP_FULL_FFT, "17", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    //{ BOOTSTRAP_FULL_FFT, "18", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
 #endif
     // ==========================================
-    // TestType,       Descr, Scheme,          RDim, MultDepth,  SFBits, DSize, BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
-    { BOOTSTRAP_SPARSE, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "03", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "04", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
+    { BOOTSTRAP_SPARSE, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "03", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "04", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
 #if NATIVEINT != 128
-    { BOOTSTRAP_SPARSE, "05", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "06", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "07", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "05", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "06", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    //{ BOOTSTRAP_SPARSE, "07", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    //{ BOOTSTRAP_SPARSE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
 #endif
     // ==========================================
+    // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
+    { BOOTSTRAP_SPARSE, "11", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 } },
+    { BOOTSTRAP_SPARSE, "12", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 } },
+    { BOOTSTRAP_SPARSE, "13", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 } },
+    { BOOTSTRAP_SPARSE, "14", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 } },
+#if NATIVEINT != 128
+    { BOOTSTRAP_SPARSE, "15", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 } },
+    { BOOTSTRAP_SPARSE, "16", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 } },
+    //{ BOOTSTRAP_SPARSE, "17", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 } },
+    //{ BOOTSTRAP_SPARSE, "18", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 } },
+#endif
+      // ==========================================
 };
 // clang-format on
 //===========================================================================================================
@@ -159,7 +174,7 @@ class UTCKKSRNSBOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNSBOOT> {
     // The precision after which we consider two values equal.
     // This is necessary because CKKS works for approximate numbers.
     //const double eps = EPSILON;
-    const double eps = 0.00001;
+    const double eps = 0.0001;
 
 protected:
     void SetUp() {}
@@ -169,56 +184,6 @@ protected:
     }
 
     void UnitTest_BootstrapFull(const TEST_CASE_UTCKKSRNSBOOT& testData, const std::string& failmsg = std::string()) {
-        try {
-            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
-
-            const auto& cryptoParams = cc->GetCryptoParameters();
-            uint32_t slots = cryptoParams->GetElementParams()->GetRingDimension()/2;
-
-            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, slots);
-
-            auto keyPair = cc->KeyGen();
-            cc->EvalBootstrapKeyGen(keyPair.secretKey, slots);
-            cc->EvalAtIndexKeyGen(keyPair.secretKey, { 6 });
-            cc->EvalMultKeyGen(keyPair.secretKey);
-
-            std::vector<std::complex<double>> input(Fill({ 0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888 }, slots));
-            size_t encodedLength = input.size();
-
-            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, slots);
-            auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
-            auto ciphertextAfter = cc->EvalBootstrap(ciphertext1);
-
-            Plaintext result;
-            cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
-            result->SetLength(encodedLength);
-            plaintext1->SetLength(encodedLength);
-
-            checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
-                failmsg + " Bootstrapping for fully packed ciphertexts fails");
-            //std::cerr << "tmp_a:";
-            //for (auto a : result->GetCKKSPackedValue())
-            //    std::cerr << " " << a;
-            //std::cerr << std::endl;
-            //std::cerr << "tmp_b:";
-            //for (auto b : plaintext1->GetCKKSPackedValue())
-            //    std::cerr << " " << b;
-            //std::cerr << std::endl;
-        }
-        catch (std::exception& e) {
-            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
-        }
-    }
-
-    void UnitTest_BootstrapFull_FFT(const TEST_CASE_UTCKKSRNSBOOT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -330,9 +295,6 @@ TEST_P(UTCKKSRNSBOOT, CKKSRNS) {
     switch (test.testCaseType) {
     case BOOTSTRAP_FULL:
         UnitTest_BootstrapFull(test, test.buildTestName());
-        break;
-    case BOOTSTRAP_FULL_FFT:
-        UnitTest_BootstrapFull_FFT(test, test.buildTestName());
         break;
     case BOOTSTRAP_SPARSE:
         UnitTest_BootstrapSparse(test, test.buildTestName());
