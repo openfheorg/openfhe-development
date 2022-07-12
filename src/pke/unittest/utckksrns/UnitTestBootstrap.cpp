@@ -51,6 +51,9 @@ using namespace lbcrypto;
 enum TEST_CASE_TYPE {
     BOOTSTRAP_FULL = 0,
     BOOTSTRAP_SPARSE,
+    BOOTSTRAP_SPARSE_EDGE,
+    BOOTSTRAP_FULL_EDGE,
+    BOOTSTRAP_KEY_SWITCH,
 
 };
 
@@ -62,6 +65,15 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         break;
     case BOOTSTRAP_SPARSE:
         typeName = "BOOTSTRAP_SPARSE";
+        break;
+    case BOOTSTRAP_SPARSE_EDGE:
+        typeName = "BOOTSTRAP_SPARSE_EDGE";
+        break;
+    case BOOTSTRAP_FULL_EDGE:
+        typeName = "BOOTSTRAP_FULL_EDGE";
+        break;
+    case BOOTSTRAP_KEY_SWITCH:
+        typeName = "BOOTSTRAP_KEY_SWITCH";
         break;
     default:
         typeName = "UNKNOWN";
@@ -164,7 +176,34 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     //{ BOOTSTRAP_SPARSE, "17", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 } },
     //{ BOOTSTRAP_SPARSE, "18", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 } },
 #endif
-      // ==========================================
+    // ==========================================
+    // TestType,             Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
+    { BOOTSTRAP_SPARSE_EDGE, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_SPARSE_EDGE, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_SPARSE_EDGE, "03", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_SPARSE_EDGE, "04", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+#if NATIVEINT != 128
+    { BOOTSTRAP_SPARSE_EDGE, "05", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_SPARSE_EDGE, "06", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    //{ BOOTSTRAP_SPARSE_EDGE, "07", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    //{ BOOTSTRAP_SPARSE_EDGE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+#endif
+    // ==========================================
+    // TestType,           Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
+    { BOOTSTRAP_FULL_EDGE, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_EDGE, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_EDGE, "03", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_EDGE, "04", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+#if NATIVEINT != 128
+    { BOOTSTRAP_FULL_EDGE, "05", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_EDGE, "06", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    //{ BOOTSTRAP_FULL_EDGE, "07", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    //{ BOOTSTRAP_FULL_EDGE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+#endif
+    // ==========================================
+    // TestType,            Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
+    { BOOTSTRAP_KEY_SWITCH, "01", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SFBITS,     DFLT,  8,       UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
+    // ==========================================
 };
 // clang-format on
 //===========================================================================================================
@@ -285,6 +324,94 @@ protected:
         }
     }
 
+    //void UnitTest_Bootstrap_KeySwitching(const TEST_CASE_UTCKKSRNSBOOT& testData, const std::string& failmsg = std::string()) {
+    //    try {
+    //        CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+    //        // We set the cout precision to 8 decimal digits for a nicer output.
+    //        // If you want to see the error/noise introduced by CKKS, bump it up
+    //        // to 15 and it should become visible.
+    //        //std::cout.precision(8);
+    //        auto keyPair = cc->KeyGen();
+    //        cc->EvalAtIndexKeyGen(keyPair.secretKey, { 1 });
+
+    //        double eps = 0.00000001;
+    //        std::vector<std::complex<double>> a = { 0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0 };
+    //        std::vector<std::complex<double>> b = { 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0 };
+    //        Plaintext plaintext_a = cc->MakeCKKSPackedPlaintext(a);
+    //        auto comp_a = plaintext_a->GetCKKSPackedValue();
+    //        Plaintext plaintext_b = cc->MakeCKKSPackedPlaintext(b);
+    //        auto comp_b = plaintext_b->GetCKKSPackedValue();
+
+    //        // Test for KeySwitchExt + KeySwitchDown
+    //        //std::cout << "Input: " << plaintext_a << std::endl;
+    //        auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
+    //        ciphertext = cc->KeySwitchExt(ciphertext, true);
+    //        ciphertext = cc->KeySwitchDown(ciphertext);
+
+    //        Plaintext result;
+    //        cc->Decrypt(keyPair.secretKey, ciphertext, &result);
+    //        result->SetLength(a.size());
+    //        checkEquality(result->GetCKKSPackedValue(), comp_a, eps,
+    //            failmsg + " Bootstrapping for KeySwitchExt + KeySwitchDown failed");
+
+    //        // Test for EvalFastRotationExt
+    //        ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
+    //        auto digits = cc->EvalFastRotationPrecompute(ciphertext);
+    //        ciphertext = cc->EvalFastRotationExt(ciphertext, 1, digits, true);
+    //        ciphertext = cc->KeySwitchDown(ciphertext);
+
+    //        cc->Decrypt(keyPair.secretKey, ciphertext, &result);
+    //        result->SetLength(b.size());
+    //        checkEquality(result->GetCKKSPackedValue(), comp_b, eps,
+    //            failmsg + " Bootstrapping for EvalFastRotationExt failed");
+
+    //        // Test for KeySwitchExt + KeySwitchDown w/o first element
+    //        ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
+    //        auto firstCurrent = ciphertext->GetElements()[0];
+    //        ciphertext = cc->KeySwitchExt(ciphertext, false);
+    //        ciphertext = cc->KeySwitchDown(ciphertext);
+    //        auto elements = ciphertext->GetElements();
+    //        elements[0] += firstCurrent;
+    //        ciphertext->SetElements(elements);
+
+    //        cc->Decrypt(keyPair.secretKey, ciphertext, &result);
+    //        result->SetLength(a.size());
+    //        checkEquality(result->GetCKKSPackedValue(), comp_a, eps,
+    //            failmsg + " Bootstrapping for KeySwitchExt + KeySwitchDown w/o first element failed");
+
+    //        // Test for EvalFastRotationExt w/o first element
+    //        ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
+    //        firstCurrent = ciphertext->GetElements()[0];
+    //        // Find the automorphism index that corresponds to rotation index index.
+    //        usint autoIndex = FindAutomorphismIndex2nComplex(1, 4096);
+    //        std::vector<usint> map(4096 / 2);
+    //        PrecomputeAutoMap(4096 / 2, autoIndex, &map);
+    //        firstCurrent = firstCurrent.AutomorphismTransform(autoIndex, map);
+    //        digits = cc->EvalFastRotationPrecompute(ciphertext);
+    //        ciphertext = cc->EvalFastRotationExt(ciphertext, 1, digits, false);
+    //        ciphertext = cc->KeySwitchDown(ciphertext);
+    //        elements = ciphertext->GetElements();
+    //        elements[0] += firstCurrent;
+    //        ciphertext->SetElements(elements);
+
+    //        cc->Decrypt(keyPair.secretKey, ciphertext, &result);
+    //        result->SetLength(b.size());
+    //        checkEquality(result->GetCKKSPackedValue(), comp_b, eps,
+    //            failmsg + " Bootstrapping for EvalFastRotationExt w/o first element failed");
+    //    }
+    //    catch (std::exception& e) {
+    //        std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+    //        // make it fail
+    //        EXPECT_TRUE(0 == 1) << failmsg;
+    //    }
+    //    catch (...) {
+    //        std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+    //        std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+    //        // make it fail
+    //        EXPECT_TRUE(0 == 1) << failmsg;
+    //    }
+    //}
 };
 
 //===========================================================================================================
@@ -294,11 +421,16 @@ TEST_P(UTCKKSRNSBOOT, CKKSRNS) {
 
     switch (test.testCaseType) {
     case BOOTSTRAP_FULL:
+    case BOOTSTRAP_FULL_EDGE:
         UnitTest_BootstrapFull(test, test.buildTestName());
         break;
     case BOOTSTRAP_SPARSE:
+    case BOOTSTRAP_SPARSE_EDGE:
         UnitTest_BootstrapSparse(test, test.buildTestName());
         break;
+    //case BOOTSTRAP_KEY_SWITCH:
+    //    UnitTest_Bootstrap_KeySwitching(test, test.buildTestName());
+    //    break;
     default:
         break;
     }
