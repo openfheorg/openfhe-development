@@ -779,9 +779,10 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
   ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
 
-  uint32_t towersToDrop = 0;
+  uint32_t towersToDrop;
   if (L != 0) {
-    towersToDrop = elementParams.GetParams().size() - L - 1;
+    towersToDrop = cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT ?
+        elementParams.GetParams().size() - L : elementParams.GetParams().size() - L - 1;
     for (uint32_t i = 0; i < towersToDrop; i++) elementParams.PopLastParam();
   }
 
@@ -853,7 +854,8 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
   uint32_t towersToDrop = 0;
   if (L != 0) {
-    towersToDrop = elementParams.GetParams().size() - L - 1;
+    towersToDrop = cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT ?
+        elementParams.GetParams().size() - L : elementParams.GetParams().size() - L - 1;
     for (uint32_t i = 0; i < towersToDrop; i++) elementParams.PopLastParam();
   }
 
@@ -986,7 +988,10 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
   uint32_t towersToDrop = 0;
 
   if (L != 0) {
-    towersToDrop = elementParams.GetParams().size() - L - levelBudget;
+    towersToDrop = cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT ?
+        elementParams.GetParams().size() - L - levelBudget + 1 :
+        elementParams.GetParams().size() - L - levelBudget;
+
     for (uint32_t i = 0; i < towersToDrop; i++) {
       elementParams.PopLastParam();
     }
@@ -1187,7 +1192,9 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
   uint32_t towersToDrop = 0;
 
   if (L != 0) {
-    towersToDrop = elementParams.GetParams().size() - L - levelBudget;
+    towersToDrop = cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT ?
+        elementParams.GetParams().size() - L - levelBudget + 1 :
+        elementParams.GetParams().size() - L - levelBudget;
     for (uint32_t i = 0; i < towersToDrop; i++) {
       elementParams.PopLastParam();
     }
