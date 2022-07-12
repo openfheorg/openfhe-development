@@ -51,6 +51,7 @@ using namespace lbcrypto;
 enum TEST_CASE_TYPE {
     BOOTSTRAP_FULL = 0,
     BOOTSTRAP_FULL_FFT,
+    BOOTSTRAP_SPARSE,
 
 };
 
@@ -62,6 +63,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         break;
     case BOOTSTRAP_FULL_FFT:
         typeName = "BOOTSTRAP_FULL_FFT";
+        break;
+    case BOOTSTRAP_SPARSE:
+        typeName = "BOOTSTRAP_SPARSE";
         break;
     default:
         typeName = "UNKNOWN";
@@ -109,27 +113,39 @@ constexpr usint MULT_DEPTH = 32;
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     // TestType,     Descr, Scheme,          RDim, MultDepth,  SFBits, DSize, BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
-    { BOOTSTRAP_FULL, "01", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "02", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "03", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "04", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "01", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "02", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "03", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "04", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
 #if NATIVEINT != 128
-    { BOOTSTRAP_FULL, "05", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "06", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "05", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "06", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
 #endif
     // ==========================================
     // TestType,         Descr, Scheme,          RDim, MultDepth,  SFBits, DSize, BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
-    { BOOTSTRAP_FULL_FFT, "01", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "02", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "03", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "04", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "01", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "02", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "03", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "04", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
 #if NATIVEINT != 128
-    { BOOTSTRAP_FULL_FFT, "05", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "06", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "07", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "08", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 59,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "05", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "06", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "07", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "08", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+#endif
+    // ==========================================
+    // TestType,       Descr, Scheme,          RDim, MultDepth,  SFBits, DSize, BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
+    { BOOTSTRAP_SPARSE, "01", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "02", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "03", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "04", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+#if NATIVEINT != 128
+    { BOOTSTRAP_SPARSE, "05", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "06", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "07", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "08", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
 #endif
     // ==========================================
 };
@@ -225,9 +241,6 @@ protected:
             cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
             result->SetLength(encodedLength);
             plaintext1->SetLength(encodedLength);
-
-            auto tmp_a = result->GetCKKSPackedValue();
-            auto tmp_b = plaintext1->GetCKKSPackedValue();
             checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
                 failmsg + " FFT-based Bootstrapping for fully packed ciphertexts fails");
 
@@ -240,6 +253,57 @@ protected:
             result6->SetLength(encodedLength);
             checkEquality(result6->GetCKKSPackedValue(), temp6, eps,
                 failmsg + " EvalAtIndex after FFT-based Bootstrapping for fully packed ciphertexts fails");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_BootstrapSparse(const TEST_CASE_UTCKKSRNSBOOT& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            const auto& cryptoParams = cc->GetCryptoParameters();
+            uint32_t slots = (cryptoParams->GetElementParams()->GetRingDimension() / 2) / (1 << 3);
+
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, slots);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, slots);
+            cc->EvalAtIndexKeyGen(keyPair.secretKey, { 6 });
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            std::vector<std::complex<double>> input(Fill({ 0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888 }, slots));
+            size_t encodedLength = input.size();
+
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, slots);
+            auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertextAfter = cc->EvalBootstrap(ciphertext1);
+
+            Plaintext result;
+            cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
+            result->SetLength(encodedLength);
+            plaintext1->SetLength(encodedLength);
+            checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
+                failmsg + " Bootstrapping for fully packed ciphertexts fails");
+
+            auto temp6 = input;
+            std::rotate(temp6.begin(), temp6.begin() + 6, temp6.end());
+
+            auto ciphertext6 = cc->EvalAtIndex(ciphertextAfter, 6);
+            Plaintext result6;
+            cc->Decrypt(keyPair.secretKey, ciphertext6, &result6);
+            result6->SetLength(encodedLength);
+            checkEquality(result6->GetCKKSPackedValue(), temp6, eps,
+                failmsg + " EvalAtIndex after bootstrapping for for sparsely packed ciphertexts failed when # slots < n/4 failed");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -267,6 +331,9 @@ TEST_P(UTCKKSRNSBOOT, CKKSRNS) {
         break;
     case BOOTSTRAP_FULL_FFT:
         UnitTest_BootstrapFull_FFT(test, test.buildTestName());
+        break;
+    case BOOTSTRAP_SPARSE:
+        UnitTest_BootstrapSparse(test, test.buildTestName());
         break;
     default:
         break;
