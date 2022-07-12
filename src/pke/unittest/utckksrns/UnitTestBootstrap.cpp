@@ -173,7 +173,7 @@ protected:
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             const auto& cryptoParams = cc->GetCryptoParameters();
-            uint32_t slots = (cryptoParams->GetElementParams()->GetRingDimension()/2) / (1 << 3);
+            uint32_t slots = cryptoParams->GetElementParams()->GetRingDimension()/2;
 
             cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, slots);
 
@@ -223,7 +223,7 @@ protected:
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             const auto& cryptoParams = cc->GetCryptoParameters();
-            uint32_t slots = (cryptoParams->GetElementParams()->GetRingDimension() / 2) / (1 << 3);
+            uint32_t slots = (cryptoParams->GetElementParams()->GetRingDimension() / 2);
 
             cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, slots);
 
