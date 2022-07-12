@@ -78,7 +78,6 @@ else()
 endif()
 
 option( BUILD_EXTRAS "Set to ON to build extras for the library"                OFF )
-option( BUILD_DOCS "Set to ON to build documentation for the library"           OFF )
 option( GIT_SUBMOD_AUTO "Submodules auto-update"                                ON  )
 option( WITH_BE2 "Include Backend 2 in build by setting WITH_BE2 to ON"         ON  )
 option( WITH_BE4 "Include Backend 4 in build by setting WITH_BE4 to ON"         ON  )
@@ -103,7 +102,6 @@ message( STATUS "BUILD_UNITTESTS:  ${BUILD_UNITTESTS}")
 message( STATUS "BUILD_EXAMPLES:   ${BUILD_EXAMPLES}")
 message( STATUS "BUILD_BENCHMARKS: ${BUILD_BENCHMARKS}")
 message( STATUS "BUILD_EXTRAS:     ${BUILD_EXTRAS}")
-message( STATUS "BUILD_DOCS:       ${BUILD_DOCS}")
 message( STATUS "BUILD_STATIC:     ${BUILD_STATIC}")
 message( STATUS "BUILD_SHARED:     ${BUILD_SHARED}")
 message( STATUS "GIT_SUBMOD_AUTO:  ${GIT_SUBMOD_AUTO}")
@@ -254,7 +252,7 @@ add_custom_command(
         TARGET "uninstall"
         POST_BUILD
         COMMENT "Uninstall files within install_manifest.txt"
-        COMMAND ../script/uninstall_openfhe.sh
+        COMMAND ../scripts/uninstall_openfhe.sh
         USES_TERMINAL
 )
 
@@ -452,13 +450,6 @@ set(CMAKE_USE_WIN32_THREADS_INIT 0)
 set(CMAKE_USE_PTHREADS_INIT 1)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
-#--------------------------------------------------------------------
-# Documentation logic
-#--------------------------------------------------------------------
-if(BUILD_DOCS)
-    add_subdirectory("docs")
-    set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/docs" ${CMAKE_MODULE_PATH})  # So we can find FindSphinx.cmake
-endif()
 #--------------------------------------------------------------------
 # Submodule Update logic
 #--------------------------------------------------------------------
