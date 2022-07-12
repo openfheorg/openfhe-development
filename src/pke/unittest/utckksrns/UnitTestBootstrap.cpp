@@ -109,43 +109,45 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNSBOOT&
 }
 //===========================================================================================================
 constexpr usint MULT_DEPTH = 32;
+constexpr usint SFBITS = 59;
+constexpr uint32_t RDIM = 512;
 
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     // TestType,     Descr, Scheme,          RDim, MultDepth,  SFBits, DSize, BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
-    { BOOTSTRAP_FULL, "01", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "02", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "03", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "04", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
 #if NATIVEINT != 128
-    { BOOTSTRAP_FULL, "05", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "06", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
-    { BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
+    { BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 } },
 #endif
     // ==========================================
     // TestType,         Descr, Scheme,          RDim, MultDepth,  SFBits, DSize, BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
-    { BOOTSTRAP_FULL_FFT, "01", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "02", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "03", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "04", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
 #if NATIVEINT != 128
-    { BOOTSTRAP_FULL_FFT, "05", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "06", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "07", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
-    { BOOTSTRAP_FULL_FFT, "08", {CKKSRNS_SCHEME, 4096, MULT_DEPTH, 55,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
+    { BOOTSTRAP_FULL_FFT, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 } },
 #endif
     // ==========================================
     // TestType,       Descr, Scheme,          RDim, MultDepth,  SFBits, DSize, BatchSz, SecKeyDist,      MDepth, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
-    { BOOTSTRAP_SPARSE, "01", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "02", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "03", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "04", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDAUTO,       3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "03", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "04", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
 #if NATIVEINT != 128
-    { BOOTSTRAP_SPARSE, "05", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "06", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "07", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
-    { BOOTSTRAP_SPARSE, "08", {CKKSRNS_SCHEME,  512, MULT_DEPTH, 53,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "05", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "06", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "07", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
+    { BOOTSTRAP_SPARSE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, 3,       DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 } },
 #endif
     // ==========================================
 };
