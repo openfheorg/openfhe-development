@@ -1057,6 +1057,10 @@ void DCRTPolyImpl<VecType>::ModReduce(const NativeInteger& t, const std::vector<
                                       const std::vector<NativeInteger>& qlInvModqPrecon) {
     usint sizeQl = m_vectors.size();
 
+    if (sizeQl <= 0) {
+        OPENFHE_THROW(math_error, "No towers left to mod reduce.");
+    }
+
     // last tower that will be dropped
     PolyType delta(m_vectors[sizeQl - 1]);
 
