@@ -52,8 +52,8 @@ CryptoContext<Element> CryptoContextFactory<Element>::GetContext(
     std::shared_ptr<SchemeBase<Element>> scheme,
     const std::string& schemeId) {
   for (CryptoContext<Element> cc : CryptoContextFactory<Element>::AllContexts) {
-    if (*cc->GetScheme().get() == *scheme.get() &&
-        *cc->GetCryptoParameters().get() == *params.get()) {
+    if (*(cc->GetScheme().get()) == *(scheme.get()) &&
+        *(cc->GetCryptoParameters().get()) == *(params.get())) {
       return cc;
     }
   }

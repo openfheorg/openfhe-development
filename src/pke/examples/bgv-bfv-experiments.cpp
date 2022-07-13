@@ -32,11 +32,12 @@
 using namespace lbcrypto;
 
 static usint schemeBGV = 0;
-static usint schemeBFV = 1;
+//static usint schemeBFV = 1;
 
 CryptoContext<DCRTPoly> GenerateContextBGV(usint ptm,
                                         usint numAdd,
                                         usint multDepth,
+                                        usint numks,
                                         usint ringDim,
                                         KeySwitchTechnique ksTech, bool isTowBig);
 
@@ -53,23 +54,16 @@ CryptoContext<DCRTPoly> GenerateContextBFV(usint ptm,
 
 void EvalNoiseBGV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, usint ptm, double& noise, double& logQ);
 void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, usint ptm, double& noise, double& logQ, EncryptionTechnique encMethod);
-void EvalNoiseBFVB(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, usint ptm, double& noise, double& logQ, EncryptionTechnique encMethod);
 
 void Check(std::vector<int64_t> encvec, std::vector<int64_t> decvec, usint ptm);
 void Head();
 void Statistics(usint N, usint dcrtBits, double noise, double logQ, double time);
 
 void BinaryTreeDemo(usint ptm, usint logsize, usint logringDim, usint multDepth, EncryptionTechnique encMethod, MultiplicationTechnique multMethod, usint scheme, bool isTowBig);
-void ChainMultDemo(usint ptm, usint logsize, usint logringDim, usint multDepth, EncryptionTechnique encMethod, MultiplicationTechnique multMethod, usint scheme, bool isTowBig);
 void FullPolyDemo(usint ptm, usint coeffBound, usint k, usint logringDim, usint multDepth, EncryptionTechnique encMethod, MultiplicationTechnique multMethod, usint scheme, bool isTowBig);
-void EvalSumDemo(usint ptm, usint logringDim, EncryptionTechnique encMethod, MultiplicationTechnique multMethod, usint scheme, bool isTowBig);
-void HorzInnerProdDemo(usint ptm, usint logringDim, EncryptionTechnique encMethod, MultiplicationTechnique multMethod, usint scheme, bool isTowBig);
 
 void BinaryTreeDemoAll(usint ptm, usint logringDim, usint multDepth, bool isNumBig);
-void ChainMultDemoAll(usint ptm, usint logringDim, usint multDepth, bool isNumBig);
 void FullPolyDemoAll(usint ptm, usint coeffBound, usint logringDim, usint multDepth, bool isNumBig);
-void EvalSumDemoAll(usint ptm, bool isNumBig);
-void HorzInnerProdDemoAll(usint ptm, bool isNumBig);
 
 void test2() {
   usint ptm = 2;
@@ -84,22 +78,22 @@ void test2() {
 void test16() {
   usint ptm = 65537;
 
-  //BinaryTreeDemoAll(ptm, 0, 0, false);
+  BinaryTreeDemoAll(ptm, 0, 0, false);
   FullPolyDemoAll(ptm, 16, 0, 0, false);
 
   //BinaryTreeDemoAll(ptm, 0, 0, true);
-  FullPolyDemoAll(ptm, 16, 0, 0, true);
+  //FullPolyDemoAll(ptm, 16, 0, 0, true);
 }
 
 void test30() {
   NativeInteger q = FirstPrime<NativeInteger>(30, 65536);
   usint ptm = PreviousPrime(q, 65536).ConvertToInt();
 
-  //BinaryTreeDemoAll(ptm, 0, 0, false);
+  BinaryTreeDemoAll(ptm, 0, 0, false);
   FullPolyDemoAll(ptm, 16, 0, 0, false);
 
   //BinaryTreeDemoAll(ptm, 0, 0, true);
-  FullPolyDemoAll(ptm, 16, 0, 0, true);
+  //FullPolyDemoAll(ptm, 16, 0, 0, true);
 }
 
 int main(int argc, char* argv[]) {
@@ -111,12 +105,12 @@ int main(int argc, char* argv[]) {
 }
 
 CryptoContext<DCRTPoly> GenerateContextBGV(usint ptm,
-                                        usint numAdd, usint multDepth,
+                                        usint numAdd, usint multDepth, usint numks,
                                         usint ringDim,
                                         KeySwitchTechnique ksTech,
                                         bool isTowBig) {
   SecurityLevel securityLevel = HEStd_128_classic;
-  SecretKeyDist secretKeyDist = GAUSSIAN;
+  SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
 
   usint dcrtBits;
   if(ringDim > 0) {
@@ -155,8 +149,11 @@ CryptoContext<DCRTPoly> GenerateContextBGV(usint ptm,
   parameters.SetBatchSize(0);
   parameters.SetRescalingTechnique(FLEXIBLEAUTOEXT);
   parameters.SetEvalAddCount(numAdd);
+  parameters.SetKeySwitchCount(numks);
 
   cc = GenCryptoContext(parameters);
+
+  //std::cout << "Parameters: " << *(cc->GetCryptoParameters().get()) << std::endl;
 
   cc->Enable(PKE);
   cc->Enable(LEVELEDSHE);
@@ -175,7 +172,7 @@ CryptoContext<DCRTPoly> GenerateContextBFV(usint ptm,
                                         EncryptionTechnique encMethod,
                                         MultiplicationTechnique multMethod) {
   SecurityLevel securityLevel = HEStd_128_classic;
-  SecretKeyDist secretKeyDist = GAUSSIAN;
+  SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
 
   CryptoContext<DCRTPoly> cc(nullptr);
   CCParams<CryptoContextBFVRNS> parameters;
@@ -197,6 +194,8 @@ CryptoContext<DCRTPoly> GenerateContextBFV(usint ptm,
   parameters.SetKeySwitchCount(numks);
 
   cc = GenCryptoContext(parameters);
+
+  std::cout << "Parameters: " << *(cc->GetCryptoParameters().get()) << std::endl;
 
   cc->Enable(PKE);
   cc->Enable(LEVELEDSHE);
@@ -221,38 +220,13 @@ void BinaryTreeDemoAll(usint ptm, usint logringDim, usint multDepth, bool isNumB
   Head();
   for (usint logsize : {1, 2, 3, 4, 5, 6, 7}) {
     std::cerr << logsize;
+    /*
     BinaryTreeDemo(ptm, logsize, logringDim, logsize + 1, STANDARD, BEHZ, schemeBFV, isNumBig);
     BinaryTreeDemo(ptm, logsize, logringDim, logsize + 1, STANDARD, HPS, schemeBFV, isNumBig);
     BinaryTreeDemo(ptm, logsize, logringDim, logsize + 1, POVERQ, HPSPOVERQ, schemeBFV, isNumBig);
     BinaryTreeDemo(ptm, logsize, logringDim, logsize + 1, POVERQ, HPSPOVERQLEVELED, schemeBFV, isNumBig);
-    BinaryTreeDemo(ptm, logsize, logringDim, logsize + 1, STANDARD, HPS, schemeBGV, isNumBig);
-    std::cerr << " \\\\" << std::endl;
-  }
-  std::cerr << "-----------------------------------" << std::endl;
-}
-
-void ChainMultDemoAll(usint ptm, usint logringDim, usint multDepth, bool isNumBig) {
-  std::cerr << "-----------------------------------" << std::endl;
-  std::cerr << "Chain Mult Demo: ";
-  if(logringDim == 0) {
-    std::cerr << "ringDimBits: dynamic";
-  } else {
-    std::cerr << "ringDimBits: " << logringDim;
-  }
-  if(multDepth == 0) {
-    std::cerr << ", multDepth: dynamic";
-  } else {
-    std::cerr << ", multDepth: " << multDepth;
-  }
-  std::cerr << std::endl;
-  Head();
-  for (usint logsize : {2, 4, 6, 8, 10, 12}) {
-    std::cerr << logsize;
-    ChainMultDemo(ptm, logsize, logringDim, multDepth, STANDARD, BEHZ, schemeBFV, isNumBig);
-    ChainMultDemo(ptm, logsize, logringDim, multDepth, STANDARD, HPS, schemeBFV, isNumBig);
-    ChainMultDemo(ptm, logsize, logringDim, multDepth, POVERQ, HPSPOVERQ, schemeBFV, isNumBig);
-    ChainMultDemo(ptm, logsize, logringDim, multDepth, POVERQ, HPSPOVERQLEVELED, schemeBFV, isNumBig);
-    ChainMultDemo(ptm, logsize, logringDim, multDepth, STANDARD, HPS, schemeBGV, isNumBig);
+    */
+    BinaryTreeDemo(ptm, logsize, logringDim, logsize, STANDARD, HPS, schemeBGV, isNumBig);
     std::cerr << " \\\\" << std::endl;
   }
   std::cerr << "-----------------------------------" << std::endl;
@@ -274,44 +248,15 @@ void FullPolyDemoAll(usint ptm, usint coeffBound, usint logringDim, usint multDe
   std::cerr << std::endl;
   Head();
   for (usint size : {2, 4, 8, 16, 32, 48, 64}) {
+  //for (usint size : {48, 64}) {
     std::cerr << size;
+    /*
     FullPolyDemo(ptm, coeffBound, size, logringDim, multDepth, STANDARD, BEHZ, schemeBFV, isNumBig);
     FullPolyDemo(ptm, coeffBound, size, logringDim, multDepth, STANDARD, HPS, schemeBFV, isNumBig);
     FullPolyDemo(ptm, coeffBound, size, logringDim, multDepth, POVERQ, HPSPOVERQ, schemeBFV, isNumBig);
     FullPolyDemo(ptm, coeffBound, size, logringDim, multDepth, POVERQ, HPSPOVERQLEVELED, schemeBFV, isNumBig);
+    */
     FullPolyDemo(ptm, coeffBound, size, logringDim, multDepth, STANDARD, HPS, schemeBGV, isNumBig);
-    std::cerr << " \\\\" << std::endl;
-  }
-  std::cerr << "-----------------------------------" << std::endl;
-}
-
-void EvalSumDemoAll(usint ptm, bool isNumBig) {
-  std::cerr << "-----------------------------------" << std::endl;
-  std::cerr << "Eval Sum Demo" << std::endl;
-  Head();
-  for (usint logRingDim : {14, 15}) {
-    std::cerr << logRingDim;
-    EvalSumDemo(ptm, logRingDim, STANDARD, BEHZ, schemeBFV, isNumBig);
-    EvalSumDemo(ptm, logRingDim, STANDARD, HPS, schemeBFV, isNumBig);
-    EvalSumDemo(ptm, logRingDim, POVERQ, HPSPOVERQ, schemeBFV, isNumBig);
-    EvalSumDemo(ptm, logRingDim, POVERQ, HPSPOVERQLEVELED, schemeBFV, isNumBig);
-    EvalSumDemo(ptm, logRingDim, STANDARD, HPS, schemeBGV, isNumBig);
-    std::cerr << " \\\\" << std::endl;
-  }
-  std::cerr << "-----------------------------------" << std::endl;
-}
-
-void HorzInnerProdDemoAll(usint ptm, bool isNumBig) {
-  std::cerr << "-----------------------------------" << std::endl;
-  std::cerr << "Eval Horizontal Inner Product Demo" << std::endl;
-  Head();
-  for (usint logRingDim : {13, 14, 15}) {
-    std::cerr << logRingDim;
-    HorzInnerProdDemo(ptm, logRingDim, STANDARD, BEHZ, schemeBFV, isNumBig);
-    HorzInnerProdDemo(ptm, logRingDim, STANDARD, HPS, schemeBFV, isNumBig);
-    HorzInnerProdDemo(ptm, logRingDim, POVERQ, HPSPOVERQ, schemeBFV, isNumBig);
-    HorzInnerProdDemo(ptm, logRingDim, POVERQ, HPSPOVERQLEVELED, schemeBFV, isNumBig);
-    HorzInnerProdDemo(ptm, logRingDim, STANDARD, HPS, schemeBGV, isNumBig);
     std::cerr << " \\\\" << std::endl;
   }
   std::cerr << "-----------------------------------" << std::endl;
@@ -326,10 +271,11 @@ void BinaryTreeDemo(usint ptm, usint logsize, usint logringDim, usint multDepth,
     ringDim = 1 << logringDim;
   }
   usint numAdd = 0;
+  usint numKS = 0;
 
   CryptoContext<DCRTPoly> cc =
-      scheme == schemeBGV ? GenerateContextBGV(ptm, numAdd, multDepth, ringDim, HYBRID, isTowBig)
-    : GenerateContextBFV(ptm, numAdd, multDepth, 0, ringDim, HYBRID, isTowBig, 60, encMethod, multMethod);
+      scheme == schemeBGV ? GenerateContextBGV(ptm, numAdd, multDepth, numKS, ringDim, HYBRID, isTowBig)
+    : GenerateContextBFV(ptm, numAdd, multDepth, numKS, ringDim, HYBRID, isTowBig, 60, encMethod, multMethod);
 
   auto keys = cc->KeyGen();
   cc->EvalMultKeyGen(keys.secretKey);
@@ -385,10 +331,8 @@ void BinaryTreeDemo(usint ptm, usint logsize, usint logringDim, usint multDepth,
   double noise = 0, logQ = 0;
   if (scheme == schemeBGV) {
     EvalNoiseBGV(keys.secretKey, cRes, ptm, noise, logQ);
-  } else if (multMethod != BEHZ) {
-    EvalNoiseBFV(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
   } else {
-    EvalNoiseBFVB(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
+    EvalNoiseBFV(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
   }
   Check(encvec, decvec, ptm);
   usint dcrtBits;
@@ -396,75 +340,6 @@ void BinaryTreeDemo(usint ptm, usint logsize, usint logringDim, usint multDepth,
       dcrtBits = cc->GetElementParams()->GetParams()[1]->GetModulus().GetMSB();
   else
       dcrtBits = cc->GetElementParams()->GetParams()[0]->GetModulus().GetMSB();
-  Statistics(N, dcrtBits, noise, logQ, time);
-}
-
-void ChainMultDemo(usint ptm, usint logsize, usint logringDim, usint multDepth, EncryptionTechnique encMethod, MultiplicationTechnique multMethod, usint scheme, bool isTowBig) {
-  if (multDepth == 0) {
-    multDepth = logsize;
-  }
-  usint ringDim = 0;
-  if(logringDim > 0) {
-    ringDim = 1 << logringDim;
-  }
-  usint numAdd = 0;
-  CryptoContext<DCRTPoly> cc =
-      scheme == schemeBGV ? GenerateContextBGV(ptm, numAdd, multDepth, ringDim, HYBRID, isTowBig)
-    : GenerateContextBFV(ptm, numAdd, multDepth, 0, ringDim, HYBRID, isTowBig, 60, encMethod, multMethod);
-
-  auto keys = cc->KeyGen();
-  cc->EvalMultKeyGen(keys.secretKey);
-
-  usint N = cc->GetRingDimension();
-  usint size = (ptm == 2) ? 1 : N;
-
-  std::vector<Ciphertext<DCRTPoly>> cvec(logsize + 1);
-  std::vector<int64_t> encvec(size, 1);
-  for (usint i = 0; i < logsize + 1; ++i) {
-    std::vector<int64_t> x(size);
-    for (usint j = 0; j < size; ++j) {
-      x[j] = rand() % ptm;
-      encvec[j] *= x[j];
-      encvec[j] %= ptm;
-    }
-    Plaintext ptxt = (ptm == 2) ?
-        cc->MakeCoefPackedPlaintext(x) :
-        cc->MakePackedPlaintext(x);
-    cvec[i] = cc->Encrypt(keys.publicKey, ptxt);
-  }
-
-  TimeVar t;
-  TIC(t);
-  double time;
-  Ciphertext<DCRTPoly> cRes;
-  for (usint i = 1; i < logsize + 1; ++i) {
-    cvec[0] = cc->EvalMult(cvec[0], cvec[i]);
-  }
-
-  time = TOC_US(t);
-  cRes = cvec[0]->Clone();
-  Plaintext result;
-  cc->Decrypt(keys.secretKey, cRes, &result);
-  std::vector<int64_t> decvec = (ptm == 2) ?
-      result->GetCoefPackedValue() :
-      result->GetPackedValue();
-  Plaintext dRes = (ptm == 2) ?
-      cc->MakeCoefPackedPlaintext(decvec) :
-      cc->MakePackedPlaintext(decvec);
-  double noise = 0, logQ = 0;
-  if (scheme == schemeBGV) {
-    EvalNoiseBGV(keys.secretKey, cRes, ptm, noise, logQ);
-  } else if (scheme == schemeBFV) {
-    EvalNoiseBFV(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
-  } else {
-    EvalNoiseBFVB(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
-  }
-  Check(encvec, decvec, ptm);
-  usint dcrtBits;
-  if (scheme == schemeBGV)
-    dcrtBits = round(log2(cc->GetElementParams()->GetParams()[1]->GetModulus().ConvertToInt()));
-  else
-    dcrtBits = round(log2(cc->GetElementParams()->GetParams()[0]->GetModulus().ConvertToInt()));
   Statistics(N, dcrtBits, noise, logQ, time);
 }
 
@@ -477,10 +352,12 @@ void FullPolyDemo(usint ptm, usint coeffBound, usint k, usint logringDim, usint 
     ringDim = 1 << logringDim;
   }
   usint numAdd = (k/2 + 1) * coeffBound;
+  //usint numAdd = k;
+  usint numKS = 0;
 
   CryptoContext<DCRTPoly> cc =
-      scheme == schemeBGV ? GenerateContextBGV(ptm, numAdd, multDepth, ringDim, HYBRID, isTowBig)
-    : GenerateContextBFV(ptm, numAdd, multDepth, 0, ringDim, HYBRID, isTowBig, 60, encMethod, multMethod);
+      scheme == schemeBGV ? GenerateContextBGV(ptm, numAdd, multDepth, numKS, ringDim, HYBRID, isTowBig)
+    : GenerateContextBFV(ptm, numAdd, multDepth, numKS, ringDim, HYBRID, isTowBig, 60, encMethod, multMethod);
   auto keys = cc->KeyGen();
   cc->EvalMultKeyGen(keys.secretKey);
 
@@ -569,157 +446,8 @@ void FullPolyDemo(usint ptm, usint coeffBound, usint k, usint logringDim, usint 
   double noise = 0, logQ = 0;
   if (scheme == schemeBGV) {
     EvalNoiseBGV(keys.secretKey, cRes, ptm, noise, logQ);
-  } else if (scheme == schemeBFV) {
-    EvalNoiseBFV(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
   } else {
-    EvalNoiseBFVB(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
-  }
-  Check(encvec, decvec, ptm);
-  usint dcrtBits;
-  if (scheme == schemeBGV)
-    dcrtBits = round(log2(cc->GetElementParams()->GetParams()[1]->GetModulus().ConvertToInt()));
-  else
-    dcrtBits = round(log2(cc->GetElementParams()->GetParams()[0]->GetModulus().ConvertToInt()));
-  Statistics(N, dcrtBits, noise, logQ, time);
-}
-
-void EvalSumDemo(usint ptm, usint logringDim, EncryptionTechnique encMethod, MultiplicationTechnique multMethod, usint scheme, bool isTowBig) {
-  usint multDepth = 1;
-  usint ringDim = 1 << logringDim;
-  usint numAdd = static_cast<usint>(ceil(log2(ringDim)));
-  CryptoContext<DCRTPoly> cc =
-      scheme == schemeBGV ? GenerateContextBGV(ptm, numAdd, multDepth, ringDim, HYBRID, isTowBig)
-    : GenerateContextBFV(ptm, numAdd, multDepth, numAdd, ringDim, HYBRID, isTowBig, 60, encMethod, multMethod);
-
-  auto keys = cc->KeyGen();
-  cc->EvalMultKeyGen(keys.secretKey);
-
-  usint N = cc->GetRingDimension();
-  usint size = (ptm == 2) ? 1 : N;
-
-  std::vector<int32_t> indexes;
-  for (usint i = 1; i < size; i <<= 1) {
-    indexes.push_back(static_cast<int32_t>(i));
-  }
-  cc->EvalAtIndexKeyGen(keys.secretKey, indexes);
-
-  int64_t sum = 0;
-  std::vector<int64_t> x(size);
-  for (usint i = 0; i < size; ++i) {
-    x[i] = rand() % ptm;
-//    x[i] = 1;
-    sum += x[i];
-    sum %= ptm;
-  }
-  std::vector<int64_t> encvec(size, sum);
-  Plaintext ptxt = (ptm == 2) ?
-      cc->MakeCoefPackedPlaintext(x) :
-      cc->MakePackedPlaintext(x);
-  auto c = cc->Encrypt(keys.publicKey, ptxt);
-
-  TimeVar t;
-  TIC(t);
-
-  auto cRes = c->Clone();
-  for (usint i = 1; i < size; i <<= 1) {
-    auto crot = cc->EvalAtIndex(cRes, i);
-    cRes = cc->EvalAdd(cRes, crot);
-  }
-  double time = TOC_US(t);
-
-  Plaintext result;
-  cc->Decrypt(keys.secretKey, cRes, &result);
-  std::vector<int64_t> decvec = (ptm == 2) ?
-      result->GetCoefPackedValue() :
-      result->GetPackedValue();
-  Plaintext dRes = (ptm == 2) ?
-      cc->MakeCoefPackedPlaintext(decvec) :
-      cc->MakePackedPlaintext(decvec);
-  double noise = 0, logQ = 0;
-  if (scheme == schemeBGV) {
-    EvalNoiseBGV(keys.secretKey, cRes, ptm, noise, logQ);
-  } else if (scheme == schemeBFV) {
     EvalNoiseBFV(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
-  } else {
-    EvalNoiseBFVB(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
-  }
-  Check(encvec, decvec, ptm);
-  usint dcrtBits;
-  if (scheme == schemeBGV)
-    dcrtBits = round(log2(cc->GetElementParams()->GetParams()[1]->GetModulus().ConvertToInt()));
-  else
-    dcrtBits = round(log2(cc->GetElementParams()->GetParams()[0]->GetModulus().ConvertToInt()));
-  Statistics(N, dcrtBits, noise, logQ, time);
-}
-
-void HorzInnerProdDemo(usint ptm, usint logringDim, EncryptionTechnique encMethod, MultiplicationTechnique multMethod, usint scheme, bool isTowBig) {
-  usint multDepth = 1;
-  usint ringDim = 1 << logringDim;
-  usint numAdd = static_cast<usint>(ceil(log2(ringDim)));
-  CryptoContext<DCRTPoly> cc =
-      scheme == schemeBGV ? GenerateContextBGV(ptm, numAdd, multDepth, ringDim, HYBRID, isTowBig)
-    : GenerateContextBFV(ptm, numAdd, multDepth, numAdd, ringDim, HYBRID, isTowBig, 37, encMethod, multMethod);
-
-  auto keys = cc->KeyGen();
-  cc->EvalMultKeyGen(keys.secretKey);
-
-  usint N = cc->GetRingDimension();
-  usint size = (ptm == 2) ? 1 : N;
-
-  std::vector<int32_t> indexes;
-  for (usint i = 1; i < size; i <<= 1) {
-    indexes.push_back(static_cast<int32_t>(i));
-  }
-  cc->EvalAtIndexKeyGen(keys.secretKey, indexes);
-
-  int64_t ip = 0;
-  std::vector<int64_t> x(size);
-  std::vector<int64_t> y(size);
-  for (usint i = 0; i < size; ++i) {
-    x[i] = rand() % ptm;
-    y[i] = rand() % ptm;
-//    x[i] = 1;
-    ip += x[i] * y[i];
-    ip %= ptm;
-  }
-  std::vector<int64_t> encvec(size, ip);
-  Plaintext ptxtx = (ptm == 2) ?
-      cc->MakeCoefPackedPlaintext(x) :
-      cc->MakePackedPlaintext(x);
-  Plaintext ptxty = (ptm == 2) ?
-      cc->MakeCoefPackedPlaintext(y) :
-      cc->MakePackedPlaintext(y);
-
-  auto cx = cc->Encrypt(keys.publicKey, ptxtx);
-  auto cy = cc->Encrypt(keys.publicKey, ptxty);
-
-  TimeVar t;
-  TIC(t);
-
-  auto cRes = cc->EvalMult(cx, cy);
-//  if(isBGV) cRes = cc->Rescale(cRes);
-
-  for (usint i = 1; i < size; i <<= 1) {
-    auto crot = cc->EvalAtIndex(cRes, i);
-    cRes = cc->EvalAdd(cRes, crot);
-  }
-  double time = TOC_US(t);
-
-  Plaintext result;
-  cc->Decrypt(keys.secretKey, cRes, &result);
-  std::vector<int64_t> decvec = (ptm == 2) ?
-      result->GetCoefPackedValue() :
-      result->GetPackedValue();
-  Plaintext dRes = (ptm == 2) ?
-      cc->MakeCoefPackedPlaintext(decvec) :
-      cc->MakePackedPlaintext(decvec);
-  double noise = 0, logQ = 0;
-  if (scheme == schemeBGV) {
-    EvalNoiseBGV(keys.secretKey, cRes, ptm, noise, logQ);
-  } else if (scheme == schemeBFV) {
-    EvalNoiseBFV(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
-  } else {
-    EvalNoiseBFVB(keys.secretKey, cRes, dRes, ptm, noise, logQ, encMethod);
   }
   Check(encvec, decvec, ptm);
   usint dcrtBits;
@@ -780,18 +508,17 @@ void EvalNoiseBGV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> cip
 
   DCRTPoly sPower(scopy);
 
-  DCRTPoly b, ci;
+  DCRTPoly b = cv[0];
 
-  if (cv[0].GetFormat() == Format::EVALUATION) {
-    b = cv[0];
-    for (size_t i = 1; i < cv.size(); i++) {
-      ci = cv[i];
-      ci.SetFormat(Format::EVALUATION);
+  b.SetFormat(Format::EVALUATION);
 
-      b += sPower * ci;
-      sPower *= scopy;
-    }
-    b.SetFormat(Format::COEFFICIENT);
+  DCRTPoly ci;
+  for (size_t i = 1; i < cv.size(); i++) {
+    ci = cv[i];
+    ci.SetFormat(Format::EVALUATION);
+
+    b += sPower * ci;
+    sPower *= scopy;
   }
 
   noise = (log2(b.Norm())-log2(ptm));
@@ -799,9 +526,6 @@ void EvalNoiseBGV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> cip
   for (usint i = 0; i < sizeQ - 1; i++) {
     double logqi = log2(cryptoParams->GetElementParams()->GetParams()[i]->GetModulus().ConvertToInt());
     logQ += logqi;
-  }
-  for (usint i = sizeQl; i < sizeQ - 1; i++) {
-    double logqi = log2(cryptoParams->GetElementParams()->GetParams()[i]->GetModulus().ConvertToInt());
     noise += logqi;
   }
 }
@@ -813,9 +537,16 @@ void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> cip
 
   const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
   DCRTPoly s = privateKey->GetPrivateElement();
-  if (encMethod == POVERQ)
-    s.DropLastElement();
-  DCRTPoly sPower(s);
+
+  size_t sizeQl = cv[0].GetParams()->GetParams().size();
+  size_t sizeQs = s.GetParams()->GetParams().size();
+
+  size_t diffQl = sizeQs - sizeQl;
+
+  auto scopy(s);
+  scopy.DropLastElements(diffQl);
+
+  DCRTPoly sPower(scopy);
 
   DCRTPoly b = cv[0];
   b.SetFormat(Format::EVALUATION);
@@ -826,12 +557,12 @@ void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> cip
     ci.SetFormat(Format::EVALUATION);
 
     b += sPower * ci;
-    sPower *= s;
+    sPower *= scopy;
   }
 
   DCRTPoly res;
   Poly bigPtxt = ptxt->GetElement<DCRTPoly>().CRTInterpolate();
-  bigPtxt = bigPtxt.MultiplyAndRound(bigPtxt.GetModulus(),cryptoParams->GetPlaintextModulus());
+  bigPtxt = bigPtxt.MultiplyAndRound(bigPtxt.GetModulus(), cryptoParams->GetPlaintextModulus());
   DCRTPoly plain(bigPtxt,ptxt->GetElement<DCRTPoly>().GetParams());
   plain.SetFormat(Format::EVALUATION);
   res = b - plain;
@@ -839,47 +570,6 @@ void EvalNoiseBFV(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> cip
   // Converts back to coefficient representation
   res.SetFormat(Format::COEFFICIENT);
   size_t sizeQ = cryptoParams->GetElementParams()->GetParams().size();
-  noise = (log2(res.Norm()));
-
-  logQ = 0;
-  for (usint i = 0; i < sizeQ; i++) {
-    double logqi = log2(cryptoParams->GetElementParams()->GetParams()[i]->GetModulus().ConvertToInt());
-    logQ += logqi;
-  }
-}
-
-void EvalNoiseBFVB(PrivateKey<DCRTPoly> privateKey, ConstCiphertext<DCRTPoly> ciphertext, Plaintext ptxt, usint ptm, double& noise, double& logQ, EncryptionTechnique encMethod) {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersBFVRNS>(
-          privateKey->GetCryptoParameters());
-
-  const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
-  const DCRTPoly &s = privateKey->GetPrivateElement();
-  DCRTPoly sPower(s);
-
-  DCRTPoly b = cv[0];
-  b.SetFormat(Format::EVALUATION);
-
-  DCRTPoly ci;
-  for (size_t i = 1; i < cv.size(); i++) {
-    ci = cv[i];
-    ci.SetFormat(Format::EVALUATION);
-
-    b += sPower * ci;
-    sPower *= s;
-  }
-
-  DCRTPoly res;
-  
-  Poly bigPtxt = ptxt->GetElement<DCRTPoly>().CRTInterpolate();
-  bigPtxt = bigPtxt.MultiplyAndRound(bigPtxt.GetModulus(),cryptoParams->GetPlaintextModulus());
-  DCRTPoly plain(bigPtxt,ptxt->GetElement<DCRTPoly>().GetParams());
-  plain.SetFormat(Format::EVALUATION);
-  res = b - plain;
-
-  // Converts back to coefficient representation
-  res.SetFormat(Format::COEFFICIENT);
-  size_t sizeQ = s.GetParams()->GetParams().size();
   noise = (log2(res.Norm()));
 
   logQ = 0;
