@@ -126,7 +126,7 @@ constexpr uint32_t BATCH = 8;
 constexpr uint32_t SFBITS = 78;
 constexpr uint32_t FMODSIZE = 89;
 #else
-constexpr uint32_t SFBITS = 59;
+constexpr uint32_t SFBITS = 50;
 constexpr uint32_t FMODSIZE = 60;
 #endif
 
