@@ -643,9 +643,9 @@ public:
    *
    */
     void SwitchFormat();
-#define NOT_AN_ELEMENT_MATRIX(T)                                         \
-    template <>                                                          \
-    void Matrix<T>::SwitchFormat() {                                     \
+#define NOT_AN_ELEMENT_MATRIX(T)                                        \
+    template <>                                                         \
+    void Matrix<T>::SwitchFormat() {                                    \
         OPENFHE_THROW(not_available_error, "Not a matrix of Elements"); \
     }
 
@@ -674,7 +674,7 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+                                                 " is from a later version of the library");
         }
         ar(::cereal::make_nvp("d", data));
         ar(::cereal::make_nvp("r", rows));

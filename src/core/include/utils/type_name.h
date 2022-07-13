@@ -53,24 +53,26 @@ bool sharedPtr(const T& t) {
 // even the code is the same for both versions of typeName() below,
 // I did decide to have 2 functions (for pointers and for objects) for now
 // typeName() for objects
-template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !is_shared_pointer<T>::value, bool>::type = true>
+template <typename T,
+          typename std::enable_if<!std::is_pointer<T>::value && !is_shared_pointer<T>::value, bool>::type = true>
 std::string typeName(const T& obj) {
     return demangle(typeid(obj).name());
 }
 //=============================================================================
 // typeName() for pointers
-template <typename T, typename std::enable_if<std::is_pointer<T>::value || is_shared_pointer<T>::value, bool>::type = true>
+template <typename T,
+          typename std::enable_if<std::is_pointer<T>::value || is_shared_pointer<T>::value, bool>::type = true>
 std::string typeName(const T& ptr) {
     return demangle(typeid(ptr).name());
 }
 //=============================================================================
 // getObjectType() takes either a regular pointer or a shared_ptr as the argument and
 // returns the actual type of the object ptr points to.
-template <typename T, typename std::enable_if<std::is_pointer<T>::value || is_shared_pointer<T>::value, bool>::type = true>
+template <typename T,
+          typename std::enable_if<std::is_pointer<T>::value || is_shared_pointer<T>::value, bool>::type = true>
 std::string objectTypeName(const T& ptr) {
     return demangle(typeid(*ptr).name());
 }
 //=============================================================================
 
-#endif // __TYPE_NAME_H__
-
+#endif  // __TYPE_NAME_H__

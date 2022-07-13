@@ -32,11 +32,11 @@
 #include <memory>
 
 #if defined(__clang__) || defined(__GNUG__)
-#include <cxxabi.h>
+    #include <cxxabi.h>
 
 std::string demangle(const char* name) {
     int status = -1;
-    std::unique_ptr<char, void(*)(void*)> result{ abi::__cxa_demangle(name, NULL, NULL, &status), std::free };
+    std::unique_ptr<char, void (*)(void*)> result{abi::__cxa_demangle(name, NULL, NULL, &status), std::free};
 
     return (status == 0) ? result.get() : "UNKNOWN";
 }
@@ -45,4 +45,3 @@ std::string demangle(const char* name) {
     return name;
 }
 #endif
-

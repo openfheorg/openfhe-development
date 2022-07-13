@@ -748,7 +748,6 @@ public:
 
     const myZZ& ModMulFastConstEq(const myZZ& b, const myZZ& modulus, const myZZ& bInv) {
         OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 6");
-
     }
 
     /**
@@ -1017,7 +1016,7 @@ public:
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                            " is from a later version of the library");
+                                                           " is from a later version of the library");
         }
         ::cereal::size_type len;
         ar(::cereal::binary_data(&len, sizeof(len)));
@@ -1040,7 +1039,7 @@ public:
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                            " is from a later version of the library");
+                                                           " is from a later version of the library");
         }
         std::string s;
         ar(::cereal::make_nvp("v", s));

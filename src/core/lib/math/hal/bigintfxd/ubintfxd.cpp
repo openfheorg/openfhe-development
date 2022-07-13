@@ -1304,7 +1304,7 @@ BigIntegerFixedT<uint_type, BITLENGTH> BigIntegerFixedT<uint_type, BITLENGTH>::M
     while (mod_back != 1) {
         if (mod_back == 0) {
             OPENFHE_THROW(lbcrypto::math_error,
-                           this->ToString() + " does not have a ModInverse using " + modulus.ToString());
+                          this->ToString() + " does not have a ModInverse using " + modulus.ToString());
         }
         first  = second;
         second = mod_back;

@@ -147,20 +147,20 @@ private:
 };
 
 // macro to provide header file interface
-#define DECLARE_ALLOCATOR                           \
-public:                                             \
-    void* operator new(size_t size) {               \
+#define DECLARE_ALLOCATOR                                   \
+public:                                                     \
+    void* operator new(size_t size) {                       \
         OPENFHE_DEBUG_FLAG(false);                          \
         OPENFHE_DEBUG("allocating   " << size << " bytes"); \
-        return _allocator.Allocate(size);           \
-    }                                               \
-    void operator delete(void* pObject) {           \
+        return _allocator.Allocate(size);                   \
+    }                                                       \
+    void operator delete(void* pObject) {                   \
         OPENFHE_DEBUG_FLAG(false);                          \
         OPENFHE_DEBUG("deallocating  ");                    \
-        _allocator.Deallocate(pObject);             \
-    }                                               \
-                                                    \
-private:                                            \
+        _allocator.Deallocate(pObject);                     \
+    }                                                       \
+                                                            \
+private:                                                    \
     static Allocator _allocator;
 
 // macro to provide source file interface

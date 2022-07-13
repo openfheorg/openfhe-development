@@ -139,8 +139,7 @@ public:
 
 class not_available_error : public openfhe_error {
 public:
-    not_available_error(const std::string& file, int line, const std::string& what)
-        : openfhe_error(file, line, what) {}
+    not_available_error(const std::string& file, int line, const std::string& what) : openfhe_error(file, line, what) {}
 };
 
 class type_error : public openfhe_error {

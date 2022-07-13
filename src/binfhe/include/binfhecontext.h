@@ -176,13 +176,13 @@ public:
     const std::shared_ptr<LWESwitchingKey> GetSwitchKey() const {
         return m_BTKey.KSkey;
     }
-     /**
+    /**
     * Gets the bootstrapping key map (used for serialization).
     *
     * @return a shared pointer to the bootstrapping key map
     */
-    const std::shared_ptr<std::map<uint32_t, RingGSWEvalKey>> GetBTKeyMap() const{
-      return std::make_shared<std::map<uint32_t, RingGSWEvalKey>>(m_BTKey_map);
+    const std::shared_ptr<std::map<uint32_t, RingGSWEvalKey>> GetBTKeyMap() const {
+        return std::make_shared<std::map<uint32_t, RingGSWEvalKey>>(m_BTKey_map);
     }
 
     /**
@@ -305,7 +305,8 @@ public:
    * @param p plaintext modulus
    * @return a shared pointer to the resulting ciphertext
    */
-    std::vector<NativeInteger> GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p), NativeInteger p);
+    std::vector<NativeInteger> GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p),
+                                                      NativeInteger p);
 
     /**
    * Evaluate a round down function
@@ -369,7 +370,7 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+                                                 " is from a later version of the library");
         }
         ar(::cereal::make_nvp("params", m_params));
     }

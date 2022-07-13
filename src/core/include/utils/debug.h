@@ -60,7 +60,7 @@
     #define OPENFHE_DEBUG_FLAG(x) bool dbg_flag = x;
 
     // debugging macro prints value of x on cerr
-    #define OPENFHE_DEBUG(x)                         \
+    #define OPENFHE_DEBUG(x)                 \
         do {                                 \
             if (dbg_flag) {                  \
                 std::cerr << x << std::endl; \
@@ -68,7 +68,7 @@
         } while (0)
 
     // debugging macro prints typography of x and value of x on cerr
-    #define OPENFHE_DEBUGEXP(x)                                   \
+    #define OPENFHE_DEBUGEXP(x)                           \
         do {                                              \
             if (dbg_flag) {                               \
                 std::cerr << #x << ":" << x << std::endl; \
@@ -76,7 +76,7 @@
         } while (0)
 
     // debugging macro prints value of x and location in codex on cerr
-    #define OPENFHE_DEBUGWHERE(x)                                                                        \
+    #define OPENFHE_DEBUGWHERE(x)                                                                \
         do {                                                                                     \
             if (dbg_flag) {                                                                      \
                 std::cerr << __FILE__ << ":" << __LINE__ << ": " << #x << ":" << x << std::endl; \
@@ -84,7 +84,7 @@
         } while (0)
 
     // debugging macro prints location in codex on cerr
-    #define OPENFHE_DEBUGHERE()                                                        \
+    #define OPENFHE_DEBUGHERE()                                                \
         do {                                                                   \
             if (dbg_flag) {                                                    \
                 std::cerr << __FILE__ << ":" << __LINE__ << ": " << std::endl; \
