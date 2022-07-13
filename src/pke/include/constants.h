@@ -76,5 +76,4 @@ std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
 enum LargeScalingFactorConstants {MAX_BITS_IN_WORD = 62, MAX_LOG_STEP = 60};
 
-
 #endif  // _CONSTANTS_H_

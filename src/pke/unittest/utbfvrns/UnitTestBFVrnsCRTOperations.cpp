@@ -199,8 +199,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     DCRTPoly a(params, Format::COEFFICIENT);
 
     usint m1              = 16;
-    NativeInteger modulus0 = 1152921504606846577;
-    NativeInteger modulus1 = 1152921504606846097;
+    NativeInteger modulus0 = NativeInteger("1152921504606846577");
+    NativeInteger modulus1 = NativeInteger("1152921504606846097");
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
     NativeInteger rootOfUnity1(RootOfUnity(m1, modulus1));
 
@@ -248,8 +248,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 
     a.FastExpandCRTBasisPloverQ(basisPQ);
 
-    NativeInteger modulus2 = 1152921504606845777;
-    NativeInteger modulus3 = 1152921504606845473;
+    NativeInteger modulus2 = NativeInteger("1152921504606845777");
+    NativeInteger modulus3 = NativeInteger("1152921504606845473");
     NativeInteger rootOfUnity2(RootOfUnity(m1, modulus2));
     NativeInteger rootOfUnity3(RootOfUnity(m1, modulus3));
 

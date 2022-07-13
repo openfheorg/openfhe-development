@@ -85,6 +85,15 @@ class KeySwitchHYBRID : public KeySwitchRNS {
   virtual void KeySwitchInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                 const EvalKey<DCRTPoly> evalKey) const override;
 
+  virtual Ciphertext<DCRTPoly> KeySwitchExt(
+      ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const override;
+
+  virtual Ciphertext<DCRTPoly> KeySwitchDown(
+      ConstCiphertext<DCRTPoly> ciphertext) const override;
+
+  virtual DCRTPoly KeySwitchDownFirstElement(
+      ConstCiphertext<DCRTPoly> ciphertext) const override;
+
   /////////////////////////////////////////
   // CORE OPERATIONS
   /////////////////////////////////////////
@@ -96,6 +105,11 @@ class KeySwitchHYBRID : public KeySwitchRNS {
       DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
 
   virtual std::shared_ptr<std::vector<DCRTPoly>> EvalFastKeySwitchCore(
+      const std::shared_ptr<std::vector<DCRTPoly>> digits,
+      const EvalKey<DCRTPoly> evalKey,
+      const std::shared_ptr<ParmType> paramsQl) const override;
+
+  virtual std::shared_ptr<std::vector<DCRTPoly>> EvalFastKeySwitchCoreExt(
       const std::shared_ptr<std::vector<DCRTPoly>> digits,
       const EvalKey<DCRTPoly> evalKey,
       const std::shared_ptr<ParmType> paramsQl) const override;

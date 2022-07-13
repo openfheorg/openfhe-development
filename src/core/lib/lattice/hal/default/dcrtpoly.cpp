@@ -910,9 +910,9 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<Integer>& c
 
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<NativeInteger>& element) const {
-    if (m_vectors.size() != element.size()) {
-        OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
-    }
+//    if (m_vectors.size() != element.size()) {
+//        OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
+//    }
     DCRTPolyImpl<VecType> tmp(*this);
 
 #pragma omp parallel for

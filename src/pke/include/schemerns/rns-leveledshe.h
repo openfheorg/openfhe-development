@@ -257,6 +257,12 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
       Ciphertext<DCRTPoly> &ciphertext1,
       Ciphertext<DCRTPoly> &ciphertext2) const override;
 
+  virtual Ciphertext<DCRTPoly> EvalSquare(
+      ConstCiphertext<DCRTPoly> ciphertext) const override;
+
+  virtual Ciphertext<DCRTPoly> EvalSquareMutable(
+      Ciphertext<DCRTPoly> &ciphertext) const override;
+
   virtual Ciphertext<DCRTPoly> EvalMult(
       ConstCiphertext<DCRTPoly> ciphertext,
       ConstPlaintext plaintext) const override;
@@ -273,6 +279,11 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
       Ciphertext<DCRTPoly> &ciphertext,
       Plaintext plaintext) const override;
 
+  virtual Ciphertext<DCRTPoly> MultByMonomial(
+      ConstCiphertext<DCRTPoly> ciphertext, usint power) const override;
+
+  virtual void MultByMonomialInPlace(
+      Ciphertext<DCRTPoly> &ciphertext, usint power) const override;
 
   /////////////////////////////////////////
   // SHE AUTOMORPHISM
@@ -302,7 +313,7 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
                                   const EvalKey<DCRTPoly> evalKey,
                                   size_t levels) const override;
 
-  virtual void LevelReduceInPlace(Ciphertext<DCRTPoly> ciphertext,
+  virtual void LevelReduceInPlace(Ciphertext<DCRTPoly> &ciphertext,
                                   const EvalKey<DCRTPoly> evalKey,
                                   size_t levels) const override;
 
