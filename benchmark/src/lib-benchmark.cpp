@@ -30,8 +30,8 @@
 //==================================================================================
 
 /*
- * This file benchmarks a small number of operations in order to exercise large
- * pieces of the library
+ * Main OpenFHE library benchmark that contains performance tests for standard operations in the following schemes:
+ * BFVrns, CKKSrns, BGVrns. It also contains several performance tests for NTT and INTT transformations.
  */
 
 #define PROFILE

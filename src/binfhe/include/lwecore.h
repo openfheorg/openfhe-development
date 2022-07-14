@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Main ring classes for Boolean circuit FHE
+  Main LWE classes for Boolean circuit FHE
  */
 
 #ifndef BINFHE_LWECORE_H

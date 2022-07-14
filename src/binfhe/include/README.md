@@ -16,7 +16,7 @@ Refer to our [OpenFHE-Readthedocs](https://openfhe-development.readthedocs.io/en
 [FHEW](fhew.h)
 
 - The FHEW scheme (RingGSW accumulator) implementation
-- The scheme is described in [Bootstrapping in FHEW-like Cryptosystems ](https://eprint.iacr.org/2014/816) from Daniele
+- The scheme is described in [Bootstrapping in FHEW-like Cryptosystems](https://eprint.iacr.org/2014/816) from Daniele
   Micciancio and Yuriy Polyakov as published in Cryptology ePrint Archive, Report 2020/086
 
 [LWE](lwe.h)
@@ -26,11 +26,11 @@ Refer to our [OpenFHE-Readthedocs](https://openfhe-development.readthedocs.io/en
 
 [LWE Core](lwecore.h)
 
-- Main ring class for boolean FHE
+- Main LWE classes for boolean FHE
 
 [Ring Core](ringcore.h)
 
-- Main ring class for boolean FHE
+- Main ring classes for boolean FHE
 - Defines the enum for the supported binary gates:
 - ``OR``, ``XOR_FAST``, ``XOR``
 - ``AND``, ``NAND``
