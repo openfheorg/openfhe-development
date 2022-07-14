@@ -57,8 +57,7 @@ namespace lbcrypto {
 
 /**
  * @brief Ring GSW accumulator schemes described in
- * https://eprint.iacr.org/2014/816 and "Bootstrapping in FHEW-like
- * Cryptosystems"
+ * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/08
  */
 class RingGSWAccumulatorScheme {
 public:

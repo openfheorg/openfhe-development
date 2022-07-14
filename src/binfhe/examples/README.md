@@ -38,3 +38,8 @@ Note that for these advanced features, only GINX bootstrapping with 128-bit secu
 
 - [Eval Sign](https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/eval-sign.cpp): - `eval-sign.cpp`
     - evaluates the most-significant bit of the input ciphertext
+    
+- [Serialization for a larger precision scenario - binary format](https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/boolean-serial-binary-dynamic-large-precision.cpp): - `boolean-serial-binary-dynamic-large-precision.cpp`
+
+- [Serialization for a larger precision scenario - json format](https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/boolean-serial-json-dynamic-large-precision.cpp): - `boolean-serial-json-dynamic-large-precision.cpp`
+    

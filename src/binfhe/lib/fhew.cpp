@@ -109,8 +109,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptAP(
     return result;
 }
 
-// Encryption for the GINX variant, as described in "Bootstrapping in FHEW-like
-// Cryptosystems"
+// Encryption for the GINX variant, as described in https://eprint.iacr.org/2020/08
 std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptGINX(
     const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT, const LWEPlaintext& m) const {
     NativeInteger Q                                  = params->GetLWEParams()->GetQ();
@@ -204,7 +203,7 @@ RingGSWEvalKey RingGSWAccumulatorScheme::KeyGenAP(const std::shared_ptr<RingGSWC
 }
 
 // Bootstrapping keys generation for the GINX variant, as described in
-// "Bootstrapping in FHEW-like Cryptosystems"
+// https://eprint.iacr.org/2020/08
 RingGSWEvalKey RingGSWAccumulatorScheme::KeyGenGINX(const std::shared_ptr<RingGSWCryptoParams> params,
                                                     const std::shared_ptr<LWEEncryptionScheme> lwescheme,
                                                     const std::shared_ptr<const LWEPrivateKeyImpl> LWEsk) const {
@@ -314,7 +313,7 @@ void RingGSWAccumulatorScheme::SignedDigitDecompose(const std::shared_ptr<RingGS
     }
 }
 
-// AP Accumulation as described in "Bootstrapping in FHEW-like Cryptosystems"
+// AP Accumulation as described in https://eprint.iacr.org/2020/08
 void RingGSWAccumulatorScheme::AddToACCAP(const std::shared_ptr<RingGSWCryptoParams> params,
                                           const RingGSWCiphertext& input,
                                           std::shared_ptr<RingGSWCiphertext> acc) const {
@@ -352,7 +351,7 @@ void RingGSWAccumulatorScheme::AddToACCAP(const std::shared_ptr<RingGSWCryptoPar
     }
 }
 
-// GINX Accumulation as described in "Bootstrapping in FHEW-like Cryptosystems"
+// GINX Accumulation as described in https://eprint.iacr.org/2020/08
 // Added ternary MUX introduced in paper https://eprint.iacr.org/2022/074.pdf section 5
 // We optimize the algorithm by multiplying the monomial after the external product
 // This reduces the number of polynomial multiplications which further reduces the runtime
@@ -492,8 +491,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
     return acc;
 }
 
-// Full evaluation as described in "Bootstrapping in FHEW-like
-// Cryptosystems"
+// Full evaluation as described in https://eprint.iacr.org/2020/08
 std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalBinGate(
     const std::shared_ptr<RingGSWCryptoParams> params, const BINGATE gate, const RingGSWEvalKey& EK,
     const std::shared_ptr<const LWECiphertextImpl> ct1, const std::shared_ptr<const LWECiphertextImpl> ct2,
@@ -573,8 +571,7 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalBinGate(
     }
 }
 
-// Full evaluation as described in "Bootstrapping in FHEW-like
-// Cryptosystems"
+// Full evaluation as described in https://eprint.iacr.org/2020/08
 std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::Bootstrap(
     const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey& EK,
     const std::shared_ptr<const LWECiphertextImpl> ct1, const std::shared_ptr<LWEEncryptionScheme> LWEscheme) const {
@@ -698,8 +695,7 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
     return acc;
 }
 
-// Full evaluation as described in "Bootstrapping in FHEW-like
-// Cryptosystems"
+// Full evaluation as described in https://eprint.iacr.org/2020/08
 template <typename Func>
 std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::Bootstrap(
     const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey& EK,

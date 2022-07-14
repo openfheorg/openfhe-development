@@ -47,7 +47,7 @@
 #endif
 
 /**
- * GetOPENFHEVersion - Returns OPENFHE Version string
+ * GetOPENFHEVersion - Returns OpenFHE Version string
  * @return
  */
 inline std::string GetOPENFHEVersion() {
