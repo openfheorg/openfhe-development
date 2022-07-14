@@ -70,7 +70,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     parameters.plaintextModulus = 65537;
     parameters.standardDeviation = 3.19;
     parameters.maxRelinSkDeg = 2;
-    parameters.rsTech = NORESCALE;
+    parameters.scalTech = NORESCALE;
     parameters.numLargeDigits = 0;
     parameters.evalMultCount = 2;
     parameters.multiplicativeDepth = 2;
@@ -170,7 +170,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     parameters.plaintextModulus = 65537;
     parameters.standardDeviation = 3.19;
     parameters.maxRelinSkDeg = 2;
-    parameters.rsTech = NORESCALE;
+    parameters.scalTech = NORESCALE;
     parameters.numLargeDigits = 0;
     parameters.evalMultCount = 2;
     parameters.multiplicativeDepth = 2;

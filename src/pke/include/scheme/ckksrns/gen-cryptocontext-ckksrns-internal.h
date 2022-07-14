@@ -50,7 +50,7 @@ class CCParams;
 template<typename ContextGeneratorType, typename Element>
 typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const CCParams<ContextGeneratorType>& parameters) {
 #if NATIVEINT == 128
-    if (parameters.GetRescalingTechnique() == FLEXIBLEAUTO || parameters.GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
+    if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         OPENFHE_THROW(config_error, "128-bit CKKS is not supported for the FLEXIBLEAUTO or FLEXIBLEAUTOEXT methods.");
     }
 #endif
@@ -73,7 +73,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         parameters.GetSecretKeyDist(),
         parameters.GetMaxRelinSkDeg(),
         parameters.GetKeySwitchTechnique(),
-        parameters.GetRescalingTechnique(),
+        parameters.GetScalingTechnique(),
         parameters.GetEncryptionTechnique(),
         parameters.GetMultiplicationTechnique());
 

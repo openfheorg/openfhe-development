@@ -121,7 +121,7 @@ constexpr usint DSIZE    = 20;
 constexpr usint BATCH    = 16;
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSSer> testCases = {
-    // TestType,            Descr, Scheme,         RDim,     MultDepth,  SFBits, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,            Descr, Scheme,         RDim,     MultDepth,  SFBits, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { CONTEXT_WITH_SERTYPE, "01", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DSIZE, BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { CONTEXT_WITH_SERTYPE, "02", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DSIZE, BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { CONTEXT_WITH_SERTYPE, "03", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DSIZE, BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -133,7 +133,7 @@ static std::vector<TEST_CASE_UTCKKSSer> testCases = {
     { CONTEXT_WITH_SERTYPE, "08", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DSIZE, BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
-    // TestType,            Descr, Scheme,         RDim,     MultDepth,  SFBits, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,            Descr, Scheme,         RDim,     MultDepth,  SFBits, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { KEYS_AND_CIPHERTEXTS, "01", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DSIZE, BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { KEYS_AND_CIPHERTEXTS, "02", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DSIZE, BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { KEYS_AND_CIPHERTEXTS, "03", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DSIZE, BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -145,7 +145,7 @@ static std::vector<TEST_CASE_UTCKKSSer> testCases = {
     { KEYS_AND_CIPHERTEXTS, "08", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  DSIZE, BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
-    // TestType,            Descr, Scheme,         RDim,     MultDepth,  SFBits, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,            Descr, Scheme,         RDim,     MultDepth,  SFBits, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { KEYS_AND_CIPHERTEXTS, "11", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { KEYS_AND_CIPHERTEXTS, "12", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { KEYS_AND_CIPHERTEXTS, "13", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
@@ -157,7 +157,7 @@ static std::vector<TEST_CASE_UTCKKSSer> testCases = {
     { KEYS_AND_CIPHERTEXTS, "18", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
 #endif
     // ==========================================
-    // TestType,    Descr,  Scheme,         RDim,     MultDepth,  SFBits, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,    Descr,  Scheme,         RDim,     MultDepth,  SFBits, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
     { NO_CRT_TABLES, "01", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { NO_CRT_TABLES, "02", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },
     { NO_CRT_TABLES, "03", {CKKSRNS_SCHEME, RING_DIM, MULT_DEPTH, SCALE,  0,     BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT}, },

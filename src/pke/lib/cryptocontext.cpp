@@ -560,7 +560,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(
 
     decryptedCKKS->Decode(ciphertext->GetDepth(),
                           ciphertext->GetScalingFactor(),
-                          cryptoParamsCKKS->GetRescalingTechnique());
+                          cryptoParamsCKKS->GetScalingTechnique());
 
   } else {
     decrypted->Decode();
@@ -618,7 +618,7 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
             this->GetCryptoParameters());
     decryptedCKKS->Decode(partialCiphertextVec[0]->GetDepth(),
                           partialCiphertextVec[0]->GetScalingFactor(),
-                          cryptoParamsCKKS->GetRescalingTechnique());
+                          cryptoParamsCKKS->GetScalingTechnique());
   } else {
     decrypted->Decode();
   }
@@ -750,7 +750,7 @@ namespace lbcrypto {
 
             decryptedCKKS->Decode(ciphertext->GetDepth(),
                 ciphertext->GetScalingFactor(),
-                cryptoParamsCKKS->GetRescalingTechnique());
+                cryptoParamsCKKS->GetScalingTechnique());
 
         }
         else {
@@ -815,7 +815,7 @@ namespace lbcrypto {
                     this->GetCryptoParameters());
             decryptedCKKS->Decode(partialCiphertextVec[0]->GetDepth(),
                 partialCiphertextVec[0]->GetScalingFactor(),
-                cryptoParamsCKKS->GetRescalingTechnique());
+                cryptoParamsCKKS->GetScalingTechnique());
         }
         else {
             decrypted->Decode();

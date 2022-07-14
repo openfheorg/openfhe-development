@@ -111,7 +111,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTMultiparty& 
 constexpr usint BATCH = 16;
 // clang-format off
 static std::vector<TEST_CASE_UTMultiparty> testCases = {
-    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, EncTech,  Star, Slots
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, EncTech,  Star, Slots
     { CKKSRNS_TEST, "01", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false,    0},
     { CKKSRNS_TEST, "02", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false,    0},
     { CKKSRNS_TEST, "03", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false,    0},
@@ -130,7 +130,7 @@ static std::vector<TEST_CASE_UTMultiparty> testCases = {
     { CKKSRNS_TEST, "15", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    true,     0},
     { CKKSRNS_TEST, "16", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    true,     0},
 #endif
-    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, EncTech,  Star, Slots
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, EncTech,  Star, Slots
     { CKKSRNS_TEST, "21", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false,   16},
     { CKKSRNS_TEST, "22", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false,   16},
     { CKKSRNS_TEST, "23", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false,   16},
@@ -149,7 +149,7 @@ static std::vector<TEST_CASE_UTMultiparty> testCases = {
     { CKKSRNS_TEST, "35", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    true,    16},
     { CKKSRNS_TEST, "36", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    true,    16},
 #endif
-    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, EncTech,  Star, Slots
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, EncTech,  Star, Slots
     { CKKSRNS_TEST, "41", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false,   32},
     { CKKSRNS_TEST, "42", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false,   32},
     { CKKSRNS_TEST, "43", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false,   32},
@@ -168,7 +168,7 @@ static std::vector<TEST_CASE_UTMultiparty> testCases = {
     { CKKSRNS_TEST, "55", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    true,    32},
     { CKKSRNS_TEST, "56", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    true,    32},
 #endif
-    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, EncTech,  Star, Slots
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, EncTech,  Star, Slots
     { CKKSRNS_TEST, "61", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false, 1024},
     { CKKSRNS_TEST, "62", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false, 1024},
     { CKKSRNS_TEST, "63", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    false, 1024},
@@ -188,7 +188,7 @@ static std::vector<TEST_CASE_UTMultiparty> testCases = {
     { CKKSRNS_TEST, "76", {CKKSRNS_SCHEME, 2048, 2,         50,     3,    BATCH,   DFLT,       DFLT,          DFLT,    HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   0,         0,          0,    DFLT,     DFLT},    true,  1024},
 #endif
     // ==========================================
-    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech,   Star, Slots
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,     LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech,   Star, Slots
     { BFVRNS_TEST, "01", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, HPS,              STANDARD}, false, 0},
     { BFVRNS_TEST, "02", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    GAUSSIAN,        DFLT,          DFLT,    DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, HPS,              STANDARD}, false, 0},
     { BFVRNS_TEST, "03", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, BEHZ,             STANDARD}, false, 0},
@@ -222,7 +222,7 @@ static std::vector<TEST_CASE_UTMultiparty> testCases = {
     { BFVRNS_TEST, "31", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED, POVERQ},   true,  0},
     { BFVRNS_TEST, "32", {BFVRNS_SCHEME,   DFLT, DFLT,      60,    20,    DFLT,    GAUSSIAN,        DFLT,          DFLT,    DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED, POVERQ},   true,  0},
     // ==========================================
-    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, EncTech,  Star, Slots
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, EncTech,  Star, Slots
     { BGVRNS_TEST, "01", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   UNIFORM_TERNARY, 1,             60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT,     DFLT},    false,    0},
     { BGVRNS_TEST, "02", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   GAUSSIAN,        DFLT,          60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT,     DFLT},    false,    0},
     { BGVRNS_TEST, "03", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   UNIFORM_TERNARY, 1,             60,      HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT,     DFLT},    false,    0},
@@ -256,7 +256,7 @@ static std::vector<TEST_CASE_UTMultiparty> testCases = {
     { BGVRNS_TEST, "31", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   UNIFORM_TERNARY, 1,             60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT,     DFLT},    true,     0},
     { BGVRNS_TEST, "32", {BGVRNS_SCHEME,   256,  2,         50,     3,    BATCH,   GAUSSIAN,        DFLT,          60,      HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT,       DFLT, DFLT,     DFLT},    true,     0},
     // ==========================================
-    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,       LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech,          EncTech,   Star, Slots
+    // TestType,   Descr, Scheme,          RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,     LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech,          EncTech,   Star, Slots
     { BFVRNS_TEST_EXTRA, "01", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    GAUSSIAN,        DFLT,          DFLT,    DFLT,         DFLT,   DFLT,         DFLT,    4,     DFLT,   DFLT,      2,          DFLT, HPS,              STANDARD}, false,    0},
     { BFVRNS_TEST_EXTRA, "02", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,         DFLT,   DFLT,         DFLT,    16,    DFLT,   DFLT,      2,          DFLT, HPS,              STANDARD}, false,    0},
     { BFVRNS_TEST_EXTRA, "03", {BFVRNS_SCHEME, DFLT, DFLT,  60,     20,   DFLT,    GAUSSIAN,        DFLT,          DFLT,    DFLT,         DFLT,   DFLT,         DFLT,    4,     DFLT,   DFLT,      2,          DFLT, BEHZ,             STANDARD}, false,    0},
@@ -526,7 +526,7 @@ protected:
             }
             //====================================================================
             if (BGVRNS_TEST == testData.testCaseType && testData.star) { // TODO (dsuponit): is this necessary???
-                uint32_t targetTowers = (testData.params.rsTech == FIXEDMANUAL) ? 1 : 2;
+                uint32_t targetTowers = (testData.params.scalTech == FIXEDMANUAL) ? 1 : 2;
                 ciphertextMult = cc->Compress(ciphertextMult, targetTowers);
             }
             Plaintext plaintextMultipartyMult;

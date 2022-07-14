@@ -128,7 +128,7 @@ public:
   /////////////////////////////////////
 
   /**
-   * Method for rescaling in-place.
+   * Method for scaling in-place.
    *
    * @param cipherText is the ciphertext to perform modreduce on.
    * @param levels the number of towers to drop.

@@ -102,7 +102,7 @@ constexpr usint BATCH = 16;
 constexpr usint BV_DSIZE = 4;
 // clang-format off
 static std::vector<TEST_CASE_Encrypt_Decrypt> testCases = {
-    // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech
     { STRING_TEST, "01", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
     { STRING_TEST, "02", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
     { STRING_TEST, "03", {BGVRNS_SCHEME, 256,  2,         59,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
@@ -120,7 +120,7 @@ static std::vector<TEST_CASE_Encrypt_Decrypt> testCases = {
     { STRING_TEST, "15", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,    DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQ,        POVERQ}   },
     { STRING_TEST, "16", {BFVRNS_SCHEME, DFLT, DFLT,      60,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,    DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED, POVERQ}   },
     // ==========================================
-    // TestType,       Descr, Scheme,         RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize, SecLvl,       KSTech, RSTech,          LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,       Descr, Scheme,         RDim, MultDepth, SFBits, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech
     { COEF_PACKED_TEST, "01", {BGVRNS_SCHEME, 64,   2,         59,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,      HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
     { COEF_PACKED_TEST, "02", {BGVRNS_SCHEME, 64,   2,         59,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,      HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
     { COEF_PACKED_TEST, "03", {BGVRNS_SCHEME, 64,   2,         59,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,      HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },

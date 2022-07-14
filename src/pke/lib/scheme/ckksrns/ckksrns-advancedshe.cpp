@@ -82,7 +82,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(
   auto cc = ciphertexts[0]->GetCryptoContext();
   auto algo = cc->GetScheme();
 
-  if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
+  if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
 
     // Check to see if input ciphertexts are of same level
     // and adjust if needed to the max level among them
@@ -437,7 +437,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(
 
   auto algo = cc->GetScheme();
 
-  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+  if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
     // brings all powers of x to the same level
     for (size_t i = 1; i < k; i++) {
       if (indices[i - 1] == 1) {
@@ -956,7 +956,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(
 
   auto algo = cc->GetScheme();
 
-  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+  if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
     // brings all powers of x to the same level
     for (size_t i = 1; i < k; i++) {
       usint levelDiff = T[k - 1]->GetLevel() - T[i - 1]->GetLevel();

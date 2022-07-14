@@ -66,7 +66,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
         parameters.GetSecretKeyDist(),
         parameters.GetMaxRelinSkDeg(),
         parameters.GetKeySwitchTechnique(),
-        parameters.GetRescalingTechnique(),
+        parameters.GetScalingTechnique(),
         parameters.GetEncryptionTechnique(),
         parameters.GetMultiplicationTechnique());
     params->SetStdLevel(parameters.GetSecurityLevel()); // TODO (dsuponit): do we need this as we have already set root hermit factor?

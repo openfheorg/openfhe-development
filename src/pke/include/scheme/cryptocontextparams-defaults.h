@@ -56,10 +56,10 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
 // Backend-specific settings for CKKS
 #if NATIVEINT == 128
-    constexpr RescalingTechnique   rsTech              = FIXEDAUTO;
+    constexpr ScalingTechnique     scalTech            = FIXEDAUTO;
     constexpr usint                firstModSize        = 105;
 #else
-    constexpr RescalingTechnique   rsTech              = FLEXIBLEAUTOEXT;
+    constexpr ScalingTechnique     scalTech            = FLEXIBLEAUTOEXT;
     constexpr usint                firstModSize        = 60;
 #endif
     constexpr usint                batchSize           = 0;
@@ -85,7 +85,7 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxRelinSkDeg       = 2;
     constexpr KeySwitchTechnique   ksTech              = BV;          // set to avoid compiler errors
-    constexpr RescalingTechnique   rsTech              = NORESCALE; // set to avoid compiler errors
+    constexpr ScalingTechnique     scalTech            = NORESCALE; // set to avoid compiler errors
     constexpr usint                firstModSize        = 60;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
@@ -110,7 +110,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxRelinSkDeg       = 2;
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
-    constexpr RescalingTechnique   rsTech              = FLEXIBLEAUTOEXT; // set to avoid compiler errors
+    constexpr ScalingTechnique     scalTech            = FLEXIBLEAUTOEXT; // set to avoid compiler errors
     constexpr usint                firstModSize        = 0;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;

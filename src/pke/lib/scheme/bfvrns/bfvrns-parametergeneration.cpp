@@ -78,7 +78,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
       std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
 
   KeySwitchTechnique ksTech = cryptoParamsBFVRNS->GetKeySwitchTechnique();
-  RescalingTechnique rsTech = cryptoParamsBFVRNS->GetRescalingTechnique();
+  ScalingTechnique scalTech = cryptoParamsBFVRNS->GetScalingTechnique();
   EncryptionTechnique encTech = cryptoParamsBFVRNS->GetEncryptionTechnique();
   MultiplicationTechnique multTech = cryptoParamsBFVRNS->GetMultiplicationTechnique();
 
@@ -358,7 +358,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
 
   uint32_t numPartQ = ComputeNumLargeDigits(numDigits, sizeQ - 1);
 
-  cryptoParamsBFVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, 60, 0);
+  cryptoParamsBFVRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, 60, 0);
 
   return true;
 }

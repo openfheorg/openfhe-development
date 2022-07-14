@@ -80,7 +80,7 @@ std::ostream &operator<<(std::ostream &s, SecretKeyDist m) {
   return s;
 }
 
-std::ostream &operator<<(std::ostream &s, RescalingTechnique t) {
+std::ostream &operator<<(std::ostream &s, ScalingTechnique t) {
   switch (t) {
     case FIXEDMANUAL:
       s << "FIXEDMANUAL";

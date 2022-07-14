@@ -29,7 +29,7 @@
     - Optimized (UNIFORM_TERNARY)
     - Sparse (SPARSE_TERNARY; Hamming weight is 64)
     
-  - Rescaling Technique 
+  - Scaling Technique 
     - Fixed Manual (FIXEDMANUAL)
     - Fixed Auto (FIXEDAUTO)
     - Flexible Auto (FLEXIBLEAUTO)

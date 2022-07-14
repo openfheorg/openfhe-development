@@ -79,7 +79,7 @@ CryptoContext<DCRTPoly> GenerateCKKSContext() {
     parameters.SetMultiplicativeDepth(1);
     parameters.SetScalingFactorBits(48);
     parameters.SetBatchSize(8);
-    parameters.SetRescalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(FIXEDMANUAL);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);
@@ -94,7 +94,7 @@ CryptoContext<DCRTPoly> GenerateBGVrnsContext() {
     parameters.SetMultiplicativeDepth(1);
     parameters.SetPlaintextModulus(65537);
     parameters.SetMaxRelinSkDeg(1);
-    parameters.SetRescalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(FIXEDMANUAL);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);

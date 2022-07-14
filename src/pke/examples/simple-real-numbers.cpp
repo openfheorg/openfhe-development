@@ -123,7 +123,7 @@ int main() {
   parameters.SetMultiplicativeDepth(multDepth);
   parameters.SetScalingFactorBits(scaleFactorBits);
   parameters.SetBatchSize(batchSize);
-  parameters.SetRescalingTechnique(FLEXIBLEAUTO);
+  parameters.SetScalingTechnique(FLEXIBLEAUTO);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 

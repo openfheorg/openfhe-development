@@ -55,7 +55,7 @@ struct UnitTestCCParams {
     double   firstModSize; // BGVRNS
     double   securityLevel; // BFVRNS, BGVRNS
     double   ksTech; // CKKSRNS, BGVRNS
-    double   rsTech; // CKKSRNS, BGVRNS
+    double   scalTech; // CKKSRNS, BGVRNS
     double   numLargeDigits; // CKKSRNS, BGVRNS
     double   plaintextModulus; // BFVRNS, BGVRNS
     double   standardDeviation; // BFVRNS, BGVRNS

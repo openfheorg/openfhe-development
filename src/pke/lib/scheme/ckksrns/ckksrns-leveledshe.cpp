@@ -107,7 +107,7 @@ void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly> &ciphertext,
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext->GetCryptoParameters());
 
-  if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
+  if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
     if (ciphertext->GetDepth() == 2) {
       ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
     }
@@ -171,9 +171,8 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMultMutable(
       std::static_pointer_cast<CryptoParametersCKKSRNS>(
           ciphertext->GetCryptoParameters());
 
-  // In the case of EXACT RNS rescaling, we automatically rescale ciphertexts
-  // that are not at the same level
-  if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+  // In the case of EXACT RNS scaling, we automatically rescale ciphertexts that are not at the same level
+  if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
     return EvalMultApprox(ciphertext, plaintext);
   }
 
@@ -191,13 +190,10 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMultMutable(
   if (plaintext->GetDepth() != ciphertext->GetDepth() ||
       plaintext->GetLevel() != ciphertext->GetLevel()) {
     // TODO - it's not efficient to re-make the plaintexts
-    // Allow for rescaling of plaintexts, and the ability to
-    // increase the towers of a plaintext to get better performance.
-
+    // Allow for rescaling of plaintexts, and the ability to increase the towers of a plaintext to get better performance.
     std::vector<std::complex<double>> values = plaintext->GetCKKSPackedValue();
 
-    Plaintext ptxt = cc->MakeCKKSPackedPlaintext(values, ciphertext->GetDepth(),
-                                                 ciphertext->GetLevel());
+    Plaintext ptxt = cc->MakeCKKSPackedPlaintext(values, ciphertext->GetDepth(), ciphertext->GetLevel());
 
     pt = ptxt->GetElement<DCRTPoly>();
     ptxSF = ptxt->GetScalingFactor();
@@ -363,7 +359,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(
           ciphertext->GetCryptoParameters());
 
   double scFactor = 0;
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && ciphertext->GetLevel() == 0) {
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && ciphertext->GetLevel() == 0) {
     scFactor = cryptoParams->GetScalingFactorRealBig(ciphertext->GetLevel());
   } else {
     scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
@@ -398,7 +394,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(
 
   // In FLEXIBLEAUTOEXT mode at level 0, we don't use the depth to calculate the scaling factor,
   // so we return the value before taking the depth into account.
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && ciphertext->GetLevel() == 0) {
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && ciphertext->GetLevel() == 0) {
     return crtConstant;
   } 
 

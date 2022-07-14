@@ -56,14 +56,14 @@ protected:
   CryptoParametersRNS()
       : CryptoParametersRLWE<DCRTPoly>(),
         m_ksTechnique(BV),
-        m_rsTechnique(FIXEDMANUAL),
+        m_scalTechnique(FIXEDMANUAL),
         m_encTechnique(STANDARD),
         m_multTechnique(HPS) {}
 
   CryptoParametersRNS(const CryptoParametersRNS &rhs)
       : CryptoParametersRLWE<DCRTPoly>(rhs),
         m_ksTechnique(rhs.m_ksTechnique),
-        m_rsTechnique(rhs.m_rsTechnique),
+        m_scalTechnique(rhs.m_scalTechnique),
         m_encTechnique(rhs.m_encTechnique),
         m_multTechnique(rhs.m_multTechnique) {}
 
@@ -88,7 +88,7 @@ protected:
    * @param maxRelinSkDeg the maximum power of secret key for which the
    * relinearization key is generated
    * @param ksTech key switching method
-   * @param rsTech rescaling method
+   * @param scalTech scaling method
    */
   CryptoParametersRNS(std::shared_ptr<ParmType> params,
                        const PlaintextModulus &plaintextModulus,
@@ -96,7 +96,7 @@ protected:
                        float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
                        int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
-                       RescalingTechnique rsTech = FIXEDMANUAL,
+                       ScalingTechnique scalTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRLWE<DCRTPoly>(
@@ -106,7 +106,7 @@ protected:
             distributionParameter, assuranceMeasure, securityLevel, digitSize,
             maxRelinSkDeg, secretKeyDist) {
     m_ksTechnique = ksTech;
-    m_rsTechnique = rsTech;
+    m_scalTechnique = scalTech;
     m_encTechnique = encTech;
     m_multTechnique = multTech;
   }
@@ -117,14 +117,14 @@ protected:
                        float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
                        int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
-                       RescalingTechnique rsTech = FIXEDMANUAL,
+                       ScalingTechnique scalTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRLWE<DCRTPoly>(
             params, encodingParams, distributionParameter, assuranceMeasure,
             securityLevel, digitSize, maxRelinSkDeg, secretKeyDist) {
     m_ksTechnique = ksTech;
-    m_rsTechnique = rsTech;
+    m_scalTechnique = scalTech;
     m_encTechnique = encTech;
     m_multTechnique = multTech;
   }
@@ -134,17 +134,15 @@ protected:
 
 public:
     /**
-   * Computes all tables needed for decryption, homomorphic multiplication and
-   * key switching.
+   * Computes all tables needed for decryption, homomorphic multiplication and key switching.
    * Even though this is a pure virtual function and must be overriden in all derived classes,
    * PrecomputeCRTTables() has its own implementation in the source file. It should be called from
    * derived classes' PrecomputeCRTTables() only and must not be called from CryptoParametersRNS::load().
    * @param ksTech the technique to use for key switching (e.g., BV or GHS).
-   * @param rsTech the technique to use for rescaling (e.g., FLEXIBLEAUTO or
-   * FIXEDMANUAL).
+   * @param scalTech the technique to use for scaling (e.g., FLEXIBLEAUTO or FIXEDMANUAL).
    */
   virtual void PrecomputeCRTTables(KeySwitchTechnique ksTech,
-                                   RescalingTechnique rsTech,
+                                   ScalingTechnique scalTech,
                                    EncryptionTechnique encTech,
                                    MultiplicationTechnique multTech,
                                    uint32_t numPartQ,
@@ -164,7 +162,7 @@ public:
     if (el == nullptr) return false;
 
     return CryptoParametersBase<DCRTPoly>::operator==(rhs) &&
-           m_rsTechnique == el->GetRescalingTechnique() &&
+           m_scalTechnique == el->GetScalingTechnique() &&
            m_ksTechnique == el->GetKeySwitchTechnique() &&
            m_multTechnique == el->GetMultiplicationTechnique() &&
            m_encTechnique == el->GetEncryptionTechnique() &&
@@ -191,12 +189,12 @@ public:
   }
 
   /**
-   * Method to retrieve the technique to be used for rescaling.
+   * Method to retrieve the technique to be used for scaling.
    *
-   * @return the rescaling technique.
+   * @return the scaling technique.
    */
-  enum RescalingTechnique GetRescalingTechnique() const {
-    return m_rsTechnique;
+  enum ScalingTechnique GetScalingTechnique() const {
+    return m_scalTechnique;
   }
 
   /**
@@ -585,15 +583,13 @@ public:
 
   /**
    * Method to retrieve the scaling factor of level l.
-   * For FIXEDMANUAL rescaling technique method always returns 2^p,
-   * where p corresponds to plaintext modulus
-   * @param l For FLEXIBLEAUTO rescaling technique the level whose scaling
-   * factor we want to learn. Levels start from 0 (no rescaling done - all
-   * towers) and go up to K-1, where K is the number of towers supported.
+   * For FIXEDMANUAL scaling technique method always returns 2^p, where p corresponds to plaintext modulus
+   * @param l For FLEXIBLEAUTO scaling technique the level whose scaling factor we want to learn.
+   * Levels start from 0 (no scaling done - all towers) and go up to K-1, where K is the number of towers supported.
    * @return the scaling factor.
    */
   double GetScalingFactorReal(uint32_t l = 0) const {
-    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
+    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
       if (l >= m_scalingFactorsReal.size()) {
         // TODO: Return an error here.
         return m_approxSF;
@@ -606,7 +602,7 @@ public:
   }
 
   double GetScalingFactorRealBig(uint32_t l = 0) const {
-    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
+    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
       if (l >= m_scalingFactorsRealBig.size()) {
         // TODO: Return an error here.
         return m_approxSF;
@@ -620,15 +616,12 @@ public:
 
   /**
    * Method to retrieve the modulus to be dropped of level l.
-   * For FIXEDMANUAL rescaling technique method always returns 2^p,
-   * where p corresponds to plaintext modulus
-   * @param l index of modulus to be dropped for FLEXIBLEAUTO rescaling
-   * technique
-   *
+   * For FIXEDMANUAL rescaling technique method always returns 2^p, where p corresponds to plaintext modulus
+   * @param l index of modulus to be dropped for FLEXIBLEAUTO scaling technique
    * @return the precomputed table
    */
   double GetModReduceFactor(uint32_t l = 0) const {
-    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
+    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
       return m_dmoduliQ[l];
     }
 
@@ -914,7 +907,7 @@ public:
   }
 
   const NativeInteger &GetScalingFactorInt(usint l) const {
-    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
+    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
       if (l >= m_scalingFactorsInt.size()) {
         // TODO: Return an error here.
         return m_fixedSF;
@@ -925,7 +918,7 @@ public:
   }
 
   const NativeInteger &GetScalingFactorIntBig(usint l) const { 
-    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
+    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
       if (l >= m_scalingFactorsIntBig.size()) {
         // TODO: Return an error here.
         return m_fixedSF;
@@ -936,7 +929,7 @@ public:
   }
 
   const NativeInteger &GetModReduceFactorInt(uint32_t l = 0) const {
-    if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
+    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
       return m_qModt[l];
     }
     return m_fixedSF;
@@ -1249,7 +1242,7 @@ public:
   // Stores the technique to use for key switching
   enum KeySwitchTechnique m_ksTechnique;
 
-  enum RescalingTechnique m_rsTechnique;
+  enum ScalingTechnique m_scalTechnique;
 
   enum EncryptionTechnique m_encTechnique;
 
@@ -1653,7 +1646,7 @@ public:
   void save(Archive &ar, std::uint32_t const version) const {
     ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));
     ar(cereal::make_nvp("ks", m_ksTechnique));
-    ar(cereal::make_nvp("rs", m_rsTechnique));
+    ar(cereal::make_nvp("rs", m_scalTechnique));
     ar(cereal::make_nvp("encs", m_encTechnique));
     ar(cereal::make_nvp("muls", m_multTechnique));
     ar(cereal::make_nvp("dnum", m_numPartQ));
@@ -1670,7 +1663,7 @@ public:
       }
       ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));
       ar(cereal::make_nvp("ks", m_ksTechnique));
-      ar(cereal::make_nvp("rs", m_rsTechnique));
+      ar(cereal::make_nvp("rs", m_scalTechnique));
       ar(cereal::make_nvp("encs", m_encTechnique));
       ar(cereal::make_nvp("muls", m_multTechnique));
       ar(cereal::make_nvp("dnum", m_numPartQ));

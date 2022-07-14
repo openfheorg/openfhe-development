@@ -137,7 +137,7 @@ void CKKSEvalAtIndex2n() {
   parameters.SetDigitSize(10);
   parameters.SetBatchSize(16);
   parameters.SetKeySwitchTechnique(BV);
-  parameters.SetRescalingTechnique(FIXEDMANUAL);
+  parameters.SetScalingTechnique(FIXEDMANUAL);
   parameters.SetNumLargeDigits(4);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);

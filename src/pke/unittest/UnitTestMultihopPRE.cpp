@@ -93,7 +93,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     parameters.SetFirstModSize(firstqmod);
     parameters.SetScalingFactorBits(dcrtbits);
     parameters.SetDigitSize(digitSize);
-    parameters.SetRescalingTechnique(FIXEDAUTO);
+    parameters.SetScalingTechnique(FIXEDAUTO);
     parameters.SetMultiHopQModulusLowerBound(qmodulus);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);

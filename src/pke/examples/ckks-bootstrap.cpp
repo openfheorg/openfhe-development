@@ -91,11 +91,11 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
   std::vector<uint32_t> levelBudget6 = { 3, 1 };
 
 #if NATIVEINT==128
-  RescalingTechnique rescaleTech = FIXEDMANUAL;
+  ScalingTechnique rescaleTech = FIXEDMANUAL;
   usint dcrtBits = 78;
   usint firstMod = 89; /*firstMod*/
 #else
-  RescalingTechnique rescaleTech = FLEXIBLEAUTO;
+  ScalingTechnique rescaleTech = FLEXIBLEAUTO;
   usint dcrtBits = 59;
   usint firstMod = 60; /*firstMod*/
 #endif
@@ -106,7 +106,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(depth);
   parameters.SetScalingFactorBits(dcrtBits);
-  parameters.SetRescalingTechnique(rescaleTech);
+  parameters.SetScalingTechnique(rescaleTech);
   parameters.SetRingDim(n);
   parameters.SetSecretKeyDist(secretKeyDist);
   parameters.SetNumLargeDigits(3);
@@ -278,12 +278,12 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
 	std::vector<uint32_t> levelBudget = { 4, 4 };
 
 #if NATIVEINT==128
-	RescalingTechnique rescaleTech = FIXEDMANUAL;
+  ScalingTechnique rescaleTech = FIXEDMANUAL;
   usint dcrtBits = 78;
   usint firstMod = 89; /*firstMod*/
 #else
-	RescalingTechnique rescaleTech = FLEXIBLEAUTO;
-	usint dcrtBits = 59;
+  ScalingTechnique rescaleTech = FLEXIBLEAUTO;
+  usint dcrtBits = 59;
   usint firstMod = 60; /*firstMod*/
 #endif
 
@@ -293,7 +293,7 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(depth);
   parameters.SetScalingFactorBits(dcrtBits);
-  parameters.SetRescalingTechnique(rescaleTech);
+  parameters.SetScalingTechnique(rescaleTech);
   parameters.SetRingDim(n);
   parameters.SetSecretKeyDist(secretKeyDist);
   parameters.SetNumLargeDigits(3);

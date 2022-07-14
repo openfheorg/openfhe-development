@@ -824,10 +824,10 @@ protected:
         std::dynamic_pointer_cast<CryptoParametersRNS>(
             GetCryptoParameters());
     Plaintext p;
-    if (getSchemeId() == "BGVRNS" && (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO
-        || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)) {
+    if (getSchemeId() == "BGVRNS" && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO
+        || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
       NativeInteger scf;
-      if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+      if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
         scf = cryptoParams->GetScalingFactorIntBig(level);
         p = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
                                                  this->GetEncodingParams(), getSchemeId(), 1, level, scf);
@@ -914,7 +914,7 @@ protected:
             GetCryptoParameters());
     double scFact;
 
-    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
       scFact = cryptoParams->GetScalingFactorRealBig(level);
       // In FLEXIBLEAUTOEXT mode at level 0, we don't use the depth
       // in our encoding function, so we set it to 1 to make sure it
@@ -949,7 +949,7 @@ protected:
     p->Encode();
 
     // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has depth 2.
-    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
       p->SetDepth(2);
     }
     return p;

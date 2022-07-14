@@ -149,10 +149,10 @@ class CKKSPackedEncoding : public PlaintextImpl {
 
   bool Decode() {
     OPENFHE_THROW(not_available_error,
-        "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(depth,scalingFactor,rstech) instead.");
+        "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(depth,scalingFactor,scalTech) instead.");
   }
 
-  bool Decode(size_t depth, double scalingFactor, RescalingTechnique rsTech);
+  bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech);
 
   const std::vector<std::complex<double>> &GetCKKSPackedValue() const {
     return value;

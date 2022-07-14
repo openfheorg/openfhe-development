@@ -56,12 +56,12 @@ public:
                        float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
                        int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
-                       RescalingTechnique rsTech = FIXEDMANUAL,
+                       ScalingTechnique scalTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRNS(params, plaintextModulus, distributionParameter,
           assuranceMeasure, securityLevel, digitSize, secretKeyDist, maxRelinSkDeg,
-          ksTech, rsTech, encTech, multTech) {}
+          ksTech, scalTech, encTech, multTech) {}
 
   CryptoParametersBFVRNS(std::shared_ptr<ParmType> params,
                        EncodingParams encodingParams,
@@ -69,19 +69,19 @@ public:
                        float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
                        int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
-                       RescalingTechnique rsTech = FIXEDMANUAL,
+                       ScalingTechnique scalTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRNS(
             params, encodingParams, distributionParameter, assuranceMeasure,
             securityLevel, digitSize, secretKeyDist, maxRelinSkDeg,
-            ksTech, rsTech, encTech, multTech) {}
+            ksTech, scalTech, encTech, multTech) {}
 
   virtual ~CryptoParametersBFVRNS() {}
 
   virtual void PrecomputeCRTTables(
       KeySwitchTechnique ksTech,
-      RescalingTechnique rsTech,
+      ScalingTechnique scalTech,
       EncryptionTechnique encTech,
       MultiplicationTechnique multTech,
       uint32_t numPartQ,
@@ -109,7 +109,7 @@ public:
 
       ar(cereal::base_class<CryptoParametersRNS>(this));
 
-      PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
+      PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique,
           m_numPartQ, m_auxBits, m_extraBits);
   }
 

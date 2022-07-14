@@ -89,7 +89,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 			parameters.GetSecretKeyDist(),
 			parameters.GetMaxRelinSkDeg(),
 			parameters.GetKeySwitchTechnique(),
-			parameters.GetRescalingTechnique(),
+			parameters.GetScalingTechnique(),
 			parameters.GetEncryptionTechnique(),
 			parameters.GetMultiplicationTechnique());
 

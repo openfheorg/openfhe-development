@@ -42,8 +42,8 @@
 
 using namespace lbcrypto;
 
-void AutomaticRescaleDemo(RescalingTechnique rsTech);
-void ManualRescaleDemo(RescalingTechnique rsTech);
+void AutomaticRescaleDemo(ScalingTechnique scalTech);
+void ManualRescaleDemo(ScalingTechnique scalTech);
 void HybridKeySwitchingDemo1();
 void HybridKeySwitchingDemo2();
 void FastRotationsDemo1();
@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-void AutomaticRescaleDemo(RescalingTechnique rsTech) {
+void AutomaticRescaleDemo(ScalingTechnique scalTech) {
   /* Please read comments in main() for an introduction to what the
    * rescale operation is. Knowing about Rescale() is not necessary
    * to use the FIXEDAUTO CKKS variant, it is however needed to
@@ -150,7 +150,7 @@ void AutomaticRescaleDemo(RescalingTechnique rsTech) {
    *    computations without worrying about the depth of ciphertexts
    *    or rescaling.
    */
-  if (rsTech == FIXEDAUTO) {
+  if (scalTech == FIXEDAUTO) {
     std::cout << "\n\n\n ===== ApproxAutoDemo ============= " << std::endl;
   }
 
@@ -215,7 +215,7 @@ void AutomaticRescaleDemo(RescalingTechnique rsTech) {
   std::cout << "0.5*x^18 + 0.5*x^9 = " << result3 << std::endl;
 }
 
-void ManualRescaleDemo(RescalingTechnique rsTech) {
+void ManualRescaleDemo(ScalingTechnique scalTech) {
   /* Please read comments in main() for an introduction to what the
    * rescale operation is, and what's the FIXEDMANUAL variant of CKKS.
    *
@@ -323,7 +323,7 @@ void HybridKeySwitchingDemo1() {
   parameters.SetMultiplicativeDepth(5);
   parameters.SetScalingFactorBits(90);
   parameters.SetBatchSize(batchSize);
-  parameters.SetRescalingTechnique(FIXEDAUTO);
+  parameters.SetScalingTechnique(FIXEDAUTO);
   // uint32_t ringDimension = 0;  // 0 means the library will choose it based on securityLevel
   /*
    * dnum is the number of large digits in HYBRID decomposition
@@ -479,7 +479,7 @@ void HybridKeySwitchingDemo2() {
   parameters.SetMultiplicativeDepth(5);
   parameters.SetScalingFactorBits(90);
   parameters.SetBatchSize(batchSize);
-  parameters.SetRescalingTechnique(FIXEDAUTO);
+  parameters.SetScalingTechnique(FIXEDAUTO);
 
   // uint32_t ringDimension = 0;  // 0 means the library will choose it based on securityLevel
   /*
@@ -717,7 +717,7 @@ void FastRotationsDemo2() {
   parameters.SetMultiplicativeDepth(1);
   parameters.SetScalingFactorBits(90);
   parameters.SetBatchSize(batchSize);
-  parameters.SetRescalingTechnique(FIXEDAUTO);
+  parameters.SetScalingTechnique(FIXEDAUTO);
   parameters.SetKeySwitchTechnique(BV);
   /*
    * This controls how many multiplications are possible without rescaling.

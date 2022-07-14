@@ -89,8 +89,8 @@ class Params {
     // it is good to have alternative to numLargeDigits - numPrimesInDigit
     KeySwitchTechnique ksTech;
 
-    // rescaling technique used in CKKS/BGV
-    RescalingTechnique rsTech;
+    // scaling technique used in CKKS/BGV
+    ScalingTechnique  scalTech;
 
     // max batch size of messages to be packed in encoding
     usint batchSize;
@@ -183,8 +183,8 @@ public:
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
     }
-    RescalingTechnique GetRescalingTechnique() const {
-        return rsTech;
+    ScalingTechnique  GetScalingTechnique() const {
+        return scalTech;
     }
     usint GetBatchSize() const {
         return batchSize;
@@ -248,8 +248,8 @@ public:
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;
     }
-    void SetRescalingTechnique(RescalingTechnique rsTech0) {
-        rsTech = rsTech0;
+    void SetScalingTechnique(ScalingTechnique  scalTech0) {
+        scalTech = scalTech0;
     }
     void SetBatchSize(usint batchSize0) {
         batchSize = batchSize0;

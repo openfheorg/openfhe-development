@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
   parameters.SetMultiplicativeDepth(3);
   parameters.SetPlaintextModulus(536903681);
   parameters.SetMaxRelinSkDeg(3);
-  parameters.SetRescalingTechnique(FIXEDAUTO);
+  parameters.SetScalingTechnique(FIXEDAUTO);
 
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use

@@ -47,7 +47,7 @@ std::string UnitTestCCParams::toString() const {
         << "firstModSize [" << firstModSize << "], "
         << "securityLevel [" << securityLevel << "], "
         << "ksTech [" << ksTech << "], "
-        << "rsTech [" << rsTech << "], "
+        << "scalTech [" << scalTech << "], "
         << "numLargeDigits [" << numLargeDigits << "], "
         << "plaintextModulus [" << plaintextModulus << "], "
         << "standardDeviation [" << standardDeviation << "], "

@@ -55,7 +55,7 @@ namespace lbcrypto {
     SET_TO_SCHEME_DEFAULT(SCHEME, secretKeyDist);              \
     SET_TO_SCHEME_DEFAULT(SCHEME, maxRelinSkDeg);              \
     SET_TO_SCHEME_DEFAULT(SCHEME, ksTech);                     \
-    SET_TO_SCHEME_DEFAULT(SCHEME, rsTech);                     \
+    SET_TO_SCHEME_DEFAULT(SCHEME, scalTech);                   \
     SET_TO_SCHEME_DEFAULT(SCHEME, batchSize);                  \
     SET_TO_SCHEME_DEFAULT(SCHEME, firstModSize);               \
     SET_TO_SCHEME_DEFAULT(SCHEME, numLargeDigits);             \
@@ -101,7 +101,7 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; secretKeyDist: " << obj.secretKeyDist
         << "; maxRelinSkDeg: " << obj.maxRelinSkDeg
         << "; ksTech: " << obj.ksTech
-        << "; rsTech: " << obj.rsTech
+        << "; scalTech: " << obj.scalTech
         << "; batchSize: " << obj.batchSize
         << "; firstModSize: " << obj.firstModSize
         << "; numLargeDigits: " << obj.numLargeDigits

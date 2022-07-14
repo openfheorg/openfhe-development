@@ -101,7 +101,7 @@ public:
    * @param secretKeyDist
    * @param ksTech the key switching technique used (e.g., BV or GHS)
    * @param firstModSize the bit-size of the first modulus
-   * @param rsTech the rescaling technique used (e.g., FIXEDMANUAL or
+   * @param scalTech the scaling technique used (e.g., FIXEDMANUAL or
    * FLEXIBLEAUTO)
    */
   virtual bool ParamsGenCKKSRNS(

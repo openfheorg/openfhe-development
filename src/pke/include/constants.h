@@ -55,7 +55,7 @@ std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
 enum SecretKeyDist { GAUSSIAN = 0, UNIFORM_TERNARY = 1, SPARSE_TERNARY = 2 };
 std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
-enum RescalingTechnique {
+enum ScalingTechnique {
   FIXEDMANUAL,
   FIXEDAUTO,
   FLEXIBLEAUTO,
@@ -63,7 +63,7 @@ enum RescalingTechnique {
   NORESCALE,
   INVALID_RS_TECHNIQUE  // TODO (dsuponit): make this the first value
 };
-std::ostream& operator<<(std::ostream& s, RescalingTechnique t);
+std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 
 enum KeySwitchTechnique { INVALID_KS_TECH, BV, HYBRID };
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t);

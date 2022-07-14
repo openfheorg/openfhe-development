@@ -74,12 +74,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
       std::static_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
 
   KeySwitchTechnique ksTech = cryptoParamsCKKSRNS->GetKeySwitchTechnique();
-  RescalingTechnique rsTech = cryptoParamsCKKSRNS->GetRescalingTechnique();
+  ScalingTechnique scalTech = cryptoParamsCKKSRNS->GetScalingTechnique();
   EncryptionTechnique encTech = cryptoParamsCKKSRNS->GetEncryptionTechnique();
   MultiplicationTechnique multTech = cryptoParamsCKKSRNS->GetMultiplicationTechnique();
 
   usint extraModSize = 0;
-  if (rsTech == FLEXIBLEAUTOEXT) {
+  if (scalTech == FLEXIBLEAUTOEXT) {
     // TODO: Allow the user to specify this?
     extraModSize = DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
   }
@@ -144,7 +144,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
   NativeInteger qNext = q;
   NativeInteger qPrev = q;
   if (numPrimes > 1) {
-    if (rsTech != FLEXIBLEAUTO && rsTech != FLEXIBLEAUTOEXT) {
+    if (scalTech != FLEXIBLEAUTO && scalTech != FLEXIBLEAUTOEXT) {
       uint32_t cnt = 0;
       for (usint i = numPrimes - 2; i >= 1; i--) {
         if ((cnt % 2) == 0) {
@@ -224,7 +224,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
   }
   rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
 
-  if (rsTech == FLEXIBLEAUTOEXT) {
+  if (scalTech == FLEXIBLEAUTOEXT) {
     if (extraModSize == dcrtBits || extraModSize == firstModSize) {
       moduliQ[numPrimes] = PreviousPrime<NativeInteger>(moduliQ[0], cyclOrder);
     } else {
@@ -255,7 +255,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
     cryptoParamsCKKSRNS->SetEncodingParams(encodingParamsNew);
   }
 
-  cryptoParamsCKKSRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, extraModSize);
+  cryptoParamsCKKSRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraModSize);
 
   return true;
 }
