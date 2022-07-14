@@ -62,7 +62,7 @@ namespace lbcrypto {
 // multiplication
 void CryptoParametersBFVRNS::PrecomputeCRTTables(
     KeySwitchTechnique ksTech,
-    RescalingTechnique rsTech,
+    ScalingTechnique scalTech,
     EncryptionTechnique encTech,
     MultiplicationTechnique multTech,
     uint32_t numPartQ,
@@ -72,7 +72,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
     if (!PrecomputeCRTTablesAfterDeserializaton())
         return;
 
-    CryptoParametersRNS::PrecomputeCRTTables(ksTech, rsTech, encTech, multTech,
+    CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech,
         numPartQ, auxBits, extraBits);
 
   size_t sizeQ = GetElementParams()->GetParams().size();

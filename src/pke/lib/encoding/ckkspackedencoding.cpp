@@ -412,7 +412,7 @@ bool CKKSPackedEncoding::Encode() {
 #endif
 
 bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
-                                enum RescalingTechnique rsTech) {
+                                enum ScalingTechnique scalTech) {
   double p = encodingParams->GetPlaintextModulus();
   double powP = 0.0;
   uint32_t Nh = GetElementRingDimension() / 2;
@@ -422,7 +422,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
   std::vector<std::complex<double>> curValues(slots);
 
   if (this->typeFlag == IsNativePoly) {
-    if (rsTech == FLEXIBLEAUTO || rsTech == FLEXIBLEAUTOEXT)
+    if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)
       powP = pow(scalingFactor, -1);
     else
       powP = pow(2, -p);
@@ -450,7 +450,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor,
 
     // we will bring down the scaling factor to 2^p
     double scalingFactorPre = 0.0;
-    if (rsTech == FLEXIBLEAUTO || rsTech == FLEXIBLEAUTOEXT)
+    if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)
       scalingFactorPre = pow(scalingFactor, -1) * pow(2, p);
     else
       scalingFactorPre = pow(2, -p * (depth - 1));

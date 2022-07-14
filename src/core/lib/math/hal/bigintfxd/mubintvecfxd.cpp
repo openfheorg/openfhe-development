@@ -285,7 +285,7 @@ template <class IntegerType>
 const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddAtIndexEq(usint i, const IntegerType& b) {
     if (i > this->GetLength() - 1) {
         OPENFHE_THROW(lbcrypto::math_error,
-                       "mubintvecfxd::ModAddAtIndex. Index is out of range. i = " + std::to_string(i));
+                      "mubintvecfxd::ModAddAtIndex. Index is out of range. i = " + std::to_string(i));
     }
     this->m_data[i].ModAddEq(b, this->m_modulus);
     return *this;

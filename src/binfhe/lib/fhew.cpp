@@ -53,11 +53,11 @@ namespace lbcrypto {
 // skNTT corresponds to the secret key z
 std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptAP(
     const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT, const LWEPlaintext& m) const {
-    NativeInteger Q                             = params->GetLWEParams()->GetQ();
-    int64_t q                                   = params->GetLWEParams()->Getq().ConvertToInt();
-    uint32_t N                                  = params->GetLWEParams()->GetN();
-    uint32_t digitsG                            = params->GetDigitsG();
-    uint32_t digitsG2                           = params->GetDigitsG2();
+    NativeInteger Q                                  = params->GetLWEParams()->GetQ();
+    int64_t q                                        = params->GetLWEParams()->Getq().ConvertToInt();
+    uint32_t N                                       = params->GetLWEParams()->GetN();
+    uint32_t digitsG                                 = params->GetDigitsG();
+    uint32_t digitsG2                                = params->GetDigitsG2();
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     auto result = std::make_shared<RingGSWCiphertext>(digitsG2, 2);
@@ -113,9 +113,9 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptAP(
 // Cryptosystems"
 std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::EncryptGINX(
     const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT, const LWEPlaintext& m) const {
-    NativeInteger Q                             = params->GetLWEParams()->GetQ();
-    uint32_t digitsG                            = params->GetDigitsG();
-    uint32_t digitsG2                           = params->GetDigitsG2();
+    NativeInteger Q                                  = params->GetLWEParams()->GetQ();
+    uint32_t digitsG                                 = params->GetDigitsG();
+    uint32_t digitsG2                                = params->GetDigitsG2();
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     auto result = std::make_shared<RingGSWCiphertext>(digitsG2, 2);
@@ -318,7 +318,7 @@ void RingGSWAccumulatorScheme::SignedDigitDecompose(const std::shared_ptr<RingGS
 void RingGSWAccumulatorScheme::AddToACCAP(const std::shared_ptr<RingGSWCryptoParams> params,
                                           const RingGSWCiphertext& input,
                                           std::shared_ptr<RingGSWCiphertext> acc) const {
-    uint32_t digitsG2                           = params->GetDigitsG2();
+    uint32_t digitsG2                                = params->GetDigitsG2();
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements()[0];
@@ -360,9 +360,9 @@ void RingGSWAccumulatorScheme::AddToACCGINX(const std::shared_ptr<RingGSWCryptoP
                                             const RingGSWCiphertext& input1, const RingGSWCiphertext& input2,
                                             const NativeInteger& a, std::shared_ptr<RingGSWCiphertext> acc) const {
     // cycltomic order
-    uint32_t m                                  = 2 * params->GetLWEParams()->GetN();
-    uint32_t digitsG2                           = params->GetDigitsG2();
-    int64_t q                                   = params->GetLWEParams()->Getq().ConvertToInt();
+    uint32_t m                                       = 2 * params->GetLWEParams()->GetN();
+    uint32_t digitsG2                                = params->GetDigitsG2();
+    int64_t q                                        = params->GetLWEParams()->Getq().ConvertToInt();
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements()[0];
@@ -430,12 +430,12 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
     }
 
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
-    NativeInteger q                             = params->GetLWEParams()->Getq();
-    NativeInteger Q                             = params->GetLWEParams()->GetQ();
-    uint32_t N                                  = params->GetLWEParams()->GetN();
-    uint32_t baseR                              = params->GetBaseR();
-    uint32_t n                                  = params->GetLWEParams()->Getn();
-    std::vector<NativeInteger> digitsR          = params->GetDigitsR();
+    NativeInteger q                                  = params->GetLWEParams()->Getq();
+    NativeInteger Q                                  = params->GetLWEParams()->GetQ();
+    uint32_t N                                       = params->GetLWEParams()->GetN();
+    uint32_t baseR                                   = params->GetBaseR();
+    uint32_t n                                       = params->GetLWEParams()->Getn();
+    std::vector<NativeInteger> digitsR               = params->GetDigitsR();
 
     // Specifies the range [q1,q2) that will be used for mapping
     uint32_t qHalf   = q.ConvertToInt() >> 1;
@@ -650,12 +650,12 @@ std::shared_ptr<RingGSWCiphertext> RingGSWAccumulatorScheme::BootstrapCore(
     }
 
     const std::shared_ptr<ILNativeParams> polyParams = params->GetPolyParams();
-    NativeInteger q                             = params->GetLWEParams()->Getq();
-    NativeInteger Q                             = params->GetLWEParams()->GetQ();
-    uint32_t N                                  = params->GetLWEParams()->GetN();
-    uint32_t baseR                              = params->GetBaseR();
-    uint32_t n                                  = params->GetLWEParams()->Getn();
-    std::vector<NativeInteger> digitsR          = params->GetDigitsR();
+    NativeInteger q                                  = params->GetLWEParams()->Getq();
+    NativeInteger Q                                  = params->GetLWEParams()->GetQ();
+    uint32_t N                                       = params->GetLWEParams()->GetN();
+    uint32_t baseR                                   = params->GetBaseR();
+    uint32_t n                                       = params->GetLWEParams()->Getn();
+    std::vector<NativeInteger> digitsR               = params->GetDigitsR();
 
     NativeVector m(params->GetLWEParams()->GetN(), params->GetLWEParams()->GetQ());
     // For specific function evaluation instead of general bootstrapping

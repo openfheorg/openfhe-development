@@ -180,7 +180,7 @@ void BM_encoding_PackedCKKSPlaintext(benchmark::State& state) {
     parameters.SetScalingFactorBits(50);
     parameters.SetBatchSize(8);
     parameters.SetKeySwitchTechnique(BV);
-    parameters.SetRescalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(FIXEDMANUAL);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);

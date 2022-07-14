@@ -834,7 +834,6 @@ public:
 
     const ubint& ModMulFastConstEq(const ubint& b, const ubint& modulus, const ubint& bInv) {
         OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 4");
-
     }
 
     /**
@@ -1174,7 +1173,7 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                            " is from a later version of the library");
+                                                           " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));

@@ -54,35 +54,36 @@ public:
   CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params,
                        const PlaintextModulus &plaintextModulus,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
-                       int maxDepth = 2,
+                       SecurityLevel securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
+                       int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
-                       RescalingTechnique rsTech = FIXEDMANUAL,
+                       ScalingTechnique scalTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
-      : CryptoParametersRNS(params, plaintextModulus, distributionParameter,
-          assuranceMeasure, securityLevel, digitSize, secretKeyDist, maxDepth,
-          ksTech, rsTech, encTech, multTech) {}
+      : CryptoParametersRNS(
+            params, plaintextModulus,
+            distributionParameter, assuranceMeasure, securityLevel, digitSize, secretKeyDist, maxRelinSkDeg,
+            ksTech, scalTech, encTech, multTech) {}
 
   CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
-                       int maxDepth = 2,
+                       SecurityLevel securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
+                       int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
-                       RescalingTechnique rsTech = FIXEDMANUAL,
+                       ScalingTechnique scalTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRNS(
-            params, encodingParams, distributionParameter, assuranceMeasure,
-            securityLevel, digitSize, secretKeyDist, maxDepth,
-            ksTech, rsTech, encTech, multTech) {}
+            params, encodingParams,
+            distributionParameter, assuranceMeasure, securityLevel, digitSize, secretKeyDist, maxRelinSkDeg,
+            ksTech, scalTech, encTech, multTech) {}
 
   virtual ~CryptoParametersCKKSRNS() {}
 
   virtual void PrecomputeCRTTables(
       KeySwitchTechnique ksTech,
-      RescalingTechnique rsTech,
+      ScalingTechnique scalTech,
       EncryptionTechnique encTech,
       MultiplicationTechnique multTech,
       uint32_t numPartQ,
@@ -109,7 +110,7 @@ public:
       }
       ar(cereal::base_class<CryptoParametersRNS>(this));
 
-      PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
+      PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique,
           m_numPartQ, m_auxBits, m_extraBits);
   }
 

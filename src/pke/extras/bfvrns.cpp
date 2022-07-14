@@ -62,10 +62,9 @@ int main(int argc, char *argv[]) {
 
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(256);
-  parameters.SetRootHermiteFactor(1.006);
   parameters.SetStandardDeviation(4);
   parameters.SetEvalMultCount(5);
-  parameters.SetMaxDepth(6);
+  parameters.SetMaxRelinSkDeg(6);
   parameters.SetScalingFactorBits(60);
 
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);

@@ -152,8 +152,8 @@ Field2n Field2n::Plus(double scalar) const {
     }
     else {
         OPENFHE_THROW(not_implemented_error,
-                       "Field2n scalar addition is currently supported only for "
-                       "Format::COEFFICIENT representation");
+                      "Field2n scalar addition is currently supported only for "
+                      "Format::COEFFICIENT representation");
     }
 }
 
@@ -182,8 +182,8 @@ Field2n Field2n::Times(const Field2n& rhs) const {
     }
     else {
         OPENFHE_THROW(type_error,
-                       "At least one of the polynomials is not in "
-                       "Format::EVALUATION representation");
+                      "At least one of the polynomials is not in "
+                      "Format::EVALUATION representation");
     }
 }
 
@@ -222,8 +222,8 @@ Field2n Field2n::AutomorphismTransform(size_t i) const {
     }
     else {
         OPENFHE_THROW(not_implemented_error,
-                       "Field2n Automorphism is only implemented for "
-                       "Format::EVALUATION format");
+                      "Field2n Automorphism is only implemented for "
+                      "Format::EVALUATION format");
     }
 }
 

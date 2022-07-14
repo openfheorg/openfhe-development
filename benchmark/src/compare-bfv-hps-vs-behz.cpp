@@ -130,7 +130,7 @@ CryptoContext<DCRTPoly> GenerateBEHZContext(usint ptm, usint dcrtBits) {
 CryptoContext<DCRTPoly> GenerateFlatBFVrnsContext(usint ptm, usint dcrtBits, usint n) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetMaxDepth(0);
+    parameters.SetMaxRelinSkDeg(0);
     parameters.SetScalingFactorBits(dcrtBits);
     parameters.SetRingDim(n);
 
@@ -144,7 +144,7 @@ CryptoContext<DCRTPoly> GenerateFlatBFVrnsContext(usint ptm, usint dcrtBits, usi
 CryptoContext<DCRTPoly> GenerateFlatBEHZContext(usint ptm, usint dcrtBits, usint n) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetMaxDepth(0);
+    parameters.SetMaxRelinSkDeg(0);
     parameters.SetScalingFactorBits(dcrtBits);
     parameters.SetRingDim(n);
     parameters.SetMultiplicationTechnique(BEHZ);

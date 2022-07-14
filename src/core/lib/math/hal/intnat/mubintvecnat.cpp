@@ -55,7 +55,7 @@ template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(usint length, const IntegerType& modulus) {
     if (modulus.GetMSB() > MAX_MODULUS_SIZE) {
         OPENFHE_THROW(lbcrypto::not_available_error,
-                       "NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE) + " bits");
+                      "NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE) + " bits");
     }
     this->SetModulus(modulus);
     this->m_data.resize(length);
@@ -179,7 +179,7 @@ template <class IntegerType>
 void NativeVectorT<IntegerType>::SetModulus(const IntegerType& value) {
     if (value.GetMSB() > MAX_MODULUS_SIZE) {
         OPENFHE_THROW(lbcrypto::not_available_error,
-                       "NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE) + " bits");
+                      "NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE) + " bits");
     }
     this->m_modulus = value;
 }

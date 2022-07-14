@@ -97,7 +97,7 @@ public:
    * @param numPartQ is 
    * @param multihopQBound 
    * @param ksTech is the key switching technique used, BV or Hybrid.
-   * @param rsTech is the rescaling technique used.
+   * @param scalTech is the scaling technique used.
    * @param encTech is the encryption technique used.
    * @param multTech is the multiplication technique used (BFV) only.
    * @return A boolean.
@@ -125,7 +125,7 @@ public:
 
   uint64_t getCyclicOrder(const uint32_t ringDimension,
                           const int plainModulus,
-                          const RescalingTechnique rsTech) const;
+                          const ScalingTechnique scalTech) const;
 
   /*
    * Method that generates moduli for FLEXIBLEAUTOEXT mode for the BGV RNS scheme.
@@ -137,7 +137,7 @@ public:
    * @param digitSize The bit size of the base for BV key relinearization.
    * @param auxBits is the size of the additional modulus P, used for hybrid key-switching.
    * @param ksTech is the key switching technique used, BV or Hybrid.
-   * @param rsTech is the rescaling technique used.
+   * @param scalTech is the scaling technique used.
    * @param numPrimes Number of CRT moduli.
    * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
    */

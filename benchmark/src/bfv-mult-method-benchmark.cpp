@@ -90,7 +90,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(MultiplicationTechnique multMethod
     parameters.SetRingDim(RING_DIM);
     parameters.SetMultiplicationTechnique(multMethod);
     parameters.SetSecurityLevel(HEStd_128_classic);
-    parameters.SetMaxDepth(2);
+    parameters.SetMaxRelinSkDeg(2);
     parameters.SetStandardDeviation(3.19);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -119,7 +119,7 @@ void BFVrns_EvalMult(benchmark::State& state) {
 
     std::vector<Ciphertext<DCRTPoly>> ciphertexts;
     int treeSize = 1 << MULT_DEPTH;
-    
+
     for (int i = 0; i < treeSize; i++)
         ciphertexts.push_back(cc->Encrypt(keyPair.publicKey, plaintext));
 
@@ -136,7 +136,7 @@ void BFVrns_EvalMult(benchmark::State& state) {
     }
 
     cRes = ciphertexts[0]->Clone();
-    
+
     Plaintext plaintextDec;
     cc->Decrypt(keyPair.secretKey, cRes, &plaintextDec);
     plaintextDec->SetLength(plaintext->GetLength());

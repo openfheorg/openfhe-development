@@ -82,8 +82,7 @@ public:
    * @param format
    * @return new Element
    */
-    virtual Element CloneWithNoise(const DiscreteGaussianGeneratorImpl<VecType>& dgg,
-                                   Format format) const = 0;
+    virtual Element CloneWithNoise(const DiscreteGaussianGeneratorImpl<VecType>& dgg, Format format) const = 0;
 
     /**
    * @brief Standard destructor
@@ -431,8 +430,7 @@ public:
    * ASSUMPTION: This method assumes that the caller provides the correct
    * rootOfUnity for the modulus.
    */
-    virtual void SwitchModulus(const IntType& modulus, const IntType& rootOfUnity,
-                               const IntType& modulusArb,
+    virtual void SwitchModulus(const IntType& modulus, const IntType& rootOfUnity, const IntType& modulusArb,
                                const IntType& rootOfUnityArb) = 0;
 
     /**

@@ -62,7 +62,7 @@ namespace lbcrypto {
 // multiplication
 void CryptoParametersBGVRNS::PrecomputeCRTTables(
     KeySwitchTechnique ksTech,
-    RescalingTechnique rsTech,
+    ScalingTechnique scalTech,
     EncryptionTechnique encTech,
     MultiplicationTechnique multTech,
     uint32_t numPartQ,
@@ -72,7 +72,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(
     if (!PrecomputeCRTTablesAfterDeserializaton())
         return;
  
-    CryptoParametersRNS::PrecomputeCRTTables(ksTech, rsTech, encTech, multTech,
+    CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech,
           numPartQ, auxBits, extraBits);
 
   size_t sizeQ = GetElementParams()->GetParams().size();
@@ -129,10 +129,10 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(
     }
   }
 
-  if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
+  if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
     m_scalingFactorsInt.resize(sizeQ);
     m_scalingFactorsInt[0] = moduliQ[sizeQ - 1] % t;
-    uint32_t isFlexibleAutoExt = (m_rsTechnique == FLEXIBLEAUTOEXT) ? 1 : 0;
+    uint32_t isFlexibleAutoExt = (m_scalTechnique == FLEXIBLEAUTOEXT) ? 1 : 0;
     if (isFlexibleAutoExt) {
       m_scalingFactorsInt[1] = moduliQ[sizeQ - 2] % t;
     }
@@ -145,7 +145,7 @@ void CryptoParametersBGVRNS::PrecomputeCRTTables(
     m_scalingFactorsIntBig.resize(sizeQ - 1);
 
     if (m_scalingFactorsIntBig.size() > 0) {
-      if (m_rsTechnique == FLEXIBLEAUTO) {
+      if (m_scalTechnique == FLEXIBLEAUTO) {
         m_scalingFactorsIntBig[0] =
             m_scalingFactorsInt[0].ModMul(m_scalingFactorsInt[0], t);
       } else {

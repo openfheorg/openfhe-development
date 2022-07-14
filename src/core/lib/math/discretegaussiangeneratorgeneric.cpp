@@ -256,7 +256,7 @@ usint BaseSampler::FindInVector(const std::vector<double>& S, double search) con
         return lower - S.begin();
 
     OPENFHE_THROW(not_available_error,
-                   "DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
+                  "DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
 }
 
 DiscreteGaussianGeneratorGeneric::DiscreteGaussianGeneratorGeneric(BaseSampler** samplers, const double std,

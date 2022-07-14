@@ -169,7 +169,7 @@ usint DiscreteGaussianGeneratorImpl<VecType>::FindInVector(const std::vector<dou
         return lower - S.begin() + 1;
     }
     OPENFHE_THROW(not_available_error,
-                   "DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
+                  "DGG Inversion Sampling. FindInVector value not found: " + std::to_string(search));
 }
 
 template <typename VecType>
@@ -278,7 +278,6 @@ int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, dou
     }
     if (std::isinf(stddev)) {
         OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with stddev == +-inf");
-
     }
     typename VecType::Integer result;
 

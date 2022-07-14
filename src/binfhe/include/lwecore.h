@@ -206,7 +206,7 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+                                                 " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("n", m_n));
@@ -331,7 +331,7 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+                                                 " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("a", m_a));
@@ -402,7 +402,7 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+                                                 " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("s", m_s));
@@ -475,7 +475,7 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+                                                 " is from a later version of the library");
         }
 
         ar(::cereal::make_nvp("k", m_key));

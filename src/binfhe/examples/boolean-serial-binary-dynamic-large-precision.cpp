@@ -49,8 +49,8 @@ int main() {
     cc1.GenerateBinFHEContext(TOY, false, logQ, 0, GINX, true);
     uint32_t Q = 1 << logQ;
 
-    int q      = 4096;                                               // q
-    int factor = 1 << int(logQ - log2(q));                           // Q/q
+    int q      = 4096;                                                // q
+    int factor = 1 << int(logQ - log2(q));                            // Q/q
     int p      = cc1.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
 
     std::cout << "Generating keys." << std::endl;
@@ -91,16 +91,17 @@ int main() {
     std::cout << "The key switching key has been serialized." << std::endl;
 
     auto BTKeyMap = cc1.GetBTKeyMap();
-    for(auto it = BTKeyMap->begin(); it != BTKeyMap->end(); it++)
-    {
-        auto index = it->first;
+    for (auto it = BTKeyMap->begin(); it != BTKeyMap->end(); it++) {
+        auto index  = it->first;
         auto thekey = it->second;
-        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "refreshKey.txt", thekey.BSkey, SerType::BINARY)) {
+        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "refreshKey.txt", thekey.BSkey,
+                                     SerType::BINARY)) {
             std::cerr << "Error serializing the refreshing key" << std::endl;
             return 1;
         }
 
-        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "ksKey.txt", thekey.KSkey, SerType::BINARY)) {
+        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "ksKey.txt", thekey.KSkey,
+                                     SerType::BINARY)) {
             std::cerr << "Error serializing the switching key" << std::endl;
             return 1;
         }
@@ -153,20 +154,21 @@ int main() {
 
     uint32_t baseGlist[3] = {1 << 14, 1 << 18, 1 << 27};
 
-    for(size_t i = 0; i < 3; i++)
-    {
-        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "refreshKey.txt", refreshKey, SerType::BINARY) == false) {
+    for (size_t i = 0; i < 3; i++) {
+        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "refreshKey.txt", refreshKey,
+                                        SerType::BINARY) == false) {
             std::cerr << "Could not deserialize the refresh key" << std::endl;
             return 1;
         }
 
         std::shared_ptr<LWESwitchingKey> ksKey;
-        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "ksKey.txt", ksKey, SerType::BINARY) == false) {
+        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "ksKey.txt", ksKey,
+                                        SerType::BINARY) == false) {
             std::cerr << "Could not deserialize the switching key" << std::endl;
             return 1;
         }
         std::cout << "The BT map element for baseG = " << baseGlist[i] << " has been deserialized." << std::endl;
-        
+
         // Loading the keys in the cryptocontext
         cc.BTKeyMapLoadSingleElement(baseGlist[i], {refreshKey, ksKey});
     }

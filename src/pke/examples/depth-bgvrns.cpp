@@ -75,8 +75,8 @@ int main(int argc, char *argv[]) {
   CCParams<CryptoContextBGVRNS> parameters;
   parameters.SetMultiplicativeDepth(3);
   parameters.SetPlaintextModulus(536903681);
-  parameters.SetMaxDepth(3);
-  parameters.SetRescalingTechnique(FIXEDAUTO);
+  parameters.SetMaxRelinSkDeg(3);
+  parameters.SetScalingTechnique(FIXEDAUTO);
 
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use

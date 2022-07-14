@@ -69,8 +69,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     parameters.schemeId = BFVRNS_SCHEME;
     parameters.plaintextModulus = 65537;
     parameters.standardDeviation = 3.19;
-    parameters.maxDepth = 2;
-    parameters.rsTech = NORESCALE;
+    parameters.maxRelinSkDeg = 2;
+    parameters.scalTech = NORESCALE;
     parameters.numLargeDigits = 0;
     parameters.evalMultCount = 2;
     parameters.multiplicativeDepth = 2;
@@ -169,8 +169,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     parameters.schemeId = BFVRNS_SCHEME;
     parameters.plaintextModulus = 65537;
     parameters.standardDeviation = 3.19;
-    parameters.maxDepth = 2;
-    parameters.rsTech = NORESCALE;
+    parameters.maxRelinSkDeg = 2;
+    parameters.scalTech = NORESCALE;
     parameters.numLargeDigits = 0;
     parameters.evalMultCount = 2;
     parameters.multiplicativeDepth = 2;
@@ -277,9 +277,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     CCParams<CryptoContextBFVRNS> parameters;
     usint ptm = 1 << 31;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetRootHermiteFactor(1.006);
     parameters.SetEvalMultCount(7);
-    parameters.SetMaxDepth(8);
+    parameters.SetMaxRelinSkDeg(8);
     parameters.SetScalingFactorBits(60);
     parameters.SetMultiplicationTechnique(HPS);
 
@@ -327,7 +326,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
     CCParams<CryptoContextBFVRNS> parameters;
     usint ptm = 1 << 15;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetRootHermiteFactor(1.006);
     parameters.SetEvalMultCount(1);
     parameters.SetScalingFactorBits(60);
     parameters.SetMultiplicationTechnique(HPS);
@@ -465,7 +463,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     CCParams<CryptoContextBFVRNS> parameters;
     usint ptm = 1 << 15;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetRootHermiteFactor(1.006);
     parameters.SetEvalMultCount(1);
     parameters.SetScalingFactorBits(60);
     parameters.SetMultiplicationTechnique(HPS);

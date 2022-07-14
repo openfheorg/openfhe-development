@@ -82,9 +82,8 @@ void BFVrnsEvalAtIndex2n() {
   CCParams<CryptoContextBFVRNS> parameters;
 
   parameters.SetPlaintextModulus(65537);
-  parameters.SetRootHermiteFactor(1.006);
   parameters.SetEvalMultCount(1);
-  parameters.SetMaxDepth(3);
+  parameters.SetMaxRelinSkDeg(3);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // enable features that you wish to use
@@ -137,7 +136,7 @@ void CKKSEvalAtIndex2n() {
   parameters.SetDigitSize(10);
   parameters.SetBatchSize(16);
   parameters.SetKeySwitchTechnique(BV);
-  parameters.SetRescalingTechnique(FIXEDMANUAL);
+  parameters.SetScalingTechnique(FIXEDMANUAL);
   parameters.SetNumLargeDigits(4);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -184,9 +183,8 @@ void BFVrnsEvalMerge2n() {
   CCParams<CryptoContextBFVRNS> parameters;
 
   parameters.SetPlaintextModulus(65537);
-  parameters.SetRootHermiteFactor(1.006);
   parameters.SetEvalMultCount(2);
-  parameters.SetMaxDepth(3);
+  parameters.SetMaxRelinSkDeg(3);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // enable features that you wish to use

@@ -85,7 +85,7 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(
   ciphertext->SetLevel(ciphertext->GetLevel() + levels);
   ciphertext->SetDepth(ciphertext->GetDepth() - levels);
 
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
     for (usint i = 0; i < levels; ++i) {
       NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
       NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(t);
@@ -282,7 +282,7 @@ void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly> &ciphertext, con
   const NativeInteger t(cryptoParams->GetPlaintextModulus());
 
   ciphertext->SetDepth(ciphertext->GetDepth() + 1);
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
     ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(constant, t));
   }
 }

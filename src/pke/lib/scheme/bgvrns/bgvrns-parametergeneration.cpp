@@ -110,7 +110,7 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
   usint digitSize = cryptoParamsBGVRNS->GetDigitSize();
   KeySwitchTechnique ksTech = cryptoParamsBGVRNS->GetKeySwitchTechnique();
-  RescalingTechnique rsTech = cryptoParamsBGVRNS->GetRescalingTechnique();
+  ScalingTechnique scalTech = cryptoParamsBGVRNS->GetScalingTechnique();
   double sigma = cryptoParamsBGVRNS->GetDistributionParameter();
   double alpha = cryptoParamsBGVRNS->GetAssuranceMeasure();
 
@@ -147,7 +147,7 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
 
   // V_c
   double noisePerLevel = 0;
-  if (rsTech == FLEXIBLEAUTOEXT) {
+  if (scalTech == FLEXIBLEAUTOEXT) {
     noisePerLevel = 1 + expansionFactor * Bkey;
   } else {
     noisePerLevel = (evalAddCount + 1) * freshEncryptionNoise + (keySwitchCount + 1) * keySwitchingNoise;
@@ -158,12 +158,12 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
 
 uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension,
                         const int plainModulus,
-                        const RescalingTechnique rsTech) const {
+                        const ScalingTechnique scalTech) const {
   // Moduli need to be primes that are 1 (mod 2n)
   usint cyclOrder = 2 * ringDimension;
   uint64_t lcmCyclOrderPtm = 0;
 
-  if (rsTech == FIXEDAUTO) {
+  if (scalTech == FIXEDAUTO) {
     // In FIXEDAUTO, moduli also need to be 1 (mod t)
     usint plaintextModulus = plainModulus;
     usint pow2ptm = 1;  // The largest power of 2 dividing ptm (check whether it
@@ -195,9 +195,9 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
   const auto cryptoParamsBGVRNS =
     std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
-  RescalingTechnique rsTech = cryptoParamsBGVRNS->GetRescalingTechnique();
+  ScalingTechnique scalTech = cryptoParamsBGVRNS->GetScalingTechnique();
 
-  size_t numModuli = rsTech == FLEXIBLEAUTOEXT ? numPrimes + 1 : numPrimes;
+  size_t numModuli = scalTech == FLEXIBLEAUTOEXT ? numPrimes + 1 : numPrimes;
   std::vector<NativeInteger> moduliQ(numModuli);
 
   double plainModulus = static_cast<double>(cryptoParamsBGVRNS->GetPlaintextModulus());
@@ -205,10 +205,10 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
   BGVNoiseEstimates noiseEstimates = computeNoiseEstimates(cryptoParams, ringDimension, evalAddCount, keySwitchCount,
                                                            auxBits, numPrimes);
-  uint64_t cyclOrder = getCyclicOrder(ringDimension, (int)plainModulus, rsTech);
+  uint64_t cyclOrder = getCyclicOrder(ringDimension, (int)plainModulus, scalTech);
 
   double firstModLowerBound = 0;
-  if (rsTech == FLEXIBLEAUTOEXT)
+  if (scalTech == FLEXIBLEAUTOEXT)
     firstModLowerBound = 2 * plainModulus * noiseEstimates.freshEncryptionNoise - plainModulus;
   else
     firstModLowerBound = 2 * plainModulus * noiseEstimates.noisePerLevel - plainModulus;
@@ -220,7 +220,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   uint32_t totalModSize = firstModSize;
   moduliQ[0] = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
 
-  if (rsTech == FLEXIBLEAUTOEXT) {
+  if (scalTech == FLEXIBLEAUTOEXT) {
     double extraModLowerBound = noiseEstimates.freshEncryptionNoise / noiseEstimates.noisePerLevel * (evalAddCount + 1);
     extraModLowerBound += keySwitchCount * noiseEstimates.keySwitchingNoise / noiseEstimates.noisePerLevel;
     extraModLowerBound *= 2;
@@ -239,7 +239,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
   if (numPrimes > 1) {
     // Compute bounds.
     double modLowerBound = 0;
-    if (rsTech == FLEXIBLEAUTOEXT) {
+    if (scalTech == FLEXIBLEAUTOEXT) {
       modLowerBound = 2 * noiseEstimates.noisePerLevel + 2 + 1.0 / noiseEstimates.noisePerLevel;
       modLowerBound *= noiseEstimates.expansionFactor * plainModulus * (evalAddCount + 1) / 2.0;
       modLowerBound += (keySwitchCount + 1) * noiseEstimates.keySwitchingNoise / noiseEstimates.noisePerLevel;
@@ -287,7 +287,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
 
   uint32_t ptm = cryptoParamsBGVRNS->GetPlaintextModulus();
   KeySwitchTechnique ksTech = cryptoParamsBGVRNS->GetKeySwitchTechnique();
-  RescalingTechnique rsTech = cryptoParamsBGVRNS->GetRescalingTechnique();
+  ScalingTechnique scalTech = cryptoParamsBGVRNS->GetScalingTechnique();
   EncryptionTechnique encTech = cryptoParamsBGVRNS->GetEncryptionTechnique();
   MultiplicationTechnique multTech = cryptoParamsBGVRNS->GetMultiplicationTechnique();
 
@@ -310,7 +310,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
 
   // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
-  usint extraModSize = (rsTech == FLEXIBLEAUTOEXT) ?  DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;
+  usint extraModSize = (scalTech == FLEXIBLEAUTOEXT) ?  DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE : 0;
   uint32_t qBound = firstModSize + (numPrimes - 1) * dcrtBits + extraModSize;
   if (ksTech == HYBRID)
     qBound +=
@@ -330,11 +330,11 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   uint32_t n = computeRingDimension(cryptoParams, qBound, cyclOrder);
   //// End HE Standards compliance logic/check
 
-  uint32_t vecSize = (rsTech != FLEXIBLEAUTOEXT) ? numPrimes : numPrimes + 1;
+  uint32_t vecSize = (scalTech != FLEXIBLEAUTOEXT) ? numPrimes : numPrimes + 1;
   std::vector<NativeInteger> moduliQ(vecSize);
   std::vector<NativeInteger> rootsQ(vecSize);
 
-  if (rsTech == FIXEDAUTO || rsTech == FLEXIBLEAUTO || rsTech == FLEXIBLEAUTOEXT) {
+  if (scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT) {
     auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxBits, numPrimes);
     moduliQ = std::get<0>(moduliInfo);
     uint32_t newQBound = std::get<1>(moduliInfo);
@@ -453,7 +453,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
         encodingParams->GetPlaintextModulus(), batchSize));
     cryptoParamsBGVRNS->SetEncodingParams(encodingParamsNew);
   }
-  cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, auxBits, 0);
+  cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, 0);
   return true;
 }
 

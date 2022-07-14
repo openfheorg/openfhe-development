@@ -68,18 +68,13 @@ class Params {
     // Has impact on parameger generation
     float standardDeviation;
 
-    // Related to Security Level
-    // Currently used in BFV parameter generation
-    float rootHermiteFactor;
-
     // GAUSSIAN means Gaussian secret key distribution
     // UNIFORM_TERNARY means Ternary secret key distribution
     // SPARSE_TERNARY means sparse secret key distribution
-    // both enum type and values should be renamed?
     SecretKeyDist secretKeyDist;
 
-    // Max possible multiplicative depth of the scheme
-    int maxDepth;
+    // Max linearization security key degree (former maxDepth: max possible multiplicative depth of the scheme)
+    int maxRelinSkDeg;
 
     // key switching technique: BV or HYBRID currently
     // For BV we do not have extra modulus, so the security depends on ciphertext modulus Q.
@@ -89,8 +84,8 @@ class Params {
     // it is good to have alternative to numLargeDigits - numPrimesInDigit
     KeySwitchTechnique ksTech;
 
-    // rescaling technique used in CKKS/BGV
-    RescalingTechnique rsTech;
+    // scaling technique used in CKKS/BGV
+    ScalingTechnique  scalTech;
 
     // max batch size of messages to be packed in encoding
     usint batchSize;
@@ -130,7 +125,7 @@ class Params {
     usint keySwitchCount;
 
     // not sure, some parameter used in BGV
-    usint multiHopQModulusLowerBound;
+    usint multiHopModSize;
 
     // new parameter used in BFV type scheme: Encryption can be using floor(Q/t) * m  or round(Q*m / t)
     EncryptionTechnique encryptionTechnique;
@@ -153,11 +148,6 @@ public:
 
     ~Params() = default;
 
-    bool IsValidRootHermiteFactor() const {
-        // rootHermiteFactor is valid or set if it is greater than or equal to 1.0
-        float epsilon = 0.001;
-        return (rootHermiteFactor >= (1.0-epsilon));
-    }
     // getters
     SCHEME GetScheme() const {
         return scheme;
@@ -171,20 +161,17 @@ public:
     float GetStandardDeviation() const {
         return standardDeviation;
     }
-    float GetRootHermiteFactor() const {
-        return rootHermiteFactor;
-    }
     SecretKeyDist GetSecretKeyDist() const {
         return secretKeyDist;
     }
-    int GetMaxDepth() const {
-        return maxDepth;
+    int GetMaxRelinSkDeg() const {
+        return maxRelinSkDeg;
     }
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
     }
-    RescalingTechnique GetRescalingTechnique() const {
-        return rsTech;
+    ScalingTechnique  GetScalingTechnique() const {
+        return scalTech;
     }
     usint GetBatchSize() const {
         return batchSize;
@@ -222,8 +209,8 @@ public:
     MultiplicationTechnique GetMultiplicationTechnique() const {
         return multiplicationTechnique;
     }
-    usint GetMultiHopQModulusLowerBound() const {
-        return multiHopQModulusLowerBound;
+    usint GetMultiHopModSize() const {
+        return multiHopModSize;
     }
 
     // setters
@@ -236,20 +223,17 @@ public:
     void SetStandardDeviation(float standardDeviation0) {
         standardDeviation = standardDeviation0;
     }
-    void SetRootHermiteFactor(float rootHermiteFactor0) {
-        rootHermiteFactor = rootHermiteFactor0;
-    }
     void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
         secretKeyDist = secretKeyDist0;
     }
-    void SetMaxDepth(int maxDepth0) {
-        maxDepth = maxDepth0;
+    void SetMaxRelinSkDeg(int maxRelinSkDeg0) {
+        maxRelinSkDeg = maxRelinSkDeg0;
     }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;
     }
-    void SetRescalingTechnique(RescalingTechnique rsTech0) {
-        rsTech = rsTech0;
+    void SetScalingTechnique(ScalingTechnique  scalTech0) {
+        scalTech = scalTech0;
     }
     void SetBatchSize(usint batchSize0) {
         batchSize = batchSize0;
@@ -287,8 +271,8 @@ public:
     void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) {
         multiplicationTechnique = multiplicationTechnique0;
     }
-    void SetMultiHopQModulusLowerBound(usint multiHopQModulusLowerBound0) {
-        multiHopQModulusLowerBound = multiHopQModulusLowerBound0;
+    void SetMultiHopModSize(usint multiHopModSize0) {
+        multiHopModSize = multiHopModSize0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);

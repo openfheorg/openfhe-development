@@ -474,8 +474,8 @@ public:
     virtual DerivedType Transpose() const {
         if (m_format == COEFFICIENT) {
             OPENFHE_THROW(not_implemented_error,
-                           "DCRTPolyInterface element transposition is currently "
-                           "implemented only in the Evaluation representation.");
+                          "DCRTPolyInterface element transposition is currently "
+                          "implemented only in the Evaluation representation.");
         }
         else {
             usint m = m_params->GetCyclotomicOrder();

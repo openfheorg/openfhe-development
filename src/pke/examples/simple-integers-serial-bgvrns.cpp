@@ -58,7 +58,7 @@ int main() {
   parameters.SetMultiplicativeDepth(2);
   parameters.SetPlaintextModulus(65537);
   parameters.SetKeySwitchTechnique(BV);
-  parameters.SetRescalingTechnique(FIXEDAUTO);
+  parameters.SetScalingTechnique(FIXEDAUTO);
 
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // Enable features that you wish to use

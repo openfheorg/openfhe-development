@@ -118,7 +118,7 @@ class CryptoParametersBase : public Serializable {
 
   virtual usint GetDigitSize() const { return 0; }
 
-  virtual size_t GetMaxDepth() const { return 0; }
+  virtual size_t GetMaxRelinSkDeg() const { return 0; }
 
   virtual const typename Element::DggType &GetDiscreteGaussianGenerator()
       const {

@@ -51,7 +51,7 @@ void FHECKKSRNS::EvalBootstrapSetup(
   if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
       OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 
@@ -173,7 +173,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
   if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
       OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
     auto cc = privateKey->GetCryptoContext();
@@ -197,7 +197,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
   if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
       OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
 #if NATIVEINT==128
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT)
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
       OPENFHE_THROW(config_error, "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
 
@@ -326,7 +326,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     cc->EvalAddInPlace(ctxtEnc, conj);
     algo->MultByMonomialInPlace(ctxtEncI, 3 * M / 4);
 
-    if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
       while(ctxtEnc->GetDepth() > 1) {
         cc->ModReduceInPlace(ctxtEnc);
         cc->ModReduceInPlace(ctxtEncI);
@@ -348,7 +348,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
     if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
-      if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
+      if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
         algo->ModReduceInternalInPlace(ctxtEnc);
         algo->ModReduceInternalInPlace(ctxtEncI);
       }
@@ -378,7 +378,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     // In the case of FLEXIBLEAUTO, we need one extra tower
     // TODO: See if we can remove the extra level in FLEXIBLEAUTO
-    if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
+    if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
       algo->ModReduceInternalInPlace(ctxtEnc);
     }
 
@@ -419,7 +419,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     auto conj = Conjugate(ctxtEnc, evalKeyMap);
     cc->EvalAddInPlace(ctxtEnc, conj);
 
-    if (cryptoParams->GetRescalingTechnique() == FIXEDMANUAL) {
+    if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
       while(ctxtEnc->GetDepth() > 1) {
         cc->ModReduceInPlace(ctxtEnc);
       }
@@ -448,7 +448,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
     if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
-      if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
+      if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
         algo->ModReduceInternalInPlace(ctxtEnc);
       }
       ApplyDoubleAngleIterations(ctxtEnc);
@@ -473,7 +473,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     // In the case of FLEXIBLEAUTO, we need one extra tower
     // TODO: See if we can remove the extra level in FLEXIBLEAUTO
-    if (cryptoParams->GetRescalingTechnique() != FIXEDMANUAL) {
+    if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
       algo->ModReduceInternalInPlace(ctxtEnc);
     }
 
@@ -781,7 +781,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
   uint32_t towersToDrop = 0;
   if (L != 0) {
-    towersToDrop = cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT ?
+    towersToDrop = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT ?
         elementParams.GetParams().size() - L : elementParams.GetParams().size() - L - 1;
     for (uint32_t i = 0; i < towersToDrop; i++) elementParams.PopLastParam();
   }
@@ -854,7 +854,7 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
   uint32_t towersToDrop = 0;
   if (L != 0) {
-    towersToDrop = cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT ?
+    towersToDrop = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT ?
         elementParams.GetParams().size() - L : elementParams.GetParams().size() - L - 1;
     for (uint32_t i = 0; i < towersToDrop; i++) elementParams.PopLastParam();
   }
@@ -988,7 +988,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
   uint32_t towersToDrop = 0;
 
   if (L != 0) {
-    towersToDrop = cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT ?
+    towersToDrop = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT ?
         elementParams.GetParams().size() - L - levelBudget + 1 :
         elementParams.GetParams().size() - L - levelBudget;
 
@@ -1192,7 +1192,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
   uint32_t towersToDrop = 0;
 
   if (L != 0) {
-    towersToDrop = cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT ?
+    towersToDrop = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT ?
         elementParams.GetParams().size() - L - levelBudget + 1 :
         elementParams.GetParams().size() - L - levelBudget;
     for (uint32_t i = 0; i < towersToDrop; i++) {
@@ -1881,7 +1881,7 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
   auto cc = ciphertext->GetCryptoContext();
   auto algo = cc->GetScheme();
 
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO) {
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO) {
     double targetSF = cryptoParams->GetScalingFactorReal(0);
     double sourceSF = ciphertext->GetScalingFactor();
     uint32_t numTowers = ciphertext->GetElements()[0].GetNumOfElements();

@@ -46,7 +46,7 @@ int main() {
     parameters.SetPlaintextModulus(65537);
 //    parameters.SetKeySwitchTechnique(HYBRID);
     parameters.SetKeySwitchTechnique(BV);
-    parameters.SetRescalingTechnique(FIXEDAUTO);
+    parameters.SetScalingTechnique(FIXEDAUTO);
 //    parameters.SetScalingFactorBits(60);
 //    parameters.SetDigitSize(10);
 

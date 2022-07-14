@@ -42,8 +42,8 @@
 
 using namespace lbcrypto;
 
-void AutomaticRescaleDemo(RescalingTechnique rsTech);
-void ManualRescaleDemo(RescalingTechnique rsTech);
+void AutomaticRescaleDemo(ScalingTechnique scalTech);
+void ManualRescaleDemo(ScalingTechnique scalTech);
 void HybridKeySwitchingDemo1();
 void HybridKeySwitchingDemo2();
 void FastRotationsDemo1();
@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-void AutomaticRescaleDemo(RescalingTechnique rsTech) {
+void AutomaticRescaleDemo(ScalingTechnique scalTech) {
   /* Please read comments in main() for an introduction to what the
    * rescale operation is. Knowing about Rescale() is not necessary
    * to use the FLEXIBLEAUTO CKKS variant, it is however needed to
@@ -158,7 +158,7 @@ void AutomaticRescaleDemo(RescalingTechnique rsTech) {
    *    becomes harder and harder as the multiplicative depth
    *    increases.
    */
-  if (rsTech == FLEXIBLEAUTO) {
+  if (scalTech == FLEXIBLEAUTO) {
     std::cout << std::endl << std::endl << std::endl << " ===== ExactRescaleDemo ============= " << std::endl;
   } else {
     std::cout << std::endl << std::endl << std::endl << " ===== ApproxAutoDemo ============= " << std::endl;
@@ -168,7 +168,7 @@ void AutomaticRescaleDemo(RescalingTechnique rsTech) {
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(5);
   parameters.SetScalingFactorBits(50);
-  parameters.SetRescalingTechnique(rsTech);
+  parameters.SetScalingTechnique(scalTech);
   parameters.SetBatchSize(batchSize);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -310,7 +310,7 @@ void AutomaticRescaleDemo(RescalingTechnique rsTech) {
 //#endif
 }
 
-void ManualRescaleDemo(RescalingTechnique rsTech) {
+void ManualRescaleDemo(ScalingTechnique scalTech) {
   /* Please read comments in main() for an introduction to what the
    * rescale operation is, and what's the FIXEDMANUAL variant of CKKS.
    *
@@ -473,7 +473,7 @@ void HybridKeySwitchingDemo1() {
   parameters.SetMultiplicativeDepth(5);
   parameters.SetScalingFactorBits(50);
   parameters.SetBatchSize(batchSize);
-  parameters.SetRescalingTechnique(FLEXIBLEAUTO);
+  parameters.SetScalingTechnique(FLEXIBLEAUTO);
   parameters.SetNumLargeDigits(dnum);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -590,7 +590,7 @@ void HybridKeySwitchingDemo2() {
   parameters.SetMultiplicativeDepth(5);
   parameters.SetScalingFactorBits(50);
   parameters.SetBatchSize(batchSize);
-  parameters.SetRescalingTechnique(FLEXIBLEAUTO);
+  parameters.SetScalingTechnique(FLEXIBLEAUTO);
   parameters.SetNumLargeDigits(dnum);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -808,12 +808,12 @@ void FastRotationsDemo2() {
   // uint32_t dnum = 0;  -already default
   /*
    * This controls how many multiplications are possible without rescaling.
-   * The number of multiplications (depth) is maxDepth - 1.
+   * The number of multiplications (maxRelinSkDeg) is maxDepth - 1.
    * This is useful for an optimization technique called lazy
    * re-linearization (only applicable in FIXEDMANUAL, as
    * FLEXIBLEAUTO implements automatic rescaling).
    */
-  // uint32_t maxDepth = 2; - already default
+  // uint32_t maxDepth (maxRelinSkDeg) = 2; - already default
   /*
    * The digit size is only used in BV key switching and
    * it allows us to perform digit decomposition at a finer granularity.
@@ -833,7 +833,7 @@ void FastRotationsDemo2() {
   parameters.SetMultiplicativeDepth(1);
   parameters.SetScalingFactorBits(50);
   parameters.SetBatchSize(batchSize);
-  parameters.SetRescalingTechnique(FLEXIBLEAUTO);
+  parameters.SetScalingTechnique(FLEXIBLEAUTO);
   parameters.SetKeySwitchTechnique(BV);
   parameters.SetFirstModSize(60);
   parameters.SetDigitSize(digitSize);

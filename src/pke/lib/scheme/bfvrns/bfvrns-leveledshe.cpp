@@ -103,7 +103,7 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   double p = static_cast<double>(cryptoParamsBFVrns->GetPlaintextModulus());
   uint32_t n = cryptoParamsBFVrns->GetElementParams()->GetRingDimension();
   uint32_t relinWindow = cryptoParamsBFVrns->GetDigitSize();
-  KeySwitchTechnique rsTechnique = cryptoParamsBFVrns->GetKeySwitchTechnique();
+  KeySwitchTechnique scalTechnique = cryptoParamsBFVrns->GetKeySwitchTechnique();
   EncryptionTechnique encTech = cryptoParamsBFVrns->GetEncryptionTechnique();
 
   uint32_t k = cryptoParamsBFVrns->GetNumPerPartQ();
@@ -127,7 +127,7 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   };
 
   auto noiseKS = [&](uint32_t n, double logqPrev, double w) -> double {
-	if (rsTechnique == HYBRID)
+	if (scalTechnique == HYBRID)
       return  k * ( numPartQ * delta(n) * Berr + delta(n) * Bkey + 1.0 )/2;
 	else
 	  return delta(n) *

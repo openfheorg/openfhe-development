@@ -622,7 +622,7 @@ public:
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                            " is from a later version of the library");
+                                                           " is from a later version of the library");
         }
         // YSP. This was seg-faulting in MINGW
         // std::string m;
@@ -654,7 +654,7 @@ public:
         Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
-                                                            " is from a later version of the library");
+                                                           " is from a later version of the library");
         }
         std::string m;
         ar(::cereal::make_nvp("m", m));

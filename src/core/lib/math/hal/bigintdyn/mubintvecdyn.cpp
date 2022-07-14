@@ -447,7 +447,6 @@ const mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModSubEq(const mubintvec& b)
     }
     else if (this->m_data.size() != b.m_data.size()) {
         OPENFHE_THROW(lbcrypto::math_error, "mubintvec subtracting vectors of different lengths");
-
     }
     else {
         for (usint i = 0; i < this->m_data.size(); i++) {

@@ -276,8 +276,7 @@ public:
    * that indicates if the polynomial is in Evaluation representation or
    * Coefficient representation. It is defined in inttypes.h.
    */
-    DCRTPolyType CloneWithNoise(const DiscreteGaussianGeneratorImpl<VecType>& dgg,
-                                Format format) const override;
+    DCRTPolyType CloneWithNoise(const DiscreteGaussianGeneratorImpl<VecType>& dgg, Format format) const override;
 
     /**
    * @brief Destructor.
@@ -497,8 +496,8 @@ public:
     DCRTPolyType Transpose() const override {
         if (this->GetFormat() == COEFFICIENT) {
             OPENFHE_THROW(not_implemented_error,
-                           "DCRTPolyImpl element transposition is currently "
-                           "implemented only in the Evaluation representation.");
+                          "DCRTPolyImpl element transposition is currently "
+                          "implemented only in the Evaluation representation.");
         }
         else {
             usint m = this->GetCyclotomicOrder();
@@ -992,6 +991,7 @@ public:
         const std::vector<DoubleNativeInt> modqBarrettMu;
         const std::vector<double> pInv;
 
+        // clang-format off
         CRTBasisExtensionPrecomputations(
             const std::shared_ptr<DCRTPolyImpl::Params> paramsQlPl0,
             const std::shared_ptr<DCRTPolyImpl::Params> paramsPl0,
@@ -1005,29 +1005,27 @@ public:
             const std::vector<std::vector<NativeInteger>> PlHatModq0,
             const std::vector<std::vector<NativeInteger>> alphaPlModq0,
             const std::vector<DoubleNativeInt> modqBarrettMu0,
-            const std::vector<double> pInv0) :
-            paramsQlPl(paramsQlPl0),
-            paramsPl(paramsPl0),
-            paramsQl(paramsQl0),
-            mPlQHatInvModq(mPlQHatInvModq0),
-            mPlQHatInvModqPrecon(mPlQHatInvModqPrecon0),
-            qInvModp(qInvModp0),
-            modpBarrettMu(modpBarrettMu0),
-            PlHatInvModp(PlHatInvModp0),
-            PlHatInvModpPrecon(PlHatInvModpPrecon0),
-            PlHatModq(PlHatModq0),
-            alphaPlModq(alphaPlModq0),
-            modqBarrettMu(modqBarrettMu0),
-            pInv(pInv0) {}
-
+            const std::vector<double> pInv0)
+            : paramsQlPl(paramsQlPl0),
+              paramsPl(paramsPl0),
+              paramsQl(paramsQl0),
+              mPlQHatInvModq(mPlQHatInvModq0),
+              mPlQHatInvModqPrecon(mPlQHatInvModqPrecon0),
+              qInvModp(qInvModp0),
+              modpBarrettMu(modpBarrettMu0),
+              PlHatInvModp(PlHatInvModp0),
+              PlHatInvModpPrecon(PlHatInvModpPrecon0),
+              PlHatModq(PlHatModq0),
+              alphaPlModq(alphaPlModq0),
+              modqBarrettMu(modqBarrettMu0),
+              pInv(pInv0) {}
+        // clang-format on
     };
     void FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations precomputed);
 
-  void ExpandCRTBasisQlHat(
-      const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
-      const std::vector<NativeInteger> &QlHatModq,
-      const std::vector<NativeInteger> &QlHatModqPrecon,
-      const usint sizeQ);
+    void ExpandCRTBasisQlHat(const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+                             const std::vector<NativeInteger>& QlHatModq,
+                             const std::vector<NativeInteger>& QlHatModqPrecon, const usint sizeQ);
 
     /**
    * @brief Performs scale and round:
@@ -1332,7 +1330,7 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+                                                 " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_vectors));
         ar(::cereal::make_nvp("f", this->m_format));

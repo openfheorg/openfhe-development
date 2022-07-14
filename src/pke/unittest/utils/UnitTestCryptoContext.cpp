@@ -58,8 +58,8 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.secretKeyDist)) {
         parameters.SetSecretKeyDist(static_cast<SecretKeyDist>(std::round(params.secretKeyDist)));
     }
-    if (!isDefaultValue(params.maxDepth)) {
-        parameters.SetMaxDepth(static_cast<int>(std::round(params.maxDepth)));
+    if (!isDefaultValue(params.maxRelinSkDeg)) {
+        parameters.SetMaxRelinSkDeg(static_cast<int>(std::round(params.maxRelinSkDeg)));
     }
     if (!isDefaultValue(params.firstModSize)) {
         parameters.SetFirstModSize(static_cast<usint>(std::round(params.firstModSize)));
@@ -70,8 +70,8 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.ksTech)) {
         parameters.SetKeySwitchTechnique(static_cast<KeySwitchTechnique>(std::round(params.ksTech)));
     }
-    if (!isDefaultValue(params.rsTech)) {
-        parameters.SetRescalingTechnique(static_cast<RescalingTechnique>(std::round(params.rsTech)));
+    if (!isDefaultValue(params.scalTech)) {
+        parameters.SetScalingTechnique(static_cast<ScalingTechnique>(std::round(params.scalTech)));
     }
     if (!isDefaultValue(params.numLargeDigits)) {
         parameters.SetNumLargeDigits(static_cast<uint32_t>(std::round(params.numLargeDigits)));

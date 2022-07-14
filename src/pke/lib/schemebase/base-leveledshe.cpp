@@ -188,17 +188,17 @@ std::vector<EvalKey<Element>> LeveledSHEBase<Element>::EvalMultKeysGen(
 
   std::vector<EvalKey<Element>> evalKeyVec;
 
-  usint maxDepth = cryptoParams->GetMaxDepth();
-  std::vector<Element> sPower(maxDepth - 1);
+  usint maxRelinSkDeg = cryptoParams->GetMaxRelinSkDeg();
+  std::vector<Element> sPower(maxRelinSkDeg - 1);
 
   sPower[0] = s * s;
-  for (size_t i = 1; i < maxDepth - 1; i++) {
+  for (size_t i = 1; i < maxRelinSkDeg - 1; i++) {
     sPower[i] = sPower[i - 1] * s;
   }
 
   auto algo = cc->GetScheme();
 
-  for (size_t i = 0; i < maxDepth - 1; i++) {
+  for (size_t i = 0; i < maxRelinSkDeg - 1; i++) {
     privateKeyPower->SetPrivateElement(std::move(sPower[i]));
     evalKeyVec.push_back(algo->KeySwitchGen(privateKeyPower, privateKey));
   }

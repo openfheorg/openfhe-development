@@ -59,7 +59,7 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 namespace lbcrypto {
 
 void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
-                                              RescalingTechnique rsTech,
+                                              ScalingTechnique scalTech,
                                               EncryptionTechnique encTech,
                                               MultiplicationTechnique multTech,
                                               uint32_t numPartQ,
@@ -67,8 +67,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech,
                                               uint32_t extraBits) {
   // Set the key switching technique.
   m_ksTechnique = ksTech;
-  // Set the rescaling technique.
-  m_rsTechnique = rsTech;
+  // Set the scaling technique.
+  m_scalTechnique = scalTech;
   // Set the key encryption technique.
   m_encTechnique = encTech;
   // Set the multiplication technique.

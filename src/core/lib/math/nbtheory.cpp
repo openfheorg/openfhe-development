@@ -299,7 +299,7 @@ IntType RootOfUnity(usint m, const IntType& modulo) {
     OPENFHE_DEBUG("gen = " << gen.ToString());
 
     OPENFHE_DEBUG("calling gen.ModExp( " << ((modulo - IntType(1)).DividedBy(M)).ToString() << ", modulus "
-                                 << modulo.ToString());
+                                         << modulo.ToString());
     result = gen.ModExp((modulo - IntType(1)).DividedBy(M), modulo);
     OPENFHE_DEBUG("result = " << result.ToString());
     if (result == IntType(1)) {
@@ -482,7 +482,7 @@ IntType FirstPrime(uint64_t nBits, uint64_t m) {
 #if (NATIVEINT == 64 && !defined(HAVE_INT128)) || (NATIVEINT == 128)
     if ((typeid(IntType) == typeid(NativeInteger)) && (nBits >= MAX_MODULUS_SIZE)) {
         OPENFHE_THROW(math_error, "Requested modulus size " + std::to_string(nBits + 1) +
-                                       " exceeds maximum allowed size " + std::to_string(MAX_MODULUS_SIZE));
+                                      " exceeds maximum allowed size " + std::to_string(MAX_MODULUS_SIZE));
     }
 #endif
     try {
@@ -495,8 +495,8 @@ IntType FirstPrime(uint64_t nBits, uint64_t m) {
         if ((qNew == IntType(0)) || (std::llround(std::log2(d1)) < std::llround(std::log2(d2)))) {
             // too big for IntType
             OPENFHE_THROW(math_error,
-                           "FirstPrime parameters are too large for this integer "
-                           "implementation");
+                          "FirstPrime parameters are too large for this integer "
+                          "implementation");
         }
         IntType qNew2 = (r > IntType(0)) ? (qNew + (IntType(m) - r) + IntType(1)) : (qNew + IntType(1));  // if r == 0
         if (qNew2 < qNew) {

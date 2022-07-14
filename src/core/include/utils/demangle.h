@@ -33,8 +33,6 @@
 
 #include <string>
 
-
 std::string demangle(const char* name);
 
-#endif // __DEMANGLE_H__
-
+#endif  // __DEMANGLE_H__

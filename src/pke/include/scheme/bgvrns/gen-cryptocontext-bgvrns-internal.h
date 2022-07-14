@@ -61,15 +61,15 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
         encodingParams,
         parameters.GetStandardDeviation(),
         assuranceMeasure,
-        parameters.GetRootHermiteFactor(),
+        parameters.GetSecurityLevel(),
         parameters.GetDigitSize(),
         parameters.GetSecretKeyDist(),
-        parameters.GetMaxDepth(),
+        parameters.GetMaxRelinSkDeg(),
         parameters.GetKeySwitchTechnique(),
-        parameters.GetRescalingTechnique(),
+        parameters.GetScalingTechnique(),
         parameters.GetEncryptionTechnique(),
         parameters.GetMultiplicationTechnique());
-    params->SetStdLevel(parameters.GetSecurityLevel()); // TODO (dsuponit): do we need this as we have already set root hermit factor?
+
     // for BGV scheme noise scale is always set to plaintext modulus
     params->SetNoiseScale(parameters.GetPlaintextModulus());
 
@@ -86,7 +86,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
         parameters.GetFirstModSize(),
         parameters.GetScalingFactorBits(),
         numLargeDigits,
-        parameters.GetMultiHopQModulusLowerBound());
+        parameters.GetMultiHopModSize());
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
     cc->setSchemeId("BGVRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::BGVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string

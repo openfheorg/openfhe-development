@@ -168,8 +168,8 @@ inline usint ReverseBits(usint num, usint msb) {
 template <typename IntType>
 inline usint GetMSB(IntType x) {
     OPENFHE_THROW(math_error,
-                   "Unsupported integer type (GetMSB() supports 64- and 128-bit "
-                   "integers only)");
+                  "Unsupported integer type (GetMSB() supports 64- and 128-bit "
+                  "integers only)");
 }
 
 template <>

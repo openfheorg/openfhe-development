@@ -54,9 +54,9 @@ int main(int argc, char* argv[]) {
   parameters.SetBatchSize(16);
   parameters.SetSecurityLevel(HEStd_NotSet);
   parameters.SetRingDim(2048);
-//  parameters.SetRescalingTechnique(FLEXIBLEAUTO);
-//  parameters.SetRescalingTechnique(FIXEDAUTO);
-  parameters.SetRescalingTechnique(FIXEDMANUAL);
+//  parameters.SetScalingTechnique(FLEXIBLEAUTO);
+//  parameters.SetScalingTechnique(FIXEDAUTO);
+  parameters.SetScalingTechnique(FIXEDMANUAL);
   parameters.SetNumLargeDigits(3);
   parameters.SetFirstModSize(60);
 

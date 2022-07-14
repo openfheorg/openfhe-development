@@ -83,8 +83,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * Method for computing all derived parameters based on chosen primitive
    * parameters.
    *
-   * @param *cryptoParams the crypto parameters object to be populated with
-   * parameters.
+   * @param *cryptoParams the crypto parameters object to be populated with parameters.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
    * @param scaleExp the bit-width for plaintexts and DCRTPoly's.
@@ -92,8 +91,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param secretKeyDist
    * @param ksTech the key switching technique used (e.g., BV or GHS)
    * @param firstModSize the bit-size of the first modulus
-   * @param rsTech the rescaling technique used (e.g., FIXEDMANUAL or
-   * FLEXIBLEAUTO)
+   * @param scalTech the scaling technique used (e.g., FIXEDMANUAL or FLEXIBLEAUTO)
    */
   bool ParamsGenCKKSRNS(
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,

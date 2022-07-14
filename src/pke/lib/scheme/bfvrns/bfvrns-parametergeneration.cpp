@@ -78,13 +78,12 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
       std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
 
   KeySwitchTechnique ksTech = cryptoParamsBFVRNS->GetKeySwitchTechnique();
-  RescalingTechnique rsTech = cryptoParamsBFVRNS->GetRescalingTechnique();
+  ScalingTechnique scalTech = cryptoParamsBFVRNS->GetScalingTechnique();
   EncryptionTechnique encTech = cryptoParamsBFVRNS->GetEncryptionTechnique();
   MultiplicationTechnique multTech = cryptoParamsBFVRNS->GetMultiplicationTechnique();
 
   double sigma = cryptoParamsBFVRNS->GetDistributionParameter();
   double alpha = cryptoParamsBFVRNS->GetAssuranceMeasure();
-  double hermiteFactor = cryptoParamsBFVRNS->GetSecurityLevel();
   double p = static_cast<double>(cryptoParamsBFVRNS->GetPlaintextModulus());
   uint32_t digitSize = cryptoParamsBFVRNS->GetDigitSize();
   SecurityLevel stdLevel = cryptoParamsBFVRNS->GetStdLevel();
@@ -121,7 +120,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   // GAUSSIAN security constraint
   auto nRLWE = [&](double logq) -> double {
     if (stdLevel == HEStd_NotSet) {
-      return (logq - log(sigma)) / (4. * log(hermiteFactor));
+      return 0;
     } else {
       return static_cast<double>(StdLatticeParm::FindRingDim(
           distType, stdLevel, static_cast<long>(ceil(logq / log(2)))));
@@ -358,7 +357,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
 
   uint32_t numPartQ = ComputeNumLargeDigits(numDigits, sizeQ - 1);
 
-  cryptoParamsBFVRNS->PrecomputeCRTTables(ksTech, rsTech, encTech, multTech, numPartQ, 60, 0);
+  cryptoParamsBFVRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, 60, 0);
 
   return true;
 }

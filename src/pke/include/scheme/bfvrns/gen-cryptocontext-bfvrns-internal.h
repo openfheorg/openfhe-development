@@ -56,27 +56,6 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 	auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
 	EncodingParams encodingParams(
 		std::make_shared<EncodingParamsImpl>(parameters.GetPlaintextModulus(), parameters.GetBatchSize()));
-// YSP previous version of the code; it did not work
-//	// use rootHermiteFactor as securityLevel if it is set
-//	auto params = parameters.IsValidRootHermiteFactor() ?
-//		std::make_shared<typename ContextGeneratorType::CryptoParams>(
-//			ep,
-//			encodingParams,
-//			parameters.GetStandardDeviation(),
-//			assuranceMeasure,
-//			parameters.GetRootHermiteFactor(),  // TODO (dsuponit): find a way to get securityLevel of different types
-//			parameters.GetDigitSize(),
-//			parameters.GetSecretKeyDist(),
-//			parameters.GetMaxDepth()) :
-//		std::make_shared<typename ContextGeneratorType::CryptoParams>(
-//			ep,
-//			encodingParams,
-//			parameters.GetStandardDeviation(),
-//			assuranceMeasure,
-//			parameters.GetSecurityLevel(),
-//			parameters.GetDigitSize(),
-//			parameters.GetSecretKeyDist(),
-//			parameters.GetMaxDepth());
 
 	auto params =
 		std::make_shared<typename ContextGeneratorType::CryptoParams>(
@@ -84,16 +63,14 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 			encodingParams,
 			parameters.GetStandardDeviation(),
 			assuranceMeasure,
-			parameters.GetRootHermiteFactor(),  // TODO (dsuponit): find a way to get securityLevel of different types
+			parameters.GetSecurityLevel(),
 			parameters.GetDigitSize(),
 			parameters.GetSecretKeyDist(),
-			parameters.GetMaxDepth(),
+			parameters.GetMaxRelinSkDeg(),
 			parameters.GetKeySwitchTechnique(),
-			parameters.GetRescalingTechnique(),
+			parameters.GetScalingTechnique(),
 			parameters.GetEncryptionTechnique(),
 			parameters.GetMultiplicationTechnique());
-
-	params->SetStdLevel(parameters.GetSecurityLevel()); // TODO (dsuponit): do we need this as we already have root hermit factor?
 
     // for BFV scheme noise scale is always set to 1
     params->SetNoiseScale(1);

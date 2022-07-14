@@ -62,7 +62,7 @@ namespace lbcrypto {
 // multiplication
 void CryptoParametersCKKSRNS::PrecomputeCRTTables(
     KeySwitchTechnique ksTech,
-    RescalingTechnique rsTech,
+    ScalingTechnique scalTech,
     EncryptionTechnique encTech,
     MultiplicationTechnique multTech,
     uint32_t numPartQ,
@@ -72,7 +72,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(
     if (!PrecomputeCRTTablesAfterDeserializaton())
         return;
 
-    CryptoParametersRNS::PrecomputeCRTTables(ksTech, rsTech, encTech, multTech,
+    CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech,
         numPartQ, auxBits, extraBits);
 
   size_t sizeQ = GetElementParams()->GetParams().size();
@@ -110,18 +110,17 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(
     }
   }
 
-  // Pre-compute scaling factors for each level (used in EXACT rescaling
-  // technique)
-  if (m_rsTechnique == FLEXIBLEAUTO || m_rsTechnique == FLEXIBLEAUTOEXT) {
+  // Pre-compute scaling factors for each level (used in EXACT scaling technique)
+  if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
     m_scalingFactorsReal.resize(sizeQ);
     m_scalingFactorsReal[0] = moduliQ[sizeQ - 1].ConvertToDouble();
 
     if (extraBits == 0) {
       for (uint32_t k = 1; k < sizeQ; k++) {
         double prevSF = m_scalingFactorsReal[k - 1];
-        m_scalingFactorsReal[k] =
-            prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
+        m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
         double ratio = m_scalingFactorsReal[k] / m_scalingFactorsReal[0];
+
         if (ratio <= 0.5 || ratio >= 2.0)
           OPENFHE_THROW(
               config_error,
@@ -134,8 +133,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(
       m_scalingFactorsReal[1] = moduliQ[sizeQ - 2].ConvertToDouble();
       for (uint32_t k = 2; k < sizeQ; k++) {
         double prevSF = m_scalingFactorsReal[k - 1];
-        m_scalingFactorsReal[k] =
-            prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
+        m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
         double ratio = m_scalingFactorsReal[k] / m_scalingFactorsReal[1];
 
         if (ratio <= 0.5 || ratio >= 2.0)

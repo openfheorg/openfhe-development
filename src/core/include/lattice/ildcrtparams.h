@@ -236,7 +236,7 @@ public:
     std::vector<std::shared_ptr<ILNativeParams>> GetParamPartition(uint32_t start, uint32_t end) const {
         if (end < start || end > this->GetParams().size()) {
             OPENFHE_THROW(math_error, "Incorrect parameters for GetParamPartition - (start: " + std::to_string(start) +
-                                           ", end:" + std::to_string(end) + ")");
+                                          ", end:" + std::to_string(end) + ")");
         }
 
         std::vector<std::shared_ptr<ILNativeParams>> resParams =
@@ -356,7 +356,7 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                  " is from a later version of the library");
+                                                 " is from a later version of the library");
         }
         ar(::cereal::base_class<ElemParams<IntType>>(this));
         ar(::cereal::make_nvp("p", m_parms));

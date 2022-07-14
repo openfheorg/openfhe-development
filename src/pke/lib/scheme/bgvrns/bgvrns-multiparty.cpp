@@ -86,7 +86,7 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
           cryptoParams->GetqlInvModq(i),
           cryptoParams->GetqlInvModqPrecon(i));
     }
-    if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
+    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
       for (size_t i = 0; i < sizeQl - 1; ++i) {
         NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
         NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());

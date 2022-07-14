@@ -273,7 +273,7 @@ void testParallelDiscreteUniformGenerator(typename V::Integer& modulus, std::str
     #pragma omp ordered
             {
                 OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " moving " << (int)randBigVectorPvt.size()
-                                 << " to starting point " << (int)randBigVector.size());
+                                         << " to starting point " << (int)randBigVector.size());
                 randBigVector.insert(randBigVector.end(), randBigVectorPvt.begin(), randBigVectorPvt.end());
                 OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " moved");
             }
@@ -512,8 +512,8 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
     #pragma omp ordered
                 {
                     OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " "
-                                     << "moving " << (int)dggCharVectorPvt.size() << " to starting point"
-                                     << (int)dggCharVector.size());
+                                             << "moving " << (int)dggCharVectorPvt.size() << " to starting point"
+                                             << (int)dggCharVector.size());
                     dggCharVector.insert(dggCharVector.end(), dggCharVectorPvt.begin(), dggCharVectorPvt.end());
                 }
             }
@@ -556,8 +556,8 @@ void ParallelDiscreteGaussianGenerator_VERY_LONG(const std::string& msg) {
     #pragma omp ordered
                 {
                     OPENFHE_DEBUG("thread #" << omp_get_thread_num() << " "
-                                     << "moving " << (int)dggBigVectorPvt.size() << " to starting point"
-                                     << (int)dggBigVector.size());
+                                             << "moving " << (int)dggBigVectorPvt.size() << " to starting point"
+                                             << (int)dggBigVector.size());
                     dggBigVector.insert(dggBigVector.end(), dggBigVectorPvt.begin(), dggBigVectorPvt.end());
                 }
             }

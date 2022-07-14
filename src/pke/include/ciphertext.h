@@ -582,21 +582,26 @@ class CiphertextImpl : public CryptoObject<Element> {
   // FUTURE ENHANCEMENT: current value of error norm
   // BigInteger m_norm;
 
-  std::vector<Element>
-      m_elements;  /*!< vector of ring elements for this Ciphertext */
-  uint32_t m_depth;  // holds the multiplicative depth of the ciphertext.
-  PlaintextEncodings encodingType; /*!< how was this Ciphertext encoded? */
+  // vector of ring elements for this Ciphertext
+  std::vector<Element> m_elements;
+
+  // holds the multiplicative depth of the ciphertext
+  uint32_t m_depth;
+  
+  // how was this Ciphertext encoded?
+  PlaintextEncodings encodingType;
 
   double m_scalingFactor;
   NativeInteger m_scalingFactorInt;
-  uint32_t m_level;  // holds the number of rescalings performed before getting
-                   // this ciphertext - initially 0
+  // holds the number of scalings performed before getting this ciphertext - initially 0
+  uint32_t m_level;
 
-  uint32_t m_hopslevel;  // Parameter for re-encryption to store the number of
-                       // times the ciphertext has been re-encrypted.
+  // Parameter for re-encryption to store the number of times the ciphertext has been re-encrypted.
+  uint32_t m_hopslevel;
+
   uint32_t m_slots;
-  // A map to hold different Metadata objects - used for flexible extensions of
-  // Ciphertext
+  
+  // A map to hold different Metadata objects - used for flexible extensions of Ciphertext
   MetadataMap m_metadataMap;
 };
 

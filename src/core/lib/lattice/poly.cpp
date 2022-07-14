@@ -461,7 +461,6 @@ void PolyImpl<VecType>::SetValues(const VecType& values, Format format) {
     }
     if (m_params->GetRingDimension() != values.GetLength() || m_params->GetModulus() != values.GetModulus()) {
         OPENFHE_THROW(type_error, "Parameter mismatch on SetValues for Polynomial");
-
     }
     m_values = make_unique<VecType>(values);
     m_format = format;
@@ -474,7 +473,6 @@ void PolyImpl<VecType>::SetValues(VecType&& values, Format format) {
     }
     if (m_params->GetRingDimension() != values.GetLength() || m_params->GetModulus() != values.GetModulus()) {
         OPENFHE_THROW(type_error, "Parameter mismatch on SetValues for Polynomial");
-
     }
     m_values = make_unique<VecType>(std::move(values));
     m_format = format;
@@ -585,8 +583,8 @@ template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Times(const PolyImpl& element) const {
     if (m_format != Format::EVALUATION || element.m_format != Format::EVALUATION)
         OPENFHE_THROW(not_implemented_error,
-                       "operator* for PolyImpl is supported only in "
-                       "Format::EVALUATION format.\n");
+                      "operator* for PolyImpl is supported only in "
+                      "Format::EVALUATION format.\n");
 
     if (!(*this->m_params == *element.m_params))
         OPENFHE_THROW(type_error, "operator* called on PolyImpl's with different params.");
@@ -635,8 +633,8 @@ template <typename VecType>
 const PolyImpl<VecType>& PolyImpl<VecType>::operator*=(const PolyImpl& element) {
     if (m_format != Format::EVALUATION || element.m_format != Format::EVALUATION)
         OPENFHE_THROW(not_implemented_error,
-                       "operator*= for PolyImpl is supported only in "
-                       "Format::EVALUATION format.\n");
+                      "operator*= for PolyImpl is supported only in "
+                      "Format::EVALUATION format.\n");
 
     if (!(*this->m_params == *element.m_params))
         OPENFHE_THROW(type_error, "operator*= called on PolyImpl's with different params.");
@@ -715,8 +713,8 @@ PolyImpl<VecType> PolyImpl<VecType>::AutomorphismTransform(const usint& k) const
         // automorphism in Format::COEFFICIENT representation
         if (!m_params->OrderIsPowerOfTwo()) {
             OPENFHE_THROW(not_implemented_error,
-                           "Automorphism in Format::COEFFICIENT representation is not currently "
-                           "supported for non-power-of-two polynomials");
+                          "Automorphism in Format::COEFFICIENT representation is not currently "
+                          "supported for non-power-of-two polynomials");
         }
         else {  // power of two cyclotomics
             if (k % 2 == 0) {
@@ -764,8 +762,8 @@ template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Transpose() const {
     if (m_format == Format::COEFFICIENT)
         OPENFHE_THROW(not_implemented_error,
-                       "PolyImpl element transposition is currently implemented "
-                       "only in the Format::EVALUATION representation.");
+                      "PolyImpl element transposition is currently implemented "
+                      "only in the Format::EVALUATION representation.");
 
     usint m = m_params->GetCyclotomicOrder();
     return AutomorphismTransform(m - 1);
@@ -971,8 +969,8 @@ std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(usint baseBits, 
 
         xDigit.SetValues(x.GetValues().GetDigitAtIndexForBase(i + 1, 1 << baseBits), x.GetFormat());
         OPENFHE_DEBUG("x.GetValue().GetDigitAtIndexForBase(i="
-              << i << ")" << std::endl
-              << x.GetValues().GetDigitAtIndexForBase(i * baseBits + 1, 1 << baseBits));
+                      << i << ")" << std::endl
+                      << x.GetValues().GetDigitAtIndexForBase(i * baseBits + 1, 1 << baseBits));
         OPENFHE_DEBUG("x.GetFormat()" << x.GetFormat());
         // TP: xDigit is all zeros for BACKEND=6, but not for BACKEND-2
         // *********************************************************
@@ -980,7 +978,8 @@ std::vector<PolyImpl<VecType>> PolyImpl<VecType>::BaseDecompose(usint baseBits, 
         if (evalModeAnswer)
             xDigit.SwitchFormat();
         result.push_back(xDigit);
-        OPENFHE_DEBUG("<xDigit.SwitchFormat." << i << ">" << std::endl << xDigit << "</xDigit.SwitchFormat." << i << ">");
+        OPENFHE_DEBUG("<xDigit.SwitchFormat." << i << ">" << std::endl
+                                              << xDigit << "</xDigit.SwitchFormat." << i << ">");
     }
 
 #if !defined(NDEBUG)
