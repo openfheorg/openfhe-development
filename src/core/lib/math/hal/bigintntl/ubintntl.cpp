@@ -340,7 +340,7 @@ usint myZZ::GetDigitAtIndexForBase(usint index, usint base) const {
 }
 
 // returns the bit at the index into the binary format of the big integer,
-// note that msb is 1 like all other bit indicies in OPENFHE.
+// note that msb is 1 like all other bit indicies in OpenFHE.
 
 uschar myZZ::GetBitAtIndex(usint index) const {
     return (uschar)GetBitRangeAtIndex(index, 1);
