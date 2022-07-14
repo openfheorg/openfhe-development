@@ -69,7 +69,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     parameters.schemeId = BFVRNS_SCHEME;
     parameters.plaintextModulus = 65537;
     parameters.standardDeviation = 3.19;
-    parameters.maxDepth = 2;
+    parameters.maxRelinSkDeg = 2;
     parameters.rsTech = NORESCALE;
     parameters.numLargeDigits = 0;
     parameters.evalMultCount = 2;
@@ -169,7 +169,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     parameters.schemeId = BFVRNS_SCHEME;
     parameters.plaintextModulus = 65537;
     parameters.standardDeviation = 3.19;
-    parameters.maxDepth = 2;
+    parameters.maxRelinSkDeg = 2;
     parameters.rsTech = NORESCALE;
     parameters.numLargeDigits = 0;
     parameters.evalMultCount = 2;
@@ -279,7 +279,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     parameters.SetPlaintextModulus(ptm);
     parameters.SetRootHermiteFactor(1.006);
     parameters.SetEvalMultCount(7);
-    parameters.SetMaxDepth(8);
+    parameters.SetMaxRelinSkDeg(8);
     parameters.SetScalingFactorBits(60);
     parameters.SetMultiplicationTechnique(HPS);
 

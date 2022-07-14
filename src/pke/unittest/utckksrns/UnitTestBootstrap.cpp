@@ -127,7 +127,7 @@ constexpr uint32_t FMODSIZE = 60;
 
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
-    // TestType,     Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,       Slots
+    // TestType,     Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,       Slots
     { BOOTSTRAP_FULL, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
     { BOOTSTRAP_FULL, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
     { BOOTSTRAP_FULL, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
@@ -139,7 +139,7 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     //{ BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
 #endif
     // ==========================================
-    // TestType,     Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
+    // TestType,     Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
     { BOOTSTRAP_FULL, "11", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 }, RDIM/2 },
     { BOOTSTRAP_FULL, "12", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 }, RDIM/2 },
     { BOOTSTRAP_FULL, "13", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 }, RDIM/2 },
@@ -151,7 +151,7 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     //{ BOOTSTRAP_FULL, "18", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 }, RDIM/2 },
 #endif
     // ==========================================
-    // TestType,      Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
+    // TestType,      Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
     { BOOTSTRAP_EDGE, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, RDIM/4 },
     { BOOTSTRAP_EDGE, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, RDIM/4 },
     { BOOTSTRAP_EDGE, "03", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, RDIM/4 },
@@ -163,7 +163,7 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     //{ BOOTSTRAP_EDGE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, RDIM/4 },
 #endif
     // ==========================================
-    // TestType,      Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
+    // TestType,      Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
     { BOOTSTRAP_EDGE, "11", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, RDIM/4 },
     { BOOTSTRAP_EDGE, "12", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, RDIM/4 },
     { BOOTSTRAP_EDGE, "13", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, RDIM/4 },
@@ -175,7 +175,7 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     //{ BOOTSTRAP_EDGE, "18", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, RDIM/4 },
 #endif
     // ==========================================
-    // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
+    // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
     { BOOTSTRAP_SPARSE, "01", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 }, 8 },
     { BOOTSTRAP_SPARSE, "02", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 }, 8 },
     { BOOTSTRAP_SPARSE, "03", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 }, 8 },
@@ -187,7 +187,7 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     //{ BOOTSTRAP_SPARSE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 }, 8 },
 #endif
     // ==========================================
-    // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
+    // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
     { BOOTSTRAP_SPARSE, "11", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "12", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "13", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, 8 },
@@ -199,7 +199,7 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     //{ BOOTSTRAP_SPARSE, "18", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, 8 },
 #endif
     // ==========================================
-    // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
+    // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
     { BOOTSTRAP_SPARSE, "21", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "22", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "23", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, 8 },
@@ -211,7 +211,7 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     //{ BOOTSTRAP_SPARSE, "28", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, 8 },
 #endif
     // ==========================================
-    // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
+    // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
     { BOOTSTRAP_SPARSE, "31", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "32", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "33", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 }, 8 },
@@ -223,7 +223,7 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
     //{ BOOTSTRAP_SPARSE, "38", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 }, 8 },
 #endif
     // ==========================================
-    // TestType,            Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MDepth, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
+    // TestType,            Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, RSTech,          LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1
     { BOOTSTRAP_KEY_SWITCH, "01", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SFBITS,     DFLT,  8,       UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
     { BOOTSTRAP_KEY_SWITCH, "02", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SFBITS,     DFLT,  8,       UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },
     { BOOTSTRAP_KEY_SWITCH, "03", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SFBITS,     DFLT,  8,       UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 } },

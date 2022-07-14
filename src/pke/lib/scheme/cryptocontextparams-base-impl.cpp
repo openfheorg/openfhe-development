@@ -53,7 +53,7 @@ namespace lbcrypto {
     SET_TO_SCHEME_DEFAULT(SCHEME, standardDeviation);          \
     SET_TO_SCHEME_DEFAULT(SCHEME, rootHermiteFactor);          \
     SET_TO_SCHEME_DEFAULT(SCHEME, secretKeyDist);              \
-    SET_TO_SCHEME_DEFAULT(SCHEME, maxDepth);                   \
+    SET_TO_SCHEME_DEFAULT(SCHEME, maxRelinSkDeg);              \
     SET_TO_SCHEME_DEFAULT(SCHEME, ksTech);                     \
     SET_TO_SCHEME_DEFAULT(SCHEME, rsTech);                     \
     SET_TO_SCHEME_DEFAULT(SCHEME, batchSize);                  \
@@ -99,7 +99,7 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; standardDeviation: " << obj.standardDeviation
         << "; rootHermiteFactor: " << obj.rootHermiteFactor
         << "; secretKeyDist: " << obj.secretKeyDist
-        << "; maxDepth: " << obj.maxDepth
+        << "; maxRelinSkDeg: " << obj.maxRelinSkDeg
         << "; ksTech: " << obj.ksTech
         << "; rsTech: " << obj.rsTech
         << "; batchSize: " << obj.batchSize

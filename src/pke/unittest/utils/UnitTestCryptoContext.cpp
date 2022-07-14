@@ -58,8 +58,8 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.secretKeyDist)) {
         parameters.SetSecretKeyDist(static_cast<SecretKeyDist>(std::round(params.secretKeyDist)));
     }
-    if (!isDefaultValue(params.maxDepth)) {
-        parameters.SetMaxDepth(static_cast<int>(std::round(params.maxDepth)));
+    if (!isDefaultValue(params.maxRelinSkDeg)) {
+        parameters.SetMaxRelinSkDeg(static_cast<int>(std::round(params.maxRelinSkDeg)));
     }
     if (!isDefaultValue(params.firstModSize)) {
         parameters.SetFirstModSize(static_cast<usint>(std::round(params.firstModSize)));

@@ -90,7 +90,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(MultiplicationTechnique multMethod
     parameters.SetRingDim(RING_DIM);
     parameters.SetMultiplicationTechnique(multMethod);
     parameters.SetSecurityLevel(HEStd_128_classic);
-    parameters.SetMaxDepth(2);
+    parameters.SetMaxRelinSkDeg(2);
     parameters.SetStandardDeviation(3.19);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);

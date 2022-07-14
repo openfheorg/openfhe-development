@@ -721,7 +721,7 @@ void FastRotationsDemo2() {
   parameters.SetKeySwitchTechnique(BV);
   /*
    * This controls how many multiplications are possible without rescaling.
-   * The number of multiplications (depth) is maxDepth - 1.
+   * The number of multiplications (maxRelinSkDeg) is maxDepth - 1.
    * This is useful for an optimization technique called lazy
    * re-linearization (only applicable in FIXEDMANUAL, as
    * FIXEDAUTO implements automatic rescaling).

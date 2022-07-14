@@ -59,7 +59,7 @@ static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC() {
     parameters.SetRootHermiteFactor(1.03);
     parameters.SetStandardDeviation(4);
     parameters.SetEvalMultCount(3);
-    parameters.SetMaxDepth(4);
+    parameters.SetMaxRelinSkDeg(4);
     parameters.SetScalingFactorBits(60);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);

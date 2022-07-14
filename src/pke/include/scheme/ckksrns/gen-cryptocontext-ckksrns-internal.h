@@ -71,7 +71,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         parameters.GetRootHermiteFactor(),
         parameters.GetDigitSize(),
         parameters.GetSecretKeyDist(),
-        parameters.GetMaxDepth(),
+        parameters.GetMaxRelinSkDeg(),
         parameters.GetKeySwitchTechnique(),
         parameters.GetRescalingTechnique(),
         parameters.GetEncryptionTechnique(),

@@ -43,7 +43,7 @@ std::string UnitTestCCParams::toString() const {
         << "digitSize [" << digitSize << "], "
         << "batchSize [" << batchSize << "], "
         << "secretKeyDist [" << secretKeyDist << "], "
-        << "maxDepth [" << maxDepth << "], "
+        << "maxRelinSkDeg [" << maxRelinSkDeg << "], "
         << "firstModSize [" << firstModSize << "], "
         << "securityLevel [" << securityLevel << "], "
         << "ksTech [" << ksTech << "], "

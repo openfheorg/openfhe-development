@@ -127,7 +127,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
 			   rescaleTech,
 			   HYBRID,
 			   3, /*numLargeDigits*/
-			   2, /*maxDepth*/
+			   2, /*maxRelinSkDeg*/
 #if NATIVEINT==128
 			   89, /*firstMod*/
 #else
@@ -314,7 +314,7 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
 			   rescaleTech,
 			   HYBRID,
 			   3, /*numLargeDigits*/
-			   2, /*maxDepth*/
+			   2, /*maxRelinSkDeg*/
 #if NATIVEINT==128
 			   89, /*firstMod*/
 #else

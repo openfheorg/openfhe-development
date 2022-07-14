@@ -75,7 +75,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_noiseScale = 1;
     m_digitSize = 1;
     m_dgg.SetStd(m_distributionParameter);
-    m_maxDepth = 2;
+    m_maxRelinSkDeg = 2;
     m_secretKeyDist = GAUSSIAN;
     m_stdLevel = HEStd_NotSet;
   }
@@ -93,7 +93,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_noiseScale = rhs.m_noiseScale;
     m_digitSize = rhs.m_digitSize;
     m_dgg.SetStd(m_distributionParameter);
-    m_maxDepth = rhs.m_maxDepth;
+    m_maxRelinSkDeg = rhs.m_maxRelinSkDeg;
     m_secretKeyDist = rhs.m_secretKeyDist;
     m_stdLevel = rhs.m_stdLevel;
   }
@@ -107,7 +107,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param assuranceMeasure assurance level.
    * @param securityLevel security level.
    * @param digitSize the size of the relinearization window.
-   * @param maxDepth the maximum power of secret key for which the
+   * @param maxRelinSkDeg the maximum power of secret key for which the
    * relinearization key is generated
    * @param secretKeyDist mode for secret polynomial, defaults to GAUSSIAN.
    */
@@ -115,7 +115,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint digitSize,
-                       int maxDepth = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
+                       int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
                        PlaintextModulus noiseScale = 1)
       : CryptoParametersBase<Element>(params, encodingParams) {
     m_distributionParameter = distributionParameter;
@@ -124,7 +124,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_noiseScale = noiseScale;
     m_digitSize = digitSize;
     m_dgg.SetStd(m_distributionParameter);
-    m_maxDepth = maxDepth;
+    m_maxRelinSkDeg = maxRelinSkDeg;
     m_secretKeyDist = secretKeyDist;
     m_stdLevel = HEStd_NotSet;
   }
@@ -139,7 +139,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param assuranceMeasure assurance level.
    * @param securityLevel security level.
    * @param digitSize the size of the digit size.
-   * @param maxDepth the maximum power of secret key for which the
+   * @param maxRelinSkDeg the maximum power of secret key for which the
    * relinearization key is generated
    * @param secretKeyDist mode for secret polynomial, defaults to GAUSSIAN.
    */
@@ -147,7 +147,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        SecurityLevel stdLevel, usint digitSize,
-                       int maxDepth = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
+                       int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
                        PlaintextModulus noiseScale = 1)
       : CryptoParametersBase<Element>(params, encodingParams) {
     m_distributionParameter = distributionParameter;
@@ -156,7 +156,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     m_noiseScale = noiseScale;
     m_digitSize = digitSize;
     m_dgg.SetStd(m_distributionParameter);
-    m_maxDepth = maxDepth;
+    m_maxRelinSkDeg = maxRelinSkDeg;
     m_secretKeyDist = secretKeyDist;
     m_stdLevel = stdLevel;
   }
@@ -208,7 +208,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    *
    * @return the computation depth supported d.
    */
-  size_t GetMaxDepth() const { return m_maxDepth; }
+  size_t GetMaxRelinSkDeg() const { return m_maxRelinSkDeg; }
 
   /**
    * Gets the secretKeyDist setting: GAUSSIAN or UNIFORM_TERNARY
@@ -283,7 +283,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * relinearization key is generated
    * @param depth
    */
-  void SetMaxDepth(size_t maxDepth) { m_maxDepth = maxDepth; }
+  void SetMaxRelinSkDeg(size_t maxRelinSkDeg) { m_maxRelinSkDeg = maxRelinSkDeg; }
 
   /**
    * Configures the secretKeyDist for generating the secret key polynomial
@@ -332,7 +332,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("sl", m_securityLevel));
     ar(::cereal::make_nvp("ns", m_noiseScale));
     ar(::cereal::make_nvp("rw", m_digitSize));
-    ar(::cereal::make_nvp("md", m_maxDepth));
+    ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
     ar(::cereal::make_nvp("mo", m_secretKeyDist));
     ar(::cereal::make_nvp("slv", m_stdLevel));
   }
@@ -346,7 +346,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("sl", m_securityLevel));
     ar(::cereal::make_nvp("ns", m_noiseScale));
     ar(::cereal::make_nvp("rw", m_digitSize));
-    ar(::cereal::make_nvp("md", m_maxDepth));
+    ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
     ar(::cereal::make_nvp("mo", m_secretKeyDist));
     ar(::cereal::make_nvp("slv", m_stdLevel));
   }
@@ -367,7 +367,7 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   // maximum depth support of a ciphertext without keyswitching
   // corresponds to the highest power of secret key for which evaluation keys
   // are genererated
-  uint32_t m_maxDepth;
+  uint32_t m_maxRelinSkDeg;
   // specifies whether the secret polynomials are generated from discrete
   // Gaussian distribution or ternary distribution with the norm of unity
   SecretKeyDist m_secretKeyDist;

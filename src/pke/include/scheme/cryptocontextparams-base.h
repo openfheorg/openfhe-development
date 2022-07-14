@@ -78,8 +78,8 @@ class Params {
     // both enum type and values should be renamed?
     SecretKeyDist secretKeyDist;
 
-    // Max possible multiplicative depth of the scheme
-    int maxDepth;
+    // Max linearization security key degree (former maxDepth: max possible multiplicative depth of the scheme)
+    int maxRelinSkDeg;
 
     // key switching technique: BV or HYBRID currently
     // For BV we do not have extra modulus, so the security depends on ciphertext modulus Q.
@@ -177,8 +177,8 @@ public:
     SecretKeyDist GetSecretKeyDist() const {
         return secretKeyDist;
     }
-    int GetMaxDepth() const {
-        return maxDepth;
+    int GetMaxRelinSkDeg() const {
+        return maxRelinSkDeg;
     }
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
@@ -242,8 +242,8 @@ public:
     void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
         secretKeyDist = secretKeyDist0;
     }
-    void SetMaxDepth(int maxDepth0) {
-        maxDepth = maxDepth0;
+    void SetMaxRelinSkDeg(int maxRelinSkDeg0) {
+        maxRelinSkDeg = maxRelinSkDeg0;
     }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;

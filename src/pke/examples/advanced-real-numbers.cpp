@@ -808,12 +808,12 @@ void FastRotationsDemo2() {
   // uint32_t dnum = 0;  -already default
   /*
    * This controls how many multiplications are possible without rescaling.
-   * The number of multiplications (depth) is maxDepth - 1.
+   * The number of multiplications (maxRelinSkDeg) is maxDepth - 1.
    * This is useful for an optimization technique called lazy
    * re-linearization (only applicable in FIXEDMANUAL, as
    * FLEXIBLEAUTO implements automatic rescaling).
    */
-  // uint32_t maxDepth = 2; - already default
+  // uint32_t maxDepth (maxRelinSkDeg) = 2; - already default
   /*
    * The digit size is only used in BV key switching and
    * it allows us to perform digit decomposition at a finer granularity.

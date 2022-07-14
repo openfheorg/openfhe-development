@@ -1544,7 +1544,7 @@ protected:
 
     if (evalKeyVec.size() < (ciphertext->GetElements().size() - 2)) {
       OPENFHE_THROW(type_error,
-                     "Insufficient value was used for maxDepth to generate "
+                     "Insufficient value was used for maxRelinSkDeg to generate "
                      "keys for EvalMult");
     }
 
@@ -1565,7 +1565,7 @@ protected:
     const auto evalKeyVec = GetEvalMultKeyVector(ciphertext->GetKeyTag());
     if (evalKeyVec.size() < (ciphertext->GetElements().size() - 2)) {
       OPENFHE_THROW(type_error,
-                     "Insufficient value was used for maxDepth to generate "
+                     "Insufficient value was used for maxRelinSkDeg to generate "
                      "keys for EvalMult");
     }
 
@@ -1594,7 +1594,7 @@ protected:
     if (evalKeyVec.size() < (ciphertext1->GetElements().size() +
                              ciphertext2->GetElements().size() - 3)) {
       OPENFHE_THROW(type_error,
-                     "Insufficient value was used for maxDepth to generate "
+                     "Insufficient value was used for maxRelinSkDeg to generate "
                      "keys for EvalMult");
     }
 
@@ -2097,7 +2097,7 @@ protected:
     const auto evalKeyVec = GetEvalMultKeyVector(ciphertextVec[0]->GetKeyTag());
     if (evalKeyVec.size() < (ciphertextVec[0]->GetElements().size() - 2)) {
       OPENFHE_THROW(type_error,
-                     "Insufficient value was used for maxDepth to generate "
+                     "Insufficient value was used for maxRelinSkDeg to generate "
                      "keys for EvalMult");
     }
 

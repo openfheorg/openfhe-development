@@ -81,7 +81,7 @@ void SHERun() {
   parameters.SetPlaintextModulus(2);
   parameters.SetRootHermiteFactor(1.0048);
   parameters.SetEvalMultCount(5);
-  parameters.SetMaxDepth(3);
+  parameters.SetMaxRelinSkDeg(3);
   parameters.SetScalingFactorBits(55);
   parameters.SetMultiplicationTechnique(BEHZ);
 

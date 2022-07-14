@@ -85,7 +85,7 @@ protected:
    * @param securityLevel security level.
    * @param digitSize the size of the relinearization window.
    * @param secretKeyDist sets the secretKeyDist of operation: GAUSSIAN or UNIFORM_TERNARY
-   * @param maxDepth the maximum power of secret key for which the
+   * @param maxRelinSkDeg the maximum power of secret key for which the
    * relinearization key is generated
    * @param ksTech key switching method
    * @param rsTech rescaling method
@@ -94,7 +94,7 @@ protected:
                        const PlaintextModulus &plaintextModulus,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
-                       int maxDepth = 2,
+                       int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
                        RescalingTechnique rsTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
@@ -104,7 +104,7 @@ protected:
             EncodingParams(
                 std::make_shared<EncodingParamsImpl>(plaintextModulus)),
             distributionParameter, assuranceMeasure, securityLevel, digitSize,
-            maxDepth, secretKeyDist) {
+            maxRelinSkDeg, secretKeyDist) {
     m_ksTechnique = ksTech;
     m_rsTechnique = rsTech;
     m_encTechnique = encTech;
@@ -115,14 +115,14 @@ protected:
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
                        float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
-                       int maxDepth = 2,
+                       int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
                        RescalingTechnique rsTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRLWE<DCRTPoly>(
             params, encodingParams, distributionParameter, assuranceMeasure,
-            securityLevel, digitSize, maxDepth, secretKeyDist) {
+            securityLevel, digitSize, maxRelinSkDeg, secretKeyDist) {
     m_ksTechnique = ksTech;
     m_rsTechnique = rsTech;
     m_encTechnique = encTech;

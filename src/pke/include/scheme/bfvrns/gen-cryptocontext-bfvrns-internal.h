@@ -67,7 +67,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 //			parameters.GetRootHermiteFactor(),  // TODO (dsuponit): find a way to get securityLevel of different types
 //			parameters.GetDigitSize(),
 //			parameters.GetSecretKeyDist(),
-//			parameters.GetMaxDepth()) :
+//			parameters.GetMaxRelinSkDeg()) :
 //		std::make_shared<typename ContextGeneratorType::CryptoParams>(
 //			ep,
 //			encodingParams,
@@ -76,7 +76,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 //			parameters.GetSecurityLevel(),
 //			parameters.GetDigitSize(),
 //			parameters.GetSecretKeyDist(),
-//			parameters.GetMaxDepth());
+//			parameters.GetMaxRelinSkDeg());
 
 	auto params =
 		std::make_shared<typename ContextGeneratorType::CryptoParams>(
@@ -87,7 +87,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 			parameters.GetRootHermiteFactor(),  // TODO (dsuponit): find a way to get securityLevel of different types
 			parameters.GetDigitSize(),
 			parameters.GetSecretKeyDist(),
-			parameters.GetMaxDepth(),
+			parameters.GetMaxRelinSkDeg(),
 			parameters.GetKeySwitchTechnique(),
 			parameters.GetRescalingTechnique(),
 			parameters.GetEncryptionTechnique(),

@@ -93,7 +93,7 @@ CryptoContext<DCRTPoly> GenerateBGVrnsContext() {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetMultiplicativeDepth(1);
     parameters.SetPlaintextModulus(65537);
-    parameters.SetMaxDepth(1);
+    parameters.SetMaxRelinSkDeg(1);
     parameters.SetRescalingTechnique(FIXEDMANUAL);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
