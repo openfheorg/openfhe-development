@@ -59,7 +59,6 @@ TEST_F(UTPKESer, BFVrns_DCRTPoly_Serial) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(16);
     parameters.SetStandardDeviation(4);
-    parameters.SetRootHermiteFactor(1.006);
     parameters.SetEvalMultCount(1);
     parameters.SetScalingFactorBits(60);
 

@@ -54,28 +54,29 @@ public:
   CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params,
                        const PlaintextModulus &plaintextModulus,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
-                       int maxRelinSkDeg = 2,
-                       KeySwitchTechnique ksTech = BV,
-                       ScalingTechnique scalTech = FIXEDMANUAL,
-                       EncryptionTechnique encTech = STANDARD,
-                       MultiplicationTechnique multTech = HPS)
-      : CryptoParametersRNS(params, plaintextModulus, distributionParameter,
-          assuranceMeasure, securityLevel, digitSize, secretKeyDist, maxRelinSkDeg,
-          ksTech, scalTech, encTech, multTech) {}
-
-  CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params,
-                       EncodingParams encodingParams,
-                       float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
+                       SecurityLevel securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
                        int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
                        ScalingTechnique scalTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRNS(
-            params, encodingParams, distributionParameter, assuranceMeasure,
-            securityLevel, digitSize, secretKeyDist, maxRelinSkDeg,
+            params, plaintextModulus,
+            distributionParameter, assuranceMeasure, securityLevel, digitSize, secretKeyDist, maxRelinSkDeg,
+            ksTech, scalTech, encTech, multTech) {}
+
+  CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params,
+                       EncodingParams encodingParams,
+                       float distributionParameter, float assuranceMeasure,
+                       SecurityLevel securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
+                       int maxRelinSkDeg = 2,
+                       KeySwitchTechnique ksTech = BV,
+                       ScalingTechnique scalTech = FIXEDMANUAL,
+                       EncryptionTechnique encTech = STANDARD,
+                       MultiplicationTechnique multTech = HPS)
+      : CryptoParametersRNS(
+            params, encodingParams,
+            distributionParameter, assuranceMeasure, securityLevel, digitSize, secretKeyDist, maxRelinSkDeg,
             ksTech, scalTech, encTech, multTech) {}
 
   virtual ~CryptoParametersCKKSRNS() {}

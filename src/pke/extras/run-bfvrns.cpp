@@ -79,7 +79,6 @@ void SHERun() {
 
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(2);
-  parameters.SetRootHermiteFactor(1.0048);
   parameters.SetEvalMultCount(5);
   parameters.SetMaxRelinSkDeg(3);
   parameters.SetScalingFactorBits(55);

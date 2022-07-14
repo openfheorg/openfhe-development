@@ -84,7 +84,6 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
 
   double sigma = cryptoParamsBFVRNS->GetDistributionParameter();
   double alpha = cryptoParamsBFVRNS->GetAssuranceMeasure();
-  double hermiteFactor = cryptoParamsBFVRNS->GetSecurityLevel();
   double p = static_cast<double>(cryptoParamsBFVRNS->GetPlaintextModulus());
   uint32_t digitSize = cryptoParamsBFVRNS->GetDigitSize();
   SecurityLevel stdLevel = cryptoParamsBFVRNS->GetStdLevel();
@@ -121,7 +120,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   // GAUSSIAN security constraint
   auto nRLWE = [&](double logq) -> double {
     if (stdLevel == HEStd_NotSet) {
-      return (logq - log(sigma)) / (4. * log(hermiteFactor));
+      return 0;
     } else {
       return static_cast<double>(StdLatticeParm::FindRingDim(
           distType, stdLevel, static_cast<long>(ceil(logq / log(2)))));

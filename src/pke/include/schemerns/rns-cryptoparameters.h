@@ -93,18 +93,15 @@ protected:
   CryptoParametersRNS(std::shared_ptr<ParmType> params,
                        const PlaintextModulus &plaintextModulus,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
+                       SecurityLevel securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
                        int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
                        ScalingTechnique scalTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRLWE<DCRTPoly>(
-            params,
-            EncodingParams(
-                std::make_shared<EncodingParamsImpl>(plaintextModulus)),
-            distributionParameter, assuranceMeasure, securityLevel, digitSize,
-            maxRelinSkDeg, secretKeyDist) {
+            params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
+            distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist) {
     m_ksTechnique = ksTech;
     m_scalTechnique = scalTech;
     m_encTechnique = encTech;
@@ -114,15 +111,15 @@ protected:
   CryptoParametersRNS(std::shared_ptr<ParmType> params,
                        EncodingParams encodingParams,
                        float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
+                       SecurityLevel securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
                        int maxRelinSkDeg = 2,
                        KeySwitchTechnique ksTech = BV,
                        ScalingTechnique scalTech = FIXEDMANUAL,
                        EncryptionTechnique encTech = STANDARD,
                        MultiplicationTechnique multTech = HPS)
       : CryptoParametersRLWE<DCRTPoly>(
-            params, encodingParams, distributionParameter, assuranceMeasure,
-            securityLevel, digitSize, maxRelinSkDeg, secretKeyDist) {
+            params, encodingParams,
+            distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist) {
     m_ksTechnique = ksTech;
     m_scalTechnique = scalTech;
     m_encTechnique = encTech;

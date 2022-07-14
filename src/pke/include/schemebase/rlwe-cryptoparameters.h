@@ -71,7 +71,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   CryptoParametersRLWE() : CryptoParametersBase<Element>() {
     m_distributionParameter = 0.0f;
     m_assuranceMeasure = 0.0f;
-    m_securityLevel = 0.0f;
     m_noiseScale = 1;
     m_digitSize = 1;
     m_dgg.SetStd(m_distributionParameter);
@@ -89,44 +88,12 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
                                       rhs.GetPlaintextModulus()) {
     m_distributionParameter = rhs.m_distributionParameter;
     m_assuranceMeasure = rhs.m_assuranceMeasure;
-    m_securityLevel = rhs.m_securityLevel;
     m_noiseScale = rhs.m_noiseScale;
     m_digitSize = rhs.m_digitSize;
     m_dgg.SetStd(m_distributionParameter);
     m_maxRelinSkDeg = rhs.m_maxRelinSkDeg;
     m_secretKeyDist = rhs.m_secretKeyDist;
     m_stdLevel = rhs.m_stdLevel;
-  }
-
-  /**
-   * Constructor that initializes values.
-   *
-   * @param &params element parameters.
-   * @param &encodingParams encoding-specific parameters
-   * @param distributionParameter noise distribution parameter.
-   * @param assuranceMeasure assurance level.
-   * @param securityLevel security level.
-   * @param digitSize the size of the relinearization window.
-   * @param maxRelinSkDeg the maximum power of secret key for which the
-   * relinearization key is generated
-   * @param secretKeyDist mode for secret polynomial, defaults to GAUSSIAN.
-   */
-  CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
-                       EncodingParams encodingParams,
-                       float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint digitSize,
-                       int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
-                       PlaintextModulus noiseScale = 1)
-      : CryptoParametersBase<Element>(params, encodingParams) {
-    m_distributionParameter = distributionParameter;
-    m_assuranceMeasure = assuranceMeasure;
-    m_securityLevel = securityLevel;
-    m_noiseScale = noiseScale;
-    m_digitSize = digitSize;
-    m_dgg.SetStd(m_distributionParameter);
-    m_maxRelinSkDeg = maxRelinSkDeg;
-    m_secretKeyDist = secretKeyDist;
-    m_stdLevel = HEStd_NotSet;
   }
 
   /**
@@ -152,7 +119,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
       : CryptoParametersBase<Element>(params, encodingParams) {
     m_distributionParameter = distributionParameter;
     m_assuranceMeasure = assuranceMeasure;
-    m_securityLevel = 0;
     m_noiseScale = noiseScale;
     m_digitSize = digitSize;
     m_dgg.SetStd(m_distributionParameter);
@@ -180,13 +146,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @return the assurance measure.
    */
   float GetAssuranceMeasure() const { return m_assuranceMeasure; }
-
-  /**
-   * Returns the value of root Hermite factor security level /delta.
-   *
-   * @return the root Hermite factor /delta.
-   */
-  float GetSecurityLevel() const { return m_securityLevel; }
 
   /**
    * Returns the value of noise scale.
@@ -253,14 +212,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   }
 
   /**
-   * Sets the value of security level /delta
-   * @param securityLevel
-   */
-  void SetSecurityLevel(float securityLevel) {
-    m_securityLevel = securityLevel;
-  }
-
-  /**
    * Sets the standard security level
    * @param standard security level
    */
@@ -307,7 +258,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
            *this->GetEncodingParams() == *el->GetEncodingParams() &&
            m_distributionParameter == el->GetDistributionParameter() &&
            m_assuranceMeasure == el->GetAssuranceMeasure() &&
-           m_securityLevel == el->GetSecurityLevel() &&
            m_noiseScale == el->GetNoiseScale() &&
            m_digitSize == el->GetDigitSize() && m_secretKeyDist == el->GetSecretKeyDist() &&
            m_stdLevel == el->GetStdLevel();
@@ -317,11 +267,11 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     CryptoParametersBase<Element>::PrintParameters(os);
 
     os << "Distrib parm " << GetDistributionParameter()
-       << ", Assurance measure " << GetAssuranceMeasure() << ", Security level "
-       << GetSecurityLevel() << ", Noise scale " << GetNoiseScale()
+       << ", Assurance measure " << GetAssuranceMeasure()
+       << ", Noise scale " << GetNoiseScale()
        << ", Digit Size " << GetDigitSize()
-       << ", SecretKeyDist " << GetSecretKeyDist() << ", Standard security level "
-       << GetStdLevel() << std::endl;
+       << ", SecretKeyDist " << GetSecretKeyDist()
+       << ", Standard security level " << GetStdLevel() << std::endl;
   }
 
   template <class Archive>
@@ -329,7 +279,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::base_class<CryptoParametersBase<Element>>(this));
     ar(::cereal::make_nvp("dp", m_distributionParameter));
     ar(::cereal::make_nvp("am", m_assuranceMeasure));
-    ar(::cereal::make_nvp("sl", m_securityLevel));
     ar(::cereal::make_nvp("ns", m_noiseScale));
     ar(::cereal::make_nvp("rw", m_digitSize));
     ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
@@ -343,7 +292,6 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
     ar(::cereal::make_nvp("dp", m_distributionParameter));
     m_dgg.SetStd(m_distributionParameter);
     ar(::cereal::make_nvp("am", m_assuranceMeasure));
-    ar(::cereal::make_nvp("sl", m_securityLevel));
     ar(::cereal::make_nvp("ns", m_noiseScale));
     ar(::cereal::make_nvp("rw", m_digitSize));
     ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
@@ -358,15 +306,12 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
   float m_distributionParameter;
   // assurance measure alpha
   float m_assuranceMeasure;
-  // root Hermite value /delta
-  float m_securityLevel;
   // noise scale
   PlaintextModulus m_noiseScale;
   // digit size
   usint m_digitSize;
   // maximum depth support of a ciphertext without keyswitching
-  // corresponds to the highest power of secret key for which evaluation keys
-  // are genererated
+  // corresponds to the highest power of secret key for which evaluation keys are genererated
   uint32_t m_maxRelinSkDeg;
   // specifies whether the secret polynomials are generated from discrete
   // Gaussian distribution or ternary distribution with the norm of unity

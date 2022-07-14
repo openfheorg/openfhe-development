@@ -82,7 +82,6 @@ void BFVrnsEvalAtIndex2n() {
   CCParams<CryptoContextBFVRNS> parameters;
 
   parameters.SetPlaintextModulus(65537);
-  parameters.SetRootHermiteFactor(1.006);
   parameters.SetEvalMultCount(1);
   parameters.SetMaxRelinSkDeg(3);
 
@@ -184,7 +183,6 @@ void BFVrnsEvalMerge2n() {
   CCParams<CryptoContextBFVRNS> parameters;
 
   parameters.SetPlaintextModulus(65537);
-  parameters.SetRootHermiteFactor(1.006);
   parameters.SetEvalMultCount(2);
   parameters.SetMaxRelinSkDeg(3);
 

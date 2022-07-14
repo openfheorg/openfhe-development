@@ -56,7 +56,6 @@ class UnitTestEvalMultMany : public ::testing::Test {
 static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC() {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(256);
-    parameters.SetRootHermiteFactor(1.03);
     parameters.SetStandardDeviation(4);
     parameters.SetEvalMultCount(3);
     parameters.SetMaxRelinSkDeg(4);

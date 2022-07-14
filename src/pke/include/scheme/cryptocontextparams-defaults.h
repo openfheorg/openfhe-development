@@ -50,7 +50,6 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr PlaintextModulus     ptModulus           = 0;
     constexpr usint                digitSize           = 0;
     constexpr float                standardDeviation   = 3.19;
-    constexpr float                rootHermiteFactor   = 1.006;
     constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxRelinSkDeg       = 2;
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
@@ -81,7 +80,6 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr PlaintextModulus     ptModulus           = 0;
     constexpr usint                digitSize           = 0;
     constexpr float                standardDeviation   = 3.19;
-    constexpr float                rootHermiteFactor   = 0.0;
     constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxRelinSkDeg       = 2;
     constexpr KeySwitchTechnique   ksTech              = BV;          // set to avoid compiler errors
@@ -106,7 +104,6 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr PlaintextModulus     ptModulus           = 0;
     constexpr usint                digitSize           = 0;
     constexpr float                standardDeviation   = 3.19;
-    constexpr float                rootHermiteFactor   = 1.006;
     constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxRelinSkDeg       = 2;
     constexpr KeySwitchTechnique   ksTech              = HYBRID;

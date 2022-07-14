@@ -68,14 +68,9 @@ class Params {
     // Has impact on parameger generation
     float standardDeviation;
 
-    // Related to Security Level
-    // Currently used in BFV parameter generation
-    float rootHermiteFactor;
-
     // GAUSSIAN means Gaussian secret key distribution
     // UNIFORM_TERNARY means Ternary secret key distribution
     // SPARSE_TERNARY means sparse secret key distribution
-    // both enum type and values should be renamed?
     SecretKeyDist secretKeyDist;
 
     // Max linearization security key degree (former maxDepth: max possible multiplicative depth of the scheme)
@@ -153,11 +148,6 @@ public:
 
     ~Params() = default;
 
-    bool IsValidRootHermiteFactor() const {
-        // rootHermiteFactor is valid or set if it is greater than or equal to 1.0
-        float epsilon = 0.001;
-        return (rootHermiteFactor >= (1.0-epsilon));
-    }
     // getters
     SCHEME GetScheme() const {
         return scheme;
@@ -170,9 +160,6 @@ public:
     }
     float GetStandardDeviation() const {
         return standardDeviation;
-    }
-    float GetRootHermiteFactor() const {
-        return rootHermiteFactor;
     }
     SecretKeyDist GetSecretKeyDist() const {
         return secretKeyDist;
@@ -235,9 +222,6 @@ public:
     }
     void SetStandardDeviation(float standardDeviation0) {
         standardDeviation = standardDeviation0;
-    }
-    void SetRootHermiteFactor(float rootHermiteFactor0) {
-        rootHermiteFactor = rootHermiteFactor0;
     }
     void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
         secretKeyDist = secretKeyDist0;
