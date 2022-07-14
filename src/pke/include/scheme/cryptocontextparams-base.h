@@ -130,7 +130,7 @@ class Params {
     usint keySwitchCount;
 
     // not sure, some parameter used in BGV
-    usint multiHopQModulusLowerBound;
+    usint multiHopModSize;
 
     // new parameter used in BFV type scheme: Encryption can be using floor(Q/t) * m  or round(Q*m / t)
     EncryptionTechnique encryptionTechnique;
@@ -222,8 +222,8 @@ public:
     MultiplicationTechnique GetMultiplicationTechnique() const {
         return multiplicationTechnique;
     }
-    usint GetMultiHopQModulusLowerBound() const {
-        return multiHopQModulusLowerBound;
+    usint GetMultiHopModSize() const {
+        return multiHopModSize;
     }
 
     // setters
@@ -287,8 +287,8 @@ public:
     void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) {
         multiplicationTechnique = multiplicationTechnique0;
     }
-    void SetMultiHopQModulusLowerBound(usint multiHopQModulusLowerBound0) {
-        multiHopQModulusLowerBound = multiHopQModulusLowerBound0;
+    void SetMultiHopModSize(usint multiHopModSize0) {
+        multiHopModSize = multiHopModSize0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);

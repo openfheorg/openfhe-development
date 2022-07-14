@@ -73,7 +73,7 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr usint                keySwitchCount      = 3;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPS;
-    constexpr usint                multiHopQModulusLowerBound = 0;
+    constexpr usint                multiHopModSize     = 0;
 }; // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {
@@ -98,7 +98,7 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr usint                keySwitchCount      = 0;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPSPOVERQLEVELED;
-    constexpr usint                multiHopQModulusLowerBound = 0;
+    constexpr usint                multiHopModSize     = 0;
 }; // namespace BFVRNS_SCHEME_DEFAULTS
 
 namespace BGVRNS_SCHEME_DEFAULTS {
@@ -123,7 +123,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr usint                keySwitchCount      = 3;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPS;
-    constexpr usint                multiHopQModulusLowerBound = 0;
+    constexpr usint                multiHopModSize     = 0;
 }; // namespace BGVRNS_SCHEME_DEFAULTS
 
 //====================================================================================================================
