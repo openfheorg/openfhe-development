@@ -102,14 +102,14 @@ We request that you conform to the following workflow:
    that you have not introduced any additional bugs.
 8. Make sure all unit tests pass and add additional unit tests as needed for features you've added.
 9. Before creating merge requests, developers should rebase their branch from main and test that their code works
-   properly.  [This page describes a workflow to rebase a branch from a main branch.](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/contributing/rebasing_off_main.html)
+   properly.  [This page describes a workflow to rebase a branch from a main branch.](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/rebasing_off_main.html)
 10. Submit a merge request so project owners can review your commits here. You should include the text
-    ```Fixes #issue``` in your merge request.
+     ```Fixes #issue``` in your merge request.
 11. You may get feedback on your merge request, especially if there are problems or issues.
 12. When your merge request is accepted, your changes will be merged into main and your branch will be deleted.
 
 * All additions to the released versions of ~ are subject to approval by the OpenFHE governance team as outlined in
-  the [OpenFHE Governance document.](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/misc/governance.html)
+  the [OpenFHE Governance document.](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/misc/governance.html)
 
 # Workflow for Major Contributions
 
@@ -144,7 +144,7 @@ In addition to the workflow for Minor contributions the following is the request
     recent `HEAD` commit of `main`.
   * Periodically run the test suite (`make testall`) to make sure that your changes are not causing any test failures.
 * Major additions may require changes to the OpenFHE CMAKE files. Refer to the wiki
-  page [Use-of-CMake-in-OpenFHE](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/intro/installation/cmake_in_openfhe.html)
+  page [Use-of-CMake-in-OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/cmake_in_openfhe.html)
   for details.
 
 * Submit a Pull Request on GitLab. Check the results of the continuous- integration tests pipelines and resolve any
@@ -159,7 +159,7 @@ In addition to the workflow for Minor contributions the following is the request
 
 * All additions to the released versions of OpenFHE are subject to approval by the OpenFHE governance team as outlined
   in
-  the [OpenFHE Governance document.](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/misc/governance.html)
+  the [OpenFHE Governance document.](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/misc/governance.html)
 
 # Style Guidelines
 
