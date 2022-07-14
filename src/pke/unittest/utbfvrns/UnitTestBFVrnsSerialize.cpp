@@ -60,7 +60,7 @@ TEST_F(UTPKESer, BFVrns_DCRTPoly_Serial) {
     parameters.SetPlaintextModulus(16);
     parameters.SetStandardDeviation(4);
     parameters.SetEvalMultCount(1);
-    parameters.SetScalingFactorBits(60);
+    parameters.SetScalingModSize(60);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);

@@ -74,7 +74,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     parameters.numLargeDigits = 0;
     parameters.evalMultCount = 2;
     parameters.multiplicativeDepth = 2;
-    parameters.scalingFactorBits = 60;
+    parameters.scalingModSize = 60;
     parameters.ksTech = BV;
     parameters.digitSize = 20;
     parameters.securityLevel = HEStd_NotSet;
@@ -174,7 +174,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     parameters.numLargeDigits = 0;
     parameters.evalMultCount = 2;
     parameters.multiplicativeDepth = 2;
-    parameters.scalingFactorBits = 60;
+    parameters.scalingModSize = 60;
     parameters.ksTech = BV;
     parameters.digitSize = 20;
     parameters.securityLevel = HEStd_NotSet;
@@ -279,7 +279,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     parameters.SetPlaintextModulus(ptm);
     parameters.SetEvalMultCount(7);
     parameters.SetMaxRelinSkDeg(8);
-    parameters.SetScalingFactorBits(60);
+    parameters.SetScalingModSize(60);
     parameters.SetMultiplicationTechnique(HPS);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
@@ -327,7 +327,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
     usint ptm = 1 << 15;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetEvalMultCount(1);
-    parameters.SetScalingFactorBits(60);
+    parameters.SetScalingModSize(60);
     parameters.SetMultiplicationTechnique(HPS);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
@@ -464,7 +464,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     usint ptm = 1 << 15;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetEvalMultCount(1);
-    parameters.SetScalingFactorBits(60);
+    parameters.SetScalingModSize(60);
     parameters.SetMultiplicationTechnique(HPS);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);

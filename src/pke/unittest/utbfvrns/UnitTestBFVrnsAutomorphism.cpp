@@ -89,7 +89,7 @@ std::vector<int64_t> BFVrnsAutomorphismPackedArray(usint i,
   parameters.SetPlaintextModulus(65537);
   parameters.SetStandardDeviation(4);
   parameters.SetEvalMultCount(1);
-  parameters.SetScalingFactorBits(60);
+  parameters.SetScalingModSize(60);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   cc->Enable(PKE);

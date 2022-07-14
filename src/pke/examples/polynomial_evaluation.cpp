@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(6);
-  parameters.SetScalingFactorBits(50);
+  parameters.SetScalingModSize(50);
   parameters.SetBatchSize(16);
   parameters.SetSecurityLevel(HEStd_NotSet);
   parameters.SetRingDim(2048);

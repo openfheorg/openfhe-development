@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
   parameters.SetStandardDeviation(4);
   parameters.SetEvalMultCount(5);
   parameters.SetMaxRelinSkDeg(6);
-  parameters.SetScalingFactorBits(60);
+  parameters.SetScalingModSize(60);
 
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use

@@ -75,7 +75,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(MultiplicationTechnique multMethod
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(PTM);
     parameters.SetEvalMultCount(MULT_DEPTH);
-    parameters.SetScalingFactorBits(DCRT_BITS);
+    parameters.SetScalingModSize(DCRT_BITS);
     parameters.SetKeySwitchTechnique(KS_TECH);
     parameters.SetRingDim(RING_DIM);
     parameters.SetMultiplicationTechnique(multMethod);

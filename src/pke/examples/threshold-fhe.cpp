@@ -223,7 +223,7 @@ void RunBFVrns() {
   parameters.SetEvalMultCount(2);
   parameters.SetDigitSize(30);
   parameters.SetRingDim(1 << 14);
-  parameters.SetScalingFactorBits(60);
+  parameters.SetScalingModSize(60);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // enable features that you wish to use
@@ -464,7 +464,7 @@ void RunCKKS() {
 
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(3);
-  parameters.SetScalingFactorBits(50);
+  parameters.SetScalingModSize(50);
   parameters.SetBatchSize(batchSize);
   parameters.SetScalingTechnique(FLEXIBLEAUTO);
   parameters.SetKeySwitchTechnique(BV);

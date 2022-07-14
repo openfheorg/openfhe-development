@@ -46,8 +46,8 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.multiplicativeDepth)) {
         parameters.SetMultiplicativeDepth(static_cast<usint>(std::round(params.multiplicativeDepth)));
     }
-    if (!isDefaultValue(params.scalingFactorBits)) {
-        parameters.SetScalingFactorBits(static_cast<usint>(std::round(params.scalingFactorBits)));
+    if (!isDefaultValue(params.scalingModSize)) {
+        parameters.SetScalingModSize(static_cast<usint>(std::round(params.scalingModSize)));
     }
     if (!isDefaultValue(params.digitSize)) {
         parameters.SetDigitSize(static_cast<usint>(std::round(params.digitSize)));

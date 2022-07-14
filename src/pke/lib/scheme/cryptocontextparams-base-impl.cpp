@@ -59,7 +59,7 @@ namespace lbcrypto {
     SET_TO_SCHEME_DEFAULT(SCHEME, firstModSize);               \
     SET_TO_SCHEME_DEFAULT(SCHEME, numLargeDigits);             \
     SET_TO_SCHEME_DEFAULT(SCHEME, multiplicativeDepth);        \
-    SET_TO_SCHEME_DEFAULT(SCHEME, scalingFactorBits);          \
+    SET_TO_SCHEME_DEFAULT(SCHEME, scalingModSize);             \
     SET_TO_SCHEME_DEFAULT(SCHEME, securityLevel);              \
     SET_TO_SCHEME_DEFAULT(SCHEME, ringDim);                    \
     SET_TO_SCHEME_DEFAULT(SCHEME, evalAddCount);               \
@@ -104,7 +104,7 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; firstModSize: " << obj.firstModSize
         << "; numLargeDigits: " << obj.numLargeDigits
         << "; multiplicativeDepth:" << obj.multiplicativeDepth
-        << "; scalingFactorBits: " << obj.scalingFactorBits
+        << "; scalingModSize: " << obj.scalingModSize
         << "; securityLevel: " << obj.securityLevel
         << "; ringDim: " << obj.ringDim
         << "; evalAddCount: " << obj.evalAddCount

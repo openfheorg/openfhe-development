@@ -90,17 +90,17 @@ void demarcate(const std::string &msg) {
  *  - then, we generate some data (akin to loading raw data on an enclave)
  * before encrypting the data
  * @param multDepth - multiplication depth
- * @param scaleFactorBits - number of bits to use in the scale factor (not the
+ * @param scaleModSize - number of bits to use in the scale factor (not the
  * scale factor itself)
  * @param batchSize - batch size to use
  * @return Tuple<cryptoContext, keyPair>
  */
 std::tuple<CryptoContext<DCRTPoly>, KeyPair<DCRTPoly>, int>
-serverSetupAndWrite(int multDepth, int scaleFactorBits, int batchSize) {
+serverSetupAndWrite(int multDepth, int scaleModSize, int batchSize) {
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
-    parameters.SetScalingFactorBits(scaleFactorBits);
+    parameters.SetScalingModSize(scaleModSize);
     parameters.SetBatchSize(batchSize);
 
     CryptoContext<DCRTPoly> serverCC = GenCryptoContext(parameters);
@@ -395,7 +395,7 @@ int main() {
 
   // Set main params
   const int multDepth = 5;
-  const int scaleFactorBits = 40;
+  const int scaleModSize = 40;
   const usint batchSize = 32;
 
   const int cryptoContextIdx = 0;
@@ -413,7 +413,7 @@ int main() {
       "(server)");
 
   auto tupleCryptoContext_KeyPair =
-      serverSetupAndWrite(multDepth, scaleFactorBits, batchSize);
+      serverSetupAndWrite(multDepth, scaleModSize, batchSize);
   auto cc = std::get<cryptoContextIdx>(tupleCryptoContext_KeyPair);
   auto kp = std::get<keyPairIdx>(tupleCryptoContext_KeyPair);
   int vectorSize = std::get<vectorSizeIdx>(tupleCryptoContext_KeyPair);

@@ -61,7 +61,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
     auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
     // In CKKS, the plaintext modulus is equal to the scaling factor.
     EncodingParams encodingParams(
-        std::make_shared<EncodingParamsImpl>(parameters.GetScalingFactorBits(), parameters.GetBatchSize()));
+        std::make_shared<EncodingParamsImpl>(parameters.GetScalingModSize(), parameters.GetBatchSize()));
 
     auto params = std::make_shared<typename ContextGeneratorType::CryptoParams>(
         ep,
@@ -88,7 +88,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         params,
         2 * parameters.GetRingDim(),
         parameters.GetMultiplicativeDepth() + 1,
-        parameters.GetScalingFactorBits(),
+        parameters.GetScalingModSize(),
         parameters.GetFirstModSize(),
         numLargeDigits);
 
