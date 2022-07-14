@@ -127,7 +127,7 @@ constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 
 // clang-format off
 static std::vector<TEST_CASE_UTBGVRNS_SER> testCases = {
-    // TestType, Descr, Scheme,      RDim,     MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize,        SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType, Descr, Scheme,      RDim,     MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, EvalMultCt, KSCt, MultTech
     { CONTEXT, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT,       DFLT, DFLT}, },
     { CONTEXT, "02", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT,       DFLT, DFLT}, },
     { CONTEXT, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT,       DFLT, DFLT}, },
@@ -137,7 +137,7 @@ static std::vector<TEST_CASE_UTBGVRNS_SER> testCases = {
     { CONTEXT, "07", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT,       DFLT, DFLT}, },
     { CONTEXT, "08", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT,       DFLT, DFLT}, },
     // ==========================================
-    // TestType,           Descr, Scheme,         RDim,     MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, ModSize,        SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, EvalMultCt, KSCt, MultTech
+    // TestType,           Descr, Scheme,         RDim,     MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, EvalMultCt, KSCt, MultTech
     { KEYS_AND_CIPHERTEXTS, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT,       DFLT, DFLT}, },
     { KEYS_AND_CIPHERTEXTS, "02", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT,       DFLT, DFLT}, },
     { KEYS_AND_CIPHERTEXTS, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT,       DFLT, DFLT}, },
