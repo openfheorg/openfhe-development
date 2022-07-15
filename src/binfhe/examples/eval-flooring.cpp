@@ -58,11 +58,12 @@ int main() {
     // Sample Program: Step 3: Encryption
 
     // Obtain the maximum plaintext space
+    // With the default parameter, p = 8
     int p = cc.GetMaxPlaintextSpace().ConvertToInt();
 
     // Number of bits to round down
-    auto bits      = 2;
-    uint32_t input = 12;
+    auto bits      = 1;
+    uint32_t input = 6;
     std::cout << "Homomorphically round down the input by " << bits << " bits." << std::endl;
 
     auto ct1 = cc.Encrypt(sk, input % p, FRESH, p);
