@@ -1,0 +1,44 @@
+# Always validate the PR title, and ignore the commits
+titleOnly: true
+# By default types specified in commitizen/conventional-commit-types is used.
+# See: https://github.com/commitizen/conventional-commit-types/blob/v3.0.0/index.json
+# You can override the valid types
+types:
+  # Features
+  - feat
+  - Feat
+  - Feature
+  # Fixes
+  - fix
+  - Fix
+  # Documentation
+  - docs
+  - Docs
+  - doc
+  - Doc
+  # Styles
+  - style
+  - Style
+  # Refactor
+  - refactor
+  - Refactor
+  # Performance
+  - perf
+  - Perf
+  # Tests
+  - test
+  - Test
+  - tests
+  - Tests
+  # Builds
+  - build
+  - Build
+  # CI
+  - ci
+  - CI
+  # Chore
+  - chore
+  - Chore
+  # CI
+  - revert
+  - Revert

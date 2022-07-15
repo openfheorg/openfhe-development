@@ -1,0 +1,101 @@
+name: OpenFHE Code Bug Report
+description: Use this template to report any issues in the code
+title: "[Bug In Code]: "
+labels: [ "code-bug", "triage" ]
+body:
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What type of issue would you like to report?
+      multiple: false
+      options:
+        - Bug
+        - Build/Install
+        - Performance
+        - Others
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Please make sure that this is a bug in the OpenFHE code. All help requests should be directed to [OpenFHE Discourse](https://openfhe.discourse.group/c/user-questions/17)
+
+  - type: input
+    id: version
+    attributes:
+      label: OpenFHE Version
+      description: What version of OpenFHE was installed? This information can be found in the `CMakeLists.txt` file.
+      placeholder: ex,. OpenFHE `Major.Minor.Patch`.
+    validations:
+      required: true
+
+
+  - type: dropdown
+    id: support
+    attributes:
+      label: Is this an official OpenFHE product?
+      options:
+        - "Yes"
+        - "No"
+
+
+  - type: input
+    id: OS
+    attributes:
+      label: OS Platform and Distribution
+      description: Please list your OS and distribution
+      placeholder: e.g., Linux Ubuntu 16.04
+    validations:
+      required: true
+
+  - type: input
+    id: compiler
+    attributes:
+      label: Compiler and Version
+      description: Please list your compiler and the version number
+      placeholder: e.g., gcc-12
+    validations:
+      required: false
+
+  - type: textarea
+    id: build-information
+    attributes:
+      label: CMake Output
+      description: Copy-paste the output of a fresh `CMake` run
+    validations:
+      required: false
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Current Behavior
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+
+  - type: textarea
+    id: code-to-reproduce
+    attributes:
+      label: Standalone Code To Reproduce the Issue
+      description: Provide a reproducible test case that is the bare minimum necessary to generate the problem. If necessary please share a link to a separate github repo which we can use to reproduce the error.
+      placeholder: Format any code with backticks
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+
+
+
+  - type: textarea
+    id: misc_info
+    attributes:
+      label: Relevant Misc. Information
+      description: Please add any other relevant information. This will be automatically formatted into code, so no need for backticks.
+      render: shell

@@ -1,0 +1,13 @@
+# Labels PRs by triaging them to include tags
+name: Pull Request Labeling
+
+on:
+  - pull_request
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@v3
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"

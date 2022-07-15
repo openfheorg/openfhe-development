@@ -1,0 +1,36 @@
+name: OpenFHE Documentation Report
+description: Use this template to any issues with the documentation
+title: "[Bug In Documentation]: "
+labels: [ "documentation-bug", "triage" ]
+body:
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What type of issue would you like to report?
+      multiple: false
+      options:
+        - Documentation Feature Request
+        - Bug in Documentation
+        - Incorrect Documentation
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Please make sure that pertains only to documentation. All help requests should be directed to [OpenFHE Discourse](https://openfhe.discourse.group/c/user-questions/17)
+
+  - type: textarea
+    id: doc-error
+    attributes:
+      label: The erroneous documentation
+      description: Provide the URL to the documentation and briefly state why the existing documentation is incorrect
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+
+  - type: textarea
+    id: fix
+    attributes:
+      label: URL to PR
+      description: Please paste the URL to a PR fix if relevant

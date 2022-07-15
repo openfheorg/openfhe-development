@@ -1,0 +1,8 @@
+blank_issues_enabled: false  # Whether we should allow them to use a non-template issue
+contact_links:
+  - name: OpenFHE Support and Questions
+    url: https://openfhe.discourse.group/c/user-questions/17
+    about: Please ask for help regarding code here.
+  - name: OpenFHE Security Reports
+    url: contact@openfhe.org
+    about: Please report security vulnerabilities here.

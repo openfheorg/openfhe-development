@@ -1,0 +1,29 @@
+# Adds a label depending on the files/ directories that were changed. Makes it easier for us to determine
+# who should be looking at it
+
+ci/cd:
+  - .github/workflows/*
+  - ./cicd/*
+
+documentation:
+  - README.md
+  - ./*.md
+  - ./docs/*
+
+benchmark:
+  - ./benchmark/*
+
+docker:
+  - ./docker/*
+
+binfhe:
+  - ./src/binfhe/*
+
+core:
+  - ./src/core/*
+
+pke:
+  - ./src/pke/*
+
+tests:
+  - ./test/*
