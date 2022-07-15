@@ -94,7 +94,7 @@ class Params {
     // The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
-    // other q_i have same number of bits and is equal to scalingFactorBits
+    // other q_i have same number of bits and is equal to scalingModSize
     // the prime q' is currently not exist, but it will be used in CKKS and BGV schemes as extraBits
     usint firstModSize;
 
@@ -105,7 +105,7 @@ class Params {
     usint multiplicativeDepth;
 
     // see firstModSize
-    usint scalingFactorBits;  // or dcrtBits
+    usint scalingModSize;  // or dcrtBits
 
     // security level:
     // For given ring dimension and security level we have
@@ -185,8 +185,8 @@ public:
     usint GetMultiplicativeDepth() const {
         return multiplicativeDepth;
     }
-    usint GetScalingFactorBits() const {
-        return scalingFactorBits;
+    usint GetScalingModSize() const {
+        return scalingModSize;
     }
     SecurityLevel GetSecurityLevel() const {
         return securityLevel;
@@ -247,8 +247,8 @@ public:
     void SetMultiplicativeDepth(usint multiplicativeDepth0) {
         multiplicativeDepth = multiplicativeDepth0;
     }
-    void SetScalingFactorBits(usint scalingFactorBits0) {
-        scalingFactorBits = scalingFactorBits0;
+    void SetScalingModSize(usint scalingModSize0) {
+        scalingModSize = scalingModSize0;
     }
     void SetSecurityLevel(SecurityLevel securityLevel0) {
         securityLevel = securityLevel0;

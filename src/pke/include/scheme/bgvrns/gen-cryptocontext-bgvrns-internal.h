@@ -84,7 +84,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
         2 * parameters.GetRingDim(),
         parameters.GetMultiplicativeDepth() + 1,
         parameters.GetFirstModSize(),
-        parameters.GetScalingFactorBits(),
+        parameters.GetScalingModSize(),
         numLargeDigits,
         parameters.GetMultiHopModSize());
 

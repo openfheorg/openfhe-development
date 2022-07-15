@@ -47,7 +47,7 @@ struct UnitTestCCParams {
     // all double values are just data holders. Having them we can use parameters' default values
     double   ringDimension; // CKKSRNS, BFVRNS, BGVRNS
     double   multiplicativeDepth; // CKKSRNS, BGVRNS
-    double   scalingFactorBits; // CKKSRNS, BFVRNS, BGVRNS
+    double   scalingModSize; // CKKSRNS, BFVRNS, BGVRNS
     double   digitSize; // CKKSRNS, BFVRNS, BGVRNS
     double   batchSize; // CKKSRNS, BFVRNS, BGVRNS
     double   secretKeyDist; // CKKSRNS, BFVRNS, BGVRNS

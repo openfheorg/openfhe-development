@@ -97,27 +97,27 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_ReEncrypt& tes
 //===========================================================================================================
 const usint PTMOD    = 256;
 const usint BATCH    = 16;
-const usint SBITS    = 60;
+const usint SCALE    = 60;
 const usint DSIZ     = 20;
 // clang-format off
 static std::vector<TEST_CASE_ReEncrypt> testCases = {
-    // TestType,  Descr, Scheme,       RDim, MultDepth, SFBits, DSize,BatchSz, SecKeyDist,       MaxRelinSkDeg, ModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech
-    { RE_ENCRYPT, "01", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              STANDARD}, },
-    { RE_ENCRYPT, "02", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              STANDARD}, },
-    { RE_ENCRYPT, "03", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             STANDARD}, },
-    { RE_ENCRYPT, "04", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             STANDARD}, },
-    { RE_ENCRYPT, "05", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        STANDARD}, },
-    { RE_ENCRYPT, "06", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        STANDARD}, },
-    { RE_ENCRYPT, "07", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, STANDARD}, },
-    { RE_ENCRYPT, "08", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, STANDARD}, },
-    { RE_ENCRYPT, "09", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              POVERQ},   },
-    { RE_ENCRYPT, "10", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              POVERQ},   },
-    { RE_ENCRYPT, "11", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             POVERQ},   },
-    { RE_ENCRYPT, "12", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             POVERQ},   },
-    { RE_ENCRYPT, "13", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        POVERQ},   },
-    { RE_ENCRYPT, "14", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        POVERQ},   },
-    { RE_ENCRYPT, "15", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, POVERQ},   },
-    { RE_ENCRYPT, "16", {BFVRNS_SCHEME, DFLT, DFLT,      SBITS,  DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,    DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, POVERQ},   },
+    // TestType,  Descr, Scheme,        RDim, MultDepth, SModSize, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech
+    { RE_ENCRYPT, "01", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              STANDARD}, },
+    { RE_ENCRYPT, "02", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              STANDARD}, },
+    { RE_ENCRYPT, "03", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             STANDARD}, },
+    { RE_ENCRYPT, "04", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             STANDARD}, },
+    { RE_ENCRYPT, "05", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        STANDARD}, },
+    { RE_ENCRYPT, "06", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        STANDARD}, },
+    { RE_ENCRYPT, "07", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, STANDARD}, },
+    { RE_ENCRYPT, "08", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, STANDARD}, },
+    { RE_ENCRYPT, "09", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              POVERQ},   },
+    { RE_ENCRYPT, "10", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              POVERQ},   },
+    { RE_ENCRYPT, "11", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             POVERQ},   },
+    { RE_ENCRYPT, "12", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             POVERQ},   },
+    { RE_ENCRYPT, "13", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        POVERQ},   },
+    { RE_ENCRYPT, "14", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        POVERQ},   },
+    { RE_ENCRYPT, "15", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, POVERQ},   },
+    { RE_ENCRYPT, "16", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, POVERQ},   },
     // ==========================================
 };
 // clang-format on

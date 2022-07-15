@@ -47,7 +47,7 @@ int main() {
 //    parameters.SetKeySwitchTechnique(HYBRID);
     parameters.SetKeySwitchTechnique(BV);
     parameters.SetScalingTechnique(FIXEDAUTO);
-//    parameters.SetScalingFactorBits(60);
+//    parameters.SetScalingModSize(60);
 //    parameters.SetDigitSize(10);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);

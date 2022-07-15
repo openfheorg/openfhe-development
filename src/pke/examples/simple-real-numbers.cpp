@@ -75,12 +75,12 @@ int main() {
    * decryption, the scaling factor is removed so the user is presented with
    * the real number result of 0.13.
    *
-   * Parameter 'scaleFactorBits' determines the bit-length of the scaling
+   * Parameter 'scaleModSize' determines the bit-length of the scaling
    * factor D, but not the scaling factor itself. The latter is implementation
    * specific, and it may also vary between ciphertexts in certain versions of
    * CKKS (e.g., in EXACTRESCALE).
    *
-   * Choosing 'scaleFactorBits' depends on the desired accuracy of the
+   * Choosing 'scaleModSize' depends on the desired accuracy of the
    * computation, as well as the remaining parameters like multDepth or security
    * standard. This is because the remaining parameters determine how much noise
    * will be incurred during the computation (remember CKKS is an approximate
@@ -88,7 +88,7 @@ int main() {
    * scaling factor should be large enough to both accommodate this noise and
    * support results that match the desired accuracy.
    */
-  uint32_t scaleFactorBits = 50;
+  uint32_t scaleModSize = 50;
 
   /* A3) Number of plaintext slots used in the ciphertext.
    * CKKS packs multiple plaintext values in each ciphertext.
@@ -121,7 +121,7 @@ int main() {
    */
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(multDepth);
-  parameters.SetScalingFactorBits(scaleFactorBits);
+  parameters.SetScalingModSize(scaleModSize);
   parameters.SetBatchSize(batchSize);
   parameters.SetScalingTechnique(FLEXIBLEAUTO);
 

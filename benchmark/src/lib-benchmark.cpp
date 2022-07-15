@@ -63,7 +63,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext() {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
     parameters.SetEvalMultCount(1);
-    parameters.SetScalingFactorBits(60);
+    parameters.SetScalingModSize(60);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     // Enable features that you wish to use
@@ -77,7 +77,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext() {
 CryptoContext<DCRTPoly> GenerateCKKSContext() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(1);
-    parameters.SetScalingFactorBits(48);
+    parameters.SetScalingModSize(48);
     parameters.SetBatchSize(8);
     parameters.SetScalingTechnique(FIXEDMANUAL);
 

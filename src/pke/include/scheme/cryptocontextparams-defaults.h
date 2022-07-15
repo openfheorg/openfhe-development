@@ -64,7 +64,7 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
     constexpr usint                multiplicativeDepth = 1;
-    constexpr usint                scalingFactorBits   = 0;
+    constexpr usint                scalingModSize      = 0;
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
     constexpr usint                evalAddCount        = 10;
@@ -88,7 +88,7 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
     constexpr usint                multiplicativeDepth = 1;
-    constexpr usint                scalingFactorBits   = 0;
+    constexpr usint                scalingModSize      = 0;
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic; // set to avoid compiler errors
     constexpr usint                ringDim             = 0;
     constexpr usint                evalAddCount        = 0;
@@ -112,7 +112,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
     constexpr usint                multiplicativeDepth = 1;
-    constexpr usint                scalingFactorBits   = 0;
+    constexpr usint                scalingModSize      = 0;
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
     constexpr usint                evalAddCount        = 10;

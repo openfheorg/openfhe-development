@@ -105,7 +105,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
 
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(depth);
-  parameters.SetScalingFactorBits(dcrtBits);
+  parameters.SetScalingModSize(dcrtBits);
   parameters.SetScalingTechnique(rescaleTech);
   parameters.SetRingDim(n);
   parameters.SetSecretKeyDist(secretKeyDist);
@@ -292,7 +292,7 @@ void BootstrapExampleClean(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slo
 
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(depth);
-  parameters.SetScalingFactorBits(dcrtBits);
+  parameters.SetScalingModSize(dcrtBits);
   parameters.SetScalingTechnique(rescaleTech);
   parameters.SetRingDim(n);
   parameters.SetSecretKeyDist(secretKeyDist);

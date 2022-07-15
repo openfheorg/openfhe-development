@@ -39,7 +39,7 @@ std::string UnitTestCCParams::toString() const {
     ss << "schemeId [" << schemeId << "], "
         << "ringDimension [" << ringDimension << "], "
         << "multiplicativeDepth [" << multiplicativeDepth << "], "
-        << "scalingFactorBits [" << scalingFactorBits << "], "
+        << "scalingModSize [" << scalingModSize << "], "
         << "digitSize [" << digitSize << "], "
         << "batchSize [" << batchSize << "], "
         << "secretKeyDist [" << secretKeyDist << "], "

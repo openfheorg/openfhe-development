@@ -81,7 +81,7 @@ void SHERun() {
   parameters.SetPlaintextModulus(2);
   parameters.SetEvalMultCount(5);
   parameters.SetMaxRelinSkDeg(3);
-  parameters.SetScalingFactorBits(55);
+  parameters.SetScalingModSize(55);
 
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use

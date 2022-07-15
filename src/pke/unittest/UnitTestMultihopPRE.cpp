@@ -91,7 +91,7 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
     parameters.SetKeySwitchTechnique(BV);
     parameters.SetRingDim(ringDimension);
     parameters.SetFirstModSize(firstqmod);
-    parameters.SetScalingFactorBits(dcrtbits);
+    parameters.SetScalingModSize(dcrtbits);
     parameters.SetDigitSize(digitSize);
     parameters.SetScalingTechnique(FIXEDAUTO);
     parameters.SetMultiHopModSize(qmodulus);
