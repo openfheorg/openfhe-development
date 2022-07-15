@@ -135,8 +135,8 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
 #if NATIVEINT != 128
     { BOOTSTRAP_FULL, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
     { BOOTSTRAP_FULL, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
-    /{ BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
-    /{ BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
 #endif
     // ==========================================
     // TestType,     Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
