@@ -142,6 +142,9 @@ std::ostream &operator<<(std::ostream &s, MultiplicationTechnique t) {
     case BEHZ:
       s << "BEHZ";
       break;
+    case HPS:
+      s << "HPS";
+      break;
     case HPSPOVERQ:
       s << "HPSPOVERQ";
       break;
