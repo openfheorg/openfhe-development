@@ -1068,30 +1068,6 @@ class SchemeBase {
     OPENFHE_THROW(config_error, "MultByMonomialInPlace operation has not been enabled");
   }
 
-  // TODO (dsuponit): commented the code below to avoid compiler errors
-  //virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext,
-  //                                     const NativeInteger &constant) const {
-  //  if (m_LeveledSHE) {
-  //    if (!ciphertext)
-  //      OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
-  //    return m_LeveledSHE->EvalMult(ciphertext, constant);
-  //  }
-  //  OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
-  //}
-
-  // TODO (dsuponit): commented the code below to avoid compiler errors
-  //virtual void EvalMultInPlace(Ciphertext<Element> &ciphertext, const NativeInteger &constant) const {
-  //  if (m_LeveledSHE) {
-  //    if (!ciphertext)
-  //      OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
-  //    m_LeveledSHE->EvalMultInPlace(ciphertext, constant);
-  //    return;
-  //  }
-  //  OPENFHE_THROW(config_error, "EvalMult operation has not been enabled");
-  //}
-
   virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, double constant) const {
     if (m_LeveledSHE) {
       if (!ciphertext)

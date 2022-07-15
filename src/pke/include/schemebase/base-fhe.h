@@ -54,10 +54,10 @@ class FHEBase {
   /**
    * Bootstrap functionality:
    * There are three methods that have to be called in this specific order:
-   * 1. EvalBTSetup: computes and encodes the coefficients for encoding and
+   * 1. EvalBootstrapSetup: computes and encodes the coefficients for encoding and
    * decoding and stores the necessary parameters
-   * 2. EvalBTKeyGen: computes and stores the keys for rotations and conjugation
-   * 3. EvalBT: refreshes the given ciphertext
+   * 2. EvalBootstrapKeyGen: computes and stores the keys for rotations and conjugation
+   * 3. EvalBootstrap: refreshes the given ciphertext
    */
 
   /**
@@ -68,8 +68,6 @@ class FHEBase {
    * @param dim1 - vector of inner dimension in the baby-step giant-step routine
    * for encoding and decoding
    * @param slots - number of slots to be bootstrapped
-   * @param debugFlag - set to 1 when debugging encoding/decoding only
-   * @param precomp - do linear transform precomputations
    */
   virtual void EvalBootstrapSetup(
       const CryptoContextImpl<Element> &cc,
@@ -83,7 +81,7 @@ class FHEBase {
    * EvalBTKeyGen uses the baby-step/giant-step strategy.
    *
    * @param privateKey private key.
-   * @param bootstrapFlag - when set to 1, generates extra automorphism keys for sparse bootstrapping.
+   * @param slots - number of slots to be bootstrapped
    * @return the dictionary of evaluation key indices.
    */
   virtual std::shared_ptr<std::map<usint, EvalKey<Element>>>

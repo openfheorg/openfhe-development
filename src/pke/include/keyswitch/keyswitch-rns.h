@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
- * Abstract interface class for RNS LBC SHE algorithms
+ * Abstract interface class for the RNS versions of key switching algorithms
  */
 
 #ifndef LBCRYPTO_CRYPTO_KEYSWITCH_RNS_H

@@ -30,7 +30,7 @@
 //==================================================================================
 
 /**
-Base class for Lattice-based cryptography(LBC) Somewhat Homomorphic Encryption(SHE) algorithms.
+Base class for key switching algorithms.
  */
 
 #ifndef LBCRYPTO_CRYPTO_KEYSWITCH_BASE_H

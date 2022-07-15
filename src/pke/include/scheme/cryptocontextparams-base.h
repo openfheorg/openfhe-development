@@ -39,8 +39,6 @@
 // Had to include cryptocontext.h as the includes below give a compiler error.
 // Those headers probably depend on some order/sequence.
 //TODO (dsuponit): fix the problem with header described above 
-//#include "lattice/stdlatticeparms.h" // SecurityLevel
-//#include "pubkeylp.h" // KeySwitchTechnique
 #include "cryptocontext.h"
 #include "scheme/scheme-id.h" // SCHEME
 #include "utils/inttypes.h"
@@ -57,15 +55,15 @@ class Params {
     // cryptocontextparams-case.cpp and cryptocontextparams-defaults.h
     SCHEME scheme;
     // Used in BGV/BFV type schemes
-    // Has impact on noise growth, thus has impact on parameger generation
+    // Has impact on noise growth, thus has impact on parameter generation
     PlaintextModulus ptModulus;
 
-    // Used in BV type Key Switching only (KeySwitchTechnique = BV)
-    // Has impact on noise growth, thus has impact on parameger generation
+    // Used in BV Key Switching only (KeySwitchTechnique = BV)
+    // Has impact on noise growth, thus has impact on parameter generation
     usint digitSize;
 
     // Used for Gaussian error generation
-    // Has impact on parameger generation
+    // Has impact on parameter generation
     float standardDeviation;
 
     // GAUSSIAN means Gaussian secret key distribution
@@ -73,7 +71,7 @@ class Params {
     // SPARSE_TERNARY means sparse secret key distribution
     SecretKeyDist secretKeyDist;
 
-    // Max linearization security key degree (former maxDepth: max possible multiplicative depth of the scheme)
+    // Max relinearization degree of secret key polynomial (used for lazy relinearization)
     int maxRelinSkDeg;
 
     // key switching technique: BV or HYBRID currently
@@ -84,30 +82,34 @@ class Params {
     // it is good to have alternative to numLargeDigits - numPrimesInDigit
     KeySwitchTechnique ksTech;
 
-    // scaling technique used in CKKS/BGV
+    // rescaling/modulus switching technique used in CKKS/BGV
+    // The options are FIXEDMANUL, FIXEDAUTO, FLEXIBLEAUTO, and FLEXIBLEAUTOEXT (default)
+    // see https://eprint.iacr.org/2022/915 for details
     ScalingTechnique  scalTech;
 
-    // max batch size of messages to be packed in encoding
+    // max batch size of messages to be packed in encoding (number of slots)
     usint batchSize;
 
-    // number of primes in ciphertext modulus of the scheme
     // The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
     // other q_i have same number of bits and is equal to scalingModSize
-    // the prime q' is currently not exist, but it will be used in CKKS and BGV schemes as extraBits
+    // the prime q' is not explicitly given,
+    // but it is used internally in CKKS and BGV schemes (in *EXT scaling methods)
+
     usint firstModSize;
 
-    // see KeySwitchTechnique
+    usint scalingModSize;
+
+    // see KeySwitchTechnique - number of digits in HYBRID key switching
     usint numLargeDigits;
 
-    // multiplicative depth of the scheme
+    // multiplicative depth for these parameters
     usint multiplicativeDepth;
 
-    // see firstModSize
-    usint scalingModSize;  // or dcrtBits
-
     // security level:
+    // We use the values from the security standard  at
+    // http://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
     // For given ring dimension and security level we have
     // upper bound of possible highest modulus (Q for BV or P*Q for HYBRID)
     SecurityLevel securityLevel;
@@ -115,22 +117,27 @@ class Params {
     // ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1)
     usint ringDim;
 
-    // TODO (dsuponit): add description
+    // number of additions (used for setting noise in BGV and BFV)
     usint evalAddCount;
 
-    // TODO (dsuponit): add description
+    // to be removed
     usint evalMultCount;
 
-    // TODO (dsuponit): add description
+    // number of key switching operations (used for setting noise in BGV and BFV)
     usint keySwitchCount;
 
-    // not sure, some parameter used in BGV
+    // size of moduli used for PRE in the provable HRA setting
     usint multiHopModSize;
 
-    // new parameter used in BFV type scheme: Encryption can be using floor(Q/t) * m  or round(Q*m / t)
+    // STANDARD or EXTENDED mode for BFV encryption
+    // EXTENDED slightly reduces the size of Q (by few bits) but makes encryption
+    // somewhat slower
+    // see https://eprint.iacr.org/2022/915 for details
     EncryptionTechnique encryptionTechnique;
-    // new parameter used in BFV type scheme: Multiplication can be HPS or BEHZ style,
-    // in future we plan to add other methods for BFV
+
+    // multiplication method in BFV:
+    // BEHZ, HPS, HPSPOVEQ, or HPSPOVERQLEVELED (default)
+    // see https://eprint.iacr.org/2022/915 for details
     MultiplicationTechnique multiplicationTechnique;
 
     void SetToDefaults(SCHEME scheme);

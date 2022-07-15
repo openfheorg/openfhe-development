@@ -13,7 +13,7 @@ flowchart BT
 We provide a brief overview of the files below. However, we recommend referring to our [ReadTheDocs - PKE/Encoding Headers](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/pke/pke_encoding.html) for more in-depth information.
 
 [CKKS Packed Encoding](ckkspackedencoding.h)
-- Describes the CKKS packing. Accepts a `std::vector<double` unlike the other schemes.
+- Describes the CKKS packing. Accepts a `std::vector<double>` unlike the other schemes.
 
 [Coef Packed Encoding](coefpackedencoding.h)
 - Accepts plaintext data and packs the data into coefficients of a polynomial. 

@@ -36,12 +36,12 @@
     - No Rescaling (NORESCALE)
 
   - Key Switch Technique 
-    - BV (See [Fully Homomorphic Encryption from Ring-LWE and Security for Key Dependent Messages (BV Scheme)](https://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf))
-    - Hybrid (See [Homomorphic Evaluation of the AES Circuit](https://eprint.iacr.org/2012/099.pdf))
+    - BV (See Appendix of https://eprint.iacr.org/2021/204)
+    - HYBRID (See Appendix of https://eprint.iacr.org/2021/204)
     
   - Encryption Technique
     - Standard (STANDARD)
-    - P Over Q (POVERQ)
+    - Extended (EXTENDED)
     
   - Multiplication Technique
     - Bajard-Eynard-Hasan-Zucca (BEHZ)

@@ -332,16 +332,14 @@ class CiphertextImpl : public CryptoObject<Element> {
   }
 
   /**
-   * Get the depth of the ciphertext.
-   * It will be used in multiplication/addition/subtraction to handle the
-   * keyswitching.
+   * Get the depth of the ciphertext. In CKKS, it describes the degree
+   * of the scaling factor for the encrypted message.
    */
   size_t GetDepth() const { return m_depth; }
 
   /**
-   * Set the depth of the ciphertext.
-   * It will be used in multiplication/addition/subtraction to handle the
-   * keyswitching.
+   * Set the depth of the ciphertext. In CKKS, it describes the degree
+   * of the scaling factor for the encrypted message.
    */
   void SetDepth(size_t depth) { m_depth = depth; }
 
@@ -579,8 +577,6 @@ class CiphertextImpl : public CryptoObject<Element> {
   static uint32_t SerializedVersion() { return 1; }
 
  private:
-  // FUTURE ENHANCEMENT: current value of error norm
-  // BigInteger m_norm;
 
   // vector of ring elements for this Ciphertext
   std::vector<Element> m_elements;

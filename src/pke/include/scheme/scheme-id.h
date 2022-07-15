@@ -41,7 +41,6 @@
 namespace lbcrypto {
 
 //====================================================================================================================
-// TODO: should it be a SCHEME class??? (dsuponit)
 enum SCHEME {
   CKKSRNS_SCHEME,
   BFVRNS_SCHEME,
