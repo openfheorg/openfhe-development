@@ -79,7 +79,7 @@ void SHERun() {
 
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(2);
-  parameters.SetEvalMultCount(5);
+  parameters.SetMultiplicativeDepth(5);
   parameters.SetMaxRelinSkDeg(3);
   parameters.SetScalingModSize(55);
   parameters.SetMultiplicationTechnique(BEHZ);

@@ -220,7 +220,7 @@ void RunBFVrns() {
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(65537);
   parameters.SetBatchSize(batchSize);
-  parameters.SetEvalMultCount(2);
+  parameters.SetMultiplicativeDepth(2);
   parameters.SetDigitSize(30);
   parameters.SetRingDim(1 << 14);
   parameters.SetScalingModSize(60);

@@ -60,7 +60,6 @@ struct UnitTestCCParams {
     double   plaintextModulus; // BFVRNS, BGVRNS
     double   standardDeviation; // BFVRNS, BGVRNS
     double   evalAddCount; // BFVRNS, 
-    double   evalMultCount; // BFVRNS, 
     double   keySwitchCount; // BFVRNS, 
     double   multiplicationTechnique; // BFVRNS, 
     double   encryptionTechnique; // BFVRNS,

@@ -82,7 +82,6 @@ void BFVrnsEvalAtIndex2n() {
   CCParams<CryptoContextBFVRNS> parameters;
 
   parameters.SetPlaintextModulus(65537);
-  parameters.SetEvalMultCount(1);
   parameters.SetMaxRelinSkDeg(3);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
@@ -184,7 +183,7 @@ void BFVrnsEvalMerge2n() {
   CCParams<CryptoContextBFVRNS> parameters;
 
   parameters.SetPlaintextModulus(65537);
-  parameters.SetEvalMultCount(2);
+  parameters.SetMultiplicativeDepth(2);
   parameters.SetMaxRelinSkDeg(3);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);

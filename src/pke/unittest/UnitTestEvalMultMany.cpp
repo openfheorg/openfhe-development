@@ -57,7 +57,7 @@ static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC() {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(256);
     parameters.SetStandardDeviation(4);
-    parameters.SetEvalMultCount(3);
+    parameters.SetMultiplicativeDepth(3);
     parameters.SetMaxRelinSkDeg(4);
     parameters.SetScalingModSize(60);
 

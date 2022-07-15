@@ -93,9 +93,6 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.evalAddCount)) {
         parameters.SetEvalAddCount(static_cast<usint>(std::round(params.evalAddCount)));
     }
-    if (!isDefaultValue(params.evalMultCount)) {
-        parameters.SetEvalMultCount(static_cast<usint>(std::round(params.evalMultCount)));
-    }
     if (!isDefaultValue(params.keySwitchCount)) {
         parameters.SetKeySwitchCount(static_cast<usint>(std::round(params.keySwitchCount)));
     }

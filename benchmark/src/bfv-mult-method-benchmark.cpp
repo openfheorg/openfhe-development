@@ -74,7 +74,7 @@ static void MultBFVArguments(benchmark::internal::Benchmark* b) {
 CryptoContext<DCRTPoly> GenerateBFVrnsContext(MultiplicationTechnique multMethod) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(PTM);
-    parameters.SetEvalMultCount(MULT_DEPTH);
+    parameters.SetMultiplicativeDepth(MULT_DEPTH);
     parameters.SetScalingModSize(DCRT_BITS);
     parameters.SetKeySwitchTechnique(KS_TECH);
     parameters.SetRingDim(RING_DIM);

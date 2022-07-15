@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(65537);
-  parameters.SetEvalMultCount(3);
+  parameters.SetMultiplicativeDepth(3);
   parameters.SetDigitSize(1);
   parameters.SetScalingModSize(60);
 

@@ -76,7 +76,7 @@ void LeveledSHEBFVRNS::EvalSubInPlace(
   cv[0] -= pt;
 }
 
-uint32_t FindLevelsToDrop(usint evalMultCount,
+uint32_t FindLevelsToDrop(usint multiplicativeDepth,
                           std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                           uint32_t dcrtBits, bool keySwitch = false) {
   const auto cryptoParamsBFVrns =
@@ -130,9 +130,9 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
 
   // main correctness constraint
   auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
-    if (evalMultCount > 0) {
-      return log(4 * p) + (evalMultCount - 1) * log(C1(n)) +
-      log(C1(n) * Vnorm(n) + evalMultCount * C2(n, logqPrev));
+    if (multiplicativeDepth > 0) {
+      return log(4 * p) + (multiplicativeDepth - 1) * log(C1(n)) +
+      log(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
     }
     return log(p * (4 * (Vnorm(n))));
   };
@@ -152,7 +152,7 @@ uint32_t FindLevelsToDrop(usint evalMultCount,
   double logExtra = keySwitch ? log2(noiseKS(n, logq, w)) : log2(delta(n));
 
   // adding the cushon to the error (see Appendix D of https://eprint.iacr.org/2021/204.pdf for details)
-  int32_t levels = std::floor((loge - 2*evalMultCount - 4 - logExtra)/dcrtBits);
+  int32_t levels = std::floor((loge - 2* multiplicativeDepth - 4 - logExtra)/dcrtBits);
   size_t sizeQ = cryptoParamsBFVrns->GetElementParams()->GetParams().size();
 
   if (levels < 0)

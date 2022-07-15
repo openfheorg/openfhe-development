@@ -88,7 +88,6 @@ std::vector<int64_t> BFVrnsAutomorphismPackedArray(usint i,
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(65537);
   parameters.SetStandardDeviation(4);
-  parameters.SetEvalMultCount(1);
   parameters.SetScalingModSize(60);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
