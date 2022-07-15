@@ -140,14 +140,13 @@ CryptoContext<DCRTPoly> GenerateContextBGV(usint ptm,
   parameters.SetPlaintextModulus(ptm);
   parameters.SetSecurityLevel(securityLevel);
   parameters.SetStandardDeviation(3.19);
-  parameters.SetMaxDepth(0);
   parameters.SetSecretKeyDist(secretKeyDist);
   parameters.SetKeySwitchTechnique(ksTech);
   parameters.SetRingDim(ringDim);
   parameters.SetFirstModSize(firstModSize);
   parameters.SetScalingFactorBits(dcrtBits);
   parameters.SetBatchSize(0);
-  parameters.SetRescalingTechnique(FLEXIBLEAUTOEXT);
+  parameters.SetScalingTechnique(FLEXIBLEAUTOEXT);
   parameters.SetEvalAddCount(numAdd);
   parameters.SetKeySwitchCount(numks);
 
@@ -181,7 +180,6 @@ CryptoContext<DCRTPoly> GenerateContextBFV(usint ptm,
   parameters.SetPlaintextModulus(ptm);
   parameters.SetSecurityLevel(securityLevel);
   parameters.SetStandardDeviation(3.19);
-  parameters.SetMaxDepth(2);
   parameters.SetSecretKeyDist(secretKeyDist);
   parameters.SetKeySwitchTechnique(ksTech);
   parameters.SetRingDim(ringDim);
