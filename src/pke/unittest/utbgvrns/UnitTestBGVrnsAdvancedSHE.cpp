@@ -101,7 +101,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTSHEADVANCED&
 constexpr usint RING_DIM = 8192;
 constexpr usint PTM = 20;
 constexpr usint DSIZE = 4;
-constexpr double STD_DEV = 4;
+constexpr double STD_DEV = 3.19;
 
 // clang-format off
 static std::vector<TEST_CASE_UTSHEADVANCED> testCasesUTSHEADVANCED = {
