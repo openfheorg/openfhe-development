@@ -29,27 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-Description:
-
-This code implements RNS variants of the Cheon-Kim-Kim-Song scheme.
-
-The CKKS scheme is introduced in the following paper:
-- Jung Hee Cheon, Andrey Kim, Miran Kim, and Yongsoo Song. Homomorphic
-encryption for arithmetic of approximate numbers. Cryptology ePrint Archive,
-Report 2016/421, 2016. https://eprint.iacr.org/2016/421.
-
- Our implementation builds from the designs here:
- - Marcelo Blatt, Alexander Gusev, Yuriy Polyakov, Kurt Rohloff, and Vinod
-Vaikuntanathan. Optimized homomorphic encryption solution for secure genomewide
-association studies. Cryptology ePrint Archive, Report 2019/223, 2019.
-https://eprint.iacr.org/2019/223.
- - Andrey Kim, Antonis Papadimitriou, and Yuriy Polyakov. Approximate
-homomorphic encryption with reduced approximation error. Cryptology ePrint
-Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
-1118.
- */
-
 #include "cryptocontext.h"
 #include "schemebase/base-advancedshe.h"
 
@@ -188,9 +167,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(
 
   plaintext->Encode();
   plaintext->GetElement<Element>().SetFormat(EVALUATION);
-  // TODO Andrey EvalAdd through GetScheme
   auto algo = cc->GetScheme();
-
   return algo->EvalAdd(ciphertext, plaintext);
 }
 
@@ -228,10 +205,6 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
   }
 
   auto algo = privateKey->GetCryptoContext()->GetScheme();
-
-//  if (publicKey)  // NTRU-based scheme
-//    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
-  // Regular RLWE scheme
   return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
 
@@ -261,11 +234,6 @@ AdvancedSHEBase<Element>::EvalSumRowsKeyGen(
 
   auto algo = cc->GetScheme();
 
-  //  if (publicKey)
-  //    // NTRU-based scheme
-  //    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
-  //  else
-  //    // Regular RLWE scheme
   return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
 
@@ -292,9 +260,6 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<
 
   auto algo = cc->GetScheme();
 
-//  if (publicKey) // NTRU-based scheme
-//    return algo->EvalAutomorphismKeyGen(publicKey, privateKey, indices);
-  // Regular RLWE scheme
   return algo->EvalAutomorphismKeyGen(privateKey, indices);
 }
 
@@ -302,11 +267,6 @@ template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(
     ConstCiphertext<Element> ciphertext, usint batchSize,
     const std::map<usint, EvalKey<Element>> &evalKeyMap) const {
-  // TODO Some functions through GetScheme
-  // we have checks on higher level
-//  if (!ciphertext) OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-//  if (!evalKeyMap.size())
-//    OPENFHE_THROW(config_error, "Input index map is empty");
 
   const auto cryptoParams = ciphertext->GetCryptoParameters();
   const auto encodingParams = cryptoParams->GetEncodingParams();
@@ -354,11 +314,6 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumRows(
     ConstCiphertext<Element> ciphertext, usint rowSize,
     const std::map<usint, EvalKey<Element>> &evalKeyMap,
     usint subringDim) const {
-
-  // we have checks on higher level
-//  if (!ciphertext) OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-//  if (!evalKeyMap.size())
-//    OPENFHE_THROW(config_error, "Input index map is empty");
 
   if (ciphertext->GetEncodingType() != CKKSPacked)
     OPENFHE_THROW(config_error,
@@ -540,16 +495,6 @@ std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices2nComplex(
   std::vector<usint> indices;
 
   // generator
-//  int32_t g = 5;
-//  usint gFinal = g;
-//
-//  for (size_t j = 0; j < ceil(log2(batchSize)); j++) {
-//    indices.push_back(gFinal);
-//    g = (g * g) % m;
-//
-//    gFinal = g;
-//  }
-
   usint g = 5;
 
   for (size_t j = 0; j < ceil(log2(batchSize)); j++) {
@@ -710,8 +655,6 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum2nComplexCols(
 // the code below is from base-advancedshe-impl.cpp
 namespace lbcrypto {
 
-    //template class AdvancedSHEBase<Poly>;
-    //template class AdvancedSHEBase<NativePoly>;
     template class AdvancedSHEBase<DCRTPoly>;
 
 }  // namespace lbcrypto

@@ -30,24 +30,7 @@
 //==================================================================================
 
 /*
-Description:
-
-This code implements RNS variants of the Cheon-Kim-Kim-Song scheme.
-
-The CKKS scheme is introduced in the following paper:
-- Jung Hee Cheon, Andrey Kim, Miran Kim, and Yongsoo Song. Homomorphic
-encryption for arithmetic of approximate numbers. Cryptology ePrint Archive,
-Report 2016/421, 2016. https://eprint.iacr.org/2016/421.
-
- Our implementation builds from the designs here:
- - Marcelo Blatt, Alexander Gusev, Yuriy Polyakov, Kurt Rohloff, and Vinod
-Vaikuntanathan. Optimized homomorphic encryption solution for secure genomewide
-association studies. Cryptology ePrint Archive, Report 2019/223, 2019.
-https://eprint.iacr.org/2019/223.
- - Andrey Kim, Antonis Papadimitriou, and Yuriy Polyakov. Approximate
-homomorphic encryption with reduced approximation error. Cryptology ePrint
-Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
-1118.
+BGV implementation. See https://eprint.iacr.org/2021/204 for details.
  */
 
 #define PROFILE

@@ -33,8 +33,6 @@
 
 // the code below is from evalkeyrelin-impl.cpp
 namespace lbcrypto {
-    //template class EvalKeyRelinImpl<Poly>;
-    //template class EvalKeyRelinImpl<NativePoly>;
     template class EvalKeyRelinImpl<DCRTPoly>;
 }  // namespace lbcrypto
 

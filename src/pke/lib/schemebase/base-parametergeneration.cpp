@@ -33,8 +33,6 @@
 
 // the code below is from base-parametergeneration-impl.cpp
 namespace lbcrypto {
-    //template class ParameterGenerationBase<Poly>;
-    //template class ParameterGenerationBase<NativePoly>;
     template class ParameterGenerationBase<DCRTPoly>;
 }  // namespace lbcrypto
 

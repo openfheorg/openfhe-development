@@ -30,10 +30,8 @@
 //==================================================================================
 
 /**
- * The implementation uses a mix of the GHS key-switching with the BV key-switching to
-       produce more efficient key-switching.
- * This method was introduced in "Homomorphic Evaluation of the AES Circuit(GHS Scheme)"
-        https://eprint.iacr.org/2012/099.pdf
+ * Hybrid key switching implementation. See
+ * Appendix of https://eprint.iacr.org/2021/204 for details.
  */
 #define PROFILE
 
@@ -571,9 +569,6 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
       cryptoParams->GettInvModpPrecon(), t,
       cryptoParams->GettModqPrecon());
 
-  // ct0.SetFormat(Format::EVALUATION);
-  // ct1.SetFormat(Format::EVALUATION);
-
   return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>{std::move(ct0), std::move(ct1)});
 }
 
@@ -618,9 +613,6 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt
       cTilda1.SetElementAtIndex(i, cTilda1.GetElementAtIndex(i) + cji * aji);
     }
   }
-
-  // cTilda0.SetFormat(Format::COEFFICIENT);
-  // cTilda1.SetFormat(Format::COEFFICIENT);
 
   return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>{std::move(cTilda0), std::move(cTilda1)});
 }

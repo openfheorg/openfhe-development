@@ -34,8 +34,6 @@
 
 namespace lbcrypto {
 
-    //template class FHEBase<Poly>;
-    //template class FHEBase<NativePoly>;
     template class FHEBase<DCRTPoly>;
 
 }  // namespace lbcrypto

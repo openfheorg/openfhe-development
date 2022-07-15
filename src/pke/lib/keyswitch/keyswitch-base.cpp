@@ -37,9 +37,6 @@ Base class for Lattice-based cryptography(LBC) Somewhat Homomorphic Encryption(S
 #include "keyswitch/keyswitch-base.h"
 
 namespace lbcrypto {
-
-//template class KeySwitchBase<Poly>;
-//template class KeySwitchBase<NativePoly>;
 template class KeySwitchBase<DCRTPoly>;
 
 }  // namespace lbcrypto
