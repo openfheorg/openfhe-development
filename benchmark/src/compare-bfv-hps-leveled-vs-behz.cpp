@@ -30,8 +30,8 @@
 //==================================================================================
 
 /*
- * This file benchmarks a small number of operations in order to exercise large
- * pieces of the library
+ * Compares the performance of BFV HPSPOVERQLEVELED with BFV BEHZ
+ * using EvalMultMany operation.
  */
 
 #define PROFILE
@@ -85,20 +85,13 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint dcrtBits) {
     parameters.SetPlaintextModulus(ptm);
     parameters.SetEvalMultCount(mult_depth);
     parameters.SetScalingFactorBits(dcrtBits);
+    parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
-
-    // std::cout << "\nParameters BFVrns for depth " << mult_depth << std::endl;
-    // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
-    // std::endl; std::cout << "n = " <<
-    // cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2 <<
-    // std::endl; std::cout << "log2 q = " <<
-    // log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
-    // << "\n" << std::endl;
 
     return cc;
 }
@@ -116,14 +109,6 @@ CryptoContext<DCRTPoly> GenerateBEHZContext(usint ptm, usint dcrtBits) {
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
 
-    // std::cout << "\nParameters BEHZ for depth " << mult_depth << std::endl;
-    // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
-    // std::endl; std::cout << "n = " <<
-    // cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2 <<
-    // std::endl; std::cout << "log2 q = " <<
-    // log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
-    // << "\n" << std::endl;
-
     return cc;
 }
 
@@ -133,6 +118,7 @@ CryptoContext<DCRTPoly> GenerateFlatBFVrnsContext(usint ptm, usint dcrtBits, usi
     parameters.SetMaxRelinSkDeg(0);
     parameters.SetScalingFactorBits(dcrtBits);
     parameters.SetRingDim(n);
+    parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);

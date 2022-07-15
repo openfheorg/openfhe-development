@@ -30,8 +30,7 @@
 //==================================================================================
 
 /*
-  This code benchmarks functions of the math directory  of the OpenFHE lattice
-  encryption library.
+  This code benchmarks vector operations.
  */
 #define _USE_MATH_DEFINES
 #include "benchmark/benchmark.h"

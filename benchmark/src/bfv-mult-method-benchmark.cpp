@@ -30,8 +30,8 @@
 //==================================================================================
 
 /*
- * This file benchmarks a small number of operations in order to exercise large
- * pieces of the library
+ * Compares the performance of different multiplication methods in BFV
+ * using EvalMultMany operation.
  */
 
 #define PROFILE
@@ -58,16 +58,6 @@ constexpr usint MULT_DEPTH           = 7;
 constexpr usint PTM                  = 2;
 constexpr usint DCRT_BITS            = 60;
 constexpr KeySwitchTechnique KS_TECH = BV;
-
-/*
-These are the results we obtained for the above parameters immediately after implementing HPSPOVERQLEVELED.
---------------------------------------------------------------------------------------------
-Benchmark                                                  Time             CPU   Iterations
---------------------------------------------------------------------------------------------
-BFVrns_EvalMultMany/mult_method:1/min_time:10.000       6590 ms         6578 ms            2
-BFVrns_EvalMultMany/mult_method:2/min_time:10.000       5140 ms         5132 ms            3
-BFVrns_EvalMultMany/mult_method:3/min_time:10.000       3382 ms         3376 ms            4
-*/
 
 static std::vector<MultiplicationTechnique> MULT_METHOD_ARGS = {BEHZ, HPS, HPSPOVERQ, HPSPOVERQLEVELED};
 
@@ -128,17 +118,8 @@ void BFVrns_EvalMult(benchmark::State& state) {
         ciphertextMult = cc->EvalMultMany(ciphertexts);
     }
 
-    Ciphertext<DCRTPoly> cRes;
-    for (usint i = (treeSize >> 1); i >= 1; i >>= 1) {
-        for (usint j = 0; j < i; ++j) {
-            ciphertexts[j] = cc->EvalMult(ciphertexts[j], ciphertexts[j + i]);
-        }
-    }
-
-    cRes = ciphertexts[0]->Clone();
-
     Plaintext plaintextDec;
-    cc->Decrypt(keyPair.secretKey, cRes, &plaintextDec);
+    cc->Decrypt(keyPair.secretKey, ciphertextMult, &plaintextDec);
     plaintextDec->SetLength(plaintext->GetLength());
 
     if (plaintext != plaintextDec) {

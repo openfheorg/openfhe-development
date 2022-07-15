@@ -29,6 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+/*
+ * This code benchmarks CKKS serialization.
+ */
+
+
 // #define PROFILE
 #define _USE_MATH_DEFINES
 #include "benchmark/benchmark.h"
@@ -54,7 +59,7 @@ void CKKS_serialize(benchmark::State& state) {
     parameters.SetMultiplicativeDepth(3);
     parameters.SetScalingFactorBits(50);
     parameters.SetDigitSize(20);
-    parameters.SetBatchSize(8);
+    parameters.SetSecurityLevel(HEStd_NotSet);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);
