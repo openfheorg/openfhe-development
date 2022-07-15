@@ -128,6 +128,9 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
 
   double keySwitchingNoise = 0;
   if (ksTech == BV) {
+	if (digitSize == 0) {
+	  OPENFHE_THROW(config_error, "digitSize is not allowed to be 0 for BV key switching in BGV when scalingModSize = 0.");
+	}
     int relinBase = pow(2.0, digitSize);
     int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
     int numWindows = floor(modSizeEstimate / log(relinBase)) + 1;
@@ -291,8 +294,9 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   if(!ptm)
       OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
 
-  // Select the size of moduli according to the plaintext modulus (TODO:
-  // optimized the bounds).
+  bool dcrtBitsSet = (dcrtBits == 0) ? false : true ;
+
+  // Select the size of moduli according to the plaintext modulus
   if (dcrtBits == 0) {
     dcrtBits = 28 + GetMSB64(ptm);
     if (dcrtBits > DCRT_MODULUS::MAX_SIZE) {
@@ -331,7 +335,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(
   std::vector<NativeInteger> moduliQ(vecSize);
   std::vector<NativeInteger> rootsQ(vecSize);
 
-  if (scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT) {
+  if ((scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT) && (dcrtBitsSet == false)) {
     auto moduliInfo = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxBits, numPrimes);
     moduliQ = std::get<0>(moduliInfo);
     uint32_t newQBound = std::get<1>(moduliInfo);

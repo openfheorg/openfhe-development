@@ -623,12 +623,6 @@ void LeveledSHERNS::ModReduceInPlace(Ciphertext<DCRTPoly> &ciphertext,
       std::static_pointer_cast<CryptoParametersRNS>(
           ciphertext->GetCryptoParameters());
 
-  if (cryptoParams->GetScalingTechnique() == NORESCALE) {
-    OPENFHE_THROW(
-        not_implemented_error,
-        "ModReduce is not implemented for NORESCALE scaling technique");
-  }
-
   if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
     ModReduceInternalInPlace(ciphertext, levels);
   }

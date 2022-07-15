@@ -135,7 +135,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS& test
 constexpr usint RING_DIM = 512;
 constexpr usint MULT_DEPTH = 7;
 constexpr usint MAX_RELIN_DEG = 1;
-constexpr usint SIZEMODULI = 50; // scaling factor bits
+constexpr int   SIZEMODULI = DFLT; // scaling factor bits
 constexpr usint DSIZE = 0;
 constexpr usint BV_DSIZE = 4;
 constexpr usint PTM = 65537;
