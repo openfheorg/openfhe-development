@@ -107,7 +107,7 @@ public:
     /**
      * @brief Check if the gaussian generator has been initialized with a standard deviation
      */
-     bool IsInitialized();
+     bool IsInitialized() const;
 
 
     /**

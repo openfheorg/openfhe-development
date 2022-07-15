@@ -48,7 +48,7 @@ DiscreteGaussianGeneratorImpl<VecType>::DiscreteGaussianGeneratorImpl(double std
 }
 
 template <typename VecType>
-bool DiscreteGaussianGeneratorImpl<VecType>::IsInitialized() {
+bool DiscreteGaussianGeneratorImpl<VecType>::IsInitialized() const {
     if (abs(m_std - 1) < 1e-9) {
         return false;
     } else {
