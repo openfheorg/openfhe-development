@@ -96,7 +96,7 @@ class CryptoParametersBase : public Serializable {
   }
 
   virtual bool operator==(const CryptoParametersBase<Element> &cmp) const {
-    return *m_encodingParams == *cmp.GetEncodingParams();
+    return *m_encodingParams == *(cmp.GetEncodingParams()) && *m_params == *(cmp.GetElementParams());
   }
   virtual bool operator!=(const CryptoParametersBase<Element> &cmp) const {
     return !(*this == cmp);
