@@ -1917,6 +1917,20 @@ protected:
                          const PublicKey<Element> publicKey = nullptr);
 
   /**
+   * EvalRotateKeyGen generates evaluation keys for a list of indices
+   *
+   * @param privateKey private key.
+   * @param indexList list of indices.
+   * @param publicKey public key (used in NTRU schemes).
+   */
+  void EvalRotateKeyGen(const PrivateKey<Element> privateKey,
+                         const std::vector<int32_t>& indexList,
+                         const PublicKey<Element> publicKey = nullptr) {
+	  EvalAtIndexKeyGen(privateKey,indexList,publicKey);
+  };
+
+
+  /**
    * Moves i-th slot to slot 0
    *
    * @param ciphertext.
