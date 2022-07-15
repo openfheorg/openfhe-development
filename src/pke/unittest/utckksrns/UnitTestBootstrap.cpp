@@ -135,8 +135,8 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
 #if NATIVEINT != 128
     { BOOTSTRAP_FULL, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
     { BOOTSTRAP_FULL, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
-    //{ BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
-    //{ BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 32, 32 }, RDIM/2 },
 #endif
     // ==========================================
     // TestType,     Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
@@ -147,8 +147,8 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
 #if NATIVEINT != 128
     { BOOTSTRAP_FULL, "15", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 }, RDIM/2 },
     { BOOTSTRAP_FULL, "16", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 }, RDIM/2 },
-    //{ BOOTSTRAP_FULL, "17", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 }, RDIM/2 },
-    //{ BOOTSTRAP_FULL, "18", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "17", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 }, RDIM/2 },
+    { BOOTSTRAP_FULL, "18", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 3 },  { 0, 0 }, RDIM/2 },
 #endif
     // ==========================================
     // TestType,      Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
@@ -159,8 +159,8 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
 #if NATIVEINT != 128
     { BOOTSTRAP_EDGE, "05", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, RDIM/4 },
     { BOOTSTRAP_EDGE, "06", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, RDIM/4 },
-    //{ BOOTSTRAP_EDGE, "07", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, RDIM/4 },
-    //{ BOOTSTRAP_EDGE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, RDIM/4 },
+    { BOOTSTRAP_EDGE, "07", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, RDIM/4 },
+    { BOOTSTRAP_EDGE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, RDIM/4 },
 #endif
     // ==========================================
     // TestType,      Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
@@ -171,8 +171,8 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
 #if NATIVEINT != 128
     { BOOTSTRAP_EDGE, "15", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, RDIM/4 },
     { BOOTSTRAP_EDGE, "16", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, RDIM/4 },
-    //{ BOOTSTRAP_EDGE, "17", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, RDIM/4 },
-    //{ BOOTSTRAP_EDGE, "18", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, RDIM/4 },
+    { BOOTSTRAP_EDGE, "17", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, RDIM/4 },
+    { BOOTSTRAP_EDGE, "18", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, RDIM/4 },
 #endif
     // ==========================================
     // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
@@ -183,8 +183,8 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
 #if NATIVEINT != 128
     { BOOTSTRAP_SPARSE, "05", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 }, 8 },
     { BOOTSTRAP_SPARSE, "06", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 }, 8 },
-    //{ BOOTSTRAP_SPARSE, "07", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 }, 8 },
-    //{ BOOTSTRAP_SPARSE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 }, 8 },
+    { BOOTSTRAP_SPARSE, "07", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 }, 8 },
+    { BOOTSTRAP_SPARSE, "08", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 8, 8 }, 8 },
 #endif
     // ==========================================
     // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
@@ -195,8 +195,8 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
 #if NATIVEINT != 128
     { BOOTSTRAP_SPARSE, "15", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "16", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, 8 },
-    //{ BOOTSTRAP_SPARSE, "17", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, 8 },
-    //{ BOOTSTRAP_SPARSE, "18", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, 8 },
+    { BOOTSTRAP_SPARSE, "17", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, 8 },
+    { BOOTSTRAP_SPARSE, "18", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 2, 2 },  { 0, 0 }, 8 },
 #endif
     // ==========================================
     // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
@@ -207,8 +207,8 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
 #if NATIVEINT != 128
     { BOOTSTRAP_SPARSE, "25", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "26", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, 8 },
-    //{ BOOTSTRAP_SPARSE, "27", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, 8 },
-    //{ BOOTSTRAP_SPARSE, "28", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, 8 },
+    { BOOTSTRAP_SPARSE, "27", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, 8 },
+    { BOOTSTRAP_SPARSE, "28", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 1, 1 },  { 0, 0 }, 8 },
 #endif
     // ==========================================
     // TestType,        Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1,     Slots
@@ -219,8 +219,8 @@ static std::vector<TEST_CASE_UTCKKSRNSBOOT> testCases = {
 #if NATIVEINT != 128
     { BOOTSTRAP_SPARSE, "35", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 }, 8 },
     { BOOTSTRAP_SPARSE, "36", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 }, 8 },
-    //{ BOOTSTRAP_SPARSE, "37", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 }, 8 },
-    //{ BOOTSTRAP_SPARSE, "38", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 }, 8 },
+    { BOOTSTRAP_SPARSE, "37", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 }, 8 },
+    { BOOTSTRAP_SPARSE, "38", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SFBITS,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,   FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT,       DFLT, DFLT},    { 3, 2 },  { 0, 0 }, 8 },
 #endif
     // ==========================================
     // TestType,            Descr, Scheme,          RDim, MultDepth,  SFBits,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, ModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech, LvlBudget, Dim1

@@ -131,6 +131,8 @@ void FHECKKSRNS::EvalBootstrapSetup(
 
   // compute # of levels to remain when encoding the coefficients
   uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
+  // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) L0 -= 1;
   uint32_t lEnc = L0 - precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] - 1;
   uint32_t lDec = L0 - depthBT;
 
@@ -222,8 +224,28 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
   uint32_t M = cc->GetCyclotomicOrder();
   size_t N = cc->GetRingDimension();
 
-  auto elementParams = cryptoParams->GetElementParams();
-  NativeInteger q = elementParams->GetParams()[0]->GetModulus().ConvertToInt();
+  uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
+
+  auto elementParamsRaised = *(cryptoParams->GetElementParams());
+
+  // For FLEXIBLEAUTOEXT we raised ciphertext does not include extra modulus
+  // as it is multiplied by auxiliary plaintext
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+    elementParamsRaised.PopLastParam();
+  }
+
+  auto paramsQ = elementParamsRaised.GetParams();
+  usint sizeQ = paramsQ.size();
+
+  std::vector<NativeInteger> moduli(sizeQ);
+  std::vector<NativeInteger> roots(sizeQ);
+  for (size_t i = 0; i < sizeQ; i++) {
+    moduli[i] = paramsQ[i]->GetModulus();
+    roots[i] = paramsQ[i]->GetRootOfUnity();
+  }
+  auto elementParamsRaisedPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(M, moduli, roots);
+
+  NativeInteger q = elementParamsRaisedPtr->GetParams()[0]->GetModulus().ConvertToInt();
   double qDouble = q.ConvertToDouble();
 
   const auto p = cryptoParams->GetPlaintextModulus();
@@ -256,7 +278,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
   // We only use the level 0 ciphertext here. All other towers are automatically ignored to make
   // CKKS bootstrapping faster.
   for (size_t i = 0; i < ctxtDCRT.size(); i++) {
-    DCRTPoly temp(elementParams, COEFFICIENT);
+    DCRTPoly temp(elementParamsRaisedPtr, COEFFICIENT);
     ctxtDCRT[i].SetFormat(COEFFICIENT);
     temp = ctxtDCRT[i].GetElementAtIndex(0);
     temp.SetFormat(EVALUATION);
@@ -264,7 +286,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
   }
 
   raised->SetElements(ctxtDCRT);
-  raised->SetLevel(elementParams->GetParams().size() - ctxtDCRT[0].GetNumOfElements());
+  raised->SetLevel(L0 - ctxtDCRT[0].GetNumOfElements());
 
 #ifdef BOOTSTRAPTIMING
   std::cerr << "\nNumber of levels at the beginning of bootstrapping: " << raised->GetElements()[0].GetNumOfElements() - 1 << std::endl;
@@ -781,9 +803,11 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
   uint32_t towersToDrop = 0;
   if (L != 0) {
-    towersToDrop = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT ?
-        elementParams.GetParams().size() - L : elementParams.GetParams().size() - L - 1;
-    for (uint32_t i = 0; i < towersToDrop; i++) elementParams.PopLastParam();
+    towersToDrop = elementParams.GetParams().size() - L - 1;
+  }
+
+  for (uint32_t i = 0; i < towersToDrop; i++) {
+    elementParams.PopLastParam();
   }
 
   auto paramsQ = elementParams.GetParams();
@@ -854,9 +878,11 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
   uint32_t towersToDrop = 0;
   if (L != 0) {
-    towersToDrop = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT ?
-        elementParams.GetParams().size() - L : elementParams.GetParams().size() - L - 1;
-    for (uint32_t i = 0; i < towersToDrop; i++) elementParams.PopLastParam();
+    towersToDrop = elementParams.GetParams().size() - L - 1;
+  }
+
+  for (uint32_t i = 0; i < towersToDrop; i++) {
+    elementParams.PopLastParam();
   }
 
   auto paramsQ = elementParams.GetParams();
@@ -988,13 +1014,11 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
   uint32_t towersToDrop = 0;
 
   if (L != 0) {
-    towersToDrop = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT ?
-        elementParams.GetParams().size() - L - levelBudget + 1 :
-        elementParams.GetParams().size() - L - levelBudget;
+    towersToDrop = elementParams.GetParams().size() - L - levelBudget;
+  }
 
-    for (uint32_t i = 0; i < towersToDrop; i++) {
-      elementParams.PopLastParam();
-    }
+  for (uint32_t i = 0; i < towersToDrop; i++) {
+    elementParams.PopLastParam();
   }
 
   uint32_t level0 = towersToDrop + levelBudget - 1;
@@ -1192,12 +1216,11 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
   uint32_t towersToDrop = 0;
 
   if (L != 0) {
-    towersToDrop = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT ?
-        elementParams.GetParams().size() - L - levelBudget + 1 :
-        elementParams.GetParams().size() - L - levelBudget;
-    for (uint32_t i = 0; i < towersToDrop; i++) {
-      elementParams.PopLastParam();
-    }
+    towersToDrop = elementParams.GetParams().size() - L - levelBudget;
+  }
+
+  for (uint32_t i = 0; i < towersToDrop; i++) {
+    elementParams.PopLastParam();
   }
 
   uint32_t level0 = towersToDrop;
@@ -1881,8 +1904,10 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
   auto cc = ciphertext->GetCryptoContext();
   auto algo = cc->GetScheme();
 
-  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO) {
-    double targetSF = cryptoParams->GetScalingFactorReal(0);
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+      cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+    uint32_t lvl = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ? 0 : 1;
+    double targetSF = cryptoParams->GetScalingFactorReal(lvl);
     double sourceSF = ciphertext->GetScalingFactor();
     uint32_t numTowers = ciphertext->GetElements()[0].GetNumOfElements();
     double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers - 1]->GetModulus().ConvertToDouble();
