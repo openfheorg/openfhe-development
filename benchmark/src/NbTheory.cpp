@@ -30,8 +30,7 @@
 //==================================================================================
 
 /*
- * This code benchmarks functions of the number theory directory  of the
- * OpenFHE lattice encryption library.
+ * This code benchmarks number theory operations.
  */
 
 #define _USE_MATH_DEFINES

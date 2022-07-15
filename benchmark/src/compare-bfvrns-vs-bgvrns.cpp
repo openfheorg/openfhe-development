@@ -30,8 +30,8 @@
 //==================================================================================
 
 /*
- * This file benchmarks a small number of operations in order to exercise large
- * pieces of the library
+ * Compares the performance of BFV and BFV (default modes)
+ * using EvalMultMany operation.
  */
 
 #define PROFILE
@@ -63,6 +63,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
     parameters.SetPlaintextModulus(ptm);
     parameters.SetEvalMultCount(mult_depth);
     parameters.SetScalingFactorBits(60);
+    parameters.SetKeySwitchTechnique(BV);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     // enable features that you wish to use
@@ -71,14 +72,6 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
 
-    // std::cout << "\nParameters BFVrns for depth " << mult_depth << std::endl;
-    // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
-    // std::endl; std::cout << "n = " <<
-    // cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2 <<
-    // std::endl; std::cout << "log2 q = " <<
-    // log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
-    // << "\n" << std::endl;
-
     return cc;
 }
 
@@ -86,20 +79,13 @@ CryptoContext<DCRTPoly> GenerateBGVrnsContext(usint ptm) {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetMultiplicativeDepth(mult_depth);
     parameters.SetPlaintextModulus(ptm);
+    parameters.SetKeySwitchTechnique(BV);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
-
-    // std::cout << "\nParameters BGVrns for depth " << mult_depth << std::endl;
-    // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
-    // std::endl; std::cout << "n = " <<
-    // cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2 <<
-    // std::endl; std::cout << "log2 q = " <<
-    // log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
-    // << "\n" << std::endl;
 
     return cc;
 }

@@ -31,8 +31,7 @@
 
 /*
   Description:
-  This code benchmarks functions of the src/lib/lattoce directory  of the
-  OpenFHE lattice encryption library.
+  This code benchmarks polynomial operations for various math backends.
  */
 
 #define _USE_MATH_DEFINES

@@ -128,9 +128,6 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
 
   double keySwitchingNoise = 0;
   if (ksTech == BV) {
-    if (digitSize == 0) {
-      OPENFHE_THROW(config_error, "digitSize is not allowed to be 0 for BV key switching in BGV.");
-    }
     int relinBase = pow(2.0, digitSize);
     int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
     int numWindows = floor(modSizeEstimate / log(relinBase)) + 1;

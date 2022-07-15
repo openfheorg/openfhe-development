@@ -29,6 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
+/*
+ * This code benchmarks polynomial operations for ring dimension of 16k.
+ */
+
 #define _USE_MATH_DEFINES
 #include "benchmark/benchmark.h"
 

@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This is some helper code for benchmarking BBVs
+  This is some helper code for benchmarking vector operations
  */
 
 #ifndef _VECHELPER_H_

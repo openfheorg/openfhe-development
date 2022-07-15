@@ -477,7 +477,7 @@ BENCHMARK(BFVrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
  * CKKS benchmarks
  * */
 
-void CKKS_KeyGen(benchmark::State& state) {
+void CKKSrns_KeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cryptoContext = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair;
@@ -487,9 +487,9 @@ void CKKS_KeyGen(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_KeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_KeyGen)->Unit(benchmark::kMicrosecond);
 
-void CKKS_MultKeyGen(benchmark::State& state) {
+void CKKSrns_MultKeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair;
@@ -500,9 +500,9 @@ void CKKS_MultKeyGen(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_MultKeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_MultKeyGen)->Unit(benchmark::kMicrosecond);
 
-void CKKS_EvalAtIndexKeyGen(benchmark::State& state) {
+void CKKSrns_EvalAtIndexKeyGen(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair;
@@ -518,9 +518,9 @@ void CKKS_EvalAtIndexKeyGen(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_EvalAtIndexKeyGen)->Unit(benchmark::kMicrosecond);
 
-void CKKS_Encryption(benchmark::State& state) {
+void CKKSrns_Encryption(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -538,9 +538,9 @@ void CKKS_Encryption(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_Encryption)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_Encryption)->Unit(benchmark::kMicrosecond);
 
-void CKKS_Decryption(benchmark::State& state) {
+void CKKSrns_Decryption(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -562,9 +562,9 @@ void CKKS_Decryption(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_Decryption)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_Decryption)->Unit(benchmark::kMicrosecond);
 
-void CKKS_Add(benchmark::State& state) {
+void CKKSrns_Add(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -587,9 +587,9 @@ void CKKS_Add(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_Add)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_Add)->Unit(benchmark::kMicrosecond);
 
-void CKKS_AddInPlace(benchmark::State& state) {
+void CKKSrns_AddInPlace(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -612,9 +612,9 @@ void CKKS_AddInPlace(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_AddInPlace)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_AddInPlace)->Unit(benchmark::kMicrosecond);
 
-void CKKS_MultNoRelin(benchmark::State& state) {
+void CKKSrns_MultNoRelin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -637,9 +637,9 @@ void CKKS_MultNoRelin(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_MultNoRelin)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_MultNoRelin)->Unit(benchmark::kMicrosecond);
 
-void CKKS_MultRelin(benchmark::State& state) {
+void CKKSrns_MultRelin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -663,9 +663,9 @@ void CKKS_MultRelin(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_MultRelin)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_MultRelin)->Unit(benchmark::kMicrosecond);
 
-void CKKS_Relin(benchmark::State& state) {
+void CKKSrns_Relin(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -691,9 +691,9 @@ void CKKS_Relin(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_Relin)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_Relin)->Unit(benchmark::kMicrosecond);
 
-void CKKS_RelinInPlace(benchmark::State& state) {
+void CKKSrns_RelinInPlace(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -723,9 +723,9 @@ void CKKS_RelinInPlace(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_RelinInPlace)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_RelinInPlace)->Unit(benchmark::kMicrosecond);
 
-void CKKS_Rescale(benchmark::State& state) {
+void CKKSrns_Rescale(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -751,9 +751,9 @@ void CKKS_Rescale(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_Rescale)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_Rescale)->Unit(benchmark::kMicrosecond);
 
-void CKKS_RescaleInPlace(benchmark::State& state) {
+void CKKSrns_RescaleInPlace(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -778,9 +778,9 @@ void CKKS_RescaleInPlace(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_RescaleInPlace)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_RescaleInPlace)->Unit(benchmark::kMicrosecond);
 
-void CKKS_EvalAtIndex(benchmark::State& state) {
+void CKKSrns_EvalAtIndex(benchmark::State& state) {
     CryptoContext<DCRTPoly> cc = GenerateCKKSContext();
 
     KeyPair<DCRTPoly> keyPair = cc->KeyGen();
@@ -813,7 +813,7 @@ void CKKS_EvalAtIndex(benchmark::State& state) {
     }
 }
 
-BENCHMARK(CKKS_EvalAtIndex)->Unit(benchmark::kMicrosecond);
+BENCHMARK(CKKSrns_EvalAtIndex)->Unit(benchmark::kMicrosecond);
 
 /*
  * BGVrns benchmarks
