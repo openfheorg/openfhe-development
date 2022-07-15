@@ -1,5 +1,5 @@
 # Adds a label depending on the files/ directories that were changed. Makes it easier for us to determine
-# who should be looking at it
+# who should be looking at it.
 
 ci/cd:
   - .github/workflows/*
