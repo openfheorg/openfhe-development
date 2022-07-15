@@ -132,7 +132,7 @@ void FHECKKSRNS::EvalBootstrapSetup(
   // compute # of levels to remain when encoding the coefficients
   uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
   // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) L0 -= 1;
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) L0 -= 1;
   uint32_t lEnc = L0 - precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] - 1;
   uint32_t lDec = L0 - depthBT;
 
@@ -230,7 +230,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
   // For FLEXIBLEAUTOEXT we raised ciphertext does not include extra modulus
   // as it is multiplied by auxiliary plaintext
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
     elementParamsRaised.PopLastParam();
   }
 
@@ -1904,9 +1904,9 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
   auto cc = ciphertext->GetCryptoContext();
   auto algo = cc->GetScheme();
 
-  if (cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO ||
-      cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTOEXT) {
-    uint32_t lvl = cryptoParams->GetRescalingTechnique() == FLEXIBLEAUTO ? 0 : 1;
+  if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+      cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+    uint32_t lvl = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ? 0 : 1;
     double targetSF = cryptoParams->GetScalingFactorReal(lvl);
     double sourceSF = ciphertext->GetScalingFactor();
     uint32_t numTowers = ciphertext->GetElements()[0].GetNumOfElements();
