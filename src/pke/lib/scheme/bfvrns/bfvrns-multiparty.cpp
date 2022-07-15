@@ -70,7 +70,7 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
                            std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
   auto elementParams = cryptoParams->GetElementParams();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     elementParams = cryptoParams->GetParamsQr();
   }
   const auto ns = cryptoParams->GetNoiseScale();
@@ -112,7 +112,7 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
                            std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
   auto elementParams = cryptoParams->GetElementParams();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     elementParams = cryptoParams->GetParamsQr();
   }
   const auto paramsPK = cryptoParams->GetParamsPK();

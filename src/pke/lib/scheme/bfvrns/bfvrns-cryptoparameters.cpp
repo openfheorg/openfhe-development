@@ -118,7 +118,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(
   m_negQModtPrecon = m_negQModt.PrepModMulConst(t);
 
   // BFVrns : Encrypt : With extra
-  if (encTech == POVERQ) {
+  if (encTech == EXTENDED) {
     std::vector<NativeInteger> moduliQr(sizeQ + 1);
     std::vector<NativeInteger> rootsQr(sizeQ + 1);
 

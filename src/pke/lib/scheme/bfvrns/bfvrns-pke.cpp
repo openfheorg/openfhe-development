@@ -68,7 +68,7 @@ KeyPair<DCRTPoly> PKEBFVRNS::KeyGen(CryptoContext<DCRTPoly> cc,
           cc->GetCryptoParameters());
 
   std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     elementParams = cryptoParams->GetParamsQr();
   }
   const std::shared_ptr<ParmType> paramsPK = cryptoParams->GetParamsPK();
@@ -128,7 +128,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   auto encParams = elementParams;
 
   std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     encParams = cryptoParams->GetParamsQr();
     ptxt.SetFormat(Format::COEFFICIENT);
     Poly bigPtxt = ptxt.CRTInterpolate();
@@ -144,7 +144,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   NativeInteger NegQModt = cryptoParams->GetNegQModt();
   NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
 
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     NegQModt = cryptoParams->GetNegQrModt();
     NegQModtPrecon = cryptoParams->GetNegQrModtPrecon();
   }
@@ -158,7 +158,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   (*ba)[0].SetFormat(Format::COEFFICIENT);
   (*ba)[1].SetFormat(Format::COEFFICIENT);
 
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
     (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
   }
@@ -185,7 +185,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   auto encParams = elementParams;
 
   std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     encParams = cryptoParams->GetParamsQr();
     ptxt.SetFormat(Format::COEFFICIENT);
     Poly bigPtxt = ptxt.CRTInterpolate();
@@ -201,7 +201,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   NativeInteger NegQModt = cryptoParams->GetNegQModt();
   NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
 
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     NegQModt = cryptoParams->GetNegQrModt();
     NegQModtPrecon = cryptoParams->GetNegQrModtPrecon();
   }
@@ -215,7 +215,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   (*ba)[0].SetFormat(Format::COEFFICIENT);
   (*ba)[1].SetFormat(Format::COEFFICIENT);
 
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
     (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
   }

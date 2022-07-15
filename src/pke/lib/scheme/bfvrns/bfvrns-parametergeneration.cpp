@@ -109,9 +109,9 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   // expansion factor delta
   auto delta = [](uint32_t n) -> double { return (2. * sqrt(n)); };
 
-  // norm of fresh ciphertext polynomial (for POVERQ the noise is reduced to modulus switching noise)
+  // norm of fresh ciphertext polynomial (for EXTENDED the noise is reduced to modulus switching noise)
   auto Vnorm = [&](uint32_t n) -> double {
-	if (encTech == POVERQ)
+	if (encTech == EXTENDED)
 	  return (1. + delta(n) * Bkey)/2.;
 	else
       return Berr * (1. + 2. * delta(n) * Bkey);

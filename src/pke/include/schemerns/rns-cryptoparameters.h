@@ -221,7 +221,7 @@ public:
   const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
     if (m_ksTechnique == HYBRID) {
       return m_paramsQP;
-    } else if (m_encTechnique == POVERQ) {
+    } else if (m_encTechnique == EXTENDED) {
       return m_paramsQr;
     }
     return m_params;
@@ -945,7 +945,7 @@ public:
 
   /**
    * Gets the Auxiliary CRT basis {Qr} = {Q U r}
-   * used in BFV encryption in mode POVERQ
+   * used in BFV encryption in mode EXTENDED
    *
    * @return the precomputed CRT params
    */

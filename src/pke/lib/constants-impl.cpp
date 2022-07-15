@@ -127,8 +127,8 @@ std::ostream &operator<<(std::ostream &s, EncryptionTechnique t) {
     case STANDARD:
       s << "STANDARD";
       break;
-    case POVERQ:
-      s << "POVERQ";
+    case EXTENDED:
+      s << "EXTENDED";
       break;
     default:
       s << "UKNOWN";
