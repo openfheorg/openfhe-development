@@ -42,8 +42,8 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
-    void SchemeBFVRNS::Enable(PKESchemeFeature feature) {
-        switch (feature) {
+void SchemeBFVRNS::Enable(PKESchemeFeature feature) {
+    switch (feature) {
         case PKE:
             if (m_PKE == nullptr)
                 m_PKE = std::make_shared<PKEBFVRNS>();
@@ -69,13 +69,14 @@ namespace lbcrypto {
             break;
         case FHE:
             if (m_FHE == nullptr)
-              m_FHE = std::make_shared<FHEBFVRNS>();
+                m_FHE = std::make_shared<FHEBFVRNS>();
             break;
         default:
             std::stringstream ss;
             ss << feature;
-            OPENFHE_THROW(not_implemented_error, std::string("This feature [") + ss.str() + "] is not supported for BFVRNS scheme");
-        }
+            OPENFHE_THROW(not_implemented_error,
+                          std::string("This feature [") + ss.str() + "] is not supported for BFVRNS scheme");
     }
-
 }
+
+}  // namespace lbcrypto

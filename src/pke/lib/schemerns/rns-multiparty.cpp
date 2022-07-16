@@ -37,147 +37,139 @@
 
 namespace lbcrypto {
 
-Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(
-    ConstCiphertext<DCRTPoly> ciphertext,
-    const PrivateKey<DCRTPoly> privateKey) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersRNS>(
-          privateKey->GetCryptoParameters());
+Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPoly> ciphertext,
+                                                          const PrivateKey<DCRTPoly> privateKey) const {
+    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
 
-  const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
-  const auto ns = cryptoParams->GetNoiseScale();
+    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+    const auto ns                   = cryptoParams->GetNoiseScale();
 
-  auto s(privateKey->GetPrivateElement());
+    auto s(privateKey->GetPrivateElement());
 
-  size_t sizeQ = s.GetParams()->GetParams().size();
-  size_t sizeQl = cv[0].GetParams()->GetParams().size();
-  size_t diffQl = sizeQ - sizeQl;
+    size_t sizeQ  = s.GetParams()->GetParams().size();
+    size_t sizeQl = cv[0].GetParams()->GetParams().size();
+    size_t diffQl = sizeQ - sizeQl;
 
-  s.DropLastElements(diffQl);
+    s.DropLastElements(diffQl);
 
-  DggType dgg(MP_SD);
-  DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
+    DggType dgg(MP_SD);
+    DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
 
-  // e is added to do noise flooding
-  DCRTPoly b = cv[0] + s * cv[1] + ns * e;
+    // e is added to do noise flooding
+    DCRTPoly b = cv[0] + s * cv[1] + ns * e;
 
-  Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
+    Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
 
-  result->SetElements({std::move(b)});
+    result->SetElements({std::move(b)});
 
-  result->SetDepth(ciphertext->GetDepth());
-  result->SetLevel(ciphertext->GetLevel());
-  result->SetScalingFactor(ciphertext->GetScalingFactor());
-  result->SetScalingFactorInt(ciphertext->GetScalingFactorInt());
-  result->SetSlots(ciphertext->GetSlots());
+    result->SetDepth(ciphertext->GetDepth());
+    result->SetLevel(ciphertext->GetLevel());
+    result->SetScalingFactor(ciphertext->GetScalingFactor());
+    result->SetScalingFactorInt(ciphertext->GetScalingFactorInt());
+    result->SetSlots(ciphertext->GetSlots());
 
-  return result;
+    return result;
 }
 
-Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(
-    ConstCiphertext<DCRTPoly> ciphertext,
-    const PrivateKey<DCRTPoly> privateKey) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersRNS>(
-          privateKey->GetCryptoParameters());
-  const auto ns = cryptoParams->GetNoiseScale();
+Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
+                                                          const PrivateKey<DCRTPoly> privateKey) const {
+    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
+    const auto ns           = cryptoParams->GetNoiseScale();
 
-  const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
+    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
-  auto s(privateKey->GetPrivateElement());
+    auto s(privateKey->GetPrivateElement());
 
-  size_t sizeQ = s.GetParams()->GetParams().size();
-  size_t sizeQl = cv[0].GetParams()->GetParams().size();
-  size_t diffQl = sizeQ - sizeQl;
+    size_t sizeQ  = s.GetParams()->GetParams().size();
+    size_t sizeQl = cv[0].GetParams()->GetParams().size();
+    size_t diffQl = sizeQ - sizeQl;
 
-  s.DropLastElements(diffQl);
+    s.DropLastElements(diffQl);
 
-  DggType dgg(MP_SD);
-  DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
+    DggType dgg(MP_SD);
+    DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
 
-  // e is added to do noise flooding
-  DCRTPoly b = s * cv[1] + ns * e;
+    // e is added to do noise flooding
+    DCRTPoly b = s * cv[1] + ns * e;
 
-  Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
+    Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
 
-  result->SetElements({std::move(b)});
+    result->SetElements({std::move(b)});
 
-  result->SetDepth(ciphertext->GetDepth());
-  result->SetLevel(ciphertext->GetLevel());
-  result->SetScalingFactor(ciphertext->GetScalingFactor());
-  result->SetScalingFactorInt(ciphertext->GetScalingFactorInt());
-  result->SetSlots(ciphertext->GetSlots());
+    result->SetDepth(ciphertext->GetDepth());
+    result->SetLevel(ciphertext->GetLevel());
+    result->SetScalingFactor(ciphertext->GetScalingFactor());
+    result->SetScalingFactorInt(ciphertext->GetScalingFactorInt());
+    result->SetSlots(ciphertext->GetSlots());
 
-  return result;
+    return result;
 }
 
-EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(
-    PrivateKey<DCRTPoly> privateKey, EvalKey<DCRTPoly> evalKey) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersRNS>(
-          evalKey->GetCryptoContext()->GetCryptoParameters());
-  const auto ns = cryptoParams->GetNoiseScale();
+EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKey, EvalKey<DCRTPoly> evalKey) const {
+    const auto cryptoParams =
+        std::static_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoContext()->GetCryptoParameters());
+    const auto ns = cryptoParams->GetNoiseScale();
 
-  const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
+    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
 
-  EvalKey<DCRTPoly> evalKeyResult(
-      new EvalKeyRelinImpl<DCRTPoly>(evalKey->GetCryptoContext()));
+    EvalKey<DCRTPoly> evalKeyResult(new EvalKeyRelinImpl<DCRTPoly>(evalKey->GetCryptoContext()));
 
-  const std::vector<DCRTPoly> &a0 = evalKey->GetAVector();
-  const std::vector<DCRTPoly> &b0 = evalKey->GetBVector();
+    const std::vector<DCRTPoly>& a0 = evalKey->GetAVector();
+    const std::vector<DCRTPoly>& b0 = evalKey->GetBVector();
 
-  std::vector<DCRTPoly> a;
-  std::vector<DCRTPoly> b;
+    std::vector<DCRTPoly> a;
+    std::vector<DCRTPoly> b;
 
-  if (cryptoParams->GetKeySwitchTechnique() == BV) {
-    const DCRTPoly &s = privateKey->GetPrivateElement();
-    const auto elementParams = s.GetParams();
+    if (cryptoParams->GetKeySwitchTechnique() == BV) {
+        const DCRTPoly& s        = privateKey->GetPrivateElement();
+        const auto elementParams = s.GetParams();
 
-    for (usint i = 0; i < a0.size(); i++) {
-      DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-      DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
-      a.push_back(a0[i] * s + ns * e0);
-      b.push_back(b0[i] * s + ns * e1);
+        for (usint i = 0; i < a0.size(); i++) {
+            DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
+            DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
+            a.push_back(a0[i] * s + ns * e0);
+            b.push_back(b0[i] * s + ns * e1);
+        }
     }
-  } else {
-    const auto elementParams = cryptoParams->GetElementParams();
-    const std::shared_ptr<ParmType> paramsQ = cryptoParams->GetElementParams();
-    const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
+    else {
+        const auto elementParams                 = cryptoParams->GetElementParams();
+        const std::shared_ptr<ParmType> paramsQ  = cryptoParams->GetElementParams();
+        const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
 
-    usint sizeQ = paramsQ->GetParams().size();
-    usint sizeQP = paramsQP->GetParams().size();
+        usint sizeQ  = paramsQ->GetParams().size();
+        usint sizeQP = paramsQP->GetParams().size();
 
-    DCRTPoly s = privateKey->GetPrivateElement().Clone();
+        DCRTPoly s = privateKey->GetPrivateElement().Clone();
 
-    s.SetFormat(Format::COEFFICIENT);
-    DCRTPoly sExt(paramsQP, Format::COEFFICIENT, true);
+        s.SetFormat(Format::COEFFICIENT);
+        DCRTPoly sExt(paramsQP, Format::COEFFICIENT, true);
 
-    for (usint i = 0; i < sizeQ; i++) {
-      sExt.SetElementAtIndex(i, s.GetElementAtIndex(i));
+        for (usint i = 0; i < sizeQ; i++) {
+            sExt.SetElementAtIndex(i, s.GetElementAtIndex(i));
+        }
+
+        for (usint j = sizeQ; j < sizeQP; j++) {
+            NativeInteger pj    = paramsQP->GetParams()[j]->GetModulus();
+            NativeInteger rooti = paramsQP->GetParams()[j]->GetRootOfUnity();
+            auto sNew0          = s.GetElementAtIndex(0);
+            sNew0.SwitchModulus(pj, rooti, 0, 0);
+            sExt.SetElementAtIndex(j, std::move(sNew0));
+        }
+        sExt.SetFormat(Format::EVALUATION);
+
+        for (usint i = 0; i < a0.size(); i++) {
+            DCRTPoly e0(dgg, paramsQP, Format::EVALUATION);
+            DCRTPoly e1(dgg, paramsQP, Format::EVALUATION);
+
+            a.push_back(a0[i] * sExt + ns * e0);
+            b.push_back(b0[i] * sExt + ns * e1);
+        }
     }
 
-    for (usint j = sizeQ; j < sizeQP; j++) {
-      NativeInteger pj = paramsQP->GetParams()[j]->GetModulus();
-      NativeInteger rooti = paramsQP->GetParams()[j]->GetRootOfUnity();
-      auto sNew0 = s.GetElementAtIndex(0);
-      sNew0.SwitchModulus(pj, rooti, 0, 0);
-      sExt.SetElementAtIndex(j, std::move(sNew0));
-    }
-    sExt.SetFormat(Format::EVALUATION);
+    evalKeyResult->SetAVector(std::move(a));
+    evalKeyResult->SetBVector(std::move(b));
 
-    for (usint i = 0; i < a0.size(); i++) {
-      DCRTPoly e0(dgg, paramsQP, Format::EVALUATION);
-      DCRTPoly e1(dgg, paramsQP, Format::EVALUATION);
-
-      a.push_back(a0[i] * sExt + ns * e0);
-      b.push_back(b0[i] * sExt + ns * e1);
-    }
-  }
-
-  evalKeyResult->SetAVector(std::move(a));
-  evalKeyResult->SetBVector(std::move(b));
-
-  return evalKeyResult;
+    return evalKeyResult;
 }
 
 }  // namespace lbcrypto

@@ -42,8 +42,8 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
-    void SchemeBGVRNS::Enable(PKESchemeFeature feature) {
-        switch (feature) {
+void SchemeBGVRNS::Enable(PKESchemeFeature feature) {
+    switch (feature) {
         case PKE:
             if (m_PKE == nullptr)
                 m_PKE = std::make_shared<PKEBGVRNS>();
@@ -69,13 +69,14 @@ namespace lbcrypto {
             break;
         case FHE:
             if (m_FHE == nullptr)
-              m_FHE = std::make_shared<FHEBGVRNS>();
+                m_FHE = std::make_shared<FHEBGVRNS>();
             break;
         default:
             std::stringstream ss;
             ss << feature;
-            OPENFHE_THROW(not_implemented_error, std::string("This feature [") + ss.str() + "] is not supported for BGVRNS scheme");
-        }
+            OPENFHE_THROW(not_implemented_error,
+                          std::string("This feature [") + ss.str() + "] is not supported for BGVRNS scheme");
     }
-
 }
+
+}  // namespace lbcrypto

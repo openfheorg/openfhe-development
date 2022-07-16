@@ -43,50 +43,49 @@
 namespace lbcrypto {
 
 //====================================================================================================================
-#define SET_TO_SCHEME_DEFAULT(SCHEME, var) \
-  var = SCHEME##_DEFAULTS::var  // see cryptocontextparams-defaults.h
-#define SET_TO_SCHEME_DEFAULTS(SCHEME)                         \
-  {                                                            \
-    SET_TO_SCHEME_DEFAULT(SCHEME, scheme);                     \
-    SET_TO_SCHEME_DEFAULT(SCHEME, ptModulus);                  \
-    SET_TO_SCHEME_DEFAULT(SCHEME, digitSize);                  \
-    SET_TO_SCHEME_DEFAULT(SCHEME, standardDeviation);          \
-    SET_TO_SCHEME_DEFAULT(SCHEME, secretKeyDist);              \
-    SET_TO_SCHEME_DEFAULT(SCHEME, maxRelinSkDeg);              \
-    SET_TO_SCHEME_DEFAULT(SCHEME, ksTech);                     \
-    SET_TO_SCHEME_DEFAULT(SCHEME, scalTech);                   \
-    SET_TO_SCHEME_DEFAULT(SCHEME, batchSize);                  \
-    SET_TO_SCHEME_DEFAULT(SCHEME, firstModSize);               \
-    SET_TO_SCHEME_DEFAULT(SCHEME, numLargeDigits);             \
-    SET_TO_SCHEME_DEFAULT(SCHEME, multiplicativeDepth);        \
-    SET_TO_SCHEME_DEFAULT(SCHEME, scalingModSize);             \
-    SET_TO_SCHEME_DEFAULT(SCHEME, securityLevel);              \
-    SET_TO_SCHEME_DEFAULT(SCHEME, ringDim);                    \
-    SET_TO_SCHEME_DEFAULT(SCHEME, evalAddCount);               \
-    SET_TO_SCHEME_DEFAULT(SCHEME, keySwitchCount);             \
-    SET_TO_SCHEME_DEFAULT(SCHEME, encryptionTechnique);        \
-    SET_TO_SCHEME_DEFAULT(SCHEME, multiplicationTechnique);    \
-    SET_TO_SCHEME_DEFAULT(SCHEME, multiHopModSize);            \
-  }
+#define SET_TO_SCHEME_DEFAULT(SCHEME, var) var = SCHEME##_DEFAULTS::var  // see cryptocontextparams-defaults.h
+#define SET_TO_SCHEME_DEFAULTS(SCHEME)                          \
+    {                                                           \
+        SET_TO_SCHEME_DEFAULT(SCHEME, scheme);                  \
+        SET_TO_SCHEME_DEFAULT(SCHEME, ptModulus);               \
+        SET_TO_SCHEME_DEFAULT(SCHEME, digitSize);               \
+        SET_TO_SCHEME_DEFAULT(SCHEME, standardDeviation);       \
+        SET_TO_SCHEME_DEFAULT(SCHEME, secretKeyDist);           \
+        SET_TO_SCHEME_DEFAULT(SCHEME, maxRelinSkDeg);           \
+        SET_TO_SCHEME_DEFAULT(SCHEME, ksTech);                  \
+        SET_TO_SCHEME_DEFAULT(SCHEME, scalTech);                \
+        SET_TO_SCHEME_DEFAULT(SCHEME, batchSize);               \
+        SET_TO_SCHEME_DEFAULT(SCHEME, firstModSize);            \
+        SET_TO_SCHEME_DEFAULT(SCHEME, numLargeDigits);          \
+        SET_TO_SCHEME_DEFAULT(SCHEME, multiplicativeDepth);     \
+        SET_TO_SCHEME_DEFAULT(SCHEME, scalingModSize);          \
+        SET_TO_SCHEME_DEFAULT(SCHEME, securityLevel);           \
+        SET_TO_SCHEME_DEFAULT(SCHEME, ringDim);                 \
+        SET_TO_SCHEME_DEFAULT(SCHEME, evalAddCount);            \
+        SET_TO_SCHEME_DEFAULT(SCHEME, keySwitchCount);          \
+        SET_TO_SCHEME_DEFAULT(SCHEME, encryptionTechnique);     \
+        SET_TO_SCHEME_DEFAULT(SCHEME, multiplicationTechnique); \
+        SET_TO_SCHEME_DEFAULT(SCHEME, multiHopModSize);         \
+    }
 void Params::SetToDefaults(SCHEME scheme) {
-  switch (scheme) {
-    case CKKSRNS_SCHEME:
-      SET_TO_SCHEME_DEFAULTS(CKKSRNS_SCHEME);
-      break;
-    case BFVRNS_SCHEME:
-      SET_TO_SCHEME_DEFAULTS(BFVRNS_SCHEME);
-      break;
-    case BGVRNS_SCHEME:
-      SET_TO_SCHEME_DEFAULTS(BGVRNS_SCHEME);
-      break;
-    default:
-      std::string errorMsg(std::string("Invalid scheme id: ") +
-                           std::to_string(scheme));
-      OPENFHE_THROW(config_error, errorMsg);
-      break;
-  }
+    switch (scheme) {
+        case CKKSRNS_SCHEME:
+            SET_TO_SCHEME_DEFAULTS(CKKSRNS_SCHEME);
+            break;
+        case BFVRNS_SCHEME:
+            SET_TO_SCHEME_DEFAULTS(BFVRNS_SCHEME);
+            break;
+        case BGVRNS_SCHEME:
+            SET_TO_SCHEME_DEFAULTS(BGVRNS_SCHEME);
+            break;
+        default:
+            std::string errorMsg(std::string("Invalid scheme id: ") + std::to_string(scheme));
+            OPENFHE_THROW(config_error, errorMsg);
+            break;
+    }
 }
 //====================================================================================================================
+// clang-format off
 std::ostream& operator<<(std::ostream& os, const Params& obj) {
     os  << "scheme: " << obj.scheme
         << "; ptModulus: " << obj.ptModulus
@@ -109,8 +108,9 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; multiplicationTechnique: " << obj.multiplicationTechnique
         << "; multiHopModSize: " << obj.multiHopModSize;
 
-  return os;
+    return os;
 }
+// clang-format on
 //====================================================================================================================
 
 }  // namespace lbcrypto

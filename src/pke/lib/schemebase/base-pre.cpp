@@ -36,40 +36,36 @@
 namespace lbcrypto {
 
 template <class Element>
-EvalKey<Element> PREBase<Element>::ReKeyGen(
-        const PrivateKey<Element> oldPrivateKey,
-        const PublicKey<Element> newPublicKey) const {
-  auto algo = oldPrivateKey->GetCryptoContext()->GetScheme();
-  return algo->KeySwitchGen(oldPrivateKey, newPublicKey);
+EvalKey<Element> PREBase<Element>::ReKeyGen(const PrivateKey<Element> oldPrivateKey,
+                                            const PublicKey<Element> newPublicKey) const {
+    auto algo = oldPrivateKey->GetCryptoContext()->GetScheme();
+    return algo->KeySwitchGen(oldPrivateKey, newPublicKey);
 }
 
 template <class Element>
-Ciphertext<Element> PREBase<Element>::ReEncrypt(
-  ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-  const PublicKey<Element> publicKey, usint noiseflooding) const {
-  auto algo = ciphertext->GetCryptoContext()->GetScheme();
+Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
+                                                const PublicKey<Element> publicKey, usint noiseflooding) const {
+    auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
-  Ciphertext<Element> result = ciphertext->Clone();
-  if (publicKey != nullptr) {
-    std::vector<Element> &cv = result->GetElements();
-    std::shared_ptr<std::vector<Element>> ba =
-        algo->EncryptZeroCore(publicKey);
+    Ciphertext<Element> result = ciphertext->Clone();
+    if (publicKey != nullptr) {
+        std::vector<Element>& cv                 = result->GetElements();
+        std::shared_ptr<std::vector<Element>> ba = algo->EncryptZeroCore(publicKey);
 
-    cv[0] += (*ba)[0];
-    cv[1] += (*ba)[1];
-  }
+        cv[0] += (*ba)[0];
+        cv[1] += (*ba)[1];
+    }
 
-  algo->KeySwitchInPlace(result, evalKey);
+    algo->KeySwitchInPlace(result, evalKey);
 
-  return result;
+    return result;
 }
 
-}
+}  // namespace lbcrypto
 
 // the code below is from base-pre-impl.cpp
 namespace lbcrypto {
 
-    template class PREBase<DCRTPoly>;
+template class PREBase<DCRTPoly>;
 
 }  // namespace lbcrypto
-

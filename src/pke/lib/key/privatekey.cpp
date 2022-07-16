@@ -33,6 +33,5 @@
 
 // the code below is from privatekey-impl.cpp
 namespace lbcrypto {
-    template class PrivateKeyImpl<DCRTPoly>;
+template class PrivateKeyImpl<DCRTPoly>;
 }  // namespace lbcrypto
-

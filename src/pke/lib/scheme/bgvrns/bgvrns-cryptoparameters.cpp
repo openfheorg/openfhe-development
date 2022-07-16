@@ -43,144 +43,135 @@ namespace lbcrypto {
 
 // Precomputation of CRT tables encryption, decryption, and  homomorphic
 // multiplication
-void CryptoParametersBGVRNS::PrecomputeCRTTables(
-    KeySwitchTechnique ksTech,
-    ScalingTechnique scalTech,
-    EncryptionTechnique encTech,
-    MultiplicationTechnique multTech,
-    uint32_t numPartQ,
-    uint32_t auxBits,
-    uint32_t extraBits) {
+void CryptoParametersBGVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech,
+                                                 EncryptionTechnique encTech, MultiplicationTechnique multTech,
+                                                 uint32_t numPartQ, uint32_t auxBits, uint32_t extraBits) {
     // Don't run the function if it is not required
     if (!PrecomputeCRTTablesAfterDeserializaton())
         return;
- 
-    CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech,
-          numPartQ, auxBits, extraBits);
 
-  size_t sizeQ = GetElementParams()->GetParams().size();
+    CryptoParametersRNS::PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraBits);
 
-  std::vector<NativeInteger> moduliQ(sizeQ);
-  std::vector<NativeInteger> rootsQ(sizeQ);
+    size_t sizeQ = GetElementParams()->GetParams().size();
 
-  for (size_t i = 0; i < sizeQ; i++) {
-    moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
-    rootsQ[i] = GetElementParams()->GetParams()[i]->GetRootOfUnity();
-  }
+    std::vector<NativeInteger> moduliQ(sizeQ);
+    std::vector<NativeInteger> rootsQ(sizeQ);
 
-  NativeInteger t(GetPlaintextModulus());
-
-  if (m_ksTechnique == HYBRID) {
-    size_t sizeP = GetParamsP()->GetParams().size();
-    std::vector<NativeInteger> moduliP(sizeP);
-    for (size_t j = 0; j < sizeP; j++) {
-      moduliP[j] = GetParamsP()->GetParams()[j]->GetModulus();
+    for (size_t i = 0; i < sizeQ; i++) {
+        moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
+        rootsQ[i]  = GetElementParams()->GetParams()[i]->GetRootOfUnity();
     }
 
-    // Pre-compute values [t^{-1}]_{q_i}, precomputations for  [t]_{q_i}
-    m_tInvModq.resize(sizeQ);
-    m_tInvModqPrecon.resize(sizeQ);
+    NativeInteger t(GetPlaintextModulus());
+
+    if (m_ksTechnique == HYBRID) {
+        size_t sizeP = GetParamsP()->GetParams().size();
+        std::vector<NativeInteger> moduliP(sizeP);
+        for (size_t j = 0; j < sizeP; j++) {
+            moduliP[j] = GetParamsP()->GetParams()[j]->GetModulus();
+        }
+
+        // Pre-compute values [t^{-1}]_{q_i}, precomputations for  [t]_{q_i}
+        m_tInvModq.resize(sizeQ);
+        m_tInvModqPrecon.resize(sizeQ);
+        for (usint i = 0; i < sizeQ; i++) {
+            m_tInvModq[i]       = t.ModInverse(moduliQ[i]);
+            m_tInvModqPrecon[i] = m_tInvModq[i].PrepModMulConst(moduliQ[i]);
+        }
+
+        // Pre-compute values [t^{-1}]_{p_i}, precomputations for [t]_{q_i}
+        m_tInvModp.resize(sizeP);
+        m_tInvModpPrecon.resize(sizeP);
+        for (usint j = 0; j < sizeP; j++) {
+            m_tInvModp[j]       = t.ModInverse(moduliP[j]);
+            m_tInvModpPrecon[j] = m_tInvModp[j].PrepModMulConst(moduliP[j]);
+        }
+    }
+
+    m_negtInvModq.resize(sizeQ);
+    m_negtInvModqPrecon.resize(sizeQ);
+    m_tModqPrecon.resize(sizeQ);
+    m_qlInvModq.resize(sizeQ);
+    m_qlInvModqPrecon.resize(sizeQ);
     for (usint i = 0; i < sizeQ; i++) {
-      m_tInvModq[i] = t.ModInverse(moduliQ[i]);
-      m_tInvModqPrecon[i] = m_tInvModq[i].PrepModMulConst(moduliQ[i]);
+        m_negtInvModq[i]       = moduliQ[i] - t.ModInverse(moduliQ[i]);
+        m_negtInvModqPrecon[i] = m_negtInvModq[i].PrepModMulConst(moduliQ[i]);
+        NativeInteger tModQi   = t.Mod(moduliQ[i]);
+        m_tModqPrecon[i]       = tModQi.PrepModMulConst(moduliQ[i]);
+        m_qlInvModq[i].resize(i);
+        m_qlInvModqPrecon[i].resize(i);
+        for (usint j = 0; j < i; ++j) {
+            m_qlInvModq[i][j]       = moduliQ[i].ModInverse(moduliQ[j]);
+            m_qlInvModqPrecon[i][j] = m_qlInvModq[i][j].PrepModMulConst(moduliQ[j]);
+        }
     }
 
-    // Pre-compute values [t^{-1}]_{p_i}, precomputations for [t]_{q_i}
-    m_tInvModp.resize(sizeP);
-    m_tInvModpPrecon.resize(sizeP);
-    for (usint j = 0; j < sizeP; j++) {
-      m_tInvModp[j] = t.ModInverse(moduliP[j]);
-      m_tInvModpPrecon[j] = m_tInvModp[j].PrepModMulConst(moduliP[j]);
-    }
-  }
+    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+        m_scalingFactorsInt.resize(sizeQ);
+        m_scalingFactorsInt[0]     = moduliQ[sizeQ - 1] % t;
+        uint32_t isFlexibleAutoExt = (m_scalTechnique == FLEXIBLEAUTOEXT) ? 1 : 0;
+        if (isFlexibleAutoExt) {
+            m_scalingFactorsInt[1] = moduliQ[sizeQ - 2] % t;
+        }
+        for (uint32_t k = 1 + isFlexibleAutoExt; k < sizeQ - isFlexibleAutoExt; k++) {
+            NativeInteger prevSF   = m_scalingFactorsInt[k - 1];
+            NativeInteger qInv     = moduliQ[sizeQ - k].ModInverse(t);
+            m_scalingFactorsInt[k] = prevSF.ModMul(prevSF, t).ModMul(qInv, t);
+        }
 
-  m_negtInvModq.resize(sizeQ);
-  m_negtInvModqPrecon.resize(sizeQ);
-  m_tModqPrecon.resize(sizeQ);
-  m_qlInvModq.resize(sizeQ);
-  m_qlInvModqPrecon.resize(sizeQ);
-  for (usint i = 0; i < sizeQ; i++) {
-    m_negtInvModq[i] = moduliQ[i] - t.ModInverse(moduliQ[i]);
-    m_negtInvModqPrecon[i] = m_negtInvModq[i].PrepModMulConst(moduliQ[i]);
-    NativeInteger tModQi = t.Mod(moduliQ[i]);
-    m_tModqPrecon[i] = tModQi.PrepModMulConst(moduliQ[i]);
-    m_qlInvModq[i].resize(i);
-    m_qlInvModqPrecon[i].resize(i);
-    for (usint j = 0; j < i; ++j) {
-      m_qlInvModq[i][j] = moduliQ[i].ModInverse(moduliQ[j]);
-      m_qlInvModqPrecon[i][j] = m_qlInvModq[i][j].PrepModMulConst(moduliQ[j]);
-    }
-  }
+        m_scalingFactorsIntBig.resize(sizeQ - 1);
 
-  if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
-    m_scalingFactorsInt.resize(sizeQ);
-    m_scalingFactorsInt[0] = moduliQ[sizeQ - 1] % t;
-    uint32_t isFlexibleAutoExt = (m_scalTechnique == FLEXIBLEAUTOEXT) ? 1 : 0;
-    if (isFlexibleAutoExt) {
-      m_scalingFactorsInt[1] = moduliQ[sizeQ - 2] % t;
-    }
-    for (uint32_t k = 1 + isFlexibleAutoExt; k < sizeQ - isFlexibleAutoExt; k++) {
-      NativeInteger prevSF = m_scalingFactorsInt[k - 1];
-      NativeInteger qInv = moduliQ[sizeQ - k].ModInverse(t);
-      m_scalingFactorsInt[k] = prevSF.ModMul(prevSF, t).ModMul(qInv, t);
+        if (m_scalingFactorsIntBig.size() > 0) {
+            if (m_scalTechnique == FLEXIBLEAUTO) {
+                m_scalingFactorsIntBig[0] = m_scalingFactorsInt[0].ModMul(m_scalingFactorsInt[0], t);
+            }
+            else {
+                m_scalingFactorsIntBig[0] = m_scalingFactorsInt[0].ModMul(m_scalingFactorsInt[1], t);
+            }
+            for (uint32_t k = 1; k < sizeQ - 1; k++) {
+                m_scalingFactorsIntBig[k] = m_scalingFactorsInt[k].ModMul(m_scalingFactorsInt[k], t);
+            }
+        }
+
+        // Moduli mod t
+        m_qModt.resize(sizeQ);
+        for (usint i = 0; i < sizeQ; i++) {
+            m_qModt[i] = moduliQ[i].Mod(t);
+        }
     }
 
-    m_scalingFactorsIntBig.resize(sizeQ - 1);
+    if (m_ksTechnique == HYBRID) {
+        const BigInteger BarrettBase128Bit("340282366920938463463374607431768211456");  // 2^128
+        const BigInteger TwoPower64("18446744073709551616");                            // 2^64
 
-    if (m_scalingFactorsIntBig.size() > 0) {
-      if (m_scalTechnique == FLEXIBLEAUTO) {
-        m_scalingFactorsIntBig[0] =
-            m_scalingFactorsInt[0].ModMul(m_scalingFactorsInt[0], t);
-      } else {
-        m_scalingFactorsIntBig[0] =
-            m_scalingFactorsInt[0].ModMul(m_scalingFactorsInt[1], t);
-      }
-      for (uint32_t k = 1; k < sizeQ - 1; k++) {
-        m_scalingFactorsIntBig[k] =
-            m_scalingFactorsInt[k].ModMul(m_scalingFactorsInt[k], t);
-      }
+        m_modqBarrettMu.resize(sizeQ);
+        for (uint32_t i = 0; i < sizeQ; i++) {
+            BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[i]);
+            uint64_t val[2];
+            val[0] = (mu % TwoPower64).ConvertToInt();
+            val[1] = mu.RShift(64).ConvertToInt();
+            memcpy(&m_modqBarrettMu[i], val, sizeof(DoubleNativeInt));
+        }
     }
-
-    // Moduli mod t
-    m_qModt.resize(sizeQ);
-    for (usint i = 0; i < sizeQ; i++) {
-      m_qModt[i] = moduliQ[i].Mod(t);
-    }
-  }
-
-  if (m_ksTechnique == HYBRID) {
-
-	  const BigInteger BarrettBase128Bit(
-        "340282366920938463463374607431768211456");       // 2^128
-    const BigInteger TwoPower64("18446744073709551616");  // 2^64
-
-    m_modqBarrettMu.resize(sizeQ);
-    for (uint32_t i = 0; i < sizeQ; i++) {
-      BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[i]);
-      uint64_t val[2];
-      val[0] = (mu % TwoPower64).ConvertToInt();
-      val[1] = mu.RShift(64).ConvertToInt();
-      memcpy(&m_modqBarrettMu[i], val, sizeof(DoubleNativeInt));
-    }
-  }
 }
 
 uint64_t CryptoParametersBGVRNS::FindAuxPrimeStep() const {
-  size_t n = GetElementParams()->GetRingDimension();
-  usint plaintextModulus = GetPlaintextModulus();
-  usint cyclOrder = 2 * n;
-  usint pow2ptm = 1;
+    size_t n               = GetElementParams()->GetRingDimension();
+    usint plaintextModulus = GetPlaintextModulus();
+    usint cyclOrder        = 2 * n;
+    usint pow2ptm          = 1;
 
-  // The largest power of 2 dividing ptm
-  // Check whether it is larger than cyclOrder or not
-  while (plaintextModulus % 2 == 0) {
-    plaintextModulus >>= 1;
-    pow2ptm <<= 1;
-  }
+    // The largest power of 2 dividing ptm
+    // Check whether it is larger than cyclOrder or not
+    while (plaintextModulus % 2 == 0) {
+        plaintextModulus >>= 1;
+        pow2ptm <<= 1;
+    }
 
-  if (pow2ptm < cyclOrder) pow2ptm = cyclOrder;
+    if (pow2ptm < cyclOrder)
+        pow2ptm = cyclOrder;
 
-  return static_cast<uint64_t>(pow2ptm) * plaintextModulus;
+    return static_cast<uint64_t>(pow2ptm) * plaintextModulus;
 }
 
 }  // namespace lbcrypto

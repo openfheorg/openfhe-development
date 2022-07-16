@@ -58,68 +58,58 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 
 namespace lbcrypto {
 
-DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
-    const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
-    NativePoly *plaintext) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersBGVRNS>(
-          ciphertextVec[0]->GetCryptoParameters());
+DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                        NativePoly* plaintext) const {
+    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBGVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
-  const std::vector<DCRTPoly> &cv0 = ciphertextVec[0]->GetElements();
-  DCRTPoly b = cv0[0];
-  for (size_t i = 1; i < ciphertextVec.size(); i++) {
-    const std::vector<DCRTPoly> &cvi = ciphertextVec[i]->GetElements();
-    b += cvi[0];
-  }
-  b.SetFormat(Format::COEFFICIENT);
-
-  size_t sizeQl = b.GetNumOfElements();
-
-  NativeInteger scalingFactorInt = ciphertextVec[0]->GetScalingFactorInt();
-  if(sizeQl > 0) {
-    for (size_t i = sizeQl - 1; i > 0; --i) {
-      b.ModReduce(
-          cryptoParams->GetPlaintextModulus(),
-          cryptoParams->GettModqPrecon(),
-          cryptoParams->GetNegtInvModq(i),
-          cryptoParams->GetNegtInvModqPrecon(i),
-          cryptoParams->GetqlInvModq(i),
-          cryptoParams->GetqlInvModqPrecon(i));
+    const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
+    DCRTPoly b                       = cv0[0];
+    for (size_t i = 1; i < ciphertextVec.size(); i++) {
+        const std::vector<DCRTPoly>& cvi = ciphertextVec[i]->GetElements();
+        b += cvi[0];
     }
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-      for (size_t i = 0; i < sizeQl - 1; ++i) {
-        NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
-        NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
-        scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
-      }
+    b.SetFormat(Format::COEFFICIENT);
+
+    size_t sizeQl = b.GetNumOfElements();
+
+    NativeInteger scalingFactorInt = ciphertextVec[0]->GetScalingFactorInt();
+    if (sizeQl > 0) {
+        for (size_t i = sizeQl - 1; i > 0; --i) {
+            b.ModReduce(cryptoParams->GetPlaintextModulus(), cryptoParams->GettModqPrecon(),
+                        cryptoParams->GetNegtInvModq(i), cryptoParams->GetNegtInvModqPrecon(i),
+                        cryptoParams->GetqlInvModq(i), cryptoParams->GetqlInvModqPrecon(i));
+        }
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+            cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+            for (size_t i = 0; i < sizeQl - 1; ++i) {
+                NativeInteger modReduceFactor    = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+                NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+                scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+            }
+        }
     }
-  }
 
-  *plaintext = b.GetElementAtIndex(0).DecryptionCRTInterpolate(cryptoParams->GetPlaintextModulus());
+    *plaintext = b.GetElementAtIndex(0).DecryptionCRTInterpolate(cryptoParams->GetPlaintextModulus());
 
-  return DecryptResult(plaintext->GetLength(), scalingFactorInt);
+    return DecryptResult(plaintext->GetLength(), scalingFactorInt);
 }
 
-DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(
-    const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
-    Poly *plaintext) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersBGVRNS>(
-          ciphertextVec[0]->GetCryptoParameters());
+DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                        Poly* plaintext) const {
+    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBGVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
-  const std::vector<DCRTPoly> &cv0 = ciphertextVec[0]->GetElements();
+    const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 
-  DCRTPoly b = cv0[0];
-  for (size_t i = 1; i < ciphertextVec.size(); i++) {
-    const std::vector<DCRTPoly> &cvi = ciphertextVec[i]->GetElements();
-    b += cvi[0];
-  }
-  b.SetFormat(Format::COEFFICIENT);
+    DCRTPoly b = cv0[0];
+    for (size_t i = 1; i < ciphertextVec.size(); i++) {
+        const std::vector<DCRTPoly>& cvi = ciphertextVec[i]->GetElements();
+        b += cvi[0];
+    }
+    b.SetFormat(Format::COEFFICIENT);
 
-  *plaintext = b.CRTInterpolate().Mod(cryptoParams->GetPlaintextModulus());
+    *plaintext = b.CRTInterpolate().Mod(cryptoParams->GetPlaintextModulus());
 
-  return DecryptResult(plaintext->GetLength());
-
+    return DecryptResult(plaintext->GetLength());
 }
 
-}
+}  // namespace lbcrypto
