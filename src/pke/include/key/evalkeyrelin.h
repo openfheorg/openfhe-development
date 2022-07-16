@@ -274,7 +274,7 @@ class EvalKeyRelinImpl : public EvalKeyImpl<Element> {
   // private member to store vector of vector of Element.
   std::vector<std::vector<Element>> m_rKey;
 
-  // Used for GHS key switching
+  // Used for hybrid key switching
   std::vector<DCRTPoly> m_dcrtKeys;
 };
 

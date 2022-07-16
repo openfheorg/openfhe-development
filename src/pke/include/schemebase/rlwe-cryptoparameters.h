@@ -104,11 +104,12 @@ class CryptoParametersRLWE : public CryptoParametersBase<Element> {
    * @param &encodingParams encoding-specific parameters
    * @param distributionParameter noise distribution parameter.
    * @param assuranceMeasure assurance level.
-   * @param securityLevel security level.
+   * @param stdLevel security level.
    * @param digitSize the size of the digit size.
    * @param maxRelinSkDeg the maximum power of secret key for which the
    * relinearization key is generated
    * @param secretKeyDist mode for secret polynomial, defaults to GAUSSIAN.
+   * @param noiseScale used in HRA-secure PRE
    */
   CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params,
                        EncodingParams encodingParams,

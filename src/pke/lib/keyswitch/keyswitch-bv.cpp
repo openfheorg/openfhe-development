@@ -34,6 +34,7 @@
     Ring-LWE and Security for Key Dependent Messages (BVScheme)](
     https://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf
     )
+ *  see the Appendix of https://eprint.iacr.org/2021/204 for more details
  */
 #define PROFILE
 

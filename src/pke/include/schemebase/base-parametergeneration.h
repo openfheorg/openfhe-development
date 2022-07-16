@@ -74,6 +74,7 @@ public:
    * @param dcrtBits number of bits in each CRT modulus*
    * @param n ring dimension in case the user wants to use a custom ring
    * dimension
+   * @param numPartQ number of partitions of Q for HYBRID key switching
    */
   virtual bool ParamsGenBFVRNS(
       std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
@@ -97,12 +98,8 @@ public:
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
    * @param scaleExp the bit-width for plaintexts and DCRTPoly's.
-   * @param digitSize the digit size
-   * @param secretKeyDist
-   * @param ksTech the key switching technique used (e.g., BV or GHS)
    * @param firstModSize the bit-size of the first modulus
-   * @param scalTech the scaling technique used (e.g., FIXEDMANUAL or
-   * FLEXIBLEAUTO)
+   * @param numPartQ number of partitions of Q for HYBRID key switching
    */
   virtual bool ParamsGenCKKSRNS(
       std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
@@ -110,7 +107,7 @@ public:
       usint numPrimes,
       usint scaleExp,
       usint firstModSize,
-      uint32_t mulPartQ) const {
+      uint32_t numPartQ) const {
     OPENFHE_THROW(
         config_error,
         "This signature for ParamsGen is not supported for this scheme.");
@@ -125,11 +122,10 @@ public:
    * @param keySwitchCount number of KeySwitch operations per level.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
-   * @param digitSize the digit size
-   * @param secretKeyDist
-   * @param ksTech the key switching technique used (e.g., BV or GHS)
    * @param firstModSize the bit-size of the first modulus
-   * @param dcrtBits the bit-width of moduli.
+   * @param dcrtBits the bit-width of moduli
+   * @param numPartQ number of partitions of Q for HYBRID key switching
+   * @param multihopQBound bound for the HRA-secure mode of PRE
    */
   virtual bool ParamsGenBGVRNS(
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,

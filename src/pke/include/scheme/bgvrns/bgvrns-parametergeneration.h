@@ -88,18 +88,11 @@ public:
    * @param evalAddCount is the maximum number of additions per level.
    * @param keySwitchCount is the maximum number of key switches per level.
    * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
-   * @param ptm is the plaintext modulus.
    * @param numPrimes Number of CRT moduli.
-   * @param digitSize The bit size of the base for BV key relinearization.
-   * @param secretKeyDist
    * @param firstModSize is the approximate bit size of the first CRT modulus.
    * @param dcrtBits is the approximate bit size of the remaining CRT moduli.
-   * @param numPartQ is 
+   * @param numPartQ
    * @param multihopQBound 
-   * @param ksTech is the key switching technique used, BV or Hybrid.
-   * @param scalTech is the scaling technique used.
-   * @param encTech is the encryption technique used.
-   * @param multTech is the multiplication technique used (BFV) only.
    * @return A boolean.
    */
   bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
@@ -134,10 +127,7 @@ public:
    * @param ringDimension is the dimension of the ring (n)
    * @param evalAddCount is the maximum number of additions per level.
    * @param keySwitchCount is the maximum number of key switches per level.
-   * @param digitSize The bit size of the base for BV key relinearization.
    * @param auxBits is the size of the additional modulus P, used for hybrid key-switching.
-   * @param ksTech is the key switching technique used, BV or Hybrid.
-   * @param scalTech is the scaling technique used.
    * @param numPrimes Number of CRT moduli.
    * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
    */

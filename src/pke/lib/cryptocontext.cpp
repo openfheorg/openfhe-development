@@ -826,8 +826,6 @@ namespace lbcrypto {
         return result;
     }
 
-    //template class CryptoContextImpl<Poly>;
-    //template class CryptoContextImpl<NativePoly>;
     template class CryptoContextImpl<DCRTPoly>;
 
 }  // namespace lbcrypto

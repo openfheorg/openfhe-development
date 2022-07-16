@@ -68,7 +68,7 @@ std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 enum KeySwitchTechnique { INVALID_KS_TECH, BV, HYBRID };
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t);
 
-enum EncryptionTechnique { STANDARD, POVERQ };
+enum EncryptionTechnique { STANDARD, EXTENDED };
 std::ostream& operator<<(std::ostream& s, EncryptionTechnique t);
 
 enum MultiplicationTechnique { BEHZ, HPS, HPSPOVERQ, HPSPOVERQLEVELED };

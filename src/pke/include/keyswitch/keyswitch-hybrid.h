@@ -29,8 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 /**
- * Uses a mix of the GHS key - switching with the BV key - switching to produce more efficient key -switching.
- * Was introduced in Homomorphic Evaluation of the AES Circuit(GHS Scheme) (https://eprint.iacr.org/2012/099.pdf)
+ * Hybrid key switching method first introduced in https://eprint.iacr.org/2012/099.pdf
+ * RNS version was introduced in https://eprint.iacr.org/2019/688.
+ * See the Appendix of https://eprint.iacr.org/2021/204 for more detailed description.
 
 * GHS Keyswitching :
     Pros : Smaller noise growth than BV and is more efficient as it only

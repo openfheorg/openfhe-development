@@ -36,7 +36,6 @@
 #ifndef _CRYPTOCONTEXTPARAMS_DEFAULTS_H_
 #define _CRYPTOCONTEXTPARAMS_DEFAULTS_H_
 
-//TODO: move enums to separate files (dsuponit)
 #include "lattice/stdlatticeparms.h" // SecurityLevel
 #include "scheme/scheme-id.h" // SCHEME
 #include "utils/inttypes.h"
@@ -44,7 +43,6 @@
 
 namespace lbcrypto {
 
-// TODO: all default values below should be reviewed for every scheme (dsuponit)
 namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr SCHEME               scheme              = CKKSRNS_SCHEME;
     constexpr PlaintextModulus     ptModulus           = 0;
@@ -67,9 +65,9 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr usint                scalingModSize      = 0;
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
-    constexpr usint                evalAddCount        = 10;
+    constexpr usint                evalAddCount        = 0;
     constexpr usint                evalMultCount       = 0;
-    constexpr usint                keySwitchCount      = 3;
+    constexpr usint                keySwitchCount      = 0;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPS;
     constexpr usint                multiHopModSize     = 0;
@@ -82,14 +80,14 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr float                standardDeviation   = 3.19;
     constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxRelinSkDeg       = 2;
-    constexpr KeySwitchTechnique   ksTech              = BV;          // set to avoid compiler errors
-    constexpr ScalingTechnique     scalTech            = NORESCALE; // set to avoid compiler errors
+    constexpr KeySwitchTechnique   ksTech              = BV;
+    constexpr ScalingTechnique     scalTech            = NORESCALE;
     constexpr usint                firstModSize        = 60;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
     constexpr usint                multiplicativeDepth = 1;
-    constexpr usint                scalingModSize      = 0;
-    constexpr SecurityLevel        securityLevel       = HEStd_128_classic; // set to avoid compiler errors
+    constexpr usint                scalingModSize      = 60;
+    constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
     constexpr usint                evalAddCount        = 0;
     constexpr usint                evalMultCount       = 0;
@@ -107,7 +105,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr SecretKeyDist        secretKeyDist       = UNIFORM_TERNARY;
     constexpr int                  maxRelinSkDeg       = 2;
     constexpr KeySwitchTechnique   ksTech              = HYBRID;
-    constexpr ScalingTechnique     scalTech            = FLEXIBLEAUTOEXT; // set to avoid compiler errors
+    constexpr ScalingTechnique     scalTech            = FLEXIBLEAUTOEXT;
     constexpr usint                firstModSize        = 0;
     constexpr usint                batchSize           = 0;
     constexpr uint32_t             numLargeDigits      = 0;
@@ -115,7 +113,7 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr usint                scalingModSize      = 0;
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
-    constexpr usint                evalAddCount        = 10;
+    constexpr usint                evalAddCount        = 5;
     constexpr usint                evalMultCount       = 0;
     constexpr usint                keySwitchCount      = 3;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;

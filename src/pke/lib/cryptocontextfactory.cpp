@@ -80,8 +80,6 @@ const std::vector<CryptoContext<T>>& CryptoContextFactory<T>::GetAllContexts() {
 // the code below is from pke/lib/cryptocontextfactory-impl.cpp
 namespace lbcrypto {
 
-    //template class CryptoContextFactory<Poly>;
-    //template class CryptoContextFactory<NativePoly>;
     template class CryptoContextFactory<DCRTPoly>;
 
 }

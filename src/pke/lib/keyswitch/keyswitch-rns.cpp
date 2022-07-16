@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
- * Abstract interface class for RNS LBC SHE algorithms
+ * Abstract interface class for key switching methods in RNS
  */
 
 #define PROFILE

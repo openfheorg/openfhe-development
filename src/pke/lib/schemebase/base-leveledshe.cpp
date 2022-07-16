@@ -29,27 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-Description:
-
-This code implements RNS variants of the Cheon-Kim-Kim-Song scheme.
-
-The CKKS scheme is introduced in the following paper:
-- Jung Hee Cheon, Andrey Kim, Miran Kim, and Yongsoo Song. Homomorphic
-encryption for arithmetic of approximate numbers. Cryptology ePrint Archive,
-Report 2016/421, 2016. https://eprint.iacr.org/2016/421.
-
- Our implementation builds from the designs here:
- - Marcelo Blatt, Alexander Gusev, Yuriy Polyakov, Kurt Rohloff, and Vinod
-Vaikuntanathan. Optimized homomorphic encryption solution for secure genomewide
-association studies. Cryptology ePrint Archive, Report 2019/223, 2019.
-https://eprint.iacr.org/2019/223.
- - Andrey Kim, Antonis Papadimitriou, and Yuriy Polyakov. Approximate
-homomorphic encryption with reduced approximation error. Cryptology ePrint
-Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
-1118.
- */
-
 #include "cryptocontext.h"
 #include "schemebase/base-leveledshe.h"
 
@@ -571,17 +550,6 @@ LeveledSHEBase<Element>::EvalAtIndexKeyGen(
             : FindAutomorphismIndex2n(indexList[i], M);
   }
 
-  // we use only power of two cyclotomics now
-//  if (IsPowerOfTwo(m)) {  // power-of-two cyclotomics
-//  } else {  // cyclic groups
-//    for (size_t i = 0; i < indexList.size(); i++)
-//      autoIndices[i] = FindAutomorphismIndexCyclic(
-//          indexList[i], m, encodingParams->GetPlaintextGenerator());
-//  }
-
-//  if (publicKey) // NTRU-based scheme
-//    return EvalAutomorphismKeyGen(publicKey, privateKey, autoIndices);
-  // RLWE-based scheme
   return EvalAutomorphismKeyGen(privateKey, autoIndices);
 }
 
@@ -597,14 +565,6 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAtIndex(
   uint32_t autoIndex = (cc->getSchemeId() == "CKKSRNS")
                   ? FindAutomorphismIndex2nComplex(index, M)
                   : FindAutomorphismIndex2n(index, M);
-
-  // we use only power of two cyclotomics
-//  // power-of-two cyclotomics
-//  if (IsPowerOfTwo(m)) {
-//  } else {  // cyclic-group cyclotomics
-//    autoIndex = FindAutomorphismIndexCyclic(
-//        index, m, encodingParams->GetPlaintextGenerator());
-//  }
 
   return EvalAutomorphism(ciphertext, autoIndex, evalKeyMap);
 }

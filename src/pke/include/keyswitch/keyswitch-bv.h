@@ -42,10 +42,11 @@
 namespace lbcrypto {
 
 /**
- * @brief Implements BV scheme from [Fully Homomorphic Encryption from
+ * @brief Implements BV key switching method from [Fully Homomorphic Encryption from
     Ring-LWE and Security for Key Dependent Messages (BVScheme)](
     https://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf
     )
+ * See the Appendix of https://eprint.iacr.org/2021/204 for more detailed description.
  * Requires the computation of a quadratic number of NTTs.
  */
 class KeySwitchBV : public KeySwitchRNS {

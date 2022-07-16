@@ -1146,7 +1146,7 @@ public:
                            const std::vector<NativeInteger>& negInvqModtgammaPrecon) const override;
 
     /**
-   * @brief Computes scale and round for BFV encryption mode POVERQ:
+   * @brief Computes scale and round for BFV encryption mode EXTENDED:
    * {X}_{Qp} -> {\round(1/p * X)}_Q
    * {Q} = {q_1,...,q_l}
    *

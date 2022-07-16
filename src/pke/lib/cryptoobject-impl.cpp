@@ -33,8 +33,6 @@
 
 namespace lbcrypto {
 
-//template class CryptoObject<Poly>;
-//template class CryptoObject<NativePoly>;
 template class CryptoObject<DCRTPoly>;
 
 }

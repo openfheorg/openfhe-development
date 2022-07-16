@@ -48,7 +48,6 @@ namespace lbcrypto {
  */
  enum {
      BASE_NUM_LEVELS_TO_DROP = 1,
-     BASE_TARGET_NUM_LEVELS  = 1,
  };
 /**
  * @brief Abstract interface class for LBC SHE algorithms

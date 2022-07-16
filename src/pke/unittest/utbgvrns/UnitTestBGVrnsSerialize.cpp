@@ -116,8 +116,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& 
  */
 constexpr usint RING_DIM = 512;
 constexpr usint MULT_DEPTH = 3;
-constexpr usint MAX_RELIN_DEG = 1;
-constexpr usint SIZEMODULI = 50; // scaling factor bits
+constexpr usint MAX_RELIN_DEG = 2;
+constexpr int SIZEMODULI = DFLT; // scaling factor bits
 constexpr usint DSIZE = 4;
 constexpr usint PTM = 65537;
 constexpr usint BATCH = 16;

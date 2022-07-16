@@ -30,24 +30,7 @@
 //==================================================================================
 
 /*
-Description:
-
-This code implements RNS variants of the Cheon-Kim-Kim-Song scheme.
-
-The CKKS scheme is introduced in the following paper:
-- Jung Hee Cheon, Andrey Kim, Miran Kim, and Yongsoo Song. Homomorphic
-encryption for arithmetic of approximate numbers. Cryptology ePrint Archive,
-Report 2016/421, 2016. https://eprint.iacr.org/2016/421.
-
- Our implementation builds from the designs here:
- - Marcelo Blatt, Alexander Gusev, Yuriy Polyakov, Kurt Rohloff, and Vinod
-Vaikuntanathan. Optimized homomorphic encryption solution for secure genomewide
-association studies. Cryptology ePrint Archive, Report 2019/223, 2019.
-https://eprint.iacr.org/2019/223.
- - Andrey Kim, Antonis Papadimitriou, and Yuriy Polyakov. Approximate
-homomorphic encryption with reduced approximation error. Cryptology ePrint
-Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
-1118.
+BFV implementation. See https://eprint.iacr.org/2021/204 for details.
  */
 
 #define PROFILE
@@ -68,7 +51,7 @@ KeyPair<DCRTPoly> PKEBFVRNS::KeyGen(CryptoContext<DCRTPoly> cc,
           cc->GetCryptoParameters());
 
   std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     elementParams = cryptoParams->GetParamsQr();
   }
   const std::shared_ptr<ParmType> paramsPK = cryptoParams->GetParamsPK();
@@ -128,7 +111,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   auto encParams = elementParams;
 
   std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     encParams = cryptoParams->GetParamsQr();
     ptxt.SetFormat(Format::COEFFICIENT);
     Poly bigPtxt = ptxt.CRTInterpolate();
@@ -144,7 +127,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   NativeInteger NegQModt = cryptoParams->GetNegQModt();
   NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
 
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     NegQModt = cryptoParams->GetNegQrModt();
     NegQModtPrecon = cryptoParams->GetNegQrModtPrecon();
   }
@@ -158,7 +141,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   (*ba)[0].SetFormat(Format::COEFFICIENT);
   (*ba)[1].SetFormat(Format::COEFFICIENT);
 
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
     (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
   }
@@ -185,7 +168,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   auto encParams = elementParams;
 
   std::vector<NativeInteger> tInvModq = cryptoParams->GettInvModq();
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     encParams = cryptoParams->GetParamsQr();
     ptxt.SetFormat(Format::COEFFICIENT);
     Poly bigPtxt = ptxt.CRTInterpolate();
@@ -201,7 +184,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   NativeInteger NegQModt = cryptoParams->GetNegQModt();
   NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon();
 
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     NegQModt = cryptoParams->GetNegQrModt();
     NegQModtPrecon = cryptoParams->GetNegQrModtPrecon();
   }
@@ -215,7 +198,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt,
   (*ba)[0].SetFormat(Format::COEFFICIENT);
   (*ba)[1].SetFormat(Format::COEFFICIENT);
 
-  if (cryptoParams->GetEncryptionTechnique() == POVERQ) {
+  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
     (*ba)[0].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
     (*ba)[1].ScaleAndRoundPOverQ(elementParams, cryptoParams->GetrInvModq());
   }

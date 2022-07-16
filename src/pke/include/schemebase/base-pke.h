@@ -64,7 +64,7 @@ struct EncryptResult {
  * checksum eventually. This notion of a decoding output is inherited from the
  * crypto++ library. It is also intended to be used in a recover and restart
  * robust functionality if not all ciphertext is recieved over a lossy
- * channel, so that if all information is eventually recieved,
+ * channel, so that if all information is eventually received,
  * decoding/decryption can be performed eventually. This is intended to be
  * returned with the output of a decryption operation.
  */
