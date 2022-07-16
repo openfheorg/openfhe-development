@@ -46,7 +46,7 @@ public:
 
   bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                  int32_t evalAddCount,
-                 int32_t evalMultCount,
+                 int32_t multiplicativeDepth,
                  int32_t keySwitchCount,
                  size_t dcrBits,
                  uint32_t n,

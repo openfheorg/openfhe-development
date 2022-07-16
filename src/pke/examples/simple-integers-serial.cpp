@@ -55,7 +55,7 @@ int main() {
 
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(65537);
-  parameters.SetEvalMultCount(2);
+  parameters.SetMultiplicativeDepth(2);
   parameters.SetScalingModSize(60);
 
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);

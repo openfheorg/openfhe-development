@@ -52,7 +52,6 @@ std::string UnitTestCCParams::toString() const {
         << "plaintextModulus [" << plaintextModulus << "], "
         << "standardDeviation [" << standardDeviation << "], "
         << "evalAddCount [" << evalAddCount << "], "
-        << "evalMultCount [" << evalMultCount << "], "
         << "keySwitchCount [" << keySwitchCount << "], "
         << "multiplicationTechnique [" << multiplicationTechnique << "], "
         << "encryptionTechnique [" << encryptionTechnique << "], "

@@ -66,7 +66,6 @@ namespace CKKSRNS_SCHEME_DEFAULTS {
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
     constexpr usint                evalAddCount        = 0;
-    constexpr usint                evalMultCount       = 0;
     constexpr usint                keySwitchCount      = 0;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPS;
@@ -90,7 +89,6 @@ namespace BFVRNS_SCHEME_DEFAULTS {
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
     constexpr usint                evalAddCount        = 0;
-    constexpr usint                evalMultCount       = 0;
     constexpr usint                keySwitchCount      = 0;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPSPOVERQLEVELED;
@@ -114,7 +112,6 @@ namespace BGVRNS_SCHEME_DEFAULTS {
     constexpr SecurityLevel        securityLevel       = HEStd_128_classic;
     constexpr usint                ringDim             = 0;
     constexpr usint                evalAddCount        = 5;
-    constexpr usint                evalMultCount       = 0;
     constexpr usint                keySwitchCount      = 3;
     constexpr EncryptionTechnique  encryptionTechnique = STANDARD;
     constexpr MultiplicationTechnique multiplicationTechnique = HPS;

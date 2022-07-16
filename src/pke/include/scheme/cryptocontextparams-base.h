@@ -120,9 +120,6 @@ class Params {
     // number of additions (used for setting noise in BGV and BFV)
     usint evalAddCount;
 
-    // to be removed
-    usint evalMultCount;
-
     // number of key switching operations (used for setting noise in BGV and BFV)
     usint keySwitchCount;
 
@@ -204,9 +201,6 @@ public:
     usint GetEvalAddCount() const {
         return evalAddCount;
     }
-    usint GetEvalMultCount() const {
-        return evalMultCount;
-    }
     usint GetKeySwitchCount() const {
         return keySwitchCount;
     }
@@ -265,9 +259,6 @@ public:
     }
     void SetEvalAddCount(usint evalAddCount0) {
         evalAddCount = evalAddCount0;
-    }
-    void SetEvalMultCount(usint evalMultCount0) {
-        evalMultCount = evalMultCount0;
     }
     void SetKeySwitchCount(usint keySwitchCount0) {
         keySwitchCount = keySwitchCount0;

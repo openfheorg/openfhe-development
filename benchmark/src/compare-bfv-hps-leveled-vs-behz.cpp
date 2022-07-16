@@ -83,7 +83,7 @@ static void DecBFVArguments(benchmark::internal::Benchmark* b) {
 CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint dcrtBits) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetEvalMultCount(mult_depth);
+    parameters.SetMultiplicativeDepth(mult_depth);
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetMultiplicationTechnique(HPSPOVERQLEVELED);
 
@@ -99,7 +99,7 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint dcrtBits) {
 CryptoContext<DCRTPoly> GenerateBEHZContext(usint ptm, usint dcrtBits) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetEvalMultCount(mult_depth);
+    parameters.SetMultiplicativeDepth(mult_depth);
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetMultiplicationTechnique(BEHZ);
 

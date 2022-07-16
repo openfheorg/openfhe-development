@@ -66,7 +66,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE_Encrypt_Decrypt {
+struct TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -90,57 +90,57 @@ struct TEST_CASE_Encrypt_Decrypt {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE_Encrypt_Decrypt>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE_Encrypt_Decrypt& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& test) {
     return os << test.toString();
 }
 //===========================================================================================================
 constexpr usint BATCH = 16;
 constexpr usint BV_DSIZE = 4;
 // clang-format off
-static std::vector<TEST_CASE_Encrypt_Decrypt> testCases = {
-    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech
-    { STRING_TEST, "01", {BGVRNS_SCHEME, 256,  2,         DFLT,       BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { STRING_TEST, "02", {BGVRNS_SCHEME, 256,  2,         DFLT,       BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { STRING_TEST, "03", {BGVRNS_SCHEME, 256,  2,         DFLT,       BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { STRING_TEST, "04", {BGVRNS_SCHEME, 256,  2,         DFLT,       BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { STRING_TEST, "05", {BGVRNS_SCHEME, 256,  2,         DFLT,       BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { STRING_TEST, "06", {BGVRNS_SCHEME, 256,  2,         DFLT,       BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { STRING_TEST, "07", {BGVRNS_SCHEME, 256,  2,         DFLT,       BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { STRING_TEST, "08", {BGVRNS_SCHEME, 256,  2,         DFLT,       BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    256,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { STRING_TEST, "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPS,              STANDARD} },
-    { STRING_TEST, "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, BEHZ,             STANDARD} },
-    { STRING_TEST, "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQ,        STANDARD} },
-    { STRING_TEST, "12", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED, STANDARD} },
-    { STRING_TEST, "13", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPS,              EXTENDED}   },
-    { STRING_TEST, "14", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, BEHZ,             EXTENDED}   },
-    { STRING_TEST, "15", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQ,        EXTENDED}   },
-    { STRING_TEST, "16", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED, EXTENDED}   },
+static std::vector<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> testCases = {
+    // TestType,  Descr, Scheme,         RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech
+    { STRING_TEST, "01", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { STRING_TEST, "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { STRING_TEST, "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { STRING_TEST, "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { STRING_TEST, "05", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { STRING_TEST, "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { STRING_TEST, "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { STRING_TEST, "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    256,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { STRING_TEST, "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, HPS,              STANDARD} },
+    { STRING_TEST, "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, BEHZ,             STANDARD} },
+    { STRING_TEST, "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD} },
+    { STRING_TEST, "12", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD} },
+    { STRING_TEST, "13", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, HPS,              EXTENDED}   },
+    { STRING_TEST, "14", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, BEHZ,             EXTENDED}   },
+    { STRING_TEST, "15", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED}   },
+    { STRING_TEST, "16", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    256,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED}   },
     // ==========================================
-    // TestType,       Descr, Scheme,         RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech
-    { COEF_PACKED_TEST, "01", {BGVRNS_SCHEME, 64,   2,         DFLT,       BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { COEF_PACKED_TEST, "02", {BGVRNS_SCHEME, 64,   2,         DFLT,       BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { COEF_PACKED_TEST, "03", {BGVRNS_SCHEME, 64,   2,         DFLT,       BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { COEF_PACKED_TEST, "04", {BGVRNS_SCHEME, 64,   2,         DFLT,       BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { COEF_PACKED_TEST, "05", {BGVRNS_SCHEME, 64,   2,         DFLT,       BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { COEF_PACKED_TEST, "06", {BGVRNS_SCHEME, 64,   2,         DFLT,       BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { COEF_PACKED_TEST, "07", {BGVRNS_SCHEME, 64,   2,         DFLT,       BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { COEF_PACKED_TEST, "08", {BGVRNS_SCHEME, 64,   2,         DFLT,       BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    512,   DFLT,   DFLT,      0,          DFLT, DFLT,             STANDARD} },
-    { COEF_PACKED_TEST, "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      2,          DFLT, HPS,              STANDARD} },
-    { COEF_PACKED_TEST, "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      2,          DFLT, BEHZ,             STANDARD} },
-    { COEF_PACKED_TEST, "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQ,        STANDARD} },
-    { COEF_PACKED_TEST, "12", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED, STANDARD} },
-    { COEF_PACKED_TEST, "13", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      2,          DFLT, HPS,              EXTENDED}   },
-    { COEF_PACKED_TEST, "14", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      2,          DFLT, BEHZ,             EXTENDED}   },
-    { COEF_PACKED_TEST, "15", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQ,        EXTENDED}   },
-    { COEF_PACKED_TEST, "16", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,       20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      2,          DFLT, HPSPOVERQLEVELED, EXTENDED}   },
+    // TestType,       Descr, Scheme,         RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech
+    { COEF_PACKED_TEST, "01", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { COEF_PACKED_TEST, "02", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { COEF_PACKED_TEST, "03", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { COEF_PACKED_TEST, "04", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,        1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { COEF_PACKED_TEST, "05", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { COEF_PACKED_TEST, "06", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { COEF_PACKED_TEST, "07", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { COEF_PACKED_TEST, "08", {BGVRNS_SCHEME, 64,   2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    512,   DFLT,   DFLT,      DFLT, DFLT,             STANDARD} },
+    { COEF_PACKED_TEST, "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, HPS,              STANDARD} },
+    { COEF_PACKED_TEST, "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, BEHZ,             STANDARD} },
+    { COEF_PACKED_TEST, "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD} },
+    { COEF_PACKED_TEST, "12", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD} },
+    { COEF_PACKED_TEST, "13", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, HPS,              EXTENDED}   },
+    { COEF_PACKED_TEST, "14", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, BEHZ,             EXTENDED}   },
+    { COEF_PACKED_TEST, "15", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED}   },
+    { COEF_PACKED_TEST, "16", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     FIXEDMANUAL,     DFLT,    512,   DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED}   },
 };
 // clang-format on
 //===========================================================================================================
-class Encrypt_Decrypt : public ::testing::TestWithParam<TEST_CASE_Encrypt_Decrypt> {
+class UTGENERAL_ENCRYPT_DECRYPT : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> {
     using Element = DCRTPoly;
 
 protected:
@@ -155,7 +155,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void EncryptionString(const TEST_CASE_Encrypt_Decrypt& testData, const std::string& failmsg = std::string()) {
+    void EncryptionString(const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -186,7 +186,7 @@ protected:
         }
     }
 
-    void EncryptionCoefPacked(const TEST_CASE_Encrypt_Decrypt& testData, const std::string& failmsg = std::string()) {
+    void EncryptionCoefPacked(const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -236,7 +236,7 @@ protected:
     }
 };
 //===========================================================================================================
-TEST_P(Encrypt_Decrypt, ENCRYPT) {
+TEST_P(UTGENERAL_ENCRYPT_DECRYPT, ENCRYPT) {
     setupSignals();
     auto test = GetParam();
     if (test.testCaseType == STRING_TEST)
@@ -245,6 +245,6 @@ TEST_P(Encrypt_Decrypt, ENCRYPT) {
         EncryptionCoefPacked(test, test.buildTestName());
 }
 
-INSTANTIATE_TEST_SUITE_P(UnitTests, Encrypt_Decrypt, ::testing::ValuesIn(testCases), testName);
+INSTANTIATE_TEST_SUITE_P(UnitTests, UTGENERAL_ENCRYPT_DECRYPT, ::testing::ValuesIn(testCases), testName);
 
 

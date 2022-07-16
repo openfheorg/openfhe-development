@@ -133,13 +133,13 @@ class SchemeBase {
 
   virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
                          int32_t evalAddCount,
-                         int32_t evalMultCount,
+                         int32_t multiplicativeDepth,
                          int32_t keySwitchCount,
                          size_t dcrtBits,
                          uint32_t n,
                          uint32_t numPartQ) const {
     if (m_ParamsGen) {
-      return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, evalMultCount,
+      return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, multiplicativeDepth,
                                     keySwitchCount, dcrtBits, n, numPartQ);
     }
     OPENFHE_THROW(not_implemented_error,

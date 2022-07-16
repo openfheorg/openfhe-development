@@ -59,13 +59,13 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         typeName = "EVAL_ADD_SINGLE";
         break;
     default:
-        typeName = "UNKNOWN_UTSHEADVANCED";
+        typeName = "UNKNOWN";
         break;
     }
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE_UTSHEADVANCED {
+struct TEST_CASE_UTBGVRNS_SHEADVANCED {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -90,11 +90,11 @@ struct TEST_CASE_UTSHEADVANCED {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTSHEADVANCED>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTBGVRNS_SHEADVANCED>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTSHEADVANCED& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SHEADVANCED& test) {
     return os << test.toString();
 }
 //===========================================================================================================
@@ -104,22 +104,22 @@ constexpr usint DSIZE = 4;
 constexpr double STD_DEV = 3.19;
 
 // clang-format off
-static std::vector<TEST_CASE_UTSHEADVANCED> testCasesUTSHEADVANCED = {
-    // TestType,       Descr,  Scheme,        RDim,     MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech,        LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
-    { EVAL_MULT_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,    DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_MULT_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,    DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_MULT_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,    DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_MULT_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,    DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
+static std::vector<TEST_CASE_UTBGVRNS_SHEADVANCED> testCasesUTBGVRNS_SHEADVANCED = {
+    // TestType,       Descr,  Scheme,        RDim,     MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech,        LDigits, PtMod, StdDev,  EvalAddCt, KSCt, MultTech
+    { EVAL_MULT_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT}, },
+    { EVAL_MULT_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT}, },
+    { EVAL_MULT_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT}, },
+    { EVAL_MULT_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT}, },
     // ==========================================
-    // TestType,      Descr,  Scheme,        RDim,     MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg,  FModSize, SecLvl, KSTech, ScalTech,        LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech
-    { EVAL_ADD_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_ADD_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_ADD_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
-    { EVAL_ADD_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT,       DFLT, DFLT}, },
+    // TestType,      Descr,  Scheme,        RDim,     MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg,  FModSize, SecLvl, KSTech, ScalTech,        LDigits, PtMod, StdDev,  EvalAddCt, KSCt, MultTech
+    { EVAL_ADD_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT}, },
+    { EVAL_ADD_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT}, },
+    { EVAL_ADD_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT}, },
+    { EVAL_ADD_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT}, },
 };
 // clang-format on
 //===========================================================================================================
-class UTSHEADVANCED : public ::testing::TestWithParam<TEST_CASE_UTSHEADVANCED> {
+class UTBGVRNS_SHEADVANCED : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_SHEADVANCED> {
     using Element = DCRTPoly;
     const double eps = EPSILON;
 
@@ -130,7 +130,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_EvalMultSingle(const TEST_CASE_UTSHEADVANCED& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMultSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -172,7 +172,7 @@ protected:
         }
     }
 
-    void UnitTest_EvalAddSingle(const TEST_CASE_UTSHEADVANCED& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAddSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -210,7 +210,7 @@ protected:
     }
 };
 //===========================================================================================================
-TEST_P(UTSHEADVANCED, SHEADVANCED) {
+TEST_P(UTBGVRNS_SHEADVANCED, SHEADVANCED) {
     setupSignals();
     auto test = GetParam();
 
@@ -226,7 +226,7 @@ TEST_P(UTSHEADVANCED, SHEADVANCED) {
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(UnitTests, UTSHEADVANCED, ::testing::ValuesIn(testCasesUTSHEADVANCED), testName);
+INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS_SHEADVANCED, ::testing::ValuesIn(testCasesUTBGVRNS_SHEADVANCED), testName);
 
 #endif
 

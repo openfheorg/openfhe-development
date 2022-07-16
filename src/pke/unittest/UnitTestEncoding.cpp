@@ -47,7 +47,7 @@
 
 using namespace lbcrypto;
 
-class UTEncoding : public ::testing::Test {
+class UTGENERAL_ENCODING : public ::testing::Test {
 protected:
     virtual void SetUp() {}
 
@@ -57,7 +57,7 @@ protected:
     }
 };
 
-TEST_F(UTEncoding, coef_packed_encoding) {
+TEST_F(UTGENERAL_ENCODING, coef_packed_encoding) {
     std::vector<int64_t> value = { 32, 17, 8, -12, -32, 22, -101, 6 };
     usint m = 16;
 
@@ -71,7 +71,7 @@ TEST_F(UTEncoding, coef_packed_encoding) {
     EXPECT_EQ(se.GetCoefPackedValue(), value) << "CoefPacked";
 }
 
-TEST_F(UTEncoding, packed_int_ptxt_encoding) {
+TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding) {
     usint m = 22;
     PlaintextModulus p = 89;
     BigInteger modulusQ("955263939794561");
@@ -94,7 +94,7 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding) {
     EXPECT_EQ(se.GetPackedValue(), vectorOfInts1) << "packed int";
 }
 
-TEST_F(UTEncoding, packed_int_ptxt_encoding_negative) {
+TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_negative) {
     usint m = 22;
     PlaintextModulus p = 89;
     BigInteger modulusQ("955263939794561");
@@ -117,7 +117,7 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding_negative) {
     EXPECT_EQ(se.GetPackedValue(), vectorOfInts1) << "packed int";
 }
 
-TEST_F(UTEncoding, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) {
+TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) {
     usint init_size = 3;
     usint dcrtBits = 24;
     usint dcrtBitsBig = 58;
@@ -183,7 +183,7 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) {
     EXPECT_EQ(se.GetPackedValue(), vectorOfInts1) << "packed int - prime cyclotomics";
 }
 
-TEST_F(UTEncoding, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_negative) {
+TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_negative) {
     usint init_size = 3;
     usint dcrtBits = 24;
     usint dcrtBitsBig = 58;
@@ -248,7 +248,7 @@ TEST_F(UTEncoding, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_negative)
     EXPECT_EQ(se.GetPackedValue(), vectorOfInts1) << "packed int - prime cyclotomics";
 }
 
-TEST_F(UTEncoding, string_encoding) {
+TEST_F(UTGENERAL_ENCODING, string_encoding) {
     std::string value = "Hello, world!";
     usint m = 64;
 

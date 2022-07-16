@@ -80,7 +80,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const 
 	scheme->ParamsGenBFVRNS(
 		params,
 		parameters.GetEvalAddCount(),
-		parameters.GetEvalMultCount(),
+		parameters.GetMultiplicativeDepth(),
 		parameters.GetKeySwitchCount(),
 		parameters.GetFirstModSize(),
 		parameters.GetRingDim(),

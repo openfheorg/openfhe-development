@@ -44,7 +44,7 @@
 
 using namespace lbcrypto;
 
-class UnitTestEvalMultMany : public ::testing::Test {
+class UTGENERAL_EVAL_MULT_MANY : public ::testing::Test {
  protected:
   virtual void SetUp() {}
 
@@ -57,7 +57,7 @@ static CryptoContext<DCRTPoly> MakeBFVrnsDCRTPolyCC() {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(256);
     parameters.SetStandardDeviation(4);
-    parameters.SetEvalMultCount(3);
+    parameters.SetMultiplicativeDepth(3);
     parameters.SetMaxRelinSkDeg(4);
     parameters.SetScalingModSize(60);
 
@@ -75,7 +75,7 @@ static void RunEvalMultManyTest(CryptoContext<Element> cc, std::string msg);
 
 // Tests EvalMult w/o keyswitching and EvalMultMany for BFVrns in the
 // UNIFORM_TERNARY mode
-TEST(UTBFVrnsEVALMM, Poly_BFVrns_Eval_Mult_Many_Operations) {
+TEST(UTGENERAL_EVAL_MULT_MANY, Poly_BFVrns_Eval_Mult_Many_Operations) {
   RunEvalMultManyTest(MakeBFVrnsDCRTPolyCC(), "BFVrns");
 }
 

@@ -63,7 +63,6 @@ namespace lbcrypto {
     SET_TO_SCHEME_DEFAULT(SCHEME, securityLevel);              \
     SET_TO_SCHEME_DEFAULT(SCHEME, ringDim);                    \
     SET_TO_SCHEME_DEFAULT(SCHEME, evalAddCount);               \
-    SET_TO_SCHEME_DEFAULT(SCHEME, evalMultCount);              \
     SET_TO_SCHEME_DEFAULT(SCHEME, keySwitchCount);             \
     SET_TO_SCHEME_DEFAULT(SCHEME, encryptionTechnique);        \
     SET_TO_SCHEME_DEFAULT(SCHEME, multiplicationTechnique);    \
@@ -105,7 +104,6 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; securityLevel: " << obj.securityLevel
         << "; ringDim: " << obj.ringDim
         << "; evalAddCount: " << obj.evalAddCount
-        << "; evalMultCount: " << obj.evalMultCount
         << "; keySwitchCount: " << obj.keySwitchCount
         << "; encryptionTechnique: " << obj.encryptionTechnique
         << "; multiplicationTechnique: " << obj.multiplicationTechnique

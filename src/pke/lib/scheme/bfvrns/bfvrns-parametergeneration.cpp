@@ -44,7 +44,7 @@ namespace lbcrypto {
 
 bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
     std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-    int32_t evalAddCount, int32_t evalMultCount,
+    int32_t evalAddCount, int32_t multiplicativeDepth,
     int32_t keySwitchCount, size_t dcrtBits,
     uint32_t nCustom,
     uint32_t numDigits) const {
@@ -117,7 +117,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
 	// conservative estimate for HYBRID to avoid the use of method of
 	// iterative approximations; we do not know the number
 	// of moduli at this point and use an upper bound for numDigits
-      return  (evalMultCount + 1) * delta(n) * Berr;
+      return  (multiplicativeDepth + 1) * delta(n) * Berr;
 	else
 	  return delta(n) *
               (floor(logqPrev / (log(2) * dcrtBits)) + 1) * w * Berr;
@@ -133,7 +133,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
   // https://eprint.iacr.org/2014/062.pdf is used
   // optimization (noise reduction) from Section 3.1 of https://eprint.iacr.org/2021/204.pdf
   // is also applied
-  if ((evalMultCount == 0) && (keySwitchCount == 0)) {
+  if ((multiplicativeDepth == 0) && (keySwitchCount == 0)) {
     // Correctness constraint
     auto logqBFV = [&](uint32_t n) -> double {
       return log(p *
@@ -167,8 +167,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
       k = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
       logqCeil = k * dcrtBits * log(2);
     }
-  } else if ((evalMultCount == 0) && (keySwitchCount > 0) &&
-             (evalAddCount == 0)) {
+  } else if ((multiplicativeDepth == 0) && (keySwitchCount > 0) && (evalAddCount == 0)) {
     // this case supports automorphism w/o any other operations
     // base for relinearization
 
@@ -225,8 +224,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
         logqPrev = logqCeil;
       }
     }
-  } else if ((evalAddCount == 0) && (evalMultCount > 0) &&
-             (keySwitchCount == 0)) {
+  } else if ((evalAddCount == 0) && (multiplicativeDepth > 0) && (keySwitchCount == 0)) {
     // Only EvalMult operations are used in the correctness constraint
     // the correctness constraint from Section 3.1 of https://eprint.iacr.org/2021/204.pdf
 	// is used
@@ -247,8 +245,8 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(
 
     // main correctness constraint
     auto logqBFV = [&](uint32_t n, double logqPrev) -> double {
-      return log(4 * p) + (evalMultCount - 1) * log(C1(n)) +
-             log(C1(n) * Vnorm(n) + evalMultCount * C2(n, logqPrev));
+      return log(4 * p) + (multiplicativeDepth - 1) * log(C1(n)) +
+             log(C1(n) * Vnorm(n) + multiplicativeDepth * C2(n, logqPrev));
     };
 
     // initial values

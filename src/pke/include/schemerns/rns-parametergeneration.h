@@ -58,7 +58,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * parameters.
    * @param evalAddCount number of EvalAdds assuming no EvalMult and KeySwitch
    * operations are performed.
-   * @param evalMultCount number of EvalMults assuming no EvalAdd and
+   * @param multiplicativeDepth number of EvalMults assuming no EvalAdd and
    * KeySwitch operations are performed.
    * @param keySwitchCount number of KeySwitch operations assuming no EvalAdd
    * and EvalMult operations are performed.
@@ -69,7 +69,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
   bool ParamsGenBFVRNS(
       std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
       int32_t evalAddCount,
-      int32_t evalMultCount,
+      int32_t multiplicativeDepth,
       int32_t keySwitchCount,
       size_t dcrtBits,
       uint32_t numPartQ,

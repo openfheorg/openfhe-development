@@ -72,7 +72,6 @@ bool run_demo_pre(void) {
 
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(plaintextModulus);
-  parameters.SetEvalMultCount(1);
   parameters.SetScalingModSize(60);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
