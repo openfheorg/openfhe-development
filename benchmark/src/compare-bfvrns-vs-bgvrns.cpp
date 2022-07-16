@@ -47,10 +47,6 @@
 #include "openfhe.h"
 #include "utils/debug.h"
 
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
-
 using namespace lbcrypto;
 
 usint mult_depth = 3;

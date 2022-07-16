@@ -40,12 +40,11 @@
 #include <unistd.h>
 
 #include "openfhe.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 
 // header files needed for serialization
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
+#include "key/key-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
 
 using namespace lbcrypto;
@@ -121,7 +120,7 @@ serverSetupAndWrite(int multDepth, int scaleModSize, int batchSize) {
   std::cout << "Eval Mult Keys/ Relinearization keys have been generated"
             << std::endl;
 
-  serverCC->EvalAtIndexKeyGen(serverKP.secretKey, {1, 2, -1, -2});
+  serverCC->EvalRotateKeyGen(serverKP.secretKey, {1, 2, -1, -2});
   std::cout << "Rotation keys generated" << std::endl;
 
   std::vector<std::complex<double>> vec1 = {1.0, 2.0, 3.0, 4.0};

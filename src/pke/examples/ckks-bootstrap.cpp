@@ -38,8 +38,6 @@ Example for CKKS bootstrapping
 #define PROFILE
 
 #include "openfhe.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace std;
 using namespace lbcrypto;

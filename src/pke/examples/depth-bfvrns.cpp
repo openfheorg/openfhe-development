@@ -39,8 +39,6 @@
 #include <iostream>
 
 #include "openfhe.h"
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -68,7 +66,6 @@ int main(int argc, char *argv[]) {
   parameters.SetPlaintextModulus(536903681);
   parameters.SetMultiplicativeDepth(3);
   parameters.SetMaxRelinSkDeg(3);
-  parameters.SetScalingModSize(60);
 
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // enable features that you wish to use

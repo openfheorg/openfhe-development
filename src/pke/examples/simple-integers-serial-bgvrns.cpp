@@ -35,12 +35,11 @@
  */
 
 #include "openfhe.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
 
 // header files needed for serialization
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
+#include "key/key-ser.h"
 #include "scheme/bgvrns/bgvrns-ser.h"
 
 using namespace lbcrypto;
@@ -128,7 +127,7 @@ int main() {
   }
 
   // Generate the rotation evaluation keys
-  cryptoContext->EvalAtIndexKeyGen(keyPair.secretKey, {1, 2, -1, -2});
+  cryptoContext->EvalRotateKeyGen(keyPair.secretKey, {1, 2, -1, -2});
 
   std::cout << "The rotation keys have been generated." << std::endl;
 

@@ -33,8 +33,6 @@
   Simple example for BFVrns (integer arithmetic)
  */
 
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "gen-cryptocontext.h"
 #include "openfhe.h"
 
 using namespace lbcrypto;

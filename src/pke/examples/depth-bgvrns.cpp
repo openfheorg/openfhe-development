@@ -42,9 +42,6 @@
 #include <iterator>
 
 #include "openfhe.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
-
 
 using namespace lbcrypto;
 

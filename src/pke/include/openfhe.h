@@ -48,4 +48,9 @@
 #include "ciphertext.h"
 #include "cryptocontext.h"
 
+#include "gen-cryptocontext.h"
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+
 #endif /* SRC_LIB_OPENFHE_H_ */

@@ -1772,10 +1772,7 @@ protected:
   }
 
   Ciphertext<Element> EvalRotate(ConstCiphertext<Element> ciphertext, int32_t index) const {
-    CheckCiphertext(ciphertext);
-
-    auto evalKeyMap = GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
-    return GetScheme()->EvalAtIndex(ciphertext, index, evalKeyMap);
+	  return EvalRotate(ciphertext, index);
   }
 
   /**

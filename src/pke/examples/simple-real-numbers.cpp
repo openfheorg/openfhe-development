@@ -35,8 +35,6 @@
 
 #define PROFILE
 
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 #include "openfhe.h"
 
 using namespace lbcrypto;
@@ -165,7 +163,7 @@ int main() {
    * in the output of this demo, since CKKS is approximate, zeros are not exact
    * - they're just very small numbers.
    */
-  cc->EvalAtIndexKeyGen(keys.secretKey, {1, -2});
+  cc->EvalRotateKeyGen(keys.secretKey, {1, -2});
 
   // Step 3: Encoding and encryption of inputs
 

@@ -36,8 +36,6 @@
 #define PROFILE  // turns on the reporting of timing results
 
 #include "openfhe.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
