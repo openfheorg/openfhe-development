@@ -33,7 +33,6 @@
   Simple examples for CKKS
  */
 
-
 #define PROFILE
 
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
@@ -41,8 +40,6 @@
 #include "openfhe.h"
 
 using namespace lbcrypto;
-
-//#define NEW_GET_CRYPTOCONTEXT
 
 int main() {
   // Step 1: Setup CryptoContext
@@ -123,7 +120,6 @@ int main() {
   parameters.SetMultiplicativeDepth(multDepth);
   parameters.SetScalingModSize(scaleModSize);
   parameters.SetBatchSize(batchSize);
-  parameters.SetScalingTechnique(FLEXIBLEAUTO);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
@@ -203,8 +199,8 @@ int main() {
   auto cMul = cc->EvalMult(c1, c2);
 
   // Homomorphic rotations
-  auto cRot1 = cc->EvalAtIndex(c1, 1);
-  auto cRot2 = cc->EvalAtIndex(c1, -2);
+  auto cRot1 = cc->EvalRotate(c1, 1);
+  auto cRot2 = cc->EvalRotate(c1, -2);
 
   // Step 5: Decryption and output
   Plaintext result;

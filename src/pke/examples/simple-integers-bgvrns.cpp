@@ -44,11 +44,6 @@ int main() {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetMultiplicativeDepth(2);
     parameters.SetPlaintextModulus(65537);
-//    parameters.SetKeySwitchTechnique(HYBRID);
-    parameters.SetKeySwitchTechnique(BV);
-    parameters.SetScalingTechnique(FIXEDAUTO);
-//    parameters.SetScalingModSize(60);
-//    parameters.SetDigitSize(10);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use
@@ -68,7 +63,7 @@ int main() {
   cryptoContext->EvalMultKeyGen(keyPair.secretKey);
 
   // Generate the rotation evaluation keys
-  cryptoContext->EvalAtIndexKeyGen(keyPair.secretKey, {1, 2, -1, -2});
+  cryptoContext->EvalRotateKeyGen(keyPair.secretKey, {1, 2, -1, -2});
 
   // Sample Program: Step 3 - Encryption
 
@@ -101,10 +96,10 @@ int main() {
   auto ciphertextMultResult =
       cryptoContext->EvalMult(ciphertextMul12, ciphertext3);
   // Homomorphic rotations
-  auto ciphertextRot1 = cryptoContext->EvalAtIndex(ciphertext1, 1);
-  auto ciphertextRot2 = cryptoContext->EvalAtIndex(ciphertext1, 2);
-  auto ciphertextRot3 = cryptoContext->EvalAtIndex(ciphertext1, -1);
-  auto ciphertextRot4 = cryptoContext->EvalAtIndex(ciphertext1, -2);
+  auto ciphertextRot1 = cryptoContext->EvalRotate(ciphertext1, 1);
+  auto ciphertextRot2 = cryptoContext->EvalRotate(ciphertext1, 2);
+  auto ciphertextRot3 = cryptoContext->EvalRotate(ciphertext1, -1);
+  auto ciphertextRot4 = cryptoContext->EvalRotate(ciphertext1, -2);
 
   // Sample Program: Step 5 - Decryption
 

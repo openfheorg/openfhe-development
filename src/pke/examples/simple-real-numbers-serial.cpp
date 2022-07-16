@@ -35,15 +35,18 @@
   2 separate entities
  */
 
-#include "openfhe.h"
 #include <iomanip>
+#include <tuple>
+#include <unistd.h>
+
+#include "openfhe.h"
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "gen-cryptocontext.h"
+
+// header files needed for serialization
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
-#include <tuple>
-#include <unistd.h>
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -299,8 +302,8 @@ void clientProcess() {
   std::cout << "Deserialized ciphertext1" << '\n' << std::endl;
   auto clientCiphertextMult = clientCC->EvalMult(clientC1, clientC2);
   auto clientCiphertextAdd = clientCC->EvalAdd(clientC1, clientC2);
-  auto clientCiphertextRot = clientCC->EvalAtIndex(clientC1, 1);
-  auto clientCiphertextRotNeg = clientCC->EvalAtIndex(clientC1, -1);
+  auto clientCiphertextRot = clientCC->EvalRotate(clientC1, 1);
+  auto clientCiphertextRotNeg = clientCC->EvalRotate(clientC1, -1);
 
   // Now, we want to simulate a client who is encrypting data for the server to
   // decrypt. E.g weights of a machine learning algorithm

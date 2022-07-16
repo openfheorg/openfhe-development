@@ -51,14 +51,6 @@ int main(int argc, char* argv[]) {
   CCParams<CryptoContextCKKSRNS> parameters;
   parameters.SetMultiplicativeDepth(6);
   parameters.SetScalingModSize(50);
-  parameters.SetBatchSize(16);
-  parameters.SetSecurityLevel(HEStd_NotSet);
-  parameters.SetRingDim(2048);
-//  parameters.SetScalingTechnique(FLEXIBLEAUTO);
-//  parameters.SetScalingTechnique(FIXEDAUTO);
-  parameters.SetScalingTechnique(FIXEDMANUAL);
-  parameters.SetNumLargeDigits(3);
-  parameters.SetFirstModSize(60);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   cc->Enable(PKE);

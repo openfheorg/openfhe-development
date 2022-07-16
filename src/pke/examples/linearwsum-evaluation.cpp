@@ -55,9 +55,6 @@ int main(int argc, char* argv[]) {
   parameters.SetSecurityLevel(HEStd_NotSet);
   parameters.SetRingDim(2048);
   parameters.SetScalingTechnique(FLEXIBLEAUTO);
-//  parameters.SetScalingTechnique(FIXEDAUTO);
-//  parameters.SetScalingTechnique(FIXEDMANUAL);
-//  parameters.SetNumLargeDigits(3);
   parameters.SetFirstModSize(60);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);

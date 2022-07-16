@@ -31,7 +31,7 @@
 
 /*
   Example of vector rotation. 
-  This code shows how the EvalAtIndex and EvalMerge operations work for different cyclotomic rings (both power-of-two and cyclic)
+  This code shows how the EvalRotate and EvalMerge operations work
  */
 
 #include <fstream>
@@ -53,18 +53,18 @@ void BFVrnsEvalMerge2n();
 
 int main() {
   std::cout
-      << "\nThis code shows how the EvalAtIndex and EvalMerge operations work "
+      << "\nThis code shows how the EvalRotate and EvalMerge operations work "
          "for different cyclotomic rings (both power-of-two and cyclic).\n"
       << std::endl;
 
-  std::cout << "\n========== BFVrns.EvalAtIndex - Power-of-Two Cyclotomics "
+  std::cout << "\n========== BFVrns.EvalRotate - Power-of-Two Cyclotomics "
                "==========="
             << std::endl;
 
   BFVrnsEvalAtIndex2n();
 
   std::cout
-      << "\n========== CKKS.EvalAtIndex - Power-of-Two Cyclotomics ==========="
+      << "\n========== CKKS.EvalRotate - Power-of-Two Cyclotomics ==========="
       << std::endl;
 
   CKKSEvalAtIndex2n();
@@ -112,7 +112,7 @@ void BFVrnsEvalAtIndex2n() {
   auto ciphertext = cc->Encrypt(kp.publicKey, intArray);
 
   for (size_t i = 0; i < 18; i++) {
-    auto permutedCiphertext = cc->EvalAtIndex(ciphertext, indexList[i]);
+    auto permutedCiphertext = cc->EvalRotate(ciphertext, indexList[i]);
 
     Plaintext intArrayNew;
 
@@ -129,15 +129,8 @@ void CKKSEvalAtIndex2n() {
   usint cyclOrder = 8192;
 
   CCParams<CryptoContextCKKSRNS> parameters;
-  parameters.SetRingDim(cyclOrder / 2);
   parameters.SetMultiplicativeDepth(2);
   parameters.SetScalingModSize(40);
-  parameters.SetDigitSize(10);
-  parameters.SetBatchSize(16);
-  parameters.SetKeySwitchTechnique(BV);
-  parameters.SetScalingTechnique(FIXEDMANUAL);
-  parameters.SetNumLargeDigits(4);
-  parameters.SetSecurityLevel(HEStd_NotSet);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   cc->Enable(PKE);
@@ -166,7 +159,7 @@ void CKKSEvalAtIndex2n() {
   auto ciphertext = cc->Encrypt(kp.publicKey, intArray);
 
   for (size_t i = 0; i < 18; i++) {
-    auto permutedCiphertext = cc->EvalAtIndex(ciphertext, indexList[i]);
+    auto permutedCiphertext = cc->EvalRotate(ciphertext, indexList[i]);
 
     Plaintext intArrayNew;
 
@@ -191,6 +184,7 @@ void BFVrnsEvalMerge2n() {
   cc->Enable(PKE);
   cc->Enable(KEYSWITCH);
   cc->Enable(LEVELEDSHE);
+  cc->Enable(ADVANCEDSHE);
 
   // Initialize the public key containers.
   KeyPair<DCRTPoly> kp = cc->KeyGen();

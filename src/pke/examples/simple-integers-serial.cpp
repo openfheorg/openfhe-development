@@ -51,12 +51,11 @@ int main() {
   std::cout << "This program requres the subdirectory `" << DATAFOLDER
             << "' to exist, otherwise you will get "
             << "an error writing serializations." << std::endl;
-  // Sample Program: Step 1: Set CryptoContext
 
+  // Sample Program: Step 1: Set CryptoContext
   CCParams<CryptoContextBFVRNS> parameters;
   parameters.SetPlaintextModulus(65537);
   parameters.SetMultiplicativeDepth(2);
-  parameters.SetScalingModSize(60);
 
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // Enable features that you wish to use

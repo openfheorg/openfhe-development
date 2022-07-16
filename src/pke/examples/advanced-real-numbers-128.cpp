@@ -408,8 +408,8 @@ void HybridKeySwitchingDemo1() {
 
   TimeVar t;
   TIC(t);
-  auto cRot1 = cc->EvalAtIndex(c, 1);
-  auto cRot2 = cc->EvalAtIndex(cRot1, -2);
+  auto cRot1 = cc->EvalRotate(c, 1);
+  auto cRot2 = cc->EvalRotate(cRot1, -2);
   double time2digits = TOC(t);
   // Take note and compare the runtime to the runtime
   // of the same computation in the next demo.
@@ -528,8 +528,8 @@ void HybridKeySwitchingDemo2() {
 
   TimeVar t;
   TIC(t);
-  auto cRot1 = cc->EvalAtIndex(c, 1);
-  auto cRot2 = cc->EvalAtIndex(cRot1, -2);
+  auto cRot1 = cc->EvalRotate(c, 1);
+  auto cRot2 = cc->EvalRotate(cRot1, -2);
   // The runtime here is smaller than in the previous demo.
   double time3digits = TOC(t);
 
@@ -652,13 +652,13 @@ void FastRotationsDemo1() {
   // and measure the runtime.
   TimeVar t;
   TIC(t);
-  cRot1 = cc->EvalAtIndex(c, 1);
-  cRot2 = cc->EvalAtIndex(c, 2);
-  cRot3 = cc->EvalAtIndex(c, 3);
-  cRot4 = cc->EvalAtIndex(c, 4);
-  cRot5 = cc->EvalAtIndex(c, 5);
-  cRot6 = cc->EvalAtIndex(c, 6);
-  cRot7 = cc->EvalAtIndex(c, 7);
+  cRot1 = cc->EvalRotate(c, 1);
+  cRot2 = cc->EvalRotate(c, 2);
+  cRot3 = cc->EvalRotate(c, 3);
+  cRot4 = cc->EvalRotate(c, 4);
+  cRot5 = cc->EvalRotate(c, 5);
+  cRot6 = cc->EvalRotate(c, 6);
+  cRot7 = cc->EvalRotate(c, 7);
   double timeNoHoisting = TOC(t);
 
   auto cResNoHoist = c + cRot1 + cRot2 + cRot3 + cRot4 + cRot5 + cRot6 + cRot7;
@@ -773,13 +773,13 @@ void FastRotationsDemo2() {
   // and measure the runtime.
   TimeVar t;
   TIC(t);
-  cRot1 = cc->EvalAtIndex(c, 1);
-  cRot2 = cc->EvalAtIndex(c, 2);
-  cRot3 = cc->EvalAtIndex(c, 3);
-  cRot4 = cc->EvalAtIndex(c, 4);
-  cRot5 = cc->EvalAtIndex(c, 5);
-  cRot6 = cc->EvalAtIndex(c, 6);
-  cRot7 = cc->EvalAtIndex(c, 7);
+  cRot1 = cc->EvalRotate(c, 1);
+  cRot2 = cc->EvalRotate(c, 2);
+  cRot3 = cc->EvalRotate(c, 3);
+  cRot4 = cc->EvalRotate(c, 4);
+  cRot5 = cc->EvalRotate(c, 5);
+  cRot6 = cc->EvalRotate(c, 6);
+  cRot7 = cc->EvalRotate(c, 7);
   double timeNoHoisting = TOC(t);
 
   auto cResNoHoist = c + cRot1 + cRot2 + cRot3 + cRot4 + cRot5 + cRot6 + cRot7;
