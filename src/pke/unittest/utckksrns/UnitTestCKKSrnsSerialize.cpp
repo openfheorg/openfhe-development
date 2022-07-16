@@ -42,9 +42,8 @@
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
 #include "scheme/ckksrns/ckksrns-ser.h"
-#include "globals.h" // for SERIALIZE_PRECOMPUTE
+#include "globals.h"  // for SERIALIZE_PRECOMPUTE
 #include "utils/demangle.h"
-
 
 using namespace lbcrypto;
 
@@ -58,18 +57,18 @@ enum TEST_CASE_TYPE {
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
-    case CONTEXT_WITH_SERTYPE:
-        typeName = "CONTEXT_WITH_SERTYPE";
-        break;
-    case KEYS_AND_CIPHERTEXTS:
-        typeName = "KEYS_AND_CIPHERTEXTS";
-        break;
-    case NO_CRT_TABLES:
-        typeName = "NO_CRT_TABLES";
-        break;
-    default:
-        typeName = "UNKNOWN";
-        break;
+        case CONTEXT_WITH_SERTYPE:
+            typeName = "CONTEXT_WITH_SERTYPE";
+            break;
+        case KEYS_AND_CIPHERTEXTS:
+            typeName = "KEYS_AND_CIPHERTEXTS";
+            break;
+        case NO_CRT_TABLES:
+            typeName = "NO_CRT_TABLES";
+            break;
+        default:
+            typeName = "UNKNOWN";
+            break;
     }
     return os << typeName;
 }
@@ -79,7 +78,7 @@ struct TEST_CASE_UTCKKSRNS_SER {
     // test case description - MUST BE UNIQUE
     std::string description;
 
-    UnitTestCCParams  params;
+    UnitTestCCParams params;
 
     // additional test case data
     // ........
@@ -114,11 +113,11 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_SER&
  *        Use small values (3-4?) if you need rotations before any multiplications.
  * BATCH: The length of the packed vectors to be used with CKKS.
  */
-constexpr usint RING_DIM = 512;
-constexpr usint SMODSIZE = 50;
+constexpr usint RING_DIM   = 512;
+constexpr usint SMODSIZE   = 50;
 constexpr usint MULT_DEPTH = 3;
-constexpr usint DSIZE    = 20;
-constexpr usint BATCH    = 16;
+constexpr usint DSIZE      = 20;
+constexpr usint BATCH      = 16;
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_SER> testCases = {
     // TestType,            Descr, Scheme,         RDim,     MultDepth,  SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech
@@ -173,7 +172,7 @@ static std::vector<TEST_CASE_UTCKKSRNS_SER> testCases = {
 // clang-format on
 //===========================================================================================================
 class UTCKKSRNS_SER : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_SER> {
-    using Element = DCRTPoly;
+    using Element    = DCRTPoly;
     const double eps = EPSILON;
 
 protected:
@@ -191,7 +190,8 @@ protected:
     }
 
     template <typename ST>
-    void TestKeysAndCiphertexts(const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype, const std::string& failmsg = std::string()) {
+    void TestKeysAndCiphertexts(const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype,
+                                const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -233,12 +233,11 @@ protected:
                 EXPECT_EQ(*kp.secretKey, *kpnew.secretKey) << "Secret key mismatch after ser/deser";
             }
             OPENFHE_DEBUG("step 3");
-            std::vector<std::complex<double>> vals = { 1.0, 3.0, 5.0, 7.0, 9.0,
-                                                 2.0, 4.0, 6.0, 8.0, 11.0 };
-            Plaintext plaintextShort = cc->MakeCKKSPackedPlaintext(vals);
-            Plaintext plaintextShortL2D2 = cc->MakeCKKSPackedPlaintext(vals, 2, 2);
-            Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
-            Ciphertext<DCRTPoly> ciphertextL2D2 = cc->Encrypt(kp.publicKey, plaintextShortL2D2);
+            std::vector<std::complex<double>> vals = {1.0, 3.0, 5.0, 7.0, 9.0, 2.0, 4.0, 6.0, 8.0, 11.0};
+            Plaintext plaintextShort               = cc->MakeCKKSPackedPlaintext(vals);
+            Plaintext plaintextShortL2D2           = cc->MakeCKKSPackedPlaintext(vals, 2, 2);
+            Ciphertext<DCRTPoly> ciphertext        = cc->Encrypt(kp.publicKey, plaintextShort);
+            Ciphertext<DCRTPoly> ciphertextL2D2    = cc->Encrypt(kp.publicKey, plaintextShortL2D2);
 
             OPENFHE_DEBUG("step 4");
             Ciphertext<DCRTPoly> newC;
@@ -262,9 +261,9 @@ protected:
             plaintextShortNew->SetLength(plaintextShort->GetLength());
             plaintextShortNewL2D2->SetLength(plaintextShortL2D2->GetLength());
             checkEquality(plaintextShortNew->GetCKKSPackedValue(), plaintextShort->GetCKKSPackedValue(), eps,
-                failmsg + " Decrypted serialization test fails");
+                          failmsg + " Decrypted serialization test fails");
             checkEquality(plaintextShortNewL2D2->GetCKKSPackedValue(), plaintextShortL2D2->GetCKKSPackedValue(), eps,
-                failmsg + " Decrypted serialization test fails (level 2, depth 2)");
+                          failmsg + " Decrypted serialization test fails (level 2, depth 2)");
 
             OPENFHE_DEBUG("step 6");
             KeyPair<DCRTPoly> kp2 = cc->KeyGen();
@@ -376,13 +375,15 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
-    void UnitTestKeysAndCiphertexts(const TEST_CASE_UTCKKSRNS_SER& testData, const std::string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(const TEST_CASE_UTCKKSRNS_SER& testData,
+                                    const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }
 
     template <typename ST>
-    void TestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype, const std::string& failmsg = std::string()) {
+    void TestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSRNS_SER& testData, const ST& sertype,
+                                      const std::string& failmsg = std::string()) {
         try {
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
@@ -393,10 +394,9 @@ protected:
 
             KeyPair<Element> kp = cc->KeyGen();
 
-            std::vector<std::complex<double>> vals = { 1.0, 3.0, 5.0, 7.0, 9.0,
-                                                 2.0, 4.0, 6.0, 8.0, 11.0 };
-            Plaintext plaintextShort = cc->MakeCKKSPackedPlaintext(vals);
-            Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
+            std::vector<std::complex<double>> vals = {1.0, 3.0, 5.0, 7.0, 9.0, 2.0, 4.0, 6.0, 8.0, 11.0};
+            Plaintext plaintextShort               = cc->MakeCKKSPackedPlaintext(vals);
+            Ciphertext<DCRTPoly> ciphertext        = cc->Encrypt(kp.publicKey, plaintextShort);
 
             std::stringstream s;
             Serial::Serialize(cc, s, sertype);
@@ -434,7 +434,7 @@ protected:
             cc->Decrypt(kp.secretKey, newC, &result);
             result->SetLength(plaintextShort->GetLength());
             checkEquality(plaintextShort->GetCKKSPackedValue(), result->GetCKKSPackedValue(), eps,
-                failmsg + " Decryption Failed");
+                          failmsg + " Decryption Failed");
 
             EnablePrecomputeCRTTablesAfterDeserializaton();
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
@@ -456,11 +456,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
-    void UnitTestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSRNS_SER& testData, const std::string& failmsg = std::string()) {
+    void UnitTestDecryptionSerNoCRTTables(const TEST_CASE_UTCKKSRNS_SER& testData,
+                                          const std::string& failmsg = std::string()) {
         TestDecryptionSerNoCRTTables(testData, SerType::JSON, "json");
         TestDecryptionSerNoCRTTables(testData, SerType::BINARY, "binary");
     }
-
 };
 //===========================================================================================================
 TEST_P(UTCKKSRNS_SER, CKKSSer) {
@@ -476,4 +476,3 @@ TEST_P(UTCKKSRNS_SER, CKKSSer) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_SER, ::testing::ValuesIn(testCases), testName);
-

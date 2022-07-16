@@ -33,29 +33,27 @@
 #include <sstream>
 #include <ostream>
 
-
 std::string UnitTestCCParams::toString() const {
     std::stringstream ss;
     ss << "schemeId [" << schemeId << "], "
-        << "ringDimension [" << ringDimension << "], "
-        << "multiplicativeDepth [" << multiplicativeDepth << "], "
-        << "scalingModSize [" << scalingModSize << "], "
-        << "digitSize [" << digitSize << "], "
-        << "batchSize [" << batchSize << "], "
-        << "secretKeyDist [" << secretKeyDist << "], "
-        << "maxRelinSkDeg [" << maxRelinSkDeg << "], "
-        << "firstModSize [" << firstModSize << "], "
-        << "securityLevel [" << securityLevel << "], "
-        << "ksTech [" << ksTech << "], "
-        << "scalTech [" << scalTech << "], "
-        << "numLargeDigits [" << numLargeDigits << "], "
-        << "plaintextModulus [" << plaintextModulus << "], "
-        << "standardDeviation [" << standardDeviation << "], "
-        << "evalAddCount [" << evalAddCount << "], "
-        << "keySwitchCount [" << keySwitchCount << "], "
-        << "multiplicationTechnique [" << multiplicationTechnique << "], "
-        << "encryptionTechnique [" << encryptionTechnique << "], "
-        ;
+       << "ringDimension [" << ringDimension << "], "
+       << "multiplicativeDepth [" << multiplicativeDepth << "], "
+       << "scalingModSize [" << scalingModSize << "], "
+       << "digitSize [" << digitSize << "], "
+       << "batchSize [" << batchSize << "], "
+       << "secretKeyDist [" << secretKeyDist << "], "
+       << "maxRelinSkDeg [" << maxRelinSkDeg << "], "
+       << "firstModSize [" << firstModSize << "], "
+       << "securityLevel [" << securityLevel << "], "
+       << "ksTech [" << ksTech << "], "
+       << "scalTech [" << scalTech << "], "
+       << "numLargeDigits [" << numLargeDigits << "], "
+       << "plaintextModulus [" << plaintextModulus << "], "
+       << "standardDeviation [" << standardDeviation << "], "
+       << "evalAddCount [" << evalAddCount << "], "
+       << "keySwitchCount [" << keySwitchCount << "], "
+       << "multiplicationTechnique [" << multiplicationTechnique << "], "
+       << "encryptionTechnique [" << encryptionTechnique << "], ";
     return ss.str();
 }
 //===========================================================================================================

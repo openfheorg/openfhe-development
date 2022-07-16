@@ -31,36 +31,36 @@
 
 #if !defined(_MSC_VER)
 
-#include "UnitTestUtils.h"
-#include "UnitTestCCParams.h"
-#include "UnitTestCryptoContext.h"
+    #include "UnitTestUtils.h"
+    #include "UnitTestCCParams.h"
+    #include "UnitTestCryptoContext.h"
 
-#include <iostream>
-#include <vector>
-#include "gtest/gtest.h"
-#include <cxxabi.h>
-#include "utils/demangle.h"
+    #include <iostream>
+    #include <vector>
+    #include "gtest/gtest.h"
+    #include <cxxabi.h>
+    #include "utils/demangle.h"
 
 using namespace lbcrypto;
 
 //===========================================================================================================
 enum TEST_CASE_TYPE {
     EVAL_MULT_SINGLE = 0,
-    EVAL_ADD_SINGLE
+    EVAL_ADD_SINGLE,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
-    case EVAL_MULT_SINGLE:
-        typeName = "EVAL_MULT_SINGLE";
-        break;
-    case EVAL_ADD_SINGLE:
-        typeName = "EVAL_ADD_SINGLE";
-        break;
-    default:
-        typeName = "UNKNOWN";
-        break;
+        case EVAL_MULT_SINGLE:
+            typeName = "EVAL_MULT_SINGLE";
+            break;
+        case EVAL_ADD_SINGLE:
+            typeName = "EVAL_ADD_SINGLE";
+            break;
+        default:
+            typeName = "UNKNOWN";
+            break;
     }
     return os << typeName;
 }
@@ -70,14 +70,13 @@ struct TEST_CASE_UTBGVRNS_SHEADVANCED {
     // test case description - MUST BE UNIQUE
     std::string description;
 
-    UnitTestCCParams  params;
+    UnitTestCCParams params;
 
     // additional test case data
     // ........
 
     std::string buildTestName() const {
         std::stringstream ss;
-        //std::cout << "======= testCaseType: " << testCaseType << "; description: " << description << std::endl;
         ss << testCaseType << "_" << description;
         return ss.str();
     }
@@ -99,8 +98,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SHEAD
 }
 //===========================================================================================================
 constexpr usint RING_DIM = 8192;
-constexpr usint PTM = 20;
-constexpr usint DSIZE = 4;
+constexpr usint PTM      = 20;
+constexpr usint DSIZE    = 4;
 constexpr double STD_DEV = 3.19;
 
 // clang-format off
@@ -120,7 +119,7 @@ static std::vector<TEST_CASE_UTBGVRNS_SHEADVANCED> testCasesUTBGVRNS_SHEADVANCED
 // clang-format on
 //===========================================================================================================
 class UTBGVRNS_SHEADVANCED : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_SHEADVANCED> {
-    using Element = DCRTPoly;
+    using Element    = DCRTPoly;
     const double eps = EPSILON;
 
 protected:
@@ -130,7 +129,8 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_EvalMultSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalMultSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,
+                                 const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -138,18 +138,18 @@ protected:
             KeyPair<Element> kp = cc->KeyGen();
             cc->EvalMultKeyGen(kp.secretKey);
 
-            std::vector<int64_t> vectorOfInts1 = { 2 };
-            Plaintext intArray1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
-            std::vector<int64_t> vectorOfInts2 = { 3 };
-            Plaintext intArray2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
-            std::vector<int64_t> vectorOfExpectedValues = { 6 }; // = vectorOfInts1 * vectorOfInts2
-            Plaintext expectedValues = cc->MakeCoefPackedPlaintext(vectorOfExpectedValues);
+            std::vector<int64_t> vectorOfInts1          = {2};
+            Plaintext intArray1                         = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+            std::vector<int64_t> vectorOfInts2          = {3};
+            Plaintext intArray2                         = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+            std::vector<int64_t> vectorOfExpectedValues = {6};  // = vectorOfInts1 * vectorOfInts2
+            Plaintext expectedValues                    = cc->MakeCoefPackedPlaintext(vectorOfExpectedValues);
 
             Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
             Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
-            Ciphertext<Element> cResult = cc->EvalMult(ciphertext1, ciphertext2);
+            Ciphertext<Element> cResult     = cc->EvalMult(ciphertext1, ciphertext2);
 
-            KeyPair<Element> newKp = cc->KeyGen();
+            KeyPair<Element> newKp          = cc->KeyGen();
             EvalKey<Element> keySwitchHint2 = cc->KeySwitchGen(kp.secretKey, newKp.secretKey);
             cc->KeySwitchInPlace(cResult, keySwitchHint2);
 
@@ -172,23 +172,24 @@ protected:
         }
     }
 
-    void UnitTest_EvalAddSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAddSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,
+                                const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             // Initialize the public key containers.
             KeyPair<Element> kp = cc->KeyGen();
 
-            std::vector<int64_t> vectorOfInts1 = { 2, 3, 1, 4 };
-            Plaintext intArray1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
-            std::vector<int64_t> vectorOfInts2 = { 3, 6, 3, 1 };
-            Plaintext intArray2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
-            std::vector<int64_t> vectorOfExpectedValues = { 5, 9, 4, 5 }; // = vectorOfInts1 + vectorOfInts2
-            Plaintext expectedValues = cc->MakeCoefPackedPlaintext(vectorOfExpectedValues);
+            std::vector<int64_t> vectorOfInts1          = {2, 3, 1, 4};
+            Plaintext intArray1                         = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+            std::vector<int64_t> vectorOfInts2          = {3, 6, 3, 1};
+            Plaintext intArray2                         = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+            std::vector<int64_t> vectorOfExpectedValues = {5, 9, 4, 5};  // = vectorOfInts1 + vectorOfInts2
+            Plaintext expectedValues                    = cc->MakeCoefPackedPlaintext(vectorOfExpectedValues);
 
             Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
             Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
-            Ciphertext<Element> cResult = cc->EvalAdd(ciphertext1, ciphertext2);
+            Ciphertext<Element> cResult     = cc->EvalAdd(ciphertext1, ciphertext2);
 
             Plaintext results;
             cc->Decrypt(kp.secretKey, cResult, &results);
@@ -215,18 +216,17 @@ TEST_P(UTBGVRNS_SHEADVANCED, SHEADVANCED) {
     auto test = GetParam();
 
     switch (test.testCaseType) {
-    case EVAL_MULT_SINGLE:
-        UnitTest_EvalMultSingle(test, test.buildTestName());
-        break;
-    case EVAL_ADD_SINGLE:
-        UnitTest_EvalAddSingle(test, test.buildTestName());
-        break;
-    default:
-        break;
+        case EVAL_MULT_SINGLE:
+            UnitTest_EvalMultSingle(test, test.buildTestName());
+            break;
+        case EVAL_ADD_SINGLE:
+            UnitTest_EvalAddSingle(test, test.buildTestName());
+            break;
+        default:
+            break;
     }
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS_SHEADVANCED, ::testing::ValuesIn(testCasesUTBGVRNS_SHEADVANCED), testName);
 
 #endif
-

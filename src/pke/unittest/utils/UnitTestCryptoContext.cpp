@@ -37,8 +37,7 @@
 
 using namespace lbcrypto;
 
-
-template<typename U>
+template <typename U>
 static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParams& params, U& parameters) {
     if (!isDefaultValue(params.ringDimension)) {
         parameters.SetRingDim(static_cast<usint>(std::round(params.ringDimension)));
@@ -87,8 +86,7 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
             static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
     }
     if (!isDefaultValue(params.encryptionTechnique)) {
-        parameters.SetEncryptionTechnique(
-            static_cast<EncryptionTechnique>(std::round(params.encryptionTechnique)));
+        parameters.SetEncryptionTechnique(static_cast<EncryptionTechnique>(std::round(params.encryptionTechnique)));
     }
     if (!isDefaultValue(params.evalAddCount)) {
         parameters.SetEvalAddCount(static_cast<usint>(std::round(params.evalAddCount)));
@@ -132,5 +130,3 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
 
     return cc;
 }
-
-
