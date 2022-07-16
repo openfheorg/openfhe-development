@@ -35,15 +35,17 @@
   2 separate entities
  */
 
-#include "openfhe.h"
 #include <iomanip>
-#include "ciphertext-ser.h"
-#include "cryptocontext-ser.h"
-#include "scheme/ckksrns/ckksrns-ser.h"
 #include <tuple>
 #include <unistd.h>
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
+
+#include "openfhe.h"
+
+// header files needed for serialization
+#include "ciphertext-ser.h"
+#include "cryptocontext-ser.h"
+#include "key/key-ser.h"
+#include "scheme/ckksrns/ckksrns-ser.h"
 
 using namespace lbcrypto;
 
@@ -118,7 +120,7 @@ serverSetupAndWrite(int multDepth, int scaleModSize, int batchSize) {
   std::cout << "Eval Mult Keys/ Relinearization keys have been generated"
             << std::endl;
 
-  serverCC->EvalAtIndexKeyGen(serverKP.secretKey, {1, 2, -1, -2});
+  serverCC->EvalRotateKeyGen(serverKP.secretKey, {1, 2, -1, -2});
   std::cout << "Rotation keys generated" << std::endl;
 
   std::vector<std::complex<double>> vec1 = {1.0, 2.0, 3.0, 4.0};
@@ -299,8 +301,8 @@ void clientProcess() {
   std::cout << "Deserialized ciphertext1" << '\n' << std::endl;
   auto clientCiphertextMult = clientCC->EvalMult(clientC1, clientC2);
   auto clientCiphertextAdd = clientCC->EvalAdd(clientC1, clientC2);
-  auto clientCiphertextRot = clientCC->EvalAtIndex(clientC1, 1);
-  auto clientCiphertextRotNeg = clientCC->EvalAtIndex(clientC1, -1);
+  auto clientCiphertextRot = clientCC->EvalRotate(clientC1, 1);
+  auto clientCiphertextRotNeg = clientCC->EvalRotate(clientC1, -1);
 
   // Now, we want to simulate a client who is encrypting data for the server to
   // decrypt. E.g weights of a machine learning algorithm

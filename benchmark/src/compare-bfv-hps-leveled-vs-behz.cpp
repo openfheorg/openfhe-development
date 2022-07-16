@@ -46,9 +46,6 @@
 
 #include "openfhe.h"
 
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "gen-cryptocontext.h"
-
 #include "utils/debug.h"
 
 using namespace lbcrypto;

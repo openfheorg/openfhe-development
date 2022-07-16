@@ -31,7 +31,7 @@
 
 /*
   Example of vector rotation. 
-  This code shows how the EvalAtIndex and EvalMerge operations work for different cyclotomic rings (both power-of-two and cyclic)
+  This code shows how the EvalRotate and EvalMerge operations work
  */
 
 #include <fstream>
@@ -41,33 +41,30 @@
 
 #include "openfhe.h"
 #include "math/hal.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
-void BFVrnsEvalAtIndex2n();
-void CKKSEvalAtIndex2n();
+void BFVrnsEvalRotate2n();
+void CKKSEvalRotate2n();
 void BFVrnsEvalMerge2n();
 
 int main() {
   std::cout
-      << "\nThis code shows how the EvalAtIndex and EvalMerge operations work "
+      << "\nThis code shows how the EvalRotate and EvalMerge operations work "
          "for different cyclotomic rings (both power-of-two and cyclic).\n"
       << std::endl;
 
-  std::cout << "\n========== BFVrns.EvalAtIndex - Power-of-Two Cyclotomics "
+  std::cout << "\n========== BFVrns.EvalRotate - Power-of-Two Cyclotomics "
                "==========="
             << std::endl;
 
-  BFVrnsEvalAtIndex2n();
+  BFVrnsEvalRotate2n();
 
   std::cout
-      << "\n========== CKKS.EvalAtIndex - Power-of-Two Cyclotomics ==========="
+      << "\n========== CKKS.EvalRotate - Power-of-Two Cyclotomics ==========="
       << std::endl;
 
-  CKKSEvalAtIndex2n();
+  CKKSEvalRotate2n();
 
   std::cout
       << "\n========== BFVrns.EvalMerge - Power-of-Two Cyclotomics ==========="
@@ -78,7 +75,7 @@ int main() {
   return 0;
 }
 
-void BFVrnsEvalAtIndex2n() {
+void BFVrnsEvalRotate2n() {
   CCParams<CryptoContextBFVRNS> parameters;
 
   parameters.SetPlaintextModulus(65537);
@@ -99,7 +96,7 @@ void BFVrnsEvalAtIndex2n() {
                                8,     9,  10, -n + 2, -n + 3, n - 1,
                                n - 2, -1, -2, -3,     -4,     -5};
 
-  cc->EvalAtIndexKeyGen(kp.secretKey, indexList);
+  cc->EvalRotateKeyGen(kp.secretKey, indexList);
 
   std::vector<int64_t> vectorOfInts = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   vectorOfInts.resize(n);
@@ -112,7 +109,7 @@ void BFVrnsEvalAtIndex2n() {
   auto ciphertext = cc->Encrypt(kp.publicKey, intArray);
 
   for (size_t i = 0; i < 18; i++) {
-    auto permutedCiphertext = cc->EvalAtIndex(ciphertext, indexList[i]);
+    auto permutedCiphertext = cc->EvalRotate(ciphertext, indexList[i]);
 
     Plaintext intArrayNew;
 
@@ -125,24 +122,18 @@ void BFVrnsEvalAtIndex2n() {
   }
 }
 
-void CKKSEvalAtIndex2n() {
-  usint cyclOrder = 8192;
+void CKKSEvalRotate2n() {
 
   CCParams<CryptoContextCKKSRNS> parameters;
-  parameters.SetRingDim(cyclOrder / 2);
   parameters.SetMultiplicativeDepth(2);
   parameters.SetScalingModSize(40);
-  parameters.SetDigitSize(10);
-  parameters.SetBatchSize(16);
-  parameters.SetKeySwitchTechnique(BV);
-  parameters.SetScalingTechnique(FIXEDMANUAL);
-  parameters.SetNumLargeDigits(4);
-  parameters.SetSecurityLevel(HEStd_NotSet);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   cc->Enable(PKE);
   cc->Enable(KEYSWITCH);
   cc->Enable(LEVELEDSHE);
+
+  usint cyclOrder = cc->GetCyclotomicOrder();
 
   // Initialize the public key containers.
   KeyPair<DCRTPoly> kp = cc->KeyGen();
@@ -152,7 +143,7 @@ void CKKSEvalAtIndex2n() {
                                8,     9,  10, -n + 2, -n + 3, n - 1,
                                n - 2, -1, -2, -3,     -4,     -5};
 
-  cc->EvalAtIndexKeyGen(kp.secretKey, indexList);
+  cc->EvalRotateKeyGen(kp.secretKey, indexList);
 
   std::vector<std::complex<double>> vectorOfInts = {1, 2, 3, 4, 5,
                                                     6, 7, 8, 9, 10};
@@ -166,7 +157,7 @@ void CKKSEvalAtIndex2n() {
   auto ciphertext = cc->Encrypt(kp.publicKey, intArray);
 
   for (size_t i = 0; i < 18; i++) {
-    auto permutedCiphertext = cc->EvalAtIndex(ciphertext, indexList[i]);
+    auto permutedCiphertext = cc->EvalRotate(ciphertext, indexList[i]);
 
     Plaintext intArrayNew;
 
@@ -191,13 +182,14 @@ void BFVrnsEvalMerge2n() {
   cc->Enable(PKE);
   cc->Enable(KEYSWITCH);
   cc->Enable(LEVELEDSHE);
+  cc->Enable(ADVANCEDSHE);
 
   // Initialize the public key containers.
   KeyPair<DCRTPoly> kp = cc->KeyGen();
 
   std::vector<int32_t> indexList = {-1, -2, -3, -4, -5};
 
-  cc->EvalAtIndexKeyGen(kp.secretKey, indexList);
+  cc->EvalRotateKeyGen(kp.secretKey, indexList);
 
   std::vector<Ciphertext<DCRTPoly>> ciphertexts;
 

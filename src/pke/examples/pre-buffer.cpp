@@ -36,8 +36,6 @@
 
 #define PROFILE  //for TIC TOC
 #include "openfhe.h"
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 

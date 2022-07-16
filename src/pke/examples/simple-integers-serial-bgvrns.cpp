@@ -39,10 +39,8 @@
 // header files needed for serialization
 #include "ciphertext-ser.h"
 #include "cryptocontext-ser.h"
+#include "key/key-ser.h"
 #include "scheme/bgvrns/bgvrns-ser.h"
-
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -57,8 +55,6 @@ int main() {
   CCParams<CryptoContextBGVRNS> parameters;
   parameters.SetMultiplicativeDepth(2);
   parameters.SetPlaintextModulus(65537);
-  parameters.SetKeySwitchTechnique(BV);
-  parameters.SetScalingTechnique(FIXEDAUTO);
 
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
   // Enable features that you wish to use
@@ -131,7 +127,7 @@ int main() {
   }
 
   // Generate the rotation evaluation keys
-  cryptoContext->EvalAtIndexKeyGen(keyPair.secretKey, {1, 2, -1, -2});
+  cryptoContext->EvalRotateKeyGen(keyPair.secretKey, {1, 2, -1, -2});
 
   std::cout << "The rotation keys have been generated." << std::endl;
 
@@ -294,10 +290,10 @@ int main() {
   auto ciphertextMultResult = cc->EvalMult(ciphertextMul12, ct3);//iphertext3);
 
   // Homomorphic rotations
-  auto ciphertextRot1 = cc->EvalAtIndex(ct1, 1);
-  auto ciphertextRot2 = cc->EvalAtIndex(ct1, 2);
-  auto ciphertextRot3 = cc->EvalAtIndex(ct1, -1);
-  auto ciphertextRot4 = cc->EvalAtIndex(ct1, -2);
+  auto ciphertextRot1 = cc->EvalRotate(ct1, 1);
+  auto ciphertextRot2 = cc->EvalRotate(ct1, 2);
+  auto ciphertextRot3 = cc->EvalRotate(ct1, -1);
+  auto ciphertextRot4 = cc->EvalRotate(ct1, -2);
 
   // Sample Program: Step 5 - Decryption
 

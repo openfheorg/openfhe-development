@@ -38,8 +38,6 @@
 #include <iostream>
 
 #include "openfhe.h"
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "gen-cryptocontext.h"
 #include "utils/parallel.h"
 
 typedef std::numeric_limits<double> dbl;

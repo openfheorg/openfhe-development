@@ -36,8 +36,6 @@
 #define PROFILE  // turns on the reporting of timing results
 
 #include "openfhe.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -55,9 +53,6 @@ int main(int argc, char* argv[]) {
   parameters.SetSecurityLevel(HEStd_NotSet);
   parameters.SetRingDim(2048);
   parameters.SetScalingTechnique(FLEXIBLEAUTO);
-//  parameters.SetScalingTechnique(FIXEDAUTO);
-//  parameters.SetScalingTechnique(FIXEDMANUAL);
-//  parameters.SetNumLargeDigits(3);
   parameters.SetFirstModSize(60);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);

@@ -34,10 +34,6 @@
  */
 
 #include "openfhe.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -68,8 +64,6 @@ int main(int argc, char *argv[]) {
 void RunBGVrnsAdditive() {
   CCParams<CryptoContextBGVRNS> parameters;
   parameters.SetPlaintextModulus(65537);
-//  parameters.SetScalingTechnique(FIXEDAUTO);
-  parameters.SetScalingTechnique(FIXEDMANUAL);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // Enable features that you wish to use
@@ -221,9 +215,6 @@ void RunBFVrns() {
   parameters.SetPlaintextModulus(65537);
   parameters.SetBatchSize(batchSize);
   parameters.SetMultiplicativeDepth(2);
-  parameters.SetDigitSize(30);
-  parameters.SetRingDim(1 << 14);
-  parameters.SetScalingModSize(60);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // enable features that you wish to use
@@ -466,11 +457,6 @@ void RunCKKS() {
   parameters.SetMultiplicativeDepth(3);
   parameters.SetScalingModSize(50);
   parameters.SetBatchSize(batchSize);
-  parameters.SetScalingTechnique(FLEXIBLEAUTO);
-  parameters.SetKeySwitchTechnique(BV);
-  parameters.SetNumLargeDigits(2);
-  parameters.SetFirstModSize(60); // TODO (dsuponit): should this be set from the defaults?
-  parameters.SetDigitSize(5);
 
   CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
   // enable features that you wish to use

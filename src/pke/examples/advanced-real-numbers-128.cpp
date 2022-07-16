@@ -37,8 +37,6 @@
 #define PROFILE
 
 #include "openfhe.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -151,7 +149,7 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
    *    or rescaling.
    */
   if (scalTech == FIXEDAUTO) {
-    std::cout << "\n\n\n ===== ApproxAutoDemo ============= " << std::endl;
+    std::cout << "\n\n\n ===== FixedAutoDemo ============= " << std::endl;
   }
 
   uint32_t batchSize = 8;
@@ -238,7 +236,7 @@ void ManualRescaleDemo(ScalingTechnique scalTech) {
    * Overall, we believe that automatic modulus switching and rescaling make
    * CKKS much easier to use, at least for non-expert users.
    */
-  std::cout << "\n\n\n ===== ApproxRescaleDemo ============= " << std::endl;
+  std::cout << "\n\n\n ===== FixedManualDemo ============= " << std::endl;
 
   uint32_t batchSize = 8;
   CCParams<CryptoContextCKKSRNS> parameters;
@@ -396,7 +394,7 @@ void HybridKeySwitchingDemo1() {
   cc->Enable(LEVELEDSHE);
 
   auto keys = cc->KeyGen();
-  cc->EvalAtIndexKeyGen(keys.secretKey, {1, -2});
+  cc->EvalRotateKeyGen(keys.secretKey, {1, -2});
 
   // Input
   std::vector<double> x = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7};
@@ -408,8 +406,8 @@ void HybridKeySwitchingDemo1() {
 
   TimeVar t;
   TIC(t);
-  auto cRot1 = cc->EvalAtIndex(c, 1);
-  auto cRot2 = cc->EvalAtIndex(cRot1, -2);
+  auto cRot1 = cc->EvalRotate(c, 1);
+  auto cRot2 = cc->EvalRotate(cRot1, -2);
   double time2digits = TOC(t);
   // Take note and compare the runtime to the runtime
   // of the same computation in the next demo.
@@ -516,7 +514,7 @@ void HybridKeySwitchingDemo2() {
   cc->Enable(LEVELEDSHE);
 
   auto keys = cc->KeyGen();
-  cc->EvalAtIndexKeyGen(keys.secretKey, {1, -2});
+  cc->EvalRotateKeyGen(keys.secretKey, {1, -2});
 
   // Input
   std::vector<double> x = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7};
@@ -528,8 +526,8 @@ void HybridKeySwitchingDemo2() {
 
   TimeVar t;
   TIC(t);
-  auto cRot1 = cc->EvalAtIndex(c, 1);
-  auto cRot2 = cc->EvalAtIndex(cRot1, -2);
+  auto cRot1 = cc->EvalRotate(c, 1);
+  auto cRot2 = cc->EvalRotate(cRot1, -2);
   // The runtime here is smaller than in the previous demo.
   double time3digits = TOC(t);
 
@@ -636,7 +634,7 @@ void FastRotationsDemo1() {
   cc->Enable(LEVELEDSHE);
 
   auto keys = cc->KeyGen();
-  cc->EvalAtIndexKeyGen(keys.secretKey, {1, 2, 3, 4, 5, 6, 7});
+  cc->EvalRotateKeyGen(keys.secretKey, {1, 2, 3, 4, 5, 6, 7});
 
   // Input
   std::vector<double> x = {0, 0, 0, 0, 0, 0, 0, 1};
@@ -652,13 +650,13 @@ void FastRotationsDemo1() {
   // and measure the runtime.
   TimeVar t;
   TIC(t);
-  cRot1 = cc->EvalAtIndex(c, 1);
-  cRot2 = cc->EvalAtIndex(c, 2);
-  cRot3 = cc->EvalAtIndex(c, 3);
-  cRot4 = cc->EvalAtIndex(c, 4);
-  cRot5 = cc->EvalAtIndex(c, 5);
-  cRot6 = cc->EvalAtIndex(c, 6);
-  cRot7 = cc->EvalAtIndex(c, 7);
+  cRot1 = cc->EvalRotate(c, 1);
+  cRot2 = cc->EvalRotate(c, 2);
+  cRot3 = cc->EvalRotate(c, 3);
+  cRot4 = cc->EvalRotate(c, 4);
+  cRot5 = cc->EvalRotate(c, 5);
+  cRot6 = cc->EvalRotate(c, 6);
+  cRot7 = cc->EvalRotate(c, 7);
   double timeNoHoisting = TOC(t);
 
   auto cResNoHoist = c + cRot1 + cRot2 + cRot3 + cRot4 + cRot5 + cRot6 + cRot7;
@@ -757,7 +755,7 @@ void FastRotationsDemo2() {
   cc->Enable(LEVELEDSHE);
 
   auto keys = cc->KeyGen();
-  cc->EvalAtIndexKeyGen(keys.secretKey, {1, 2, 3, 4, 5, 6, 7});
+  cc->EvalRotateKeyGen(keys.secretKey, {1, 2, 3, 4, 5, 6, 7});
 
   // Input
   std::vector<double> x = {0, 0, 0, 0, 0, 0, 0, 1};
@@ -773,13 +771,13 @@ void FastRotationsDemo2() {
   // and measure the runtime.
   TimeVar t;
   TIC(t);
-  cRot1 = cc->EvalAtIndex(c, 1);
-  cRot2 = cc->EvalAtIndex(c, 2);
-  cRot3 = cc->EvalAtIndex(c, 3);
-  cRot4 = cc->EvalAtIndex(c, 4);
-  cRot5 = cc->EvalAtIndex(c, 5);
-  cRot6 = cc->EvalAtIndex(c, 6);
-  cRot7 = cc->EvalAtIndex(c, 7);
+  cRot1 = cc->EvalRotate(c, 1);
+  cRot2 = cc->EvalRotate(c, 2);
+  cRot3 = cc->EvalRotate(c, 3);
+  cRot4 = cc->EvalRotate(c, 4);
+  cRot5 = cc->EvalRotate(c, 5);
+  cRot6 = cc->EvalRotate(c, 6);
+  cRot7 = cc->EvalRotate(c, 7);
   double timeNoHoisting = TOC(t);
 
   auto cResNoHoist = c + cRot1 + cRot2 + cRot3 + cRot4 + cRot5 + cRot6 + cRot7;
