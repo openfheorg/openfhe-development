@@ -46,7 +46,7 @@
 using namespace lbcrypto;
 
 
-class UTMultihopPRE : public ::testing::TestWithParam<int> {
+class UTGENERAL_MULTIHOP_PRE : public ::testing::TestWithParam<int> {
  protected:
   void SetUp() {}
 
@@ -212,14 +212,14 @@ class UTMultihopPRE : public ::testing::TestWithParam<int> {
 };
 
 
-TEST_P(UTMultihopPRE, MULTIHOP_PRE_TEST) {
+TEST_P(UTGENERAL_MULTIHOP_PRE, MULTIHOP_PRE_TEST) {
     auto test = GetParam();
     run_demo_pre(test);
 }
 
 int Security_Model_Options[3] = {0,1,2};
 
-INSTANTIATE_TEST_SUITE_P(MULTIHOP_PRE_TEST, UTMultihopPRE, ::testing::ValuesIn(Security_Model_Options));
+INSTANTIATE_TEST_SUITE_P(MULTIHOP_PRE_TEST, UTGENERAL_MULTIHOP_PRE, ::testing::ValuesIn(Security_Model_Options));
 
 /*
 run_demo_pre(0); //IND CPA secure

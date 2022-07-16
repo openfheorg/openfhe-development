@@ -63,7 +63,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE_ReEncrypt {
+struct TEST_CASE_UTGENERAL_REENCRYPT {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
@@ -87,11 +87,11 @@ struct TEST_CASE_ReEncrypt {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE_ReEncrypt>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTGENERAL_REENCRYPT>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE_ReEncrypt& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_REENCRYPT& test) {
     return os << test.toString();
 }
 //===========================================================================================================
@@ -100,29 +100,29 @@ const usint BATCH    = 16;
 const usint SCALE    = 60;
 const usint DSIZ     = 20;
 // clang-format off
-static std::vector<TEST_CASE_ReEncrypt> testCases = {
-    // TestType,  Descr, Scheme,        RDim, MultDepth, SModSize, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod, StdDev,  EvalAddCt, EvalMultCt, KSCt, MultTech,         EncTech
-    { RE_ENCRYPT, "01", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              STANDARD}, },
-    { RE_ENCRYPT, "02", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              STANDARD}, },
-    { RE_ENCRYPT, "03", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             STANDARD}, },
-    { RE_ENCRYPT, "04", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             STANDARD}, },
-    { RE_ENCRYPT, "05", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        STANDARD}, },
-    { RE_ENCRYPT, "06", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        STANDARD}, },
-    { RE_ENCRYPT, "07", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, STANDARD}, },
-    { RE_ENCRYPT, "08", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, STANDARD}, },
-    { RE_ENCRYPT, "09", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              EXTENDED},   },
-    { RE_ENCRYPT, "10", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPS,              EXTENDED},   },
-    { RE_ENCRYPT, "11", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             EXTENDED},   },
-    { RE_ENCRYPT, "12", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, BEHZ,             EXTENDED},   },
-    { RE_ENCRYPT, "13", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        EXTENDED},   },
-    { RE_ENCRYPT, "14", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQ,        EXTENDED},   },
-    { RE_ENCRYPT, "15", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, EXTENDED},   },
-    { RE_ENCRYPT, "16", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      2,          DFLT, HPSPOVERQLEVELED, EXTENDED},   },
+static std::vector<TEST_CASE_UTGENERAL_REENCRYPT> testCases = {
+    // TestType,  Descr, Scheme,        RDim, MultDepth, SModSize, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod, StdDev,  EvalAddCt, KSCt, MultTech,         EncTech
+    { RE_ENCRYPT, "01", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPS,              STANDARD}, },
+    { RE_ENCRYPT, "02", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPS,              STANDARD}, },
+    { RE_ENCRYPT, "03", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, BEHZ,             STANDARD}, },
+    { RE_ENCRYPT, "04", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, BEHZ,             STANDARD}, },
+    { RE_ENCRYPT, "05", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPSPOVERQ,        STANDARD}, },
+    { RE_ENCRYPT, "06", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPSPOVERQ,        STANDARD}, },
+    { RE_ENCRYPT, "07", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD}, },
+    { RE_ENCRYPT, "08", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD}, },
+    { RE_ENCRYPT, "09", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPS,              EXTENDED},   },
+    { RE_ENCRYPT, "10", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPS,              EXTENDED},   },
+    { RE_ENCRYPT, "11", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, BEHZ,             EXTENDED},   },
+    { RE_ENCRYPT, "12", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, BEHZ,             EXTENDED},   },
+    { RE_ENCRYPT, "13", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPSPOVERQ,        EXTENDED},   },
+    { RE_ENCRYPT, "14", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPSPOVERQ,        EXTENDED},   },
+    { RE_ENCRYPT, "15", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED},   },
+    { RE_ENCRYPT, "16", {BFVRNS_SCHEME, DFLT, DFLT,      SCALE,    DSIZ, BATCH,   GAUSSIAN,        DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    PTMOD, DFLT,    DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED},   },
     // ==========================================
 };
 // clang-format on
 
-class ReEncrypt : public ::testing::TestWithParam<TEST_CASE_ReEncrypt> {
+class UTGENERAL_REENCRYPT : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_REENCRYPT> {
     using Element = DCRTPoly;
 
 protected:
@@ -132,7 +132,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void ReEncryption(const TEST_CASE_ReEncrypt& testData, const std::string& failmsg = std::string()) {
+    void ReEncryption(const TEST_CASE_UTGENERAL_REENCRYPT& testData, const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -232,12 +232,12 @@ protected:
 };
 
 //===========================================================================================================
-TEST_P(ReEncrypt, PRE) {
+TEST_P(UTGENERAL_REENCRYPT, PRE) {
     setupSignals();
     auto test = GetParam();
     if (test.testCaseType == RE_ENCRYPT)
         ReEncryption(test, test.buildTestName());
 }
 
-INSTANTIATE_TEST_SUITE_P(UnitTests, ReEncrypt, ::testing::ValuesIn(testCases), testName);
+INSTANTIATE_TEST_SUITE_P(UnitTests, UTGENERAL_REENCRYPT, ::testing::ValuesIn(testCases), testName);
 
