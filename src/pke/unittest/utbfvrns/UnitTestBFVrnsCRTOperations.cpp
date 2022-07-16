@@ -163,26 +163,16 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
 
 // TODO (dsuponit): review and fix multiple errors in this file
 TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
+    CCParams<CryptoContextBFVRNS> parameters;
+    parameters.SetPlaintextModulus(65537);
+    parameters.SetRingDim(8);
+    parameters.SetMultiplicativeDepth(2);
+    parameters.SetDigitSize(20);
+    parameters.SetBatchSize(8);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetMultiplicationTechnique(HPSPOVERQ);
 
-    UnitTestCCParams parameters;
-    parameters.schemeId = BFVRNS_SCHEME;
-    parameters.plaintextModulus = 65537;
-    parameters.standardDeviation = 3.19;
-    parameters.maxRelinSkDeg = 2;
-    parameters.scalTech = NORESCALE;
-    parameters.numLargeDigits = 0;
-    parameters.multiplicativeDepth = 2;
-    parameters.scalingModSize = 60;
-    parameters.ksTech = BV;
-    parameters.digitSize = 20;
-    parameters.securityLevel = HEStd_NotSet;
-    parameters.ringDimension = 8;
-    parameters.firstModSize = 60;
-    parameters.batchSize = 8;
-    parameters.secretKeyDist = UNIFORM_TERNARY;
-    parameters.multiplicationTechnique = HPSPOVERQ;
-    
-    CryptoContext<Element> cc(UnitTestGenerateContext(parameters));
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> params =
         cc->GetCryptoParameters()->GetElementParams();
