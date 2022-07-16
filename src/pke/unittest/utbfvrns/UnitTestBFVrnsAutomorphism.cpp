@@ -48,22 +48,22 @@ using namespace lbcrypto;
 
 namespace {
 class UTBFVRNS_AUTOMORPHISM : public ::testing::Test {
- protected:
-  void SetUp() {}
+protected:
+    void SetUp() {}
 
-  void TearDown() {
-    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-  }
+    void TearDown() {
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    }
 
- public:
+public:
 };
 
-const std::vector<int64_t> vector8  {1, 2, 3, 4, 5, 6, 7, 8};
-const std::vector<int64_t> vector10 {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-const std::vector<int64_t> vectorFailure {1, 2, 3, 4};
-const std::vector<usint> initIndexList {3, 5, 7, 9, 11, 13, 15};
+const std::vector<int64_t> vector8{1, 2, 3, 4, 5, 6, 7, 8};
+const std::vector<int64_t> vector10{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+const std::vector<int64_t> vectorFailure{1, 2, 3, 4};
+const std::vector<usint> initIndexList{3, 5, 7, 9, 11, 13, 15};
 const usint invalidIndexAutomorphism = 4;
-const int64_t vector8Sum = std::accumulate(vector8.begin(), vector8.end(), int64_t(0)); // 36
+const int64_t vector8Sum             = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));  // 36
 
 enum TEST_ESTIMATED_RESULT {
     SUCCESS,
@@ -76,127 +76,125 @@ enum TEST_ESTIMATED_RESULT {
     NO_KEY_GEN_CALL
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
 //================================================================================================
 
 // declaration for Automorphism Test on BFVrns scheme with polynomial operation
 // in power of 2 cyclotomics.
-std::vector<int64_t> BFVrnsAutomorphismPackedArray(usint i,
-                                                   TEST_ESTIMATED_RESULT testResult = SUCCESS) {
-  using Element = DCRTPoly;
-  CCParams<CryptoContextBFVRNS> parameters;
-  parameters.SetPlaintextModulus(65537);
-  parameters.SetStandardDeviation(4);
-  parameters.SetScalingModSize(60);
+std::vector<int64_t> BFVrnsAutomorphismPackedArray(usint i, TEST_ESTIMATED_RESULT testResult = SUCCESS) {
+    using Element = DCRTPoly;
+    CCParams<CryptoContextBFVRNS> parameters;
+    parameters.SetPlaintextModulus(65537);
+    parameters.SetStandardDeviation(4);
+    parameters.SetScalingModSize(60);
 
-  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-  cc->Enable(PKE);
-  cc->Enable(KEYSWITCH);
-  cc->Enable(LEVELEDSHE);
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
 
-  // Initialize the public key containers.
-  KeyPair<Element> kp = cc->KeyGen();
+    // Initialize the public key containers.
+    KeyPair<Element> kp = cc->KeyGen();
 
-  i = (INVALID_INDEX == testResult) ?  invalidIndexAutomorphism : i;
-  std::vector<int64_t> inputVec = (INVALID_INPUT_DATA == testResult) ? vectorFailure : vector8;
-  Plaintext intArray = cc->MakePackedPlaintext(inputVec);
+    i                             = (INVALID_INDEX == testResult) ? invalidIndexAutomorphism : i;
+    std::vector<int64_t> inputVec = (INVALID_INPUT_DATA == testResult) ? vectorFailure : vector8;
+    Plaintext intArray            = cc->MakePackedPlaintext(inputVec);
 
-  Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testResult) ?
-      cc->Encrypt(PublicKey<Element>(nullptr), intArray) : cc->Encrypt(kp.publicKey, intArray);
+    Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testResult) ?
+                                         cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
+                                         cc->Encrypt(kp.publicKey, intArray);
 
-  std::vector<usint> indexList(initIndexList);
+    std::vector<usint> indexList(initIndexList);
 
-  auto evalKeys = (INVALID_PRIVATE_KEY == testResult) ?
-    cc->EvalAutomorphismKeyGen(PrivateKey<Element>(nullptr), indexList) : cc->EvalAutomorphismKeyGen(kp.secretKey, indexList);
+    auto evalKeys = (INVALID_PRIVATE_KEY == testResult) ?
+                        cc->EvalAutomorphismKeyGen(PrivateKey<Element>(nullptr), indexList) :
+                        cc->EvalAutomorphismKeyGen(kp.secretKey, indexList);
 
-  std::map<usint, EvalKey<Element>> emptyEvalKeys;
-  Ciphertext<Element> p1 = (INVALID_EVAL_KEY == testResult) ?
-    cc->EvalAutomorphism(ciphertext, i, emptyEvalKeys) :
-    cc->EvalAutomorphism(ciphertext, i, *evalKeys);
+    std::map<usint, EvalKey<Element>> emptyEvalKeys;
+    Ciphertext<Element> p1 = (INVALID_EVAL_KEY == testResult) ? cc->EvalAutomorphism(ciphertext, i, emptyEvalKeys) :
+                                                                cc->EvalAutomorphism(ciphertext, i, *evalKeys);
 
-  Plaintext intArrayNew;
-  cc->Decrypt(kp.secretKey, p1, &intArrayNew);
+    Plaintext intArrayNew;
+    cc->Decrypt(kp.secretKey, p1, &intArrayNew);
 
-  return intArrayNew->GetPackedValue();
+    return intArrayNew->GetPackedValue();
 }
 
-
 TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2) {
-  PackedEncoding::Destroy();
+    PackedEncoding::Destroy();
 
-  for (auto index : initIndexList) {
-    auto morphedVector = BFVrnsAutomorphismPackedArray(index);
-    EXPECT_TRUE(CheckAutomorphism(morphedVector, vector8));
-  }
+    for (auto index : initIndexList) {
+        auto morphedVector = BFVrnsAutomorphismPackedArray(index);
+        EXPECT_TRUE(CheckAutomorphism(morphedVector, vector8));
+    }
 }
 
 TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2_INVALID_INPUT_DATA) {
-  PackedEncoding::Destroy();
+    PackedEncoding::Destroy();
 
-  for (auto index : initIndexList) {
-    auto morphedVector = BFVrnsAutomorphismPackedArray(index, INVALID_INPUT_DATA);
-    EXPECT_FALSE(CheckAutomorphism(morphedVector, vector8));
-  }
+    for (auto index : initIndexList) {
+        auto morphedVector = BFVrnsAutomorphismPackedArray(index, INVALID_INPUT_DATA);
+        EXPECT_FALSE(CheckAutomorphism(morphedVector, vector8));
+    }
 }
 
 TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2_INVALID_PRIVATE_KEY) {
-  PackedEncoding::Destroy();
+    PackedEncoding::Destroy();
 
-  try {
-    for (auto index : initIndexList) {
-      auto morphedVector = BFVrnsAutomorphismPackedArray(index, INVALID_PRIVATE_KEY);
-      EXPECT_EQ(0, 1);
+    try {
+        for (auto index : initIndexList) {
+            auto morphedVector = BFVrnsAutomorphismPackedArray(index, INVALID_PRIVATE_KEY);
+            EXPECT_EQ(0, 1);
+        }
     }
-  }
-  catch(const std::exception& e) {
-    //std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_PRIVATE_KEY exception: " << e.what() << std::endl;
-    EXPECT_EQ(1, 1);
-  }
+    catch (const std::exception& e) {
+        // std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_PRIVATE_KEY exception: " << e.what() << std::endl;
+        EXPECT_EQ(1, 1);
+    }
 }
 
 TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2_INVALID_PUBLIC_KEY) {
-  PackedEncoding::Destroy();
+    PackedEncoding::Destroy();
 
-  try {
-    for (auto index : initIndexList) {
-      auto morphedVector = BFVrnsAutomorphismPackedArray(index, INVALID_PUBLIC_KEY);
-      EXPECT_EQ(0, 1);
+    try {
+        for (auto index : initIndexList) {
+            auto morphedVector = BFVrnsAutomorphismPackedArray(index, INVALID_PUBLIC_KEY);
+            EXPECT_EQ(0, 1);
+        }
     }
-  }
-  catch(const std::exception& e) {
-    //std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_PUBLIC_KEY exception: " << e.what() << std::endl;
-    EXPECT_EQ(1, 1);
-  }
+    catch (const std::exception& e) {
+        // std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_PUBLIC_KEY exception: " << e.what() << std::endl;
+        EXPECT_EQ(1, 1);
+    }
 }
 
 TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2_INVALID_EVAL_KEY) {
-  PackedEncoding::Destroy();
+    PackedEncoding::Destroy();
 
-  try {
-    for (auto index : initIndexList) {
-      auto morphedVector = BFVrnsAutomorphismPackedArray(index, INVALID_EVAL_KEY);
-      EXPECT_EQ(0, 1);
+    try {
+        for (auto index : initIndexList) {
+            auto morphedVector = BFVrnsAutomorphismPackedArray(index, INVALID_EVAL_KEY);
+            EXPECT_EQ(0, 1);
+        }
     }
-  }
-  catch(const std::exception& e) {
-    //std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_EVAL_KEY exception: " << e.what() << std::endl;
-    EXPECT_EQ(1, 1);
-  }
+    catch (const std::exception& e) {
+        // std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_EVAL_KEY exception: " << e.what() << std::endl;
+        EXPECT_EQ(1, 1);
+    }
 }
 
 TEST_F(UTBFVRNS_AUTOMORPHISM, Test_BFVrns_Automorphism_PowerOf2_INVALID_INDEX) {
-  PackedEncoding::Destroy();
+    PackedEncoding::Destroy();
 
-  try {
-    for (auto index : initIndexList) {
-      auto morphedVector = BFVrnsAutomorphismPackedArray(index, INVALID_INDEX);
-      EXPECT_EQ(0, 1);
+    try {
+        for (auto index : initIndexList) {
+            auto morphedVector = BFVrnsAutomorphismPackedArray(index, INVALID_INDEX);
+            EXPECT_EQ(0, 1);
+        }
     }
-  }
-  catch(const std::exception& e) {
-    //std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_INDEX exception: " << e.what() << std::endl;
-    EXPECT_EQ(1, 1);
-  }
+    catch (const std::exception& e) {
+        // std::cout << "Test_BFVrns_Automorphism_PowerOf2_INVALID_INDEX exception: " << e.what() << std::endl;
+        EXPECT_EQ(1, 1);
+    }
 }
-

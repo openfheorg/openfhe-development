@@ -39,7 +39,7 @@
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "utils/exception.h"
-#include "globals.h" // for SERIALIZE_PRECOMPUTE
+#include "globals.h"  // for SERIALIZE_PRECOMPUTE
 
 #include "include/gtest/gtest.h"
 #include <iostream>
@@ -47,7 +47,6 @@
 #include <vector>
 #include <cxxabi.h>
 #include "utils/demangle.h"
-
 
 using namespace lbcrypto;
 
@@ -60,15 +59,15 @@ enum TEST_CASE_TYPE {
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
-    case CONTEXT:
-        typeName = "CONTEXT";
-        break;
-    case KEYS_AND_CIPHERTEXTS:
-        typeName = "KEYS_AND_CIPHERTEXTS";
-        break;
-    default:
-        typeName = "UNKNOWN";
-        break;
+        case CONTEXT:
+            typeName = "CONTEXT";
+            break;
+        case KEYS_AND_CIPHERTEXTS:
+            typeName = "KEYS_AND_CIPHERTEXTS";
+            break;
+        default:
+            typeName = "UNKNOWN";
+            break;
     }
     return os << typeName;
 }
@@ -78,7 +77,7 @@ struct TEST_CASE_UTBGVRNS_SER {
     // test case description - MUST BE UNIQUE
     std::string description;
 
-    UnitTestCCParams  params;
+    UnitTestCCParams params;
 
     // additional test case data
     // ........
@@ -114,13 +113,13 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& 
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
-constexpr usint RING_DIM = 512;
-constexpr usint MULT_DEPTH = 3;
-constexpr usint MAX_RELIN_DEG = 2;
-constexpr usint DSIZE = 4;
-constexpr usint PTM = 65537;
-constexpr usint BATCH = 16;
-constexpr usint FIRST_MOD_SIZE = 60;
+constexpr usint RING_DIM        = 512;
+constexpr usint MULT_DEPTH      = 3;
+constexpr usint MAX_RELIN_DEG   = 2;
+constexpr usint DSIZE           = 4;
+constexpr usint PTM             = 65537;
+constexpr usint BATCH           = 16;
+constexpr usint FIRST_MOD_SIZE  = 60;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 // TODO (dsuponit): are there any changes under this condition - #if NATIVEINT != 128?
 
@@ -158,7 +157,7 @@ static std::vector<TEST_CASE_UTBGVRNS_SER> testCases = {
 // clang-format on
 //===========================================================================================================
 class UTBGVRNS_SER : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_SER> {
-    using Element = DCRTPoly;
+    using Element    = DCRTPoly;
     const double eps = EPSILON;
 
 protected:
@@ -176,7 +175,8 @@ protected:
     }
 
     template <typename ST>
-    void TestKeysAndCiphertexts(const TEST_CASE_UTBGVRNS_SER& testData, const ST& sertype, const std::string& failmsg = std::string()) {
+    void TestKeysAndCiphertexts(const TEST_CASE_UTBGVRNS_SER& testData, const ST& sertype,
+                                const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
@@ -229,8 +229,8 @@ protected:
                 EXPECT_EQ(*kp.secretKey, *kpnew.secretKey) << "Secret key mismatch after ser/deser";
             }
             OPENFHE_DEBUG("step 3");
-            std::vector<int64_t> vals = { 1, 3, 5, 7, 9, 2, 4, 6, 8, 11 };
-            Plaintext plaintextShort = cc->MakePackedPlaintext(vals);
+            std::vector<int64_t> vals       = {1, 3, 5, 7, 9, 2, 4, 6, 8, 11};
+            Plaintext plaintextShort        = cc->MakePackedPlaintext(vals);
             Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
 
             OPENFHE_DEBUG("step 4");
@@ -248,10 +248,10 @@ protected:
             plaintextShortNew->SetLength(plaintextShort->GetLength());
 
             std::stringstream bufferShort;
-            bufferShort << "should be: " << plaintextShortNew->GetPackedValue() <<
-                " - we get: " << plaintextShort->GetPackedValue();
+            bufferShort << "should be: " << plaintextShortNew->GetPackedValue()
+                        << " - we get: " << plaintextShort->GetPackedValue();
             checkEquality(plaintextShortNew->GetPackedValue(), plaintextShort->GetPackedValue(), eps,
-                failmsg + " Decrypted serialization test fails" + bufferShort.str());
+                          failmsg + " Decrypted serialization test fails" + bufferShort.str());
 
             OPENFHE_DEBUG("step 6");
             KeyPair<DCRTPoly> kp2 = cc->KeyGen();
@@ -364,7 +364,8 @@ protected:
         }
     }
 
-    void UnitTestKeysAndCiphertexts(const TEST_CASE_UTBGVRNS_SER& testData, const std::string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(const TEST_CASE_UTBGVRNS_SER& testData,
+                                    const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }
@@ -381,5 +382,3 @@ TEST_P(UTBGVRNS_SER, BGVSer) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS_SER, ::testing::ValuesIn(testCases), testName);
-
-

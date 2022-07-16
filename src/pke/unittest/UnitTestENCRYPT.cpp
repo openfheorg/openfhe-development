@@ -41,7 +41,6 @@
 #include <cxxabi.h>
 #include "utils/demangle.h"
 
-
 using namespace lbcrypto;
 
 //===========================================================================================================
@@ -53,15 +52,15 @@ enum TEST_CASE_TYPE {
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
-    case STRING_TEST:
-        typeName = "STRING_TEST";
-        break;
-    case COEF_PACKED_TEST:
-        typeName = "COEF_PACKED_TEST";
-        break;
-    default:
-        typeName = "UNKNOWN";
-        break;
+        case STRING_TEST:
+            typeName = "STRING_TEST";
+            break;
+        case COEF_PACKED_TEST:
+            typeName = "COEF_PACKED_TEST";
+            break;
+        default:
+            typeName = "UNKNOWN";
+            break;
     }
     return os << typeName;
 }
@@ -71,10 +70,9 @@ struct TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT {
     // test case description - MUST BE UNIQUE
     std::string description;
 
-    UnitTestCCParams  params;
+    UnitTestCCParams params;
 
     // additional test case data
-
 
     std::string buildTestName() const {
         std::stringstream ss;
@@ -98,7 +96,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_ENCR
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint BATCH = 16;
+constexpr usint BATCH    = 16;
 constexpr usint BV_DSIZE = 4;
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT> testCases = {
@@ -148,18 +146,19 @@ protected:
 
     void TearDown() {
         // TODO (dsuponit): do we need to remove keys before releasing all context?
-        //CryptoContextImpl<Poly>::ClearEvalMultKeys();
-        //CryptoContextImpl<Poly>::ClearEvalSumKeys();
-        //CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
-        //CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
+        // CryptoContextImpl<Poly>::ClearEvalMultKeys();
+        // CryptoContextImpl<Poly>::ClearEvalSumKeys();
+        // CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        // CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void EncryptionString(const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData, const std::string& failmsg = std::string()) {
+    void EncryptionString(const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData,
+                          const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            std::string value = "You keep using that word. I do not think it means what you think it means";
+            std::string value   = "You keep using that word. I do not think it means what you think it means";
             Plaintext plaintext = CryptoContextImpl<Element>::MakePlaintext(String, cc, value);
 
             KeyPair<Element> kp = cc->KeyGen();
@@ -186,29 +185,31 @@ protected:
         }
     }
 
-    void EncryptionCoefPacked(const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData, const std::string& failmsg = std::string()) {
+    void EncryptionCoefPacked(const TEST_CASE_UTGENERAL_ENCRYPT_DECRYPT& testData,
+                              const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             size_t intSize = cc->GetRingDimension();
-            auto ptm = cc->GetCryptoParameters()->GetPlaintextModulus();
-            int half = ptm / 2;
+            auto ptm       = cc->GetCryptoParameters()->GetPlaintextModulus();
+            int half       = ptm / 2;
 
             std::vector<int64_t> intvec;
-            for (size_t ii = 0; ii < intSize; ii++) intvec.push_back(rand() % half);
+            for (size_t ii = 0; ii < intSize; ii++)
+                intvec.push_back(rand() % half);  // NOLINT
             Plaintext plaintextInt = cc->MakeCoefPackedPlaintext(intvec);
 
             std::vector<int64_t> sintvec;
             for (size_t ii = 0; ii < intSize; ii++) {
-                int rnum = rand() % half;
-                if (rand() % 2) rnum *= -1;
+                int rnum = rand() % half;  // NOLINT
+                if (rand() % 2)            // NOLINT
+                    rnum *= -1;
                 sintvec.push_back(rnum);
             }
             Plaintext plaintextSInt = cc->MakeCoefPackedPlaintext(sintvec);
 
             KeyPair<Element> kp = cc->KeyGen();
-            EXPECT_EQ(kp.good(), true)
-                << failmsg << " key generation for coef packed encrypt/decrypt failed";
+            EXPECT_EQ(kp.good(), true) << failmsg << " key generation for coef packed encrypt/decrypt failed";
 
             Ciphertext<Element> ciphertext4 = cc->Encrypt(kp.publicKey, plaintextInt);
             Plaintext plaintextIntNew;
@@ -246,5 +247,3 @@ TEST_P(UTGENERAL_ENCRYPT_DECRYPT, ENCRYPT) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTGENERAL_ENCRYPT_DECRYPT, ::testing::ValuesIn(testCases), testName);
-
-

@@ -29,7 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-//#include "scheme/bfvrns/bfvrns.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "gen-cryptocontext.h"
 
@@ -51,14 +50,14 @@
 using namespace lbcrypto;
 
 class UTBFVRNS_CRT : public ::testing::Test {
- protected:
-  void SetUp() {}
+protected:
+    void SetUp() {}
 
-  void TearDown() {
-    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-  }
+    void TearDown() {
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    }
 
- public:
+public:
 };
 
 /*
@@ -174,19 +173,16 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> params =
-        cc->GetCryptoParameters()->GetElementParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> params = cc->GetCryptoParameters()->GetElementParams();
 
-    const auto cryptoParamsBFVrns =
-        std::static_pointer_cast<CryptoParametersBFVRNS>(
-            cc->GetCryptoParameters());
+    const auto cryptoParamsBFVrns = std::static_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters());
 
     size_t sizeQ = 2;
 
     // Generate the element "a" of the public key
     DCRTPoly a(params, Format::COEFFICIENT);
 
-    usint m1              = 16;
+    usint m1               = 16;
     NativeInteger modulus0 = NativeInteger("1152921504606846577");
     NativeInteger modulus1 = NativeInteger("1152921504606846097");
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
@@ -199,40 +195,29 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 
     NativePoly poly0(x0p, Format::COEFFICIENT);
     NativePoly poly1(x1p, Format::COEFFICIENT);
-    poly0 = {242947838436205858, 458804958636264704, 813208723994158017, 738376275125875131, 269337450701982501, 633721177525656427, 406635995163024073, 763204304316606329};
-    poly1 = {1024863409567898083, 845721255474383902, 537504300724180111, 1018489837930110795, 112800627588840746, 1119710169440476902, 77894506676832730, 34149187620514595};
+    poly0 = {242947838436205858, 458804958636264704, 813208723994158017, 738376275125875131,
+             269337450701982501, 633721177525656427, 406635995163024073, 763204304316606329};
+    poly1 = {1024863409567898083, 845721255474383902,  537504300724180111, 1018489837930110795,
+             112800627588840746,  1119710169440476902, 77894506676832730,  34149187620514595};
 
     a.SetElementAtIndex(0, poly0);
     a.SetElementAtIndex(1, poly1);
 
-    auto param1 = cryptoParamsBFVrns->GetParamsQlRl(sizeQ - 1);
-    auto param2 = cryptoParamsBFVrns->GetParamsRl(sizeQ - 1);
-    auto param3 = cryptoParamsBFVrns->GetParamsQl(sizeQ - 1);
-    auto param4 = cryptoParamsBFVrns->GetmNegRlQHatInvModq(sizeQ - 1);
-    auto param5 = cryptoParamsBFVrns->GetmNegRlQHatInvModqPrecon(sizeQ - 1);
-    auto param6 = cryptoParamsBFVrns->GetqInvModr();
-    auto param7 = cryptoParamsBFVrns->GetModrBarrettMu();
-    auto param8 = cryptoParamsBFVrns->GetRlHatInvModr(sizeQ - 1);
-    auto param9 = cryptoParamsBFVrns->GetRlHatInvModrPrecon(sizeQ - 1);
+    auto param1  = cryptoParamsBFVrns->GetParamsQlRl(sizeQ - 1);
+    auto param2  = cryptoParamsBFVrns->GetParamsRl(sizeQ - 1);
+    auto param3  = cryptoParamsBFVrns->GetParamsQl(sizeQ - 1);
+    auto param4  = cryptoParamsBFVrns->GetmNegRlQHatInvModq(sizeQ - 1);
+    auto param5  = cryptoParamsBFVrns->GetmNegRlQHatInvModqPrecon(sizeQ - 1);
+    auto param6  = cryptoParamsBFVrns->GetqInvModr();
+    auto param7  = cryptoParamsBFVrns->GetModrBarrettMu();
+    auto param8  = cryptoParamsBFVrns->GetRlHatInvModr(sizeQ - 1);
+    auto param9  = cryptoParamsBFVrns->GetRlHatInvModrPrecon(sizeQ - 1);
     auto param10 = cryptoParamsBFVrns->GetRlHatModq(sizeQ - 1);
     auto param11 = cryptoParamsBFVrns->GetalphaRlModq(sizeQ - 1);
     auto param12 = cryptoParamsBFVrns->GetModqBarrettMu();
     auto param13 = cryptoParamsBFVrns->GetrInv();
-    DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(
-        param1,
-        param2,
-        param3,
-        param4,
-        param5,
-        param6,
-        param7,
-        param8,
-        param9,
-        param10,
-        param11,
-        param12,
-        param13
-    );
+    DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(param1, param2, param3, param4, param5, param6, param7, param8,
+                                                       param9, param10, param11, param12, param13);
 
     a.FastExpandCRTBasisPloverQ(basisPQ);
 
@@ -249,10 +234,14 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     NativePoly ans1(x1p, Format::COEFFICIENT);
     NativePoly ans2(x2p, Format::COEFFICIENT);
     NativePoly ans3(x3p, Format::COEFFICIENT);
-    ans0 = {805568738929329616, 1078766251747424582, 785656076316475932, 599125608237504784, 541576441836927290, 152721755350883626, 574857357780891061, 1081393409810468825};
-    ans1 = {434562805454153184, 312761043978375123, 509951653046700586, 879239171041671808, 385039618723450975, 638710747265582661, 246115869294473638, 352338293114574371};
-    ans2 = {955839852875274614, 186398073668078476, 710455872402389881, 1065981546244475424, 1049296073052489283, 578396240339812092, 26954876970280156, 1019223053257416912};
-    ans3 = {874592295621923164, 585167928946466637, 612704504638527027, 551633899923050545, 758002500979691774, 694035684451390662, 625796987487151016, 96319544173820807};
+    ans0 = {805568738929329616, 1078766251747424582, 785656076316475932, 599125608237504784,
+            541576441836927290, 152721755350883626,  574857357780891061, 1081393409810468825};
+    ans1 = {434562805454153184, 312761043978375123, 509951653046700586, 879239171041671808,
+            385039618723450975, 638710747265582661, 246115869294473638, 352338293114574371};
+    ans2 = {955839852875274614,  186398073668078476, 710455872402389881, 1065981546244475424,
+            1049296073052489283, 578396240339812092, 26954876970280156,  1019223053257416912};
+    ans3 = {874592295621923164, 585167928946466637, 612704504638527027, 551633899923050545,
+            758002500979691774, 694035684451390662, 625796987487151016, 96319544173820807};
 
     EXPECT_EQ(a.GetElementAtIndex(0), ans0);
     EXPECT_EQ(a.GetElementAtIndex(1), ans1);
@@ -261,7 +250,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 }
 
 TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
-
     CCParams<CryptoContextBFVRNS> parameters;
     usint ptm = 1 << 31;
     parameters.SetPlaintextModulus(ptm);
@@ -272,45 +260,42 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> params =
-        cryptoContext->GetCryptoParameters()->GetElementParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> params = cryptoContext->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParamsBFVrns =
-        std::static_pointer_cast<CryptoParametersBFVRNS>(
-            cryptoContext->GetCryptoParameters());
+        std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR =
-        cryptoParamsBFVrns->GetParamsRl();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
-  typename DCRTPoly::DugType dug;
+    typename DCRTPoly::DugType dug;
 
-  // Generate the element "a" of the public key
-  const DCRTPoly a(dug, params, Format::COEFFICIENT);
+    // Generate the element "a" of the public key
+    const DCRTPoly a(dug, params, Format::COEFFICIENT);
 
-  Poly resultA = a.CRTInterpolate();
+    Poly resultA = a.CRTInterpolate();
 
-    const DCRTPoly b = a.SwitchCRTBasis(
-        paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
-        cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
-        cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-        cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
+    const DCRTPoly b =
+        a.SwitchCRTBasis(paramsR, cryptoParamsBFVrns->GetQlHatInvModq(), cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
+                         cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
+                         cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv());
 
     Poly resultB = b.CRTInterpolate();
 
-  BigInteger A0 = resultA.at(0);
+    BigInteger A0 = resultA.at(0);
 
-    if (A0 > (params->GetModulus() >> 1)) A0 = params->GetModulus() - A0;
+    if (A0 > (params->GetModulus() >> 1))
+        A0 = params->GetModulus() - A0;
 
-  BigInteger B0 = resultB.at(0);
+    BigInteger B0 = resultB.at(0);
 
-    if (B0 > (paramsR->GetModulus() >> 1)) B0 = paramsR->GetModulus() - B0;
+    if (B0 > (paramsR->GetModulus() >> 1))
+        B0 = paramsR->GetModulus() - B0;
 
     EXPECT_EQ(A0, B0) << "SwitchCRTBasis produced incorrect results";
 }
 
 // TESTING POLYNOMIAL MULTIPLICATION - ONE TERM IS CONSTANT POLYNOMIAL
 TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
-
     CCParams<CryptoContextBFVRNS> parameters;
     usint ptm = 1 << 15;
     parameters.SetPlaintextModulus(ptm);
@@ -319,130 +304,122 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ =
-      cryptoContext->GetCryptoParameters()->GetElementParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ = cryptoContext->GetCryptoParameters()->GetElementParams();
 
-  const auto cryptoParamsBFVrns =
-      std::static_pointer_cast<CryptoParametersBFVRNS>(
-          cryptoContext->GetCryptoParameters());
+    const auto cryptoParamsBFVrns =
+        std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
-  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR =
-      cryptoParamsBFVrns->GetParamsRl();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
-  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQR =
-      cryptoParamsBFVrns->GetParamsQlRl();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQR = cryptoParamsBFVrns->GetParamsQlRl();
 
-  typename DCRTPoly::DugType dug;
+    typename DCRTPoly::DugType dug;
 
-  // Generate uninform element
-  DCRTPoly a(dug, paramsQ, Format::COEFFICIENT);
+    // Generate uninform element
+    DCRTPoly a(dug, paramsQ, Format::COEFFICIENT);
 
-  // Generate constant element
-  DCRTPoly b(paramsQ, Format::COEFFICIENT, true);
-  b = b + (uint64_t)1976860313128;
-  b = b.Negate();
+    // Generate constant element
+    DCRTPoly b(paramsQ, Format::COEFFICIENT, true);
+    b = b + (uint64_t)1976860313128;
+    b = b.Negate();
 
-  Poly aPoly = a.CRTInterpolate();
+    Poly aPoly = a.CRTInterpolate();
 
-  Poly bPoly = b.CRTInterpolate();
+    Poly bPoly = b.CRTInterpolate();
 
-  a.ExpandCRTBasis(
-      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
-      cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
-      cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
+    a.ExpandCRTBasis(paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+                     cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
+                     cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
+                     cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
-  b.ExpandCRTBasis(
-      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
-      cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
-      cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
+    b.ExpandCRTBasis(paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+                     cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
+                     cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
+                     cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
-  Poly resultExpandedB = b.CRTInterpolate();
+    Poly resultExpandedB = b.CRTInterpolate();
 
-  BigInteger A0 = bPoly.at(0);
+    BigInteger A0 = bPoly.at(0);
 
-  if (A0 > (bPoly.GetModulus() >> 1)) A0 = bPoly.GetModulus() - A0;
+    if (A0 > (bPoly.GetModulus() >> 1))
+        A0 = bPoly.GetModulus() - A0;
 
-  BigInteger B0 = resultExpandedB.at(0);
+    BigInteger B0 = resultExpandedB.at(0);
 
-  if (B0 > (resultExpandedB.GetModulus() >> 1))
-    B0 = resultExpandedB.GetModulus() - B0;
+    if (B0 > (resultExpandedB.GetModulus() >> 1))
+        B0 = resultExpandedB.GetModulus() - B0;
 
-  EXPECT_EQ(A0, B0) << "CRT expansion of polynomial b worked incorrectly";
+    EXPECT_EQ(A0, B0) << "CRT expansion of polynomial b worked incorrectly";
 
-  // a and b are already in evaluation representation after ExpandCRTBasis
+    // a and b are already in evaluation representation after ExpandCRTBasis
 
-  // Polynomial multiplication in Q*S CRT basis
-  DCRTPoly c = a * b;
+    // Polynomial multiplication in Q*S CRT basis
+    DCRTPoly c = a * b;
 
-  c.SetFormat(Format::COEFFICIENT);
+    c.SetFormat(Format::COEFFICIENT);
 
-  Poly resultC = c.CRTInterpolate();
+    Poly resultC = c.CRTInterpolate();
 
-  // Starting multiprecision polynomial multiplication
+    // Starting multiprecision polynomial multiplication
 
-  BigInteger modulus(
-      "1606938044258990275541962092341162602522202993782792836833281");
-  BigInteger root(
-      "859703842628303907691187858658134128225754111718143879712783");
-  usint m = 8192;
+    BigInteger modulus("1606938044258990275541962092341162602522202993782792836833281");
+    BigInteger root("859703842628303907691187858658134128225754111718143879712783");
+    usint m = 8192;
 
-  auto paramsPoly = std::make_shared<ILParams>(m, modulus, root);
+    auto paramsPoly = std::make_shared<ILParams>(m, modulus, root);
 
-  aPoly.SwitchModulus(modulus, root, 0, 0);
-  bPoly.SwitchModulus(modulus, root, 0, 0);
+    aPoly.SwitchModulus(modulus, root, 0, 0);
+    bPoly.SwitchModulus(modulus, root, 0, 0);
 
-  aPoly.SetFormat(Format::EVALUATION);
-  bPoly.SetFormat(Format::EVALUATION);
+    aPoly.SetFormat(Format::EVALUATION);
+    bPoly.SetFormat(Format::EVALUATION);
 
-  // Polynomial multiplication in Q*S CRT basis
-  Poly cPoly = aPoly * bPoly;
+    // Polynomial multiplication in Q*S CRT basis
+    Poly cPoly = aPoly * bPoly;
 
-  cPoly.SetFormat(Format::COEFFICIENT);
+    cPoly.SetFormat(Format::COEFFICIENT);
 
-  // Ended multiprecision multiplication
+    // Ended multiprecision multiplication
 
-  A0 = cPoly.at(0);
+    A0 = cPoly.at(0);
 
-  if (A0 > (cPoly.GetModulus() >> 1)) A0 = cPoly.GetModulus() - A0;
+    if (A0 > (cPoly.GetModulus() >> 1))
+        A0 = cPoly.GetModulus() - A0;
 
-  B0 = resultC.at(0);
+    B0 = resultC.at(0);
 
-  if (B0 > (resultC.GetModulus() >> 1)) B0 = resultC.GetModulus() - B0;
+    if (B0 > (resultC.GetModulus() >> 1))
+        B0 = resultC.GetModulus() - B0;
 
-  EXPECT_EQ(A0, B0)
-      << "Results of multiprecision and CRT multiplication do not match";
+    EXPECT_EQ(A0, B0) << "Results of multiprecision and CRT multiplication do not match";
 
-  DCRTPoly rounded =
-      c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
-          cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(),
-          cryptoParamsBFVrns->GetModrBarrettMu());
+    DCRTPoly rounded =
+        c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
+                        cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
 
-  DCRTPoly roundedQ = rounded.SwitchCRTBasis(
-      paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
-      cryptoParamsBFVrns->GetRlHatInvModrPrecon(),
-      cryptoParamsBFVrns->GetRlHatModq(), cryptoParamsBFVrns->GetalphaRlModq(),
-      cryptoParamsBFVrns->GetModqBarrettMu(), cryptoParamsBFVrns->GetrInv());
+    DCRTPoly roundedQ = rounded.SwitchCRTBasis(paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
+                                               cryptoParamsBFVrns->GetRlHatInvModrPrecon(),
+                                               cryptoParamsBFVrns->GetRlHatModq(), cryptoParamsBFVrns->GetalphaRlModq(),
+                                               cryptoParamsBFVrns->GetModqBarrettMu(), cryptoParamsBFVrns->GetrInv());
 
-  Poly resultRoundedQ = roundedQ.CRTInterpolate();
+    Poly resultRoundedQ = roundedQ.CRTInterpolate();
 
-  Poly roundedMP =
-      cPoly.MultiplyAndRound(BigInteger(ptm), roundedQ.GetModulus());
+    Poly roundedMP = cPoly.MultiplyAndRound(BigInteger(ptm), roundedQ.GetModulus());
 
-  A0 = roundedMP.at(0);
+    A0 = roundedMP.at(0);
 
-  if (A0 > (roundedMP.GetModulus() >> 1)) A0 = roundedMP.GetModulus() - A0;
+    if (A0 > (roundedMP.GetModulus() >> 1))
+        A0 = roundedMP.GetModulus() - A0;
 
-  B0 = resultRoundedQ.at(0);
+    B0 = resultRoundedQ.at(0);
 
-  if (B0 > (resultRoundedQ.GetModulus() >> 1))
-    B0 = resultRoundedQ.GetModulus() - B0;
+    if (B0 > (resultRoundedQ.GetModulus() >> 1))
+        B0 = resultRoundedQ.GetModulus() - B0;
 
-  // uint64_t result = (A0 + BigInteger(2) - B0).ConvertToInt();
+    // uint64_t result = (A0 + BigInteger(2) - B0).ConvertToInt();
 
-  // EXPECT_TRUE((result >= 1) && (result <= 3)) << "Results of multiprecision
-  // and CRT multiplication after scaling + rounding do not match";
+    // EXPECT_TRUE((result >= 1) && (result <= 3)) << "Results of multiprecision
+    // and CRT multiplication after scaling + rounding do not match";
 }
 
 // TESTING POLYNOMIAL MULTIPLICATION - UNIFORM AND GAUSSIAN RANDOM POLYNOMIALS
@@ -455,130 +432,123 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
-  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ =
-      cryptoContext->GetCryptoParameters()->GetElementParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ = cryptoContext->GetCryptoParameters()->GetElementParams();
 
-  const auto cryptoParamsBFVrns =
-      std::static_pointer_cast<CryptoParametersBFVRNS>(
-          cryptoContext->GetCryptoParameters());
+    const auto cryptoParamsBFVrns =
+        std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
-  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR =
-      cryptoParamsBFVrns->GetParamsRl();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
-  const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQR =
-      cryptoParamsBFVrns->GetParamsQlRl();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQR = cryptoParamsBFVrns->GetParamsQlRl();
 
-  typename DCRTPoly::DugType dug;
+    typename DCRTPoly::DugType dug;
 
-  // Generate uninform element
-  DCRTPoly a(dug, paramsQ, Format::COEFFICIENT);
+    // Generate uninform element
+    DCRTPoly a(dug, paramsQ, Format::COEFFICIENT);
 
-  // dgg with distribution parameter 400000
-  typename DCRTPoly::DggType dgg(400000);
+    // dgg with distribution parameter 400000
+    typename DCRTPoly::DggType dgg(400000);
 
-  // Generate Discrete Gaussian element
-  DCRTPoly b(dgg, paramsQ, Format::COEFFICIENT);
+    // Generate Discrete Gaussian element
+    DCRTPoly b(dgg, paramsQ, Format::COEFFICIENT);
 
-  Poly aPoly = a.CRTInterpolate();
+    Poly aPoly = a.CRTInterpolate();
 
-  Poly bPoly = b.CRTInterpolate();
+    Poly bPoly = b.CRTInterpolate();
 
-  a.ExpandCRTBasis(
-      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
-      cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
-      cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
+    a.ExpandCRTBasis(paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+                     cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
+                     cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
+                     cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
-  b.ExpandCRTBasis(
-      paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
-      cryptoParamsBFVrns->GetQlHatInvModqPrecon(),
-      cryptoParamsBFVrns->GetQlHatModr(), cryptoParamsBFVrns->GetalphaQlModr(),
-      cryptoParamsBFVrns->GetModrBarrettMu(), cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
+    b.ExpandCRTBasis(paramsQR, paramsR, cryptoParamsBFVrns->GetQlHatInvModq(),
+                     cryptoParamsBFVrns->GetQlHatInvModqPrecon(), cryptoParamsBFVrns->GetQlHatModr(),
+                     cryptoParamsBFVrns->GetalphaQlModr(), cryptoParamsBFVrns->GetModrBarrettMu(),
+                     cryptoParamsBFVrns->GetqInv(), Format::EVALUATION);
 
-  Poly resultExpandedB = b.CRTInterpolate();
+    Poly resultExpandedB = b.CRTInterpolate();
 
-  BigInteger A0 = bPoly.at(0);
+    BigInteger A0 = bPoly.at(0);
 
-  if (A0 > (bPoly.GetModulus() >> 1)) A0 = bPoly.GetModulus() - A0;
+    if (A0 > (bPoly.GetModulus() >> 1))
+        A0 = bPoly.GetModulus() - A0;
 
-  BigInteger B0 = resultExpandedB.at(0);
+    BigInteger B0 = resultExpandedB.at(0);
 
-  if (B0 > (resultExpandedB.GetModulus() >> 1))
-    B0 = resultExpandedB.GetModulus() - B0;
+    if (B0 > (resultExpandedB.GetModulus() >> 1))
+        B0 = resultExpandedB.GetModulus() - B0;
 
-  EXPECT_EQ(A0, B0) << "CRT expansion of polynomial b worked incorrectly";
+    EXPECT_EQ(A0, B0) << "CRT expansion of polynomial b worked incorrectly";
 
-  // a and b are already in evaluation representation after ExpandCRTBasis
+    // a and b are already in evaluation representation after ExpandCRTBasis
 
-  // Polynomial multiplication in Q*S CRT basis
-  DCRTPoly c = a * b;
+    // Polynomial multiplication in Q*S CRT basis
+    DCRTPoly c = a * b;
 
-  c.SetFormat(Format::COEFFICIENT);
+    c.SetFormat(Format::COEFFICIENT);
 
-  Poly resultC = c.CRTInterpolate();
+    Poly resultC = c.CRTInterpolate();
 
-  // Starting multiprecision polynomial multiplication
+    // Starting multiprecision polynomial multiplication
 
-  BigInteger modulus(
-      "1606938044258990275541962092341162602522202993782792836833281");
-  BigInteger root(
-      "859703842628303907691187858658134128225754111718143879712783");
-  usint m = 8192;
+    BigInteger modulus("1606938044258990275541962092341162602522202993782792836833281");
+    BigInteger root("859703842628303907691187858658134128225754111718143879712783");
+    usint m = 8192;
 
-  auto paramsPoly = std::make_shared<ILParams>(m, modulus, root);
+    auto paramsPoly = std::make_shared<ILParams>(m, modulus, root);
 
-  aPoly.SwitchModulus(modulus, root, 0, 0);
-  bPoly.SwitchModulus(modulus, root, 0, 0);
+    aPoly.SwitchModulus(modulus, root, 0, 0);
+    bPoly.SwitchModulus(modulus, root, 0, 0);
 
-  aPoly.SetFormat(Format::EVALUATION);
-  bPoly.SetFormat(Format::EVALUATION);
+    aPoly.SetFormat(Format::EVALUATION);
+    bPoly.SetFormat(Format::EVALUATION);
 
-  // Polynomial multiplication in Q*S CRT basis
-  Poly cPoly = aPoly * bPoly;
+    // Polynomial multiplication in Q*S CRT basis
+    Poly cPoly = aPoly * bPoly;
 
-  cPoly.SetFormat(Format::COEFFICIENT);
+    cPoly.SetFormat(Format::COEFFICIENT);
 
-  // Ended multiprecision multiplication
+    // Ended multiprecision multiplication
 
-  A0 = cPoly.at(0);
+    A0 = cPoly.at(0);
 
-  if (A0 > (cPoly.GetModulus() >> 1)) A0 = cPoly.GetModulus() - A0;
+    if (A0 > (cPoly.GetModulus() >> 1))
+        A0 = cPoly.GetModulus() - A0;
 
-  B0 = resultC.at(0);
+    B0 = resultC.at(0);
 
-  if (B0 > (resultC.GetModulus() >> 1)) B0 = resultC.GetModulus() - B0;
+    if (B0 > (resultC.GetModulus() >> 1))
+        B0 = resultC.GetModulus() - B0;
 
-  //TODO (andrey) fix this part of the test
-//  EXPECT_EQ(A0, B0)
-//      << "Results of multiprecision and CRT multiplication do not match";
+    // TODO (andrey) fix this part of the test
+    //  EXPECT_EQ(A0, B0)
+    //      << "Results of multiprecision and CRT multiplication do not match";
 
-  DCRTPoly rounded =
-      c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
-          cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(),
-          cryptoParamsBFVrns->GetModrBarrettMu());
+    DCRTPoly rounded =
+        c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
+                        cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
 
-  DCRTPoly roundedQ = rounded.SwitchCRTBasis(
-      paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
-      cryptoParamsBFVrns->GetRlHatInvModrPrecon(),
-      cryptoParamsBFVrns->GetRlHatModq(), cryptoParamsBFVrns->GetalphaRlModq(),
-      cryptoParamsBFVrns->GetModqBarrettMu(), cryptoParamsBFVrns->GetrInv());
+    DCRTPoly roundedQ = rounded.SwitchCRTBasis(paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
+                                               cryptoParamsBFVrns->GetRlHatInvModrPrecon(),
+                                               cryptoParamsBFVrns->GetRlHatModq(), cryptoParamsBFVrns->GetalphaRlModq(),
+                                               cryptoParamsBFVrns->GetModqBarrettMu(), cryptoParamsBFVrns->GetrInv());
 
-  Poly resultRoundedQ = roundedQ.CRTInterpolate();
+    Poly resultRoundedQ = roundedQ.CRTInterpolate();
 
-  Poly roundedMP =
-      cPoly.MultiplyAndRound(BigInteger(ptm), roundedQ.GetModulus());
+    Poly roundedMP = cPoly.MultiplyAndRound(BigInteger(ptm), roundedQ.GetModulus());
 
-  A0 = roundedMP.at(0);
+    A0 = roundedMP.at(0);
 
-  if (A0 > (roundedMP.GetModulus() >> 1)) A0 = roundedMP.GetModulus() - A0;
+    if (A0 > (roundedMP.GetModulus() >> 1))
+        A0 = roundedMP.GetModulus() - A0;
 
-  B0 = resultRoundedQ.at(0);
+    B0 = resultRoundedQ.at(0);
 
-  if (B0 > (resultRoundedQ.GetModulus() >> 1))
-    B0 = resultRoundedQ.GetModulus() - B0;
+    if (B0 > (resultRoundedQ.GetModulus() >> 1))
+        B0 = resultRoundedQ.GetModulus() - B0;
 
-  // uint64_t result = (A0 + BigInteger(2) - B0).ConvertToInt();
+    // uint64_t result = (A0 + BigInteger(2) - B0).ConvertToInt();
 
-  // EXPECT_TRUE((result >= 1) && (result <= 3)) <<  "Results of multiprecision
-  // and CRT multiplication after scaling + rounding do not match";
+    // EXPECT_TRUE((result >= 1) && (result <= 3)) <<  "Results of multiprecision
+    // and CRT multiplication after scaling + rounding do not match";
 }

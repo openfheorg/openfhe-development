@@ -44,7 +44,6 @@
 #include <iterator>
 #include "utils/demangle.h"
 
-
 using namespace lbcrypto;
 
 //===========================================================================================================
@@ -53,27 +52,26 @@ enum TEST_CASE_TYPE {
     BOOTSTRAP_EDGE,
     BOOTSTRAP_SPARSE,
     BOOTSTRAP_KEY_SWITCH,
-
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
-    case BOOTSTRAP_FULL:
-        typeName = "BOOTSTRAP_FULL";
-        break;
-    case BOOTSTRAP_EDGE:
-        typeName = "BOOTSTRAP_EDGE";
-        break;
-    case BOOTSTRAP_SPARSE:
-        typeName = "BOOTSTRAP_SPARSE";
-        break;
-    case BOOTSTRAP_KEY_SWITCH:
-        typeName = "BOOTSTRAP_KEY_SWITCH";
-        break;
-    default:
-        typeName = "UNKNOWN";
-        break;
+        case BOOTSTRAP_FULL:
+            typeName = "BOOTSTRAP_FULL";
+            break;
+        case BOOTSTRAP_EDGE:
+            typeName = "BOOTSTRAP_EDGE";
+            break;
+        case BOOTSTRAP_SPARSE:
+            typeName = "BOOTSTRAP_SPARSE";
+            break;
+        case BOOTSTRAP_KEY_SWITCH:
+            typeName = "BOOTSTRAP_KEY_SWITCH";
+            break;
+        default:
+            typeName = "UNKNOWN";
+            break;
     }
     return os << typeName;
 }
@@ -83,7 +81,7 @@ struct TEST_CASE_UTCKKSRNS_BOOT {
     // test case description - MUST BE UNIQUE
     std::string description;
 
-    UnitTestCCParams  params;
+    UnitTestCCParams params;
 
     // additional test case data
     // ........
@@ -113,11 +111,11 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_BOOT
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr uint32_t MULT_DEPTH = 25;
-constexpr uint32_t RDIM = 512;
+constexpr uint32_t MULT_DEPTH   = 25;
+constexpr uint32_t RDIM         = 512;
 constexpr uint32_t NUM_LRG_DIGS = 3;
 
-#if NATIVEINT==128
+#if NATIVEINT == 128
 constexpr uint32_t SMODSIZE = 78;
 constexpr uint32_t FMODSIZE = 89;
 #else
@@ -243,7 +241,6 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
 
     // The precision after which we consider two values equal.
     // This is necessary because CKKS works for approximate numbers.
-    //const double eps = EPSILON;
     const double eps = 0.0001;
 
 protected:
@@ -257,21 +254,19 @@ protected:
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            //const auto& cryptoParams = cc->GetCryptoParameters();
-            //uint32_t slots = (cryptoParams->GetElementParams()->GetRingDimension() / 2);
-
             cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
 
             auto keyPair = cc->KeyGen();
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
-            cc->EvalAtIndexKeyGen(keyPair.secretKey, { 6 });
+            cc->EvalAtIndexKeyGen(keyPair.secretKey, {6});
             cc->EvalMultKeyGen(keyPair.secretKey);
 
-            std::vector<std::complex<double>> input(Fill({ 0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888 }, testData.slots));
+            std::vector<std::complex<double>> input(
+                Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
             size_t encodedLength = input.size();
 
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, testData.slots);
-            auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
             auto ciphertextAfter = cc->EvalBootstrap(ciphertext1);
 
             Plaintext result;
@@ -279,7 +274,7 @@ protected:
             result->SetLength(encodedLength);
             plaintext1->SetLength(encodedLength);
             checkEquality(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue(), eps,
-                failmsg + " Bootstrapping for fully packed ciphertexts fails");
+                          failmsg + " Bootstrapping for fully packed ciphertexts fails");
 
             auto temp6 = input;
             std::rotate(temp6.begin(), temp6.begin() + 6, temp6.end());
@@ -289,7 +284,7 @@ protected:
             cc->Decrypt(keyPair.secretKey, ciphertext6, &result6);
             result6->SetLength(encodedLength);
             checkEquality(result6->GetCKKSPackedValue(), temp6, eps,
-                failmsg + " EvalAtIndex after Bootstrapping for fully packed ciphertexts fails");
+                          failmsg + " EvalAtIndex after Bootstrapping for fully packed ciphertexts fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -304,81 +299,81 @@ protected:
         }
     }
 
-    void UnitTest_Bootstrap_KeySwitching(const TEST_CASE_UTCKKSRNS_BOOT& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_Bootstrap_KeySwitching(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                         const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             // We set the cout precision to 8 decimal digits for a nicer output.
             // If you want to see the error/noise introduced by CKKS, bump it up
             // to 15 and it should become visible.
-            //std::cout.precision(8);
+            // std::cout.precision(8);
             auto keyPair = cc->KeyGen();
-            cc->EvalAtIndexKeyGen(keyPair.secretKey, { 1 });
+            cc->EvalAtIndexKeyGen(keyPair.secretKey, {1});
 
-            double eps = 0.00000001;
-            std::vector<std::complex<double>> a = { 0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0 };
-            std::vector<std::complex<double>> b = { 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0 };
-            Plaintext plaintext_a = cc->MakeCKKSPackedPlaintext(a);
-            auto comp_a = plaintext_a->GetCKKSPackedValue();
-            Plaintext plaintext_b = cc->MakeCKKSPackedPlaintext(b);
-            auto comp_b = plaintext_b->GetCKKSPackedValue();
+            double eps                          = 0.00000001;
+            std::vector<std::complex<double>> a = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
+            std::vector<std::complex<double>> b = {0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
+            Plaintext plaintext_a               = cc->MakeCKKSPackedPlaintext(a);
+            auto comp_a                         = plaintext_a->GetCKKSPackedValue();
+            Plaintext plaintext_b               = cc->MakeCKKSPackedPlaintext(b);
+            auto comp_b                         = plaintext_b->GetCKKSPackedValue();
 
             // Test for KeySwitchExt + KeySwitchDown
-            //std::cout << "Input: " << plaintext_a << std::endl;
             auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
-            ciphertext = cc->KeySwitchExt(ciphertext, true);
-            ciphertext = cc->KeySwitchDown(ciphertext);
+            ciphertext      = cc->KeySwitchExt(ciphertext, true);
+            ciphertext      = cc->KeySwitchDown(ciphertext);
 
             Plaintext result;
             cc->Decrypt(keyPair.secretKey, ciphertext, &result);
             result->SetLength(a.size());
             checkEquality(result->GetCKKSPackedValue(), comp_a, eps,
-                failmsg + " Bootstrapping for KeySwitchExt + KeySwitchDown failed");
+                          failmsg + " Bootstrapping for KeySwitchExt + KeySwitchDown failed");
 
             // Test for EvalFastRotationExt
-            ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
+            ciphertext  = cc->Encrypt(keyPair.publicKey, plaintext_a);
             auto digits = cc->EvalFastRotationPrecompute(ciphertext);
-            ciphertext = cc->EvalFastRotationExt(ciphertext, 1, digits, true);
-            ciphertext = cc->KeySwitchDown(ciphertext);
+            ciphertext  = cc->EvalFastRotationExt(ciphertext, 1, digits, true);
+            ciphertext  = cc->KeySwitchDown(ciphertext);
 
             cc->Decrypt(keyPair.secretKey, ciphertext, &result);
             result->SetLength(b.size());
             checkEquality(result->GetCKKSPackedValue(), comp_b, eps,
-                failmsg + " Bootstrapping for EvalFastRotationExt failed");
+                          failmsg + " Bootstrapping for EvalFastRotationExt failed");
 
             // Test for KeySwitchExt + KeySwitchDown w/o first element
-            ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
+            ciphertext        = cc->Encrypt(keyPair.publicKey, plaintext_a);
             auto firstCurrent = ciphertext->GetElements()[0];
-            ciphertext = cc->KeySwitchExt(ciphertext, false);
-            ciphertext = cc->KeySwitchDown(ciphertext);
-            auto elements = ciphertext->GetElements();
+            ciphertext        = cc->KeySwitchExt(ciphertext, false);
+            ciphertext        = cc->KeySwitchDown(ciphertext);
+            auto elements     = ciphertext->GetElements();
             elements[0] += firstCurrent;
             ciphertext->SetElements(elements);
 
             cc->Decrypt(keyPair.secretKey, ciphertext, &result);
             result->SetLength(a.size());
             checkEquality(result->GetCKKSPackedValue(), comp_a, eps,
-                failmsg + " Bootstrapping for KeySwitchExt + KeySwitchDown w/o first element failed");
+                          failmsg + " Bootstrapping for KeySwitchExt + KeySwitchDown w/o first element failed");
 
             // Test for EvalFastRotationExt w/o first element
-            ciphertext = cc->Encrypt(keyPair.publicKey, plaintext_a);
+            ciphertext   = cc->Encrypt(keyPair.publicKey, plaintext_a);
             firstCurrent = ciphertext->GetElements()[0];
             // Find the automorphism index that corresponds to rotation index index.
             usint autoIndex = FindAutomorphismIndex2nComplex(1, 4096);
             std::vector<usint> map(4096 / 2);
             PrecomputeAutoMap(4096 / 2, autoIndex, &map);
             firstCurrent = firstCurrent.AutomorphismTransform(autoIndex, map);
-            digits = cc->EvalFastRotationPrecompute(ciphertext);
-            ciphertext = cc->EvalFastRotationExt(ciphertext, 1, digits, false);
-            ciphertext = cc->KeySwitchDown(ciphertext);
-            elements = ciphertext->GetElements();
+            digits       = cc->EvalFastRotationPrecompute(ciphertext);
+            ciphertext   = cc->EvalFastRotationExt(ciphertext, 1, digits, false);
+            ciphertext   = cc->KeySwitchDown(ciphertext);
+            elements     = ciphertext->GetElements();
             elements[0] += firstCurrent;
             ciphertext->SetElements(elements);
 
             cc->Decrypt(keyPair.secretKey, ciphertext, &result);
             result->SetLength(b.size());
             checkEquality(result->GetCKKSPackedValue(), comp_b, eps,
-                failmsg + " Bootstrapping for EvalFastRotationExt w/o first element failed");
+                          failmsg + " Bootstrapping for EvalFastRotationExt w/o first element failed");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -400,18 +395,17 @@ TEST_P(UTCKKSRNS_BOOT, CKKSRNS) {
     auto test = GetParam();
 
     switch (test.testCaseType) {
-    case BOOTSTRAP_FULL:
-    case BOOTSTRAP_EDGE:
-    case BOOTSTRAP_SPARSE:
-        UnitTest_Bootstrap(test, test.buildTestName());
-        break;
-    case BOOTSTRAP_KEY_SWITCH:
-        UnitTest_Bootstrap_KeySwitching(test, test.buildTestName());
-        break;
-    default:
-        break;
+        case BOOTSTRAP_FULL:
+        case BOOTSTRAP_EDGE:
+        case BOOTSTRAP_SPARSE:
+            UnitTest_Bootstrap(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_KEY_SWITCH:
+            UnitTest_Bootstrap_KeySwitching(test, test.buildTestName());
+            break;
+        default:
+            break;
     }
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_BOOT, ::testing::ValuesIn(testCases), testName);
-

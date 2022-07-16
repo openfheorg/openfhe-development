@@ -42,28 +42,26 @@
 #include <cxxabi.h>
 #include "utils/demangle.h"
 
-
 using namespace lbcrypto;
-
 
 //===========================================================================================================
 enum TEST_CASE_TYPE {
-    EVAL_AT_INDX_PACKED_ARRAY,
-    EVAL_SUM_PACKED_ARRAY
+    EVAL_AT_INDX_PACKED_ARRAY = 0,
+    EVAL_SUM_PACKED_ARRAY,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
-    case EVAL_AT_INDX_PACKED_ARRAY:
-        typeName = "EVAL_AT_INDX_PACKED_ARRAY";
-        break;
-    case EVAL_SUM_PACKED_ARRAY:
-        typeName = "EVAL_SUM_PACKED_ARRAY";
-        break;
-    default:
-        typeName = "UNKNOWN_UTCKKSRNS_AUTOMORPHISM";
-        break;
+        case EVAL_AT_INDX_PACKED_ARRAY:
+            typeName = "EVAL_AT_INDX_PACKED_ARRAY";
+            break;
+        case EVAL_SUM_PACKED_ARRAY:
+            typeName = "EVAL_SUM_PACKED_ARRAY";
+            break;
+        default:
+            typeName = "UNKNOWN_UTCKKSRNS_AUTOMORPHISM";
+            break;
     }
     return os << typeName;
 }
@@ -77,7 +75,7 @@ enum TEST_CASE_ERROR {
     INVALID_EVAL_KEY,
     INVALID_INDEX,
     INVALID_BATCH_SIZE,
-    NO_KEY_GEN_CALL
+    NO_KEY_GEN_CALL,
 };
 
 struct TEST_CASE_UTCKKSRNS_AUTOMORPHISM {
@@ -85,7 +83,7 @@ struct TEST_CASE_UTCKKSRNS_AUTOMORPHISM {
     // test case description - MUST BE UNIQUE
     std::string description;
 
-    UnitTestCCParams  params;
+    UnitTestCCParams params;
 
     // additional test case data
     TEST_CASE_ERROR error;
@@ -93,7 +91,6 @@ struct TEST_CASE_UTCKKSRNS_AUTOMORPHISM {
 
     std::string buildTestName() const {
         std::stringstream ss;
-        //std::cout << "======= testCaseType: " << testCaseType << "; description: " << description << std::endl;
         ss << testCaseType << "_" << description;
         return ss.str();
     }
@@ -114,13 +111,13 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_AUTO
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr usint SMODSIZE = 50;
-constexpr usint RING_DIM = 16;
-constexpr usint BATCH = 8;
-constexpr usint MULT_DEPTH = 1;
+constexpr usint SMODSIZE        = 50;
+constexpr usint RING_DIM        = 16;
+constexpr usint BATCH           = 8;
+constexpr usint MULT_DEPTH      = 1;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
-static const std::vector<int32_t> initIndexList{ 3, 5, 7, 9, 11, 13, 15 };
-static const std::vector<int32_t> cornerCaseIndexList{ 0 };
+static const std::vector<int32_t> initIndexList{3, 5, 7, 9, 11, 13, 15};
+static const std::vector<int32_t> cornerCaseIndexList{0};
 
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_AUTOMORPHISM> testCasesUTCKKSRNS_AUTOMORPHISM = {
@@ -189,17 +186,18 @@ static std::vector<TEST_CASE_UTCKKSRNS_AUTOMORPHISM> testCasesUTCKKSRNS_AUTOMORP
 //===========================================================================================================
 
 class UTCKKSRNS_AUTOMORPHISM : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_AUTOMORPHISM> {
-    using Element = DCRTPoly;
+    using Element    = DCRTPoly;
     const double eps = EPSILON;
 
-    const std::vector<int64_t> vector8{ 1, 2, 3, 4, 5, 6, 7, 8 };
-    const std::vector<int64_t> vector10{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    const std::vector<int64_t> vectorFailure{ 1, 2, 3, 4 };
+    const std::vector<int64_t> vector8{1, 2, 3, 4, 5, 6, 7, 8};
+    const std::vector<int64_t> vector10{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    const std::vector<int64_t> vectorFailure{1, 2, 3, 4};
     const usint invalidIndexAutomorphism = 4;
-    const std::vector<std::complex<double>> vectorComplexFailure{ 1.0, 2.0, 3.0, 4.0 };
-    const std::vector<std::complex<double>> vector8Complex{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0 };
-    const std::complex<double> vector8ComplexSum = std::accumulate(vector8Complex.begin(), vector8Complex.end(), std::complex<double>(0)); // 36.0;
-    const int64_t vector8Sum = std::accumulate(vector8.begin(), vector8.end(), int64_t(0)); // 36
+    const std::vector<std::complex<double>> vectorComplexFailure{1.0, 2.0, 3.0, 4.0};
+    const std::vector<std::complex<double>> vector8Complex{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+    const std::complex<double> vector8ComplexSum =
+        std::accumulate(vector8Complex.begin(), vector8Complex.end(), std::complex<double>(0));  // 36.0;
+    const int64_t vector8Sum = std::accumulate(vector8.begin(), vector8.end(), int64_t(0));      // 36
 
 protected:
     void SetUp() {}
@@ -209,8 +207,8 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-
-    void UnitTest_EvalAtIndexPackedArray(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
+    void UnitTest_EvalAtIndexPackedArray(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
+                                         const std::string& failmsg = std::string()) {
         for (auto index : testData.indexList) {
             try {
                 CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -218,11 +216,11 @@ protected:
                 // Initialize the public key containers.
                 KeyPair<Element> kp = cc->KeyGen();
 
-                std::vector<std::complex<double>> inputVec = (INVALID_INPUT_DATA == testData.error) ?
-                    vectorComplexFailure : vector8Complex;
+                std::vector<std::complex<double>> inputVec =
+                    (INVALID_INPUT_DATA == testData.error) ? vectorComplexFailure : vector8Complex;
                 Plaintext intArray = cc->MakeCKKSPackedPlaintext(inputVec);
 
-                std::vector<int32_t> indices{ index, -index };
+                std::vector<int32_t> indices{index, -index};
                 if (NO_KEY_GEN_CALL != testData.error) {
                     if (INVALID_PRIVATE_KEY == testData.error) {
                         cc->EvalAtIndexKeyGen(nullptr, indices);
@@ -233,7 +231,8 @@ protected:
                 }
 
                 Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testData.error) ?
-                    cc->Encrypt(PublicKey<Element>(nullptr), intArray) : cc->Encrypt(kp.publicKey, intArray);
+                                                     cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
+                                                     cc->Encrypt(kp.publicKey, intArray);
 
                 if (INVALID_INDEX == testData.error)
                     index = invalidIndexAutomorphism;
@@ -245,27 +244,94 @@ protected:
 
                 intArrayNew->SetLength(inputVec.size());
 
-
                 std::string errMsg(" for index[" + std::to_string(index) + "]");
                 switch (testData.error) {
-                case SUCCESS:
-                case CORNER_CASES:
-                    // should not fail
-                    checkEquality(intArrayNew->GetCKKSPackedValue(), vector8Complex, eps, errMsg);
-                    break;
-                case INVALID_INPUT_DATA:
-                    // should fail
-                    EXPECT_FALSE(checkEquality(intArrayNew->GetCKKSPackedValue(), vector8Complex)) << errMsg;
-                    break;
-                default:
-                    // make it fail
-                    std::cerr << __func__ << " failed " << errMsg << std::endl;
-                    EXPECT_EQ(0, 1);
-                    break;
+                    case SUCCESS:
+                    case CORNER_CASES:
+                        // should not fail
+                        checkEquality(intArrayNew->GetCKKSPackedValue(), vector8Complex, eps, errMsg);
+                        break;
+                    case INVALID_INPUT_DATA:
+                        // should fail
+                        EXPECT_FALSE(checkEquality(intArrayNew->GetCKKSPackedValue(), vector8Complex)) << errMsg;
+                        break;
+                    default:
+                        // make it fail
+                        std::cerr << __func__ << " failed " << errMsg << std::endl;
+                        EXPECT_EQ(0, 1);
+                        break;
                 }
             }
             catch (std::exception& e) {
                 switch (testData.error) {
+                    case SUCCESS:
+                    case CORNER_CASES:
+                    case INVALID_INPUT_DATA:
+                        std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+                        // make it fail
+                        EXPECT_EQ(0, 1);
+                        break;
+                    default:
+                        EXPECT_EQ(1, 1);
+                        break;
+                }
+            }
+            catch (...) {
+                std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+                std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()"
+                          << std::endl;
+                // make it fail
+                EXPECT_TRUE(0 == 1) << failmsg;
+            }
+        }
+    }
+
+    void UnitTest_EvalSumPackedArray(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData,
+                                     const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            // Initialize the public key containers.
+            KeyPair<Element> kp = cc->KeyGen();
+
+            std::vector<std::complex<double>> inputVec = vector8Complex;
+            Plaintext intArray                         = cc->MakeCKKSPackedPlaintext(inputVec);
+
+            if (NO_KEY_GEN_CALL != testData.error) {
+                if (INVALID_PRIVATE_KEY == testData.error)
+                    cc->EvalSumKeyGen(nullptr);
+                else
+                    cc->EvalSumKeyGen(kp.secretKey);
+            }
+
+            Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testData.error) ?
+                                                 cc->Encrypt(PublicKey<Element>(nullptr), intArray) :
+                                                 cc->Encrypt(kp.publicKey, intArray);
+
+            uint32_t batchSz       = (INVALID_BATCH_SIZE == testData.error) ? (BATCH * 2) : BATCH;
+            Ciphertext<Element> p1 = cc->EvalSum(ciphertext, batchSz);
+
+            Plaintext intArrayNew;
+            cc->Decrypt(kp.secretKey, p1, &intArrayNew);
+
+            switch (testData.error) {
+                case SUCCESS:
+                case CORNER_CASES:
+                    // should not fail
+                    EXPECT_TRUE(checkEquality(intArrayNew->GetCKKSPackedValue()[0], vector8ComplexSum));
+                    break;
+                case INVALID_INPUT_DATA:
+                    // should fail
+                    EXPECT_FALSE(checkEquality(intArrayNew->GetCKKSPackedValue()[0], vector8ComplexSum));
+                    break;
+                default:
+                    // make it fail
+                    EXPECT_EQ(0, 1);
+                    break;
+            }
+        }
+        catch (std::exception& e) {
+            switch (testData.error) {
                 case SUCCESS:
                 case CORNER_CASES:
                 case INVALID_INPUT_DATA:
@@ -276,72 +342,6 @@ protected:
                 default:
                     EXPECT_EQ(1, 1);
                     break;
-                }
-            }
-            catch (...) {
-                std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-                std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-                // make it fail
-                EXPECT_TRUE(0 == 1) << failmsg;
-            }
-        }
-    }
-
-    void UnitTest_EvalSumPackedArray(const TEST_CASE_UTCKKSRNS_AUTOMORPHISM& testData, const std::string& failmsg = std::string()) {
-        try {
-            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
-
-            // Initialize the public key containers.
-            KeyPair<Element> kp = cc->KeyGen();
-
-            std::vector<std::complex<double>> inputVec = vector8Complex;
-            Plaintext intArray = cc->MakeCKKSPackedPlaintext(inputVec);
-
-            if (NO_KEY_GEN_CALL != testData.error)
-            {
-                if (INVALID_PRIVATE_KEY == testData.error)
-                    cc->EvalSumKeyGen(nullptr);
-                else
-                    cc->EvalSumKeyGen(kp.secretKey);
-            }
-
-            Ciphertext<Element> ciphertext = (INVALID_PUBLIC_KEY == testData.error) ?
-                cc->Encrypt(PublicKey<Element>(nullptr), intArray) : cc->Encrypt(kp.publicKey, intArray);
-
-            uint32_t batchSz = (INVALID_BATCH_SIZE == testData.error) ? (BATCH * 2) : BATCH;
-            Ciphertext<Element> p1 = cc->EvalSum(ciphertext, batchSz);
-
-            Plaintext intArrayNew;
-            cc->Decrypt(kp.secretKey, p1, &intArrayNew);
-
-            switch (testData.error) {
-            case SUCCESS:
-            case CORNER_CASES:
-                // should not fail
-                EXPECT_TRUE(checkEquality(intArrayNew->GetCKKSPackedValue()[0], vector8ComplexSum));
-                break;
-            case INVALID_INPUT_DATA:
-                // should fail
-                EXPECT_FALSE(checkEquality(intArrayNew->GetCKKSPackedValue()[0], vector8ComplexSum));
-                break;
-            default:
-                // make it fail
-                EXPECT_EQ(0, 1);
-                break;
-            }
-        }
-        catch (std::exception& e) {
-            switch (testData.error) {
-            case SUCCESS:
-            case CORNER_CASES:
-            case INVALID_INPUT_DATA:
-                std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
-                // make it fail
-                EXPECT_EQ(0, 1);
-                break;
-            default:
-                EXPECT_EQ(1, 1);
-                break;
             }
         }
         catch (...) {
@@ -351,7 +351,6 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
-
 };
 //===========================================================================================================
 TEST_P(UTCKKSRNS_AUTOMORPHISM, Automorphism) {
@@ -359,16 +358,16 @@ TEST_P(UTCKKSRNS_AUTOMORPHISM, Automorphism) {
     auto test = GetParam();
 
     switch (test.testCaseType) {
-    case EVAL_AT_INDX_PACKED_ARRAY:
-        UnitTest_EvalAtIndexPackedArray(test, test.buildTestName());
-        break;
-    case EVAL_SUM_PACKED_ARRAY:
-        UnitTest_EvalSumPackedArray(test, test.buildTestName());
-        break;
-    default:
-        break;
+        case EVAL_AT_INDX_PACKED_ARRAY:
+            UnitTest_EvalAtIndexPackedArray(test, test.buildTestName());
+            break;
+        case EVAL_SUM_PACKED_ARRAY:
+            UnitTest_EvalSumPackedArray(test, test.buildTestName());
+            break;
+        default:
+            break;
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTCKKSRNS_AUTOMORPHISM), testName);
-
+INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_AUTOMORPHISM, ::testing::ValuesIn(testCasesUTCKKSRNS_AUTOMORPHISM),
+                         testName);
