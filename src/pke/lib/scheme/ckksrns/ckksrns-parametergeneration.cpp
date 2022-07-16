@@ -47,103 +47,96 @@ const size_t AUXMODSIZE = 119;
 const size_t AUXMODSIZE = 60;
 #endif
 
-bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
-          std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-          usint numPrimes, usint scaleExp,
-          usint firstModSize,
-          uint32_t numPartQ) const {
+bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                                  usint cyclOrder, usint numPrimes, usint scaleExp, usint firstModSize,
+                                                  uint32_t numPartQ) const {
+    const auto cryptoParamsCKKSRNS = std::static_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
 
-  const auto cryptoParamsCKKSRNS =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
+    KeySwitchTechnique ksTech        = cryptoParamsCKKSRNS->GetKeySwitchTechnique();
+    ScalingTechnique scalTech        = cryptoParamsCKKSRNS->GetScalingTechnique();
+    EncryptionTechnique encTech      = cryptoParamsCKKSRNS->GetEncryptionTechnique();
+    MultiplicationTechnique multTech = cryptoParamsCKKSRNS->GetMultiplicationTechnique();
 
-  KeySwitchTechnique ksTech = cryptoParamsCKKSRNS->GetKeySwitchTechnique();
-  ScalingTechnique scalTech = cryptoParamsCKKSRNS->GetScalingTechnique();
-  EncryptionTechnique encTech = cryptoParamsCKKSRNS->GetEncryptionTechnique();
-  MultiplicationTechnique multTech = cryptoParamsCKKSRNS->GetMultiplicationTechnique();
-
-  usint extraModSize = 0;
-  if (scalTech == FLEXIBLEAUTOEXT) {
-    // TODO: Allow the user to specify this?
-    extraModSize = DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
-  }
-
-  //// HE Standards compliance logic/check
-  SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
-  uint32_t auxBits = AUXMODSIZE;
-  uint32_t n = cyclOrder / 2;
-  uint32_t qBound = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
-  // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
-  if (ksTech == HYBRID) {
-    qBound +=
-        ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits) *
-        auxBits;
-  }
-
-  // GAUSSIAN security constraint
-  DistributionType distType =
-      (cryptoParamsCKKSRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;
-  auto nRLWE = [&](usint q) -> uint32_t {
-    return StdLatticeParm::FindRingDim(distType, stdLevel, q);
-  };
-
-  // Case 1: SecurityLevel specified as HEStd_NotSet -> Do nothing
-  if (stdLevel != HEStd_NotSet) {
-    if (n == 0) {
-      // Case 2: SecurityLevel specified, but ring dimension not specified
-
-      // Choose ring dimension based on security standards
-      n = nRLWE(qBound);
-      cyclOrder = 2 * n;
-    } else {  // if (n!=0)
-      // Case 3: Both SecurityLevel and ring dimension specified
-
-      // Check whether particular selection is standards-compliant
-      auto he_std_n = nRLWE(qBound);
-      if (he_std_n > n) {
-        OPENFHE_THROW(
-            config_error,
-            "The specified ring dimension (" + std::to_string(n) +
-                ") does not comply with HE standards recommendation (" +
-                std::to_string(he_std_n) + ").");
-      }
+    usint extraModSize = 0;
+    if (scalTech == FLEXIBLEAUTOEXT) {
+        // TODO: Allow the user to specify this?
+        extraModSize = DCRT_MODULUS::DEFAULT_EXTRA_MOD_SIZE;
     }
-  } else if (n == 0) {
-    OPENFHE_THROW(
-        config_error,
-        "Please specify the ring dimension or desired security level.");
-  }
-  //// End HE Standards compliance logic/check
 
-  usint dcrtBits = scaleExp;
+    //// HE Standards compliance logic/check
+    SecurityLevel stdLevel = cryptoParamsCKKSRNS->GetStdLevel();
+    uint32_t auxBits       = AUXMODSIZE;
+    uint32_t n             = cyclOrder / 2;
+    uint32_t qBound        = firstModSize + (numPrimes - 1) * scaleExp + extraModSize;
+    // Estimate ciphertext modulus Q bound (in case of GHS/HYBRID P*Q)
+    if (ksTech == HYBRID) {
+        qBound += ceil(ceil(static_cast<double>(qBound) / numPartQ) / auxBits) * auxBits;
+    }
 
-  uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
-  std::vector<NativeInteger> moduliQ(vecSize);
-  std::vector<NativeInteger> rootsQ(vecSize);
+    // GAUSSIAN security constraint
+    DistributionType distType = (cryptoParamsCKKSRNS->GetSecretKeyDist() == GAUSSIAN) ? HEStd_error : HEStd_ternary;
+    auto nRLWE                = [&](usint q) -> uint32_t {
+        return StdLatticeParm::FindRingDim(distType, stdLevel, q);
+    };
 
-  NativeInteger q = FirstPrime<NativeInteger>(dcrtBits, cyclOrder);
-  moduliQ[numPrimes - 1] = q;
-  rootsQ[numPrimes - 1] = RootOfUnity(cyclOrder, moduliQ[numPrimes - 1]);
+    // Case 1: SecurityLevel specified as HEStd_NotSet -> Do nothing
+    if (stdLevel != HEStd_NotSet) {
+        if (n == 0) {
+            // Case 2: SecurityLevel specified, but ring dimension not specified
 
-  NativeInteger qNext = q;
-  NativeInteger qPrev = q;
-  if (numPrimes > 1) {
-    if (scalTech != FLEXIBLEAUTO && scalTech != FLEXIBLEAUTOEXT) {
-      uint32_t cnt = 0;
-      for (usint i = numPrimes - 2; i >= 1; i--) {
-        if ((cnt % 2) == 0) {
-          qPrev = lbcrypto::PreviousPrime(qPrev, cyclOrder);
-          q = qPrev;
-        } else {
-          qNext = lbcrypto::NextPrime(qNext, cyclOrder);
-          q = qNext;
+            // Choose ring dimension based on security standards
+            n         = nRLWE(qBound);
+            cyclOrder = 2 * n;
         }
+        else {  // if (n!=0)
+            // Case 3: Both SecurityLevel and ring dimension specified
 
-        moduliQ[i] = q;
-        rootsQ[i] = RootOfUnity(cyclOrder, moduliQ[i]);
-        cnt++;
-      }
-    } else {  // FLEXIBLEAUTO
-      /* Scaling factors in FLEXIBLEAUTO are a bit fragile,
+            // Check whether particular selection is standards-compliant
+            auto he_std_n = nRLWE(qBound);
+            if (he_std_n > n) {
+                OPENFHE_THROW(config_error, "The specified ring dimension (" + std::to_string(n) +
+                                                ") does not comply with HE standards recommendation (" +
+                                                std::to_string(he_std_n) + ").");
+            }
+        }
+    }
+    else if (n == 0) {
+        OPENFHE_THROW(config_error, "Please specify the ring dimension or desired security level.");
+    }
+    //// End HE Standards compliance logic/check
+
+    usint dcrtBits = scaleExp;
+
+    uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
+    std::vector<NativeInteger> moduliQ(vecSize);
+    std::vector<NativeInteger> rootsQ(vecSize);
+
+    NativeInteger q        = FirstPrime<NativeInteger>(dcrtBits, cyclOrder);
+    moduliQ[numPrimes - 1] = q;
+    rootsQ[numPrimes - 1]  = RootOfUnity(cyclOrder, moduliQ[numPrimes - 1]);
+
+    NativeInteger qNext = q;
+    NativeInteger qPrev = q;
+    if (numPrimes > 1) {
+        if (scalTech != FLEXIBLEAUTO && scalTech != FLEXIBLEAUTOEXT) {
+            uint32_t cnt = 0;
+            for (usint i = numPrimes - 2; i >= 1; i--) {
+                if ((cnt % 2) == 0) {
+                    qPrev = lbcrypto::PreviousPrime(qPrev, cyclOrder);
+                    q     = qPrev;
+                }
+                else {
+                    qNext = lbcrypto::NextPrime(qNext, cyclOrder);
+                    q     = qNext;
+                }
+
+                moduliQ[i] = q;
+                rootsQ[i]  = RootOfUnity(cyclOrder, moduliQ[i]);
+                cnt++;
+            }
+        }
+        else {  // FLEXIBLEAUTO
+            /* Scaling factors in FLEXIBLEAUTO are a bit fragile,
        * in the sense that once one scaling factor gets far enough from the
        * original scaling factor, subsequent level scaling factors quickly
        * diverge to either 0 or infinity. To mitigate this problem to a certain
@@ -152,95 +145,90 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(
        * scale factor of level 0 as possible.
        */
 
-      double sf = moduliQ[numPrimes - 1].ConvertToDouble();
-      uint32_t cnt = 0;
-      for (usint i = numPrimes - 2; i >= 1; i--) {
-        sf = static_cast<double>(pow(sf, 2) / moduliQ[i + 1].ConvertToDouble());
-        if ((cnt % 2) == 0) {
-          NativeInteger sfInt = std::llround(sf);
-          NativeInteger sfRem = sfInt.Mod(cyclOrder);
-          NativeInteger qPrev =
-              sfInt - NativeInteger(cyclOrder) - sfRem + NativeInteger(1);
+            double sf    = moduliQ[numPrimes - 1].ConvertToDouble();
+            uint32_t cnt = 0;
+            for (usint i = numPrimes - 2; i >= 1; i--) {
+                sf = static_cast<double>(pow(sf, 2) / moduliQ[i + 1].ConvertToDouble());
+                if ((cnt % 2) == 0) {
+                    NativeInteger sfInt = std::llround(sf);
+                    NativeInteger sfRem = sfInt.Mod(cyclOrder);
+                    NativeInteger qPrev = sfInt - NativeInteger(cyclOrder) - sfRem + NativeInteger(1);
 
-          bool hasSameMod = true;
-          while (hasSameMod) {
-            hasSameMod = false;
-            qPrev = lbcrypto::PreviousPrime(qPrev, cyclOrder);
-            for (uint32_t j = i + 1; j < numPrimes; j++) {
-              if (qPrev == moduliQ[j]) {
-                hasSameMod = true;
-              }
-            }
-          }
-          moduliQ[i] = qPrev;
+                    bool hasSameMod = true;
+                    while (hasSameMod) {
+                        hasSameMod = false;
+                        qPrev      = lbcrypto::PreviousPrime(qPrev, cyclOrder);
+                        for (uint32_t j = i + 1; j < numPrimes; j++) {
+                            if (qPrev == moduliQ[j]) {
+                                hasSameMod = true;
+                            }
+                        }
+                    }
+                    moduliQ[i] = qPrev;
+                }
+                else {
+                    NativeInteger sfInt = std::llround(sf);
+                    NativeInteger sfRem = sfInt.Mod(cyclOrder);
+                    NativeInteger qNext = sfInt + NativeInteger(cyclOrder) - sfRem + NativeInteger(1);
+                    bool hasSameMod     = true;
+                    while (hasSameMod) {
+                        hasSameMod = false;
+                        qNext      = lbcrypto::NextPrime(qNext, cyclOrder);
+                        for (uint32_t j = i + 1; j < numPrimes; j++) {
+                            if (qNext == moduliQ[j]) {
+                                hasSameMod = true;
+                            }
+                        }
+                    }
+                    moduliQ[i] = qNext;
+                }
 
-        } else {
-          NativeInteger sfInt = std::llround(sf);
-          NativeInteger sfRem = sfInt.Mod(cyclOrder);
-          NativeInteger qNext =
-              sfInt + NativeInteger(cyclOrder) - sfRem + NativeInteger(1);
-          bool hasSameMod = true;
-          while (hasSameMod) {
-            hasSameMod = false;
-            qNext = lbcrypto::NextPrime(qNext, cyclOrder);
-            for (uint32_t j = i + 1; j < numPrimes; j++) {
-              if (qNext == moduliQ[j]) {
-                hasSameMod = true;
-              }
+                rootsQ[i] = RootOfUnity(cyclOrder, moduliQ[i]);
+                cnt++;
             }
-          }
-          moduliQ[i] = qNext;
         }
-
-        rootsQ[i] = RootOfUnity(cyclOrder, moduliQ[i]);
-        cnt++;
-      }
     }
-  }
 
-  if (firstModSize == dcrtBits) {  // this requires dcrtBits < 60
-    moduliQ[0] = PreviousPrime<NativeInteger>(qPrev, cyclOrder);
-  } else {
-    NativeInteger firstInteger =
-        FirstPrime<NativeInteger>(firstModSize, cyclOrder);
-    moduliQ[0] = PreviousPrime<NativeInteger>(firstInteger, cyclOrder);
-  }
-  rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
-
-  if (scalTech == FLEXIBLEAUTOEXT) {
-    if (extraModSize == dcrtBits || extraModSize == firstModSize) {
-      moduliQ[numPrimes] = PreviousPrime<NativeInteger>(moduliQ[0], cyclOrder);
-    } else {
-      NativeInteger extraInteger =
-          FirstPrime<NativeInteger>(extraModSize, cyclOrder);
-      moduliQ[numPrimes] =
-          PreviousPrime<NativeInteger>(extraInteger, cyclOrder);
+    if (firstModSize == dcrtBits) {  // this requires dcrtBits < 60
+        moduliQ[0] = PreviousPrime<NativeInteger>(qPrev, cyclOrder);
     }
-    rootsQ[numPrimes] = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
-  }
+    else {
+        NativeInteger firstInteger = FirstPrime<NativeInteger>(firstModSize, cyclOrder);
+        moduliQ[0]                 = PreviousPrime<NativeInteger>(firstInteger, cyclOrder);
+    }
+    rootsQ[0] = RootOfUnity(cyclOrder, moduliQ[0]);
 
-  auto paramsDCRT =
-      std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
+    if (scalTech == FLEXIBLEAUTOEXT) {
+        if (extraModSize == dcrtBits || extraModSize == firstModSize) {
+            moduliQ[numPrimes] = PreviousPrime<NativeInteger>(moduliQ[0], cyclOrder);
+        }
+        else {
+            NativeInteger extraInteger = FirstPrime<NativeInteger>(extraModSize, cyclOrder);
+            moduliQ[numPrimes]         = PreviousPrime<NativeInteger>(extraInteger, cyclOrder);
+        }
+        rootsQ[numPrimes] = RootOfUnity(cyclOrder, moduliQ[numPrimes]);
+    }
 
-  cryptoParamsCKKSRNS->SetElementParams(paramsDCRT);
+    auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
 
-  const EncodingParams encodingParams = cryptoParamsCKKSRNS->GetEncodingParams();
-  if (encodingParams->GetBatchSize() > n / 2)
-    OPENFHE_THROW(config_error,
-                   "The batch size cannot be larger than ring dimension / 2.");
+    cryptoParamsCKKSRNS->SetElementParams(paramsDCRT);
 
-  // if no batch size was specified, we set batchSize = n/2 by default (for full
-  // packing)
-  if (encodingParams->GetBatchSize() == 0) {
-    uint32_t batchSize = n / 2;
-    EncodingParams encodingParamsNew(std::make_shared<EncodingParamsImpl>(
-        encodingParams->GetPlaintextModulus(), batchSize));
-    cryptoParamsCKKSRNS->SetEncodingParams(encodingParamsNew);
-  }
+    const EncodingParams encodingParams = cryptoParamsCKKSRNS->GetEncodingParams();
+    if (encodingParams->GetBatchSize() > n / 2)
+        OPENFHE_THROW(config_error, "The batch size cannot be larger than ring dimension / 2.");
 
-  cryptoParamsCKKSRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraModSize);
+    // if no batch size was specified, we set batchSize = n/2 by default (for full
+    // packing)
+    if (encodingParams->GetBatchSize() == 0) {
+        uint32_t batchSize = n / 2;
+        EncodingParams encodingParamsNew(
+            std::make_shared<EncodingParamsImpl>(encodingParams->GetPlaintextModulus(), batchSize));
+        cryptoParamsCKKSRNS->SetEncodingParams(encodingParamsNew);
+    }
 
-  return true;
+    cryptoParamsCKKSRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, extraModSize);
+
+    return true;
 }
 
 }  // namespace lbcrypto

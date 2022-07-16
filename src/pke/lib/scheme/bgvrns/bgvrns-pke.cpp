@@ -41,68 +41,61 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
-DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
-    const PrivateKey<DCRTPoly> privateKey, NativePoly *plaintext) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersBGVRNS>(
-          ciphertext->GetCryptoParameters());
-  const std::vector<DCRTPoly> &cv = ciphertext->GetElements();
-  size_t sizeQl = cv[0].GetParams()->GetParams().size();
+DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                                 NativePoly* plaintext) const {
+    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
+    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+    size_t sizeQl                   = cv[0].GetParams()->GetParams().size();
 
-  DCRTPoly b;
-  NativeInteger scalingFactorInt = ciphertext->GetScalingFactorInt();
-  if (cv[0].GetFormat() == Format::EVALUATION) {
-    b = PKERNS::DecryptCore(cv, privateKey);
-    b.SetFormat(Format::COEFFICIENT);
-    if(sizeQl > 0 ) {
-      for (size_t i = sizeQl - 1; i > 0; --i) {
-        b.ModReduce(
-            cryptoParams->GetPlaintextModulus(),
-            cryptoParams->GettModqPrecon(),
-            cryptoParams->GetNegtInvModq(i),
-            cryptoParams->GetNegtInvModqPrecon(i),
-            cryptoParams->GetqlInvModq(i),
-            cryptoParams->GetqlInvModqPrecon(i));
-      }
-      // TODO: Use pre-computed scaling factor at level L.
-      if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        for (size_t i = 0; i < sizeQl - 1; ++i) {
-          NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
-          NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
-          scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+    DCRTPoly b;
+    NativeInteger scalingFactorInt = ciphertext->GetScalingFactorInt();
+    if (cv[0].GetFormat() == Format::EVALUATION) {
+        b = PKERNS::DecryptCore(cv, privateKey);
+        b.SetFormat(Format::COEFFICIENT);
+        if (sizeQl > 0) {
+            for (size_t i = sizeQl - 1; i > 0; --i) {
+                b.ModReduce(cryptoParams->GetPlaintextModulus(), cryptoParams->GettModqPrecon(),
+                            cryptoParams->GetNegtInvModq(i), cryptoParams->GetNegtInvModqPrecon(i),
+                            cryptoParams->GetqlInvModq(i), cryptoParams->GetqlInvModqPrecon(i));
+            }
+            // TODO: Use pre-computed scaling factor at level L.
+            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+                cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+                for (size_t i = 0; i < sizeQl - 1; ++i) {
+                    NativeInteger modReduceFactor    = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+                    NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+                    scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+                }
+            }
         }
-      }
     }
-  } else {
-    std::vector<DCRTPoly> ct(cv);
-    if(sizeQl > 0 ) {
-      for (size_t j = sizeQl - 1; j > 0; j--) {
-        for (usint i = 0; i < ct.size(); i++) {
-          ct[i].ModReduce(
-              cryptoParams->GetPlaintextModulus(),
-              cryptoParams->GettModqPrecon(),
-              cryptoParams->GetNegtInvModq(j),
-              cryptoParams->GetNegtInvModqPrecon(j),
-              cryptoParams->GetqlInvModq(j),
-              cryptoParams->GetqlInvModqPrecon(j));
+    else {
+        std::vector<DCRTPoly> ct(cv);
+        if (sizeQl > 0) {
+            for (size_t j = sizeQl - 1; j > 0; j--) {
+                for (usint i = 0; i < ct.size(); i++) {
+                    ct[i].ModReduce(cryptoParams->GetPlaintextModulus(), cryptoParams->GettModqPrecon(),
+                                    cryptoParams->GetNegtInvModq(j), cryptoParams->GetNegtInvModqPrecon(j),
+                                    cryptoParams->GetqlInvModq(j), cryptoParams->GetqlInvModqPrecon(j));
+                }
+            }
+            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+                cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+                for (size_t i = 0; i < sizeQl - 1; i++) {
+                    NativeInteger modReduceFactor    = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
+                    NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
+                    scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
+                }
+            }
         }
-      }
-      if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        for (size_t i = 0; i < sizeQl - 1; i++) {
-          NativeInteger modReduceFactor = cryptoParams->GetModReduceFactorInt(sizeQl - 1 - i);
-          NativeInteger modReduceFactorInv = modReduceFactor.ModInverse(cryptoParams->GetPlaintextModulus());
-          scalingFactorInt = scalingFactorInt.ModMul(modReduceFactorInv, cryptoParams->GetPlaintextModulus());
-        }
-      }
+
+        b = PKERNS::DecryptCore(ct, privateKey);
+        b.SetFormat(Format::COEFFICIENT);
     }
 
-    b = PKERNS::DecryptCore(ct, privateKey);
-    b.SetFormat(Format::COEFFICIENT);
-  }
+    *plaintext = b.GetElementAtIndex(0).DecryptionCRTInterpolate(cryptoParams->GetPlaintextModulus());
 
-  *plaintext = b.GetElementAtIndex(0).DecryptionCRTInterpolate(cryptoParams->GetPlaintextModulus());
-
-  return DecryptResult(plaintext->GetLength(), scalingFactorInt);
+    return DecryptResult(plaintext->GetLength(), scalingFactorInt);
 }
 
 }  // namespace lbcrypto

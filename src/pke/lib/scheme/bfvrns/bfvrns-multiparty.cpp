@@ -42,145 +42,132 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 namespace lbcrypto {
 
 // makeSparse is not used by this scheme
-KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
-    CryptoContext<DCRTPoly> cc, const std::vector<PrivateKey<DCRTPoly>> &privateKeyVec,
-    bool makeSparse) {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersRNS>(
-          cc->GetCryptoParameters());
+KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
+                                                     const std::vector<PrivateKey<DCRTPoly>>& privateKeyVec,
+                                                     bool makeSparse) {
+    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
 
-  KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
-                           std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
+    KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
+                              std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
-  auto elementParams = cryptoParams->GetElementParams();
-  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
-    elementParams = cryptoParams->GetParamsQr();
-  }
-  const auto ns = cryptoParams->GetNoiseScale();
+    auto elementParams = cryptoParams->GetElementParams();
+    if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
+        elementParams = cryptoParams->GetParamsQr();
+    }
+    const auto ns = cryptoParams->GetNoiseScale();
 
-  const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
-  DugType dug;
+    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
+    DugType dug;
 
-  // Private Key Generation
+    // Private Key Generation
 
-  DCRTPoly s(elementParams, Format::EVALUATION, true);
+    DCRTPoly s(elementParams, Format::EVALUATION, true);
 
-  for (auto &pk : privateKeyVec) {
-    const DCRTPoly &si = pk->GetPrivateElement();
-    s += si;
-  }
+    for (auto& pk : privateKeyVec) {
+        const DCRTPoly& si = pk->GetPrivateElement();
+        s += si;
+    }
 
-  // Public Key Generation
-  DCRTPoly a(dug, elementParams, Format::EVALUATION);
-  DCRTPoly e(dgg, elementParams, Format::EVALUATION);
+    // Public Key Generation
+    DCRTPoly a(dug, elementParams, Format::EVALUATION);
+    DCRTPoly e(dgg, elementParams, Format::EVALUATION);
 
-  DCRTPoly b = ns * e - a * s;
+    DCRTPoly b = ns * e - a * s;
 
-  keyPair.secretKey->SetPrivateElement(std::move(s));
+    keyPair.secretKey->SetPrivateElement(std::move(s));
 
-  keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
-  keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
+    keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
+    keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
 
-  return keyPair;
+    return keyPair;
 }
 
-KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(
-    CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey,
-    bool makeSparse, bool fresh) {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersRNS>(
-          cc->GetCryptoParameters());
+KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey,
+                                                     bool makeSparse, bool fresh) {
+    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
 
-  KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
-                           std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
+    KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
+                              std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
-  auto elementParams = cryptoParams->GetElementParams();
-  if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
-    elementParams = cryptoParams->GetParamsQr();
-  }
-  const auto paramsPK = cryptoParams->GetParamsPK();
+    auto elementParams = cryptoParams->GetElementParams();
+    if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
+        elementParams = cryptoParams->GetParamsQr();
+    }
+    const auto paramsPK = cryptoParams->GetParamsPK();
 
-  const auto ns = cryptoParams->GetNoiseScale();
+    const auto ns = cryptoParams->GetNoiseScale();
 
-  const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
-  DugType dug;
-  TugType tug;
+    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
+    DugType dug;
+    TugType tug;
 
-  DCRTPoly s;
-  switch (cryptoParams->GetSecretKeyDist()) {
-    case GAUSSIAN:
-      s = DCRTPoly(dgg, paramsPK, Format::EVALUATION);
-      break;
-    case UNIFORM_TERNARY:
-      s = DCRTPoly(tug, paramsPK, Format::EVALUATION);
-      break;
-    case SPARSE_TERNARY:
-      s = DCRTPoly(tug, paramsPK, Format::EVALUATION, 64);
-      break;
-    default:
-      break;
-  }
+    DCRTPoly s;
+    switch (cryptoParams->GetSecretKeyDist()) {
+        case GAUSSIAN:
+            s = DCRTPoly(dgg, paramsPK, Format::EVALUATION);
+            break;
+        case UNIFORM_TERNARY:
+            s = DCRTPoly(tug, paramsPK, Format::EVALUATION);
+            break;
+        case SPARSE_TERNARY:
+            s = DCRTPoly(tug, paramsPK, Format::EVALUATION, 64);
+            break;
+        default:
+            break;
+    }
 
-  const std::vector<DCRTPoly> &pk = publicKey->GetPublicElements();
+    const std::vector<DCRTPoly>& pk = publicKey->GetPublicElements();
 
-  DCRTPoly a = pk[1];
-  DCRTPoly e(dgg, paramsPK, Format::EVALUATION);
+    DCRTPoly a = pk[1];
+    DCRTPoly e(dgg, paramsPK, Format::EVALUATION);
 
-  // When PRE is not used, a joint key is computed
-  DCRTPoly b = fresh ? (ns * e - a * s)
-                    : (ns * e - a * s + pk[0]);
+    // When PRE is not used, a joint key is computed
+    DCRTPoly b = fresh ? (ns * e - a * s) : (ns * e - a * s + pk[0]);
 
-  usint sizeQ = elementParams->GetParams().size();
-  usint sizePK = paramsPK->GetParams().size();
-  if (sizePK > sizeQ) {
-    s.DropLastElements(sizePK - sizeQ);
-  }
+    usint sizeQ  = elementParams->GetParams().size();
+    usint sizePK = paramsPK->GetParams().size();
+    if (sizePK > sizeQ) {
+        s.DropLastElements(sizePK - sizeQ);
+    }
 
-  keyPair.secretKey->SetPrivateElement(std::move(s));
+    keyPair.secretKey->SetPrivateElement(std::move(s));
 
-  keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
-  keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
+    keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
+    keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
 
-  return keyPair;
+    return keyPair;
 }
 
-DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(
-    const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
-    NativePoly *plaintext) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersBFVRNS>(
-          ciphertextVec[0]->GetCryptoParameters());
+DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                        NativePoly* plaintext) const {
+    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBFVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
-  const std::vector<DCRTPoly> &cv0 = ciphertextVec[0]->GetElements();
+    const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 
-  DCRTPoly b = cv0[0];
-  for (size_t i = 1; i < ciphertextVec.size(); i++) {
-    const std::vector<DCRTPoly> &cvi = ciphertextVec[i]->GetElements();
-    b += cvi[0];
-  }
+    DCRTPoly b = cv0[0];
+    for (size_t i = 1; i < ciphertextVec.size(); i++) {
+        const std::vector<DCRTPoly>& cvi = ciphertextVec[i]->GetElements();
+        b += cvi[0];
+    }
 
-  b.SetFormat(Format::COEFFICIENT);
+    b.SetFormat(Format::COEFFICIENT);
 
-  if (cryptoParams->GetMultiplicationTechnique() == HPS
-   || cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ
-   || cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-    *plaintext = b.ScaleAndRound(cryptoParams->GetPlaintextModulus(),
-                                 cryptoParams->GettQHatInvModqDivqModt(),
-                                 cryptoParams->GettQHatInvModqDivqModtPrecon(),
-                                 cryptoParams->GettQHatInvModqBDivqModt(),
-                                 cryptoParams->GettQHatInvModqBDivqModtPrecon(),
-                                 cryptoParams->GettQHatInvModqDivqFrac(),
-                                 cryptoParams->GettQHatInvModqBDivqFrac());
-  } else {
-    *plaintext = b.ScaleAndRound(
-        cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(),
-        cryptoParams->Gettgamma(), cryptoParams->GettgammaQHatInvModq(),
-        cryptoParams->GettgammaQHatInvModqPrecon(),
-        cryptoParams->GetNegInvqModtgamma(),
-        cryptoParams->GetNegInvqModtgammaPrecon());
-  }
+    if (cryptoParams->GetMultiplicationTechnique() == HPS || cryptoParams->GetMultiplicationTechnique() == HPSPOVERQ ||
+        cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
+        *plaintext =
+            b.ScaleAndRound(cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
+                            cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
+                            cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
+                            cryptoParams->GettQHatInvModqBDivqFrac());
+    }
+    else {
+        *plaintext =
+            b.ScaleAndRound(cryptoParams->GetModuliQ(), cryptoParams->GetPlaintextModulus(), cryptoParams->Gettgamma(),
+                            cryptoParams->GettgammaQHatInvModq(), cryptoParams->GettgammaQHatInvModqPrecon(),
+                            cryptoParams->GetNegInvqModtgamma(), cryptoParams->GetNegInvqModtgammaPrecon());
+    }
 
-  return DecryptResult(plaintext->GetLength());
+    return DecryptResult(plaintext->GetLength());
 }
 
-}
+}  // namespace lbcrypto

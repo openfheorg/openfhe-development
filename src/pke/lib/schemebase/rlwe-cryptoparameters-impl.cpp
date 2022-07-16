@@ -34,8 +34,8 @@
 
 namespace lbcrypto {
 
-//template class CryptoParametersRLWE<Poly>;
-//template class CryptoParametersRLWE<NativePoly>;
+// template class CryptoParametersRLWE<Poly>;
+// template class CryptoParametersRLWE<NativePoly>;
 template class CryptoParametersRLWE<DCRTPoly>;
 
 }  // namespace lbcrypto

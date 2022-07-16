@@ -34,7 +34,6 @@
 // the code below is from base-scheme-impl.cpp
 namespace lbcrypto {
 
-    template class SchemeBase<DCRTPoly>;
+template class SchemeBase<DCRTPoly>;
 
 }  // namespace lbcrypto
-

@@ -42,8 +42,8 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 namespace lbcrypto {
 
-    void SchemeCKKSRNS::Enable(PKESchemeFeature feature) {
-        switch (feature) {
+void SchemeCKKSRNS::Enable(PKESchemeFeature feature) {
+    switch (feature) {
         case PKE:
             if (m_PKE == nullptr)
                 m_PKE = std::make_shared<PKECKKSRNS>();
@@ -69,13 +69,14 @@ namespace lbcrypto {
             break;
         case FHE:
             if (m_FHE == nullptr)
-              m_FHE = std::make_shared<FHECKKSRNS>();
+                m_FHE = std::make_shared<FHECKKSRNS>();
             break;
         default:
             std::stringstream ss;
             ss << feature;
-            OPENFHE_THROW(not_implemented_error, std::string("This feature [") + ss.str() + "] is not supported for CKKSRNS scheme");
-        }
+            OPENFHE_THROW(not_implemented_error,
+                          std::string("This feature [") + ss.str() + "] is not supported for CKKSRNS scheme");
     }
-
 }
+
+}  // namespace lbcrypto

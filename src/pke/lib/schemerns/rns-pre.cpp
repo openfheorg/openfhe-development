@@ -35,7 +35,4 @@
 #include "schemerns/rns-pke.h"
 #include "schemerns/rns-pre.h"
 
-namespace lbcrypto {
-
-}
-
+namespace lbcrypto {}
