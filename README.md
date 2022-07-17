@@ -18,6 +18,7 @@ OpenFHE also includes the following multiparty extensions of FHE:
  * [Design paper for OpenFHE](https://eprint.iacr.org/2022/915)
  * [OpenFHE website](https://openfhe.org)
  * [Community forum for OpenFHE](https://openfhe.discourse.group/)
+ * [OpenFHE Release Notes](https://github.com/openfheorg/openfhe-development/blob/main/docs/static_docs/Release_Notes.md)
  * [Quickstart](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/quickstart.html)
  * [BSD 2-Clause License](LICENSE)
  * [Contributing to OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/contributing.html)
