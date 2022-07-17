@@ -42,7 +42,7 @@ namespace lbcrypto {
 
 //====================================================================================================================
 enum SCHEME {
-    CKKSRNS_SCHEME 0,
+    CKKSRNS_SCHEME = 0,
     BFVRNS_SCHEME,
     BGVRNS_SCHEME,
     INVALID_SCHEME,
