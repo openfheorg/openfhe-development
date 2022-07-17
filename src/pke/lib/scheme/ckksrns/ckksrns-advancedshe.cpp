@@ -252,7 +252,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(ConstCiphertext<DCRTPol
                 cc->ModReduceInPlace(cu);
             }
             else {
-                cu = powers.front();
+                cu = powers.front()->Clone();
             }
         }
         else {
@@ -297,7 +297,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(ConstCiphertext<DCRTPol
             cc->EvalAddInPlace(qu, powers[k - 1]);
         }
         else {
-            qu = powers[k - 1];
+            qu = powers[k - 1]->Clone();
         }
         // adds the free term (at x^0)
         cc->EvalAddInPlace(qu, divqr->q.front());
@@ -307,7 +307,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(ConstCiphertext<DCRTPol
     Ciphertext<DCRTPoly> su;
 
     if (std::equal(s2.begin(), s2.end(), divqr->q.begin())) {
-        su = qu;
+        su = qu->Clone();
     }
     else {
         if (ds > k) {
@@ -332,7 +332,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(ConstCiphertext<DCRTPol
                 cc->EvalAddInPlace(su, powers[k - 1]);
             }
             else {
-                su = powers[k - 1];
+                su = powers[k - 1]->Clone();
             }
             // adds the free term (at x^0)
             cc->EvalAddInPlace(su, s2.front());
@@ -414,7 +414,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
                 // non-power of 2
                 int64_t powerOf2 = 1 << (int64_t)std::floor(std::log2(i));
                 int64_t rem      = i % powerOf2;
-                usint levelDiff  = powers[rem - 1]->GetLevel() - powers[powerOf2 - 1]->GetLevel();
+                usint levelDiff  = powers[powerOf2 - 1]->GetLevel() - powers[rem - 1]->GetLevel();
                 cc->LevelReduceInPlace(powers[rem - 1], nullptr, levelDiff);
                 powers[i - 1] = cc->EvalMult(powers[powerOf2 - 1], powers[rem - 1]);
                 cc->ModReduceInPlace(powers[i - 1]);
@@ -446,14 +446,14 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
     std::vector<Ciphertext<DCRTPoly>> powers2(m);
 
     // computes powers of form k*2^i for x
-    powers2.front() = powers.back();
+    powers2.front() = powers.back()->Clone();
     for (uint32_t i = 1; i < m; i++) {
         powers2[i] = cc->EvalSquare(powers2[i - 1]);
         cc->ModReduceInPlace(powers2[i]);
     }
 
     // computes the product of the powers in power2, that yield x^{k(2*m - 1)}
-    auto power2km1 = powers2.front();
+    auto power2km1 = powers2.front()->Clone();
     for (uint32_t i = 1; i < m; i++) {
         power2km1 = cc->EvalMult(power2km1, powers2[i]);
         cc->ModReduceInPlace(power2km1);
@@ -504,7 +504,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
                 cc->ModReduceInPlace(cu);
             }
             else {
-                cu = powers.front();
+                cu = powers.front()->Clone();
             }
         }
         else {
@@ -549,7 +549,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
             cc->EvalAddInPlace(qu, powers[k - 1]);
         }
         else {
-            qu = powers[k - 1];
+            qu = powers[k - 1]->Clone();
         }
         // adds the free term (at x^0)
         cc->EvalAddInPlace(qu, divqr->q.front());
@@ -559,7 +559,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
     Ciphertext<DCRTPoly> su;
 
     if (std::equal(s2.begin(), s2.end(), divqr->q.begin())) {
-        su = qu;
+        su = qu->Clone();
     }
     else {
         if (ds > k) {
@@ -584,7 +584,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
                 cc->EvalAddInPlace(su, powers[k - 1]);
             }
             else {
-                su = powers[k - 1];
+                su = powers[k - 1]->Clone();
             }
             // adds the free term (at x^0)
             cc->EvalAddInPlace(su, s2.front());
