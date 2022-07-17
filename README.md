@@ -38,6 +38,26 @@ Or refer to the following for your specific operating system:
 - [Windows](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/windows.html)
 
 
+## Code Examples
+
+To get familiar with the main API of OpenFHE, we recommend looking at the code of the following examples:
+   1. FHE for arithmetic over integers (BFV): 
+       1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers.cpp)
+       2. [Simple Code Example with Serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial.cpp)
+   1. FHE for arithmetic over integers (BGV): 
+       1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-bgvrns.cpp)
+       2. [Simple Code Example with Serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial-bgvrns.cpp)
+   1. FHE for arithmetic over real numbers (CKKS):
+       1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers.cpp)
+       2. [Advanced Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers.cpp)
+       2. [Advanced Code Example for High-Precision CKKS](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers-128.cpp)
+   1. FHE for Boolean circuits (FHEW/TFHE):
+       1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean.cpp)
+       2. [Code with JSON serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean-serial-json.cpp)
+       3. [Code with Binary Serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean-serial-binary.cpp)
+   1. Threshold FHE:
+       1. [Code Example for BGV, BFV, and CKKS](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/threshold-fhe.cpp)
+
 ## Code of Conduct
 
 In the interest of fostering an open and welcoming environment, we as contributors and maintainers pledge to making
