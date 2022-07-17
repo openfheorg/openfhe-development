@@ -15,8 +15,8 @@ Refer to our [OpenFHE-Readthedocs](https://openfhe-development.readthedocs.io/en
 
 [FHEW](fhew.h)
 
-- The FHEW scheme (RingGSW accumulator) implementation
-- The scheme is described in [Bootstrapping in FHEW-like Cryptosystems](https://eprint.iacr.org/2014/816) from Daniele
+- The FHEW scheme (RingGSW accumulator) implementation for both DM and CGGI schemes
+- The schemes are described in [Bootstrapping in FHEW-like Cryptosystems](https://eprint.iacr.org/2014/816) from Daniele
   Micciancio and Yuriy Polyakov as published in Cryptology ePrint Archive, Report 2020/086
 
 [LWE](lwe.h)
