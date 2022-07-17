@@ -36,6 +36,8 @@
 
 #include "schemebase/base-pre.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -47,32 +49,34 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class PRERNS : public PREBase<DCRTPoly> {
-  using ParmType = typename DCRTPoly::Params;
-  using IntType = typename DCRTPoly::Integer;
-  using DugType = typename DCRTPoly::DugType;
-  using DggType = typename DCRTPoly::DggType;
-  using TugType = typename DCRTPoly::TugType;
+    using ParmType = typename DCRTPoly::Params;
+    using IntType  = typename DCRTPoly::Integer;
+    using DugType  = typename DCRTPoly::DugType;
+    using DggType  = typename DCRTPoly::DggType;
+    using TugType  = typename DCRTPoly::TugType;
 
 public:
-  virtual ~PRERNS() {}
+    virtual ~PRERNS() {}
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<PREBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<PREBase<DCRTPoly>>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<PREBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<PREBase<DCRTPoly>>(this));
+    }
 
-  std::string SerializedObjectName() const { return "PRERNS"; }
+    std::string SerializedObjectName() const {
+        return "PRERNS";
+    }
 };
 
-} // namespace lbcrypto
+}  // namespace lbcrypto
 
 #endif

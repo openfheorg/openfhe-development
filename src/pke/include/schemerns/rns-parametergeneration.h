@@ -36,6 +36,9 @@
 
 #include "schemebase/base-parametergeneration.h"
 
+#include <string>
+#include <memory>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -47,10 +50,10 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
- public:
-  virtual ~ParameterGenerationRNS() {}
+public:
+    virtual ~ParameterGenerationRNS() {}
 
-  /**
+    /**
    * Method for computing all derived parameters based on chosen primitive
    * parameters
    *
@@ -66,20 +69,13 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param n ring dimension in case the user wants to use a custom ring
    * dimension
    */
-  bool ParamsGenBFVRNS(
-      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-      int32_t evalAddCount,
-      int32_t multiplicativeDepth,
-      int32_t keySwitchCount,
-      size_t dcrtBits,
-      uint32_t numPartQ,
-      uint32_t n) const override {
-    OPENFHE_THROW(
-        config_error,
-        "This signature for ParamsGen is not supported for this scheme.");
-  }
+    bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
+                         int32_t multiplicativeDepth, int32_t keySwitchCount, size_t dcrtBits, uint32_t numPartQ,
+                         uint32_t n) const override {
+        OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
+    }
 
-  /**
+    /**
    * Method for computing all derived parameters based on chosen primitive
    * parameters.
    *
@@ -93,19 +89,12 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param firstModSize the bit-size of the first modulus
    * @param scalTech the scaling technique used (e.g., FIXEDMANUAL or FLEXIBLEAUTO)
    */
-  bool ParamsGenCKKSRNS(
-      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-      usint cyclOrder,
-      usint numPrimes,
-      usint scaleExp,
-      usint firstModSize,
-      uint32_t mulPartQ) const override {
-    OPENFHE_THROW(
-        config_error,
-        "This signature for ParamsGen is not supported for this scheme.");
-  }
+    bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
+                          usint numPrimes, usint scaleExp, usint firstModSize, uint32_t mulPartQ) const override {
+        OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
+    }
 
-  /**
+    /**
    * Method for computing all derived parameters based on chosen primitive
    * parameters. This is intended for BGVrns
    * @param *cryptoParams the crypto parameters object to be populated with
@@ -120,32 +109,31 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param firstModSize the bit-size of the first modulus
    * @param dcrtBits the bit-width of moduli.
    */
-  bool ParamsGenBGVRNS(
-      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
-      int32_t keySwitchCount, usint cyclOrder, usint numPrimes,
-      usint firstModSize, usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const override {
-    OPENFHE_THROW(
-        not_implemented_error,
-        "This signature for ParamsGen is not supported for this scheme.");
-  }
+    bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
+                         int32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
+                         uint32_t numPartQ, usint multihopQBound) const override {
+        OPENFHE_THROW(not_implemented_error, "This signature for ParamsGen is not supported for this scheme.");
+    }
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {}
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {}
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
 
-  std::string SerializedObjectName() const { return "ParameterGenerationRNS"; }
+    std::string SerializedObjectName() const {
+        return "ParameterGenerationRNS";
+    }
 
-  protected:
+protected:
     enum DCRT_MODULUS {
-      DEFAULT_EXTRA_MOD_SIZE = 20,
-      MIN_SIZE = 30,
-      MAX_SIZE = 60,
+        DEFAULT_EXTRA_MOD_SIZE = 20,
+        MIN_SIZE               = 30,
+        MAX_SIZE               = 60,
     };
 };
 

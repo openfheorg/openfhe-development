@@ -40,58 +40,61 @@
 #include "constants.h"
 #include "scheme/scheme-utils.h"
 
+#include <memory>
+
 namespace lbcrypto {
 
 // forward declarations (don't include headers as compilation fails when you do)
 template <typename T>
 class CCParams;
 
-template<typename ContextGeneratorType, typename Element>
-typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(const CCParams<ContextGeneratorType>& parameters) {
+template <typename ContextGeneratorType, typename Element>
+typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(
+    const CCParams<ContextGeneratorType>& parameters) {
+    using ParmType                   = typename Element::Params;
+    using IntType                    = typename Element::Integer;
+    constexpr float assuranceMeasure = 36;
 
-    using ParmType = typename Element::Params;
-    using IntType = typename Element::Integer;
-	constexpr float assuranceMeasure = 36;
+    auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
+    EncodingParams encodingParams(
+        std::make_shared<EncodingParamsImpl>(parameters.GetPlaintextModulus(), parameters.GetBatchSize()));
 
-	auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
-	EncodingParams encodingParams(
-		std::make_shared<EncodingParamsImpl>(parameters.GetPlaintextModulus(), parameters.GetBatchSize()));
-
-	auto params =
-		std::make_shared<typename ContextGeneratorType::CryptoParams>(
-			ep,
-			encodingParams,
-			parameters.GetStandardDeviation(),
-			assuranceMeasure,
-			parameters.GetSecurityLevel(),
-			parameters.GetDigitSize(),
-			parameters.GetSecretKeyDist(),
-			parameters.GetMaxRelinSkDeg(),
-			parameters.GetKeySwitchTechnique(),
-			parameters.GetScalingTechnique(),
-			parameters.GetEncryptionTechnique(),
-			parameters.GetMultiplicationTechnique());
+    // clang-format off
+    auto params = std::make_shared<typename ContextGeneratorType::CryptoParams>(
+        ep,
+        encodingParams,
+        parameters.GetStandardDeviation(),
+        assuranceMeasure,
+        parameters.GetSecurityLevel(),
+        parameters.GetDigitSize(),
+        parameters.GetSecretKeyDist(),
+        parameters.GetMaxRelinSkDeg(),
+        parameters.GetKeySwitchTechnique(),
+        parameters.GetScalingTechnique(),
+        parameters.GetEncryptionTechnique(),
+        parameters.GetMultiplicationTechnique());
 
     // for BFV scheme noise scale is always set to 1
     params->SetNoiseScale(1);
 
-	auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
-	scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
-	scheme->ParamsGenBFVRNS(
-		params,
-		parameters.GetEvalAddCount(),
-		parameters.GetMultiplicativeDepth(),
-		parameters.GetKeySwitchCount(),
-		parameters.GetFirstModSize(),
-		parameters.GetRingDim(),
-		parameters.GetNumLargeDigits());
+    auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
+    scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
+    scheme->ParamsGenBFVRNS(
+        params,
+        parameters.GetEvalAddCount(),
+        parameters.GetMultiplicativeDepth(),
+        parameters.GetKeySwitchCount(),
+        parameters.GetFirstModSize(),
+        parameters.GetRingDim(),
+        parameters.GetNumLargeDigits());
+    // clang-format on
 
-	auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
-	cc->setSchemeId("BFVRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::BFVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string
-	return cc;
+    auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
+    cc->setSchemeId(
+        "BFVRNS");  // TODO (dsuponit): do we need this? if we do then it should SCHEME::BFVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string
+    return cc;
 };
 
 }  // namespace lbcrypto
 
-#endif // _GEN_CRYPTOCONTEXT_BFVRNS_INTERNAL_H_
-
+#endif  // _GEN_CRYPTOCONTEXT_BFVRNS_INTERNAL_H_

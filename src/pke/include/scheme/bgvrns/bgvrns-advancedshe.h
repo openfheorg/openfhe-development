@@ -34,6 +34,8 @@
 
 #include "schemerns/rns-advancedshe.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -42,24 +44,25 @@ namespace lbcrypto {
 
 class AdvancedSHEBGVRNS : public AdvancedSHERNS {
 public:
+    virtual ~AdvancedSHEBGVRNS() {}
 
-  virtual ~AdvancedSHEBGVRNS() {}
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<AdvancedSHERNS>(this));
+    }
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<AdvancedSHERNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<AdvancedSHERNS>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<AdvancedSHERNS>(this));
-  }
-
-  std::string SerializedObjectName() const { return "AdvancedSHEBGVRNS"; }
+    std::string SerializedObjectName() const {
+        return "AdvancedSHEBGVRNS";
+    }
 };
 
 }  // namespace lbcrypto

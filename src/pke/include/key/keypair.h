@@ -43,18 +43,18 @@ namespace lbcrypto {
 
 template <class Element>
 class KeyPair {
- public:
-  PublicKey<Element> publicKey;
-  PrivateKey<Element> secretKey;
+public:
+    PublicKey<Element> publicKey;
+    PrivateKey<Element> secretKey;
 
-  KeyPair(PublicKey<Element> a, PrivateKey<Element> b)
-      : publicKey(a), secretKey(b) {}
+    KeyPair(PublicKey<Element> a, PrivateKey<Element> b) : publicKey(a), secretKey(b) {}
 
-  KeyPair(PublicKeyImpl<Element> *a = nullptr,
-          PrivateKeyImpl<Element> *b = nullptr)
-      : publicKey(a), secretKey(b) {}
+    explicit KeyPair(PublicKeyImpl<Element>* a = nullptr, PrivateKeyImpl<Element>* b = nullptr)
+        : publicKey(a), secretKey(b) {}
 
-  bool good() { return publicKey && secretKey; }
+    bool good() {
+        return publicKey && secretKey;
+    }
 };
 
 }  // namespace lbcrypto

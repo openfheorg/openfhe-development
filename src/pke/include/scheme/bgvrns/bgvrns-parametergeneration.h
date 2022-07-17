@@ -34,13 +34,18 @@
 
 #include "schemerns/rns-parametergeneration.h"
 
+#include <string>
+#include <vector>
+#include <memory>
+#include <utility>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
 
-  /*
+/*
    * Struct that keeps track of all noise estimates necessary to compute moduli.
    *
    * @param Berr is the bound on the error distribution
@@ -51,7 +56,7 @@ namespace lbcrypto {
    * @param modSwitchingNoise is the noise after modulus switching
    * @param noisePerLevel is the noise we wish to maintain at each level
    */
-  struct BGVNoiseEstimates {
+struct BGVNoiseEstimates {
     const double Berr;
     const double Bkey;
     const double expansionFactor;
@@ -60,28 +65,23 @@ namespace lbcrypto {
     const double modSwitchingNoise;
     const double noisePerLevel;
 
-    BGVNoiseEstimates(
-        const double Berr0,
-        const double Bkey0,
-        const double expansionFactor0,
-        const double freshEncryptionNoise0,
-        const double keySwitchingNoise0,
-        const double modSwitchingNoise0,
-        double noisePerLevel0) :
-        Berr(Berr0),
-        Bkey(Bkey0),
-        expansionFactor(expansionFactor0),
-        freshEncryptionNoise(freshEncryptionNoise0),
-        keySwitchingNoise(keySwitchingNoise0),
-        modSwitchingNoise(modSwitchingNoise0),
-        noisePerLevel(noisePerLevel0) {}
-  };
+    BGVNoiseEstimates(const double Berr0, const double Bkey0, const double expansionFactor0,
+                      const double freshEncryptionNoise0, const double keySwitchingNoise0,
+                      const double modSwitchingNoise0, double noisePerLevel0)
+        : Berr(Berr0),
+          Bkey(Bkey0),
+          expansionFactor(expansionFactor0),
+          freshEncryptionNoise(freshEncryptionNoise0),
+          keySwitchingNoise(keySwitchingNoise0),
+          modSwitchingNoise(modSwitchingNoise0),
+          noisePerLevel(noisePerLevel0) {}
+};
 
 class ParameterGenerationBGVRNS : public ParameterGenerationRNS {
 public:
-  virtual ~ParameterGenerationBGVRNS() {}
+    virtual ~ParameterGenerationBGVRNS() {}
 
-  /*
+    /*
    * Method that generates parameters for the BGV RNS scheme.
    *
    * @param cryptoParams contains parameters input by the user
@@ -95,11 +95,11 @@ public:
    * @param multihopQBound 
    * @return A boolean.
    */
-  bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
-                       int32_t keySwitchCount, usint cyclOrder, usint numPrimes,
-                       usint firstModSize, usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const override;
+    bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
+                         int32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
+                         uint32_t numPartQ, usint multihopQBound) const override;
 
-  /*
+    /*
    * Method that computes a security-compliant ring dimension.
    *
    * @param cryptoParams contains parameters input by the user
@@ -107,20 +107,17 @@ public:
    * @param cyclOrder is the cyclotomic order, which is twice the ring dimension.
    * @return The ring dimension.
    */
-  uint32_t computeRingDimension(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                uint32_t qBound, usint cyclOrder) const;
+    uint32_t computeRingDimension(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t qBound,
+                                  usint cyclOrder) const;
 
-  BGVNoiseEstimates computeNoiseEstimates(
-            std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-            uint32_t ringDimension,
-            int32_t evalAddCount, int32_t keySwitchCount, uint32_t auxBits,
-            usint numPrimes) const;
+    BGVNoiseEstimates computeNoiseEstimates(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                            uint32_t ringDimension, int32_t evalAddCount, int32_t keySwitchCount,
+                                            uint32_t auxBits, usint numPrimes) const;
 
-  uint64_t getCyclicOrder(const uint32_t ringDimension,
-                          const int plainModulus,
-                          const ScalingTechnique scalTech) const;
+    uint64_t getCyclicOrder(const uint32_t ringDimension, const int plainModulus,
+                            const ScalingTechnique scalTech) const;
 
-  /*
+    /*
    * Method that generates moduli for FLEXIBLEAUTOEXT mode for the BGV RNS scheme.
    *
    * @param cryptoParams contains parameters input by the user
@@ -131,27 +128,23 @@ public:
    * @param numPrimes Number of CRT moduli.
    * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
    */
-  std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                     uint32_t ringDimension,
-                     int32_t evalAddCount,
-                     int32_t keySwitchCount,
-                     uint32_t auxBits,
-                     usint numPrimes) const;
+    std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(
+        std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, int32_t evalAddCount,
+        int32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {}
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {}
-
-  std::string SerializedObjectName() const {
-    return "ParameterGenerationBGVRNS";
-  }
+    std::string SerializedObjectName() const {
+        return "ParameterGenerationBGVRNS";
+    }
 };
 
 }  // namespace lbcrypto

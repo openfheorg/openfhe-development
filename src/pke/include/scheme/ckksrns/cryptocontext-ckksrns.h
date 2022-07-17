@@ -49,7 +49,7 @@ class CryptoContextCKKSRNS {
     using Element = DCRTPoly;
 
 public:
-    using ContextType               = CryptoContext<Element>; // required by GenCryptoContext() in gen-cryptocontext.h
+    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
     using Factory                   = CryptoContextFactory<Element>;
     using PublicKeyEncryptionScheme = SchemeCKKSRNS;
     using CryptoParams              = CryptoParametersCKKSRNS;
@@ -61,5 +61,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif // _CRYPTOCONTEXT_CKKSRNS_H_
-
+#endif  // _CRYPTOCONTEXT_CKKSRNS_H_

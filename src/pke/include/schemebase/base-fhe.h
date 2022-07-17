@@ -35,6 +35,10 @@
 #include "key/allkey.h"
 #include "ciphertext.h"
 
+#include <memory>
+#include <vector>
+#include <map>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -47,11 +51,10 @@ namespace lbcrypto {
  */
 template <class Element>
 class FHEBase {
- public:
+public:
+    virtual ~FHEBase() {}
 
-  virtual ~FHEBase() {}
-
-  /**
+    /**
    * Bootstrap functionality:
    * There are three methods that have to be called in this specific order:
    * 1. EvalBootstrapSetup: computes and encodes the coefficients for encoding and
@@ -60,7 +63,7 @@ class FHEBase {
    * 3. EvalBootstrap: refreshes the given ciphertext
    */
 
-  /**
+    /**
    * Sets all parameters for the linear method for the FFT-like method
    *
    * @param levelBudget - vector of budgets for the amount of levels in encoding
@@ -69,14 +72,12 @@ class FHEBase {
    * for encoding and decoding
    * @param slots - number of slots to be bootstrapped
    */
-  virtual void EvalBootstrapSetup(
-      const CryptoContextImpl<Element> &cc,
-      std::vector<uint32_t> levelBudget = {5, 4},
-      std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0) {
-    OPENFHE_THROW(not_implemented_error, "Not supported");
-  }
+    virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, std::vector<uint32_t> levelBudget = {5, 4},
+                                    std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0) {
+        OPENFHE_THROW(not_implemented_error, "Not supported");
+    }
 
-  /**
+    /**
    * Virtual function to define the generation of all automorphism keys for EvalBT (with FFT evaluation).
    * EvalBTKeyGen uses the baby-step/giant-step strategy.
    *
@@ -84,24 +85,20 @@ class FHEBase {
    * @param slots - number of slots to be bootstrapped
    * @return the dictionary of evaluation key indices.
    */
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>>
-  EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
-      uint32_t slots) {
-    OPENFHE_THROW(not_implemented_error, "Not supported");
-  }
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalBootstrapKeyGen(const PrivateKey<Element> privateKey,
+                                                                                   uint32_t slots) {
+        OPENFHE_THROW(not_implemented_error, "Not supported");
+    }
 
-  /**
+    /**
    * Defines the bootstrapping evaluation of ciphertext
    *
    * @param ciphertext the input ciphertext.
    * @return the refreshed ciphertext.
    */
-  virtual Ciphertext<Element> EvalBootstrap(
-      ConstCiphertext<Element> ciphertext) const {
-    OPENFHE_THROW(not_implemented_error,
-        "EvalBootstrap is not implemented for this scheme");
-  }
-
+    virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
+        OPENFHE_THROW(not_implemented_error, "EvalBootstrap is not implemented for this scheme");
+    }
 };
 
 }  // namespace lbcrypto

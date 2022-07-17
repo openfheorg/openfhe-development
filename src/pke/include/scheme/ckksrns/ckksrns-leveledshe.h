@@ -34,6 +34,11 @@
 
 #include "schemerns/rns-leveledshe.h"
 
+#include <memory>
+#include <string>
+#include <map>
+#include <vector>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -42,106 +47,95 @@ namespace lbcrypto {
 
 class LeveledSHECKKSRNS : public LeveledSHERNS {
 public:
+    virtual ~LeveledSHECKKSRNS() {}
 
-  virtual ~LeveledSHECKKSRNS() {}
+    /////////////////////////////////////////
+    // SHE ADDITION
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE ADDITION
-  /////////////////////////////////////////
+    using LeveledSHERNS::EvalAdd;
+    using LeveledSHERNS::EvalAddInPlace;
 
-  using LeveledSHERNS::EvalAdd;
-  using LeveledSHERNS::EvalAddInPlace;
+    /////////////////////////////////////////
+    // SHE ADDITION PLAINTEXT
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE ADDITION PLAINTEXT
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE ADDITION CONSTANT
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE ADDITION CONSTANT
-  /////////////////////////////////////////
+    Ciphertext<DCRTPoly> EvalAdd(ConstCiphertext<DCRTPoly> ciphertext, double constant) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalAdd(ConstCiphertext<DCRTPoly> ciphertext,
-                                      double constant) const override;
+    void EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, double constant) const override;
 
-  virtual void EvalAddInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                              double constant) const override;
+    /////////////////////////////////////////
+    // SHE SUBTRACTION
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE SUBTRACTION
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE SUBTRACTION PLAINTEXT
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE SUBTRACTION PLAINTEXT
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE SUBTRACTION CONSTANT
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE SUBTRACTION CONSTANT
-  /////////////////////////////////////////
+    using LeveledSHERNS::EvalSub;
+    using LeveledSHERNS::EvalSubInPlace;
 
-  using LeveledSHERNS::EvalSub;
-  using LeveledSHERNS::EvalSubInPlace;
+    Ciphertext<DCRTPoly> EvalSub(ConstCiphertext<DCRTPoly> ciphertext, double constant) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalSub(ConstCiphertext<DCRTPoly> ciphertext,
-                                      double constant) const override;
+    void EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, double constant) const override;
 
-  virtual void EvalSubInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                              double constant) const override;
+    /////////////////////////////////////////
+    // SHE MULTIPLICATION
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE MULTIPLICATION
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE MULTIPLICATION PLAINTEXT
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE MULTIPLICATION PLAINTEXT
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE MULTIPLICATION CONSTANT
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE MULTIPLICATION CONSTANT
-  /////////////////////////////////////////
+    using LeveledSHEBase<DCRTPoly>::EvalMult;
+    using LeveledSHEBase<DCRTPoly>::EvalMultInPlace;
 
-  using LeveledSHEBase<DCRTPoly>::EvalMult;
-  using LeveledSHEBase<DCRTPoly>::EvalMultInPlace;
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext, double constant) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext,
-                                      double constant) const override;
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double constant) const override;
 
-  virtual void EvalMultInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                              double constant) const override;
+    Ciphertext<DCRTPoly> MultByInteger(ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const override;
 
-  virtual Ciphertext<DCRTPoly> MultByInteger(
-      ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const override;
+    void MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, uint64_t integer) const override;
 
-  virtual void MultByIntegerInPlace(
-      Ciphertext<DCRTPoly> &ciphertext, uint64_t integer) const override;
+    /////////////////////////////////////
+    // AUTOMORPHISM
+    /////////////////////////////////////
 
-  /////////////////////////////////////
-  // AUTOMORPHISM
-  /////////////////////////////////////
+    Ciphertext<DCRTPoly> EvalFastRotationExt(ConstCiphertext<DCRTPoly> ciphertext, usint index,
+                                             const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
+                                             const std::map<usint, EvalKey<DCRTPoly>>& evalKeys) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalFastRotationExt(
-      ConstCiphertext<DCRTPoly> ciphertext, usint index,
-      const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
-      const std::map<usint, EvalKey<DCRTPoly>> &evalKeys) const override;
+    /////////////////////////////////////
+    // Mod Reduce
+    /////////////////////////////////////
 
-  /////////////////////////////////////
-  // Mod Reduce
-  /////////////////////////////////////
-
-  /**
+    /**
    * Method for scaling in-place.
    *
    * @param cipherText is the ciphertext to perform modreduce on.
    * @param levels the number of towers to drop.
    * @details \p cipherText will have modulus reduction performed in-place.
    */
-  virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                        size_t levels) const override;
+    void ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;
 
-  /////////////////////////////////////
-  // Level Reduce
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // Level Reduce
+    /////////////////////////////////////
 
-  /**
+    /**
    * Method for in-place Level Reduction in the CKKS scheme. It just drops
    * "levels" number of the towers of the ciphertext without changing the
    * underlying plaintext.
@@ -149,52 +143,51 @@ public:
    * @param cipherText1 is the ciphertext to be level reduced in-place
    * @param levels the number of towers to drop.
    */
-  void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext, size_t levels) const override;
+    void LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;
 
-  /////////////////////////////////////
-  // Compress
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // Compress
+    /////////////////////////////////////
 
+    /////////////////////////////////////
+    // CKKS Core
+    /////////////////////////////////////
 
-  /////////////////////////////////////
-  // CKKS Core
-  /////////////////////////////////////
+    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, double constant) const;
 
-  void EvalMultCoreInPlace(Ciphertext<DCRTPoly> &ciphertext, double constant) const;
+    void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                     Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-  virtual void AdjustLevelsAndDepthInPlace(
-      Ciphertext<DCRTPoly> &ciphertext1, Ciphertext<DCRTPoly> &ciphertext2) const override;
+    void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                          Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-  virtual void AdjustLevelsAndDepthToOneInPlace(
-      Ciphertext<DCRTPoly> &ciphertext1, Ciphertext<DCRTPoly> &ciphertext2) const override;
+    DCRTPoly AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
-  virtual DCRTPoly AdjustLevelsAndDepthInPlace(
-      Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const override;
+    DCRTPoly AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext,
+                                              ConstPlaintext plaintext) const override;
 
-  virtual DCRTPoly AdjustLevelsAndDepthToOneInPlace(
-      Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const override;
+    std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly> ciphertext,
+                                                             double constant) const;
 
-  std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(
-      ConstCiphertext<DCRTPoly> ciphertext, double constant) const;
+    std::vector<DCRTPoly::Integer> GetElementForEvalMult(ConstCiphertext<DCRTPoly> ciphertext, double constant) const;
 
-  std::vector<DCRTPoly::Integer> GetElementForEvalMult(
-        ConstCiphertext<DCRTPoly> ciphertext, double constant) const;
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<LeveledSHERNS>(this));
+    }
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<LeveledSHERNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<LeveledSHERNS>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<LeveledSHERNS>(this));
-  }
-
-  std::string SerializedObjectName() const { return "LeveledSHECKKSRNS"; }
+    std::string SerializedObjectName() const {
+        return "LeveledSHECKKSRNS";
+    }
 };
 
 }  // namespace lbcrypto

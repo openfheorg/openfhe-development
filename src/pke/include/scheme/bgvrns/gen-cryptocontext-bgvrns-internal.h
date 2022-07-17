@@ -39,15 +39,17 @@
 #include "encoding/encodingparams.h"
 #include "scheme/scheme-utils.h"
 
+#include <memory>
+
 namespace lbcrypto {
 
 // forward declarations (don't include headers as compilation fails when you do)
 template <typename T>
 class CCParams;
 
-template<typename ContextGeneratorType, typename Element>
-typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const CCParams<ContextGeneratorType>& parameters) {
-
+template <typename ContextGeneratorType, typename Element>
+typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(
+    const CCParams<ContextGeneratorType>& parameters) {
     using ParmType = typename Element::Params;
     // using IntType = typename Element::Integer;
     constexpr float assuranceMeasure = 9;
@@ -56,6 +58,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
     EncodingParams encodingParams(
         std::make_shared<EncodingParamsImpl>(parameters.GetPlaintextModulus(), parameters.GetBatchSize()));
 
+    // clang-format off
     auto params = std::make_shared<typename ContextGeneratorType::CryptoParams>(
         ep,
         encodingParams,
@@ -73,26 +76,29 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(const 
     // for BGV scheme noise scale is always set to plaintext modulus
     params->SetNoiseScale(parameters.GetPlaintextModulus());
 
-    uint32_t numLargeDigits = ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
+    uint32_t numLargeDigits =
+        ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
 
     auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
     scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
     scheme->ParamsGenBGVRNS(
         params,
         parameters.GetEvalAddCount(),
-		parameters.GetKeySwitchCount(),
+        parameters.GetKeySwitchCount(),
         2 * parameters.GetRingDim(),
         parameters.GetMultiplicativeDepth() + 1,
         parameters.GetFirstModSize(),
         parameters.GetScalingModSize(),
         numLargeDigits,
         parameters.GetMultiHopModSize());
+    // clang-format on
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
-    cc->setSchemeId("BGVRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::BGVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string
+    // TODO (dsuponit): do we need this? if we do then it should SCHEME::BGVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string
+    cc->setSchemeId("BGVRNS");
     return cc;
 }
 
 }  // namespace lbcrypto
 
-#endif // __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__
+#endif  // __GEN_CRYPTOCONTEXT_BGVRNS_INTERNAL_H__

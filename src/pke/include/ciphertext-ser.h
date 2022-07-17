@@ -44,14 +44,11 @@ extern template class lbcrypto::CiphertextImpl<lbcrypto::Poly>;
 extern template class lbcrypto::CiphertextImpl<lbcrypto::NativePoly>;
 extern template class lbcrypto::CiphertextImpl<lbcrypto::DCRTPoly>;
 
-CEREAL_CLASS_VERSION(
-    lbcrypto::CiphertextImpl<lbcrypto::Poly>,
-    lbcrypto::CiphertextImpl<lbcrypto::Poly>::SerializedVersion());
-CEREAL_CLASS_VERSION(
-    lbcrypto::CiphertextImpl<lbcrypto::NativePoly>,
-    lbcrypto::CiphertextImpl<lbcrypto::NativePoly>::SerializedVersion());
-CEREAL_CLASS_VERSION(
-    lbcrypto::CiphertextImpl<lbcrypto::DCRTPoly>,
-    lbcrypto::CiphertextImpl<lbcrypto::DCRTPoly>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::CiphertextImpl<lbcrypto::Poly>,
+                     lbcrypto::CiphertextImpl<lbcrypto::Poly>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::CiphertextImpl<lbcrypto::NativePoly>,
+                     lbcrypto::CiphertextImpl<lbcrypto::NativePoly>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::CiphertextImpl<lbcrypto::DCRTPoly>,
+                     lbcrypto::CiphertextImpl<lbcrypto::DCRTPoly>::SerializedVersion());
 
 #endif

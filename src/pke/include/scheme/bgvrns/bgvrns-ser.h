@@ -33,7 +33,6 @@
   serialize bgvrns; include this in any app that needs to serialize this scheme
  */
 
-
 #ifndef LBCRYPTO_CRYPTO_BGVRNSSER_H
 #define LBCRYPTO_CRYPTO_BGVRNSSER_H
 

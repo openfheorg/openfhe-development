@@ -41,21 +41,24 @@
 #include "utils/exception.h"
 #include "scheme/scheme-utils.h"
 
+#include <memory>
+
 namespace lbcrypto {
 
 // forward declarations (don't include headers as compilation fails when you do)
 template <typename T>
 class CCParams;
 
-template<typename ContextGeneratorType, typename Element>
-typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const CCParams<ContextGeneratorType>& parameters) {
+template <typename ContextGeneratorType, typename Element>
+typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
+    const CCParams<ContextGeneratorType>& parameters) {
 #if NATIVEINT == 128
     if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         OPENFHE_THROW(config_error, "128-bit CKKS is not supported for the FLEXIBLEAUTO or FLEXIBLEAUTOEXT methods.");
     }
 #endif
-    using ParmType = typename Element::Params;
-    using IntType = typename Element::Integer;
+    using ParmType                   = typename Element::Params;
+    using IntType                    = typename Element::Integer;
     constexpr float assuranceMeasure = 9;
 
     auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
@@ -63,6 +66,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
     EncodingParams encodingParams(
         std::make_shared<EncodingParamsImpl>(parameters.GetScalingModSize(), parameters.GetBatchSize()));
 
+    // clang-format off
     auto params = std::make_shared<typename ContextGeneratorType::CryptoParams>(
         ep,
         encodingParams,
@@ -80,7 +84,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
 
-    uint32_t numLargeDigits = ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
+    uint32_t numLargeDigits =
+        ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
 
     auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
     scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
@@ -91,12 +96,13 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         parameters.GetScalingModSize(),
         parameters.GetFirstModSize(),
         numLargeDigits);
+    // clang-format on
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
-    cc->setSchemeId("CKKSRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::CKKSRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string
+    // TODO (dsuponit): do we need this? if we do then it should SCHEME::CKKSRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string
+    cc->setSchemeId("CKKSRNS");
     return cc;
 }
 }  // namespace lbcrypto
 
-#endif // _GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
-
+#endif  // _GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_

@@ -51,25 +51,22 @@ namespace lbcrypto {
  */
 template <class Element>
 class Key : public CryptoObject<Element>, public Serializable {
- public:
-  explicit Key(CryptoContext<Element> cc = 0, const std::string &id = "")
-      : CryptoObject<Element>(cc, id) {}
+public:
+    explicit Key(CryptoContext<Element> cc = 0, const std::string& id = "") : CryptoObject<Element>(cc, id) {}
 
-  explicit Key(std::shared_ptr<CryptoObject<Element>> co)
-      : CryptoObject<Element>(co) {}
+    explicit Key(std::shared_ptr<CryptoObject<Element>> co) : CryptoObject<Element>(co) {}
 
-  virtual ~Key() {}
+    virtual ~Key() {}
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(::cereal::base_class<CryptoObject<Element>>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(::cereal::base_class<CryptoObject<Element>>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    ar(::cereal::base_class<CryptoObject<Element>>(this));
-  }
-
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        ar(::cereal::base_class<CryptoObject<Element>>(this));
+    }
 };
 
 }  // namespace lbcrypto

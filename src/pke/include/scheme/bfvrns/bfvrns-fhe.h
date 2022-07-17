@@ -34,6 +34,8 @@
 
 #include "schemerns/rns-fhe.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -42,23 +44,25 @@ namespace lbcrypto {
 
 class FHEBFVRNS : public FHERNS {
 public:
-  virtual ~FHEBFVRNS() {}
+    virtual ~FHEBFVRNS() {}
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<FHERNS>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<FHERNS>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<FHERNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<FHERNS>(this));
+    }
 
-  std::string SerializedObjectName() const { return "FHEBFVRNS"; }
+    std::string SerializedObjectName() const {
+        return "FHEBFVRNS";
+    }
 };
 }  // namespace lbcrypto
 

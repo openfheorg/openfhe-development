@@ -38,24 +38,22 @@
 #define __GLOBALS_H__
 
 namespace lbcrypto {
-    /**
+/**
      * PrecomputeCRTTablesAfterDeserializaton() will be executed during CryptoContext deserialization.
      * Deserializing without this precomputation can speed up the procedure by a factor of 100.
      * function's return values:
      * true (default value): PrecomputeCRTTables() will be executed during deserialization
      * false:                PrecomputeCRTTables() will not be executed during deserialization
      */
-    bool PrecomputeCRTTablesAfterDeserializaton();
+bool PrecomputeCRTTablesAfterDeserializaton();
 
-    /**
+/**
      * Calling EnablePrecomputeCRTTablesAfterDeserializaton() and DisablePrecomputeCRTTablesAfterDeserializaton()
      * changes the boolean value returned by PrecomputeCRTTablesAfterDeserializaton()
      */
-    void EnablePrecomputeCRTTablesAfterDeserializaton();
-    void DisablePrecomputeCRTTablesAfterDeserializaton();
+void EnablePrecomputeCRTTablesAfterDeserializaton();
+void DisablePrecomputeCRTTablesAfterDeserializaton();
 
 }  // namespace lbcrypto
 
-
-#endif // __GLOBALS_H__
-
+#endif  // __GLOBALS_H__

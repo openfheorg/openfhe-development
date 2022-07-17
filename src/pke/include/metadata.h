@@ -32,6 +32,10 @@
 #ifndef LBCRYPTO_CRYPTO_METADATA_H
 #define LBCRYPTO_CRYPTO_METADATA_H
 
+#include <map>
+#include <memory>
+#include <string>
+
 #include "openfhecore.h"
 
 namespace lbcrypto {
@@ -46,90 +50,97 @@ using MetadataMap = std::shared_ptr<std::map<std::string, std::shared_ptr<Metada
  * @brief Empty metadata container
  */
 class Metadata {
- public:
-  /**
+public:
+    /**
    * Default constructor
    */
-  Metadata() {}
+    Metadata() {}
 
-  /**
+    /**
    * Copy constructor
    */
-  Metadata(const Metadata& mdata) { Metadata(); }
+    Metadata(const Metadata& mdata) {
+        Metadata();
+    }
 
-  /**
+    /**
    * Destructor
    */
-  virtual ~Metadata() {}
+    virtual ~Metadata() {}
 
-  /**
+    /**
    * This method creates a copy of the Metadata object
    * wrapped in a shared_ptr
    */
-  virtual std::shared_ptr<Metadata> Clone() const {
-    return std::make_shared<Metadata>();
-  }
+    virtual std::shared_ptr<Metadata> Clone() const {
+        return std::make_shared<Metadata>();
+    }
 
-  /**
+    /**
    * Equality operator for Metadata.
    * Unless overriden by subclasses, Metadata does not carry any
    * metadata, so all Metadata objects are equal.
    */
-  virtual bool operator==(const Metadata& mdata) const { return true; }
+    virtual bool operator==(const Metadata& mdata) const {
+        return true;
+    }
 
-  /**
+    /**
    * Inequality operator, implemented by a call to the
    * equality operator.
    */
-  virtual bool operator!=(const Metadata& mdata) const {
-    return !(*this == mdata);
-  }
+    virtual bool operator!=(const Metadata& mdata) const {
+        return !(*this == mdata);
+    }
 
-  /**
+    /**
    * A method that prints the contents of metadata objects.
    * Please override in subclasses to print all members.
    */
-  virtual std::ostream& print(std::ostream& out) const {
-    out << "[ ]" << std::endl;
-    return out;
-  }
+    virtual std::ostream& print(std::ostream& out) const {
+        out << "[ ]" << std::endl;
+        return out;
+    }
 
-  /**
+    /**
    * << operator implements by calling member method print.
    * This is a friend method and cannot be overriden by subclasses.
    */
-  friend std::ostream& operator<<(std::ostream& out, const Metadata& m) {
-    m.print(out);
-    return out;
-  }
+    friend std::ostream& operator<<(std::ostream& out, const Metadata& m) {
+        m.print(out);
+        return out;
+    }
 
-  /**
+    /**
    * save method for serialization
    */
-  template <class Archive>
-  void save(Archive& ar, std::uint32_t const version) const {}
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
 
-  /**
+    /**
    * load method for serialization
    */
-  template <class Archive>
-  void load(Archive& ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      OPENFHE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                                                 " is from a later version of the library");
+        }
     }
-  }
 
-  /**
+    /**
    * SerializedObjectName method for serialization
    */
-  virtual std::string SerializedObjectName() const { return "Metadata"; }
+    virtual std::string SerializedObjectName() const {
+        return "Metadata";
+    }
 
-  /**
+    /**
    * SerializedVersion method for serialization
    */
-  static uint32_t SerializedVersion() { return 1; }
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 };
 
 /**
@@ -137,22 +148,24 @@ class Metadata {
  * This is used in unit tests.
  */
 class MetadataTest : public Metadata {
- public:
-  /**
+public:
+    /**
    * Default constructor
    */
-  MetadataTest() : Metadata(), m_s("") {}
-  /**
+    MetadataTest() : Metadata(), m_s("") {}
+    /**
    * Destructor
    */
-  virtual ~MetadataTest() {}
+    virtual ~MetadataTest() {}
 
-  /**
+    /**
    * Copy constructor
    */
-  MetadataTest(const MetadataTest& mdata) : Metadata() { m_s = mdata.m_s; }
+    MetadataTest(const MetadataTest& mdata) : Metadata() {
+        m_s = mdata.m_s;
+    }
 
-  /**
+    /**
    * This method creates a new MetadataTest object.
    *
    * Since Ciphertexts have a map of shared_ptr<Metadata>,
@@ -164,91 +177,91 @@ class MetadataTest : public Metadata {
    * the Clone method.
    *
    */
-  std::shared_ptr<Metadata> Clone() const {
-    auto mdata = std::make_shared<MetadataTest>();
-    mdata->m_s = this->m_s;
-    return mdata;
-  }
+    std::shared_ptr<Metadata> Clone() const {
+        auto mdata = std::make_shared<MetadataTest>();
+        mdata->m_s = this->m_s;
+        return mdata;
+    }
 
-  /**
+    /**
    * Setter method for the only value stored in this Metadata container.
    */
-  void SetMetadata(std::string str) { m_s = std::string(str); }
+    void SetMetadata(std::string str) {
+        m_s = std::string(str);
+    }
 
-  /**
+    /**
    * This method returns the (only) value stored in this Metadata container
    */
-  std::string GetMetadata() const { return m_s; }
+    std::string GetMetadata() const {
+        return m_s;
+    }
 
-  /**
+    /**
    * Defines how to check equality between objects of this class.
    */
-  bool operator==(const Metadata& mdata) const {
-    try {
-      const MetadataTest& mdataTest = dynamic_cast<const MetadataTest&>(mdata);
-      return m_s == mdataTest.GetMetadata();  // All Metadata objects without
-                                              // any members are equal
-    } catch (const std::bad_cast& e) {
-      OPENFHE_THROW(
-          openfhe_error,
-          "Tried to downcast an object of different class to MetadataTest");
+    bool operator==(const Metadata& mdata) const {
+        try {
+            const MetadataTest& mdataTest = dynamic_cast<const MetadataTest&>(mdata);
+            return m_s == mdataTest.GetMetadata();  // All Metadata objects without
+                                                    // any members are equal
+        }
+        catch (const std::bad_cast& e) {
+            OPENFHE_THROW(openfhe_error, "Tried to downcast an object of different class to MetadataTest");
+        }
     }
-  }
 
-  /**
+    /**
    * Defines how to print the contents of objects of this class.
    */
-  std::ostream& print(std::ostream& out) const {
-    out << "[ " << m_s << " ]";
-    return out;
-  }
+    std::ostream& print(std::ostream& out) const {
+        out << "[ " << m_s << " ]";
+        return out;
+    }
 
-  /**
+    /**
    * save method for serialization
    */
-  template <class Archive>
-  void save(Archive& ar, std::uint32_t const version) const {
-    ar(cereal::base_class<Metadata>(this));
-    ar(cereal::make_nvp("str", m_s));
-  }
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(cereal::base_class<Metadata>(this));
+        ar(cereal::make_nvp("str", m_s));
+    }
 
-  /**
+    /**
    * load method for serialization
    */
-  template <class Archive>
-  void load(Archive& ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      OPENFHE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                                                 " is from a later version of the library");
+        }
+        ar(cereal::base_class<Metadata>(this));
+        ar(cereal::make_nvp("str", m_s));
     }
-    ar(cereal::base_class<Metadata>(this));
-    ar(cereal::make_nvp("str", m_s));
-  }
 
-  /**
+    /**
    * This static method retrieves a MetadataTest object
    * from a Ciphertext, and clones it so we can further
    * modify it.
    *
    * @param ciphertext the ciphertext whose metadata to retrieve.
    */
-  template <class Element>
-  static const std::shared_ptr<MetadataTest> CloneMetadata(
-      const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
-    auto it = ciphertext->FindMetadataByKey("test");
+    template <class Element>
+    static const std::shared_ptr<MetadataTest> CloneMetadata(
+        const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
+        auto it = ciphertext->FindMetadataByKey("test");
 
-    if (ciphertext->MetadataFound(it)) {
-      return std::dynamic_pointer_cast<MetadataTest>(
-          ciphertext->GetMetadata(it)->Clone());
-    } else {
-      OPENFHE_THROW(
-          openfhe_error,
-          "Attempt to access metadata (MetadataTest) that has not been set.");
+        if (ciphertext->MetadataFound(it)) {
+            return std::dynamic_pointer_cast<MetadataTest>(ciphertext->GetMetadata(it)->Clone());
+        }
+        else {
+            OPENFHE_THROW(openfhe_error, "Attempt to access metadata (MetadataTest) that has not been set.");
+        }
     }
-  }
 
-  /**
+    /**
    * This static method retrieves a MetadataTest object
    * from a Ciphertext, without cloning it. This means that any
    * modifications on the MetadataTest object will affect the
@@ -256,22 +269,20 @@ class MetadataTest : public Metadata {
    *
    * @param ciphertext the ciphertext whose metadata to retrieve.
    */
-  template <class Element>
-  static const std::shared_ptr<MetadataTest> GetMetadata(
-      const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
-    auto it = ciphertext->FindMetadataByKey("test");
+    template <class Element>
+    static const std::shared_ptr<MetadataTest> GetMetadata(
+        const std::shared_ptr<const CiphertextImpl<Element>> ciphertext) {
+        auto it = ciphertext->FindMetadataByKey("test");
 
-    if (ciphertext->MetadataFound(it)) {
-      return std::dynamic_pointer_cast<MetadataTest>(
-          ciphertext->GetMetadata(it));
-    } else {
-      OPENFHE_THROW(
-          openfhe_error,
-          "Attempt to access metadata (MetadataTest) that has not been set.");
+        if (ciphertext->MetadataFound(it)) {
+            return std::dynamic_pointer_cast<MetadataTest>(ciphertext->GetMetadata(it));
+        }
+        else {
+            OPENFHE_THROW(openfhe_error, "Attempt to access metadata (MetadataTest) that has not been set.");
+        }
     }
-  }
 
-  /**
+    /**
    * This static method stores a MetadataTest object
    * to a Ciphertext. If the Ciphertext already has another MetadataTest
    * object stored in its map, it will get overwritten by this MetadataTest
@@ -286,14 +297,14 @@ class MetadataTest : public Metadata {
    *
    * @param ciphertext the ciphertext whose metadata to retrieve.
    */
-  template <class Element>
-  static void StoreMetadata(std::shared_ptr<CiphertextImpl<Element>> ciphertext,
-      std::shared_ptr<MetadataTest> mdata) {
-    ciphertext->SetMetadataByKey("test", mdata);
-  }
+    template <class Element>
+    static void StoreMetadata(std::shared_ptr<CiphertextImpl<Element>> ciphertext,
+                              std::shared_ptr<MetadataTest> mdata) {
+        ciphertext->SetMetadataByKey("test", mdata);
+    }
 
- protected:
-  std::string m_s;
+protected:
+    std::string m_s;
 };
 
 }  // end namespace lbcrypto

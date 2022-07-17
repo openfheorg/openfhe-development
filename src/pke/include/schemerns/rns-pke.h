@@ -36,6 +36,10 @@
 
 #include "schemebase/base-pke.h"
 
+#include <string>
+#include <memory>
+#include <vector>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -47,16 +51,16 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class PKERNS : public PKEBase<DCRTPoly> {
-  using ParmType = typename DCRTPoly::Params;
-  using IntType = typename DCRTPoly::Integer;
-  using DugType = typename DCRTPoly::DugType;
-  using DggType = typename DCRTPoly::DggType;
-  using TugType = typename DCRTPoly::TugType;
+    using ParmType = typename DCRTPoly::Params;
+    using IntType  = typename DCRTPoly::Integer;
+    using DugType  = typename DCRTPoly::DugType;
+    using DggType  = typename DCRTPoly::DggType;
+    using TugType  = typename DCRTPoly::TugType;
 
- public:
-  virtual ~PKERNS() {}
+public:
+    virtual ~PKERNS() {}
 
-  /**
+    /**
    * Method for encrypting plaintext using LBC
    *
    * @param&publicKey public key used for encryption.
@@ -66,10 +70,9 @@ class PKERNS : public PKEBase<DCRTPoly> {
    * cryptocontext if false
    * @param *ciphertext ciphertext which results from encryption.
    */
-  Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext,
-      const PublicKey<DCRTPoly> publicKey) const override;
+    Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext, const PublicKey<DCRTPoly> publicKey) const override;
 
-  /**
+    /**
    * Method for encrypting plaintex using LBC
    *
    * @param privateKey private key used for encryption.
@@ -79,10 +82,9 @@ class PKERNS : public PKEBase<DCRTPoly> {
    * cryptocontext if false
    * @param *ciphertext ciphertext which results from encryption.
    */
-  Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext,
-      const PrivateKey<DCRTPoly> privateKey) const override;
+    Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext, const PrivateKey<DCRTPoly> privateKey) const override;
 
-  /**
+    /**
    * Method for decrypting plaintext using LBC
    *
    * @param &privateKey private key used for decryption.
@@ -90,12 +92,10 @@ class PKERNS : public PKEBase<DCRTPoly> {
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-  virtual DecryptResult Decrypt(
-      ConstCiphertext<DCRTPoly> ciphertext,
-      const PrivateKey<DCRTPoly> privateKey,
-      NativePoly *plaintext) const override;
+    DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                          NativePoly* plaintext) const override;
 
-  /**
+    /**
    * Method for decrypting plaintext using LBC
    *
    * @param &privateKey private key used for decryption.
@@ -103,41 +103,38 @@ class PKERNS : public PKEBase<DCRTPoly> {
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-  DecryptResult Decrypt(
-      ConstCiphertext<DCRTPoly> ciphertext,
-      const PrivateKey<DCRTPoly> privateKey,
-      Poly *plaintext) const override;
+    DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                          Poly* plaintext) const override;
 
-  /////////////////////////////////////
-  // CORE OPERATIONS
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // CORE OPERATIONS
+    /////////////////////////////////////
 
-  std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(
-      const PrivateKey<DCRTPoly> privateKey,
-      const std::shared_ptr<ParmType> params) const override;
+    std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(const PrivateKey<DCRTPoly> privateKey,
+                                                           const std::shared_ptr<ParmType> params) const override;
 
-  std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(
-      const PublicKey<DCRTPoly> publicKey,
-      const std::shared_ptr<ParmType> params) const override;
+    std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(const PublicKey<DCRTPoly> publicKey,
+                                                           const std::shared_ptr<ParmType> params) const override;
 
-  DCRTPoly DecryptCore(const std::vector<DCRTPoly> &cv,
-                       const PrivateKey<DCRTPoly> privateKey) const override;
+    DCRTPoly DecryptCore(const std::vector<DCRTPoly>& cv, const PrivateKey<DCRTPoly> privateKey) const override;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<PKEBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<PKEBase<DCRTPoly>>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<PKEBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<PKEBase<DCRTPoly>>(this));
+    }
 
-  std::string SerializedObjectName() const { return "PKERNS"; }
+    std::string SerializedObjectName() const {
+        return "PKERNS";
+    }
 };
 
 }  // namespace lbcrypto

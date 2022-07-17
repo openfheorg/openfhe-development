@@ -54,119 +54,118 @@ namespace lbcrypto {
  */
 
 class CKKSPackedEncoding : public PlaintextImpl {
- public:
-  // these two constructors are used inside of Decrypt
-  template <typename T, typename std::enable_if<
-      std::is_same<T, Poly::Params>::value ||
-      std::is_same<T, NativePoly::Params>::value ||
-      std::is_same<T, DCRTPoly::Params>::value,
-      bool>::type = true>
-      CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep) {
-      depth = 1; // TODO (dsuponit): is depth supposed to be initialized to 1 in all constructors?
-  }
+public:
+    // these two constructors are used inside of Decrypt
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep) {
+        depth = 1;  // TODO (dsuponit): is depth supposed to be initialized to 1 in all constructors?
+    }
 
-  /*
+    /*
    * @param depth depth of plaintext to create.
    * @param level level of plaintext to create.
    * @param scFact scaling factor of a plaintext of this level at depth 1.
    *
    */
-  template <typename T, typename std::enable_if<
-      std::is_same<T, Poly::Params>::value ||
-      std::is_same<T, NativePoly::Params>::value ||
-      std::is_same<T, DCRTPoly::Params>::value,
-      bool>::type = true>
-      CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep,
-          const std::vector<std::complex<double>>& coeffs,
-          size_t depth, uint32_t level, double scFact, size_t slots)
-      : PlaintextImpl(vp, ep), value(coeffs) {
-      // validate the number of slots
-      if ((slots & (slots - 1)) != 0) {
-          OPENFHE_THROW(config_error, "The number of slots should be a power of two");
-      }
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& coeffs,
+                       size_t depth, uint32_t level, double scFact, size_t slots)
+        : PlaintextImpl(vp, ep), value(coeffs) {
+        // validate the number of slots
+        if ((slots & (slots - 1)) != 0) {
+            OPENFHE_THROW(config_error, "The number of slots should be a power of two");
+        }
 
-      if (0 == slots) {
-          auto batchSize = GetEncodingParams()->GetBatchSize();
-          this->slots = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
-      } else {
-        this->slots = slots;
-      }
-      if (this->slots < coeffs.size()) {
-          OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
-      }
-      else if (this->slots > (GetElementRingDimension() / 2)) {
-          OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
-      }
+        if (0 == slots) {
+            auto batchSize = GetEncodingParams()->GetBatchSize();
+            this->slots    = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
+        }
+        else {
+            this->slots = slots;
+        }
+        if (this->slots < coeffs.size()) {
+            OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
+        }
+        else if (this->slots > (GetElementRingDimension() / 2)) {
+            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+        }
 
-      this->depth = depth;
-      this->level = level;
-      this->scalingFactor = scFact;
-  }
+        this->depth         = depth;
+        this->level         = level;
+        this->scalingFactor = scFact;
+    }
 
-  /**
+    /**
    * @brief Constructs a container with a copy of each of the elements in rhs,
    * in the same order.
    * @param rhs - The input object to copy.
    */
-  explicit CKKSPackedEncoding(const std::vector<std::complex<double>> &rhs, size_t slots)
-      : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(rhs) {
-      // validate the number of slots
-      if ((slots & (slots - 1)) != 0) {
-          OPENFHE_THROW(config_error, "The number of slots should be a power of two");
-      }
+    explicit CKKSPackedEncoding(const std::vector<std::complex<double>>& rhs, size_t slots)
+        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(rhs) {
+        // validate the number of slots
+        if ((slots & (slots - 1)) != 0) {
+            OPENFHE_THROW(config_error, "The number of slots should be a power of two");
+        }
 
-      if (0 == slots) {
-          auto batchSize = GetEncodingParams()->GetBatchSize();
-          this->slots = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
-      } else {
-        this->slots = slots;
-      }
-      if (this->slots < rhs.size()) {
-          OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
-      }
-      else if (this->slots > (GetElementRingDimension() / 2)) {
-          OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
-      }
+        if (0 == slots) {
+            auto batchSize = GetEncodingParams()->GetBatchSize();
+            this->slots    = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
+        }
+        else {
+            this->slots = slots;
+        }
+        if (this->slots < rhs.size()) {
+            OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
+        }
+        else if (this->slots > (GetElementRingDimension() / 2)) {
+            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+        }
 
-      depth = 1;
-  }
+        depth = 1;
+    }
 
-  /**
+    /**
    * @brief Default empty constructor with empty uninitialized data elements.
    */
-  CKKSPackedEncoding()
-      : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value() {
-    depth = 1;
-  }
+    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value() {
+        depth = 1;
+    }
 
-  CKKSPackedEncoding(const CKKSPackedEncoding &rhs)
-      : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
+    CKKSPackedEncoding(const CKKSPackedEncoding& rhs)
+        : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
 
-  CKKSPackedEncoding(const CKKSPackedEncoding &&rhs)
-      : PlaintextImpl(rhs), value(std::move(rhs.value)), m_logError(rhs.m_logError) {}
+    CKKSPackedEncoding(const CKKSPackedEncoding&& rhs)
+        : PlaintextImpl(rhs), value(std::move(rhs.value)), m_logError(rhs.m_logError) {}
 
-  bool Encode();
+    bool Encode();
 
-  bool Decode() {
-    OPENFHE_THROW(not_available_error,
-        "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(depth,scalingFactor,scalTech) instead.");
-  }
+    bool Decode() {
+        OPENFHE_THROW(
+            not_available_error,
+            "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(depth,scalingFactor,scalTech) instead.");
+    }
 
-  bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech);
+    bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech);
 
-  const std::vector<std::complex<double>> &GetCKKSPackedValue() const {
-    return value;
-  }
+    const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
+        return value;
+    }
 
-  const std::vector<double> GetRealPackedValue() const {
-    std::vector<double> realValue(value.size());
-    std::transform(value.begin(), value.end(), realValue.begin(),
-                   [](std::complex<double> da) { return da.real(); });
+    const std::vector<double> GetRealPackedValue() const {
+        std::vector<double> realValue(value.size());
+        std::transform(value.begin(), value.end(), realValue.begin(),
+                       [](std::complex<double> da) { return da.real(); });
 
-    return realValue;
-  }
+        return realValue;
+    }
 
-  /**
+    /**
    * Static utility method to multiply two numbers in CRT representation.
    * CRT representation is stored in a vector of native integers, and each
    * position corresponds to the remainder of the number against one of
@@ -176,127 +175,130 @@ class CKKSPackedEncoding : public PlaintextImpl {
    * @param b is the second number in CRT representation.
    * @return the product of the two numbers in CRT representation.
    */
-  static std::vector<DCRTPoly::Integer> CRTMult(
-      const std::vector<DCRTPoly::Integer> &a,
-      const std::vector<DCRTPoly::Integer> &b,
-      const std::vector<DCRTPoly::Integer> &mods);
+    static std::vector<DCRTPoly::Integer> CRTMult(const std::vector<DCRTPoly::Integer>& a,
+                                                  const std::vector<DCRTPoly::Integer>& b,
+                                                  const std::vector<DCRTPoly::Integer>& mods);
 
-  /**
+    /**
    * GetEncodingType
    * @return this is a Packed encoding
    */
-  PlaintextEncodings GetEncodingType() const { return CKKSPacked; }
+    PlaintextEncodings GetEncodingType() const {
+        return CKKSPacked;
+    }
 
-  /**
+    /**
    * Get method to return the length of plaintext
    *
    * @return the length of the plaintext in terms of the number of bits.
    */
-  size_t GetLength() const { return value.size(); }
+    size_t GetLength() const {
+        return value.size();
+    }
 
-  /**
+    /**
    * Get method to return log2 of estimated standard deviation of approximation
    * error
    */
-  double GetLogError() const { return m_logError; }
+    double GetLogError() const {
+        return m_logError;
+    }
 
-  /**
+    /**
    * Get method to return log2 of estimated precision
    */
-  double GetLogPrecision() const {
-    return encodingParams->GetPlaintextModulus() - m_logError;
-  }
+    double GetLogPrecision() const {
+        return encodingParams->GetPlaintextModulus() - m_logError;
+    }
 
-  /**
+    /**
    * SetLength of the plaintext to the given size
    * @param siz
    */
-  void SetLength(size_t siz) { value.resize(siz); }
+    void SetLength(size_t siz) {
+        value.resize(siz);
+    }
 
-  /**
+    /**
    * Method to compare two plaintext to test for equivalence.  This method does
    * not test that the plaintext are of the same type.
    *
    * @param other - the other plaintext to compare to.
    * @return whether the two plaintext are equivalent.
    */
-  bool CompareTo(const PlaintextImpl &other) const {
-    const auto &rv = static_cast<const CKKSPackedEncoding &>(other);
-    return this->value == rv.value;
-  }
-
-  /**
-   * @brief Destructor method.
-   */
-  static void Destroy();
-
-  void PrintValue(std::ostream &out) const {
-    // for sanity's sake, trailing zeros get elided into "..."
-    // out.precision(15);
-    out << "(";
-    size_t i = value.size();
-    while (--i > 0)
-      if (value[i] != std::complex<double>(0, 0)) break;
-
-    for (size_t j = 0; j <= i; j++) {
-      out << value[j].real() << ", ";
+    bool CompareTo(const PlaintextImpl& other) const {
+        const auto& rv = static_cast<const CKKSPackedEncoding&>(other);
+        return this->value == rv.value;
     }
 
-    out << " ... ); ";
-    out << "Estimated precision: "
-        << encodingParams->GetPlaintextModulus() - m_logError << " bits"
-        << std::endl;
-  }
+    /**
+   * @brief Destructor method.
+   */
+    static void Destroy();
 
- private:
-  std::vector<std::complex<double>> value;
+    void PrintValue(std::ostream& out) const {
+        // for sanity's sake, trailing zeros get elided into "..."
+        // out.precision(15);
+        out << "(";
+        size_t i = value.size();
+        while (--i > 0)
+            if (value[i] != std::complex<double>(0, 0))
+                break;
 
-  double m_logError = 0;
+        for (size_t j = 0; j <= i; j++) {
+            out << value[j].real() << ", ";
+        }
 
- protected:
-  /**
+        out << " ... ); ";
+        out << "Estimated precision: " << encodingParams->GetPlaintextModulus() - m_logError << " bits" << std::endl;
+    }
+
+private:
+    std::vector<std::complex<double>> value;
+
+    double m_logError = 0;
+
+protected:
+    /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
    * @param &vec input vector
    * @param &bigValue big bound of the vector values.
    * @param &modulus modulus to be set for vector.
    */
-  void FitToNativeVector(const std::vector<int64_t> &vec, int64_t bigBound,
-                         NativeVector *nativeVec) const;
+    void FitToNativeVector(const std::vector<int64_t>& vec, int64_t bigBound, NativeVector* nativeVec) const;
 
 #if NATIVEINT == 128
-  /**
+    /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
    * @param &vec input vector
    * @param &bigValue big bound of the vector values.
    * @param &modulus modulus to be set for vector.
    */
-  void FitToNativeVector(const std::vector<__int128> &vec, __int128 bigBound,
-                         NativeVector *nativeVec) const;
+    void FitToNativeVector(const std::vector<__int128>& vec, __int128 bigBound, NativeVector* nativeVec) const;
 
-  constexpr __int128 Max128BitValue() const {
-    // 2^127-2^73-1 - max value that could be rounded to int128_t
-    return ((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) -
-           (unsigned __int128)1;
-  }
+    constexpr __int128 Max128BitValue() const {
+        // 2^127-2^73-1 - max value that could be rounded to int128_t
+        return ((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) - (unsigned __int128)1;
+    }
 
-  inline bool is128BitOverflow(double d) const {
-    const double EPSILON = 0.000001;
+    inline bool is128BitOverflow(double d) const {
+        const double EPSILON = 0.000001;
 
-    return EPSILON < (std::abs(d) - Max128BitValue());
-  }
+        return EPSILON < (std::abs(d) - Max128BitValue());
+    }
 #else  // NATIVEINT == 64
-  constexpr int64_t Max64BitValue() const {
-    // 2^63-2^9-1 - max value that could be rounded to int64_t
-    return 9223372036854775295;
-  }
+    constexpr int64_t Max64BitValue() const {
+        // 2^63-2^9-1 - max value that could be rounded to int64_t
+        return 9223372036854775295;
+    }
 
-  inline bool is64BitOverflow(double d) const {
-    const double EPSILON = 0.000001;
+    inline bool is64BitOverflow(double d) const {
+        const double EPSILON = 0.000001;
 
-    return EPSILON < (std::abs(d) - Max64BitValue());
-  }
+        return EPSILON < (std::abs(d) - Max64BitValue());
+    }
 #endif
 };
 

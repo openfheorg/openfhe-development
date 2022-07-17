@@ -39,103 +39,115 @@
 #include <initializer_list>
 #include <memory>
 #include <vector>
+#include <string>
 
 #include "encoding/plaintext.h"
 
 namespace lbcrypto {
 
 class CoefPackedEncoding : public PlaintextImpl {
-  std::vector<int64_t> value;
+    std::vector<int64_t> value;
 
- public:
-  template <typename T, typename std::enable_if<
-      std::is_same<T, Poly::Params>::value ||
-      std::is_same<T, NativePoly::Params>::value ||
-      std::is_same<T, DCRTPoly::Params>::value,
-      bool>::type = true>
-  CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, std::string schemeID = "")
-      : PlaintextImpl(vp, ep, schemeID) {}
+public:
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, std::string schemeID = "")
+        : PlaintextImpl(vp, ep, schemeID) {}
 
-  template <typename T, typename std::enable_if<
-      std::is_same<T, Poly::Params>::value ||
-      std::is_same<T, NativePoly::Params>::value ||
-      std::is_same<T, DCRTPoly::Params>::value,
-      bool>::type = true>
-  CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs, std::string schemeID = "")
-      : PlaintextImpl(vp, ep, schemeID), value(coeffs) {}
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs,
+                       std::string schemeID = "")
+        : PlaintextImpl(vp, ep, schemeID), value(coeffs) {}
 
-  virtual ~CoefPackedEncoding() = default;
+    virtual ~CoefPackedEncoding() = default;
 
-  /**
+    /**
    * GetCoeffsValue
    * @return the un-encoded scalar
    */
-  const std::vector<int64_t>& GetCoefPackedValue() const { return value; }
+    const std::vector<int64_t>& GetCoefPackedValue() const {
+        return value;
+    }
 
-  /**
+    /**
    * SetIntVectorValue
    * @param val integer vector to initialize the plaintext
    */
-  void SetIntVectorValue(const std::vector<int64_t>& val) { value = val; }
+    void SetIntVectorValue(const std::vector<int64_t>& val) {
+        value = val;
+    }
 
-  /**
+    /**
    * Encode the plaintext into the Poly
    * @return true on success
    */
-  bool Encode();
+    bool Encode();
 
-  /**
+    /**
    * Decode the Poly into the string
    * @return true on success
    */
-  bool Decode();
+    bool Decode();
 
-  /**
+    /**
    * GetEncodingType
    * @return this is a CoefPacked encoding
    */
-  PlaintextEncodings GetEncodingType() const { return CoefPacked; }
+    PlaintextEncodings GetEncodingType() const {
+        return CoefPacked;
+    }
 
-  /**
+    /**
    * Get length of the plaintext
    *
    * @return number of elements in this plaintext
    */
-  size_t GetLength() const { return value.size(); }
+    size_t GetLength() const {
+        return value.size();
+    }
 
-  /**
+    /**
    * SetLength of the plaintext to the given size
    * @param siz
    */
-  void SetLength(size_t siz) { value.resize(siz); }
+    void SetLength(size_t siz) {
+        value.resize(siz);
+    }
 
-  /**
+    /**
    * Method to compare two plaintext to test for equivalence
    * Testing that the plaintexts are of the same type done in operator==
    *
    * @param other - the other plaintext to compare to.
    * @return whether the two plaintext are equivalent.
    */
-  bool CompareTo(const PlaintextImpl& other) const {
-    const auto& oth = static_cast<const CoefPackedEncoding&>(other);
-    return oth.value == this->value;
-  }
+    bool CompareTo(const PlaintextImpl& other) const {
+        const auto& oth = static_cast<const CoefPackedEncoding&>(other);
+        return oth.value == this->value;
+    }
 
-  /**
+    /**
    * PrintValue - used by operator<< for this object
    * @param out
    */
-  void PrintValue(std::ostream& out) const {
-    // for sanity's sake, trailing zeros get elided into "..."
-    out << "(";
-    size_t i = value.size();
-    while (--i > 0)
-      if (value[i] != 0) break;
+    void PrintValue(std::ostream& out) const {
+        // for sanity's sake, trailing zeros get elided into "..."
+        out << "(";
+        size_t i = value.size();
+        while (--i > 0)
+            if (value[i] != 0)
+                break;
 
-    for (size_t j = 0; j <= i; j++) out << ' ' << value[j];
+        for (size_t j = 0; j <= i; j++)
+            out << ' ' << value[j];
 
-    out << " ... )";
-  }
+        out << " ... )";
+    }
 };
 
 } /* namespace lbcrypto */

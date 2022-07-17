@@ -50,60 +50,58 @@ namespace lbcrypto {
 class PlaintextFactory {
     PlaintextFactory() = delete;  // never construct one!
 
- public:
-  template <typename T, typename std::enable_if<
-       std::is_same<T, Poly::Params>::value ||
-       std::is_same<T, NativePoly::Params>::value ||
-       std::is_same<T, DCRTPoly::Params>::value,
-       bool>::type = true>
-  static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep, std::string schemeID = "") {
-      switch (encoding) {
-      case CoefPacked:
-          return std::make_shared<CoefPackedEncoding>(vp, ep, schemeID);
-      case Packed:
-          return std::make_shared<PackedEncoding>(vp, ep);
-      case String:
-          return std::make_shared<StringEncoding>(vp, ep);
-      case CKKSPacked:
-          return std::make_shared<CKKSPackedEncoding>(vp, ep);
-      default:
-          OPENFHE_THROW(type_error, "Unknown plaintext encoding type in MakePlaintext");
-      }
-  }
+public:
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
+                                   std::string schemeID = "") {
+        switch (encoding) {
+            case CoefPacked:
+                return std::make_shared<CoefPackedEncoding>(vp, ep, schemeID);
+            case Packed:
+                return std::make_shared<PackedEncoding>(vp, ep);
+            case String:
+                return std::make_shared<StringEncoding>(vp, ep);
+            case CKKSPacked:
+                return std::make_shared<CKKSPackedEncoding>(vp, ep);
+            default:
+                OPENFHE_THROW(type_error, "Unknown plaintext encoding type in MakePlaintext");
+        }
+    }
 
-  template <typename T, typename std::enable_if<
-      std::is_same<T, Poly::Params>::value ||
-      std::is_same<T, NativePoly::Params>::value ||
-      std::is_same<T, DCRTPoly::Params>::value,
-      bool>::type = true>
-  static Plaintext MakePlaintext(const std::vector<int64_t>& value, PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
-       std::string schemeID = "", size_t depth = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    static Plaintext MakePlaintext(const std::vector<int64_t>& value, PlaintextEncodings encoding,
+                                   std::shared_ptr<T> vp, EncodingParams ep, std::string schemeID = "",
+                                   size_t depth = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
+        Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
+        pt->SetIntVectorValue(value);
+        pt->SetDepth(depth);
+        pt->SetLevel(level);
+        pt->SetScalingFactorInt(scalingFactor);
+        pt->Encode();
+        return pt;
+    }
 
-      Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
-      pt->SetIntVectorValue(value);
-      pt->SetDepth(depth);
-      pt->SetLevel(level);
-      pt->SetScalingFactorInt(scalingFactor);
-      pt->Encode();
-      return pt;
-  }
-
-  template <typename T, typename std::enable_if<
-      std::is_same<T, Poly::Params>::value ||
-      std::is_same<T, NativePoly::Params>::value ||
-      std::is_same<T, DCRTPoly::Params>::value,
-      bool>::type = true>
-  static Plaintext MakePlaintext(const std::string& value, PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
-      std::string schemeID = "", size_t depth = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
-
-      Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
-      pt->SetStringValue(value);
-      pt->SetDepth(depth);
-      pt->SetLevel(level);
-      pt->SetScalingFactorInt(scalingFactor);
-      pt->Encode();
-      return pt;
-  }
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    static Plaintext MakePlaintext(const std::string& value, PlaintextEncodings encoding, std::shared_ptr<T> vp,
+                                   EncodingParams ep, std::string schemeID = "", size_t depth = 1, uint32_t level = 0,
+                                   NativeInteger scalingFactor = 1) {
+        Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
+        pt->SetStringValue(value);
+        pt->SetDepth(depth);
+        pt->SetLevel(level);
+        pt->SetScalingFactorInt(scalingFactor);
+        pt->Encode();
+        return pt;
+    }
 };
 
 } /* namespace lbcrypto */

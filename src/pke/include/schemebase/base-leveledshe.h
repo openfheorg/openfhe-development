@@ -36,6 +36,11 @@
 #include "keyswitch/keyswitch-base.h"
 #include "ciphertext.h"
 
+#include <memory>
+#include <vector>
+#include <map>
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -46,52 +51,51 @@ namespace lbcrypto {
  * @brief  BASE_NUM_LEVELS_TO_DROP is the most common value for levels/towers to drop (do not make it a default argument
  * as default arguments work differently for virtual functions)
  */
- enum {
-     BASE_NUM_LEVELS_TO_DROP = 1,
- };
+enum {
+    BASE_NUM_LEVELS_TO_DROP = 1,
+};
 /**
  * @brief Abstract interface class for LBC SHE algorithms
  * @tparam Element a ring element.
  */
 template <class Element>
 class LeveledSHEBase {
-  using ParmType = typename Element::Params;
-  using IntType = typename Element::Integer;
-  using DugType = typename Element::DugType;
-  using DggType = typename Element::DggType;
-  using TugType = typename Element::TugType;
+    using ParmType = typename Element::Params;
+    using IntType  = typename Element::Integer;
+    using DugType  = typename Element::DugType;
+    using DggType  = typename Element::DggType;
+    using TugType  = typename Element::TugType;
 
- public:
-  virtual ~LeveledSHEBase() {}
+public:
+    virtual ~LeveledSHEBase() {}
 
-  /////////////////////////////////////////
-  // SHE NEGATION
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE NEGATION
+    /////////////////////////////////////////
 
-  /**
+    /**
    * Virtual function to define the homomorphic negation of
    * ciphertext.
    *
    * @param &ciphertext the input ciphertext.
    * @return new ciphertext.
    */
-  virtual Ciphertext<Element> EvalNegate(
-      ConstCiphertext<Element> ciphertext) const;
+    virtual Ciphertext<Element> EvalNegate(ConstCiphertext<Element> ciphertext) const;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic negation of
    * ciphertext.
    *
    * @param &ciphertext the input ciphertext.
    * @return new ciphertext.
    */
-  virtual void EvalNegateInPlace(Ciphertext<Element> &ciphertext) const;
+    virtual void EvalNegateInPlace(Ciphertext<Element>& ciphertext) const;
 
-  /////////////////////////////////////////
-  // SHE ADDITION
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE ADDITION
+    /////////////////////////////////////////
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
    *
@@ -99,21 +103,19 @@ class LeveledSHEBase {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalAdd(
-      ConstCiphertext<Element> ciphertext1,
-      ConstCiphertext<Element> ciphertext2) const;
+    virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext1,
+                                        ConstCiphertext<Element> ciphertext2) const;
 
-  /**
+    /**
    * Virtual function to define the interface for in-place homomorphic addition
    * of ciphertexts.
    *
    * @param ciphertext1 the input/output ciphertext.
    * @param ciphertext2 the input ciphertext.
    */
-  virtual void EvalAddInPlace(Ciphertext<Element> &ciphertext1,
-                              ConstCiphertext<Element> ciphertext2) const;
+    virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element> ciphertext2) const;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts. This is the mutable version - input ciphertexts may change
    * (automatically rescaled, or towers dropped).
@@ -122,20 +124,16 @@ class LeveledSHEBase {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalAddMutable(
-      Ciphertext<Element> &ciphertext1,
-      Ciphertext<Element> &ciphertext2) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalAddMutable is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalAddMutable(Ciphertext<Element>& ciphertext1,
+                                               Ciphertext<Element>& ciphertext2) const {
+        OPENFHE_THROW(not_implemented_error, "EvalAddMutable is not implemented for this scheme");
+    }
 
-  virtual void EvalAddMutableInPlace(Ciphertext<Element> &ciphertext1,
-                                     Ciphertext<Element> &ciphertext2) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalAddMutable is not implemented for this scheme");
-  }
+    virtual void EvalAddMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
+        OPENFHE_THROW(not_implemented_error, "EvalAddMutable is not implemented for this scheme");
+    }
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
    *
@@ -143,20 +141,18 @@ class LeveledSHEBase {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext,
-                                      ConstPlaintext plaintext) const;
+    virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext) const;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
    *
    * @param ciphertext the input ciphertext.
    * @param plaintext the input plaintext.
    */
-  virtual void EvalAddInPlace(Ciphertext<Element> &ciphertext,
-      ConstPlaintext plaintext) const;
+    virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, ConstPlaintext plaintext) const;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -165,13 +161,11 @@ class LeveledSHEBase {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalAddMutable(Ciphertext<Element> &ciphertext,
-                                             Plaintext plaintext) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalAddMutable is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalAddMutable(Ciphertext<Element>& ciphertext, Plaintext plaintext) const {
+        OPENFHE_THROW(not_implemented_error, "EvalAddMutable is not implemented for this scheme");
+    }
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -180,41 +174,31 @@ class LeveledSHEBase {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual void EvalAddMutableInPlace(Ciphertext<Element> &ciphertext,
-                                     Plaintext plaintext) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalAddMutable is not implemented for this scheme");
-  }
+    virtual void EvalAddMutableInPlace(Ciphertext<Element>& ciphertext, Plaintext plaintext) const {
+        OPENFHE_THROW(not_implemented_error, "EvalAddMutable is not implemented for this scheme");
+    }
 
-  virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext,
-                                      const NativeInteger &constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "integer scalar addition is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, const NativeInteger& constant) const {
+        OPENFHE_THROW(not_implemented_error, "integer scalar addition is not implemented for this scheme");
+    }
 
-  virtual void EvalAddInPlace(Ciphertext<Element> &ciphertext,
-                              const NativeInteger &constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "integer scalar addition is not implemented for this scheme");
-  }
+    virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& constant) const {
+        OPENFHE_THROW(not_implemented_error, "integer scalar addition is not implemented for this scheme");
+    }
 
-  virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext,
-                                      double constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "double scalar addition is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalAdd(ConstCiphertext<Element> ciphertext, double constant) const {
+        OPENFHE_THROW(not_implemented_error, "double scalar addition is not implemented for this scheme");
+    }
 
-  virtual void EvalAddInPlace(Ciphertext<Element> &ciphertext,
-                              double constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "double scalar addition is not implemented for this scheme");
-  }
+    virtual void EvalAddInPlace(Ciphertext<Element>& ciphertext, double constant) const {
+        OPENFHE_THROW(not_implemented_error, "double scalar addition is not implemented for this scheme");
+    }
 
-  /////////////////////////////////////////
-  // SHE SUBTRACTION
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE SUBTRACTION
+    /////////////////////////////////////////
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts.
    *
@@ -222,21 +206,19 @@ class LeveledSHEBase {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalSub(
-      ConstCiphertext<Element> ciphertext1,
-      ConstCiphertext<Element> ciphertext2) const;
+    virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext1,
+                                        ConstCiphertext<Element> ciphertext2) const;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts.
    *
    * @param ciphertext1 the input ciphertext.
    * @param ciphertext2 the input ciphertext.
    */
-  virtual void EvalSubInPlace(Ciphertext<Element> &ciphertext1,
-                              ConstCiphertext<Element> ciphertext2) const;
+    virtual void EvalSubInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element> ciphertext2) const;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -245,14 +227,12 @@ class LeveledSHEBase {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalSubMutable(
-      Ciphertext<Element> &ciphertext1,
-      Ciphertext<Element> &ciphertext2) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalSubMutable is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext1,
+                                               Ciphertext<Element>& ciphertext2) const {
+        OPENFHE_THROW(not_implemented_error, "EvalSubMutable is not implemented for this scheme");
+    }
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -261,13 +241,11 @@ class LeveledSHEBase {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual void EvalSubMutableInPlace(Ciphertext<Element> &ciphertext1,
-                                     Ciphertext<Element> &ciphertext2) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalSubMutable is not implemented for this scheme");
-  }
+    virtual void EvalSubMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
+        OPENFHE_THROW(not_implemented_error, "EvalSubMutable is not implemented for this scheme");
+    }
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts.
    *
@@ -275,13 +253,11 @@ class LeveledSHEBase {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext,
-                                      ConstPlaintext plaintext) const;
+    virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext) const;
 
-  virtual void EvalSubInPlace(Ciphertext<Element> &ciphertext,
-                              ConstPlaintext plaintext) const;
+    virtual void EvalSubInPlace(Ciphertext<Element>& ciphertext, ConstPlaintext plaintext) const;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -290,47 +266,35 @@ class LeveledSHEBase {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalSubMutable(Ciphertext<Element> &ciphertext,
-                                             Plaintext plaintext) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalSubMutable is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalSubMutable(Ciphertext<Element>& ciphertext, Plaintext plaintext) const {
+        OPENFHE_THROW(not_implemented_error, "EvalSubMutable is not implemented for this scheme");
+    }
 
-  virtual void EvalSubMutableInPlace(Ciphertext<Element> &ciphertext,
-                                     Plaintext plaintext) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalSubMutable is not implemented for this scheme");
-  }
+    virtual void EvalSubMutableInPlace(Ciphertext<Element>& ciphertext, Plaintext plaintext) const {
+        OPENFHE_THROW(not_implemented_error, "EvalSubMutable is not implemented for this scheme");
+    }
 
-  virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext,
-                                      const NativeInteger &constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "integer scalar subtraction is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext, const NativeInteger& constant) const {
+        OPENFHE_THROW(not_implemented_error, "integer scalar subtraction is not implemented for this scheme");
+    }
 
-  virtual void EvalSubInPlace(Ciphertext<Element> &ciphertext,
-                              const NativeInteger &constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "integer scalar subtraction is not implemented for this scheme");
-  }
+    virtual void EvalSubInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& constant) const {
+        OPENFHE_THROW(not_implemented_error, "integer scalar subtraction is not implemented for this scheme");
+    }
 
-  virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext,
-                                      double constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "double scalar subtraction is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalSub(ConstCiphertext<Element> ciphertext, double constant) const {
+        OPENFHE_THROW(not_implemented_error, "double scalar subtraction is not implemented for this scheme");
+    }
 
-  virtual void EvalSubInPlace(Ciphertext<Element> &ciphertext,
-                              double constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "double scalar subtraction is not implemented for this scheme");
-  }
+    virtual void EvalSubInPlace(Ciphertext<Element>& ciphertext, double constant) const {
+        OPENFHE_THROW(not_implemented_error, "double scalar subtraction is not implemented for this scheme");
+    }
 
-  //------------------------------------------------------------------------------
-  // SHE MULTIPLICATION
-  //------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------
+    // SHE MULTIPLICATION
+    //------------------------------------------------------------------------------
 
-  /**
+    /**
    * Virtual function to define the interface for generating a evaluation key
    * which is used after each multiplication.
    *
@@ -340,24 +304,22 @@ class LeveledSHEBase {
    * the same secret key as that of ciphertext1 and ciphertext2.
    * @param *newCiphertext the new resulting ciphertext.
    */
-  virtual EvalKey<Element> EvalMultKeyGen(
-      const PrivateKey<Element> privateKey) const;
+    virtual EvalKey<Element> EvalMultKeyGen(const PrivateKey<Element> privateKey) const;
 
-  /**
+    /**
    * Virtual function to define the interface for generating a evaluation key
    * which is used after each multiplication for depth more than 2.
    *
    * @param &originalPrivateKey Original private key used for encryption.
    * @param *evalMultKeys the resulting evalution key vector list.
    */
-  virtual std::vector<EvalKey<Element>> EvalMultKeysGen(
-      const PrivateKey<Element> privateKey) const;
+    virtual std::vector<EvalKey<Element>> EvalMultKeysGen(const PrivateKey<Element> privateKey) const;
 
-  //------------------------------------------------------------------------------
-  // EVAL MULTIPLICATION CIPHERTEXT & CIPHERTEXT
-  //------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------
+    // EVAL MULTIPLICATION CIPHERTEXT & CIPHERTEXT
+    //------------------------------------------------------------------------------
 
-  /**
+    /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext.
    *
@@ -365,14 +327,12 @@ class LeveledSHEBase {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalMult(
-      ConstCiphertext<Element> ciphertext1,
-      ConstCiphertext<Element> ciphertext2) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalMult is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext1,
+                                         ConstCiphertext<Element> ciphertext2) const {
+        OPENFHE_THROW(not_implemented_error, "EvalMult is not implemented for this scheme");
+    }
 
-  /**
+    /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext. This is the mutable version - input ciphertexts
    * may change (automatically rescaled, or towers dropped).
@@ -381,14 +341,12 @@ class LeveledSHEBase {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalMultMutable(
-      Ciphertext<Element> &ciphertext1,
-      Ciphertext<Element> &ciphertext2) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalMultMutable is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext1,
+                                                Ciphertext<Element>& ciphertext2) const {
+        OPENFHE_THROW(not_implemented_error, "EvalMultMutable is not implemented for this scheme");
+    }
 
-  /**
+    /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext.
    *
@@ -396,13 +354,11 @@ class LeveledSHEBase {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalSquare(
-      ConstCiphertext<Element> ciphertext1) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalSquare is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalSquare(ConstCiphertext<Element> ciphertext1) const {
+        OPENFHE_THROW(not_implemented_error, "EvalSquare is not implemented for this scheme");
+    }
 
-  /**
+    /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext. This is the mutable version - input ciphertexts
    * may change (automatically rescaled, or towers dropped).
@@ -411,17 +367,15 @@ class LeveledSHEBase {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalSquareMutable(
-      Ciphertext<Element> &ciphertext1) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalSquareMutable is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalSquareMutable(Ciphertext<Element>& ciphertext1) const {
+        OPENFHE_THROW(not_implemented_error, "EvalSquareMutable is not implemented for this scheme");
+    }
 
-  //------------------------------------------------------------------------------
-  // EVAL MULTIPLICATION CIPHERTEXT & PLAINTEXT
-  //------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------
+    // EVAL MULTIPLICATION CIPHERTEXT & PLAINTEXT
+    //------------------------------------------------------------------------------
 
-  /**
+    /**
    * Virtual function to define the interface for multiplication of ciphertext
    * by plaintext.
    *
@@ -429,13 +383,11 @@ class LeveledSHEBase {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext,
-                                       ConstPlaintext plaintext) const;
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, ConstPlaintext plaintext) const;
 
-  virtual void EvalMultInPlace(Ciphertext<Element> &ciphertext,
-                               ConstPlaintext plaintext) const;
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, ConstPlaintext plaintext) const;
 
-  /**
+    /**
    * Virtual function to define the interface for multiplication of ciphertext
    * by plaintext. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -444,13 +396,11 @@ class LeveledSHEBase {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element> &ciphertext,
-                                              Plaintext plaintext) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalMultMutable C,P is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext, Plaintext plaintext) const {
+        OPENFHE_THROW(not_implemented_error, "EvalMultMutable C,P is not implemented for this scheme");
+    }
 
-  /**
+    /**
    * Virtual function to define the interface for multiplication of ciphertext
    * by plaintext. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -459,61 +409,43 @@ class LeveledSHEBase {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual void EvalMultMutableInPlace(
-      Ciphertext<Element> &ciphertext, Plaintext plaintext) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "EvalMultMutableInPlace C P is not implemented for this scheme");
-  }
+    virtual void EvalMultMutableInPlace(Ciphertext<Element>& ciphertext, Plaintext plaintext) const {
+        OPENFHE_THROW(not_implemented_error, "EvalMultMutableInPlace C P is not implemented for this scheme");
+    }
 
-  virtual Ciphertext<Element> MultByMonomial(
-      ConstCiphertext<Element> ciphertext, usint power) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "MultByMonomial is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> MultByMonomial(ConstCiphertext<Element> ciphertext, usint power) const {
+        OPENFHE_THROW(not_implemented_error, "MultByMonomial is not implemented for this scheme");
+    }
 
-  virtual void MultByMonomialInPlace(
-      Ciphertext<Element> &ciphertext, usint power) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "MultByMonomialInPlace is not implemented for this scheme");
-  }
+    virtual void MultByMonomialInPlace(Ciphertext<Element>& ciphertext, usint power) const {
+        OPENFHE_THROW(not_implemented_error, "MultByMonomialInPlace is not implemented for this scheme");
+    }
 
-  virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext,
-                                      const NativeInteger &constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "integer scalar multiplication is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, const NativeInteger& constant) const {
+        OPENFHE_THROW(not_implemented_error, "integer scalar multiplication is not implemented for this scheme");
+    }
 
-  virtual void EvalMultInPlace(Ciphertext<Element> &ciphertext,
-                              const NativeInteger &constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "integer scalar multiplication is not implemented for this scheme");
-  }
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, const NativeInteger& constant) const {
+        OPENFHE_THROW(not_implemented_error, "integer scalar multiplication is not implemented for this scheme");
+    }
 
-  virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext,
-                                      double constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "double scalar multiplication is not implemented for this scheme");
-  }
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext, double constant) const {
+        OPENFHE_THROW(not_implemented_error, "double scalar multiplication is not implemented for this scheme");
+    }
 
-  virtual void EvalMultInPlace(Ciphertext<Element> &ciphertext,
-                              double constant) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "double scalar multiplication is not implemented for this scheme");
-  }
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext, double constant) const {
+        OPENFHE_THROW(not_implemented_error, "double scalar multiplication is not implemented for this scheme");
+    }
 
-  virtual Ciphertext<DCRTPoly> MultByInteger(
-      ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "MultByInteger is not implemented for this scheme");
-  }
+    virtual Ciphertext<DCRTPoly> MultByInteger(ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
+        OPENFHE_THROW(not_implemented_error, "MultByInteger is not implemented for this scheme");
+    }
 
-  virtual void MultByIntegerInPlace(
-      Ciphertext<DCRTPoly> &ciphertext, uint64_t integer) const {
-    OPENFHE_THROW(not_implemented_error,
-                   "MultByIntegerInPlace is not implemented for this scheme");
-  }
+    virtual void MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, uint64_t integer) const {
+        OPENFHE_THROW(not_implemented_error, "MultByIntegerInPlace is not implemented for this scheme");
+    }
 
-  /**
+    /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext using the evaluation key.
    *
@@ -523,57 +455,49 @@ class LeveledSHEBase {
    * the same secret key as that of ciphertext1 and ciphertext2.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext1,
-                                       ConstCiphertext<Element> ciphertext2,
-                                       const EvalKey<Element> evalKey) const;
-
-  virtual void EvalMultInPlace(Ciphertext<Element> &ciphertext1,
-                               ConstCiphertext<Element> ciphertext2,
-                               const EvalKey<Element> evalKey) const;
-
-  /**
-   * Virtual function to define the interface for multiplicative homomorphic
-   * evaluation of ciphertext using the evaluation key. This is the mutable
-   * version - input ciphertext may change (automatically rescaled, or towers
-   * dropped).
-   *
-   * @param &ciphertext1 first input ciphertext.
-   * @param &ciphertext2 second input ciphertext.
-   * @param &ek is the evaluation key to make the newCiphertext decryptable by
-   * the same secret key as that of ciphertext1 and ciphertext2.
-   * @return the new ciphertext.
-   */
-  virtual Ciphertext<Element> EvalMultMutable(
-      Ciphertext<Element> &ciphertext1, Ciphertext<Element> &ciphertext2,
-      const EvalKey<Element> evalKey) const;
-
-  /**
-   * Virtual function to define the interface for multiplicative homomorphic
-   * evaluation of ciphertext using the evaluation key. This is the mutable
-   * version - input ciphertext may change (automatically rescaled, or towers
-   * dropped).
-   *
-   * @param &ciphertext1 first input ciphertext.
-   * @param &ciphertext2 second input ciphertext.
-   * @param &ek is the evaluation key to make the newCiphertext decryptable by
-   * the same secret key as that of ciphertext1 and ciphertext2.
-   * @return the new ciphertext.
-   */
-  virtual void EvalMultMutableInPlace(
-      Ciphertext<Element> &ciphertext1, Ciphertext<Element> &ciphertext2,
-      const EvalKey<Element> evalKey) const;
-
-  virtual Ciphertext<Element> EvalSquare(ConstCiphertext<Element> ciphertext,
+    virtual Ciphertext<Element> EvalMult(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2,
                                          const EvalKey<Element> evalKey) const;
 
-  virtual void EvalSquareInPlace(
-      Ciphertext<Element> &ciphertext1,
-      const EvalKey<Element> evalKey) const;
+    virtual void EvalMultInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element> ciphertext2,
+                                 const EvalKey<Element> evalKey) const;
 
-  virtual Ciphertext<Element> EvalSquareMutable(
-      Ciphertext<Element> &ciphertext,
-      const EvalKey<Element> evalKey) const;
-  /**
+    /**
+   * Virtual function to define the interface for multiplicative homomorphic
+   * evaluation of ciphertext using the evaluation key. This is the mutable
+   * version - input ciphertext may change (automatically rescaled, or towers
+   * dropped).
+   *
+   * @param &ciphertext1 first input ciphertext.
+   * @param &ciphertext2 second input ciphertext.
+   * @param &ek is the evaluation key to make the newCiphertext decryptable by
+   * the same secret key as that of ciphertext1 and ciphertext2.
+   * @return the new ciphertext.
+   */
+    virtual Ciphertext<Element> EvalMultMutable(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2,
+                                                const EvalKey<Element> evalKey) const;
+
+    /**
+   * Virtual function to define the interface for multiplicative homomorphic
+   * evaluation of ciphertext using the evaluation key. This is the mutable
+   * version - input ciphertext may change (automatically rescaled, or towers
+   * dropped).
+   *
+   * @param &ciphertext1 first input ciphertext.
+   * @param &ciphertext2 second input ciphertext.
+   * @param &ek is the evaluation key to make the newCiphertext decryptable by
+   * the same secret key as that of ciphertext1 and ciphertext2.
+   * @return the new ciphertext.
+   */
+    virtual void EvalMultMutableInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2,
+                                        const EvalKey<Element> evalKey) const;
+
+    virtual Ciphertext<Element> EvalSquare(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const;
+
+    virtual void EvalSquareInPlace(Ciphertext<Element>& ciphertext1, const EvalKey<Element> evalKey) const;
+
+    virtual Ciphertext<Element> EvalSquareMutable(Ciphertext<Element>& ciphertext,
+                                                  const EvalKey<Element> evalKey) const;
+    /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext using the evaluation key.
    *
@@ -584,12 +508,11 @@ class LeveledSHEBase {
    * ciphertext2.
    * @param *newCiphertext the new resulting ciphertext.
    */
-  virtual Ciphertext<Element> EvalMultAndRelinearize(
-      ConstCiphertext<Element> ciphertext1,
-      ConstCiphertext<Element> ciphertext2,
-      const std::vector<EvalKey<Element>> &evalKeyVec) const;
+    virtual Ciphertext<Element> EvalMultAndRelinearize(ConstCiphertext<Element> ciphertext1,
+                                                       ConstCiphertext<Element> ciphertext2,
+                                                       const std::vector<EvalKey<Element>>& evalKeyVec) const;
 
-  /**
+    /**
    * Virtual function to do relinearization
    *
    * @param ciphertext input ciphertext.
@@ -598,11 +521,10 @@ class LeveledSHEBase {
    * ciphertext2.
    * @return the new resulting ciphertext.
    */
-  virtual Ciphertext<Element> Relinearize(
-      ConstCiphertext<Element> ciphertext,
-      const std::vector<EvalKey<Element>> &evalKeyVec) const;
+    virtual Ciphertext<Element> Relinearize(ConstCiphertext<Element> ciphertext,
+                                            const std::vector<EvalKey<Element>>& evalKeyVec) const;
 
-  /**
+    /**
    * Virtual function to do relinearization
    *
    * @param ciphertext input ciphertext.
@@ -611,15 +533,14 @@ class LeveledSHEBase {
    * ciphertext2.
    * @return the new resulting ciphertext.
    */
-  virtual void RelinearizeInPlace(
-      Ciphertext<Element> &ciphertext,
-      const std::vector<EvalKey<Element>> &evalKeyVec) const;
+    virtual void RelinearizeInPlace(Ciphertext<Element>& ciphertext,
+                                    const std::vector<EvalKey<Element>>& evalKeyVec) const;
 
-  //------------------------------------------------------------------------------
-  // SHE AUTOMORPHISM
-  //------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------
+    // SHE AUTOMORPHISM
+    //------------------------------------------------------------------------------
 
-  /**
+    /**
    * Virtual function to generate automophism keys for a given private key;
    * Uses the private key for encryption
    *
@@ -627,11 +548,10 @@ class LeveledSHEBase {
    * @param indexList list of automorphism indices to be computed
    * @return returns the evaluation keys
    */
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
-      const PrivateKey<Element> privateKey,
-      const std::vector<usint> &indexList) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
+        const PrivateKey<Element> privateKey, const std::vector<usint>& indexList) const;
 
-  /**
+    /**
    * Virtual function to generate all isomorphism keys for a given private key
    *
    * @param publicKey encryption key for the new ciphertext.
@@ -639,15 +559,14 @@ class LeveledSHEBase {
    * @param indexList list of automorphism indices to be computed
    * @return returns the evaluation keys
    */
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
-      const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-      const std::vector<usint> &indexList) const {
-    std::string errMsg =
-        "EvalAutomorphismKeyGen is not implemented for this scheme.";
-    OPENFHE_THROW(not_implemented_error, errMsg);
-  }
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAutomorphismKeyGen(
+        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
+        const std::vector<usint>& indexList) const {
+        std::string errMsg = "EvalAutomorphismKeyGen is not implemented for this scheme.";
+        OPENFHE_THROW(not_implemented_error, errMsg);
+    }
 
-  /**
+    /**
    * Virtual function for evaluating automorphism of ciphertext at index i
    *
    * @param ciphertext the input ciphertext.
@@ -656,12 +575,11 @@ class LeveledSHEBase {
    * by EvalAutomorphismKeyGen.
    * @return resulting ciphertext
    */
-  virtual Ciphertext<Element> EvalAutomorphism(
-      ConstCiphertext<Element> ciphertext, usint i,
-      const std::map<usint, EvalKey<Element>> &evalKeyMap,
-      CALLER_INFO_ARGS_HDR) const;
+    virtual Ciphertext<Element> EvalAutomorphism(ConstCiphertext<Element> ciphertext, usint i,
+                                                 const std::map<usint, EvalKey<Element>>& evalKeyMap,
+                                                 CALLER_INFO_ARGS_HDR) const;
 
-  /**
+    /**
    * Virtual function for the automorphism and key switching step of
    * hoisted automorphisms.
    *
@@ -672,30 +590,27 @@ class LeveledSHEBase {
    * @param digits the digit decomposition created by
    * EvalFastRotationPrecompute at the precomputation step.
    */
-  virtual Ciphertext<Element> EvalFastRotation(
-      ConstCiphertext<Element> ciphertext, const usint index, const usint m,
-      const std::shared_ptr<std::vector<Element>> digits) const;
+    virtual Ciphertext<Element> EvalFastRotation(ConstCiphertext<Element> ciphertext, const usint index, const usint m,
+                                                 const std::shared_ptr<std::vector<Element>> digits) const;
 
-  /**
+    /**
    * Virtual function for the precomputation step of hoisted
    * automorphisms.
    *
    * @param ct the input ciphertext on which to do the precomputation (digit
    * decomposition)
    */
-  virtual std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(
-      ConstCiphertext<Element> ciphertext) const;
+    virtual std::shared_ptr<std::vector<Element>> EvalFastRotationPrecompute(ConstCiphertext<Element> ciphertext) const;
 
-  virtual Ciphertext<Element> EvalFastRotationExt(
-      ConstCiphertext<Element> ciphertext, usint index,
-      const std::shared_ptr<std::vector<Element>> expandedCiphertext, bool addFirst,
-      const std::map<usint, EvalKey<Element>> &evalKeys) const {
-    std::string errMsg =
-        "EvalFastRotationExt is not implemented for this scheme.";
-    OPENFHE_THROW(not_implemented_error, errMsg);
-  }
+    virtual Ciphertext<Element> EvalFastRotationExt(ConstCiphertext<Element> ciphertext, usint index,
+                                                    const std::shared_ptr<std::vector<Element>> expandedCiphertext,
+                                                    bool addFirst,
+                                                    const std::map<usint, EvalKey<Element>>& evalKeys) const {
+        std::string errMsg = "EvalFastRotationExt is not implemented for this scheme.";
+        OPENFHE_THROW(not_implemented_error, errMsg);
+    }
 
-  /**
+    /**
    * Generates evaluation keys for a list of indices
    * Currently works only for power-of-two and cyclic-group cyclotomics
    *
@@ -704,11 +619,11 @@ class LeveledSHEBase {
    * @param indexList list of indices to be computed
    * @return returns the evaluation keys
    */
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAtIndexKeyGen(
-      const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
-      const std::vector<int32_t> &indexList) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalAtIndexKeyGen(
+        const PublicKey<Element> publicKey, const PrivateKey<Element> privateKey,
+        const std::vector<int32_t>& indexList) const;
 
-  /**
+    /**
    * Moves i-th slot to slot 0
    *
    * @param ciphertext.
@@ -717,37 +632,34 @@ class LeveledSHEBase {
    * generated by EvalAtIndexKeyGen.
    * @return resulting ciphertext
    */
-  virtual Ciphertext<Element> EvalAtIndex(
-      ConstCiphertext<Element> ciphertext, int32_t index,
-      const std::map<usint, EvalKey<Element>> &evalKeyMap) const;
+    virtual Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element> ciphertext, int32_t index,
+                                            const std::map<usint, EvalKey<Element>>& evalKeyMap) const;
 
-  /////////////////////////////////////////
-  // SHE LEVELED Mod Reduce
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE LEVELED Mod Reduce
+    /////////////////////////////////////////
 
-  /**
+    /**
    * Method for Modulus Reduction.
    *
    * @param &cipherText Ciphertext to perform mod reduce on.
    * @param levels the number of towers to drop.
    */
-  virtual Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext,
-                                        size_t levels) const  {
-    OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
-  }
+    virtual Ciphertext<Element> ModReduce(ConstCiphertext<Element> ciphertext, size_t levels) const {
+        OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
+    }
 
-  /**
+    /**
    * Method for In-place Modulus Reduction.
    *
    * @param &cipherText Ciphertext to perform mod reduce on.
    * @param levels the number of towers to drop.
    */
-  virtual void ModReduceInPlace(Ciphertext<Element> &ciphertext,
-                                size_t levels) const {
-    OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
-  }
+    virtual void ModReduceInPlace(Ciphertext<Element>& ciphertext, size_t levels) const {
+        OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
+    }
 
-  /**
+    /**
    * Method for Composed EvalMult
    *
    * @param &cipherText1 ciphertext1, first input ciphertext to perform
@@ -759,12 +671,11 @@ class LeveledSHEBase {
    * @param &cipherTextResult is the resulting ciphertext that can be
    * decrypted with the secret key of the particular level.
    */
-  virtual Ciphertext<Element> ComposedEvalMult(
-      ConstCiphertext<Element> ciphertext1,
-      ConstCiphertext<Element> ciphertext2,
-      const EvalKey<Element> evalKey) const;
+    virtual Ciphertext<Element> ComposedEvalMult(ConstCiphertext<Element> ciphertext1,
+                                                 ConstCiphertext<Element> ciphertext2,
+                                                 const EvalKey<Element> evalKey) const;
 
-  /**
+    /**
    * Method for Level Reduction from sk -> sk1. This method peforms a
    * keyswitch on the ciphertext and then performs a modulus reduction.
    *
@@ -774,11 +685,10 @@ class LeveledSHEBase {
    * key switch operation.
    * @param &cipherTextResult is the resulting ciphertext.
    */
-  virtual Ciphertext<Element> LevelReduce(ConstCiphertext<Element> ciphertext1,
-                                          const EvalKey<Element> evalKey,
-                                          size_t levels) const;
+    virtual Ciphertext<Element> LevelReduce(ConstCiphertext<Element> ciphertext1, const EvalKey<Element> evalKey,
+                                            size_t levels) const;
 
-  /**
+    /**
    * Method for Level Reduction from sk -> sk1. This method peforms a
    * keyswitch on the ciphertext and then performs a modulus reduction.
    *
@@ -788,43 +698,38 @@ class LeveledSHEBase {
    * key switch operation.
    * @param &cipherTextResult is the resulting ciphertext.
    */
-  virtual void LevelReduceInPlace(Ciphertext<Element> &ciphertext1,
-                                  const EvalKey<Element> evalKey,
-                                  size_t levels) const {
-    OPENFHE_THROW(config_error,
-                   "LevelReduce is not supported for this scheme");
-  }
+    virtual void LevelReduceInPlace(Ciphertext<Element>& ciphertext1, const EvalKey<Element> evalKey,
+                                    size_t levels) const {
+        OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
+    }
 
-  virtual Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext,
-                                       size_t towersLeft) const {
-    OPENFHE_THROW(config_error, "Compress is not supported for this scheme");
-  }
+    virtual Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext, size_t towersLeft) const {
+        OPENFHE_THROW(config_error, "Compress is not supported for this scheme");
+    }
 
-  /**
+    /**
    * Method for rescaling.
    *
    * @param cipherText is the ciphertext to perform modreduce on.
    * @param levels the number of towers to drop.
    * @return ciphertext after the modulus reduction performed.
    */
-  virtual Ciphertext<DCRTPoly> ModReduceInternal(
-      ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
-    OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
-  }
+    virtual Ciphertext<DCRTPoly> ModReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
+        OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
+    }
 
-  /**
+    /**
    * Method for rescaling in-place.
    *
    * @param cipherText is the ciphertext to perform modreduce on.
    * @param levels the number of towers to drop.
    * @details \p cipherText will have modulus reduction performed in-place.
    */
-  virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                        size_t levels) const {
-    OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
-  }
+    virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
+        OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
+    }
 
-  /**
+    /**
    * Method for Level Reduction in the CKKS scheme. It just drops "levels"
    * number of the towers of the ciphertext without changing the underlying
    * plaintext.
@@ -833,11 +738,11 @@ class LeveledSHEBase {
    * @param levels the number of towers to drop.
    * @return resulting ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> LevelReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
-    OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
-  }
+    virtual Ciphertext<DCRTPoly> LevelReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
+        OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
+    }
 
-  /**
+    /**
    * Method for in-place Level Reduction in the CKKS scheme. It just drops
    * "levels" number of the towers of the ciphertext without changing the
    * underlying plaintext.
@@ -845,53 +750,43 @@ class LeveledSHEBase {
    * @param cipherText1 is the ciphertext to be level reduced in-place
    * @param levels the number of towers to drop.
    */
-  virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext, size_t levels) const {
-    OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
-  }
+    virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
+        OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
+    }
 
-  virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext1,
-                           Ciphertext<DCRTPoly> &ciphertext2) const {
-    OPENFHE_THROW(config_error,
-                   "Leveled Operations are not supported for this scheme");
-  }
+    virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const {
+        OPENFHE_THROW(config_error, "Leveled Operations are not supported for this scheme");
+    }
 
-  virtual void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly> &ciphertext1,
-                                   Ciphertext<DCRTPoly> &ciphertext2) const {
-    OPENFHE_THROW(config_error,
-                   "Mutable Operations are not supported for this scheme");
-  }
+    virtual void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                             Ciphertext<DCRTPoly>& ciphertext2) const {
+        OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
+    }
 
-  virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ciphertext1,
-                                   Ciphertext<DCRTPoly> &ciphertext2) const {
-    OPENFHE_THROW(config_error,
-                   "Mutable Operations are not supported for this scheme");
-  }
+    virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                                  Ciphertext<DCRTPoly>& ciphertext2) const {
+        OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
+    }
 
-  virtual DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
-      ConstPlaintext plaintext) const {
-    OPENFHE_THROW(config_error,
-                   "Leveled Operations are not supported for this scheme");
-  }
+    virtual DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
+        OPENFHE_THROW(config_error, "Leveled Operations are not supported for this scheme");
+    }
 
-  virtual DCRTPoly AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly> &ciphertext,
-      ConstPlaintext plaintext) const {
-    OPENFHE_THROW(config_error,
-                   "Mutable Operations are not supported for this scheme");
-  }
+    virtual DCRTPoly AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
+        OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
+    }
 
-  virtual DCRTPoly AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ciphertext,
-      ConstPlaintext plaintext) const {
-    OPENFHE_THROW(config_error,
-                   "Mutable Operations are not supported for this scheme");
-  }
+    virtual DCRTPoly AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext,
+                                                      ConstPlaintext plaintext) const {
+        OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
+    }
 
- protected:
+protected:
+    /////////////////////////////////////////
+    // CORE OPERATIONS
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // CORE OPERATIONS
-  /////////////////////////////////////////
-
-  /**
+    /**
    * Internal function for in-place homomorphic addition of ciphertexts.
    * This method does not check whether input ciphertexts are
    * at the same level.
@@ -901,11 +796,10 @@ class LeveledSHEBase {
    * @return \p ciphertext1 contains the result of the homomorphic addition of
    * input ciphertexts.
    */
-  virtual Ciphertext<Element> EvalAddCore(
-      ConstCiphertext<Element> ciphertext1,
-      ConstCiphertext<Element> ciphertext2) const;
+    virtual Ciphertext<Element> EvalAddCore(ConstCiphertext<Element> ciphertext1,
+                                            ConstCiphertext<Element> ciphertext2) const;
 
-  /**
+    /**
    * Internal function for in-place homomorphic addition of ciphertexts.
    * This method does not check whether input ciphertexts are
    * at the same level.
@@ -915,14 +809,12 @@ class LeveledSHEBase {
    * @return \p ciphertext1 contains the result of the homomorphic addition of
    * input ciphertexts.
    */
-  void EvalAddCoreInPlace(Ciphertext<Element> &ciphertext1,
-                          ConstCiphertext<Element> ciphertext2) const;
+    void EvalAddCoreInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element> ciphertext2) const;
 
-  virtual Ciphertext<Element> EvalSubCore(
-      ConstCiphertext<Element> ciphertext1,
-      ConstCiphertext<Element> ciphertext2) const;
+    virtual Ciphertext<Element> EvalSubCore(ConstCiphertext<Element> ciphertext1,
+                                            ConstCiphertext<Element> ciphertext2) const;
 
-  /**
+    /**
    * Internal function for in-place homomorphic addition of ciphertexts.
    * This method does not check whether input ciphertexts are
    * at the same level.
@@ -932,10 +824,9 @@ class LeveledSHEBase {
    * @return \p ciphertext1 contains the result of the homomorphic addition of
    * input ciphertexts.
    */
-  void EvalSubCoreInPlace(Ciphertext<Element> &ciphertext1,
-                          ConstCiphertext<Element> ciphertext2) const;
+    void EvalSubCoreInPlace(Ciphertext<Element>& ciphertext1, ConstCiphertext<Element> ciphertext2) const;
 
-  /**
+    /**
    * Internal function for homomorphic multiplication of ciphertexts.
    * This method does not check whether input ciphertexts are
    * at the same level.
@@ -944,35 +835,21 @@ class LeveledSHEBase {
    * @param ciphertext2 second input ciphertext.
    * @return result of homomorphic multiplication of input ciphertexts.
    */
-  Ciphertext<Element> EvalMultCore(ConstCiphertext<Element> ciphertext1,
-                                   ConstCiphertext<Element> ciphertext2) const;
+    Ciphertext<Element> EvalMultCore(ConstCiphertext<Element> ciphertext1, ConstCiphertext<Element> ciphertext2) const;
 
-  Ciphertext<Element> EvalSquareCore(ConstCiphertext<Element> ciphertext) const;
+    Ciphertext<Element> EvalSquareCore(ConstCiphertext<Element> ciphertext) const;
 
-  virtual Ciphertext<Element> EvalAddCore(
-      ConstCiphertext<Element> ciphertext,
-      const Element plaintext) const;
+    virtual Ciphertext<Element> EvalAddCore(ConstCiphertext<Element> ciphertext, const Element plaintext) const;
 
-  void EvalAddCoreInPlace(
-      Ciphertext<Element> &ciphertext,
-      const Element plaintext) const;
+    void EvalAddCoreInPlace(Ciphertext<Element>& ciphertext, const Element plaintext) const;
 
-  virtual Ciphertext<Element> EvalSubCore(
-      ConstCiphertext<Element> ciphertext1,
-      const Element plaintext) const;
+    virtual Ciphertext<Element> EvalSubCore(ConstCiphertext<Element> ciphertext1, const Element plaintext) const;
 
-  void EvalSubCoreInPlace(
-      Ciphertext<Element> &ciphertext1,
-      const Element plaintext) const;
+    void EvalSubCoreInPlace(Ciphertext<Element>& ciphertext1, const Element plaintext) const;
 
-  Ciphertext<Element> EvalMultCore(
-      ConstCiphertext<Element> ciphertext,
-      const Element plaintext) const;
+    Ciphertext<Element> EvalMultCore(ConstCiphertext<Element> ciphertext, const Element plaintext) const;
 
-  void EvalMultCoreInPlace(
-      Ciphertext<Element> &ciphertext,
-      const Element plaintext) const;
-
+    void EvalMultCoreInPlace(Ciphertext<Element>& ciphertext, const Element plaintext) const;
 };
 
 }  // namespace lbcrypto

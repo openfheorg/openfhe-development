@@ -32,13 +32,14 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_MULTIPARTY_H
 #define LBCRYPTO_CRYPTO_BASE_MULTIPARTY_H
 
-#include <vector>
-#include <memory>
-#include <map>
-
 #include "key/allkey.h"
 #include "base-pke.h"
 #include "ciphertext.h"
+
+#include <vector>
+#include <memory>
+#include <map>
+#include <string>
 
 /**
  * @namespace lbcrypto
@@ -46,8 +47,8 @@
  */
 namespace lbcrypto {
 
-//template <typename Element>
-//class KeyPair;
+// template <typename Element>
+// class KeyPair;
 
 /**
  * @brief Abstract interface class for LBC Multiparty algorithms based on
@@ -77,16 +78,16 @@ namespace lbcrypto {
  */
 template <class Element>
 class MultipartyBase {
-  using ParmType = typename Element::Params;
-  using IntType = typename Element::Integer;
-  using DugType = typename Element::DugType;
-  using DggType = typename Element::DggType;
-  using TugType = typename Element::TugType;
+    using ParmType = typename Element::Params;
+    using IntType  = typename Element::Integer;
+    using DugType  = typename Element::DugType;
+    using DggType  = typename Element::DggType;
+    using TugType  = typename Element::TugType;
 
- public:
-  virtual ~MultipartyBase() {}
+public:
+    virtual ~MultipartyBase() {}
 
-  /**
+    /**
    * Threshold FHE: Generates a public key from a vector of secret shares.
    * ONLY FOR DEBUGGIN PURPOSES. SHOULD NOT BE USED IN PRODUCTION.
    *
@@ -97,12 +98,11 @@ class MultipartyBase {
    * @return key pair including the private for the current party and joined
    * public key
    */
-  virtual KeyPair<Element> MultipartyKeyGen(
-      CryptoContext<Element> cc,
-      const std::vector<PrivateKey<Element>> &privateKeyVec,
-      bool makeSparse = false);
+    virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc,
+                                              const std::vector<PrivateKey<Element>>& privateKeyVec,
+                                              bool makeSparse = false);
 
-  /**
+    /**
    * Threshold FHE: Generation of a public key derived
    * from a previous joined public key (for prior secret shares) and the secret
    * key share of the current party.
@@ -116,12 +116,10 @@ class MultipartyBase {
    * @return key pair including the secret share for the current party and
    * joined public key
    */
-  virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc,
-                                            const PublicKey<Element> publicKey,
-                                            bool makeSparse = false,
-                                            bool fresh = false);
+    virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc, const PublicKey<Element> publicKey,
+                                              bool makeSparse = false, bool fresh = false);
 
-  /**
+    /**
    * Threshold FHE: Generates a joined evaluation key
    * from the current secret share and a prior joined
    * evaluation key
@@ -131,12 +129,11 @@ class MultipartyBase {
    * @param ek the prior joined evaluation key.
    * @return the new joined evaluation key.
    */
-  virtual EvalKey<Element> MultiKeySwitchGen(
-      const PrivateKey<Element> oldPrivateKey,
-      const PrivateKey<Element> newPrivateKey,
-      const EvalKey<Element> evalKey) const;
+    virtual EvalKey<Element> MultiKeySwitchGen(const PrivateKey<Element> oldPrivateKey,
+                                               const PrivateKey<Element> newPrivateKey,
+                                               const EvalKey<Element> evalKey) const;
 
-  /**
+    /**
    * Threshold FHE: Generates joined automorphism keys
    * from the current secret share and prior joined
    * automorphism keys
@@ -146,13 +143,11 @@ class MultipartyBase {
    * @param &indexList a vector of automorphism indices.
    * @return a dictionary with new joined automorphism keys.
    */
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>>
-  MultiEvalAutomorphismKeyGen(
-      const PrivateKey<Element> privateKey,
-      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
-      const std::vector<usint> &indexVec) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
+        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+        const std::vector<usint>& indexVec) const;
 
-  /**
+    /**
    * Threshold FHE: Generates evaluation keys for a list of indices for a
    * multi-party setting Currently works only for power-of-two and cyclic-group
    * cyclotomics
@@ -162,12 +157,11 @@ class MultipartyBase {
    * @param indexList list of indices to be computed
    * @return returns the joined evaluation keys
    */
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
-      const PrivateKey<Element> privateKey,
-      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
-      const std::vector<int32_t> &indexVec) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
+        const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap,
+        const std::vector<int32_t>& indexVec) const;
 
-  /**
+    /**
    * Threshold FHE: Generates joined summation evaluation keys
    * from the current secret share and prior joined
    * summation keys
@@ -176,35 +170,33 @@ class MultipartyBase {
    * @param eSum a dictionary with prior joined summation keys.
    * @return new joined summation keys.
    */
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
-      const PrivateKey<Element> privateKey,
-      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
+        const PrivateKey<Element> privateKey,
+        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap) const;
 
-  // MULTIPARTY PKE
+    // MULTIPARTY PKE
 
-  /**
+    /**
    * Threshold FHE: "Partial" decryption computed by all parties except for the
    * lead one
    *
    * @param privateKey secret key share used for decryption.
    * @param ciphertext ciphertext that is being decrypted.
    */
-  virtual Ciphertext<Element> MultipartyDecryptMain(
-      ConstCiphertext<Element> ciphertext,
-      const PrivateKey<Element> privateKey) const;
+    virtual Ciphertext<Element> MultipartyDecryptMain(ConstCiphertext<Element> ciphertext,
+                                                      const PrivateKey<Element> privateKey) const;
 
-  /**
+    /**
    * Threshold FHE: Method for decryption operation run by the lead decryption
    * client
    *
    * @param privateKey secret key share used for decryption.
    * @param ciphertext ciphertext id decrypted.
    */
-  virtual Ciphertext<Element> MultipartyDecryptLead(
-      ConstCiphertext<Element> ciphertext,
-      const PrivateKey<Element> privateKey) const;
+    virtual Ciphertext<Element> MultipartyDecryptLead(ConstCiphertext<Element> ciphertext,
+                                                      const PrivateKey<Element> privateKey) const;
 
-  /**
+    /**
    * Threshold FHE: Method for combining the partially decrypted ciphertexts
    * and getting the final decryption in the clear as a NativePoly.
    *
@@ -212,11 +204,10 @@ class MultipartyBase {
    * @param *plaintext the plaintext output as a NativePoly.
    * @return the decoding result.
    */
-  virtual DecryptResult MultipartyDecryptFusion(
-      const std::vector<Ciphertext<Element>> &ciphertextVec,
-      NativePoly *plaintext) const;
+    virtual DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& ciphertextVec,
+                                                  NativePoly* plaintext) const;
 
-  /**
+    /**
    * Threshold FHE: Method for combining the partially decrypted ciphertexts
    * and getting the final decryption in the clear as a Poly.
    *
@@ -224,42 +215,39 @@ class MultipartyBase {
    * @param *plaintext the plaintext output as a Poly.
    * @return the decoding result.
    */
-  virtual DecryptResult MultipartyDecryptFusion(
-      const std::vector<Ciphertext<Element>> &ciphertextVec, Poly *plaintext) const {
-    OPENFHE_THROW(config_error, "Decryption to Poly is not supported");
-  }
+    virtual DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& ciphertextVec,
+                                                  Poly* plaintext) const {
+        OPENFHE_THROW(config_error, "Decryption to Poly is not supported");
+    }
 
-  /**
+    /**
    * Threshold FHE: Adds two prior public keys
    *
    * @param evalKey1 first public key.
    * @param evalKey2 second public key.
    * @return the new joined key.
    */
-  virtual PublicKey<Element> MultiAddPubKeys(
-      PublicKey<Element> publicKey1, PublicKey<Element> publicKey2) const;
+    virtual PublicKey<Element> MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2) const;
 
-  /**
+    /**
    * Threshold FHE: Adds two prior evaluation keys
    *
    * @param evalKey1 first evaluation key.
    * @param evalKey2 second evaluation key.
    * @return the new joined key.
    */
-  virtual EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1,
-                                            EvalKey<Element> evalKey2) const;
+    virtual EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2) const;
 
-  /**
+    /**
    * Threshold FHE: Adds two  partial evaluation keys for multiplication
    *
    * @param evalKey1 first evaluation key.
    * @param evalKey2 second evaluation key.
    * @return the new joined key.
    */
-  virtual EvalKey<Element> MultiAddEvalMultKeys(
-      EvalKey<Element> evalKey1, EvalKey<Element> evalKey2) const;
+    virtual EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2) const;
 
-  /**
+    /**
    * Threshold FHE: Generates a partial evaluation key for homomorphic
    * multiplication based on the current secret share and an existing partial
    * evaluation key
@@ -268,9 +256,8 @@ class MultipartyBase {
    * @param sk current secret share.
    * @return the new joined key.
    */
-  virtual EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey,
-                                            EvalKey<Element> evalKey) const;
-  /**
+    virtual EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey) const;
+    /**
    *
    * Threshold FHE: Adds two prior evaluation key sets for automorphisms
    *
@@ -278,29 +265,30 @@ class MultipartyBase {
    * @param es2 second automorphism key set.
    * @return the new joined key set for summation.
    */
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>>
-  MultiAddEvalAutomorphismKeys(
-      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
+        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
+        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
 
-  /**
+    /**
    * Threshold FHE: Adds two prior evaluation key sets for summation
    *
    * @param es1 first summation key set.
    * @param es2 second summation key set.
    * @return the new joined key set for summation.
    */
-  virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
-      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
-      const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
+        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
+        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {}
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {}
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
 
-  std::string SerializedObjectName() const { return "MultiPartyBase"; }
+    std::string SerializedObjectName() const {
+        return "MultiPartyBase";
+    }
 };
 
 }  // namespace lbcrypto

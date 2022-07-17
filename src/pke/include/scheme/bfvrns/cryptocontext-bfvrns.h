@@ -42,19 +42,21 @@
 
 namespace lbcrypto {
 // forward declarations. TODO (dsuponit): I would replace them with the following includes later:
-//#include "scheme/bfvrns/bfvrns-scheme.h"
-//#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-//#include "cryptocontext.h"
+// #include "scheme/bfvrns/bfvrns-scheme.h"
+// #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
+// #include "cryptocontext.h"
 class SchemeBFVRNS;
 class CryptoParametersBFVRNS;
-template <typename Element> class CryptoContextImpl;
-template <typename Element> class CryptoContextFactory;
+template <typename Element>
+class CryptoContextImpl;
+template <typename Element>
+class CryptoContextFactory;
 
 class CryptoContextBFVRNS {
     using Element = DCRTPoly;
 
 public:
-    using ContextType               = CryptoContext<Element>; // required by GenCryptoContext() in gen-cryptocontext.h
+    using ContextType               = CryptoContext<Element>;  // required by GenCryptoContext() in gen-cryptocontext.h
     using Factory                   = CryptoContextFactory<Element>;
     using PublicKeyEncryptionScheme = SchemeBFVRNS;
     using CryptoParams              = CryptoParametersBFVRNS;
@@ -66,5 +68,4 @@ public:
 
 }  // namespace lbcrypto
 
-#endif // _CRYPTOCONTEXT_BFVRNS_H_
-
+#endif  // _CRYPTOCONTEXT_BFVRNS_H_

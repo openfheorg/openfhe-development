@@ -33,7 +33,6 @@
   Constructs CryptoContext based on the provided set of parameters
  */
 
-
 /*
 * HOW TO GENERATE CRYPTOCONTEXT BY CALLING GenCryptoContext()
 * 
@@ -80,18 +79,17 @@
 #ifndef _GEN_CRYPTOCONTEXT_H_
 #define _GEN_CRYPTOCONTEXT_H_
 
-
 namespace lbcrypto {
 
 // forward declarations (don't include headers as compilation fails when you do)
 template <typename T>
 class CCParams;
 
-template<typename T>
+template <typename T>
 typename T::ContextType GenCryptoContext(const CCParams<T>& params) {
     return T::genCryptoContext(params);
 }
 
 }  // namespace lbcrypto
 
-#endif // _GEN_CRYPTOCONTEXT_H_
+#endif  // _GEN_CRYPTOCONTEXT_H_
