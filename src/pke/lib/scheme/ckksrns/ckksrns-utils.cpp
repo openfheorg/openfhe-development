@@ -60,7 +60,8 @@ uint32_t Degree(const std::vector<double>& coefficients) {
         if (coefficients[i] == 0) {
             deg += 1;
         }
-        break;
+        else
+          break;
     }
     return coefficients.size() - deg;
 }
