@@ -38,6 +38,11 @@
 
 #include "key/key.h"
 
+#include <memory>
+#include <vector>
+#include <string>
+#include <utility>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -56,146 +61,150 @@ using PublicKey = std::shared_ptr<PublicKeyImpl<Element>>;
  */
 template <typename Element>
 class PublicKeyImpl : public Key<Element> {
- public:
-  /**
+public:
+    /**
    * Basic constructor
    *
    * @param cc - CryptoContext
    * @param id - key identifier
    */
-  explicit PublicKeyImpl(CryptoContext<Element> cc = 0, const std::string &id = "")
-      : Key<Element>(cc, id) {}
+    explicit PublicKeyImpl(CryptoContext<Element> cc = 0, const std::string& id = "") : Key<Element>(cc, id) {}
 
-  /**
+    /**
    * Copy constructor
    *
    *@param &rhs PublicKeyImpl to copy from
    */
-  explicit PublicKeyImpl(const PublicKeyImpl<Element> &rhs)
-      : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()) {
-    m_h = rhs.m_h;
-  }
+    explicit PublicKeyImpl(const PublicKeyImpl<Element>& rhs) : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()) {
+        m_h = rhs.m_h;
+    }
 
-  /**
+    /**
    * Move constructor
    *
    *@param &rhs PublicKeyImpl to move from
    */
-  explicit PublicKeyImpl(PublicKeyImpl<Element> &&rhs)
-      : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()) {
-    m_h = std::move(rhs.m_h);
-  }
+    explicit PublicKeyImpl(PublicKeyImpl<Element>&& rhs) : Key<Element>(rhs.GetCryptoContext(), rhs.GetKeyTag()) {
+        m_h = std::move(rhs.m_h);
+    }
 
-  operator bool() const {
-    return static_cast<bool>(this->context) && m_h.size() != 0;
-  }
+    operator bool() const {
+        return static_cast<bool>(this->context) && m_h.size() != 0;
+    }
 
-  /**
+    /**
    * Assignment Operator.
    *
    * @param &rhs PublicKeyImpl to copy from
    */
-  const PublicKeyImpl<Element> &operator=(const PublicKeyImpl<Element> &rhs) {
-    CryptoObject<Element>::operator=(rhs);
-    this->m_h = rhs.m_h;
-    return *this;
-  }
+    const PublicKeyImpl<Element>& operator=(const PublicKeyImpl<Element>& rhs) {
+        CryptoObject<Element>::operator=(rhs);
+        this->m_h                      = rhs.m_h;
+        return *this;
+    }
 
-  /**
+    /**
    * Move Assignment Operator.
    *
    * @param &rhs PublicKeyImpl to copy from
    */
-  const PublicKeyImpl<Element> &operator=(PublicKeyImpl<Element> &&rhs) {
-    CryptoObject<Element>::operator=(rhs);
-    m_h = std::move(rhs.m_h);
-    return *this;
-  }
+    const PublicKeyImpl<Element>& operator=(PublicKeyImpl<Element>&& rhs) {
+        CryptoObject<Element>::operator=(rhs);
+        m_h                            = std::move(rhs.m_h);
+        return *this;
+    }
 
-  // @Get Properties
+    // @Get Properties
 
-  /**
+    /**
    * Gets the computed public key
    * @return the public key element.
    */
-  const std::vector<Element> &GetPublicElements() const { return this->m_h; }
+    const std::vector<Element>& GetPublicElements() const {
+        return this->m_h;
+    }
 
-  // @Set Properties
+    // @Set Properties
 
-  /**
+    /**
    * Sets the public key vector of Element.
    * @param &element is the public key Element vector to be copied.
    */
-  void SetPublicElements(const std::vector<Element> &element) { m_h = element; }
+    void SetPublicElements(const std::vector<Element>& element) {
+        m_h = element;
+    }
 
-  /**
+    /**
    * Sets the public key vector of Element.
    * @param &&element is the public key Element vector to be moved.
    */
-  void SetPublicElements(std::vector<Element> &&element) {
-    m_h = std::move(element);
-  }
+    void SetPublicElements(std::vector<Element>&& element) {
+        m_h = std::move(element);
+    }
 
-  /**
+    /**
    * Sets the public key Element at index idx.
    * @param &element is the public key Element to be copied.
    */
-  void SetPublicElementAtIndex(usint idx, const Element &element) {
-    m_h.insert(m_h.begin() + idx, element);
-  }
+    void SetPublicElementAtIndex(usint idx, const Element& element) {
+        m_h.insert(m_h.begin() + idx, element);
+    }
 
-  /**
+    /**
    * Sets the public key Element at index idx.
    * @param &&element is the public key Element to be moved.
    */
-  void SetPublicElementAtIndex(usint idx, Element &&element) {
-    m_h.insert(m_h.begin() + idx, std::move(element));
-  }
-
-  bool operator==(const PublicKeyImpl &other) const {
-    if (!CryptoObject<Element>::operator==(other)) {
-      return false;
+    void SetPublicElementAtIndex(usint idx, Element&& element) {
+        m_h.insert(m_h.begin() + idx, std::move(element));
     }
 
-    if (m_h.size() != other.m_h.size()) {
-      return false;
+    bool operator==(const PublicKeyImpl& other) const {
+        if (!CryptoObject<Element>::operator==(other)) {
+            return false;
+        }
+
+        if (m_h.size() != other.m_h.size()) {
+            return false;
+        }
+
+        for (size_t i = 0; i < m_h.size(); i++) {
+            if (m_h[i] != other.m_h[i]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    for (size_t i = 0; i < m_h.size(); i++) {
-      if (m_h[i] != other.m_h[i]) {
-        return false;
-      }
+    bool operator!=(const PublicKeyImpl& other) const {
+        return !(*this == other);
     }
 
-    return true;
-  }
-
-  bool operator!=(const PublicKeyImpl &other) const {
-    return !(*this == other);
-  }
-
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(::cereal::base_class<Key<Element>>(this));
-    ar(::cereal::make_nvp("h", m_h));
-  }
-
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      OPENFHE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(::cereal::base_class<Key<Element>>(this));
+        ar(::cereal::make_nvp("h", m_h));
     }
-    ar(::cereal::base_class<Key<Element>>(this));
-    ar(::cereal::make_nvp("h", m_h));
-  }
 
-  std::string SerializedObjectName() const { return "PublicKey"; }
-  static uint32_t SerializedVersion() { return 1; }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                                                 " is from a later version of the library");
+        }
+        ar(::cereal::base_class<Key<Element>>(this));
+        ar(::cereal::make_nvp("h", m_h));
+    }
 
- private:
-  std::vector<Element> m_h;
+    std::string SerializedObjectName() const {
+        return "PublicKey";
+    }
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
+
+private:
+    std::vector<Element> m_h;
 };
 
 }  // namespace lbcrypto

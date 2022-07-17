@@ -34,6 +34,9 @@
 
 #include "schemerns/rns-parametergeneration.h"
 
+#include <string>
+#include <memory>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -42,30 +45,24 @@ namespace lbcrypto {
 
 class ParameterGenerationCKKSRNS : public ParameterGenerationRNS {
 public:
+    virtual ~ParameterGenerationCKKSRNS() {}
 
-  virtual ~ParameterGenerationCKKSRNS() {}
+    bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
+                          usint numPrimes, usint scaleExp, usint firstModSize, uint32_t mulPartQ) const override;
 
-  bool ParamsGenCKKSRNS(
-      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-      usint numPrimes, usint scaleExp,
-      usint firstModSize,
-      uint32_t mulPartQ) const override;
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
 
-
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {}
-
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {}
-
-  std::string SerializedObjectName() const {
-    return "ParameterGenerationCKKSRNS";
-  }
+    std::string SerializedObjectName() const {
+        return "ParameterGenerationCKKSRNS";
+    }
 };
 
 }  // namespace lbcrypto

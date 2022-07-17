@@ -34,6 +34,8 @@
 
 #include "schemerns/rns-leveledshe.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -42,49 +44,49 @@ namespace lbcrypto {
 
 class LeveledSHEBGVRNS : public LeveledSHERNS {
 public:
-  virtual ~LeveledSHEBGVRNS() {}
+    virtual ~LeveledSHEBGVRNS() {}
 
-  /**
+    /**
    * Method for scaling in-place.
    *
    * @param cipherText is the ciphertext to perform modreduce on.
    * @param levels the number of towers to drop.
    * @details \p cipherText will have modulus reduction performed in-place.
    */
-  virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                        size_t levels) const override;
+    void ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;
 
-  virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext, size_t levels) const override;
+    void LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;
 
-  void EvalMultCoreInPlace(Ciphertext<DCRTPoly> &ciphertext, const NativeInteger& constant) const;
+    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const;
 
-  virtual void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly> &ciphertext1,
-                                   Ciphertext<DCRTPoly> &ciphertext2) const override;
+    void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                     Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-  virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly> &ciphertext1,
-                                   Ciphertext<DCRTPoly> &ciphertext2) const override;
+    void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
+                                          Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-  virtual DCRTPoly AdjustLevelsAndDepthInPlace(
-      Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const override;
+    DCRTPoly AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
-  virtual DCRTPoly AdjustLevelsAndDepthToOneInPlace(
-      Ciphertext<DCRTPoly> &ciphertext, ConstPlaintext plaintext) const override;
+    DCRTPoly AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext,
+                                              ConstPlaintext plaintext) const override;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<LeveledSHERNS>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<LeveledSHERNS>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<LeveledSHERNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<LeveledSHERNS>(this));
+    }
 
-  std::string SerializedObjectName() const { return "LeveledSHEBGVRNS"; }
+    std::string SerializedObjectName() const {
+        return "LeveledSHEBGVRNS";
+    }
 };
 
 }  // namespace lbcrypto

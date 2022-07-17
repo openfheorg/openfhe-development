@@ -36,6 +36,10 @@
 
 #include "schemebase/rlwe-cryptoparameters.h"
 
+#include <string>
+#include <vector>
+#include <memory>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -50,24 +54,24 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class CryptoParametersRNS : public CryptoParametersRLWE<DCRTPoly> {
-  using ParmType = typename DCRTPoly::Params;
+    using ParmType = typename DCRTPoly::Params;
 
 protected:
-  CryptoParametersRNS()
-      : CryptoParametersRLWE<DCRTPoly>(),
-        m_ksTechnique(BV),
-        m_scalTechnique(FIXEDMANUAL),
-        m_encTechnique(STANDARD),
-        m_multTechnique(HPS) {}
+    CryptoParametersRNS()
+        : CryptoParametersRLWE<DCRTPoly>(),
+          m_ksTechnique(BV),
+          m_scalTechnique(FIXEDMANUAL),
+          m_encTechnique(STANDARD),
+          m_multTechnique(HPS) {}
 
-  CryptoParametersRNS(const CryptoParametersRNS &rhs)
-      : CryptoParametersRLWE<DCRTPoly>(rhs),
-        m_ksTechnique(rhs.m_ksTechnique),
-        m_scalTechnique(rhs.m_scalTechnique),
-        m_encTechnique(rhs.m_encTechnique),
-        m_multTechnique(rhs.m_multTechnique) {}
+    CryptoParametersRNS(const CryptoParametersRNS& rhs)
+        : CryptoParametersRLWE<DCRTPoly>(rhs),
+          m_ksTechnique(rhs.m_ksTechnique),
+          m_scalTechnique(rhs.m_scalTechnique),
+          m_encTechnique(rhs.m_encTechnique),
+          m_multTechnique(rhs.m_multTechnique) {}
 
-  /**
+    /**
    * Constructor that initializes values.  Note that it is possible to set
    * parameters in a way that is overall infeasible for actual use. There are
    * fewer degrees of freedom than parameters provided.  Typically one chooses
@@ -90,44 +94,34 @@ protected:
    * @param ksTech key switching method
    * @param scalTech scaling method
    */
-  CryptoParametersRNS(std::shared_ptr<ParmType> params,
-                       const PlaintextModulus &plaintextModulus,
-                       float distributionParameter, float assuranceMeasure,
-                       SecurityLevel securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
-                       int maxRelinSkDeg = 2,
-                       KeySwitchTechnique ksTech = BV,
-                       ScalingTechnique scalTech = FIXEDMANUAL,
-                       EncryptionTechnique encTech = STANDARD,
-                       MultiplicationTechnique multTech = HPS)
-      : CryptoParametersRLWE<DCRTPoly>(
-            params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
-            distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist) {
-    m_ksTechnique = ksTech;
-    m_scalTechnique = scalTech;
-    m_encTechnique = encTech;
-    m_multTechnique = multTech;
-  }
+    CryptoParametersRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
+                        float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
+                        usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
+                        KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
+                        EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS)
+        : CryptoParametersRLWE<DCRTPoly>(params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
+                                         distributionParameter, assuranceMeasure, securityLevel, digitSize,
+                                         maxRelinSkDeg, secretKeyDist) {
+        m_ksTechnique   = ksTech;
+        m_scalTechnique = scalTech;
+        m_encTechnique  = encTech;
+        m_multTechnique = multTech;
+    }
 
-  CryptoParametersRNS(std::shared_ptr<ParmType> params,
-                       EncodingParams encodingParams,
-                       float distributionParameter, float assuranceMeasure,
-                       SecurityLevel securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
-                       int maxRelinSkDeg = 2,
-                       KeySwitchTechnique ksTech = BV,
-                       ScalingTechnique scalTech = FIXEDMANUAL,
-                       EncryptionTechnique encTech = STANDARD,
-                       MultiplicationTechnique multTech = HPS)
-      : CryptoParametersRLWE<DCRTPoly>(
-            params, encodingParams,
-            distributionParameter, assuranceMeasure, securityLevel, digitSize, maxRelinSkDeg, secretKeyDist) {
-    m_ksTechnique = ksTech;
-    m_scalTechnique = scalTech;
-    m_encTechnique = encTech;
-    m_multTechnique = multTech;
-  }
+    CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
+                        float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
+                        SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
+                        ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
+                        MultiplicationTechnique multTech = HPS)
+        : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
+                                         digitSize, maxRelinSkDeg, secretKeyDist) {
+        m_ksTechnique   = ksTech;
+        m_scalTechnique = scalTech;
+        m_encTechnique  = encTech;
+        m_multTechnique = multTech;
+    }
 
-
-  virtual ~CryptoParametersRNS() {}
+    virtual ~CryptoParametersRNS() {}
 
 public:
     /**
@@ -138,221 +132,222 @@ public:
    * @param ksTech the technique to use for key switching (e.g., BV or GHS).
    * @param scalTech the technique to use for scaling (e.g., FLEXIBLEAUTO or FIXEDMANUAL).
    */
-  virtual void PrecomputeCRTTables(KeySwitchTechnique ksTech,
-                                   ScalingTechnique scalTech,
-                                   EncryptionTechnique encTech,
-                                   MultiplicationTechnique multTech,
-                                   uint32_t numPartQ,
-                                   uint32_t auxBits,
-                                   uint32_t extraBits) = 0;
+    virtual void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
+                                     MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
+                                     uint32_t extraBits) = 0;
 
-  virtual uint64_t FindAuxPrimeStep() const;
+    virtual uint64_t FindAuxPrimeStep() const;
 
-  /**
+    /**
    * == operator to compare to this instance of CryptoParametersBase object.
    *
    * @param &rhs CryptoParameters to check equality against.
    */
-  bool operator==(const CryptoParametersBase<DCRTPoly> &rhs) const override {
-    const auto *el = dynamic_cast<const CryptoParametersRNS *>(&rhs);
+    bool operator==(const CryptoParametersBase<DCRTPoly>& rhs) const override {
+        const auto* el = dynamic_cast<const CryptoParametersRNS*>(&rhs);
 
-    if (el == nullptr) return false;
+        if (el == nullptr)
+            return false;
 
-    return CryptoParametersBase<DCRTPoly>::operator==(rhs) &&
-           m_scalTechnique == el->GetScalingTechnique() &&
-           m_ksTechnique == el->GetKeySwitchTechnique() &&
-           m_multTechnique == el->GetMultiplicationTechnique() &&
-           m_encTechnique == el->GetEncryptionTechnique() &&
-           m_numPartQ == el->GetNumPartQ() &&
-           m_auxBits == el->GetAuxBits() &&
-           m_extraBits == el->GetExtraBits();
-  }
+        return CryptoParametersBase<DCRTPoly>::operator==(rhs) && m_scalTechnique == el->GetScalingTechnique() &&
+               m_ksTechnique == el->GetKeySwitchTechnique() && m_multTechnique == el->GetMultiplicationTechnique() &&
+               m_encTechnique == el->GetEncryptionTechnique() && m_numPartQ == el->GetNumPartQ() &&
+               m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits();
+    }
 
-  void PrintParameters(std::ostream &os) const override {
-    CryptoParametersBase<DCRTPoly>::PrintParameters(os);
-  }
+    void PrintParameters(std::ostream& os) const override {
+        CryptoParametersBase<DCRTPoly>::PrintParameters(os);
+    }
 
-  /////////////////////////////////////
-  // PrecomputeCRTTables
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // PrecomputeCRTTables
+    /////////////////////////////////////
 
-  /**
+    /**
    * Method to retrieve the technique to be used for key switching.
    *
    * @return the key switching technique.
    */
-  enum KeySwitchTechnique GetKeySwitchTechnique() const {
-    return m_ksTechnique;
-  }
+    enum KeySwitchTechnique GetKeySwitchTechnique() const {
+        return m_ksTechnique;
+    }
 
-  /**
+    /**
    * Method to retrieve the technique to be used for scaling.
    *
    * @return the scaling technique.
    */
-  enum ScalingTechnique GetScalingTechnique() const {
-    return m_scalTechnique;
-  }
-
-  /**
-   * Method to retrieve the technique to be used for rescaling.
-   *
-   * @return the rescaling technique.
-   */
-  enum EncryptionTechnique GetEncryptionTechnique() const {
-    return m_encTechnique;
-  }
-
-  /**
-   * Method to retrieve the technique to be used for rescaling.
-   *
-   * @return the rescaling technique.
-   */
-  enum MultiplicationTechnique GetMultiplicationTechnique() const {
-    return m_multTechnique;
-  }
-
-
-
-  uint32_t GetAuxBits() const { return m_auxBits; }
-
-  uint32_t GetExtraBits() const { return m_extraBits; }
-
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
-    if (m_ksTechnique == HYBRID) {
-      return m_paramsQP;
-    } else if (m_encTechnique == EXTENDED) {
-      return m_paramsQr;
+    enum ScalingTechnique GetScalingTechnique() const {
+        return m_scalTechnique;
     }
-    return m_params;
-  }
 
-  /////////////////////////////////////
-  // BGVrns : ModReduce
-  /////////////////////////////////////
+    /**
+   * Method to retrieve the technique to be used for rescaling.
+   *
+   * @return the rescaling technique.
+   */
+    enum EncryptionTechnique GetEncryptionTechnique() const {
+        return m_encTechnique;
+    }
 
-  /**
+    /**
+   * Method to retrieve the technique to be used for rescaling.
+   *
+   * @return the rescaling technique.
+   */
+    enum MultiplicationTechnique GetMultiplicationTechnique() const {
+        return m_multTechnique;
+    }
+
+    uint32_t GetAuxBits() const {
+        return m_auxBits;
+    }
+
+    uint32_t GetExtraBits() const {
+        return m_extraBits;
+    }
+
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
+        if (m_ksTechnique == HYBRID) {
+            return m_paramsQP;
+        }
+        else if (m_encTechnique == EXTENDED) {
+            return m_paramsQr;
+        }
+        return m_params;
+    }
+
+    /////////////////////////////////////
+    // BGVrns : ModReduce
+    /////////////////////////////////////
+
+    /**
    * Method that returns the NTL precomputions for [t]_{q_i}
    *
    * @return the pre-computed values.
    */
-  const std::vector<NativeInteger> &GettModqPrecon() const { return m_tModqPrecon; }
+    const std::vector<NativeInteger>& GettModqPrecon() const {
+        return m_tModqPrecon;
+    }
 
-  /**
+    /**
    * Get the precomputed table of [-t^{-1}]_{q_i}
    *
    * @return the pre-computed values.
    */
-  const NativeInteger &GetNegtInvModq(usint l) const {
-    return m_negtInvModq[l];
-  }
+    const NativeInteger& GetNegtInvModq(usint l) const {
+        return m_negtInvModq[l];
+    }
 
-  /**
+    /**
    * Method that returns the NTL precomputions for [-t^{-1}]_{q_i}
    *
    * @return the pre-computed values.
    */
-  const NativeInteger &GetNegtInvModqPrecon(usint l) const {
-    return m_negtInvModqPrecon[l];
-  }
+    const NativeInteger& GetNegtInvModqPrecon(usint l) const {
+        return m_negtInvModqPrecon[l];
+    }
 
-  /////////////////////////////////////
-  // CKKSrns : DropLastElementAndScale
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // CKKSrns : DropLastElementAndScale
+    /////////////////////////////////////
 
-  /**
+    /**
    * Q^(l) = \prod_{j=0}^{l-1}
    * Gets the precomputed table of [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetQlQlInvModqlDivqlModq(size_t i) const {
-    return m_QlQlInvModqlDivqlModq[i];
-  }
+    const std::vector<NativeInteger>& GetQlQlInvModqlDivqlModq(size_t i) const {
+        return m_QlQlInvModqlDivqlModq[i];
+    }
 
-  /**
+    /**
    * Q^(l) = \prod_{j=0}^{l-1}
    * Gets the NTL precomputions for [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetQlQlInvModqlDivqlModqPrecon(
-      size_t i) const {
-    return m_QlQlInvModqlDivqlModqPrecon[i];
-  }
+    const std::vector<NativeInteger>& GetQlQlInvModqlDivqlModqPrecon(size_t i) const {
+        return m_QlQlInvModqlDivqlModqPrecon[i];
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [q_i^{-1}]_{q_j}
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetqlInvModq(size_t i) const {
-    return m_qlInvModq[i];
-  }
+    const std::vector<NativeInteger>& GetqlInvModq(size_t i) const {
+        return m_qlInvModq[i];
+    }
 
-  /**
+    /**
    * Gets the NTL precomputions for [q_i^{-1}]_{q_j}
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetqlInvModqPrecon(size_t i) const {
-    return m_qlInvModqPrecon[i];
-  }
+    const std::vector<NativeInteger>& GetqlInvModqPrecon(size_t i) const {
+        return m_qlInvModqPrecon[i];
+    }
 
-  /////////////////////////////////////
-  // KeySwitchHybrid : KeyGen
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // KeySwitchHybrid : KeyGen
+    /////////////////////////////////////
 
-  /**
+    /**
    * Gets Q*P CRT basis
    * Q*P = {q_1,...,q_l,p_1,...,p_k}
    * Used in Hybrid key switch generation
    *
    * @return the precomputed CRT params
    */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQP() const {
-    return m_paramsQP;
-  }
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQP() const {
+        return m_paramsQP;
+    }
 
-  /**
+    /**
    * Method that returns the number of digits.
    * Used in Hybrid key switch generation
    * @return the number of digits.
    */
-  uint32_t GetNumPartQ() const { return m_numPartQ; }
+    uint32_t GetNumPartQ() const {
+        return m_numPartQ;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [P]_{q_i}
    * Used in Hybrid key switch generation.
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetPModq() const { return m_PModq; }
+    const std::vector<NativeInteger>& GetPModq() const {
+        return m_PModq;
+    }
 
-  /**
+    /**
    * Get the precomputed table of [Q/Q_j]_{q_i}
    * Used in HYBRID key switch generation.
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GetPartQHatModq() const {
-    return m_PartQHatModq;
-  }
+    const std::vector<std::vector<NativeInteger>>& GetPartQHatModq() const {
+        return m_PartQHatModq;
+    }
 
-  /////////////////////////////////////
-  // KeySwitchHybrid : KeySwitch
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // KeySwitchHybrid : KeySwitch
+    /////////////////////////////////////
 
-  /**
+    /**
    * Gets the Auxiliary CRT basis {P} = {p_1,...,p_k}
    * Used in Hybrid key switching
    *
    * @return the parameters CRT params
    */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsP() const {
-    return m_paramsP;
-  }
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsP() const {
+        return m_paramsP;
+    }
 
-  /**
+    /**
    * Method that returns the number of towers within every digit.
    * This is the alpha parameter from the paper (see documentation
    * for KeySwitchHHybrid).
@@ -360,39 +355,42 @@ public:
    *
    * @return the number of towers per digit.
    */
-  uint32_t GetNumPerPartQ() const { return m_numPerPartQ; }
+    uint32_t GetNumPerPartQ() const {
+        return m_numPerPartQ;
+    }
 
-  /*
+    /*
    * Method that returns the number of partitions.
    * Used in Hybrid key switching
    *
    * @return the number of partitions.
    */
-  uint32_t GetNumberOfQPartitions() const { return m_paramsPartQ.size(); }
+    uint32_t GetNumberOfQPartitions() const {
+        return m_paramsPartQ.size();
+    }
 
-  /**
+    /**
    * Method that returns the element parameters corresponding to
    * partitions {Q_j} of Q.
    * Used in Hybrid key switching
    *
    * @return the pre-computed values.
    */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> &GetParamsPartQ(
-      uint32_t part) const {
-    return m_paramsPartQ[part];
-  }
+    const std::shared_ptr<ILDCRTParams<BigInteger>>& GetParamsPartQ(uint32_t part) const {
+        return m_paramsPartQ[part];
+    }
 
-  /**
+    /**
    * Method that returns the precomputed values for QHat^-1 mod qj
    * Used in Hybrid key switching
    *
    * @return the pre-computed values.
    */
-  const std::vector<NativeInteger> &GetPartQHatInvModq(uint32_t part) const {
-    return m_PartQHatInvModq[part];
-  }
+    const std::vector<NativeInteger>& GetPartQHatInvModq(uint32_t part) const {
+        return m_PartQHatInvModq[part];
+    }
 
-  /*
+    /*
    * Method that returns the element parameters corresponding to the
    * complementary basis of a single digit j, i.e., the basis consisting of
    * all other digits plus the special primes. Note that numTowers should be
@@ -404,80 +402,72 @@ public:
    * partition from.
    * @return the partitions.
    */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> &GetParamsComplPartQ(
-      uint32_t numTowers, uint32_t digit) const {
-    return m_paramsComplPartQ[numTowers][digit];
-  }
+    const std::shared_ptr<ILDCRTParams<BigInteger>>& GetParamsComplPartQ(uint32_t numTowers, uint32_t digit) const {
+        return m_paramsComplPartQ[numTowers][digit];
+    }
 
-  /**
+    /**
    * Method that returns the precomputed values for QHat^-1 mod qj within a
    * partition of towers, used in HYBRID.
    *
    * @return the pre-computed values.
    */
-  const std::vector<NativeInteger> &GetPartQlHatInvModq(uint32_t part,
-                                                   uint32_t sublvl) const {
-    if (part < m_PartQlHatInvModq.size() &&
-        sublvl < m_PartQlHatInvModq[part].size())
-      return m_PartQlHatInvModq[part][sublvl];
+    const std::vector<NativeInteger>& GetPartQlHatInvModq(uint32_t part, uint32_t sublvl) const {
+        if (part < m_PartQlHatInvModq.size() && sublvl < m_PartQlHatInvModq[part].size())
+            return m_PartQlHatInvModq[part][sublvl];
 
-    OPENFHE_THROW(math_error,
-                   "CryptoParametersCKKS::GetPartitionQHatInvModQTable - "
-                   "index out of bounds.");
-  }
+        OPENFHE_THROW(math_error,
+                      "CryptoParametersCKKS::GetPartitionQHatInvModQTable - "
+                      "index out of bounds.");
+    }
 
-  /**
+    /**
    * Barrett multiplication precomputations getter.
    *
    * @param index The number of towers in the ciphertext.
    * @return the pre-computed values.
    */
-  const std::vector<NativeInteger> &GetPartQlHatInvModqPrecon(
-      uint32_t part, uint32_t sublvl) const {
-    if (part < m_PartQlHatInvModqPrecon.size() &&
-        sublvl < m_PartQlHatInvModqPrecon[part].size())
-      return m_PartQlHatInvModqPrecon[part][sublvl];
+    const std::vector<NativeInteger>& GetPartQlHatInvModqPrecon(uint32_t part, uint32_t sublvl) const {
+        if (part < m_PartQlHatInvModqPrecon.size() && sublvl < m_PartQlHatInvModqPrecon[part].size())
+            return m_PartQlHatInvModqPrecon[part][sublvl];
 
-    OPENFHE_THROW(math_error,
-                   "CryptoParametersCKKS::"
-                   "GetPartitionQHatInvModQPreconTable - index "
-                   "out of bounds.");
-  }
+        OPENFHE_THROW(math_error,
+                      "CryptoParametersCKKS::"
+                      "GetPartitionQHatInvModQPreconTable - index "
+                      "out of bounds.");
+    }
 
-  /**
+    /**
    * Barrett multiplication precomputations getter.
    *
    * @param index The table containing [PartQHat]_{p_j}
    * @return the pre-computed values.
    */
-  const std::vector<std::vector<NativeInteger>> &GetPartQlHatModp(uint32_t lvl,
-                                                        uint32_t part) const {
-    if (lvl < m_PartQlHatModp.size() && part < m_PartQlHatModp[lvl].size())
-      return m_PartQlHatModp[lvl][part];
+    const std::vector<std::vector<NativeInteger>>& GetPartQlHatModp(uint32_t lvl, uint32_t part) const {
+        if (lvl < m_PartQlHatModp.size() && part < m_PartQlHatModp[lvl].size())
+            return m_PartQlHatModp[lvl][part];
 
-    OPENFHE_THROW(math_error,
-                   "CryptoParametersCKKS::GetPartitionQHatModPTable - "
-                   "index out of bounds.");
-  }
+        OPENFHE_THROW(math_error,
+                      "CryptoParametersCKKS::GetPartitionQHatModPTable - "
+                      "index out of bounds.");
+    }
 
-  /**
+    /**
    * Barrett multiplication precomputations getter.
    *
    * @param index The number of towers in the ciphertext.
    * @return the pre-computed values.
    */
-  const std::vector<DoubleNativeInt> &GetmodComplPartqBarrettMu(
-      uint32_t lvl, uint32_t part) const {
-    if (lvl < m_modComplPartqBarrettMu.size() &&
-        part < m_modComplPartqBarrettMu[lvl].size())
-      return m_modComplPartqBarrettMu[lvl][part];
+    const std::vector<DoubleNativeInt>& GetmodComplPartqBarrettMu(uint32_t lvl, uint32_t part) const {
+        if (lvl < m_modComplPartqBarrettMu.size() && part < m_modComplPartqBarrettMu[lvl].size())
+            return m_modComplPartqBarrettMu[lvl][part];
 
-    OPENFHE_THROW(math_error,
-                   "CryptoParametersCKKS::GetPartitionPrecon - index out "
-                   "of bounds.");
-  }
+        OPENFHE_THROW(math_error,
+                      "CryptoParametersCKKS::GetPartitionPrecon - index out "
+                      "of bounds.");
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [P^{-1}]_{q_i}
    * Used in GHS key switching
    *
@@ -486,19 +476,21 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetPInvModq() const { return m_PInvModq; }
+    const std::vector<NativeInteger>& GetPInvModq() const {
+        return m_PInvModq;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputions for [P^{-1}]_{q_i}
    * Used for speeding up GHS key switching.
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetPInvModqPrecon() const {
-    return m_PInvModqPrecon;
-  }
+    const std::vector<NativeInteger>& GetPInvModqPrecon() const {
+        return m_PInvModqPrecon;
+    }
 
-  /**
+    /**
    * Get the precomputed table of [(P/p_j)^{-1}]_{p_j}
    * Used in GHS key switching.
    *
@@ -507,18 +499,20 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetPHatInvModp() const { return m_PHatInvModp; }
+    const std::vector<NativeInteger>& GetPHatInvModp() const {
+        return m_PHatInvModp;
+    }
 
-  /**
+    /**
    * Get the NTL precomputions for [(P/p_j)^{-1}]_{p_j}
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetPHatInvModpPrecon() const {
-    return m_PHatInvModpPrecon;
-  }
+    const std::vector<NativeInteger>& GetPHatInvModpPrecon() const {
+        return m_PHatInvModpPrecon;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [P/p_j]_{q_i}
    * Used in GHS key switching.
    *
@@ -527,1149 +521,1178 @@ public:
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GetPHatModq() const {
-    return m_PHatModq;
-  }
+    const std::vector<std::vector<NativeInteger>>& GetPHatModq() const {
+        return m_PHatModq;
+    }
 
-  /**
+    /**
    * Gets the Barrett modulo reduction precomputation for q_i
    *
    * @return the precomputed table
    */
-  const std::vector<DoubleNativeInt> &GetModqBarrettMu() const {
-    return m_modqBarrettMu;
-  }
+    const std::vector<DoubleNativeInt>& GetModqBarrettMu() const {
+        return m_modqBarrettMu;
+    }
 
-  /**
+    /**
    * Method that returns the precomputed values for [t^(-1)]_{q_i}
    * Used in ModulusSwitching.
    *
    * @return the pre-computed values.
    */
-  const std::vector<NativeInteger> &GettInvModq() const { return m_tInvModq; }
+    const std::vector<NativeInteger>& GettInvModq() const {
+        return m_tInvModq;
+    }
 
-  /**
+    /**
    * Method that returns the NTL precomputions for [t^{-1}]_{q_i}
    *
    * @return the pre-computed values.
    */
-  const std::vector<NativeInteger> &GettInvModqPrecon() const {
-    return m_tInvModqPrecon;
-  }
+    const std::vector<NativeInteger>& GettInvModqPrecon() const {
+        return m_tInvModqPrecon;
+    }
 
-  /**
+    /**
    * Method that returns the precomputed values for [t^(-1)]_{p_j}
    * Used in KeySwitching.
    *
    * @return the pre-computed values.
    */
-  const std::vector<NativeInteger> &GettInvModp() const { return m_tInvModp; }
+    const std::vector<NativeInteger>& GettInvModp() const {
+        return m_tInvModp;
+    }
 
-  /**
+    /**
    * Method that returns the NTL precomputions for [t^{-1}]_{p_j}
    *
    * @return the pre-computed values.
    */
-  const std::vector<NativeInteger> &GettInvModpPrecon() const {
-    return m_tInvModpPrecon;
-  }
+    const std::vector<NativeInteger>& GettInvModpPrecon() const {
+        return m_tInvModpPrecon;
+    }
 
-  /////////////////////////////////////
-  // CKKSrns Scaling Factor
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // CKKSrns Scaling Factor
+    /////////////////////////////////////
 
-  /**
+    /**
    * Method to retrieve the scaling factor of level l.
    * For FIXEDMANUAL scaling technique method always returns 2^p, where p corresponds to plaintext modulus
    * @param l For FLEXIBLEAUTO scaling technique the level whose scaling factor we want to learn.
    * Levels start from 0 (no scaling done - all towers) and go up to K-1, where K is the number of towers supported.
    * @return the scaling factor.
    */
-  double GetScalingFactorReal(uint32_t l = 0) const {
-    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
-      if (l >= m_scalingFactorsReal.size()) {
-        // TODO: Return an error here.
-        return m_approxSF;
-      }
+    double GetScalingFactorReal(uint32_t l = 0) const {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+            if (l >= m_scalingFactorsReal.size()) {
+                // TODO: Return an error here.
+                return m_approxSF;
+            }
 
-      return m_scalingFactorsReal[l];
+            return m_scalingFactorsReal[l];
+        }
+
+        return m_approxSF;
     }
 
-    return m_approxSF;
-  }
+    double GetScalingFactorRealBig(uint32_t l = 0) const {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+            if (l >= m_scalingFactorsRealBig.size()) {
+                // TODO: Return an error here.
+                return m_approxSF;
+            }
 
-  double GetScalingFactorRealBig(uint32_t l = 0) const {
-    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
-      if (l >= m_scalingFactorsRealBig.size()) {
-        // TODO: Return an error here.
+            return m_scalingFactorsRealBig[l];
+        }
+
         return m_approxSF;
-      }
-
-      return m_scalingFactorsRealBig[l];
     }
 
-    return m_approxSF;
-  }
-
-  /**
+    /**
    * Method to retrieve the modulus to be dropped of level l.
    * For FIXEDMANUAL rescaling technique method always returns 2^p, where p corresponds to plaintext modulus
    * @param l index of modulus to be dropped for FLEXIBLEAUTO scaling technique
    * @return the precomputed table
    */
-  double GetModReduceFactor(uint32_t l = 0) const {
-    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
-      return m_dmoduliQ[l];
+    double GetModReduceFactor(uint32_t l = 0) const {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+            return m_dmoduliQ[l];
+        }
+
+        return m_approxSF;
     }
 
-    return m_approxSF;
-  }
+    /////////////////////////////////////
+    // BFVrns : Encrypt : POverQ
+    /////////////////////////////////////
 
-  /////////////////////////////////////
-  // BFVrns : Encrypt : POverQ
-  /////////////////////////////////////
+    const NativeInteger GetNegQModt() const {
+        return m_negQModt;
+    }
 
-  const NativeInteger GetNegQModt() const {
-    return m_negQModt;
-  }
+    const NativeInteger GetNegQModtPrecon() const {
+        return m_negQModtPrecon;
+    }
 
-  const NativeInteger GetNegQModtPrecon() const {
-    return m_negQModtPrecon;
-  }
+    const NativeInteger GetNegQrModt() const {
+        return m_negQrModt;
+    }
 
-  const NativeInteger GetNegQrModt() const {
-    return m_negQrModt;
-  }
+    const NativeInteger GetNegQrModtPrecon() const {
+        return m_negQrModtPrecon;
+    }
 
-  const NativeInteger GetNegQrModtPrecon() const {
-    return m_negQrModtPrecon;
-  }
-
-  /**
+    /**
    * Method that returns the precomputed values for [t^(-1)]_{a} where a is from {q_i} U r
    * Used in ModulusSwitching.
    *
    * @return the pre-computed values.
    */
-  const std::vector<NativeInteger> &GettInvModqr() const { return m_tInvModqr; }
+    const std::vector<NativeInteger>& GettInvModqr() const {
+        return m_tInvModqr;
+    }
 
-  /////////////////////////////////////
-  // BFVrns : Mult : ExpandCRTBasis
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Mult : ExpandCRTBasis
+    /////////////////////////////////////
 
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQl(usint l = 0) const {
-    return m_paramsQl[l];
-  }
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQl(usint l = 0) const {
+        return m_paramsQl[l];
+    }
 
-  const std::vector<double>& GetQlQHatInvModqDivqFrac(usint l) const {
-    return m_QlQHatInvModqDivqFrac[l];
-  }
+    const std::vector<double>& GetQlQHatInvModqDivqFrac(usint l) const {
+        return m_QlQHatInvModqDivqFrac[l];
+    }
 
-  const std::vector<std::vector<NativeInteger>>& GetQlQHatInvModqDivqModq(usint l)
-      const {
-    return m_QlQHatInvModqDivqModq[l];
-  }
+    const std::vector<std::vector<NativeInteger>>& GetQlQHatInvModqDivqModq(usint l) const {
+        return m_QlQHatInvModqDivqModq[l];
+    }
 
-  /**
+    /**
    * Gets the Auxiliary CRT basis {R} = {r_1,...,r_k}
    * used in homomorphic multiplication
    *
    * @return the precomputed CRT params
    */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsRl(usint l = 0) const {
-    return m_paramsRl[l];
-  }
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsRl(usint l = 0) const {
+        return m_paramsRl[l];
+    }
 
-  /**
+    /**
    * Gets the Auxiliary expanded CRT basis {S} = {Q*R} =
    * {{q_i},{r_k}} used in homomorphic multiplication
    *
    * @return the precomputed CRT params
    */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlRl(usint l = 0) const {
-    return m_paramsQlRl[l];
-  }
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQlRl(usint l = 0) const {
+        return m_paramsQlRl[l];
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [(Q/q_i)^{-1}]_{q_i}
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetQlHatInvModq(usint l = 0) const {
-    return m_QlHatInvModq[l];
-  }
+    const std::vector<NativeInteger>& GetQlHatInvModq(usint l = 0) const {
+        return m_QlHatInvModq[l];
+    }
 
-  /**
+    /**
    * Gets the NTL precomputations for [(Q/q_i)^{-1}]_{q_i}
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetQlHatInvModqPrecon(usint l = 0) const {
-    return m_QlHatInvModqPrecon[l];
-  }
+    const std::vector<NativeInteger>& GetQlHatInvModqPrecon(usint l = 0) const {
+        return m_QlHatInvModqPrecon[l];
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [Q/q_i]_{r_k}
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GetQlHatModr(usint l = 0) const {
-    return m_QlHatModr[l];
-  }
+    const std::vector<std::vector<NativeInteger>>& GetQlHatModr(usint l = 0) const {
+        return m_QlHatModr[l];
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [\alpha*Q]_{r_k}
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GetalphaQlModr(usint l = 0) const {
-    return m_alphaQlModr[l];
-  }
+    const std::vector<std::vector<NativeInteger>>& GetalphaQlModr(usint l = 0) const {
+        return m_alphaQlModr[l];
+    }
 
-  const std::vector<NativeInteger>& GetmNegRlQHatInvModq(usint l = 0) const {
-    return m_negRlQHatInvModq[l];
-  }
+    const std::vector<NativeInteger>& GetmNegRlQHatInvModq(usint l = 0) const {
+        return m_negRlQHatInvModq[l];
+    }
 
-  const std::vector<NativeInteger>& GetmNegRlQHatInvModqPrecon(usint l = 0) const {
-    return m_negRlQHatInvModqPrecon[l];
-  }
+    const std::vector<NativeInteger>& GetmNegRlQHatInvModqPrecon(usint l = 0) const {
+        return m_negRlQHatInvModqPrecon[l];
+    }
 
-  const std::vector<std::vector<NativeInteger>>& GetqInvModr() const {
-    return m_qInvModr;
-  }
+    const std::vector<std::vector<NativeInteger>>& GetqInvModr() const {
+        return m_qInvModr;
+    }
 
-  /**
+    /**
    * Gets the Barrett modulo reduction precomputations for r_k
    *
    * @return the precomputed table
    */
-  std::vector<DoubleNativeInt> const &GetModrBarrettMu() const {
-    return m_modrBarrettMu;
-  }
+    std::vector<DoubleNativeInt> const& GetModrBarrettMu() const {
+        return m_modrBarrettMu;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of 1./q_i
    *
    * @return the precomputed table
    */
-  std::vector<double> const &GetqInv() const { return m_qInv; }
+    std::vector<double> const& GetqInv() const {
+        return m_qInv;
+    }
 
-  /////////////////////////////////////
-  // BFVrns : Mult : ScaleAndRound
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Mult : ScaleAndRound
+    /////////////////////////////////////
 
-  /**
+    /**
    * For S = QR
    * Gets the precomputed table of \frac{[t*R*(S/s_m)^{-1}]_{s_m}/s_m}
    *
    * @return the precomputed table
    */
-  const std::vector<double> &GettRSHatInvModsDivsFrac() const {
-    return m_tRSHatInvModsDivsFrac;
-  }
+    const std::vector<double>& GettRSHatInvModsDivsFrac() const {
+        return m_tRSHatInvModsDivsFrac;
+    }
 
-  /**
+    /**
    * For S = QR
    * Gets the precomputed table of [\floor{t*R*(S/s_m)^{-1}/s_m}]_{r_k}
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GettRSHatInvModsDivsModr() const {
-    return m_tRSHatInvModsDivsModr;
-  }
+    const std::vector<std::vector<NativeInteger>>& GettRSHatInvModsDivsModr() const {
+        return m_tRSHatInvModsDivsModr;
+    }
 
-  /////////////////////////////////////
-  // BFVrns : Mult : SwitchCRTBasis
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Mult : SwitchCRTBasis
+    /////////////////////////////////////
 
-  /**
+    /**
    * Gets the precomputed table of [(R/r_k)^{-1}]_{r_k}
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetRlHatInvModr(usint l = 0) const {
-    return m_RlHatInvModr[l];
-  }
+    const std::vector<NativeInteger>& GetRlHatInvModr(usint l = 0) const {
+        return m_RlHatInvModr[l];
+    }
 
-  /**
+    /**
    * Gets the NTL precomputation for [(R/r_k)^{-1}]_{r_k}
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GetRlHatInvModrPrecon(usint l = 0) const {
-    return m_RlHatInvModrPrecon[l];
-  }
+    const std::vector<NativeInteger>& GetRlHatInvModrPrecon(usint l = 0) const {
+        return m_RlHatInvModrPrecon[l];
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [R/r_k]_{q_i}
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GetRlHatModq(usint l = 0) const {
-    return m_RlHatModq[l];
-  }
+    const std::vector<std::vector<NativeInteger>>& GetRlHatModq(usint l = 0) const {
+        return m_RlHatModq[l];
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [\alpha*P]_{q_i}
    *
    * @return the precomputed table
    */
-  const std::vector<std::vector<NativeInteger>> &GetalphaRlModq(usint l = 0) const {
-    return m_alphaRlModq[l];
-  }
+    const std::vector<std::vector<NativeInteger>>& GetalphaRlModq(usint l = 0) const {
+        return m_alphaRlModq[l];
+    }
 
-  const std::vector<double>& GettQlSlHatInvModsDivsFrac(usint l) const {
-    return m_tQlSlHatInvModsDivsFrac[l];
-  }
+    const std::vector<double>& GettQlSlHatInvModsDivsFrac(usint l) const {
+        return m_tQlSlHatInvModsDivsFrac[l];
+    }
 
-  const std::vector<std::vector<NativeInteger>>& GettQlSlHatInvModsDivsModq(usint l)
-      const {
-    return m_tQlSlHatInvModsDivsModq[l];
-  }
+    const std::vector<std::vector<NativeInteger>>& GettQlSlHatInvModsDivsModq(usint l) const {
+        return m_tQlSlHatInvModsDivsModq[l];
+    }
 
-  const std::vector<NativeInteger>& GetQlHatModq(usint l) const {
-    return m_QlHatModq[l];
-  }
+    const std::vector<NativeInteger>& GetQlHatModq(usint l) const {
+        return m_QlHatModq[l];
+    }
 
-  const std::vector<NativeInteger>& GetQlHatModqPrecon(usint l) const {
-    return m_QlHatModqPrecon[l];
-  }
+    const std::vector<NativeInteger>& GetQlHatModqPrecon(usint l) const {
+        return m_QlHatModqPrecon[l];
+    }
 
-  /**
+    /**
    * Gets the precomputed table of 1./p_j
    *
    * @return the precomputed table
    */
-  std::vector<double> const &GetrInv() const { return m_rInv; }
+    std::vector<double> const& GetrInv() const {
+        return m_rInv;
+    }
 
-  /////////////////////////////////////
-  // BFVrns : Decrypt : ScaleAndRound
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Decrypt : ScaleAndRound
+    /////////////////////////////////////
 
-  /**
+    /**
    * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}/q_i}
    *
    * @return the precomputed table
    */
-  const std::vector<double> &GettQHatInvModqDivqFrac() const {
-    return m_tQHatInvModqDivqFrac;
-  }
+    const std::vector<double>& GettQHatInvModqDivqFrac() const {
+        return m_tQHatInvModqDivqFrac;
+    }
 
-  /**
+    /**
    * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
    * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}*B/q_i}
    *
    * @return the precomputed table
    */
-  const std::vector<double> &GettQHatInvModqBDivqFrac() const {
-    return m_tQHatInvModqBDivqFrac;
-  }
+    const std::vector<double>& GettQHatInvModqBDivqFrac() const {
+        return m_tQHatInvModqBDivqFrac;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [\floor{t*{Q/q_i}^{-1}/q_i}]_t
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GettQHatInvModqDivqModt() const {
-    return m_tQHatInvModqDivqModt;
-  }
+    const std::vector<NativeInteger>& GettQHatInvModqDivqModt() const {
+        return m_tQHatInvModqDivqModt;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputations for [\floor{t*{Q/q_i}^{-1}/q_i}]_t
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GettQHatInvModqDivqModtPrecon() const {
-    return m_tQHatInvModqDivqModtPrecon;
-  }
+    const std::vector<NativeInteger>& GettQHatInvModqDivqModtPrecon() const {
+        return m_tQHatInvModqDivqModtPrecon;
+    }
 
-  /**
+    /**
    * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
    * Gets the precomputed table of [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GettQHatInvModqBDivqModt() const {
-    return m_tQHatInvModqBDivqModt;
-  }
+    const std::vector<NativeInteger>& GettQHatInvModqBDivqModt() const {
+        return m_tQHatInvModqBDivqModt;
+    }
 
-  /**
+    /**
    * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
    * Gets the NTL precomputations for [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
    *
    * @return the precomputed table
    */
-  const std::vector<NativeInteger> &GettQHatInvModqBDivqModtPrecon() const {
-    return m_tQHatInvModqBDivqModtPrecon;
-  }
+    const std::vector<NativeInteger>& GettQHatInvModqBDivqModtPrecon() const {
+        return m_tQHatInvModqBDivqModtPrecon;
+    }
 
-  const NativeInteger &GetScalingFactorInt(usint l) const {
-    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
-      if (l >= m_scalingFactorsInt.size()) {
-        // TODO: Return an error here.
+    const NativeInteger& GetScalingFactorInt(usint l) const {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+            if (l >= m_scalingFactorsInt.size()) {
+                // TODO: Return an error here.
+                return m_fixedSF;
+            }
+            return m_scalingFactorsInt[l];
+        }
         return m_fixedSF;
-      }
-      return m_scalingFactorsInt[l];
     }
-    return m_fixedSF;
-  }
 
-  const NativeInteger &GetScalingFactorIntBig(usint l) const { 
-    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
-      if (l >= m_scalingFactorsIntBig.size()) {
-        // TODO: Return an error here.
+    const NativeInteger& GetScalingFactorIntBig(usint l) const {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+            if (l >= m_scalingFactorsIntBig.size()) {
+                // TODO: Return an error here.
+                return m_fixedSF;
+            }
+            return m_scalingFactorsIntBig[l];
+        }
         return m_fixedSF;
-      }
-      return m_scalingFactorsIntBig[l];
     }
-    return m_fixedSF;
-  }
 
-  const NativeInteger &GetModReduceFactorInt(uint32_t l = 0) const {
-    if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
-      return m_qModt[l];
+    const NativeInteger& GetModReduceFactorInt(uint32_t l = 0) const {
+        if (m_scalTechnique == FLEXIBLEAUTO || m_scalTechnique == FLEXIBLEAUTOEXT) {
+            return m_qModt[l];
+        }
+        return m_fixedSF;
     }
-    return m_fixedSF;
-  }
 
-  /////////////////////////////////////
-  // BFVrns : Encrypt
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Encrypt
+    /////////////////////////////////////
 
-  /**
+    /**
    * Gets the precomputed table of 1./p_{q_i}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetrInvModq() const { return m_rInvModq; }
+    std::vector<NativeInteger> const& GetrInvModq() const {
+        return m_rInvModq;
+    }
 
-  /**
+    /**
    * Gets the Auxiliary CRT basis {Qr} = {Q U r}
    * used in BFV encryption in mode EXTENDED
    *
    * @return the precomputed CRT params
    */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQr() const {
-    return m_paramsQr;
-  }
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQr() const {
+        return m_paramsQr;
+    }
 
-  /////////////////////////////////////
-  // BFVrnsB
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrnsB
+    /////////////////////////////////////
 
-  /**
+    /**
    * Gets the Auxiliary CRT basis {Bsk} = {B U msk}
    * used in homomorphic multiplication
    *
    * @return the precomputed CRT params
    */
-  const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsBsk() const {
-    return m_paramsBsk;
-  }
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsBsk() const {
+        return m_paramsBsk;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of q_i
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetModuliQ() const { return m_moduliQ; }
+    std::vector<NativeInteger> const& GetModuliQ() const {
+        return m_moduliQ;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of bsk_j
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetModuliBsk() const { return m_moduliBsk; }
+    std::vector<NativeInteger> const& GetModuliBsk() const {
+        return m_moduliBsk;
+    }
 
-  /**
+    /**
    * Gets the Barrett modulo reduction precomputation for bsk_j
    *
    * @return the precomputed table
    */
-  std::vector<DoubleNativeInt> const &GetModbskBarrettMu() const {
-    return m_modbskBarrettMu;
-  }
+    std::vector<DoubleNativeInt> const& GetModbskBarrettMu() const {
+        return m_modbskBarrettMu;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [mtilde*(Q/q_i)^{-1}]_{q_i}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetmtildeQHatInvModq() const {
-    return m_mtildeQHatInvModq;
-  }
+    std::vector<NativeInteger> const& GetmtildeQHatInvModq() const {
+        return m_mtildeQHatInvModq;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputations for [mtilde*(Q/q_i)^{-1}]_{q_i}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetmtildeQHatInvModqPrecon() const {
-    return m_mtildeQHatInvModqPrecon;
-  }
+    std::vector<NativeInteger> const& GetmtildeQHatInvModqPrecon() const {
+        return m_mtildeQHatInvModqPrecon;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [Q/q_i]_{bsk_j}
    *
    * @return the precomputed table
    */
-  std::vector<std::vector<NativeInteger>> const &GetQHatModbsk() const {
-    return m_QHatModbsk;
-  }
+    std::vector<std::vector<NativeInteger>> const& GetQHatModbsk() const {
+        return m_QHatModbsk;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [(q_i)^{-1}]_{bsk_j}
    *
    * @return the precomputed table
    */
-  std::vector<std::vector<NativeInteger>> const &GetqInvModbsk() const {
-    return m_qInvModbsk;
-  }
+    std::vector<std::vector<NativeInteger>> const& GetqInvModbsk() const {
+        return m_qInvModbsk;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [Q/q_i]_{mtilde}
    *
    * @return the precomputed table
    */
-  std::vector<uint16_t> const &GetQHatModmtilde() const {
-    return m_QHatModmtilde;
-  }
+    std::vector<uint16_t> const& GetQHatModmtilde() const {
+        return m_QHatModmtilde;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [Q]_{bsk_j}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetQModbsk() const { return m_QModbsk; }
+    std::vector<NativeInteger> const& GetQModbsk() const {
+        return m_QModbsk;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputations for [Q]_{bsk_j}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetQModbskPrecon() const {
-    return m_QModbskPrecon;
-  }
+    std::vector<NativeInteger> const& GetQModbskPrecon() const {
+        return m_QModbskPrecon;
+    }
 
-  /**
+    /**
    * Gets the precomputed [-Q^{-1}]_{mtilde}
    *
    * @return the precomputed value
    */
-  uint16_t const &GetNegQInvModmtilde() const { return m_negQInvModmtilde; }
+    uint16_t const& GetNegQInvModmtilde() const {
+        return m_negQInvModmtilde;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [mtilde^{-1}]_{bsk_j}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetmtildeInvModbsk() const {
-    return m_mtildeInvModbsk;
-  }
+    std::vector<NativeInteger> const& GetmtildeInvModbsk() const {
+        return m_mtildeInvModbsk;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputations for [mtilde^{-1}]_{bsk_j}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetmtildeInvModbskPrecon() const {
-    return m_mtildeInvModbskPrecon;
-  }
+    std::vector<NativeInteger> const& GetmtildeInvModbskPrecon() const {
+        return m_mtildeInvModbskPrecon;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [t*(Q/q_i)^{-1}]_{q_i}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GettQHatInvModq() const {
-    return m_tQHatInvModq;
-  }
+    std::vector<NativeInteger> const& GettQHatInvModq() const {
+        return m_tQHatInvModq;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputations for [t*(Q/q_i)^{-1}]_{q_i}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GettQHatInvModqPrecon() const {
-    return m_tQHatInvModqPrecon;
-  }
+    std::vector<NativeInteger> const& GettQHatInvModqPrecon() const {
+        return m_tQHatInvModqPrecon;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [t*gamma*(Q/q_i)^(-1)]_{q_i}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GettgammaQHatInvModq() const {
-    return m_tgammaQHatInvModq;
-  }
+    std::vector<NativeInteger> const& GettgammaQHatInvModq() const {
+        return m_tgammaQHatInvModq;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputations for [t*gamma*(Q/q_i)^(-1)]_{q_i}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GettgammaQHatInvModqPrecon() const {
-    return m_tgammaQHatInvModqPrecon;
-  }
+    std::vector<NativeInteger> const& GettgammaQHatInvModqPrecon() const {
+        return m_tgammaQHatInvModqPrecon;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [t/Q]_{bsk_j}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GettQInvModbsk() const {
-    return m_tQInvModbsk;
-  }
+    std::vector<NativeInteger> const& GettQInvModbsk() const {
+        return m_tQInvModbsk;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputations for [t/Q]_{bsk_j}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GettQInvModbskPrecon() const {
-    return m_tQInvModbskPrecon;
-  }
+    std::vector<NativeInteger> const& GettQInvModbskPrecon() const {
+        return m_tQInvModbskPrecon;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [(B/b_j)^{-1}]_{b_j}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetBHatInvModb() const {
-    return m_BHatInvModb;
-  }
+    std::vector<NativeInteger> const& GetBHatInvModb() const {
+        return m_BHatInvModb;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputations for [(B/b_j)^{-1}]_{b_j}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetBHatInvModbPrecon() const {
-    return m_BHatInvModbPrecon;
-  }
+    std::vector<NativeInteger> const& GetBHatInvModbPrecon() const {
+        return m_BHatInvModbPrecon;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [B/b_j]_{msk}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetBHatModmsk() const {
-    return m_BHatModmsk;
-  }
+    std::vector<NativeInteger> const& GetBHatModmsk() const {
+        return m_BHatModmsk;
+    }
 
-  /**
+    /**
    * Gets the precomputed [B^{-1}]_msk
    *
    * @return the precomputed value
    */
-  NativeInteger const &GetBInvModmsk() const { return m_BInvModmsk; }
+    NativeInteger const& GetBInvModmsk() const {
+        return m_BInvModmsk;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputions for [B^{-1}]_msk
    *
    * @return the precomputed value
    */
-  NativeInteger const &GetBInvModmskPrecon() const {
-    return m_BInvModmskPrecon;
-  }
+    NativeInteger const& GetBInvModmskPrecon() const {
+        return m_BInvModmskPrecon;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [B/b_j]_{q_i}
    *
    * @return the precomputed table
    */
-  std::vector<std::vector<NativeInteger>> const &GetBHatModq() const {
-    return m_BHatModq;
-  }
+    std::vector<std::vector<NativeInteger>> const& GetBHatModq() const {
+        return m_BHatModq;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [B]_{q_i}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetBModq() const { return m_BModq; }
+    std::vector<NativeInteger> const& GetBModq() const {
+        return m_BModq;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputions for [B]_{q_i}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetBModqPrecon() const {
-    return m_BModqPrecon;
-  }
+    std::vector<NativeInteger> const& GetBModqPrecon() const {
+        return m_BModqPrecon;
+    }
 
-  /**
+    /**
    * Gets auxiliary modulus gamma
    *
    * @return gamma
    */
-  uint32_t const &Getgamma() const { return m_gamma; }
+    uint32_t const& Getgamma() const {
+        return m_gamma;
+    }
 
-  // TODO: use 64 bit words in case NativeInteger uses smaller word size
-  /**
+    // TODO: use 64 bit words in case NativeInteger uses smaller word size
+    /**
    * Gets t*gamma where t - plaintext modulus, gamma - auxiliary modulus
    *
    * @return t*gamma
    */
-  NativeInteger const &Gettgamma() const { return m_tgamma; }
+    NativeInteger const& Gettgamma() const {
+        return m_tgamma;
+    }
 
-  /**
+    /**
    * Gets the precomputed table of [-(q_i)^{-1}]_{t*gamma}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetNegInvqModtgamma() const {
-    return m_negInvqModtgamma;
-  }
+    std::vector<NativeInteger> const& GetNegInvqModtgamma() const {
+        return m_negInvqModtgamma;
+    }
 
-  /**
+    /**
    * Gets the NTL precomputions for [-(q_i)^{-1}]_{t*gamma}
    *
    * @return the precomputed table
    */
-  std::vector<NativeInteger> const &GetNegInvqModtgammaPrecon() const {
-    return m_negInvqModtgammaPrecon;
-  }
+    std::vector<NativeInteger> const& GetNegInvqModtgammaPrecon() const {
+        return m_negInvqModtgammaPrecon;
+    }
 
- protected:
-  /////////////////////////////////////
-  // PrecomputeCRTTables
-  /////////////////////////////////////
+protected:
+    /////////////////////////////////////
+    // PrecomputeCRTTables
+    /////////////////////////////////////
 
-  // Stores the technique to use for key switching
-  enum KeySwitchTechnique m_ksTechnique;
+    // Stores the technique to use for key switching
+    enum KeySwitchTechnique m_ksTechnique;
 
-  enum ScalingTechnique m_scalTechnique;
+    enum ScalingTechnique m_scalTechnique;
 
-  enum EncryptionTechnique m_encTechnique;
+    enum EncryptionTechnique m_encTechnique;
 
-  enum MultiplicationTechnique m_multTechnique;
+    enum MultiplicationTechnique m_multTechnique;
 
-  uint32_t m_auxBits = 0;
+    uint32_t m_auxBits = 0;
 
-  uint32_t m_extraBits = 0;
+    uint32_t m_extraBits = 0;
 
-  /////////////////////////////////////
-  // BGVrns ModReduce
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BGVrns ModReduce
+    /////////////////////////////////////
 
-  // Stores NTL precomputations for [t]_{q_i}
-  std::vector<NativeInteger> m_tModqPrecon;
+    // Stores NTL precomputations for [t]_{q_i}
+    std::vector<NativeInteger> m_tModqPrecon;
 
-  // Stores [-t^{-1}]_{q_i}
-  std::vector<NativeInteger> m_negtInvModq;
+    // Stores [-t^{-1}]_{q_i}
+    std::vector<NativeInteger> m_negtInvModq;
 
-  // Stores NTL precomputations for [-t^{-1}]_{q_i}
-  std::vector<NativeInteger> m_negtInvModqPrecon;
+    // Stores NTL precomputations for [-t^{-1}]_{q_i}
+    std::vector<NativeInteger> m_negtInvModqPrecon;
 
-  /////////////////////////////////////
-  // CKKSrns/BFVrns DropLastElementAndScale
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // CKKSrns/BFVrns DropLastElementAndScale
+    /////////////////////////////////////
 
-  // Q^(l) = \prod_{j=0}^{l-1}
-  // Stores [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}
-  std::vector<std::vector<NativeInteger>> m_QlQlInvModqlDivqlModq;
+    // Q^(l) = \prod_{j=0}^{l-1}
+    // Stores [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_QlQlInvModqlDivqlModq;
 
-  // Q^(l) = \prod_{j=0}^{l-1}
-  // Stores NTL precomputations for [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}
-  std::vector<std::vector<NativeInteger>> m_QlQlInvModqlDivqlModqPrecon;
+    // Q^(l) = \prod_{j=0}^{l-1}
+    // Stores NTL precomputations for [Q^(l)*[Q^(l)^{-1}]_{q_l}/q_l]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_QlQlInvModqlDivqlModqPrecon;
 
-  // Stores [q_l^{-1}]_{q_i}
-  std::vector<std::vector<NativeInteger>> m_qlInvModq;
+    // Stores [q_l^{-1}]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_qlInvModq;
 
-  // Stores NTL precomputations for [q_l^{-1}]_{q_i}
-  std::vector<std::vector<NativeInteger>> m_qlInvModqPrecon;
+    // Stores NTL precomputations for [q_l^{-1}]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_qlInvModqPrecon;
 
-  /////////////////////////////////////
-  // KeySwitchHybrid KeyGen
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // KeySwitchHybrid KeyGen
+    /////////////////////////////////////
 
-  // Params for Extended CRT basis {QP} = {q_1...q_l,p_1,...,p_k}
-  // used in GHS key switching
-  std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsQP;
+    // Params for Extended CRT basis {QP} = {q_1...q_l,p_1,...,p_k}
+    // used in GHS key switching
+    std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsQP;
 
-  // Stores the partition size {PartQ} = {Q_1,...,Q_l}
-  // where each Q_i is the product of q_j
-  uint32_t m_numPartQ = 0;
+    // Stores the partition size {PartQ} = {Q_1,...,Q_l}
+    // where each Q_i is the product of q_j
+    uint32_t m_numPartQ = 0;
 
-  // Stores [P]_{q_i}, used in GHS key switching
-  std::vector<NativeInteger> m_PModq;
+    // Stores [P]_{q_i}, used in GHS key switching
+    std::vector<NativeInteger> m_PModq;
 
-  // Stores [Q/Q_j]_{q_i} for HYBRID
-  std::vector<std::vector<NativeInteger>> m_PartQHatModq;
+    // Stores [Q/Q_j]_{q_i} for HYBRID
+    std::vector<std::vector<NativeInteger>> m_PartQHatModq;
 
-  /////////////////////////////////////
-  // KeySwitchHybrid KeySwitch
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // KeySwitchHybrid KeySwitch
+    /////////////////////////////////////
 
-  // Params for Auxiliary CRT basis {P} = {p_1,...,p_k}
-  // used in GHS key switching
-  std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsP;
+    // Params for Auxiliary CRT basis {P} = {p_1,...,p_k}
+    // used in GHS key switching
+    std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsP;
 
-  // Stores the number of towers per Q_i
-  uint32_t m_numPerPartQ = 0;
+    // Stores the number of towers per Q_i
+    uint32_t m_numPerPartQ = 0;
 
-  // Stores the parameters for moduli Q_i
-  std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsPartQ;
+    // Stores the parameters for moduli Q_i
+    std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsPartQ;
 
-  // Stores [{Q/Q_j}^{-1}]_{q_i} for HYBRID
-  std::vector<std::vector<NativeInteger>> m_PartQHatInvModq;
+    // Stores [{Q/Q_j}^{-1}]_{q_i} for HYBRID
+    std::vector<std::vector<NativeInteger>> m_PartQHatInvModq;
 
-  // Stores the parameters for complementary {\bar{Q_i},P}
-  std::vector<std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>>> m_paramsComplPartQ;
+    // Stores the parameters for complementary {\bar{Q_i},P}
+    std::vector<std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>>> m_paramsComplPartQ;
 
-  // Stores [{(Q_k)^(l)/q_i}^{-1}]_{q_i} for HYBRID
-  std::vector<std::vector<std::vector<NativeInteger>>> m_PartQlHatInvModq;
+    // Stores [{(Q_k)^(l)/q_i}^{-1}]_{q_i} for HYBRID
+    std::vector<std::vector<std::vector<NativeInteger>>> m_PartQlHatInvModq;
 
-  // Stores NTL precomputations for
-  // [{(Q_k)^(l)/q_i}^{-1}]_{q_i} for HYBRID
-  std::vector<std::vector<std::vector<NativeInteger>>> m_PartQlHatInvModqPrecon;
+    // Stores NTL precomputations for
+    // [{(Q_k)^(l)/q_i}^{-1}]_{q_i} for HYBRID
+    std::vector<std::vector<std::vector<NativeInteger>>> m_PartQlHatInvModqPrecon;
 
-  // Stores [QHat_i]_{p_j}
-  std::vector<std::vector<std::vector<std::vector<NativeInteger>>>> m_PartQlHatModp;
+    // Stores [QHat_i]_{p_j}
+    std::vector<std::vector<std::vector<std::vector<NativeInteger>>>> m_PartQlHatModp;
 
-  // Stores the Barrett mu for CompQBar_i
-  std::vector<std::vector<std::vector<DoubleNativeInt>>> m_modComplPartqBarrettMu;
+    // Stores the Barrett mu for CompQBar_i
+    std::vector<std::vector<std::vector<DoubleNativeInt>>> m_modComplPartqBarrettMu;
 
-  // Stores [P^{-1}]_{q_i}, required for GHS key switching
-  std::vector<NativeInteger> m_PInvModq;
+    // Stores [P^{-1}]_{q_i}, required for GHS key switching
+    std::vector<NativeInteger> m_PInvModq;
 
-  // Stores NTL precomputations for [P^{-1}]_{q_i}
-  std::vector<NativeInteger> m_PInvModqPrecon;
+    // Stores NTL precomputations for [P^{-1}]_{q_i}
+    std::vector<NativeInteger> m_PInvModqPrecon;
 
-  // Stores [(P/p_j)^{-1}]_{p_j}, required for GHS key switching
-  std::vector<NativeInteger> m_PHatInvModp;
+    // Stores [(P/p_j)^{-1}]_{p_j}, required for GHS key switching
+    std::vector<NativeInteger> m_PHatInvModp;
 
-  // Stores NTL precomputations for [(P/p_j)^{-1}]_{p_j}
-  std::vector<NativeInteger> m_PHatInvModpPrecon;
+    // Stores NTL precomputations for [(P/p_j)^{-1}]_{p_j}
+    std::vector<NativeInteger> m_PHatInvModpPrecon;
 
-  // Stores [P/p_j]_{q_i}, required for GHS key switching
-  std::vector<std::vector<NativeInteger>> m_PHatModq;
+    // Stores [P/p_j]_{q_i}, required for GHS key switching
+    std::vector<std::vector<NativeInteger>> m_PHatModq;
 
-  // Stores the BarrettUint128ModUint64 precomputations for q_j
-  std::vector<DoubleNativeInt> m_modqBarrettMu;
+    // Stores the BarrettUint128ModUint64 precomputations for q_j
+    std::vector<DoubleNativeInt> m_modqBarrettMu;
 
-  // Stores [t^{-1}]_{p_j}
-  std::vector<NativeInteger> m_tInvModp;
+    // Stores [t^{-1}]_{p_j}
+    std::vector<NativeInteger> m_tInvModp;
 
-  // Stores NTL precomputations for [t^{-1}]_{p_j}
-  std::vector<NativeInteger> m_tInvModpPrecon;
+    // Stores NTL precomputations for [t^{-1}]_{p_j}
+    std::vector<NativeInteger> m_tInvModpPrecon;
 
-  /////////////////////////////////////
-  // CKKS Scaling Factor
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // CKKS Scaling Factor
+    /////////////////////////////////////
 
-  // A vector holding the doubles that correspond to the exact
-  // scaling factor of each level, when FLEXIBLEAUTO is used.
-  std::vector<double> m_scalingFactorsReal;
+    // A vector holding the doubles that correspond to the exact
+    // scaling factor of each level, when FLEXIBLEAUTO is used.
+    std::vector<double> m_scalingFactorsReal;
 
-  std::vector<double> m_scalingFactorsRealBig;
+    std::vector<double> m_scalingFactorsRealBig;
 
-  // Stores q_i as doubles
-  std::vector<double> m_dmoduliQ;
+    // Stores q_i as doubles
+    std::vector<double> m_dmoduliQ;
 
-  // Stores 2^ptm where ptm - plaintext modulus
-  double m_approxSF = 0;
+    // Stores 2^ptm where ptm - plaintext modulus
+    double m_approxSF = 0;
 
-  /////////////////////////////////////
-  // BFVrns : Encrypt
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Encrypt
+    /////////////////////////////////////
 
-  std::vector<NativeInteger> m_scalingFactorsInt;
+    std::vector<NativeInteger> m_scalingFactorsInt;
 
-  std::vector<NativeInteger> m_scalingFactorsIntBig;
+    std::vector<NativeInteger> m_scalingFactorsIntBig;
 
-  std::vector<NativeInteger> m_qModt;
+    std::vector<NativeInteger> m_qModt;
 
-  NativeInteger m_fixedSF = NativeInteger(1);
+    NativeInteger m_fixedSF = NativeInteger(1);
 
-  /////////////////////////////////////
-  // BFVrns : Encrypt
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Encrypt
+    /////////////////////////////////////
 
-  NativeInteger m_negQModt;
-  NativeInteger m_negQModtPrecon;
-  std::vector<NativeInteger> m_tInvModq;
-  std::vector<NativeInteger> m_tInvModqPrecon;
-  std::vector<NativeInteger> m_tInvModqr;
+    NativeInteger m_negQModt;
+    NativeInteger m_negQModtPrecon;
+    std::vector<NativeInteger> m_tInvModq;
+    std::vector<NativeInteger> m_tInvModqPrecon;
+    std::vector<NativeInteger> m_tInvModqr;
 
-  /////////////////////////////////////
-  // BFVrns : Encrypt
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Encrypt
+    /////////////////////////////////////
 
-  std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsQr;
-  NativeInteger m_negQrModt;
-  NativeInteger m_negQrModtPrecon;
-  std::vector<NativeInteger> m_rInvModq;
+    std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsQr;
+    NativeInteger m_negQrModt;
+    NativeInteger m_negQrModtPrecon;
+    std::vector<NativeInteger> m_rInvModq;
 
-  /////////////////////////////////////
-  // BFVrns : Decrypt : ScaleAndRound
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Decrypt : ScaleAndRound
+    /////////////////////////////////////
 
-  // Stores \frac{t*{Q/q_i}^{-1}/q_i}
-  std::vector<double> m_tQHatInvModqDivqFrac;
+    // Stores \frac{t*{Q/q_i}^{-1}/q_i}
+    std::vector<double> m_tQHatInvModqDivqFrac;
 
-  // when log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-  // Stores \frac{t*{Q/q_i}^{-1}*B/q_i}
-  std::vector<double> m_tQHatInvModqBDivqFrac;
+    // when log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
+    // Stores \frac{t*{Q/q_i}^{-1}*B/q_i}
+    std::vector<double> m_tQHatInvModqBDivqFrac;
 
-  // Stores [\floor{t*{Q/q_i}^{-1}/q_i}]_t
-  std::vector<NativeInteger> m_tQHatInvModqDivqModt;
+    // Stores [\floor{t*{Q/q_i}^{-1}/q_i}]_t
+    std::vector<NativeInteger> m_tQHatInvModqDivqModt;
 
-  // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}/q_i}]_t
-  std::vector<NativeInteger> m_tQHatInvModqDivqModtPrecon;
+    // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}/q_i}]_t
+    std::vector<NativeInteger> m_tQHatInvModqDivqModtPrecon;
 
-  // when log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-  // Stores [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
-  std::vector<NativeInteger> m_tQHatInvModqBDivqModt;
+    // when log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
+    // Stores [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
+    std::vector<NativeInteger> m_tQHatInvModqBDivqModt;
 
-  // when log2 q_i >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-  // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
-  std::vector<NativeInteger> m_tQHatInvModqBDivqModtPrecon;
+    // when log2 q_i >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
+    // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
+    std::vector<NativeInteger> m_tQHatInvModqBDivqModtPrecon;
 
-  /////////////////////////////////////
-  // BFVrns : Mult : ExpandCRTBasis
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Mult : ExpandCRTBasis
+    /////////////////////////////////////
 
-  // Auxiliary CRT basis {Ql} = {q_i}
-  // used in homomorphic multiplication
-  std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsQl;
+    // Auxiliary CRT basis {Ql} = {q_i}
+    // used in homomorphic multiplication
+    std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsQl;
 
-  std::vector<std::vector<double>> m_QlQHatInvModqDivqFrac;
-  std::vector<std::vector<std::vector<NativeInteger>>> m_QlQHatInvModqDivqModq;
+    std::vector<std::vector<double>> m_QlQHatInvModqDivqFrac;
+    std::vector<std::vector<std::vector<NativeInteger>>> m_QlQHatInvModqDivqModq;
 
-  // Auxiliary CRT basis {Rl} = {r_k}
-  // used in homomorphic multiplication
-  std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsRl;
+    // Auxiliary CRT basis {Rl} = {r_k}
+    // used in homomorphic multiplication
+    std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsRl;
 
-  // Auxiliary expanded CRT basis Ql*Rl = {s_m}
-  // used in homomorphic multiplication
-  std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsQlRl;
+    // Auxiliary expanded CRT basis Ql*Rl = {s_m}
+    // used in homomorphic multiplication
+    std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsQlRl;
 
-  // Stores [(Ql/q_i)^{-1}]_{q_i}
-  std::vector<std::vector<NativeInteger>> m_QlHatInvModq;
+    // Stores [(Ql/q_i)^{-1}]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_QlHatInvModq;
 
-  // Stores NTL precomputations for [(Ql/q_i)^{-1}]_{q_i}
-  std::vector<std::vector<NativeInteger>> m_QlHatInvModqPrecon;
+    // Stores NTL precomputations for [(Ql/q_i)^{-1}]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_QlHatInvModqPrecon;
 
-  // Stores [Q/q_i]_{r_k}
-  std::vector<std::vector<std::vector<NativeInteger>>> m_QlHatModr;
+    // Stores [Q/q_i]_{r_k}
+    std::vector<std::vector<std::vector<NativeInteger>>> m_QlHatModr;
 
-  // Stores [\alpha*Ql]_{r_k} for 0 <= alpha <= sizeQl
-  std::vector<std::vector<std::vector<NativeInteger>>> m_alphaQlModr;
+    // Stores [\alpha*Ql]_{r_k} for 0 <= alpha <= sizeQl
+    std::vector<std::vector<std::vector<NativeInteger>>> m_alphaQlModr;
 
-  // Barrett modulo reduction precomputation for r_k
-  std::vector<DoubleNativeInt> m_modrBarrettMu;
+    // Barrett modulo reduction precomputation for r_k
+    std::vector<DoubleNativeInt> m_modrBarrettMu;
 
-  // Stores \frac{1/q_i}
-  std::vector<double> m_qInv;
+    // Stores \frac{1/q_i}
+    std::vector<double> m_qInv;
 
-  /////////////////////////////////////
-  // BFVrns : Mult : ScaleAndRound
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Mult : ScaleAndRound
+    /////////////////////////////////////
 
-  // S = QR
-  // Stores \frac{[t*R*(S/s_m)^{-1}]_{s_m}/s_m}
-  std::vector<double> m_tRSHatInvModsDivsFrac;
+    // S = QR
+    // Stores \frac{[t*R*(S/s_m)^{-1}]_{s_m}/s_m}
+    std::vector<double> m_tRSHatInvModsDivsFrac;
 
-  // S = QR
-  // Stores [\floor{t*R*(S/s_m)^{-1}/s_m}]_{r_k}
-  std::vector<std::vector<NativeInteger>> m_tRSHatInvModsDivsModr;
+    // S = QR
+    // Stores [\floor{t*R*(S/s_m)^{-1}/s_m}]_{r_k}
+    std::vector<std::vector<NativeInteger>> m_tRSHatInvModsDivsModr;
 
-  /////////////////////////////////////
-  // BFVrns : Mult : SwitchCRTBasis
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Mult : SwitchCRTBasis
+    /////////////////////////////////////
 
-  // Stores [(Rl/r_k)^{-1}]_{r_k}
-  std::vector<std::vector<NativeInteger>> m_RlHatInvModr;
+    // Stores [(Rl/r_k)^{-1}]_{r_k}
+    std::vector<std::vector<NativeInteger>> m_RlHatInvModr;
 
-  // Stores NTL precomputations for [(Rl/r_k)^{-1}]_{r_k}
-  std::vector<std::vector<NativeInteger>> m_RlHatInvModrPrecon;
+    // Stores NTL precomputations for [(Rl/r_k)^{-1}]_{r_k}
+    std::vector<std::vector<NativeInteger>> m_RlHatInvModrPrecon;
 
-  // Stores [Rl/r_k]_{q_i}
-  std::vector<std::vector<std::vector<NativeInteger>>> m_RlHatModq;
+    // Stores [Rl/r_k]_{q_i}
+    std::vector<std::vector<std::vector<NativeInteger>>> m_RlHatModq;
 
-  // Stores [\alpha*Rl]_{q_i} for 0 <= alpha <= sizeR
-  std::vector<std::vector<std::vector<NativeInteger>>> m_alphaRlModq;
+    // Stores [\alpha*Rl]_{q_i} for 0 <= alpha <= sizeR
+    std::vector<std::vector<std::vector<NativeInteger>>> m_alphaRlModq;
 
-  // Stores \frac{1/r_k}
-  std::vector<double> m_rInv;
+    // Stores \frac{1/r_k}
+    std::vector<double> m_rInv;
 
-  /////////////////////////////////////
-  // BFVrns : Mult : FastExpandCRTBasisPloverQ
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Mult : FastExpandCRTBasisPloverQ
+    /////////////////////////////////////
 
-  std::vector<std::vector<NativeInteger>> m_negRlQHatInvModq;
+    std::vector<std::vector<NativeInteger>> m_negRlQHatInvModq;
 
-  std::vector<std::vector<NativeInteger>> m_negRlQHatInvModqPrecon;
+    std::vector<std::vector<NativeInteger>> m_negRlQHatInvModqPrecon;
 
-  std::vector<std::vector<NativeInteger>> m_qInvModr;
+    std::vector<std::vector<NativeInteger>> m_qInvModr;
 
-  /////////////////////////////////////
-  // BFVrns : Mult : ExpandCRTBasisQlHat
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Mult : ExpandCRTBasisQlHat
+    /////////////////////////////////////
 
-  std::vector<std::vector<NativeInteger>> m_QlHatModq;
+    std::vector<std::vector<NativeInteger>> m_QlHatModq;
 
-  std::vector<std::vector<NativeInteger>> m_QlHatModqPrecon;
+    std::vector<std::vector<NativeInteger>> m_QlHatModqPrecon;
 
-  /////////////////////////////////////
-  // BFVrns : Mult : ScaleAndRoundP
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrns : Mult : ScaleAndRoundP
+    /////////////////////////////////////
 
-  std::vector<std::vector<double>> m_tQlSlHatInvModsDivsFrac;
+    std::vector<std::vector<double>> m_tQlSlHatInvModsDivsFrac;
 
-  std::vector<std::vector<std::vector<NativeInteger>>>
-      m_tQlSlHatInvModsDivsModq;
+    std::vector<std::vector<std::vector<NativeInteger>>> m_tQlSlHatInvModsDivsModq;
 
-  /////////////////////////////////////
-  // BFVrnsB
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // BFVrnsB
+    /////////////////////////////////////
 
-  // Auxiliary CRT basis {Bsk} = {B U msk} = {{b_j} U msk}
-  std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsBsk;
+    // Auxiliary CRT basis {Bsk} = {B U msk} = {{b_j} U msk}
+    std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsBsk;
 
-  // number of moduli in the base {Q}
-  uint32_t m_numq = 0;
+    // number of moduli in the base {Q}
+    uint32_t m_numq = 0;
 
-  // number of moduli in the auxilliary base {B}
-  uint32_t m_numb = 0;
+    // number of moduli in the auxilliary base {B}
+    uint32_t m_numb = 0;
 
-  // mtilde = 2^16
-  NativeInteger m_mtilde = NativeInteger((uint64_t)1 << 16);
+    // mtilde = 2^16
+    NativeInteger m_mtilde = NativeInteger((uint64_t)1 << 16);
 
-  // Auxiliary modulus msk
-  NativeInteger m_msk;
+    // Auxiliary modulus msk
+    NativeInteger m_msk;
 
-  // Stores q_i
-  std::vector<NativeInteger> m_moduliQ;
+    // Stores q_i
+    std::vector<NativeInteger> m_moduliQ;
 
-  // Stores auxilliary base moduli b_j
-  std::vector<NativeInteger> m_moduliB;
+    // Stores auxilliary base moduli b_j
+    std::vector<NativeInteger> m_moduliB;
 
-  // Stores the roots of unity modulo bsk_j
-  std::vector<NativeInteger> m_rootsBsk;
+    // Stores the roots of unity modulo bsk_j
+    std::vector<NativeInteger> m_rootsBsk;
 
-  // Stores moduli {bsk_i} = {{b_j} U msk}
-  std::vector<NativeInteger> m_moduliBsk;
+    // Stores moduli {bsk_i} = {{b_j} U msk}
+    std::vector<NativeInteger> m_moduliBsk;
 
-  // Barrett modulo reduction precomputation for bsk_j
-  std::vector<DoubleNativeInt> m_modbskBarrettMu;
+    // Barrett modulo reduction precomputation for bsk_j
+    std::vector<DoubleNativeInt> m_modbskBarrettMu;
 
-  // Stores [mtilde*(Q/q_i)^{-1}]_{q_i}
-  std::vector<NativeInteger> m_mtildeQHatInvModq;
+    // Stores [mtilde*(Q/q_i)^{-1}]_{q_i}
+    std::vector<NativeInteger> m_mtildeQHatInvModq;
 
-  // Stores NTL precomputations for [mtilde*(Q/q_i)^{-1}]_{q_i}
-  std::vector<NativeInteger> m_mtildeQHatInvModqPrecon;
+    // Stores NTL precomputations for [mtilde*(Q/q_i)^{-1}]_{q_i}
+    std::vector<NativeInteger> m_mtildeQHatInvModqPrecon;
 
-  // Stores [Q/q_i]_{bsk_j}
-  std::vector<std::vector<NativeInteger>> m_QHatModbsk;
+    // Stores [Q/q_i]_{bsk_j}
+    std::vector<std::vector<NativeInteger>> m_QHatModbsk;
 
-  // Stores [(q_i)^{-1}]_{bsk_j}
-  std::vector<std::vector<NativeInteger>> m_qInvModbsk;
+    // Stores [(q_i)^{-1}]_{bsk_j}
+    std::vector<std::vector<NativeInteger>> m_qInvModbsk;
 
-  // Stores [Q/q_i]_{mtilde}
-  std::vector<uint16_t> m_QHatModmtilde;
+    // Stores [Q/q_i]_{mtilde}
+    std::vector<uint16_t> m_QHatModmtilde;
 
-  // Stores [Q]_{bsk_j}
-  std::vector<NativeInteger> m_QModbsk;
-  // Stores NTL precomputations for [Q]_{bsk_j}
-  std::vector<NativeInteger> m_QModbskPrecon;
+    // Stores [Q]_{bsk_j}
+    std::vector<NativeInteger> m_QModbsk;
+    // Stores NTL precomputations for [Q]_{bsk_j}
+    std::vector<NativeInteger> m_QModbskPrecon;
 
-  // Stores [-Q^{-1}]_{mtilde}
-  uint16_t m_negQInvModmtilde = 0;
+    // Stores [-Q^{-1}]_{mtilde}
+    uint16_t m_negQInvModmtilde = 0;
 
-  // Stores [mtilde^{-1}]_{bsk_j}
-  std::vector<NativeInteger> m_mtildeInvModbsk;
-  // Stores NTL precomputations for [mtilde^{-1}]_{bsk_j}
-  std::vector<NativeInteger> m_mtildeInvModbskPrecon;
+    // Stores [mtilde^{-1}]_{bsk_j}
+    std::vector<NativeInteger> m_mtildeInvModbsk;
+    // Stores NTL precomputations for [mtilde^{-1}]_{bsk_j}
+    std::vector<NativeInteger> m_mtildeInvModbskPrecon;
 
-  // Stores [t*(Q/q_i)^{-1}]_{q_i}
-  std::vector<NativeInteger> m_tQHatInvModq;
+    // Stores [t*(Q/q_i)^{-1}]_{q_i}
+    std::vector<NativeInteger> m_tQHatInvModq;
 
-  // Stores NTL precomputations for [t*(Q/q_i)^{-1}]_{q_i}
-  std::vector<NativeInteger> m_tQHatInvModqPrecon;
+    // Stores NTL precomputations for [t*(Q/q_i)^{-1}]_{q_i}
+    std::vector<NativeInteger> m_tQHatInvModqPrecon;
 
-  // Stores [t*gamma*(Q/q_i)^(-1)]_{q_i}
-  std::vector<NativeInteger> m_tgammaQHatInvModq;
-  // Stores NTL precomputations for [t*gamma*(Q/q_i)^(-1)]_{q_i}
-  std::vector<NativeInteger> m_tgammaQHatInvModqPrecon;
+    // Stores [t*gamma*(Q/q_i)^(-1)]_{q_i}
+    std::vector<NativeInteger> m_tgammaQHatInvModq;
+    // Stores NTL precomputations for [t*gamma*(Q/q_i)^(-1)]_{q_i}
+    std::vector<NativeInteger> m_tgammaQHatInvModqPrecon;
 
-  // Stores [t/Q]_{bsk_j}
-  std::vector<NativeInteger> m_tQInvModbsk;
-  // Stores NTL precomputations for [t/Q]_{bsk_j}
-  std::vector<NativeInteger> m_tQInvModbskPrecon;
+    // Stores [t/Q]_{bsk_j}
+    std::vector<NativeInteger> m_tQInvModbsk;
+    // Stores NTL precomputations for [t/Q]_{bsk_j}
+    std::vector<NativeInteger> m_tQInvModbskPrecon;
 
-  // Stores [(B/b_j)^{-1}]_{b_j}
-  std::vector<NativeInteger> m_BHatInvModb;
+    // Stores [(B/b_j)^{-1}]_{b_j}
+    std::vector<NativeInteger> m_BHatInvModb;
 
-  // Stores NTL precomputations for [(B/b_j)^{-1}]_{b_j}
-  std::vector<NativeInteger> m_BHatInvModbPrecon;
+    // Stores NTL precomputations for [(B/b_j)^{-1}]_{b_j}
+    std::vector<NativeInteger> m_BHatInvModbPrecon;
 
-  // stores [B/b_j]_{msk}
-  std::vector<NativeInteger> m_BHatModmsk;
+    // stores [B/b_j]_{msk}
+    std::vector<NativeInteger> m_BHatModmsk;
 
-  // Stores [B^{-1}]_msk
-  NativeInteger m_BInvModmsk;
-  // Stores NTL precomputations for [B^{-1}]_msk
-  NativeInteger m_BInvModmskPrecon;
+    // Stores [B^{-1}]_msk
+    NativeInteger m_BInvModmsk;
+    // Stores NTL precomputations for [B^{-1}]_msk
+    NativeInteger m_BInvModmskPrecon;
 
-  // Stores [B/b_j]_{q_i}
-  std::vector<std::vector<NativeInteger>> m_BHatModq;
+    // Stores [B/b_j]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_BHatModq;
 
-  // Stores [B]_{q_i}
-  std::vector<NativeInteger> m_BModq;
-  // Stores NTL precomputations for [B]_{q_i}
-  std::vector<NativeInteger> m_BModqPrecon;
+    // Stores [B]_{q_i}
+    std::vector<NativeInteger> m_BModq;
+    // Stores NTL precomputations for [B]_{q_i}
+    std::vector<NativeInteger> m_BModqPrecon;
 
-  // Stores gamma = 2^26;
-  uint32_t m_gamma = 1 << 26;
+    // Stores gamma = 2^26;
+    uint32_t m_gamma = 1 << 26;
 
-  // TODO: use 64 bit words in case NativeInteger uses smaller word size
-  // Stores t*gamma on a uint64_t word
-  NativeInteger m_tgamma;
+    // TODO: use 64 bit words in case NativeInteger uses smaller word size
+    // Stores t*gamma on a uint64_t word
+    NativeInteger m_tgamma;
 
-  // Stores [-(q_i)^{-1}]_{t*gamma}
-  std::vector<NativeInteger> m_negInvqModtgamma;
-  // Stores NTL precomputations for [-(q_i)^{-1}]_{t*gamma}
-  std::vector<NativeInteger> m_negInvqModtgammaPrecon;
+    // Stores [-(q_i)^{-1}]_{t*gamma}
+    std::vector<NativeInteger> m_negInvqModtgamma;
+    // Stores NTL precomputations for [-(q_i)^{-1}]_{t*gamma}
+    std::vector<NativeInteger> m_negInvqModtgammaPrecon;
 
- public:
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+public:
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));
-    ar(cereal::make_nvp("ks", m_ksTechnique));
-    ar(cereal::make_nvp("rs", m_scalTechnique));
-    ar(cereal::make_nvp("encs", m_encTechnique));
-    ar(cereal::make_nvp("muls", m_multTechnique));
-    ar(cereal::make_nvp("dnum", m_numPartQ));
-    ar(cereal::make_nvp("ab", m_auxBits));
-    ar(cereal::make_nvp("eb", m_extraBits));
-  }
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));
+        ar(cereal::make_nvp("ks", m_ksTechnique));
+        ar(cereal::make_nvp("rs", m_scalTechnique));
+        ar(cereal::make_nvp("encs", m_encTechnique));
+        ar(cereal::make_nvp("muls", m_multTechnique));
+        ar(cereal::make_nvp("dnum", m_numPartQ));
+        ar(cereal::make_nvp("ab", m_auxBits));
+        ar(cereal::make_nvp("eb", m_extraBits));
+    }
 
-  template <class Archive>
-  void load(Archive& ar, std::uint32_t const version) {
-      if (version > SerializedVersion()) {
-          std::string errMsg("serialized object version " + std::to_string(version) +
-              " is from a later version of the library");
-          OPENFHE_THROW(deserialize_error, errMsg);
-      }
-      ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));
-      ar(cereal::make_nvp("ks", m_ksTechnique));
-      ar(cereal::make_nvp("rs", m_scalTechnique));
-      ar(cereal::make_nvp("encs", m_encTechnique));
-      ar(cereal::make_nvp("muls", m_multTechnique));
-      ar(cereal::make_nvp("dnum", m_numPartQ));
-      ar(cereal::make_nvp("ab", m_auxBits));
-      ar(cereal::make_nvp("eb", m_extraBits));
-  }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            std::string errMsg("serialized object version " + std::to_string(version) +
+                               " is from a later version of the library");
+            OPENFHE_THROW(deserialize_error, errMsg);
+        }
+        ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));
+        ar(cereal::make_nvp("ks", m_ksTechnique));
+        ar(cereal::make_nvp("rs", m_scalTechnique));
+        ar(cereal::make_nvp("encs", m_encTechnique));
+        ar(cereal::make_nvp("muls", m_multTechnique));
+        ar(cereal::make_nvp("dnum", m_numPartQ));
+        ar(cereal::make_nvp("ab", m_auxBits));
+        ar(cereal::make_nvp("eb", m_extraBits));
+    }
 
-  virtual std::string SerializedObjectName() const override { return "SchemeParametersRNS"; }
-  static uint32_t SerializedVersion() { return 1; }
+    std::string SerializedObjectName() const override {
+        return "SchemeParametersRNS";
+    }
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 };
 
 }  // namespace lbcrypto

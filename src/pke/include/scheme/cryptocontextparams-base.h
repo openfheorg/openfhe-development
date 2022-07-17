@@ -38,14 +38,13 @@
 
 // Had to include cryptocontext.h as the includes below give a compiler error.
 // Those headers probably depend on some order/sequence.
-//TODO (dsuponit): fix the problem with header described above 
+// TODO (dsuponit): fix the problem with header described above
 #include "cryptocontext.h"
-#include "scheme/scheme-id.h" // SCHEME
+#include "scheme/scheme-id.h"  // SCHEME
 #include "utils/inttypes.h"
 #include "constants.h"
 
 #include <iosfwd>
-
 
 namespace lbcrypto {
 
@@ -85,7 +84,7 @@ class Params {
     // rescaling/modulus switching technique used in CKKS/BGV
     // The options are FIXEDMANUL, FIXEDAUTO, FLEXIBLEAUTO, and FLEXIBLEAUTOEXT (default)
     // see https://eprint.iacr.org/2022/915 for details
-    ScalingTechnique  scalTech;
+    ScalingTechnique scalTech;
 
     // max batch size of messages to be packed in encoding (number of slots)
     usint batchSize;
@@ -140,12 +139,12 @@ class Params {
     void SetToDefaults(SCHEME scheme);
 
 public:
-    Params(SCHEME scheme0 = INVALID_SCHEME) {
+    explicit Params(SCHEME scheme0 = INVALID_SCHEME) {
         SetToDefaults(scheme0);
     }
 
     Params(const Params& obj) = default;
-    Params(Params&& obj) = default;
+    Params(Params&& obj)      = default;
 
     Params& operator=(const Params& obj) = default;
     Params& operator=(Params&& obj) = default;
@@ -174,7 +173,7 @@ public:
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
     }
-    ScalingTechnique  GetScalingTechnique() const {
+    ScalingTechnique GetScalingTechnique() const {
         return scalTech;
     }
     usint GetBatchSize() const {
@@ -233,7 +232,7 @@ public:
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;
     }
-    void SetScalingTechnique(ScalingTechnique  scalTech0) {
+    void SetScalingTechnique(ScalingTechnique scalTech0) {
         scalTech = scalTech0;
     }
     void SetBatchSize(usint batchSize0) {
@@ -279,6 +278,4 @@ public:
 
 }  // namespace lbcrypto
 
-
-#endif // _CRYPTOCONTEXTPARAMS_BASE_H_
-
+#endif  // _CRYPTOCONTEXTPARAMS_BASE_H_

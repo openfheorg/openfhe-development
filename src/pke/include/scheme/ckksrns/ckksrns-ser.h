@@ -40,9 +40,9 @@
 #include "utils/serial.h"
 
 namespace lbcrypto {
-    class CryptoParametersCKKSRNS;
-    class SchemeCKKSRNS;
-}
+class CryptoParametersCKKSRNS;
+class SchemeCKKSRNS;
+}  // namespace lbcrypto
 
 CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersCKKSRNS);
 CEREAL_REGISTER_TYPE(lbcrypto::SchemeCKKSRNS);

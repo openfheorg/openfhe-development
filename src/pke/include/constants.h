@@ -38,13 +38,13 @@
  * @brief Lists all features supported by public key encryption schemes
  */
 enum PKESchemeFeature {
-  PKE = 0x01,
-  KEYSWITCH = 0x02,
-  PRE = 0x04,
-  LEVELEDSHE = 0x08,
-  ADVANCEDSHE = 0x10,
-  MULTIPARTY = 0x20,
-  FHE = 0x40
+    PKE         = 0x01,
+    KEYSWITCH   = 0x02,
+    PRE         = 0x04,
+    LEVELEDSHE  = 0x08,
+    ADVANCEDSHE = 0x10,
+    MULTIPARTY  = 0x20,
+    FHE         = 0x40,
 };
 
 std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
@@ -52,28 +52,47 @@ std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
 /**
  * @brief Lists all modes for RLWE schemes, such as BGV and BFV
  */
-enum SecretKeyDist { GAUSSIAN = 0, UNIFORM_TERNARY = 1, SPARSE_TERNARY = 2 };
+enum SecretKeyDist {
+    GAUSSIAN        = 0,
+    UNIFORM_TERNARY = 1,
+    SPARSE_TERNARY  = 2,
+};
 std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
 enum ScalingTechnique {
-  FIXEDMANUAL,
-  FIXEDAUTO,
-  FLEXIBLEAUTO,
-  FLEXIBLEAUTOEXT,
-  NORESCALE,
-  INVALID_RS_TECHNIQUE  // TODO (dsuponit): make this the first value
+    FIXEDMANUAL = 0,
+    FIXEDAUTO,
+    FLEXIBLEAUTO,
+    FLEXIBLEAUTOEXT,
+    NORESCALE,
+    INVALID_RS_TECHNIQUE,  // TODO (dsuponit): make this the first value
 };
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 
-enum KeySwitchTechnique { INVALID_KS_TECH, BV, HYBRID };
+enum KeySwitchTechnique {
+    INVALID_KS_TECH = 0,
+    BV,
+    HYBRID,
+};
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t);
 
-enum EncryptionTechnique { STANDARD, EXTENDED };
+enum EncryptionTechnique {
+    STANDARD = 0,
+    EXTENDED,
+};
 std::ostream& operator<<(std::ostream& s, EncryptionTechnique t);
 
-enum MultiplicationTechnique { BEHZ, HPS, HPSPOVERQ, HPSPOVERQLEVELED };
+enum MultiplicationTechnique {
+    BEHZ = 0,
+    HPS,
+    HPSPOVERQ,
+    HPSPOVERQLEVELED,
+};
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
-enum LargeScalingFactorConstants {MAX_BITS_IN_WORD = 62, MAX_LOG_STEP = 60};
+enum LargeScalingFactorConstants {
+    MAX_BITS_IN_WORD = 62,
+    MAX_LOG_STEP     = 60,
+};
 
 #endif  // _CONSTANTS_H_

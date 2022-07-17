@@ -32,11 +32,12 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_PARAMETERGENERATION_H
 #define LBCRYPTO_CRYPTO_BASE_PARAMETERGENERATION_H
 
-#include <vector>
-#include <memory>
-
 #include "constants.h"
 #include "schemebase/base-cryptoparameters.h"
+
+#include <vector>
+#include <memory>
+#include <string>
 
 /**
  * @namespace lbcrypto
@@ -50,16 +51,16 @@ namespace lbcrypto {
  */
 template <class Element>
 class ParameterGenerationBase {
-  using ParmType = typename Element::Params;
-  using IntType = typename Element::Integer;
-  using DugType = typename Element::DugType;
-  using DggType = typename Element::DggType;
-  using TugType = typename Element::TugType;
+    using ParmType = typename Element::Params;
+    using IntType  = typename Element::Integer;
+    using DugType  = typename Element::DugType;
+    using DggType  = typename Element::DggType;
+    using TugType  = typename Element::TugType;
 
 public:
-  virtual ~ParameterGenerationBase() {}
+    virtual ~ParameterGenerationBase() {}
 
-  /**
+    /**
    * Method for computing all derived parameters based on chosen primitive
    * parameters
    *
@@ -76,20 +77,13 @@ public:
    * dimension
    * @param numPartQ number of partitions of Q for HYBRID key switching
    */
-  virtual bool ParamsGenBFVRNS(
-      std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
-      int32_t evalAddCount,
-      int32_t multiplicativeDepth,
-      int32_t keySwitchCount,
-      size_t dcrtBits,
-      uint32_t n,
-      uint32_t numPartQ) const {
-    OPENFHE_THROW(
-        config_error,
-        "This signature for ParamsGen is not supported for this scheme.");
-  }
+    virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, int32_t evalAddCount,
+                                 int32_t multiplicativeDepth, int32_t keySwitchCount, size_t dcrtBits, uint32_t n,
+                                 uint32_t numPartQ) const {
+        OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
+    }
 
-  /**
+    /**
    * Method for computing all derived parameters based on chosen primitive
    * parameters.
    *
@@ -101,19 +95,12 @@ public:
    * @param firstModSize the bit-size of the first modulus
    * @param numPartQ number of partitions of Q for HYBRID key switching
    */
-  virtual bool ParamsGenCKKSRNS(
-      std::shared_ptr<CryptoParametersBase<Element>> cryptoParams,
-      usint cyclOrder,
-      usint numPrimes,
-      usint scaleExp,
-      usint firstModSize,
-      uint32_t numPartQ) const {
-    OPENFHE_THROW(
-        config_error,
-        "This signature for ParamsGen is not supported for this scheme.");
-  }
+    virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
+                                  usint numPrimes, usint scaleExp, usint firstModSize, uint32_t numPartQ) const {
+        OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
+    }
 
-  /**
+    /**
    * Method for computing all derived parameters based on chosen primitive
    * parameters. This is intended for BGVrns
    * @param *cryptoParams the crypto parameters object to be populated with
@@ -127,23 +114,21 @@ public:
    * @param numPartQ number of partitions of Q for HYBRID key switching
    * @param multihopQBound bound for the HRA-secure mode of PRE
    */
-  virtual bool ParamsGenBGVRNS(
-      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
-                       int32_t keySwitchCount, usint cyclOrder, usint numPrimes,
-                       usint firstModSize, usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
-    OPENFHE_THROW(
-        not_implemented_error,
-        "This signature for ParamsGen is not supported for this scheme.");
-  }
+    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
+                                 int32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
+                                 usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
+        OPENFHE_THROW(not_implemented_error, "This signature for ParamsGen is not supported for this scheme.");
+    }
 
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {}
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {}
-
-  std::string SerializedObjectName() const { return "ParameterGenerationBase"; }
+    std::string SerializedObjectName() const {
+        return "ParameterGenerationBase";
+    }
 };
 
 }  // namespace lbcrypto

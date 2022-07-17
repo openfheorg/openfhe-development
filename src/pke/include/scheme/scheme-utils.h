@@ -34,11 +34,11 @@
 
 inline uint32_t ComputeNumLargeDigits(uint32_t numLargeDigits, usint multDepth) {
     if (!numLargeDigits) {  // Choose one of the default values
-        if (multDepth > 3)        // If more than 4 towers, use 3 digits
+        if (multDepth > 3)  // If more than 4 towers, use 3 digits
             numLargeDigits = 3;
         else if (multDepth == 0)  // if there is only 1 tower, use one digit
             numLargeDigits = 1;
-        else                                // If 2, 3 or 4 towers, use 2 digits (1 <= multiplicativeDepth <=3 )
+        else  // If 2, 3 or 4 towers, use 2 digits (1 <= multiplicativeDepth <=3 )
             numLargeDigits = 2;
     }
     return numLargeDigits;

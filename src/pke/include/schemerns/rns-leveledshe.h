@@ -36,6 +36,8 @@
 
 #include "schemebase/base-leveledshe.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -47,23 +49,23 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
- public:
-  virtual ~LeveledSHERNS() {}
+public:
+    virtual ~LeveledSHERNS() {}
 
-  /////////////////////////////////////////
-  // SHE NEGATION
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE NEGATION
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE ADDITION
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE ADDITION
+    /////////////////////////////////////////
 
-  using LeveledSHEBase<DCRTPoly>::EvalAdd;
-  using LeveledSHEBase<DCRTPoly>::EvalAddInPlace;
-  using LeveledSHEBase<DCRTPoly>::EvalAddMutable;
-  using LeveledSHEBase<DCRTPoly>::EvalAddMutableInPlace;
+    using LeveledSHEBase<DCRTPoly>::EvalAdd;
+    using LeveledSHEBase<DCRTPoly>::EvalAddInPlace;
+    using LeveledSHEBase<DCRTPoly>::EvalAddMutable;
+    using LeveledSHEBase<DCRTPoly>::EvalAddMutableInPlace;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
    *
@@ -71,21 +73,19 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> EvalAdd(
-      ConstCiphertext<DCRTPoly> ciphertext1,
-      ConstCiphertext<DCRTPoly> ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalAdd(ConstCiphertext<DCRTPoly> ciphertext1,
+                                 ConstCiphertext<DCRTPoly> ciphertext2) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for in-place homomorphic addition
    * of ciphertexts.
    *
    * @param ciphertext1 the input/output ciphertext.
    * @param ciphertext2 the input ciphertext.
    */
-  virtual void EvalAddInPlace(Ciphertext<DCRTPoly> &ciphertext1,
-                              ConstCiphertext<DCRTPoly> ciphertext2) const override;
+    void EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts. This is the mutable version - input ciphertexts may change
    * (automatically rescaled, or towers dropped).
@@ -94,14 +94,12 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> EvalAddMutable(
-      Ciphertext<DCRTPoly> &ciphertext1,
-      Ciphertext<DCRTPoly> &ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext1,
+                                        Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-  virtual void EvalAddMutableInPlace(Ciphertext<DCRTPoly> &ciphertext1,
-                                     Ciphertext<DCRTPoly> &ciphertext2) const override;
+    void EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
    *
@@ -109,20 +107,18 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> EvalAdd(ConstCiphertext<DCRTPoly> ciphertext,
-                                       ConstPlaintext plaintext) const override;
+    Ciphertext<DCRTPoly> EvalAdd(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
    *
    * @param ciphertext the input ciphertext.
    * @param plaintext the input plaintext.
    */
-  virtual void EvalAddInPlace(Ciphertext<DCRTPoly> &ciphertext,
-      ConstPlaintext plaintext) const override;
+    void EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -131,10 +127,9 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> EvalAddMutable(Ciphertext<DCRTPoly> &ciphertext,
-                                              Plaintext plaintext) const override;
+    Ciphertext<DCRTPoly> EvalAddMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -143,19 +138,18 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual void EvalAddMutableInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                     Plaintext plaintext) const override;
+    void EvalAddMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
 
-  /////////////////////////////////////////
-  // SHE SUBTRACTION
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE SUBTRACTION
+    /////////////////////////////////////////
 
-  using LeveledSHEBase<DCRTPoly>::EvalSub;
-  using LeveledSHEBase<DCRTPoly>::EvalSubInPlace;
-  using LeveledSHEBase<DCRTPoly>::EvalSubMutable;
-  using LeveledSHEBase<DCRTPoly>::EvalSubMutableInPlace;
+    using LeveledSHEBase<DCRTPoly>::EvalSub;
+    using LeveledSHEBase<DCRTPoly>::EvalSubInPlace;
+    using LeveledSHEBase<DCRTPoly>::EvalSubMutable;
+    using LeveledSHEBase<DCRTPoly>::EvalSubMutableInPlace;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts.
    *
@@ -163,21 +157,19 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> EvalSub(
-      ConstCiphertext<DCRTPoly> ciphertext1,
-      ConstCiphertext<DCRTPoly> ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalSub(ConstCiphertext<DCRTPoly> ciphertext1,
+                                 ConstCiphertext<DCRTPoly> ciphertext2) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts.
    *
    * @param ciphertext1 the input ciphertext.
    * @param ciphertext2 the input ciphertext.
    */
-  virtual void EvalSubInPlace(Ciphertext<DCRTPoly> &ciphertext1,
-                              ConstCiphertext<DCRTPoly> ciphertext2) const override;
+    void EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -186,11 +178,10 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> EvalSubMutable(
-      Ciphertext<DCRTPoly> &ciphertext1,
-      Ciphertext<DCRTPoly> &ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext1,
+                                        Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -199,10 +190,9 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual void EvalSubMutableInPlace(Ciphertext<DCRTPoly> &ciphertext1,
-                                     Ciphertext<DCRTPoly> &ciphertext2) const override;
+    void EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts.
    *
@@ -210,13 +200,11 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> EvalSub(ConstCiphertext<DCRTPoly> ciphertext,
-                                       ConstPlaintext plaintext) const override;
+    Ciphertext<DCRTPoly> EvalSub(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const override;
 
-  virtual void EvalSubInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                              ConstPlaintext plaintext) const override;
+    void EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -225,10 +213,9 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> EvalSubMutable(Ciphertext<DCRTPoly> &ciphertext,
-                                              Plaintext plaintext) const override;
+    Ciphertext<DCRTPoly> EvalSubMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic subtraction of
    * ciphertexts. This is the mutable version - input ciphertext may change
    * (automatically rescaled, or towers dropped).
@@ -237,123 +224,99 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param plaintext the input plaintext.
    * @return the new ciphertext.
    */
-  virtual void EvalSubMutableInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                     Plaintext plaintext) const override;
+    void EvalSubMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
 
-  /////////////////////////////////////////
-  // SHE MULTIPLICATION
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE MULTIPLICATION
+    /////////////////////////////////////////
 
-  using LeveledSHEBase<DCRTPoly>::EvalMult;
-  using LeveledSHEBase<DCRTPoly>::EvalMultInPlace;
-  using LeveledSHEBase<DCRTPoly>::EvalMultMutable;
-  using LeveledSHEBase<DCRTPoly>::EvalMultMutableInPlace;
+    using LeveledSHEBase<DCRTPoly>::EvalMult;
+    using LeveledSHEBase<DCRTPoly>::EvalMultInPlace;
+    using LeveledSHEBase<DCRTPoly>::EvalMultMutable;
+    using LeveledSHEBase<DCRTPoly>::EvalMultMutableInPlace;
 
-  virtual Ciphertext<DCRTPoly> EvalMult(
-      ConstCiphertext<DCRTPoly> ciphertext1,
-      ConstCiphertext<DCRTPoly> ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext1,
+                                  ConstCiphertext<DCRTPoly> ciphertext2) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalMultMutable(
-      Ciphertext<DCRTPoly> &ciphertext1,
-      Ciphertext<DCRTPoly> &ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext1,
+                                         Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalSquare(
-      ConstCiphertext<DCRTPoly> ciphertext) const override;
+    Ciphertext<DCRTPoly> EvalSquare(ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalSquareMutable(
-      Ciphertext<DCRTPoly> &ciphertext) const override;
+    Ciphertext<DCRTPoly> EvalSquareMutable(Ciphertext<DCRTPoly>& ciphertext) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalMult(
-      ConstCiphertext<DCRTPoly> ciphertext,
-      ConstPlaintext plaintext) const override;
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const override;
 
-  virtual void EvalMultInPlace(
-      Ciphertext<DCRTPoly> &ciphertext,
-      ConstPlaintext plaintext) const override;
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalMultMutable(
-      Ciphertext<DCRTPoly> &ciphertext,
-      Plaintext plaintext) const override;
+    Ciphertext<DCRTPoly> EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
 
-  virtual void EvalMultMutableInPlace(
-      Ciphertext<DCRTPoly> &ciphertext,
-      Plaintext plaintext) const override;
+    void EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
 
-  virtual Ciphertext<DCRTPoly> MultByMonomial(
-      ConstCiphertext<DCRTPoly> ciphertext, usint power) const override;
+    Ciphertext<DCRTPoly> MultByMonomial(ConstCiphertext<DCRTPoly> ciphertext, usint power) const override;
 
-  virtual void MultByMonomialInPlace(
-      Ciphertext<DCRTPoly> &ciphertext, usint power) const override;
+    void MultByMonomialInPlace(Ciphertext<DCRTPoly>& ciphertext, usint power) const override;
 
-  /////////////////////////////////////////
-  // SHE AUTOMORPHISM
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE AUTOMORPHISM
+    /////////////////////////////////////////
 
-  /////////////////////////////////////////
-  // SHE LEVELED Mod Reduce
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE LEVELED Mod Reduce
+    /////////////////////////////////////////
 
-  virtual Ciphertext<DCRTPoly> ModReduce(ConstCiphertext<DCRTPoly> ciphertext,
-                                size_t levels) const override;
+    Ciphertext<DCRTPoly> ModReduce(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const override;
 
-  /**
+    /**
    * Method for In-place Modulus Reduction.
    *
    * @param &cipherText Ciphertext to perform mod reduce on.
    * @param levels the number of towers to drop.
    */
-  virtual void ModReduceInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                size_t levels) const override;
+    void ModReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;
 
-  /////////////////////////////////////////
-  // SHE LEVELED Level Reduce
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE LEVELED Level Reduce
+    /////////////////////////////////////////
 
-  virtual Ciphertext<DCRTPoly> LevelReduce(ConstCiphertext<DCRTPoly> ciphertext,
-                                  const EvalKey<DCRTPoly> evalKey,
-                                  size_t levels) const override;
+    Ciphertext<DCRTPoly> LevelReduce(ConstCiphertext<DCRTPoly> ciphertext, const EvalKey<DCRTPoly> evalKey,
+                                     size_t levels) const override;
 
-  virtual void LevelReduceInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                  const EvalKey<DCRTPoly> evalKey,
-                                  size_t levels) const override;
+    void LevelReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey,
+                            size_t levels) const override;
 
-  /////////////////////////////////////////
-  // SHE LEVELED Compress
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SHE LEVELED Compress
+    /////////////////////////////////////////
 
-  virtual Ciphertext<DCRTPoly> Compress(
-      ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const override;
+    Ciphertext<DCRTPoly> Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const override;
 
- protected:
+protected:
+    /////////////////////////////////////
+    // RNS Core
+    /////////////////////////////////////
 
-  /////////////////////////////////////
-  // RNS Core
-  /////////////////////////////////////
-
-
-  /**
+    /**
    * Method for rescaling.
    *
    * @param cipherText is the ciphertext to perform modreduce on.
    * @param levels the number of towers to drop.
    * @return ciphertext after the modulus reduction performed.
    */
-  virtual Ciphertext<DCRTPoly> ModReduceInternal(
-      ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const override;
+    Ciphertext<DCRTPoly> ModReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const override;
 
-  /**
+    /**
    * Method for rescaling in-place.
    *
    * @param cipherText is the ciphertext to perform modreduce on.
    * @param levels the number of towers to drop.
    * @details \p cipherText will have modulus reduction performed in-place.
    */
-  virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                        size_t levels) const override {
-    OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
-  }
+    void ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override {
+        OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
+    }
 
-  /**
+    /**
    * Method for Level Reduction in the CKKS scheme. It just drops "levels"
    * number of the towers of the ciphertext without changing the underlying
    * plaintext.
@@ -362,9 +325,9 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param levels the number of towers to drop.
    * @return resulting ciphertext.
    */
-  Ciphertext<DCRTPoly> LevelReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const override;
+    Ciphertext<DCRTPoly> LevelReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const override;
 
-  /**
+    /**
    * Method for in-place Level Reduction in the CKKS scheme. It just drops
    * "levels" number of the towers of the ciphertext without changing the
    * underlying plaintext.
@@ -373,31 +336,31 @@ class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
    * @param linearKeySwitchHint not used in the CKKS scheme.
    * @param levels the number of towers to drop.
    */
-  void LevelReduceInternalInPlace(Ciphertext<DCRTPoly> &ciphertext, size_t levels) const override {
-    OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
-  }
+    void LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override {
+        OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
+    }
 
-  virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext1,
-                           Ciphertext<DCRTPoly> &ciphertext2) const override;
+    void AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-  virtual DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                          ConstPlaintext plaintext) const override;
+    DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<LeveledSHEBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<LeveledSHEBase<DCRTPoly>>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<LeveledSHEBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<LeveledSHEBase<DCRTPoly>>(this));
+    }
 
-  std::string SerializedObjectName() const { return "LeveledSHERNS"; }
+    std::string SerializedObjectName() const {
+        return "LeveledSHERNS";
+    }
 };
 
 }  // namespace lbcrypto

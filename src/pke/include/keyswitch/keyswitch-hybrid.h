@@ -45,6 +45,10 @@
 #include "keyswitch/keyswitch-rns.h"
 #include "schemebase/rlwe-cryptoparameters.h"
 
+#include <string>
+#include <vector>
+#include <memory>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -58,78 +62,69 @@ namespace lbcrypto {
     Uses a mix of BV and GHS keyswitching for efficient key-switching
  */
 class KeySwitchHYBRID : public KeySwitchRNS {
-  using ParmType = typename DCRTPoly::Params;
-  using DugType = typename DCRTPoly::DugType;
-  using DggType = typename DCRTPoly::DggType;
-  using TugType = typename DCRTPoly::TugType;
+    using ParmType = typename DCRTPoly::Params;
+    using DugType  = typename DCRTPoly::DugType;
+    using DggType  = typename DCRTPoly::DggType;
+    using TugType  = typename DCRTPoly::TugType;
 
- public:
-  KeySwitchHYBRID() {};
+public:
+    KeySwitchHYBRID(){};
 
-  virtual ~KeySwitchHYBRID() {};
+    virtual ~KeySwitchHYBRID(){};
 
-  using KeySwitchRNS::KeySwitchGen;
+    using KeySwitchRNS::KeySwitchGen;
 
-  virtual EvalKey<DCRTPoly> KeySwitchGen(
-      const PrivateKey<DCRTPoly> oldPrivateKey,
-      const PrivateKey<DCRTPoly> newPrivateKey) const override;
+    EvalKey<DCRTPoly> KeySwitchGen(const PrivateKey<DCRTPoly> oldPrivateKey,
+                                   const PrivateKey<DCRTPoly> newPrivateKey) const override;
 
-  virtual EvalKey<DCRTPoly> KeySwitchGen(
-      const PrivateKey<DCRTPoly> oldPrivateKey,
-      const PrivateKey<DCRTPoly> newPrivateKey,
-      const EvalKey<DCRTPoly> evalKey) const override;
+    EvalKey<DCRTPoly> KeySwitchGen(const PrivateKey<DCRTPoly> oldPrivateKey, const PrivateKey<DCRTPoly> newPrivateKey,
+                                   const EvalKey<DCRTPoly> evalKey) const override;
 
-  virtual EvalKey<DCRTPoly> KeySwitchGen(
-      const PrivateKey<DCRTPoly> oldPrivateKey,
-      const PublicKey<DCRTPoly> newPublicKey) const override;
+    EvalKey<DCRTPoly> KeySwitchGen(const PrivateKey<DCRTPoly> oldPrivateKey,
+                                   const PublicKey<DCRTPoly> newPublicKey) const override;
 
-  virtual void KeySwitchInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                                const EvalKey<DCRTPoly> evalKey) const override;
+    void KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const override;
 
-  virtual Ciphertext<DCRTPoly> KeySwitchExt(
-      ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const override;
+    Ciphertext<DCRTPoly> KeySwitchExt(ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const override;
 
-  virtual Ciphertext<DCRTPoly> KeySwitchDown(
-      ConstCiphertext<DCRTPoly> ciphertext) const override;
+    Ciphertext<DCRTPoly> KeySwitchDown(ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-  virtual DCRTPoly KeySwitchDownFirstElement(
-      ConstCiphertext<DCRTPoly> ciphertext) const override;
+    DCRTPoly KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-  /////////////////////////////////////////
-  // CORE OPERATIONS
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // CORE OPERATIONS
+    /////////////////////////////////////////
 
-  virtual std::shared_ptr<std::vector<DCRTPoly>> KeySwitchCore(
-      DCRTPoly a, const EvalKey<DCRTPoly> evalKey) const override;
+    std::shared_ptr<std::vector<DCRTPoly>> KeySwitchCore(DCRTPoly a, const EvalKey<DCRTPoly> evalKey) const override;
 
-  virtual std::shared_ptr<std::vector<DCRTPoly>> EvalKeySwitchPrecomputeCore(
-      DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
+    std::shared_ptr<std::vector<DCRTPoly>> EvalKeySwitchPrecomputeCore(
+        DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const override;
 
-  virtual std::shared_ptr<std::vector<DCRTPoly>> EvalFastKeySwitchCore(
-      const std::shared_ptr<std::vector<DCRTPoly>> digits,
-      const EvalKey<DCRTPoly> evalKey,
-      const std::shared_ptr<ParmType> paramsQl) const override;
+    std::shared_ptr<std::vector<DCRTPoly>> EvalFastKeySwitchCore(
+        const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
+        const std::shared_ptr<ParmType> paramsQl) const override;
 
-  virtual std::shared_ptr<std::vector<DCRTPoly>> EvalFastKeySwitchCoreExt(
-      const std::shared_ptr<std::vector<DCRTPoly>> digits,
-      const EvalKey<DCRTPoly> evalKey,
-      const std::shared_ptr<ParmType> paramsQl) const override;
+    std::shared_ptr<std::vector<DCRTPoly>> EvalFastKeySwitchCoreExt(
+        const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
+        const std::shared_ptr<ParmType> paramsQl) const override;
 
-  /////////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<KeySwitchRNS>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<KeySwitchRNS>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<KeySwitchRNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<KeySwitchRNS>(this));
+    }
 
-  virtual std::string SerializedObjectName() const override { return "KeySwitchHYBRID"; }
+    std::string SerializedObjectName() const override {
+        return "KeySwitchHYBRID";
+    }
 };
 
 }  // namespace lbcrypto

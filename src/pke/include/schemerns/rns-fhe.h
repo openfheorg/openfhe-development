@@ -36,6 +36,8 @@
 
 #include "schemebase/base-fhe.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -47,24 +49,26 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class FHERNS : public FHEBase<DCRTPoly> {
- public:
-  virtual ~FHERNS() {}
+public:
+    virtual ~FHERNS() {}
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<FHEBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<FHEBase<DCRTPoly>>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<FHEBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<FHEBase<DCRTPoly>>(this));
+    }
 
-  std::string SerializedObjectName() const { return "FHERNS"; }
+    std::string SerializedObjectName() const {
+        return "FHERNS";
+    }
 };
 
 }  // namespace lbcrypto

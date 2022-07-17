@@ -32,6 +32,10 @@
 #ifndef SRC_PKE_CRYPTOCONTEXTFACTORY_H_
 #define SRC_PKE_CRYPTOCONTEXTFACTORY_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 // TODO (dsuponit): remove/refactor allscheme.h as it contains information on ALL schemes. we don't need this all together anymore
 #include "scheme/allscheme.h"
 
@@ -44,19 +48,19 @@ namespace lbcrypto {
  */
 template <typename Element>
 class CryptoContextFactory {
-  static std::vector<CryptoContext<Element>> AllContexts;
+    static std::vector<CryptoContext<Element>> AllContexts;
 
- public:
-  static void ReleaseAllContexts();
+public:
+    static void ReleaseAllContexts();
 
-  static int GetContextCount();
+    static int GetContextCount();
 
-  static CryptoContext<Element> GetContext(
-      std::shared_ptr<CryptoParametersBase<Element>> params,
-      std::shared_ptr<SchemeBase<Element>> scheme, const std::string& schemeId = "Not");
+    static CryptoContext<Element> GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
+                                             std::shared_ptr<SchemeBase<Element>> scheme,
+                                             const std::string& schemeId = "Not");
 
-  static const std::vector<CryptoContext<Element>>& GetAllContexts();
+    static const std::vector<CryptoContext<Element>>& GetAllContexts();
 };
-}
+}  // namespace lbcrypto
 
 #endif

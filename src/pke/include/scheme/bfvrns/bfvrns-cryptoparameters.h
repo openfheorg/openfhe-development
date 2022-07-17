@@ -34,6 +34,9 @@
 
 #include "schemerns/rns-cryptoparameters.h"
 
+#include <memory>
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -41,81 +44,66 @@
 namespace lbcrypto {
 
 class CryptoParametersBFVRNS : public CryptoParametersRNS {
-  using ParmType = typename DCRTPoly::Params;
+    using ParmType = typename DCRTPoly::Params;
+
 public:
+    CryptoParametersBFVRNS() : CryptoParametersRNS() {}
 
-  CryptoParametersBFVRNS()
-  : CryptoParametersRNS() {}
+    CryptoParametersBFVRNS(const CryptoParametersBFVRNS& rhs) : CryptoParametersRNS(rhs) {}
 
-  CryptoParametersBFVRNS(const CryptoParametersBFVRNS &rhs)
-      : CryptoParametersRNS(rhs) {}
+    CryptoParametersBFVRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
+                           float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
+                           usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
+                           KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
+                           EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS)
+        : CryptoParametersRNS(params, plaintextModulus, distributionParameter, assuranceMeasure, securityLevel,
+                              digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech) {}
 
-  CryptoParametersBFVRNS(std::shared_ptr<ParmType> params,
-                       const PlaintextModulus &plaintextModulus,
-                       float distributionParameter, float assuranceMeasure,
-                       SecurityLevel securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
-                       int maxRelinSkDeg = 2,
-                       KeySwitchTechnique ksTech = BV,
-                       ScalingTechnique scalTech = FIXEDMANUAL,
-                       EncryptionTechnique encTech = STANDARD,
-                       MultiplicationTechnique multTech = HPS)
-      : CryptoParametersRNS(
-            params, plaintextModulus,
-            distributionParameter, assuranceMeasure, securityLevel, digitSize, secretKeyDist, maxRelinSkDeg,
-            ksTech, scalTech, encTech, multTech) {}
+    CryptoParametersBFVRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
+                           float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
+                           SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
+                           ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
+                           MultiplicationTechnique multTech = HPS)
+        : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
+                              secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech) {}
 
-  CryptoParametersBFVRNS(std::shared_ptr<ParmType> params,
-                       EncodingParams encodingParams,
-                       float distributionParameter, float assuranceMeasure,
-                       SecurityLevel securityLevel, usint digitSize, SecretKeyDist secretKeyDist,
-                       int maxRelinSkDeg = 2,
-                       KeySwitchTechnique ksTech = BV,
-                       ScalingTechnique scalTech = FIXEDMANUAL,
-                       EncryptionTechnique encTech = STANDARD,
-                       MultiplicationTechnique multTech = HPS)
-      : CryptoParametersRNS(
-            params, encodingParams,
-            distributionParameter, assuranceMeasure, securityLevel, digitSize, secretKeyDist, maxRelinSkDeg,
-            ksTech, scalTech, encTech, multTech) {}
+    virtual ~CryptoParametersBFVRNS() {}
 
-  virtual ~CryptoParametersBFVRNS() {}
+    void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
+                             MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
+                             uint32_t extraBits) override;
 
-  virtual void PrecomputeCRTTables(
-      KeySwitchTechnique ksTech,
-      ScalingTechnique scalTech,
-      EncryptionTechnique encTech,
-      MultiplicationTechnique multTech,
-      uint32_t numPartQ,
-      uint32_t auxBits,
-      uint32_t extraBits) override;
+    uint64_t FindAuxPrimeStep() const override;
 
-  virtual uint64_t FindAuxPrimeStep() const override;
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(cereal::base_class<CryptoParametersRNS>(this));
+    }
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(cereal::base_class<CryptoParametersRNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            std::string errMsg("serialized object version " + std::to_string(version) +
+                               " is from a later version of the library");
+            OPENFHE_THROW(deserialize_error, errMsg);
+        }
 
-  template <class Archive>
-  void load(Archive& ar, std::uint32_t const version) {
-      if (version > SerializedVersion()) {
-          std::string errMsg("serialized object version " + std::to_string(version) +
-              " is from a later version of the library");
-          OPENFHE_THROW(deserialize_error, errMsg);
-      }
+        ar(cereal::base_class<CryptoParametersRNS>(this));
 
-      ar(cereal::base_class<CryptoParametersRNS>(this));
+        PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique, m_numPartQ, m_auxBits,
+                            m_extraBits);
+    }
 
-      PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique,
-          m_numPartQ, m_auxBits, m_extraBits);
-  }
-
-  std::string SerializedObjectName() const override { return "CryptoParametersBFVRNS"; }
-  static uint32_t SerializedVersion() { return 1; }
+    std::string SerializedObjectName() const override {
+        return "CryptoParametersBFVRNS";
+    }
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 };
 
 }  // namespace lbcrypto
