@@ -60,7 +60,8 @@ uint32_t Degree(const std::vector<double>& coefficients) {
         if (coefficients[i] == 0) {
             deg += 1;
         }
-        break;
+        else
+          break;
     }
     return coefficients.size() - deg;
 }
@@ -74,11 +75,11 @@ longDiv* LongDivisionPoly(const std::vector<double>& f, const std::vector<double
     uint32_t k = Degree(g);
 
     if (n != f.size() - 1) {
-        OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divident is zero.");
+        OPENFHE_THROW(math_error, "LongDivisionPoly: The dominant coefficient of the divident is zero.");
     }
 
     if (k != g.size() - 1) {
-        OPENFHE_THROW(math_error, "LongDivisionChebyshev: The dominant coefficient of the divisor is zero.");
+        OPENFHE_THROW(math_error, "LongDivisionPoly: The dominant coefficient of the divisor is zero.");
     }
 
     std::vector<double> q;
