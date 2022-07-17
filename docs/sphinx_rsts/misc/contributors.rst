@@ -1,29 +1,9 @@
 Contributors
 ============
 
-We gratefully acknowledge intellectual and software contributions to the library from numerous individuals. The following individuals have contributed code or algorithms to the OpenFHE library:
+We gratefully acknowledge intellectual and software contributions to the library from numerous individuals. The following individuals have contributed code, algorithms, or ideas to the OpenFHE project:
 
-**Core contributors**
-
-* David Cousins (New Jersey Institute of Technology & Duality Technologies)
-
-* Andrey Kim (Samsung Advanced Institute of Technology)
-
-* Yuriy Polyakov (Duality Technologies)
-
-* Kurt Rohloff (New Jersey Institute of Technology & Duality Technologies)
-
-* Gerard "Jerry" Ryan (New Jersey Institute of Technology)
-
-* Jonathan Saylor (Duality Technologies)
-
-* Dmitriy Suponitskiy (Duality Technologies)
-
-* Matthew Triplett (Duality Technologies)
-
-* Saraswathy Ramanathapuram Vancheeswaran (Duality Technologies)
-
-**Community contributors**
+**Contributors**
 
 * Ahmad Al Badawi (National University of Singapore)
 
@@ -33,7 +13,11 @@ We gratefully acknowledge intellectual and software contributions to the library
 
 * Lisa Bahler (Perspecta Labs / Applied Communication Sciences (ACS) / Vencore Labs)
 
-* Fabian Boemer (Intel)
+* Jack Bates (Duality Technologies)
+
+* Flavio Bergamaschi (Intel Corporation)
+
+* Fabian Boemer (Intel Corporation)
 
 * Ted Brownlow
 
@@ -41,15 +25,21 @@ We gratefully acknowledge intellectual and software contributions to the library
 
 * Aloni Cohen (Massachusetts Institute of Technology)
 
-* Jack Crawford (Intel)
+* David Cousins (Duality Technologies)
+
+* Jack Crawford (Intel Corporation)
 
 * Yarkın Doröz (New Jersey Institute of Technology)
 
+* Saroja Erabelli (Duality Technologies)
+
 * Arnab Bobby Deb Gupta (New Jersey Institute of Technology)
 
-* Shai Halevi (IBM Research)
+* Shai Halevi (Algorand Foundation, IBM Research)
 
-* Nick Genise (University of California San Diego)
+* Hamish Hunt (Intel Corporation)
+
+* Nick Genise (Duality Technologies, University of California San Diego)
 
 * Kamil Doruk Gür (New Jersey Institute of Technology)
 
@@ -57,13 +47,17 @@ We gratefully acknowledge intellectual and software contributions to the library
 
 * Chiraag Juvekar (Massachusetts Institute of Technology)
 
+* Andrey Kim (Samsung Advanced Institute of Technology)
+
 * Kevin King (Massachusetts Institute of Technology)
+
+* Yongwoo Lee (Samsung Advanced Institute of Technology)
 
 * Thomas (Zeyu) Liu (Duality Technologies & Columbia University)
 
 * Alex Malozemoff (Galois)
 
-* Daniele Micciancio (University of California San Diego)
+* Daniele Micciancio (University of California San Diego, Duality Technologies)
 
 * Antonis Papadimitriou (Duality Technologies)
 
@@ -71,20 +65,36 @@ We gratefully acknowledge intellectual and software contributions to the library
 
 * Thomas Petsche (New Jersey Institute of Technology)
 
+* Yuriy Polyakov (Duality Technologies)
+
+* Ian Quah (Duality Technologies)
+
+* Saraswathy Ramanathapuram Vancheeswaran (Duality Technologies)
+
+* Kurt Rohloff (Duality Technologies)
+
+* Gerard "Jerry" Ryan (New Jersey Institute of Technology)
+
 * Gyana Sahu (New Jersey Institute of Technology)
 
 * Hadi Sajjadpour (New Jersey Institute of Technology)
 
 * Erkay Savaş (Sabanci University)
 
+* Jonathan Saylor (Duality Technologies)
+
 * Victor Shoup (New York University)
 
 * David Stott (CACI / LGS Innovations (Lucent Government Systems))
+
+* Dmitriy Suponitskiy (Duality Technologies)
+
+* Matthew Triplett (Duality Technologies)
 
 * Vinod Vaikuntanathan (Massachusetts Institute of Technology & Duality Technologies)
 
 * Michael Walter (University of California San Diego)
 
-* Vincent Zucca (KU Leuven)
+* Vincent Zucca (Universite de Perpignan Via Domitia, LIRMM, University of Montpellier, KU Leuven)
 
 **Note.** We have attempted to make an as inclusive a list as possible to identify contributors, but we may of forgotten some important contributors.  Any oversights are unintentional.  If we neglected to identify your contribution, please let us know and we'll update our listing.  If you are on the list of contributors and you'd prefer not to be, please let us know and we'll similarly update our list.

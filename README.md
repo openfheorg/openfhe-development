@@ -61,7 +61,7 @@ We welcome all contributions including but not limited to:
 - documentation changes 
 - talks and seminars using OpenFHE
 
-# How to Cite OpenFHE
+## How to Cite OpenFHE
 
 To cite OpenFHE in academic papers, please use the following BibTeX entry.
 

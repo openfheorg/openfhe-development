@@ -27,7 +27,7 @@ CMake does not usually have to be rerun. A ``make`` will rerun CMake if it detec
 Required Compilers
 ^^^^^^^^^^^^^^^^^^^^^
 
-OpenFHE supports any GNU C++ compiler version 6 or above and clang C++ compiler version 6 or above.
+OpenFHE supports any GNU C++ compiler version 9 or above and clang C++ compiler version 10 or above.
 
 A warning is issued if an older version of the compiler is found. The build may run but such compilers are unsupported.
 
@@ -74,7 +74,7 @@ We point out a number of the standard CMake variables that can be set using -D f
 
 Flags for OpenFHE Builds
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Beginning with release 1.10, the OpenFHE build has a number of options to control
+The OpenFHE build has a number of options to control
 what is built and what features are included/excluded.
 
 Each of the options is enabled by saying ``-DOPTION_NAME=ON`` and is disabled by saying ``-DOPTION_NAME=OFF``
