@@ -7,7 +7,7 @@ This is comprised of 3 folders:
 
 - `schemebase <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/schemebase/>`_, which contains the base implementations of various functionalities
 
-- `schemerns <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/schemerns/>`_, which contains the RNS-ed base schemeimplementations.
+- `schemerns <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/schemerns/>`_, which contains the base RNS scheme implementation.
 
 At a high level, this can be thought of as:
 

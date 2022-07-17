@@ -18,7 +18,7 @@ Boolean FHE
 
 At a high level:
 
--  `boolean.cpp: GINX Bootstrapping <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/boolean.cpp>`__:
+-  `boolean.cpp: GINX (CGGI) Bootstrapping <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/boolean.cpp>`__:
 
    -  bootstrapping as described in `TFHE: Fast Fully Homomorphic
       Encryption over the Torus <https://eprint.iacr.org/2018/421>`__
@@ -26,7 +26,7 @@ At a high level:
       Cryptosystems <https://eprint.iacr.org/2020/086.pdf>`__
 
 
--  `boolean-ap.cpp: AP Bootstrapping <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/boolean-ap.cpp>`__:
+-  `boolean-ap.cpp: AP (DM) Bootstrapping <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/boolean-ap.cpp>`__:
 
    -  bootstrapping as described in `FHEW: Bootstrapping Homomorphic
       Encryption in less than a
@@ -87,21 +87,19 @@ Core
   - For more information on sampling, read :ref:`sampling documentation <sampling>`
 
 
-Public-Key Encryption (PKE)
+PKE - SIMD FHE
 ----------------------------
 
-`Generalized Fully Homomorphic Encryption Examples <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/examples>`_:
+`SIMD Fully Homomorphic Encryption Examples <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/examples>`_:
 
 Basic Homomorphic Encryption
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Demonstrates basic homomorphic encryption using the various schemes:
 
-- `BFV-rns B (depth-bfvrns-b.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bfvrns-b.cpp>`_
+- `BFVrns (depth-bfvrns.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bfvrns.cpp>`_
 
-- `BFV-rns (depth-bfvrns.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bfvrns.cpp>`_
-
-- `BGV-rns depth-bgvrns.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bgvrns.cpp>`_
+- `BGVrns depth-bgvrns.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/depth-bgvrns.cpp>`_
 
 
 Simple Mathematical Operations and Serialization
@@ -150,17 +148,17 @@ Demonstates advanced operations on real-number vectors using ``CKKS``:
 Misc. Operations across Schemes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  `evalatindex.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/evalatindex.cpp>`__:
+-  `rotation.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/rotation.cpp>`__:
 
-   - demonstrates use of ``EvalAtIndex (rotation operation) AKA automorphism`` for different schemes and cyclotomic rings
+   - demonstrates use of ``EvalRotate automorphism`` for different schemes
 
 
-- `linearsum_evaluation <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/linearwsum_evaluation.cpp>`_:
+- `linearsum-evaluation <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/linearwsum-evaluation.cpp>`_:
 
   - demonstrates the process of taking the linear weighted sum of a vector of ciphertexts against a vector of plaintext data in the `CKKS` scheme
 
 
--  `polynomial_evaluation.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/polynomial_evaluation.cpp>`__:
+-  `polynomial-evaluation.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/polynomial-evaluation.cpp>`__:
 
    - demonstrates an evaluation of a polynomial (power series) using ``CKKS``
 
@@ -171,4 +169,4 @@ Misc. Operations across Schemes
 
 -  `threshold-fhe.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/threshold-fhe.cpp>`__:
 
-   - shows several examples of threshold FHE in ``BGVrns``, ``BFVrns``, and ``CKKS``
+   - shows several examples of threshold FHE in ``BGVrns``, ``BFVrns``, and ``CKKSrns``

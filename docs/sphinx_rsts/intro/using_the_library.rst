@@ -7,33 +7,19 @@ The source files in the demo directories, particularly those in src/examples/pke
 
 To use OpenFHE, you must
 
-* select a lattice element to be used for your application. We support:
-
- * ``Poly``
-
- * ``NativePoly``
-
- * ``DCRTPoly``
-
 * select a scheme to use
-
-  * ``BFV``
 
   * ``BFVrns``
 
-  * ``BFVrnsB``
-
   * ``BGVrns``
 
-  * ``CKKS``
+  * ``CKKSrns``
 
-  * ``Null`` (a test scheme which does not actually encrypt/decrypt anything)
-
-* create a CryptoContext for the scheme and lattice element type. This requires that you:
+* create a CryptoContext for the scheme. This requires that you:
 
  * run a parameter generation function or, alternatively,
 
-  * decide on lattice parameters (cyclotomic order, ciphertext modulus)
+  * decide on lattice parameters (ring dimension, size of moduli)
 
   * decide on encoding parameters (plaintext modulus)
 

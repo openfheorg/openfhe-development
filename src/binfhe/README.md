@@ -6,7 +6,7 @@ We provide the following classes of examples:
 
 ### Simple Boolean
 
-- bootstrapping for `AP` and `GINX`
+- bootstrapping for `AP` (DM) and `GINX` (CGGI)
 - serialization to binary and json formats
 
 ### Evaluation of functions

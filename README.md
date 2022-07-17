@@ -1,33 +1,29 @@
 OpenFHE - Open-Source Fully Homomorphic Encryption Library
 =====================================
 
-OpenFHE is an open-source fully homomorphic encryption library that currently includes efficient implementations of the following lattice cryptography capabilities:
-
-* Fully Homomorphic Encryption (FHE)
+Fully Homomorphic Encryption (FHE) is a powerful cryptographic primitive that enables performing computations over encrypted data without having access to the secret key. 
+OpenFHE is an open-source FHE library that includes efficient implementations of all common FHE schemes:
   * Brakerski/Fan-Vercauteren (BFV) scheme for integer arithmetic
   * Brakerski-Gentry-Vaikuntanathan (BGV) scheme for integer arithmetic
-  * Cheon-Kim-Kim-Song (CKKS) scheme for real-number arithmetic
-  * Ducas-Micciancio (FHEW) and Chillotti-Gama-Georgieva-Izabachene (TFHE) schemes for Boolean circuit evaluation
-* Multi-Party Extensions of FHE (to support multi-key FHE)
+  * Cheon-Kim-Kim-Song (CKKS) scheme for real-number arithmetic (includes approximate bootstrapping)
+  * Ducas-Micciancio (DM) and Chillotti-Gama-Georgieva-Izabachene (CGGI) schemes for Boolean circuit evaluation
+
+OpenFHE also includes the following multiparty extensions of FHE: 
   * Threshold FHE for BGV, BFV, and CKKS schemes
   * Proxy Re-Encryption for BGV, BFV, and CKKS schemes
 
-**Note** visit our [openfhe-development](https://openfhe-development.readthedocs.io/en/latest) for in-depth
-documentation about this library.
-
 ## Links and Resources
 
-**Documentation**  [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/)
-
-**Quickstart** [OpenFHE Readthedocs](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/quickstart.html)
-
-**License** OpenFHE is released under the BSD 2-Clause License. See [here](LICENSE)
-
-**Contributing** [Contributing to OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/contributing.html)
-
-**Reporting bugs** [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development/issues)
-
-**Reporting security vulnerabilities** Please email us at contact@openfhe.org
+ * [OpenFHE documentation](https://openfhe-development.readthedocs.io/en/latest/)
+ * [Design paper for OpenFHE](https://eprint.iacr.org/2022/915)
+ * [OpenFHE website](https://openfhe.org)
+ * [Community forum for OpenFHE](https://openfhe.discourse.group/)
+ * [OpenFHE Release Notes](https://github.com/openfheorg/openfhe-development/blob/main/docs/static_docs/Release_Notes.md)
+ * [Quickstart](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/quickstart.html)
+ * [BSD 2-Clause License](LICENSE)
+ * [Contributing to OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/contributing.html)
+ * [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development/issues)
+ * To report security vulnerabilities, please email us at contact@openfhe.org
 
 
 ## Installation
@@ -42,6 +38,26 @@ Or refer to the following for your specific operating system:
 
 - [Windows](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/windows.html)
 
+
+## Code Examples
+
+To get familiar with the main API of OpenFHE, we recommend looking at the code of the following examples:
+   1. FHE for arithmetic over integers (BFV): 
+       1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers.cpp)
+       2. [Simple Code Example with Serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial.cpp)
+   1. FHE for arithmetic over integers (BGV): 
+       1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-bgvrns.cpp)
+       2. [Simple Code Example with Serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial-bgvrns.cpp)
+   1. FHE for arithmetic over real numbers (CKKS):
+       1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers.cpp)
+       2. [Advanced Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers.cpp)
+       2. [Advanced Code Example for High-Precision CKKS](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers-128.cpp)
+   1. FHE for Boolean circuits (FHEW/TFHE):
+       1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean.cpp)
+       2. [Code with JSON serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean-serial-json.cpp)
+       3. [Code with Binary Serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean-serial-binary.cpp)
+   1. Threshold FHE:
+       1. [Code Example for BGV, BFV, and CKKS](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/threshold-fhe.cpp)
 
 ## Code of Conduct
 
@@ -65,3 +81,18 @@ We welcome all contributions including but not limited to:
 - addressing [bugs](https://github.com/openfheorg/openfhe-development/issues) big or small. We label issues to help you filter them to your skill level.
 - documentation changes 
 - talks and seminars using OpenFHE
+
+## How to Cite OpenFHE
+
+To cite OpenFHE in academic papers, please use the following BibTeX entry.
+
+```
+@misc{OpenFHE,
+      author = {Ahmad Al Badawi and Jack Bates and Flavio Bergamaschi and David Bruce Cousins and Saroja Erabelli and Nicholas Genise and Shai Halevi and Hamish Hunt and Andrey Kim and Yongwoo Lee and Zeyu Liu and Daniele Micciancio and Ian Quah and Yuriy Polyakov and Saraswathy R.V. and Kurt Rohloff and Jonathan Saylor and Dmitriy Suponitsky and Matthew Triplett and Vinod Vaikuntanathan and Vincent Zucca},
+      title = {OpenFHE: Open-Source Fully Homomorphic Encryption Library},
+      howpublished = {Cryptology ePrint Archive, Paper 2022/915},
+      year = {2022},
+      note = {\url{https://eprint.iacr.org/2022/915}},
+      url = {https://eprint.iacr.org/2022/915}
+}
+```

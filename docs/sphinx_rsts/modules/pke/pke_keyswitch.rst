@@ -36,22 +36,20 @@ File Listings
 
 `Key-Switch Base (keyswitch-base.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/keyswitch/keyswitch-base.h>`_
 
-- Base class for Lattice-based cryptography(LBC) Somewhat Homomorphic Encryption(SHE) algorithms.
+- Base class for key switching algorithms.
 
 `Key-Switch RNS (keyswitch-rns.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/keyswitch/keyswitch-rns.h>`_
 
-- Abstract interface class for RNS LBC SHE algorithms
+- Abstract interface class for key switching algorithms in RNS
 
 `Key-Switch BV (keyswitch-bv.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/keyswitch/keyswitch-bv.h>`_
 
 - Implements BV scheme from `Fully Homomorphic Encryption from Ring-LWE and Security for Key Dependent Messages (BV Scheme) <https://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf>`_
 - Requires the computation of a quadratic number of NTTs.
+- See the Appendix of https://eprint.iacr.org/2021/204 for more detailed description of the RNS variant.
 
 `Key-switch Hybrid (keyswitch-hybrid.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/include/keyswitch/keyswitch-hybrid.h>`_
 
-- Uses a mix of the GHS key-switching with the BV key-switching to produce more efficient key-switching.
-- Was introduced in `Homomorphic Evaluation of the AES Circuit(GHS Scheme) <https://eprint.iacr.org/2012/099.pdf>`_
-- GHS Keyswitching:
-
-  - **Pros**: Smaller noise growth than BV and is more efficient as it only requires a linear number of NTTs
-  - **Cons**: need to double dimension, N, or reduce size of ciphertext modulus, Q, by a factor of 2
+ - Hybrid key switching method first introduced in https://eprint.iacr.org/2012/099.pdf
+ - RNS version was introduced in https://eprint.iacr.org/2019/688.
+ - See the Appendix of https://eprint.iacr.org/2021/204 for more detailed description.

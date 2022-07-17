@@ -6,9 +6,9 @@ Boolean FHE (BinFHE) documentation
 
 `Github Source <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples>`_: Implements the following Boolean circuit evaluation schemes:
 
-- `Ducas-Micciancio (FHEW) <https://eprint.iacr.org/2014/816.pdf>`_
+- `Ducas-Micciancio (DM or FHEW) <https://eprint.iacr.org/2014/816.pdf>`_
 
-- `Chillotti-Gama-Georgieva-Izabachene (TFHE)  <https://eprint.iacr.org/2018/421.pdf>`_
+- `Chillotti-Gama-Georgieva-Izabachene (CGGI or TFHE)  <https://eprint.iacr.org/2018/421.pdf>`_
 
 File Listings
 -----------------------

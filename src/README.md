@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart BT
-    A[CORE<br/>- math implementation<br/>- lattice implementation<br/>- serialization] --> B[PKE<br/> -generalized FHE];
+    A[CORE<br/>- math implementation<br/>- lattice implementation<br/>- serialization] --> B[PKE<br/> -SIMD FHE];
     A --> C[BINFHE<br/>- binary FHE];
     B --> D[Application<br/>- encrypted data analysis<br/>- privacy-compliant data sharing];
     C --> D;
@@ -10,7 +10,7 @@ flowchart BT
 
 # binFHE
 
-- for binary-FHE applications
+- Boolean arithmetic, comparisons, and aribtrary function evaluation based on DM and CGGI schemes
 
 # core
 
@@ -18,7 +18,7 @@ flowchart BT
 
 # pke
 
-- for general Homomorphic Encryption applications
+- integer and real-number arithmetic based on BGV, BFV, and CKKS schemes
 
 ## Warning
 

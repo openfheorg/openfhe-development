@@ -120,14 +120,14 @@ message( STATUS "WITH_COVTEST:     ${WITH_COVTEST}")
 # Compiler logic
 #--------------------------------------------------------------------
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    # require at least gcc 6.1
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.1)
-        message(WARNING "GCC version should be at least 6.1.")
+    # require at least gcc 9.0
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+        message(WARNING "GCC version should be at least 9.0.")
     endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    # require at least clang 6
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)
-        message(WARNING "Clang version should be at least 6.")
+    # require at least clang 10
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10)
+        message(WARNING "Clang version should be at least 10.0.")
     endif()
 else()
 	message(WARNING "You are using ${CMAKE_CXX_COMPILER_ID} version ${CMAKE_CXX_COMPILER_VERSION}, which is unsupported.")
