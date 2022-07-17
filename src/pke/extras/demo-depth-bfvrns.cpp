@@ -42,91 +42,84 @@
 
 using namespace lbcrypto;
 
-int main(int argc, char *argv[]) {
-  ////////////////////////////////////////////////////////////
-  // Set-up of parameters
-  TimeVar t;
-  double processingTime(0.0);
+int main(int argc, char* argv[]) {
+    ////////////////////////////////////////////////////////////
+    // Set-up of parameters
+    TimeVar t;
+    double processingTime(0.0);
 
-  int numkeys = 1 << 4;
-  int numruns = 1 << 4;
+    int numkeys = 1 << 4;
+    int numruns = 1 << 4;
 
-  CCParams<CryptoContextBFVRNS> parameters;
-  parameters.SetPlaintextModulus(65537);
-  parameters.SetMultiplicativeDepth(3);
-  parameters.SetDigitSize(1);
-  parameters.SetScalingModSize(60);
+    CCParams<CryptoContextBFVRNS> parameters;
+    parameters.SetPlaintextModulus(65537);
+    parameters.SetMultiplicativeDepth(3);
+    parameters.SetDigitSize(1);
+    parameters.SetScalingModSize(60);
 
-  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
-  // enable features that you wish to use
-  cryptoContext->Enable(PKE);
-  cryptoContext->Enable(KEYSWITCH);
-  cryptoContext->Enable(LEVELEDSHE);
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+    // enable features that you wish to use
+    cryptoContext->Enable(PKE);
+    cryptoContext->Enable(KEYSWITCH);
+    cryptoContext->Enable(LEVELEDSHE);
 
-  std::cout << "\np = "
-            << cryptoContext->GetCryptoParameters()->GetPlaintextModulus()
-            << std::endl;
-  std::cout << "n = "
-            << cryptoContext->GetCryptoParameters()
-                       ->GetElementParams()
-                       ->GetCyclotomicOrder() /
-                   2
-            << std::endl;
-  std::cout << "log2 q = "
-            << log2(cryptoContext->GetCryptoParameters()
-                        ->GetElementParams()
-                        ->GetModulus()
-                        .ConvertToDouble())
-            << std::endl;
+    std::cout << "\np = " << cryptoContext->GetCryptoParameters()->GetPlaintextModulus() << std::endl;
+    std::cout << "n = " << cryptoContext->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2
+              << std::endl;
+    std::cout << "log2 q = "
+              << log2(cryptoContext->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
+              << std::endl;
 
-  // Initialize Public Key Containers
-  KeyPair<DCRTPoly> keyPair;
+    // Initialize Public Key Containers
+    KeyPair<DCRTPoly> keyPair;
 
-  std::cout << "\nMeasuring Multiplicative Depth:\n";
-  TIC(t);
+    std::cout << "\nMeasuring Multiplicative Depth:\n";
+    TIC(t);
 
-  std::vector<int64_t> vectorOfInts1 = { 1 };
-  Plaintext plaintext = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts1);
-  Plaintext dec(plaintext);
-  Ciphertext<DCRTPoly> ciphertext;
-  std::vector<int> depth(numruns, 0);
-  std::vector<int> min(numkeys, 0);
+    std::vector<int64_t> vectorOfInts1 = {1};
+    Plaintext plaintext                = cryptoContext->MakeCoefPackedPlaintext(vectorOfInts1);
+    Plaintext dec(plaintext);
+    Ciphertext<DCRTPoly> ciphertext;
+    std::vector<int> depth(numruns, 0);
+    std::vector<int> min(numkeys, 0);
 
-  for (int i = 0; i < numkeys; i++) {
-    keyPair = cryptoContext->KeyGen();
-    cryptoContext->EvalMultKeysGen(keyPair.secretKey);
+    for (int i = 0; i < numkeys; i++) {
+        keyPair = cryptoContext->KeyGen();
+        cryptoContext->EvalMultKeysGen(keyPair.secretKey);
 
-    std::cout << "Key " << i << ": ";
+        std::cout << "Key " << i << ": ";
 
-    for (int j = 0; j < numruns; j++) {
-      ciphertext = cryptoContext->Encrypt(keyPair.publicKey, plaintext);
+        for (int j = 0; j < numruns; j++) {
+            ciphertext = cryptoContext->Encrypt(keyPair.publicKey, plaintext);
 
-      dec = plaintext;
+            dec = plaintext;
 
-      depth[j] = 0;
-      while (dec == plaintext) {
-        ciphertext = cryptoContext->EvalMult(ciphertext, ciphertext);
-        cryptoContext->Decrypt(keyPair.secretKey, ciphertext, &dec);
+            depth[j] = 0;
+            while (dec == plaintext) {
+                ciphertext = cryptoContext->EvalMult(ciphertext, ciphertext);
+                cryptoContext->Decrypt(keyPair.secretKey, ciphertext, &dec);
 
-        depth[j]++;
-      }
-      depth[j]--;
-      std::cerr << depth[j] << " ";
+                depth[j]++;
+            }
+            depth[j]--;
+            std::cerr << depth[j] << " ";
+        }
+        min[i] = depth[0];
+        for (int j = 1; j < numruns; j++)
+            if (min[i] > depth[j])
+                min[i] = depth[j];
+        std::cout << "--> " << min[i] << "\n";
     }
-    min[i] = depth[0];
-    for (int j = 1; j < numruns; j++)
-      if (min[i] > depth[j]) min[i] = depth[j];
-    std::cout << "--> " << min[i] << "\n";
-  }
-  std::cout << "\n";
+    std::cout << "\n";
 
-  int MIN = min[0];
-  for (int i = 1; i < numkeys; i++)
-    if (MIN > min[i]) MIN = min[i];
-  std::cout << "Smallest depth = " << MIN;
+    int MIN = min[0];
+    for (int i = 1; i < numkeys; i++)
+        if (MIN > min[i])
+            MIN = min[i];
+    std::cout << "Smallest depth = " << MIN;
 
-  processingTime = TOC(t);
-  std::cout << " in " << processingTime / 1000. << "s\n" << std::endl;
+    processingTime = TOC(t);
+    std::cout << " in " << processingTime / 1000. << "s\n" << std::endl;
 
-  return 0;
+    return 0;
 }

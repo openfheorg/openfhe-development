@@ -45,301 +45,278 @@
 
 using namespace lbcrypto;
 
-int main(int argc, char *argv[]) {
-  ////////////////////////////////////////////////////////////
-  // Set-up of parameters
-  ////////////////////////////////////////////////////////////
-
-  std::cout << "\nThis code demonstrates the use of the BGVrns scheme for "
-               "homomorphic multiplication. "
-            << std::endl;
-  std::cout
-      << "This code shows how to auto-generate parameters during run-time "
-         "based on desired plaintext moduli and security levels. "
-      << std::endl;
-  std::cout << "In this demonstration we use three input plaintexts and show "
-               "how to both add them together and multiply them together.\n"
-            << std::endl;
-
-  // benchmarking variables
-  TimeVar t;
-  double processingTime(0.0);
-
-  // Crypto Parameters
-  // # of evalMults = 3 (first 3) is used to support the multiplication of 7
-  // ciphertexts, i.e., ceiling{log2{7}} Max depth is set to 3 (second 3) to
-  // generate homomorphic evaluation multiplication keys for s^2 and s^3
-  CCParams<CryptoContextBGVRNS> parameters;
-  parameters.SetMultiplicativeDepth(3);
-  parameters.SetPlaintextModulus(536903681);
-  parameters.SetMaxRelinSkDeg(3);
-
-  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
-  // enable features that you wish to use
-  cryptoContext->Enable(PKE);
-  cryptoContext->Enable(KEYSWITCH);
-  cryptoContext->Enable(LEVELEDSHE);
-  cryptoContext->Enable(ADVANCEDSHE);
-
-  std::cout << "\np = "
-            << cryptoContext->GetCryptoParameters()->GetPlaintextModulus()
-            << std::endl;
-  std::cout << "n = "
-            << cryptoContext->GetCryptoParameters()
-                       ->GetElementParams()
-                       ->GetCyclotomicOrder() /
-                   2
-            << std::endl;
-  std::cout << "log2 q = "
-            << log2(cryptoContext->GetCryptoParameters()
-                        ->GetElementParams()
-                        ->GetModulus()
-                        .ConvertToDouble())
-            << std::endl;
+int main(int argc, char* argv[]) {
+    ////////////////////////////////////////////////////////////
+    // Set-up of parameters
+    ////////////////////////////////////////////////////////////
 
-  // Initialize Public Key Containers
-  KeyPair<DCRTPoly> keyPair;
+    std::cout << "\nThis code demonstrates the use of the BGVrns scheme for "
+                 "homomorphic multiplication. "
+              << std::endl;
+    std::cout << "This code shows how to auto-generate parameters during run-time "
+                 "based on desired plaintext moduli and security levels. "
+              << std::endl;
+    std::cout << "In this demonstration we use three input plaintexts and show "
+                 "how to both add them together and multiply them together.\n"
+              << std::endl;
 
-  // Perform Key Generation Operation
+    // benchmarking variables
+    TimeVar t;
+    double processingTime(0.0);
 
-  std::cout << "\nRunning key generation (used for source data)..."
-            << std::endl;
+    // Crypto Parameters
+    // # of evalMults = 3 (first 3) is used to support the multiplication of 7
+    // ciphertexts, i.e., ceiling{log2{7}} Max depth is set to 3 (second 3) to
+    // generate homomorphic evaluation multiplication keys for s^2 and s^3
+    CCParams<CryptoContextBGVRNS> parameters;
+    parameters.SetMultiplicativeDepth(3);
+    parameters.SetPlaintextModulus(536903681);
+    parameters.SetMaxRelinSkDeg(3);
 
-  TIC(t);
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+    // enable features that you wish to use
+    cryptoContext->Enable(PKE);
+    cryptoContext->Enable(KEYSWITCH);
+    cryptoContext->Enable(LEVELEDSHE);
+    cryptoContext->Enable(ADVANCEDSHE);
 
-  keyPair = cryptoContext->KeyGen();
+    std::cout << "\np = " << cryptoContext->GetCryptoParameters()->GetPlaintextModulus() << std::endl;
+    std::cout << "n = " << cryptoContext->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2
+              << std::endl;
+    std::cout << "log2 q = "
+              << log2(cryptoContext->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
+              << std::endl;
 
-  processingTime = TOC(t);
-  std::cout << "Key generation time: " << processingTime << "ms" << std::endl;
+    // Initialize Public Key Containers
+    KeyPair<DCRTPoly> keyPair;
 
-  if (!keyPair.good()) {
-    std::cout << "Key generation failed!" << std::endl;
-    exit(1);
-  }
+    // Perform Key Generation Operation
 
-  std::cout << "Running key generation for homomorphic multiplication "
-               "evaluation keys..."
-            << std::endl;
+    std::cout << "\nRunning key generation (used for source data)..." << std::endl;
 
-  TIC(t);
+    TIC(t);
 
-  cryptoContext->EvalMultKeysGen(keyPair.secretKey);
+    keyPair = cryptoContext->KeyGen();
 
-  processingTime = TOC(t);
-  std::cout
-      << "Key generation time for homomorphic multiplication evaluation keys: "
-      << processingTime << "ms" << std::endl;
+    processingTime = TOC(t);
+    std::cout << "Key generation time: " << processingTime << "ms" << std::endl;
 
-  ////////////////////////////////////////////////////////////
-  // Encode source data
-  ////////////////////////////////////////////////////////////
+    if (!keyPair.good()) {
+        std::cout << "Key generation failed!" << std::endl;
+        exit(1);
+    }
 
-  std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-  Plaintext plaintext1 = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    std::cout << "Running key generation for homomorphic multiplication "
+                 "evaluation keys..."
+              << std::endl;
 
-  std::vector<int64_t> vectorOfInts2 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-  Plaintext plaintext2 = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+    TIC(t);
 
-  std::vector<int64_t> vectorOfInts3 = {2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-  Plaintext plaintext3 = cryptoContext->MakePackedPlaintext(vectorOfInts3);
+    cryptoContext->EvalMultKeysGen(keyPair.secretKey);
 
-  std::vector<int64_t> vectorOfInts4 = {2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-  Plaintext plaintext4 = cryptoContext->MakePackedPlaintext(vectorOfInts4);
+    processingTime = TOC(t);
+    std::cout << "Key generation time for homomorphic multiplication evaluation keys: " << processingTime << "ms"
+              << std::endl;
 
-  std::vector<int64_t> vectorOfInts5 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-  Plaintext plaintext5 = cryptoContext->MakePackedPlaintext(vectorOfInts5);
+    ////////////////////////////////////////////////////////////
+    // Encode source data
+    ////////////////////////////////////////////////////////////
 
-  std::vector<int64_t> vectorOfInts6 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-  Plaintext plaintext6 = cryptoContext->MakePackedPlaintext(vectorOfInts6);
+    std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
 
-  std::vector<int64_t> vectorOfInts7 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-  Plaintext plaintext7 = cryptoContext->MakePackedPlaintext(vectorOfInts7);
+    std::vector<int64_t> vectorOfInts2 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
 
-  std::cout << "\nOriginal Plaintext #1: \n";
-  std::cout << plaintext1 << std::endl;
+    std::vector<int64_t> vectorOfInts3 = {2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Plaintext plaintext3               = cryptoContext->MakePackedPlaintext(vectorOfInts3);
 
-  std::cout << "\nOriginal Plaintext #2: \n";
-  std::cout << plaintext2 << std::endl;
+    std::vector<int64_t> vectorOfInts4 = {2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Plaintext plaintext4               = cryptoContext->MakePackedPlaintext(vectorOfInts4);
 
-  std::cout << "\nOriginal Plaintext #3: \n";
-  std::cout << plaintext3 << std::endl;
+    std::vector<int64_t> vectorOfInts5 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Plaintext plaintext5               = cryptoContext->MakePackedPlaintext(vectorOfInts5);
 
-  std::cout << "\nOriginal Plaintext #4: \n";
-  std::cout << plaintext4 << std::endl;
+    std::vector<int64_t> vectorOfInts6 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Plaintext plaintext6               = cryptoContext->MakePackedPlaintext(vectorOfInts6);
 
-  std::cout << "\nOriginal Plaintext #5: \n";
-  std::cout << plaintext5 << std::endl;
+    std::vector<int64_t> vectorOfInts7 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Plaintext plaintext7               = cryptoContext->MakePackedPlaintext(vectorOfInts7);
 
-  std::cout << "\nOriginal Plaintext #6: \n";
-  std::cout << plaintext6 << std::endl;
+    std::cout << "\nOriginal Plaintext #1: \n";
+    std::cout << plaintext1 << std::endl;
 
-  std::cout << "\nOriginal Plaintext #7: \n";
-  std::cout << plaintext7 << std::endl;
+    std::cout << "\nOriginal Plaintext #2: \n";
+    std::cout << plaintext2 << std::endl;
 
-  ////////////////////////////////////////////////////////////
-  // Encryption
-  ////////////////////////////////////////////////////////////
+    std::cout << "\nOriginal Plaintext #3: \n";
+    std::cout << plaintext3 << std::endl;
 
-  std::cout << "\nRunning encryption of all plaintexts... ";
+    std::cout << "\nOriginal Plaintext #4: \n";
+    std::cout << plaintext4 << std::endl;
 
-  std::vector<Ciphertext<DCRTPoly>> ciphertexts;
+    std::cout << "\nOriginal Plaintext #5: \n";
+    std::cout << plaintext5 << std::endl;
 
-  TIC(t);
+    std::cout << "\nOriginal Plaintext #6: \n";
+    std::cout << plaintext6 << std::endl;
 
-  ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext1));
-  ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext2));
-  ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext3));
-  ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext4));
-  ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext5));
-  ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext6));
-  ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext7));
+    std::cout << "\nOriginal Plaintext #7: \n";
+    std::cout << plaintext7 << std::endl;
 
-  processingTime = TOC(t);
+    ////////////////////////////////////////////////////////////
+    // Encryption
+    ////////////////////////////////////////////////////////////
 
-  std::cout << "Completed\n";
+    std::cout << "\nRunning encryption of all plaintexts... ";
 
-  std::cout << "\nAverage encryption time: " << processingTime / 7 << "ms"
-            << std::endl;
+    std::vector<Ciphertext<DCRTPoly>> ciphertexts;
 
-  ////////////////////////////////////////////////////////////
-  // Homomorphic multiplication of 2 ciphertexts
-  ////////////////////////////////////////////////////////////
+    TIC(t);
 
-  TIC(t);
+    ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext1));
+    ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext2));
+    ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext3));
+    ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext4));
+    ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext5));
+    ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext6));
+    ciphertexts.push_back(cryptoContext->Encrypt(keyPair.publicKey, plaintext7));
 
-  auto ciphertextMult = cryptoContext->EvalMult(ciphertexts[0], ciphertexts[1]);
+    processingTime = TOC(t);
 
-  processingTime = TOC(t);
-  std::cout << "\nTotal time of multiplying 2 ciphertexts using EvalMult w/ "
-               "relinearization: "
-            << processingTime << "ms" << std::endl;
+    std::cout << "Completed\n";
 
-  Plaintext plaintextDecMult;
+    std::cout << "\nAverage encryption time: " << processingTime / 7 << "ms" << std::endl;
 
-  TIC(t);
+    ////////////////////////////////////////////////////////////
+    // Homomorphic multiplication of 2 ciphertexts
+    ////////////////////////////////////////////////////////////
 
-  cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult, &plaintextDecMult);
+    TIC(t);
 
-  processingTime = TOC(t);
-  std::cout << "\nDecryption time: " << processingTime << "ms" << std::endl;
+    auto ciphertextMult = cryptoContext->EvalMult(ciphertexts[0], ciphertexts[1]);
 
-  plaintextDecMult->SetLength(plaintext1->GetLength());
+    processingTime = TOC(t);
+    std::cout << "\nTotal time of multiplying 2 ciphertexts using EvalMult w/ "
+                 "relinearization: "
+              << processingTime << "ms" << std::endl;
 
-  std::cout << "\nResult of homomorphic multiplication of ciphertexts #1 and #2: \n";
-  std::cout << plaintextDecMult << std::endl;
+    Plaintext plaintextDecMult;
 
-  ////////////////////////////////////////////////////////////
-  // Homomorphic multiplication of 7 ciphertexts
-  ////////////////////////////////////////////////////////////
+    TIC(t);
 
-  std::cout << "\nRunning a binary-tree multiplication of 7 ciphertexts...";
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult, &plaintextDecMult);
 
-  TIC(t);
+    processingTime = TOC(t);
+    std::cout << "\nDecryption time: " << processingTime << "ms" << std::endl;
 
-  auto ciphertextMult7 = cryptoContext->EvalMultMany(ciphertexts);
+    plaintextDecMult->SetLength(plaintext1->GetLength());
 
-  processingTime = TOC(t);
+    std::cout << "\nResult of homomorphic multiplication of ciphertexts #1 and #2: \n";
+    std::cout << plaintextDecMult << std::endl;
 
-  std::cout << "Completed\n";
+    ////////////////////////////////////////////////////////////
+    // Homomorphic multiplication of 7 ciphertexts
+    ////////////////////////////////////////////////////////////
 
-  std::cout << "\nTotal time of multiplying 7 ciphertexts using EvalMultMany: "
-            << processingTime << "ms" << std::endl;
+    std::cout << "\nRunning a binary-tree multiplication of 7 ciphertexts...";
 
-  Plaintext plaintextDecMult7;
+    TIC(t);
 
-  cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult7,
-                         &plaintextDecMult7);
+    auto ciphertextMult7 = cryptoContext->EvalMultMany(ciphertexts);
 
-  plaintextDecMult7->SetLength(plaintext1->GetLength());
+    processingTime = TOC(t);
 
-  std::cout << "\nResult of 6 homomorphic multiplications: \n";
-  std::cout << plaintextDecMult7 << std::endl;
+    std::cout << "Completed\n";
 
-  ////////////////////////////////////////////////////////////
-  // Homomorphic multiplication of 3 ciphertexts where relinearization is done
-  // at the end
-  ////////////////////////////////////////////////////////////
+    std::cout << "\nTotal time of multiplying 7 ciphertexts using EvalMultMany: " << processingTime << "ms"
+              << std::endl;
 
-  std::cout << "\nRunning a depth-3 multiplication w/o relinearization until the "
-          "very end...";
+    Plaintext plaintextDecMult7;
 
-  TIC(t);
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult7, &plaintextDecMult7);
 
-  auto ciphertextMult12 =
-      cryptoContext->EvalMultNoRelin(ciphertexts[0], ciphertexts[1]);
-  cryptoContext->ModReduceInPlace(ciphertextMult12);
+    plaintextDecMult7->SetLength(plaintext1->GetLength());
 
-  processingTime = TOC(t);
+    std::cout << "\nResult of 6 homomorphic multiplications: \n";
+    std::cout << plaintextDecMult7 << std::endl;
 
-  std::cout << "Completed\n";
+    ////////////////////////////////////////////////////////////
+    // Homomorphic multiplication of 3 ciphertexts where relinearization is done
+    // at the end
+    ////////////////////////////////////////////////////////////
 
-  std::cout << "Time of multiplying 2 ciphertexts w/o relinearization: "
-            << processingTime << "ms" << std::endl;
+    std::cout << "\nRunning a depth-3 multiplication w/o relinearization until the "
+                 "very end...";
 
-  auto ciphertexts2 = cryptoContext->ModReduce(ciphertexts[2]);
+    TIC(t);
 
-  auto ciphertextMult123 =
-      cryptoContext->EvalMultAndRelinearize(ciphertextMult12, ciphertexts2);
+    auto ciphertextMult12 = cryptoContext->EvalMultNoRelin(ciphertexts[0], ciphertexts[1]);
+    cryptoContext->ModReduceInPlace(ciphertextMult12);
 
-  Plaintext plaintextDecMult123;
+    processingTime = TOC(t);
 
-  cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult123,
-                         &plaintextDecMult123);
+    std::cout << "Completed\n";
 
-  plaintextDecMult123->SetLength(plaintext1->GetLength());
+    std::cout << "Time of multiplying 2 ciphertexts w/o relinearization: " << processingTime << "ms" << std::endl;
 
-  std::cout << "\nResult of 2 homomorphic multiplications: \n";
-  std::cout << plaintextDecMult123 << std::endl;
+    auto ciphertexts2 = cryptoContext->ModReduce(ciphertexts[2]);
 
-  ////////////////////////////////////////////////////////////
-  // Homomorphic multiplication of 3 ciphertexts w/o any relinearization
-  ////////////////////////////////////////////////////////////
+    auto ciphertextMult123 = cryptoContext->EvalMultAndRelinearize(ciphertextMult12, ciphertexts2);
 
-  std::cout << "\nRunning a depth-3 multiplication w/o relinearization...";
+    Plaintext plaintextDecMult123;
 
-  ciphertextMult12 =
-      cryptoContext->EvalMultNoRelin(ciphertexts[0], ciphertexts[1]);
-  cryptoContext->ModReduceInPlace(ciphertextMult12);
-  ciphertextMult123 =
-      cryptoContext->EvalMultNoRelin(ciphertextMult12, ciphertexts2);
-  ciphertextMult123 = cryptoContext->ModReduce(ciphertextMult123);
-  std::cout << "Completed\n";
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult123, &plaintextDecMult123);
 
-  cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult123,
-                         &plaintextDecMult123);
+    plaintextDecMult123->SetLength(plaintext1->GetLength());
 
-  plaintextDecMult123->SetLength(plaintext1->GetLength());
+    std::cout << "\nResult of 2 homomorphic multiplications: \n";
+    std::cout << plaintextDecMult123 << std::endl;
 
-  std::cout << "\nResult of 3 homomorphic multiplications: \n";
-  std::cout << plaintextDecMult123 << std::endl;
+    ////////////////////////////////////////////////////////////
+    // Homomorphic multiplication of 3 ciphertexts w/o any relinearization
+    ////////////////////////////////////////////////////////////
 
-  ////////////////////////////////////////////////////////////
-  // Homomorphic multiplication of 3 ciphertexts w/ relinearization after each
-  // multiplication
-  ////////////////////////////////////////////////////////////
+    std::cout << "\nRunning a depth-3 multiplication w/o relinearization...";
 
-  std::cout << "\nRunning a depth-3 multiplication w/ relinearization after each "
-          "multiplication...";
+    ciphertextMult12 = cryptoContext->EvalMultNoRelin(ciphertexts[0], ciphertexts[1]);
+    cryptoContext->ModReduceInPlace(ciphertextMult12);
+    ciphertextMult123 = cryptoContext->EvalMultNoRelin(ciphertextMult12, ciphertexts2);
+    ciphertextMult123 = cryptoContext->ModReduce(ciphertextMult123);
+    std::cout << "Completed\n";
 
-  TIC(t);
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult123, &plaintextDecMult123);
 
-  ciphertextMult12 = cryptoContext->EvalMult(ciphertexts[0], ciphertexts[1]);
-  cryptoContext->ModReduceInPlace(ciphertextMult12);
+    plaintextDecMult123->SetLength(plaintext1->GetLength());
 
-  processingTime = TOC(t);
-  std::cout << "Completed\n";
-  std::cout << "Time for multiplying 3 ciphertexts w/ relinearization: "
-            << processingTime << "ms" << std::endl;
+    std::cout << "\nResult of 3 homomorphic multiplications: \n";
+    std::cout << plaintextDecMult123 << std::endl;
 
-  ciphertextMult123 = cryptoContext->EvalMult(ciphertextMult12, ciphertexts2);
+    ////////////////////////////////////////////////////////////
+    // Homomorphic multiplication of 3 ciphertexts w/ relinearization after each
+    // multiplication
+    ////////////////////////////////////////////////////////////
 
-  cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult123,
-                         &plaintextDecMult123);
+    std::cout << "\nRunning a depth-3 multiplication w/ relinearization after each "
+                 "multiplication...";
 
-  plaintextDecMult123->SetLength(plaintext1->GetLength());
+    TIC(t);
 
-  std::cout << "\nResult of 3 homomorphic multiplications: \n";
-  std::cout << plaintextDecMult123 << std::endl;
+    ciphertextMult12 = cryptoContext->EvalMult(ciphertexts[0], ciphertexts[1]);
+    cryptoContext->ModReduceInPlace(ciphertextMult12);
 
-  return 0;
+    processingTime = TOC(t);
+    std::cout << "Completed\n";
+    std::cout << "Time for multiplying 3 ciphertexts w/ relinearization: " << processingTime << "ms" << std::endl;
+
+    ciphertextMult123 = cryptoContext->EvalMult(ciphertextMult12, ciphertexts2);
+
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMult123, &plaintextDecMult123);
+
+    plaintextDecMult123->SetLength(plaintext1->GetLength());
+
+    std::cout << "\nResult of 3 homomorphic multiplications: \n";
+    std::cout << plaintextDecMult123 << std::endl;
+
+    return 0;
 }
