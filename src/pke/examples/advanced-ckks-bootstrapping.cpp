@@ -175,6 +175,7 @@ void BootstrapExample(uint32_t numSlots) {
     // Encoding as plaintexts
     // We specify the number of slots as numSlots to achieve a performance improvement.
     // We use the other default values of depth 1, levels 0, and no params.
+    // Alternatively, you can also set batch size as a parameter in the CryptoContext.
     Plaintext ptxt1 = cryptoContext->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr, numSlots);
     Plaintext ptxt2 = cryptoContext->MakeCKKSPackedPlaintext(x2, 1, 0, nullptr, numSlots);
 
