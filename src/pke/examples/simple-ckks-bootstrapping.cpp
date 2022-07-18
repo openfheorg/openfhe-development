@@ -83,10 +83,12 @@ int main(int argc, char* argv[]) {
     * below unless you are an FHE expert.
     */
 #if NATIVEINT == 128
-    ScalingTechnique rescaleTech = FIXEDMANUAL;
+    // Currently, only FIXEDMANUAL and FIXEDAUTO modes are supported for 128-bit CKKS bootstrapping.
+    ScalingTechnique rescaleTech = FIXEDAUTO;
     usint dcrtBits               = 78;
     usint firstMod               = 89;
 #else
+    // All modes are supported for 64-bit CKKS bootstrapping.
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
     usint dcrtBits               = 59;
     usint firstMod               = 60;
