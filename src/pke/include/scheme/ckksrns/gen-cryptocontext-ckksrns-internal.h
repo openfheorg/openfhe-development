@@ -59,7 +59,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
 #endif
     using ParmType                   = typename Element::Params;
     using IntType                    = typename Element::Integer;
-    constexpr float assuranceMeasure = 9;
+    constexpr float assuranceMeasure = 36;
 
     auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
     // In CKKS, the plaintext modulus is equal to the scaling factor.

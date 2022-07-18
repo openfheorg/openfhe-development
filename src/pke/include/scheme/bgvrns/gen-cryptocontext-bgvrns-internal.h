@@ -52,7 +52,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(
     const CCParams<ContextGeneratorType>& parameters) {
     using ParmType = typename Element::Params;
     // using IntType = typename Element::Integer;
-    constexpr float assuranceMeasure = 9;
+    constexpr float assuranceMeasure = 36;
 
     auto ep = std::make_shared<ParmType>(0, 0, 0);
     EncodingParams encodingParams(
