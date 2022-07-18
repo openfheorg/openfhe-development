@@ -31,7 +31,7 @@
 
 /*
 
-Example for CKKS bootstrapping
+Example for CKKS bootstrapping with sparse packing
 
 */
 
@@ -46,7 +46,7 @@ void BootstrapExample(uint32_t numSlots);
 
 int main(int argc, char* argv[]) {
     // We run the example with 8 slots and ring dimension 4096 to illustrate how to run bootstrapping with a sparse plaintext.
-    // Using a sparse plaintext and specifying the smaller number of slots gives a performance improvement.
+    // Using a sparse plaintext and specifying the smaller number of slots gives a performance improvement (typicall up to 3x).
     BootstrapExample(8);
 }
 
@@ -132,7 +132,7 @@ void BootstrapExample(uint32_t numSlots) {
     * using GetBootstrapDepth, and add it to levelsUsedBeforeBootstrap to set our initial multiplicative
     * depth.
     */
-    uint32_t levelsUsedBeforeBootstrap = 30;
+    uint32_t levelsUsedBeforeBootstrap = 10;
     usint depth =
         levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
@@ -160,49 +160,35 @@ void BootstrapExample(uint32_t numSlots) {
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
     // Step 4: Encoding and encryption of inputs
-    // Inputs
-    std::vector<double> x1(numSlots, 1.0);
-
-    // Generate random input x2
-    std::vector<double> x2;
+    // Generate random input
+    std::vector<double> x;
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0.0, 1.0);
     for (size_t i = 0; i < numSlots; i++) {
-        x2.push_back(dis(gen));
+        x.push_back(dis(gen));
     }
 
     // Encoding as plaintexts
     // We specify the number of slots as numSlots to achieve a performance improvement.
     // We use the other default values of depth 1, levels 0, and no params.
-    // Alternatively, you can also set batch size as a parameter in the CryptoContext.
-    Plaintext ptxt1 = cryptoContext->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr, numSlots);
-    Plaintext ptxt2 = cryptoContext->MakeCKKSPackedPlaintext(x2, 1, 0, nullptr, numSlots);
-
-    ptxt1->SetLength(numSlots);
-    ptxt2->SetLength(numSlots);
-    std::cout << "Input x1: " << ptxt1 << std::endl;
-    std::cout << "Input x2: " << ptxt2 << std::endl << std::endl;
+    // Alternatively, you can also set batch size as a parameter in the CryptoContext as follows:
+    // parameters.SetBatchSize(numSlots);
+    // Here, we assume all ciphertexts in the cryptoContext will have numSlots slots.
+    // We start with a depleted ciphertext that has used up all of its towers.
+    size_t numTowers = cryptoContext->GetElementParams()->GetParams().size();
+    Plaintext ptxt   = cryptoContext->MakeCKKSPackedPlaintext(x, 1, numTowers - 2, nullptr, numSlots);
+    ptxt->SetLength(numSlots);
+    std::cout << "Input: " << ptxt << std::endl;
 
     // Encrypt the encoded vectors
-    Ciphertext<DCRTPoly> c1 = cryptoContext->Encrypt(keyPair.publicKey, ptxt1);
-    Ciphertext<DCRTPoly> c2 = cryptoContext->Encrypt(keyPair.publicKey, ptxt2);
+    Ciphertext<DCRTPoly> ciph = cryptoContext->Encrypt(keyPair.publicKey, ptxt);
 
-    std::cout << "Initial number of towers: " << c1->GetElements()[0].GetNumOfElements() << std::endl;
+    std::cout << "Initial number of towers: " << ciph->GetElements()[0].GetNumOfElements() << std::endl;
 
-    // Step 5: Perform computations on the ciphertext.
-
-    // Homomorphic multiplication
-    auto cMul = cryptoContext->EvalMult(c1, c2);
-    for (size_t i = 0; i < levelsUsedBeforeBootstrap - 1; i++) {
-        cMul = cryptoContext->EvalMult(cMul, c1);
-    }
-
-    std::cout << "Number of towers after multiplications: " << cMul->GetElements()[0].GetNumOfElements() << std::endl;
-
-    // Step 6: Perform the bootstrapping operation. The goal is to increase the number of towers available
+    // Step 5: Perform the bootstrapping operation. The goal is to increase the number of towers available
     // for HE computation.
-    auto ciphertextAfter = cryptoContext->EvalBootstrap(cMul);
+    auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
 
     std::cout << "Number of towers after bootstrapping: " << ciphertextAfter->GetElements()[0].GetNumOfElements()
               << std::endl
@@ -212,6 +198,5 @@ void BootstrapExample(uint32_t numSlots) {
     Plaintext result;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(numSlots);
-    std::cout << "Expected output with no noise\n\t" << x2 << std::endl;
     std::cout << "Output after bootstrapping \n\t" << result << std::endl;
 }

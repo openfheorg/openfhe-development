@@ -31,7 +31,7 @@
 
 /*
 
-Example for CKKS bootstrapping
+Example for CKKS bootstrapping with full packing
 
 */
 
@@ -101,7 +101,7 @@ void SimpleBootstrapExample() {
     std::vector<uint32_t> levelBudget = {4, 4};
     uint32_t approxBootstrapDepth     = 9;
 
-    uint32_t levelsUsedBeforeBootstrap = 30;
+    uint32_t levelsUsedBeforeBootstrap = 10;
     usint depth =
         levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
@@ -114,7 +114,8 @@ void SimpleBootstrapExample() {
     cryptoContext->Enable(ADVANCEDSHE);
     cryptoContext->Enable(FHE);
 
-    usint ringDim  = cryptoContext->GetRingDimension();
+    usint ringDim = cryptoContext->GetRingDimension();
+    // This is the maximum number of slots that can be used for full packing.
     usint numSlots = ringDim / 2;
     std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
 
@@ -124,33 +125,23 @@ void SimpleBootstrapExample() {
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
 
-    std::vector<double> x1 = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
-    std::vector<double> x2 = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-    size_t encodedLength   = x1.size();
+    std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
+    size_t encodedLength  = x.size();
 
-    Plaintext ptxt1 = cryptoContext->MakeCKKSPackedPlaintext(x1);
-    Plaintext ptxt2 = cryptoContext->MakeCKKSPackedPlaintext(x2);
+    // We start with a depleted ciphertext that has used up all of its towers.
+    size_t numTowers = cryptoContext->GetElementParams()->GetParams().size();
+    Plaintext ptxt   = cryptoContext->MakeCKKSPackedPlaintext(x, 1, numTowers - 2);
 
-    ptxt1->SetLength(encodedLength);
-    ptxt2->SetLength(encodedLength);
-    std::cout << "Input x1: " << ptxt1 << std::endl;
-    std::cout << "Input x2: " << ptxt2 << std::endl << std::endl;
+    ptxt->SetLength(encodedLength);
+    std::cout << "Input: " << ptxt << std::endl;
 
-    Ciphertext<DCRTPoly> c1 = cryptoContext->Encrypt(keyPair.publicKey, ptxt1);
-    Ciphertext<DCRTPoly> c2 = cryptoContext->Encrypt(keyPair.publicKey, ptxt2);
+    Ciphertext<DCRTPoly> ciph = cryptoContext->Encrypt(keyPair.publicKey, ptxt);
 
-    std::cout << "Initial number of towers: " << c1->GetElements()[0].GetNumOfElements() << std::endl;
-
-    auto cMul = cryptoContext->EvalMult(c1, c2);
-    for (size_t i = 0; i < levelsUsedBeforeBootstrap - 1; i++) {
-        cMul = cryptoContext->EvalMult(cMul, c2);
-    }
-
-    std::cout << "Number of towers after multiplications: " << cMul->GetElements()[0].GetNumOfElements() << std::endl;
+    std::cout << "Initial number of towers: " << ciph->GetElements()[0].GetNumOfElements() << std::endl;
 
     // Perform the bootstrapping operation. The goal is to increase the number of towers available
     // for HE computation.
-    auto ciphertextAfter = cryptoContext->EvalBootstrap(cMul);
+    auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
 
     std::cout << "Number of towers after bootstrapping: " << ciphertextAfter->GetElements()[0].GetNumOfElements()
               << std::endl
@@ -159,6 +150,5 @@ void SimpleBootstrapExample() {
     Plaintext result;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(encodedLength);
-    std::cout << "Expected output with no noise\n\t" << x1 << std::endl;
     std::cout << "Output after bootstrapping \n\t" << result << std::endl;
 }
