@@ -158,9 +158,10 @@ public:
     }
 
     virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
-                                  usint numPrimes, usint scaleExp, usint firstModSize, uint32_t numPartQ) const {
+                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ) const {
         if (m_ParamsGen) {
-            return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes, scaleExp, firstModSize, numPartQ);
+            return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes, scalingModSize, firstModSize,
+                                                 numPartQ);
         }
         OPENFHE_THROW(not_implemented_error,
                       "Parameter generation operation has not been implemented "

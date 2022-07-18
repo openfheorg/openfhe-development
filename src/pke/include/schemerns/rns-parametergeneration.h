@@ -82,7 +82,7 @@ public:
    * @param *cryptoParams the crypto parameters object to be populated with parameters.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
-   * @param scaleExp the bit-width for plaintexts and DCRTPoly's.
+   * @param scalingModSize the bit-width for plaintexts and DCRTPoly's.
    * @param digitSize the digit size
    * @param secretKeyDist
    * @param ksTech the key switching technique used (e.g., BV or GHS)
@@ -90,7 +90,7 @@ public:
    * @param scalTech the scaling technique used (e.g., FIXEDMANUAL or FLEXIBLEAUTO)
    */
     bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-                          usint numPrimes, usint scaleExp, usint firstModSize, uint32_t mulPartQ) const override {
+                          usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ) const override {
         OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
     }
 

@@ -91,12 +91,12 @@ public:
    * parameters.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
-   * @param scaleExp the bit-width for plaintexts and DCRTPoly's.
+   * @param scalingModSize the bit-width for plaintexts and DCRTPoly's.
    * @param firstModSize the bit-size of the first modulus
    * @param numPartQ number of partitions of Q for HYBRID key switching
    */
     virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
-                                  usint numPrimes, usint scaleExp, usint firstModSize, uint32_t numPartQ) const {
+                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ) const {
         OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
     }
 
