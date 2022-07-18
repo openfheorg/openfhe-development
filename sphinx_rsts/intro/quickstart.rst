@@ -145,6 +145,10 @@ Demonstates advanced operations on real-number vectors using ``CKKS``:
 
 -  `High-precision Advanced CKKS Examples (advanced-real-numbers.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers-128.cpp>`__:
 
+-  `CKKS Bootstrapping with Full Packing (simple-ckks-bootstrapping.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-ckks-bootstrapping.cpp>`__:
+
+-  `CKKS Bootstrapping with Sparse Packing (advanced-ckks-bootstrapping.cpp) <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-ckks-bootstrapping.cpp>`__:
+
 Misc. Operations across Schemes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
