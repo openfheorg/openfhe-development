@@ -311,7 +311,6 @@ endif()
 #--------------------------------------------------------------------
 # Backend logic
 #--------------------------------------------------------------------
-## default math backend is 2 for 32-bit and 64-bit integers and 4 for 128-bit integers
 if( NOT MATHBACKEND)
 	set( MATHBACKEND 4 )
 endif()
