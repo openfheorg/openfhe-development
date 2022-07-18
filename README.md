@@ -53,6 +53,8 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers.cpp)
        2. [Advanced Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers.cpp)
        2. [Advanced Code Example for High-Precision CKKS](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers-128.cpp)
+       3. [Simple CKKS Bootstrapping Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-ckks-bootstrapping.cpp)
+       4. [Advanced CKKS Bootstrapping Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-ckks-bootstrapping.cpp)
    1. FHE for Boolean circuits (FHEW/TFHE):
        1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean.cpp)
        2. [Code with JSON serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean-serial-json.cpp)

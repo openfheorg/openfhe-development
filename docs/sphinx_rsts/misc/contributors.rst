@@ -3,7 +3,7 @@ Contributors
 
 We gratefully acknowledge intellectual and software contributions to the library from numerous individuals. The following individuals have contributed code, algorithms, or ideas to the OpenFHE project:
 
-* Ahmad Al Badawi (National University of Singapore)
+* Ahmad Al Badawi (Duality Technologies & National University of Singapore)
 
 * Andreea Alexandru (Duality Technologies & University of Pennsylvania)
 
