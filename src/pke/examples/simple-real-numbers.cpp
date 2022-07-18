@@ -73,7 +73,7 @@ int main() {
    * Parameter 'scaleModSize' determines the bit-length of the scaling
    * factor D, but not the scaling factor itself. The latter is implementation
    * specific, and it may also vary between ciphertexts in certain versions of
-   * CKKS (e.g., in EXACTRESCALE).
+   * CKKS (e.g., in FLEXIBLEAUTO).
    *
    * Choosing 'scaleModSize' depends on the desired accuracy of the
    * computation, as well as the remaining parameters like multDepth or security
