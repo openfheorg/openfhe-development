@@ -2,7 +2,7 @@
 
 Refer to our [OpenFHE-Readthedocs](https://openfhe-development.readthedocs.io/en/latest/assets/sphinx_rsts/modules/binfhe.html) for more information. This folder contains implementations of [Ducas-Micciancio (FHEW)](https://eprint.iacr.org/2014/816.pdf), and [Chillotti-Gama-Georgieva-Izabachene (TFHE)](https://eprint.iacr.org/2018/421.pdf)
 
-##File Listings
+## File Listings
 
 [Binary FHE CryptoContext Serialization](binfhecontext-ser.h)
 

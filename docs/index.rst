@@ -4,14 +4,14 @@ Welcome to OpenFHE's documentation!
 OpenFHE
 --------
 
-Fully Homomorphic Encryption (FHE) is a powerful cryptographic primitive that enables performing computations over encrypted data without having access to the secret key. 
+Fully Homomorphic Encryption (FHE) is a powerful cryptographic primitive that enables performing computations over encrypted data without having access to the secret key.
 OpenFHE is an open-source FHE library that includes efficient implementations of all common FHE schemes:
   - Brakerski/Fan-Vercauteren (BFV) scheme for integer arithmetic
   - Brakerski-Gentry-Vaikuntanathan (BGV) scheme for integer arithmetic
   - Cheon-Kim-Kim-Song (CKKS) scheme for real-number arithmetic (includes approximate bootstrapping)
   - Ducas-Micciancio (DM) and Chillotti-Gama-Georgieva-Izabachene (CGGI) schemes for Boolean circuit evaluation
 
-OpenFHE also includes the following multiparty extensions of FHE: 
+OpenFHE also includes the following multiparty extensions of FHE:
   - Threshold FHE for BGV, BFV, and CKKS schemes
   - Proxy Re-Encryption for BGV, BFV, and CKKS schemes
 
@@ -29,6 +29,7 @@ OpenFHE implements efficient Residue Number System (RNS) algorithms to achieve h
    sphinx_rsts/intro/get_started.rst
    sphinx_rsts/intro/quickstart.rst
    sphinx_rsts/modules/modules.rst
+   sphinx_rsts/intro/security.rst
 
 
 ..

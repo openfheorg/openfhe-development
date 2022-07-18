@@ -1,14 +1,14 @@
 OpenFHE - Open-Source Fully Homomorphic Encryption Library
 =====================================
 
-Fully Homomorphic Encryption (FHE) is a powerful cryptographic primitive that enables performing computations over encrypted data without having access to the secret key. 
+Fully Homomorphic Encryption (FHE) is a powerful cryptographic primitive that enables performing computations over encrypted data without having access to the secret key.
 OpenFHE is an open-source FHE library that includes efficient implementations of all common FHE schemes:
   * Brakerski/Fan-Vercauteren (BFV) scheme for integer arithmetic
   * Brakerski-Gentry-Vaikuntanathan (BGV) scheme for integer arithmetic
   * Cheon-Kim-Kim-Song (CKKS) scheme for real-number arithmetic (includes approximate bootstrapping)
   * Ducas-Micciancio (DM) and Chillotti-Gama-Georgieva-Izabachene (CGGI) schemes for Boolean circuit evaluation
 
-OpenFHE also includes the following multiparty extensions of FHE: 
+OpenFHE also includes the following multiparty extensions of FHE:
   * Threshold FHE for BGV, BFV, and CKKS schemes
   * Proxy Re-Encryption for BGV, BFV, and CKKS schemes
 
@@ -22,6 +22,7 @@ OpenFHE also includes the following multiparty extensions of FHE:
  * [Quickstart](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/quickstart.html)
  * [BSD 2-Clause License](LICENSE)
  * [Contributing to OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/contributing.html)
+ * [Security of FHE and FHE schemes](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/security.html)
  * [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development/issues)
  * To report security vulnerabilities, please email us at contact@openfhe.org
 
@@ -42,10 +43,10 @@ Or refer to the following for your specific operating system:
 ## Code Examples
 
 To get familiar with the main API of OpenFHE, we recommend looking at the code of the following examples:
-   1. FHE for arithmetic over integers (BFV): 
+   1. FHE for arithmetic over integers (BFV):
        1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers.cpp)
        2. [Simple Code Example with Serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial.cpp)
-   1. FHE for arithmetic over integers (BGV): 
+   1. FHE for arithmetic over integers (BGV):
        1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-bgvrns.cpp)
        2. [Simple Code Example with Serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers-serial-bgvrns.cpp)
    1. FHE for arithmetic over real numbers (CKKS):
@@ -77,9 +78,9 @@ makes our community thrive.
 
 We welcome all contributions including but not limited to:
 
-- [reporting issues](https://github.com/openfheorg/openfhe-development/issues) 
+- [reporting issues](https://github.com/openfheorg/openfhe-development/issues)
 - addressing [bugs](https://github.com/openfheorg/openfhe-development/issues) big or small. We label issues to help you filter them to your skill level.
-- documentation changes 
+- documentation changes
 - talks and seminars using OpenFHE
 
 ## How to Cite OpenFHE

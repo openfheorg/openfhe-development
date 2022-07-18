@@ -10,9 +10,9 @@ Welcome to the OpenFHE webpage!
    :caption: Contents:
 
    directory_structure.rst
+   security.rst
    installation/installation.rst
    using_the_library.rst
    building_user_applications.rst
    editor_setup.rst
    exceptions_in_openfhe.rst
-
