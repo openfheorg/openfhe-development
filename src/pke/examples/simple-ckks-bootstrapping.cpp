@@ -38,13 +38,20 @@ Example for CKKS bootstrapping
 #define PROFILE
 
 #include "openfhe.h"
-#include "scheme/ckksrns/cryptocontext-ckksrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace std;
 using namespace lbcrypto;
 
+void BootstrapExample();
+
+// Same example with no extra code
+void BootstrapExampleClean();
+
 int main(int argc, char* argv[]) {
+    BootstrapExampleClean();
+}
+
+void BootstrapExample() {
     // Step 1: Set CryptoContext
     CCParams<CryptoContextCKKSRNS> parameters;
 
@@ -73,6 +80,7 @@ int main(int argc, char* argv[]) {
     /*  A3) Key switching parameters.
     * By default, we use HYBRID key switching with a digit size of 3.
     * Choosing a larger digit size can reduce complexity, but the size of keys will increase.
+    * Note that you can leave these lines of code out completely, since these are the default values.
     */
     parameters.SetNumLargeDigits(3);
     parameters.SetKeySwitchTechnique(HYBRID);
@@ -104,7 +112,7 @@ int main(int argc, char* argv[]) {
     * but increases the depth required for bootstrapping.
 	* We must choose values smaller than ceil(log2(slots)).
     */
-    std::vector<uint32_t> levelBudget = {2, 2};
+    std::vector<uint32_t> levelBudget = {4, 4};
 
     // We approximate the number of levels bootstrapping will consume to help set our initial multiplicative depth.
     uint32_t approxBootstrapDepth = 9;
@@ -112,7 +120,7 @@ int main(int argc, char* argv[]) {
     /* We give the user the option of configuring values for an optimization algorithm in bootstrapping.
     * Here, we specify the giant step for the baby-step-giant-step algorithm in linear transforms
     * for encoding and decoding, respectively. Either choose this to be a power of 2
-    * or an exact divisor of the number of slots. Setting it to be 0 allows OpenFHE to choose
+    * or an exact divisor of the number of slots. Setting it to have the default value of {0, 0} allows OpenFHE to choose
     * the values automatically.
     */
     std::vector<uint32_t> bsgsDim = {0, 0};
@@ -124,7 +132,7 @@ int main(int argc, char* argv[]) {
     * using GetBootstrapDepth, and add it to levelsUsedBeforeBootstrap to set our initial multiplicative
     * depth.
     */
-    uint32_t levelsUsedBeforeBootstrap = 23;
+    uint32_t levelsUsedBeforeBootstrap = 30;
     usint depth =
         levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
@@ -154,15 +162,13 @@ int main(int argc, char* argv[]) {
 
     // Step 4: Encoding and encryption of inputs
     // Inputs
-    std::vector<std::complex<double>> x1 = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
-    std::vector<std::complex<double>> x2 = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-    size_t encodedLength                 = x1.size();
-    std::vector<std::complex<double>> input1(Fill(x1, numSlots));
-    std::vector<std::complex<double>> input2(Fill(x2, numSlots));
+    std::vector<double> x1 = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
+    std::vector<double> x2 = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    size_t encodedLength   = x1.size();
 
     // Encoding as plaintexts
-    Plaintext ptxt1 = cryptoContext->MakeCKKSPackedPlaintext(input1);
-    Plaintext ptxt2 = cryptoContext->MakeCKKSPackedPlaintext(input2);
+    Plaintext ptxt1 = cryptoContext->MakeCKKSPackedPlaintext(x1);
+    Plaintext ptxt2 = cryptoContext->MakeCKKSPackedPlaintext(x2);
 
     ptxt1->SetLength(encodedLength);
     ptxt2->SetLength(encodedLength);
@@ -197,8 +203,91 @@ int main(int argc, char* argv[]) {
     Plaintext result;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(encodedLength);
-    std::cout << "Expected output with no noise\n\t" << ptxt1 << std::endl;
+    std::cout << "Expected output with no noise\n\t" << x1 << std::endl;
     std::cout << "Output after bootstrapping \n\t" << result << std::endl;
+}
 
-    return 0;
+void BootstrapExampleClean() {
+    CCParams<CryptoContextCKKSRNS> parameters;
+    SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
+    parameters.SetSecretKeyDist(secretKeyDist);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(1 << 12);
+
+#if NATIVEINT == 128
+    ScalingTechnique rescaleTech = FIXEDAUTO;
+    usint dcrtBits               = 78;
+    usint firstMod               = 89;
+#else
+    ScalingTechnique rescaleTech = FLEXIBLEAUTO;
+    usint dcrtBits               = 59;
+    usint firstMod               = 60;
+#endif
+
+    parameters.SetScalingModSize(dcrtBits);
+    parameters.SetScalingTechnique(rescaleTech);
+    parameters.SetFirstModSize(firstMod);
+
+    std::vector<uint32_t> levelBudget = {4, 4};
+    uint32_t approxBootstrapDepth     = 9;
+    std::vector<uint32_t> bsgsDim     = {0, 0};
+
+    uint32_t levelsUsedBeforeBootstrap = 30;
+    usint depth =
+        levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
+    parameters.SetMultiplicativeDepth(depth);
+
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+
+    cryptoContext->Enable(PKE);
+    cryptoContext->Enable(KEYSWITCH);
+    cryptoContext->Enable(LEVELEDSHE);
+    cryptoContext->Enable(ADVANCEDSHE);
+    cryptoContext->Enable(FHE);
+
+    usint ringDim  = cryptoContext->GetRingDimension();
+    usint numSlots = ringDim / 2;
+    std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
+
+    cryptoContext->EvalBootstrapSetup(levelBudget, bsgsDim, numSlots);
+
+    auto keyPair = cryptoContext->KeyGen();
+    cryptoContext->EvalMultKeyGen(keyPair.secretKey);
+    cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
+
+    std::vector<double> x1 = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
+    std::vector<double> x2 = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    size_t encodedLength   = x1.size();
+
+    Plaintext ptxt1 = cryptoContext->MakeCKKSPackedPlaintext(x1);
+    Plaintext ptxt2 = cryptoContext->MakeCKKSPackedPlaintext(x2);
+
+    ptxt1->SetLength(encodedLength);
+    ptxt2->SetLength(encodedLength);
+    std::cout << "Input x1: " << ptxt1 << std::endl;
+    std::cout << "Input x2: " << ptxt2 << std::endl << std::endl;
+
+    Ciphertext<DCRTPoly> c1 = cryptoContext->Encrypt(keyPair.publicKey, ptxt1);
+    Ciphertext<DCRTPoly> c2 = cryptoContext->Encrypt(keyPair.publicKey, ptxt2);
+
+    std::cout << "Initial number of towers: " << c1->GetElements()[0].GetNumOfElements() << std::endl;
+
+    auto cMul = cryptoContext->EvalMult(c1, c2);
+    for (size_t i = 0; i < levelsUsedBeforeBootstrap - 1; i++) {
+        cMul = cryptoContext->EvalMult(cMul, c2);
+    }
+
+    std::cout << "Number of towers after computations: " << cMul->GetElements()[0].GetNumOfElements() << std::endl;
+
+    auto ciphertextAfter = cryptoContext->EvalBootstrap(cMul);
+
+    std::cout << "Number of towers after bootstrapping: " << ciphertextAfter->GetElements()[0].GetNumOfElements()
+              << std::endl
+              << std::endl;
+
+    Plaintext result;
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
+    result->SetLength(encodedLength);
+    std::cout << "Expected output with no noise\n\t" << x1 << std::endl;
+    std::cout << "Output after bootstrapping \n\t" << result << std::endl;
 }
