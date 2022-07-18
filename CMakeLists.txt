@@ -311,10 +311,7 @@ endif()
 #--------------------------------------------------------------------
 # Backend logic
 #--------------------------------------------------------------------
-## default math backend is 2 for 32-bit and 64-bit integers and 4 for 128-bit integers
-if( NOT MATHBACKEND AND NOT ${NATIVE_SIZE} EQUAL 128)
-	set( MATHBACKEND 2 )
-elseif(NOT MATHBACKEND AND ${NATIVE_SIZE} EQUAL 128)
+if( NOT MATHBACKEND)
 	set( MATHBACKEND 4 )
 endif()
 
@@ -413,7 +410,7 @@ if (WITH_OPENMP)
         link_directories("${OPENMP_LIBRARIES}")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        
+
         message( STATUS "OPENMP_LIBRARIES: " ${OPENMP_LIBRARIES})
         message( STATUS "OPENMP_INCLUDES: " ${OPENMP_INCLUDES})
         message( STATUS "OpenMP_CXX_FLAGS: " ${OpenMP_CXX_FLAGS})
