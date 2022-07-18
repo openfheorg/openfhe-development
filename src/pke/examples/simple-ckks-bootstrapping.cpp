@@ -39,7 +39,6 @@ Example for CKKS bootstrapping with full packing
 
 #include "openfhe.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 void SimpleBootstrapExample();
@@ -128,23 +127,21 @@ void SimpleBootstrapExample() {
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
     size_t encodedLength  = x.size();
 
-    // We start with a depleted ciphertext that has used up all of its towers.
-    size_t numTowers = cryptoContext->GetElementParams()->GetParams().size();
-    Plaintext ptxt   = cryptoContext->MakeCKKSPackedPlaintext(x, 1, numTowers - 2);
+    // We start with a depleted ciphertext that has used up all of its levels.
+    Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1);
 
     ptxt->SetLength(encodedLength);
     std::cout << "Input: " << ptxt << std::endl;
 
     Ciphertext<DCRTPoly> ciph = cryptoContext->Encrypt(keyPair.publicKey, ptxt);
 
-    std::cout << "Initial number of towers: " << ciph->GetElements()[0].GetNumOfElements() << std::endl;
+    std::cout << "Initial number of levels remaining: " << depth - ciph->GetLevel() << std::endl;
 
-    // Perform the bootstrapping operation. The goal is to increase the number of towers available
+    // Perform the bootstrapping operation. The goal is to increase the number of levels remaining
     // for HE computation.
     auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
 
-    std::cout << "Number of towers after bootstrapping: " << ciphertextAfter->GetElements()[0].GetNumOfElements()
-              << std::endl
+    std::cout << "Number of levels remaining after bootstrapping: " << depth - ciphertextAfter->GetLevel() << std::endl
               << std::endl;
 
     Plaintext result;

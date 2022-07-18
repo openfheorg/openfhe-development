@@ -39,7 +39,6 @@ Example for CKKS bootstrapping with sparse packing
 
 #include "openfhe.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 void BootstrapExample(uint32_t numSlots);
@@ -175,23 +174,21 @@ void BootstrapExample(uint32_t numSlots) {
     // Alternatively, you can also set batch size as a parameter in the CryptoContext as follows:
     // parameters.SetBatchSize(numSlots);
     // Here, we assume all ciphertexts in the cryptoContext will have numSlots slots.
-    // We start with a depleted ciphertext that has used up all of its towers.
-    size_t numTowers = cryptoContext->GetElementParams()->GetParams().size();
-    Plaintext ptxt   = cryptoContext->MakeCKKSPackedPlaintext(x, 1, numTowers - 2, nullptr, numSlots);
+    // We start with a depleted ciphertext that has used up all of its levels.
+    Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1, nullptr, numSlots);
     ptxt->SetLength(numSlots);
     std::cout << "Input: " << ptxt << std::endl;
 
     // Encrypt the encoded vectors
     Ciphertext<DCRTPoly> ciph = cryptoContext->Encrypt(keyPair.publicKey, ptxt);
 
-    std::cout << "Initial number of towers: " << ciph->GetElements()[0].GetNumOfElements() << std::endl;
+    std::cout << "Initial number of levels remaining: " << depth - ciph->GetLevel() << std::endl;
 
-    // Step 5: Perform the bootstrapping operation. The goal is to increase the number of towers available
+    // Step 5: Perform the bootstrapping operation. The goal is to increase the number of levels remaining
     // for HE computation.
     auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
 
-    std::cout << "Number of towers after bootstrapping: " << ciphertextAfter->GetElements()[0].GetNumOfElements()
-              << std::endl
+    std::cout << "Number of levels remaining after bootstrapping: " << depth - ciphertextAfter->GetLevel() << std::endl
               << std::endl;
 
     // Step 7: Decryption and output
