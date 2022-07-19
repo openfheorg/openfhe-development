@@ -159,13 +159,13 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS& tes
  */
 constexpr usint RING_DIM      = 512;
 constexpr usint RING_DIM_HALF = 256;
-constexpr usint RING_DIM_PREC = 4096;  // for test cases with approximation error comparison only
 constexpr usint DSIZE         = 10;
 constexpr usint BATCH         = 8;
 #if NATIVEINT == 128
 constexpr usint SMODSIZE = 90;
 #else
-constexpr usint SMODSIZE = 50;
+constexpr usint RING_DIM_PREC = 4096;  // for test cases with approximation error comparison only
+constexpr usint SMODSIZE      = 50;
 #endif
 // MIN_PRECISION_DIFF is the minimal difference expected between approximation error/precision for FLEXIBLEAUTO and FLEXIBLEAUTOEXT
 constexpr double MIN_PRECISION_DIFF = 1.5;
