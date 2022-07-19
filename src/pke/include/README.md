@@ -23,26 +23,26 @@
     - Advanced Somewhat Homomorphic Encryption (ADVANCEDSHE)
     - Threshold FHE (MULTIPARTY)
     - Fully Homomorphic Encryption (FHE)
-  
+
   - SecretKeyDistribution
     - Ring Learning with Error (GAUSSIAN)
     - Optimized (UNIFORM_TERNARY)
     - Sparse (SPARSE_TERNARY; Hamming weight is 64)
-    
-  - Scaling Technique 
+
+  - Scaling Technique
     - Fixed Manual (FIXEDMANUAL)
     - Fixed Auto (FIXEDAUTO)
     - Flexible Auto (FLEXIBLEAUTO)
     - No Rescaling (NORESCALE)
 
-  - Key Switch Technique 
+  - Key Switch Technique
     - BV (See Appendix of https://eprint.iacr.org/2021/204)
     - HYBRID (See Appendix of https://eprint.iacr.org/2021/204)
-    
+
   - Encryption Technique
     - Standard (STANDARD)
     - Extended (EXTENDED)
-    
+
   - Multiplication Technique
     - Bajard-Eynard-Hasan-Zucca (BEHZ)
     - Halevi-Polyakov-Shoup (HPS)
@@ -53,24 +53,13 @@
 
 - Generates new `CryptoContexts` from user parameters
 
-[cryptocontextgen.h](cryptocontextgen.h)
-
-- `Cryptocontext` generator for the various PKE schemes (notably `BFV`, `BGV`, and `CKKS` in their `RNS` forms)
-
 [cryptocontext.h](cryptocontext.h)
 
 - defines `CryptoContextImpl`, which is used to access the OpenFHE library
 
-- all OpenFHE objects are created "within" a `CryptoContext` which acts like an object "manager". 
+- all OpenFHE objects are created "within" a `CryptoContext` which acts like an object "manager".
 Objects can only be used in the context they were created in
 
-[cryptocontexthelper.h](cryptocontexthelper.h)
-
-- provides helper functions to print out the parameter sets 
-
-[cryptocontextparametersets.h](cryptocontextparametersets.h)
-
-- defines the parameter sets for `CryptoContexts`
 
 [cryptocontext-ser.h](cryptocontext-ser.h)
 

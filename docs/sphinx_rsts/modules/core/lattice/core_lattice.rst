@@ -169,7 +169,7 @@ Misc.
 
 -  Given (distribution type, security level), we can get a ``maxQ`` for a given ring dimension, or get a ring dimension given some ``maxQ``
 
-`Hal Lattice BAckend Switcher (lat-hal.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/lat-hal.h>`_
+`Hal Lattice Backend Switcher (lat-hal.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/core/include/lattice/lat-hal.h>`_
 
 - contains functionality to switch between lattice backends
 
