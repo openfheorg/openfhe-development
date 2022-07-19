@@ -89,10 +89,10 @@ void BaseSampler::GenerateProbMatrix(double stddev, double mean) {
     b_matrixSize = 2 * fin + 1;
     hammingWeights.resize(64, 0);
     probMatrix.resize(b_matrixSize);
-    double* probs = new double[b_matrixSize];
-    double S      = 0.0;
-    b_std         = stddev;
-    double error  = 1.0;
+    std::vector<double> probs(b_matrixSize);
+    double S     = 0.0;
+    b_std        = stddev;
+    double error = 1.0;
     for (int i = -1 * fin; i <= fin; i++) {
         double prob = pow(M_E, -pow((i - mean), 2) / (2. * stddev * stddev));
         S += prob;
@@ -106,7 +106,6 @@ void BaseSampler::GenerateProbMatrix(double stddev, double mean) {
             hammingWeights[j] += ((probMatrix[i] >> (63 - j)) & 1);
         }
     }
-    delete[] probs;
     GenerateDDGTree(probMatrix);
 }
 

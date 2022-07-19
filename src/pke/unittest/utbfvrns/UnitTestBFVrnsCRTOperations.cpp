@@ -81,7 +81,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     parameters.batchSize = 8;
     parameters.secretKeyDist = UNIFORM_TERNARY;
     parameters.multiplicationTechnique = BEHZ;
-    
+
     CryptoContext<Element> cc(UnitTestGenerateContext(parameters));
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> params =
@@ -102,8 +102,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
 
     ILNativeParams polyParams0(m1, modulus0, rootOfUnity0);
     ILNativeParams polyParams1(m1, modulus1, rootOfUnity1);
-    std::shared_ptr<ILNativeParams> x0p(new ILNativeParams(polyParams0));
-    std::shared_ptr<ILNativeParams> x1p(new ILNativeParams(polyParams1));
+    auto x0p = std::make_shared<ILNativeParams>(polyParams0);
+    auto x1p = std::make_shared<ILNativeParams>(polyParams1);
 
     NativePoly poly0(x0p, Format::EVALUATION);
     NativePoly poly1(x1p, Format::EVALUATION);
@@ -138,9 +138,9 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     ILNativeParams polyParams2(m1, modulus2, rootOfUnity2);
     ILNativeParams polyParams3(m1, modulus3, rootOfUnity3);
     ILNativeParams polyParams4(m1, modulus4, rootOfUnity4);
-    std::shared_ptr<ILNativeParams> x2p(new ILNativeParams(polyParams2));
-    std::shared_ptr<ILNativeParams> x3p(new ILNativeParams(polyParams3));
-    std::shared_ptr<ILNativeParams> x4p(new ILNativeParams(polyParams4));
+    auto x2p = std::make_shared<ILNativeParams>(polyParams2);
+    auto x3p = std::make_shared<ILNativeParams>(polyParams3);
+    auto x4p = std::make_shared<ILNativeParams>(polyParams4);
     NativePoly ans0(x0p, Format::EVALUATION);
     NativePoly ans1(x1p, Format::EVALUATION);
     NativePoly ans2(x2p, Format::EVALUATION);
@@ -190,8 +190,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 
     ILNativeParams polyParams0(m1, modulus0, rootOfUnity0);
     ILNativeParams polyParams1(m1, modulus1, rootOfUnity1);
-    std::shared_ptr<ILNativeParams> x0p(new ILNativeParams(polyParams0));
-    std::shared_ptr<ILNativeParams> x1p(new ILNativeParams(polyParams1));
+    auto x0p = std::make_shared<ILNativeParams>(polyParams0);
+    auto x1p = std::make_shared<ILNativeParams>(polyParams1);
 
     NativePoly poly0(x0p, Format::COEFFICIENT);
     NativePoly poly1(x1p, Format::COEFFICIENT);
@@ -228,8 +228,8 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 
     ILNativeParams polyParams2(m1, modulus2, rootOfUnity2);
     ILNativeParams polyParams3(m1, modulus3, rootOfUnity3);
-    std::shared_ptr<ILNativeParams> x2p(new ILNativeParams(polyParams2));
-    std::shared_ptr<ILNativeParams> x3p(new ILNativeParams(polyParams3));
+    auto x2p = std::make_shared<ILNativeParams>(polyParams2);
+    auto x3p = std::make_shared<ILNativeParams>(polyParams3);
     NativePoly ans0(x0p, Format::COEFFICIENT);
     NativePoly ans1(x1p, Format::COEFFICIENT);
     NativePoly ans2(x2p, Format::COEFFICIENT);

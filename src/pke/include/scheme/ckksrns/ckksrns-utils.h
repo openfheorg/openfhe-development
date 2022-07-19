@@ -36,6 +36,7 @@
 #include <complex>
 #include <iostream>
 #include <stdint.h>
+#include <memory>
 
 /*
  * Subroutines used by the linear transformation homomorphic capability
@@ -46,6 +47,9 @@ namespace lbcrypto {
 struct longDiv {
     std::vector<double> q;
     std::vector<double> r;
+
+    longDiv() {}
+    longDiv(const std::vector<double>& q0, const std::vector<double>& r0) : q(q0), r(r0) {}
 };
 
 /**
@@ -63,7 +67,7 @@ uint32_t Degree(const std::vector<double>& coefficients);
  * @param &g the vector of coefficients of the divisor.
  * @return a struct with the coefficients for the quotient and remainder.
  */
-longDiv* LongDivisionPoly(const std::vector<double>& f, const std::vector<double>& g);
+std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const std::vector<double>& g);
 
 /**
  * Computes the quotient and remainder of the long division of two polynomials in the Chebyshev series basis
@@ -72,7 +76,7 @@ longDiv* LongDivisionPoly(const std::vector<double>& f, const std::vector<double
  * @param &g the vector of coefficients of the divisor.
  * @return a struct with the coefficients for the quotient and remainder.
  */
-longDiv* LongDivisionChebyshev(const std::vector<double>& f, const std::vector<double>& g);
+std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, const std::vector<double>& g);
 
 /**
  * Computes the values of the internal degrees k and m needed in the Paterson-Stockmeyer algorithm

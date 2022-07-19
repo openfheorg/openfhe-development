@@ -298,8 +298,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
         cvMult[1] -= cvMult[0];
     }
     else {  // if size of any of the ciphertexts > 2
-        bool* isFirstAdd = new bool[cvMultSize];
-        std::fill_n(isFirstAdd, cvMultSize, true);
+        std::vector<bool> isFirstAdd(cvMultSize, true);
 
         for (size_t i = 0; i < cv1Size; i++) {
             for (size_t j = 0; j < cv2Size; j++) {
@@ -312,12 +311,9 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
                 }
             }
         }
-
-        delete[] isFirstAdd;
     }
 #else
-    bool* isFirstAdd = new bool[cvMultSize];
-    std::fill_n(isFirstAdd, cvMultSize, true);
+    std::vector<bool> isFirstAdd(cvMultSize, true);
 
     for (size_t i = 0; i < cv1Size; i++) {
         for (size_t j = 0; j < cv2Size; j++) {
@@ -330,8 +326,6 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
             }
         }
     }
-
-    delete[] isFirstAdd;
 #endif
 
     if (cryptoParams->GetMultiplicationTechnique() == HPS) {
