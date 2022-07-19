@@ -22,7 +22,6 @@ OpenFHE also includes the following multiparty extensions of FHE:
  * [Quickstart](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/quickstart.html)
  * [BSD 2-Clause License](LICENSE)
  * [Contributing to OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/contributing.html)
- * [Security of FHE and FHE schemes](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/security.html)
  * [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development/issues)
  * To report security vulnerabilities, please email us at contact@openfhe.org
 
