@@ -1,0 +1,11 @@
+Security Notes for Homomorphic Encryption
+==================================================
+
+All homomorphic encryption schemes implemented in OpenFHE are IND-CPA secure, and hence are expected to be used under the honest-but-curios (a.k.a., semi-honest) model. In this model, the adversary cannot corrupt/tamper with ciphertexts (and perform related active attacks) but can only use the API of OpenFHE to perform valid operations.
+
+Notes specific to the CKKS scheme
+-----------------------------------
+
+Li and Micciancio recently showed that the IND-CPA model may not be sufficient for the CKKS scheme in some scenarios because a decryption result can be used to perform a key recovery attack. This attack applies to the setting where decryption results need to be shared between multiple parties, e.g., in the the threshold FHE setting. To mitigate the Li-Micciancio attack, we extended the original CKKS (starting with v1.10.6) to a stronger adversarial model where decryption results may still be shared between multiple parties. By default, OpenFHE chooses a configuration where a relatively large number of decryption queries of the same or related ciphertexts can be tolerated. The lower bound for the tolerated number of such decryption queries is N_d = 128 (but in practical computations, N_d is at least 10,000). We consider this default setting sufficient to prevent passive attacks (where a normal homomorphic encryption computation protocol is followed).
+
+In scenarios where an even stronger adversarial model is needed (uncommon scenarios), the user can increase the number of shared decryptions of the same or related ciphertexts to a higher number by increasing the `CKKS_M_FACTOR` CMake parameter (a compile-level flag). The minimum number of decryption results in this case becomes N_d x (`CKKS_M_FACTOR` + 1) / 2. Please note that increasing `CKKS_M_FACTOR` from the default value of 1 will decrease the precision of CKKS ciphertexts by 0.5 x (log2(`CKKS_M_FACTOR` + 1) - 1) bits. Hence increasing `CKKS_M_FACTOR` is only suggested when a stronger adversarial model is needed.

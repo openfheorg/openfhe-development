@@ -30,11 +30,6 @@ File Listings
 
 -  Generates new ``CryptoContexts`` from user parameters
 
-`CryptoContext Generator (cryptocontextgen.h) <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/cryptocontextgen.h>`__
-
--  ``CryptoContext`` generator for the various PKE schemes (notably
-   ``BFV``, ``BGV``, and ``CKKS`` in their ``RNS`` forms)
-
 `CryptoContext (cryptocontext.h) <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/cryptocontext.h>`__
 
 -  defines ``CryptoContextImpl``, which is used to access the OpenFHE
@@ -43,14 +38,6 @@ File Listings
 -  all OpenFHE objects are created “within” a ``CryptoContext`` which
    acts like an object “manager”. Objects can only be used in the
    context they were created in
-
-`CryptoContext Helper/utils (cryptocontexthelper.h) <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/cryptocontexthelper.h>`__
-
--  provides helper functions to print out the parameter sets
-
-`CryptoContext Parameter Sets (cryptocontextparametersets.h) <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/cryptocontextparametersets.h>`__
-
--  defines the parameter sets for ``CryptoContexts``
 
 `CryptoContext Serialization (cryptocontext-ser.h) <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/include/cryptocontext-ser.h>`__
 
