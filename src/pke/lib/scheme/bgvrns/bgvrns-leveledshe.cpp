@@ -41,7 +41,7 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 namespace lbcrypto {
 
 void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
 
     const auto t = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
 
@@ -80,7 +80,7 @@ void LeveledSHEBGVRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& cipherte
 
 void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                                    Ciphertext<DCRTPoly>& ciphertext2) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBGVRNS>(ciphertext1->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext1->GetCryptoParameters());
 
     const NativeInteger t(cryptoParams->GetPlaintextModulus());
 
@@ -257,7 +257,7 @@ DCRTPoly LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>
 }
 
 void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
 
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     for (usint i = 0; i < cv.size(); ++i) {

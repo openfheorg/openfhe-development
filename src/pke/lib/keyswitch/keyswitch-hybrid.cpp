@@ -45,7 +45,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
     auto cc                   = newKey->GetCryptoContext();
     EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(cc);
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
 
     const std::shared_ptr<ParmType> paramsQ  = cryptoParams->GetElementParams();
     const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
@@ -128,7 +128,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
     auto cc = newKey->GetCryptoContext();
     EvalKeyRelin<DCRTPoly> ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(cc));
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
 
     const std::shared_ptr<ParmType> paramsQ  = cryptoParams->GetElementParams();
     const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
@@ -212,7 +212,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
     auto cc                   = newKey->GetCryptoContext();
     EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(cc);
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
 
     const std::shared_ptr<ParmType> paramsQ  = cryptoParams->GetElementParams();
     const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
@@ -309,7 +309,7 @@ void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
 }
 
 Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
@@ -336,7 +336,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> cip
 }
 
 Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ciphertext) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     const auto paramsP   = cryptoParams->GetParamsP();
     const auto paramsQlP = ciphertext->GetElements()[0].GetParams();
@@ -373,7 +373,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchDown(ConstCiphertext<DCRTPoly> ci
 }
 
 DCRTPoly KeySwitchHYBRID::KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ciphertext) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cTilda = ciphertext->GetElements();
 
@@ -411,7 +411,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(DCRTPoly a
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
     DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(cryptoParamsBase);
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParamsBase);
 
     const std::shared_ptr<ParmType> paramsQl  = c.GetParams();
     const std::shared_ptr<ParmType> paramsP   = cryptoParams->GetParamsP();
@@ -501,7 +501,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
     const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
     const std::shared_ptr<ParmType> paramsQl) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
 
     std::shared_ptr<std::vector<DCRTPoly>> cTilda = EvalFastKeySwitchCoreExt(digits, evalKey, paramsQl);
 
@@ -525,7 +525,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(
     const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
     const std::shared_ptr<ParmType> paramsQl) const {
-    const auto cryptoParams         = std::static_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
+    const auto cryptoParams         = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
     const std::vector<DCRTPoly>& bv = evalKey->GetBVector();
     const std::vector<DCRTPoly>& av = evalKey->GetAVector();
 

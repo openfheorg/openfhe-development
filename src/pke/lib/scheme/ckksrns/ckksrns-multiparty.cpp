@@ -44,7 +44,7 @@ namespace lbcrypto {
 DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                                          Poly* plaintext) const {
     const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertextVec[0]->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertextVec[0]->GetCryptoParameters());
     const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 
     DCRTPoly b = cv0[0];
@@ -73,7 +73,7 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphe
 DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                                          NativePoly* plaintext) const {
     const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertextVec[0]->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertextVec[0]->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 
