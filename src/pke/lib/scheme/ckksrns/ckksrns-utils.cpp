@@ -61,7 +61,7 @@ uint32_t Degree(const std::vector<double>& coefficients) {
             deg += 1;
         }
         else
-          break;
+            break;
     }
     return coefficients.size() - deg;
 }
@@ -70,7 +70,7 @@ uint32_t Degree(const std::vector<double>& coefficients) {
 coefficient is not zero. LongDivisionPoly returns the vector of coefficients for the
 quotient and remainder of the division f/g. longDiv is a struct that contains the
 vectors of coefficients for the quotient and rest. */
-longDiv* LongDivisionPoly(const std::vector<double>& f, const std::vector<double>& g) {
+std::shared_ptr<longDiv> LongDivisionPoly(const std::vector<double>& f, const std::vector<double>& g) {
     uint32_t n = Degree(f);
     uint32_t k = Degree(g);
 
@@ -116,10 +116,7 @@ longDiv* LongDivisionPoly(const std::vector<double>& f, const std::vector<double
         r = f;
     }
 
-    longDiv* div = new longDiv;
-    *div         = {q, r};
-
-    return div;
+    return std::make_shared<longDiv>(q, r);
 }
 
 /* f and g are vectors of Chebyshev interpolation coefficients of the two polynomials.
@@ -128,7 +125,7 @@ vector of Chebyshev interpolation coefficients for the quotient and remainder of
 division f/g. longDiv is a struct that contains the vectors of coefficients for the
 quotient and rest. We assume that the zero-th coefficient is c0, not c0/2 and returns
 the same format.*/
-longDiv* LongDivisionChebyshev(const std::vector<double>& f, const std::vector<double>& g) {
+std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, const std::vector<double>& g) {
     uint32_t n = Degree(f);
     uint32_t k = Degree(g);
 
@@ -233,10 +230,7 @@ longDiv* LongDivisionChebyshev(const std::vector<double>& f, const std::vector<d
         r = f;
     }
 
-    longDiv* div = new longDiv;
-    *div         = {q, r};
-
-    return div;
+    return std::make_shared<longDiv>(q, r);
 }
 
 /* Compute positive integers k,m such that n < k(2^m-1) and k close to sqrt(n/2) */

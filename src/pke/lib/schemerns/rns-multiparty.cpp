@@ -112,7 +112,7 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
 
     const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
 
-    EvalKey<DCRTPoly> evalKeyResult(new EvalKeyRelinImpl<DCRTPoly>(evalKey->GetCryptoContext()));
+    EvalKey<DCRTPoly> evalKeyResult = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(evalKey->GetCryptoContext());
 
     const std::vector<DCRTPoly>& a0 = evalKey->GetAVector();
     const std::vector<DCRTPoly>& b0 = evalKey->GetBVector();
