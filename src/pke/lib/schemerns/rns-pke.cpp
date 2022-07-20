@@ -107,7 +107,7 @@ DecryptResult PKERNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Privat
 
 std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PrivateKey<DCRTPoly> privateKey,
                                                                const std::shared_ptr<ParmType> params) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
 
     const DCRTPoly& s  = privateKey->GetPrivateElement();
     const auto ns      = cryptoParams->GetNoiseScale();
@@ -144,7 +144,7 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PrivateKey<
 
 std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<DCRTPoly> publicKey,
                                                                const std::shared_ptr<ParmType> params) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(publicKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(publicKey->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& pk = publicKey->GetPublicElements();
     const auto ns                   = cryptoParams->GetNoiseScale();

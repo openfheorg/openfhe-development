@@ -47,7 +47,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
                                             const PrivateKey<DCRTPoly> newKey) const {
     EvalKeyRelin<DCRTPoly> ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
 
     const DCRTPoly& sNew = newKey->GetPrivateElement();
     auto elementParams   = sNew.GetParams();
@@ -119,7 +119,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey, c
                                             const EvalKey<DCRTPoly> ek) const {
     EvalKeyRelin<DCRTPoly> evalKey(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(oldKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(oldKey->GetCryptoParameters());
 
     const DCRTPoly& sNew = newKey->GetPrivateElement();
     auto elementParams   = sNew.GetParams();
@@ -206,7 +206,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldSk, co
 
     EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(cc);
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(newPk->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newPk->GetCryptoParameters());
 
     const auto ns                = cryptoParams->GetNoiseScale();
     const DCRTPoly::DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
@@ -303,7 +303,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::KeySwitchCore(DCRTPoly a, co
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalKeySwitchPrecomputeCore(
     DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(cryptoParamsBase);
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParamsBase);
 
     uint32_t digitSize = cryptoParams->GetDigitSize();
 

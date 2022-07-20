@@ -59,7 +59,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ConstCiphert
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
                                                                const std::vector<double>& constants) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
 
     auto cc   = ciphertexts[0]->GetCryptoContext();
     auto algo = cc->GetScheme();
@@ -422,7 +422,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
         }
     }
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(powers[k - 1]->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(powers[k - 1]->GetCryptoParameters());
 
     auto algo = cc->GetScheme();
 
@@ -952,7 +952,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
         }
     }
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(T[k - 1]->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(T[k - 1]->GetCryptoParameters());
 
     auto algo = cc->GetScheme();
 

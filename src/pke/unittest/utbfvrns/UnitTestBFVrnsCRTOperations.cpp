@@ -87,9 +87,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     const std::shared_ptr<ILDCRTParams<BigInteger>> params =
         cc->GetCryptoParameters()->GetElementParams();
 
-    const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersBFVRNS>(
-            cc->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters());
 
     // Generate the element "a" of the public key
     DCRTPoly a(params, Format::EVALUATION);
@@ -175,7 +173,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> params = cc->GetCryptoParameters()->GetElementParams();
 
-    const auto cryptoParamsBFVrns = std::static_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters());
+    const auto cryptoParamsBFVrns = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters());
 
     size_t sizeQ = 2;
 
@@ -263,7 +261,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_SwitchCRTBasis) {
     const std::shared_ptr<ILDCRTParams<BigInteger>> params = cryptoContext->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParamsBFVrns =
-        std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
@@ -307,7 +305,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ = cryptoContext->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParamsBFVrns =
-        std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 
@@ -435,7 +433,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsQ = cryptoContext->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParamsBFVrns =
-        std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoContext->GetCryptoParameters());
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> paramsR = cryptoParamsBFVrns->GetParamsRl();
 

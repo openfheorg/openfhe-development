@@ -43,7 +43,7 @@ namespace lbcrypto {
 
 uint32_t ParameterGenerationBGVRNS::computeRingDimension(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                          uint32_t qBound, usint cyclOrder) const {
-    const auto cryptoParamsBGVRNS = std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+    const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
     //// HE Standards compliance logic/check
     SecurityLevel stdLevel = cryptoParamsBGVRNS->GetStdLevel();
 
@@ -82,7 +82,7 @@ uint32_t ParameterGenerationBGVRNS::computeRingDimension(std::shared_ptr<CryptoP
 BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, int32_t evalAddCount,
     int32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const {
-    const auto cryptoParamsBGVRNS = std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+    const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
     usint digitSize               = cryptoParamsBGVRNS->GetDigitSize();
     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS->GetKeySwitchTechnique();
     ScalingTechnique scalTech     = cryptoParamsBGVRNS->GetScalingTechnique();
@@ -169,7 +169,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
         OPENFHE_THROW(config_error, "numPrimes must be at least 1");
     }
 
-    const auto cryptoParamsBGVRNS = std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+    const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
     ScalingTechnique scalTech     = cryptoParamsBGVRNS->GetScalingTechnique();
 
     size_t numModuli = scalTech == FLEXIBLEAUTOEXT ? numPrimes + 1 : numPrimes;
@@ -264,7 +264,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
                                                 int32_t evalAddCount, int32_t keySwitchCount, usint cyclOrder,
                                                 usint numPrimes, usint firstModSize, usint dcrtBits, uint32_t numPartQ,
                                                 usint multihopQBound) const {
-    const auto cryptoParamsBGVRNS = std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+    const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
     uint32_t ptm                     = cryptoParamsBGVRNS->GetPlaintextModulus();
     KeySwitchTechnique ksTech        = cryptoParamsBGVRNS->GetKeySwitchTechnique();

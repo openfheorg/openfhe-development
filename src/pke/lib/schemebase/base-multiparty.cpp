@@ -41,7 +41,7 @@ template <class Element>
 KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element> cc,
                                                            const std::vector<PrivateKey<Element>>& privateKeyVec,
                                                            bool makeSparse) {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
 
     KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
                              std::make_shared<PrivateKeyImpl<Element>>(cc));
@@ -79,7 +79,7 @@ template <class Element>
 KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element> cc,
                                                            const PublicKey<Element> publicKey, bool makeSparse,
                                                            bool fresh) {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
 
     KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
                              std::make_shared<PrivateKeyImpl<Element>>(cc));
@@ -216,7 +216,7 @@ template <class Element>
 Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptLead(ConstCiphertext<Element> ciphertext,
                                                                    const PrivateKey<Element> privateKey) const {
     const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
 
     const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
     const auto ns                                 = cryptoParams->GetNoiseScale();
@@ -240,7 +240,7 @@ template <class Element>
 Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(ConstCiphertext<Element> ciphertext,
                                                                    const PrivateKey<Element> privateKey) const {
     const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
 
     const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
     const auto es                                 = cryptoParams->GetNoiseScale();
@@ -263,7 +263,7 @@ template <class Element>
 DecryptResult MultipartyBase<Element>::MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& ciphertextVec,
                                                                NativePoly* plaintext) const {
     const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersRLWE<Element>>(ciphertextVec[0]->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(ciphertextVec[0]->GetCryptoParameters());
 
     const std::vector<Element>& cv0 = ciphertextVec[0]->GetElements();
 
@@ -352,7 +352,7 @@ EvalKey<Element> MultipartyBase<Element>::MultiMultEvalKey(PrivateKey<Element> p
                                                            EvalKey<Element> evalKey) const {
     const auto cc = evalKey->GetCryptoContext();
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
 
     const DggType& dgg       = cryptoParams->GetDiscreteGaussianGenerator();
     const auto elementParams = cryptoParams->GetElementParams();

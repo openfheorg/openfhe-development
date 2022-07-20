@@ -60,7 +60,8 @@ namespace lbcrypto {
 
 DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                                         NativePoly* plaintext) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBGVRNS>(ciphertextVec[0]->GetCryptoParameters());
+    const auto cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
     DCRTPoly b                       = cv0[0];
@@ -96,7 +97,8 @@ DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(const std::vector<Cipher
 
 DecryptResult MultipartyBGVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                                         Poly* plaintext) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBGVRNS>(ciphertextVec[0]->GetCryptoParameters());
+    const auto cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 

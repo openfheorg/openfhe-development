@@ -43,7 +43,7 @@ namespace lbcrypto {
 
 DecryptResult PKEBGVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                                  NativePoly* plaintext) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     size_t sizeQl                   = cv[0].GetParams()->GetParams().size();
 
