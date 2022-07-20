@@ -50,7 +50,7 @@ const size_t AUXMODSIZE = 60;
 bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                   usint cyclOrder, usint numPrimes, usint scalingModSize,
                                                   usint firstModSize, uint32_t numPartQ) const {
-    const auto cryptoParamsCKKSRNS = std::static_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
+    const auto cryptoParamsCKKSRNS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cryptoParams);
 
     KeySwitchTechnique ksTech        = cryptoParamsCKKSRNS->GetKeySwitchTechnique();
     ScalingTechnique scalTech        = cryptoParamsCKKSRNS->GetScalingTechnique();

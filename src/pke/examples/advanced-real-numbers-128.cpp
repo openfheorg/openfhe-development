@@ -419,7 +419,7 @@ void HybridKeySwitchingDemo1() {
    */
 #if 0
   const auto cryptoParamsCKKS =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
+      std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
           cc->GetCryptoParameters());
 
   auto paramsQ = cc->GetElementParams()->GetParams();
@@ -533,7 +533,7 @@ void HybridKeySwitchingDemo2() {
    */
 #if 0
   const auto cryptoParamsCKKS =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
+      std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
           cc->GetCryptoParameters());
 
   auto paramsQ = cc->GetElementParams()->GetParams();

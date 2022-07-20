@@ -80,7 +80,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalMult(ConstCiphertext<DCRTPoly> ciphe
 }
 
 void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double constant) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
         if (ciphertext->GetDepth() == 2) {
@@ -100,7 +100,7 @@ void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double
 /////////////////////////////////////
 
 void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
@@ -149,7 +149,7 @@ void LeveledSHECKKSRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphert
 #if NATIVEINT == 128
 std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly> ciphertext,
                                                                             double constant) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     uint32_t precision = 52;
     double powP        = std::pow(2, precision);
@@ -211,7 +211,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
         moduli[i] = cv[0].GetElementAtIndex(i).GetModulus();
     }
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     double scFactor = 0;
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && ciphertext->GetLevel() == 0) {
@@ -273,7 +273,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
 #if NATIVEINT == 128
 std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCiphertext<DCRTPoly> ciphertext,
                                                                         double constant) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     uint32_t precision = 52;
     double powP        = std::pow(2, precision);
@@ -320,7 +320,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 #else  // NATIVEINT == 64
 std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCiphertext<DCRTPoly> ciphertext,
                                                                         double constant) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     uint32_t numTowers              = cv[0].GetNumOfElements();
@@ -405,7 +405,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(ConstCiphertext<DCRT
 
     const auto cc = ciphertext->GetCryptoContext();
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     usint N = cryptoParams->GetElementParams()->GetRingDimension();
     usint M = cryptoParams->GetElementParams()->GetCyclotomicOrder();
@@ -468,7 +468,7 @@ void LeveledSHECKKSRNS::MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, u
 
 void LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                                     Ciphertext<DCRTPoly>& ciphertext2) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext1->GetCryptoParameters());
     usint c1lvl             = ciphertext1->GetLevel();
     usint c2lvl             = ciphertext2->GetLevel();
     usint c1depth           = ciphertext1->GetDepth();
@@ -623,7 +623,7 @@ DCRTPoly LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly
 }
 
 void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, double constant) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     std::vector<DCRTPoly::Integer> factors = GetElementForEvalMult(ciphertext, constant);
     std::vector<DCRTPoly>& cv              = ciphertext->GetElements();

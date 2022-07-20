@@ -140,7 +140,7 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
     cc->Enable(FHE);
 
     const shared_ptr<CryptoParametersCKKSRNS> cryptoParams =
-        std::static_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
     std::cerr << "SecretKeyDist: " << secretKeyDist << std::endl;
 
