@@ -1,6 +1,6 @@
 07/21/2022: OpenFHE 0.9.1 (development) is released
 
-* Fixes a compilation error for NATIVESIZE=128 in MacOS
+* Fixes a compilation error for NATIVE_SIZE=128 in MacOS
 * Fixes small bugs
 
 07/19/2022: OpenFHE 0.9.0 (development) is released
