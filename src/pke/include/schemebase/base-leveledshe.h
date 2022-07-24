@@ -758,13 +758,21 @@ public:
         OPENFHE_THROW(config_error, "Leveled Operations are not supported for this scheme");
     }
 
-    virtual void AdjustLevelsAndDepthInPlace(Ciphertext<Element>& ciphertext1,
-                                             Ciphertext<Element>& ciphertext2) const {
+    virtual void AdjustLevelsAndDepthInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
     }
 
     virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<Element>& ciphertext1,
                                                   Ciphertext<Element>& ciphertext2) const {
+        OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
+    }
+
+    // TODO (Andrey) : Move these functions to protected or to rns?
+    virtual void AdjustForAddOrSubInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
+        OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
+    }
+
+    virtual void AdjustForMultInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
     }
 
