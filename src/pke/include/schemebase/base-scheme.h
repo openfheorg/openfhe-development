@@ -147,8 +147,8 @@ public:
     // PARAMETER GENERATION WRAPPER
     //------------------------------------------------------------------------------
 
-    virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, int32_t evalAddCount,
-                                 int32_t multiplicativeDepth, int32_t keySwitchCount, size_t dcrtBits, uint32_t n,
+    virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t evalAddCount,
+                                 uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t n,
                                  uint32_t numPartQ) const {
         if (m_ParamsGen) {
             return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, multiplicativeDepth, keySwitchCount,
@@ -168,8 +168,8 @@ public:
                       "for this scheme.");
     }
 
-    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
-                                 int32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
+    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+                                 uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
                                  usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
         if (m_ParamsGen) {
             return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount, keySwitchCount, cyclOrder, numPrimes,

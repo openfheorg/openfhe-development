@@ -80,8 +80,8 @@ uint32_t ParameterGenerationBGVRNS::computeRingDimension(std::shared_ptr<CryptoP
 }
 
 BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
-    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, int32_t evalAddCount,
-    int32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const {
+    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
+    uint32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
     usint digitSize               = cryptoParamsBGVRNS->GetDigitSize();
     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS->GetKeySwitchTechnique();
@@ -163,8 +163,8 @@ uint64_t ParameterGenerationBGVRNS::getCyclicOrder(const uint32_t ringDimension,
 }
 
 std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::computeModuli(
-    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, int32_t evalAddCount,
-    int32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const {
+    std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
+    uint32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const {
     if (numPrimes < 1) {
         OPENFHE_THROW(config_error, "numPrimes must be at least 1");
     }
@@ -261,7 +261,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 }
 
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                int32_t evalAddCount, int32_t keySwitchCount, usint cyclOrder,
+                                                uint32_t evalAddCount, uint32_t keySwitchCount, usint cyclOrder,
                                                 usint numPrimes, usint firstModSize, usint dcrtBits, uint32_t numPartQ,
                                                 usint multihopQBound) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);

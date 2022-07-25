@@ -43,8 +43,8 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 namespace lbcrypto {
 
 bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                                int32_t evalAddCount, int32_t multiplicativeDepth,
-                                                int32_t keySwitchCount, size_t dcrtBits, uint32_t nCustom,
+                                                uint32_t evalAddCount, uint32_t multiplicativeDepth,
+                                                uint32_t keySwitchCount, size_t dcrtBits, uint32_t nCustom,
                                                 uint32_t numDigits) const {
     if (!cryptoParams)
         OPENFHE_THROW(not_available_error, "No crypto parameters are supplied to BFVrns ParamsGen");
@@ -287,6 +287,16 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
                 logqPrev = logqCeil;
             }
         }
+    }
+    else if (multiplicativeDepth && (evalAddCount || keySwitchCount) ||
+             keySwitchCount && (multiplicativeDepth || evalAddCount)) {
+        // throw an exception if at least 2 variables are not zero
+        std::string errMsg("multiplicativeDepth, evalAddCount and keySwitchCount are incorrectly set to [ ");
+        errMsg += std::to_string(multiplicativeDepth) + ", ";
+        errMsg += std::to_string(evalAddCount) + ", ";
+        errMsg += std::to_string(keySwitchCount) + " ]. Only one of them can be non-zero.";
+
+        OPENFHE_THROW(config_error, errMsg);
     }
 
     const size_t sizeQ = static_cast<size_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
