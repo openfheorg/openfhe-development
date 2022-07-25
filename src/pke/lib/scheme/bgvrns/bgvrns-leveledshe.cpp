@@ -231,31 +231,6 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ci
     }
 }
 
-DCRTPoly LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext,
-                                                       ConstPlaintext plaintext) const {
-    CryptoContext<DCRTPoly> cc = ciphertext->GetCryptoContext();
-    Plaintext ptx;
-    if (plaintext->GetEncodingType() == Packed) {
-        auto values = plaintext->GetPackedValue();
-        ptx         = cc->MakePackedPlaintext(values, ciphertext->GetDepth(), ciphertext->GetLevel());
-    }
-    else if (plaintext->GetEncodingType() == CoefPacked) {
-        auto values = plaintext->GetCoefPackedValue();
-        ptx         = cc->MakeCoefPackedPlaintext(values, ciphertext->GetDepth(), ciphertext->GetLevel());
-    }
-
-    ptx->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
-    return ptx->GetElement<DCRTPoly>();
-}
-
-DCRTPoly LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext,
-                                                            ConstPlaintext plaintext) const {
-    if (ciphertext->GetDepth() == 2) {
-        ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
-    }
-    return AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
-}
-
 void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext->GetCryptoParameters());
 

@@ -1379,37 +1379,6 @@ public:
         OPENFHE_THROW(config_error, "AdjustLevelsAndDepthToOneInPlace has not been enabled for this scheme.");
     }
 
-    virtual DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-        if (m_LeveledSHE) {
-            if (!ciphertext)
-                OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
-
-            return m_LeveledSHE->AdjustLevelsInPlace(ciphertext, plaintext);
-        }
-        OPENFHE_THROW(config_error, "AdjustLevelsInPlace has not been enabled for this scheme.");
-    }
-
-    virtual DCRTPoly AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-        if (m_LeveledSHE) {
-            if (!ciphertext)
-                OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
-
-            return m_LeveledSHE->AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
-        }
-        OPENFHE_THROW(config_error, "AdjustLevelsAndDepthInPlace has not been enabled for this scheme.");
-    }
-
-    virtual DCRTPoly AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext,
-                                                      ConstPlaintext plaintext) const {
-        if (m_LeveledSHE) {
-            if (!ciphertext)
-                OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
-
-            return m_LeveledSHE->AdjustLevelsAndDepthToOneInPlace(ciphertext, plaintext);
-        }
-        OPENFHE_THROW(config_error, "AdjustLevelsAndDepthToOneInPlace has not been enabled for this scheme.");
-    }
-
     /////////////////////////////////////////
     // Advanced SHE Wrapper
     /////////////////////////////////////////

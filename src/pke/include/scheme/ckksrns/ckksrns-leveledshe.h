@@ -161,11 +161,6 @@ public:
     void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                           Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-    DCRTPoly AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
-
-    DCRTPoly AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext,
-                                              ConstPlaintext plaintext) const override;
-
     std::vector<DCRTPoly::Integer> GetElementForEvalAddOrSub(ConstCiphertext<DCRTPoly> ciphertext,
                                                              double constant) const;
 

@@ -606,22 +606,6 @@ void LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& c
     }
 }
 
-DCRTPoly LeveledSHECKKSRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext,
-                                                        ConstPlaintext plaintext) const {
-    CryptoContext<DCRTPoly> cc = ciphertext->GetCryptoContext();
-    auto values                = plaintext->GetCKKSPackedValue();
-    Plaintext ptx              = cc->MakeCKKSPackedPlaintext(values, ciphertext->GetDepth(), ciphertext->GetLevel());
-    return ptx->GetElement<DCRTPoly>();
-}
-
-DCRTPoly LeveledSHECKKSRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext,
-                                                             ConstPlaintext plaintext) const {
-    if (ciphertext->GetDepth() == 2) {
-        ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
-    }
-    return AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
-}
-
 void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, double constant) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 

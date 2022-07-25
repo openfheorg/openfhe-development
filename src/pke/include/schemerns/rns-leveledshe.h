@@ -342,7 +342,9 @@ protected:
 
     void AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
 
-    DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
+    void AdjustForAddOrSubInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
+
+    void AdjustForMultInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
