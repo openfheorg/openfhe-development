@@ -1,0 +1,47 @@
+name: Feature Request
+description: Request a feature
+title: "[Feature Request]: "
+labels: [ "feature-request", "triage" ]
+body:
+  - type: textarea
+    id: featuredescription
+    attributes:
+      label: Feature Description
+      description: Briefly describe the feature below
+      placeholder: "OpenFHE should have feature X"
+    validations:
+      required: true
+
+
+  - type: textarea
+    id: reasoning
+    attributes:
+      label: Briefly Describe Why This Feature Is Important
+      placeholder: "This feature is useful because of X"
+
+
+  - type: dropdown
+    id: will-you-do-it
+    attributes:
+      label: Are You Willing to Implement This Feature?
+      options:
+        - "Yes"
+        - "No"
+    validations:
+      required: true
+
+
+  - type: textarea
+    id: url
+    attributes:
+      label: Pull Request URL
+      placeholder: Please Paste The Pull Request URL(if applicable)
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/openfheorg/openfhe-development#code-of-conduct)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
