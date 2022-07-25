@@ -288,8 +288,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
             }
         }
     }
-    else if (multiplicativeDepth && (evalAddCount || keySwitchCount) ||
-             keySwitchCount && (multiplicativeDepth || evalAddCount)) {
+    else if ((multiplicativeDepth && (evalAddCount || keySwitchCount)) || (evalAddCount && keySwitchCount)) {
         // throw an exception if at least 2 variables are not zero
         std::string errMsg("multiplicativeDepth, evalAddCount and keySwitchCount are incorrectly set to [ ");
         errMsg += std::to_string(multiplicativeDepth) + ", ";
