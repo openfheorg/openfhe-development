@@ -77,8 +77,8 @@ public:
    * dimension
    * @param numPartQ number of partitions of Q for HYBRID key switching
    */
-    virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, int32_t evalAddCount,
-                                 int32_t multiplicativeDepth, int32_t keySwitchCount, size_t dcrtBits, uint32_t n,
+    virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t evalAddCount,
+                                 uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t n,
                                  uint32_t numPartQ) const {
         OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
     }
@@ -114,8 +114,8 @@ public:
    * @param numPartQ number of partitions of Q for HYBRID key switching
    * @param multihopQBound bound for the HRA-secure mode of PRE
    */
-    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
-                                 int32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
+    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+                                 uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
                                  usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
         OPENFHE_THROW(not_implemented_error, "This signature for ParamsGen is not supported for this scheme.");
     }
