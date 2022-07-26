@@ -700,7 +700,7 @@ public:
    */
     virtual void LevelReduceInPlace(Ciphertext<Element>& ciphertext1, const EvalKey<Element> evalKey,
                                     size_t levels) const {
-        OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
+        OPENFHE_THROW(config_error, "LevelReduceInPlace is not supported for this scheme");
     }
 
     virtual Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext, size_t towersLeft) const {

@@ -114,10 +114,10 @@ public:
    * @param &privateKey private key used for decryption.
    * @return function ran correctly.
    */
-    virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc, bool makeSparse = false);
+    virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc, bool makeSparse);
 
     //  virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc,
-    //                                    bool makeSparse = false,
+    //                                    bool makeSparse,
     //                                    PublicKey<Element>
     // publicKey);
 
