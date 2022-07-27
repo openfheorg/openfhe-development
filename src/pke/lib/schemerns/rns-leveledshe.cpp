@@ -342,7 +342,7 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetScalingTechnique() == NORESCALE) {
-        OPENFHE_THROW(not_implemented_error, "LevelReduce is not implemented for NORESCALE rescaling technique");
+        OPENFHE_THROW(not_implemented_error, "LevelReduceInPlace is not implemented for NORESCALE rescaling technique");
     }
 
     if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL && levels > 0) {
