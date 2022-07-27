@@ -445,6 +445,10 @@ void PackedEncoding::Unpack(P* ring, const PlaintextModulus& modulus) const {
 }
 
 void PackedEncoding::SetParams_2n(usint m, const NativeInteger& modulusNI) {
+    if (!MillerRabinPrimalityTest(modulusNI)) {
+        OPENFHE_THROW(math_error, "The modulus value is [" + modulusNI.ToString() + "]. It must be prime.");
+    }
+
     const ModulusM modulusM = {modulusNI, m};
 
     // Power of two: m/2-point FTT. So we need the mth root of unity
@@ -477,6 +481,11 @@ void PackedEncoding::SetParams_2n(usint m, const NativeInteger& modulusNI) {
 
 void PackedEncoding::SetParams_2n(usint m, EncodingParams params) {
     NativeInteger modulusNI(params->GetPlaintextModulus());  // native int modulus
+
+    if (!MillerRabinPrimalityTest(modulusNI)) {
+        OPENFHE_THROW(math_error, "The modulus value is [" + modulusNI.ToString() + "]. It must be prime.");
+    }
+
     const ModulusM modulusM = {modulusNI, m};
 
     // Power of two: m/2-point FTT. So we need the mth root of unity
