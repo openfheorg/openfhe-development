@@ -2037,6 +2037,10 @@ public:
         if (!ciphertextVec.size())
             OPENFHE_THROW(type_error, "Empty input ciphertext vector");
 
+        if (ciphertextVec.size() == 1) {
+            return ciphertextVec[0];
+        }
+
         return GetScheme()->EvalAddMany(ciphertextVec);
     }
 
@@ -2078,11 +2082,13 @@ public:
             OPENFHE_THROW(type_error, "Empty input ciphertext vector");
         }
 
+        if (ciphertextVec.size() == 1) {
+            return ciphertextVec[0];
+        }
+
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertextVec[0]->GetKeyTag());
         if (evalKeyVec.size() < (ciphertextVec[0]->GetElements().size() - 2)) {
-            OPENFHE_THROW(type_error,
-                          "Insufficient value was used for maxRelinSkDeg to generate "
-                          "keys for EvalMult");
+            OPENFHE_THROW(type_error, "Insufficient value was used for maxRelinSkDeg to generate keys");
         }
 
         return GetScheme()->EvalMultMany(ciphertextVec, evalKeyVec);
