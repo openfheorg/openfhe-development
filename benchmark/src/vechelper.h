@@ -36,9 +36,10 @@
 #ifndef _VECHELPER_H_
 #define _VECHELPER_H_
 
-#include <utility>
 #define _USE_MATH_DEFINES
-#include "math/hal.h"
+#include "math/discreteuniformgenerator.h"
+
+#include <utility>
 using namespace lbcrypto;
 
 template <typename V>

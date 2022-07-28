@@ -36,6 +36,9 @@
 
 #define PROFILE
 #define _USE_MATH_DEFINES
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "gen-cryptocontext.h"
+
 #include "benchmark/benchmark.h"
 
 #include <iostream>
@@ -43,10 +46,6 @@
 #include <limits>
 #include <iterator>
 #include <random>
-
-#include "openfhe.h"
-
-#include "utils/debug.h"
 
 using namespace lbcrypto;
 

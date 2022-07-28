@@ -36,15 +36,14 @@
 #ifndef LBCRYPTO_CRYPTO_CRYPTOCONTEXTSER_H
 #define LBCRYPTO_CRYPTO_CRYPTOCONTEXTSER_H
 
+#include "cryptocontext.h"
+
+#include "utils/serial.h"
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "cryptocontext.h"
-#include "openfhe.h"
-
-#include "utils/serial.h"
 
 CEREAL_CLASS_VERSION(lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>,
                      lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>::SerializedVersion());

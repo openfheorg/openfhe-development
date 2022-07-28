@@ -36,9 +36,8 @@
 #ifndef LBCRYPTO_CRYPTO_CIPHERTEXTSER_H
 #define LBCRYPTO_CRYPTO_CIPHERTEXTSER_H
 
-#include "openfhe.h"
+#include "ciphertext.h"
 #include "utils/serial.h"
-#include "metadata-ser.h"
 
 extern template class lbcrypto::CiphertextImpl<lbcrypto::Poly>;
 extern template class lbcrypto::CiphertextImpl<lbcrypto::NativePoly>;
