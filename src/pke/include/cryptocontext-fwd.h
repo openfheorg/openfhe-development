@@ -29,17 +29,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef __UNITTESTCRYPTOCONTEXT_H__
-#define __UNITTESTCRYPTOCONTEXT_H__
+/*
+ * It is a lightweight file to be included where we need the declaration of CryptoContext only
+ *
+ */
+#ifndef __CRYPTOCONTEXT_FWD_H__
+#define __CRYPTOCONTEXT_FWD_H__
 
+#include <memory>
 
-#include "UnitTestCCParams.h"
-#include "cryptocontext.h"
-#include "scheme/allscheme.h"
+namespace lbcrypto {
 
-using Element = lbcrypto::DCRTPoly;
+template <typename Element>
+class CryptoContextImpl;
 
-lbcrypto::CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& testData);
+template <typename Element>
+using CryptoContext = std::shared_ptr<CryptoContextImpl<Element>>;
 
-#endif // __UNITTESTCRYPTOCONTEXT_H__
+} // namespace lbcrypto
+
+#endif // __CRYPTOCONTEXT_FWD_H__
 

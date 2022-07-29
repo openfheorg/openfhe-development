@@ -38,18 +38,13 @@
 
 #include "scheme/bgvrns/gen-cryptocontext-bgvrns-internal.h"
 #include "scheme/bgvrns/cryptocontextparams-bgvrns.h"
+#include "scheme/bgvrns/bgvrns-scheme.h"
+#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
+#include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
 
 namespace lbcrypto {
 
-// forward declarations. TODO (dsuponit): I would replace them with the following includes later:
-// #include "scheme/bgvrns/bgvrns-scheme.h"
-// #include "scheme/bgvrns/bgvrns-cryptoparameters.h"
-// #include "cryptocontext.h" or "cryptocontextfactory.h"
-class SchemeBGVRNS;
-class CryptoParametersBGVRNS;
-template <typename Element>
-class CryptoContextImpl;
 template <typename Element>
 class CryptoContextFactory;
 

@@ -32,14 +32,16 @@
 #ifndef SRC_PKE_CRYPTOCONTEXTFACTORY_H_
 #define SRC_PKE_CRYPTOCONTEXTFACTORY_H_
 
+#include "cryptocontext-fwd.h"
+
 #include <memory>
 #include <string>
 #include <vector>
 
-// TODO (dsuponit): remove/refactor allscheme.h as it contains information on ALL schemes. we don't need this all together anymore
-#include "scheme/allscheme.h"
-
 namespace lbcrypto {
+
+template <typename Element> class SchemeBase;
+template <typename Element> class CryptoParametersBase;
 
 /**
  * @brief CryptoContextFactory
