@@ -33,7 +33,7 @@
 #define LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_H
 
 #include "key/allkey.h"
-#include "ciphertext.h"
+#include "ciphertext-fwd.h"
 
 #include <memory>
 #include <vector>

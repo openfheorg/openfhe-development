@@ -28,46 +28,25 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+/*
+ * It is a lightweight file to be included where we need the declaration of Ciphertext only
+ */
+#ifndef __CIPHERTEXT_FWD_H__
+#define __CIPHERTEXT_FWD_H__
 
-#include "cryptocontext.h"
-#include "schemebase/base-pke.h"
-#include "schemebase/base-pre.h"
-
-#include "schemebase/base-scheme.h"
+#include <memory>
 
 namespace lbcrypto {
 
-template <class Element>
-EvalKey<Element> PREBase<Element>::ReKeyGen(const PrivateKey<Element> oldPrivateKey,
-                                            const PublicKey<Element> newPublicKey) const {
-    auto algo = oldPrivateKey->GetCryptoContext()->GetScheme();
-    return algo->KeySwitchGen(oldPrivateKey, newPublicKey);
-}
+template <typename Element>
+class CiphertextImpl;
 
-template <class Element>
-Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-                                                const PublicKey<Element> publicKey, usint noiseflooding) const {
-    auto algo = ciphertext->GetCryptoContext()->GetScheme();
+template <typename Element>
+using Ciphertext = std::shared_ptr<CiphertextImpl<Element>>;
 
-    Ciphertext<Element> result = ciphertext->Clone();
-    if (publicKey != nullptr) {
-        std::vector<Element>& cv                 = result->GetElements();
-        std::shared_ptr<std::vector<Element>> ba = algo->EncryptZeroCore(publicKey);
-
-        cv[0] += (*ba)[0];
-        cv[1] += (*ba)[1];
-    }
-
-    algo->KeySwitchInPlace(result, evalKey);
-
-    return result;
-}
+template <typename Element>
+using ConstCiphertext = std::shared_ptr<const CiphertextImpl<Element>>;
 
 }  // namespace lbcrypto
 
-// the code below is from base-pre-impl.cpp
-namespace lbcrypto {
-
-template class PREBase<DCRTPoly>;
-
-}  // namespace lbcrypto
+#endif  // __CIPHERTEXT_FWD_H__

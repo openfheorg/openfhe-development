@@ -36,11 +36,8 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_KEY_SER_H
 #define LBCRYPTO_CRYPTO_KEY_KEY_SER_H
 
-#include "lattice/hal/default/lat-backend-default.h"
+#include "key/evalkeyrelin.h"
 #include "utils/serial.h"
-
-extern template class lbcrypto::EvalKeyImpl<lbcrypto::DCRTPoly>;
-extern template class lbcrypto::EvalKeyRelinImpl<lbcrypto::DCRTPoly>;
 
 CEREAL_REGISTER_TYPE(lbcrypto::EvalKeyImpl<lbcrypto::DCRTPoly>);
 CEREAL_REGISTER_TYPE(lbcrypto::EvalKeyRelinImpl<lbcrypto::DCRTPoly>);

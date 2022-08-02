@@ -32,8 +32,10 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_PKE_H
 #define LBCRYPTO_CRYPTO_BASE_PKE_H
 
-#include "key/allkey.h"
-#include "ciphertext.h"
+#include "ciphertext-fwd.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "key/keypair.h"
 
 #include <vector>
 #include <memory>
