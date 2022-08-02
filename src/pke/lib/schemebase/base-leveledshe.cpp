@@ -32,6 +32,8 @@
 #include "cryptocontext.h"
 #include "schemebase/base-leveledshe.h"
 
+#include "schemebase/base-scheme.h"
+
 namespace lbcrypto {
 
 /////////////////////////////////////////
@@ -557,20 +559,21 @@ Ciphertext<Element> LeveledSHEBase<Element>::LevelReduce(ConstCiphertext<Element
 }
 
 template <class Element>
-Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext plaintext, ConstCiphertext<Element> ciphertext) const {
-  auto result = ciphertext->CloneEmpty();
+Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext plaintext,
+                                                            ConstCiphertext<Element> ciphertext) const {
+    auto result = ciphertext->CloneEmpty();
 
-  result->SetDepth(plaintext->GetDepth());
-  result->SetLevel(plaintext->GetLevel());
-  result->SetScalingFactor(plaintext->GetScalingFactor());
-  result->SetScalingFactorInt(plaintext->GetScalingFactorInt());
-  result->SetSlots(plaintext->GetSlots());
+    result->SetDepth(plaintext->GetDepth());
+    result->SetLevel(plaintext->GetLevel());
+    result->SetScalingFactor(plaintext->GetScalingFactor());
+    result->SetScalingFactorInt(plaintext->GetScalingFactorInt());
+    result->SetSlots(plaintext->GetSlots());
 
-  Element pt = plaintext->GetElement<Element>();
-  pt.SetFormat(EVALUATION);
-  result->SetElements({pt});
+    Element pt = plaintext->GetElement<Element>();
+    pt.SetFormat(EVALUATION);
+    result->SetElements({pt});
 
-  return result;
+    return result;
 }
 
 /////////////////////////////////////////

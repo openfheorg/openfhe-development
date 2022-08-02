@@ -36,11 +36,11 @@
 #ifndef SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_
 #define SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_
 
+#include "encoding/encodings.h"
+
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "encoding/encodings.h"
 
 // TODO: when the parms are polymorphic, reduce the tuple of methods to a
 // single one

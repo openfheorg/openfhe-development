@@ -36,6 +36,23 @@
 #ifndef SRC_PKE_CRYPTOCONTEXT_H_
 #define SRC_PKE_CRYPTOCONTEXT_H_
 
+#include "cryptocontextfactory.h"
+#include "cryptocontext-fwd.h"
+#include "ciphertext.h"
+
+#include "encoding/plaintextfactory.h"
+
+#include "key/evalkey.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "key/keypair.h"
+
+#include "schemebase/base-pke.h"
+#include "schemerns/rns-cryptoparameters.h"
+
+#include "utils/caller_info.h"
+#include "utils/serial.h"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -43,21 +60,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "encoding/plaintextfactory.h"
-#include "key/allkey.h"
-#include "schemerns/allrns.h"
-
-#include "cryptocontextfactory.h"
-
-#include "utils/serial.h"
-
 namespace lbcrypto {
-
-template <typename Element>
-class CryptoContextImpl;
-
-template <typename Element>
-using CryptoContext = std::shared_ptr<CryptoContextImpl<Element>>;
 
 /**
  * @brief CryptoContextImpl

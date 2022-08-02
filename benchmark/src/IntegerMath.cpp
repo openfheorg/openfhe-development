@@ -34,9 +34,9 @@
   This code benchmarks integer operations.
 */
 #define _USE_MATH_DEFINES
-#include "benchmark/benchmark.h"
+#include "lattice/lat-hal.h"
 
-#include "openfhe.h"
+#include "benchmark/benchmark.h"
 
 #include <iostream>
 #include <vector>

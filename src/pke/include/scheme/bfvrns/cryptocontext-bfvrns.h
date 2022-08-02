@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  API to generate BFVRNS crypto context
+ * API to generate BFVRNS crypto context
  */
 
 #ifndef _CRYPTOCONTEXT_BFVRNS_H_
@@ -38,17 +38,13 @@
 
 #include "scheme/bfvrns/gen-cryptocontext-bfvrns-internal.h"
 #include "scheme/bfvrns/cryptocontextparams-bfvrns.h"
+#include "scheme/bfvrns/bfvrns-scheme.h"
+#include "scheme/bfvrns/bfvrns-cryptoparameters.h"
+#include "cryptocontext-fwd.h"
 #include "lattice/lat-hal.h"
 
 namespace lbcrypto {
-// forward declarations. TODO (dsuponit): I would replace them with the following includes later:
-// #include "scheme/bfvrns/bfvrns-scheme.h"
-// #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
-// #include "cryptocontext.h"
-class SchemeBFVRNS;
-class CryptoParametersBFVRNS;
-template <typename Element>
-class CryptoContextImpl;
+
 template <typename Element>
 class CryptoContextFactory;
 

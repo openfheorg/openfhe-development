@@ -34,11 +34,11 @@
  */
 
 #define _USE_MATH_DEFINES
+#include "lattice/lat-hal.h"
+
 #include "benchmark/benchmark.h"
 
 #include <iostream>
-
-#include "openfhe.h"
 
 using namespace lbcrypto;
 

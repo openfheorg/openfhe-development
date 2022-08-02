@@ -34,6 +34,8 @@
 #include "schemebase/base-multiparty.h"
 #include "schemebase/rlwe-cryptoparameters.h"
 
+#include "schemebase/base-scheme.h"
+
 namespace lbcrypto {
 
 // makeSparse is not used by this scheme

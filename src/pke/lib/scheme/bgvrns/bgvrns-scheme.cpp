@@ -36,6 +36,7 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 #define PROFILE
 
 #include "cryptocontext.h"
+#include "scheme/allscheme.h"
 #include "keyswitch/keyswitch-hybrid.h"
 #include "scheme/bgvrns/bgvrns-scheme.h"
 #include <iosfwd>

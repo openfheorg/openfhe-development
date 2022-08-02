@@ -46,7 +46,6 @@ enum PKESchemeFeature {
     MULTIPARTY  = 0x20,
     FHE         = 0x40,
 };
-
 std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
 
 /**
@@ -93,6 +92,15 @@ std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 enum LargeScalingFactorConstants {
     MAX_BITS_IN_WORD = 62,
     MAX_LOG_STEP     = 60,
+};
+
+/**
+ * @brief  BASE_NUM_LEVELS_TO_DROP is the most common value for levels/towers to drop (do not make it a default argument
+ * as default arguments work differently for virtual functions)
+ */
+// TODO (dsuponit): remove BASE_NUM_LEVELS_TO_DROP
+enum {
+    BASE_NUM_LEVELS_TO_DROP = 1,
 };
 
 #endif  // _CONSTANTS_H_

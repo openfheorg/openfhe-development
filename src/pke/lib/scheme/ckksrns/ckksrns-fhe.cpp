@@ -34,6 +34,7 @@
 #include "math/dftransform.h"
 
 #include "cryptocontext.h"
+#include "scheme/allscheme.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
 
 namespace lbcrypto {

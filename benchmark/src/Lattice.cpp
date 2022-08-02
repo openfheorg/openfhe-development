@@ -35,11 +35,10 @@
  */
 
 #define _USE_MATH_DEFINES
-#include "benchmark/benchmark.h"
-
-#include "openfhe.h"
 #include "vechelper.h"
 #include "lattice/elemparamfactory.h"
+
+#include "benchmark/benchmark.h"
 
 #include <iostream>
 #include <vector>

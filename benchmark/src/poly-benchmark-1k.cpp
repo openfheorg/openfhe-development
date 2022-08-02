@@ -34,15 +34,13 @@
  */
 
 #define _USE_MATH_DEFINES
-#include "benchmark/benchmark.h"
-
-#include "openfhe.h"
+#include "vechelper.h"
+#include "lattice/lat-hal.h"
 
 #include <iostream>
 #include <vector>
 
-#include "vechelper.h"
-#include "math/hal.h"
+#include "benchmark/benchmark.h"
 
 using namespace lbcrypto;
 

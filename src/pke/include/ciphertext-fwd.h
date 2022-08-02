@@ -28,17 +28,25 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+/*
+ * It is a lightweight file to be included where we need the declaration of Ciphertext only
+ */
+#ifndef __CIPHERTEXT_FWD_H__
+#define __CIPHERTEXT_FWD_H__
 
-#ifndef LBCRYPTO_CRYPTO_METADATASER_H
-#define LBCRYPTO_CRYPTO_METADATASER_H
+#include <memory>
 
-#include "metadata.h"
-#include "utils/serial.h"
+namespace lbcrypto {
 
-CEREAL_CLASS_VERSION(lbcrypto::Metadata, lbcrypto::Metadata::SerializedVersion());
-CEREAL_REGISTER_TYPE(lbcrypto::Metadata);
+template <typename Element>
+class CiphertextImpl;
 
-CEREAL_REGISTER_TYPE(lbcrypto::MetadataTest);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::Metadata, lbcrypto::MetadataTest)
+template <typename Element>
+using Ciphertext = std::shared_ptr<CiphertextImpl<Element>>;
 
-#endif
+template <typename Element>
+using ConstCiphertext = std::shared_ptr<const CiphertextImpl<Element>>;
+
+}  // namespace lbcrypto
+
+#endif  // __CIPHERTEXT_FWD_H__

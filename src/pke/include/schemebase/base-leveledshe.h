@@ -46,14 +46,6 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
-
-/**
- * @brief  BASE_NUM_LEVELS_TO_DROP is the most common value for levels/towers to drop (do not make it a default argument
- * as default arguments work differently for virtual functions)
- */
-enum {
-    BASE_NUM_LEVELS_TO_DROP = 1,
-};
 /**
  * @brief Abstract interface class for LBC SHE algorithms
  * @tparam Element a ring element.

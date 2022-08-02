@@ -33,6 +33,8 @@
 #include "schemebase/base-pke.h"
 #include "schemebase/base-pre.h"
 
+#include "schemebase/base-scheme.h"
+
 namespace lbcrypto {
 
 template <class Element>
