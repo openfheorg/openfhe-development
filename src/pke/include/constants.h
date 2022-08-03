@@ -68,6 +68,9 @@ enum ScalingTechnique {
 };
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 
+enum ProxyReEncryptionMode { INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA, DIVIDE_AND_ROUND_HRA };
+std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
+
 enum KeySwitchTechnique {
     INVALID_KS_TECH = 0,
     BV,
