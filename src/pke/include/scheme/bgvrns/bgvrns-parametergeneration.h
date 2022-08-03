@@ -146,6 +146,14 @@ private:
     std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(
         std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
         uint32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const;
+
+    /*
+   * Method that initializes the Discrete Gaussian Generator with flooding for PRE.
+   *
+   * @param cryptoParams contains parameters input by the user
+   * @param numPrimes Number of CRT moduli.
+   */
+    void InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint numPrimes) const;
 };
 
 }  // namespace lbcrypto

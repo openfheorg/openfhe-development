@@ -107,6 +107,26 @@ std::ostream& operator<<(std::ostream& s, ScalingTechnique t) {
     return s;
 }
 
+std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
+    switch (p) {
+        case INDCPA:
+            s << "INDCPA";
+            break;
+        case FIXED_NOISE_HRA:
+            s << "FIXED_NOISE_HRA";
+            break;
+        case NOISE_FLOODING_HRA:
+            s << "NOISE_FLOODING_HRA";
+            break;
+        case DIVIDE_AND_ROUND_HRA:
+            s << "DIVIDE_AND_ROUND_HRA";
+            break;
+        default:
+            s << "UKNOWN";
+            break;
+    }
+    return s;
+}
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t) {
     switch (t) {
         case BV:

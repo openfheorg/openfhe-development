@@ -56,7 +56,7 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext, const PublicKey<DCRTPol
     Ciphertext<DCRTPoly> ciphertext(std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
 
     const std::shared_ptr<ParmType> ptxtParams = plaintext.GetParams();
-    std::shared_ptr<std::vector<DCRTPoly>> ba  = EncryptZeroCore(publicKey, ptxtParams);
+    std::shared_ptr<std::vector<DCRTPoly>> ba  = EncryptZeroCore(publicKey, ptxtParams, DggType());
 
     plaintext.SetFormat(EVALUATION);
 
@@ -143,12 +143,14 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PrivateKey<
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<DCRTPoly> publicKey,
-                                                               const std::shared_ptr<ParmType> params) const {
+                                                               const std::shared_ptr<ParmType> params,
+                                                               const DggType& dgg) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(publicKey->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& pk = publicKey->GetPublicElements();
     const auto ns                   = cryptoParams->GetNoiseScale();
-    const DggType& dgg              = cryptoParams->GetDiscreteGaussianGenerator();
+    const DggType& dggsecret        = cryptoParams->GetDiscreteGaussianGenerator();
+
     TugType tug;
 
     const std::shared_ptr<ParmType> elementParams = (params == nullptr) ? cryptoParams->GetElementParams() : params;
@@ -157,11 +159,15 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<D
     // if (cryptoParams->GetSecretKeyDist() != GAUSSIAN) {
     //    OPENFHE_THROW(math_error, "TugType tug must be assigned");
     //}
-    DCRTPoly v = cryptoParams->GetSecretKeyDist() == GAUSSIAN ? DCRTPoly(dgg, elementParams, Format::EVALUATION) :
+    DCRTPoly v = cryptoParams->GetSecretKeyDist() == GAUSSIAN ? DCRTPoly(dggsecret, elementParams, Format::EVALUATION) :
                                                                 DCRTPoly(tug, elementParams, Format::EVALUATION);
 
-    DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-    DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
+    const DggType& dggGen = dgg.IsInitialized() ? dgg : cryptoParams->GetDiscreteGaussianGenerator();
+
+    std::cout << "dgggen std dev " << dggGen.GetStd() << std::endl;
+
+    DCRTPoly e0(dggGen, elementParams, Format::EVALUATION);
+    DCRTPoly e1(dggGen, elementParams, Format::EVALUATION);
 
     uint32_t sizeQ  = pk[0].GetParams()->GetParams().size();
     uint32_t sizeQl = elementParams->GetParams().size();
