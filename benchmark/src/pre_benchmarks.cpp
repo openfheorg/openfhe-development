@@ -31,11 +31,6 @@
 
 #include "benchmark/benchmark.h"
 
-<<<<<<< HEAD
-=======
-#include "openfhe.h"
-
->>>>>>> Applied changes from srv_PRE_fixednoise_flooding branch for PRE and fixed review comments from merge request 74
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
 
@@ -120,38 +115,26 @@ void PRE_ReEncrypt(benchmark::State& state) {
             case 0:
                 // CPA secure PRE
                 benchmark::DoNotOptimize(reEncryptedCT = cryptoContext->ReEncrypt(ciphertext, reencryptionKey));
-<<<<<<< HEAD
                 break;
-=======
->>>>>>> Applied changes from srv_PRE_fixednoise_flooding branch for PRE and fixed review comments from merge request 74
             case 1:
                 // Fixed noise (20 bits) practically secure PRE
                 benchmark::DoNotOptimize(
                     reEncryptedCT = cryptoContext->ReEncrypt(ciphertext, reencryptionKey, keyPairproducer.publicKey));
-<<<<<<< HEAD
                 break;
-=======
->>>>>>> Applied changes from srv_PRE_fixednoise_flooding branch for PRE and fixed review comments from merge request 74
             case 2:
                 // Provable HRA secure PRE with noise flooding with BV switching
                 benchmark::DoNotOptimize(
                     reEncryptedCT1 = cryptoContext->ReEncrypt(ciphertext, reencryptionKey, keyPairproducer.publicKey));
                 benchmark::DoNotOptimize(
                     reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1));  // mod reduction for noise flooding
-<<<<<<< HEAD
                 break;
-=======
->>>>>>> Applied changes from srv_PRE_fixednoise_flooding branch for PRE and fixed review comments from merge request 74
             case 3:
                 // Provable HRA secure PRE with noise flooding with Hybrid switching
                 benchmark::DoNotOptimize(
                     reEncryptedCT1 = cryptoContext->ReEncrypt(ciphertext, reencryptionKey, keyPairproducer.publicKey));
                 benchmark::DoNotOptimize(
                     reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1));  // mod reduction for noise flooding
-<<<<<<< HEAD
                 break;
-=======
->>>>>>> Applied changes from srv_PRE_fixednoise_flooding branch for PRE and fixed review comments from merge request 74
             default:
                 OPENFHE_THROW(config_error, "Not a valid security mode");
         }
@@ -286,11 +269,7 @@ int main(int argc, char** argv) {
 
     std::cerr << "security model = " << SECURITY_MODEL << std::endl;
 
-<<<<<<< HEAD
     int num_of_repetitions = 10;
-=======
-    int num_of_repetitions = 100;
->>>>>>> Applied changes from srv_PRE_fixednoise_flooding branch for PRE and fixed review comments from merge request 74
 
     ::benchmark::Initialize(&argc, argv);
     ::benchmark::RegisterBenchmark("Keygen", &PRE_keygen)
