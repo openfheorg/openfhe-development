@@ -164,8 +164,6 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<D
 
     const DggType& dggGen = dgg.IsInitialized() ? dgg : cryptoParams->GetDiscreteGaussianGenerator();
 
-    std::cout << "dgggen std dev " << dggGen.GetStd() << std::endl;
-
     DCRTPoly e0(dggGen, elementParams, Format::EVALUATION);
     DCRTPoly e1(dggGen, elementParams, Format::EVALUATION);
 

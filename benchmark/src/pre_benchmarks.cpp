@@ -117,22 +117,26 @@ void PRE_ReEncrypt(benchmark::State& state) {
             case 0:
                 // CPA secure PRE
                 benchmark::DoNotOptimize(reEncryptedCT = cryptoContext->ReEncrypt(ciphertext, reencryptionKey));
+                break;
             case 1:
                 // Fixed noise (20 bits) practically secure PRE
                 benchmark::DoNotOptimize(
                     reEncryptedCT = cryptoContext->ReEncrypt(ciphertext, reencryptionKey, keyPairproducer.publicKey));
+                break;
             case 2:
                 // Provable HRA secure PRE with noise flooding with BV switching
                 benchmark::DoNotOptimize(
                     reEncryptedCT1 = cryptoContext->ReEncrypt(ciphertext, reencryptionKey, keyPairproducer.publicKey));
                 benchmark::DoNotOptimize(
                     reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1));  // mod reduction for noise flooding
+                break;
             case 3:
                 // Provable HRA secure PRE with noise flooding with Hybrid switching
                 benchmark::DoNotOptimize(
                     reEncryptedCT1 = cryptoContext->ReEncrypt(ciphertext, reencryptionKey, keyPairproducer.publicKey));
                 benchmark::DoNotOptimize(
                     reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1));  // mod reduction for noise flooding
+                break;
             default:
                 OPENFHE_THROW(config_error, "Not a valid security mode");
         }
@@ -267,7 +271,7 @@ int main(int argc, char** argv) {
 
     std::cerr << "security model = " << SECURITY_MODEL << std::endl;
 
-    int num_of_repetitions = 100;
+    int num_of_repetitions = 10;
 
     ::benchmark::Initialize(&argc, argv);
     ::benchmark::RegisterBenchmark("Keygen", &PRE_keygen)
