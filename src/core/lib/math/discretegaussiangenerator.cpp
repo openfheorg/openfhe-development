@@ -48,6 +48,10 @@ DiscreteGaussianGeneratorImpl<VecType>::DiscreteGaussianGeneratorImpl(double std
 }
 
 template <typename VecType>
+bool DiscreteGaussianGeneratorImpl<VecType>::IsInitialized() const {
+    return ((m_std - 1) > 1e-9) ? true : false;
+}
+template <typename VecType>
 void DiscreteGaussianGeneratorImpl<VecType>::SetStd(double std) {
     m_std = std;
     if (log2(m_std) > 59) {

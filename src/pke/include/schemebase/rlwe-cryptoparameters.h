@@ -57,7 +57,12 @@ const double MP_SD = 1048576;
 // noise flooding distribution parameter
 // for fixed 20 bits noise multihop PRE
 const double MPRE_SD = 1048576;
-
+// noise flooding distribution parameter
+// for distributed decryption in
+// PRE
+const double PRE_SD = 1048576;
+// statistical security parameter for noise flooding in PRE
+const double STAT_SECURITY_FLOODING = 30;
 /**
  * @brief Template for crypto parameters.
  * @tparam Element a ring element.
@@ -69,14 +74,17 @@ public:
    * Default Constructor
    */
     CryptoParametersRLWE() : CryptoParametersBase<Element>() {
-        m_distributionParameter = 0.0f;
-        m_assuranceMeasure      = 0.0f;
-        m_noiseScale            = 1;
-        m_digitSize             = 1;
+        m_distributionParameter         = 0.0f;
+        m_assuranceMeasure              = 0.0f;
+        m_noiseScale                    = 1;
+        m_digitSize                     = 1;
+        m_maxRelinSkDeg                 = 2;
+        m_secretKeyDist                 = GAUSSIAN;
+        m_stdLevel                      = HEStd_NotSet;
+        m_floodingdistributionParameter = 0;
         m_dgg.SetStd(m_distributionParameter);
-        m_maxRelinSkDeg = 2;
-        m_secretKeyDist = GAUSSIAN;
-        m_stdLevel      = HEStd_NotSet;
+        m_dggflooding.SetStd(m_floodingdistributionParameter);
+        m_premode = INDCPA;
     }
 
     /**
@@ -85,14 +93,17 @@ public:
    */
     CryptoParametersRLWE(const CryptoParametersRLWE& rhs)
         : CryptoParametersBase<Element>(rhs.GetElementParams(), rhs.GetPlaintextModulus()) {
-        m_distributionParameter = rhs.m_distributionParameter;
-        m_assuranceMeasure      = rhs.m_assuranceMeasure;
-        m_noiseScale            = rhs.m_noiseScale;
-        m_digitSize             = rhs.m_digitSize;
+        m_distributionParameter         = rhs.m_distributionParameter;
+        m_assuranceMeasure              = rhs.m_assuranceMeasure;
+        m_noiseScale                    = rhs.m_noiseScale;
+        m_digitSize                     = rhs.m_digitSize;
+        m_maxRelinSkDeg                 = rhs.m_maxRelinSkDeg;
+        m_secretKeyDist                 = rhs.m_secretKeyDist;
+        m_stdLevel                      = rhs.m_stdLevel;
+        m_floodingdistributionParameter = rhs.m_floodingdistributionParameter;
         m_dgg.SetStd(m_distributionParameter);
-        m_maxRelinSkDeg = rhs.m_maxRelinSkDeg;
-        m_secretKeyDist = rhs.m_secretKeyDist;
-        m_stdLevel      = rhs.m_stdLevel;
+        m_dggflooding.SetStd(m_floodingdistributionParameter);
+        m_premode = rhs.m_premode;
     }
 
     /**
@@ -122,6 +133,7 @@ public:
         m_maxRelinSkDeg = maxRelinSkDeg;
         m_secretKeyDist = secretKeyDist;
         m_stdLevel      = stdLevel;
+        m_premode       = INDCPA;
     }
 
     /**
@@ -137,6 +149,16 @@ public:
    */
     float GetDistributionParameter() const {
         return m_distributionParameter;
+    }
+
+    /**
+   * Returns the value of standard deviation r for discrete Gaussian
+   * distribution with flooding
+   *
+   * @return the flooding standard deviation r.
+   */
+    double GetFloodingDistributionParameter() const {
+        return m_floodingdistributionParameter;
     }
 
     /**
@@ -186,6 +208,16 @@ public:
     }
 
     /**
+   * Gets the pre security mode setting:
+   * INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or MODULUS_SWITCHING_HRA.
+   *
+   * @return the pre security mode setting.
+   */
+    ProxyReEncryptionMode GetPREMode() const {
+        return m_premode;
+    }
+
+    /**
    * Gets the standard security level
    *
    * @return the security level.
@@ -203,6 +235,15 @@ public:
         return m_dgg;
     }
 
+    /**
+   * Returns reference to Discrete Gaussian Generator with flooding for PRE
+   *
+   * @return reference to Discrete Gaussian Generaror with flooding for PRE.
+   * The Std dev for this generator changes based on the PRE mode, so it is not const
+   */
+    typename Element::DggType& GetFloodingDiscreteGaussianGenerator() {
+        return m_dggflooding;
+    }
     // @Set Properties
 
     /**
@@ -212,6 +253,15 @@ public:
     void SetDistributionParameter(float distributionParameter) {
         m_distributionParameter = distributionParameter;
         m_dgg.SetStd(m_distributionParameter);
+    }
+
+    /**
+   * Sets the value of flooding standard deviation r for discrete Gaussian distribution with flooding
+   * @param distributionParameter
+   */
+    void SetFloodingDistributionParameter(double distributionParameter) {
+        m_floodingdistributionParameter = distributionParameter;
+        m_dggflooding.SetStd(m_floodingdistributionParameter);
     }
 
     /**
@@ -264,6 +314,14 @@ public:
     }
 
     /**
+   * Configures the security mode for pre
+   * @param premode is INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or MODULUS_SWITCHING_HRA.
+   */
+    void SetPREMode(ProxyReEncryptionMode premode) {
+        m_premode = premode;
+    }
+
+    /**
    * == operator to compare to this instance of CryptoParametersRLWE object.
    *
    * @param &rhs CryptoParameters to check equality against.
@@ -302,6 +360,8 @@ public:
         ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
         ar(::cereal::make_nvp("slv", m_stdLevel));
+        ar(::cereal::make_nvp("pmo", m_premode));
+        ar(::cereal::make_nvp("fdp", m_floodingdistributionParameter));
     }
 
     template <class Archive>
@@ -314,7 +374,9 @@ public:
         ar(::cereal::make_nvp("rw", m_digitSize));
         ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
+        ar(::cereal::make_nvp("pmo", m_premode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
+        ar(::cereal::make_nvp("fdp", m_floodingdistributionParameter));
     }
 
     std::string SerializedObjectName() const {
@@ -324,6 +386,8 @@ public:
 protected:
     // standard deviation in Discrete Gaussian Distribution
     float m_distributionParameter;
+    // standard deviation in Discrete Gaussian Distribution with Flooding
+    double m_floodingdistributionParameter;
     // assurance measure alpha
     float m_assuranceMeasure;
     // noise scale
@@ -340,6 +404,10 @@ protected:
     SecurityLevel m_stdLevel;
 
     typename Element::DggType m_dgg;
+    typename Element::DggType m_dggflooding;
+
+    // specifies the security mode used for PRE
+    ProxyReEncryptionMode m_premode;
 };
 
 }  // namespace lbcrypto

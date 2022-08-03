@@ -105,6 +105,11 @@ public:
     ~DiscreteGaussianGeneratorImpl() {}
 
     /**
+     * @brief Check if the gaussian generator has been initialized with a standard deviation
+     */
+    bool IsInitialized() const;
+
+    /**
    * @brief Initializes the generator.
    */
     void Initialize();
