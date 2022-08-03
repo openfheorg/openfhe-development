@@ -267,7 +267,6 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS->GetKeySwitchTechnique();
     ProxyReEncryptionMode PREMode = cryptoParamsBGVRNS->GetPREMode();
 
-    std::cout << "PREmode " << PREMode << std::endl;
     // compute the flooding distribution parameter based on the security mode for pre
     // get the re-encryption level and set the level after re-encryption
     usint ringDimension = cryptoParamsBGVRNS->GetElementParams()->GetRingDimension();
@@ -275,9 +274,6 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     double alpha        = cryptoParamsBGVRNS->GetAssuranceMeasure();
     usint r             = cryptoParamsBGVRNS->GetDigitSize();
     double log2q        = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
-    std::cout << "digit size in paramsgen " << r << std::endl;
-    std::cout << "ring dimension in paramsgen " << ringDimension << std::endl;
-    std::cout << "logq in paramsgen " << log2q << std::endl;
 
     double B_e       = sqrt(alpha) * sigma;
     uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
@@ -317,7 +313,6 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     }
     // set the flooding distribution parameter to the distribution.
     dggflooding.SetStd(noise_param);
-    std::cout << "initializeflooding noiseparam " << noise_param << std::endl;
 }
 
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
@@ -325,7 +320,6 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
                                                 usint numPrimes, usint firstModSize, usint dcrtBits, uint32_t numPartQ,
                                                 usint multihopQBound) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
-    std::cout << "in bgvrnsparamsgen" << std::endl;
 
     uint32_t ptm                     = cryptoParamsBGVRNS->GetPlaintextModulus();
     KeySwitchTechnique ksTech        = cryptoParamsBGVRNS->GetKeySwitchTechnique();
@@ -496,7 +490,6 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     }
     cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, 0);
     InitializeFloodingDgg(cryptoParams, numPrimes);
-    std::cout << "after initializefloodingin bgvrnsparamsgen" << std::endl;
     return true;
 }
 
