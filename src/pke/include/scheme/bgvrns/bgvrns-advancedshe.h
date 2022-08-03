@@ -59,10 +59,6 @@ public:
     void load(Archive& ar) {
         ar(cereal::base_class<AdvancedSHERNS>(this));
     }
-
-    std::string SerializedObjectName() const {
-        return "AdvancedSHEBGVRNS";
-    }
 };
 
 }  // namespace lbcrypto

@@ -1687,9 +1687,6 @@ public:
         ar(cereal::make_nvp("eb", m_extraBits));
     }
 
-    std::string SerializedObjectName() const override {
-        return "SchemeParametersRNS";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

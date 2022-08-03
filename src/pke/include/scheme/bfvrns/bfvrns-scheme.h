@@ -78,10 +78,6 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         ar(cereal::base_class<SchemeRNS>(this));
     }
-
-    std::string SerializedObjectName() const override {
-        return "SchemeBFVRNS";
-    }
 };
 }  // namespace lbcrypto
 

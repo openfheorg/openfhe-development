@@ -65,10 +65,6 @@ public:
     void load(Archive& ar) {
         ar(cereal::base_class<FHEBase<DCRTPoly>>(this));
     }
-
-    std::string SerializedObjectName() const {
-        return "FHERNS";
-    }
 };
 
 }  // namespace lbcrypto

@@ -59,10 +59,6 @@ public:
     void load(Archive& ar) {
         ar(cereal::base_class<FHERNS>(this));
     }
-
-    std::string SerializedObjectName() const {
-        return "FHEBFVRNS";
-    }
 };
 }  // namespace lbcrypto
 

@@ -359,10 +359,6 @@ protected:
     void load(Archive& ar) {
         ar(cereal::base_class<LeveledSHEBase<DCRTPoly>>(this));
     }
-
-    std::string SerializedObjectName() const {
-        return "LeveledSHERNS";
-    }
 };
 
 }  // namespace lbcrypto

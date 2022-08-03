@@ -683,9 +683,6 @@ public:
         // users will need to SetAllocator for any newly deserialized matrix
     }
 
-    std::string SerializedObjectName() const {
-        return "Matrix";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

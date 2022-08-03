@@ -339,9 +339,6 @@ public:
         ar(::cereal::make_nvp("f", format));
     }
 
-    std::string SerializedObjectName() const {
-        return "Field2n";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

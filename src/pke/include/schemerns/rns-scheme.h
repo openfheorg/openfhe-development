@@ -92,10 +92,6 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         ar(cereal::base_class<SchemeBase<DCRTPoly>>(this));
     }
-
-    std::string SerializedObjectName() const override {
-        return "SchemeRNS";
-    }
 };
 
 }  // namespace lbcrypto

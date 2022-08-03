@@ -131,10 +131,6 @@ public:
     void load(Archive& ar) {
         ar(cereal::base_class<PKEBase<DCRTPoly>>(this));
     }
-
-    std::string SerializedObjectName() const {
-        return "PKERNS";
-    }
 };
 
 }  // namespace lbcrypto

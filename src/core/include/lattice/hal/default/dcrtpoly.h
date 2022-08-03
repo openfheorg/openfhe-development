@@ -810,12 +810,9 @@ public:
    */
     std::shared_ptr<Params> GetExtendedCRTBasis(std::shared_ptr<Params> paramsP) const override;
 
-    void TimesQovert(
-      const std::shared_ptr<Params> paramsQ,
-      const std::vector<NativeInteger> &tInvModq,
-      const NativeInteger &t,
-      const NativeInteger &NegQModt,
-      const NativeInteger &NegQModtPrecon) override;
+    void TimesQovert(const std::shared_ptr<Params> paramsQ, const std::vector<NativeInteger>& tInvModq,
+                     const NativeInteger& t, const NativeInteger& NegQModt,
+                     const NativeInteger& NegQModtPrecon) override;
 
     /**
    * @brief Performs approximate CRT basis switching:
@@ -1158,9 +1155,8 @@ public:
    * @param &pInvModq p^{-1}_{q_i}
    * @return
    */
-    void ScaleAndRoundPOverQ(
-        const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
-        const std::vector<NativeInteger> &pInvModq) override;
+    void ScaleAndRoundPOverQ(const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+                             const std::vector<NativeInteger>& pInvModq) override;
 
     /**
    * @brief Expands basis:
@@ -1337,9 +1333,6 @@ public:
         ar(::cereal::make_nvp("p", this->m_params));
     }
 
-    std::string SerializedObjectName() const override {
-        return "DCRTPoly";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

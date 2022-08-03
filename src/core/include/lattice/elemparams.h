@@ -247,9 +247,6 @@ public:
         ar(::cereal::make_nvp("br", bigRootOfUnity));
     }
 
-    std::string SerializedObjectName() const {
-        return "ElemParams";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

@@ -921,9 +921,6 @@ public:
         ar(::cereal::make_nvp("p", m_params));
     }
 
-    std::string SerializedObjectName() const {
-        return "Poly";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }
@@ -941,10 +938,10 @@ private:
     void ArbitrarySwitchFormat();
 };
 
-//template <>
-//inline PolyImpl<NativeVector> PolyImpl<NativeVector>::DecryptionCRTInterpolate(PlaintextModulus ptm) const {
+// template <>
+// inline PolyImpl<NativeVector> PolyImpl<NativeVector>::DecryptionCRTInterpolate(PlaintextModulus ptm) const {
 //    return this->Mod(ptm);
-//}
+// }
 
 // biginteger version
 template <>

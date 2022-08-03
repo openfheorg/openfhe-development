@@ -275,9 +275,6 @@ public:
         ar(::cereal::base_class<EvalKeyImpl<Element>>(this));
         ar(::cereal::make_nvp("k", m_rKey));
     }
-    std::string SerializedObjectName() const {
-        return "EvalKeyRelin";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

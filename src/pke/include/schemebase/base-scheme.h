@@ -1986,10 +1986,6 @@ public:
         Enable(enabled);
     }
 
-    virtual std::string SerializedObjectName() const {
-        return "SchemeBase";
-    }
-
     static uint32_t SerializedVersion() {
         return 1;
     }

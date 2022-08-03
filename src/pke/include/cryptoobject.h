@@ -131,9 +131,6 @@ public:
                                                             context->getSchemeId());
     }
 
-    std::string SerializedObjectName() const {
-        return "CryptoObject";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

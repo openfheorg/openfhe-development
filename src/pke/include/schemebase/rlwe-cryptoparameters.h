@@ -317,10 +317,6 @@ public:
         ar(::cereal::make_nvp("slv", m_stdLevel));
     }
 
-    std::string SerializedObjectName() const {
-        return "CryptoParametersRLWE";
-    }
-
 protected:
     // standard deviation in Discrete Gaussian Distribution
     float m_distributionParameter;

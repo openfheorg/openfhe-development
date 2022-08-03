@@ -268,9 +268,6 @@ public:
         this->PreCompute();
     }
 
-    std::string SerializedObjectName() const {
-        return "RingGSWCryptoParams";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }
@@ -411,9 +408,6 @@ public:
         ar(::cereal::make_nvp("elements", m_elements));
     }
 
-    std::string SerializedObjectName() const {
-        return "RingGSWCiphertext";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }
@@ -497,9 +491,6 @@ public:
         ar(::cereal::make_nvp("key", m_key));
     }
 
-    std::string SerializedObjectName() const {
-        return "RingGSWBTKey";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

@@ -109,10 +109,6 @@ public:
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {}
 
-    std::string SerializedObjectName() const {
-        return "ParameterGenerationBGVRNS";
-    }
-
 private:
     /*
    * Method that computes a security-compliant ring dimension.

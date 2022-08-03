@@ -37,6 +37,7 @@
 #define LBCRYPTO_SERIALIZABLE_H
 
 // TODO (dsuponit): purge the headers below and combine #pragma for GNU and clang
+#include "utils/type_name.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -90,7 +91,9 @@ class Serializable {
 public:
     virtual ~Serializable() {}
 
-    virtual std::string SerializedObjectName() const = 0;
+    virtual std::string SerializedObjectName() const {
+        return objectTypeName(this);
+    }
 };
 
 // helper template to stream vector contents provided T has an stream operator<<

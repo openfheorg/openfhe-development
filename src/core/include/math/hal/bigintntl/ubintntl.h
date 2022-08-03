@@ -1046,10 +1046,6 @@ public:
         *this = s;
     }
 
-    std::string SerializedObjectName() const {
-        return "NTLInteger";
-    }
-
     static uint32_t SerializedVersion() {
         return 1;
     }

@@ -101,10 +101,6 @@ public:
     void load(Archive& ar) {
         ar(cereal::base_class<KeySwitchRNS>(this));
     }
-
-    std::string SerializedObjectName() const override {
-        return "KeySwitchBV";
-    }
 };
 
 }  // namespace lbcrypto

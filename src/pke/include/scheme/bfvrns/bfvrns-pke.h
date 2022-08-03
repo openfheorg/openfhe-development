@@ -119,10 +119,6 @@ public:
     void load(Archive& ar) {
         ar(cereal::base_class<PKERNS>(this));
     }
-
-    std::string SerializedObjectName() const {
-        return "PKEBFVRNS";
-    }
 };
 }  // namespace lbcrypto
 

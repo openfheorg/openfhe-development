@@ -363,9 +363,6 @@ public:
         ar(::cereal::make_nvp("m", originalModulus));
     }
 
-    std::string SerializedObjectName() const {
-        return "DCRTParams";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }

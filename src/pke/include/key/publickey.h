@@ -196,9 +196,6 @@ public:
         ar(::cereal::make_nvp("h", m_h));
     }
 
-    std::string SerializedObjectName() const {
-        return "PublicKey";
-    }
     static uint32_t SerializedVersion() {
         return 1;
     }
