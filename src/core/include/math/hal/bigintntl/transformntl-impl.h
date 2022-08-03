@@ -39,7 +39,6 @@
 #include "utils/exception.h"
 #include "utils/utilities.h"
 #include "math/nbtheory.h"
-#include "utils/defines.h"
 
 #include <map>
 #include <vector>

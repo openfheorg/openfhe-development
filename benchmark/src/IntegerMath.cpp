@@ -217,7 +217,6 @@ template <typename I>
 static void BM_BigInt_ModInverse(benchmark::State& state) {  // benchmark
     while (state.KeepRunning()) {
         I c = I(3017).ModInverse(I(108));
-        OPENFHE_UNUSED(c);
     }
 }
 
