@@ -320,6 +320,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
                                                 usint numPrimes, usint firstModSize, usint dcrtBits, uint32_t numPartQ,
                                                 usint multihopQBound) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+    std::cout << "in bgvrnsparamsgen" << std::endl;
 
     uint32_t ptm                     = cryptoParamsBGVRNS->GetPlaintextModulus();
     KeySwitchTechnique ksTech        = cryptoParamsBGVRNS->GetKeySwitchTechnique();

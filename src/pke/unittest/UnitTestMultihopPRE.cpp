@@ -178,6 +178,7 @@ protected:
         keyPairs.push_back(keyPair1);
         reEncryptedCTs.push_back(ciphertext1);
 
+        std::cout << "security_model " << security_model << std::endl;
         for (int i = 0; i < num_of_hops; i++) {
             auto keyPair = cryptoContext->KeyGen();
             keyPairs.push_back(keyPair);
