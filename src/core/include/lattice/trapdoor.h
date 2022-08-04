@@ -53,7 +53,7 @@ namespace lbcrypto {
  * based on the hardness of Ring-LWE problem
  */
 template <class Element>
-class RLWETrapdoorPair {
+class RLWETrapdoorPair : public Serializable {
 public:
     // matrix of noise polynomials
     Matrix<Element> m_r;
@@ -74,6 +74,10 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
+        if (version > this->SerializedVersion()) {
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                                                 " is from a later version of the library");
+        }
         ar(CEREAL_NVP(m_r));
         ar(CEREAL_NVP(m_e));
     }

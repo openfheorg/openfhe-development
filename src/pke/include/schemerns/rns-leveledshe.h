@@ -34,6 +34,7 @@
 
 #include "lattice/lat-hal.h"
 
+#include "utils/serializable.h"
 #include "schemebase/base-leveledshe.h"
 
 #include <string>
@@ -48,7 +49,7 @@ namespace lbcrypto {
  * @brief Abstract interface class for LBC SHE algorithms
  * @tparam Element a ring element.
  */
-class LeveledSHERNS : public LeveledSHEBase<DCRTPoly> {
+class LeveledSHERNS : public LeveledSHEBase<DCRTPoly>, public Serializable {
 public:
     virtual ~LeveledSHERNS() {}
 
@@ -357,6 +358,10 @@ protected:
 
     template <class Archive>
     void load(Archive& ar) {
+        // if (version > this->SerializedVersion()) {
+        //    OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+        //            " is from a later version of the library");
+        // }
         ar(cereal::base_class<LeveledSHEBase<DCRTPoly>>(this));
     }
 };

@@ -34,6 +34,7 @@
 
 #include "lattice/lat-hal.h"
 
+#include "utils/serializable.h"
 #include "schemebase/base-pke.h"
 
 #include <string>
@@ -50,7 +51,7 @@ namespace lbcrypto {
  * @brief Abstract interface for encryption algorithm
  * @tparam Element a ring element.
  */
-class PKERNS : public PKEBase<DCRTPoly> {
+class PKERNS : public PKEBase<DCRTPoly>, public Serializable {
     using ParmType = typename DCRTPoly::Params;
     using IntType  = typename DCRTPoly::Integer;
     using DugType  = typename DCRTPoly::DugType;
@@ -129,6 +130,10 @@ public:
 
     template <class Archive>
     void load(Archive& ar) {
+        // if (version > this->SerializedVersion()) {
+        //    OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+        //            " is from a later version of the library");
+        // }
         ar(cereal::base_class<PKEBase<DCRTPoly>>(this));
     }
 };

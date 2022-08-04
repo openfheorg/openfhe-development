@@ -36,13 +36,13 @@
 #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
 #define LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
 
-#include <iostream>
-#include <string>
+#include "math/hal/bigintfxd/ubintfxd.h"
 
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
 
-#include "math/hal/bigintfxd/ubintfxd.h"
+#include <iostream>
+#include <string>
 
 /**
  * @namespace bigintfxd
@@ -550,7 +550,7 @@ public:
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                            " is from a later version of the library");
         }
@@ -563,7 +563,7 @@ public:
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                            " is from a later version of the library");
         }
@@ -573,10 +573,6 @@ public:
         for (size_t i = 0; i < m_length; i++) {
             ar(m_data[i]);
         }
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 private:

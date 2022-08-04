@@ -36,15 +36,15 @@
 #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
 #define LBCRYPTO_MATH_HAL_BIGINTDYN_MUBINTVECDYN_H
 
-#include <initializer_list>
-#include <iostream>
-#include <string>
-#include <vector>
-
 #include "math/hal/vector.h"
 #include "math/hal/bigintdyn/ubintdyn.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
+
+#include <initializer_list>
+#include <iostream>
+#include <string>
+#include <vector>
 
 /**
  * @namespace bigintdyn
@@ -586,17 +586,13 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                            " is from a later version of the library");
         }
         ar(::cereal::make_nvp("d", m_data));
         ar(::cereal::make_nvp("m", m_modulus));
         ar(::cereal::make_nvp("ms", m_modulus_state));
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 private:

@@ -32,11 +32,12 @@
 #ifndef LBCRYPTO_CRYPTO_METADATA_H
 #define LBCRYPTO_CRYPTO_METADATA_H
 
+#include "utils/serializable.h"
+#include "openfhecore.h"
+
 #include <map>
 #include <memory>
 #include <string>
-
-#include "openfhecore.h"
 
 namespace lbcrypto {
 
@@ -49,7 +50,7 @@ using MetadataMap = std::shared_ptr<std::map<std::string, std::shared_ptr<Metada
 /**
  * @brief Empty metadata container
  */
-class Metadata {
+class Metadata : public Serializable {
 public:
     /**
    * Default constructor
@@ -122,17 +123,10 @@ public:
    */
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                  " is from a later version of the library");
         }
-    }
-
-    /**
-   * SerializedVersion method for serialization
-   */
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 };
 
@@ -226,7 +220,7 @@ public:
    */
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                  " is from a later version of the library");
         }

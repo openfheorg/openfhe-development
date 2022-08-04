@@ -32,6 +32,7 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_SCHEME_H
 #define LBCRYPTO_CRYPTO_BASE_SCHEME_H
 
+#include "utils/serializable.h"
 #include "utils/caller_info.h"
 
 #include "key/allkey.h"
@@ -66,7 +67,7 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 template <typename Element>
-class SchemeBase {
+class SchemeBase : public Serializable {
     using ParmType = typename Element::Params;
     using IntType  = typename Element::Integer;
     using DugType  = typename Element::DugType;
@@ -1976,7 +1977,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                  " is from a later version of the library");
         }
@@ -1984,10 +1985,6 @@ public:
         usint enabled;
         ar(::cereal::make_nvp("enabled", enabled));
         Enable(enabled);
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
     friend std::ostream& operator<<(std::ostream& out, const SchemeBase<Element>& s) {

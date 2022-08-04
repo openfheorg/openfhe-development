@@ -41,6 +41,14 @@
 
 #define NO_BARRETT  // currently barrett is slower than mod
 
+#include "math/nbtheory.h"
+#include "utils/inttypes.h"
+#include "utils/memory.h"
+#include "utils/serializable.h"
+#include "utils/utilities.h"
+
+#include "math/hal/integer.h"
+
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -50,13 +58,6 @@
 #include <type_traits>
 #include <typeinfo>
 #include <vector>
-#include "math/nbtheory.h"
-#include "utils/inttypes.h"
-#include "utils/memory.h"
-#include "utils/serializable.h"
-#include "utils/utilities.h"
-
-#include "math/hal/integer.h"
 
 ////////// for bigintdyn, decide if you want 32 bit or 64 bit underlying
 /// integers in the implementation
@@ -341,7 +342,7 @@ const double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of Log b
 // Definition starts here
 //////////////////////////////////////////////////////////////////////////////////////////////////
 template <typename limb_t>
-class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
+class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>>, public lbcrypto::Serializable {
 public:
     // CONSTRUCTORS
 
@@ -1171,17 +1172,13 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                            " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));
         ar(::cereal::make_nvp("s", m_state));
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 protected:

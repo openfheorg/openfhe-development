@@ -1672,10 +1672,9 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
-            std::string errMsg("serialized object version " + std::to_string(version) +
-                               " is from a later version of the library");
-            OPENFHE_THROW(deserialize_error, errMsg);
+        if (version > this->SerializedVersion()) {
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                                                 " is from a later version of the library");
         }
         ar(cereal::base_class<CryptoParametersRLWE<DCRTPoly>>(this));
         ar(cereal::make_nvp("ks", m_ksTechnique));
@@ -1685,10 +1684,6 @@ public:
         ar(cereal::make_nvp("dnum", m_numPartQ));
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 };
 

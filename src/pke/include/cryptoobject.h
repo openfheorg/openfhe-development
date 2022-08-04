@@ -32,6 +32,7 @@
 #ifndef LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
 #define LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
 
+#include "utils/serializable.h"
 #include "encoding/encodingparams.h"
 #include "schemebase/base-cryptoparameters.h"
 
@@ -53,7 +54,7 @@ class CryptoContextFactory;
  * A class to aid in referring to the crypto context that an object belongs to
  */
 template <typename Element>
-class CryptoObject {
+class CryptoObject : public Serializable {
 protected:
     CryptoContext<Element> context;  // crypto context this object belongs to
                                      // tag used to find the evaluation key needed
@@ -120,7 +121,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                  " is from a later version of the library");
         }
@@ -129,10 +130,6 @@ public:
 
         context = CryptoContextFactory<Element>::GetContext(context->GetCryptoParameters(), context->GetScheme(),
                                                             context->getSchemeId());
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 };
 

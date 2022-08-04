@@ -109,7 +109,7 @@ struct Log2<2> {
     static const usint value = 1;
 };
 
-class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ> {
+class myZZ : public NTL::ZZ, public lbcrypto::BigIntegerInterface<myZZ>, public lbcrypto::Serializable {
 public:
     // CONSTRUCTORS
 
@@ -1014,7 +1014,7 @@ public:
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                            " is from a later version of the library");
         }
@@ -1037,17 +1037,13 @@ public:
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                            " is from a later version of the library");
         }
         std::string s;
         ar(::cereal::make_nvp("v", s));
         *this = s;
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 private:

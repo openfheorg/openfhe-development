@@ -256,7 +256,8 @@ const double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of Log b
  * @tparam BITLENGTH maximum bitwidth supported for big integers
  */
 template <typename uint_type, usint BITLENGTH>
-class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<uint_type, BITLENGTH>> {
+class BigIntegerFixedT : public lbcrypto::BigIntegerInterface<BigIntegerFixedT<uint_type, BITLENGTH>>,
+                         public lbcrypto::Serializable {
 public:
     // CONSTRUCTORS
 
@@ -1019,7 +1020,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const BigIntegerFixedT<uint_type_c, BITLENGTH_c>& ptr_obj) {
         usint counter;
         // initiate to object to be printed
-        auto print_obj = new BigIntegerFixedT<uint_type_c, BITLENGTH_c>(ptr_obj);
+        auto print_obj = std::make_shared<BigIntegerFixedT<uint_type_c, BITLENGTH_c>>(ptr_obj);
         // print_VALUE array stores the decimal value in the array
         uschar* print_VALUE = new uschar[ptr_obj.m_numDigitInPrintval];
         for (size_t i = 0; i < ptr_obj.m_numDigitInPrintval; i++) {
@@ -1045,7 +1046,6 @@ public:
         }
         // deallocate the memory since values are inserted into the ostream object
         delete[] print_VALUE;
-        delete print_obj;
         return os;
     }
 
@@ -1068,7 +1068,7 @@ public:
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                            " is from a later version of the library");
         }
@@ -1079,16 +1079,12 @@ public:
     template <class Archive>
     typename std::enable_if<cereal::traits::is_text_archive<Archive>::value, void>::type load(
         Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                            " is from a later version of the library");
         }
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 protected:

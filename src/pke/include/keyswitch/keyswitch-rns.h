@@ -37,6 +37,7 @@
 #define LBCRYPTO_CRYPTO_KEYSWITCH_RNS_H
 
 #include "keyswitch/keyswitch-base.h"
+#include "utils/serializable.h"
 
 #include <string>
 
@@ -50,7 +51,7 @@ namespace lbcrypto {
  * @brief A child of KeySwitchBase for use with RNS keyswitching
  * @tparam Element a ring element.
  */
-class KeySwitchRNS : public KeySwitchBase<DCRTPoly> {
+class KeySwitchRNS : public KeySwitchBase<DCRTPoly>, public Serializable {
 public:
     virtual ~KeySwitchRNS() {}
 
@@ -65,6 +66,10 @@ public:
 
     template <class Archive>
     void load(Archive& ar) {
+        // if (version > this->SerializedVersion()) {
+        //    OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+        //            " is from a later version of the library");
+        // }
         ar(cereal::base_class<KeySwitchBase<DCRTPoly>>(this));
     }
 };

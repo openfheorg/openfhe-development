@@ -83,16 +83,24 @@ using Serialized = void*;
  *
  * \brief Base class for OpenFHE serialization
  *
- * This class is inherited by every class that needs to be serialized.
- * The class contains some deprecated methods from the older mechanisms
- * for serialization
+ * This class is inherited by every class that needs to be serialized as it has 2 important interfaces:
+ * SerializedObjectName() and SerializedVersion()
+ * class Serializable should never be instantiated.
+ *
  */
 class Serializable {
-public:
-    virtual ~Serializable() {}
+protected:
+    Serializable() = default;
+    ~Serializable() {}
 
+public:
+    // TODO (dsuponit): should we make the interfaces non-virtual to improve performance of the derived classes ???
     virtual std::string SerializedObjectName() const {
         return objectTypeName(this);
+    }
+
+    static uint32_t SerializedVersion() {
+        return 1;
     }
 };
 

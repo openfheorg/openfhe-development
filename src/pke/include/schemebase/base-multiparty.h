@@ -32,6 +32,8 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_MULTIPARTY_H
 #define LBCRYPTO_CRYPTO_BASE_MULTIPARTY_H
 
+#include "utils/serializable.h"
+
 #include "key/allkey.h"
 #include "base-pke.h"
 #include "ciphertext.h"
@@ -77,7 +79,7 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 template <class Element>
-class MultipartyBase {
+class MultipartyBase : public Serializable {
     using ParmType = typename Element::Params;
     using IntType  = typename Element::Integer;
     using DugType  = typename Element::DugType;
@@ -283,7 +285,12 @@ public:
     void save(Archive& ar, std::uint32_t const version) const {}
 
     template <class Archive>
-    void load(Archive& ar, std::uint32_t const version) {}
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > this->SerializedVersion()) {
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                                                 " is from a later version of the library");
+        }
+    }
 };
 
 }  // namespace lbcrypto

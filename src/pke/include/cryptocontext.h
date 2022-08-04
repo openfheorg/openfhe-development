@@ -2677,7 +2677,7 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                  " is from a later version of the library");
         }
@@ -2692,10 +2692,6 @@ public:
         // object, we must check to see if there is a matching object for this
         // object that's already existing in memory if it DOES exist, use it. If it
         // does NOT exist, add this to the cache of all contexts
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 protected:

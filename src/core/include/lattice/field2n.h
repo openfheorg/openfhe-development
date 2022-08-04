@@ -331,16 +331,12 @@ public:
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
+        if (version > this->SerializedVersion()) {
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                  " is from a later version of the library");
         }
         ar(::cereal::base_class<std::vector<std::complex<double>>>(this));
         ar(::cereal::make_nvp("f", format));
-    }
-
-    static uint32_t SerializedVersion() {
-        return 1;
     }
 
 private:
