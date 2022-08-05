@@ -280,7 +280,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     double Bkey      = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
 
     // get the flooding discrete gaussian distribution
-    auto& dggflooding  = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
+    auto& dggFlooding  = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
     double noise_param = 1;
     if (PREMode == FIXED_NOISE_HRA) {
         noise_param = PRE_SD;
@@ -312,7 +312,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
         OPENFHE_THROW(config_error, "Noise Flooding not applicable for PRE DIVIDE_AND_ROUND_HRA mode");
     }
     // set the flooding distribution parameter to the distribution.
-    dggflooding.SetStd(noise_param);
+    dggFlooding.SetStd(noise_param);
 }
 
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
