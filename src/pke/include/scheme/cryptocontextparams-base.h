@@ -234,8 +234,8 @@ public:
     void SetMaxRelinSkDeg(int maxRelinSkDeg0) {
         maxRelinSkDeg = maxRelinSkDeg0;
     }
-    void SetPREMode(ProxyReEncryptionMode premode0) {
-        PREMode = premode0;
+    void SetPREMode(ProxyReEncryptionMode PREMode0) {
+        PREMode = PREMode0;
     }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;

@@ -31,8 +31,6 @@
 
 #include "benchmark/benchmark.h"
 
-#include "openfhe.h"
-
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
 
