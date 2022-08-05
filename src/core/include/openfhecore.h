@@ -47,6 +47,5 @@
 #include "lattice/lat-hal.h"
 #include "lattice/stdlatticeparms.h"
 #include "utils/debug.h"
-#include "utils/defines.h"
 
 #endif /* SRC_CORE_INCLUDE_OPENFHECORE_H_ */
