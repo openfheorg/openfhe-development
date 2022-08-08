@@ -36,11 +36,7 @@
 #ifndef LBCRYPTO_SERIAL_H
 #define LBCRYPTO_SERIAL_H
 
-// TODO (dsuponit): purge the headers below and combine #pragma for GNU and clang
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include "utils/sertype.h"
 
 #ifndef CEREAL_RAPIDJSON_HAS_STDSTRING
     #define CEREAL_RAPIDJSON_HAS_STDSTRING 1
@@ -52,16 +48,14 @@
 
 #ifdef __GNUC__
     #if __GNUC__ >= 8
+        #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wclass-memaccess"
     #endif
-#endif
-
-#ifdef __clang__
+#elif defined __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wunused-private-field"
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
-
-#include "utils/sertype.h"
 
 #include "cereal/archives/portable_binary.hpp"
 #include "cereal/archives/json.hpp"
@@ -76,11 +70,14 @@
     #if __GNUC__ >= 8
         #pragma GCC diagnostic pop
     #endif
-#endif
-
-#ifdef __clang__
+#elif defined __clang__
     #pragma clang diagnostic pop
 #endif
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 namespace lbcrypto {
 
