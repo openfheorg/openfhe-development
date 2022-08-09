@@ -2156,8 +2156,7 @@ private:
 
         wres   = wa * wb;  // should give us the lower 64 bits of 32*32
         res.hi = wres >> 32;
-        res.lo = (uint32_t)wres && 0xFFFFFFFF;
-
+        res.lo = (uint32_t)wres & 0xFFFFFFFF;
 #elif __riscv
 	U128BITS wres(0), wa(a), wb(b);
 	wres = wa * wb;  // should give us 128 bits  of 64 * 64 
