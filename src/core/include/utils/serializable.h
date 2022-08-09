@@ -28,18 +28,8 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-/*
-  Legacy Serialization utilities
- */
-
 #ifndef LBCRYPTO_SERIALIZABLE_H
 #define LBCRYPTO_SERIALIZABLE_H
-
-// TODO (dsuponit): purge the headers below and combine #pragma for GNU and clang
-#include <iostream>
-#include <string>
-#include <vector>
 
 #ifndef CEREAL_RAPIDJSON_HAS_STDSTRING
     #define CEREAL_RAPIDJSON_HAS_STDSTRING 1
@@ -51,13 +41,13 @@
 
 #ifdef __GNUC__
     #if __GNUC__ >= 8
+        #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wclass-memaccess"
     #endif
-#endif
-
-#ifdef __clang__
+#elif defined __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wunused-private-field"
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 #include "cereal/cereal.hpp"
@@ -67,15 +57,15 @@
     #if __GNUC__ >= 8
         #pragma GCC diagnostic pop
     #endif
-#endif
-
-#ifdef __clang__
+#elif defined __clang__
     #pragma clang diagnostic pop
 #endif
 
-namespace lbcrypto {
+#include <iostream>
+#include <string>
+#include <vector>
 
-using Serialized = void*;
+namespace lbcrypto {
 
 /**
  * \class Serializable
