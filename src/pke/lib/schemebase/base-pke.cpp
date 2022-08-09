@@ -41,7 +41,7 @@ KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc, bool makeSp
     KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
                              std::make_shared<PrivateKeyImpl<Element>>(cc));
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(cc->GetCryptoParameters());
 
     const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
     const std::shared_ptr<ParmType> paramsPK      = cryptoParams->GetParamsPK();
@@ -118,7 +118,7 @@ template <class Element>
 std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const PrivateKey<Element> privateKey,
                                                                         const std::shared_ptr<ParmType> params) const {
     const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(privateKey->GetCryptoParameters());
 
     const Element& s   = privateKey->GetPrivateElement();
     const auto ns      = cryptoParams->GetNoiseScale();
@@ -139,7 +139,8 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const Pr
 template <class Element>
 std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const PublicKey<Element> publicKey,
                                                                         const std::shared_ptr<ParmType> params) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRLWE<Element>>(publicKey->GetCryptoParameters());
+    const auto cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersRLWE<Element>>(publicKey->GetCryptoParameters());
 
     const auto ns      = cryptoParams->GetNoiseScale();
     const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();

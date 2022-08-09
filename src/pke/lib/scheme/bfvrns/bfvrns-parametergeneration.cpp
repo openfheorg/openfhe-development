@@ -54,7 +54,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
                       "BFVrns.ParamsGen: Number of bits in CRT moduli should be "
                       "in the range from 30 to 60");
 
-    const auto cryptoParamsBFVRNS = std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
+    const auto cryptoParamsBFVRNS = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
 
     KeySwitchTechnique ksTech        = cryptoParamsBFVRNS->GetKeySwitchTechnique();
     ScalingTechnique scalTech        = cryptoParamsBFVRNS->GetScalingTechnique();

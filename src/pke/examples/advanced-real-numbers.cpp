@@ -220,7 +220,7 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
 
     // #if 0
     //  const auto cryptoParamsCKKS =
-    //      std::static_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
+    //      std::dynamic_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
     //          cc->GetCryptoParameters());
     //
     //  std::cout << fixed;
@@ -514,7 +514,7 @@ void HybridKeySwitchingDemo1() {
    */
     // #if 0
     //  const auto cryptoParamsCKKS =
-    //      std::static_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
+    //      std::dynamic_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
     //          cc->GetCryptoParameters());
     //
     //  auto paramsQ = cc->GetElementParams()->GetParams();
@@ -627,7 +627,7 @@ void HybridKeySwitchingDemo2() {
    */
     // #if 0
     //  const auto cryptoParamsCKKS =
-    //      std::static_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
+    //      std::dynamic_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
     //          cc->GetCryptoParameters());
     //
     //  auto paramsQ = cc->GetElementParams()->GetParams();

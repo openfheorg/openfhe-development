@@ -45,7 +45,7 @@ namespace lbcrypto {
 KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
                                                      const std::vector<PrivateKey<DCRTPoly>>& privateKeyVec,
                                                      bool makeSparse) {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
 
     KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
                               std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
@@ -84,7 +84,7 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
 
 KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey,
                                                      bool makeSparse, bool fresh) {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cc->GetCryptoParameters());
 
     KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
                               std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
@@ -140,7 +140,8 @@ KeyPair<DCRTPoly> MultipartyBFVRNS::MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
 
 DecryptResult MultipartyBFVRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                                         NativePoly* plaintext) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBFVRNS>(ciphertextVec[0]->GetCryptoParameters());
+    const auto cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertextVec[0]->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 

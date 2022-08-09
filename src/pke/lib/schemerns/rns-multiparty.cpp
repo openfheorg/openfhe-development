@@ -39,7 +39,7 @@ namespace lbcrypto {
 
 Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPoly> ciphertext,
                                                           const PrivateKey<DCRTPoly> privateKey) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     const auto ns                   = cryptoParams->GetNoiseScale();
@@ -73,7 +73,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
 
 Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
                                                           const PrivateKey<DCRTPoly> privateKey) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(privateKey->GetCryptoParameters());
     const auto ns           = cryptoParams->GetNoiseScale();
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
@@ -107,12 +107,12 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
 
 EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKey, EvalKey<DCRTPoly> evalKey) const {
     const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoContext()->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoContext()->GetCryptoParameters());
     const auto ns = cryptoParams->GetNoiseScale();
 
     const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
 
-    EvalKey<DCRTPoly> evalKeyResult(new EvalKeyRelinImpl<DCRTPoly>(evalKey->GetCryptoContext()));
+    EvalKey<DCRTPoly> evalKeyResult = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(evalKey->GetCryptoContext());
 
     const std::vector<DCRTPoly>& a0 = evalKey->GetAVector();
     const std::vector<DCRTPoly>& b0 = evalKey->GetBVector();

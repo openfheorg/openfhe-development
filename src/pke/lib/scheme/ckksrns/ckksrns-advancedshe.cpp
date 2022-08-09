@@ -59,7 +59,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSum(std::vector<ConstCiphert
 
 Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
                                                                const std::vector<double>& constants) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertexts[0]->GetCryptoParameters());
 
     auto cc   = ciphertexts[0]->GetCryptoContext();
     auto algo = cc->GetScheme();
@@ -220,7 +220,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(ConstCiphertext<DCRTPol
     std::vector<double> xkm(int32_t(k2m2k + k) + 1, 0.0);
     xkm.back() = 1;
 
-    longDiv* divqr = LongDivisionPoly(coefficients, xkm);
+    auto divqr = LongDivisionPoly(coefficients, xkm);
 
     // Subtract x^{k(2^{m-1} - 1)} from r
     std::vector<double> r2 = divqr->r;
@@ -234,7 +234,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalPolyPS(ConstCiphertext<DCRTPol
     }
 
     // Divide r2 by q
-    longDiv* divcs = LongDivisionPoly(r2, divqr->q);
+    auto divcs = LongDivisionPoly(r2, divqr->q);
 
     // Add x^{k(2^{m-1} - 1)} to s
     std::vector<double> s2 = divcs->r;
@@ -422,7 +422,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
         }
     }
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(powers[k - 1]->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(powers[k - 1]->GetCryptoParameters());
 
     auto algo = cc->GetScheme();
 
@@ -469,8 +469,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
 
     // Divide f2 by x^{k*2^{m-1}}
     std::vector<double> xkm(int32_t(k2m2k + k) + 1, 0.0);
-    xkm.back()     = 1;
-    longDiv* divqr = LongDivisionPoly(f2, xkm);
+    xkm.back() = 1;
+    auto divqr = LongDivisionPoly(f2, xkm);
 
     // Subtract x^{k(2^{m-1} - 1)} from r
     std::vector<double> r2 = divqr->r;
@@ -484,7 +484,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalPolyPS(ConstCiphertext<DCRTPoly> x,
     }
 
     // Divide r2 by q
-    longDiv* divcs = LongDivisionPoly(r2, divqr->q);
+    auto divcs = LongDivisionPoly(r2, divqr->q);
 
     // Add x^{k(2^{m-1} - 1)} to s
     std::vector<double> s2 = divcs->r;
@@ -729,8 +729,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(ConstCiphertext<DC
 
     // Divide coefficients by T^{k*2^{m-1}}
     std::vector<double> Tkm(int32_t(k2m2k + k) + 1, 0.0);
-    Tkm.back()     = 1;
-    longDiv* divqr = LongDivisionChebyshev(coefficients, Tkm);
+    Tkm.back() = 1;
+    auto divqr = LongDivisionChebyshev(coefficients, Tkm);
 
     // Subtract x^{k(2^{m-1} - 1)} from r
     std::vector<double> r2 = divqr->r;
@@ -744,7 +744,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::InnerEvalChebyshevPS(ConstCiphertext<DC
     }
 
     // Divide r2 by q
-    longDiv* divcs = LongDivisionChebyshev(r2, divqr->q);
+    auto divcs = LongDivisionChebyshev(r2, divqr->q);
 
     // Add x^{k(2^{m-1} - 1)} to s
     std::vector<double> s2 = divcs->r;
@@ -952,7 +952,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
         }
     }
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersCKKSRNS>(T[k - 1]->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(T[k - 1]->GetCryptoParameters());
 
     auto algo = cc->GetScheme();
 
@@ -1002,8 +1002,8 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
 
     // Divide f2 by T^{k*2^{m-1}}
     std::vector<double> Tkm(int32_t(k2m2k + k) + 1, 0.0);
-    Tkm.back()     = 1;
-    longDiv* divqr = LongDivisionChebyshev(f2, Tkm);
+    Tkm.back() = 1;
+    auto divqr = LongDivisionChebyshev(f2, Tkm);
 
     // Subtract x^{k(2^{m-1} - 1)} from r
     std::vector<double> r2 = divqr->r;
@@ -1017,7 +1017,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalChebyshevSeriesPS(ConstCiphertext<D
     }
 
     // Divide r2 by q
-    longDiv* divcs = LongDivisionChebyshev(r2, divqr->q);
+    auto divcs = LongDivisionChebyshev(r2, divqr->q);
 
     // Add x^{k(2^{m-1} - 1)} to s
     std::vector<double> s2 = divcs->r;

@@ -45,7 +45,7 @@ KeyPair<DCRTPoly> PKEBFVRNS::KeyGen(CryptoContext<DCRTPoly> cc, bool makeSparse)
     KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
                               std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters());
 
     std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
     if (cryptoParams->GetEncryptionTechnique() == EXTENDED) {
@@ -98,7 +98,7 @@ KeyPair<DCRTPoly> PKEBFVRNS::KeyGen(CryptoContext<DCRTPoly> cc, bool makeSparse)
 Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PrivateKey<DCRTPoly> privateKey) const {
     Ciphertext<DCRTPoly> ciphertext(std::make_shared<CiphertextImpl<DCRTPoly>>(privateKey));
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBFVRNS>(privateKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(privateKey->GetCryptoParameters());
 
     const auto elementParams = cryptoParams->GetElementParams();
     auto encParams           = elementParams;
@@ -150,7 +150,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PrivateKey<DCRTPoly
 Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly> publicKey) const {
     Ciphertext<DCRTPoly> ciphertext(std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
 
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBFVRNS>(publicKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(publicKey->GetCryptoParameters());
 
     const auto elementParams = cryptoParams->GetElementParams();
     auto encParams           = elementParams;
@@ -201,7 +201,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
 
 DecryptResult PKEBFVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
                                  NativePoly* plaintext) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBFVRNS>(privateKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(privateKey->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     DCRTPoly b                      = DecryptCore(cv, privateKey);

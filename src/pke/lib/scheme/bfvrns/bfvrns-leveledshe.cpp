@@ -41,7 +41,7 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 namespace lbcrypto {
 
 void LeveledSHEBFVRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    const auto cryptoParams   = std::static_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams   = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
     DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
@@ -56,7 +56,7 @@ void LeveledSHEBFVRNS::EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPla
 }
 
 void LeveledSHEBFVRNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    const auto cryptoParams   = std::static_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams   = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
     DCRTPoly pt = plaintext->GetElement<DCRTPoly>();
@@ -72,7 +72,7 @@ void LeveledSHEBFVRNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPla
 
 uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                           uint32_t dcrtBits, bool keySwitch = false) {
-    const auto cryptoParamsBFVrns    = std::static_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
+    const auto cryptoParamsBFVrns    = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
     double sigma                     = cryptoParamsBFVrns->GetDistributionParameter();
     double alpha                     = cryptoParamsBFVrns->GetAssuranceMeasure();
     double p                         = static_cast<double>(cryptoParamsBFVrns->GetPlaintextModulus());
@@ -165,7 +165,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
     Ciphertext<DCRTPoly> ciphertextMult = ciphertext1->CloneEmpty();
 
     const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersBFVRNS>(ciphertext1->GetCryptoContext()->GetCryptoParameters());
+        std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext1->GetCryptoContext()->GetCryptoParameters());
 
     std::vector<DCRTPoly> cv1 = ciphertext1->GetElements();
     std::vector<DCRTPoly> cv2 = ciphertext2->GetElements();
@@ -298,8 +298,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
         cvMult[1] -= cvMult[0];
     }
     else {  // if size of any of the ciphertexts > 2
-        bool* isFirstAdd = new bool[cvMultSize];
-        std::fill_n(isFirstAdd, cvMultSize, true);
+        std::vector<bool> isFirstAdd(cvMultSize, true);
 
         for (size_t i = 0; i < cv1Size; i++) {
             for (size_t j = 0; j < cv2Size; j++) {
@@ -312,12 +311,9 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
                 }
             }
         }
-
-        delete[] isFirstAdd;
     }
 #else
-    bool* isFirstAdd = new bool[cvMultSize];
-    std::fill_n(isFirstAdd, cvMultSize, true);
+    std::vector<bool> isFirstAdd(cvMultSize, true);
 
     for (size_t i = 0; i < cv1Size; i++) {
         for (size_t j = 0; j < cv2Size; j++) {
@@ -330,8 +326,6 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
             }
         }
     }
-
-    delete[] isFirstAdd;
 #endif
 
     if (cryptoParams->GetMultiplicationTechnique() == HPS) {
@@ -406,7 +400,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
 }
 
 void LeveledSHEBFVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const {
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     for (usint i = 0; i < cv.size(); ++i) {

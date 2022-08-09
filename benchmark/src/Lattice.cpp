@@ -59,8 +59,7 @@ static E makeElement(std::shared_ptr<lbcrypto::ILParamsImpl<typename E::Integer>
 
 template <typename E>
 static E makeElement(std::shared_ptr<lbcrypto::ILDCRTParams<typename E::Integer>> p) {
-    std::shared_ptr<ILParamsImpl<typename E::Integer>> params(
-        new ILParamsImpl<typename E::Integer>(p->GetCyclotomicOrder(), p->GetModulus(), 1));
+    auto params = std::make_shared<ILParamsImpl<typename E::Integer>>(p->GetCyclotomicOrder(), p->GetModulus(), 1);
     typename E::Vector vec = makeVector<typename E::Vector>(params->GetRingDimension(), params->GetModulus());
 
     typename E::PolyLargeType bigE(params);

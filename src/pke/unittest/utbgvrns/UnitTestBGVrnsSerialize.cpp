@@ -208,7 +208,7 @@ protected:
 
             // Update the batchSize from the default value
             const auto cryptoParamsBGVrns =
-                std::static_pointer_cast<CryptoParametersBGVRNS>(kp.publicKey->GetCryptoParameters());
+                std::dynamic_pointer_cast<CryptoParametersBGVRNS>(kp.publicKey->GetCryptoParameters());
 
             EncodingParams encodingParamsNew(
                 std::make_shared<EncodingParamsImpl>(cc->GetEncodingParams()->GetPlaintextModulus(), vecSize));
