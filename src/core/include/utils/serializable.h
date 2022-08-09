@@ -91,7 +91,7 @@ using Serialized = void*;
 class Serializable {
 protected:
     Serializable() = default;
-    ~Serializable() {}
+    virtual ~Serializable() {}
 
 public:
     // TODO (dsuponit): should we make the interfaces non-virtual to improve performance of the derived classes ???
