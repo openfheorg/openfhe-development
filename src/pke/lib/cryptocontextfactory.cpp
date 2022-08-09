@@ -30,6 +30,7 @@
 //==================================================================================
 #include "cryptocontext.h"
 #include "cryptocontextfactory.h"
+#include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
 

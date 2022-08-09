@@ -36,6 +36,7 @@
 #define PROFILE
 
 #include "cryptocontext.h"
+#include "scheme/allscheme.h"
 #include "keyswitch/keyswitch-hybrid.h"
 
 namespace lbcrypto {

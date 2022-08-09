@@ -116,10 +116,14 @@ bool CKKSPackedEncoding::Encode() {
     if (this->isEncoded)
         return true;
 
-    uint32_t ringDim = GetElementRingDimension();
-    usint slots      = this->GetSlots();
-
+    uint32_t ringDim                          = GetElementRingDimension();
+    usint slots                               = this->GetSlots();
     std::vector<std::complex<double>> inverse = this->GetCKKSPackedValue();
+    if (slots < inverse.size()) {
+        std::string errMsg = std::string("The number of slots [") + std::to_string(slots) +
+                             "] is less than the size of data [" + std::to_string(inverse.size()) + "]";
+        OPENFHE_THROW(config_error, errMsg);
+    }
 
     // clears all imaginary values as CKKS for complex numbers
     for (size_t i = 0; i < inverse.size(); i++)
@@ -234,11 +238,18 @@ bool CKKSPackedEncoding::Encode() {
     usint ringDim                             = GetElementRingDimension();
     usint slots                               = this->GetSlots();
     std::vector<std::complex<double>> inverse = this->GetCKKSPackedValue();
+    if (slots < inverse.size()) {
+        std::string errMsg = std::string("The number of slots [") + std::to_string(slots) +
+                             "] is less than the size of data [" + std::to_string(inverse.size()) + "]";
+        OPENFHE_THROW(config_error, errMsg);
+    }
+
     // clears all imaginary values as CKKS for complex numbers
     for (size_t i = 0; i < inverse.size(); i++)
         inverse[i].imag(0.0);
 
     inverse.resize(slots);
+
     if (this->typeFlag == IsDCRTPoly) {
         DiscreteFourierTransform::FFTSpecialInv(inverse);
         double powP = scalingFactor;

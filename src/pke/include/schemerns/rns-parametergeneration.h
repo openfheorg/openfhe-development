@@ -69,8 +69,8 @@ public:
    * @param n ring dimension in case the user wants to use a custom ring
    * dimension
    */
-    bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
-                         int32_t multiplicativeDepth, int32_t keySwitchCount, size_t dcrtBits, uint32_t numPartQ,
+    bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+                         uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t numPartQ,
                          uint32_t n) const override {
         OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
     }
@@ -109,8 +109,8 @@ public:
    * @param firstModSize the bit-size of the first modulus
    * @param dcrtBits the bit-width of moduli.
    */
-    bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
-                         int32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
+    bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+                         uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
                          uint32_t numPartQ, usint multihopQBound) const override {
         OPENFHE_THROW(not_implemented_error, "This signature for ParamsGen is not supported for this scheme.");
     }

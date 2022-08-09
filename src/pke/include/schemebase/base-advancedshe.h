@@ -33,7 +33,7 @@
 #define LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_H
 
 #include "key/allkey.h"
-#include "ciphertext.h"
+#include "ciphertext-fwd.h"
 
 #include <memory>
 #include <vector>
@@ -220,8 +220,7 @@ public:
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
                                                                                  const PublicKey<Element> publicKey,
-                                                                                 usint rowSize,
-                                                                                 usint subringDim = 0) const;
+                                                                                 usint rowSize, usint subringDim) const;
 
     /**
    * Virtual function to generate the automorphism keys for EvalSumCols; works
@@ -262,7 +261,7 @@ public:
    */
     virtual Ciphertext<Element> EvalSumRows(ConstCiphertext<Element> ciphertext, usint rowSize,
                                             const std::map<usint, EvalKey<Element>>& evalSumRowsKeyMap,
-                                            usint subringDim = 0) const;
+                                            usint subringDim) const;
 
     /**
    * Sums all elements over column-vectors in a matrix - works only with

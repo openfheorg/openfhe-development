@@ -32,12 +32,13 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_KEY_H
 #define LBCRYPTO_CRYPTO_KEY_KEY_H
 
+#include "cryptoobject.h"
+
+#include "utils/serial.h"
+
 #include <memory>
 #include <string>
 #include <utility>
-
-#include "utils/serial.h"
-#include "cryptoobject.h"
 
 /**
  * @namespace lbcrypto

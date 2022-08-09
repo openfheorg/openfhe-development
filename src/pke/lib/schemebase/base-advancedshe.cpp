@@ -32,6 +32,8 @@
 #include "cryptocontext.h"
 #include "schemebase/base-advancedshe.h"
 
+#include "schemebase/base-scheme.h"
+
 namespace lbcrypto {
 
 template <class Element>

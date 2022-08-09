@@ -92,13 +92,28 @@ public:
    * @param firstModSize is the approximate bit size of the first CRT modulus.
    * @param dcrtBits is the approximate bit size of the remaining CRT moduli.
    * @param numPartQ
-   * @param multihopQBound 
+   * @param multihopQBound
    * @return A boolean.
    */
-    bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
-                         int32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
+    bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+                         uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
                          uint32_t numPartQ, usint multihopQBound) const override;
 
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
+
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
+
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
+
+    std::string SerializedObjectName() const {
+        return "ParameterGenerationBGVRNS";
+    }
+
+private:
     /*
    * Method that computes a security-compliant ring dimension.
    *
@@ -111,7 +126,7 @@ public:
                                   usint cyclOrder) const;
 
     BGVNoiseEstimates computeNoiseEstimates(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                                            uint32_t ringDimension, int32_t evalAddCount, int32_t keySwitchCount,
+                                            uint32_t ringDimension, uint32_t evalAddCount, uint32_t keySwitchCount,
                                             uint32_t auxBits, usint numPrimes) const;
 
     uint64_t getCyclicOrder(const uint32_t ringDimension, const int plainModulus,
@@ -129,22 +144,8 @@ public:
    * @return A pair containing: 1) a vector with the CRT moduli and 2) the total modulus size to be used for ensuring security compliance.
    */
     std::pair<std::vector<NativeInteger>, uint32_t> computeModuli(
-        std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, int32_t evalAddCount,
-        int32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const;
-
-    /////////////////////////////////////
-    // SERIALIZATION
-    /////////////////////////////////////
-
-    template <class Archive>
-    void save(Archive& ar, std::uint32_t const version) const {}
-
-    template <class Archive>
-    void load(Archive& ar, std::uint32_t const version) {}
-
-    std::string SerializedObjectName() const {
-        return "ParameterGenerationBGVRNS";
-    }
+        std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t ringDimension, uint32_t evalAddCount,
+        uint32_t keySwitchCount, uint32_t auxBits, usint numPrimes) const;
 };
 
 }  // namespace lbcrypto

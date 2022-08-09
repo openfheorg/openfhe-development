@@ -28,15 +28,25 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
 /*
-  Declarations of global configuration parameters
+ * It is a lightweight file to be included where we need the declaration of Ciphertext only
  */
+#ifndef __CIPHERTEXT_FWD_H__
+#define __CIPHERTEXT_FWD_H__
 
-#ifndef SRC_CORE_INCLUDE_UTILS_DEFINES_H
-#define SRC_CORE_INCLUDE_UTILS_DEFINES_H
+#include <memory>
 
-// Avoid unused variable warnings
-#define OPENFHE_UNUSED(x) (void)(x)
+namespace lbcrypto {
 
-#endif  // SRC_CORE_INCLUDE_UTILS_DEFINES_H
+template <typename Element>
+class CiphertextImpl;
+
+template <typename Element>
+using Ciphertext = std::shared_ptr<CiphertextImpl<Element>>;
+
+template <typename Element>
+using ConstCiphertext = std::shared_ptr<const CiphertextImpl<Element>>;
+
+}  // namespace lbcrypto
+
+#endif  // __CIPHERTEXT_FWD_H__

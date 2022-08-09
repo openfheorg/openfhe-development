@@ -72,8 +72,8 @@ public:
    * for encoding and decoding
    * @param slots - number of slots to be bootstrapped
    */
-    virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, std::vector<uint32_t> levelBudget = {5, 4},
-                                    std::vector<uint32_t> dim1 = {0, 0}, uint32_t slots = 0) {
+    virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, std::vector<uint32_t> levelBudget,
+                                    std::vector<uint32_t> dim1, uint32_t slots) {
         OPENFHE_THROW(not_implemented_error, "Not supported");
     }
 

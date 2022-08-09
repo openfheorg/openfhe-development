@@ -34,6 +34,7 @@
 #include "math/dftransform.h"
 
 #include "cryptocontext.h"
+#include "scheme/allscheme.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
 
 namespace lbcrypto {
@@ -345,7 +346,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         //------------------------------------------------------------------------------
 
         // need to call internal modular reduction so it also works for FLEXIBLEAUTO
-        algo->ModReduceInternalInPlace(raised);
+        algo->ModReduceInternalInPlace(raised, BASE_NUM_LEVELS_TO_DROP);
 
         // only one linear transform is needed as the other one can be derived
         auto ctxtEnc = (isLTBootstrap) ? EvalLinearTransform(precom->m_U0hatTPre, raised) :
@@ -365,8 +366,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         }
         else {
             if (ctxtEnc->GetDepth() == 2) {
-                algo->ModReduceInternalInPlace(ctxtEnc);
-                algo->ModReduceInternalInPlace(ctxtEncI);
+                algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
+                algo->ModReduceInternalInPlace(ctxtEncI, BASE_NUM_LEVELS_TO_DROP);
             }
         }
 
@@ -381,8 +382,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
         if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
             if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
-                algo->ModReduceInternalInPlace(ctxtEnc);
-                algo->ModReduceInternalInPlace(ctxtEncI);
+                algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
+                algo->ModReduceInternalInPlace(ctxtEncI, BASE_NUM_LEVELS_TO_DROP);
             }
             ApplyDoubleAngleIterations(ctxtEnc);
             ApplyDoubleAngleIterations(ctxtEncI);
@@ -411,7 +412,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // In the case of FLEXIBLEAUTO, we need one extra tower
         // TODO: See if we can remove the extra level in FLEXIBLEAUTO
         if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
-            algo->ModReduceInternalInPlace(ctxtEnc);
+            algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
         }
 
         // Only one linear transform is needed
@@ -440,7 +441,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // Running CoeffsToSlots
         //------------------------------------------------------------------------------
 
-        algo->ModReduceInternalInPlace(raised);
+        algo->ModReduceInternalInPlace(raised, BASE_NUM_LEVELS_TO_DROP);
 
         auto ctxtEnc = (isLTBootstrap) ? EvalLinearTransform(precom->m_U0hatTPre, raised) :
                                          EvalCoeffsToSlots(precom->m_U0hatTPreFFT, raised);
@@ -456,7 +457,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         }
         else {
             if (ctxtEnc->GetDepth() == 2) {
-                algo->ModReduceInternalInPlace(ctxtEnc);
+                algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
             }
         }
 
@@ -480,7 +481,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
         if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
             if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
-                algo->ModReduceInternalInPlace(ctxtEnc);
+                algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
             }
             ApplyDoubleAngleIterations(ctxtEnc);
         }
@@ -505,7 +506,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // In the case of FLEXIBLEAUTO, we need one extra tower
         // TODO: See if we can remove the extra level in FLEXIBLEAUTO
         if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
-            algo->ModReduceInternalInPlace(ctxtEnc);
+            algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
         }
 
         // linear transform for decoding
@@ -1514,7 +1515,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
     // hoisted automorphisms
     for (int32_t s = levelBudget - 1; s > stop; s--) {
         if (s != levelBudget - 1) {
-            algo->ModReduceInternalInPlace(result);
+            algo->ModReduceInternalInPlace(result, BASE_NUM_LEVELS_TO_DROP);
         }
 
         // computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
@@ -1577,7 +1578,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
     }
 
     if (flagRem) {
-        algo->ModReduceInternalInPlace(result);
+        algo->ModReduceInternalInPlace(result, BASE_NUM_LEVELS_TO_DROP);
 
         // computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
         auto digits = cc->EvalFastRotationPrecompute(result);
@@ -1727,7 +1728,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
     // hoisted automorphisms
     for (int32_t s = 0; s < levelBudget - flagRem; s++) {
         if (s != 0) {
-            algo->ModReduceInternalInPlace(result);
+            algo->ModReduceInternalInPlace(result, BASE_NUM_LEVELS_TO_DROP);
         }
         // computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
         auto digits = cc->EvalFastRotationPrecompute(result);
@@ -1791,7 +1792,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
     }
 
     if (flagRem) {
-        algo->ModReduceInternalInPlace(result);
+        algo->ModReduceInternalInPlace(result, BASE_NUM_LEVELS_TO_DROP);
         // computes the NTTs for each CRT limb (for the hoisted automorphisms used later on)
         auto digits = cc->EvalFastRotationPrecompute(result);
         std::vector<Ciphertext<DCRTPoly>> fastRotation(gRem);
@@ -1900,7 +1901,7 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
 #endif
         cc->EvalMultInPlace(ciphertext, adjustmentFactor);
 
-        algo->ModReduceInternalInPlace(ciphertext);
+        algo->ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
         ciphertext->SetScalingFactor(targetSF);
     }
     else {
@@ -1908,7 +1909,7 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
         // Scaling down the message by a correction factor to emulate using a larger q0.
         // This step is needed so we could use a scaling factor of up to 2^59 with q9 ~= 2^60.
         cc->EvalMultInPlace(ciphertext, std::pow(2, -correction));
-        algo->ModReduceInternalInPlace(ciphertext);
+        algo->ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
 #endif
     }
 }

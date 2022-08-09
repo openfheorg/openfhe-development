@@ -99,8 +99,7 @@ public:
    * public key
    */
     virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc,
-                                              const std::vector<PrivateKey<Element>>& privateKeyVec,
-                                              bool makeSparse = false);
+                                              const std::vector<PrivateKey<Element>>& privateKeyVec, bool makeSparse);
 
     /**
    * Threshold FHE: Generation of a public key derived
@@ -117,7 +116,7 @@ public:
    * joined public key
    */
     virtual KeyPair<Element> MultipartyKeyGen(CryptoContext<Element> cc, const PublicKey<Element> publicKey,
-                                              bool makeSparse = false, bool fresh = false);
+                                              bool makeSparse, bool fresh);
 
     /**
    * Threshold FHE: Generates a joined evaluation key

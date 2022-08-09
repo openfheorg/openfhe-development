@@ -36,13 +36,13 @@
 #include "UnitTestUtils.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
+#include "utils/demangle.h"
 
 #include <iostream>
 #include <vector>
 #include "gtest/gtest.h"
 #include <cxxabi.h>
 #include <iterator>
-#include "utils/demangle.h"
 
 using namespace lbcrypto;
 

@@ -46,14 +46,6 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
-
-/**
- * @brief  BASE_NUM_LEVELS_TO_DROP is the most common value for levels/towers to drop (do not make it a default argument
- * as default arguments work differently for virtual functions)
- */
-enum {
-    BASE_NUM_LEVELS_TO_DROP = 1,
-};
 /**
  * @brief Abstract interface class for LBC SHE algorithms
  * @tparam Element a ring element.
@@ -700,7 +692,7 @@ public:
    */
     virtual void LevelReduceInPlace(Ciphertext<Element>& ciphertext1, const EvalKey<Element> evalKey,
                                     size_t levels) const {
-        OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
+        OPENFHE_THROW(config_error, "LevelReduceInPlace is not supported for this scheme");
     }
 
     virtual Ciphertext<Element> Compress(ConstCiphertext<Element> ciphertext, size_t towersLeft) const {
@@ -714,7 +706,7 @@ public:
    * @param levels the number of towers to drop.
    * @return ciphertext after the modulus reduction performed.
    */
-    virtual Ciphertext<DCRTPoly> ModReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
+    virtual Ciphertext<Element> ModReduceInternal(ConstCiphertext<Element> ciphertext, size_t levels) const {
         OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
     }
 
@@ -725,7 +717,7 @@ public:
    * @param levels the number of towers to drop.
    * @details \p cipherText will have modulus reduction performed in-place.
    */
-    virtual void ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
+    virtual void ModReduceInternalInPlace(Ciphertext<Element>& ciphertext, size_t levels) const {
         OPENFHE_THROW(config_error, "ModReduce is not supported for this scheme");
     }
 
@@ -738,7 +730,7 @@ public:
    * @param levels the number of towers to drop.
    * @return resulting ciphertext.
    */
-    virtual Ciphertext<DCRTPoly> LevelReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
+    virtual Ciphertext<Element> LevelReduceInternal(ConstCiphertext<Element> ciphertext, size_t levels) const {
         OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
     }
 
@@ -750,36 +742,33 @@ public:
    * @param cipherText1 is the ciphertext to be level reduced in-place
    * @param levels the number of towers to drop.
    */
-    virtual void LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
+    virtual void LevelReduceInternalInPlace(Ciphertext<Element>& ciphertext, size_t levels) const {
         OPENFHE_THROW(config_error, "LevelReduce is not supported for this scheme");
     }
 
-    virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const {
+    virtual void AdjustLevelsInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(config_error, "Leveled Operations are not supported for this scheme");
     }
 
-    virtual void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                             Ciphertext<DCRTPoly>& ciphertext2) const {
+    virtual void AdjustLevelsAndDepthInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
     }
 
-    virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                                  Ciphertext<DCRTPoly>& ciphertext2) const {
+    virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<Element>& ciphertext1,
+                                                  Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
     }
 
-    virtual DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-        OPENFHE_THROW(config_error, "Leveled Operations are not supported for this scheme");
-    }
-
-    virtual DCRTPoly AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
+    // TODO (Andrey) : Move these functions to protected or to rns?
+    virtual void AdjustForAddOrSubInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
     }
 
-    virtual DCRTPoly AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext,
-                                                      ConstPlaintext plaintext) const {
+    virtual void AdjustForMultInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         OPENFHE_THROW(config_error, "Mutable Operations are not supported for this scheme");
     }
+
+    virtual Ciphertext<Element> MorphPlaintext(ConstPlaintext plaintext, ConstCiphertext<Element> ciphertext) const;
 
 protected:
     /////////////////////////////////////////
