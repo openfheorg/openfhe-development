@@ -46,7 +46,11 @@
 #endif
 #define CEREAL_RAPIDJSON_HAS_CXX11_NOEXCEPT 0
 
-#ifdef __GNUC__
+// In order to correctly identify GCC and clang we must either:
+// 1. use "#if defined(__GNUC__) && !defined(__clang__)" (preferred option)
+// 2. or check the condition "#if defined __clang__" first
+// The reason is: clang always defines __GNUC__ and __GNUC_MINOR__ and __GNUC_PATCHLEVEL__ according to the version of gcc that it claims full compatibility with.
+#if defined(__GNUC__) && !defined(__clang__)
     #if __GNUC__ >= 8
         #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wclass-memaccess"
@@ -66,7 +70,7 @@
 #include "cereal/types/string.hpp"
 #include "cereal/types/vector.hpp"
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
     #if __GNUC__ >= 8
         #pragma GCC diagnostic pop
     #endif
