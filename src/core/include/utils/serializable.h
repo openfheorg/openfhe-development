@@ -97,9 +97,9 @@ protected:
 
 public:
     // TODO (dsuponit): should we make the interfaces non-virtual to improve performance of the derived classes ???
-    std::string SerializedObjectName() const {
-        return objectTypeName(this);
-    }
+    // std::string SerializedObjectName() const {
+    // return objectTypeName(this);
+    // }
 
     static constexpr uint32_t SerializedVersion() {
         return 1;
