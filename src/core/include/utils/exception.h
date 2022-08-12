@@ -37,9 +37,7 @@
 #define SRC_CORE_LIB_UTILS_EXCEPTION_H_
 
 #include <exception>
-#include <iostream>
 #include <mutex>
-#include <stdexcept>
 #include <string>
 
 namespace lbcrypto {

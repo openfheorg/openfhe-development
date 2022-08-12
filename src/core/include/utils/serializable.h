@@ -38,6 +38,8 @@
 
 // TODO (dsuponit): purge the headers below and combine #pragma for GNU and clang
 #include "utils/type_name.h"
+// #include "utils/exception.h"
+// #include "utils/caller_info.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -91,17 +93,24 @@ using Serialized = void*;
 class Serializable {
 protected:
     Serializable() = default;
-    virtual ~Serializable() {}
+    // virtual ~Serializable() {}
 
 public:
     // TODO (dsuponit): should we make the interfaces non-virtual to improve performance of the derived classes ???
-    virtual std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const {
         return objectTypeName(this);
     }
 
-    static uint32_t SerializedVersion() {
+    static constexpr uint32_t SerializedVersion() {
         return 1;
     }
+
+    // void checkVersion(uint32_t version, CALLER_INFO_ARGS_HDR) const {
+    //    if (version > this->SerializedVersion()) {
+    //        OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+    //            " is from a later version of the library." + CALLER_INFO);
+    //    }
+    // }
 };
 
 // helper template to stream vector contents provided T has an stream operator<<
