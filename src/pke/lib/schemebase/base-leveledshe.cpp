@@ -473,8 +473,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 
     const auto cc = ciphertext->GetCryptoContext();
 
-    usint autoIndex =
-        (cc->getSchemeId() == "CKKSRNS") ? FindAutomorphismIndex2nComplex(index, m) : FindAutomorphismIndex2n(index, m);
+    usint autoIndex = FindAutomorphismIndex(index, m);
 
     auto evalKey = cc->GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag()).find(autoIndex)->second;
 
@@ -511,8 +510,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
 
     std::vector<uint32_t> autoIndices(indexList.size());
     for (size_t i = 0; i < indexList.size(); i++) {
-        autoIndices[i] = (cc->getSchemeId() == "CKKSRNS") ? FindAutomorphismIndex2nComplex(indexList[i], M) :
-                                                            FindAutomorphismIndex2n(indexList[i], M);
+        autoIndices[i] = FindAutomorphismIndex(indexList[i], M);
     }
 
     return EvalAutomorphismKeyGen(privateKey, autoIndices);
@@ -525,8 +523,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAtIndex(ConstCiphertext<Element
 
     usint M = ciphertext->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder();
 
-    uint32_t autoIndex =
-        (cc->getSchemeId() == "CKKSRNS") ? FindAutomorphismIndex2nComplex(index, M) : FindAutomorphismIndex2n(index, M);
+    uint32_t autoIndex = FindAutomorphismIndex(index, M);
 
     return EvalAutomorphism(ciphertext, autoIndex, evalKeyMap);
 }

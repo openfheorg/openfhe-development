@@ -633,6 +633,10 @@ public:
     virtual Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element> ciphertext, int32_t index,
                                             const std::map<usint, EvalKey<Element>>& evalKeyMap) const;
 
+    virtual usint FindAutomorphismIndex(usint index, usint m) const {
+        OPENFHE_THROW(config_error, "FindAutomorphismIndex is not supported for this scheme");
+    }
+
     /////////////////////////////////////////
     // SHE LEVELED Mod Reduce
     /////////////////////////////////////////

@@ -46,6 +46,16 @@ class LeveledSHEBGVRNS : public LeveledSHERNS {
 public:
     virtual ~LeveledSHEBGVRNS() {}
 
+    /////////////////////////////////////
+    // AUTOMORPHISM
+    /////////////////////////////////////
+
+    usint FindAutomorphismIndex(usint index, usint m) const override;
+
+    /////////////////////////////////////
+    // Mod Reduce
+    /////////////////////////////////////
+
     /**
    * Method for scaling in-place.
    *

@@ -248,4 +248,8 @@ void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, con
     }
 }
 
+usint LeveledSHEBGVRNS::FindAutomorphismIndex(usint index, usint m) const {
+    return FindAutomorphismIndex2n(index, m);
+}
+
 }  // namespace lbcrypto
