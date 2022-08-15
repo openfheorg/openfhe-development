@@ -32,9 +32,9 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_MULTIPARTY_H
 #define LBCRYPTO_CRYPTO_BASE_MULTIPARTY_H
 
-#include "key/allkey.h"
-#include "base-pke.h"
-#include "ciphertext.h"
+#include "key/keypair.h"
+#include "decrypt-result.h"
+#include "ciphertext-fwd.h"
 
 #include <vector>
 #include <memory>
@@ -46,10 +46,6 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
-
-// template <typename Element>
-// class KeyPair;
-
 /**
  * @brief Abstract interface class for LBC Multiparty algorithms based on
  * threshold FHE.  A version of this multiparty scheme built on the BGV scheme

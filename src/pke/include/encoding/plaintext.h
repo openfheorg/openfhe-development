@@ -36,6 +36,12 @@
 #ifndef LBCRYPTO_UTILS_PLAINTEXT_H
 #define LBCRYPTO_UTILS_PLAINTEXT_H
 
+#include "encoding/plaintext-fwd.h"
+
+#include "encoding/encodingparams.h"
+#include "lattice/lat-hal.h"
+#include "constants.h"
+
 #include <initializer_list>
 #include <iostream>
 #include <memory>
@@ -43,10 +49,6 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
-
-#include "encoding/encodingparams.h"
-#include "lattice/lat-hal.h"
-#include "constants.h"
 
 namespace lbcrypto {
 
@@ -79,9 +81,7 @@ inline std::ostream& operator<<(std::ostream& out, const PlaintextEncodings p) {
     return out;
 }
 
-class PlaintextImpl;
-typedef std::shared_ptr<PlaintextImpl> Plaintext;
-typedef std::shared_ptr<const PlaintextImpl> ConstPlaintext;
+enum PtxtPolyType { IsPoly, IsDCRTPoly, IsNativePoly };
 
 /**
  * @class PlaintextImpl
@@ -92,9 +92,6 @@ typedef std::shared_ptr<const PlaintextImpl> ConstPlaintext;
  * from this class which depend on the application the plaintext is used with.
  * It provides virtual methods for encoding and decoding of data.
  */
-
-enum PtxtPolyType { IsPoly, IsDCRTPoly, IsNativePoly };
-
 class PlaintextImpl {
 protected:
     bool isEncoded;

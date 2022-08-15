@@ -42,7 +42,6 @@
 #include "lattice/lat-hal.h"
 #include "schemebase/base-cryptoparameters.h"
 #include "constants.h"
-#include "utils/serializable.h"
 
 // TODO - temp include for the SecurityLevel
 #include "lattice/stdlatticeparms.h"
