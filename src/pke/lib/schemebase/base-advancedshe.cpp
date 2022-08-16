@@ -127,7 +127,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Ele
 
     Plaintext plaintext;
 
-    if (ciphertext->GetEncodingType() == CKKSPacked) {
+    if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         std::vector<std::complex<double>> randomIntVector(n);
 
         // first plaintext slot does not need to change
@@ -267,7 +267,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(ConstCiphertext<Element> c
     Ciphertext<Element> newCiphertext = ciphertext->Clone();
 
     if (IsPowerOfTwo(m)) {
-        if (ciphertext->GetEncodingType() == CKKSPacked)
+        if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING)
             newCiphertext = EvalSum2nComplex(newCiphertext, batchSize, m, evalKeyMap);
         else
             newCiphertext = EvalSum_2n(newCiphertext, batchSize, m, evalKeyMap);
@@ -298,7 +298,7 @@ template <class Element>
 Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumRows(ConstCiphertext<Element> ciphertext, usint rowSize,
                                                           const std::map<usint, EvalKey<Element>>& evalKeyMap,
                                                           usint subringDim) const {
-    if (ciphertext->GetEncodingType() != CKKSPacked)
+    if (ciphertext->GetEncodingType() != CKKS_PACKED_ENCODING)
         OPENFHE_THROW(config_error,
                       "Matrix summation of row-vectors is only supported "
                       "for CKKS packed encoding.");
@@ -333,7 +333,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumCols(
     if (!evalSumColsKeyMap.size())
         OPENFHE_THROW(config_error, "Input rightEvalKeys map is empty");
 
-    if (ciphertext->GetEncodingType() != CKKSPacked)
+    if (ciphertext->GetEncodingType() != CKKS_PACKED_ENCODING)
         OPENFHE_THROW(config_error,
                       "Matrix summation of column-vectors is only supported "
                       "for CKKS packed encoding.");
@@ -385,7 +385,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalInnerProduct(ConstCiphertext<E
 
     // add a random number to all slots except for the first one so that no
     // information is leaked
-    // if (ciphertext1->GetEncodingType() != CKKSPacked)
+    // if (ciphertext1->GetEncodingType() != CKKS_PACKED_ENCODING)
     //   result = AddRandomNoise(result);
     return result;
 }
@@ -402,7 +402,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalInnerProduct(
 
     // add a random number to all slots except for the first one so that no
     // information is leaked
-    // if (ciphertext1->GetEncodingType() != CKKSPacked)
+    // if (ciphertext1->GetEncodingType() != CKKS_PACKED_ENCODING)
     //   result = AddRandomNoise(result);
     return result;
 }
@@ -421,7 +421,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(const std::vector<Cipher
     auto cc = ciphertextVec[0]->GetCryptoContext();
 
     Plaintext plaintext;
-    if (ciphertextVec[0]->GetEncodingType() == CKKSPacked) {
+    if (ciphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) {
         std::vector<std::complex<double>> mask({{1, 0}, {0, 0}});
         plaintext = cc->MakeCKKSPackedPlaintext(mask);
     }

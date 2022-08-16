@@ -89,6 +89,15 @@ enum MultiplicationTechnique {
 };
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
+enum PlaintextEncodings {
+    INVALID_ENCODING = 0,
+    COEF_PACKED_ENCODING,
+    PACKED_ENCODING,
+    STRING_ENCODING,
+    CKKS_PACKED_ENCODING,
+};
+std::ostream& operator<<(std::ostream& s, PlaintextEncodings p);
+
 enum LargeScalingFactorConstants {
     MAX_BITS_IN_WORD = 62,
     MAX_LOG_STEP     = 60,

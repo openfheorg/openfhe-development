@@ -66,7 +66,7 @@ public:
     CiphertextImpl()
         : CryptoObject<Element>(),
           m_depth(1),
-          encodingType(Unknown),
+          encodingType(INVALID_ENCODING),
           m_scalingFactor(1),
           m_scalingFactorInt(1),
           m_level(0),
@@ -80,7 +80,8 @@ public:
    *
    * @param cc
    */
-    explicit CiphertextImpl(CryptoContext<Element> cc, const std::string& id = "", PlaintextEncodings encType = Unknown)
+    explicit CiphertextImpl(CryptoContext<Element> cc, const std::string& id = "",
+                            PlaintextEncodings encType = INVALID_ENCODING)
         : CryptoObject<Element>(cc, id),
           m_depth(1),
           encodingType(encType),
@@ -100,7 +101,7 @@ public:
     explicit CiphertextImpl(const std::shared_ptr<Key<Element>> k)
         : CryptoObject<Element>(k->GetCryptoContext(), k->GetKeyTag()),
           m_depth(1),
-          encodingType(Unknown),
+          encodingType(INVALID_ENCODING),
           m_scalingFactor(1),
           m_scalingFactorInt(1),
           m_level(0),

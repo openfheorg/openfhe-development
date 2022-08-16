@@ -36,7 +36,8 @@
 #ifndef LBCRYPTO_ENCODING_ENCODINGPARAMS_H
 #define LBCRYPTO_ENCODING_ENCODINGPARAMS_H
 
-#include "math/hal.h"
+#include "utils/serializable.h"
+#include "lattice/lat-hal.h"
 #include "utils/inttypes.h"
 
 #include <memory>

@@ -129,10 +129,10 @@ public:
 
     /**
    * GetEncodingType
-   * @return this is a Packed encoding
+   * @return PACKED_ENCODING
    */
     PlaintextEncodings GetEncodingType() const {
-        return Packed;
+        return PACKED_ENCODING;
     }
 
     /**

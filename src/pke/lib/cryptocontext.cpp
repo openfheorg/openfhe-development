@@ -458,7 +458,7 @@ Plaintext CryptoContextImpl<Element>::GetPlaintextForDecrypt(PlaintextEncodings 
                                                              EncodingParams ep) {
     auto vp = std::make_shared<typename NativePoly::Params>(evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
 
-    if (pte == CKKSPacked)
+    if (pte == CKKS_PACKED_ENCODING)
         return PlaintextFactory::MakePlaintext(pte, evp, ep);
 
     return PlaintextFactory::MakePlaintext(pte, vp, ep);
@@ -485,7 +485,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
 
     DecryptResult result;
 
-    if ((ciphertext->GetEncodingType() == CKKSPacked) && (typeid(Element) != typeid(NativePoly))) {
+    if ((ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) && (typeid(Element) != typeid(NativePoly))) {
         result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<Poly>());
     }
     else {
@@ -497,7 +497,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
 
     decrypted->SetScalingFactorInt(result.scalingFactorInt);
 
-    if (ciphertext->GetEncodingType() == CKKSPacked) {
+    if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
         decryptedCKKS->SetDepth(ciphertext->GetDepth());
         decryptedCKKS->SetLevel(ciphertext->GetLevel());
@@ -543,7 +543,7 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
         GetPlaintextForDecrypt(partialCiphertextVec[0]->GetEncodingType(),
                                partialCiphertextVec[0]->GetElements()[0].GetParams(), this->GetEncodingParams());
 
-    if ((partialCiphertextVec[0]->GetEncodingType() == CKKSPacked) && (typeid(Element) != typeid(NativePoly)))
+    if ((partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) && (typeid(Element) != typeid(NativePoly)))
         result = GetScheme()->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<Poly>());
     else
         result = GetScheme()->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<NativePoly>());
@@ -551,7 +551,7 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
     if (result.isValid == false)
         return result;
 
-    if (partialCiphertextVec[0]->GetEncodingType() == CKKSPacked) {
+    if (partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
         decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersRNS>(this->GetCryptoParameters());
@@ -624,7 +624,7 @@ namespace lbcrypto {
 template <>
 Plaintext CryptoContextImpl<DCRTPoly>::GetPlaintextForDecrypt(PlaintextEncodings pte, std::shared_ptr<ParmType> evp,
                                                               EncodingParams ep) {
-    if ((pte == CKKSPacked) && (evp->GetParams().size() > 1)) {
+    if ((pte == CKKS_PACKED_ENCODING) && (evp->GetParams().size() > 1)) {
         auto vp = std::make_shared<typename Poly::Params>(evp->GetCyclotomicOrder(), ep->GetPlaintextModulus(), 1);
         return PlaintextFactory::MakePlaintext(pte, vp, ep);
     }
@@ -656,7 +656,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> cip
 
     DecryptResult result;
 
-    if ((ciphertext->GetEncodingType() == CKKSPacked) &&
+    if ((ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) &&
         (ciphertext->GetElements()[0].GetParams()->GetParams().size() > 1))  // only one tower in DCRTPoly
         result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<Poly>());
     else
@@ -667,7 +667,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> cip
 
     decrypted->SetScalingFactorInt(result.scalingFactorInt);
 
-    if (ciphertext->GetEncodingType() == CKKSPacked) {
+    if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
         decryptedCKKS->SetDepth(ciphertext->GetDepth());
         decryptedCKKS->SetLevel(ciphertext->GetLevel());
@@ -713,7 +713,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
         GetPlaintextForDecrypt(partialCiphertextVec[0]->GetEncodingType(),
                                partialCiphertextVec[0]->GetElements()[0].GetParams(), this->GetEncodingParams());
 
-    if ((partialCiphertextVec[0]->GetEncodingType() == CKKSPacked) &&
+    if ((partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) &&
         (partialCiphertextVec[0]->GetElements()[0].GetParams()->GetParams().size() > 1))
         result = GetScheme()->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<Poly>());
     else
@@ -724,7 +724,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
 
     decrypted->SetScalingFactorInt(result.scalingFactorInt);
 
-    if (partialCiphertextVec[0]->GetEncodingType() == CKKSPacked) {
+    if (partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
         decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
