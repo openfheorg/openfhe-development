@@ -38,6 +38,7 @@
 #define _USE_MATH_DEFINES
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "gen-cryptocontext.h"
 
 #include "benchmark/benchmark.h"
@@ -77,6 +78,20 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm, usint multDepth) {
     parameters.SetScalingModSize(60);
     parameters.SetKeySwitchTechnique(HYBRID);
     parameters.SetMultiplicationTechnique(HPS);
+
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
+    cc->Enable(LEVELEDSHE);
+
+    return cc;
+}
+
+CryptoContext<DCRTPoly> GenerateCKKSContext(usint multDepth) {
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetScalingModSize(48);
+    parameters.SetBatchSize(8);
+    parameters.SetMultiplicativeDepth(multDepth);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);
@@ -387,5 +402,87 @@ void BFVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
 }
 
 BENCHMARK(BFVrns_EvalPo2WithSquare_P65537)->Unit(benchmark::kMicrosecond)->Apply(DepthArguments)->MinTime(10.0);
+
+/*
+ * EvalMult benchmarks for Power of 2
+ */
+void CKKSrns_EvalPo2WithMult(benchmark::State& state) {
+    usint depth                = state.range(0);
+    CryptoContext<DCRTPoly> cc = GenerateCKKSContext(depth);
+
+    // KeyGen
+    KeyPair<DCRTPoly> keyPair = cc->KeyGen();
+    cc->EvalMultKeyGen(keyPair.secretKey);
+
+    std::vector<double> vectorOfDoubles = {1., 0., 0., 1., 0., 0., 1., 1.};
+    Plaintext plaintext                 = cc->MakeCKKSPackedPlaintext(vectorOfDoubles);
+    Ciphertext<DCRTPoly> ciphertext     = cc->Encrypt(keyPair.publicKey, plaintext);
+
+    Ciphertext<DCRTPoly> ciphertextPo2;
+
+    while (state.KeepRunning()) {
+        ciphertextPo2 = cc->EvalMult(ciphertext, ciphertext);
+        for (usint i = 2; i < depth; ++i) {
+            ciphertextPo2 = cc->EvalMult(ciphertextPo2, ciphertextPo2);
+        }
+    }
+
+    Plaintext plaintextDec;
+    cc->Decrypt(keyPair.secretKey, ciphertextPo2, &plaintextDec);
+    plaintextDec->SetLength(plaintext->GetLength());
+    bool equal = std::equal(plaintext->GetCKKSPackedValue().begin(), plaintext->GetCKKSPackedValue().end(),
+                            plaintextDec->GetCKKSPackedValue().begin(),
+                            [](std::complex<double> value1, std::complex<double> value2) {
+                                constexpr double epsilon = 0.0001;
+                                return std::fabs(value1.real() - value2.real()) < epsilon;
+                            });
+    if (!equal) {
+        std::cout << "Original plaintext: " << plaintext << std::endl;
+        std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
+    }
+}
+
+BENCHMARK(CKKSrns_EvalPo2WithMult)->Unit(benchmark::kMicrosecond)->Apply(DepthArguments)->MinTime(10.0);
+
+/*
+ * EvalSquare benchmarks for Power of 2
+ */
+void CKKSrns_EvalPo2WithSquare(benchmark::State& state) {
+    usint depth                = state.range(0);
+    CryptoContext<DCRTPoly> cc = GenerateCKKSContext(depth);
+
+    // KeyGen
+    KeyPair<DCRTPoly> keyPair = cc->KeyGen();
+    cc->EvalMultKeyGen(keyPair.secretKey);
+
+    std::vector<double> vectorOfDoubles = {1., 0., 0., 1., 0., 0., 1., 1.};
+    Plaintext plaintext                 = cc->MakeCKKSPackedPlaintext(vectorOfDoubles);
+    Ciphertext<DCRTPoly> ciphertext     = cc->Encrypt(keyPair.publicKey, plaintext);
+
+    Ciphertext<DCRTPoly> ciphertextPo2;
+
+    while (state.KeepRunning()) {
+        ciphertextPo2 = cc->EvalSquare(ciphertext);
+        for (usint i = 2; i < depth; ++i) {
+            ciphertextPo2 = cc->EvalSquare(ciphertextPo2);
+        }
+    }
+
+    Plaintext plaintextDec;
+    cc->Decrypt(keyPair.secretKey, ciphertextPo2, &plaintextDec);
+    plaintextDec->SetLength(plaintext->GetLength());
+    bool equal = std::equal(plaintext->GetCKKSPackedValue().begin(), plaintext->GetCKKSPackedValue().end(),
+                            plaintextDec->GetCKKSPackedValue().begin(),
+                            [](std::complex<double> value1, std::complex<double> value2) {
+                                constexpr double epsilon = 0.0001;
+                                return std::fabs(value1.real() - value2.real()) < epsilon;
+                            });
+    if (!equal) {
+        std::cout << "Original plaintext: " << plaintext << std::endl;
+        std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
+    }
+}
+
+BENCHMARK(CKKSrns_EvalPo2WithSquare)->Unit(benchmark::kMicrosecond)->Apply(DepthArguments)->MinTime(10.0);
 
 BENCHMARK_MAIN();

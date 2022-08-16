@@ -255,6 +255,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
             cryptoParams->GetqInvModr(), cryptoParams->GetModrBarrettMu(), cryptoParams->GetRlHatInvModr(l),
             cryptoParams->GetRlHatInvModrPrecon(l), cryptoParams->GetRlHatModq(l), cryptoParams->GetalphaRlModq(l),
             cryptoParams->GetModqBarrettMu(), cryptoParams->GetrInv());
+
         for (size_t i = 0; i < cv2Size; i++) {
             cv2[i].SetFormat(Format::COEFFICIENT);
             // Switch ciphertext2 from basis Q to P to PQ.
@@ -451,8 +452,6 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
         }
     }
     else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        cvPoverQ = cv;
-
         size_t cdepth   = ciphertext->GetDepth();
         size_t levels   = cdepth - 1;
         double dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
@@ -463,6 +462,11 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
 
         for (size_t i = 0; i < cvSize; i++) {
             cv[i].SetFormat(Format::COEFFICIENT);
+        }
+
+        cvPoverQ = cv;
+
+        for (size_t i = 0; i < cvSize; i++) {
             if (l < sizeQ - 1) {
                 // Drop from basis Q to Q_l.
                 cv[i] =
@@ -484,8 +488,6 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
             cryptoParams->GetModqBarrettMu(), cryptoParams->GetrInv());
 
         for (size_t i = 0; i < cvSize; i++) {
-            cvPoverQ[i].SetFormat(Format::COEFFICIENT);
-            // Switch ciphertext2 from basis Q to P to PQ.
             cvPoverQ[i].FastExpandCRTBasisPloverQ(basisPQ);
             cvPoverQ[i].SetFormat(Format::EVALUATION);
         }
