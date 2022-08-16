@@ -32,10 +32,10 @@
 #ifndef LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
 #define LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
 
+#include "cryptocontext-fwd.h"
 #include "encoding/encodingparams.h"
 #include "schemebase/base-cryptoparameters.h"
-
-#include "cryptocontext-fwd.h"
+#include "cryptocontextfactory.h"
 
 #include <algorithm>
 #include <memory>
@@ -43,9 +43,6 @@
 #include <utility>
 
 namespace lbcrypto {
-
-template <typename Element>
-class CryptoContextFactory;
 
 /**
  * @brief CryptoObject
@@ -55,8 +52,7 @@ class CryptoContextFactory;
 template <typename Element>
 class CryptoObject {
 protected:
-    CryptoContext<Element> context;  // crypto context this object belongs to
-                                     // tag used to find the evaluation key needed
+    CryptoContext<Element> context;  // crypto context belongs to the tag used to find the evaluation key needed
                                      // for SHE/FHE operations
     std::string keyTag;
 
@@ -96,13 +92,9 @@ public:
         return context;
     }
 
-    const std::shared_ptr<CryptoParametersBase<Element>> GetCryptoParameters() const {
-        return context->GetCryptoParameters();
-    }
+    const std::shared_ptr<CryptoParametersBase<Element>> GetCryptoParameters() const;
 
-    const EncodingParams GetEncodingParameters() const {
-        return context->GetCryptoParameters()->GetEncodingParams();
-    }
+    const EncodingParams GetEncodingParameters() const;
 
     const std::string GetKeyTag() const {
         return keyTag;
@@ -127,8 +119,7 @@ public:
         ar(::cereal::make_nvp("cc", context));
         ar(::cereal::make_nvp("kt", keyTag));
 
-        context = CryptoContextFactory<Element>::GetContext(context->GetCryptoParameters(), context->GetScheme(),
-                                                            context->getSchemeId());
+        context = CryptoContextFactory<Element>::GetFullContextByDeserializedContext(context);
     }
 
     std::string SerializedObjectName() const {

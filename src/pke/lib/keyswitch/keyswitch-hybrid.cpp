@@ -35,9 +35,11 @@
  */
 #define PROFILE
 
-#include "cryptocontext.h"
-#include "scheme/allscheme.h"
 #include "keyswitch/keyswitch-hybrid.h"
+
+#include "cryptocontext-fwd.h"
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "ciphertext.h"
 
 namespace lbcrypto {
 

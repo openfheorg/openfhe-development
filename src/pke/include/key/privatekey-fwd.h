@@ -28,14 +28,23 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
 /*
- * Abstract interface class for key switching methods in RNS
+ * It is a lightweight file to be included where we need the declaration of PrivateKey only
+ *
  */
+#ifndef __PRIVATEKEY_FWD_H__
+#define __PRIVATEKEY_FWD_H__
 
-#define PROFILE
+#include <memory>
 
-#include "cryptocontext.h"
-#include "keyswitch/keyswitch-rns.h"
+namespace lbcrypto {
 
-namespace lbcrypto {}
+template <typename Element>
+class PrivateKeyImpl;
+
+template <typename Element>
+using PrivateKey = std::shared_ptr<PrivateKeyImpl<Element>>;
+
+}  // namespace lbcrypto
+
+#endif  // __PRIVATEKEY_FWD_H__

@@ -32,6 +32,7 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_EVALKEY_H
 #define LBCRYPTO_CRYPTO_KEY_EVALKEY_H
 
+#include "key/evalkey-fwd.h"
 #include "key/key.h"
 
 #include <memory>
@@ -43,12 +44,6 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
-
-template <typename Element>
-class EvalKeyImpl;
-
-template <typename Element>
-using EvalKey = std::shared_ptr<EvalKeyImpl<Element>>;
 
 /**
  * @brief Abstract interface for evaluation/proxy keys

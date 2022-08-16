@@ -36,12 +36,12 @@
 #ifndef LBCRYPTO_ENCODING_ENCODINGPARAMS_H
 #define LBCRYPTO_ENCODING_ENCODINGPARAMS_H
 
+#include "math/hal.h"
+#include "utils/inttypes.h"
+
 #include <memory>
 #include <string>
 #include <utility>
-
-#include "math/hal.h"
-#include "utils/inttypes.h"
 
 namespace lbcrypto {
 class EncodingParamsImpl;

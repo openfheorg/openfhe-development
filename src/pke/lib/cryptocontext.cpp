@@ -34,8 +34,8 @@
  */
 
 #include "cryptocontext.h"
-#include "scheme/allscheme.h"
 #include "schemerns/rns-scheme.h"
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
 namespace lbcrypto {
 

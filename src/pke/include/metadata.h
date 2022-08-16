@@ -32,16 +32,14 @@
 #ifndef LBCRYPTO_CRYPTO_METADATA_H
 #define LBCRYPTO_CRYPTO_METADATA_H
 
+#include "ciphertext.h"
+
 #include <map>
 #include <memory>
 #include <string>
-
-#include "openfhecore.h"
+#include <ostream>
 
 namespace lbcrypto {
-
-template <typename Element>
-class CiphertextImpl;
 
 class Metadata;
 using MetadataMap = std::shared_ptr<std::map<std::string, std::shared_ptr<Metadata>>>;

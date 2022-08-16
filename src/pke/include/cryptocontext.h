@@ -43,8 +43,6 @@
 #include "encoding/plaintextfactory.h"
 
 #include "key/evalkey.h"
-#include "key/privatekey.h"
-#include "key/publickey.h"
 #include "key/keypair.h"
 
 #include "schemebase/base-pke.h"
