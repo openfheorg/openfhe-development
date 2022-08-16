@@ -114,8 +114,12 @@ void Benchmark(const char* name, AllocFunc allocFunc, DeallocFunc deallocFunc);
 void Benchmark(const char* name, AllocFunc allocFunc, DeallocFunc deallocFunc) {
     TimeVar t1, t_total;
 
-    float ElapsedMicroseconds, TotalElapsedMicroseconds = {0};
-
+    float ElapsedMicroseconds = 0;
+#if defined(__clang__)
+    [[maybe_unused]] float TotalElapsedMicroseconds = 0;
+#else
+    float TotalElapsedMicroseconds = 0;
+#endif
     // Allocate MAX_ALLOCATIONS blocks MAX_BLOCK_SIZE / 2 sized blocks
     TIC(t_total);
     TIC(t1);
