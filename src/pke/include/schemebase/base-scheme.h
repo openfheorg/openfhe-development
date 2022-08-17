@@ -42,7 +42,7 @@
 #include "schemebase/base-fhe.h"
 #include "schemebase/base-pke.h"
 #include "schemebase/base-pre.h"
-#include "ciphertext-fwd.h"
+#include "ciphertext.h"
 
 #include "utils/exception.h"
 #include "utils/caller_info.h"

@@ -39,7 +39,12 @@
 
 #include "openfhecore.h"
 
-#include "key/allkey.h"
+#include "key/keypair.h"
+#include "key/publickey.h"
+#include "key/privatekey.h"
+#include "key/evalkey.h"
+#include "key/evalkeyrelin.h"
+
 #include "cryptoobject.h"
 
 #include "encoding/plaintextfactory.h"

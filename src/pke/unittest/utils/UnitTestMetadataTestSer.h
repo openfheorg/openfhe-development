@@ -28,14 +28,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#ifndef __UNITTESTMETADATATESTSER_H__
+#define __UNITTESTMETADATATESTSER_H__
 
-#ifndef SRC_PKE_INCLUDE_KEY_ALLKEY_H_
-#define SRC_PKE_INCLUDE_KEY_ALLKEY_H_
+#include "UnitTestMetadataTest.h"
+#include "utils/serial.h"
 
-#include "key/keypair.h"
-#include "key/publickey.h"
-#include "key/privatekey.h"
-#include "key/evalkey.h"
-#include "key/evalkeyrelin.h"
+CEREAL_REGISTER_TYPE(lbcrypto::MetadataTest);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::Metadata, lbcrypto::MetadataTest);
 
-#endif /* SRC_PKE_INCLUDE_SCHEME_ALLSCHEME_H_ */
+#endif  // __UNITTESTMETADATATESTSER_H__

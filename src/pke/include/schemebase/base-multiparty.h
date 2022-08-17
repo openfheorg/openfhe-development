@@ -34,6 +34,7 @@
 
 #include "key/keypair.h"
 #include "decrypt-result.h"
+#include "key/evalkeyrelin.h"
 #include "ciphertext-fwd.h"
 
 #include <vector>

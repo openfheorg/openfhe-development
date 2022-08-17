@@ -40,6 +40,9 @@
 
 #include "keyswitch/keyswitch-bv.h"
 
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "key/evalkeyrelin.h"
 #include "schemerns/rns-cryptoparameters.h"
 #include "cryptocontext.h"
 
