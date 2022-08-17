@@ -52,10 +52,10 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 
 #define PROFILE
 
-#include "cryptocontext.h"
-#include "scheme/allscheme.h"
-#include "scheme/bgvrns/bgvrns-pke.h"
 #include "scheme/bgvrns/bgvrns-multiparty.h"
+
+#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
+#include "ciphertext.h"
 
 namespace lbcrypto {
 

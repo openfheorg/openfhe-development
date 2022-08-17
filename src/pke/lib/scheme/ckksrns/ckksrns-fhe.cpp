@@ -31,11 +31,13 @@
 
 #define PROFILE
 
-#include "math/dftransform.h"
-
-#include "cryptocontext.h"
-#include "scheme/allscheme.h"
 #include "scheme/ckksrns/ckksrns-fhe.h"
+
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "schemebase/base-scheme.h"
+#include "cryptocontext.h"
+#include "ciphertext.h"
+#include "math/dftransform.h"
 
 namespace lbcrypto {
 

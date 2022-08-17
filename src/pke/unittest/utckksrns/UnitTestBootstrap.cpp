@@ -37,6 +37,7 @@
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "utils/demangle.h"
+#include "scheme/ckksrns/ckksrns-utils.h"
 
 #include <iostream>
 #include <vector>

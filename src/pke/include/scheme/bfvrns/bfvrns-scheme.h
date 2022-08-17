@@ -36,6 +36,7 @@
 
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "scheme/bfvrns/bfvrns-parametergeneration.h"
+#include "scheme/bfvrns/bfvrns-fhe.h"
 #include "scheme/bfvrns/bfvrns-pke.h"
 #include "scheme/bfvrns/bfvrns-pre.h"
 #include "scheme/bfvrns/bfvrns-leveledshe.h"
