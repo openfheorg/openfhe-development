@@ -767,7 +767,7 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
         size_t sizeQ    = c1.GetNumOfElements();
         double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
         // how many levels to drop
-        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, false);
+        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
         uint32_t l             = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
         c1.SetFormat(COEFFICIENT);
         c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
@@ -805,7 +805,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
         size_t sizeQ    = cv[0].GetNumOfElements();
         double dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
         // how many levels to drop
-        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, false);
+        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
         uint32_t l             = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
 
         (*ba)[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
@@ -839,6 +839,7 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
     uint32_t l              = 0;
 
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+    bool isKeySwitch          = (cv.size() == 2);
 
     auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
@@ -848,9 +849,9 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
         double dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
 
         // how many levels to drop
-        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, false);
+        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, isKeySwitch);
         l                      = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
-        if (cv.size() == 2) {
+        if (isKeySwitch) {
             cv[1].SetFormat(COEFFICIENT);
             cv[1] = cv[1].ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
                                         cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
@@ -866,7 +867,7 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
         c.SetFormat(Format::EVALUATION);
 
     std::shared_ptr<std::vector<DCRTPoly>> ab =
-        (cv.size() == 2) ? algo->KeySwitchCore(cv[1], evalKey) : algo->KeySwitchCore(cv[2], evalKey);
+        isKeySwitch ? algo->KeySwitchCore(cv[1], evalKey) : algo->KeySwitchCore(cv[2], evalKey);
 
     if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
         size_t sizeQ = cv[0].GetNumOfElements();
@@ -878,7 +879,7 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
 
     cv[0] += (*ab)[0];
 
-    if (cv.size() > 2) {
+    if (!isKeySwitch) {
         cv[1] += (*ab)[1];
     }
     else {
