@@ -1,3 +1,11 @@
+08/18/2022: OpenFHE 0.9.2 (development) is released
+
+* Fixes a compilation error for some versions of MacOS
+* Fixes a problem with docker configuration
+* Includes bug fixes from PALISADE v1.11.7
+* Adds support for RISC-V architecture
+* Small optimizations for some of the CKKS operations
+
 07/21/2022: OpenFHE 0.9.1 (development) is released
 
 * Fixes a compilation error for NATIVE_SIZE=128 in MacOS
