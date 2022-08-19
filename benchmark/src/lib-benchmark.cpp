@@ -36,6 +36,11 @@
 
 #define PROFILE
 #define _USE_MATH_DEFINES
+#include "scheme/ckksrns/cryptocontext-ckksrns.h"
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "gen-cryptocontext.h"
+
 #include "benchmark/benchmark.h"
 
 #include <fstream>
@@ -43,10 +48,6 @@
 #include <iterator>
 #include <limits>
 #include <random>
-
-#include "openfhe.h"
-#include "utils/debug.h"
-#include "math/hal.h"
 
 using namespace lbcrypto;
 

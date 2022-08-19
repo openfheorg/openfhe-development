@@ -32,21 +32,17 @@
 #ifndef LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
 #define LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
 
+#include "encoding/encodingparams.h"
+#include "schemebase/base-cryptoparameters.h"
+
+#include "cryptocontext-fwd.h"
+
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "encoding/encodingparams.h"
-#include "schemebase/base-cryptoparameters.h"
-
 namespace lbcrypto {
-
-template <typename Element>
-class CryptoContextImpl;
-
-template <typename Element>
-using CryptoContext = std::shared_ptr<CryptoContextImpl<Element>>;
 
 template <typename Element>
 class CryptoContextFactory;

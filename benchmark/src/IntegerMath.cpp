@@ -34,9 +34,9 @@
   This code benchmarks integer operations.
 */
 #define _USE_MATH_DEFINES
-#include "benchmark/benchmark.h"
+#include "lattice/lat-hal.h"
 
-#include "openfhe.h"
+#include "benchmark/benchmark.h"
 
 #include <iostream>
 #include <vector>
@@ -216,8 +216,7 @@ BENCHMARK_TEMPLATE(BM_BigInt_Multeq, NativeInteger)->Unit(benchmark::kMicrosecon
 template <typename I>
 static void BM_BigInt_ModInverse(benchmark::State& state) {  // benchmark
     while (state.KeepRunning()) {
-        I c = I(3017).ModInverse(I(108));
-        OPENFHE_UNUSED(c);
+        I(3017).ModInverse(I(108));
     }
 }
 

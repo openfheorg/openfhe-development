@@ -47,6 +47,7 @@
 
 #include "ciphertext.h"
 #include "cryptocontext.h"
+#include "scheme/allscheme.h"
 
 #include "gen-cryptocontext.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"

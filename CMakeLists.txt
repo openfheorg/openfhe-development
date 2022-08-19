@@ -27,7 +27,7 @@ project (OpenFHE C CXX)
 
 set(OPENFHE_VERSION_MAJOR 0)
 set(OPENFHE_VERSION_MINOR 9)
-set(OPENFHE_VERSION_PATCH 1)
+set(OPENFHE_VERSION_PATCH 2)
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -86,6 +86,7 @@ option( WITH_TCM "Activate tcmalloc by setting WITH_TCM to ON"                  
 option( WITH_INTEL_HEXL "Use Intel HEXL library"                                OFF )
 option( WITH_NATIVEOPT "Use machine-specific optimizations"                     OFF )
 option( WITH_COVTEST "Turn on to enable coverage testing"                       OFF )
+option( USE_MACPORTS "Use MacPorts installed packages"                          OFF )
 
 # Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
 if( NOT NATIVE_SIZE )
@@ -115,6 +116,7 @@ message( STATUS "NATIVE_SIZE:      ${NATIVE_SIZE}")
 message( STATUS "CKKS_M_FACTOR:    ${CKKS_M_FACTOR}")
 message( STATUS "WITH_NATIVEOPT:   ${WITH_NATIVEOPT}")
 message( STATUS "WITH_COVTEST:     ${WITH_COVTEST}")
+message( STATUS "USE_MACPORTS:     ${USE_MACPORTS}")
 
 #--------------------------------------------------------------------
 # Compiler logic
@@ -379,32 +381,47 @@ if (WITH_OPENMP)
 	# Used to optionally compile openmp code
 	add_definitions(-DPARALLEL)
 
-	find_package (OpenMP)
-
 	# Set OpenMP configuration manually for macOS
 	if (APPLE)
+        if (USE_MACPORTS)
+            # Macports-based installation
+            message( STATUS "Using Macports setup")
+            set(OPENMP_LIBRARIES "/opt/local/lib/libomp")
+            set(OPENMP_INCLUDES "/opt/local/include/libomp")
+            if(CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "AppleClang")
+                set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+                set(OpenMP_C_LIB_NAMES "omp")
+                set(OpenMP_omp_LIBRARY ${OpenMP_C_LIB_NAMES})
+            endif()
+            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
+                set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+                set(OpenMP_CXX_LIB_NAMES "omp")
+                set(OpenMP_omp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+            endif()
+        else (USE_MACPORTS)
+            # Homebrew-based installation
+            # Check for Apple M1 Processor
+            if (${ARCHITECTURE} MATCHES "arm64")
+                message( STATUS "Apple M1 detected")
+                set(OPENMP_LIBRARIES "/opt/homebrew/opt/libomp/lib")
+                set(OPENMP_INCLUDES "/opt/homebrew/opt/libomp/include")
+            else() # Apple Intel Processor
+                message( STATUS "Apple Intel detected")
+                set(OPENMP_LIBRARIES "/usr/local/opt/libomp/lib")
+                set(OPENMP_INCLUDES "/usr/local/opt/libomp/include")
+            endif()
 
-        # Check for Apple M1 Processor
-        if (${ARCHITECTURE} MATCHES "arm64")
-            message( STATUS "Apple M1 detected")
-            set(OPENMP_LIBRARIES "/opt/homebrew/opt/libomp/lib")
-            set(OPENMP_INCLUDES "/opt/homebrew/opt/libomp/include")
-        else() # Apple Intel Processor
-            message( STATUS "Apple Intel detected")
-            set(OPENMP_LIBRARIES "/usr/local/opt/libomp/lib")
-            set(OPENMP_INCLUDES "/usr/local/opt/libomp/include")
-        endif()
-
-        if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-            set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
-            set(OpenMP_C_LIB_NAMES "libomp")
-            set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
-        endif()
-        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
-            set(OpenMP_CXX_LIB_NAMES "libomp")
-            set(OpenMP_libomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
-        endif()
+            if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+                set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+                set(OpenMP_C_LIB_NAMES "libomp")
+                set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
+            endif()
+            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+                set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+                set(OpenMP_CXX_LIB_NAMES "libomp")
+                set(OpenMP_libomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+            endif()
+        endif (USE_MACPORTS)
 
         include_directories("${OPENMP_INCLUDES}")
         link_directories("${OPENMP_LIBRARIES}")
@@ -416,6 +433,8 @@ if (WITH_OPENMP)
         message( STATUS "OpenMP_CXX_FLAGS: " ${OpenMP_CXX_FLAGS})
         message( STATUS "OpenMP_CXX_LIB_NAMES: " ${OpenMP_CXX_LIB_NAMES})
 	endif()
+
+    find_package (OpenMP)
 
 	# OpenMP_CXX_FOUND was added in cmake 3.9.x
 	# so we are also checking the OpenMP_FOUND flag

@@ -36,6 +36,23 @@
 #ifndef SRC_PKE_CRYPTOCONTEXT_H_
 #define SRC_PKE_CRYPTOCONTEXT_H_
 
+#include "cryptocontextfactory.h"
+#include "cryptocontext-fwd.h"
+#include "ciphertext.h"
+
+#include "encoding/plaintextfactory.h"
+
+#include "key/evalkey.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "key/keypair.h"
+
+#include "schemebase/base-pke.h"
+#include "schemerns/rns-cryptoparameters.h"
+
+#include "utils/caller_info.h"
+#include "utils/serial.h"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -43,21 +60,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "encoding/plaintextfactory.h"
-#include "key/allkey.h"
-#include "schemerns/allrns.h"
-
-#include "cryptocontextfactory.h"
-
-#include "utils/serial.h"
-
 namespace lbcrypto {
-
-template <typename Element>
-class CryptoContextImpl;
-
-template <typename Element>
-using CryptoContext = std::shared_ptr<CryptoContextImpl<Element>>;
 
 /**
  * @brief CryptoContextImpl
@@ -89,6 +92,54 @@ class CryptoContextImpl : public Serializable {
                 return ctx;
         }
         OPENFHE_THROW(type_error, "Cannot find context for the given pointer to CryptoContextImpl");
+    }
+
+    virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value, size_t depth,
+                                                      uint32_t level, const std::shared_ptr<ParmType> params,
+                                                      usint slots) const {
+        Plaintext p;
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
+        double scFact;
+
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+            scFact = cryptoParams->GetScalingFactorRealBig(level);
+            // In FLEXIBLEAUTOEXT mode at level 0, we don't use the depth
+            // in our encoding function, so we set it to 1 to make sure it
+            // has no effect on the encoding.
+            depth = 1;
+        }
+        else {
+            scFact = cryptoParams->GetScalingFactorReal(level);
+        }
+
+        if (params == nullptr) {
+            std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
+            if (level != 0) {
+                ILDCRTParams<DCRTPoly::Integer> elemParams = *(cryptoParams->GetElementParams());
+                for (uint32_t i = 0; i < level; i++) {
+                    elemParams.PopLastParam();
+                }
+                elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
+            }
+            else {
+                elemParamsPtr = cryptoParams->GetElementParams();
+            }
+
+            p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value, depth,
+                                                               level, scFact, slots));
+        }
+        else {
+            p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, depth, level,
+                                                               scFact, slots));
+        }
+
+        p->Encode();
+
+        // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has depth 2.
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+            p->SetDepth(2);
+        }
+        return p;
     }
 
 protected:
@@ -894,52 +945,10 @@ public:
    * @param params - parameters to be usef for the ciphertext
    * @return plaintext
    */
-    virtual Plaintext MakeCKKSPackedPlaintext(const std::vector<std::complex<double>>& value, size_t depth = 1,
-                                              uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr,
-                                              usint slots = 0) const {
-        Plaintext p;
-        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
-        double scFact;
-
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
-            scFact = cryptoParams->GetScalingFactorRealBig(level);
-            // In FLEXIBLEAUTOEXT mode at level 0, we don't use the depth
-            // in our encoding function, so we set it to 1 to make sure it
-            // has no effect on the encoding.
-            depth = 1;
-        }
-        else {
-            scFact = cryptoParams->GetScalingFactorReal(level);
-        }
-
-        if (params == nullptr) {
-            std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
-            if (level != 0) {
-                ILDCRTParams<DCRTPoly::Integer> elemParams = *(cryptoParams->GetElementParams());
-                for (uint32_t i = 0; i < level; i++) {
-                    elemParams.PopLastParam();
-                }
-                elemParamsPtr = std::make_shared<ILDCRTParams<DCRTPoly::Integer>>(elemParams);
-            }
-            else {
-                elemParamsPtr = cryptoParams->GetElementParams();
-            }
-
-            p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value, depth,
-                                                               level, scFact, slots));
-        }
-        else {
-            p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, depth, level,
-                                                               scFact, slots));
-        }
-
-        p->Encode();
-
-        // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has depth 2.
-        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
-            p->SetDepth(2);
-        }
-        return p;
+    Plaintext MakeCKKSPackedPlaintext(const std::vector<std::complex<double>>& value, size_t depth = 1,
+                                      uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr,
+                                      usint slots = 0) const {
+        return MakeCKKSPackedPlaintextInternal(value, depth, level, params, slots);
     }
 
     /**
@@ -951,13 +960,13 @@ public:
    * @param params - parameters to be usef for the ciphertext
    * @return plaintext
    */
-    virtual Plaintext MakeCKKSPackedPlaintext(const std::vector<double>& value, size_t depth = 1, uint32_t level = 0,
-                                              const std::shared_ptr<ParmType> params = nullptr, usint slots = 0) const {
+    Plaintext MakeCKKSPackedPlaintext(const std::vector<double>& value, size_t depth = 1, uint32_t level = 0,
+                                      const std::shared_ptr<ParmType> params = nullptr, usint slots = 0) const {
         std::vector<std::complex<double>> complexValue(value.size());
         std::transform(value.begin(), value.end(), complexValue.begin(),
                        [](double da) { return std::complex<double>(da); });
 
-        return MakeCKKSPackedPlaintext(complexValue, depth, level, params, slots);
+        return MakeCKKSPackedPlaintextInternal(complexValue, depth, level, params, slots);
     }
 
     /**
@@ -2031,6 +2040,10 @@ public:
         if (!ciphertextVec.size())
             OPENFHE_THROW(type_error, "Empty input ciphertext vector");
 
+        if (ciphertextVec.size() == 1) {
+            return ciphertextVec[0];
+        }
+
         return GetScheme()->EvalAddMany(ciphertextVec);
     }
 
@@ -2072,11 +2085,13 @@ public:
             OPENFHE_THROW(type_error, "Empty input ciphertext vector");
         }
 
+        if (ciphertextVec.size() == 1) {
+            return ciphertextVec[0];
+        }
+
         const auto evalKeyVec = GetEvalMultKeyVector(ciphertextVec[0]->GetKeyTag());
         if (evalKeyVec.size() < (ciphertextVec[0]->GetElements().size() - 2)) {
-            OPENFHE_THROW(type_error,
-                          "Insufficient value was used for maxRelinSkDeg to generate "
-                          "keys for EvalMult");
+            OPENFHE_THROW(type_error, "Insufficient value was used for maxRelinSkDeg to generate keys");
         }
 
         return GetScheme()->EvalMultMany(ciphertextVec, evalKeyVec);

@@ -147,8 +147,8 @@ public:
     // PARAMETER GENERATION WRAPPER
     //------------------------------------------------------------------------------
 
-    virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, int32_t evalAddCount,
-                                 int32_t multiplicativeDepth, int32_t keySwitchCount, size_t dcrtBits, uint32_t n,
+    virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t evalAddCount,
+                                 uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t n,
                                  uint32_t numPartQ) const {
         if (m_ParamsGen) {
             return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, multiplicativeDepth, keySwitchCount,
@@ -168,8 +168,8 @@ public:
                       "for this scheme.");
     }
 
-    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, int32_t evalAddCount,
-                                 int32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
+    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+                                 uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
                                  usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
         if (m_ParamsGen) {
             return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount, keySwitchCount, cyclOrder, numPrimes,
@@ -1260,7 +1260,7 @@ public:
         OPENFHE_THROW(config_error, "ModReduce operation has not been enabled");
     }
 
-    virtual Ciphertext<Element> ModReduceInternal(ConstCiphertext<Element> ciphertext, size_t levels = 1) const {
+    virtual Ciphertext<Element> ModReduceInternal(ConstCiphertext<Element> ciphertext, size_t levels) const {
         if (m_LeveledSHE) {
             if (!ciphertext)
                 OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1270,7 +1270,7 @@ public:
         OPENFHE_THROW(config_error, "ModReduceInternal has not been enabled for this scheme.");
     }
 
-    virtual void ModReduceInternalInPlace(Ciphertext<Element>& ciphertext, size_t levels = 1) const {
+    virtual void ModReduceInternalInPlace(Ciphertext<Element>& ciphertext, size_t levels) const {
         if (m_LeveledSHE) {
             if (!ciphertext)
                 OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1284,7 +1284,7 @@ public:
     }
 
     virtual Ciphertext<Element> LevelReduce(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-                                            size_t levels = 1) const {
+                                            size_t levels) const {
         if (m_LeveledSHE) {
             if (!ciphertext)
                 OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1297,7 +1297,7 @@ public:
     }
 
     virtual void LevelReduceInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey,
-                                    size_t levels = 1) const {
+                                    size_t levels) const {
         if (m_LeveledSHE) {
             if (!ciphertext)
                 OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1375,37 +1375,6 @@ public:
 
             m_LeveledSHE->AdjustLevelsAndDepthToOneInPlace(ciphertext1, ciphertext2);
             return;
-        }
-        OPENFHE_THROW(config_error, "AdjustLevelsAndDepthToOneInPlace has not been enabled for this scheme.");
-    }
-
-    virtual DCRTPoly AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-        if (m_LeveledSHE) {
-            if (!ciphertext)
-                OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
-
-            return m_LeveledSHE->AdjustLevelsInPlace(ciphertext, plaintext);
-        }
-        OPENFHE_THROW(config_error, "AdjustLevelsInPlace has not been enabled for this scheme.");
-    }
-
-    virtual DCRTPoly AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-        if (m_LeveledSHE) {
-            if (!ciphertext)
-                OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
-
-            return m_LeveledSHE->AdjustLevelsAndDepthInPlace(ciphertext, plaintext);
-        }
-        OPENFHE_THROW(config_error, "AdjustLevelsAndDepthInPlace has not been enabled for this scheme.");
-    }
-
-    virtual DCRTPoly AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext,
-                                                      ConstPlaintext plaintext) const {
-        if (m_LeveledSHE) {
-            if (!ciphertext)
-                OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
-
-            return m_LeveledSHE->AdjustLevelsAndDepthToOneInPlace(ciphertext, plaintext);
         }
         OPENFHE_THROW(config_error, "AdjustLevelsAndDepthToOneInPlace has not been enabled for this scheme.");
     }
@@ -1571,7 +1540,7 @@ public:
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSumRowsKeyGen(const PrivateKey<Element> privateKey,
                                                                                  const PublicKey<Element> publicKey,
                                                                                  usint rowSize,
-                                                                                 usint subringDim = 0) const {
+                                                                                 usint subringDim) const {
         if (m_AdvancedSHE) {
             if (!privateKey)
                 OPENFHE_THROW(config_error, "Input private key is nullptr");
@@ -1615,7 +1584,7 @@ public:
 
     virtual Ciphertext<Element> EvalSumRows(ConstCiphertext<Element> ciphertext, usint rowSize,
                                             const std::map<usint, EvalKey<Element>>& evalKeyMap,
-                                            usint subringDim = 0) const {
+                                            usint subringDim) const {
         if (m_AdvancedSHE) {
             if (!ciphertext)
                 OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -1806,7 +1775,7 @@ public:
 
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
         const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalAutoKeyMap,
-        const std::vector<usint>& indexList, const std::string& keyId = "") {
+        const std::vector<usint>& indexList, const std::string& keyId) {
         if (m_Multiparty) {
             if (!privateKey)
                 OPENFHE_THROW(config_error, "Input private key is nullptr");
@@ -1828,7 +1797,7 @@ public:
 
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
         const PrivateKey<Element> privateKey, const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalAutoKeyMap,
-        const std::vector<int32_t>& indexList, const std::string& keyId = "") {
+        const std::vector<int32_t>& indexList, const std::string& keyId) {
         if (m_Multiparty) {
             if (!privateKey)
                 OPENFHE_THROW(config_error, "Input private key is nullptr");
@@ -1869,7 +1838,7 @@ public:
     }
 
     virtual EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
-                                              const std::string& keyId = "") {
+                                              const std::string& keyId) {
         if (m_Multiparty) {
             if (!evalKey1)
                 OPENFHE_THROW(config_error, "Input first evaluation key is nullptr");
@@ -1884,7 +1853,7 @@ public:
     }
 
     virtual EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey,
-                                              const std::string& keyId = "") {
+                                              const std::string& keyId) {
         if (m_Multiparty) {
             if (!privateKey)
                 OPENFHE_THROW(config_error, "Input private key is nullptr");
@@ -1900,7 +1869,7 @@ public:
 
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(
         const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap1,
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId = "") {
+        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
         if (m_Multiparty) {
             if (!evalSumKeyMap1)
                 OPENFHE_THROW(config_error, "Input first evaluation key map is nullptr");
@@ -1920,7 +1889,7 @@ public:
 
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
         const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap1,
-        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId = "") {
+        const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalSumKeyMap2, const std::string& keyId) {
         if (m_Multiparty) {
             if (!evalSumKeyMap1)
                 OPENFHE_THROW(config_error, "Input first evaluation key map is nullptr");
@@ -1939,7 +1908,7 @@ public:
     }
 
     virtual PublicKey<Element> MultiAddPubKeys(PublicKey<Element> publicKey1, PublicKey<Element> publicKey2,
-                                               const std::string& keyId = "") {
+                                               const std::string& keyId) {
         if (m_Multiparty) {
             if (!publicKey1)
                 OPENFHE_THROW(config_error, "Input first public key is nullptr");
@@ -1954,7 +1923,7 @@ public:
     }
 
     virtual EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
-                                                  const std::string& keyId = "") {
+                                                  const std::string& keyId) {
         if (m_Multiparty) {
             if (!evalKey1)
                 OPENFHE_THROW(config_error, "Input first evaluation key is nullptr");

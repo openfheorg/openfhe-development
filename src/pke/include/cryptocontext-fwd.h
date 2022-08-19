@@ -29,16 +29,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_METADATASER_H
-#define LBCRYPTO_CRYPTO_METADATASER_H
+/*
+ * It is a lightweight file to be included where we need the declaration of CryptoContext only
+ *
+ */
+#ifndef __CRYPTOCONTEXT_FWD_H__
+#define __CRYPTOCONTEXT_FWD_H__
 
-#include "metadata.h"
-#include "utils/serial.h"
+#include <memory>
 
-CEREAL_CLASS_VERSION(lbcrypto::Metadata, lbcrypto::Metadata::SerializedVersion());
-CEREAL_REGISTER_TYPE(lbcrypto::Metadata);
+namespace lbcrypto {
 
-CEREAL_REGISTER_TYPE(lbcrypto::MetadataTest);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::Metadata, lbcrypto::MetadataTest)
+template <typename Element>
+class CryptoContextImpl;
 
-#endif
+template <typename Element>
+using CryptoContext = std::shared_ptr<CryptoContextImpl<Element>>;
+
+} // namespace lbcrypto
+
+#endif // __CRYPTOCONTEXT_FWD_H__
+

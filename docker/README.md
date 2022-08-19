@@ -6,13 +6,13 @@ openfhe-development repository latest commit:
 ## Building docker image:
 
 ```
-docker build -t <imagename> . 
+docker build -t <imagename> .
 ```
 
 example:
 
 ```
-docker build -t openfhe-development . 
+docker build -t openfhe-development .
 ```
 
 `no_threads` is an argument (with a default value of 1 if it is not passed as an argument) for running make with
@@ -33,7 +33,7 @@ docker build -t openfhe-development . --build-arg no_threads=1 --build-arg CC_pa
 ```
 
 The OpenFHE repository and the release tag are also arguments that can be passed to the docker build to build the
-corresponding image (the default repository is openfhe-development, master branch and the latest commit).
+corresponding image (the default repository is openfhe-development, main branch and the latest commit).
 
 For example, to build openfhe-release v1.10.6, run the following command:
 
@@ -91,7 +91,7 @@ Multiple terminals of the same container (that may be needed for client/server e
 
 ```
 docker exec -it openfhe /bin/bash
-``` 
+```
 
 ## Clean up:
 

@@ -950,12 +950,12 @@ protected:
             std::vector<std::complex<double>> constantInts(
                 std::vector<std::complex<double>>(VECTOR_SIZE, 11));  // vector of 11s
             Plaintext plaintextConst     = cc->MakeCKKSPackedPlaintext(constantInts);
-            Plaintext plaintextConstDeep = cc->MakeCKKSPackedPlaintext(constantInts, 3);
+            Plaintext plaintextConstDeep = cc->MakeCKKSPackedPlaintext(constantInts, 2);
 
             std::vector<std::complex<double>> constantInts2(
                 std::vector<std::complex<double>>(VECTOR_SIZE, -11));  // vector of "-11"s
             Plaintext plaintextConst2     = cc->MakeCKKSPackedPlaintext(constantInts2);
-            Plaintext plaintextConst2Deep = cc->MakeCKKSPackedPlaintext(constantInts2, 3);
+            Plaintext plaintextConst2Deep = cc->MakeCKKSPackedPlaintext(constantInts2, 2);
 
             Plaintext plaintext2 = cc->MakeCKKSPackedPlaintext(vectorOfInts7_0);
             Plaintext plaintext3 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7neg);
@@ -1318,14 +1318,14 @@ protected:
             auto ct_5 = cc->EvalAdd(ct_4, plaintext2);
             cc->Decrypt(kp.secretKey, ct_5, &results);
             results->SetLength(plaintextCt_5->GetLength());
-            checkEquality(plaintextCt_5->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+            checkEquality(plaintextCt_5->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
                           failmsg + " addition with plaintext and tower diff = 1 fails");
 
             // Subtraction with plaintext and tower diff = 1
             auto ct_6 = cc->EvalSub(ct_4, plaintext2);
             cc->Decrypt(kp.secretKey, ct_6, &results);
             results->SetLength(plaintextCt_6->GetLength());
-            checkEquality(plaintextCt_6->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+            checkEquality(plaintextCt_6->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
                           failmsg + " subtraction with plaintext and tower diff = 1 fails");
 
             // Multiplication with plaintext and tower diff = 1

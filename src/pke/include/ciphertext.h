@@ -36,27 +36,19 @@
 #ifndef LBCRYPTO_CRYPTO_CIPHERTEXT_H
 #define LBCRYPTO_CRYPTO_CIPHERTEXT_H
 
+#include "ciphertext-fwd.h"
+#include "cryptoobject.h"
+
+#include "metadata.h"
+#include "key/key.h"
+
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 #include <map>
 
-#include "metadata.h"
-#include "key/key.h"
-
 namespace lbcrypto {
-
-template <typename Element>
-class CiphertextImpl;
-
-template <typename Element>
-using Ciphertext = std::shared_ptr<CiphertextImpl<Element>>;
-
-// TODO (dsuponit): add another "const" to have "const std::shared_ptr<const CiphertextImpl<Element>>"
-template <typename Element>
-using ConstCiphertext = std::shared_ptr<const CiphertextImpl<Element>>;
-
 /**
  * @brief CiphertextImpl
  *
