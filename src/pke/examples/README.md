@@ -27,7 +27,6 @@ File Listing
 - [depth-bgvrns.cpp](depth-bgvrns.cpp): demonstrates use of the BGVrns scheme for basic homomorphic encryption
 - [linearwsum-evaluation.cpp](linearwsum.cpp): demonstrates the evaluation of a linear weighted sum using CKKS
 - [polynomial-evaluation.cpp](polynomial-evaluation.cpp): demonstrates an evaluation of a polynomial (power series) using CKKS
-- [pre.cpp](pre.cpp): demonstrates use of proxy re-encryption across several schemes
 - [pre-buffer.cpp](pre-buffer.cpp): demonstrates use of OpenFHE for encryption, re-encryption and decryption of packed vector of binary data
 - [rotation.cpp](rotation.cpp): demonstrates use of EvalRotate for different schemes
 - [simple-ckks-bootstrapping.cpp](simple-ckks-bootstrapping.cpp): simple example showing CKKS bootstrapping for a ciphertext with full packing
