@@ -1,4 +1,3 @@
-#if 0
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -30,29 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  FHEW scheme (RingGSW accumulator) implementation
-  The scheme is described in https://eprint.iacr.org/2014/816 and in Daniele Micciancio and Yuriy Polyakov
-  "Bootstrapping in FHEW-like Cryptosystems", Cryptology ePrint Archive, Report 2020/086,
-  https://eprint.iacr.org/2020/086.
+#ifndef BINFHE_FHEW_H
+#define BINFHE_FHEW_H
 
-  Full reference to https://eprint.iacr.org/2014/816:
-  @misc{cryptoeprint:2014:816,
-    author = {Leo Ducas and Daniele Micciancio},
-    title = {FHEW: Bootstrapping Homomorphic Encryption in less than a second},
-    howpublished = {Cryptology ePrint Archive, Report 2014/816},
-    year = {2014},
-    note = {\url{https://eprint.iacr.org/2014/816}},
- */
+#include <map>
+#include <vector>
+#include <memory>
+#include <string>
 
-    #ifndef BINFHE_FHEW_H
-        #define BINFHE_FHEW_H
-
-        #include <map>
-        #include <vector>
-        #include <memory>
-        #include "lwe.h"
-        #include "ringcore.h"
+#include "binfhe-base-params.h"
+#include "rgsw-btkey.h"
+#include "rgsw-ciphertext.h"
+#include "lwe-pke.h"
 
 namespace lbcrypto {
 
@@ -331,7 +319,5 @@ private:
 };
 
 }  // namespace lbcrypto
-
-    #endif
 
 #endif

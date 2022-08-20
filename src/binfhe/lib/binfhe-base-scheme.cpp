@@ -1,4 +1,3 @@
-#if 0
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -45,8 +44,9 @@
     note = {\url{https://eprint.iacr.org/2014/816}},
  */
 
-    #include "fhew.h"
-    #include <string>
+#include <string>
+
+#include "binfhe-base-scheme.h"
 
 namespace lbcrypto {
 
@@ -185,7 +185,7 @@ RingGSWEvalKey RingGSWAccumulatorScheme::KeyGenAP(const std::shared_ptr<RingGSWC
 
     ek.BSkey = std::make_shared<RingGSWBTKey>(n, baseR, digitsR.size());
 
-    #pragma omp parallel for
+#pragma omp parallel for
     for (uint32_t i = 0; i < n; ++i)
         for (uint32_t j = 1; j < baseR; ++j)
             for (uint32_t k = 0; k < digitsR.size(); ++k) {
@@ -226,7 +226,7 @@ RingGSWEvalKey RingGSWAccumulatorScheme::KeyGenGINX(const std::shared_ptr<RingGS
 
     // handles ternary secrets using signed mod 3 arithmetic; 0 -> {0,0}, 1 ->
     // {1,0}, -1 -> {0,1}
-    #pragma omp parallel for
+#pragma omp parallel for
     for (uint32_t i = 0; i < n; ++i) {
         int64_t s = LWEsk->GetElement()[i].ConvertToInt();
         if (s > qHalf)
@@ -1066,5 +1066,3 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> RingGSWAccumulatorScheme::EvalDe
 }
 
 };  // namespace lbcrypto
-
-#endif

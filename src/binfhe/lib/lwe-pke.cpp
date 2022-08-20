@@ -1,4 +1,3 @@
-#if 0
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -30,21 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  LWE Encryption Scheme as described in
-  https://eprint.iacr.org/2014/816 Full reference:
-  @misc{cryptoeprint:2014:816,
-    author = {Leo Ducas and Daniele Micciancio},
-    title = {FHEW: Bootstrapping Homomorphic Encryption in less than a second},
-    howpublished = {Cryptology ePrint Archive, Report 2014/816},
-    year = {2014},
-    note = {\url{https://eprint.iacr.org/2014/816}},
- */
+#include "math/binaryuniformgenerator.h"
+#include "math/discreteuniformgenerator.h"
+#include "math/ternaryuniformgenerator.h"
 
-    #include "lwe.h"
-    #include "math/binaryuniformgenerator.h"
-    #include "math/discreteuniformgenerator.h"
-    #include "math/ternaryuniformgenerator.h"
+#include "lwe-pke.h"
 
 namespace lbcrypto {
 
@@ -75,10 +64,10 @@ std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::Encrypt(const std::share
 
     NativeInteger b = (m % p) * (q / p) + params->GetDgg().GenerateInteger(q);
 
-    #if defined(BINFHE_DEBUG)
+#if defined(BINFHE_DEBUG)
     std::cout << b % q << std::endl;
     std::cout << (m % p) * (q / p) << std::endl;
-    #endif
+#endif
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(q);
@@ -134,21 +123,14 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params,
     r.ModAddFastEq((q / (p * 2)), q);
     *result = ((NativeInteger(p) * r) / q).ConvertToInt();
 
-    #if defined(BINFHE_DEBUG)
+#if defined(BINFHE_DEBUG)
     double error = (static_cast<double>(p) * (r.ConvertToDouble() - q.ConvertToInt() / (p * 2))) / q.ConvertToDouble() -
                    static_cast<double>(*result);
     std::cerr << q << " " << p << " " << r << " error:\t" << error << std::endl;
     std::cerr << error * q.ConvertToDouble() / static_cast<double>(p) << std::endl;
-    #endif
+#endif
 
     return;
-}
-
-// the main rounding operation used in ModSwitch (as described in Section 3 of
-// https://eprint.iacr.org/2014/816) The idea is that Round(x) = 0.5 + Floor(x)
-NativeInteger RoundqQ(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q) {
-    return NativeInteger((uint64_t)std::floor(0.5 + v.ConvertToDouble() * q.ConvertToDouble() / Q.ConvertToDouble()))
-        .Mod(q);
 }
 
 // Modulus switching - directly applies the scale-and-round operation RoundQ
@@ -201,7 +183,7 @@ std::shared_ptr<LWESwitchingKey> LWEEncryptionScheme::KeySwitchGen(
 
     std::vector<std::vector<std::vector<LWECiphertextImpl>>> resultVec(N);
 
-    #pragma omp parallel for
+#pragma omp parallel for
     for (uint32_t i = 0; i < N; ++i) {
         std::vector<std::vector<LWECiphertextImpl>> vector1(baseKS);
         for (uint32_t j = 0; j < baseKS; ++j) {
@@ -212,16 +194,16 @@ std::shared_ptr<LWESwitchingKey> LWEEncryptionScheme::KeySwitchGen(
 
                 NativeVector a = dug.GenerateVector(n);
 
-    #if NATIVEINT == 32
+#if NATIVEINT == 32
                 for (uint32_t i = 0; i < n; ++i) {
                     b.ModAddFastEq(a[i].ModMulFast(newSK[i], Q, mu), Q);
                 }
-    #else
+#else
                 for (uint32_t i = 0; i < n; ++i) {
                     b += a[i].ModMulFast(newSK[i], Q, mu);
                 }
                 b.ModEq(Q);
-    #endif
+#endif
 
                 vector2[k] = LWECiphertextImpl(a, b);
             }
@@ -280,6 +262,11 @@ std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::NoiselessEmbedding(
     return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
 }
 
-};  // namespace lbcrypto
+// the main rounding operation used in ModSwitch (as described in Section 3 of
+// https://eprint.iacr.org/2014/816) The idea is that Round(x) = 0.5 + Floor(x)
+NativeInteger RoundqQ(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q) {
+    return NativeInteger((uint64_t)std::floor(0.5 + v.ConvertToDouble() * q.ConvertToDouble() / Q.ConvertToDouble()))
+        .Mod(q);
+}
 
-#endif
+};  // namespace lbcrypto

@@ -1,4 +1,3 @@
-#if 0
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -30,28 +29,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  LWE Encryption Scheme as described in
-  https://eprint.iacr.org/2014/816 Full reference:
-  @misc{cryptoeprint:2014:816,
-    author = {Leo Ducas and Daniele Micciancio},
-    title = {FHEW: Bootstrapping Homomorphic Encryption in less than a second},
-    howpublished = {Cryptology ePrint Archive, Report 2014/816},
-    year = {2014},
-    note = {\url{https://eprint.iacr.org/2014/816}},
- */
+#ifndef _LWE_PKE_H_
+#define _LWE_PKE_H_
 
-    #ifndef BINFHE_LWE_H
-        #define BINFHE_LWE_H
+#include <memory>
 
-// undefine to output the noise value during decryption
-// #define BINFHE_DEBUG
-
-        #include <memory>
-
-        #include "lwecore.h"
+#include "lwe-ciphertext.h"
+#include "lwe-keyswitchkey.h"
+#include "lwe-privatekey.h"
+#include "lwe-cryptoparameters.h"
 
 namespace lbcrypto {
+
+typedef int64_t LWEPlaintext;
+typedef int64_t LWEPlaintextModulus;
 
 /**
  * @brief Additive LWE scheme
@@ -151,7 +142,5 @@ public:
 NativeInteger RoundqQ(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q);
 
 }  // namespace lbcrypto
-
-    #endif
 
 #endif

@@ -1,3 +1,4 @@
+#if 0
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -33,21 +34,21 @@
   Main ring classes for Boolean circuit FHE
  */
 
-#ifndef BINFHE_RINGCORE_H
-#define BINFHE_RINGCORE_H
+    #ifndef BINFHE_RINGCORE_H
+        #define BINFHE_RINGCORE_H
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-#include <map>
+        #include <memory>
+        #include <string>
+        #include <utility>
+        #include <vector>
+        #include <map>
 
-#include "lattice/lat-hal.h"
-#include "lwecore.h"
-#include "math/discretegaussiangenerator.h"
-#include "math/nbtheory.h"
-#include "utils/serializable.h"
-#include "utils/utilities.h"
+        #include "lattice/lat-hal.h"
+        #include "lwecore.h"
+        #include "math/discretegaussiangenerator.h"
+        #include "math/nbtheory.h"
+        #include "utils/serializable.h"
+        #include "utils/utilities.h"
 
 namespace lbcrypto {
 
@@ -173,7 +174,7 @@ public:
                 m_monomials.push_back(aPoly);
             }
         }
-#if defined(BINFHE_DEBUG)
+        #if defined(BINFHE_DEBUG)
         std::cerr << "base_g = " << m_baseG << std::endl;
         std::cerr << "m_digitsG = " << m_digitsG << std::endl;
         std::cerr << "m_digitsG2 = " << m_digitsG2 << std::endl;
@@ -186,7 +187,7 @@ public:
         std::cerr << "Q = " << m_LWEParams->GetQ() << std::endl;
         std::cerr << "baseKS = " << m_LWEParams->GetBaseKS() << std::endl;
         std::cerr << "digitsKS = " << m_LWEParams->GetDigitsKS() << std::endl;
-#endif
+        #endif
     }
 
     const std::shared_ptr<LWECryptoParams> GetLWEParams() const {
@@ -517,5 +518,7 @@ typedef struct {
 } RingGSWEvalKey;
 
 }  // namespace lbcrypto
+
+    #endif
 
 #endif

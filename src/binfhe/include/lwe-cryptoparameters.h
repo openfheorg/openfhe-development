@@ -1,4 +1,3 @@
-#if 0
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -30,25 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  Main LWE classes for Boolean circuit FHE
- */
+#ifndef _LWE_CRYPTOPARAMETERS_H_
+#define _LWE_CRYPTOPARAMETERS_H_
 
-    #ifndef BINFHE_LWECORE_H
-        #define BINFHE_LWECORE_H
+#include <string>
+#include <utility>
+#include <vector>
 
-        #include <string>
-        #include <utility>
-        #include <vector>
-
-        #include "math/hal.h"
-        #include "math/discretegaussiangenerator.h"
-        #include "utils/serializable.h"
+#include "math/hal.h"
+#include "math/discretegaussiangenerator.h"
+#include "utils/serializable.h"
 
 namespace lbcrypto {
-
-typedef int64_t LWEPlaintext;
-typedef int64_t LWEPlaintextModulus;
 
 /**
  * @brief Class that stores all parameters for the LWE scheme
@@ -258,243 +250,6 @@ private:
     std::vector<NativeInteger> m_digitsKS;
 };
 
-/**
- * @brief Class that stores a LWE scheme ciphertext; composed of a vector "a"
- * and integer "b"
- */
-class LWECiphertextImpl : public Serializable {
-public:
-    LWECiphertextImpl() {}
-
-    explicit LWECiphertextImpl(const NativeVector&& a, const NativeInteger& b) : m_a(std::move(a)), m_b(b) {}
-
-    explicit LWECiphertextImpl(const NativeVector& a, const NativeInteger& b) : m_a(a), m_b(b) {}
-
-    LWECiphertextImpl(NativeVector&& a, NativeInteger b) : m_a(std::move(a)), m_b(b) {}
-
-    explicit LWECiphertextImpl(const LWECiphertextImpl& rhs) {
-        this->m_a = rhs.m_a;
-        this->m_b = rhs.m_b;
-    }
-
-    explicit LWECiphertextImpl(const LWECiphertextImpl&& rhs) {
-        this->m_a = std::move(rhs.m_a);
-        this->m_b = std::move(rhs.m_b);
-    }
-
-    const LWECiphertextImpl& operator=(const LWECiphertextImpl& rhs) {
-        this->m_a = rhs.m_a;
-        this->m_b = rhs.m_b;
-        return *this;
-    }
-
-    const LWECiphertextImpl& operator=(const LWECiphertextImpl&& rhs) {
-        this->m_a = std::move(rhs.m_a);
-        this->m_b = std::move(rhs.m_b);
-        return *this;
-    }
-
-    const NativeVector& GetA() const {
-        return m_a;
-    }
-
-    const NativeInteger& GetA(std::size_t i) const {
-        return m_a[i];
-    }
-
-    const NativeInteger& GetB() const {
-        return m_b;
-    }
-
-    void SetA(const NativeVector& a) {
-        m_a = a;
-    }
-
-    void SetB(const NativeInteger& b) {
-        m_b = b;
-    }
-
-    bool operator==(const LWECiphertextImpl& other) const {
-        return m_a == other.m_a && m_b == other.m_b;
-    }
-
-    bool operator!=(const LWECiphertextImpl& other) const {
-        return !(*this == other);
-    }
-
-    template <class Archive>
-    void save(Archive& ar, std::uint32_t const version) const {
-        ar(::cereal::make_nvp("a", m_a));
-        ar(::cereal::make_nvp("b", m_b));
-    }
-
-    template <class Archive>
-    void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
-        }
-
-        ar(::cereal::make_nvp("a", m_a));
-        ar(::cereal::make_nvp("b", m_b));
-    }
-
-    std::string SerializedObjectName() const {
-        return "LWECiphertext";
-    }
-    static uint32_t SerializedVersion() {
-        return 1;
-    }
-
-private:
-    NativeVector m_a;
-    NativeInteger m_b;
-};
-
-/**
- * @brief Class that stores the LWE scheme secret key; contains a vector
- */
-class LWEPrivateKeyImpl : public Serializable {
-public:
-    LWEPrivateKeyImpl() {}
-
-    explicit LWEPrivateKeyImpl(const NativeVector& s) : m_s(s) {}
-
-    explicit LWEPrivateKeyImpl(const LWEPrivateKeyImpl& rhs) {
-        this->m_s = rhs.m_s;
-    }
-
-    explicit LWEPrivateKeyImpl(const LWEPrivateKeyImpl&& rhs) {
-        this->m_s = std::move(rhs.m_s);
-    }
-
-    const LWEPrivateKeyImpl& operator=(const LWEPrivateKeyImpl& rhs) {
-        this->m_s = rhs.m_s;
-        return *this;
-    }
-
-    const LWEPrivateKeyImpl& operator=(const LWEPrivateKeyImpl&& rhs) {
-        this->m_s = std::move(rhs.m_s);
-        return *this;
-    }
-
-    const NativeVector& GetElement() const {
-        return m_s;
-    }
-
-    void SetElement(const NativeVector& s) {
-        m_s = s;
-    }
-
-    bool operator==(const LWEPrivateKeyImpl& other) const {
-        return m_s == other.m_s;
-    }
-
-    bool operator!=(const LWEPrivateKeyImpl& other) const {
-        return !(*this == other);
-    }
-
-    template <class Archive>
-    void save(Archive& ar, std::uint32_t const version) const {
-        ar(::cereal::make_nvp("s", m_s));
-    }
-
-    template <class Archive>
-    void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
-        }
-
-        ar(::cereal::make_nvp("s", m_s));
-    }
-
-    std::string SerializedObjectName() const {
-        return "LWEPrivateKey";
-    }
-    static uint32_t SerializedVersion() {
-        return 1;
-    }
-    void switchModulus(NativeInteger q) {
-        m_s.Mod(q);
-        m_s.SetModulus(q);
-    }
-
-private:
-    NativeVector m_s;
-};
-
-/**
- * @brief Class that stores the LWE scheme switching key
- */
-class LWESwitchingKey : public Serializable {
-public:
-    LWESwitchingKey() {}
-
-    explicit LWESwitchingKey(const std::vector<std::vector<std::vector<LWECiphertextImpl>>>& key) : m_key(key) {}
-
-    explicit LWESwitchingKey(const LWESwitchingKey& rhs) {
-        this->m_key = rhs.m_key;
-    }
-
-    explicit LWESwitchingKey(const LWESwitchingKey&& rhs) {
-        this->m_key = std::move(rhs.m_key);
-    }
-
-    const LWESwitchingKey& operator=(const LWESwitchingKey& rhs) {
-        this->m_key = rhs.m_key;
-        return *this;
-    }
-
-    const LWESwitchingKey& operator=(const LWESwitchingKey&& rhs) {
-        this->m_key = std::move(rhs.m_key);
-        return *this;
-    }
-
-    const std::vector<std::vector<std::vector<LWECiphertextImpl>>>& GetElements() const {
-        return m_key;
-    }
-
-    void SetElements(const std::vector<std::vector<std::vector<LWECiphertextImpl>>>& key) {
-        m_key = key;
-    }
-
-    bool operator==(const LWESwitchingKey& other) const {
-        return m_key == other.m_key;
-    }
-
-    bool operator!=(const LWESwitchingKey& other) const {
-        return !(*this == other);
-    }
-
-    template <class Archive>
-    void save(Archive& ar, std::uint32_t const version) const {
-        ar(::cereal::make_nvp("k", m_key));
-    }
-
-    template <class Archive>
-    void load(Archive& ar, std::uint32_t const version) {
-        if (version > SerializedVersion()) {
-            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
-                                                 " is from a later version of the library");
-        }
-
-        ar(::cereal::make_nvp("k", m_key));
-    }
-
-    std::string SerializedObjectName() const {
-        return "LWEPrivateKey";
-    }
-    static uint32_t SerializedVersion() {
-        return 1;
-    }
-
-private:
-    std::vector<std::vector<std::vector<LWECiphertextImpl>>> m_key;
-};
-
 }  // namespace lbcrypto
 
-    #endif
-
-#endif
+#endif  // _LWE_CRYPTOPARAMETERS_H_
