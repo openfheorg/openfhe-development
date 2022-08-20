@@ -113,14 +113,14 @@ int main() {
 
     // deserializing the refreshing and switching keys (for bootstrapping)
 
-    std::shared_ptr<RingGSWBTKey> refreshKey;
+    RingGSWBTKey refreshKey;
     if (Serial::DeserializeFromFile(DATAFOLDER + "/refreshKey.txt", refreshKey, SerType::JSON) == false) {
         std::cerr << "Could not deserialize the refresh key" << std::endl;
         return 1;
     }
     std::cout << "The refresh key has been deserialized." << std::endl;
 
-    std::shared_ptr<LWESwitchingKey> ksKey;
+    LWESwitchingKey ksKey;
     if (Serial::DeserializeFromFile(DATAFOLDER + "/ksKey.txt", ksKey, SerType::JSON) == false) {
         std::cerr << "Could not deserialize the switching key" << std::endl;
         return 1;

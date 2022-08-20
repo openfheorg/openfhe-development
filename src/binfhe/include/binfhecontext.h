@@ -107,7 +107,7 @@ public:
    *
    * @return a shared pointer to the refreshing key
    */
-    const std::shared_ptr<RingGSWBTKey> GetRefreshKey() const {
+    const RingGSWBTKey GetRefreshKey() const {
         return m_BTKey.BSkey;
     }
 
@@ -116,7 +116,7 @@ public:
    *
    * @return a shared pointer to the switching key
    */
-    const std::shared_ptr<LWESwitchingKey> GetSwitchKey() const {
+    const LWESwitchingKey GetSwitchKey() const {
         return m_BTKey.KSkey;
     }
     /**
@@ -176,7 +176,7 @@ public:
    * @param skN old secret key
    * @return a shared pointer to the switching key
    */
-    std::shared_ptr<LWESwitchingKey> KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPrivateKey skN) const;
+    LWESwitchingKey KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPrivateKey skN) const;
 
     /**
    * Generates boostrapping keys
@@ -300,7 +300,7 @@ public:
         return m_LWEscheme;
     }
 
-    const std::shared_ptr<RingGSWAccumulatorScheme> GetRingGSWScheme() {
+    const std::shared_ptr<RingGSWAccumulatorSchemeBase> GetRingGSWScheme() {
         return m_RingGSWscheme;
     }
 
@@ -346,7 +346,7 @@ private:
     std::shared_ptr<LWEEncryptionScheme> m_LWEscheme;
 
     // Shared pointer to the underlying RingGSW/RLWE scheme
-    std::shared_ptr<RingGSWAccumulatorScheme> m_RingGSWscheme;
+    std::shared_ptr<RingGSWAccumulatorSchemeBase> m_RingGSWscheme;
 
     // Struct containing the bootstrapping keys
     RingGSWEvalKey m_BTKey;

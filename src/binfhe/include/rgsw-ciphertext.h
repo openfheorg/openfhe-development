@@ -52,36 +52,42 @@
 
 namespace lbcrypto {
 
+class RingGSWCiphertextImpl;
+
+using RingGSWCiphertext = std::shared_ptr<RingGSWCiphertextImpl>;
+
+using ConstRingGSWCiphertext = const std::shared_ptr<const RingGSWCiphertextImpl>;
+
 /**
  * @brief Class that stores a RingGSW ciphertext; a two-dimensional vector of
  * ring elements
  */
-class RingGSWCiphertext : public Serializable {
+class RingGSWCiphertextImpl : public Serializable {
 public:
-    RingGSWCiphertext() {}
+    RingGSWCiphertextImpl() {}
 
-    RingGSWCiphertext(uint32_t rowSize, uint32_t colSize) {
+    RingGSWCiphertextImpl(uint32_t rowSize, uint32_t colSize) {
         m_elements.resize(rowSize);
         for (uint32_t i = 0; i < rowSize; i++)
             m_elements[i].resize(colSize);
     }
 
-    explicit RingGSWCiphertext(const std::vector<std::vector<NativePoly>>& elements) : m_elements(elements) {}
+    explicit RingGSWCiphertextImpl(const std::vector<std::vector<NativePoly>>& elements) : m_elements(elements) {}
 
-    explicit RingGSWCiphertext(const RingGSWCiphertext& rhs) {
+    explicit RingGSWCiphertextImpl(const RingGSWCiphertextImpl& rhs) {
         this->m_elements = rhs.m_elements;
     }
 
-    explicit RingGSWCiphertext(const RingGSWCiphertext&& rhs) {
+    explicit RingGSWCiphertextImpl(const RingGSWCiphertextImpl&& rhs) {
         this->m_elements = std::move(rhs.m_elements);
     }
 
-    const RingGSWCiphertext& operator=(const RingGSWCiphertext& rhs) {
+    const RingGSWCiphertextImpl& operator=(const RingGSWCiphertextImpl& rhs) {
         this->m_elements = rhs.m_elements;
         return *this;
     }
 
-    const RingGSWCiphertext& operator=(const RingGSWCiphertext&& rhs) {
+    const RingGSWCiphertextImpl& operator=(const RingGSWCiphertextImpl&& rhs) {
         this->m_elements = rhs.m_elements;
         return *this;
     }
@@ -113,11 +119,11 @@ public:
         return m_elements[i];
     }
 
-    bool operator==(const RingGSWCiphertext& other) const {
+    bool operator==(const RingGSWCiphertextImpl& other) const {
         return m_elements == other.m_elements;
     }
 
-    bool operator!=(const RingGSWCiphertext& other) const {
+    bool operator!=(const RingGSWCiphertextImpl& other) const {
         return !(*this == other);
     }
 

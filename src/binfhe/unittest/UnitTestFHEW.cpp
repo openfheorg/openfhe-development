@@ -60,10 +60,8 @@ TEST(UnitTestFHEWAP, KeySwitch) {
 
     auto keySwitchHint = cc.KeySwitchGen(sk, skN);
 
-    std::shared_ptr<LWECiphertextImpl> eQ1 =
-        cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
-    std::shared_ptr<LWECiphertextImpl> eQ0 =
-        cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
+    LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
+    LWECiphertext eQ0 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
 
     LWEPlaintext resultAfterKeySwitch1;
     cc.Decrypt(skQ, eQ1, &resultAfterKeySwitch1);
@@ -96,10 +94,8 @@ TEST(UnitTestFHEWGINX, KeySwitch) {
 
     auto keySwitchHint = cc.KeySwitchGen(sk, skN);
 
-    std::shared_ptr<LWECiphertextImpl> eQ1 =
-        cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
-    std::shared_ptr<LWECiphertextImpl> eQ0 =
-        cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
+    LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
+    LWECiphertext eQ0 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
 
     LWEPlaintext resultAfterKeySwitch1;
     cc.Decrypt(skQ, eQ1, &resultAfterKeySwitch1);

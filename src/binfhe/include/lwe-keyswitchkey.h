@@ -32,6 +32,7 @@
 #ifndef _LWE_KEYSWITCHKEY_H_
 #define _LWE_KEYSWITCHKEY_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -41,29 +42,35 @@
 
 namespace lbcrypto {
 
+class LWESwitchingKeyImpl;
+
+using LWESwitchingKey = std::shared_ptr<LWESwitchingKeyImpl>;
+
+using ConstLWESwitchingKey = const std::shared_ptr<const LWESwitchingKeyImpl>;
+
 /**
  * @brief Class that stores the LWE scheme switching key
  */
-class LWESwitchingKey : public Serializable {
+class LWESwitchingKeyImpl : public Serializable {
 public:
-    LWESwitchingKey() {}
+    LWESwitchingKeyImpl() {}
 
-    explicit LWESwitchingKey(const std::vector<std::vector<std::vector<LWECiphertextImpl>>>& key) : m_key(key) {}
+    explicit LWESwitchingKeyImpl(const std::vector<std::vector<std::vector<LWECiphertextImpl>>>& key) : m_key(key) {}
 
-    explicit LWESwitchingKey(const LWESwitchingKey& rhs) {
+    explicit LWESwitchingKeyImpl(const LWESwitchingKeyImpl& rhs) {
         this->m_key = rhs.m_key;
     }
 
-    explicit LWESwitchingKey(const LWESwitchingKey&& rhs) {
+    explicit LWESwitchingKeyImpl(const LWESwitchingKeyImpl&& rhs) {
         this->m_key = std::move(rhs.m_key);
     }
 
-    const LWESwitchingKey& operator=(const LWESwitchingKey& rhs) {
+    const LWESwitchingKeyImpl& operator=(const LWESwitchingKeyImpl& rhs) {
         this->m_key = rhs.m_key;
         return *this;
     }
 
-    const LWESwitchingKey& operator=(const LWESwitchingKey&& rhs) {
+    const LWESwitchingKeyImpl& operator=(const LWESwitchingKeyImpl&& rhs) {
         this->m_key = std::move(rhs.m_key);
         return *this;
     }
@@ -76,11 +83,11 @@ public:
         m_key = key;
     }
 
-    bool operator==(const LWESwitchingKey& other) const {
+    bool operator==(const LWESwitchingKeyImpl& other) const {
         return m_key == other.m_key;
     }
 
-    bool operator!=(const LWESwitchingKey& other) const {
+    bool operator!=(const LWESwitchingKeyImpl& other) const {
         return !(*this == other);
     }
 

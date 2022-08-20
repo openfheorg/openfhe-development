@@ -53,15 +53,21 @@
 
 namespace lbcrypto {
 
+class RingGSWBTKeyImpl;
+
+using RingGSWBTKey = std::shared_ptr<RingGSWBTKeyImpl>;
+
+using ConstRingGSWBTKey = const std::shared_ptr<const RingGSWBTKeyImpl>;
+
 /**
  * @brief Class that stores the refreshing key (used in bootstrapping)
  * A three-dimensional vector of RingGSW ciphertexts
  */
-class RingGSWBTKey : public Serializable {
+class RingGSWBTKeyImpl : public Serializable {
 public:
-    RingGSWBTKey() {}
+    RingGSWBTKeyImpl() {}
 
-    explicit RingGSWBTKey(uint32_t dim1, uint32_t dim2, uint32_t dim3) {
+    explicit RingGSWBTKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) {
         m_key.resize(dim1);
         for (uint32_t i = 0; i < dim1; i++) {
             m_key[i].resize(dim2);
@@ -70,47 +76,47 @@ public:
         }
     }
 
-    explicit RingGSWBTKey(const std::vector<std::vector<std::vector<RingGSWCiphertext>>>& key) : m_key(key) {}
+    explicit RingGSWBTKeyImpl(const std::vector<std::vector<std::vector<RingGSWCiphertextImpl>>>& key) : m_key(key) {}
 
-    explicit RingGSWBTKey(const RingGSWBTKey& rhs) {
+    explicit RingGSWBTKeyImpl(const RingGSWBTKeyImpl& rhs) {
         this->m_key = rhs.m_key;
     }
 
-    explicit RingGSWBTKey(const RingGSWBTKey&& rhs) {
+    explicit RingGSWBTKeyImpl(const RingGSWBTKeyImpl&& rhs) {
         this->m_key = std::move(rhs.m_key);
     }
 
-    const RingGSWBTKey& operator=(const RingGSWBTKey& rhs) {
+    const RingGSWBTKeyImpl& operator=(const RingGSWBTKeyImpl& rhs) {
         this->m_key = rhs.m_key;
         return *this;
     }
 
-    const RingGSWBTKey& operator=(const RingGSWBTKey&& rhs) {
+    const RingGSWBTKeyImpl& operator=(const RingGSWBTKeyImpl&& rhs) {
         this->m_key = std::move(rhs.m_key);
         return *this;
     }
 
-    const std::vector<std::vector<std::vector<RingGSWCiphertext>>>& GetElements() const {
+    const std::vector<std::vector<std::vector<RingGSWCiphertextImpl>>>& GetElements() const {
         return m_key;
     }
 
-    void SetElements(const std::vector<std::vector<std::vector<RingGSWCiphertext>>>& key) {
+    void SetElements(const std::vector<std::vector<std::vector<RingGSWCiphertextImpl>>>& key) {
         m_key = key;
     }
 
-    std::vector<std::vector<RingGSWCiphertext>>& operator[](uint32_t i) {
+    std::vector<std::vector<RingGSWCiphertextImpl>>& operator[](uint32_t i) {
         return m_key[i];
     }
 
-    const std::vector<std::vector<RingGSWCiphertext>>& operator[](usint i) const {
+    const std::vector<std::vector<RingGSWCiphertextImpl>>& operator[](usint i) const {
         return m_key[i];
     }
 
-    bool operator==(const RingGSWBTKey& other) const {
+    bool operator==(const RingGSWBTKeyImpl& other) const {
         return m_key == other.m_key;
     }
 
-    bool operator!=(const RingGSWBTKey& other) const {
+    bool operator!=(const RingGSWBTKeyImpl& other) const {
         return !(*this == other);
     }
 
@@ -129,22 +135,22 @@ public:
     }
 
     std::string SerializedObjectName() const {
-        return "RingGSWBTKey";
+        return "RingGSWBTKeyImpl";
     }
     static uint32_t SerializedVersion() {
         return 1;
     }
 
 private:
-    std::vector<std::vector<std::vector<RingGSWCiphertext>>> m_key;
+    std::vector<std::vector<std::vector<RingGSWCiphertextImpl>>> m_key;
 };
 
 // The struct for storing bootstrapping keys
 typedef struct {
     // refreshing key
-    std::shared_ptr<RingGSWBTKey> BSkey;
+    RingGSWBTKey BSkey;
     // switching key
-    std::shared_ptr<LWESwitchingKey> KSkey;
+    LWESwitchingKey KSkey;
 } RingGSWEvalKey;
 
 }  // namespace lbcrypto

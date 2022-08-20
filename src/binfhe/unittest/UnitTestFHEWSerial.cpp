@@ -156,14 +156,14 @@ TEST(UnitTestFHEWSerialAP, BINARY) {
   s.clear();
 
   Serial::Serialize(cc.GetRefreshKey(), s, SerType::BINARY);
-  std::shared_ptr<RingGSWBTKey> refreshKey;
+  RingGSWBTKey refreshKey;
   Serial::Deserialize(refreshKey, s, SerType::BINARY);
 
   s.str("");
   s.clear();
 
   Serial::Serialize(cc.GetSwitchKey(), s, SerType::BINARY);
-  std::shared_ptr<LWESwitchingKey> switchKey;
+  LWESwitchingKey switchKey;
   Serial::Deserialize(switchKey, s, SerType::BINARY);
 
   // Loading deserialized bootstrapping keys
@@ -222,14 +222,14 @@ TEST(UnitTestFHEWSerialGINX, BINARY) {
   s.clear();
 
   Serial::Serialize(cc.GetRefreshKey(), s, SerType::BINARY);
-  std::shared_ptr<RingGSWBTKey> refreshKey;
+  RingGSWBTKey refreshKey;
   Serial::Deserialize(refreshKey, s, SerType::BINARY);
 
   s.str("");
   s.clear();
 
   Serial::Serialize(cc.GetSwitchKey(), s, SerType::BINARY);
-  std::shared_ptr<LWESwitchingKey> switchKey;
+  LWESwitchingKey switchKey;
   Serial::Deserialize(switchKey, s, SerType::BINARY);
 
   // Loading deserialized bootstrapping keys

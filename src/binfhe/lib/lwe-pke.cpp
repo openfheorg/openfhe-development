@@ -37,12 +37,12 @@
 
 namespace lbcrypto {
 
-std::shared_ptr<LWEPrivateKeyImpl> LWEEncryptionScheme::KeyGen(const std::shared_ptr<LWECryptoParams> params) const {
+LWEPrivateKey LWEEncryptionScheme::KeyGen(const std::shared_ptr<LWECryptoParams> params) const {
     TernaryUniformGeneratorImpl<NativeVector> tug;
     return std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(tug.GenerateVector(params->Getn(), params->Getq())));
 }
 
-std::shared_ptr<LWEPrivateKeyImpl> LWEEncryptionScheme::KeyGenN(const std::shared_ptr<LWECryptoParams> params) const {
+LWEPrivateKey LWEEncryptionScheme::KeyGenN(const std::shared_ptr<LWECryptoParams> params) const {
     TernaryUniformGeneratorImpl<NativeVector> tug;
     return std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(tug.GenerateVector(params->GetN(), params->GetQ())));
 }
@@ -50,10 +50,8 @@ std::shared_ptr<LWEPrivateKeyImpl> LWEEncryptionScheme::KeyGenN(const std::share
 // classical LWE encryption
 // a is a randomly uniform vector of dimension n; with integers mod q
 // b = a*s + e + m floor(q/4) is an integer mod q
-std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams> params,
-                                                                const std::shared_ptr<const LWEPrivateKeyImpl> sk,
-                                                                const LWEPlaintext& m,
-                                                                const LWEPlaintextModulus& p) const {
+LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk,
+                                           const LWEPlaintext& m, const LWEPlaintextModulus& p) const {
     NativeInteger q = sk->GetElement().GetModulus();
     uint32_t n      = sk->GetElement().GetLength();
 
@@ -86,10 +84,8 @@ std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::Encrypt(const std::share
 
 // classical LWE decryption
 // m_result = Round(4/q * (b - a*s))
-void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params,
-                                  const std::shared_ptr<const LWEPrivateKeyImpl> sk,
-                                  const std::shared_ptr<const LWECiphertextImpl> ct, LWEPlaintext* result,
-                                  const LWEPlaintextModulus& p) const {
+void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk,
+                                  ConstLWECiphertext ct, LWEPlaintext* result, const LWEPlaintextModulus& p) const {
     // TODO in the future we should add a check to make sure sk parameters match
     // the ct parameters
 
@@ -134,8 +130,7 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params,
 }
 
 // Modulus switching - directly applies the scale-and-round operation RoundQ
-std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::ModSwitch(
-    NativeInteger q, const std::shared_ptr<const LWECiphertextImpl> ctQ) const {
+LWECiphertext LWEEncryptionScheme::ModSwitch(NativeInteger q, ConstLWECiphertext ctQ) const {
     auto n = ctQ->GetA().GetLength();
     auto Q = ctQ->GetA().GetModulus();
     NativeVector a(n, q);
@@ -149,9 +144,8 @@ std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::ModSwitch(
 }
 
 // Switching key as described in Section 3 of https://eprint.iacr.org/2014/816
-std::shared_ptr<LWESwitchingKey> LWEEncryptionScheme::KeySwitchGen(
-    const std::shared_ptr<LWECryptoParams> params, const std::shared_ptr<const LWEPrivateKeyImpl> sk,
-    const std::shared_ptr<const LWEPrivateKeyImpl> skN) const {
+LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk,
+                                                  ConstLWEPrivateKey skN) const {
     // Create local copies of main variables
     uint32_t n                          = params->Getn();
     uint32_t N                          = params->GetN();
@@ -212,14 +206,13 @@ std::shared_ptr<LWESwitchingKey> LWEEncryptionScheme::KeySwitchGen(
         resultVec[i] = std::move(vector1);
     }
 
-    return std::make_shared<LWESwitchingKey>(LWESwitchingKey(resultVec));
+    return std::make_shared<LWESwitchingKeyImpl>(LWESwitchingKeyImpl(resultVec));
 }
 
 // the key switching operation as described in Section 3 of
 // https://eprint.iacr.org/2014/816
-std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::KeySwitch(
-    const std::shared_ptr<LWECryptoParams> params, const std::shared_ptr<LWESwitchingKey> K,
-    const std::shared_ptr<const LWECiphertextImpl> ctQN) const {
+LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoParams> params, ConstLWESwitchingKey K,
+                                             ConstLWECiphertext ctQN) const {
     uint32_t n                          = params->Getn();
     uint32_t N                          = params->GetN();
     NativeInteger Q                     = params->GetqKS();
@@ -248,8 +241,8 @@ std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::KeySwitch(
 // noiseless LWE embedding
 // a is a zero vector of dimension n; with integers mod q
 // b = m floor(q/4) is an integer mod q
-std::shared_ptr<LWECiphertextImpl> LWEEncryptionScheme::NoiselessEmbedding(
-    const std::shared_ptr<LWECryptoParams> params, const LWEPlaintext& m) const {
+LWECiphertext LWEEncryptionScheme::NoiselessEmbedding(const std::shared_ptr<LWECryptoParams> params,
+                                                      const LWEPlaintext& m) const {
     NativeInteger q = params->Getq();
     uint32_t n      = params->Getn();
 

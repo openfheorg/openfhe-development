@@ -144,7 +144,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
         { STD192Q_OPT,     { 35,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 12,  32 } },
         { STD256Q,         { 27,     4096,        2048, 2048, 1 << 16, STD_DEV,     16,    1 <<  7,  46 } },
         { STD256Q_OPT,     { 27,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 <<  7,  32 } },
-        { SIGNED_MOD_TEST, { 28,     2048,         512, 1024,   PRIME, STD_DEV,     25,    1 <<  7,  23 } }, 
+        { SIGNED_MOD_TEST, { 28,     2048,         512, 1024,   PRIME, STD_DEV,     25,    1 <<  7,  23 } },
     });
     // clang-format on
 
@@ -212,7 +212,7 @@ void BinFHEContext::Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct, LWEPla
     if (DiffQ != 0) {
         this->SetQ(DiffQ);
         LWEPrivateKeyImpl skp(sk->GetElement());
-        std::shared_ptr<LWEPrivateKeyImpl> skpptr = std::make_shared<LWEPrivateKeyImpl>(skp);
+        LWEPrivateKey skpptr = std::make_shared<LWEPrivateKeyImpl>(skp);
         skpptr->switchModulus(DiffQ);
         m_LWEscheme->Decrypt(m_params->GetLWEParams(), skpptr, ct, result, p);
         this->SetQ(q);
@@ -222,7 +222,7 @@ void BinFHEContext::Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct, LWEPla
     }
 }
 
-std::shared_ptr<LWESwitchingKey> BinFHEContext::KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPrivateKey skN) const {
+LWESwitchingKey BinFHEContext::KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPrivateKey skN) const {
     return m_LWEscheme->KeySwitchGen(m_params->GetLWEParams(), sk, skN);
 }
 
