@@ -756,35 +756,30 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
     ConstCiphertext<DCRTPoly> ciphertext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
     auto algo               = ciphertext->GetCryptoContext()->GetScheme();
-    std::shared_ptr<std::vector<DCRTPoly>> digits;
 
-    if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        digits = algo->EvalKeySwitchPrecomputeCore(ciphertext->GetElements()[1], ciphertext->GetCryptoParameters());
-    }
-    else {
-        DCRTPoly c1     = ciphertext->GetElements()[1];
-        size_t levels   = ciphertext->GetDepth() - 1;
-        size_t sizeQ    = c1.GetNumOfElements();
-        double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
-        // how many levels to drop
-        uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
-        uint32_t l             = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
-        c1.SetFormat(COEFFICIENT);
-        c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
-                              cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
-
-        digits = algo->EvalKeySwitchPrecomputeCore(c1, ciphertext->GetCryptoParameters());
+    if (cryptoParams->GetMultiplicationTechnique() != HPSPOVERQLEVELED) {
+        return algo->EvalKeySwitchPrecomputeCore(ciphertext->GetElements()[1], ciphertext->GetCryptoParameters());
     }
 
-    return digits;
+    DCRTPoly c1     = ciphertext->GetElements()[1];
+    size_t levels   = ciphertext->GetDepth() - 1;
+    size_t sizeQ    = c1.GetNumOfElements();
+    double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
+    // how many levels to drop
+    uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
+    uint32_t l             = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
+    c1.SetFormat(COEFFICIENT);
+    c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
+                          cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
+
+    return algo->EvalKeySwitchPrecomputeCore(c1, ciphertext->GetCryptoParameters());
 }
 
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly> ciphertext, const usint index,
                                                         const usint m,
                                                         const std::shared_ptr<std::vector<DCRTPoly>> digits) const {
     if (index == 0) {
-        Ciphertext<DCRTPoly> result = ciphertext->Clone();
-        return result;
+        return ciphertext->Clone();
     }
 
     const auto cc = ciphertext->GetCryptoContext();

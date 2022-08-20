@@ -34,8 +34,6 @@
  * using EvalMult and EvalSquare operations.
  */
 
-#define PROFILE
-#define _USE_MATH_DEFINES
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
@@ -137,6 +135,7 @@ void BGVrns_EvalPo2WithMult_P2(benchmark::State& state) {
     plaintextDec->SetLength(plaintext->GetLength());
 
     if (plaintext != plaintextDec) {
+        std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
@@ -174,6 +173,7 @@ void BGVrns_EvalPo2WithSquare_P2(benchmark::State& state) {
     plaintextDec->SetLength(plaintext->GetLength());
 
     if (plaintext != plaintextDec) {
+        std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
@@ -211,6 +211,7 @@ void BFVrns_EvalPo2WithMult_P2(benchmark::State& state) {
     plaintextDec->SetLength(plaintext->GetLength());
 
     if (plaintext != plaintextDec) {
+        std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
@@ -248,6 +249,7 @@ void BFVrns_EvalPo2WithSquare_P2(benchmark::State& state) {
     plaintextDec->SetLength(plaintext->GetLength());
 
     if (plaintext != plaintextDec) {
+        std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
@@ -285,6 +287,7 @@ void BGVrns_EvalPo2WithMult_P65537(benchmark::State& state) {
     plaintextDec->SetLength(plaintext->GetLength());
 
     if (plaintext != plaintextDec) {
+        std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
@@ -322,6 +325,7 @@ void BGVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
     plaintextDec->SetLength(plaintext->GetLength());
 
     if (plaintext != plaintextDec) {
+        std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
@@ -359,6 +363,7 @@ void BFVrns_EvalPo2WithMult_P65537(benchmark::State& state) {
     plaintextDec->SetLength(plaintext->GetLength());
 
     if (plaintext != plaintextDec) {
+        std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
@@ -396,6 +401,7 @@ void BFVrns_EvalPo2WithSquare_P65537(benchmark::State& state) {
     plaintextDec->SetLength(plaintext->GetLength());
 
     if (plaintext != plaintextDec) {
+        std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
@@ -437,6 +443,7 @@ void CKKSrns_EvalPo2WithMult(benchmark::State& state) {
                                 return std::fabs(value1.real() - value2.real()) < epsilon;
                             });
     if (!equal) {
+        std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
@@ -478,6 +485,7 @@ void CKKSrns_EvalPo2WithSquare(benchmark::State& state) {
                                 return std::fabs(value1.real() - value2.real()) < epsilon;
                             });
     if (!equal) {
+        std::cout << "Error: Original plaintext should be equal to evaluated plaintext" << std::endl;
         std::cout << "Original plaintext: " << plaintext << std::endl;
         std::cout << "Evaluated plaintext: " << plaintextDec << std::endl;
     }
