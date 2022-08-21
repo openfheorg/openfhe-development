@@ -29,86 +29,101 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_KEYSWITCHKEY_H_
-#define _LWE_KEYSWITCHKEY_H_
+#ifndef _RGSW_BTKEY_H_
+#define _RGSW_BTKEY_H_
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+#include <map>
 
-#include "math/hal.h"
+#include "lattice/lat-hal.h"
+#include "math/discretegaussiangenerator.h"
+#include "math/nbtheory.h"
 #include "utils/serializable.h"
+#include "utils/utilities.h"
+
+#include "lwe-ciphertext.h"
+#include "lwe-keyswitchkey.h"
+#include "lwe-privatekey.h"
+#include "lwe-cryptoparameters.h"
+
+#include "rgsw-evalkey.h"
 
 namespace lbcrypto {
 
-class LWESwitchingKeyImpl;
+class RingGSWACCKeyImpl;
 
-using LWESwitchingKey = std::shared_ptr<LWESwitchingKeyImpl>;
+using RingGSWACCKey = std::shared_ptr<RingGSWACCKeyImpl>;
 
-using ConstLWESwitchingKey = const std::shared_ptr<const LWESwitchingKeyImpl>;
+using ConstRingGSWACCKey = const std::shared_ptr<const RingGSWACCKeyImpl>;
 
 /**
- * @brief Class that stores the LWE scheme switching key
+ * @brief Class that stores the refreshing key (used in bootstrapping)
+ * A three-dimensional vector of RingGSW ciphertexts
  */
-class LWESwitchingKeyImpl : public Serializable {
+class RingGSWACCKeyImpl : public Serializable {
 public:
-    LWESwitchingKeyImpl() {}
+    RingGSWACCKeyImpl() {}
 
-    explicit LWESwitchingKeyImpl(const std::vector<std::vector<std::vector<NativeVector>>>& keyA,
-                                 const std::vector<std::vector<std::vector<NativeInteger>>>& keyB)
-        : m_keyA(keyA), m_keyB(keyB) {}
-
-    explicit LWESwitchingKeyImpl(const LWESwitchingKeyImpl& rhs) {
-        this->m_keyA = rhs.m_keyA;
-        this->m_keyB = rhs.m_keyB;
+    explicit RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) {
+        m_key.resize(dim1);
+        for (uint32_t i1 = 0; i1 < dim1; i1++) {
+            m_key[i1].resize(dim2);
+            for (uint32_t i2 = 0; i2 < dim2; i2++) {
+                m_key[i1][i2].resize(dim3);
+            }
+        }
     }
 
-    explicit LWESwitchingKeyImpl(const LWESwitchingKeyImpl&& rhs) {
-        this->m_keyA = std::move(rhs.m_keyA);
-        this->m_keyB = std::move(rhs.m_keyB);
+    explicit RingGSWACCKeyImpl(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) : m_key(key) {}
+
+    explicit RingGSWACCKeyImpl(const RingGSWACCKeyImpl& rhs) {
+        this->m_key = rhs.m_key;
     }
 
-    const LWESwitchingKeyImpl& operator=(const LWESwitchingKeyImpl& rhs) {
-        this->m_keyA = rhs.m_keyA;
-        this->m_keyB = rhs.m_keyB;
+    explicit RingGSWACCKeyImpl(const RingGSWACCKeyImpl&& rhs) {
+        this->m_key = std::move(rhs.m_key);
+    }
+
+    const RingGSWACCKeyImpl& operator=(const RingGSWACCKeyImpl& rhs) {
+        this->m_key = rhs.m_key;
         return *this;
     }
 
-    const LWESwitchingKeyImpl& operator=(const LWESwitchingKeyImpl&& rhs) {
-        this->m_keyA = std::move(rhs.m_keyA);
-        this->m_keyB = std::move(rhs.m_keyB);
+    const RingGSWACCKeyImpl& operator=(const RingGSWACCKeyImpl&& rhs) {
+        this->m_key = std::move(rhs.m_key);
         return *this;
     }
 
-    const std::vector<std::vector<std::vector<NativeVector>>>& GetElementsA() const {
-        return m_keyA;
+    const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& GetElements() const {
+        return m_key;
     }
 
-    const std::vector<std::vector<std::vector<NativeInteger>>>& GetElementsB() const {
-        return m_keyB;
+    void SetElements(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) {
+        m_key = key;
     }
 
-    void SetElementsA(const std::vector<std::vector<std::vector<NativeVector>>>& keyA) {
-        m_keyA = keyA;
+    std::vector<std::vector<RingGSWEvalKey>>& operator[](uint32_t i) {
+        return m_key[i];
     }
 
-    void SetElementsB(const std::vector<std::vector<std::vector<NativeInteger>>>& keyB) {
-        m_keyB = keyB;
+    const std::vector<std::vector<RingGSWEvalKey>>& operator[](usint i) const {
+        return m_key[i];
     }
 
-    bool operator==(const LWESwitchingKeyImpl& other) const {
-        return (m_keyA == other.m_keyA && m_keyB == other.m_keyB);
+    bool operator==(const RingGSWACCKeyImpl& other) const {
+        return m_key == other.m_key;
     }
 
-    bool operator!=(const LWESwitchingKeyImpl& other) const {
+    bool operator!=(const RingGSWACCKeyImpl& other) const {
         return !(*this == other);
     }
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
-        ar(::cereal::make_nvp("a", m_keyA));
-        ar(::cereal::make_nvp("b", m_keyB));
+        ar(::cereal::make_nvp("key", m_key));
     }
 
     template <class Archive>
@@ -117,23 +132,20 @@ public:
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                  " is from a later version of the library");
         }
-
-        ar(::cereal::make_nvp("a", m_keyA));
-        ar(::cereal::make_nvp("b", m_keyB));
+        ar(::cereal::make_nvp("key", m_key));
     }
 
     std::string SerializedObjectName() const {
-        return "LWEPrivateKey";
+        return "RingGSWACCKey";
     }
     static uint32_t SerializedVersion() {
         return 1;
     }
 
 private:
-    std::vector<std::vector<std::vector<NativeVector>>> m_keyA;
-    std::vector<std::vector<std::vector<NativeInteger>>> m_keyB;
+    std::vector<std::vector<std::vector<RingGSWEvalKey>>> m_key;
 };
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // _RGSW_BTKEY_H_

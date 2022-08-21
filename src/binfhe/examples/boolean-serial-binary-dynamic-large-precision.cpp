@@ -138,7 +138,7 @@ int main() {
 
     // deserializing the refreshing and switching keys (forbootstrapping)
 
-    RingGSWBTKey refreshKey;
+    RingGSWACCKey refreshKey;
     if (Serial::DeserializeFromFile(DATAFOLDER + "/refreshKey.txt", refreshKey, SerType::BINARY) == false) {
         std::cerr << "Could not deserialize the refresh key" << std::endl;
         return 1;

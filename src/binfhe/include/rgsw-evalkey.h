@@ -29,8 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_BTKEY_H_
-#define _RGSW_BTKEY_H_
+#ifndef _RGSW_EVAL_KEY_H_
+#define _RGSW_EVAL_KEY_H_
 
 #include <memory>
 #include <string>
@@ -39,6 +39,7 @@
 #include <map>
 
 #include "lattice/lat-hal.h"
+
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 #include "utils/serializable.h"
@@ -49,80 +50,86 @@
 #include "lwe-privatekey.h"
 #include "lwe-cryptoparameters.h"
 
-#include "rgsw-ciphertext.h"
-
 namespace lbcrypto {
 
-class RingGSWBTKeyImpl;
+class RingGSWEvalKeyImpl;
 
-using RingGSWBTKey = std::shared_ptr<RingGSWBTKeyImpl>;
+using RingGSWEvalKey = std::shared_ptr<RingGSWEvalKeyImpl>;
 
-using ConstRingGSWBTKey = const std::shared_ptr<const RingGSWBTKeyImpl>;
+using ConstRingGSWEvalKey = const std::shared_ptr<const RingGSWEvalKeyImpl>;
 
 /**
- * @brief Class that stores the refreshing key (used in bootstrapping)
- * A three-dimensional vector of RingGSW ciphertexts
+ * @brief Class that stores a RingGSW ciphertext; a two-dimensional vector of
+ * ring elements
  */
-class RingGSWBTKeyImpl : public Serializable {
+class RingGSWEvalKeyImpl : public Serializable {
 public:
-    RingGSWBTKeyImpl() {}
+    RingGSWEvalKeyImpl() {}
 
-    explicit RingGSWBTKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) {
-        m_key.resize(dim1);
-        for (uint32_t i = 0; i < dim1; i++) {
-            m_key[i].resize(dim2);
-            for (uint32_t j = 0; j < dim2; j++)
-                m_key[i][j].resize(dim3);
-        }
+    RingGSWEvalKeyImpl(uint32_t rowSize, uint32_t colSize) {
+        m_elements.resize(rowSize);
+        for (uint32_t i = 0; i < rowSize; i++)
+            m_elements[i].resize(colSize);
     }
 
-    explicit RingGSWBTKeyImpl(const std::vector<std::vector<std::vector<RingGSWCiphertextImpl>>>& key) : m_key(key) {}
+    explicit RingGSWEvalKeyImpl(const std::vector<std::vector<NativePoly>>& elements) : m_elements(elements) {}
 
-    explicit RingGSWBTKeyImpl(const RingGSWBTKeyImpl& rhs) {
-        this->m_key = rhs.m_key;
+    explicit RingGSWEvalKeyImpl(const RingGSWEvalKeyImpl& rhs) {
+        this->m_elements = rhs.m_elements;
     }
 
-    explicit RingGSWBTKeyImpl(const RingGSWBTKeyImpl&& rhs) {
-        this->m_key = std::move(rhs.m_key);
+    explicit RingGSWEvalKeyImpl(const RingGSWEvalKeyImpl&& rhs) {
+        this->m_elements = std::move(rhs.m_elements);
     }
 
-    const RingGSWBTKeyImpl& operator=(const RingGSWBTKeyImpl& rhs) {
-        this->m_key = rhs.m_key;
+    const RingGSWEvalKeyImpl& operator=(const RingGSWEvalKeyImpl& rhs) {
+        this->m_elements = rhs.m_elements;
         return *this;
     }
 
-    const RingGSWBTKeyImpl& operator=(const RingGSWBTKeyImpl&& rhs) {
-        this->m_key = std::move(rhs.m_key);
+    const RingGSWEvalKeyImpl& operator=(const RingGSWEvalKeyImpl&& rhs) {
+        this->m_elements = rhs.m_elements;
         return *this;
     }
 
-    const std::vector<std::vector<std::vector<RingGSWCiphertextImpl>>>& GetElements() const {
-        return m_key;
+    const std::vector<std::vector<NativePoly>>& GetElements() const {
+        return m_elements;
     }
 
-    void SetElements(const std::vector<std::vector<std::vector<RingGSWCiphertextImpl>>>& key) {
-        m_key = key;
+    void SetElements(const std::vector<std::vector<NativePoly>>& elements) {
+        m_elements = elements;
     }
 
-    std::vector<std::vector<RingGSWCiphertextImpl>>& operator[](uint32_t i) {
-        return m_key[i];
+    /**
+   * Switches between COEFFICIENT and Format::EVALUATION polynomial
+   * representations using NTT
+   */
+    void SetFormat(const Format format) {
+        for (uint32_t i = 0; i < m_elements.size(); i++)
+            // column size is assume to be the same
+            for (uint32_t j = 0; j < m_elements[0].size(); j++)
+                m_elements[i][j].SetFormat(format);
     }
 
-    const std::vector<std::vector<RingGSWCiphertextImpl>>& operator[](usint i) const {
-        return m_key[i];
+    std::vector<NativePoly>& operator[](uint32_t i) {
+        return m_elements[i];
     }
 
-    bool operator==(const RingGSWBTKeyImpl& other) const {
-        return m_key == other.m_key;
+    const std::vector<NativePoly>& operator[](usint i) const {
+        return m_elements[i];
     }
 
-    bool operator!=(const RingGSWBTKeyImpl& other) const {
+    bool operator==(const RingGSWEvalKeyImpl& other) const {
+        return m_elements == other.m_elements;
+    }
+
+    bool operator!=(const RingGSWEvalKeyImpl& other) const {
         return !(*this == other);
     }
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
-        ar(::cereal::make_nvp("key", m_key));
+        ar(::cereal::make_nvp("elements", m_elements));
     }
 
     template <class Archive>
@@ -131,28 +138,20 @@ public:
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                  " is from a later version of the library");
         }
-        ar(::cereal::make_nvp("key", m_key));
+        ar(::cereal::make_nvp("elements", m_elements));
     }
 
     std::string SerializedObjectName() const {
-        return "RingGSWBTKeyImpl";
+        return "RingGSWEvalKey";
     }
     static uint32_t SerializedVersion() {
         return 1;
     }
 
 private:
-    std::vector<std::vector<std::vector<RingGSWCiphertextImpl>>> m_key;
+    std::vector<std::vector<NativePoly>> m_elements;
 };
-
-// The struct for storing bootstrapping keys
-typedef struct {
-    // refreshing key
-    RingGSWBTKey BSkey;
-    // switching key
-    LWESwitchingKey KSkey;
-} RingGSWEvalKey;
 
 }  // namespace lbcrypto
 
-#endif  // _RGSW_BTKEY_H_
+#endif  // _RGSW_EVAL_KEY_H_

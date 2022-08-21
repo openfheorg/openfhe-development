@@ -175,13 +175,16 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
 
     NativeInteger mu = Q.ComputeMu();
 
-    std::vector<std::vector<std::vector<LWECiphertextImpl>>> resultVec(N);
+    std::vector<std::vector<std::vector<NativeVector>>> resultVecA(N);
+    std::vector<std::vector<std::vector<NativeInteger>>> resultVecB(N);
 
 #pragma omp parallel for
     for (uint32_t i = 0; i < N; ++i) {
-        std::vector<std::vector<LWECiphertextImpl>> vector1(baseKS);
+        std::vector<std::vector<NativeVector>> vector1A(baseKS);
+        std::vector<std::vector<NativeInteger>> vector1B(baseKS);
         for (uint32_t j = 0; j < baseKS; ++j) {
-            std::vector<LWECiphertextImpl> vector2(expKS);
+            std::vector<NativeVector> vector2A(expKS);
+            std::vector<NativeInteger> vector2B(expKS);
             for (uint32_t k = 0; k < expKS; ++k) {
                 NativeInteger b =
                     (params->GetDggKS().GenerateInteger(Q)).ModAdd(oldSK[i].ModMul(j * digitsKS[k], Q), Q);
@@ -199,14 +202,17 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
                 b.ModEq(Q);
 #endif
 
-                vector2[k] = LWECiphertextImpl(a, b);
+                vector2A[k] = std::move(a);
+                vector2B[k] = std::move(b);
             }
-            vector1[j] = std::move(vector2);
+            vector1A[j] = std::move(vector2A);
+            vector1B[j] = std::move(vector2B);
         }
-        resultVec[i] = std::move(vector1);
+        resultVecA[i] = std::move(vector1A);
+        resultVecB[i] = std::move(vector1B);
     }
 
-    return std::make_shared<LWESwitchingKeyImpl>(LWESwitchingKeyImpl(resultVec));
+    return std::make_shared<LWESwitchingKeyImpl>(LWESwitchingKeyImpl(resultVecA, resultVecB));
 }
 
 // the key switching operation as described in Section 3 of
@@ -230,8 +236,8 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
         for (uint32_t j = 0; j < expKS; ++j, atmp /= baseKS) {
             uint64_t a0 = (atmp % baseKS).ConvertToInt();
             for (uint32_t k = 0; k < n; ++k)
-                a[k].ModSubFastEq((K->GetElements()[i][a0][j]).GetA()[k], Q);
-            b.ModSubFastEq((K->GetElements()[i][a0][j]).GetB(), Q);
+                a[k].ModSubFastEq(K->GetElementsA()[i][a0][j][k], Q);
+            b.ModSubFastEq(K->GetElementsB()[i][a0][j], Q);
         }
     }
 

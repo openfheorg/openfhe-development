@@ -156,7 +156,7 @@ TEST(UnitTestFHEWSerialAP, BINARY) {
   s.clear();
 
   Serial::Serialize(cc.GetRefreshKey(), s, SerType::BINARY);
-  RingGSWBTKey refreshKey;
+  RingGSWACCKey refreshKey;
   Serial::Deserialize(refreshKey, s, SerType::BINARY);
 
   s.str("");
@@ -222,7 +222,7 @@ TEST(UnitTestFHEWSerialGINX, BINARY) {
   s.clear();
 
   Serial::Serialize(cc.GetRefreshKey(), s, SerType::BINARY);
-  RingGSWBTKey refreshKey;
+  RingGSWACCKey refreshKey;
   Serial::Deserialize(refreshKey, s, SerType::BINARY);
 
   s.str("");

@@ -107,7 +107,7 @@ public:
    *
    * @return a shared pointer to the refreshing key
    */
-    const RingGSWBTKey GetRefreshKey() const {
+    const RingGSWACCKey GetRefreshKey() const {
         return m_BTKey.BSkey;
     }
 
@@ -124,8 +124,8 @@ public:
     *
     * @return a shared pointer to the bootstrapping key map
     */
-    const std::shared_ptr<std::map<uint32_t, RingGSWEvalKey>> GetBTKeyMap() const {
-        return std::make_shared<std::map<uint32_t, RingGSWEvalKey>>(m_BTKey_map);
+    const std::shared_ptr<std::map<uint32_t, RingGSWBTKey>> GetBTKeyMap() const {
+        return std::make_shared<std::map<uint32_t, RingGSWBTKey>>(m_BTKey_map);
     }
 
     /**
@@ -191,7 +191,7 @@ public:
    *
    * @param key struct with the bootstrapping keys
    */
-    void BTKeyLoad(const RingGSWEvalKey& key) {
+    void BTKeyLoad(const RingGSWBTKey& key) {
         m_BTKey = key;
     }
 
@@ -201,7 +201,7 @@ public:
    * @param baseG baseG corresponding to the given key
    * @param key struct with the bootstrapping keys
    */
-    void BTKeyMapLoadSingleElement(const uint32_t& baseG, const RingGSWEvalKey& key) {
+    void BTKeyMapLoadSingleElement(const uint32_t& baseG, const RingGSWBTKey& key) {
         m_BTKey_map[baseG] = key;
     }
 
@@ -319,7 +319,7 @@ public:
     }
 
     std::string SerializedObjectName() const {
-        return "RingGSWBTKey";
+        return "BinFHEContext";
     }
     static uint32_t SerializedVersion() {
         return 1;
@@ -349,10 +349,10 @@ private:
     std::shared_ptr<RingGSWAccumulatorSchemeBase> m_RingGSWscheme;
 
     // Struct containing the bootstrapping keys
-    RingGSWEvalKey m_BTKey;
+    RingGSWBTKey m_BTKey;
 
     // Struct containing the bootstrapping keys
-    std::map<uint32_t, RingGSWEvalKey> m_BTKey_map;
+    std::map<uint32_t, RingGSWBTKey> m_BTKey_map;
 
     // Whether to optimize time for sign eval
     bool m_timeOptimization = false;
