@@ -42,8 +42,11 @@ namespace lbcrypto {
 void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
                                           double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,
                                           BINFHEMETHOD method) {
-    auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
-    m_params       = std::make_shared<RingGSWCryptoParams>(lweparams, baseG, baseR, method);
+    auto lweparams  = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, true);
+    m_params        = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    m_binfhescheme  = std::make_shared<BinFHEScheme>();
+    m_binfhescheme->SetACCTechnique(method);
 }
 
 void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint32_t logQ, int64_t N,
@@ -96,9 +99,14 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint
     uint64_t qKS = 1 << 30;
     qKS <<= 5;
 
-    uint32_t n     = (set == TOY) ? 32 : 1305;
-    auto lweparams = std::make_shared<LWECryptoParams>(n, ringDim, q, Q.ConvertToInt(), qKS, 3.19, 32);
-    m_params = std::make_shared<RingGSWCryptoParams>(lweparams, baseG, 23, method, ((logQ != 11) && timeOptimization));
+    uint32_t n      = (set == TOY) ? 32 : 1305;
+    auto lweparams  = std::make_shared<LWECryptoParams>(n, ringDim, q, Q, qKS, 3.19, 32);
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, q, baseG, 23, method, 3.19,
+                                                            ((logQ != 11) && timeOptimization));
+
+    m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    m_binfhescheme = std::make_shared<BinFHEScheme>();
+    m_binfhescheme->SetACCTechnique(method);
 
 #if defined(BINFHE_DEBUG)
     std::cout << ringDim << " " << Q < < < < " " << n << " " << q << " " << baseG << std::endl;
@@ -159,25 +167,31 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
     NativeInteger Q(
         PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder));
 
-    usint ringDim  = params.cyclOrder / 2;
-    auto lweparams = (PRIME == params.modKS) ?
-                         std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
+    usint ringDim   = params.cyclOrder / 2;
+    auto lweparams  = (PRIME == params.modKS) ?
+                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
                                                            params.stdDev, params.baseKS) :
-                         std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
+                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
                                                            params.stdDev, params.baseKS);
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK,
+                                                            method, params.stdDev);
 
-    m_params = std::make_shared<RingGSWCryptoParams>(lweparams, params.gadgetBase, params.baseRK, method);
+    m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    m_binfhescheme = std::make_shared<BinFHEScheme>();
+    m_binfhescheme->SetACCTechnique(method);
 }
 
 LWEPrivateKey BinFHEContext::KeyGen(NativeInteger DiffQ) const {
-    if (DiffQ > m_params->GetLWEParams()->Getq()) {
-        auto q = m_params->GetLWEParams()->Getq();
-        this->SetQ(DiffQ);
-        auto ret = m_LWEscheme->KeyGen(m_params->GetLWEParams());
-        this->SetQ(q);
+    auto& LWEParams = m_params->GetLWEParams();
+
+    if (DiffQ > LWEParams->Getq()) {
+        auto q = LWEParams->Getq();
+        SetQ(DiffQ);
+        auto ret = m_LWEscheme->KeyGen(LWEParams);
+        SetQ(q);
         return ret;
     }
-    return m_LWEscheme->KeyGen(m_params->GetLWEParams());
+    return m_LWEscheme->KeyGen(LWEParams);
 }
 
 LWEPrivateKey BinFHEContext::KeyGenN() const {
@@ -186,39 +200,43 @@ LWEPrivateKey BinFHEContext::KeyGenN() const {
 
 LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHEOUTPUT output,
                                      LWEPlaintextModulus p, NativeInteger DiffQ) const {
-    auto q = m_params->GetLWEParams()->Getq();
+    auto& LWEParams = m_params->GetLWEParams();
+
+    auto q = LWEParams->Getq();
     if (DiffQ > q) {
-        this->SetQ(DiffQ);
+        SetQ(DiffQ);
     }
     LWECiphertext ct;
 
-    ct = m_LWEscheme->Encrypt(m_params->GetLWEParams(), sk, m, p);
+    ct = m_LWEscheme->Encrypt(LWEParams, sk, m, p);
     if ((output == FRESH) || (p != 4)) {
         // No bootstrapping needed
     }
     else {
-        ct = m_RingGSWscheme->Bootstrap(m_params, m_BTKey, ct, m_LWEscheme);
+        ct = m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
     }
 
     if (DiffQ > q) {
-        this->SetQ(q);
+        SetQ(q);
     }
     return ct;
 }
 
 void BinFHEContext::Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct, LWEPlaintext* result, LWEPlaintextModulus p,
                             NativeInteger DiffQ) const {
-    auto q = m_params->GetLWEParams()->Getq();
+    auto& LWEParams = m_params->GetLWEParams();
+
+    auto q = LWEParams->Getq();
     if (DiffQ != 0) {
-        this->SetQ(DiffQ);
+        SetQ(DiffQ);
         LWEPrivateKeyImpl skp(sk->GetElement());
         LWEPrivateKey skpptr = std::make_shared<LWEPrivateKeyImpl>(skp);
         skpptr->switchModulus(DiffQ);
-        m_LWEscheme->Decrypt(m_params->GetLWEParams(), skpptr, ct, result, p);
-        this->SetQ(q);
+        m_LWEscheme->Decrypt(LWEParams, skpptr, ct, result, p);
+        SetQ(q);
     }
     else {
-        m_LWEscheme->Decrypt(m_params->GetLWEParams(), sk, ct, result, p);
+        m_LWEscheme->Decrypt(LWEParams, sk, ct, result, p);
     }
 }
 
@@ -227,46 +245,49 @@ LWESwitchingKey BinFHEContext::KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPriva
 }
 
 void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk, NativeInteger DiffQ) {
-    auto q = m_params->GetLWEParams()->Getq();
+    auto& LWEParams  = m_params->GetLWEParams();
+    auto& RGSWParams = m_params->GetRingGSWParams();
+
+    auto q = LWEParams->Getq();
     if (DiffQ > q) {
-        this->SetQ(DiffQ);
+        SetQ(DiffQ);
     }
 
-    auto temp = m_params->GetBaseG();
+    auto temp = RGSWParams->GetBaseG();
 
     if (m_timeOptimization) {
-        auto gpowermap = m_params->GetGPowerMap();
+        auto gpowermap = RGSWParams->GetGPowerMap();
         for (std::map<uint32_t, std::vector<NativeInteger>>::iterator it = gpowermap.begin(); it != gpowermap.end();
              ++it) {
-            m_params->Change_BaseG(it->first);
-            m_BTKey_map[it->first] = m_RingGSWscheme->KeyGen(m_params, m_LWEscheme, sk);
+            RGSWParams->Change_BaseG(it->first);
+            m_BTKey_map[it->first] = m_binfhescheme->KeyGen(m_params, sk);
         }
-        m_params->Change_BaseG(temp);
+        RGSWParams->Change_BaseG(temp);
     }
 
     if (m_BTKey_map.size() != 0) {
         m_BTKey = m_BTKey_map[temp];
     }
     else {
-        m_BTKey           = m_RingGSWscheme->KeyGen(m_params, m_LWEscheme, sk);
+        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk);
         m_BTKey_map[temp] = m_BTKey;
     }
 
     if (DiffQ > q) {
-        this->SetQ(q);
+        SetQ(q);
     }
 }
 
 LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const {
-    return m_RingGSWscheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2, m_LWEscheme);
+    return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2);
 }
 
 LWECiphertext BinFHEContext::Bootstrap(ConstLWECiphertext ct1) const {
-    return m_RingGSWscheme->Bootstrap(m_params, m_BTKey, ct1, m_LWEscheme);
+    return m_binfhescheme->Bootstrap(m_params, m_BTKey, ct1);
 }
 
 LWECiphertext BinFHEContext::EvalNOT(ConstLWECiphertext ct) const {
-    return m_RingGSWscheme->EvalNOT(m_params, ct);
+    return m_binfhescheme->EvalNOT(m_params, ct);
 }
 
 LWECiphertext BinFHEContext::EvalConstant(bool value) const {
@@ -275,7 +296,7 @@ LWECiphertext BinFHEContext::EvalConstant(bool value) const {
 
 LWECiphertext BinFHEContext::EvalFunc(ConstLWECiphertext ct1, const std::vector<NativeInteger>& LUT) const {
     NativeInteger beta = GetBeta();
-    return m_RingGSWscheme->EvalFunc(m_params, m_BTKey, ct1, m_LWEscheme, LUT, beta, 0);
+    return m_binfhescheme->EvalFunc(m_params, m_BTKey, ct1, LUT, beta, 0);
 }
 
 LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext ct1, const uint32_t roundbits) const {
@@ -285,20 +306,20 @@ LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext ct1, const uint32_t ro
         SetQ(q / newp * (1 << roundbits));
     }
     NativeInteger beta = GetBeta();
-    auto res           = m_RingGSWscheme->EvalFloor(m_params, m_BTKey, ct1, m_LWEscheme, beta, q);
+    auto res           = m_binfhescheme->EvalFloor(m_params, m_BTKey, ct1, beta, q);
     SetQ(q);
     return res;
 }
 
 LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext ct1, const NativeInteger bigger_q) {
-    auto params        = std::make_shared<RingGSWCryptoParams>(*m_params);
+    auto params        = std::make_shared<BinFHECryptoParams>(*m_params);
     NativeInteger beta = GetBeta();
-    return m_RingGSWscheme->EvalSign(params, m_BTKey_map, ct1, m_LWEscheme, beta, bigger_q);
+    return m_binfhescheme->EvalSign(params, m_BTKey_map, ct1, beta, bigger_q);
 }
 
 std::vector<LWECiphertext> BinFHEContext::EvalDecomp(ConstLWECiphertext ct1, const NativeInteger bigger_q) {
     NativeInteger beta = GetBeta();
-    return m_RingGSWscheme->EvalDecomp(m_params, m_BTKey_map, ct1, m_LWEscheme, beta, bigger_q);
+    return m_binfhescheme->EvalDecomp(m_params, m_BTKey_map, ct1, beta, bigger_q);
 }
 
 std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p),

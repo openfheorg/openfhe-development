@@ -36,6 +36,9 @@
 
 namespace lbcrypto {
 
+typedef int64_t LWEPlaintext;
+typedef int64_t LWEPlaintextModulus;
+
 /**
  * @brief Security levels for predefined parameter sets
  */

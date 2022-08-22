@@ -34,15 +34,13 @@
 
 #include <memory>
 
+#include "binfhe-constants.h"
 #include "lwe-ciphertext.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
 #include "lwe-cryptoparameters.h"
 
 namespace lbcrypto {
-
-typedef int64_t LWEPlaintext;
-typedef int64_t LWEPlaintextModulus;
 
 /**
  * @brief Additive LWE scheme

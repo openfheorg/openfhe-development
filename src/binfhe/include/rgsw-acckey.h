@@ -123,7 +123,7 @@ public:
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
-        ar(::cereal::make_nvp("key", m_key));
+        ar(::cereal::make_nvp("k", m_key));
     }
 
     template <class Archive>
@@ -132,7 +132,7 @@ public:
             OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
                                                  " is from a later version of the library");
         }
-        ar(::cereal::make_nvp("key", m_key));
+        ar(::cereal::make_nvp("k", m_key));
     }
 
     std::string SerializedObjectName() const {

@@ -45,7 +45,6 @@ using namespace lbcrypto;
 TEST(UnitTestFHEWGINX, EvalArbFunc) {
     auto cc = BinFHEContext();
     cc.GenerateBinFHEContext(TOY, true, 12);
-
     auto sk = cc.KeyGen();
     cc.BTKeyGen(sk);
     int p   = cc.GetMaxPlaintextSpace().ConvertToInt();

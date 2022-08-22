@@ -48,6 +48,7 @@ CEREAL_REGISTER_TYPE(lbcrypto::RingGSWCryptoParams);
 CEREAL_REGISTER_TYPE(lbcrypto::RingGSWCiphertextImpl);
 CEREAL_REGISTER_TYPE(lbcrypto::RingGSWEvalKeyImpl);
 CEREAL_REGISTER_TYPE(lbcrypto::RingGSWACCKeyImpl);
+CEREAL_REGISTER_TYPE(lbcrypto::BinFHECryptoParams);
 CEREAL_REGISTER_TYPE(lbcrypto::BinFHEContext);
 
 #endif

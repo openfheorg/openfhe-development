@@ -292,7 +292,7 @@ public:
    */
     LWECiphertext EvalConstant(bool value) const;
 
-    const std::shared_ptr<RingGSWCryptoParams> GetParams() {
+    const std::shared_ptr<BinFHECryptoParams> GetParams() {
         return m_params;
     }
 
@@ -300,8 +300,8 @@ public:
         return m_LWEscheme;
     }
 
-    const std::shared_ptr<RingGSWAccumulatorSchemeBase> GetRingGSWScheme() {
-        return m_RingGSWscheme;
+    const std::shared_ptr<BinFHEScheme> GetBinFHEScheme() {
+        return m_binfhescheme;
     }
 
     template <class Archive>
@@ -326,7 +326,8 @@ public:
     }
 
     void SetQ(NativeInteger q) const {
-        m_params->SetQ(q);
+        m_params->GetLWEParams()->SetQ(q);
+        m_params->GetRingGSWParams()->SetQ(q);
     }
 
     NativeInteger GetMaxPlaintextSpace() const {
@@ -340,13 +341,13 @@ public:
 
 private:
     // Shared pointer to Ring GSW + LWE parameters
-    std::shared_ptr<RingGSWCryptoParams> m_params;
+    std::shared_ptr<BinFHECryptoParams> m_params;
 
     // Shared pointer to the underlying additive LWE scheme
     std::shared_ptr<LWEEncryptionScheme> m_LWEscheme;
 
     // Shared pointer to the underlying RingGSW/RLWE scheme
-    std::shared_ptr<RingGSWAccumulatorSchemeBase> m_RingGSWscheme;
+    std::shared_ptr<BinFHEScheme> m_binfhescheme;
 
     // Struct containing the bootstrapping keys
     RingGSWBTKey m_BTKey;
