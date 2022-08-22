@@ -36,6 +36,7 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_H
 #define LBCRYPTO_CRYPTO_KEY_PRIVATEKEY_H
 
+#include "key/privatekey-fwd.h"
 #include "key/key.h"
 
 #include <iomanip>
@@ -49,12 +50,6 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
-
-template <typename Element>
-class PrivateKeyImpl;
-
-template <typename Element>
-using PrivateKey = std::shared_ptr<PrivateKeyImpl<Element>>;
 
 /**
  * Generates a random 128-bit hash

@@ -38,7 +38,4 @@
 CEREAL_CLASS_VERSION(lbcrypto::Metadata, lbcrypto::Metadata::SerializedVersion());
 CEREAL_REGISTER_TYPE(lbcrypto::Metadata);
 
-CEREAL_REGISTER_TYPE(lbcrypto::MetadataTest);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::Metadata, lbcrypto::MetadataTest)
-
 #endif

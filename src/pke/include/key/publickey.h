@@ -36,6 +36,7 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_PUBLICKEY_H
 #define LBCRYPTO_CRYPTO_KEY_PUBLICKEY_H
 
+#include "key/publickey-fwd.h"
 #include "key/key.h"
 
 #include <memory>
@@ -48,12 +49,6 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
-
-template <typename Element>
-class PublicKeyImpl;
-
-template <typename Element>
-using PublicKey = std::shared_ptr<PublicKeyImpl<Element>>;
 
 /**
  * @brief Class for public key

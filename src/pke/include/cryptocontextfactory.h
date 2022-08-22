@@ -40,8 +40,10 @@
 
 namespace lbcrypto {
 
-template <typename Element> class SchemeBase;
-template <typename Element> class CryptoParametersBase;
+template <typename Element>
+class SchemeBase;
+template <typename Element>
+class CryptoParametersBase;
 
 /**
  * @brief CryptoContextFactory
@@ -60,6 +62,11 @@ public:
     static CryptoContext<Element> GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
                                              std::shared_ptr<SchemeBase<Element>> scheme,
                                              const std::string& schemeId = "Not");
+
+    // GetFullContextByDeserializedContext() is to get the full cryptocontext based on partial information
+    // we usually get from a de-serialized cryptocontext object. Using this function instead of GetContext()
+    // allows to avoid circular dependencies in some places by including cryptocontext-fwd.h
+    static CryptoContext<Element> GetFullContextByDeserializedContext(const CryptoContext<Element> context);
 
     static const std::vector<CryptoContext<Element>>& GetAllContexts();
 };

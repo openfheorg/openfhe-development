@@ -28,15 +28,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#ifndef __UNITTESTMETADATATESTSER_H__
+#define __UNITTESTMETADATATESTSER_H__
 
-/*
-BGV implementation. See https://eprint.iacr.org/2021/204 for details.
- */
+#include "UnitTestMetadataTest.h"
+#include "utils/serial.h"
 
-#define PROFILE
+CEREAL_REGISTER_TYPE(lbcrypto::MetadataTest);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::Metadata, lbcrypto::MetadataTest);
 
-#include "cryptocontext.h"
-#include "scheme/bgvrns/bgvrns-pke.h"
-#include "scheme/bgvrns/bgvrns-pre.h"
-
-namespace lbcrypto {}
+#endif  // __UNITTESTMETADATATESTSER_H__

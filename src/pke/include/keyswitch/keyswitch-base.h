@@ -36,14 +36,16 @@ Base class for key switching algorithms.
 #ifndef LBCRYPTO_CRYPTO_KEYSWITCH_BASE_H
 #define LBCRYPTO_CRYPTO_KEYSWITCH_BASE_H
 
-#include <utility>
-#include <initializer_list>
+#include "ciphertext-fwd.h"
+#include "key/publickey-fwd.h"
+#include "key/privatekey-fwd.h"
+#include "key/evalkey-fwd.h"
+#include "utils/exception.h"
+#include "schemebase/base-cryptoparameters.h"
+
 #include <memory>
 #include <vector>
 
-#include "ciphertext.h"
-#include "key/allkey.h"
-#include "schemebase/base-cryptoparameters.h"
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -87,11 +89,7 @@ public:
         OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
     }
 
-    virtual Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const {
-        Ciphertext<Element> result = ciphertext->Clone();
-        KeySwitchInPlace(result, evalKey);
-        return result;
-    }
+    virtual Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const;
 
     virtual void KeySwitchInPlace(Ciphertext<Element>& ciphertext, const EvalKey<Element> evalKey) const {
         OPENFHE_THROW(config_error, "KeySwitch is not supported");

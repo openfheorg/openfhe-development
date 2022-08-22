@@ -28,11 +28,23 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
 /*
-  Manufactures plaintext objects in OpenFHE
+ * It is a lightweight file to be included where we need the declaration of EvalKey only
+ *
  */
+#ifndef __EVALKEY_FWD_H__
+#define __EVALKEY_FWD_H__
 
-#include "encoding/plaintextfactory.h"
+#include <memory>
 
-namespace lbcrypto {} /* namespace lbcrypto */
+namespace lbcrypto {
+
+template <typename Element>
+class EvalKeyImpl;
+
+template <typename Element>
+using EvalKey = std::shared_ptr<EvalKeyImpl<Element>>;
+
+}  // namespace lbcrypto
+
+#endif  // __EVALKEY_FWD_H__

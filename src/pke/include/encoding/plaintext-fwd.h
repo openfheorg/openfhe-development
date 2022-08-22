@@ -28,14 +28,22 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
 /*
- * Abstract interface class for key switching methods in RNS
+ * It is a lightweight file to be included where we need the declaration of Plaintext only
+ *
  */
+#ifndef __PLAINTEXT_FWD_H__
+#define __PLAINTEXT_FWD_H__
 
-#define PROFILE
+#include <memory>
 
-#include "cryptocontext.h"
-#include "keyswitch/keyswitch-rns.h"
+namespace lbcrypto {
 
-namespace lbcrypto {}
+class PlaintextImpl;
+
+using Plaintext      = std::shared_ptr<PlaintextImpl>;
+using ConstPlaintext = std::shared_ptr<PlaintextImpl>;
+
+}  // namespace lbcrypto
+
+#endif  // __PLAINTEXT_FWD_H__

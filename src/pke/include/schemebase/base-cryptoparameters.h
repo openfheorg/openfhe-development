@@ -28,11 +28,12 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
 #ifndef LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
 #define LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
 
 #include "utils/serializable.h"
+#include "encoding/plaintext.h"
+
 #include "encoding/encodings.h"
 
 #include <memory>

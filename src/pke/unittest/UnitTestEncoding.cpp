@@ -68,7 +68,7 @@ TEST_F(UTGENERAL_ENCODING, coef_packed_encoding) {
     se.Encode();
     se.Decode();
     se.SetLength(value.size());
-    EXPECT_EQ(se.GetCoefPackedValue(), value) << "CoefPacked";
+    EXPECT_EQ(se.GetCoefPackedValue(), value) << "COEF_PACKED_ENCODING";
 }
 
 TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding) {

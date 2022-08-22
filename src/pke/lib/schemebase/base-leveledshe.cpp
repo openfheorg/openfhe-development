@@ -29,9 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "cryptocontext.h"
 #include "schemebase/base-leveledshe.h"
 
+#include "cryptocontext.h"
 #include "schemebase/base-scheme.h"
 
 namespace lbcrypto {

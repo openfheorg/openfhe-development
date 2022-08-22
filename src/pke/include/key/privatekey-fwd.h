@@ -28,18 +28,23 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+/*
+ * It is a lightweight file to be included where we need the declaration of PrivateKey only
+ *
+ */
+#ifndef __PRIVATEKEY_FWD_H__
+#define __PRIVATEKEY_FWD_H__
 
-#ifndef LBCRYPTO_CRYPTO_RNS_ALLRNS_H
-#define LBCRYPTO_CRYPTO_RNS_ALLRNS_H
+#include <memory>
 
-#include "schemerns/rns-advancedshe.h"
-#include "schemerns/rns-cryptoparameters.h"
-#include "schemerns/rns-leveledshe.h"
-#include "schemerns/rns-multiparty.h"
-#include "schemerns/rns-parametergeneration.h"
-#include "schemerns/rns-pke.h"
-#include "schemerns/rns-pre.h"
-#include "schemerns/rns-fhe.h"
-#include "schemerns/rns-scheme.h"
+namespace lbcrypto {
 
-#endif
+template <typename Element>
+class PrivateKeyImpl;
+
+template <typename Element>
+using PrivateKey = std::shared_ptr<PrivateKeyImpl<Element>>;
+
+}  // namespace lbcrypto
+
+#endif  // __PRIVATEKEY_FWD_H__

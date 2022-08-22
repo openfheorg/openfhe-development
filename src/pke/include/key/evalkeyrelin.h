@@ -32,6 +32,7 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_H
 #define LBCRYPTO_CRYPTO_KEY_EVALKEYRELIN_H
 
+#include "key/evalkeyrelin-fwd.h"
 #include "key/evalkey.h"
 
 #include <memory>
@@ -44,12 +45,6 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
-
-template <typename Element>
-class EvalKeyRelinImpl;
-
-template <typename Element>
-using EvalKeyRelin = std::shared_ptr<EvalKeyRelinImpl<Element>>;
 
 /**
  * @brief Concrete class for Relinearization keys of RLWE scheme

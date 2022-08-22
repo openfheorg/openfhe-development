@@ -34,6 +34,7 @@
 #include "cryptocontext.h"
 #include "schemerns/rns-pke.h"
 #include "schemerns/rns-multiparty.h"
+#include "key/evalkeyrelin.h"
 
 namespace lbcrypto {
 
