@@ -177,7 +177,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
     size_t cv2Size    = cv2.size();
     size_t cvMultSize = cv1Size + cv2Size - 1;
     size_t sizeQ      = cv1[0].GetNumOfElements();
-    size_t l          = 0;
+    // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
+    size_t l = 0;
 
     std::vector<DCRTPoly> cvMult(cvMultSize);
 
@@ -414,7 +415,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
     size_t cvSize   = cv.size();
     size_t cvSqSize = 2 * cvSize - 1;
     size_t sizeQ    = cv[0].GetNumOfElements();
-    size_t l        = 0;
+    // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
+    size_t l = 0;
 
     std::vector<DCRTPoly> cvPoverQ;
     if (cryptoParams->GetMultiplicationTechnique() == HPS) {
@@ -767,7 +769,8 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
     double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
     // how many levels to drop
     uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
-    uint32_t l             = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
+    // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
+    uint32_t l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
     c1.SetFormat(COEFFICIENT);
     c1 = c1.ScaleAndRound(cryptoParams->GetParamsQl(l), cryptoParams->GetQlQHatInvModqDivqModq(l),
                           cryptoParams->GetQlQHatInvModqDivqFrac(l), cryptoParams->GetModqBarrettMu());
@@ -801,7 +804,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
         double dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
         // how many levels to drop
         uint32_t levelsDropped = FindLevelsToDrop(levels, cryptoParams, dcrtBits, true);
-        uint32_t l             = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
+        // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
+        uint32_t l = levelsDropped > 0 ? sizeQ - 1 - levelsDropped : sizeQ - 1;
 
         (*ba)[0].ExpandCRTBasisQlHat(cryptoParams->GetElementParams(), cryptoParams->GetQlHatModq(l),
                                      cryptoParams->GetQlHatModqPrecon(l), sizeQ);
@@ -831,7 +835,8 @@ usint LeveledSHEBFVRNS::FindAutomorphismIndex(usint index, usint m) const {
 
 void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
-    uint32_t l              = 0;
+    // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
+    uint32_t l = 0;
 
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     bool isKeySwitch          = (cv.size() == 2);
