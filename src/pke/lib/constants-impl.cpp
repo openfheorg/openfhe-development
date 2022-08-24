@@ -30,6 +30,8 @@
 //==================================================================================
 
 #include "constants.h"
+
+#include <string>
 #include <ostream>
 
 std::ostream& operator<<(std::ostream& s, PKESchemeFeature f) {
@@ -171,6 +173,28 @@ std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t) {
         case HPSPOVERQLEVELED:
             s << "HPSPOVERQLEVELED";
             break;
+        default:
+            s << "UKNOWN";
+            break;
+    }
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, PlaintextEncodings p) {
+    switch (p) {
+        case COEF_PACKED_ENCODING:
+            s << "COEF_PACKED_ENCODING";
+            break;
+        case PACKED_ENCODING:
+            s << "PACKED_ENCODING";
+            break;
+        case STRING_ENCODING:
+            s << "STRING_ENCODING";
+            break;
+        case CKKS_PACKED_ENCODING:
+            s << "CKKS_PACKED_ENCODING";
+            break;
+        case INVALID_ENCODING:
         default:
             s << "UKNOWN";
             break;

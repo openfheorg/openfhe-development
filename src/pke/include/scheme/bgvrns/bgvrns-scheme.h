@@ -34,13 +34,8 @@
 
 #include "schemerns/rns-scheme.h"
 
-#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
 #include "scheme/bgvrns/bgvrns-parametergeneration.h"
-#include "scheme/bgvrns/bgvrns-pke.h"
-#include "scheme/bgvrns/bgvrns-pre.h"
-#include "scheme/bgvrns/bgvrns-leveledshe.h"
-#include "scheme/bgvrns/bgvrns-advancedshe.h"
-#include "scheme/bgvrns/bgvrns-multiparty.h"
+#include "utils/serializable.h"
 
 #include <string>
 #include <memory>

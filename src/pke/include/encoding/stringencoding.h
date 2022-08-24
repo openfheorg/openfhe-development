@@ -97,10 +97,10 @@ public:
 
     /**
    * GetEncodingType
-   * @return this is a String encoding
+   * @return STRING_ENCODING
    */
     PlaintextEncodings GetEncodingType() const {
-        return String;
+        return STRING_ENCODING;
     }
 
     /**

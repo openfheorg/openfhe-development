@@ -159,7 +159,7 @@ protected:
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
             std::string value   = "You keep using that word. I do not think it means what you think it means";
-            Plaintext plaintext = CryptoContextImpl<Element>::MakePlaintext(String, cc, value);
+            Plaintext plaintext = CryptoContextImpl<Element>::MakePlaintext(STRING_ENCODING, cc, value);
 
             KeyPair<Element> kp = cc->KeyGen();
             EXPECT_EQ(kp.good(), true) << failmsg << " key generation for string encrypt/decrypt failed";

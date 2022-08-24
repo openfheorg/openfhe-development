@@ -32,6 +32,7 @@
 #include "UnitTestUtils.h"
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
+#include "UnitTestMetadataTest.h"
 
 #include <iostream>
 #include <vector>

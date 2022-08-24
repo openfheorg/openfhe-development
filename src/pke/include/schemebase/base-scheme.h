@@ -32,20 +32,20 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_SCHEME_H
 #define LBCRYPTO_CRYPTO_BASE_SCHEME_H
 
-#include "utils/caller_info.h"
-
-#include "key/allkey.h"
-
-#include "keyswitch/keyswitch-base.h"
-
-#include "schemebase/rlwe-cryptoparameters.h"
+#include "key/keypair.h"
+#include "key/evalkey.h"
 #include "schemebase/base-parametergeneration.h"
-#include "schemebase/base-pke.h"
-#include "schemebase/base-pre.h"
-#include "schemebase/base-leveledshe.h"
+#include "keyswitch/keyswitch-base.h"
 #include "schemebase/base-advancedshe.h"
+#include "schemebase/base-leveledshe.h"
 #include "schemebase/base-multiparty.h"
 #include "schemebase/base-fhe.h"
+#include "schemebase/base-pke.h"
+#include "schemebase/base-pre.h"
+#include "ciphertext.h"
+
+#include "utils/exception.h"
+#include "utils/caller_info.h"
 
 #include <vector>
 #include <map>

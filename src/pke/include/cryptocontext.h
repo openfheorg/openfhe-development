@@ -43,8 +43,6 @@
 #include "encoding/plaintextfactory.h"
 
 #include "key/evalkey.h"
-#include "key/privatekey.h"
-#include "key/publickey.h"
 #include "key/keypair.h"
 
 #include "schemebase/base-pke.h"
@@ -853,12 +851,13 @@ public:
    * @return plaintext
    */
     Plaintext MakeStringPlaintext(const std::string& str) const {
-        return PlaintextFactory::MakePlaintext(str, String, this->GetElementParams(), this->GetEncodingParams());
+        return PlaintextFactory::MakePlaintext(str, STRING_ENCODING, this->GetElementParams(),
+                                               this->GetEncodingParams());
     }
 
     /**
    * MakePlaintext constructs a CoefPackedEncoding or PackedEncoding in this context
-   * @param encoding is Packed or CoefPacked
+   * @param encoding is PACKED_ENCODING or COEF_PACKED_ENCODING
    * @param value is the value to encode
    * @param depth is the multiplicative depth to encode the plaintext at
    * @param level is the level to encode the plaintext at
@@ -901,7 +900,7 @@ public:
    * @return plaintext
    */
     Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1, uint32_t level = 0) const {
-        return MakePlaintext(CoefPacked, value, depth, level);
+        return MakePlaintext(COEF_PACKED_ENCODING, value, depth, level);
     }
 
     /**
@@ -912,7 +911,7 @@ public:
    * @return plaintext
    */
     Plaintext MakePackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1, uint32_t level = 0) const {
-        return MakePlaintext(Packed, value, depth, level);
+        return MakePlaintext(PACKED_ENCODING, value, depth, level);
     }
 
     /**

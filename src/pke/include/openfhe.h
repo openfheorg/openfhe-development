@@ -39,7 +39,12 @@
 
 #include "openfhecore.h"
 
-#include "key/allkey.h"
+#include "key/keypair.h"
+#include "key/publickey.h"
+#include "key/privatekey.h"
+#include "key/evalkey.h"
+#include "key/evalkeyrelin.h"
+
 #include "cryptoobject.h"
 
 #include "encoding/plaintextfactory.h"
@@ -47,7 +52,23 @@
 
 #include "ciphertext.h"
 #include "cryptocontext.h"
-#include "scheme/allscheme.h"
+
+#include "keyswitch/keyswitch-bv.h"
+#include "keyswitch/keyswitch-hybrid.h"
+
+#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
+#include "scheme/bgvrns/bgvrns-parametergeneration.h"
+#include "scheme/bgvrns/bgvrns-pke.h"
+#include "scheme/bgvrns/bgvrns-pre.h"
+#include "scheme/bgvrns/bgvrns-leveledshe.h"
+#include "scheme/bgvrns/bgvrns-advancedshe.h"
+#include "scheme/bgvrns/bgvrns-multiparty.h"
+#include "scheme/bgvrns/bgvrns-fhe.h"
+#include "scheme/bgvrns/bgvrns-scheme.h"
+
+#include "scheme/bfvrns/bfvrns-scheme.h"
+#include "scheme/ckksrns/ckksrns-scheme.h"
+
 
 #include "gen-cryptocontext.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
