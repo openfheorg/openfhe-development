@@ -283,13 +283,13 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     auto& dggFlooding  = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
     double noise_param = 1;
     if (PREMode == FIXED_NOISE_HRA) {
-        noise_param = PRE_SD;
+        noise_param = NOISE_FLOODING::PRE_SD;
     }
     else if (PREMode == NOISE_FLOODING_HRA) {
         if (ksTech == BV) {
             if (r > 0) {
-                noise_param = pow(2, STAT_SECURITY_FLOODING) * (1 + 2 * Bkey) * (numPrimes + 1) * (log2q / r + 1) *
-                              sqrt(ringDimension) * (pow(2, r) - 1) * B_e;
+                noise_param = pow(2, NOISE_FLOODING::STAT_SECURITY) * (1 + 2 * Bkey) * (numPrimes + 1) *
+                              (log2q / r + 1) * sqrt(ringDimension) * (pow(2, r) - 1) * B_e;
             }
             else {
                 OPENFHE_THROW(config_error, "Relinwindow value cannot be 0 for BV keyswitching");
@@ -301,7 +301,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
                 int numDigits            = cryptoParamsBGVRNS->GetNumPartQ();
                 noise_param              = numTowersPerDigit * numDigits * sqrt(ringDimension) * B_e * (1 + 2 * Bkey);
                 noise_param += auxBits * (1 + sqrt(ringDimension));
-                noise_param = pow(2, STAT_SECURITY_FLOODING) * noise_param;
+                noise_param = pow(2, NOISE_FLOODING::STAT_SECURITY) * noise_param;
             }
             else {
                 OPENFHE_THROW(config_error, "Relinwindow value can only  be zero for Hybrid keyswitching");

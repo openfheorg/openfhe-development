@@ -49,20 +49,17 @@
 
 namespace lbcrypto {
 
-// noise flooding distribution parameter
-// for distributed decryption in
-// threshold FHE
+namespace NOISE_FLOODING {
+// noise flooding distribution parameter for distributed decryption in threshold FHE
 const double MP_SD = 1048576;
-
-// noise flooding distribution parameter
-// for fixed 20 bits noise multihop PRE
+// noise flooding distribution parameter for fixed 20 bits noise multihop PRE
 const double MPRE_SD = 1048576;
-// noise flooding distribution parameter
-// for distributed decryption in
-// PRE
+// noise flooding distribution parameter for distributed decryption in PRE
 const double PRE_SD = 1048576;
 // statistical security parameter for noise flooding in PRE
-const double STAT_SECURITY_FLOODING = 30;
+const double STAT_SECURITY = 30;
+};  // namespace NOISE_FLOODING
+
 /**
  * @brief Template for crypto parameters.
  * @tparam Element a ring element.
@@ -73,23 +70,10 @@ public:
     /**
    * Default Constructor
    */
-    CryptoParametersRLWE() : CryptoParametersBase<Element>() {
-        m_distributionParameter         = 0.0f;
-        m_assuranceMeasure              = 0.0f;
-        m_noiseScale                    = 1;
-        m_digitSize                     = 1;
-        m_maxRelinSkDeg                 = 2;
-        m_secretKeyDist                 = GAUSSIAN;
-        m_stdLevel                      = HEStd_NotSet;
-        m_floodingDistributionParameter = 0;
-        m_dgg.SetStd(m_distributionParameter);
-        m_dggFlooding.SetStd(m_floodingDistributionParameter);
-        m_PREMode = INDCPA;
-    }
+    CryptoParametersRLWE() = default;
 
     /**
    * Copy constructor.
-   *
    */
     CryptoParametersRLWE(const CryptoParametersRLWE& rhs)
         : CryptoParametersBase<Element>(rhs.GetElementParams(), rhs.GetPlaintextModulus()) {
@@ -369,7 +353,6 @@ public:
     void load(Archive& ar, std::uint32_t const version) {
         ar(::cereal::base_class<CryptoParametersBase<Element>>(this));
         ar(::cereal::make_nvp("dp", m_distributionParameter));
-        m_dgg.SetStd(m_distributionParameter);
         ar(::cereal::make_nvp("am", m_assuranceMeasure));
         ar(::cereal::make_nvp("ns", m_noiseScale));
         ar(::cereal::make_nvp("rw", m_digitSize));
@@ -378,6 +361,8 @@ public:
         ar(::cereal::make_nvp("pmo", m_PREMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
+
+        m_dgg.SetStd(m_distributionParameter);
     }
 
     std::string SerializedObjectName() const {
@@ -386,29 +371,31 @@ public:
 
 protected:
     // standard deviation in Discrete Gaussian Distribution
-    float m_distributionParameter;
+    float m_distributionParameter = 0;
     // standard deviation in Discrete Gaussian Distribution with Flooding
-    double m_floodingDistributionParameter;
+    double m_floodingDistributionParameter = 0;
     // assurance measure alpha
-    float m_assuranceMeasure;
+    float m_assuranceMeasure = 0;
     // noise scale
-    PlaintextModulus m_noiseScale;
+    PlaintextModulus m_noiseScale = 1;
     // digit size
-    usint m_digitSize;
+    usint m_digitSize = 1;
     // maximum depth support of a ciphertext without keyswitching
     // corresponds to the highest power of secret key for which evaluation keys are genererated
-    uint32_t m_maxRelinSkDeg;
+    uint32_t m_maxRelinSkDeg = 2;
     // specifies whether the secret polynomials are generated from discrete
     // Gaussian distribution or ternary distribution with the norm of unity
-    SecretKeyDist m_secretKeyDist;
+    SecretKeyDist m_secretKeyDist = GAUSSIAN;
     // Security level according in the HomomorphicEncryption.org standard
-    SecurityLevel m_stdLevel;
+    SecurityLevel m_stdLevel = HEStd_NotSet;
 
-    typename Element::DggType m_dgg;
-    typename Element::DggType m_dggFlooding;
+    // m_dgg gets the same default value as m_distributionParameter does
+    typename Element::DggType m_dgg = typename Element::DggType(0);
+    // m_dggFlooding gets the same default value as m_floodingDistributionParameter does
+    typename Element::DggType m_dggFlooding = typename Element::DggType(0);
 
     // specifies the security mode used for PRE
-    ProxyReEncryptionMode m_PREMode;
+    ProxyReEncryptionMode m_PREMode = INDCPA;
 };
 
 }  // namespace lbcrypto

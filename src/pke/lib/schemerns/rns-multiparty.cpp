@@ -52,7 +52,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
 
     s.DropLastElements(diffQl);
 
-    DggType dgg(MP_SD);
+    DggType dgg(NOISE_FLOODING::MP_SD);
     DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
 
     // e is added to do noise flooding
@@ -86,7 +86,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
 
     s.DropLastElements(diffQl);
 
-    DggType dgg(MP_SD);
+    DggType dgg(NOISE_FLOODING::MP_SD);
     DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
 
     // e is added to do noise flooding
