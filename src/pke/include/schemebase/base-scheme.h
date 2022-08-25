@@ -253,12 +253,13 @@ public:
         OPENFHE_THROW(config_error, "EncryptZeroCore operation has not been enabled");
     }
 
-    std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PublicKey<Element> publicKey) const {
+    std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PublicKey<Element> publicKey,
+                                                          const DggType& dgg) const {
         if (m_PKE) {
             if (!publicKey)
                 OPENFHE_THROW(config_error, "Input public key is nullptr");
 
-            return m_PKE->EncryptZeroCore(publicKey, nullptr);
+            return m_PKE->EncryptZeroCore(publicKey, nullptr, dgg);
         }
         OPENFHE_THROW(config_error, "EncryptZeroCore operation has not been enabled");
     }
@@ -436,14 +437,14 @@ public:
     }
 
     virtual Ciphertext<Element> ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-                                          const PublicKey<Element> publicKey, usint noiseflooding) const {
+                                          const PublicKey<Element> publicKey) const {
         if (m_PRE) {
             if (!ciphertext)
                 OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
             if (!evalKey)
                 OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
 
-            auto result = m_PRE->ReEncrypt(ciphertext, evalKey, publicKey, noiseflooding);
+            auto result = m_PRE->ReEncrypt(ciphertext, evalKey, publicKey);
             result->SetKeyTag(evalKey->GetKeyTag());
             return result;
         }

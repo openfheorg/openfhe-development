@@ -227,7 +227,7 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptLead(ConstCipherte
 
     const Element& s = privateKey->GetPrivateElement();
 
-    DggType dgg(MP_SD);
+    DggType dgg(NOISE_FLOODING::MP_SD);
     Element e(dgg, elementParams, Format::EVALUATION);
 
     Element b = cv[0] + s * cv[1] + ns * e;
@@ -250,7 +250,7 @@ Ciphertext<Element> MultipartyBase<Element>::MultipartyDecryptMain(ConstCipherte
     const std::vector<Element>& cv = ciphertext->GetElements();
     const Element& s               = privateKey->GetPrivateElement();
 
-    DggType dgg(MP_SD);
+    DggType dgg(NOISE_FLOODING::MP_SD);
     Element e(dgg, elementParams, Format::EVALUATION);
 
     // e is added to do noise flooding

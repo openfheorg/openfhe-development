@@ -48,15 +48,6 @@
 
 namespace lbcrypto {
 
-// noise flooding distribution parameter
-// for distributed decryption in
-// threshold FHE
-const double MP_SD = 1048576;
-
-// noise flooding distribution parameter
-// for fixed 20 bits noise multihop PRE
-const double MPRE_SD = 1048576;
-
 /**
  * @brief Template for crypto parameters.
  * @tparam Element a ring element.
@@ -67,31 +58,24 @@ public:
     /**
    * Default Constructor
    */
-    CryptoParametersRLWE() : CryptoParametersBase<Element>() {
-        m_distributionParameter = 0.0f;
-        m_assuranceMeasure      = 0.0f;
-        m_noiseScale            = 1;
-        m_digitSize             = 1;
-        m_dgg.SetStd(m_distributionParameter);
-        m_maxRelinSkDeg = 2;
-        m_secretKeyDist = GAUSSIAN;
-        m_stdLevel      = HEStd_NotSet;
-    }
+    CryptoParametersRLWE() = default;
 
     /**
    * Copy constructor.
-   *
    */
     CryptoParametersRLWE(const CryptoParametersRLWE& rhs)
         : CryptoParametersBase<Element>(rhs.GetElementParams(), rhs.GetPlaintextModulus()) {
-        m_distributionParameter = rhs.m_distributionParameter;
-        m_assuranceMeasure      = rhs.m_assuranceMeasure;
-        m_noiseScale            = rhs.m_noiseScale;
-        m_digitSize             = rhs.m_digitSize;
+        m_distributionParameter         = rhs.m_distributionParameter;
+        m_assuranceMeasure              = rhs.m_assuranceMeasure;
+        m_noiseScale                    = rhs.m_noiseScale;
+        m_digitSize                     = rhs.m_digitSize;
+        m_maxRelinSkDeg                 = rhs.m_maxRelinSkDeg;
+        m_secretKeyDist                 = rhs.m_secretKeyDist;
+        m_stdLevel                      = rhs.m_stdLevel;
+        m_floodingDistributionParameter = rhs.m_floodingDistributionParameter;
         m_dgg.SetStd(m_distributionParameter);
-        m_maxRelinSkDeg = rhs.m_maxRelinSkDeg;
-        m_secretKeyDist = rhs.m_secretKeyDist;
-        m_stdLevel      = rhs.m_stdLevel;
+        m_dggFlooding.SetStd(m_floodingDistributionParameter);
+        m_PREMode = rhs.m_PREMode;
     }
 
     /**
@@ -111,7 +95,8 @@ public:
    */
     CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams,
                          float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel, usint digitSize,
-                         int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN, PlaintextModulus noiseScale = 1)
+                         int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN, PlaintextModulus noiseScale = 1,
+                         ProxyReEncryptionMode PREMode = INDCPA)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
         m_assuranceMeasure      = assuranceMeasure;
@@ -121,6 +106,7 @@ public:
         m_maxRelinSkDeg = maxRelinSkDeg;
         m_secretKeyDist = secretKeyDist;
         m_stdLevel      = stdLevel;
+        m_PREMode       = PREMode;
     }
 
     /**
@@ -136,6 +122,16 @@ public:
    */
     float GetDistributionParameter() const {
         return m_distributionParameter;
+    }
+
+    /**
+   * Returns the value of standard deviation r for discrete Gaussian
+   * distribution with flooding
+   *
+   * @return the flooding standard deviation r.
+   */
+    double GetFloodingDistributionParameter() const {
+        return m_floodingDistributionParameter;
     }
 
     /**
@@ -185,6 +181,16 @@ public:
     }
 
     /**
+   * Gets the pre security mode setting:
+   * INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or MODULUS_SWITCHING_HRA.
+   *
+   * @return the pre security mode setting.
+   */
+    ProxyReEncryptionMode GetPREMode() const {
+        return m_PREMode;
+    }
+
+    /**
    * Gets the standard security level
    *
    * @return the security level.
@@ -202,6 +208,16 @@ public:
         return m_dgg;
     }
 
+    /**
+   * Returns reference to Discrete Gaussian Generator with flooding for PRE
+   *
+   * @return reference to Discrete Gaussian Generaror with flooding for PRE.
+   * The Std dev for this generator changes based on the PRE mode, so it is not const
+   */
+    typename Element::DggType& GetFloodingDiscreteGaussianGenerator() {
+        return m_dggFlooding;
+    }
+
     // @Set Properties
 
     /**
@@ -211,6 +227,15 @@ public:
     void SetDistributionParameter(float distributionParameter) {
         m_distributionParameter = distributionParameter;
         m_dgg.SetStd(m_distributionParameter);
+    }
+
+    /**
+   * Sets the value of flooding standard deviation r for discrete Gaussian distribution with flooding
+   * @param distributionParameter
+   */
+    void SetFloodingDistributionParameter(double distributionParameter) {
+        m_floodingDistributionParameter = distributionParameter;
+        m_dggFlooding.SetStd(m_floodingDistributionParameter);
     }
 
     /**
@@ -263,6 +288,14 @@ public:
     }
 
     /**
+   * Configures the security mode for pre
+   * @param PREMode is INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or MODULUS_SWITCHING_HRA.
+   */
+    void SetPREMode(ProxyReEncryptionMode PREMode) {
+        m_PREMode = PREMode;
+    }
+
+    /**
    * == operator to compare to this instance of CryptoParametersRLWE object.
    *
    * @param &rhs CryptoParameters to check equality against.
@@ -300,20 +333,26 @@ public:
         ar(::cereal::make_nvp("rw", m_digitSize));
         ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
+        ar(::cereal::make_nvp("pmo", m_PREMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
+        ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
     }
 
     template <class Archive>
     void load(Archive& ar, std::uint32_t const version) {
         ar(::cereal::base_class<CryptoParametersBase<Element>>(this));
         ar(::cereal::make_nvp("dp", m_distributionParameter));
-        m_dgg.SetStd(m_distributionParameter);
         ar(::cereal::make_nvp("am", m_assuranceMeasure));
         ar(::cereal::make_nvp("ns", m_noiseScale));
         ar(::cereal::make_nvp("rw", m_digitSize));
         ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
+        ar(::cereal::make_nvp("pmo", m_PREMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
+        ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
+
+        m_dgg.SetStd(m_distributionParameter);
+        m_dggFlooding.SetStd(m_floodingDistributionParameter);
     }
 
     std::string SerializedObjectName() const {
@@ -322,23 +361,31 @@ public:
 
 protected:
     // standard deviation in Discrete Gaussian Distribution
-    float m_distributionParameter;
+    float m_distributionParameter = 0;
+    // standard deviation in Discrete Gaussian Distribution with Flooding
+    double m_floodingDistributionParameter = 0;
     // assurance measure alpha
-    float m_assuranceMeasure;
+    float m_assuranceMeasure = 0;
     // noise scale
-    PlaintextModulus m_noiseScale;
+    PlaintextModulus m_noiseScale = 1;
     // digit size
-    usint m_digitSize;
+    usint m_digitSize = 1;
     // maximum depth support of a ciphertext without keyswitching
     // corresponds to the highest power of secret key for which evaluation keys are genererated
-    uint32_t m_maxRelinSkDeg;
+    uint32_t m_maxRelinSkDeg = 2;
     // specifies whether the secret polynomials are generated from discrete
     // Gaussian distribution or ternary distribution with the norm of unity
-    SecretKeyDist m_secretKeyDist;
+    SecretKeyDist m_secretKeyDist = GAUSSIAN;
     // Security level according in the HomomorphicEncryption.org standard
-    SecurityLevel m_stdLevel;
+    SecurityLevel m_stdLevel = HEStd_NotSet;
 
-    typename Element::DggType m_dgg;
+    // m_dgg gets the same default value as m_distributionParameter does
+    typename Element::DggType m_dgg = typename Element::DggType(0);
+    // m_dggFlooding gets the same default value as m_floodingDistributionParameter does
+    typename Element::DggType m_dggFlooding = typename Element::DggType(0);
+
+    // specifies the security mode used for PRE
+    ProxyReEncryptionMode m_PREMode = INDCPA;
 };
 
 }  // namespace lbcrypto

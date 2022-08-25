@@ -112,13 +112,14 @@ protected:
                         float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
                         SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                         ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
-                        MultiplicationTechnique multTech = HPS)
+                        MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist) {
         m_ksTechnique   = ksTech;
         m_scalTechnique = scalTech;
         m_encTechnique  = encTech;
         m_multTechnique = multTech;
+        m_PREMode       = PREMode;
     }
 
     virtual ~CryptoParametersRNS() {}

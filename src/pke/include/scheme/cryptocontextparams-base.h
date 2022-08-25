@@ -89,6 +89,8 @@ class Params {
     // max batch size of messages to be packed in encoding (number of slots)
     usint batchSize;
 
+    // PRE security mode
+    ProxyReEncryptionMode PREMode;
     // The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
@@ -147,7 +149,7 @@ public:
     Params(Params&& obj)      = default;
 
     Params& operator=(const Params& obj) = default;
-    Params& operator=(Params&& obj) = default;
+    Params& operator=(Params&& obj)      = default;
 
     ~Params() = default;
 
@@ -169,6 +171,9 @@ public:
     }
     int GetMaxRelinSkDeg() const {
         return maxRelinSkDeg;
+    }
+    ProxyReEncryptionMode GetPREMode() const {
+        return PREMode;
     }
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
@@ -229,6 +234,9 @@ public:
     void SetMaxRelinSkDeg(int maxRelinSkDeg0) {
         maxRelinSkDeg = maxRelinSkDeg0;
     }
+    void SetPREMode(ProxyReEncryptionMode PREMode0) {
+        PREMode = PREMode0;
+    }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;
     }
@@ -274,7 +282,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);
 };
-//====================================================================================================================
+// ====================================================================================================================
 
 }  // namespace lbcrypto
 

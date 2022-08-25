@@ -260,6 +260,61 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
     return std::make_pair(moduliQ, totalModSize);
 }
 
+void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
+                                                      usint numPrimes) const {
+    const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+
+    KeySwitchTechnique ksTech     = cryptoParamsBGVRNS->GetKeySwitchTechnique();
+    ProxyReEncryptionMode PREMode = cryptoParamsBGVRNS->GetPREMode();
+
+    // compute the flooding distribution parameter based on the security mode for pre
+    // get the re-encryption level and set the level after re-encryption
+    usint ringDimension = cryptoParamsBGVRNS->GetElementParams()->GetRingDimension();
+    double sigma        = cryptoParamsBGVRNS->GetDistributionParameter();
+    double alpha        = cryptoParamsBGVRNS->GetAssuranceMeasure();
+    usint r             = cryptoParamsBGVRNS->GetDigitSize();
+    double log2q        = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
+
+    double B_e       = sqrt(alpha) * sigma;
+    uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
+    double Bkey      = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
+
+    // get the flooding discrete gaussian distribution
+    auto dggFlooding   = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
+    double noise_param = 1;
+    if (PREMode == FIXED_NOISE_HRA) {
+        noise_param = NOISE_FLOODING::PRE_SD;
+    }
+    else if (PREMode == NOISE_FLOODING_HRA) {
+        if (ksTech == BV) {
+            if (r > 0) {
+                noise_param = pow(2, NOISE_FLOODING::STAT_SECURITY) * (1 + 2 * Bkey) * (numPrimes + 1) *
+                              (log2q / r + 1) * sqrt(ringDimension) * (pow(2, r) - 1) * B_e;
+            }
+            else {
+                OPENFHE_THROW(config_error, "Relinwindow value cannot be 0 for BV keyswitching");
+            }
+        }
+        else if (ksTech == HYBRID) {
+            if (r == 0) {
+                double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
+                int numDigits            = cryptoParamsBGVRNS->GetNumPartQ();
+                noise_param              = numTowersPerDigit * numDigits * sqrt(ringDimension) * B_e * (1 + 2 * Bkey);
+                noise_param += auxBits * (1 + sqrt(ringDimension));
+                noise_param = pow(2, NOISE_FLOODING::STAT_SECURITY) * noise_param;
+            }
+            else {
+                OPENFHE_THROW(config_error, "Relinwindow value can only  be zero for Hybrid keyswitching");
+            }
+        }
+    }
+    else if (PREMode == DIVIDE_AND_ROUND_HRA) {
+        OPENFHE_THROW(config_error, "Noise Flooding not applicable for PRE DIVIDE_AND_ROUND_HRA mode");
+    }
+    // set the flooding distribution parameter to the distribution.
+    dggFlooding.SetStd(noise_param);
+}
+
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                 uint32_t evalAddCount, uint32_t keySwitchCount, usint cyclOrder,
                                                 usint numPrimes, usint firstModSize, usint dcrtBits, uint32_t numPartQ,
@@ -271,9 +326,13 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     ScalingTechnique scalTech        = cryptoParamsBGVRNS->GetScalingTechnique();
     EncryptionTechnique encTech      = cryptoParamsBGVRNS->GetEncryptionTechnique();
     MultiplicationTechnique multTech = cryptoParamsBGVRNS->GetMultiplicationTechnique();
-
+    ProxyReEncryptionMode PREMode    = cryptoParamsBGVRNS->GetPREMode();
     if (!ptm)
         OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
+
+    if ((PREMode != INDCPA) && (PREMode != FIXED_NOISE_HRA) && (PREMode != NOISE_FLOODING_HRA)) {
+        OPENFHE_THROW(not_available_error, "other HRA modes for PRE with BGVRNS not implemented yet");
+    }
 
     bool dcrtBitsSet = (dcrtBits == 0) ? false : true;
 
@@ -430,6 +489,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         cryptoParamsBGVRNS->SetEncodingParams(encodingParamsNew);
     }
     cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, 0);
+    InitializeFloodingDgg(cryptoParams, numPrimes);
     return true;
 }
 

@@ -61,6 +61,7 @@ protected:
         usint qmodulus  = 27;
         usint firstqmod = 27;
 
+        CCParams<CryptoContextBGVRNS> parameters;
         if (security_model == 0) {
             ringDimension = 1024;
             digitSize     = 9;
@@ -68,6 +69,8 @@ protected:
 
             qmodulus  = 27;
             firstqmod = 27;
+            parameters.SetPREMode(INDCPA);
+            parameters.SetKeySwitchTechnique(BV);
         }
         else if (security_model == 1) {
             ringDimension = 2048;
@@ -76,6 +79,8 @@ protected:
 
             qmodulus  = 54;
             firstqmod = 54;
+            parameters.SetPREMode(FIXED_NOISE_HRA);
+            parameters.SetKeySwitchTechnique(BV);
         }
         else if (security_model == 2) {
             ringDimension = 8192;
@@ -84,17 +89,29 @@ protected:
 
             qmodulus  = 218;
             firstqmod = 60;
+            parameters.SetPREMode(NOISE_FLOODING_HRA);
+            parameters.SetKeySwitchTechnique(BV);
+        }
+        else if (security_model == 3) {
+            ringDimension = 8192;
+            digitSize     = 0;
+            dcrtbits      = 30;
+
+            qmodulus      = 218;
+            firstqmod     = 60;
+            uint32_t dnum = 2;
+            parameters.SetPREMode(NOISE_FLOODING_HRA);
+            parameters.SetKeySwitchTechnique(HYBRID);
+            parameters.SetNumLargeDigits(dnum);
         }
 
-        CCParams<CryptoContextBGVRNS> parameters;
         parameters.SetMultiplicativeDepth(0);
         parameters.SetPlaintextModulus(plaintextModulus);
-        parameters.SetKeySwitchTechnique(BV);
         parameters.SetRingDim(ringDimension);
         parameters.SetFirstModSize(firstqmod);
         parameters.SetScalingModSize(dcrtbits);
         parameters.SetDigitSize(digitSize);
-        parameters.SetScalingTechnique(FIXEDAUTO);
+        parameters.SetScalingTechnique(FIXEDMANUAL);
         parameters.SetMultiHopModSize(qmodulus);
 
         CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
@@ -113,8 +130,7 @@ protected:
         keyPair1 = cryptoContext->KeyGen();
 
         if (!keyPair1.good()) {
-            std::cout << "Key generation failed!" << std::endl;
-            exit(1);
+            OPENFHE_THROW(math_error, "Key generation failed!");
         }
 
         ////////////////////////////////////////////////////////////
@@ -168,19 +184,29 @@ protected:
 
             auto reencryptionKey = cryptoContext->ReKeyGen(keyPairs[i].secretKey, keyPairs[i + 1].publicKey);
 
-            if (security_model == 0) {
-                // IND-CPA secure
-                reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey);
-            }
-            else if (security_model == 1) {
-                // fixed bits noise HRA secure
-                reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
-            }
-            else {
-                // HRA secure noiseflooding
-                reEncryptedCT1 = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey, 1);
-                // mod reduction for noise flooding
-                reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1);
+            switch (security_model) {
+                case 0:
+                    // CPA secure PRE
+                    reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey);  // IND-CPA secure
+                    break;
+                case 1:
+                    // Fixed noise (20 bits) practically secure PRE
+                    reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+                    break;
+                case 2:
+                    // Provable HRA secure PRE with noise flooding with BV switching
+                    reEncryptedCT1 =
+                        cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+                    reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1);  // mod reduction for noise flooding
+                    break;
+                case 3:
+                    // Provable HRA secure PRE with noise flooding with Hybrid switching
+                    reEncryptedCT1 =
+                        cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
+                    reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1);  // mod reduction for noise flooding
+                    break;
+                default:
+                    OPENFHE_THROW(config_error, "Not a valid security mode");
             }
 
             reEncryptedCTs.push_back(reEncryptedCT);
@@ -199,9 +225,7 @@ protected:
         for (unsigned int j = 0; j < unpackedPT.size(); j++) {
             EXPECT_EQ(unpackedPT[j], unpackedDecPT[j]);
             if (unpackedPT[j] != unpackedDecPT[j]) {
-                std::cout << "Decryption failure" << std::endl;
-                std::cout << j << ", " << unpackedPT[j] << ", " << unpackedDecPT[j] << std::endl;
-                return 0;
+                OPENFHE_THROW(math_error, "Decryption failure");
             }
         }
 
@@ -214,11 +238,11 @@ TEST_P(UTGENERAL_MULTIHOP_PRE, MULTIHOP_PRE_TEST) {
     run_demo_pre(test);
 }
 
-int Security_Model_Options[3] = {0, 1, 2};
+int Security_Model_Options[4] = {0, 1, 2, 3};
 
 INSTANTIATE_TEST_SUITE_P(MULTIHOP_PRE_TEST, UTGENERAL_MULTIHOP_PRE, ::testing::ValuesIn(Security_Model_Options));
 
 /*
-run_demo_pre(0); //IND CPA secure
-run_demo_pre(1); //Fixed 20 bits Noise HRA
-run_demo_pre(2); //provably secure HRA */
+run_demo_pre(0); // IND CPA secure
+run_demo_pre(1); // Fixed 20 bits Noise HRA
+run_demo_pre(2); // provably secure HRA */
