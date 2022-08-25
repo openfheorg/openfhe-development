@@ -262,7 +262,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
 void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                       usint numPrimes) const {
-    const auto cryptoParamsBGVRNS = std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+    const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
 
     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS->GetKeySwitchTechnique();
     ProxyReEncryptionMode PREMode = cryptoParamsBGVRNS->GetPREMode();
@@ -280,7 +280,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     double Bkey      = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
 
     // get the flooding discrete gaussian distribution
-    auto& dggFlooding  = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
+    auto dggFlooding   = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
     double noise_param = 1;
     if (PREMode == FIXED_NOISE_HRA) {
         noise_param = NOISE_FLOODING::PRE_SD;

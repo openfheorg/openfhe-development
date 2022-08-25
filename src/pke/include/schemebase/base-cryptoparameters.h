@@ -127,13 +127,6 @@ public:
         return 0;
     }
 
-    virtual const typename Element::DggType& GetDiscreteGaussianGenerator() const {
-        OPENFHE_THROW(config_error, "No DGG Available for this parameter set");
-    }
-
-    virtual const typename Element::DggType& GetFloodingDiscreteGaussianGenerator() const {
-        OPENFHE_THROW(config_error, "No Flooding DGG Available for this parameter set");
-    }
     /**
    * Sets the reference to element params
    */

@@ -48,17 +48,6 @@
 
 namespace lbcrypto {
 
-namespace NOISE_FLOODING {
-// noise flooding distribution parameter for distributed decryption in threshold FHE
-const double MP_SD = 1048576;
-// noise flooding distribution parameter for fixed 20 bits noise multihop PRE
-const double MPRE_SD = 1048576;
-// noise flooding distribution parameter for distributed decryption in PRE
-const double PRE_SD = 1048576;
-// statistical security parameter for noise flooding in PRE
-const double STAT_SECURITY = 30;
-};  // namespace NOISE_FLOODING
-
 /**
  * @brief Template for crypto parameters.
  * @tparam Element a ring element.
@@ -228,6 +217,7 @@ public:
     typename Element::DggType& GetFloodingDiscreteGaussianGenerator() {
         return m_dggFlooding;
     }
+
     // @Set Properties
 
     /**
@@ -362,6 +352,7 @@ public:
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
 
         m_dgg.SetStd(m_distributionParameter);
+        m_dggFlooding.SetStd(m_floodingDistributionParameter);
     }
 
     std::string SerializedObjectName() const {
