@@ -1740,10 +1740,7 @@ public:
         const auto cryptoParams  = GetCryptoParameters();
         const auto elementParams = cryptoParams->GetElementParams();
         uint32_t m               = elementParams->GetCyclotomicOrder();
-        if (this->getSchemeId() == "CKKSRNS")
-            return FindAutomorphismIndex2nComplex(idx, m);
-        else
-            return FindAutomorphismIndex2n(idx, m);
+        return GetScheme()->FindAutomorphismIndex(idx, m);
     }
 
     std::vector<usint> FindAutomorphismIndices(const std::vector<usint> idxList) const {

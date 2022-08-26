@@ -1216,6 +1216,13 @@ public:
         OPENFHE_THROW(config_error, "EvalAtIndex operation has not been enabled");
     }
 
+    virtual usint FindAutomorphismIndex(usint index, usint m) {
+        if (m_LeveledSHE) {
+            return m_LeveledSHE->FindAutomorphismIndex(index, m);
+        }
+        OPENFHE_THROW(config_error, "FindAutomorphismIndex operation has not been enabled");
+    }
+
     /////////////////////////////////////////
     // SHE Leveled Methods Wrapper
     /////////////////////////////////////////
