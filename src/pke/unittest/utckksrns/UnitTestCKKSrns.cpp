@@ -469,14 +469,14 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // ==========================================
     // TestType,     Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech
     { RE_ENCRYPTION, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT}, },
-    { RE_ENCRYPTION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT}, },
+    { RE_ENCRYPTION, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT, INDCPA}, },
     { RE_ENCRYPTION, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT}, },
-    { RE_ENCRYPTION, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT}, },
+    { RE_ENCRYPTION, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT, INDCPA}, },
 #if NATIVEINT != 128
     { RE_ENCRYPTION, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT}, },
-    { RE_ENCRYPTION, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT}, },
+    { RE_ENCRYPTION, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT, INDCPA}, },
     { RE_ENCRYPTION, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT}, },
-    { RE_ENCRYPTION, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT}, },
+    { RE_ENCRYPTION, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT, INDCPA}, },
 #endif
     // ==========================================
     // TestType, Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech

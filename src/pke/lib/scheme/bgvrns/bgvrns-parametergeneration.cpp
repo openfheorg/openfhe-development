@@ -110,7 +110,7 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
         int relinBase       = pow(2.0, digitSize);
         int modSizeEstimate = DCRT_MODULUS::MAX_SIZE;
         int numWindows      = floor(modSizeEstimate / log(relinBase)) + 1;
-        keySwitchingNoise   = numWindows * (numPrimes + 1) * expansionFactor * relinBase * Berr / 2.0;
+        keySwitchingNoise   = numWindows * (numPrimes) * expansionFactor * relinBase * Berr / 2.0;
     }
     else {
         double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
@@ -330,7 +330,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     if (!ptm)
         OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
 
-    if ((PREMode != INDCPA) && (PREMode != FIXED_NOISE_HRA) && (PREMode != NOISE_FLOODING_HRA)) {
+    if ((PREMode != INDCPA) && (PREMode != FIXED_NOISE_HRA) && (PREMode != NOISE_FLOODING_HRA) && (PREMode != NOT_SET)) {
         OPENFHE_THROW(not_available_error, "other HRA modes for PRE with BGVRNS not implemented yet");
     }
 

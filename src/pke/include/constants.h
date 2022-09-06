@@ -69,7 +69,8 @@ enum ScalingTechnique {
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 
 enum ProxyReEncryptionMode {
-    INDCPA = 0,
+    NOT_SET = 0,
+    INDCPA,
     FIXED_NOISE_HRA,
     NOISE_FLOODING_HRA,
     DIVIDE_AND_ROUND_HRA,

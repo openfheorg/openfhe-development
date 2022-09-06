@@ -58,7 +58,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     MultiplicationTechnique multTech = cryptoParamsCKKSRNS->GetMultiplicationTechnique();
     ProxyReEncryptionMode PREMode    = cryptoParamsCKKSRNS->GetPREMode();
 
-    if (PREMode != INDCPA) {
+    if ((PREMode != INDCPA) && (PREMode != NOT_SET)) {
         OPENFHE_THROW(not_available_error, "HRA modes for PRE with CKKSRNS not implemented yet");
     }
 

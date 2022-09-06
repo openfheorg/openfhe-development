@@ -209,7 +209,7 @@ public:
     }
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
-        if (m_ksTechnique == HYBRID) {
+        if ((m_ksTechnique == HYBRID) && (m_PREMode != NOT_SET)) {
             return m_paramsQP;
         }
         else if (m_encTechnique == EXTENDED) {

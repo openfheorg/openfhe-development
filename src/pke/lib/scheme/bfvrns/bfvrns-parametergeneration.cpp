@@ -62,7 +62,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     MultiplicationTechnique multTech = cryptoParamsBFVRNS->GetMultiplicationTechnique();
     ProxyReEncryptionMode PREMode    = cryptoParamsBFVRNS->GetPREMode();
 
-    if (PREMode != INDCPA) {
+    if ((PREMode != INDCPA) && (PREMode != NOT_SET)) {
         OPENFHE_THROW(not_available_error, "HRA modes for PRE with BFVRNS not implemented yet");
     }
 

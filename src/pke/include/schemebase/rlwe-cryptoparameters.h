@@ -385,7 +385,7 @@ protected:
     typename Element::DggType m_dggFlooding = typename Element::DggType(0);
 
     // specifies the security mode used for PRE
-    ProxyReEncryptionMode m_PREMode = INDCPA;
+    ProxyReEncryptionMode m_PREMode = NOT_SET;
 };
 
 }  // namespace lbcrypto
