@@ -58,7 +58,7 @@ namespace lbcrypto {
  */
 class RingGSWCryptoParams : public Serializable {
 public:
-    RingGSWCryptoParams() : m_N(0), m_Q(0), m_q(0), m_baseG(0), m_digitsG(0), m_digitsG2(0), m_baseR(0) {}
+    RingGSWCryptoParams() : m_N(0), m_Q(0), m_q(0), m_baseG(0), m_digitsG(0), m_baseR(0) {}
 
     /**
    * Main constructor for RingGSWCryptoParams
@@ -85,7 +85,6 @@ public:
         // Precomputes a polynomial for MSB extraction
         m_polyParams = std::make_shared<ILNativeParams>(2 * N, Q, rootOfUnity);
         m_digitsG    = (uint32_t)std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(m_baseG)));
-        m_digitsG2   = m_digitsG * 2;
         if (m_method == AP) {
             uint32_t digitCountR =
                 (uint32_t)std::ceil(log(static_cast<double>(q.ConvertToInt())) / log(static_cast<double>(m_baseR)));
@@ -180,10 +179,6 @@ public:
         return m_digitsG;
     }
 
-    uint32_t GetDigitsG2() const {
-        return m_digitsG2;
-    }
-
     uint32_t GetBaseR() const {
         return m_baseR;
     }
@@ -271,10 +266,9 @@ public:
 
     void Change_BaseG(uint32_t BaseG) {
         if (m_baseG != BaseG) {
-            m_baseG    = BaseG;
-            m_Gpower   = m_Gpower_map[m_baseG];
-            m_digitsG  = (uint32_t)std::ceil(log(m_Q.ConvertToDouble()) / log(static_cast<double>(m_baseG)));
-            m_digitsG2 = m_digitsG * 2;
+            m_baseG   = BaseG;
+            m_Gpower  = m_Gpower_map[m_baseG];
+            m_digitsG = (uint32_t)std::ceil(log(m_Q.ConvertToDouble()) / log(static_cast<double>(m_baseG)));
         }
     }
 
@@ -293,9 +287,6 @@ private:
 
     // number of digits in decomposing integers mod Q
     uint32_t m_digitsG;
-
-    // twice the number of digits in decomposing integers mod Q
-    uint32_t m_digitsG2;
 
     // base used for the refreshing key (used only for AP bootstrapping)
     uint32_t m_baseR;

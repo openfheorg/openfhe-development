@@ -91,7 +91,7 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenGINX(const std::shared_ptr<RingGSWC
                                                   const NativePoly& skNTT, const LWEPlaintext& m) const {
     NativeInteger Q   = params->GetQ();
     uint32_t digitsG  = params->GetDigitsG();
-    uint32_t digitsG2 = params->GetDigitsG2();
+    uint32_t digitsG2 = digitsG << 1;
     auto Gpow         = params->GetGPower();
     auto polyParams   = params->GetPolyParams();
     auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG2, 2);
@@ -135,7 +135,7 @@ void RingGSWAccumulatorCGGI::AddToACCGINX(const std::shared_ptr<RingGSWCryptoPar
                                           const RingGSWEvalKey ek2, const NativeInteger& a, RLWECiphertext& acc) const {
     // cycltomic order
     uint32_t m        = 2 * params->GetN();
-    uint32_t digitsG2 = params->GetDigitsG2();
+    uint32_t digitsG2 = params->GetDigitsG() << 1;
     int64_t q         = params->Getq().ConvertToInt();
     auto polyParams   = params->GetPolyParams();
 

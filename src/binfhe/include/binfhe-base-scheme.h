@@ -195,7 +195,7 @@ private:
    * @return the output RingLWE accumulator
    */
     RLWECiphertext BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                 const RingGSWBTKey& EK, ConstLWECiphertext ct) const;
+                                 const RingGSWACCKey ek, ConstLWECiphertext ct) const;
 
     // Below is for arbitrary function evaluation purpose
 
@@ -210,7 +210,7 @@ private:
    */
     template <typename Func>
     RLWECiphertext BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                 const RingGSWBTKey& EK, ConstLWECiphertext ct, const Func f,
+                                 const RingGSWACCKey ek, ConstLWECiphertext ct, const Func f,
                                  const NativeInteger bigger_q) const;
 
     /**

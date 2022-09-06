@@ -89,7 +89,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenAP(const std::shared_ptr<RingGSWCrypt
     int64_t q         = params->Getq().ConvertToInt();
     uint32_t N        = params->GetN();
     uint32_t digitsG  = params->GetDigitsG();
-    uint32_t digitsG2 = params->GetDigitsG2();
+    uint32_t digitsG2 = digitsG << 1;
     auto polyParams   = params->GetPolyParams();
     auto Gpow         = params->GetGPower();
     auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG2, 2);
@@ -144,7 +144,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenAP(const std::shared_ptr<RingGSWCrypt
 // AP Accumulation as described in https://eprint.iacr.org/2020/08
 void RingGSWAccumulatorDM::AddToACCAP(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
                                       RLWECiphertext& acc) const {
-    uint32_t digitsG2 = params->GetDigitsG2();
+    uint32_t digitsG2 = params->GetDigitsG() << 1;
     auto polyParams   = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements();
