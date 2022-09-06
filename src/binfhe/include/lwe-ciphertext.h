@@ -63,24 +63,24 @@ public:
     LWECiphertextImpl(NativeVector&& a, NativeInteger b) : m_a(std::move(a)), m_b(b) {}
 
     explicit LWECiphertextImpl(const LWECiphertextImpl& rhs) {
-        this->m_a = rhs.m_a;
-        this->m_b = rhs.m_b;
+        m_a = rhs.m_a;
+        m_b = rhs.m_b;
     }
 
     explicit LWECiphertextImpl(const LWECiphertextImpl&& rhs) {
-        this->m_a = std::move(rhs.m_a);
-        this->m_b = std::move(rhs.m_b);
+        m_a = std::move(rhs.m_a);
+        m_b = std::move(rhs.m_b);
     }
 
     const LWECiphertextImpl& operator=(const LWECiphertextImpl& rhs) {
-        this->m_a = rhs.m_a;
-        this->m_b = rhs.m_b;
+        m_a = rhs.m_a;
+        m_b = rhs.m_b;
         return *this;
     }
 
     const LWECiphertextImpl& operator=(const LWECiphertextImpl&& rhs) {
-        this->m_a = std::move(rhs.m_a);
-        this->m_b = std::move(rhs.m_b);
+        m_a = std::move(rhs.m_a);
+        m_b = std::move(rhs.m_b);
         return *this;
     }
 
@@ -88,12 +88,28 @@ public:
         return m_a;
     }
 
+    NativeVector& GetA() {
+        return m_a;
+    }
+
     const NativeInteger& GetA(std::size_t i) const {
+        return m_a[i];
+    }
+
+    NativeInteger& GetA(std::size_t i) {
         return m_a[i];
     }
 
     const NativeInteger& GetB() const {
         return m_b;
+    }
+
+    NativeInteger& GetB() {
+        return m_b;
+    }
+
+    const NativeInteger& GetModulus() const {
+        return m_a.GetModulus();
     }
 
     void SetA(const NativeVector& a) {

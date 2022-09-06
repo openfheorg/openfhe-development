@@ -129,6 +129,29 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params,
     return;
 }
 
+void LWEEncryptionScheme::EvalAddEq(LWECiphertext& ct1, ConstLWECiphertext ct2) const {
+    ct1->GetA().ModAddEq(ct2->GetA());
+    ct1->GetB().ModAddFastEq(ct2->GetB(), ct1->GetModulus());
+}
+
+void LWEEncryptionScheme::EvalAddConstEq(LWECiphertext& ct, NativeInteger cnst) const {
+    ct->GetB().ModAddFastEq(cnst, ct->GetModulus());
+}
+
+void LWEEncryptionScheme::EvalSubEq(LWECiphertext& ct1, ConstLWECiphertext ct2) const {
+    ct1->GetA().ModSubEq(ct2->GetA());
+    ct1->GetB().ModSubFastEq(ct2->GetB(), ct1->GetModulus());
+}
+
+void LWEEncryptionScheme::EvalSubConstEq(LWECiphertext& ct, NativeInteger cnst) const {
+    ct->GetB().ModSubFastEq(cnst, ct->GetModulus());
+}
+
+void LWEEncryptionScheme::EvalMultConstEq(LWECiphertext& ct1, NativeInteger cnst) const {
+    ct1->GetA().ModMulEq(cnst);
+    ct1->GetB().ModMulFastEq(cnst, ct1->GetModulus());
+}
+
 // Modulus switching - directly applies the scale-and-round operation RoundQ
 LWECiphertext LWEEncryptionScheme::ModSwitch(NativeInteger q, ConstLWECiphertext ctQ) const {
     auto n = ctQ->GetA().GetLength();

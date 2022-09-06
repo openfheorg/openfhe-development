@@ -89,6 +89,16 @@ public:
     void Decrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk, ConstLWECiphertext ct,
                  LWEPlaintext* result, const LWEPlaintextModulus& p = 4) const;
 
+    void EvalAddEq(LWECiphertext& ct1, ConstLWECiphertext ct2) const;
+
+    void EvalAddConstEq(LWECiphertext& ct, NativeInteger cnst) const;
+
+    void EvalSubEq(LWECiphertext& ct1, ConstLWECiphertext ct2) const;
+
+    void EvalSubConstEq(LWECiphertext& ct, NativeInteger cnst) const;
+
+    void EvalMultConstEq(LWECiphertext& ct, NativeInteger cnst) const;
+
     /**
    * Changes an LWE ciphertext modulo Q into an LWE ciphertext modulo q
    *

@@ -52,15 +52,14 @@ namespace lbcrypto {
 
 // wrapper for KeyGen methods
 RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk) const {
-    auto& LWEParams  = params->GetLWEParams();
-    auto& RGSWParams = params->GetRingGSWParams();
-    auto polyParams  = RGSWParams->GetPolyParams();
-
+    auto& LWEParams        = params->GetLWEParams();
     ConstLWEPrivateKey skN = LWEscheme->KeyGenN(LWEParams);
 
     RingGSWBTKey ek;
     ek.KSkey = LWEscheme->KeySwitchGen(LWEParams, LWEsk, skN);
 
+    auto& RGSWParams   = params->GetRingGSWParams();
+    auto polyParams    = RGSWParams->GetPolyParams();
     NativePoly skNPoly = NativePoly(polyParams);
     skNPoly.SetValues(skN->GetElement(), Format::COEFFICIENT);
     skNPoly.SetFormat(Format::EVALUATION);
@@ -93,103 +92,79 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
             return EvalNOT(params, ctOR);
     }
     else {
-        auto& LWEParams = params->GetLWEParams();
-
-        NativeInteger q   = LWEParams->Getq();
-        NativeInteger qKS = LWEParams->GetqKS();
-        NativeInteger Q   = LWEParams->GetQ();
-        uint32_t n        = LWEParams->Getn();
-        uint32_t N        = LWEParams->GetN();
-        NativeInteger Q8  = Q / NativeInteger(8) + 1;
-
-        NativeVector a(n, q);
-        NativeInteger b;
+        LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
 
         // the additive homomorphic operation for XOR/NXOR is different from the
         // other gates we compute 2*(ct1 - ct2) mod 4 for XOR, me map 1,2 -> 1 and
         // 3,0 -> 0
         if ((gate == XOR_FAST) || (gate == XNOR_FAST)) {
-            a = ct1->GetA() - ct2->GetA();
-            a += a;
-            b = ct1->GetB().ModSubFast(ct2->GetB(), q);
-            b.ModAddFastEq(b, q);
+            LWEscheme->EvalSubEq(ctprep, ct2);
+            LWEscheme->EvalAddEq(ctprep, ctprep);
         }
         else {
             // for all other gates, we simply compute (ct1 + ct2) mod 4
             // for AND: 0,1 -> 0 and 2,3 -> 1
             // for OR: 1,2 -> 1 and 3,0 -> 0
-            a = ct1->GetA() + ct2->GetA();
-            b = ct1->GetB().ModAddFast(ct2->GetB(), q);
+            LWEscheme->EvalAddEq(ctprep, ct2);
         }
 
-        auto acc = BootstrapCore(params, gate, EK, a, b);
-
-        NativeInteger bNew;
-        NativeVector aNew(N, Q);
+        auto acc = BootstrapCore(params, gate, EK, ctprep->GetA(), ctprep->GetB());
 
         // the accumulator result is encrypted w.r.t. the transposed secret key
         // we can transpose "a" to get an encryption under the original secret key
         NativePoly temp = (*acc)[0][0];
         temp            = temp.Transpose();
         temp.SetFormat(Format::COEFFICIENT);
-        aNew = temp.GetValues();
+        ctprep->SetA(temp.GetValues());
 
         temp = (*acc)[0][1];
         temp.SetFormat(Format::COEFFICIENT);
         // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
-        bNew = Q8.ModAddFast(temp[0], Q);
+        auto& LWEParams  = params->GetLWEParams();
+        NativeInteger Q  = LWEParams->GetQ();
+        NativeInteger Q8 = Q / NativeInteger(8) + 1;
+        ctprep->SetB(Q8.ModAddFast(temp[0], Q));
 
         // Modulus switching to a middle step Q'
-        auto eQN = LWEscheme->ModSwitch(qKS, std::make_shared<LWECiphertextImpl>(aNew, bNew));
+        auto eQN = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctprep);
 
         // Key switching
-        ConstLWECiphertext eQ = LWEscheme->KeySwitch(LWEParams, EK.KSkey, eQN);
+        auto eQ = LWEscheme->KeySwitch(LWEParams, EK.KSkey, eQN);
 
         // Modulus switching
-        return LWEscheme->ModSwitch(q, eQ);
+        return LWEscheme->ModSwitch(ct1->GetModulus(), eQ);
     }
 }
 
 // Full evaluation as described in https://eprint.iacr.org/2020/08
 LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
                                       ConstLWECiphertext ct1) const {
-    auto& LWEParams = params->GetLWEParams();
+    LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
+    NativeInteger q      = ctprep->GetModulus();
+    LWEscheme->EvalAddConstEq(ctprep, q >> 2);
 
-    NativeInteger q   = LWEParams->Getq();
-    NativeInteger qKS = LWEParams->GetqKS();
-    NativeInteger Q   = LWEParams->GetQ();
-    uint32_t n        = LWEParams->Getn();
-    uint32_t N        = LWEParams->GetN();
-    NativeInteger Q8  = Q / NativeInteger(8) + 1;
-
-    NativeVector a(n, q);
-    NativeInteger b;
-
-    a = ct1->GetA();
-    b = ct1->GetB().ModAddFast(q >> 2, q);
-
-    auto acc = BootstrapCore(params, AND, EK, a, b);
-
-    NativeInteger bNew;
-    NativeVector aNew(N, Q);
+    auto acc = BootstrapCore(params, AND, EK, ctprep->GetA(), ctprep->GetB());
 
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
     NativePoly temp = (*acc)[0][0];
     temp            = temp.Transpose();
     temp.SetFormat(Format::COEFFICIENT);
-    aNew = temp.GetValues();
+    ctprep->SetA(temp.GetValues());
 
     temp = (*acc)[0][1];
     temp.SetFormat(Format::COEFFICIENT);
     // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
-    bNew = Q8.ModAddFast(temp[0], Q);
+    auto& LWEParams  = params->GetLWEParams();
+    NativeInteger Q  = LWEParams->GetQ();
+    NativeInteger Q8 = Q / NativeInteger(8) + 1;
+    ctprep->SetB(Q8.ModAddFast(temp[0], Q));
 
     // Modulus switching to a middle step Q'
-    auto eQN = LWEscheme->ModSwitch(qKS, std::make_shared<LWECiphertextImpl>(aNew, bNew));
+    auto eQN = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctprep);
 
     // Key switching
-    ConstLWECiphertext eQ = LWEscheme->KeySwitch(LWEParams, EK.KSkey, eQN);
+    auto eQ = LWEscheme->KeySwitch(LWEParams, EK.KSkey, eQN);
 
     // Modulus switching
     return LWEscheme->ModSwitch(q, eQ);
