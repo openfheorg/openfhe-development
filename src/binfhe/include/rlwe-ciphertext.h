@@ -52,78 +52,58 @@
 
 namespace lbcrypto {
 
-class RingGSWCiphertextImpl;
+class RLWECiphertextImpl;
 
-using RingGSWCiphertext = std::shared_ptr<RingGSWCiphertextImpl>;
+using RLWECiphertext = std::shared_ptr<RLWECiphertextImpl>;
 
-using ConstRingGSWCiphertext = const std::shared_ptr<const RingGSWCiphertextImpl>;
+using ConstRLWECiphertext = const std::shared_ptr<const RLWECiphertextImpl>;
 
 /**
  * @brief Class that stores a RingGSW ciphertext; a two-dimensional vector of
  * ring elements
  */
-class RingGSWCiphertextImpl : public Serializable {
+class RLWECiphertextImpl : public Serializable {
 public:
-    RingGSWCiphertextImpl() {}
+    RLWECiphertextImpl() {}
 
-    RingGSWCiphertextImpl(uint32_t rowSize, uint32_t colSize) {
-        m_elements.resize(rowSize);
-        for (uint32_t i = 0; i < rowSize; i++)
-            m_elements[i].resize(colSize);
-    }
+    explicit RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
 
-    explicit RingGSWCiphertextImpl(const std::vector<std::vector<NativePoly>>& elements) : m_elements(elements) {}
-
-    explicit RingGSWCiphertextImpl(const RingGSWCiphertextImpl& rhs) {
+    explicit RLWECiphertextImpl(const RLWECiphertextImpl& rhs) {
         this->m_elements = rhs.m_elements;
     }
 
-    explicit RingGSWCiphertextImpl(const RingGSWCiphertextImpl&& rhs) {
+    explicit RLWECiphertextImpl(const RLWECiphertextImpl&& rhs) {
         this->m_elements = std::move(rhs.m_elements);
     }
 
-    const RingGSWCiphertextImpl& operator=(const RingGSWCiphertextImpl& rhs) {
+    const RLWECiphertextImpl& operator=(const RLWECiphertextImpl& rhs) {
         this->m_elements = rhs.m_elements;
         return *this;
     }
 
-    const RingGSWCiphertextImpl& operator=(const RingGSWCiphertextImpl&& rhs) {
+    const RLWECiphertextImpl& operator=(const RLWECiphertextImpl&& rhs) {
         this->m_elements = rhs.m_elements;
         return *this;
     }
 
-    const std::vector<std::vector<NativePoly>>& GetElements() const {
+    const std::vector<NativePoly>& GetElements() const {
         return m_elements;
     }
 
-    void SetElements(const std::vector<std::vector<NativePoly>>& elements) {
-        m_elements = elements;
+    std::vector<NativePoly>& GetElements() {
+        return m_elements;
     }
 
-    /**
-   * Switches between COEFFICIENT and Format::EVALUATION polynomial
-   * representations using NTT
-   */
     void SetFormat(const Format format) {
         for (uint32_t i = 0; i < m_elements.size(); i++)
-            // column size is assume to be the same
-            for (uint32_t j = 0; j < m_elements[0].size(); j++)
-                m_elements[i][j].SetFormat(format);
+            m_elements[i].SetFormat(format);
     }
 
-    std::vector<NativePoly>& operator[](uint32_t i) {
-        return m_elements[i];
-    }
-
-    const std::vector<NativePoly>& operator[](usint i) const {
-        return m_elements[i];
-    }
-
-    bool operator==(const RingGSWCiphertextImpl& other) const {
+    bool operator==(const RLWECiphertextImpl& other) const {
         return m_elements == other.m_elements;
     }
 
-    bool operator!=(const RingGSWCiphertextImpl& other) const {
+    bool operator!=(const RLWECiphertextImpl& other) const {
         return !(*this == other);
     }
 
@@ -142,14 +122,14 @@ public:
     }
 
     std::string SerializedObjectName() const {
-        return "RingGSWCiphertext";
+        return "RLWECiphertext";
     }
     static uint32_t SerializedVersion() {
         return 1;
     }
 
 private:
-    std::vector<std::vector<NativePoly>> m_elements;
+    std::vector<NativePoly> m_elements;
 };
 
 }  // namespace lbcrypto

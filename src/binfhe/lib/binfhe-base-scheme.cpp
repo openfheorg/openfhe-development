@@ -29,24 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  FHEW scheme (RingGSW accumulator) implementation
-  The scheme is described in https://eprint.iacr.org/2014/816 and in Daniele Micciancio and Yuriy Polyakov
-  "Bootstrapping in FHEW-like Cryptosystems", Cryptology ePrint Archive, Report 2020/086,
-  https://eprint.iacr.org/2020/086.
-
-  Full reference to https://eprint.iacr.org/2014/816:
-  @misc{cryptoeprint:2014:816,
-    author = {Leo Ducas and Daniele Micciancio},
-    title = {FHEW: Bootstrapping Homomorphic Encryption in less than a second},
-    howpublished = {Cryptology ePrint Archive, Report 2014/816},
-    year = {2014},
-    note = {\url{https://eprint.iacr.org/2014/816}},
- */
+#include "binfhe-base-scheme.h"
 
 #include <string>
-
-#include "binfhe-base-scheme.h"
 
 namespace lbcrypto {
 
@@ -108,22 +93,21 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
             LWEscheme->EvalAddEq(ctprep, ct2);
         }
 
-        auto acc = BootstrapCore(params, gate, EK, ctprep);
+        auto acc                        = BootstrapCore(params, gate, EK, ctprep);
+        std::vector<NativePoly>& accVec = acc->GetElements();
 
         // the accumulator result is encrypted w.r.t. the transposed secret key
         // we can transpose "a" to get an encryption under the original secret key
-        NativePoly temp = (*acc)[0][0];
-        temp            = temp.Transpose();
-        temp.SetFormat(Format::COEFFICIENT);
-        ctprep->SetA(temp.GetValues());
+        accVec[0] = accVec[0].Transpose();
+        accVec[0].SetFormat(Format::COEFFICIENT);
+        ctprep->SetA(accVec[0].GetValues());
 
-        temp = (*acc)[0][1];
-        temp.SetFormat(Format::COEFFICIENT);
+        accVec[1].SetFormat(Format::COEFFICIENT);
         // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
         auto& LWEParams  = params->GetLWEParams();
         NativeInteger Q  = LWEParams->GetQ();
         NativeInteger Q8 = Q / NativeInteger(8) + 1;
-        ctprep->SetB(Q8.ModAddFast(temp[0], Q));
+        ctprep->SetB(Q8.ModAddFast(accVec[1][0], Q));
 
         // Modulus switching to a middle step Q'
         auto eQN = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctprep);
@@ -143,22 +127,21 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> 
     NativeInteger q      = ctprep->GetModulus();
     LWEscheme->EvalAddConstEq(ctprep, q >> 2);
 
-    auto acc = BootstrapCore(params, AND, EK, ctprep);
+    auto acc                        = BootstrapCore(params, AND, EK, ctprep);
+    std::vector<NativePoly>& accVec = acc->GetElements();
 
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
-    NativePoly temp = (*acc)[0][0];
-    temp            = temp.Transpose();
-    temp.SetFormat(Format::COEFFICIENT);
-    ctprep->SetA(temp.GetValues());
+    accVec[0] = accVec[0].Transpose();
+    accVec[0].SetFormat(Format::COEFFICIENT);
+    ctprep->SetA(accVec[0].GetValues());
 
-    temp = (*acc)[0][1];
-    temp.SetFormat(Format::COEFFICIENT);
+    accVec[1].SetFormat(Format::COEFFICIENT);
     // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
     auto& LWEParams  = params->GetLWEParams();
     NativeInteger Q  = LWEParams->GetQ();
     NativeInteger Q8 = Q / NativeInteger(8) + 1;
-    ctprep->SetB(Q8.ModAddFast(temp[0], Q));
+    ctprep->SetB(Q8.ModAddFast(accVec[1][0], Q));
 
     // Modulus switching to a middle step Q'
     auto eQN = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctprep);
@@ -535,8 +518,8 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
 
 // private:
 
-RingGSWCiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                              const RingGSWBTKey& EK, ConstLWECiphertext ct) const {
+RLWECiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
+                                           const RingGSWBTKey& EK, ConstLWECiphertext ct) const {
     if ((EK.BSkey == nullptr) || (EK.KSkey == nullptr)) {
         std::string errMsg =
             "Bootstrapping keys have not been generated. Please call BTKeyGen "
@@ -584,8 +567,7 @@ RingGSWCiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECrypto
     // main accumulation computation
     // the following loop is the bottleneck of bootstrapping/binary gate
     // evaluation
-    auto acc  = std::make_shared<RingGSWCiphertextImpl>(1, 2);
-    (*acc)[0] = std::move(res);
+    auto acc = std::make_shared<RLWECiphertextImpl>(std::move(res));
 
     ACCscheme->EvalACC(RGSWParams, EK.BSkey, acc, ct->GetA());
 
@@ -596,9 +578,9 @@ RingGSWCiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECrypto
 // flooring, homomorphic digit decomposition, and arbitrary
 // funciton evaluation, from https://eprint.iacr.org/2021/1337
 template <typename Func>
-RingGSWCiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                              const RingGSWBTKey& EK, ConstLWECiphertext ct, const Func f,
-                                              const NativeInteger bigger_q) const {
+RLWECiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
+                                           const RingGSWBTKey& EK, ConstLWECiphertext ct, const Func f,
+                                           const NativeInteger bigger_q) const {
     if ((EK.BSkey == nullptr) || (EK.KSkey == nullptr)) {
         std::string errMsg =
             "Bootstrapping keys have not been generated. Please call BTKeyGen "
@@ -632,8 +614,7 @@ RingGSWCiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECrypto
     // main accumulation computation
     // the following loop is the bottleneck of bootstrapping/binary gate
     // evaluation
-    auto acc  = std::make_shared<RingGSWCiphertextImpl>(1, 2);
-    (*acc)[0] = std::move(res);
+    auto acc = std::make_shared<RLWECiphertextImpl>(std::move(res));
     ACCscheme->EvalACC(RGSWParams, EK.BSkey, acc, ct->GetA());
 
     return acc;
@@ -647,18 +628,17 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> 
 
     NativeInteger toAdd = 0;  // we add beta outside as it's now dependent on plaintext space
 
-    auto acc = BootstrapCore(params, AND, EK, ct1, f, bigger_q);
+    auto acc                        = BootstrapCore(params, AND, EK, ct1, f, bigger_q);
+    std::vector<NativePoly>& accVec = acc->GetElements();
 
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
-    NativePoly temp = (*acc)[0][0];
-    temp            = temp.Transpose();
-    temp.SetFormat(Format::COEFFICIENT);
-    NativeVector aNew = temp.GetValues();
+    accVec[0] = accVec[0].Transpose();
+    accVec[0].SetFormat(Format::COEFFICIENT);
+    NativeVector aNew = accVec[0].GetValues();
 
-    temp = (*acc)[0][1];
-    temp.SetFormat(Format::COEFFICIENT);
-    NativeInteger bNew = toAdd.ModAddFast(temp[0], LWEParams->GetQ());
+    accVec[1].SetFormat(Format::COEFFICIENT);
+    NativeInteger bNew = toAdd.ModAddFast(accVec[1][0], LWEParams->GetQ());
 
     // Modulus switching to a middle step Q'
     auto eQN = LWEscheme->ModSwitch(LWEParams->GetqKS(), std::make_shared<LWECiphertextImpl>(aNew, bNew));

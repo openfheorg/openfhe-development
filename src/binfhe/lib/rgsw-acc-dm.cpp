@@ -29,24 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  FHEW scheme (RingGSW accumulator) implementation
-  The scheme is described in https://eprint.iacr.org/2014/816 and in Daniele Micciancio and Yuriy Polyakov
-  "Bootstrapping in FHEW-like Cryptosystems", Cryptology ePrint Archive, Report 2020/086,
-  https://eprint.iacr.org/2020/086.
-
-  Full reference to https://eprint.iacr.org/2014/816:
-  @misc{cryptoeprint:2014:816,
-    author = {Leo Ducas and Daniele Micciancio},
-    title = {FHEW: Bootstrapping Homomorphic Encryption in less than a second},
-    howpublished = {Cryptology ePrint Archive, Report 2014/816},
-    year = {2014},
-    note = {\url{https://eprint.iacr.org/2014/816}},
- */
+#include "rgsw-acc-dm.h"
 
 #include <string>
-
-#include "rgsw-acc-dm.h"
 
 namespace lbcrypto {
 
@@ -80,7 +65,7 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenACC(const std::shared_ptr<RingGSWCrypt
 }
 
 void RingGSWAccumulatorDM::EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
-                                   RingGSWCiphertext& acc, const NativeVector& a) const {
+                                   RLWECiphertext& acc, const NativeVector& a) const {
     uint32_t baseR = params->GetBaseR();
     auto digitsR   = params->GetDigitsR();
     auto q         = params->Getq();
@@ -158,11 +143,11 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenAP(const std::shared_ptr<RingGSWCrypt
 
 // AP Accumulation as described in https://eprint.iacr.org/2020/08
 void RingGSWAccumulatorDM::AddToACCAP(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
-                                      RingGSWCiphertext& acc) const {
+                                      RLWECiphertext& acc) const {
     uint32_t digitsG2 = params->GetDigitsG2();
     auto polyParams   = params->GetPolyParams();
 
-    std::vector<NativePoly> ct = acc->GetElements()[0];
+    std::vector<NativePoly> ct = acc->GetElements();
     std::vector<NativePoly> dct(digitsG2);
 
     // initialize dct to zeros
@@ -185,12 +170,12 @@ void RingGSWAccumulatorDM::AddToACCAP(const std::shared_ptr<RingGSWCryptoParams>
     // uses in-place * operators for the last call to dct[i] to gain performance
     // improvement
     for (uint32_t j = 0; j < 2; j++) {
-        (*acc)[0][j].SetValuesToZero();
+        acc->GetElements()[j].SetValuesToZero();
         for (uint32_t l = 0; l < digitsG2; l++) {
             if (j == 0)
-                (*acc)[0][j] += dct[l] * ev[l][j];
+                acc->GetElements()[j] += dct[l] * ev[l][j];
             else
-                (*acc)[0][j] += (dct[l] *= ev[l][j]);
+                acc->GetElements()[j] += (dct[l] *= ev[l][j]);
         }
     }
 }

@@ -70,7 +70,7 @@ public:
    * @param &input input ciphertext
    * @param acc previous value of the accumulator
    */
-    void EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RingGSWCiphertext& acc,
+    void EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
                  const NativeVector& a) const override;
 
 private:
@@ -78,7 +78,7 @@ private:
                             const LWEPlaintext& m) const;
 
     void AddToACCAP(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
-                    RingGSWCiphertext& acc) const;
+                    RLWECiphertext& acc) const;
 };
 
 }  // namespace lbcrypto

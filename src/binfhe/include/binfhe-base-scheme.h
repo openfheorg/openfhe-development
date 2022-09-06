@@ -38,9 +38,9 @@
 #include <string>
 
 #include "binfhe-base-params.h"
-#include "rgsw-acckey.h"
-#include "rgsw-ciphertext.h"
 #include "lwe-pke.h"
+#include "rlwe-ciphertext.h"
+#include "rgsw-acckey.h"
 #include "rgsw-acc.h"
 #include "rgsw-acc-dm.h"
 #include "rgsw-acc-cggi.h"
@@ -194,8 +194,8 @@ private:
    * @param lwescheme a shared pointer to additive LWE scheme
    * @return the output RingLWE accumulator
    */
-    RingGSWCiphertext BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                    const RingGSWBTKey& EK, ConstLWECiphertext ct) const;
+    RLWECiphertext BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
+                                 const RingGSWBTKey& EK, ConstLWECiphertext ct) const;
 
     // Below is for arbitrary function evaluation purpose
 
@@ -209,9 +209,9 @@ private:
    * @return a shared pointer to the resulting ciphertext
    */
     template <typename Func>
-    RingGSWCiphertext BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                    const RingGSWBTKey& EK, ConstLWECiphertext ct, const Func f,
-                                    const NativeInteger bigger_q) const;
+    RLWECiphertext BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
+                                 const RingGSWBTKey& EK, ConstLWECiphertext ct, const Func f,
+                                 const NativeInteger bigger_q) const;
 
     /**
    * Bootstraps a fresh ciphertext

@@ -37,8 +37,8 @@
 #include <memory>
 #include <string>
 
+#include "rlwe-ciphertext.h"
 #include "rgsw-acckey.h"
-#include "rgsw-ciphertext.h"
 #include "rgsw-cryptoparameters.h"
 
 namespace lbcrypto {
@@ -72,8 +72,8 @@ public:
    * @param &input input ciphertext
    * @param acc previous value of the accumulator
    */
-    virtual void EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
-                         RingGSWCiphertext& acc, const NativeVector& a) const {
+    virtual void EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
+                         const NativeVector& a) const {
         OPENFHE_THROW(not_implemented_error, "ACC operation not supported");
     }
 

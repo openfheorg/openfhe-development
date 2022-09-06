@@ -29,24 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  FHEW scheme (RingGSW accumulator) implementation
-  The scheme is described in https://eprint.iacr.org/2014/816 and in Daniele Micciancio and Yuriy Polyakov
-  "Bootstrapping in FHEW-like Cryptosystems", Cryptology ePrint Archive, Report 2020/086,
-  https://eprint.iacr.org/2020/086.
-
-  Full reference to https://eprint.iacr.org/2014/816:
-  @misc{cryptoeprint:2014:816,
-    author = {Leo Ducas and Daniele Micciancio},
-    title = {FHEW: Bootstrapping Homomorphic Encryption in less than a second},
-    howpublished = {Cryptology ePrint Archive, Report 2014/816},
-    year = {2014},
-    note = {\url{https://eprint.iacr.org/2014/816}},
- */
+#include "rgsw-acc-cggi.h"
 
 #include <string>
-
-#include "rgsw-acc-cggi.h"
 
 namespace lbcrypto {
 
@@ -91,7 +76,7 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenACC(const std::shared_ptr<RingGSWCry
 }
 
 void RingGSWAccumulatorCGGI::EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
-                                     RingGSWCiphertext& acc, const NativeVector& a) const {
+                                     RLWECiphertext& acc, const NativeVector& a) const {
     auto q     = params->Getq();
     uint32_t n = a.GetLength();
 
@@ -147,15 +132,14 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenGINX(const std::shared_ptr<RingGSWC
 // We optimize the algorithm by multiplying the monomial after the external product
 // This reduces the number of polynomial multiplications which further reduces the runtime
 void RingGSWAccumulatorCGGI::AddToACCGINX(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek1,
-                                          const RingGSWEvalKey ek2, const NativeInteger& a,
-                                          RingGSWCiphertext& acc) const {
+                                          const RingGSWEvalKey ek2, const NativeInteger& a, RLWECiphertext& acc) const {
     // cycltomic order
     uint32_t m        = 2 * params->GetN();
     uint32_t digitsG2 = params->GetDigitsG2();
     int64_t q         = params->Getq().ConvertToInt();
     auto polyParams   = params->GetPolyParams();
 
-    std::vector<NativePoly> ct = acc->GetElements()[0];
+    std::vector<NativePoly> ct = acc->GetElements();
     std::vector<NativePoly> dct(digitsG2);
 
     // initialize dct to zeros
@@ -196,7 +180,7 @@ void RingGSWAccumulatorCGGI::AddToACCGINX(const std::shared_ptr<RingGSWCryptoPar
             else
                 temp1 += (dct[l] * ev1[l][j]);
         }
-        (*acc)[0][j] += (temp1 * monomial);
+        acc->GetElements()[j] += (temp1 * monomial);
     }
 
     const std::vector<std::vector<NativePoly>>& ev2 = ek2->GetElements();
@@ -208,7 +192,7 @@ void RingGSWAccumulatorCGGI::AddToACCGINX(const std::shared_ptr<RingGSWCryptoPar
             else
                 temp1 += (dct[l] * ev2[l][j]);
         }
-        (*acc)[0][j] += (temp1 * monomialNeg);
+        acc->GetElements()[j] += (temp1 * monomialNeg);
     }
 }
 
