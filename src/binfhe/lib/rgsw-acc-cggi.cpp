@@ -51,8 +51,8 @@
 namespace lbcrypto {
 
 // Key generation as described in Section 4 of https://eprint.iacr.org/2014/816
-RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenBlindRotation(const std::shared_ptr<RingGSWCryptoParams> params,
-                                                          const NativePoly& skNTT, ConstLWEPrivateKey LWEsk) const {
+RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenACC(const std::shared_ptr<RingGSWCryptoParams> params,
+                                                const NativePoly& skNTT, ConstLWEPrivateKey LWEsk) const {
     int32_t qInt  = (int32_t)params->Getq().ConvertToInt();
     int32_t qHalf = qInt >> 1;
     auto sv       = LWEsk->GetElement();
@@ -90,9 +90,8 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenBlindRotation(const std::shared_ptr<
     return ek;
 }
 
-void RingGSWAccumulatorCGGI::EvalBlindRotation(const std::shared_ptr<RingGSWCryptoParams> params,
-                                               const RingGSWACCKey ek, RingGSWCiphertext& acc,
-                                               const NativeVector& a) const {
+void RingGSWAccumulatorCGGI::EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
+                                     RingGSWCiphertext& acc, const NativeVector& a) const {
     auto q     = params->Getq();
     uint32_t n = a.GetLength();
 

@@ -64,7 +64,7 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> para
     skNPoly.SetValues(skN->GetElement(), Format::COEFFICIENT);
     skNPoly.SetFormat(Format::EVALUATION);
 
-    ek.BSkey = ACCscheme->KeyGenBlindRotation(RGSWParams, skNPoly, LWEsk);
+    ek.BSkey = ACCscheme->KeyGenACC(RGSWParams, skNPoly, LWEsk);
 
     return ek;
 }
@@ -108,7 +108,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
             LWEscheme->EvalAddEq(ctprep, ct2);
         }
 
-        auto acc = BootstrapCore(params, gate, EK, ctprep->GetA(), ctprep->GetB());
+        auto acc = BootstrapCore(params, gate, EK, ctprep);
 
         // the accumulator result is encrypted w.r.t. the transposed secret key
         // we can transpose "a" to get an encryption under the original secret key
@@ -143,7 +143,7 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> 
     NativeInteger q      = ctprep->GetModulus();
     LWEscheme->EvalAddConstEq(ctprep, q >> 2);
 
-    auto acc = BootstrapCore(params, AND, EK, ctprep->GetA(), ctprep->GetB());
+    auto acc = BootstrapCore(params, AND, EK, ctprep);
 
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
@@ -185,99 +185,6 @@ LWECiphertext BinFHEScheme::EvalNOT(const std::shared_ptr<BinFHECryptoParams> pa
     NativeInteger b = (q >> 2).ModSubFast(ct->GetB(), q);
 
     return std::make_shared<LWECiphertextImpl>(std::move(a), b);
-}
-
-// Functions below are for large-precision sign evaluation,
-// flooring, homomorphic digit decomposition, and arbitrary
-// funciton evaluation, from https://eprint.iacr.org/2021/1337
-
-template <typename Func>
-RingGSWCiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                              const RingGSWBTKey& EK, const NativeVector& a, const NativeInteger& b,
-                                              const Func f, const NativeInteger bigger_q) const {
-    if ((EK.BSkey == nullptr) || (EK.KSkey == nullptr)) {
-        std::string errMsg =
-            "Bootstrapping keys have not been generated. Please call BTKeyGen "
-            "before calling bootstrapping.";
-        OPENFHE_THROW(config_error, errMsg);
-    }
-
-    auto& LWEParams  = params->GetLWEParams();
-    auto& RGSWParams = params->GetRingGSWParams();
-    auto polyParams  = RGSWParams->GetPolyParams();
-
-    NativeInteger q = LWEParams->Getq();
-    NativeInteger Q = LWEParams->GetQ();
-    uint32_t N      = LWEParams->GetN();
-
-    NativeVector m(N, Q);
-    // For specific function evaluation instead of general bootstrapping
-    uint32_t factor = (2 * N / q.ConvertToInt());
-    for (uint32_t j = 0; j < q / 2; j++) {
-        NativeInteger temp = b.ModSub(j, q);
-        m[j * factor]      = Q.ConvertToInt() / bigger_q.ConvertToInt() * f(temp, q, bigger_q);
-    }
-    std::vector<NativePoly> res(2);
-    // no need to do NTT as all coefficients of this poly are zero
-    res[0] = NativePoly(polyParams, Format::EVALUATION, true);
-    res[1] = NativePoly(polyParams, Format::COEFFICIENT, false);
-    res[1].SetValues(std::move(m), Format::COEFFICIENT);
-    res[1].SetFormat(Format::EVALUATION);
-
-    // main accumulation computation
-    // the following loop is the bottleneck of bootstrapping/binary gate
-    // evaluation
-    auto acc  = std::make_shared<RingGSWCiphertextImpl>(1, 2);
-    (*acc)[0] = std::move(res);
-    ACCscheme->EvalBlindRotation(RGSWParams, EK.BSkey, acc, a);
-
-    return acc;
-}
-
-// Full evaluation as described in https://eprint.iacr.org/2020/08
-template <typename Func>
-LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                                      ConstLWECiphertext ct1, const Func f, const NativeInteger bigger_q) const {
-    auto& LWEParams = params->GetLWEParams();
-
-    NativeInteger q   = LWEParams->Getq();
-    NativeInteger qKS = LWEParams->GetqKS();
-    NativeInteger Q   = LWEParams->GetQ();
-    uint32_t N        = LWEParams->GetN();
-    uint32_t n        = LWEParams->Getn();
-
-    NativeInteger toAdd = 0;  // we add beta outside as it's now dependent on plaintext space
-
-    NativeVector a(n, q);
-    NativeInteger b;
-
-    a = ct1->GetA();
-    b = ct1->GetB();
-
-    auto acc = BootstrapCore(params, AND, EK, a, b, f, bigger_q);
-
-    NativeInteger bNew;
-    NativeVector aNew(N, Q);
-
-    // the accumulator result is encrypted w.r.t. the transposed secret key
-    // we can transpose "a" to get an encryption under the original secret key
-    NativePoly temp = (*acc)[0][0];
-    temp            = temp.Transpose();
-    temp.SetFormat(Format::COEFFICIENT);
-    aNew = temp.GetValues();
-
-    temp = (*acc)[0][1];
-    temp.SetFormat(Format::COEFFICIENT);
-    bNew = toAdd.ModAddFast(temp[0], Q);
-
-    // Modulus switching to a middle step Q'
-    auto eQN = LWEscheme->ModSwitch(qKS, std::make_shared<LWECiphertextImpl>(aNew, bNew));
-
-    // Key switching
-    ConstLWECiphertext eQ = LWEscheme->KeySwitch(LWEParams, EK.KSkey, eQN);
-
-    // Modulus switching
-    return LWEscheme->ModSwitch(bigger_q, eQ);
 }
 
 // Check what type of function the input function is.
@@ -364,9 +271,8 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
 
         return std::make_shared<LWECiphertextImpl>(std::move(a2), std::move(b2));
     }
-    else {
-        // It's periodic function so we evaluate directly
-    }
+
+    // Else it's periodic function so we evaluate directly
 
     auto f1 = [](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
         if (x < q / 2)
@@ -375,10 +281,12 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
             return q / 4;
     };
 
-    auto ct2 = Bootstrap(params, EK, ct0, f1, q);  // this is 1/4q_small or -1/4q_small mod q
-    auto a2  = ct1->GetA() - ct2->GetA();
-    auto b2  = ct1->GetB().ModAddFast(beta, q).ModSubFast(ct2->GetB(), q);
-    b2       = b2.ModSubFast(q / 4, q);
+    // this is 1/4q_small or -1/4q_small mod q
+    auto ct2 = Bootstrap(params, EK, ct0, f1, q);
+
+    auto a2 = ct1->GetA() - ct2->GetA();
+    auto b2 = ct1->GetB().ModAddFast(beta, q).ModSubFast(ct2->GetB(), q);
+    b2      = b2.ModSubFast(q / 4, q);
 
     auto ct2_adj = std::make_shared<LWECiphertextImpl>(std::move(a2), std::move(b2));
 
@@ -625,9 +533,10 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
     return ret;
 }
 
+// private:
+
 RingGSWCiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                              const RingGSWBTKey& EK, const NativeVector& a,
-                                              const NativeInteger& b) const {
+                                              const RingGSWBTKey& EK, ConstLWECiphertext ct) const {
     if ((EK.BSkey == nullptr) || (EK.KSkey == nullptr)) {
         std::string errMsg =
             "Bootstrapping keys have not been generated. Please call BTKeyGen "
@@ -639,25 +548,25 @@ RingGSWCiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECrypto
     auto& RGSWParams = params->GetRingGSWParams();
     auto polyParams  = RGSWParams->GetPolyParams();
 
-    NativeInteger q = LWEParams->Getq();
-    NativeInteger Q = LWEParams->GetQ();
-    uint32_t N      = LWEParams->GetN();
-
     // Specifies the range [q1,q2) that will be used for mapping
+    NativeInteger q  = ct->GetModulus();
     uint32_t qHalf   = q.ConvertToInt() >> 1;
     NativeInteger q1 = RGSWParams->GetGateConst()[static_cast<int>(gate)];
     NativeInteger q2 = q1.ModAddFast(NativeInteger(qHalf), q);
 
     // depending on whether the value is the range, it will be set
     // to either Q/8 or -Q/8 to match binary arithmetic
+    NativeInteger Q     = LWEParams->GetQ();
     NativeInteger Q8    = Q / NativeInteger(8) + 1;
     NativeInteger Q8Neg = Q - Q8;
 
+    uint32_t N = LWEParams->GetN();
     NativeVector m(N, Q);
     // Since q | (2*N), we deal with a sparse embedding of Z_Q[x]/(X^{q/2}+1) to
     // Z_Q[x]/(X^N+1)
     uint32_t factor = (2 * N / q.ConvertToInt());
 
+    const NativeInteger& b = ct->GetB();
     for (uint32_t j = 0; j < qHalf; j++) {
         NativeInteger temp = b.ModSub(j, q);
         if (q1 < q2)
@@ -678,9 +587,87 @@ RingGSWCiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECrypto
     auto acc  = std::make_shared<RingGSWCiphertextImpl>(1, 2);
     (*acc)[0] = std::move(res);
 
-    ACCscheme->EvalBlindRotation(RGSWParams, EK.BSkey, acc, a);
+    ACCscheme->EvalACC(RGSWParams, EK.BSkey, acc, ct->GetA());
 
     return acc;
+}
+
+// Functions below are for large-precision sign evaluation,
+// flooring, homomorphic digit decomposition, and arbitrary
+// funciton evaluation, from https://eprint.iacr.org/2021/1337
+template <typename Func>
+RingGSWCiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
+                                              const RingGSWBTKey& EK, ConstLWECiphertext ct, const Func f,
+                                              const NativeInteger bigger_q) const {
+    if ((EK.BSkey == nullptr) || (EK.KSkey == nullptr)) {
+        std::string errMsg =
+            "Bootstrapping keys have not been generated. Please call BTKeyGen "
+            "before calling bootstrapping.";
+        OPENFHE_THROW(config_error, errMsg);
+    }
+
+    auto& LWEParams  = params->GetLWEParams();
+    auto& RGSWParams = params->GetRingGSWParams();
+    auto polyParams  = RGSWParams->GetPolyParams();
+
+    NativeInteger Q = LWEParams->GetQ();
+    uint32_t N      = LWEParams->GetN();
+    NativeVector m(N, Q);
+    // For specific function evaluation instead of general bootstrapping
+    //    NativeInteger q = ct->GetModulus();
+    NativeInteger q        = LWEParams->Getq();
+    uint32_t factor        = (2 * N / q.ConvertToInt());
+    const NativeInteger& b = ct->GetB();
+    for (uint32_t j = 0; j < q / 2; j++) {
+        NativeInteger temp = b.ModSub(j, q);
+        m[j * factor]      = Q.ConvertToInt() / bigger_q.ConvertToInt() * f(temp, q, bigger_q);
+    }
+    std::vector<NativePoly> res(2);
+    // no need to do NTT as all coefficients of this poly are zero
+    res[0] = NativePoly(polyParams, Format::EVALUATION, true);
+    res[1] = NativePoly(polyParams, Format::COEFFICIENT, false);
+    res[1].SetValues(std::move(m), Format::COEFFICIENT);
+    res[1].SetFormat(Format::EVALUATION);
+
+    // main accumulation computation
+    // the following loop is the bottleneck of bootstrapping/binary gate
+    // evaluation
+    auto acc  = std::make_shared<RingGSWCiphertextImpl>(1, 2);
+    (*acc)[0] = std::move(res);
+    ACCscheme->EvalACC(RGSWParams, EK.BSkey, acc, ct->GetA());
+
+    return acc;
+}
+
+// Full evaluation as described in https://eprint.iacr.org/2020/08
+template <typename Func>
+LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
+                                      ConstLWECiphertext ct1, const Func f, const NativeInteger bigger_q) const {
+    auto& LWEParams = params->GetLWEParams();
+
+    NativeInteger toAdd = 0;  // we add beta outside as it's now dependent on plaintext space
+
+    auto acc = BootstrapCore(params, AND, EK, ct1, f, bigger_q);
+
+    // the accumulator result is encrypted w.r.t. the transposed secret key
+    // we can transpose "a" to get an encryption under the original secret key
+    NativePoly temp = (*acc)[0][0];
+    temp            = temp.Transpose();
+    temp.SetFormat(Format::COEFFICIENT);
+    NativeVector aNew = temp.GetValues();
+
+    temp = (*acc)[0][1];
+    temp.SetFormat(Format::COEFFICIENT);
+    NativeInteger bNew = toAdd.ModAddFast(temp[0], LWEParams->GetQ());
+
+    // Modulus switching to a middle step Q'
+    auto eQN = LWEscheme->ModSwitch(LWEParams->GetqKS(), std::make_shared<LWECiphertextImpl>(aNew, bNew));
+
+    // Key switching
+    auto eQ = LWEscheme->KeySwitch(LWEParams, EK.KSkey, eQN);
+
+    // Modulus switching
+    return LWEscheme->ModSwitch(bigger_q, eQ);
 }
 
 };  // namespace lbcrypto

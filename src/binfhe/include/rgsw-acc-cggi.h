@@ -60,8 +60,8 @@ public:
    * key)
    * @return a shared pointer to the resulting ciphertext
    */
-    RingGSWACCKey KeyGenBlindRotation(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                                      ConstLWEPrivateKey LWEsk) const override;
+    RingGSWACCKey KeyGenACC(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
+                            ConstLWEPrivateKey LWEsk) const override;
 
     /**
    * Main accumulator function used in bootstrapping - AP variant
@@ -70,8 +70,8 @@ public:
    * @param &input input ciphertext
    * @param acc previous value of the accumulator
    */
-    void EvalBlindRotation(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
-                           RingGSWCiphertext& acc, const NativeVector& a) const override;
+    void EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RingGSWCiphertext& acc,
+                 const NativeVector& a) const override;
 
 private:
     RingGSWEvalKey KeyGenGINX(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
