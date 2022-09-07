@@ -66,7 +66,7 @@ TEST(UnitTestFHEWGINX, EvalArbFunc) {
         cc.Decrypt(sk, ct_cube, &result, p);
 
         std::string failed = "Arbitrary Function Evaluation failed";
-        EXPECT_EQ(uint(fp(i, p).ConvertToInt()), result) << failed;
+        EXPECT_EQ(usint(fp(i, p).ConvertToInt()), result) << failed;
     }
 }
 
@@ -92,7 +92,7 @@ TEST(UnitTestFHEWGINX, EvalFloorFunc) {
         cc.Decrypt(sk, ctRounded, &result, p / 2);
 
         std::string failed = "Floor Function Evalution failed";
-        EXPECT_EQ(uint(i / 2), result) << failed;
+        EXPECT_EQ(usint(i / 2), result) << failed;
     }
 }
 
@@ -115,7 +115,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncTime) {
         ct1      = cc.EvalSign(ct1, Q);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2, q);
-        EXPECT_EQ(uint(i >= 3), result) << failed;
+        EXPECT_EQ(usint(i >= 3), result) << failed;
     }
 }
 
@@ -138,7 +138,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncSpace) {
         ct1      = cc.EvalSign(ct1, Q);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2, q);
-        EXPECT_EQ(uint(i >= 3), result) << failed;
+        EXPECT_EQ(usint(i >= 3), result) << failed;
     }
 }
 
@@ -166,10 +166,10 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, p_basic, basic);
         if (i < st + 3)
-            EXPECT_EQ(uint(15), result) << failed;
+            EXPECT_EQ(usint(15), result) << failed;
         else
-            EXPECT_EQ(uint(0), result) << failed;
-        EXPECT_EQ(uint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
+            EXPECT_EQ(usint(0), result) << failed;
+        EXPECT_EQ(usint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
     }
 }
 
@@ -197,9 +197,9 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, p_basic, basic);
         if (i < st + 3)
-            EXPECT_EQ(uint(15), result) << failed;
+            EXPECT_EQ(usint(15), result) << failed;
         else
-            EXPECT_EQ(uint(0), result) << failed;
-        EXPECT_EQ(uint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
+            EXPECT_EQ(usint(0), result) << failed;
+        EXPECT_EQ(usint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
     }
 }
