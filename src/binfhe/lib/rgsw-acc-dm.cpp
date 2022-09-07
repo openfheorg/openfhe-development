@@ -36,7 +36,7 @@
 namespace lbcrypto {
 
 // Key generation as described in Section 4 of https://eprint.iacr.org/2014/816
-RingGSWACCKey RingGSWAccumulatorDM::KeyGenACC(const std::shared_ptr<RingGSWCryptoParams> params,
+RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params,
                                               const NativePoly& skNTT, ConstLWEPrivateKey LWEsk) const {
     int32_t qInt  = (int32_t)params->Getq().ConvertToInt();
     int32_t qHalf = qInt >> 1;
@@ -56,7 +56,7 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenACC(const std::shared_ptr<RingGSWCrypt
                     s -= qInt;
                 }
 
-                (*ek)[i][j][k] = KeyGenAP(params, skNTT, s * (int32_t)j * (int32_t)digitsR[k].ConvertToInt());
+                (*ek)[i][j][k] = KeyGenDM(params, skNTT, s * (int32_t)j * (int32_t)digitsR[k].ConvertToInt());
             }
         }
     }
@@ -64,7 +64,7 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenACC(const std::shared_ptr<RingGSWCrypt
     return ek;
 }
 
-void RingGSWAccumulatorDM::EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
+void RingGSWAccumulatorDM::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
                                    RLWECiphertext& acc, const NativeVector& a) const {
     uint32_t baseR = params->GetBaseR();
     auto digitsR   = params->GetDigitsR();
@@ -76,14 +76,14 @@ void RingGSWAccumulatorDM::EvalACC(const std::shared_ptr<RingGSWCryptoParams> pa
         for (uint32_t k = 0; k < digitsR.size(); k++, aI /= NativeInteger(baseR)) {
             uint32_t a0 = (aI.Mod(baseR)).ConvertToInt();
             if (a0)
-                AddToACCAP(params, (*ek)[i][a0][k], acc);
+                AddToAccDM(params, (*ek)[i][a0][k], acc);
         }
     }
 }
 
 // Encryption as described in Section 5 of https://eprint.iacr.org/2014/816
 // skNTT corresponds to the secret key z
-RingGSWEvalKey RingGSWAccumulatorDM::KeyGenAP(const std::shared_ptr<RingGSWCryptoParams> params,
+RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCryptoParams> params,
                                               const NativePoly& skNTT, const LWEPlaintext& m) const {
     NativeInteger Q   = params->GetQ();
     int64_t q         = params->Getq().ConvertToInt();
@@ -142,7 +142,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenAP(const std::shared_ptr<RingGSWCrypt
 }
 
 // AP Accumulation as described in https://eprint.iacr.org/2020/08
-void RingGSWAccumulatorDM::AddToACCAP(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
+void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
                                       RLWECiphertext& acc) const {
     uint32_t digitsG2 = params->GetDigitsG() << 1;
     auto polyParams   = params->GetPolyParams();

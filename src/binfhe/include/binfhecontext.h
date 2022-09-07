@@ -70,7 +70,7 @@ public:
    * @param baseKS the base used for key switching
    * @param baseG the gadget base used in bootstrapping
    * @param baseR the base used for refreshing
-   * @param method the bootstrapping method (AP or GINX)
+   * @param method the bootstrapping method (DM or CGGI)
    * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q, double std,
@@ -85,7 +85,7 @@ public:
    * @param arbFunc whether need to evaluate an arbitrary function using functional bootstrapping
    * @param logQ log(input ciphertext modulus)
    * @param N ring dimension for RingGSW/RLWE used in bootstrapping
-   * @param method the bootstrapping method (AP or GINX)
+   * @param method the bootstrapping method (DM or CGGI)
    * @param timeOptimization whether to use dynamic bootstrapping technique
    * @return creates the cryptocontext
    */
@@ -97,7 +97,7 @@ public:
    * most users.
    *
    * @param set the parameter set: TOY, MEDIUM, STD128, STD192, STD256
-   * @param method the bootstrapping method (AP or GINX)
+   * @param method the bootstrapping method (DM or CGGI)
    * @return create the cryptocontext
    */
     void GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD method = GINX);
@@ -134,7 +134,7 @@ public:
    * @param DiffQ Keygen according to DiffQ instead of m_q if DiffQ != 0
    * @return a shared pointer to the secret key
    */
-    LWEPrivateKey KeyGen(NativeInteger DiffQ = 0) const;
+    LWEPrivateKey KeyGen(NativeInteger modulus = 0) const;
 
     /**
    * Generates a secret key used in bootstrapping

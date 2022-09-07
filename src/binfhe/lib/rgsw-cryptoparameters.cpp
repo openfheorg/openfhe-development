@@ -81,7 +81,7 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
     };
 
     // Computes polynomials X^m - 1 that are needed in the accumulator for the
-    // GINX bootstrapping
+    // CGGI bootstrapping
     if (m_method == GINX) {
         // loop for positive values of m
         for (uint32_t i = 0; i < m_N; i++) {
@@ -101,21 +101,6 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
             m_monomials.push_back(aPoly);
         }
     }
-
-    // #if defined(BINFHE_DEBUG)
-    //    std::cerr << "base_g = " << m_baseG << std::endl;
-    //    std::cerr << "m_digitsG = " << m_digitsG << std::endl;
-    //    std::cerr << "m_digitsG2 = " << m_digitsG2 << std::endl;
-    //    std::cerr << "m_baseR = " << m_baseR << std::endl;
-    //    std::cerr << "m_digitsR = " << m_digitsR << std::endl;
-    //    std::cerr << "m_Gpower = " << m_Gpower << std::endl;
-    //    std::cerr << "n = " << m_LWEParams->Getn() << std::endl;
-    //    std::cerr << "N = " << m_LWEParams->GetN() << std::endl;
-    //    std::cerr << "q = " << m_LWEParams->Getq() << std::endl;
-    //    std::cerr << "Q = " << m_LWEParams->GetQ() << std::endl;
-    //    std::cerr << "baseKS = " << m_LWEParams->GetBaseKS() << std::endl;
-    //    std::cerr << "digitsKS = " << m_LWEParams->GetDigitsKS() << std::endl;
-    // #endif
 }
 
 };  // namespace lbcrypto

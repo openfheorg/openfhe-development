@@ -36,7 +36,7 @@
 namespace lbcrypto {
 
 // Key generation as described in Section 4 of https://eprint.iacr.org/2014/816
-RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenACC(const std::shared_ptr<RingGSWCryptoParams> params,
+RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params,
                                                 const NativePoly& skNTT, ConstLWEPrivateKey LWEsk) const {
     int32_t qInt  = (int32_t)params->Getq().ConvertToInt();
     int32_t qHalf = qInt >> 1;
@@ -55,16 +55,16 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenACC(const std::shared_ptr<RingGSWCry
 
         switch (s) {
             case 0:
-                (*ek)[0][0][i] = KeyGenGINX(params, skNTT, 0);
-                (*ek)[0][1][i] = KeyGenGINX(params, skNTT, 0);
+                (*ek)[0][0][i] = KeyGenCGGI(params, skNTT, 0);
+                (*ek)[0][1][i] = KeyGenCGGI(params, skNTT, 0);
                 break;
             case 1:
-                (*ek)[0][0][i] = KeyGenGINX(params, skNTT, 1);
-                (*ek)[0][1][i] = KeyGenGINX(params, skNTT, 0);
+                (*ek)[0][0][i] = KeyGenCGGI(params, skNTT, 1);
+                (*ek)[0][1][i] = KeyGenCGGI(params, skNTT, 0);
                 break;
             case -1:
-                (*ek)[0][0][i] = KeyGenGINX(params, skNTT, 0);
-                (*ek)[0][1][i] = KeyGenGINX(params, skNTT, 1);
+                (*ek)[0][0][i] = KeyGenCGGI(params, skNTT, 0);
+                (*ek)[0][1][i] = KeyGenCGGI(params, skNTT, 1);
                 break;
             default:
                 std::string errMsg = "ERROR: only ternary secret key distributions are supported.";
@@ -75,19 +75,19 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenACC(const std::shared_ptr<RingGSWCry
     return ek;
 }
 
-void RingGSWAccumulatorCGGI::EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
+void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
                                      RLWECiphertext& acc, const NativeVector& a) const {
     auto q     = params->Getq();
     uint32_t n = a.GetLength();
 
     for (uint32_t i = 0; i < n; i++) {
         // handles -a*E(1) and handles -a*E(-1) = a*E(1)
-        AddToACCGINX(params, (*ek)[0][0][i], (*ek)[0][1][i], q.ModSub(a[i], q), acc);
+        AddToAccCGGI(params, (*ek)[0][0][i], (*ek)[0][1][i], q.ModSub(a[i], q), acc);
     }
 }
 
-// Encryption for the GINX variant, as described in https://eprint.iacr.org/2020/08
-RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenGINX(const std::shared_ptr<RingGSWCryptoParams> params,
+// Encryption for the CGGI variant, as described in https://eprint.iacr.org/2020/08
+RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams> params,
                                                   const NativePoly& skNTT, const LWEPlaintext& m) const {
     NativeInteger Q   = params->GetQ();
     uint32_t digitsG  = params->GetDigitsG();
@@ -127,11 +127,11 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenGINX(const std::shared_ptr<RingGSWC
     return result;
 }
 
-// GINX Accumulation as described in https://eprint.iacr.org/2020/08
+// CGGI Accumulation as described in https://eprint.iacr.org/2020/08
 // Added ternary MUX introduced in paper https://eprint.iacr.org/2022/074.pdf section 5
 // We optimize the algorithm by multiplying the monomial after the external product
 // This reduces the number of polynomial multiplications which further reduces the runtime
-void RingGSWAccumulatorCGGI::AddToACCGINX(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek1,
+void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek1,
                                           const RingGSWEvalKey ek2, const NativeInteger& a, RLWECiphertext& acc) const {
     // cycltomic order
     uint32_t m        = 2 * params->GetN();

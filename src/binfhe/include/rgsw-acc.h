@@ -60,7 +60,7 @@ public:
    * key)
    * @return a shared pointer to the resulting ciphertext
    */
-    virtual RingGSWACCKey KeyGenACC(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
+    virtual RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
                                     ConstLWEPrivateKey LWEsk) const {
         OPENFHE_THROW(not_implemented_error, "KeyGenACC operation not supported");
     }
@@ -72,7 +72,7 @@ public:
    * @param &input input ciphertext
    * @param acc previous value of the accumulator
    */
-    virtual void EvalACC(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
+    virtual void EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
                          const NativeVector& a) const {
         OPENFHE_THROW(not_implemented_error, "ACC operation not supported");
     }

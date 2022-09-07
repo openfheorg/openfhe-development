@@ -66,7 +66,7 @@ public:
    * @param lweparams a shared poiter to an instance of LWECryptoParams
    * @param baseG the gadget base used in the bootstrapping
    * @param baseR the base for the refreshing key
-   * @param method bootstrapping method (AP or GINX)
+   * @param method bootstrapping method (DM or CGGI)
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
                                  BINFHEMETHOD method, double std, bool signEval = false)
@@ -132,7 +132,7 @@ public:
         };
 
         // Computes polynomials X^m - 1 that are needed in the accumulator for the
-        // GINX bootstrapping
+        // CGGI bootstrapping
         if (m_method == GINX) {
             // loop for positive values of m
             for (uint32_t i = 0; i < N; i++) {
@@ -288,10 +288,10 @@ private:
     // number of digits in decomposing integers mod Q
     uint32_t m_digitsG;
 
-    // base used for the refreshing key (used only for AP bootstrapping)
+    // base used for the refreshing key (used only for DM bootstrapping)
     uint32_t m_baseR;
 
-    // powers of m_baseR (used only for AP bootstrapping)
+    // powers of m_baseR (used only for DM bootstrapping)
     std::vector<NativeInteger> m_digitsR;
 
     // A vector of powers of baseG
@@ -310,10 +310,10 @@ private:
     std::vector<NativeInteger> m_gateConst;
 
     // Precomputed polynomials in Format::EVALUATION representation for X^m - 1
-    // (used only for GINX bootstrapping)
+    // (used only for CGGI bootstrapping)
     std::vector<NativePoly> m_monomials;
 
-    // Bootstrapping method (AP or GINX)
+    // Bootstrapping method (DM or CGGI)
     BINFHEMETHOD m_method;
 };
 

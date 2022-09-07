@@ -55,15 +55,7 @@ public:
    * @param params a shared pointer to LWE scheme parameters
    * @return a shared pointer to the secret key
    */
-    LWEPrivateKey KeyGen(const std::shared_ptr<LWECryptoParams> params) const;
-
-    /**
-   * Generates a secret key of dimension N using modulus Q
-   *
-   * @param params a shared pointer to LWE scheme parameters
-   * @return a shared pointer to the secret key
-   */
-    LWEPrivateKey KeyGenN(const std::shared_ptr<LWECryptoParams> params) const;
+    LWEPrivateKey KeyGen(usint size, const NativeInteger& modulus) const;
 
     /**
    * Encrypts a bit using a secret key (symmetric key encryption)

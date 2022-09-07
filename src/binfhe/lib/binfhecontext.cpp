@@ -52,7 +52,7 @@ void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeIn
 void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint32_t logQ, int64_t N,
                                           BINFHEMETHOD method, bool timeOptimization) {
     if (GINX != method) {
-        std::string errMsg("ERROR: GINX is the only supported method");
+        std::string errMsg("ERROR: CGGI is the only supported method");
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
     if (set != STD128 && set != TOY) {
@@ -181,21 +181,17 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
     m_binfhescheme->SetACCTechnique(method);
 }
 
-LWEPrivateKey BinFHEContext::KeyGen(NativeInteger DiffQ) const {
+LWEPrivateKey BinFHEContext::KeyGen(NativeInteger modulus) const {
     auto& LWEParams = m_params->GetLWEParams();
-
-    if (DiffQ > LWEParams->Getq()) {
-        auto q = LWEParams->Getq();
-        SetQ(DiffQ);
-        auto ret = m_LWEscheme->KeyGen(LWEParams);
-        SetQ(q);
-        return ret;
+    if (modulus > LWEParams->Getq()) {
+        return m_LWEscheme->KeyGen(LWEParams->Getn(), modulus);
     }
-    return m_LWEscheme->KeyGen(LWEParams);
+    return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->Getq());
 }
 
 LWEPrivateKey BinFHEContext::KeyGenN() const {
-    return m_LWEscheme->KeyGenN(m_params->GetLWEParams());
+    auto& LWEParams = m_params->GetLWEParams();
+    return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
 }
 
 LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHEOUTPUT output,

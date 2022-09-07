@@ -113,10 +113,10 @@ std::ostream& operator<<(std::ostream& s, BINFHEOUTPUT f) {
 std::ostream& operator<<(std::ostream& s, BINFHEMETHOD f) {
     switch (f) {
         case AP:
-            s << "AP";
+            s << "DM";
             break;
         case GINX:
-            s << "GINX";
+            s << "CGGI";
             break;
         default:
             s << "UKNOWN";

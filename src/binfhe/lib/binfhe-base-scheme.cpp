@@ -38,7 +38,7 @@ namespace lbcrypto {
 // wrapper for KeyGen methods
 RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk) const {
     auto& LWEParams        = params->GetLWEParams();
-    ConstLWEPrivateKey skN = LWEscheme->KeyGenN(LWEParams);
+    ConstLWEPrivateKey skN = LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
 
     RingGSWBTKey ek;
     ek.KSkey = LWEscheme->KeySwitchGen(LWEParams, LWEsk, skN);
@@ -49,7 +49,7 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> para
     skNPoly.SetValues(skN->GetElement(), Format::COEFFICIENT);
     skNPoly.SetFormat(Format::EVALUATION);
 
-    ek.BSkey = ACCscheme->KeyGenACC(RGSWParams, skNPoly, LWEsk);
+    ek.BSkey = ACCscheme->KeyGenAcc(RGSWParams, skNPoly, LWEsk);
 
     return ek;
 }
@@ -569,7 +569,7 @@ RLWECiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECryptoPar
     // evaluation
     auto acc = std::make_shared<RLWECiphertextImpl>(std::move(res));
 
-    ACCscheme->EvalACC(RGSWParams, ek, acc, ct->GetA());
+    ACCscheme->EvalAcc(RGSWParams, ek, acc, ct->GetA());
 
     return acc;
 }
@@ -615,7 +615,7 @@ RLWECiphertext BinFHEScheme::BootstrapCore(const std::shared_ptr<BinFHECryptoPar
     // the following loop is the bottleneck of bootstrapping/binary gate
     // evaluation
     auto acc = std::make_shared<RLWECiphertextImpl>(std::move(res));
-    ACCscheme->EvalACC(RGSWParams, ek, acc, ct->GetA());
+    ACCscheme->EvalAcc(RGSWParams, ek, acc, ct->GetA());
 
     return acc;
 }
