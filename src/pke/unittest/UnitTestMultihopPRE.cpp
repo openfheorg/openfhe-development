@@ -62,6 +62,7 @@ protected:
         usint firstqmod = 27;
 
         CCParams<CryptoContextBGVRNS> parameters;
+        parameters.SetPREMode(INDCPA);
         if (security_model == 0) {
             ringDimension = 1024;
             digitSize     = 9;

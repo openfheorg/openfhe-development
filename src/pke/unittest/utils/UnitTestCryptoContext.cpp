@@ -94,6 +94,9 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.keySwitchCount)) {
         parameters.SetKeySwitchCount(static_cast<usint>(std::round(params.keySwitchCount)));
     }
+    if (!isDefaultValue(params.PREMode)) {
+        parameters.SetPREMode(static_cast<ProxyReEncryptionMode>(std::round(params.PREMode)));
+    }
 }
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {

@@ -111,6 +111,9 @@ std::ostream& operator<<(std::ostream& s, ScalingTechnique t) {
 
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
     switch (p) {
+        case NOT_SET:
+            s << "NOT_SET";
+            break;
         case INDCPA:
             s << "INDCPA";
             break;
