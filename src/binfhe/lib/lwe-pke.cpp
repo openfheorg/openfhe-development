@@ -147,6 +147,12 @@ void LWEEncryptionScheme::EvalMultConstEq(LWECiphertext& ct1, NativeInteger cnst
     ct1->GetB().ModMulFastEq(cnst, ct1->GetModulus());
 }
 
+void LWEEncryptionScheme::SetModulus(LWECiphertext& ct, NativeInteger mod) const {
+    ct->GetA().ModEq(mod);
+    ct->GetA().SetModulus(mod);
+    ct->GetB().ModEq(mod);
+}
+
 // Modulus switching - directly applies the scale-and-round operation RoundQ
 LWECiphertext LWEEncryptionScheme::ModSwitch(NativeInteger q, ConstLWECiphertext ctQ) const {
     auto n = ctQ->GetA().GetLength();

@@ -93,7 +93,8 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
             LWEscheme->EvalAddEq(ctprep, ct2);
         }
 
-        auto acc                        = BootstrapCore(params, gate, EK.BSkey, ctprep);
+        auto acc = BootstrapCore(params, gate, EK.BSkey, ctprep);
+
         std::vector<NativePoly>& accVec = acc->GetElements();
 
         // the accumulator result is encrypted w.r.t. the transposed secret key
@@ -127,9 +128,9 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> 
     NativeInteger q      = ctprep->GetModulus();
     LWEscheme->EvalAddConstEq(ctprep, q >> 2);
 
-    auto acc                        = BootstrapCore(params, AND, EK.BSkey, ctprep);
-    std::vector<NativePoly>& accVec = acc->GetElements();
+    auto acc = BootstrapCore(params, AND, EK.BSkey, ctprep);
 
+    std::vector<NativePoly>& accVec = acc->GetElements();
     // the accumulator result is encrypted w.r.t. the transposed secret key
     // we can transpose "a" to get an encryption under the original secret key
     accVec[0] = accVec[0].Transpose();
@@ -155,15 +156,13 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> 
 
 // Evaluation of the NOT operation; no key material is needed
 LWECiphertext BinFHEScheme::EvalNOT(const std::shared_ptr<BinFHECryptoParams> params, ConstLWECiphertext ct) const {
-    auto& LWEParams = params->GetLWEParams();
-
-    NativeInteger q = LWEParams->Getq();
-    uint32_t n      = LWEParams->Getn();
+    NativeInteger q = ct->GetModulus();
+    uint32_t n      = ct->GetLength();
 
     NativeVector a(n, q);
-
-    for (uint32_t i = 0; i < n; i++)
+    for (uint32_t i = 0; i < n; i++) {
         a[i] = q - ct->GetA(i);
+    }
 
     NativeInteger b = (q >> 2).ModSubFast(ct->GetB(), q);
 
@@ -204,24 +203,20 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
     auto& LWEParams  = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
 
-    NativeInteger q              = LWEParams->Getq();
+    NativeInteger q              = ct1->GetModulus();
     NativeInteger bigger_q_local = bigger_q;
     if (bigger_q == 0)
         bigger_q_local = q;
 
     // Get what time of function it is
     int functionProperty = checkInputFunction(LUT, bigger_q_local);
-
-    auto a1  = ct1->GetA();
-    auto b1  = ct1->GetB();
-    b1       = b1.ModAddFast(beta, q);
-    auto ct0 = std::make_shared<LWECiphertextImpl>(std::move(a1), std::move(b1));
-
     if (functionProperty == 0) {  // negacyclic function only needs one bootstrap
         auto f_neg = [LUT](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
             return LUT[x.ConvertToInt()];
         };
 
+        auto ct0 = std::make_shared<LWECiphertextImpl>(*ct1);
+        LWEscheme->EvalAddConstEq(ct0, beta);
         return Bootstrap(params, EK, ct0, f_neg, q);
     }
     else if (functionProperty == 2) {  // arbitary funciton
@@ -232,11 +227,8 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
             OPENFHE_THROW(not_implemented_error, errMsg);
         }
 
-        a1 = ct1->GetA();
-        // mod up to 2q, so the encryption of m is then encryption of m or encryption of m+q (both with prob roughly 1/2)
-        a1.SetModulus(q * 2);
-        b1  = ct1->GetB();
-        ct0 = std::make_shared<LWECiphertextImpl>(std::move(a1), std::move(b1));
+        auto ct0 = std::make_shared<LWECiphertextImpl>(*ct1);
+        ct0->GetA().SetModulus(q << 1);
 
         LWEParams->SetQ(q * 2);
         RGSWParams->SetQ(q * 2);
@@ -246,13 +238,12 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
         // re-evaluate since it's now periodic
         auto ct2 = EvalFunc(params, EK, ct0, LUT_local, beta, bigger_q_local * 2);
 
-        auto a2 = ct2->GetA().Mod(bigger_q_local);
-        auto b2 = ct2->GetB().Mod(bigger_q_local);
+        LWEscheme->SetModulus(ct2, bigger_q_local);
 
         LWEParams->SetQ(bigger_q_local);
         RGSWParams->SetQ(bigger_q_local);
 
-        return std::make_shared<LWECiphertextImpl>(std::move(a2), std::move(b2));
+        return ct2;
     }
 
     // Else it's periodic function so we evaluate directly
@@ -265,11 +256,14 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
     };
 
     // this is 1/4q_small or -1/4q_small mod q
+    auto ct0 = std::make_shared<LWECiphertextImpl>(*ct1);
+    LWEscheme->EvalAddConstEq(ct0, beta);
     auto ct2 = Bootstrap(params, EK, ct0, f1, q);
 
     auto a2 = ct1->GetA() - ct2->GetA();
     auto b2 = ct1->GetB().ModAddFast(beta, q).ModSubFast(ct2->GetB(), q);
-    b2      = b2.ModSubFast(q / 4, q);
+    a2.SetModulus(q);
+    b2.ModSubFastEq(q / 4, q);
 
     auto ct2_adj = std::make_shared<LWECiphertextImpl>(std::move(a2), std::move(b2));
 
@@ -307,7 +301,7 @@ LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams> 
 
     auto& LWEParams = params->GetLWEParams();
 
-    NativeInteger q = LWEParams->Getq();
+    NativeInteger q = ct1->GetModulus();
 
     const auto bigger_q_local = (bigger_q == 0) ? q : bigger_q;
     uint32_t n                = LWEParams->Getn();
@@ -317,7 +311,8 @@ LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams> 
 
     auto a1 = ct1->GetA();
     auto b1 = ct1->GetB();
-    b1      = b1.ModAddFast(beta, bigger_q_local);
+    a1.SetModulus(bigger_q_local);
+    b1.ModAddFastEq(beta, bigger_q_local);
 
     auto a1_mod_q  = a1.Mod(q);
     auto b1_mod_q  = b1.Mod(q);
@@ -326,16 +321,19 @@ LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams> 
     // this is 1/4q_small or -1/4q_small mod q
     auto ct2 = Bootstrap(params, EK, ct0_mod_q, f1, bigger_q_local);
     auto a2  = a1 - ct2->GetA();
-    auto b2  = b1.ModSubFast(ct2->GetB(), bigger_q_local);
+    a2.SetModulus(bigger_q_local);
+    auto b2 = b1.ModSubFast(ct2->GetB(), bigger_q_local);
 
-    auto a2_mod_q  = a2.Mod(q);
-    auto b2_mod_q  = b2.Mod(q);
+    auto a2_mod_q = a2.Mod(q);
+    auto b2_mod_q = b2.Mod(q);
+    a2_mod_q.SetModulus(q);
     auto ct2_mod_q = std::make_shared<LWECiphertextImpl>(std::move(a2_mod_q), std::move(b2_mod_q));
 
     // now the input is only within the range [0, q/2)
     auto ct3 = Bootstrap(params, EK, ct2_mod_q, f2, bigger_q_local);
 
     auto a3 = a2 - ct3->GetA();
+    a3.SetModulus(bigger_q_local);
     auto b3 = b2.ModSubFast(ct3->GetB(), bigger_q_local);
 
     return std::make_shared<LWECiphertextImpl>(std::move(a3), std::move(b3));
@@ -399,8 +397,9 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams> p
         ct                    = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a_round, b_round));
     }
 
-    auto a1  = ct->GetA();
-    auto b1  = ct->GetB();
+    auto a1 = ct->GetA();
+    auto b1 = ct->GetB();
+    a1.SetModulus(theBigger_q);
     b1       = b1.ModAddFast(beta, theBigger_q);
     auto ct2 = std::make_shared<LWECiphertextImpl>(std::move(a1), std::move(b1));
 
@@ -419,8 +418,9 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams> p
 
     NativeVector a_round  = tmp->GetA();
     NativeInteger b_round = tmp->GetB();
-    b_round               = b_round.ModSubFast(q / 4, q);
-    auto res              = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a_round, b_round));
+    a_round.SetModulus(q);
+    b_round  = b_round.ModSubFast(q / 4, q);
+    auto res = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a_round, b_round));
 
     RGSWParams->Change_BaseG(curBase);
     return res;
@@ -433,7 +433,8 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
     auto theBigger_q = bigger_q;
     auto& LWEParams  = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
-    NativeInteger q  = LWEParams->Getq();
+
+    NativeInteger q = LWEParams->Getq();
     if (theBigger_q <= q) {
         std::string errMsg =
             "ERROR: EvalSign is only for large precision. For small precision, please use bootstrapping directly";
@@ -452,9 +453,9 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
     uint32_t n = LWEParams->Getn();
     std::vector<LWECiphertext> ret;
     while (theBigger_q > q) {
-        NativeVector a = ct->GetA().Mod(q);
-        a.SetModulus(q);
+        NativeVector a  = ct->GetA().Mod(q);
         NativeInteger b = ct->GetB().Mod(q);
+        a.SetModulus(q);
         ret.push_back(std::make_shared<LWECiphertextImpl>(std::move(a), std::move(b)));
 
         // Floor the input sequentially to obtain the most significant bit
@@ -489,8 +490,9 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
         ct                    = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a_round, b_round));
     }
 
-    auto a1  = ct->GetA();
-    auto b1  = ct->GetB();
+    auto a1 = ct->GetA();
+    auto b1 = ct->GetB();
+    a1.SetModulus(theBigger_q);
     b1       = b1.ModAddFast(beta, theBigger_q);
     auto ct2 = std::make_shared<LWECiphertextImpl>(std::move(a1), std::move(b1));
 
@@ -509,7 +511,8 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
 
     NativeVector a_round  = tmp->GetA();
     NativeInteger b_round = tmp->GetB();
-    b_round               = b_round.ModSubFast(q / 4, q);
+    a_round.SetModulus(q);
+    b_round = b_round.ModSubFast(q / 4, q);
     ret.push_back(std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a_round, b_round)));
 
     RGSWParams->Change_BaseG(curBase);

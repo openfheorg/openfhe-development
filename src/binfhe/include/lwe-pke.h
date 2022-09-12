@@ -91,6 +91,8 @@ public:
 
     void EvalMultConstEq(LWECiphertext& ct, NativeInteger cnst) const;
 
+    void SetModulus(LWECiphertext& ct, NativeInteger mod) const;
+
     /**
    * Changes an LWE ciphertext modulo Q into an LWE ciphertext modulo q
    *

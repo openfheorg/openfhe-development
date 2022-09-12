@@ -112,6 +112,10 @@ public:
         return m_a.GetModulus();
     }
 
+    uint32_t GetLength() const {
+        return m_a.GetLength();
+    }
+
     void SetA(const NativeVector& a) {
         m_a = a;
     }
