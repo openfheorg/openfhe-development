@@ -194,8 +194,8 @@ private:
    * @param lwescheme a shared pointer to additive LWE scheme
    * @return the output RingLWE accumulator
    */
-    RLWECiphertext BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                 const RingGSWACCKey ek, ConstLWECiphertext ct) const;
+    RLWECiphertext BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
+                                     const RingGSWACCKey ek, ConstLWECiphertext ct) const;
 
     // Below is for arbitrary function evaluation purpose
 
@@ -209,9 +209,9 @@ private:
    * @return a shared pointer to the resulting ciphertext
    */
     template <typename Func>
-    RLWECiphertext BootstrapCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                 const RingGSWACCKey ek, ConstLWECiphertext ct, const Func f,
-                                 const NativeInteger bigger_q) const;
+    RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
+                                     const RingGSWACCKey ek, ConstLWECiphertext ct, const Func f,
+                                     const NativeInteger bigger_q) const;
 
     /**
    * Bootstraps a fresh ciphertext
@@ -225,8 +225,8 @@ private:
    * @return the output RingLWE accumulator
    */
     template <typename Func>
-    LWECiphertext Bootstrap(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                            ConstLWECiphertext ct1, const Func f, const NativeInteger bigger_q) const;
+    LWECiphertext BootstrapFunc(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
+                                ConstLWECiphertext ct1, const Func f, const NativeInteger bigger_q) const;
 
 protected:
     std::shared_ptr<LWEEncryptionScheme> LWEscheme;
