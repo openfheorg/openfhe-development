@@ -1074,7 +1074,9 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
 
         for (int32_t s = levelBudget - 1; s > stop; s--) {
             for (int32_t i = 0; i < b; i++) {
-#pragma omp parallel for
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
+    #pragma omp parallel for
+#endif
                 for (int32_t j = 0; j < g; j++) {
                     if (g * i + j != int32_t(numRotations)) {
                         uint32_t rot =
@@ -1123,7 +1125,9 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
 
         for (int32_t s = levelBudget - 1; s > stop; s--) {
             for (int32_t i = 0; i < b; i++) {
-#pragma omp parallel for
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
+    #pragma omp parallel for
+#endif
                 for (int32_t j = 0; j < g; j++) {
                     if (g * i + j != int32_t(numRotations)) {
                         uint32_t rot =
