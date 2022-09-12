@@ -87,6 +87,8 @@ public:
 
     void EvalSubEq(LWECiphertext& ct1, ConstLWECiphertext ct2) const;
 
+    void EvalSubEq2(ConstLWECiphertext ct1, LWECiphertext& ct2) const;
+
     void EvalSubConstEq(LWECiphertext& ct, NativeInteger cnst) const;
 
     void EvalMultConstEq(LWECiphertext& ct, NativeInteger cnst) const;

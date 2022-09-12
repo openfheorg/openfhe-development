@@ -203,10 +203,9 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
     auto& LWEParams  = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
 
-    NativeInteger q              = ct1->GetModulus();
-    NativeInteger bigger_q_local = bigger_q;
-    if (bigger_q == 0)
-        bigger_q_local = q;
+    NativeInteger q = ct1->GetModulus();
+
+    const auto bigger_q_local = (bigger_q == 0) ? q : bigger_q;
 
     // Get what time of function it is
     int functionProperty = checkInputFunction(LUT, bigger_q_local);
@@ -248,48 +247,60 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
 
     // Else it's periodic function so we evaluate directly
 
+    auto ct0 = std::make_shared<LWECiphertextImpl>(*ct1);
+    LWEscheme->EvalAddConstEq(ct0, beta);
+
+    // this is 1/4q_small or -1/4q_small mod q
     auto f1 = [](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
         if (x < q / 2)
             return Q - q / 4;
         else
             return q / 4;
     };
-
-    // this is 1/4q_small or -1/4q_small mod q
-    auto ct0 = std::make_shared<LWECiphertextImpl>(*ct1);
-    LWEscheme->EvalAddConstEq(ct0, beta);
     auto ct2 = Bootstrap(params, EK, ct0, f1, q);
 
-    auto a2 = ct1->GetA() - ct2->GetA();
-    auto b2 = ct1->GetB().ModAddFast(beta, q).ModSubFast(ct2->GetB(), q);
-    a2.SetModulus(q);
-    b2.ModSubFastEq(q / 4, q);
+    LWEscheme->EvalSubEq2(ct1, ct2);
+    LWEscheme->EvalAddConstEq(ct2, beta);
+    LWEscheme->EvalSubConstEq(ct2, q >> 2);
 
-    auto ct2_adj = std::make_shared<LWECiphertextImpl>(std::move(a2), std::move(b2));
-
+    // Now the input is within the range [0, q/2).
+    // Note that for non-periodic function, the input q is boosted up to 2q
     auto f_neg = [LUT](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
         if (x < q / 2)
             return LUT[x.ConvertToInt()];
         else
             return Q - LUT[x.ConvertToInt() - q.ConvertToInt() / 2];
     };
-
-    // Now the input is within the range [0, q/2).
-    // Note that for non-periodic function, the input q is boosted up to 2q
-    return Bootstrap(params, EK, ct2_adj, f_neg, bigger_q_local);
+    return Bootstrap(params, EK, ct2, f_neg, bigger_q_local);
 }
 
 // Evaluate Homomorphic Flooring
 LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
                                       ConstLWECiphertext ct1, const NativeInteger beta,
                                       const NativeInteger bigger_q) const {
+    NativeInteger q = ct1->GetModulus();
+
+    const auto bigger_q_local = (bigger_q == 0) ? q : bigger_q;
+
+    auto ct0 = std::make_shared<LWECiphertextImpl>(*ct1);
+    LWEscheme->SetModulus(ct0, bigger_q_local);
+    LWEscheme->EvalAddConstEq(ct0, beta);
+
+    auto ct0_mod_q = std::make_shared<LWECiphertextImpl>(*ct0);
+    LWEscheme->SetModulus(ct0_mod_q, q);
+    // this is 1/4q_small or -1/4q_small mod q
     auto f1 = [](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
         if (x < q / 2)
             return Q - q / 4;
         else
             return q / 4;
     };
+    auto ct2 = Bootstrap(params, EK, ct0, f1, bigger_q_local);
+    LWEscheme->EvalSubEq(ct0, ct2);
 
+    auto ct2_mod_q = std::make_shared<LWECiphertextImpl>(*ct0);
+    LWEscheme->SetModulus(ct2_mod_q, q);
+    // now the input is only within the range [0, q/2)
     auto f2 = [](NativeInteger m, NativeInteger q, NativeInteger Q) -> NativeInteger {
         if (m < q / 4)
             return Q - q / 2 - m;
@@ -298,45 +309,10 @@ LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams> 
         else
             return Q + q / 2 - m;
     };
-
-    auto& LWEParams = params->GetLWEParams();
-
-    NativeInteger q = ct1->GetModulus();
-
-    const auto bigger_q_local = (bigger_q == 0) ? q : bigger_q;
-    uint32_t n                = LWEParams->Getn();
-
-    NativeVector a(n, bigger_q_local);
-    NativeInteger b;
-
-    auto a1 = ct1->GetA();
-    auto b1 = ct1->GetB();
-    a1.SetModulus(bigger_q_local);
-    b1.ModAddFastEq(beta, bigger_q_local);
-
-    auto a1_mod_q  = a1.Mod(q);
-    auto b1_mod_q  = b1.Mod(q);
-    auto ct0_mod_q = std::make_shared<LWECiphertextImpl>(std::move(a1_mod_q), std::move(b1_mod_q));
-
-    // this is 1/4q_small or -1/4q_small mod q
-    auto ct2 = Bootstrap(params, EK, ct0_mod_q, f1, bigger_q_local);
-    auto a2  = a1 - ct2->GetA();
-    a2.SetModulus(bigger_q_local);
-    auto b2 = b1.ModSubFast(ct2->GetB(), bigger_q_local);
-
-    auto a2_mod_q = a2.Mod(q);
-    auto b2_mod_q = b2.Mod(q);
-    a2_mod_q.SetModulus(q);
-    auto ct2_mod_q = std::make_shared<LWECiphertextImpl>(std::move(a2_mod_q), std::move(b2_mod_q));
-
-    // now the input is only within the range [0, q/2)
     auto ct3 = Bootstrap(params, EK, ct2_mod_q, f2, bigger_q_local);
+    LWEscheme->EvalSubEq(ct0, ct3);
 
-    auto a3 = a2 - ct3->GetA();
-    a3.SetModulus(bigger_q_local);
-    auto b3 = b2.ModSubFast(ct3->GetB(), bigger_q_local);
-
-    return std::make_shared<LWECiphertextImpl>(std::move(a3), std::move(b3));
+    return ct0;
 }
 
 // Evaluate large-precision sign

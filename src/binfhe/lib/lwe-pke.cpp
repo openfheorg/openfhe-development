@@ -138,6 +138,11 @@ void LWEEncryptionScheme::EvalSubEq(LWECiphertext& ct1, ConstLWECiphertext ct2) 
     ct1->GetB().ModSubFastEq(ct2->GetB(), ct1->GetModulus());
 }
 
+void LWEEncryptionScheme::EvalSubEq2(ConstLWECiphertext ct1, LWECiphertext& ct2) const {
+    ct2->GetA() = ct1->GetA().ModSub(ct2->GetA());
+    ct2->GetB() = ct1->GetB().ModSubFast(ct2->GetB(), ct1->GetModulus());
+}
+
 void LWEEncryptionScheme::EvalSubConstEq(LWECiphertext& ct, NativeInteger cnst) const {
     ct->GetB().ModSubFastEq(cnst, ct->GetModulus());
 }
