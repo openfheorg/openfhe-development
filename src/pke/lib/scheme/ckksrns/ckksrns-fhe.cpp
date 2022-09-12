@@ -844,7 +844,11 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     //  auto elementParamsPtr2 = std::dynamic_pointer_cast<typename DCRTPoly::Params>(elementParamsPtr);
 
     std::vector<ConstPlaintext> result(slots);
-#pragma omp parallel for
+// parallelizing the loop (below) with OMP causes a segfault on MinGW
+// see https://github.com/openfheorg/openfhe-development/issues/176
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
+    #pragma omp parallel for
+#endif
     for (int j = 0; j < gStep; j++) {
         int offset = -bStep * j;
         for (int i = 0; i < bStep; i++) {
@@ -1070,7 +1074,9 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
 
         for (int32_t s = levelBudget - 1; s > stop; s--) {
             for (int32_t i = 0; i < b; i++) {
-#pragma omp parallel for
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
+    #pragma omp parallel for
+#endif
                 for (int32_t j = 0; j < g; j++) {
                     if (g * i + j != int32_t(numRotations)) {
                         uint32_t rot =
@@ -1119,7 +1125,9 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
 
         for (int32_t s = levelBudget - 1; s > stop; s--) {
             for (int32_t i = 0; i < b; i++) {
-#pragma omp parallel for
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
+    #pragma omp parallel for
+#endif
                 for (int32_t j = 0; j < g; j++) {
                     if (g * i + j != int32_t(numRotations)) {
                         uint32_t rot =
