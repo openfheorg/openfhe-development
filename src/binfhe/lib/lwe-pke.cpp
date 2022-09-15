@@ -153,9 +153,11 @@ void LWEEncryptionScheme::EvalMultConstEq(LWECiphertext& ct1, NativeInteger cnst
 }
 
 void LWEEncryptionScheme::SetModulus(LWECiphertext& ct, NativeInteger mod) const {
-    ct->GetA().ModEq(mod);
-    ct->GetA().SetModulus(mod);
-    ct->GetB().ModEq(mod);
+    if (ct->GetModulus() != mod) {
+        ct->GetA().ModEq(mod);
+        ct->GetA().SetModulus(mod);
+        ct->GetB().ModEq(mod);
+    }
 }
 
 // Modulus switching - directly applies the scale-and-round operation RoundQ
@@ -176,12 +178,20 @@ LWECiphertext LWEEncryptionScheme::ModSwitch(NativeInteger q, ConstLWECiphertext
 LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk,
                                                   ConstLWEPrivateKey skN) const {
     // Create local copies of main variables
-    uint32_t n                          = params->Getn();
-    uint32_t N                          = params->GetN();
-    NativeInteger Q                     = params->GetqKS();
-    uint32_t baseKS                     = params->GetBaseKS();
-    std::vector<NativeInteger> digitsKS = params->GetDigitsKS();
-    uint32_t expKS                      = digitsKS.size();
+    uint32_t n = sk->GetLength();
+    uint32_t N = skN->GetLength();
+
+    NativeInteger Q = params->GetqKS();
+    uint32_t baseKS = params->GetBaseKS();
+    // Number of digits in representing numbers mod Q
+    uint32_t digitCount = (uint32_t)std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(baseKS)));
+    std::vector<NativeInteger> digitsKS;
+    // Populate digits
+    NativeInteger value = 1;
+    for (uint32_t i = 0; i < digitCount; i++) {
+        digitsKS.push_back(value);
+        value *= baseKS;
+    }
 
     // newSK stores negative values using modulus q
     // we need to switch to modulus Q
@@ -212,9 +222,9 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
         std::vector<std::vector<NativeVector>> vector1A(baseKS);
         std::vector<std::vector<NativeInteger>> vector1B(baseKS);
         for (uint32_t j = 0; j < baseKS; ++j) {
-            std::vector<NativeVector> vector2A(expKS);
-            std::vector<NativeInteger> vector2B(expKS);
-            for (uint32_t k = 0; k < expKS; ++k) {
+            std::vector<NativeVector> vector2A(digitCount);
+            std::vector<NativeInteger> vector2B(digitCount);
+            for (uint32_t k = 0; k < digitCount; ++k) {
                 NativeInteger b =
                     (params->GetDggKS().GenerateInteger(Q)).ModAdd(oldSK[i].ModMul(j * digitsKS[k], Q), Q);
 
@@ -241,28 +251,24 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
         resultVecB[i] = std::move(vector1B);
     }
 
-    return std::make_shared<LWESwitchingKeyImpl>(LWESwitchingKeyImpl(resultVecA, resultVecB));
+    return std::make_shared<LWESwitchingKeyImpl>(LWESwitchingKeyImpl(resultVecA, resultVecB, Q, n, N, baseKS));
 }
 
 // the key switching operation as described in Section 3 of
 // https://eprint.iacr.org/2014/816
-LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoParams> params, ConstLWESwitchingKey K,
-                                             ConstLWECiphertext ctQN) const {
-    uint32_t n                          = params->Getn();
-    uint32_t N                          = params->GetN();
-    NativeInteger Q                     = params->GetqKS();
-    uint32_t baseKS                     = params->GetBaseKS();
-    std::vector<NativeInteger> digitsKS = params->GetDigitsKS();
-    uint32_t expKS                      = digitsKS.size();
+LWECiphertext LWEEncryptionScheme::KeySwitch(ConstLWESwitchingKey K, ConstLWECiphertext ctQN) const {
+    uint32_t n          = K->GetLengthFrom();
+    uint32_t N          = K->GetLengthTo();
+    NativeInteger Q     = K->GetModulusTo();
+    uint32_t baseKS     = K->GetBase();
+    uint32_t digitCount = (uint32_t)std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(baseKS)));
 
     // creates an empty vector
     NativeVector a(n, Q);
-    NativeInteger b   = ctQN->GetB();
-    NativeVector aOld = ctQN->GetA();
-
+    NativeInteger b = ctQN->GetB();
     for (uint32_t i = 0; i < N; ++i) {
-        NativeInteger atmp = aOld[i];
-        for (uint32_t j = 0; j < expKS; ++j, atmp /= baseKS) {
+        NativeInteger atmp = ctQN->GetA(i);
+        for (uint32_t j = 0; j < digitCount; ++j, atmp /= baseKS) {
             uint64_t a0 = (atmp % baseKS).ConvertToInt();
             for (uint32_t k = 0; k < n; ++k)
                 a[k].ModSubFastEq(K->GetElementsA()[i][a0][j][k], Q);
@@ -270,7 +276,7 @@ LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoPara
         }
     }
 
-    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(std::move(a), b));
 }
 
 // noiseless LWE embedding

@@ -124,8 +124,7 @@ public:
    * @param ctQN input ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext KeySwitch(const std::shared_ptr<LWECryptoParams> params, ConstLWESwitchingKey K,
-                            ConstLWECiphertext ctQN) const;
+    LWECiphertext KeySwitch(ConstLWESwitchingKey K, ConstLWECiphertext ctQN) const;
 
     /**
    * Embeds a plaintext bit without noise or encryption

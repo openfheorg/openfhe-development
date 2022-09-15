@@ -83,6 +83,14 @@ public:
         m_s = s;
     }
 
+    uint32_t GetLength() const {
+        return m_s.GetLength();
+    }
+
+    const NativeInteger& GetModulus() const {
+        return m_s.GetModulus();
+    }
+
     bool operator==(const LWEPrivateKeyImpl& other) const {
         return m_s == other.m_s;
     }

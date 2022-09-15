@@ -64,76 +64,49 @@ public:
     explicit LWECryptoParams(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
                              const NativeInteger& q_KS, double std, uint32_t baseKS)
         : m_n(n), m_N(N), m_q(q), m_Q(Q), m_qKS(q_KS), m_baseKS(baseKS) {
-        m_dgg.SetStd(std);
-        if ((n == 512) && (m_qKS > (1 << 14))) {
-            m_ks_dgg.SetStd(std);
-            // std::cout << std * m_qKS.ConvertToDouble() / (1 << 14) << " \n";
-        }
-        else {
-            m_ks_dgg.SetStd(std);
-        }
-        // m_ks_dgg.SetStd(std);
-
         if (Q.GetMSB() > MAX_MODULUS_SIZE) {
             std::string errMsg = "ERROR: Maximum size of Q supported for FHEW is 60 bits.";
             OPENFHE_THROW(config_error, errMsg);
         }
 
-        PreCompute();
-    }
-
-    /**
-   * Performs precomputations based on the supplied parameters
-   */
-    void PreCompute() {
-        // Number of digits in representing numbers mod Q
-        uint32_t digitCount = (uint32_t)std::ceil(log(m_qKS.ConvertToDouble()) / log(static_cast<double>(m_baseKS)));
-        // Populate digits
-        NativeInteger value = 1;
-        for (uint32_t i = 0; i < digitCount; i++) {
-            m_digitsKS.push_back(value);
-            value *= m_baseKS;
-        }
+        m_dgg.SetStd(std);
+        m_ks_dgg.SetStd(std);
     }
 
     explicit LWECryptoParams(const LWECryptoParams& rhs) {
-        this->m_n        = rhs.m_n;
-        this->m_N        = rhs.m_N;
-        this->m_q        = rhs.m_q;
-        this->m_Q        = rhs.m_Q;
-        this->m_baseKS   = rhs.m_baseKS;
-        this->m_digitsKS = rhs.m_digitsKS;
+        this->m_n      = rhs.m_n;
+        this->m_N      = rhs.m_N;
+        this->m_q      = rhs.m_q;
+        this->m_Q      = rhs.m_Q;
+        this->m_baseKS = rhs.m_baseKS;
         this->m_dgg.SetStd(rhs.m_dgg.GetStd());
     }
 
     explicit LWECryptoParams(const LWECryptoParams&& rhs) {
-        this->m_n        = std::move(rhs.m_n);
-        this->m_N        = std::move(rhs.m_N);
-        this->m_q        = std::move(rhs.m_q);
-        this->m_Q        = std::move(rhs.m_Q);
-        this->m_baseKS   = std::move(rhs.m_baseKS);
-        this->m_digitsKS = std::move(rhs.m_digitsKS);
+        this->m_n      = std::move(rhs.m_n);
+        this->m_N      = std::move(rhs.m_N);
+        this->m_q      = std::move(rhs.m_q);
+        this->m_Q      = std::move(rhs.m_Q);
+        this->m_baseKS = std::move(rhs.m_baseKS);
         this->m_dgg.SetStd(rhs.m_dgg.GetStd());
     }
 
     const LWECryptoParams& operator=(const LWECryptoParams& rhs) {
-        this->m_n        = rhs.m_n;
-        this->m_N        = rhs.m_N;
-        this->m_q        = rhs.m_q;
-        this->m_Q        = rhs.m_Q;
-        this->m_baseKS   = rhs.m_baseKS;
-        this->m_digitsKS = rhs.m_digitsKS;
+        this->m_n      = rhs.m_n;
+        this->m_N      = rhs.m_N;
+        this->m_q      = rhs.m_q;
+        this->m_Q      = rhs.m_Q;
+        this->m_baseKS = rhs.m_baseKS;
         this->m_dgg.SetStd(rhs.m_dgg.GetStd());
         return *this;
     }
 
     const LWECryptoParams& operator=(const LWECryptoParams&& rhs) {
-        this->m_n        = std::move(rhs.m_n);
-        this->m_N        = std::move(rhs.m_N);
-        this->m_q        = std::move(rhs.m_q);
-        this->m_Q        = std::move(rhs.m_Q);
-        this->m_baseKS   = std::move(rhs.m_baseKS);
-        this->m_digitsKS = std::move(rhs.m_digitsKS);
+        this->m_n      = std::move(rhs.m_n);
+        this->m_N      = std::move(rhs.m_N);
+        this->m_q      = std::move(rhs.m_q);
+        this->m_Q      = std::move(rhs.m_Q);
+        this->m_baseKS = std::move(rhs.m_baseKS);
         this->m_dgg.SetStd(rhs.m_dgg.GetStd());
         return *this;
     }
@@ -162,10 +135,6 @@ public:
         return m_baseKS;
     }
 
-    const std::vector<NativeInteger>& GetDigitsKS() const {
-        return m_digitsKS;
-    }
-
     const DiscreteGaussianGeneratorImpl<NativeVector>& GetDgg() const {
         return m_dgg;
     }
@@ -176,7 +145,7 @@ public:
 
     bool operator==(const LWECryptoParams& other) const {
         return m_n == other.m_n && m_N == other.m_N && m_q == other.m_q && m_Q == other.m_Q &&
-               m_dgg.GetStd() == other.m_dgg.GetStd() && m_baseKS == other.m_baseKS && m_digitsKS == other.m_digitsKS;
+               m_dgg.GetStd() == other.m_dgg.GetStd() && m_baseKS == other.m_baseKS;
     }
 
     bool operator!=(const LWECryptoParams& other) const {
@@ -211,11 +180,9 @@ public:
         ar(::cereal::make_nvp("sigma", sigma));
         double sigmaKS;
         ar(::cereal::make_nvp("sigmaKS", sigmaKS));
-        this->m_dgg.SetStd(sigma);
-        this->m_ks_dgg.SetStd(sigmaKS);
+        m_dgg.SetStd(sigma);
+        m_ks_dgg.SetStd(sigmaKS);
         ar(::cereal::make_nvp("bKS", m_baseKS));
-
-        this->PreCompute();
     }
 
     std::string SerializedObjectName() const {
@@ -246,8 +213,6 @@ private:
     DiscreteGaussianGeneratorImpl<NativeVector> m_ks_dgg;
     // Base used in key switching
     uint32_t m_baseKS;
-    // Powers of m_baseKS
-    std::vector<NativeInteger> m_digitsKS;
 };
 
 }  // namespace lbcrypto

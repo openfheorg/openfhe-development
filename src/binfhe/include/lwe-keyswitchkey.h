@@ -56,28 +56,50 @@ public:
     LWESwitchingKeyImpl() {}
 
     explicit LWESwitchingKeyImpl(const std::vector<std::vector<std::vector<NativeVector>>>& keyA,
-                                 const std::vector<std::vector<std::vector<NativeInteger>>>& keyB)
-        : m_keyA(keyA), m_keyB(keyB) {}
+                                 const std::vector<std::vector<std::vector<NativeInteger>>>& keyB,
+                                 NativeInteger modulusTo, uint32_t lengthFrom, uint32_t lengthTo, uint32_t base)
+        : m_keyA(keyA),
+          m_keyB(keyB),
+          m_modulusTo(modulusTo),
+          m_lengthFrom(lengthFrom),
+          m_lengthTo(lengthTo),
+          m_base(base) {}
 
     explicit LWESwitchingKeyImpl(const LWESwitchingKeyImpl& rhs) {
-        this->m_keyA = rhs.m_keyA;
-        this->m_keyB = rhs.m_keyB;
+        m_keyA       = rhs.m_keyA;
+        m_keyB       = rhs.m_keyB;
+        m_modulusTo  = rhs.m_modulusTo;
+        m_lengthFrom = rhs.m_lengthFrom;
+        m_lengthTo   = rhs.m_lengthTo;
+        m_base       = rhs.m_base;
     }
 
     explicit LWESwitchingKeyImpl(const LWESwitchingKeyImpl&& rhs) {
-        this->m_keyA = std::move(rhs.m_keyA);
-        this->m_keyB = std::move(rhs.m_keyB);
+        m_keyA       = std::move(rhs.m_keyA);
+        m_keyB       = std::move(rhs.m_keyB);
+        m_modulusTo  = std::move(rhs.m_modulusTo);
+        m_lengthFrom = rhs.m_lengthFrom;
+        m_lengthTo   = rhs.m_lengthTo;
+        m_base       = rhs.m_base;
     }
 
     const LWESwitchingKeyImpl& operator=(const LWESwitchingKeyImpl& rhs) {
-        this->m_keyA = rhs.m_keyA;
-        this->m_keyB = rhs.m_keyB;
+        m_keyA       = rhs.m_keyA;
+        m_keyB       = rhs.m_keyB;
+        m_modulusTo  = rhs.m_modulusTo;
+        m_lengthFrom = rhs.m_lengthFrom;
+        m_lengthTo   = rhs.m_lengthTo;
+        m_base       = rhs.m_base;
         return *this;
     }
 
     const LWESwitchingKeyImpl& operator=(const LWESwitchingKeyImpl&& rhs) {
-        this->m_keyA = std::move(rhs.m_keyA);
-        this->m_keyB = std::move(rhs.m_keyB);
+        m_keyA       = std::move(rhs.m_keyA);
+        m_keyB       = std::move(rhs.m_keyB);
+        m_modulusTo  = std::move(rhs.m_modulusTo);
+        m_lengthFrom = rhs.m_lengthFrom;
+        m_lengthTo   = rhs.m_lengthTo;
+        m_base       = rhs.m_base;
         return *this;
     }
 
@@ -89,6 +111,22 @@ public:
         return m_keyB;
     }
 
+    const NativeInteger& GetModulusTo() const {
+        return m_modulusTo;
+    }
+
+    uint32_t GetLengthFrom() const {
+        return m_lengthFrom;
+    }
+
+    uint32_t GetLengthTo() const {
+        return m_lengthTo;
+    }
+
+    uint32_t GetBase() const {
+        return m_base;
+    }
+
     void SetElementsA(const std::vector<std::vector<std::vector<NativeVector>>>& keyA) {
         m_keyA = keyA;
     }
@@ -97,8 +135,25 @@ public:
         m_keyB = keyB;
     }
 
+    void SetModulusTo(const NativeInteger& modulus) {
+        m_modulusTo = modulus;
+    }
+
+    void SetLengthFrom(uint32_t length) {
+        m_lengthFrom = length;
+    }
+
+    void SetLengthTo(uint32_t length) {
+        m_lengthTo = length;
+    }
+
+    void SetBase(uint32_t base) {
+        m_base = base;
+    }
+
     bool operator==(const LWESwitchingKeyImpl& other) const {
-        return (m_keyA == other.m_keyA && m_keyB == other.m_keyB);
+        return (m_keyA == other.m_keyA && m_keyB == other.m_keyB && m_modulusTo == other.m_modulusTo &&
+                m_lengthFrom == other.m_lengthFrom && m_lengthTo == other.m_lengthTo && m_base == other.m_base);
     }
 
     bool operator!=(const LWESwitchingKeyImpl& other) const {
@@ -109,6 +164,10 @@ public:
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("a", m_keyA));
         ar(::cereal::make_nvp("b", m_keyB));
+        ar(::cereal::make_nvp("m", m_modulusTo));
+        ar(::cereal::make_nvp("f", m_lengthFrom));
+        ar(::cereal::make_nvp("t", m_lengthTo));
+        ar(::cereal::make_nvp("t", m_base));
     }
 
     template <class Archive>
@@ -120,6 +179,10 @@ public:
 
         ar(::cereal::make_nvp("a", m_keyA));
         ar(::cereal::make_nvp("b", m_keyB));
+        ar(::cereal::make_nvp("m", m_modulusTo));
+        ar(::cereal::make_nvp("f", m_lengthFrom));
+        ar(::cereal::make_nvp("t", m_lengthTo));
+        ar(::cereal::make_nvp("t", m_base));
     }
 
     std::string SerializedObjectName() const {
@@ -132,6 +195,10 @@ public:
 private:
     std::vector<std::vector<std::vector<NativeVector>>> m_keyA;
     std::vector<std::vector<std::vector<NativeInteger>>> m_keyB;
+    NativeInteger m_modulusTo;
+    uint32_t m_lengthFrom;
+    uint32_t m_lengthTo;
+    uint32_t m_base;
 };
 
 }  // namespace lbcrypto

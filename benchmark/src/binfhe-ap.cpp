@@ -161,7 +161,7 @@ void FHEW_KEYSWITCH(benchmark::State& state, ParamSet param_set) {
     auto keySwitchHint = cc.KeySwitchGen(sk, skN);
 
     for (auto _ : state) {
-        LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
+        LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(keySwitchHint, ctQN1);
     }
 }
 
