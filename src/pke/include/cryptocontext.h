@@ -92,19 +92,19 @@ class CryptoContextImpl : public Serializable {
         OPENFHE_THROW(type_error, "Cannot find context for the given pointer to CryptoContextImpl");
     }
 
-    virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value, size_t depth,
-                                                      uint32_t level, const std::shared_ptr<ParmType> params,
-                                                      usint slots) const {
+    virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
+                                                      size_t noiseScaleDeg, uint32_t level,
+                                                      const std::shared_ptr<ParmType> params, usint slots) const {
         Plaintext p;
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
         double scFact;
 
         if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
             scFact = cryptoParams->GetScalingFactorRealBig(level);
-            // In FLEXIBLEAUTOEXT mode at level 0, we don't use the depth
+            // In FLEXIBLEAUTOEXT mode at level 0, we don't use the noiseScaleDeg
             // in our encoding function, so we set it to 1 to make sure it
             // has no effect on the encoding.
-            depth = 1;
+            noiseScaleDeg = 1;
         }
         else {
             scFact = cryptoParams->GetScalingFactorReal(level);
@@ -123,19 +123,19 @@ class CryptoContextImpl : public Serializable {
                 elemParamsPtr = cryptoParams->GetElementParams();
             }
 
-            p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value, depth,
-                                                               level, scFact, slots));
+            p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
+                                                               noiseScaleDeg, level, scFact, slots));
         }
         else {
-            p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, depth, level,
-                                                               scFact, slots));
+            p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
+                                                               level, scFact, slots));
         }
 
         p->Encode();
 
-        // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has depth 2.
+        // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has noiseScaleDeg 2.
         if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
-            p->SetDepth(2);
+            p->SetNoiseScaleDeg(2);
         }
         return p;
     }
@@ -874,13 +874,13 @@ public:
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
                 scf = cryptoParams->GetScalingFactorIntBig(level);
                 p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                      this->GetEncodingParams(), getSchemeId(), 1, level, scf);
-                p->SetDepth(2);
+                                                    this->GetEncodingParams(), getSchemeId(), 1, level, scf);
+                p->SetNoiseScaleDeg(2);
             }
             else {
                 scf = cryptoParams->GetScalingFactorInt(level);
                 p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                      this->GetEncodingParams(), getSchemeId(), depth, level, scf);
+                                                    this->GetEncodingParams(), getSchemeId(), depth, level, scf);
             }
         }
         else {
@@ -1016,7 +1016,7 @@ public:
             ciphertext->SetEncodingType(plaintext->GetEncodingType());
             ciphertext->SetScalingFactor(plaintext->GetScalingFactor());
             ciphertext->SetScalingFactorInt(plaintext->GetScalingFactorInt());
-            ciphertext->SetNoiseScaleDeg(plaintext->GetDepth());
+            ciphertext->SetNoiseScaleDeg(plaintext->GetNoiseScaleDeg());
             ciphertext->SetLevel(plaintext->GetLevel());
             ciphertext->SetSlots(plaintext->GetSlots());
         }
@@ -1045,7 +1045,7 @@ public:
             ciphertext->SetEncodingType(plaintext->GetEncodingType());
             ciphertext->SetScalingFactor(plaintext->GetScalingFactor());
             ciphertext->SetScalingFactorInt(plaintext->GetScalingFactorInt());
-            ciphertext->SetNoiseScaleDeg(plaintext->GetDepth());
+            ciphertext->SetNoiseScaleDeg(plaintext->GetNoiseScaleDeg());
             ciphertext->SetLevel(plaintext->GetLevel());
             ciphertext->SetSlots(plaintext->GetSlots());
         }

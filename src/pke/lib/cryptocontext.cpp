@@ -499,7 +499,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
 
     if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
-        decryptedCKKS->SetDepth(ciphertext->GetNoiseScaleDeg());
+        decryptedCKKS->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
         decryptedCKKS->SetLevel(ciphertext->GetLevel());
         decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
         decryptedCKKS->SetSlots(ciphertext->GetSlots());
@@ -669,7 +669,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> cip
 
     if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
-        decryptedCKKS->SetDepth(ciphertext->GetNoiseScaleDeg());
+        decryptedCKKS->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
         decryptedCKKS->SetLevel(ciphertext->GetLevel());
         decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
         decryptedCKKS->SetSlots(ciphertext->GetSlots());

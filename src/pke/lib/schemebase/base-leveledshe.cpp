@@ -560,7 +560,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext plain
                                                             ConstCiphertext<Element> ciphertext) const {
     auto result = ciphertext->CloneEmpty();
 
-    result->SetNoiseScaleDeg(plaintext->GetDepth());
+    result->SetNoiseScaleDeg(plaintext->GetNoiseScaleDeg());
     result->SetLevel(plaintext->GetLevel());
     result->SetScalingFactor(plaintext->GetScalingFactor());
     result->SetScalingFactorInt(plaintext->GetScalingFactorInt());

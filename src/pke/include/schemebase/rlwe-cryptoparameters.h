@@ -273,7 +273,7 @@ public:
     /**
    * Sets the value of the maximum power of secret key for which the
    * relinearization key is generated
-   * @param depth
+   * @param maxRelinSkDeg
    */
     void SetMaxRelinSkDeg(size_t maxRelinSkDeg) {
         m_maxRelinSkDeg = maxRelinSkDeg;

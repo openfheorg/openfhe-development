@@ -1939,14 +1939,14 @@ void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext) co
 
 #if NATIVEINT == 128
 Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
-                                       const std::vector<std::complex<double>>& value, size_t depth, uint32_t level,
-                                       usint slots) const {
+                                       const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
+                                       uint32_t level, usint slots) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     double scFact = cryptoParams->GetScalingFactorReal(level);
 
-    Plaintext p = Plaintext(
-        std::make_shared<CKKSPackedEncoding>(params, cc.GetEncodingParams(), value, depth, level, scFact, slots));
+    Plaintext p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, cc.GetEncodingParams(), value, noiseScaleDeg,
+                                                                 level, scFact, slots));
 
     DCRTPoly& plainElement = p->GetElement<DCRTPoly>();
 
@@ -2072,29 +2072,29 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // We want to scale temp by 2^(pd), and the loop starts from j=2
     // because temp is already scaled by 2^p in the re/im loop above,
     // and currPowP already is 2^p.
-    for (size_t i = 2; i < depth; i++) {
+    for (size_t i = 2; i < noiseScaleDeg; i++) {
         currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
     }
 
-    if (depth > 1) {
+    if (noiseScaleDeg > 1) {
         plainElement = plainElement.Times(currPowP);
     }
 
     p->SetFormat(Format::EVALUATION);
-    p->SetScalingFactor(pow(p->GetScalingFactor(), depth));
+    p->SetScalingFactor(pow(p->GetScalingFactor(), noiseScaleDeg));
 
     return p;
 }
 #else
 Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
-                                       const std::vector<std::complex<double>>& value, size_t depth, uint32_t level,
-                                       usint slots) const {
+                                       const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
+                                       uint32_t level, usint slots) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     double scFact = cryptoParams->GetScalingFactorReal(level);
 
-    Plaintext p = Plaintext(
-        std::make_shared<CKKSPackedEncoding>(params, cc.GetEncodingParams(), value, depth, level, scFact, slots));
+    Plaintext p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, cc.GetEncodingParams(), value, noiseScaleDeg,
+                                                                 level, scFact, slots));
 
     DCRTPoly& plainElement = p->GetElement<DCRTPoly>();
 
@@ -2210,11 +2210,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // We want to scale temp by 2^(pd), and the loop starts from j=2
     // because temp is already scaled by 2^p in the re/im loop above,
     // and currPowP already is 2^p.
-    for (size_t i = 2; i < depth; i++) {
+    for (size_t i = 2; i < noiseScaleDeg; i++) {
         currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
     }
 
-    if (depth > 1) {
+    if (noiseScaleDeg > 1) {
         plainElement = plainElement.Times(currPowP);
     }
 
@@ -2237,7 +2237,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     }
 
     p->SetFormat(Format::EVALUATION);
-    p->SetScalingFactor(pow(p->GetScalingFactor(), depth));
+    p->SetScalingFactor(pow(p->GetScalingFactor(), noiseScaleDeg));
 
     return p;
 }
@@ -2253,7 +2253,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertex
     for (auto& c : cv) {
         c *= pt;
     }
-    result->SetNoiseScaleDeg(result->GetNoiseScaleDeg() + plaintext->GetDepth());
+    result->SetNoiseScaleDeg(result->GetNoiseScaleDeg() + plaintext->GetNoiseScaleDeg());
     result->SetScalingFactor(result->GetScalingFactor() * plaintext->GetScalingFactor());
     return result;
 }
