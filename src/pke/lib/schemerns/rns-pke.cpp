@@ -47,7 +47,7 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext, const PrivateKey<DCRTPo
     (*ba)[0] += plaintext;
 
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
-    ciphertext->SetDepth(1);
+    ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
 }
@@ -63,7 +63,7 @@ Ciphertext<DCRTPoly> PKERNS::Encrypt(DCRTPoly plaintext, const PublicKey<DCRTPol
     (*ba)[0] += plaintext;
 
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
-    ciphertext->SetDepth(1);
+    ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
 }

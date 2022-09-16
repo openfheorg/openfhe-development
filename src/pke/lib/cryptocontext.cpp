@@ -499,14 +499,14 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
 
     if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
-        decryptedCKKS->SetDepth(ciphertext->GetDepth());
+        decryptedCKKS->SetDepth(ciphertext->GetNoiseScaleDeg());
         decryptedCKKS->SetLevel(ciphertext->GetLevel());
         decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
         decryptedCKKS->SetSlots(ciphertext->GetSlots());
 
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersRNS>(this->GetCryptoParameters());
 
-        decryptedCKKS->Decode(ciphertext->GetDepth(), ciphertext->GetScalingFactor(),
+        decryptedCKKS->Decode(ciphertext->GetNoiseScaleDeg(), ciphertext->GetScalingFactor(),
                               cryptoParamsCKKS->GetScalingTechnique());
     }
     else {
@@ -555,7 +555,7 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
         decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersRNS>(this->GetCryptoParameters());
-        decryptedCKKS->Decode(partialCiphertextVec[0]->GetDepth(), partialCiphertextVec[0]->GetScalingFactor(),
+        decryptedCKKS->Decode(partialCiphertextVec[0]->GetNoiseScaleDeg(), partialCiphertextVec[0]->GetScalingFactor(),
                               cryptoParamsCKKS->GetScalingTechnique());
     }
     else {
@@ -669,14 +669,14 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> cip
 
     if (ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) {
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
-        decryptedCKKS->SetDepth(ciphertext->GetDepth());
+        decryptedCKKS->SetDepth(ciphertext->GetNoiseScaleDeg());
         decryptedCKKS->SetLevel(ciphertext->GetLevel());
         decryptedCKKS->SetScalingFactor(ciphertext->GetScalingFactor());
         decryptedCKKS->SetSlots(ciphertext->GetSlots());
 
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
 
-        decryptedCKKS->Decode(ciphertext->GetDepth(), ciphertext->GetScalingFactor(),
+        decryptedCKKS->Decode(ciphertext->GetNoiseScaleDeg(), ciphertext->GetScalingFactor(),
                               cryptoParamsCKKS->GetScalingTechnique());
     }
     else {
@@ -728,7 +728,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
         auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
         decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
-        decryptedCKKS->Decode(partialCiphertextVec[0]->GetDepth(), partialCiphertextVec[0]->GetScalingFactor(),
+        decryptedCKKS->Decode(partialCiphertextVec[0]->GetNoiseScaleDeg(), partialCiphertextVec[0]->GetScalingFactor(),
                               cryptoParamsCKKS->GetScalingTechnique());
     }
     else {

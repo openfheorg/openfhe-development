@@ -61,7 +61,7 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
     }
 
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
-    ciphertext->SetDepth(ciphertext->GetDepth() - levels);
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels);
 
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         for (usint i = 0; i < levels; ++i) {
@@ -88,8 +88,8 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
 
     usint c1lvl   = ciphertext1->GetLevel();
     usint c2lvl   = ciphertext2->GetLevel();
-    usint c1depth = ciphertext1->GetDepth();
-    usint c2depth = ciphertext2->GetDepth();
+    usint c1depth = ciphertext1->GetNoiseScaleDeg();
+    usint c2depth = ciphertext2->GetNoiseScaleDeg();
     auto sizeQl1  = ciphertext1->GetElements()[0].GetNumOfElements();
     auto sizeQl2  = ciphertext2->GetElements()[0].GetNumOfElements();
 
@@ -227,7 +227,7 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ci
                                                         Ciphertext<DCRTPoly>& ciphertext2) const {
     AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
 
-    if (ciphertext1->GetDepth() == 2) {
+    if (ciphertext1->GetNoiseScaleDeg() == 2) {
         ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
         ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
     }
@@ -242,7 +242,7 @@ void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, con
     }
     const NativeInteger t(cryptoParams->GetPlaintextModulus());
 
-    ciphertext->SetDepth(ciphertext->GetDepth() + 1);
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(constant, t));
     }

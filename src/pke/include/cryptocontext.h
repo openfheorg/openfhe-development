@@ -1016,7 +1016,7 @@ public:
             ciphertext->SetEncodingType(plaintext->GetEncodingType());
             ciphertext->SetScalingFactor(plaintext->GetScalingFactor());
             ciphertext->SetScalingFactorInt(plaintext->GetScalingFactorInt());
-            ciphertext->SetDepth(plaintext->GetDepth());
+            ciphertext->SetNoiseScaleDeg(plaintext->GetDepth());
             ciphertext->SetLevel(plaintext->GetLevel());
             ciphertext->SetSlots(plaintext->GetSlots());
         }
@@ -1045,7 +1045,7 @@ public:
             ciphertext->SetEncodingType(plaintext->GetEncodingType());
             ciphertext->SetScalingFactor(plaintext->GetScalingFactor());
             ciphertext->SetScalingFactorInt(plaintext->GetScalingFactorInt());
-            ciphertext->SetDepth(plaintext->GetDepth());
+            ciphertext->SetNoiseScaleDeg(plaintext->GetDepth());
             ciphertext->SetLevel(plaintext->GetLevel());
             ciphertext->SetSlots(plaintext->GetSlots());
         }

@@ -137,7 +137,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Ele
             randomIntVector[i + 1].real(distribution(PseudoRandomNumberGenerator::GetPRNG()));
         }
 
-        plaintext = cc->MakeCKKSPackedPlaintext(randomIntVector, ciphertext->GetDepth());
+        plaintext = cc->MakeCKKSPackedPlaintext(randomIntVector, ciphertext->GetNoiseScaleDeg());
     }
     else {
         DiscreteUniformGenerator dug;

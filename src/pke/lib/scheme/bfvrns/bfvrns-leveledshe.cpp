@@ -226,8 +226,8 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
         }
     }
     else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        size_t c1depth = ciphertext1->GetDepth();
-        size_t c2depth = ciphertext2->GetDepth();
+        size_t c1depth = ciphertext1->GetNoiseScaleDeg();
+        size_t c2depth = ciphertext2->GetNoiseScaleDeg();
 
         size_t levels   = std::max(c1depth, c2depth) - 1;
         double dcrtBits = cv1[0].GetElementAtIndex(0).GetModulus().GetMSB();
@@ -400,7 +400,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
     }
 
     ciphertextMult->SetElements(std::move(cvMult));
-    ciphertextMult->SetDepth(std::max(ciphertext1->GetDepth(), ciphertext2->GetDepth()) + 1);
+    ciphertextMult->SetNoiseScaleDeg(std::max(ciphertext1->GetNoiseScaleDeg(), ciphertext2->GetNoiseScaleDeg()) + 1);
 
     return ciphertextMult;
 }
@@ -455,7 +455,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
         }
     }
     else if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        size_t cdepth   = ciphertext->GetDepth();
+        size_t cdepth   = ciphertext->GetNoiseScaleDeg();
         size_t levels   = cdepth - 1;
         double dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
 
@@ -688,7 +688,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
     }
 
     ciphertextSq->SetElements(std::move(cvSquare));
-    ciphertextSq->SetDepth(ciphertext->GetDepth() + 1);
+    ciphertextSq->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
 
     return ciphertextSq;
 }
@@ -728,7 +728,7 @@ void LeveledSHEBFVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, con
     }
     const NativeInteger t(cryptoParams->GetPlaintextModulus());
 
-    ciphertext->SetDepth(ciphertext->GetDepth() + 1);
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
 }
 
 Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalAutomorphism(ConstCiphertext<DCRTPoly> ciphertext, usint i,
@@ -765,7 +765,7 @@ std::shared_ptr<std::vector<DCRTPoly>> LeveledSHEBFVRNS::EvalFastRotationPrecomp
     }
 
     DCRTPoly c1     = ciphertext->GetElements()[1];
-    size_t levels   = ciphertext->GetDepth() - 1;
+    size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
     size_t sizeQ    = c1.GetNumOfElements();
     double dcrtBits = c1.GetElementAtIndex(0).GetModulus().GetMSB();
     // how many levels to drop
@@ -800,7 +800,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        size_t levels   = ciphertext->GetDepth() - 1;
+        size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
         size_t sizeQ    = cv[0].GetNumOfElements();
         double dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
         // how many levels to drop
@@ -845,7 +845,7 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
     auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
     if (cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
-        size_t levels   = ciphertext->GetDepth() - 1;
+        size_t levels   = ciphertext->GetNoiseScaleDeg() - 1;
         size_t sizeQ    = cv[0].GetNumOfElements();
         double dcrtBits = cv[0].GetElementAtIndex(0).GetModulus().GetMSB();
 

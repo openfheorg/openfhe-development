@@ -123,6 +123,12 @@ public:
         return 0;
     }
 
+    /**
+   * Returns the value of the maximum power of secret key for which the
+   * relinearization key is generated
+   *
+   * @return maximum power of secret key
+   */
     virtual size_t GetMaxRelinSkDeg() const {
         return 0;
     }

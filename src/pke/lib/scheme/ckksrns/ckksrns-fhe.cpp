@@ -281,7 +281,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     Ciphertext<DCRTPoly> raised = ciphertext->Clone();
     auto algo                   = cc->GetScheme();
-    algo->ModReduceInternalInPlace(raised, raised->GetDepth() - 1);
+    algo->ModReduceInternalInPlace(raised, raised->GetNoiseScaleDeg() - 1);
 
     AdjustCiphertext(raised, correction);
     auto ctxtDCRT = raised->GetElements();
@@ -361,13 +361,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         algo->MultByMonomialInPlace(ctxtEncI, 3 * M / 4);
 
         if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            while (ctxtEnc->GetDepth() > 1) {
+            while (ctxtEnc->GetNoiseScaleDeg() > 1) {
                 cc->ModReduceInPlace(ctxtEnc);
                 cc->ModReduceInPlace(ctxtEncI);
             }
         }
         else {
-            if (ctxtEnc->GetDepth() == 2) {
+            if (ctxtEnc->GetNoiseScaleDeg() == 2) {
                 algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
                 algo->ModReduceInternalInPlace(ctxtEncI, BASE_NUM_LEVELS_TO_DROP);
             }
@@ -453,12 +453,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         cc->EvalAddInPlace(ctxtEnc, conj);
 
         if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            while (ctxtEnc->GetDepth() > 1) {
+            while (ctxtEnc->GetNoiseScaleDeg() > 1) {
                 cc->ModReduceInPlace(ctxtEnc);
             }
         }
         else {
-            if (ctxtEnc->GetDepth() == 2) {
+            if (ctxtEnc->GetNoiseScaleDeg() == 2) {
                 algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
             }
         }
@@ -2253,7 +2253,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalMultExt(ConstCiphertext<DCRTPoly> ciphertex
     for (auto& c : cv) {
         c *= pt;
     }
-    result->SetDepth(result->GetDepth() + plaintext->GetDepth());
+    result->SetNoiseScaleDeg(result->GetNoiseScaleDeg() + plaintext->GetDepth());
     result->SetScalingFactor(result->GetScalingFactor() * plaintext->GetScalingFactor());
     return result;
 }

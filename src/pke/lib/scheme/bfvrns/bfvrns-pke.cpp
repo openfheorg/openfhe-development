@@ -142,7 +142,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PrivateKey<DCRTPoly
     (*ba)[1].SetFormat(Format::EVALUATION);
 
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
-    ciphertext->SetDepth(1);
+    ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
 }
@@ -194,7 +194,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
     (*ba)[1].SetFormat(Format::EVALUATION);
 
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
-    ciphertext->SetDepth(1);
+    ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
 }
