@@ -118,6 +118,8 @@ public:
                                              const std::shared_ptr<std::vector<DCRTPoly>> digits, bool addFirst,
                                              const std::map<usint, EvalKey<DCRTPoly>>& evalKeys) const override;
 
+    usint FindAutomorphismIndex(usint index, usint m) const override;
+
     /////////////////////////////////////
     // Mod Reduce
     /////////////////////////////////////

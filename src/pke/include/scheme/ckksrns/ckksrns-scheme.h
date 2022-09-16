@@ -36,6 +36,7 @@
 
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-parametergeneration.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-pke.h"
 #include "scheme/ckksrns/ckksrns-pre.h"
 #include "scheme/ckksrns/ckksrns-leveledshe.h"

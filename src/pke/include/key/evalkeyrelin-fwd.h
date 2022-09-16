@@ -28,11 +28,23 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+/*
+ * It is a lightweight file to be included where we need the declaration of EvalKeyRelin only
+ *
+ */
+#ifndef __EVALKEYRELIN_FWD_H__
+#define __EVALKEYRELIN_FWD_H__
 
-#define PROFILE
+#include <memory>
 
-#include "cryptocontext.h"
-#include "schemerns/rns-pke.h"
-#include "schemerns/rns-pre.h"
+namespace lbcrypto {
 
-namespace lbcrypto {}
+template <typename Element>
+class EvalKeyRelinImpl;
+
+template <typename Element>
+using EvalKeyRelin = std::shared_ptr<EvalKeyRelinImpl<Element>>;
+
+}  // namespace lbcrypto
+
+#endif  // __EVALKEYRELIN_FWD_H__

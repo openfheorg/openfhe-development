@@ -1,3 +1,9 @@
+09/16/2022: OpenFHE 0.9.3 (development) is released
+
+* Fixes build errors in MinGW
+* Fixes a compilation error with g++ 12
+* Includes fixes for the Proxy Re-Encryption functionality
+
 08/18/2022: OpenFHE 0.9.2 (development) is released
 
 * Fixes a compilation error for some versions of MacOS

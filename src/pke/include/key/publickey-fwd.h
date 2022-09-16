@@ -28,15 +28,23 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
 /*
-CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
+ * It is a lightweight file to be included where we need the declaration of PublicKey only
+ *
  */
+#ifndef __PUBLICKEY_FWD_H__
+#define __PUBLICKEY_FWD_H__
 
-#define PROFILE
+#include <memory>
 
-#include "cryptocontext.h"
-#include "scheme/ckksrns/ckksrns-pke.h"
-#include "scheme/ckksrns/ckksrns-pre.h"
+namespace lbcrypto {
 
-namespace lbcrypto {}
+template <typename Element>
+class PublicKeyImpl;
+
+template <typename Element>
+using PublicKey = std::shared_ptr<PublicKeyImpl<Element>>;
+
+}  // namespace lbcrypto
+
+#endif  // __PUBLICKEY_FWD_H__

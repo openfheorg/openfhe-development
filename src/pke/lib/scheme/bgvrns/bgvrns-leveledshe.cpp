@@ -35,9 +35,10 @@ BGV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 #define PROFILE
 
-#include "cryptocontext.h"
-#include "scheme/allscheme.h"
 #include "scheme/bgvrns/bgvrns-leveledshe.h"
+
+#include "scheme/bgvrns/bgvrns-cryptoparameters.h"
+#include "ciphertext.h"
 
 namespace lbcrypto {
 
@@ -245,6 +246,10 @@ void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, con
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
         ciphertext->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(constant, t));
     }
+}
+
+usint LeveledSHEBGVRNS::FindAutomorphismIndex(usint index, usint m) const {
+    return FindAutomorphismIndex2n(index, m);
 }
 
 }  // namespace lbcrypto

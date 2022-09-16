@@ -63,9 +63,9 @@ public:
                            float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
                            SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                            ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
-                           MultiplicationTechnique multTech = HPS)
+                           MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = NOT_SET)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
-                              secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech) {}
+                              secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode) {}
 
     virtual ~CryptoParametersBFVRNS() {}
 

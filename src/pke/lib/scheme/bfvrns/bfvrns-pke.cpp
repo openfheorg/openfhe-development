@@ -166,7 +166,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
     }
     ptxt.SetFormat(Format::COEFFICIENT);
 
-    std::shared_ptr<std::vector<DCRTPoly>> ba = EncryptZeroCore(publicKey, encParams);
+    std::shared_ptr<std::vector<DCRTPoly>> ba = EncryptZeroCore(publicKey, encParams, DggType());
 
     NativeInteger NegQModt       = cryptoParams->GetNegQModt();
     NativeInteger NegQModtPrecon = cryptoParams->GetNegQModtPrecon();

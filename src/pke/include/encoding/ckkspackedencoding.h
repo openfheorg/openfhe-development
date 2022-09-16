@@ -32,6 +32,7 @@
 #ifndef LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
 #define LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
 
+#include <algorithm>
 #include <functional>
 #include <initializer_list>
 #include <memory>
@@ -181,10 +182,10 @@ public:
 
     /**
    * GetEncodingType
-   * @return this is a Packed encoding
+   * @return CKKS_PACKED_ENCODING
    */
     PlaintextEncodings GetEncodingType() const {
-        return CKKSPacked;
+        return CKKS_PACKED_ENCODING;
     }
 
     /**

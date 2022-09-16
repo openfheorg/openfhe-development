@@ -32,11 +32,13 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_PRE_H
 #define LBCRYPTO_CRYPTO_BASE_PRE_H
 
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "key/evalkey.h"
+#include "ciphertext-fwd.h"
+
 #include <vector>
 #include <memory>
-
-#include "key/allkey.h"
-#include "ciphertext.h"
 
 /**
  * @namespace lbcrypto
@@ -79,11 +81,10 @@ public:
    * @param &evalKey proxy re-encryption key.
    * @param publicKey the public key of the recipient of the re-encrypted
    * ciphertext.
-   * @param noiseflooding noise flooding flag for HRA-secure of PRE
    * @return the ciphertext
    */
     virtual Ciphertext<Element> ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-                                          const PublicKey<Element> publicKey, usint noiseflooding) const;
+                                          const PublicKey<Element> publicKey) const;
 };
 
 }  // namespace lbcrypto

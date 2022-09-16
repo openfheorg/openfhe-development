@@ -56,6 +56,13 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     ScalingTechnique scalTech        = cryptoParamsCKKSRNS->GetScalingTechnique();
     EncryptionTechnique encTech      = cryptoParamsCKKSRNS->GetEncryptionTechnique();
     MultiplicationTechnique multTech = cryptoParamsCKKSRNS->GetMultiplicationTechnique();
+    ProxyReEncryptionMode PREMode    = cryptoParamsCKKSRNS->GetPREMode();
+
+    if ((PREMode != INDCPA) && (PREMode != NOT_SET)) {
+        std::stringstream s;
+        s << "This PRE mode " << PREMode << " is not supported for CKKSRNS";
+        OPENFHE_THROW(not_available_error, s.str());
+    }
 
     usint extraModSize = 0;
     if (scalTech == FLEXIBLEAUTOEXT) {

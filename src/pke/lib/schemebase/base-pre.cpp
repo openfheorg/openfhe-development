@@ -46,13 +46,16 @@ EvalKey<Element> PREBase<Element>::ReKeyGen(const PrivateKey<Element> oldPrivate
 
 template <class Element>
 Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-                                                const PublicKey<Element> publicKey, usint noiseflooding) const {
+                                                const PublicKey<Element> publicKey) const {
     auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
     Ciphertext<Element> result = ciphertext->Clone();
     if (publicKey != nullptr) {
+        const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(publicKey->GetCryptoParameters());
+
+        const DggType& floodingdist              = cryptoParams->GetFloodingDiscreteGaussianGenerator();
         std::vector<Element>& cv                 = result->GetElements();
-        std::shared_ptr<std::vector<Element>> ba = algo->EncryptZeroCore(publicKey);
+        std::shared_ptr<std::vector<Element>> ba = algo->EncryptZeroCore(publicKey, floodingdist);
 
         cv[0] += (*ba)[0];
         cv[1] += (*ba)[1];

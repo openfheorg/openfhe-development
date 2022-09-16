@@ -68,6 +68,15 @@ enum ScalingTechnique {
 };
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 
+enum ProxyReEncryptionMode {
+    NOT_SET = 0,
+    INDCPA,
+    FIXED_NOISE_HRA,
+    NOISE_FLOODING_HRA,
+    DIVIDE_AND_ROUND_HRA,
+};
+std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
+
 enum KeySwitchTechnique {
     INVALID_KS_TECH = 0,
     BV,
@@ -89,6 +98,15 @@ enum MultiplicationTechnique {
 };
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
+enum PlaintextEncodings {
+    INVALID_ENCODING = 0,
+    COEF_PACKED_ENCODING,
+    PACKED_ENCODING,
+    STRING_ENCODING,
+    CKKS_PACKED_ENCODING,
+};
+std::ostream& operator<<(std::ostream& s, PlaintextEncodings p);
+
 enum LargeScalingFactorConstants {
     MAX_BITS_IN_WORD = 62,
     MAX_LOG_STEP     = 60,
@@ -102,5 +120,14 @@ enum LargeScalingFactorConstants {
 enum {
     BASE_NUM_LEVELS_TO_DROP = 1,
 };
+
+namespace NOISE_FLOODING {
+// noise flooding distribution parameter for distributed decryption in threshold FHE
+const double MP_SD = 1048576;
+// noise flooding distribution parameter for fixed 20 bits noise multihop PRE
+const double PRE_SD = 1048576;
+// statistical security parameter for noise flooding in PRE
+const double STAT_SECURITY = 30;
+};  // namespace NOISE_FLOODING
 
 #endif  // _CONSTANTS_H_

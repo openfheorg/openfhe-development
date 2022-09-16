@@ -32,9 +32,15 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_LEVELEDSHE_H
 #define LBCRYPTO_CRYPTO_BASE_LEVELEDSHE_H
 
+#include "lattice/lat-hal.h"
+#include "key/publickey-fwd.h"
+#include "key/privatekey-fwd.h"
+#include "key/evalkey-fwd.h"
+#include "encoding/plaintext-fwd.h"
+#include "ciphertext-fwd.h"
 #include "utils/caller_info.h"
-#include "keyswitch/keyswitch-base.h"
-#include "ciphertext.h"
+#include "utils/inttypes.h"
+#include "utils/exception.h"
 
 #include <memory>
 #include <vector>
@@ -626,6 +632,10 @@ public:
    */
     virtual Ciphertext<Element> EvalAtIndex(ConstCiphertext<Element> ciphertext, int32_t index,
                                             const std::map<usint, EvalKey<Element>>& evalKeyMap) const;
+
+    virtual usint FindAutomorphismIndex(usint index, usint m) const {
+        OPENFHE_THROW(config_error, "FindAutomorphismIndex is not supported for this scheme");
+    }
 
     /////////////////////////////////////////
     // SHE LEVELED Mod Reduce

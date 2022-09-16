@@ -38,8 +38,13 @@
  */
 #define PROFILE
 
-#include "cryptocontext.h"
 #include "keyswitch/keyswitch-bv.h"
+
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "key/evalkeyrelin.h"
+#include "schemerns/rns-cryptoparameters.h"
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 
@@ -201,10 +206,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey, c
 }
 
 EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldSk, const PublicKey<DCRTPoly> newPk) const {
-    // Get crypto context of new public key.
-    auto cc = newPk->GetCryptoContext();
-
-    EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(cc);
+    EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newPk->GetCryptoContext());
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newPk->GetCryptoParameters());
 

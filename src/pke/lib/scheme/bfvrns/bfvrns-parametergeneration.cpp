@@ -60,6 +60,13 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     ScalingTechnique scalTech        = cryptoParamsBFVRNS->GetScalingTechnique();
     EncryptionTechnique encTech      = cryptoParamsBFVRNS->GetEncryptionTechnique();
     MultiplicationTechnique multTech = cryptoParamsBFVRNS->GetMultiplicationTechnique();
+    ProxyReEncryptionMode PREMode    = cryptoParamsBFVRNS->GetPREMode();
+
+    if ((PREMode != INDCPA) && (PREMode != NOT_SET)) {
+        std::stringstream s;
+        s << "This PRE mode " << PREMode << " is not supported for BFVRNS";
+        OPENFHE_THROW(not_available_error, s.str());
+    }
 
     double sigma           = cryptoParamsBFVRNS->GetDistributionParameter();
     double alpha           = cryptoParamsBFVRNS->GetAssuranceMeasure();

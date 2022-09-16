@@ -58,13 +58,13 @@ public:
     static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
                                    std::string schemeID = "") {
         switch (encoding) {
-            case CoefPacked:
+            case COEF_PACKED_ENCODING:
                 return std::make_shared<CoefPackedEncoding>(vp, ep, schemeID);
-            case Packed:
+            case PACKED_ENCODING:
                 return std::make_shared<PackedEncoding>(vp, ep);
-            case String:
+            case STRING_ENCODING:
                 return std::make_shared<StringEncoding>(vp, ep);
-            case CKKSPacked:
+            case CKKS_PACKED_ENCODING:
                 return std::make_shared<CKKSPackedEncoding>(vp, ep);
             default:
                 OPENFHE_THROW(type_error, "Unknown plaintext encoding type in MakePlaintext");

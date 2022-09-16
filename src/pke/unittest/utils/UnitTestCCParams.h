@@ -63,6 +63,7 @@ struct UnitTestCCParams {
     double   keySwitchCount; // BFVRNS, 
     double   multiplicationTechnique; // BFVRNS, 
     double   encryptionTechnique; // BFVRNS,
+    double PREMode; // BGVRNS, BFVRNS, CKKSRNS
 
     std::string toString() const;
 };

@@ -32,20 +32,20 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_SCHEME_H
 #define LBCRYPTO_CRYPTO_BASE_SCHEME_H
 
-#include "utils/caller_info.h"
-
-#include "key/allkey.h"
-
-#include "keyswitch/keyswitch-base.h"
-
-#include "schemebase/rlwe-cryptoparameters.h"
+#include "key/keypair.h"
+#include "key/evalkey.h"
 #include "schemebase/base-parametergeneration.h"
-#include "schemebase/base-pke.h"
-#include "schemebase/base-pre.h"
-#include "schemebase/base-leveledshe.h"
+#include "keyswitch/keyswitch-base.h"
 #include "schemebase/base-advancedshe.h"
+#include "schemebase/base-leveledshe.h"
 #include "schemebase/base-multiparty.h"
 #include "schemebase/base-fhe.h"
+#include "schemebase/base-pke.h"
+#include "schemebase/base-pre.h"
+#include "ciphertext.h"
+
+#include "utils/exception.h"
+#include "utils/caller_info.h"
 
 #include <vector>
 #include <map>
@@ -253,12 +253,13 @@ public:
         OPENFHE_THROW(config_error, "EncryptZeroCore operation has not been enabled");
     }
 
-    std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PublicKey<Element> publicKey) const {
+    std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PublicKey<Element> publicKey,
+                                                          const DggType& dgg) const {
         if (m_PKE) {
             if (!publicKey)
                 OPENFHE_THROW(config_error, "Input public key is nullptr");
 
-            return m_PKE->EncryptZeroCore(publicKey, nullptr);
+            return m_PKE->EncryptZeroCore(publicKey, nullptr, dgg);
         }
         OPENFHE_THROW(config_error, "EncryptZeroCore operation has not been enabled");
     }
@@ -436,14 +437,14 @@ public:
     }
 
     virtual Ciphertext<Element> ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-                                          const PublicKey<Element> publicKey, usint noiseflooding) const {
+                                          const PublicKey<Element> publicKey) const {
         if (m_PRE) {
             if (!ciphertext)
                 OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
             if (!evalKey)
                 OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
 
-            auto result = m_PRE->ReEncrypt(ciphertext, evalKey, publicKey, noiseflooding);
+            auto result = m_PRE->ReEncrypt(ciphertext, evalKey, publicKey);
             result->SetKeyTag(evalKey->GetKeyTag());
             return result;
         }
@@ -1213,6 +1214,13 @@ public:
             return m_LeveledSHE->EvalAtIndex(ciphertext, i, evalKeyMap);
         }
         OPENFHE_THROW(config_error, "EvalAtIndex operation has not been enabled");
+    }
+
+    virtual usint FindAutomorphismIndex(usint index, usint m) {
+        if (m_LeveledSHE) {
+            return m_LeveledSHE->FindAutomorphismIndex(index, m);
+        }
+        OPENFHE_THROW(config_error, "FindAutomorphismIndex operation has not been enabled");
     }
 
     /////////////////////////////////////////

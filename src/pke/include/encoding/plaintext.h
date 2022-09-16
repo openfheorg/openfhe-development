@@ -36,6 +36,11 @@
 #ifndef LBCRYPTO_UTILS_PLAINTEXT_H
 #define LBCRYPTO_UTILS_PLAINTEXT_H
 
+#include "encoding/plaintext-fwd.h"
+
+#include "encoding/encodingparams.h"
+#include "constants.h"
+
 #include <initializer_list>
 #include <iostream>
 #include <memory>
@@ -44,44 +49,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "encoding/encodingparams.h"
-#include "lattice/lat-hal.h"
-#include "constants.h"
-
 namespace lbcrypto {
-
-enum PlaintextEncodings {
-    Unknown = 0,
-    CoefPacked,
-    Packed,
-    String,
-    CKKSPacked,
-};
-
-inline std::ostream& operator<<(std::ostream& out, const PlaintextEncodings p) {
-    switch (p) {
-        case Unknown:
-            out << "Unknown";
-            break;
-        case CoefPacked:
-            out << "CoefPacked";
-            break;
-        case Packed:
-            out << "Packed";
-            break;
-        case String:
-            out << "String";
-            break;
-        case CKKSPacked:
-            out << "CKKSPacked";
-            break;
-    }
-    return out;
-}
-
-class PlaintextImpl;
-typedef std::shared_ptr<PlaintextImpl> Plaintext;
-typedef std::shared_ptr<const PlaintextImpl> ConstPlaintext;
 
 /**
  * @class PlaintextImpl
@@ -92,11 +60,10 @@ typedef std::shared_ptr<const PlaintextImpl> ConstPlaintext;
  * from this class which depend on the application the plaintext is used with.
  * It provides virtual methods for encoding and decoding of data.
  */
-
-enum PtxtPolyType { IsPoly, IsDCRTPoly, IsNativePoly };
-
 class PlaintextImpl {
 protected:
+    enum PtxtPolyType { IsPoly, IsDCRTPoly, IsNativePoly };
+
     bool isEncoded;
     PtxtPolyType typeFlag;
     EncodingParams encodingParams;
@@ -105,10 +72,10 @@ protected:
     mutable NativePoly encodedNativeVector;
     mutable DCRTPoly encodedVectorDCRT;
 
-    static const int intCTOR     = 0x01;
-    static const int vecintCTOR  = 0x02;
-    static const int fracCTOR    = 0x04;
-    static const int vecuintCTOR = 0x08;
+    static constexpr int intCTOR     = 0x01;
+    static constexpr int vecintCTOR  = 0x02;
+    static constexpr int fracCTOR    = 0x04;
+    static constexpr int vecuintCTOR = 0x08;
 
     double scalingFactor           = 1;
     NativeInteger scalingFactorInt = 1;

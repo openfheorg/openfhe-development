@@ -128,8 +128,8 @@ public:
                 // location as the counter for BLAKE2 This will increase the entropy of
                 // the BLAKE2 sample
                 void* mem = malloc(1);
-                free(mem);
                 uint32_t counter = reinterpret_cast<long long>(mem);  // NOLINT
+                free(mem);
 
                 PRNG gen(initKey, counter);
 

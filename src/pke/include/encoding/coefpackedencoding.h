@@ -96,10 +96,10 @@ public:
 
     /**
    * GetEncodingType
-   * @return this is a CoefPacked encoding
+   * @return this is a COEF_PACKED_ENCODING encoding
    */
     PlaintextEncodings GetEncodingType() const {
-        return CoefPacked;
+        return COEF_PACKED_ENCODING;
     }
 
     /**

@@ -33,8 +33,8 @@
 #define LBCRYPTO_CRYPTO_BASE_PKE_H
 
 #include "ciphertext-fwd.h"
-#include "key/privatekey.h"
-#include "key/publickey.h"
+#include "cryptocontext-fwd.h"
+#include "decrypt-result.h"
 #include "key/keypair.h"
 
 #include <vector>
@@ -45,54 +45,6 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
-
-struct EncryptResult {
-    EncryptResult() : isValid(false), numBytesEncrypted(0) {}
-
-    explicit EncryptResult(size_t len) : isValid(true), numBytesEncrypted(len) {}
-
-    bool isValid;  // whether the encryption was successful
-    // count of the number of plaintext bytes that were encrypted
-    usint numBytesEncrypted;
-};
-
-/**
- * @brief Decryption result.  This represents whether the decryption of a
- * cipheretext was performed correctly.
- *
- * This is intended to eventually incorporate information about the amount of
- * padding in a decoded ciphertext, to ensure that the correct amount of
- * padding is stripped away. It is intended to provided a very simple kind of
- * checksum eventually. This notion of a decoding output is inherited from the
- * crypto++ library. It is also intended to be used in a recover and restart
- * robust functionality if not all ciphertext is recieved over a lossy
- * channel, so that if all information is eventually received,
- * decoding/decryption can be performed eventually. This is intended to be
- * returned with the output of a decryption operation.
- */
-struct DecryptResult {
-    /**
-   * Constructor that initializes all message lengths to 0.
-   */
-    DecryptResult() : isValid(false), messageLength(0), scalingFactorInt(1) {}
-
-    /**
-   * Constructor that initializes all message lengths.
-   * @param len the new length.
-   */
-    explicit DecryptResult(size_t len) : isValid(true), messageLength(len), scalingFactorInt(1) {}
-
-    /**
-   * Constructor that initializes all message lengths.
-   * @param len the new length.
-   * @param scf the new scaling factor.
-   */
-    explicit DecryptResult(size_t len, NativeInteger scf) : isValid(true), messageLength(len), scalingFactorInt(scf) {}
-
-    bool isValid;                   /**< whether the decryption was successful */
-    usint messageLength;            /**< the length of the decrypted plaintext message */
-    NativeInteger scalingFactorInt; /**< Scaling factor for BGV FlexibleAuto mode. */
-};
 
 /**
  * @brief Abstract interface for encryption algorithm
@@ -181,7 +133,8 @@ public:
                                                                    const std::shared_ptr<ParmType> params) const;
 
     virtual std::shared_ptr<std::vector<Element> > EncryptZeroCore(const PublicKey<Element> publicKey,
-                                                                   const std::shared_ptr<ParmType> params) const;
+                                                                   const std::shared_ptr<ParmType> params,
+                                                                   const DggType& dgg) const;
 
     virtual Element DecryptCore(const std::vector<Element>& cv, const PrivateKey<Element> privateKey) const;
 };

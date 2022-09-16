@@ -35,10 +35,10 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 #define PROFILE
 
-#include "cryptocontext.h"
-#include "scheme/allscheme.h"
-#include "scheme/ckksrns/ckksrns-pke.h"
 #include "scheme/ckksrns/ckksrns-multiparty.h"
+
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "ciphertext.h"
 
 namespace lbcrypto {
 

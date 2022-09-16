@@ -67,6 +67,13 @@ CryptoContext<Element> CryptoContextFactory<Element>::GetContext(std::shared_ptr
     return cc;
 }
 
+template <typename Element>
+CryptoContext<Element> CryptoContextFactory<Element>::GetFullContextByDeserializedContext(
+    const CryptoContext<Element> context) {
+    return CryptoContextFactory<Element>::GetContext(context->GetCryptoParameters(), context->GetScheme(),
+                                                     context->getSchemeId());
+}
+
 template <typename T>
 const std::vector<CryptoContext<T>>& CryptoContextFactory<T>::GetAllContexts() {
     return AllContexts;

@@ -43,8 +43,6 @@
 #include "encoding/plaintextfactory.h"
 
 #include "key/evalkey.h"
-#include "key/privatekey.h"
-#include "key/publickey.h"
 #include "key/keypair.h"
 
 #include "schemebase/base-pke.h"
@@ -853,12 +851,13 @@ public:
    * @return plaintext
    */
     Plaintext MakeStringPlaintext(const std::string& str) const {
-        return PlaintextFactory::MakePlaintext(str, String, this->GetElementParams(), this->GetEncodingParams());
+        return PlaintextFactory::MakePlaintext(str, STRING_ENCODING, this->GetElementParams(),
+                                               this->GetEncodingParams());
     }
 
     /**
    * MakePlaintext constructs a CoefPackedEncoding or PackedEncoding in this context
-   * @param encoding is Packed or CoefPacked
+   * @param encoding is PACKED_ENCODING or COEF_PACKED_ENCODING
    * @param value is the value to encode
    * @param depth is the multiplicative depth to encode the plaintext at
    * @param level is the level to encode the plaintext at
@@ -875,13 +874,13 @@ public:
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
                 scf = cryptoParams->GetScalingFactorIntBig(level);
                 p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                    this->GetEncodingParams(), getSchemeId(), 1, level, scf);
+                                                      this->GetEncodingParams(), getSchemeId(), 1, level, scf);
                 p->SetDepth(2);
             }
             else {
                 scf = cryptoParams->GetScalingFactorInt(level);
                 p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                    this->GetEncodingParams(), getSchemeId(), depth, level, scf);
+                                                      this->GetEncodingParams(), getSchemeId(), depth, level, scf);
             }
         }
         else {
@@ -901,7 +900,7 @@ public:
    * @return plaintext
    */
     Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1, uint32_t level = 0) const {
-        return MakePlaintext(CoefPacked, value, depth, level);
+        return MakePlaintext(COEF_PACKED_ENCODING, value, depth, level);
     }
 
     /**
@@ -912,7 +911,7 @@ public:
    * @return plaintext
    */
     Plaintext MakePackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1, uint32_t level = 0) const {
-        return MakePlaintext(Packed, value, depth, level);
+        return MakePlaintext(PACKED_ENCODING, value, depth, level);
     }
 
     /**
@@ -1741,10 +1740,7 @@ public:
         const auto cryptoParams  = GetCryptoParameters();
         const auto elementParams = cryptoParams->GetElementParams();
         uint32_t m               = elementParams->GetCyclotomicOrder();
-        if (this->getSchemeId() == "CKKSRNS")
-            return FindAutomorphismIndex2nComplex(idx, m);
-        else
-            return FindAutomorphismIndex2n(idx, m);
+        return GetScheme()->FindAutomorphismIndex(idx, m);
     }
 
     std::vector<usint> FindAutomorphismIndices(const std::vector<usint> idxList) const {
@@ -2327,11 +2323,11 @@ public:
    * @return vector of shared pointers to re-encrypted ciphertexts
    */
     Ciphertext<Element> ReEncrypt(ConstCiphertext<Element> ciphertext, EvalKey<Element> evalKey,
-                                  const PublicKey<Element> publicKey = nullptr, usint noiseflooding = 0) const {
+                                  const PublicKey<Element> publicKey = nullptr) const {
         CheckCiphertext(ciphertext);
         CheckKey(evalKey);
 
-        return GetScheme()->ReEncrypt(ciphertext, evalKey, publicKey, noiseflooding);
+        return GetScheme()->ReEncrypt(ciphertext, evalKey, publicKey);
     }
 
     //------------------------------------------------------------------------------
