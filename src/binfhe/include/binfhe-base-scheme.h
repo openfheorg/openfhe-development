@@ -165,7 +165,7 @@ public:
    */
     LWECiphertext EvalSign(const std::shared_ptr<BinFHECryptoParams> params,
                            const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct1,
-                           const NativeInteger beta, const NativeInteger bigger_q) const;
+                           const NativeInteger beta) const;
 
     /**
    * Evaluate a degit decomposition process over a large precision LWE ciphertext
@@ -180,7 +180,7 @@ public:
    */
     std::vector<LWECiphertext> EvalDecomp(const std::shared_ptr<BinFHECryptoParams> params,
                                           const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct1,
-                                          const NativeInteger beta, const NativeInteger bigger_q) const;
+                                          const NativeInteger beta) const;
 
 private:
     /**

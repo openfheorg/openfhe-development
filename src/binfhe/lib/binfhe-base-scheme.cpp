@@ -160,11 +160,11 @@ LWECiphertext BinFHEScheme::EvalNOT(const std::shared_ptr<BinFHECryptoParams> pa
 }
 
 // Check what type of function the input function is.
-int checkInputFunction(std::vector<NativeInteger> lut, NativeInteger bigger_q) {
+int checkInputFunction(std::vector<NativeInteger> lut, NativeInteger mod) {
     int ret = 0;  // 0 for negacyclic, 1 for periodic, 2 for arbitrary
-    if (lut[0] == (bigger_q - lut[lut.size() / 2])) {
+    if (lut[0] == (mod - lut[lut.size() / 2])) {
         for (size_t i = 1; i < lut.size() / 2; i++) {
-            if (lut[i] != (bigger_q - lut[lut.size() / 2 + i])) {
+            if (lut[i] != (mod - lut[lut.size() / 2 + i])) {
                 ret = 2;
                 break;
             }
@@ -308,8 +308,8 @@ LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams> 
 // Evaluate large-precision sign
 LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams> params,
                                      const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct1,
-                                     const NativeInteger beta, const NativeInteger bigger_q) const {
-    auto theBigger_q = bigger_q;
+                                     const NativeInteger beta) const {
+    auto theBigger_q = ct1->GetModulus();
     auto& LWEParams  = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
 
@@ -395,15 +395,15 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams> p
 // Evaluate Ciphertext Decomposition
 std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHECryptoParams> params,
                                                     const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct1,
-                                                    const NativeInteger beta, const NativeInteger bigger_q) const {
-    auto theBigger_q = bigger_q;
+                                                    const NativeInteger beta) const {
+    auto theBigger_q = ct1->GetModulus();
     auto& LWEParams  = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
 
     NativeInteger q = LWEParams->Getq();
     if (theBigger_q <= q) {
         std::string errMsg =
-            "ERROR: EvalSign is only for large precision. For small precision, please use bootstrapping directly";
+            "ERROR: EvalDecomp is only for large precision. For small precision, please use bootstrapping directly";
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
 

@@ -76,7 +76,7 @@ int main() {
         auto ct1 = cc.Encrypt(sk, p / 2 + i - 3, FRESH, p, Q);
 
         // Get the MSB
-        ct1 = cc.EvalSign(ct1, Q);
+        ct1 = cc.EvalSign(ct1);
 
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2, q);

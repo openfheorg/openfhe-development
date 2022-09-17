@@ -112,7 +112,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncTime) {
 
     for (int i = 0; i < 8; i++) {
         auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, FRESH, p * factor, Q);
-        ct1      = cc.EvalSign(ct1, Q);
+        ct1      = cc.EvalSign(ct1);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2, q);
         EXPECT_EQ(usint(i >= 3), result) << failed;
@@ -135,7 +135,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncSpace) {
 
     for (int i = 0; i < 8; i++) {
         auto ct1 = cc.Encrypt(sk, p * factor / 2 + i - 3, FRESH, p * factor, Q);
-        ct1      = cc.EvalSign(ct1, Q);
+        ct1      = cc.EvalSign(ct1);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2, q);
         EXPECT_EQ(usint(i >= 3), result) << failed;
@@ -160,7 +160,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompTime) {
     for (int i = st; i < st + 8; i++) {
         auto ct1 = cc.Encrypt(sk, i, FRESH, p_basic * factor, Q);
 
-        auto decomp = cc.EvalDecomp(ct1, Q);
+        auto decomp = cc.EvalDecomp(ct1);
         ct1         = decomp[1];
 
         LWEPlaintext result;
@@ -191,7 +191,7 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
     for (int i = st; i < st + 8; i++) {
         auto ct1 = cc.Encrypt(sk, i, FRESH, p_basic * factor, Q);
 
-        auto decomp = cc.EvalDecomp(ct1, Q);
+        auto decomp = cc.EvalDecomp(ct1);
         ct1         = decomp[1];
 
         LWEPlaintext result;

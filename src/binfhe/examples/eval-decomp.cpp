@@ -75,7 +75,7 @@ int main() {
 
     // Sample Program: Step 4: Evaluation
     // Decompose the large ciphertext into small ciphertexts that fit in q
-    auto decomp = cc.EvalDecomp(ct1, Q);
+    auto decomp = cc.EvalDecomp(ct1);
 
     // Sample Program: Step 5: Decryption
     p = cc.GetMaxPlaintextSpace().ConvertToInt();

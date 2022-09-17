@@ -307,15 +307,15 @@ LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext ct1, const uint32_t ro
     return res;
 }
 
-LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext ct1, const NativeInteger bigger_q) {
+LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext ct1) {
     auto params        = std::make_shared<BinFHECryptoParams>(*m_params);
     NativeInteger beta = GetBeta();
-    return m_binfhescheme->EvalSign(params, m_BTKey_map, ct1, beta, bigger_q);
+    return m_binfhescheme->EvalSign(params, m_BTKey_map, ct1, beta);
 }
 
-std::vector<LWECiphertext> BinFHEContext::EvalDecomp(ConstLWECiphertext ct1, const NativeInteger bigger_q) {
+std::vector<LWECiphertext> BinFHEContext::EvalDecomp(ConstLWECiphertext ct1) {
     NativeInteger beta = GetBeta();
-    return m_binfhescheme->EvalDecomp(m_params, m_BTKey_map, ct1, beta, bigger_q);
+    return m_binfhescheme->EvalDecomp(m_params, m_BTKey_map, ct1, beta);
 }
 
 std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p),

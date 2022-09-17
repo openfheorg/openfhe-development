@@ -266,7 +266,7 @@ public:
    * @param ct1 ciphertext to be bootstrapped
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalSign(ConstLWECiphertext ct1, const NativeInteger bigger_q = 0);
+    LWECiphertext EvalSign(ConstLWECiphertext ct1);
 
     /**
    * Evaluate ciphertext decomposition
@@ -274,7 +274,7 @@ public:
    * @param ct1 ciphertext to be bootstrapped
    * @return a vector of shared pointers to the resulting ciphertexts
    */
-    std::vector<LWECiphertext> EvalDecomp(ConstLWECiphertext ct1, const NativeInteger bigger_q = 0);
+    std::vector<LWECiphertext> EvalDecomp(ConstLWECiphertext ct1);
 
     /**
    * Evaluates NOT gate
