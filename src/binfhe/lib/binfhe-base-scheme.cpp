@@ -109,7 +109,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
         // Modulus switching to a middle step Q'
         auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
         // Key switching
-        auto ctKS = LWEscheme->KeySwitch(EK.KSkey, ctMS);
+        auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
         // Modulus switching
         return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
     }
@@ -139,7 +139,7 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> 
     // Modulus switching to a middle step Q'
     auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
     // Key switching
-    auto ctKS = LWEscheme->KeySwitch(EK.KSkey, ctMS);
+    auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
     // Modulus switching
     return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
 }
@@ -604,7 +604,7 @@ LWECiphertext BinFHEScheme::BootstrapFunc(const std::shared_ptr<BinFHECryptoPara
     // Modulus switching to a middle step Q'
     auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
     // Key switching
-    auto ctKS = LWEscheme->KeySwitch(EK.KSkey, ctMS);
+    auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
     // Modulus switching
     return LWEscheme->ModSwitch(mod, ctKS);
 }

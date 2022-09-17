@@ -178,9 +178,8 @@ LWECiphertext LWEEncryptionScheme::ModSwitch(NativeInteger q, ConstLWECiphertext
 LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk,
                                                   ConstLWEPrivateKey skN) const {
     // Create local copies of main variables
-    uint32_t n = sk->GetLength();
-    uint32_t N = skN->GetLength();
-
+    uint32_t n      = params->Getn();
+    uint32_t N      = params->GetN();
     NativeInteger Q = params->GetqKS();
     uint32_t baseKS = params->GetBaseKS();
     // Number of digits in representing numbers mod Q
@@ -251,16 +250,17 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
         resultVecB[i] = std::move(vector1B);
     }
 
-    return std::make_shared<LWESwitchingKeyImpl>(LWESwitchingKeyImpl(resultVecA, resultVecB, Q, n, N, baseKS));
+    return std::make_shared<LWESwitchingKeyImpl>(LWESwitchingKeyImpl(resultVecA, resultVecB));
 }
 
 // the key switching operation as described in Section 3 of
 // https://eprint.iacr.org/2014/816
-LWECiphertext LWEEncryptionScheme::KeySwitch(ConstLWESwitchingKey K, ConstLWECiphertext ctQN) const {
-    uint32_t n          = K->GetLengthFrom();
-    uint32_t N          = K->GetLengthTo();
-    NativeInteger Q     = K->GetModulusTo();
-    uint32_t baseKS     = K->GetBase();
+LWECiphertext LWEEncryptionScheme::KeySwitch(const std::shared_ptr<LWECryptoParams> params, ConstLWESwitchingKey K,
+                                             ConstLWECiphertext ctQN) const {
+    uint32_t n          = params->Getn();
+    uint32_t N          = params->GetN();
+    NativeInteger Q     = params->GetqKS();
+    uint32_t baseKS     = params->GetBaseKS();
     uint32_t digitCount = (uint32_t)std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(baseKS)));
 
     // creates an empty vector
