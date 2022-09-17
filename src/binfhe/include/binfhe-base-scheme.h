@@ -108,7 +108,7 @@ public:
    * @param ct1 the input ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalNOT(const std::shared_ptr<BinFHECryptoParams> params, ConstLWECiphertext ct1) const;
+    LWECiphertext EvalNOT(const std::shared_ptr<BinFHECryptoParams> params, ConstLWECiphertext ct) const;
 
     /**
    * Bootstraps a fresh ciphertext
@@ -120,7 +120,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext Bootstrap(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                            ConstLWECiphertext ct1) const;
+                            ConstLWECiphertext ct) const;
 
     /**
    * Evaluate an arbitrary function
@@ -135,7 +135,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalFunc(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                           ConstLWECiphertext ct1, const std::vector<NativeInteger>& LUT, const NativeInteger beta,
+                           ConstLWECiphertext ct, const std::vector<NativeInteger>& LUT, const NativeInteger beta,
                            const NativeInteger bigger_q) const;
 
     /**
@@ -150,7 +150,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalFloor(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                            ConstLWECiphertext ct1, const NativeInteger beta, const NativeInteger bigger_q) const;
+                            ConstLWECiphertext ct, const NativeInteger beta, const NativeInteger bigger_q) const;
 
     /**
    * Evaluate a sign function over large precision
@@ -164,7 +164,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalSign(const std::shared_ptr<BinFHECryptoParams> params,
-                           const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct1,
+                           const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct,
                            const NativeInteger beta) const;
 
     /**
@@ -179,7 +179,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     std::vector<LWECiphertext> EvalDecomp(const std::shared_ptr<BinFHECryptoParams> params,
-                                          const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct1,
+                                          const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct,
                                           const NativeInteger beta) const;
 
 private:
@@ -209,9 +209,8 @@ private:
    * @return a shared pointer to the resulting ciphertext
    */
     template <typename Func>
-    RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                                     const RingGSWACCKey ek, ConstLWECiphertext ct, const Func f,
-                                     const NativeInteger bigger_q) const;
+    RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWACCKey ek,
+                                     ConstLWECiphertext ct, const Func f, const NativeInteger bigger_q) const;
 
     /**
    * Bootstraps a fresh ciphertext
@@ -226,7 +225,7 @@ private:
    */
     template <typename Func>
     LWECiphertext BootstrapFunc(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                                ConstLWECiphertext ct1, const Func f, const NativeInteger bigger_q) const;
+                                ConstLWECiphertext ct, const Func f, const NativeInteger bigger_q) const;
 
 protected:
     std::shared_ptr<LWEEncryptionScheme> LWEscheme;
