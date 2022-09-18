@@ -277,7 +277,7 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
 LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
                                       ConstLWECiphertext ct, const NativeInteger beta, const uint32_t roundbits) const {
     auto& LWEParams   = params->GetLWEParams();
-    NativeInteger q   = LWEParams->Getq();
+    NativeInteger q   = roundbits == 0 ? LWEParams->Getq() : beta * 2 * (1 << roundbits);
     NativeInteger mod = ct->GetModulus();
 
     auto ct1 = std::make_shared<LWECiphertextImpl>(*ct);
@@ -294,8 +294,6 @@ LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams> 
     };
     auto ct2 = BootstrapFunc(params, EK, ct1Modq, f1, mod);
     LWEscheme->EvalSubEq(ct1, ct2);
-    LWEscheme->EvalAddConstEq(ct1, beta);
-    LWEscheme->EvalSubConstEq(ct1, q >> 2);
 
     auto ct2Modq = std::make_shared<LWECiphertextImpl>(*ct1);
     ct2Modq->SetModulus(q);

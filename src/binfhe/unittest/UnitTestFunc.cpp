@@ -90,7 +90,7 @@ TEST(UnitTestFHEWGINX, EvalFloorFunc) {
         LWEPlaintext result;
 
         cc.Decrypt(sk, ctRounded, &result, p / 2);
-
+        //        std::cerr << "i: " << i << ", f=" << (i / 2) << ", r=" << result << std::endl;
         std::string failed = "Floor Function Evalution failed";
         EXPECT_EQ(usint(i / 2), result) << failed;
     }
@@ -115,6 +115,7 @@ TEST(UnitTestFHEWGINX, EvalSignFuncTime) {
         ct1      = cc.EvalSign(ct1);
         LWEPlaintext result;
         cc.Decrypt(sk, ct1, &result, 2);
+        // std::cerr << "i: " << i << ", f=" << (i >= 3) << ", r=" << result << std::endl;
         EXPECT_EQ(usint(i >= 3), result) << failed;
     }
 }
