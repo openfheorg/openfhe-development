@@ -135,8 +135,8 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalFunc(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                           ConstLWECiphertext ct, const std::vector<NativeInteger>& LUT, const NativeInteger beta,
-                           const NativeInteger bigger_q) const;
+                           ConstLWECiphertext ct, const std::vector<NativeInteger>& LUT,
+                           const NativeInteger beta) const;
 
     /**
    * Evaluate a round down function
@@ -150,7 +150,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalFloor(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                            ConstLWECiphertext ct, const NativeInteger beta) const;
+                            ConstLWECiphertext ct, const NativeInteger beta, const uint32_t roundbits = 0) const;
 
     /**
    * Evaluate a sign function over large precision
@@ -210,7 +210,7 @@ private:
    */
     template <typename Func>
     RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWACCKey ek,
-                                     ConstLWECiphertext ct, const Func f, const NativeInteger bigger_q) const;
+                                     ConstLWECiphertext ct, const Func f, const NativeInteger fmod) const;
 
     /**
    * Bootstraps a fresh ciphertext
@@ -225,7 +225,7 @@ private:
    */
     template <typename Func>
     LWECiphertext BootstrapFunc(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                                ConstLWECiphertext ct, const Func f, const NativeInteger bigger_q) const;
+                                ConstLWECiphertext ct, const Func f, const NativeInteger fmod) const;
 
 protected:
     std::shared_ptr<LWEEncryptionScheme> LWEscheme;

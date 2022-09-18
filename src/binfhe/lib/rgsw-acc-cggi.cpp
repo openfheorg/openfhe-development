@@ -38,19 +38,19 @@ namespace lbcrypto {
 // Key generation as described in Section 4 of https://eprint.iacr.org/2014/816
 RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params,
                                                 const NativePoly& skNTT, ConstLWEPrivateKey LWEsk) const {
-    int32_t qInt  = (int32_t)params->Getq().ConvertToInt();
-    int32_t qHalf = qInt >> 1;
-    auto sv       = LWEsk->GetElement();
-    uint32_t n    = sv.GetLength();
-    auto ek       = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);
+    auto sv         = LWEsk->GetElement();
+    int32_t mod     = sv.GetModulus().ConvertToInt();
+    int32_t modHalf = mod >> 1;
+    uint32_t n      = sv.GetLength();
+    auto ek         = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);
 
     // handles ternary secrets using signed mod 3 arithmetic; 0 -> {0,0}, 1 ->
     // {1,0}, -1 -> {0,1}
 #pragma omp parallel for
     for (uint32_t i = 0; i < n; ++i) {
         int32_t s = (int32_t)sv[i].ConvertToInt();
-        if (s > qHalf) {
-            s -= qInt;
+        if (s > modHalf) {
+            s -= mod;
         }
 
         switch (s) {
@@ -77,12 +77,14 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCry
 
 void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
                                      RLWECiphertext& acc, const NativeVector& a) const {
-    auto q     = params->Getq();
-    uint32_t n = a.GetLength();
+    auto mod        = a.GetModulus();
+    uint32_t n      = a.GetLength();
+    uint32_t M      = 2 * params->GetN();
+    uint32_t modInt = mod.ConvertToInt();
 
     for (uint32_t i = 0; i < n; i++) {
         // handles -a*E(1) and handles -a*E(-1) = a*E(1)
-        AddToAccCGGI(params, (*ek)[0][0][i], (*ek)[0][1][i], q.ModSub(a[i], q), acc);
+        AddToAccCGGI(params, (*ek)[0][0][i], (*ek)[0][1][i], mod.ModSub(a[i], mod) * (M / modInt), acc);
     }
 }
 
@@ -134,9 +136,9 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
 void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek1,
                                           const RingGSWEvalKey ek2, const NativeInteger& a, RLWECiphertext& acc) const {
     // cycltomic order
-    uint32_t m        = 2 * params->GetN();
+    uint64_t MInt = 2 * params->GetN();
+    NativeInteger M(MInt);
     uint32_t digitsG2 = params->GetDigitsG() << 1;
-    int64_t q         = params->Getq().ConvertToInt();
     auto polyParams   = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements();
@@ -156,16 +158,16 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
         dct[j].SetFormat(Format::EVALUATION);
 
     // First obtain both monomial(index) for sk = 1 and monomial(-index) for sk = -1
-    auto aNeg         = params->Getq().ModSub(a, q);
-    uint64_t index    = a.ConvertToInt() * (m / q);
-    uint64_t indexNeg = aNeg.ConvertToInt() * (m / q);
+    auto aNeg         = M.ModSub(a, M);
+    uint64_t indexPos = a.ConvertToInt();
+    uint64_t indexNeg = aNeg.ConvertToInt();
     // index is in range [0,m] - so we need to adjust the edge case when
     // index = m to index = 0
-    if (index == m)
-        index = 0;
-    if (indexNeg == m)
+    if (indexPos == MInt)
+        indexPos = 0;
+    if (indexNeg == MInt)
         indexNeg = 0;
-    const NativePoly& monomial    = params->GetMonomial(index);
+    const NativePoly& monomial    = params->GetMonomial(indexPos);
     const NativePoly& monomialNeg = params->GetMonomial(indexNeg);
 
     // acc = acc + dct * ek1 * monomial + dct * ek2 * negative_monomial;

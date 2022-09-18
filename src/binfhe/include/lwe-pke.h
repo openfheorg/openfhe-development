@@ -67,7 +67,7 @@ public:
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk, const LWEPlaintext& m,
-                          const LWEPlaintextModulus& p = 4) const;
+                          const LWEPlaintextModulus& p = 4, const NativeInteger& mod = 0) const;
 
     /**
    * Decrypts the ciphertext using secret key sk
@@ -92,8 +92,6 @@ public:
     void EvalSubConstEq(LWECiphertext& ct, NativeInteger cnst) const;
 
     void EvalMultConstEq(LWECiphertext& ct, NativeInteger cnst) const;
-
-    void SetModulus(LWECiphertext& ct, NativeInteger mod) const;
 
     /**
    * Changes an LWE ciphertext modulo Q into an LWE ciphertext modulo q

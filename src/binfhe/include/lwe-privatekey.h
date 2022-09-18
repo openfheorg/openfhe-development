@@ -120,10 +120,6 @@ public:
     static uint32_t SerializedVersion() {
         return 1;
     }
-    void switchModulus(NativeInteger q) {
-        m_s.Mod(q);
-        m_s.SetModulus(q);
-    }
 
 private:
     NativeVector m_s;

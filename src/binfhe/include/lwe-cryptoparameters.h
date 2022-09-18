@@ -192,10 +192,6 @@ public:
         return 1;
     }
 
-    void SetQ(NativeInteger q) {
-        m_q = q;
-    }
-
 private:
     // lattice parameter for the additive LWE scheme
     uint32_t m_n;

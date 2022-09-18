@@ -38,12 +38,13 @@ namespace lbcrypto {
 // Key generation as described in Section 4 of https://eprint.iacr.org/2014/816
 RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params,
                                               const NativePoly& skNTT, ConstLWEPrivateKey LWEsk) const {
-    int32_t qInt  = (int32_t)params->Getq().ConvertToInt();
-    int32_t qHalf = qInt >> 1;
+    auto sv     = LWEsk->GetElement();
+    int32_t mod = sv.GetModulus().ConvertToInt();
+
+    int32_t modHalf = mod >> 1;
 
     uint32_t baseR                            = params->GetBaseR();
     const std::vector<NativeInteger>& digitsR = params->GetDigitsR();
-    const NativeVector& sv                    = LWEsk->GetElement();
     uint32_t n                                = sv.GetLength();
     RingGSWACCKey ek                          = std::make_shared<RingGSWACCKeyImpl>(n, baseR, digitsR.size());
 
@@ -52,8 +53,8 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCrypt
         for (uint32_t j = 1; j < baseR; ++j) {
             for (uint32_t k = 0; k < digitsR.size(); ++k) {
                 int32_t s = (int32_t)sv[i].ConvertToInt();
-                if (s > qHalf) {
-                    s -= qInt;
+                if (s > modHalf) {
+                    s -= mod;
                 }
 
                 (*ek)[i][j][k] = KeyGenDM(params, skNTT, s * (int32_t)j * (int32_t)digitsR[k].ConvertToInt());

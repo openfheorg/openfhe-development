@@ -260,10 +260,6 @@ public:
         return 1;
     }
 
-    void SetQ(NativeInteger q) {
-        m_q = q;
-    }
-
     void Change_BaseG(uint32_t BaseG) {
         if (m_baseG != BaseG) {
             m_baseG   = BaseG;

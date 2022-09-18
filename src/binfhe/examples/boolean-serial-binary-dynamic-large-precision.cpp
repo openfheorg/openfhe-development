@@ -56,10 +56,10 @@ int main() {
     std::cout << "Generating keys." << std::endl;
 
     // Generating the secret key
-    auto sk1 = cc1.KeyGen(Q);
+    auto sk1 = cc1.KeyGen();
 
     // Generate the bootstrapping keys
-    cc1.BTKeyGen(sk1, Q);
+    cc1.BTKeyGen(sk1);
 
     std::cout << "Done generating all keys." << std::endl;
 
@@ -204,7 +204,7 @@ int main() {
         ct1 = cc.EvalSign(ct1);
 
         LWEPlaintext result;
-        cc.Decrypt(sk, ct1, &result, 2, q);
+        cc.Decrypt(sk, ct1, &result, 2);
         std::cout << "Input: " << i << ". Expected sign: " << (i >= 3)
                   << ". "
                      "Evaluated Sign: "

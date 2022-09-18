@@ -46,33 +46,34 @@ LWEPrivateKey LWEEncryptionScheme::KeyGen(usint size, const NativeInteger& modul
 // a is a randomly uniform vector of dimension n; with integers mod q
 // b = a*s + e + m floor(q/4) is an integer mod q
 LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk,
-                                           const LWEPlaintext& m, const LWEPlaintextModulus& p) const {
-    NativeInteger q = sk->GetElement().GetModulus();
-    uint32_t n      = sk->GetElement().GetLength();
-
-    if (q % p != 0 && q.ConvertToInt() & (1 == 0)) {
+                                           const LWEPlaintext& m, const LWEPlaintextModulus& p,
+                                           const NativeInteger& mod) const {
+    if (mod % p != 0 && mod.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
-    NativeInteger b = (m % p) * (q / p) + params->GetDgg().GenerateInteger(q);
+    NativeVector s = sk->GetElement();
+    uint32_t n     = s.GetLength();
+    s.SwitchModulus(mod);
+
+    NativeInteger b = (m % p) * (mod / p) + params->GetDgg().GenerateInteger(mod);
 
 #if defined(BINFHE_DEBUG)
-    std::cout << b % q << std::endl;
-    std::cout << (m % p) * (q / p) << std::endl;
+    std::cout << b % mod << std::endl;
+    std::cout << (m % p) * (mod / p) << std::endl;
 #endif
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(q);
+    dug.SetModulus(mod);
     NativeVector a = dug.GenerateVector(n);
 
-    NativeInteger mu = q.ComputeMu();
+    NativeInteger mu = mod.ComputeMu();
 
-    const NativeVector& s = sk->GetElement();
     for (uint32_t i = 0; i < n; ++i) {
-        b += a[i].ModMulFast(s[i], q, mu);
+        b += a[i].ModMulFast(s[i], mod, mu);
     }
-    b.ModEq(q);
+    b.ModEq(mod);
 
     return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
 }
@@ -85,40 +86,40 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params,
     // the ct parameters
 
     // Create local variables to speed up the computations
-    NativeVector a  = ct->GetA();
-    uint32_t n      = sk->GetElement().GetLength();
-    NativeVector s  = sk->GetElement();
-    NativeInteger q = sk->GetElement().GetModulus();
-
-    if (q % (p * 2) != 0 && q.ConvertToInt() & (1 == 0)) {
+    const NativeInteger& mod = ct->GetModulus();
+    if (mod % (p * 2) != 0 && mod.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p*2.";
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
-    NativeInteger mu = q.ComputeMu();
-
+    NativeVector a   = ct->GetA();
+    NativeVector s   = sk->GetElement();
+    uint32_t n       = s.GetLength();
+    NativeInteger mu = mod.ComputeMu();
+    s.SwitchModulus(mod);
     NativeInteger inner(0);
     for (uint32_t i = 0; i < n; ++i) {
-        inner += a[i].ModMulFast(s[i], q, mu);
+        inner += a[i].ModMulFast(s[i], mod, mu);
     }
-    inner.ModEq(q);
+    inner.ModEq(mod);
 
     NativeInteger r = ct->GetB();
 
-    r.ModSubFastEq(inner, q);
+    r.ModSubFastEq(inner, mod);
 
     // Alternatively, rounding can be done as
     // *result = (r.MultiplyAndRound(NativeInteger(4),q)).ConvertToInt();
     // But the method below is a more efficient way of doing the rounding
     // the idea is that Round(4/q x) = q/8 + Floor(4/q x)
-    r.ModAddFastEq((q / (p * 2)), q);
-    *result = ((NativeInteger(p) * r) / q).ConvertToInt();
+    r.ModAddFastEq((mod / (p * 2)), mod);
+    *result = ((NativeInteger(p) * r) / mod).ConvertToInt();
 
 #if defined(BINFHE_DEBUG)
-    double error = (static_cast<double>(p) * (r.ConvertToDouble() - q.ConvertToInt() / (p * 2))) / q.ConvertToDouble() -
-                   static_cast<double>(*result);
-    std::cerr << q << " " << p << " " << r << " error:\t" << error << std::endl;
-    std::cerr << error * q.ConvertToDouble() / static_cast<double>(p) << std::endl;
+    double error =
+        (static_cast<double>(p) * (r.ConvertToDouble() - mod.ConvertToInt() / (p * 2))) / mod.ConvertToDouble() -
+        static_cast<double>(*result);
+    std::cerr << mod << " " << p << " " << r << " error:\t" << error << std::endl;
+    std::cerr << error * mod.ConvertToDouble() / static_cast<double>(p) << std::endl;
 #endif
 
     return;
@@ -152,18 +153,10 @@ void LWEEncryptionScheme::EvalMultConstEq(LWECiphertext& ct1, NativeInteger cnst
     ct1->GetB().ModMulFastEq(cnst, ct1->GetModulus());
 }
 
-void LWEEncryptionScheme::SetModulus(LWECiphertext& ct, NativeInteger mod) const {
-    if (ct->GetModulus() != mod) {
-        ct->GetA().ModEq(mod);
-        ct->GetA().SwitchModulus(mod);
-        ct->GetB().ModEq(mod);
-    }
-}
-
 // Modulus switching - directly applies the scale-and-round operation RoundQ
 LWECiphertext LWEEncryptionScheme::ModSwitch(NativeInteger q, ConstLWECiphertext ctQ) const {
-    auto n = ctQ->GetA().GetLength();
-    auto Q = ctQ->GetA().GetModulus();
+    auto n = ctQ->GetLength();
+    auto Q = ctQ->GetModulus();
     NativeVector a(n, q);
 
     for (uint32_t i = 0; i < n; ++i)
@@ -178,12 +171,12 @@ LWECiphertext LWEEncryptionScheme::ModSwitch(NativeInteger q, ConstLWECiphertext
 LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk,
                                                   ConstLWEPrivateKey skN) const {
     // Create local copies of main variables
-    uint32_t n      = params->Getn();
-    uint32_t N      = params->GetN();
-    NativeInteger Q = params->GetqKS();
-    uint32_t baseKS = params->GetBaseKS();
-    // Number of digits in representing numbers mod Q
-    uint32_t digitCount = (uint32_t)std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(baseKS)));
+    uint32_t n        = params->Getn();
+    uint32_t N        = params->GetN();
+    NativeInteger qKS = params->GetqKS();
+    uint32_t baseKS   = params->GetBaseKS();
+    // Number of digits in representing numbers mod qKS
+    uint32_t digitCount = (uint32_t)std::ceil(log(qKS.ConvertToDouble()) / log(static_cast<double>(baseKS)));
     std::vector<NativeInteger> digitsKS;
     // Populate digits
     NativeInteger value = 1;
@@ -194,24 +187,25 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
 
     // newSK stores negative values using modulus q
     // we need to switch to modulus Q
-    NativeVector newSK = sk->GetElement();
-    newSK.SwitchModulus(Q);
+    NativeVector sv = sk->GetElement();
+    sv.SwitchModulus(qKS);
 
-    NativeVector oldSKlargeQ = skN->GetElement();
-    NativeVector oldSK(oldSKlargeQ.GetLength(), Q);
-    for (size_t i = 0; i < oldSK.GetLength(); i++) {
-        if ((oldSKlargeQ[i] == 0) || (oldSKlargeQ[i] == 1)) {
-            oldSK[i] = oldSKlargeQ[i];
-        }
-        else {
-            oldSK[i] = Q - 1;
-        }
-    }
+    NativeVector svN = skN->GetElement();
+    svN.SwitchModulus(qKS);
+    //    NativeVector oldSK(oldSKlargeQ.GetLength(), qKS);
+    //    for (size_t i = 0; i < oldSK.GetLength(); i++) {
+    //        if ((oldSKlargeQ[i] == 0) || (oldSKlargeQ[i] == 1)) {
+    //            oldSK[i] = oldSKlargeQ[i];
+    //        }
+    //        else {
+    //            oldSK[i] = qKS - 1;
+    //        }
+    //    }
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
-    dug.SetModulus(Q);
+    dug.SetModulus(qKS);
 
-    NativeInteger mu = Q.ComputeMu();
+    NativeInteger mu = qKS.ComputeMu();
 
     std::vector<std::vector<std::vector<NativeVector>>> resultVecA(N);
     std::vector<std::vector<std::vector<NativeInteger>>> resultVecB(N);
@@ -225,19 +219,19 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
             std::vector<NativeInteger> vector2B(digitCount);
             for (uint32_t k = 0; k < digitCount; ++k) {
                 NativeInteger b =
-                    (params->GetDggKS().GenerateInteger(Q)).ModAdd(oldSK[i].ModMul(j * digitsKS[k], Q), Q);
+                    (params->GetDggKS().GenerateInteger(qKS)).ModAdd(svN[i].ModMul(j * digitsKS[k], qKS), qKS);
 
                 NativeVector a = dug.GenerateVector(n);
 
 #if NATIVEINT == 32
                 for (uint32_t i = 0; i < n; ++i) {
-                    b.ModAddFastEq(a[i].ModMulFast(newSK[i], Q, mu), Q);
+                    b.ModAddFastEq(a[i].ModMulFast(sv[i], qKS, mu), qKS);
                 }
 #else
                 for (uint32_t i = 0; i < n; ++i) {
-                    b += a[i].ModMulFast(newSK[i], Q, mu);
+                    b += a[i].ModMulFast(sv[i], qKS, mu);
                 }
-                b.ModEq(Q);
+                b.ModEq(qKS);
 #endif
 
                 vector2A[k] = std::move(a);

@@ -134,7 +134,7 @@ public:
    * @param DiffQ Keygen according to DiffQ instead of m_q if DiffQ != 0
    * @return a shared pointer to the secret key
    */
-    LWEPrivateKey KeyGen(NativeInteger modulus = 0) const;
+    LWEPrivateKey KeyGen() const;
 
     /**
    * Generates a secret key used in bootstrapping
@@ -150,11 +150,11 @@ public:
    * @param output - FRESH to generate fresh ciphertext, BOOTSTRAPPED to
    * generate a refreshed ciphertext (default)
    * @param p - plaintext modulus
-   * @param DiffQ Encrypt according to DiffQ instead of m_q if DiffQ != 0
+   * @param mod Encrypt according to mod instead of m_q if mod != 0
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHEOUTPUT output = BOOTSTRAPPED,
-                          LWEPlaintextModulus p = 4, NativeInteger DiffQ = 0) const;
+                          LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
 
     /**
    * Decrypts a ciphertext using a secret key
@@ -165,8 +165,7 @@ public:
    * @param p - plaintext modulus
    * @param DiffQ Decrypt according to DiffQ instead of m_q if DiffQ != 0
    */
-    void Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct, LWEPlaintext* result, LWEPlaintextModulus p = 4,
-                 NativeInteger DiffQ = 0) const;
+    void Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct, LWEPlaintext* result, LWEPlaintextModulus p = 4) const;
 
     /**
    * Generates a switching key to go from a secret key with (Q,N) to a secret
@@ -184,7 +183,7 @@ public:
    * @param sk secret key
    * @param DiffQ BTKeyGen according to DiffQ instead of m_q if DiffQ != 0
    */
-    void BTKeyGen(ConstLWEPrivateKey sk, NativeInteger DiffQ = 0);
+    void BTKeyGen(ConstLWEPrivateKey sk);
 
     /**
    * Loads bootstrapping keys in the context (typically after deserializing)
@@ -323,11 +322,6 @@ public:
     }
     static uint32_t SerializedVersion() {
         return 1;
-    }
-
-    void SetQ(NativeInteger q) const {
-        m_params->GetLWEParams()->SetQ(q);
-        m_params->GetRingGSWParams()->SetQ(q);
     }
 
     NativeInteger GetMaxPlaintextSpace() const {

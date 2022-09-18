@@ -124,6 +124,12 @@ public:
         m_b = b;
     }
 
+    void SetModulus(const NativeInteger& mod) {
+        m_a.ModEq(mod);
+        m_a.SetModulus(mod);
+        m_b.ModEq(mod);
+    }
+
     bool operator==(const LWECiphertextImpl& other) const {
         return m_a == other.m_a && m_b == other.m_b;
     }
