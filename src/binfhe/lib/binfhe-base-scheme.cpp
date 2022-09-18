@@ -315,9 +315,9 @@ LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams> 
 
 // Evaluate large-precision sign
 LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams> params,
-                                     const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct1,
+                                     const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct,
                                      const NativeInteger beta) const {
-    auto mod         = ct1->GetModulus();
+    auto mod         = ct->GetModulus();
     auto& LWEParams  = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
 
@@ -337,12 +337,12 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams> p
     }
     RingGSWBTKey curEK(search->second);
 
-    auto cttmp = std::make_shared<LWECiphertextImpl>(*ct1);
+    auto cttmp = std::make_shared<LWECiphertextImpl>(*ct);
     while (mod > q) {
         cttmp = EvalFloor(params, curEK, cttmp, beta);
         mod   = mod / q * 2 * beta;
         // round Q to 2betaQ/q
-        LWEscheme->ModSwitch(mod, cttmp);
+        cttmp = LWEscheme->ModSwitch(mod, cttmp);
 
         if (EKs.size() == 3) {  // if dynamic
             uint32_t base = 0;
@@ -366,22 +366,20 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams> p
     LWEscheme->EvalAddConstEq(cttmp, beta);
 
     // if the ended q is smaller than q, we need to change the param for the final boostrapping
-    auto f3 = [](NativeInteger m, NativeInteger q, NativeInteger Q) -> NativeInteger {
-        return (m < q / 2) ? (Q / 4) : (Q - Q / 4);
+    auto f3 = [](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
+        return (x < q / 2) ? (Q / 4) : (Q - Q / 4);
     };
-    cttmp = BootstrapFunc(params, curEK, cttmp, f3, mod);  // this is 1/4q_small or -1/4q_small mod q
+    cttmp = BootstrapFunc(params, curEK, cttmp, f3, q);  // this is 1/4q_small or -1/4q_small mod q
     RGSWParams->Change_BaseG(curBase);
-
-    cttmp->SetModulus(q);
     LWEscheme->EvalSubConstEq(cttmp, q >> 2);
     return cttmp;
 }
 
 // Evaluate Ciphertext Decomposition
 std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHECryptoParams> params,
-                                                    const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct1,
+                                                    const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext ct,
                                                     const NativeInteger beta) const {
-    auto mod         = ct1->GetModulus();
+    auto mod         = ct->GetModulus();
     auto& LWEParams  = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
 
@@ -400,16 +398,18 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
     }
     RingGSWBTKey curEK(search->second);
 
-    auto cttmp = std::make_shared<LWECiphertextImpl>(*ct1);
+    auto cttmp = std::make_shared<LWECiphertextImpl>(*ct);
     std::vector<LWECiphertext> ret;
     while (mod > q) {
-        ret.push_back(std::make_shared<LWECiphertextImpl>(*cttmp));
+        auto ctq = std::make_shared<LWECiphertextImpl>(*cttmp);
+        ctq->SetModulus(q);
+        ret.push_back(std::move(ctq));
 
         // Floor the input sequentially to obtain the most significant bit
         cttmp = EvalFloor(params, curEK, cttmp, beta);
         mod   = mod / q * 2 * beta;
         // round Q to 2betaQ/q
-        LWEscheme->ModSwitch(mod, cttmp);
+        cttmp = LWEscheme->ModSwitch(mod, cttmp);
 
         if (EKs.size() == 3) {  // if dynamic
             uint32_t base = 0;
@@ -432,15 +432,13 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
     }
     LWEscheme->EvalAddConstEq(cttmp, beta);
 
-    auto f3 = [](NativeInteger m, NativeInteger q, NativeInteger Q) -> NativeInteger {
-        return (m < q / 2) ? (Q / 4) : (Q - Q / 4);
+    auto f3 = [](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
+        return (x < q / 2) ? (Q / 4) : (Q - Q / 4);
     };
-
-    cttmp = BootstrapFunc(params, curEK, cttmp, f3, mod);  // this is 1/4q_small or -1/4q_small mod q
+    cttmp = BootstrapFunc(params, curEK, cttmp, f3, q);  // this is 1/4q_small or -1/4q_small mod q
     RGSWParams->Change_BaseG(curBase);
-    cttmp->SetModulus(q);
     LWEscheme->EvalSubConstEq(cttmp, q >> 2);
-    ret.push_back(std::make_shared<LWECiphertextImpl>(*cttmp));
+    ret.push_back(std::move(cttmp));
     return ret;
 }
 
