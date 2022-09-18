@@ -230,7 +230,7 @@ public:
    * @param ct1 ciphertext to be bootstrapped
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext Bootstrap(ConstLWECiphertext ct1) const;
+    LWECiphertext Bootstrap(ConstLWECiphertext ct) const;
 
     /**
    * Evaluate an arbitrary function
@@ -239,7 +239,7 @@ public:
    * @param LUT the look-up table of the to-be-evaluated function
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalFunc(ConstLWECiphertext ct1, const std::vector<NativeInteger>& LUT) const;
+    LWECiphertext EvalFunc(ConstLWECiphertext ct, const std::vector<NativeInteger>& LUT) const;
 
     /**
    * Generate the LUT for the to-be-evaluated function
@@ -258,7 +258,7 @@ public:
    * @param roundbits number of bits to be rounded
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalFloor(ConstLWECiphertext ct1, const uint32_t roundbits = 0) const;
+    LWECiphertext EvalFloor(ConstLWECiphertext ct, const uint32_t roundbits = 0) const;
 
     /**
    * Evaluate a sign function over large precisions
@@ -266,7 +266,7 @@ public:
    * @param ct1 ciphertext to be bootstrapped
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalSign(ConstLWECiphertext ct1);
+    LWECiphertext EvalSign(ConstLWECiphertext ct);
 
     /**
    * Evaluate ciphertext decomposition
@@ -274,7 +274,7 @@ public:
    * @param ct1 ciphertext to be bootstrapped
    * @return a vector of shared pointers to the resulting ciphertexts
    */
-    std::vector<LWECiphertext> EvalDecomp(ConstLWECiphertext ct1);
+    std::vector<LWECiphertext> EvalDecomp(ConstLWECiphertext ct);
 
     /**
    * Evaluates NOT gate
@@ -282,7 +282,7 @@ public:
    * @param ct1 the input ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalNOT(ConstLWECiphertext ct1) const;
+    LWECiphertext EvalNOT(ConstLWECiphertext ct) const;
 
     /**
    * Evaluates constant gate

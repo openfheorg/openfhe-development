@@ -150,7 +150,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalFloor(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                            ConstLWECiphertext ct, const NativeInteger beta, const NativeInteger bigger_q) const;
+                            ConstLWECiphertext ct, const NativeInteger beta) const;
 
     /**
    * Evaluate a sign function over large precision

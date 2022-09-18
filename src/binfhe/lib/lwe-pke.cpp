@@ -155,7 +155,7 @@ void LWEEncryptionScheme::EvalMultConstEq(LWECiphertext& ct1, NativeInteger cnst
 void LWEEncryptionScheme::SetModulus(LWECiphertext& ct, NativeInteger mod) const {
     if (ct->GetModulus() != mod) {
         ct->GetA().ModEq(mod);
-        ct->GetA().SetModulus(mod);
+        ct->GetA().SwitchModulus(mod);
         ct->GetB().ModEq(mod);
     }
 }

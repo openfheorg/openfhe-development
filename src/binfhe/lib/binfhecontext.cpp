@@ -278,8 +278,8 @@ LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext 
     return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2);
 }
 
-LWECiphertext BinFHEContext::Bootstrap(ConstLWECiphertext ct1) const {
-    return m_binfhescheme->Bootstrap(m_params, m_BTKey, ct1);
+LWECiphertext BinFHEContext::Bootstrap(ConstLWECiphertext ct) const {
+    return m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
 }
 
 LWECiphertext BinFHEContext::EvalNOT(ConstLWECiphertext ct) const {
@@ -290,32 +290,32 @@ LWECiphertext BinFHEContext::EvalConstant(bool value) const {
     return m_LWEscheme->NoiselessEmbedding(m_params->GetLWEParams(), value);
 }
 
-LWECiphertext BinFHEContext::EvalFunc(ConstLWECiphertext ct1, const std::vector<NativeInteger>& LUT) const {
+LWECiphertext BinFHEContext::EvalFunc(ConstLWECiphertext ct, const std::vector<NativeInteger>& LUT) const {
     NativeInteger beta = GetBeta();
-    return m_binfhescheme->EvalFunc(m_params, m_BTKey, ct1, LUT, beta, 0);
+    return m_binfhescheme->EvalFunc(m_params, m_BTKey, ct, LUT, beta, 0);
 }
 
-LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext ct1, const uint32_t roundbits) const {
+LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext ct, const uint32_t roundbits) const {
     auto q = m_params->GetLWEParams()->Getq().ConvertToInt();
     if (roundbits != 0) {
         NativeInteger newp = this->GetMaxPlaintextSpace();
         SetQ(q / newp * (1 << roundbits));
     }
     NativeInteger beta = GetBeta();
-    auto res           = m_binfhescheme->EvalFloor(m_params, m_BTKey, ct1, beta, q);
+    auto res           = m_binfhescheme->EvalFloor(m_params, m_BTKey, ct, beta);
     SetQ(q);
     return res;
 }
 
-LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext ct1) {
+LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext ct) {
     auto params        = std::make_shared<BinFHECryptoParams>(*m_params);
     NativeInteger beta = GetBeta();
-    return m_binfhescheme->EvalSign(params, m_BTKey_map, ct1, beta);
+    return m_binfhescheme->EvalSign(params, m_BTKey_map, ct, beta);
 }
 
-std::vector<LWECiphertext> BinFHEContext::EvalDecomp(ConstLWECiphertext ct1) {
+std::vector<LWECiphertext> BinFHEContext::EvalDecomp(ConstLWECiphertext ct) {
     NativeInteger beta = GetBeta();
-    return m_binfhescheme->EvalDecomp(m_params, m_BTKey_map, ct1, beta);
+    return m_binfhescheme->EvalDecomp(m_params, m_BTKey_map, ct, beta);
 }
 
 std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p),
