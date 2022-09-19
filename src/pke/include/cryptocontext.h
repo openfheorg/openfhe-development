@@ -164,7 +164,7 @@ protected:
         return s_evalAutomorphismKeyMap;
     }
 
-    std::string m_schemeId;
+    SCHEME m_schemeId = SCHEME::INVALID_SCHEME;
 
     uint32_t m_keyGenLevel;
 
@@ -329,11 +329,11 @@ public:
 #endif
     }
 
-    void setSchemeId(std::string schemeTag) {
+    void setSchemeId(SCHEME schemeTag) {
         this->m_schemeId = schemeTag;
     }
 
-    std::string getSchemeId() const {
+    SCHEME getSchemeId() const {
         return this->m_schemeId;
     }
 
@@ -342,8 +342,10 @@ public:
    * @param params - pointer to CryptoParameters
    * @param scheme - pointer to Crypto Scheme
    */
+    // TODO (dsuponit): investigate if we really need 2 constructors for CryptoContextImpl as one of them take regular pointer
+    // and the other one takes shared_ptr
     CryptoContextImpl(CryptoParametersBase<Element>* params = nullptr, SchemeBase<Element>* scheme = nullptr,
-                      const std::string& schemeId = "Not") {
+                      SCHEME schemeId = SCHEME::INVALID_SCHEME) {
         this->params.reset(params);
         this->scheme.reset(scheme);
         this->m_keyGenLevel = 0;
@@ -356,7 +358,7 @@ public:
    * @param scheme - sharedpointer to Crypto Scheme
    */
     CryptoContextImpl(std::shared_ptr<CryptoParametersBase<Element>> params,
-                      std::shared_ptr<SchemeBase<Element>> scheme, const std::string& schemeId = "Not") {
+                      std::shared_ptr<SchemeBase<Element>> scheme, SCHEME schemeId = SCHEME::INVALID_SCHEME) {
         this->params        = params;
         this->scheme        = scheme;
         this->m_keyGenLevel = 0;
@@ -868,8 +870,8 @@ public:
                             uint32_t level) const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
         Plaintext p;
-        if (getSchemeId() == "BGVRNS" && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-                                          cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
+        if (getSchemeId() == SCHEME::BGVRNS_SCHEME && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+                                                       cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
             NativeInteger scf;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
                 scf = cryptoParams->GetScalingFactorIntBig(level);

@@ -184,8 +184,8 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
     if (IsPowerOfTwo(m)) {
         auto ccInst = privateKey->GetCryptoContext();
         // CKKS Packing
-        indices = ccInst->getSchemeId() == "CKKSRNS" ? GenerateIndices2nComplex(batchSize, m) :
-                                                       GenerateIndices_2n(batchSize, m);
+        indices = ccInst->getSchemeId() == SCHEME::CKKSRNS_SCHEME ? GenerateIndices2nComplex(batchSize, m) :
+                                                                    GenerateIndices_2n(batchSize, m);
     }
     else {  // Arbitrary cyclotomics
         usint g = encodingParams->GetPlaintextGenerator();
@@ -204,7 +204,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey, usint rowSize, usint subringDim) const {
     auto cc = privateKey->GetCryptoContext();
 
-    if (cc->getSchemeId() != "CKKSRNS")
+    if (cc->getSchemeId() != SCHEME::CKKSRNS_SCHEME)
         OPENFHE_THROW(config_error,
                       "Matrix summation of row-vectors is only supported for "
                       "CKKSPackedEncoding.");
@@ -230,7 +230,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
     const PrivateKey<Element> privateKey, const PublicKey<Element> publicKey) const {
     auto cc = privateKey->GetCryptoContext();
 
-    if (cc->getSchemeId() != "CKKSRNS")
+    if (cc->getSchemeId() != SCHEME::CKKSRNS_SCHEME)
         OPENFHE_THROW(config_error,
                       "Matrix summation of column-vectors is only supported for "
                       "CKKSPackedEncoding.");

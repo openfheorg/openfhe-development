@@ -38,6 +38,7 @@
 
 #include "encoding/encodingparams.h"
 #include "scheme/scheme-utils.h"
+#include "scheme/scheme-id.h"
 
 #include <memory>
 
@@ -95,8 +96,7 @@ typename ContextGeneratorType::ContextType genCryptoContextBGVRNSInternal(
     // clang-format on
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
-    // TODO (dsuponit): do we need this? if we do then it should SCHEME::BGVRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string
-    cc->setSchemeId("BGVRNS");
+    cc->setSchemeId(SCHEME::BGVRNS_SCHEME);
     return cc;
 }
 

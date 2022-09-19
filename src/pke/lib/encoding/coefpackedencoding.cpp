@@ -40,7 +40,7 @@ namespace lbcrypto {
 
 template <typename P>
 inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, int64_t ub,
-                             const std::vector<int64_t>& value, std::string schemeID) {
+                             const std::vector<int64_t>& value, SCHEME schemeID) {
     poly.SetValuesToZero();
 
     for (size_t i = 0; i < value.size() && i < poly.GetLength(); i++) {
@@ -56,7 +56,7 @@ inline static void encodeVec(P& poly, const PlaintextModulus& mod, int64_t lb, i
         typename P::Integer entry = value[i];
 
         if (value[i] < 0) {
-            if (schemeID == "BFVRNS") {
+            if (schemeID == SCHEME::BFVRNS_SCHEME) {
                 // TODO: Investigate why this doesn't work with q instead of t.
                 uint64_t adjustedVal = mod - ((uint64_t)llabs(value[i]));
                 entry                = typename P::Integer(adjustedVal);

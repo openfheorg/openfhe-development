@@ -40,6 +40,7 @@
 #include "constants.h"
 #include "utils/exception.h"
 #include "scheme/scheme-utils.h"
+#include "scheme/scheme-id.h"
 
 #include <memory>
 
@@ -100,8 +101,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     // clang-format on
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
-    // TODO (dsuponit): do we need this? if we do then it should SCHEME::CKKSRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string
-    cc->setSchemeId("CKKSRNS");
+    cc->setSchemeId(SCHEME::CKKSRNS_SCHEME);
     return cc;
 }
 }  // namespace lbcrypto

@@ -40,6 +40,7 @@
 
 #include "encoding/encodingparams.h"
 #include "constants.h"
+#include "scheme/scheme-id.h"
 
 #include <initializer_list>
 #include <iostream>
@@ -82,33 +83,33 @@ protected:
     size_t level                   = 0;
     size_t noiseScaleDeg           = 1;
     usint slots                    = 0;
-    std::string schemeID;
+    SCHEME schemeID;
 
 public:
-    PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, std::string schemeID = "",
+    PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
                   bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsPoly),
           encodingParams(ep),
           encodedVector(vp, Format::COEFFICIENT),
-          schemeID(schemeID) {}
+          schemeID(schemeTag) {}
 
-    PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, std::string schemeID = "",
+    PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
                   bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsNativePoly),
           encodingParams(ep),
           encodedNativeVector(vp, Format::COEFFICIENT),
-          schemeID(schemeID) {}
+          schemeID(schemeTag) {}
 
-    PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, std::string schemeID = "",
+    PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
                   bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsDCRTPoly),
           encodingParams(ep),
           encodedVector(vp, Format::COEFFICIENT),
           encodedVectorDCRT(vp, Format::COEFFICIENT),
-          schemeID(schemeID) {}
+          schemeID(schemeTag) {}
 
     PlaintextImpl(const PlaintextImpl& rhs)
         : isEncoded(rhs.isEncoded),
@@ -175,7 +176,7 @@ public:
     /**
    * Get the encryption technique of the plaintext for BFV-based plaintexts.
    */
-    const std::string GetSchemeID() const {
+    SCHEME GetSchemeID() const {
         return schemeID;
     }
 

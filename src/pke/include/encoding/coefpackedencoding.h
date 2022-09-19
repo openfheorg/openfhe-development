@@ -53,16 +53,16 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, std::string schemeID = "")
-        : PlaintextImpl(vp, ep, schemeID) {}
+    CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeId = SCHEME::INVALID_SCHEME)
+        : PlaintextImpl(vp, ep, schemeId) {}
 
     template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     CoefPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<int64_t>& coeffs,
-                       std::string schemeID = "")
-        : PlaintextImpl(vp, ep, schemeID), value(coeffs) {}
+                       SCHEME schemeId = SCHEME::INVALID_SCHEME)
+        : PlaintextImpl(vp, ep, schemeId), value(coeffs) {}
 
     virtual ~CoefPackedEncoding() = default;
 
