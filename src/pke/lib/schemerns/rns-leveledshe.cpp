@@ -193,7 +193,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquare(ConstCiphertext<DCRTPoly> ciphert
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetScalingTechnique() == NORESCALE || cryptoParams->GetScalingTechnique() == FIXEDMANUAL ||
-        ciphertext->GetDepth() == 1) {
+        ciphertext->GetNoiseScaleDeg() == 1) {
         return EvalSquareCore(ciphertext);
     }
 
@@ -207,7 +207,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquareMutable(Ciphertext<DCRTPoly>& ciph
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetScalingTechnique() != NORESCALE && cryptoParams->GetScalingTechnique() != FIXEDMANUAL &&
-        ciphertext->GetDepth() == 2) {
+        ciphertext->GetNoiseScaleDeg() == 2) {
         ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
     }
 
@@ -226,7 +226,7 @@ void LeveledSHERNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlain
     EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    ciphertext->SetDepth(ciphertext->GetDepth() + ctmorphed->GetDepth());
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
     // TODO (Andrey) : This part is only used in CKKS scheme
     ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ctmorphed->GetScalingFactor());
     // TODO (Andrey) : This part is only used in BGV scheme
@@ -243,7 +243,7 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalMultMutable(Ciphertext<DCRTPoly>& cipher
     auto result = EvalMultCore(ciphertext, ctmorphed->GetElements()[0]);
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    result->SetDepth(ciphertext->GetDepth() + ctmorphed->GetDepth());
+    result->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
     // TODO (Andrey) : This part is only used in CKKS scheme
     result->SetScalingFactor(ciphertext->GetScalingFactor() * ctmorphed->GetScalingFactor());
     // TODO (Andrey) : This part is only used in BGV scheme
@@ -263,7 +263,7 @@ void LeveledSHERNS::EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Pla
     EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    ciphertext->SetDepth(ciphertext->GetDepth() + ctmorphed->GetDepth());
+    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
     // TODO (Andrey) : This part is only used in CKKS scheme
     ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() * ctmorphed->GetScalingFactor());
     // TODO (Andrey) : This part is only used in BGV scheme
@@ -357,7 +357,7 @@ void LeveledSHERNS::LevelReduceInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
 Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
     Ciphertext<DCRTPoly> result = std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
 
-    while (result->GetDepth() > 1) {
+    while (result->GetNoiseScaleDeg() > 1) {
         ModReduceInternalInPlace(result, BASE_NUM_LEVELS_TO_DROP);
     }
     const std::vector<DCRTPoly>& cv = result->GetElements();

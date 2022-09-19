@@ -63,7 +63,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
 
     result->SetElements({std::move(b)});
 
-    result->SetDepth(ciphertext->GetDepth());
+    result->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
     result->SetLevel(ciphertext->GetLevel());
     result->SetScalingFactor(ciphertext->GetScalingFactor());
     result->SetScalingFactorInt(ciphertext->GetScalingFactorInt());
@@ -97,7 +97,7 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
 
     result->SetElements({std::move(b)});
 
-    result->SetDepth(ciphertext->GetDepth());
+    result->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
     result->SetLevel(ciphertext->GetLevel());
     result->SetScalingFactor(ciphertext->GetScalingFactor());
     result->SetScalingFactorInt(ciphertext->GetScalingFactorInt());

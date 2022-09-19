@@ -80,7 +80,7 @@ protected:
     double scalingFactor           = 1;
     NativeInteger scalingFactorInt = 1;
     size_t level                   = 0;
-    size_t depth                   = 1;
+    size_t noiseScaleDeg           = 1;
     usint slots                    = 0;
     std::string schemeID;
 
@@ -119,7 +119,7 @@ public:
           scalingFactor(rhs.scalingFactor),
           scalingFactorInt(rhs.scalingFactorInt),
           level(rhs.level),
-          depth(rhs.depth),
+          noiseScaleDeg(rhs.noiseScaleDeg),
           slots(rhs.slots),
           schemeID(rhs.schemeID) {}
 
@@ -132,7 +132,7 @@ public:
           scalingFactor(rhs.scalingFactor),
           scalingFactorInt(rhs.scalingFactorInt),
           level(rhs.level),
-          depth(rhs.depth),
+          noiseScaleDeg(rhs.noiseScaleDeg),
           slots(rhs.slots),
           schemeID(rhs.schemeID) {}
 
@@ -295,19 +295,19 @@ public:
     }
 
     /*
-   * Method to get the depth of a plaintext.
+   * Method to get the degree of the scaling factor of a plaintext.
    *
-   * @return the depth of the plaintext
+   * @return the degree of the scaling factor of the plaintext
    */
-    size_t GetDepth() const {
-        return depth;
+    size_t GetNoiseScaleDeg() const {
+        return noiseScaleDeg;
     }
 
     /*
-   * Method to set the depth of a plaintext.
+   * Method to set the degree of the scaling factor of a plaintext.
    */
-    void SetDepth(size_t d) {
-        depth = d;
+    void SetNoiseScaleDeg(size_t d) {
+        noiseScaleDeg = d;
     }
 
     /*

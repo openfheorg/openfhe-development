@@ -78,7 +78,7 @@ bool CoefPackedEncoding::Encode() {
         return true;
     PlaintextModulus mod     = this->encodingParams->GetPlaintextModulus();
     NativeInteger originalSF = scalingFactorInt;
-    for (size_t j = 1; j < depth; j++) {
+    for (size_t j = 1; j < noiseScaleDeg; j++) {
         scalingFactorInt = scalingFactorInt.ModMul(originalSF, mod);
     }
 

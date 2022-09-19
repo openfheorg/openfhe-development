@@ -265,7 +265,7 @@ private:
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext) const;
 
     Plaintext MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
-                               const std::vector<std::complex<double>>& value, size_t depth, uint32_t level,
+                               const std::vector<std::complex<double>>& value, size_t noiseScaleDeg, uint32_t level,
                                usint slots) const;
 
     Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const;

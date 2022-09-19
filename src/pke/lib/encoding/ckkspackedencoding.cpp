@@ -212,17 +212,17 @@ bool CKKSPackedEncoding::Encode() {
         // We want to scale temp by 2^(pd), and the loop starts from j=2
         // because temp is already scaled by 2^p in the re/im loop above,
         // and currPowP already is 2^p.
-        for (size_t i = 2; i < depth; i++) {
+        for (size_t i = 2; i < noiseScaleDeg; i++) {
             currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
         }
 
-        if (depth > 1) {
+        if (noiseScaleDeg > 1) {
             this->encodedVectorDCRT = this->encodedVectorDCRT.Times(currPowP);
         }
 
         this->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
 
-        scalingFactor = pow(scalingFactor, depth);
+        scalingFactor = pow(scalingFactor, noiseScaleDeg);
     }
     else {
         OPENFHE_THROW(config_error, "Only DCRTPoly is supported for CKKS.");
@@ -369,11 +369,11 @@ bool CKKSPackedEncoding::Encode() {
         // We want to scale temp by 2^(pd), and the loop starts from j=2
         // because temp is already scaled by 2^p in the re/im loop above,
         // and currPowP already is 2^p.
-        for (size_t i = 2; i < depth; i++) {
+        for (size_t i = 2; i < noiseScaleDeg; i++) {
             currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
         }
 
-        if (depth > 1) {
+        if (noiseScaleDeg > 1) {
             this->encodedVectorDCRT = this->encodedVectorDCRT.Times(currPowP);
         }
 
@@ -397,7 +397,7 @@ bool CKKSPackedEncoding::Encode() {
 
         this->GetElement<DCRTPoly>().SetFormat(Format::EVALUATION);
 
-        scalingFactor = pow(scalingFactor, depth);
+        scalingFactor = pow(scalingFactor, noiseScaleDeg);
     }
     else {
         OPENFHE_THROW(config_error, "Only DCRTPoly is supported for CKKS.");
@@ -408,7 +408,7 @@ bool CKKSPackedEncoding::Encode() {
 }
 #endif
 
-bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor, enum ScalingTechnique scalTech) {
+bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, enum ScalingTechnique scalTech) {
     double p       = encodingParams->GetPlaintextModulus();
     double powP    = 0.0;
     uint32_t Nh    = GetElementRingDimension() / 2;
@@ -450,7 +450,7 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor, enum Scaling
         if (scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT)
             scalingFactorPre = pow(scalingFactor, -1) * pow(2, p);
         else
-            scalingFactorPre = pow(2, -p * (depth - 1));
+            scalingFactorPre = pow(2, -p * (noiseScaleDeg - 1));
 
         const BigInteger& q = GetElementModulus();
         BigInteger qHalf    = q >> 1;
@@ -501,11 +501,11 @@ bool CKKSPackedEncoding::Decode(size_t depth, double scalingFactor, enum Scaling
 
     // if stddev < sqrt{N}/4 (minimum approximation error that can be achieved)
     // if (stddev < 0.125 * std::sqrt(GetElementRingDimension())) {
-    //   if (depth <= 1) {
+    //   if (noiseScaleDeg <= 1) {
     //    OPENFHE_THROW(math_error,
     //                   "The decryption failed because the approximation error is
     //                   " "too small. Check the protocol used. ");
-    //  } else {  // depth > 1 and no rescaling operations have been applied yet
+    //  } else {  // noiseScaleDeg > 1 and no rescaling operations have been applied yet
     //    stddev = 0.125 * std::sqrt(GetElementRingDimension());
     //  }
     // }

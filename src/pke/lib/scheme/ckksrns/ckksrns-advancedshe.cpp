@@ -73,7 +73,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphe
         uint32_t maxIdx   = 0;
         for (uint32_t i = 1; i < ciphertexts.size(); i++) {
             if ((ciphertexts[i]->GetLevel() > maxLevel) ||
-                ((ciphertexts[i]->GetLevel() == maxLevel) && (ciphertexts[i]->GetDepth() == 2))) {
+                ((ciphertexts[i]->GetLevel() == maxLevel) && (ciphertexts[i]->GetNoiseScaleDeg() == 2))) {
                 maxLevel = ciphertexts[i]->GetLevel();
                 maxIdx   = i;
             }
@@ -87,7 +87,7 @@ Ciphertext<DCRTPoly> AdvancedSHECKKSRNS::EvalLinearWSumMutable(std::vector<Ciphe
             algo->AdjustLevelsAndDepthInPlace(ciphertexts[i], ciphertexts[maxIdx]);
         }
 
-        if (ciphertexts[maxIdx]->GetDepth() == 2) {
+        if (ciphertexts[maxIdx]->GetNoiseScaleDeg() == 2) {
             for (uint32_t i = 0; i < ciphertexts.size(); i++) {
                 algo->ModReduceInternalInPlace(ciphertexts[i], BASE_NUM_LEVELS_TO_DROP);
             }

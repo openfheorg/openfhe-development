@@ -95,7 +95,7 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(Element plaintext, const PrivateKe
     (*ba)[0] += plaintext;
 
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
-    ciphertext->SetDepth(1);
+    ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
 }
@@ -108,7 +108,7 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(Element plaintext, const PublicKey
     (*ba)[0] += plaintext;
 
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
-    ciphertext->SetDepth(1);
+    ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
 }

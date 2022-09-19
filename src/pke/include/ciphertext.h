@@ -63,17 +63,7 @@ public:
     /**
    * Default constructor
    */
-    CiphertextImpl()
-        : CryptoObject<Element>(),
-          m_depth(1),
-          encodingType(INVALID_ENCODING),
-          m_scalingFactor(1),
-          m_scalingFactorInt(1),
-          m_level(0),
-          m_hopslevel(0),
-          m_slots(0) {
-        m_metadataMap = std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
-    }
+    CiphertextImpl() : CryptoObject<Element>() {}
 
     /**
    * Construct a new ciphertext in the given context
@@ -82,16 +72,7 @@ public:
    */
     explicit CiphertextImpl(CryptoContext<Element> cc, const std::string& id = "",
                             PlaintextEncodings encType = INVALID_ENCODING)
-        : CryptoObject<Element>(cc, id),
-          m_depth(1),
-          encodingType(encType),
-          m_scalingFactor(1),
-          m_scalingFactorInt(1),
-          m_level(0),
-          m_hopslevel(0),
-          m_slots(0) {
-        m_metadataMap = std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
-    }
+        : CryptoObject<Element>(cc, id), encodingType(encType) {}
 
     /**
    * Construct a new ciphertext from the parameters of a given public key
@@ -99,23 +80,14 @@ public:
    * @param k key whose CryptoObject parameters will get cloned
    */
     explicit CiphertextImpl(const std::shared_ptr<Key<Element>> k)
-        : CryptoObject<Element>(k->GetCryptoContext(), k->GetKeyTag()),
-          m_depth(1),
-          encodingType(INVALID_ENCODING),
-          m_scalingFactor(1),
-          m_scalingFactorInt(1),
-          m_level(0),
-          m_hopslevel(0),
-          m_slots(0) {
-        m_metadataMap = std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
-    }
+        : CryptoObject<Element>(k->GetCryptoContext(), k->GetKeyTag()) {}
 
     /**
    * Copy constructor
    */
     CiphertextImpl(const CiphertextImpl<Element>& ciphertext) : CryptoObject<Element>(ciphertext) {
         m_elements         = ciphertext.m_elements;
-        m_depth            = ciphertext.m_depth;
+        m_noiseScaleDeg    = ciphertext.m_noiseScaleDeg;
         m_level            = ciphertext.m_level;
         m_hopslevel        = ciphertext.m_hopslevel;
         m_scalingFactor    = ciphertext.m_scalingFactor;
@@ -127,7 +99,7 @@ public:
 
     explicit CiphertextImpl(Ciphertext<Element> ciphertext) : CryptoObject<Element>(*ciphertext) {
         m_elements         = ciphertext->m_elements;
-        m_depth            = ciphertext->m_depth;
+        m_noiseScaleDeg    = ciphertext->m_noiseScaleDeg;
         m_level            = ciphertext->m_level;
         m_hopslevel        = ciphertext->m_hopslevel;
         m_scalingFactor    = ciphertext->m_scalingFactor;
@@ -142,7 +114,7 @@ public:
    */
     CiphertextImpl(CiphertextImpl<Element>&& ciphertext) : CryptoObject<Element>(ciphertext) {
         m_elements         = std::move(ciphertext.m_elements);
-        m_depth            = std::move(ciphertext.m_depth);
+        m_noiseScaleDeg    = std::move(ciphertext.m_noiseScaleDeg);
         m_level            = std::move(ciphertext.m_level);
         m_hopslevel        = std::move(ciphertext.m_hopslevel);
         m_scalingFactor    = std::move(ciphertext.m_scalingFactor);
@@ -154,7 +126,7 @@ public:
 
     explicit CiphertextImpl(Ciphertext<Element>&& ciphertext) : CryptoObject<Element>(*ciphertext) {
         m_elements         = std::move(ciphertext->m_elements);
-        m_depth            = std::move(ciphertext->m_depth);
+        m_noiseScaleDeg    = std::move(ciphertext->m_noiseScaleDeg);
         m_level            = std::move(ciphertext->m_level);
         m_hopslevel        = std::move(ciphertext->m_hopslevel);
         m_scalingFactor    = std::move(ciphertext->m_scalingFactor);
@@ -211,15 +183,15 @@ public:
     CiphertextImpl<Element>& operator=(const CiphertextImpl<Element>& rhs) {
         if (this != &rhs) {
             CryptoObject<Element>::operator=(rhs);
-            this->m_elements               = rhs.m_elements;
-            this->m_depth                  = rhs.m_depth;
-            this->m_level                  = rhs.m_level;
-            this->m_hopslevel              = rhs.m_hopslevel;
-            this->m_scalingFactor          = rhs.m_scalingFactor;
-            this->m_scalingFactorInt       = rhs.m_scalingFactorInt;
-            this->encodingType             = rhs.encodingType;
-            this->m_slots                  = rhs.m_slots;
-            this->m_metadataMap            = rhs.m_metadataMap;
+            this->m_elements         = rhs.m_elements;
+            this->m_noiseScaleDeg    = rhs.m_noiseScaleDeg;
+            this->m_level            = rhs.m_level;
+            this->m_hopslevel        = rhs.m_hopslevel;
+            this->m_scalingFactor    = rhs.m_scalingFactor;
+            this->m_scalingFactorInt = rhs.m_scalingFactorInt;
+            this->encodingType       = rhs.encodingType;
+            this->m_slots            = rhs.m_slots;
+            this->m_metadataMap      = rhs.m_metadataMap;
         }
 
         return *this;
@@ -234,15 +206,15 @@ public:
     CiphertextImpl<Element>& operator=(CiphertextImpl<Element>&& rhs) {
         if (this != &rhs) {
             CryptoObject<Element>::operator=(rhs);
-            this->m_elements               = std::move(rhs.m_elements);
-            this->m_depth                  = std::move(rhs.m_depth);
-            this->m_level                  = std::move(rhs.m_level);
-            this->m_hopslevel              = std::move(rhs.m_hopslevel);
-            this->m_scalingFactor          = std::move(rhs.m_scalingFactor);
-            this->m_scalingFactorInt       = std::move(rhs.m_scalingFactorInt);
-            this->encodingType             = std::move(rhs.encodingType);
-            this->m_slots                  = std::move(rhs.m_slots);
-            this->m_metadataMap            = std::move(rhs.m_metadataMap);
+            this->m_elements         = std::move(rhs.m_elements);
+            this->m_noiseScaleDeg    = std::move(rhs.m_noiseScaleDeg);
+            this->m_level            = std::move(rhs.m_level);
+            this->m_hopslevel        = std::move(rhs.m_hopslevel);
+            this->m_scalingFactor    = std::move(rhs.m_scalingFactor);
+            this->m_scalingFactorInt = std::move(rhs.m_scalingFactorInt);
+            this->encodingType       = std::move(rhs.encodingType);
+            this->m_slots            = std::move(rhs.m_slots);
+            this->m_metadataMap      = std::move(rhs.m_metadataMap);
         }
 
         return *this;
@@ -330,30 +302,28 @@ public:
     }
 
     /**
-   * Get the depth of the ciphertext. In CKKS, it describes the degree
-   * of the scaling factor for the encrypted message.
+   * Get the degree of the scaling factor for the encrypted message.
    */
-    size_t GetDepth() const {
-        return m_depth;
+    size_t GetNoiseScaleDeg() const {
+        return m_noiseScaleDeg;
     }
 
     /**
-   * Set the depth of the ciphertext. In CKKS, it describes the degree
-   * of the scaling factor for the encrypted message.
+   * Set the degree of the scaling factor for the encrypted message.
    */
-    void SetDepth(size_t depth) {
-        m_depth = depth;
+    void SetNoiseScaleDeg(size_t noiseScaleDeg) {
+        m_noiseScaleDeg = noiseScaleDeg;
     }
 
     /**
-   * Get the level of the ciphertext.
+   * Get the number of scalings performed
    */
     size_t GetLevel() const {
         return m_level;
     }
 
     /**
-   * Set the level of the ciphertext.
+   * Set the number of scalings
    */
     void SetLevel(size_t level) {
         m_level = level;
@@ -488,7 +458,7 @@ public:
 
     virtual Ciphertext<Element> CloneZero() const {
         Ciphertext<Element> cRes = this->CloneEmpty();
-        cRes->SetDepth(this->GetDepth());
+        cRes->SetNoiseScaleDeg(this->GetNoiseScaleDeg());
         cRes->SetLevel(this->GetLevel());
         cRes->SetHopLevel(this->GetHopLevel());
         cRes->SetScalingFactor(this->GetScalingFactor());
@@ -502,7 +472,7 @@ public:
         if (!CryptoObject<Element>::operator==(rhs))
             return false;
 
-        if (this->m_depth != rhs.m_depth)
+        if (this->m_noiseScaleDeg != rhs.m_noiseScaleDeg)
             return false;
 
         if (this->m_level != rhs.m_level)
@@ -554,7 +524,7 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& out, const CiphertextImpl<Element>& c) {
-        out << "enc=" << c.encodingType << " depth=" << c.m_depth << std::endl;
+        out << "enc=" << c.encodingType << " noiseScaleDeg=" << c.m_noiseScaleDeg << std::endl;
         out << "metadata: [ ";
         for (auto i = c.m_metadataMap->begin(); i != c.m_metadataMap->end(); ++i)
             out << "(\"" << i->first << "\", " << *(i->second) << ") ";
@@ -575,7 +545,7 @@ public:
     void save(Archive& ar, std::uint32_t const version) const {
         ar(cereal::base_class<CryptoObject<Element>>(this));
         ar(cereal::make_nvp("v", m_elements));
-        ar(cereal::make_nvp("d", m_depth));
+        ar(cereal::make_nvp("d", m_noiseScaleDeg));
         ar(cereal::make_nvp("l", m_level));
         ar(cereal::make_nvp("t", m_hopslevel));
         ar(cereal::make_nvp("s", m_scalingFactor));
@@ -593,7 +563,7 @@ public:
         }
         ar(cereal::base_class<CryptoObject<Element>>(this));
         ar(cereal::make_nvp("v", m_elements));
-        ar(cereal::make_nvp("d", m_depth));
+        ar(cereal::make_nvp("d", m_noiseScaleDeg));
         ar(cereal::make_nvp("l", m_level));
         ar(cereal::make_nvp("t", m_hopslevel));
         ar(cereal::make_nvp("s", m_scalingFactor));
@@ -614,24 +584,24 @@ private:
     // vector of ring elements for this Ciphertext
     std::vector<Element> m_elements;
 
-    // holds the multiplicative depth of the ciphertext
-    uint32_t m_depth;
+    // the degree of the scaling factor for the encrypted message.
+    uint32_t m_noiseScaleDeg = 1;
 
     // how was this Ciphertext encoded?
-    PlaintextEncodings encodingType;
+    PlaintextEncodings encodingType = INVALID_ENCODING;
 
-    double m_scalingFactor;
-    NativeInteger m_scalingFactorInt;
+    double m_scalingFactor           = 1;
+    NativeInteger m_scalingFactorInt = 1;
     // holds the number of scalings performed before getting this ciphertext - initially 0
-    uint32_t m_level;
+    uint32_t m_level = 0;
 
     // Parameter for re-encryption to store the number of times the ciphertext has been re-encrypted.
-    uint32_t m_hopslevel;
+    uint32_t m_hopslevel = 0;
 
-    uint32_t m_slots;
+    uint32_t m_slots = 0;
 
     // A map to hold different Metadata objects - used for flexible extensions of Ciphertext
-    MetadataMap m_metadataMap;
+    MetadataMap m_metadataMap = std::make_shared<std::map<std::string, std::shared_ptr<Metadata>>>();
 };
 
 // TODO the op= are not doing the work in-place, and should be updated
