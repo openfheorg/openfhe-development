@@ -42,10 +42,10 @@ namespace lbcrypto {
 
 //====================================================================================================================
 enum SCHEME {
-    CKKSRNS_SCHEME = 0,
+    INVALID_SCHEME = 0,
+    CKKSRNS_SCHEME,
     BFVRNS_SCHEME,
     BGVRNS_SCHEME,
-    INVALID_SCHEME,
 };
 //====================================================================================================================
 std::ostream& operator<<(std::ostream& os, SCHEME schemeId);

@@ -31,6 +31,7 @@
 #include "cryptocontext.h"
 #include "cryptocontextfactory.h"
 #include "schemebase/base-scheme.h"
+#include "scheme/scheme-id.h"
 
 namespace lbcrypto {
 
@@ -50,7 +51,7 @@ int CryptoContextFactory<Element>::GetContextCount() {
 template <typename Element>
 CryptoContext<Element> CryptoContextFactory<Element>::GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
                                                                  std::shared_ptr<SchemeBase<Element>> scheme,
-                                                                 const std::string& schemeId) {
+                                                                 SCHEME schemeId) {
     for (CryptoContext<Element> cc : CryptoContextFactory<Element>::AllContexts) {
         if (*cc->GetScheme().get() == *scheme.get() && *cc->GetCryptoParameters().get() == *params.get()) {
             return cc;
