@@ -28,10 +28,14 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#include "schemebase/base-multiparty.h"
 
 #include "cryptocontext.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "key/evalkey.h"
+#include "key/evalkeyrelin.h"
 #include "schemebase/base-pke.h"
-#include "schemebase/base-multiparty.h"
 #include "schemebase/rlwe-cryptoparameters.h"
 
 #include "schemebase/base-scheme.h"

@@ -36,6 +36,8 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 #define PROFILE
 
 #include "cryptocontext.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "scheme/bfvrns/bfvrns-pke.h"
 

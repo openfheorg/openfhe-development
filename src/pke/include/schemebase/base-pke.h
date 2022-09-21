@@ -34,8 +34,9 @@
 
 #include "ciphertext-fwd.h"
 #include "cryptocontext-fwd.h"
+#include "key/privatekey-fwd.h"
+#include "key/publickey-fwd.h"
 #include "decrypt-result.h"
-#include "key/keypair.h"
 
 #include <vector>
 #include <memory>
@@ -45,6 +46,8 @@
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
+template <class Element>
+class KeyPair;
 
 /**
  * @brief Abstract interface for encryption algorithm

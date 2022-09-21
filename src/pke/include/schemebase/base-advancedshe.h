@@ -32,10 +32,12 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_H
 #define LBCRYPTO_CRYPTO_BASE_ADVANCEDSHE_H
 
-#include "key/privatekey.h"
-#include "key/publickey.h"
-#include "key/evalkey.h"
+#include "key/privatekey-fwd.h"
+#include "key/publickey-fwd.h"
+#include "key/evalkey-fwd.h"
+#include "encoding/plaintext-fwd.h"
 #include "ciphertext-fwd.h"
+#include "utils/inttypes.h"
 #include "utils/exception.h"
 
 #include <memory>

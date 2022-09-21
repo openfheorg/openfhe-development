@@ -33,6 +33,7 @@
 
 #include "scheme/ckksrns/ckksrns-fhe.h"
 
+#include "key/privatekey.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "schemebase/base-scheme.h"
 #include "cryptocontext.h"

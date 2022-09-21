@@ -69,14 +69,13 @@ public:
    */
     EncodingParamsImpl(PlaintextModulus plaintextModulus = 0, uint32_t batchSize = 0, uint32_t plaintextGenerator = 0,
                        NativeInteger plaintextRootOfUnity = 0, NativeInteger plaintextBigModulus = 0,
-                       NativeInteger plaintextBigRootOfUnity = 0) {
-        m_plaintextModulus        = plaintextModulus;
-        m_plaintextRootOfUnity    = plaintextRootOfUnity;
-        m_plaintextBigModulus     = plaintextBigModulus;
-        m_plaintextBigRootOfUnity = plaintextBigRootOfUnity;
-        m_batchSize               = batchSize;
-        m_plaintextGenerator      = plaintextGenerator;
-    }
+                       NativeInteger plaintextBigRootOfUnity = 0)
+        : m_plaintextModulus(plaintextModulus),
+          m_plaintextRootOfUnity(plaintextRootOfUnity),
+          m_plaintextBigModulus(plaintextBigModulus),
+          m_plaintextBigRootOfUnity(plaintextBigRootOfUnity),
+          m_plaintextGenerator(plaintextGenerator),
+          m_batchSize(batchSize) {}
 
     /**
    * Copy constructor.
