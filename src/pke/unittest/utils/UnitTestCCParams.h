@@ -32,38 +32,37 @@
 #ifndef __UNITTESTCCPARAMS_H__
 #define __UNITTESTCCPARAMS_H__
 
-
 #include <iosfwd>
 #include <string>
 #include <cmath>
-#include "scheme/scheme-id.h" // SCHEME
+#include "scheme/scheme-id.h"  // SCHEME
 
-enum { DFLT = -999 }; // enum for test cases if you want to use the default value for the parameter
+enum { DFLT = -999 };  // enum for test cases if you want to use the default value for the parameter
 
 //===========================================================================================================
 struct UnitTestCCParams {
-    lbcrypto::SCHEME schemeId; // mandatory field indicating what scheme is used
+    lbcrypto::SCHEME schemeId = lbcrypto::INVALID_SCHEME;  // mandatory field indicating what scheme is used
 
     // all double values are just data holders. Having them we can use parameters' default values
-    double   ringDimension; // CKKSRNS, BFVRNS, BGVRNS
-    double   multiplicativeDepth; // CKKSRNS, BGVRNS
-    double   scalingModSize; // CKKSRNS, BFVRNS, BGVRNS
-    double   digitSize; // CKKSRNS, BFVRNS, BGVRNS
-    double   batchSize; // CKKSRNS, BFVRNS, BGVRNS
-    double   secretKeyDist; // CKKSRNS, BFVRNS, BGVRNS
-    double   maxRelinSkDeg; // CKKSRNS, BFVRNS, BGVRNS
-    double   firstModSize; // BGVRNS
-    double   securityLevel; // BFVRNS, BGVRNS
-    double   ksTech; // CKKSRNS, BGVRNS
-    double   scalTech; // CKKSRNS, BGVRNS
-    double   numLargeDigits; // CKKSRNS, BGVRNS
-    double   plaintextModulus; // BFVRNS, BGVRNS
-    double   standardDeviation; // BFVRNS, BGVRNS
-    double   evalAddCount; // BFVRNS, 
-    double   keySwitchCount; // BFVRNS, 
-    double   multiplicationTechnique; // BFVRNS, 
-    double   encryptionTechnique; // BFVRNS,
-    double PREMode; // BGVRNS, BFVRNS, CKKSRNS
+    double ringDimension           = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
+    double multiplicativeDepth     = DFLT;  // CKKSRNS, BGVRNS
+    double scalingModSize          = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
+    double digitSize               = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
+    double batchSize               = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
+    double secretKeyDist           = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
+    double maxRelinSkDeg           = DFLT;  // CKKSRNS, BFVRNS, BGVRNS
+    double firstModSize            = DFLT;  // BGVRNS
+    double securityLevel           = DFLT;  // BFVRNS, BGVRNS
+    double ksTech                  = DFLT;  // CKKSRNS, BGVRNS
+    double scalTech                = DFLT;  // CKKSRNS, BGVRNS
+    double numLargeDigits          = DFLT;  // CKKSRNS, BGVRNS
+    double plaintextModulus        = DFLT;  // BFVRNS, BGVRNS
+    double standardDeviation       = DFLT;  // BFVRNS, BGVRNS
+    double evalAddCount            = DFLT;  // BFVRNS,
+    double keySwitchCount          = DFLT;  // BFVRNS,
+    double multiplicationTechnique = DFLT;  // BFVRNS,
+    double encryptionTechnique     = DFLT;  // BFVRNS,
+    double PREMode                 = DFLT;  // BGVRNS, BFVRNS, CKKSRNS
 
     std::string toString() const;
 };
@@ -75,5 +74,4 @@ inline bool isDefaultValue(double val) {
 }
 //===========================================================================================================
 
-#endif // __UNITTESTCCPARAMS_H__
-
+#endif  // __UNITTESTCCPARAMS_H__

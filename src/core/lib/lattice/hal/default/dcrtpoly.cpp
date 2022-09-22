@@ -910,9 +910,9 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<Integer>& c
 
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<NativeInteger>& element) const {
-//    if (m_vectors.size() != element.size()) {
-//        OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
-//    }
+    if (m_vectors.size() != element.size()) {
+        OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
+    }
     DCRTPolyImpl<VecType> tmp(*this);
 
 #pragma omp parallel for
@@ -1380,25 +1380,22 @@ std::shared_ptr<typename DCRTPolyImpl<VecType>::Params> DCRTPolyImpl<VecType>::G
 }
 
 template <typename VecType>
-void DCRTPolyImpl<VecType>::TimesQovert(
-    const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
-    const std::vector<NativeInteger> &tInvModq,
-    const NativeInteger &t,
-    const NativeInteger &NegQModt,
-    const NativeInteger &NegQModtPrecon) {
-  usint sizeQ = m_vectors.size();
-  if (tInvModq.size() < sizeQ) {
-    OPENFHE_THROW(math_error, "Sizes of vectors do not match.");
-  }
-  usint ringDim = this->GetRingDimension();
-#pragma omp parallel for
-  for (size_t i = 0; i < sizeQ; i++) {
-    for (usint ri = 0; ri < ringDim; ri++) {
-      NativeInteger &xi = m_vectors[i][ri];
-      xi.ModMulFastConstEq(NegQModt, t, NegQModtPrecon);
+void DCRTPolyImpl<VecType>::TimesQovert(const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+                                        const std::vector<NativeInteger>& tInvModq, const NativeInteger& t,
+                                        const NativeInteger& NegQModt, const NativeInteger& NegQModtPrecon) {
+    usint sizeQ = m_vectors.size();
+    if (tInvModq.size() < sizeQ) {
+        OPENFHE_THROW(math_error, "Sizes of vectors do not match.");
     }
-  }
-  *this = this->Times(tInvModq);
+    usint ringDim = this->GetRingDimension();
+#pragma omp parallel for
+    for (size_t i = 0; i < sizeQ; i++) {
+        for (usint ri = 0; ri < ringDim; ri++) {
+            NativeInteger& xi = m_vectors[i][ri];
+            xi.ModMulFastConstEq(NegQModt, t, NegQModtPrecon);
+        }
+    }
+    *this = this->Times(tInvModq);
 }
 
 #if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
@@ -2333,21 +2330,20 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
 }
 
 template <typename VecType>
-void DCRTPolyImpl<VecType>::ScaleAndRoundPOverQ(
-    const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
-    const std::vector<NativeInteger> &pInvModq) {
-  usint sizeQ1 = m_vectors.size();
-  usint sizeQ = sizeQ1 - 1;
-  usint ringDim = this->GetRingDimension();
-  for (usint i = 0; i < sizeQ; i++) {
-    const NativeInteger &qi = paramsQ->GetParams()[i]->GetModulus();
-    for (usint ri = 0; ri < ringDim; ri++) {
-      this->m_vectors[i][ri].ModSubEq(m_vectors[sizeQ][ri], qi);
+void DCRTPolyImpl<VecType>::ScaleAndRoundPOverQ(const std::shared_ptr<DCRTPolyImpl::Params> paramsQ,
+                                                const std::vector<NativeInteger>& pInvModq) {
+    usint sizeQ1  = m_vectors.size();
+    usint sizeQ   = sizeQ1 - 1;
+    usint ringDim = this->GetRingDimension();
+    for (usint i = 0; i < sizeQ; i++) {
+        const NativeInteger& qi = paramsQ->GetParams()[i]->GetModulus();
+        for (usint ri = 0; ri < ringDim; ri++) {
+            this->m_vectors[i][ri].ModSubEq(m_vectors[sizeQ][ri], qi);
+        }
     }
-  }
-  this->m_vectors.resize(sizeQ);
-  *this = this->Times(pInvModq);
-  this->m_params = paramsQ;
+    this->m_vectors.resize(sizeQ);
+    *this          = this->Times(pInvModq);
+    this->m_params = paramsQ;
 }
 
 #if defined(HAVE_INT128) && NATIVEINT == 64
