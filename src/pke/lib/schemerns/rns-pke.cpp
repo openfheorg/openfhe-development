@@ -28,11 +28,11 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#define PROFILE
-
-#include "cryptocontext.h"
 #include "schemerns/rns-pke.h"
+
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 

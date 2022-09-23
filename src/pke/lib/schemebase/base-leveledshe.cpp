@@ -31,6 +31,7 @@
 
 #include "schemebase/base-leveledshe.h"
 
+#include "key/privatekey.h"
 #include "cryptocontext.h"
 #include "schemebase/base-scheme.h"
 

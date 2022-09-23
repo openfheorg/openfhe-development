@@ -28,10 +28,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#include "cryptocontext.h"
 #include "schemebase/base-pke.h"
+
+#include "key/keypair.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
 #include "schemebase/rlwe-cryptoparameters.h"
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 

@@ -28,13 +28,12 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#include "schemerns/rns-multiparty.h"
 
-#define PROFILE
-
+#include "key/privatekey.h"
+#include "key/evalkeyrelin.h"
 #include "cryptocontext.h"
 #include "schemerns/rns-pke.h"
-#include "schemerns/rns-multiparty.h"
-#include "key/evalkeyrelin.h"
 
 namespace lbcrypto {
 

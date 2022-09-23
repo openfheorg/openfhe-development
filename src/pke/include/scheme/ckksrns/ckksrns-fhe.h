@@ -33,6 +33,7 @@
 #define LBCRYPTO_CRYPTO_CKKSRNS_FHE_H
 
 #include "constants.h"
+#include "encoding/plaintext-fwd.h"
 #include "schemerns/rns-fhe.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "utils/caller_info.h"

@@ -236,16 +236,8 @@ protected:
         return false;
     }
 
-    void CheckKey(const std::shared_ptr<const Key<Element>> key, CALLER_INFO_ARGS_HDR) const {
-        if (key == nullptr) {
-            std::string errorMsg(std::string("Key is nullptr") + CALLER_INFO);
-            OPENFHE_THROW(config_error, errorMsg);
-        }
-        if (Mismatched(key->GetCryptoContext())) {
-            std::string errorMsg(std::string("Key was not generated with the same crypto context") + CALLER_INFO);
-            OPENFHE_THROW(config_error, errorMsg);
-        }
-    }
+    template <typename T>
+    void CheckKey(const T& key, CALLER_INFO_ARGS_HDR) const;
 
     void CheckCiphertext(const ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
         if (ciphertext == nullptr) {

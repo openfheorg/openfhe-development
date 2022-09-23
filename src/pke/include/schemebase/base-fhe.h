@@ -32,8 +32,8 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_FHE_H
 #define LBCRYPTO_CRYPTO_BASE_FHE_H
 
-#include "key/privatekey.h"
-#include "key/evalkey.h"
+#include "key/privatekey-fwd.h"
+#include "key/evalkey-fwd.h"
 #include "ciphertext-fwd.h"
 #include "cryptocontext-fwd.h"
 #include "utils/exception.h"
