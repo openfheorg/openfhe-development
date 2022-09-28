@@ -325,7 +325,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> cip
     for (usint k = 0; k < sizeCv; k++) {
         resultElements[k] = DCRTPoly(paramsQlP, Format::EVALUATION, true);
         if ((addFirst) || (k > 0)) {
-            auto cMult = cv[k].Times(cryptoParams->GetPModq());
+            auto cMult = cv[k].TimesWithDiffTowers(cryptoParams->GetPModq());
             for (usint i = 0; i < sizeQl; i++) {
                 resultElements[k].SetElementAtIndex(i, cMult.GetElementAtIndex(i));
             }

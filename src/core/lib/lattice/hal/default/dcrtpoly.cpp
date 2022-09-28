@@ -910,13 +910,25 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<Integer>& c
 
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<NativeInteger>& element) const {
-    // if (m_vectors.size() != element.size()) {
-    //     OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
-    // }
+    if (m_vectors.size() != element.size()) {
+        OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
+    }
     DCRTPolyImpl<VecType> tmp(*this);
 
 #pragma omp parallel for
     for (usint i = 0; i < m_vectors.size(); i++) {
+        tmp.m_vectors[i] *= element[i];
+    }
+    return tmp;
+}
+
+template <typename VecType>
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::TimesWithDiffTowers(const std::vector<NativeInteger>& element) const {
+    size_t vecSize = m_vectors.size() < element.size() ? m_vectors.size() : element.size();
+    DCRTPolyImpl<VecType> tmp(*this);
+
+#pragma omp parallel for
+    for (usint i = 0; i < vecSize; i++) {
         tmp.m_vectors[i] *= element[i];
     }
     return tmp;
