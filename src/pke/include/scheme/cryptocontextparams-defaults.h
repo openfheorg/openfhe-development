@@ -82,7 +82,7 @@ constexpr SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
 constexpr int maxRelinSkDeg           = 2;
 constexpr KeySwitchTechnique ksTech   = BV;
 constexpr ScalingTechnique scalTech   = NORESCALE;
-#if defined(HAVE_INT128) && NATIVEINT == 64
+#if defined(HAVE_INT128) || NATIVEINT != 64
 constexpr usint firstModSize = 60;
 #else
 constexpr usint firstModSize        = 57;
@@ -90,7 +90,7 @@ constexpr usint firstModSize        = 57;
 constexpr usint batchSize           = 0;
 constexpr uint32_t numLargeDigits   = 0;
 constexpr usint multiplicativeDepth = 1;
-#if defined(HAVE_INT128) && NATIVEINT == 64
+#if defined(HAVE_INT128) || NATIVEINT != 64
 constexpr usint scalingModSize = 60;
 #else
 constexpr usint scalingModSize      = 57;

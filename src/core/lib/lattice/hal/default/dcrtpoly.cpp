@@ -1789,7 +1789,6 @@ void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPre
 #else
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations precomputed) {
-    std::cout << "Testing function\n";
     usint ringDim = this->GetRingDimension();
 
     size_t sizeQ = m_vectors.size();
