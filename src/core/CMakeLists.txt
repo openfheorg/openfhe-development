@@ -61,7 +61,9 @@ set (CORELIBS ${CORELIBS} PUBLIC OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${Op
 endif()
 
 if( BUILD_UNITTESTS )
-	if( NOT "${NATIVE_SIZE}" EQUAL 32 )
+	if( "${NATIVE_SIZE}" EQUAL 32 )
+		message("**** core_tests are not linked for NATIVE_SIZE=32")
+	else()
 		file (GLOB CORE_TEST_SRC_FILES CONFIGURE_DEPENDS unittest/*.cpp)
 	endif()
 	set (CORE_TEST_SRC_FILES ${CORE_TEST_SRC_FILES})
