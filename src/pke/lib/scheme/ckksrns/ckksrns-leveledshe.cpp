@@ -429,7 +429,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(ConstCiphertext<DCRT
         const auto paramsQlP = (*cTilda)[0].GetParams();
         size_t sizeQl        = paramsQl->GetParams().size();
         DCRTPoly psiC0       = DCRTPoly(paramsQlP, Format::EVALUATION, true);
-        auto cMult           = ciphertext->GetElements()[0].TimesWithDiffTowers(cryptoParams->GetPModq());
+        auto cMult           = ciphertext->GetElements()[0].Times(cryptoParams->GetPModq(), true);
         for (usint i = 0; i < sizeQl; i++) {
             psiC0.SetElementAtIndex(i, cMult.GetElementAtIndex(i));
         }
