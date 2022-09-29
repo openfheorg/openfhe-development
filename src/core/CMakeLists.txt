@@ -61,7 +61,11 @@ set (CORELIBS ${CORELIBS} PUBLIC OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${Op
 endif()
 
 if( BUILD_UNITTESTS )
-	file (GLOB CORE_TEST_SRC_FILES CONFIGURE_DEPENDS unittest/*.cpp)
+	if( "${NATIVE_SIZE}" EQUAL 32 )
+		message("**** core_tests are not linked for NATIVE_SIZE=32")
+	else()
+		file (GLOB CORE_TEST_SRC_FILES CONFIGURE_DEPENDS unittest/*.cpp)
+	endif()
 	set (CORE_TEST_SRC_FILES ${CORE_TEST_SRC_FILES})
 	add_executable( core_tests ${CORE_TEST_SRC_FILES} ${UNITTESTMAIN} )
 	set_property(TARGET core_tests PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/unittest)

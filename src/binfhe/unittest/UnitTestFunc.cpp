@@ -41,6 +41,7 @@ using namespace lbcrypto;
 // ---------------  TESTING METHODS OF FHEW ---------------
 
 // Checks the arbitrary function evaluation
+#if NATIVEINT != 32
 TEST(UnitTestFHEWGINX, EvalArbFunc) {
     auto cc = BinFHEContext();
     cc.GenerateBinFHEContext(TOY, true, 12);
@@ -203,3 +204,4 @@ TEST(UnitTestFHEWGINX, EvalDigitDecompSpace) {
         EXPECT_EQ(usint(ceil(log(factor) / log(p_basic)) + 1), decomp.size()) << failed;
     }
 }
+#endif

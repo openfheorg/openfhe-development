@@ -60,39 +60,35 @@ protected:
 public:
 };
 
-/*
-TODO: Investigate why this test sometimes causes a segmentation fault.
 TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
-
     UnitTestCCParams parameters;
-    parameters.schemeId = BFVRNS_SCHEME;
-    parameters.plaintextModulus = 65537;
-    parameters.standardDeviation = 3.19;
-    parameters.maxRelinSkDeg = 2;
-    parameters.scalTech = NORESCALE;
-    parameters.numLargeDigits = 0;
-    parameters.multiplicativeDepth = 2;
-    parameters.scalingModSize = 60;
-    parameters.ksTech = BV;
-    parameters.digitSize = 20;
-    parameters.securityLevel = HEStd_NotSet;
-    parameters.ringDimension = 8;
-    parameters.firstModSize = 60;
-    parameters.batchSize = 8;
-    parameters.secretKeyDist = UNIFORM_TERNARY;
+    parameters.schemeId                = BFVRNS_SCHEME;
+    parameters.plaintextModulus        = 65537;
+    parameters.standardDeviation       = 3.19;
+    parameters.maxRelinSkDeg           = 2;
+    parameters.scalTech                = NORESCALE;
+    parameters.numLargeDigits          = 0;
+    parameters.multiplicativeDepth     = 2;
+    parameters.scalingModSize          = 60;
+    parameters.ksTech                  = BV;
+    parameters.digitSize               = 20;
+    parameters.securityLevel           = HEStd_NotSet;
+    parameters.ringDimension           = 8;
+    parameters.firstModSize            = 60;
+    parameters.batchSize               = 8;
+    parameters.secretKeyDist           = UNIFORM_TERNARY;
     parameters.multiplicationTechnique = BEHZ;
 
     CryptoContext<Element> cc(UnitTestGenerateContext(parameters));
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> params =
-        cc->GetCryptoParameters()->GetElementParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> params = cc->GetCryptoParameters()->GetElementParams();
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters());
 
     // Generate the element "a" of the public key
     DCRTPoly a(params, Format::EVALUATION);
 
-    usint m1              = 16;
+    usint m1               = 16;
     NativeInteger modulus0 = 1152921504606846577;
     NativeInteger modulus1 = 1152921504606846097;
     NativeInteger rootOfUnity0(RootOfUnity(m1, modulus0));
@@ -105,26 +101,20 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
 
     NativePoly poly0(x0p, Format::EVALUATION);
     NativePoly poly1(x1p, Format::EVALUATION);
-    poly0 = {611651427055975783, 739811248882229946, 790810915716521716, 536363726228107588, 647651536262422014, 322042217691169971, 138609670727909932, 793736138075446811};
-    poly1 = {846754661443099927, 602279558317502186, 342175723088143584, 904036735987820179, 1124341799555345257, 885339199454111253, 417243638107713607, 548811148460128084};
+    poly0 = {611651427055975783, 739811248882229946, 790810915716521716, 536363726228107588,
+             647651536262422014, 322042217691169971, 138609670727909932, 793736138075446811};
+    poly1 = {846754661443099927,  602279558317502186, 342175723088143584, 904036735987820179,
+             1124341799555345257, 885339199454111253, 417243638107713607, 548811148460128084};
 
     a.SetElementAtIndex(0, poly0);
     a.SetElementAtIndex(1, poly1);
 
     a.FastBaseConvqToBskMontgomery(
-          cryptoParams->GetParamsBsk(),
-          cryptoParams->GetModuliQ(),
-          cryptoParams->GetModuliBsk(),
-          cryptoParams->GetModbskBarrettMu(),
-          cryptoParams->GetmtildeQHatInvModq(),
-          cryptoParams->GetmtildeQHatInvModqPrecon(),
-          cryptoParams->GetQHatModbsk(),
-          cryptoParams->GetQHatModmtilde(),
-          cryptoParams->GetQModbsk(),
-          cryptoParams->GetQModbskPrecon(),
-          cryptoParams->GetNegQInvModmtilde(),
-          cryptoParams->GetmtildeInvModbsk(),
-          cryptoParams->GetmtildeInvModbskPrecon());
+        cryptoParams->GetParamsBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
+        cryptoParams->GetModbskBarrettMu(), cryptoParams->GetmtildeQHatInvModq(),
+        cryptoParams->GetmtildeQHatInvModqPrecon(), cryptoParams->GetQHatModbsk(), cryptoParams->GetQHatModmtilde(),
+        cryptoParams->GetQModbsk(), cryptoParams->GetQModbskPrecon(), cryptoParams->GetNegQInvModmtilde(),
+        cryptoParams->GetmtildeInvModbsk(), cryptoParams->GetmtildeInvModbskPrecon());
 
     NativeInteger modulus2 = 1152921504606845777;
     NativeInteger modulus3 = 1152921504606845473;
@@ -144,11 +134,16 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     NativePoly ans2(x2p, Format::EVALUATION);
     NativePoly ans3(x3p, Format::EVALUATION);
     NativePoly ans4(x4p, Format::EVALUATION);
-    ans0 = {611651427055975783, 739811248882229946, 790810915716521716, 536363726228107588, 647651536262422014, 322042217691169971, 138609670727909932, 793736138075446811};
-    ans1 = {846754661443099927, 602279558317502186, 342175723088143584, 904036735987820179, 1124341799555345257, 885339199454111253, 417243638107713607, 548811148460128084};
-    ans2 = {524228833460429474, 692928367413813885, 465662343623521646, 107498520099165490, 81602760285107383, 482417615916109741, 249076385001962496, 719980682178715834};
-    ans3 = {474506930637362424, 723790960760608304, 7991172453764409, 738286918217632692, 933904287195446155, 98490114749039532, 293617451261147895, 1050780276990075548};
-    ans4 = {612459830520599999, 273948808875966259, 276211279884817131, 805184382328000673, 605603488049806384, 756318612975583592, 1014214483788531002, 480836070509458175};
+    ans0 = {611651427055975783, 739811248882229946, 790810915716521716, 536363726228107588,
+            647651536262422014, 322042217691169971, 138609670727909932, 793736138075446811};
+    ans1 = {846754661443099927,  602279558317502186, 342175723088143584, 904036735987820179,
+            1124341799555345257, 885339199454111253, 417243638107713607, 548811148460128084};
+    ans2 = {524228833460429474, 692928367413813885, 465662343623521646, 107498520099165490,
+            81602760285107383,  482417615916109741, 249076385001962496, 719980682178715834};
+    ans3 = {474506930637362424, 723790960760608304, 7991172453764409,   738286918217632692,
+            933904287195446155, 98490114749039532,  293617451261147895, 1050780276990075548};
+    ans4 = {612459830520599999, 273948808875966259, 276211279884817131,  805184382328000673,
+            605603488049806384, 756318612975583592, 1014214483788531002, 480836070509458175};
 
     EXPECT_EQ(a.GetElementAtIndex(0), ans0);
     EXPECT_EQ(a.GetElementAtIndex(1), ans1);
@@ -156,7 +151,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     EXPECT_EQ(a.GetElementAtIndex(3), ans3);
     EXPECT_EQ(a.GetElementAtIndex(4), ans4);
 }
-*/
 
 // TODO (dsuponit): review and fix multiple errors in this file
 TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
