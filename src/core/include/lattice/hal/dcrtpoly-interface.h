@@ -584,6 +584,15 @@ public:
     virtual DerivedType Times(const std::vector<NativeInteger>& element) const = 0;
 
     /**
+   * @brief Performs a multiplication operation even when the multiplicands
+   * have a different number of towers.
+   *
+   * @param &element is the element to multiply with.
+   * @return is the result of the multiplication.
+   */
+    virtual DerivedType TimesNoCheck(const std::vector<NativeInteger>& element) const = 0;
+
+    /**
    * @brief Scalar modular multiplication by an integer represented in CRT
    * Basis.
    *
@@ -881,12 +890,9 @@ public:
    */
     virtual std::shared_ptr<Params> GetExtendedCRTBasis(std::shared_ptr<Params> paramsP) const = 0;
 
-    virtual void TimesQovert(
-      const std::shared_ptr<Params> paramsQ,
-      const std::vector<NativeInteger> &tInvModq,
-      const NativeInteger &t,
-      const NativeInteger &NegQModt,
-      const NativeInteger &NegQModtPrecon) = 0;
+    virtual void TimesQovert(const std::shared_ptr<Params> paramsQ, const std::vector<NativeInteger>& tInvModq,
+                             const NativeInteger& t, const NativeInteger& NegQModt,
+                             const NativeInteger& NegQModtPrecon) = 0;
 
     /**
    * @brief Performs approximate CRT basis switching:
@@ -1180,9 +1186,8 @@ public:
    * @param &pInvModq p^{-1}_{q_i}
    * @return
    */
-    virtual void ScaleAndRoundPOverQ(
-        const std::shared_ptr<Params> paramsQ,
-        const std::vector<NativeInteger> &pInvModq) = 0;
+    virtual void ScaleAndRoundPOverQ(const std::shared_ptr<Params> paramsQ,
+                                     const std::vector<NativeInteger>& pInvModq) = 0;
 
     /**
    * @brief Expands basis:
