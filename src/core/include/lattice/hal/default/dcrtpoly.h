@@ -601,10 +601,18 @@ public:
    * @brief Scalar multiplication by an integer represented in CRT Basis.
    *
    * @param &element is the element to multiply entry-wise.
-   * @param allowDiffTowers is true if the multiplicands are allowed to have a different number of towers
    * @return is the return value of the times operation.
    */
-    DCRTPolyType Times(const std::vector<NativeInteger>& element, bool allowDiffTowers = false) const override;
+    DCRTPolyType Times(const std::vector<NativeInteger>& element) const override;
+
+    /**
+   * @brief Performs a multiplication operation even when the multiplicands
+   * have a different number of towers.
+   *
+   * @param &element is the element to multiply with.
+   * @return is the result of the multiplication.
+   */
+    DCRTPolyType TimesNoCheck(const std::vector<NativeInteger>& element) const override;
 
     /**
    * @brief Scalar modular multiplication by an integer represented in CRT

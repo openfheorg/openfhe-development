@@ -907,18 +907,23 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<Integer>& c
     }
     return tmp;
 }
-
-// Add boolean flag to add with different towers, default to false
 template <typename VecType>
-DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<NativeInteger>& element,
-                                                   bool allowDiffTowers) const {
-    size_t vecSize = m_vectors.size();
-    if (allowDiffTowers) {
-        vecSize = m_vectors.size() < element.size() ? m_vectors.size() : element.size();
-    }
-    else if (m_vectors.size() != element.size()) {
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Times(const std::vector<NativeInteger>& element) const {
+    if (m_vectors.size() != element.size()) {
         OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
     }
+    DCRTPolyImpl<VecType> tmp(*this);
+
+#pragma omp parallel for
+    for (usint i = 0; i < m_vectors.size(); i++) {
+        tmp.m_vectors[i] *= element[i];
+    }
+    return tmp;
+}
+
+template <typename VecType>
+DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::TimesNoCheck(const std::vector<NativeInteger>& element) const {
+    size_t vecSize = m_vectors.size() < element.size() ? m_vectors.size() : element.size();
     DCRTPolyImpl<VecType> tmp(*this);
 
 #pragma omp parallel for
