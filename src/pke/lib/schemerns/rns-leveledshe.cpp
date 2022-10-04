@@ -198,7 +198,9 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquare(ConstCiphertext<DCRTPoly> ciphert
     }
 
     auto c = ciphertext->Clone();
-    ModReduceInternalInPlace(c, BASE_NUM_LEVELS_TO_DROP);
+    if (c->GetNoiseScaleDeg() == 2) {
+        ModReduceInternalInPlace(c, BASE_NUM_LEVELS_TO_DROP);
+    }
 
     return EvalSquareCore(c);
 }
@@ -206,9 +208,10 @@ Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquare(ConstCiphertext<DCRTPoly> ciphert
 Ciphertext<DCRTPoly> LeveledSHERNS::EvalSquareMutable(Ciphertext<DCRTPoly>& ciphertext) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
-    if (cryptoParams->GetScalingTechnique() != NORESCALE && cryptoParams->GetScalingTechnique() != FIXEDMANUAL &&
-        ciphertext->GetNoiseScaleDeg() == 2) {
-        ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+    if (cryptoParams->GetScalingTechnique() != NORESCALE && cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
+        if (ciphertext->GetNoiseScaleDeg() == 2) {
+            ModReduceInternalInPlace(ciphertext, BASE_NUM_LEVELS_TO_DROP);
+        }
     }
 
     return EvalSquareCore(ciphertext);
