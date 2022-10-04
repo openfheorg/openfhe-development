@@ -50,7 +50,7 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     usint sizeQl              = cv[0].GetNumOfElements();
 
-    if (sizeQl >= levels && sizeQl > 0) {
+    if (sizeQl > levels && sizeQl > 0) {
         for (auto& c : cv) {
             for (size_t i = sizeQl - 1; i >= sizeQl - levels; --i) {
                 c.ModReduce(t, cryptoParams->GettModqPrecon(), cryptoParams->GetNegtInvModq(i),
@@ -58,6 +58,10 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
                             cryptoParams->GetqlInvModqPrecon(i));
             }
         }
+    }
+    else {
+        std::string errMsg = "ERROR: Not enough towers to support ModReduce.";
+        OPENFHE_THROW(config_error, errMsg);
     }
 
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
@@ -82,28 +86,26 @@ void LeveledSHEBGVRNS::LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& cipherte
 
 void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                                    Ciphertext<DCRTPoly>& ciphertext2) const {
-    // TODO (Saroja): Fix this function to account for higher depths.
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(ciphertext1->GetCryptoParameters());
 
     const NativeInteger t(cryptoParams->GetPlaintextModulus());
 
-    usint c1lvl   = ciphertext1->GetLevel();
-    usint c2lvl   = ciphertext2->GetLevel();
     usint c1depth = ciphertext1->GetNoiseScaleDeg();
     usint c2depth = ciphertext2->GetNoiseScaleDeg();
-    auto sizeQl1  = ciphertext1->GetElements()[0].GetNumOfElements();
-    auto sizeQl2  = ciphertext2->GetElements()[0].GetNumOfElements();
 
-    while (c1depth > 2) {
-        ModReduceInternalInPlace(ciphertext1, BASE_NUM_LEVELS_TO_DROP);
-        c1depth--;
-        c1lvl++;
+    if (c1depth > 2) {
+        ModReduceInternalInPlace(ciphertext1, c1depth - 2);
     }
-    while (c2depth > 2) {
-        ModReduceInternalInPlace(ciphertext2, BASE_NUM_LEVELS_TO_DROP);
-        c2depth--;
-        c2lvl++;
+    if (c2depth > 2) {
+        ModReduceInternalInPlace(ciphertext2, c1depth - 2);
     }
+
+    usint c1lvl  = ciphertext1->GetLevel();
+    usint c2lvl  = ciphertext2->GetLevel();
+    auto sizeQl1 = ciphertext1->GetElements()[0].GetNumOfElements();
+    auto sizeQl2 = ciphertext2->GetElements()[0].GetNumOfElements();
+    c1depth      = ciphertext1->GetNoiseScaleDeg();
+    c2depth      = ciphertext2->GetNoiseScaleDeg();
 
     if (c1lvl < c2lvl) {
         if (c1depth == 2) {

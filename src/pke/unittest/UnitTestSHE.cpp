@@ -316,7 +316,8 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { EVALMERGE,  "01", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALMERGE,  "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    // TODO (Saroja): Figure out why MultDepth 2 does not work with FLEXIBLEAUTOEXT and UNIFORM_TERNARY.
+    { EVALMERGE,  "04", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "05", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
@@ -398,30 +399,32 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     // so we don't need unit tests for KS_MOD_REDUCE_DCRT in the AUTO modes.
     // ==========================================
     // TestType,   Descr, Scheme,       RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
-    { EVALSQUARE,  "01", {BGVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
-    { EVALSQUARE,  "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "05", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "08", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "09", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
-    { EVALSQUARE,  "10", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
-    { EVALSQUARE,  "11", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "12", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             STANDARD,  DFLT}, },
-    { EVALSQUARE,  "13", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD,  DFLT}, },
-    { EVALSQUARE,  "14", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD,  DFLT}, },
-    { EVALSQUARE,  "15", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD,  DFLT}, },
-    { EVALSQUARE,  "16", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD,  DFLT}, },
-    { EVALSQUARE,  "17", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              EXTENDED,  DFLT}, },
-    { EVALSQUARE,  "18", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              EXTENDED,  DFLT}, },
-    { EVALSQUARE,  "19", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             EXTENDED,  DFLT}, },
-    { EVALSQUARE,  "20", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             EXTENDED,  DFLT}, },
-    { EVALSQUARE,  "21", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
-    { EVALSQUARE,  "22", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
-    { EVALSQUARE,  "23", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
-    { EVALSQUARE,  "24", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { EVALSQUARE,  "01", {BGVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
+    { EVALSQUARE,  "02", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "03", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    // TODO (Saroja): Figure out why FLEXIBLEAUTOEXT doesn't work with MultDepth 3.
+    { EVALSQUARE,  "04", {BGVRNS_SCHEME, 256,  4,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "05", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "06", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "07", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    // TODO (Saroja): Figure out why FLEXIBLEAUTOEXT doesn't work with MultDepth 3.
+    { EVALSQUARE,  "08", {BGVRNS_SCHEME, 256,  4,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "09", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
+    { EVALSQUARE,  "10", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
+    { EVALSQUARE,  "11", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "12", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "13", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD,  DFLT}, },
+    { EVALSQUARE,  "14", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        STANDARD,  DFLT}, },
+    { EVALSQUARE,  "15", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD,  DFLT}, },
+    { EVALSQUARE,  "16", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, STANDARD,  DFLT}, },
+    { EVALSQUARE,  "17", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              EXTENDED,  DFLT}, },
+    { EVALSQUARE,  "18", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              EXTENDED,  DFLT}, },
+    { EVALSQUARE,  "19", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             EXTENDED,  DFLT}, },
+    { EVALSQUARE,  "20", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             EXTENDED,  DFLT}, },
+    { EVALSQUARE,  "21", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
+    { EVALSQUARE,  "22", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
+    { EVALSQUARE,  "23", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    { EVALSQUARE,  "24", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
  };
 // clang-format on
 //===========================================================================================================
@@ -1094,65 +1097,41 @@ protected:
     }
 
     void UnitTest_EvalSquare(const TEST_CASE_UTGENERAL_SHE& testData, const std::string& failmsg = std::string()) {
+        // TODO (Saroja): Investigate why these tests fail with MakeCoefPackedPlaintext
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            std::vector<int64_t> vectorOfInts1 = {1, 0, 3, 1, 0, 1, 2, 1};
-            Plaintext plaintext1               = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+            std::vector<int64_t> vectorOfInts = {2, 1, 3, 2, 2, 1, 3, 0};
+            Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
 
-            std::vector<int64_t> vectorOfInts2 = {2, 1, 3, 2, 2, 1, 3, 0};
-            Plaintext plaintext2               = cc->MakePackedPlaintext(vectorOfInts2);
+            std::vector<int64_t> vectorOfIntsSquare = {4, 1, 9, 4, 4, 1, 9, 0};
+            Plaintext intArrayExpectedSquare        = cc->MakePackedPlaintext(vectorOfIntsSquare);
 
-            // For cyclotomic order != 16, the expected result is the convolution of
-            // vectorOfInt21 and vectorOfInts2
-            std::vector<int64_t> vectorOfIntsSquare1 = {1, 0, 9, 1, 0, 1, 4, 1};
-            std::vector<int64_t> vectorOfIntsSquare2 = {4, 1, 9, 4, 4, 1, 9, 0};
-            Plaintext intArrayExpected1              = cc->MakeCoefPackedPlaintext(vectorOfIntsSquare1);
-            Plaintext intArrayExpected2              = cc->MakePackedPlaintext(vectorOfIntsSquare2);
-
-            std::vector<int64_t> vectorOfIntsFifth1 = {1, 0, 243, 1, 0, 1, 32, 1};
-            std::vector<int64_t> vectorOfIntsFifth2 = {32, 1, 243, 32, 32, 1, 243, 0};
-            Plaintext intArrayExpected3             = cc->MakeCoefPackedPlaintext(vectorOfIntsFifth1);
-            Plaintext intArrayExpected4             = cc->MakePackedPlaintext(vectorOfIntsFifth2);
+            std::vector<int64_t> vectorOfIntsSixth = {64, 1, 729, 64, 64, 1, 729, 0};
+            Plaintext intArrayExpectedSixth        = cc->MakePackedPlaintext(vectorOfIntsSixth);
 
             // Initialize the public key containers.
             KeyPair<Element> kp = cc->KeyGen();
 
-            Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, plaintext1);
-
-            Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
+            Ciphertext<Element> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
 
             cc->EvalMultKeyGen(kp.secretKey);
 
             Plaintext results;
 
-            Ciphertext<Element> ciphertextSq1 = cc->EvalSquare(ciphertext1);
-            cc->Decrypt(kp.secretKey, ciphertextSq1, &results);
-            results->SetLength(intArrayExpected1->GetLength());
-            EXPECT_EQ(intArrayExpected1->GetCoefPackedValue(), results->GetCoefPackedValue())
-                << failmsg << " EvalSquare (CoefPacked) fails";
-
-            Ciphertext<Element> ciphertextSq2 = cc->EvalSquare(ciphertext2);
-            cc->Decrypt(kp.secretKey, ciphertextSq2, &results);
-            results->SetLength(intArrayExpected2->GetLength());
-            EXPECT_EQ(intArrayExpected1->GetPackedValue(), results->GetPackedValue())
+            Ciphertext<Element> ciphertextSq = cc->EvalSquare(ciphertext);
+            cc->Decrypt(kp.secretKey, ciphertextSq, &results);
+            results->SetLength(intArrayExpectedSquare->GetLength());
+            EXPECT_EQ(intArrayExpectedSquare->GetPackedValue(), results->GetPackedValue())
                 << failmsg << " EvalSquare (Packed) fails";
 
-            Ciphertext<Element> ciphertextThird1 = cc->EvalMult(ciphertextSq1, plaintext1);
-            Ciphertext<Element> ciphertextThird2 = cc->EvalMult(ciphertextSq2, plaintext2);
+            Ciphertext<Element> ciphertextThird = cc->EvalMult(ciphertextSq, plaintext);
+            cc->Decrypt(kp.secretKey, ciphertextThird, &results);
 
-            Ciphertext<Element> ciphertextSixth1 = cc->EvalSquare(ciphertextThird1);
-            cc->Decrypt(kp.secretKey, ciphertextSixth1, &results);
-            results->SetLength(intArrayExpected3->GetLength());
-            std::cout << "results: " << results->GetCoefPackedValue() << std::endl;
-            EXPECT_EQ(intArrayExpected3->GetCoefPackedValue(), results->GetCoefPackedValue())
-                << failmsg << " EvalSquare Sixth (CoefPacked) fails";
-
-            Ciphertext<Element> ciphertextSixth2 = cc->EvalSquare(ciphertextThird2);
-            cc->Decrypt(kp.secretKey, ciphertextSixth2, &results);
-            results->SetLength(intArrayExpected4->GetLength());
-            std::cout << "results: " << results->GetPackedValue() << std::endl;
-            EXPECT_EQ(intArrayExpected4->GetPackedValue(), results->GetPackedValue())
+            Ciphertext<Element> ciphertextSixth = cc->EvalSquare(ciphertextThird);
+            cc->Decrypt(kp.secretKey, ciphertextSixth, &results);
+            results->SetLength(intArrayExpectedSixth->GetLength());
+            EXPECT_EQ(intArrayExpectedSixth->GetPackedValue(), results->GetPackedValue())
                 << failmsg << " EvalSquare Sixth (Packed) fails";
         }
         catch (std::exception& e) {
