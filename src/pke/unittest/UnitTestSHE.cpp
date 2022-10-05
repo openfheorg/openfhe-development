@@ -316,8 +316,7 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { EVALMERGE,  "01", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "02", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "03", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    // TODO (Saroja): Figure out why MultDepth 2 does not work with FLEXIBLEAUTOEXT and UNIFORM_TERNARY.
-    { EVALMERGE,  "04", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALMERGE,  "04", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "05", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "06", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALMERGE,  "07", {BGVRNS_SCHEME, 256,  2,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
@@ -402,13 +401,11 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { EVALSQUARE,  "01", {BGVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { EVALSQUARE,  "02", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALSQUARE,  "03", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    // TODO (Saroja): Figure out why FLEXIBLEAUTOEXT doesn't work with MultDepth 3.
-    { EVALSQUARE,  "04", {BGVRNS_SCHEME, 256,  4,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "04", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALSQUARE,  "05", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALSQUARE,  "06", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALSQUARE,  "07", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
-    // TODO (Saroja): Figure out why FLEXIBLEAUTOEXT doesn't work with MultDepth 3.
-    { EVALSQUARE,  "08", {BGVRNS_SCHEME, 256,  4,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
+    { EVALSQUARE,  "08", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   GAUSSIAN,         1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALSQUARE,  "09", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { EVALSQUARE,  "10", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { EVALSQUARE,  "11", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, BEHZ,             STANDARD,  DFLT}, },
@@ -1101,38 +1098,51 @@ protected:
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            std::vector<int64_t> vectorOfInts = {2, 1, 3, 2, 2, 1, 3, 0};
-            Plaintext plaintext               = cc->MakePackedPlaintext(vectorOfInts);
+            std::vector<int64_t> vectorOfInts1 = {2, 1, 3, 2, 2, 1, 3, 0};
+            Plaintext plaintext1               = cc->MakePackedPlaintext(vectorOfInts1);
 
-            std::vector<int64_t> vectorOfIntsSquare = {4, 1, 9, 4, 4, 1, 9, 0};
-            Plaintext intArrayExpectedSquare        = cc->MakePackedPlaintext(vectorOfIntsSquare);
+            std::vector<int64_t> vectorOfIntsSquare1 = {4, 1, 9, 4, 4, 1, 9, 0};
+            Plaintext intArrayExpectedSquare1        = cc->MakePackedPlaintext(vectorOfIntsSquare1);
 
-            std::vector<int64_t> vectorOfIntsSixth = {64, 1, 729, 64, 64, 1, 729, 0};
-            Plaintext intArrayExpectedSixth        = cc->MakePackedPlaintext(vectorOfIntsSixth);
+            std::vector<int64_t> vectorOfIntsSixth1 = {64, 1, 729, 64, 64, 1, 729, 0};
+            Plaintext intArrayExpectedSixth1        = cc->MakePackedPlaintext(vectorOfIntsSixth1);
+
+            std::vector<int64_t> vectorOfInts2 = {1, 1, -1, 1, 1, 1, 0, 0, 0, 0, 0, 0};
+            Plaintext plaintext2               = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+            // These are the coefficients of the square polynomial of the polynomial with coefficients in vectorOfInts2.
+            std::vector<int64_t> vectorOfIntsSquare2 = {1, 2, -1, 0, 5, 2, 1, 0, 3, 2, 1};
+            Plaintext intArrayExpectedSquare2        = cc->MakeCoefPackedPlaintext(vectorOfIntsSquare2);
 
             // Initialize the public key containers.
             KeyPair<Element> kp = cc->KeyGen();
 
-            Ciphertext<Element> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
+            Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, plaintext1);
+            Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, plaintext2);
 
             cc->EvalMultKeyGen(kp.secretKey);
 
             Plaintext results;
 
-            Ciphertext<Element> ciphertextSq = cc->EvalSquare(ciphertext);
-            cc->Decrypt(kp.secretKey, ciphertextSq, &results);
-            results->SetLength(intArrayExpectedSquare->GetLength());
-            EXPECT_EQ(intArrayExpectedSquare->GetPackedValue(), results->GetPackedValue())
+            Ciphertext<Element> ciphertextSq1 = cc->EvalSquare(ciphertext1);
+            cc->Decrypt(kp.secretKey, ciphertextSq1, &results);
+            results->SetLength(intArrayExpectedSquare1->GetLength());
+            EXPECT_EQ(intArrayExpectedSquare1->GetPackedValue(), results->GetPackedValue())
                 << failmsg << " EvalSquare (Packed) fails";
 
-            Ciphertext<Element> ciphertextThird = cc->EvalMult(ciphertextSq, plaintext);
-            cc->Decrypt(kp.secretKey, ciphertextThird, &results);
+            Ciphertext<Element> ciphertextThird1 = cc->EvalMult(ciphertextSq1, plaintext1);
+            cc->Decrypt(kp.secretKey, ciphertextThird1, &results);
 
-            Ciphertext<Element> ciphertextSixth = cc->EvalSquare(ciphertextThird);
-            cc->Decrypt(kp.secretKey, ciphertextSixth, &results);
-            results->SetLength(intArrayExpectedSixth->GetLength());
-            EXPECT_EQ(intArrayExpectedSixth->GetPackedValue(), results->GetPackedValue())
+            Ciphertext<Element> ciphertextSixth1 = cc->EvalSquare(ciphertextThird1);
+            cc->Decrypt(kp.secretKey, ciphertextSixth1, &results);
+            results->SetLength(intArrayExpectedSixth1->GetLength());
+            EXPECT_EQ(intArrayExpectedSixth1->GetPackedValue(), results->GetPackedValue())
                 << failmsg << " EvalSquare Sixth (Packed) fails";
+
+            Ciphertext<Element> ciphertextSq2 = cc->EvalSquare(ciphertext2);
+            cc->Decrypt(kp.secretKey, ciphertextSq2, &results);
+            results->SetLength(intArrayExpectedSquare2->GetLength());
+            EXPECT_EQ(intArrayExpectedSquare2->GetCoefPackedValue(), results->GetCoefPackedValue())
+                << failmsg << " EvalSquare (CoefPacked) fails";
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;

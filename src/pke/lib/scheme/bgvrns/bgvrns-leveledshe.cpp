@@ -90,22 +90,12 @@ void LeveledSHEBGVRNS::AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphert
 
     const NativeInteger t(cryptoParams->GetPlaintextModulus());
 
+    usint c1lvl   = ciphertext1->GetLevel();
+    usint c2lvl   = ciphertext2->GetLevel();
     usint c1depth = ciphertext1->GetNoiseScaleDeg();
     usint c2depth = ciphertext2->GetNoiseScaleDeg();
-
-    if (c1depth > 2) {
-        ModReduceInternalInPlace(ciphertext1, c1depth - 2);
-    }
-    if (c2depth > 2) {
-        ModReduceInternalInPlace(ciphertext2, c1depth - 2);
-    }
-
-    usint c1lvl  = ciphertext1->GetLevel();
-    usint c2lvl  = ciphertext2->GetLevel();
-    auto sizeQl1 = ciphertext1->GetElements()[0].GetNumOfElements();
-    auto sizeQl2 = ciphertext2->GetElements()[0].GetNumOfElements();
-    c1depth      = ciphertext1->GetNoiseScaleDeg();
-    c2depth      = ciphertext2->GetNoiseScaleDeg();
+    auto sizeQl1  = ciphertext1->GetElements()[0].GetNumOfElements();
+    auto sizeQl2  = ciphertext2->GetElements()[0].GetNumOfElements();
 
     if (c1lvl < c2lvl) {
         if (c1depth == 2) {
@@ -264,68 +254,6 @@ void LeveledSHEBGVRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, con
 
 usint LeveledSHEBGVRNS::FindAutomorphismIndex(usint index, usint m) const {
     return FindAutomorphismIndex2n(index, m);
-}
-
-void LeveledSHEBGVRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const {
-    auto ctmorphed          = MorphPlaintext(plaintext, ciphertext);
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FIXEDAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-        cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        AdjustLevelsInPlace(ciphertext, ctmorphed);
-    }
-    else {
-        AdjustForMultInPlace(ciphertext, ctmorphed);
-    }
-    EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
-
-    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
-        ciphertext->SetScalingFactorInt(
-            ciphertext->GetScalingFactorInt().ModMul(ctmorphed->GetScalingFactorInt(), plainMod));
-    }
-}
-
-Ciphertext<DCRTPoly> LeveledSHEBGVRNS::EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
-    auto ctmorphed          = MorphPlaintext(plaintext, ciphertext);
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FIXEDAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-        cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        AdjustLevelsInPlace(ciphertext, ctmorphed);
-    }
-    else {
-        AdjustForMultInPlace(ciphertext, ctmorphed);
-    }
-    auto result = EvalMultCore(ciphertext, ctmorphed->GetElements()[0]);
-    result->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
-        result->SetScalingFactorInt(
-            ciphertext->GetScalingFactorInt().ModMul(ctmorphed->GetScalingFactorInt(), plainMod));
-    }
-
-    return result;
-}
-
-// TODO (Andrey) : currently do same as EvalMultInPlace, as Plaintext element is immutable
-void LeveledSHEBGVRNS::EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const {
-    auto ctmorphed          = MorphPlaintext(plaintext, ciphertext);
-    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
-    if (cryptoParams->GetScalingTechnique() == FIXEDAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-        cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        AdjustLevelsInPlace(ciphertext, ctmorphed);
-    }
-    else {
-        AdjustForMultInPlace(ciphertext, ctmorphed);
-    }
-    EvalMultCoreInPlace(ciphertext, ctmorphed->GetElements()[0]);
-
-    ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + ctmorphed->GetNoiseScaleDeg());
-    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
-        ciphertext->SetScalingFactorInt(
-            ciphertext->GetScalingFactorInt().ModMul(ctmorphed->GetScalingFactorInt(), plainMod));
-    }
 }
 
 }  // namespace lbcrypto
