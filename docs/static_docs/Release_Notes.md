@@ -1,3 +1,8 @@
+10/05/2022: OpenFHE 0.9.4 (development) is released
+
+* Fixes build errors for NATIVE_SIZE=32
+* Includes other small bug fixes
+
 09/16/2022: OpenFHE 0.9.3 (development) is released
 
 * Fixes build errors in MinGW
