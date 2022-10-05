@@ -1094,7 +1094,6 @@ protected:
     }
 
     void UnitTest_EvalSquare(const TEST_CASE_UTGENERAL_SHE& testData, const std::string& failmsg = std::string()) {
-        // TODO (Saroja): Investigate why these tests fail with MakeCoefPackedPlaintext
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
