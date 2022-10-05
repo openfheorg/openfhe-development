@@ -509,6 +509,15 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     // ==========================================
     // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
     { EVALSQUARE, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+#if NATIVEINT != 128
+    { EVALSQUARE, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+#endif
     // ==========================================
 };
 // clang-format on
@@ -2048,7 +2057,7 @@ protected:
             Ciphertext<Element> ciphertextSixth = cc->EvalSquare(ciphertextThird);
             cc->Decrypt(kp.secretKey, ciphertextSixth, &results);
             results->SetLength(intArrayExpectedSixth->GetLength());
-            checkEquality(intArrayExpectedSixth->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+            checkEquality(intArrayExpectedSixth->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
                           failmsg + " EvalSquare Sixth (CKKSPacked) fails");
         }
         catch (std::exception& e) {

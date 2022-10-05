@@ -67,8 +67,6 @@ public:
 
     void LevelReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const override;
 
-    using LeveledSHERNS::EvalMultCoreInPlace;
-
     void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const;
 
     void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
@@ -76,12 +74,6 @@ public:
 
     void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
                                           Ciphertext<DCRTPoly>& ciphertext2) const override;
-
-    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
-
-    Ciphertext<DCRTPoly> EvalMultMutable(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
-
-    void EvalMultMutableInPlace(Ciphertext<DCRTPoly>& ciphertext, Plaintext plaintext) const override;
 
     /////////////////////////////////////
     // SERIALIZATION
