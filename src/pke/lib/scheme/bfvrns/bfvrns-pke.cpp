@@ -36,6 +36,8 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 #define PROFILE
 
 #include "cryptocontext.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "scheme/bfvrns/bfvrns-pke.h"
 
@@ -142,7 +144,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PrivateKey<DCRTPoly
     (*ba)[1].SetFormat(Format::EVALUATION);
 
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
-    ciphertext->SetDepth(1);
+    ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
 }
@@ -194,7 +196,7 @@ Ciphertext<DCRTPoly> PKEBFVRNS::Encrypt(DCRTPoly ptxt, const PublicKey<DCRTPoly>
     (*ba)[1].SetFormat(Format::EVALUATION);
 
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
-    ciphertext->SetDepth(1);
+    ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
 }

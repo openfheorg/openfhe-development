@@ -28,10 +28,14 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#include "schemebase/base-multiparty.h"
 
 #include "cryptocontext.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "key/evalkey.h"
+#include "key/evalkeyrelin.h"
 #include "schemebase/base-pke.h"
-#include "schemebase/base-multiparty.h"
 #include "schemebase/rlwe-cryptoparameters.h"
 
 #include "schemebase/base-scheme.h"
@@ -182,8 +186,9 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     std::vector<uint32_t> autoIndices(indexList.size());
 
     for (size_t i = 0; i < indexList.size(); i++) {
-        autoIndices[i] = (cc->getSchemeId() == "CKKSRNS") ? FindAutomorphismIndex2nComplex(indexList[i], M) :
-                                                            FindAutomorphismIndex2n(indexList[i], M);
+        autoIndices[i] = (cc->getSchemeId() == SCHEME::CKKSRNS_SCHEME) ?
+                             FindAutomorphismIndex2nComplex(indexList[i], M) :
+                             FindAutomorphismIndex2n(indexList[i], M);
     }
 
     return MultiEvalAutomorphismKeyGen(privateKey, evalKeyMap, autoIndices);

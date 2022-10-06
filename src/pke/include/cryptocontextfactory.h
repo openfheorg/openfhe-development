@@ -34,6 +34,8 @@
 
 #include "cryptocontext-fwd.h"
 
+#include "scheme/scheme-id.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -61,7 +63,7 @@ public:
 
     static CryptoContext<Element> GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
                                              std::shared_ptr<SchemeBase<Element>> scheme,
-                                             const std::string& schemeId = "Not");
+                                             SCHEME schemeId = SCHEME::INVALID_SCHEME);
 
     // GetFullContextByDeserializedContext() is to get the full cryptocontext based on partial information
     // we usually get from a de-serialized cryptocontext object. Using this function instead of GetContext()

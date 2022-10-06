@@ -61,12 +61,10 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep) {
-        depth = 1;  // TODO (dsuponit): is depth supposed to be initialized to 1 in all constructors?
-    }
+    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep) {}
 
     /*
-   * @param depth depth of plaintext to create.
+   * @param noiseScaleDeg degree of the scaling factor of a plaintext
    * @param level level of plaintext to create.
    * @param scFact scaling factor of a plaintext of this level at depth 1.
    *
@@ -76,7 +74,7 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& coeffs,
-                       size_t depth, uint32_t level, double scFact, size_t slots)
+                       size_t noiseScaleDeg, uint32_t level, double scFact, size_t slots)
         : PlaintextImpl(vp, ep), value(coeffs) {
         // validate the number of slots
         if ((slots & (slots - 1)) != 0) {
@@ -97,7 +95,7 @@ public:
             OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
         }
 
-        this->depth         = depth;
+        this->noiseScaleDeg = noiseScaleDeg;
         this->level         = level;
         this->scalingFactor = scFact;
     }
@@ -127,16 +125,12 @@ public:
         else if (this->slots > (GetElementRingDimension() / 2)) {
             OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
         }
-
-        depth = 1;
     }
 
     /**
    * @brief Default empty constructor with empty uninitialized data elements.
    */
-    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value() {
-        depth = 1;
-    }
+    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value() {}
 
     CKKSPackedEncoding(const CKKSPackedEncoding& rhs)
         : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
@@ -149,7 +143,7 @@ public:
     bool Decode() {
         OPENFHE_THROW(
             not_available_error,
-            "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(depth,scalingFactor,scalTech) instead.");
+            "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(noiseScaleDeg,scalingFactor,scalTech) instead.");
     }
 
     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech);

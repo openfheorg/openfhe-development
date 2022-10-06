@@ -33,6 +33,7 @@
 #define LBCRYPTO_CRYPTO_CKKSRNS_FHE_H
 
 #include "constants.h"
+#include "encoding/plaintext-fwd.h"
 #include "schemerns/rns-fhe.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "utils/caller_info.h"
@@ -265,7 +266,7 @@ private:
     void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext) const;
 
     Plaintext MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
-                               const std::vector<std::complex<double>>& value, size_t depth, uint32_t level,
+                               const std::vector<std::complex<double>>& value, size_t noiseScaleDeg, uint32_t level,
                                usint slots) const;
 
     Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const;

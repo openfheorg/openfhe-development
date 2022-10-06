@@ -28,10 +28,13 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#include "cryptocontext.h"
 #include "schemebase/base-pke.h"
+
+#include "key/keypair.h"
+#include "key/privatekey.h"
+#include "key/publickey.h"
 #include "schemebase/rlwe-cryptoparameters.h"
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 
@@ -95,7 +98,7 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(Element plaintext, const PrivateKe
     (*ba)[0] += plaintext;
 
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
-    ciphertext->SetDepth(1);
+    ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
 }
@@ -108,7 +111,7 @@ Ciphertext<Element> PKEBase<Element>::Encrypt(Element plaintext, const PublicKey
     (*ba)[0] += plaintext;
 
     ciphertext->SetElements({std::move((*ba)[0]), std::move((*ba)[1])});
-    ciphertext->SetDepth(1);
+    ciphertext->SetNoiseScaleDeg(1);
 
     return ciphertext;
 }

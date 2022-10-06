@@ -31,6 +31,7 @@
 
 #include "schemebase/base-leveledshe.h"
 
+#include "key/privatekey.h"
 #include "cryptocontext.h"
 #include "schemebase/base-scheme.h"
 
@@ -560,7 +561,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::MorphPlaintext(ConstPlaintext plain
                                                             ConstCiphertext<Element> ciphertext) const {
     auto result = ciphertext->CloneEmpty();
 
-    result->SetDepth(plaintext->GetDepth());
+    result->SetNoiseScaleDeg(plaintext->GetNoiseScaleDeg());
     result->SetLevel(plaintext->GetLevel());
     result->SetScalingFactor(plaintext->GetScalingFactor());
     result->SetScalingFactorInt(plaintext->GetScalingFactorInt());
@@ -671,7 +672,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalMultCore(ConstCiphertext<Elemen
     }
 
     result->SetElements(std::move(cvMult));
-    result->SetDepth(ciphertext1->GetDepth() + ciphertext2->GetDepth());
+    result->SetNoiseScaleDeg(ciphertext1->GetNoiseScaleDeg() + ciphertext2->GetNoiseScaleDeg());
     result->SetScalingFactor(ciphertext1->GetScalingFactor() * ciphertext2->GetScalingFactor());
     const auto plainMod = ciphertext1->GetCryptoParameters()->GetPlaintextModulus();
     result->SetScalingFactorInt(
@@ -726,7 +727,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalSquareCore(ConstCiphertext<Elem
     }
 
     result->SetElements(std::move(cvSquare));
-    result->SetDepth(2 * ciphertext->GetDepth());
+    result->SetNoiseScaleDeg(2 * ciphertext->GetNoiseScaleDeg());
     result->SetScalingFactor(ciphertext->GetScalingFactor() * ciphertext->GetScalingFactor());
     const auto plainMod = ciphertext->GetCryptoParameters()->GetPlaintextModulus();
     result->SetScalingFactorInt(ciphertext->GetScalingFactorInt().ModMul(ciphertext->GetScalingFactorInt(), plainMod));

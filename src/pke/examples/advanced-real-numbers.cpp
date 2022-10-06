@@ -244,7 +244,7 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
     //  // ones printed above.
     //  std::cout << "Ciphertext c:" << std::endl;
     //  std::cout << "\t scaling factor: " << c->GetScalingFactor() << std::endl;
-    //  std::cout << "\t depth: " << c->GetDepth() << std::endl;
+    //  std::cout << "\t scaling factor degree: " << c->GetNoiseScaleDeg() << std::endl;
     //  std::cout << "\t level: " << c->GetLevel() << std::endl;
     //
     //  // Notice how the result of EvalMult(c,c) is of depth 2.
@@ -254,7 +254,7 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
     //  std::cout << "Ciphertext c2:" << std::endl;
     //  std::cout << "\t scaling factor: (" << sqrt(c2->GetScalingFactor()) << ")^2"
     //            << std::endl;
-    //  std::cout << "\t depth: " << c2->GetDepth() << std::endl;
+    //  std::cout << "\t scaling factor degree: " << c2->GetNoiseScaleDeg() << std::endl;
     //  std::cout << "\t level: " << c2->GetLevel() << std::endl;
     //
     //  // Here, the c2 inputs where of depth 2, so they had to be rescaled
@@ -263,19 +263,19 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
     //  std::cout << "Ciphertext c4:" << std::endl;
     //  std::cout << "\t scaling factor: (" << sqrt(c4->GetScalingFactor()) << ")^2"
     //            << std::endl;
-    //  std::cout << "\t depth: " << c4->GetDepth() << std::endl;
+    //  std::cout << "\t scaling factor degree: " << c4->GetNoiseScaleDeg() << std::endl;
     //  std::cout << "\t level: " << c4->GetLevel() << std::endl;
     //
     //  std::cout << "Ciphertext c8:" << std::endl;
     //  std::cout << "\t scaling factor: (" << sqrt(c8->GetScalingFactor()) << ")^2"
     //            << std::endl;
-    //  std::cout << "\t depth: " << c8->GetDepth() << std::endl;
+    //  std::cout << "\t scaling factor degree: " << c8->GetNoiseScaleDeg() << std::endl;
     //  std::cout << "\t level: " << c8->GetLevel() << std::endl;
     //
     //  std::cout << "Ciphertext c16:" << std::endl;
     //  std::cout << "\t scaling factor: (" << sqrt(c16->GetScalingFactor()) << ")^2"
     //            << std::endl;
-    //  std::cout << "\t depth: " << c16->GetDepth() << std::endl;
+    //  std::cout << "\t scaling factor degree: " << c16->GetNoiseScaleDeg() << std::endl;
     //  std::cout << "\t level: " << c16->GetLevel() << std::endl;
     //
     //  // c9 is the result of EvalMult between c8 (depth:2, level:2) and
@@ -285,13 +285,13 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
     //  std::cout << "Ciphertext c9:" << std::endl;
     //  std::cout << "\t scaling factor: (" << sqrt(c9->GetScalingFactor()) << ")^2"
     //            << std::endl;
-    //  std::cout << "\t depth: " << c9->GetDepth() << std::endl;
+    //  std::cout << "\t scaling factor degree: " << c9->GetNoiseScaleDeg() << std::endl;
     //  std::cout << "\t level: " << c9->GetLevel() << std::endl;
     //
     //  std::cout << "Ciphertext c18:" << std::endl;
     //  std::cout << "\t scaling factor: (" << sqrt(c18->GetScalingFactor()) << ")^2"
     //            << std::endl;
-    //  std::cout << "\t depth: " << c18->GetDepth() << std::endl;
+    //  std::cout << "\t scaling factor degree: " << c18->GetNoiseScaleDeg() << std::endl;
     //  std::cout << "\t level: " << c18->GetLevel() << std::endl;
     //
     //  // The result has the same depth and level as c18 because
@@ -299,7 +299,7 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
     //  std::cout << "Ciphertext cRes:" << std::endl;
     //  std::cout << "\t scaling factor: (" << sqrt(cRes->GetScalingFactor()) << ")^2"
     //            << std::endl;
-    //  std::cout << "\t depth: " << cRes->GetDepth() << std::endl;
+    //  std::cout << "\t scaling factor degree: " << cRes->GetNoiseScaleDeg() << std::endl;
     //  std::cout << "\t level: " << cRes->GetLevel() << std::endl;
     //
     //  std::cout << defaultfloat;

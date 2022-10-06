@@ -40,6 +40,7 @@
 
 #include "encoding/encodingparams.h"
 #include "constants.h"
+#include "scheme/scheme-id.h"
 
 #include <initializer_list>
 #include <iostream>
@@ -80,35 +81,35 @@ protected:
     double scalingFactor           = 1;
     NativeInteger scalingFactorInt = 1;
     size_t level                   = 0;
-    size_t depth                   = 1;
+    size_t noiseScaleDeg           = 1;
     usint slots                    = 0;
-    std::string schemeID;
+    SCHEME schemeID;
 
 public:
-    PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, std::string schemeID = "",
+    PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
                   bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsPoly),
           encodingParams(ep),
           encodedVector(vp, Format::COEFFICIENT),
-          schemeID(schemeID) {}
+          schemeID(schemeTag) {}
 
-    PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, std::string schemeID = "",
+    PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
                   bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsNativePoly),
           encodingParams(ep),
           encodedNativeVector(vp, Format::COEFFICIENT),
-          schemeID(schemeID) {}
+          schemeID(schemeTag) {}
 
-    PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, std::string schemeID = "",
+    PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
                   bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsDCRTPoly),
           encodingParams(ep),
           encodedVector(vp, Format::COEFFICIENT),
           encodedVectorDCRT(vp, Format::COEFFICIENT),
-          schemeID(schemeID) {}
+          schemeID(schemeTag) {}
 
     PlaintextImpl(const PlaintextImpl& rhs)
         : isEncoded(rhs.isEncoded),
@@ -119,7 +120,7 @@ public:
           scalingFactor(rhs.scalingFactor),
           scalingFactorInt(rhs.scalingFactorInt),
           level(rhs.level),
-          depth(rhs.depth),
+          noiseScaleDeg(rhs.noiseScaleDeg),
           slots(rhs.slots),
           schemeID(rhs.schemeID) {}
 
@@ -132,7 +133,7 @@ public:
           scalingFactor(rhs.scalingFactor),
           scalingFactorInt(rhs.scalingFactorInt),
           level(rhs.level),
-          depth(rhs.depth),
+          noiseScaleDeg(rhs.noiseScaleDeg),
           slots(rhs.slots),
           schemeID(rhs.schemeID) {}
 
@@ -175,7 +176,7 @@ public:
     /**
    * Get the encryption technique of the plaintext for BFV-based plaintexts.
    */
-    const std::string GetSchemeID() const {
+    SCHEME GetSchemeID() const {
         return schemeID;
     }
 
@@ -295,19 +296,19 @@ public:
     }
 
     /*
-   * Method to get the depth of a plaintext.
+   * Method to get the degree of the scaling factor of a plaintext.
    *
-   * @return the depth of the plaintext
+   * @return the degree of the scaling factor of the plaintext
    */
-    size_t GetDepth() const {
-        return depth;
+    size_t GetNoiseScaleDeg() const {
+        return noiseScaleDeg;
     }
 
     /*
-   * Method to set the depth of a plaintext.
+   * Method to set the degree of the scaling factor of a plaintext.
    */
-    void SetDepth(size_t d) {
-        depth = d;
+    void SetNoiseScaleDeg(size_t d) {
+        noiseScaleDeg = d;
     }
 
     /*

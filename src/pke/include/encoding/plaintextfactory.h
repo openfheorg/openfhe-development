@@ -37,6 +37,7 @@
 #define SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_
 
 #include "encoding/encodings.h"
+#include "scheme/scheme-id.h"
 
 #include <memory>
 #include <string>
@@ -56,7 +57,7 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
-                                   std::string schemeID = "") {
+                                   SCHEME schemeID = SCHEME::INVALID_SCHEME) {
         switch (encoding) {
             case COEF_PACKED_ENCODING:
                 return std::make_shared<CoefPackedEncoding>(vp, ep, schemeID);
@@ -76,11 +77,11 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     static Plaintext MakePlaintext(const std::vector<int64_t>& value, PlaintextEncodings encoding,
-                                   std::shared_ptr<T> vp, EncodingParams ep, std::string schemeID = "",
-                                   size_t depth = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
+                                   std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
+                                   size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
         Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
         pt->SetIntVectorValue(value);
-        pt->SetDepth(depth);
+        pt->SetNoiseScaleDeg(noiseScaleDeg);
         pt->SetLevel(level);
         pt->SetScalingFactorInt(scalingFactor);
         pt->Encode();
@@ -92,11 +93,11 @@ public:
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
     static Plaintext MakePlaintext(const std::string& value, PlaintextEncodings encoding, std::shared_ptr<T> vp,
-                                   EncodingParams ep, std::string schemeID = "", size_t depth = 1, uint32_t level = 0,
-                                   NativeInteger scalingFactor = 1) {
+                                   EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
+                                   size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
         Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
         pt->SetStringValue(value);
-        pt->SetDepth(depth);
+        pt->SetNoiseScaleDeg(noiseScaleDeg);
         pt->SetLevel(level);
         pt->SetScalingFactorInt(scalingFactor);
         pt->Encode();

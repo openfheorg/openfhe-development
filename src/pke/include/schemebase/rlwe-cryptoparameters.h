@@ -162,10 +162,10 @@ public:
     }
 
     /**
-   * Returns the maximum homomorphic multiplication depth before performing
-   * relinearization
+   * Returns the value of the maximum power of secret key for which the
+   * relinearization key is generated
    *
-   * @return the computation depth supported d.
+   * @return maximum power of secret key
    */
     size_t GetMaxRelinSkDeg() const {
         return m_maxRelinSkDeg;
@@ -273,7 +273,7 @@ public:
     /**
    * Sets the value of the maximum power of secret key for which the
    * relinearization key is generated
-   * @param depth
+   * @param maxRelinSkDeg
    */
     void SetMaxRelinSkDeg(size_t maxRelinSkDeg) {
         m_maxRelinSkDeg = maxRelinSkDeg;
@@ -370,8 +370,7 @@ protected:
     PlaintextModulus m_noiseScale = 1;
     // digit size
     usint m_digitSize = 1;
-    // maximum depth support of a ciphertext without keyswitching
-    // corresponds to the highest power of secret key for which evaluation keys are genererated
+    // the highest power of secret key for which relinearization key is generated
     uint32_t m_maxRelinSkDeg = 2;
     // specifies whether the secret polynomials are generated from discrete
     // Gaussian distribution or ternary distribution with the norm of unity

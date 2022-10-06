@@ -211,15 +211,16 @@ void BootstrapExample(SecretKeyDist secretKeyDist, uint32_t n, uint32_t slots, u
         timeBootstrap        = TOC(t);
         std::cout << "\nBootstrapping time: " << timeBootstrap / 1000.0 << " s" << std::endl;
         std::cerr << "\nNumber of levels consumed: "
-                  << depth - ciphertextAfter->GetElements()[0].GetNumOfElements() + ciphertextAfter->GetDepth()
+                  << depth - ciphertextAfter->GetElements()[0].GetNumOfElements() + ciphertextAfter->GetNoiseScaleDeg()
                   << std::endl;
         std::cerr << "\nNumber of levels remaining: "
-                  << ciphertextAfter->GetElements()[0].GetNumOfElements() - ciphertextAfter->GetDepth() << std::endl;
+                  << ciphertextAfter->GetElements()[0].GetNumOfElements() - ciphertextAfter->GetNoiseScaleDeg()
+                  << std::endl;
 
         Plaintext result;
-        std::cerr << "ciphertextAfter level: " << ciphertextAfter->GetLevel() << std::endl;
-        std::cerr << "ciphertextAfter depth: " << ciphertextAfter->GetDepth() << std::endl;
-        std::cerr << "ciphertextAfter    sf: " << ciphertextAfter->GetScalingFactor() << std::endl;
+        std::cerr << "ciphertextAfter level        : " << ciphertextAfter->GetLevel() << std::endl;
+        std::cerr << "ciphertextAfter noiseScaleDeg: " << ciphertextAfter->GetNoiseScaleDeg() << std::endl;
+        std::cerr << "ciphertextAfter    sf        : " << ciphertextAfter->GetScalingFactor() << std::endl;
         cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
         std::cerr << "encodedLength: " << encodedLength << std::endl;
 
