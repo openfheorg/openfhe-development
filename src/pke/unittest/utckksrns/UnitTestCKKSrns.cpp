@@ -63,6 +63,7 @@ enum TEST_CASE_TYPE {
     METADATA,
     ADD_PACKED_PRECISION,
     MULT_PACKED_PRECISION,
+    EVALSQUARE,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -109,6 +110,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case MULT_PACKED_PRECISION:
             typeName = "MULT_PACKED_PRECISION";
+            break;
+        case EVALSQUARE:
+            typeName = "EVALSQUARE";
             break;
         default:
             typeName = "UNKNOWN";
@@ -501,6 +505,18 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { METADATA, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { METADATA, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { METADATA, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+#endif
+    // ==========================================
+    // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { EVALSQUARE, "01", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "02", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "03", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "04", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+#if NATIVEINT != 128
+    { EVALSQUARE, "05", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVALSQUARE, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
 #endif
     // ==========================================
 };
@@ -2005,6 +2021,57 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
+
+    void UnitTest_EvalSquare(const TEST_CASE_UTCKKSRNS& testData, const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            const std::vector<std::complex<double>> vectorOfInts = {1, 0, 3, 1, 0, 1, 2, 1};
+            Plaintext plaintext                                  = cc->MakeCKKSPackedPlaintext(vectorOfInts);
+
+            // For cyclotomic order != 16, the expected result is the convolution of
+            // vectorOfInt21 and vectorOfInts2
+            const std::vector<std::complex<double>> vectorOfIntsSquare = {1, 0, 9, 1, 0, 1, 4, 1};
+            Plaintext intArrayExpectedSquare = cc->MakeCKKSPackedPlaintext(vectorOfIntsSquare);
+
+            const std::vector<std::complex<double>> vectorOfIntsSixth = {1, 0, 729, 1, 0, 1, 64, 1};
+            Plaintext intArrayExpectedSixth                           = cc->MakeCKKSPackedPlaintext(vectorOfIntsSixth);
+
+            // Initialize the public key containers.
+            KeyPair<Element> kp = cc->KeyGen();
+
+            Ciphertext<Element> ciphertext = cc->Encrypt(kp.publicKey, plaintext);
+
+            cc->EvalMultKeyGen(kp.secretKey);
+
+            Plaintext results;
+
+            Ciphertext<Element> ciphertextSq = cc->EvalSquare(ciphertext);
+            cc->Decrypt(kp.secretKey, ciphertextSq, &results);
+            results->SetLength(intArrayExpectedSquare->GetLength());
+            checkEquality(intArrayExpectedSquare->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
+                          failmsg + " EvalSquare (CKKSPacked) fails");
+
+            Ciphertext<Element> ciphertextThird = cc->EvalMult(ciphertextSq, plaintext);
+
+            Ciphertext<Element> ciphertextSixth = cc->EvalSquare(ciphertextThird);
+            cc->Decrypt(kp.secretKey, ciphertextSixth, &results);
+            results->SetLength(intArrayExpectedSixth->GetLength());
+            checkEquality(intArrayExpectedSixth->GetCKKSPackedValue(), results->GetCKKSPackedValue(), epsHigh,
+                          failmsg + " EvalSquare Sixth (CKKSPacked) fails");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
 };
 
 template <>
@@ -2080,6 +2147,8 @@ TEST_P(UTCKKSRNS, CKKSRNS) {
         case MULT_PACKED_PRECISION:
             UnitTest_Mult_Packed_Precision(test, test.buildTestName());
             break;
+        case EVALSQUARE:
+            UnitTest_EvalSquare(test, test.buildTestName());
         default:
             break;
     }

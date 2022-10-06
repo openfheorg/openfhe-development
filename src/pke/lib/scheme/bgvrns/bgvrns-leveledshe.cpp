@@ -50,7 +50,7 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     usint sizeQl              = cv[0].GetNumOfElements();
 
-    if (sizeQl >= levels && sizeQl > 0) {
+    if (sizeQl > levels && sizeQl > 0) {
         for (auto& c : cv) {
             for (size_t i = sizeQl - 1; i >= sizeQl - levels; --i) {
                 c.ModReduce(t, cryptoParams->GettModqPrecon(), cryptoParams->GetNegtInvModq(i),
@@ -58,6 +58,10 @@ void LeveledSHEBGVRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext
                             cryptoParams->GetqlInvModqPrecon(i));
             }
         }
+    }
+    else {
+        std::string errMsg = "ERROR: Not enough towers to support ModReduce.";
+        OPENFHE_THROW(config_error, errMsg);
     }
 
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
