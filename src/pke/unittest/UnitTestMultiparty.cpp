@@ -404,7 +404,7 @@ protected:
             size_t encodedLength = vectorOfInts1.size();
             std::vector<int64_t> sumInput(encodedLength, 0);
             std::vector<int64_t> multInput(encodedLength, 0);
-            for (usint i = 0; i < encodedLength; ++i) {
+            for (size_t i = 0; i < encodedLength; ++i) {
                 sumInput[i]  = vectorOfInts1[i] + vectorOfInts2[i] + vectorOfInts3[i];
                 multInput[i] = vectorOfInts1[i] * vectorOfInts3[i];
             }
@@ -415,17 +415,17 @@ protected:
                 // For CKKS there is different logic, depending on slots value
                 uint32_t slots =
                     (testData.slots != 0) ? testData.slots : (BATCH != 0) ? BATCH : cc->GetRingDimension() / 2;
-                for (usint i = 0; i < encodedLength; ++i) {
+                for (size_t i = 0; i < encodedLength; ++i) {
                     evalSumInput[i] = 0;
                     // we add to evalSumInput[i] value vectorOfInts3[(i + j) % BATCH];
-                    for (usint j = 0; j < BATCH; ++j) {
+                    for (size_t j = 0; j < BATCH; ++j) {
                         if ((i + j) % slots < encodedLength) {
                             evalSumInput[i] += vectorOfInts3[(i + j) % slots];
                         }
                     }
                 }
 
-                for (usint i = 0; i < encodedLength; ++i) {
+                for (size_t i = 0; i < encodedLength; ++i) {
                     if ((slots + i + indices[0]) % slots < encodedLength) {
                         rotateInput[i] = vectorOfInts1[(slots + i + indices[0]) % slots];
                     }
@@ -433,7 +433,7 @@ protected:
             }
             else {
                 // For BGV and BFV no slots is given
-                for (usint i = 0, rev = (encodedLength - 1); i < encodedLength; ++i, --rev) {
+                for (size_t i = 0, rev = (encodedLength - 1); i < encodedLength; ++i, --rev) {
                     if (i == 0)
                         evalSumInput[rev] = vectorOfInts3[rev];
                     else

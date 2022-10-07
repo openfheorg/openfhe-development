@@ -158,7 +158,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     auto result = std::make_shared<std::map<usint, EvalKey<Element>>>();
 
     // #pragma omp parallel for if (indexList.size() >= 4)
-    for (usint i = 0; i < indexList.size(); i++) {
+    for (size_t i = 0; i < indexList.size(); ++i) {
         PrivateKey<Element> privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
         usint index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();
@@ -206,7 +206,9 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
 
     if (batchSize > 1) {
         usint g = 5;
-        for (int i = 0; i < ceil(log2(batchSize)) - 1; i++) {
+        // max should be at least 0 as batchSize is 2 or greater
+        size_t max = static_cast<size_t>(ceil(log2(batchSize))) - 1;
+        for (size_t i = 0; i < max; ++i) {
             indices.push_back(g);
             g = (g * g) % M;
         }
@@ -317,7 +319,7 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalKeys(EvalKey<Element> eval
 
     std::vector<Element> b;
 
-    for (usint i = 0; i < a.size(); i++) {
+    for (size_t i = 0; i < a.size(); ++i) {
         b.push_back(b1[i] + b2[i]);
     }
 
@@ -343,7 +345,7 @@ EvalKey<Element> MultipartyBase<Element>::MultiAddEvalMultKeys(EvalKey<Element> 
     std::vector<Element> a;
     std::vector<Element> b;
 
-    for (usint i = 0; i < a1.size(); i++) {
+    for (size_t i = 0; i < a1.size(); ++i) {
         a.push_back(a1[i] + a2[i]);
         b.push_back(b1[i] + b2[i]);
     }
@@ -375,7 +377,7 @@ EvalKey<Element> MultipartyBase<Element>::MultiMultEvalKey(PrivateKey<Element> p
     std::vector<Element> a;
     std::vector<Element> b;
 
-    for (usint i = 0; i < a0.size(); i++) {
+    for (size_t i = 0; i < a0.size(); ++i) {
         Element e1(dgg, elementParams, Format::EVALUATION);
         Element e2(dgg, elementParams, Format::EVALUATION);
 

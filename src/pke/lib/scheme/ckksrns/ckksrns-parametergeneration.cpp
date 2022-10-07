@@ -126,8 +126,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     NativeInteger qPrev = q;
     if (numPrimes > 1) {
         if (scalTech != FLEXIBLEAUTO && scalTech != FLEXIBLEAUTOEXT) {
-            uint32_t cnt = 0;
-            for (usint i = numPrimes - 2; i >= 1; i--) {
+            for (size_t i = numPrimes - 2, cnt = 0; i >= 1; --i, ++cnt) {
                 if ((cnt % 2) == 0) {
                     qPrev = lbcrypto::PreviousPrime(qPrev, cyclOrder);
                     q     = qPrev;
@@ -139,7 +138,6 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
                 moduliQ[i] = q;
                 rootsQ[i]  = RootOfUnity(cyclOrder, moduliQ[i]);
-                cnt++;
             }
         }
         else {  // FLEXIBLEAUTO
@@ -152,20 +150,21 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
        * scale factor of level 0 as possible.
        */
 
-            double sf    = moduliQ[numPrimes - 1].ConvertToDouble();
-            uint32_t cnt = 0;
-            for (usint i = numPrimes - 2; i >= 1; i--) {
-                sf = static_cast<double>(pow(sf, 2) / moduliQ[i + 1].ConvertToDouble());
+            // TODO (dsuponit): do we need to initialize sf here at all? seems like it should be moved inside the loop
+            double sf = moduliQ[numPrimes - 1].ConvertToDouble();
+            for (size_t i = numPrimes - 2, cnt = 0; i >= 1; --i, ++cnt) {
+                sf                  = static_cast<double>(pow(sf, 2) / moduliQ[i + 1].ConvertToDouble());
+                NativeInteger sfInt = std::llround(sf);
+                NativeInteger sfRem = sfInt.Mod(cyclOrder);
+                bool hasSameMod     = true;
+
                 if ((cnt % 2) == 0) {
-                    NativeInteger sfInt = std::llround(sf);
-                    NativeInteger sfRem = sfInt.Mod(cyclOrder);
                     NativeInteger qPrev = sfInt - NativeInteger(cyclOrder) - sfRem + NativeInteger(1);
 
-                    bool hasSameMod = true;
                     while (hasSameMod) {
                         hasSameMod = false;
                         qPrev      = lbcrypto::PreviousPrime(qPrev, cyclOrder);
-                        for (uint32_t j = i + 1; j < numPrimes; j++) {
+                        for (size_t j = i + 1; j < numPrimes; ++j) {
                             if (qPrev == moduliQ[j]) {
                                 hasSameMod = true;
                             }
@@ -174,14 +173,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
                     moduliQ[i] = qPrev;
                 }
                 else {
-                    NativeInteger sfInt = std::llround(sf);
-                    NativeInteger sfRem = sfInt.Mod(cyclOrder);
                     NativeInteger qNext = sfInt + NativeInteger(cyclOrder) - sfRem + NativeInteger(1);
-                    bool hasSameMod     = true;
+
                     while (hasSameMod) {
                         hasSameMod = false;
                         qNext      = lbcrypto::NextPrime(qNext, cyclOrder);
-                        for (uint32_t j = i + 1; j < numPrimes; j++) {
+                        for (size_t j = i + 1; j < numPrimes; ++j) {
                             if (qNext == moduliQ[j]) {
                                 hasSameMod = true;
                             }
@@ -191,7 +188,6 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
                 }
 
                 rootsQ[i] = RootOfUnity(cyclOrder, moduliQ[i]);
-                cnt++;
             }
         }
     }

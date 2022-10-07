@@ -139,7 +139,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
     init_moduli[0]       = q;
     init_rootsOfUnity[0] = RootOfUnity(mArb, init_moduli[0]);
 
-    for (usint i = 1; i < init_size; i++) {
+    for (size_t i = 1; i < init_size; ++i) {
         q                    = lbcrypto::NextPrime(q, mArb);
         init_moduli[i]       = q;
         init_rootsOfUnity[i] = RootOfUnity(mArb, init_moduli[i]);
@@ -154,7 +154,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics) 
     init_moduli_NTT[0]       = q;
     init_rootsOfUnity_NTT[0] = RootOfUnity(mNTT, init_moduli_NTT[0]);
 
-    for (usint i = 1; i < init_size; i++) {
+    for (size_t i = 1; i < init_size; ++i) {
         q                        = lbcrypto::NextPrime(q, mNTT);
         init_moduli_NTT[i]       = q;
         init_rootsOfUnity_NTT[i] = RootOfUnity(mNTT, init_moduli_NTT[i]);
@@ -203,7 +203,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
     init_moduli[0]       = q;
     init_rootsOfUnity[0] = RootOfUnity(mArb, init_moduli[0]);
 
-    for (usint i = 1; i < init_size; i++) {
+    for (size_t i = 1; i < init_size; ++i) {
         q                    = lbcrypto::NextPrime(q, mArb);
         init_moduli[i]       = q;
         init_rootsOfUnity[i] = RootOfUnity(mArb, init_moduli[i]);
@@ -218,7 +218,7 @@ TEST_F(UTGENERAL_ENCODING, packed_int_ptxt_encoding_DCRTPoly_prime_cyclotomics_n
     init_moduli_NTT[0]       = q;
     init_rootsOfUnity_NTT[0] = RootOfUnity(mNTT, init_moduli_NTT[0]);
 
-    for (usint i = 1; i < init_size; i++) {
+    for (size_t i = 1; i < init_size; ++i) {
         q                        = lbcrypto::NextPrime(q, mNTT);
         init_moduli_NTT[i]       = q;
         init_rootsOfUnity_NTT[i] = RootOfUnity(mNTT, init_moduli_NTT[i]);

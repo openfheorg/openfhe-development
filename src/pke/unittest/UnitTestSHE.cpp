@@ -792,9 +792,9 @@ protected:
             uint32_t n = cc->GetRingDimension();
 
             std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8};
-            uint32_t dim                       = vectorOfInts1.size();
+            size_t dim                         = vectorOfInts1.size();
             vectorOfInts1.resize(n);
-            for (uint32_t i = dim; i < n; i++)
+            for (size_t i = dim; i < n; ++i)
                 vectorOfInts1[i] = vectorOfInts1[i % dim];
             Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);
             auto ct1            = cc->Encrypt(kp.publicKey, intArray1);
@@ -807,13 +807,13 @@ protected:
 
             std::vector<int64_t> vectorOfInts2 = {3, 5, 7, 9, 11, 13, 15, 9};
             vectorOfInts2.resize(n);
-            for (uint32_t i = dim; i < n; i++)
+            for (size_t i = dim; i < n; ++i)
                 vectorOfInts2[i] = vectorOfInts2[i % dim];
             Plaintext intArray2 = cc->MakePackedPlaintext(vectorOfInts2);
 
             std::vector<int64_t> vectorOfIntsAll = {36, 36, 36, 36, 36, 36, 36, 36};
             vectorOfIntsAll.resize(n);
-            for (uint32_t i = dim; i < n; i++)
+            for (size_t i = dim; i < n; ++i)
                 vectorOfIntsAll[i] = vectorOfIntsAll[i % dim];
             Plaintext intArrayAll = cc->MakePackedPlaintext(vectorOfIntsAll);
 
@@ -938,7 +938,7 @@ protected:
                 << "Ciphertext metadata mismatch in EvalAtIndex -2";
 
             std::vector<double> weights(2);
-            for (usint i = 0; i < 2; i++)
+            for (size_t i = 0; i < 2; ++i)
                 weights[i] = i;
 
             std::vector<Ciphertext<Element>> ciphertexts(2);
@@ -971,9 +971,9 @@ protected:
             uint32_t n = cc->GetRingDimension();
 
             std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8};
-            uint32_t dim                       = vectorOfInts1.size();
+            size_t dim                         = vectorOfInts1.size();
             vectorOfInts1.resize(n);
-            for (uint32_t i = n - dim; i < n; i++)
+            for (size_t i = n - dim; i < n; ++i)
                 vectorOfInts1[i] = i;
 
             Plaintext intArray1 = cc->MakePackedPlaintext(vectorOfInts1);

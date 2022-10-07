@@ -51,7 +51,7 @@ protected:
 
     int run_demo_pre(int security_model) {
         // Generate parameters.
-        int num_of_hops = 2;
+        size_t num_of_hops = 2;
 
         int plaintextModulus = 2;
         usint ringDimension  = 1024;
@@ -179,7 +179,7 @@ protected:
         keyPairs.push_back(keyPair1);
         reEncryptedCTs.push_back(ciphertext1);
 
-        for (int i = 0; i < num_of_hops; i++) {
+        for (size_t i = 0; i < num_of_hops; ++i) {
             auto keyPair = cryptoContext->KeyGen();
             keyPairs.push_back(keyPair);
 
@@ -223,7 +223,7 @@ protected:
         std::vector<int64_t> unpackedPT, unpackedDecPT;
         unpackedPT    = plaintextDec1->GetCoefPackedValue();
         unpackedDecPT = plaintextDec->GetCoefPackedValue();
-        for (unsigned int j = 0; j < unpackedPT.size(); j++) {
+        for (size_t j = 0; j < unpackedPT.size(); ++j) {
             EXPECT_EQ(unpackedPT[j], unpackedDecPT[j]);
             if (unpackedPT[j] != unpackedDecPT[j]) {
                 OPENFHE_THROW(math_error, "Decryption failure");

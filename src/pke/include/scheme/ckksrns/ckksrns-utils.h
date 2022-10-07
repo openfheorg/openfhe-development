@@ -116,7 +116,7 @@ std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>
  *
  * @return the vector with cloned values
  */
-std::vector<std::complex<double>> Fill(const std::vector<std::complex<double>>& a, int slots);
+std::vector<std::complex<double>> Fill(const std::vector<std::complex<double>>& a, size_t slots);
 
 /**
  * Computes the coefficients for the FFT encoding for CoeffEncodingCollapse such that every
@@ -202,10 +202,11 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget 
 namespace CKKS_BOOT_PARAMS {
 /**
    * Enums representing indices for the vector returned by GetCollapsedFFTParams()
+   * ATTN: If anything changes (the values or their order) then GetCollapsedFFTParams() should be altered as well
    */
 enum {
-    LEVEL_BUDGET,  // the level budget
-    LAYERS_COLL,   // the number of layers to collapse in one level
+    LEVEL_BUDGET = 0,  // the level budget
+    LAYERS_COLL,       // the number of layers to collapse in one level
     LAYERS_REM,  // the number of layers remaining to be collapsed in one level to have exactly the number of levels specified in the level budget
     NUM_ROTATIONS,      // the number of rotations in one level
     BABY_STEP,          // the baby step in the baby-step giant-step strategy

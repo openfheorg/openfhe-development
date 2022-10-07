@@ -199,7 +199,7 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
         const DCRTPoly& s        = privateKey->GetPrivateElement();
         const auto elementParams = s.GetParams();
 
-        for (usint i = 0; i < a0.size(); i++) {
+        for (size_t i = 0; i < a0.size(); ++i) {
             DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
             DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
             a.push_back(a0[i] * s + ns * e0);
@@ -211,19 +211,19 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
         const std::shared_ptr<ParmType> paramsQ  = cryptoParams->GetElementParams();
         const std::shared_ptr<ParmType> paramsQP = cryptoParams->GetParamsQP();
 
-        usint sizeQ  = paramsQ->GetParams().size();
-        usint sizeQP = paramsQP->GetParams().size();
+        size_t sizeQ  = paramsQ->GetParams().size();
+        size_t sizeQP = paramsQP->GetParams().size();
 
         DCRTPoly s = privateKey->GetPrivateElement().Clone();
 
         s.SetFormat(Format::COEFFICIENT);
         DCRTPoly sExt(paramsQP, Format::COEFFICIENT, true);
 
-        for (usint i = 0; i < sizeQ; i++) {
+        for (size_t i = 0; i < sizeQ; ++i) {
             sExt.SetElementAtIndex(i, s.GetElementAtIndex(i));
         }
 
-        for (usint j = sizeQ; j < sizeQP; j++) {
+        for (size_t j = sizeQ; j < sizeQP; ++j) {
             NativeInteger pj    = paramsQP->GetParams()[j]->GetModulus();
             NativeInteger rooti = paramsQP->GetParams()[j]->GetRootOfUnity();
             auto sNew0          = s.GetElementAtIndex(0);
@@ -232,7 +232,7 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
         }
         sExt.SetFormat(Format::EVALUATION);
 
-        for (usint i = 0; i < a0.size(); i++) {
+        for (size_t i = 0; i < a0.size(); ++i) {
             DCRTPoly e0(dgg, paramsQP, Format::EVALUATION);
             DCRTPoly e1(dgg, paramsQP, Format::EVALUATION);
 

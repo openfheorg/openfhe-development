@@ -62,11 +62,11 @@ public:
  * @param vectorSize The length of the two vectors.
  * @param failmsg Debug message to display upon failure.
  */
-static void checkEquality(const std::vector<int64_t>& a, const std::vector<int64_t>& b, int vectorSize,
+static void checkEquality(const std::vector<int64_t>& a, const std::vector<int64_t>& b, size_t vectorSize,
                           const std::string& failmsg) {
     std::vector<usint> allTrue(vectorSize);
     std::vector<usint> tmp(vectorSize);
-    for (int i = 0; i < vectorSize; i++) {
+    for (size_t i = 0; i < vectorSize; ++i) {
         allTrue[i] = 1;
         tmp[i]     = (a[i] == b[i]);
     }
@@ -91,14 +91,14 @@ TEST_P(UTBFVRNS_DECRYPT, BFVrns_Decrypt) {
 
     KeyPair<DCRTPoly> kp = cc->KeyGen();
 
-    usint vecsize = 8;
-    std::vector<int64_t> vectorOfInts(8);
-    for (usint i = 0; i < vecsize; ++i) {
+    size_t vecsize = 8;
+    std::vector<int64_t> vectorOfInts(vecsize);
+    for (size_t i = 0; i < vecsize; ++i) {
         if (ptm == 2) {
-            vectorOfInts[i] = rand() % ptm; // NOLINT
+            vectorOfInts[i] = rand() % ptm;  // NOLINT
         }
         else {
-            vectorOfInts[i] = (rand() % ptm) / 2; // NOLINT
+            vectorOfInts[i] = (rand() % ptm) / 2;  // NOLINT
         }
     }
 

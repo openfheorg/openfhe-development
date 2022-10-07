@@ -280,7 +280,7 @@ protected:
 
             // std::vector<int64_t> vectorOfIntsSub = { -7,-5,-3,-1,1,3,5,7 };
             std::vector<int64_t> vectorOfIntsSub(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 vectorOfIntsSub[i] = (int64_t)(2 * i) - VECTOR_SIZE + 1;
             }
             Plaintext plaintextSub = cc->MakePackedPlaintext(vectorOfIntsSub);
@@ -387,7 +387,7 @@ protected:
 
             // vectorOfIntsMult = { 0,6,10,12,12,10,6,0 };
             std::vector<int64_t> vectorOfIntsMult(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 vectorOfIntsMult[i] = i * VECTOR_SIZE - i * i - i;
             }
             Plaintext plaintextMult = cc->MakePackedPlaintext(vectorOfIntsMult);
@@ -465,14 +465,14 @@ protected:
 
             // vIntsRightShift2 = { 0,0,1,2,3,4,5,6 };
             std::vector<int64_t> vIntsRightShift2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 vIntsRightShift2[i] = (i >= 2) ? vectorOfInts1[i - 2] : 0;
             }
             Plaintext plaintextRight2 = cc->MakePackedPlaintext(vIntsRightShift2);
 
             // vIntsLeftShift2 = { 3,4,5,6,7,8,0,0 };
             std::vector<int64_t> vIntsLeftShift2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 vIntsLeftShift2[i] = (i < VECTOR_SIZE - 2) ? vectorOfInts1[i + 2] : 0;
             }
             Plaintext plaintextLeft2 = cc->MakePackedPlaintext(vIntsLeftShift2);
@@ -679,7 +679,7 @@ protected:
             std::vector<int64_t> pCt12(VECTOR_SIZE);
             std::vector<int64_t> pCt13(VECTOR_SIZE);
             std::vector<int64_t> pCt14(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 pCtMult[i] = vectorOfInts1[i] * vectorOfInts2[i];
                 pCt3[i]    = pCtMult[i] + vectorOfInts1[i];
                 pCt4[i]    = pCtMult[i] - vectorOfInts1[i];
@@ -932,14 +932,14 @@ protected:
 
             // vIntsRightShift2 = { 0,0,1,2,3,4,5,6 };
             std::vector<int64_t> vIntsRightShift2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 vIntsRightShift2[i] = (i >= 2) ? vectorOfInts1[i - 2] : 0;
             }
             Plaintext plaintextRight2 = cc->MakePackedPlaintext(vIntsRightShift2);
 
             // vIntsLeftShift2 = { 3,4,5,6,7,8,0,0 };
             std::vector<int64_t> vIntsLeftShift2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 vIntsLeftShift2[i] = (i < VECTOR_SIZE - 2) ? vectorOfInts1[i + 2] : 0;
             }
             Plaintext plaintextLeft2 = cc->MakePackedPlaintext(vIntsLeftShift2);
@@ -1081,7 +1081,7 @@ protected:
                 << "Ciphertext metadata mismatch in EvalAtIndex -2";
 
             std::vector<double> weights(2);
-            for (int i = 0; i < 2; i++)
+            for (size_t i = 0; i < 2; ++i)
                 weights[i] = i;
 
             std::vector<Ciphertext<Element>> ciphertexts(2);

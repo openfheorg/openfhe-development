@@ -195,12 +195,12 @@ protected:
             int half       = ptm / 2;
 
             std::vector<int64_t> intvec;
-            for (size_t ii = 0; ii < intSize; ii++)
+            for (size_t i = 0; i < intSize; ++i)
                 intvec.push_back(rand() % half);  // NOLINT
             Plaintext plaintextInt = cc->MakeCoefPackedPlaintext(intvec);
 
             std::vector<int64_t> sintvec;
-            for (size_t ii = 0; ii < intSize; ii++) {
+            for (size_t i = 0; i < intSize; ++i) {
                 int rnum = rand() % half;  // NOLINT
                 if (rand() % 2)            // NOLINT
                     rnum *= -1;

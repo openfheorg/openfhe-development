@@ -121,7 +121,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Ele
     const auto encodingParams = cryptoParams->GetEncodingParams();
     const auto elementParams  = cryptoParams->GetElementParams();
 
-    usint n = elementParams->GetRingDimension();
+    size_t n = elementParams->GetRingDimension();
 
     auto cc = ciphertext->GetCryptoContext();
 
@@ -133,8 +133,8 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Ele
         // first plaintext slot does not need to change
         randomIntVector[0].real(0);
 
-        for (usint i = 0; i < n - 1; i++) {
-            randomIntVector[i + 1].real(distribution(PseudoRandomNumberGenerator::GetPRNG()));
+        for (size_t i = 1; i < n; ++i) {
+            randomIntVector[i].real(distribution(PseudoRandomNumberGenerator::GetPRNG()));
         }
 
         plaintext = cc->MakeCKKSPackedPlaintext(randomIntVector, ciphertext->GetNoiseScaleDeg(), 0, nullptr,
@@ -150,8 +150,8 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Ele
         // first plaintext slot does not need to change
         randomIntVector[0] = 0;
 
-        for (usint i = 0; i < n - 1; i++) {
-            randomIntVector[i + 1] = randomVector[i].ConvertToInt();
+        for (size_t i = 1; i < n; ++i) {
+            randomIntVector[i] = randomVector[i - 1].ConvertToInt();
         }
 
         plaintext = cc->MakePackedPlaintext(randomIntVector);
@@ -190,7 +190,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> AdvancedSHEBase<Element>::Eva
     }
     else {  // Arbitrary cyclotomics
         usint g = encodingParams->GetPlaintextGenerator();
-        for (int i = 0; i < floor(log2(batchSize)); i++) {
+        for (size_t i = 0; i < static_cast<size_t>(floor(log2(batchSize))); ++i) {
             indices.push_back(g);
             g = (g * g) % m;
         }
@@ -284,7 +284,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum(ConstCiphertext<Element> c
             auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
             usint g = encodingParams->GetPlaintextGenerator();
-            for (int i = 0; i < floor(log2(batchSize)); i++) {
+            for (size_t i = 0; i < static_cast<size_t>(floor(log2(batchSize))); ++i) {
                 auto ea       = algo->EvalAutomorphism(newCiphertext, g, evalKeyMap);
                 newCiphertext = algo->EvalAdd(newCiphertext, ea);
                 g             = (g * g) % m;
@@ -448,8 +448,9 @@ std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices_2n(usint batchSize,
     std::vector<usint> indices;
 
     if (batchSize > 1) {
-        usint g = 5;
-        for (int i = 0; i < ceil(log2(batchSize)) - 1; i++) {
+        usint g    = 5;
+        size_t max = static_cast<size_t>(ceil(log2(batchSize))) - 1;
+        for (size_t i = 0; i < max; ++i) {
             indices.push_back(g);
             g = (g * g) % m;
         }
@@ -470,7 +471,7 @@ std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices2nComplex(usint batc
     // generator
     usint g = 5;
 
-    for (size_t j = 0; j < ceil(log2(batchSize)); j++) {
+    for (size_t j = 0; j < static_cast<size_t>(ceil(log2(batchSize))); ++j) {
         indices.push_back(g);
         g = (g * g) % m;
     }
@@ -486,16 +487,11 @@ std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices2nComplexRows(usint 
     usint colSize = m / (4 * rowSize);
 
     // generator
-    int32_t g0 = 5;
-    usint g    = 0;
+    usint g0 = 5;
+    usint f  = (NativeInteger(g0).ModExp(rowSize, m)).ConvertToInt();
 
-    int32_t f = (NativeInteger(g0).ModExp(rowSize, m)).ConvertToInt();
-
-    for (size_t j = 0; j < ceil(log2(colSize)); j++) {
-        g = f;
-
-        indices.push_back(g);
-
+    for (size_t j = 0; j < static_cast<size_t>(ceil(log2(colSize))); ++j) {
+        indices.push_back(f);
         f = (f * f) % m;
     }
 
@@ -508,14 +504,12 @@ std::vector<usint> AdvancedSHEBase<Element>::GenerateIndices2nComplexCols(usint 
     std::vector<usint> indices;
 
     // generator
-    int32_t g    = NativeInteger(5).ModInverse(m).ConvertToInt();
-    usint gFinal = g;
+    usint g0 = 5;
+    usint g  = NativeInteger(g0).ModInverse(m).ConvertToInt();
 
-    for (size_t j = 0; j < ceil(log2(batchSize)); j++) {
-        indices.push_back(gFinal);
+    for (size_t j = 0; j < static_cast<size_t>(ceil(log2(batchSize))); j++) {
+        indices.push_back(g);
         g = (g * g) % m;
-
-        gFinal = g;
     }
 
     return indices;
@@ -528,8 +522,9 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum_2n(ConstCiphertext<Element
     auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
     if (batchSize > 1) {
-        usint g = 5;
-        for (int i = 0; i < ceil(log2(batchSize)) - 1; i++) {
+        usint g    = 5;
+        size_t max = static_cast<size_t>(ceil(log2(batchSize))) - 1;
+        for (size_t i = 0; i < max; ++i) {
             newCiphertext = algo->EvalAdd(newCiphertext, algo->EvalAutomorphism(newCiphertext, g, evalKeys));
             g             = (g * g) % m;
         }
@@ -549,15 +544,12 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum2nComplex(
     Ciphertext<Element> newCiphertext(std::make_shared<CiphertextImpl<Element>>(*ciphertext));
 
     // generator
-    int32_t g    = 5;
-    usint gFinal = g;
-    auto algo    = ciphertext->GetCryptoContext()->GetScheme();
+    usint g   = 5;
+    auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
-    for (int i = 0; i < ceil(log2(batchSize)); i++) {
-        newCiphertext = algo->EvalAdd(newCiphertext, algo->EvalAutomorphism(newCiphertext, gFinal, evalKeys));
+    for (size_t i = 0; i < static_cast<size_t>(ceil(log2(batchSize))); ++i) {
+        newCiphertext = algo->EvalAdd(newCiphertext, algo->EvalAutomorphism(newCiphertext, g, evalKeys));
         g             = (g * g) % m;
-
-        gFinal = g;
     }
 
     return newCiphertext;
@@ -572,17 +564,13 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum2nComplexRows(
     usint colSize = m / (4 * rowSize);
 
     // generator
-    int32_t g0 = 5;
-    usint g    = 0;
-    int32_t f  = (NativeInteger(g0).ModExp(rowSize, m)).ConvertToInt();
+    usint g0 = 5;
+    usint f  = (NativeInteger(g0).ModExp(rowSize, m)).ConvertToInt();
 
     auto algo = ciphertext->GetCryptoContext()->GetScheme();
-    for (size_t j = 0; j < ceil(log2(colSize)); j++) {
-        g = f;
-
-        newCiphertext = algo->EvalAdd(newCiphertext, algo->EvalAutomorphism(newCiphertext, g, evalKeys));
-
-        f = (f * f) % m;
+    for (size_t j = 0; j < static_cast<size_t>(ceil(log2(colSize))); ++j) {
+        newCiphertext = algo->EvalAdd(newCiphertext, algo->EvalAutomorphism(newCiphertext, f, evalKeys));
+        f             = (f * f) % m;
     }
 
     return newCiphertext;
@@ -595,16 +583,13 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSum2nComplexCols(
     Ciphertext<Element> newCiphertext(std::make_shared<CiphertextImpl<Element>>(*ciphertext));
 
     // generator
-    int32_t g    = NativeInteger(5).ModInverse(m).ConvertToInt();
-    usint gFinal = g;
-
+    usint g0  = 5;
+    usint g   = NativeInteger(g0).ModInverse(m).ConvertToInt();
     auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
-    for (int i = 0; i < ceil(log2(batchSize)); i++) {
-        newCiphertext = algo->EvalAdd(newCiphertext, algo->EvalAutomorphism(newCiphertext, gFinal, evalKeys));
+    for (size_t i = 0; i < static_cast<size_t>(ceil(log2(batchSize))); ++i) {
+        newCiphertext = algo->EvalAdd(newCiphertext, algo->EvalAutomorphism(newCiphertext, g, evalKeys));
         g             = (g * g) % m;
-
-        gFinal = g;
     }
 
     return newCiphertext;

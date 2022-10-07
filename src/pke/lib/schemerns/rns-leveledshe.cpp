@@ -297,7 +297,7 @@ void LeveledSHERNS::MultByMonomialInPlace(Ciphertext<DCRTPoly>& ciphertext, usin
     monomialDCRT = monomial;
     monomialDCRT.SetFormat(Format::EVALUATION);
 
-    for (usint i = 0; i < ciphertext->GetElements().size(); i++) {
+    for (size_t i = 0; i < ciphertext->GetElements().size(); ++i) {
         cv[i] *= monomialDCRT;
     }
 }

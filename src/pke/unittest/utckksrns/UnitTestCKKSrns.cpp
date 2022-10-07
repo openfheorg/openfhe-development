@@ -983,7 +983,7 @@ protected:
             std::vector<std::complex<double>> vectorOfIntsSubAfterMult(VECTOR_SIZE);
             std::vector<std::complex<double>> vectorOfIntsAddAfterMult2(VECTOR_SIZE);
             std::vector<std::complex<double>> vectorOfIntsSubAfterMult2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 vectorOfIntsMult[i]          = i * VECTOR_SIZE - i * i - i;
                 vectorOfIntsAddAfterMult[i]  = vectorOfIntsMult[i] + std::complex<double>(10, 0);
                 vectorOfIntsSubAfterMult[i]  = vectorOfIntsMult[i] - std::complex<double>(10, 0);
@@ -1150,7 +1150,7 @@ protected:
             std::vector<std::complex<double>> pCt12(VECTOR_SIZE);
             std::vector<std::complex<double>> pCt13(VECTOR_SIZE);
             std::vector<std::complex<double>> pCt14(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 pCtMult[i] = vectorOfInts1[i] * vectorOfInts2[i];
                 pCt3[i]    = pCtMult[i] + vectorOfInts1[i];
                 pCt4[i]    = pCtMult[i] - vectorOfInts1[i];
@@ -1413,19 +1413,19 @@ protected:
             uint32_t slots = (testData.slots != 0) ? testData.slots : (BATCH != 0) ? BATCH : cc->GetRingDimension() / 2;
 
             std::vector<std::complex<double>> vectorOfInts1(slots);
-            for (uint32_t i = 0; i < slots; i++) {
+            for (size_t i = 0; i < slots; ++i) {
                 vectorOfInts1[i] = rand() % 10;  // NOLINT
             }
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts1, 1, 0, nullptr, testData.slots);
 
             std::vector<std::complex<double>> vIntsRightRotate2(slots);
-            for (uint32_t i = 0; i < slots; i++) {
+            for (size_t i = 0; i < slots; ++i) {
                 vIntsRightRotate2[(i + slots + 2) % slots] = vectorOfInts1[i];
             }
             Plaintext plaintextRight2 = cc->MakeCKKSPackedPlaintext(vIntsRightRotate2, 1, 0, nullptr, testData.slots);
 
             std::vector<std::complex<double>> vIntsLeftRotate2(slots);
-            for (uint32_t i = 0; i < slots; i++) {
+            for (size_t i = 0; i < slots; ++i) {
                 // here 2*slots for the case if slots = 1, to avoid negative index
                 vIntsLeftRotate2[(i + 2 * slots - 2) % slots] = vectorOfInts1[i];
             }
@@ -1492,7 +1492,7 @@ protected:
             // vIntsRightShift2 = { 7,8,1,2,3,4,5,6 } if slots = 8;
             std::vector<std::complex<double>> vIntsRightShift2(VECTOR_SIZE);
             uint32_t slots = (testData.slots != 0) ? testData.slots : (BATCH != 0) ? BATCH : cc->GetRingDimension() / 2;
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 if ((slots + i - 2) % slots < VECTOR_SIZE) {
                     vIntsRightShift2[i] = vectorOfInts1_8[(slots + i - 2) % slots];
                 }
@@ -1505,7 +1505,7 @@ protected:
             // vIntsRightShift2 = { 3,4,5,6,7,8,0,0 } if slots > 8;
             // vIntsRightShift2 = { 3,4,5,6,7,8,1,2 } if slots = 8;
             std::vector<std::complex<double>> vIntsLeftShift2(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 if ((i + 2) % slots < VECTOR_SIZE) {
                     vIntsLeftShift2[i] = vectorOfInts1_8[(i + 2) % slots];
                 }
@@ -1651,7 +1651,7 @@ protected:
             std::vector<std::complex<double>> in2(VECTOR_SIZE, 2);  // all 2's
             std::vector<std::complex<double>> in3(VECTOR_SIZE, 1);  // all 1's
             std::vector<std::complex<double>> out(VECTOR_SIZE);
-            for (usint i = 0; i < VECTOR_SIZE; i++) {
+            for (size_t i = 0; i < VECTOR_SIZE; ++i) {
                 // TODO (dsuponit): what is the purpose of this calculation? to have a noise?
                 // otherwise it is better to create "out" without calculating values in the loop
                 out[i] = weights[0] * in1[i] + weights[1] * in2[i] + weights[2] * in3[i];
@@ -1993,7 +1993,7 @@ protected:
                 << "Ciphertext metadata mismatch in EvalFastRotation -2";
 
             std::vector<double> weights(2);
-            for (int i = 0; i < 2; i++)
+            for (size_t i = 0; i < 2; ++i)
                 weights[i] = i;
 
             std::vector<ConstCiphertext<Element>> ciphertexts{ciphertext1, ciphertext2};

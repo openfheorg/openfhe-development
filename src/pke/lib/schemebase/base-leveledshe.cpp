@@ -397,7 +397,7 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> LeveledSHEBase<Element>::Eval
 
     // TODO pragma omp currently gives concurrent error
     // #pragma omp parallel for if (indexList.size() >= 4)
-    for (usint i = 0; i < indexList.size(); i++) {
+    for (size_t i = 0; i < indexList.size(); ++i) {
         PrivateKey<Element> privateKeyPermuted = std::make_shared<PrivateKeyImpl<Element>>(cc);
 
         usint index = NativeInteger(indexList[i]).ModInverse(2 * N).ConvertToInt();

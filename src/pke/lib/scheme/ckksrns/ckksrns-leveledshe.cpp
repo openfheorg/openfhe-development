@@ -122,7 +122,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
     ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() - levels);
     ciphertext->SetLevel(ciphertext->GetLevel() + levels);
 
-    for (usint i = 0; i < levels; ++i) {
+    for (size_t i = 0; i < levels; ++i) {
         double modReduceFactor = cryptoParams->GetModReduceFactor(sizeQl - 1 - i);
         ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() / modReduceFactor);
     }
@@ -160,7 +160,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     usint numTowers                 = cv[0].GetNumOfElements();
     std::vector<DCRTPoly::Integer> moduli(numTowers);
 
-    for (usint i = 0; i < numTowers; i++) {
+    for (size_t i = 0; i < numTowers; ++i) {
         moduli[i] = cv[0].GetElementAtIndex(i).GetModulus();
     }
 
@@ -197,7 +197,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     std::vector<DCRTPoly::Integer> currPowP(numTowers, scaledConstant);
 
     // multiply c*powP with powP a total of (depth-1) times to get c*powP^d
-    for (size_t i = 0; i < ciphertext->GetNoiseScaleDeg() - 1; i++) {
+    for (size_t i = 0; i < ciphertext->GetNoiseScaleDeg() - 1; ++i) {
         currPowP = CKKSPackedEncoding::CRTMult(currPowP, crtPowP, moduli);
     }
 
@@ -209,7 +209,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     usint sizeQl                    = cv[0].GetNumOfElements();
     std::vector<DCRTPoly::Integer> moduli(sizeQl);
-    for (usint i = 0; i < sizeQl; i++) {
+    for (size_t i = 0; i < sizeQl; ++i) {
         moduli[i] = cv[0].GetElementAtIndex(i).GetModulus();
     }
 
@@ -264,7 +264,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
     DCRTPoly::Integer intScFactor = static_cast<uint64_t>(scFactor + 0.5);
     std::vector<DCRTPoly::Integer> crtScFactor(sizeQl, intScFactor);
 
-    for (usint i = 1; i < ciphertext->GetNoiseScaleDeg(); i++) {
+    for (size_t i = 1; i < ciphertext->GetNoiseScaleDeg(); ++i) {
         crtConstant = CKKSPackedEncoding::CRTMult(crtConstant, crtScFactor, moduli);
     }
 
@@ -303,7 +303,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     uint32_t numTowers              = cv[0].GetNumOfElements();
     std::vector<DCRTPoly::Integer> factors(numTowers);
 
-    for (usint i = 0; i < numTowers; i++) {
+    for (size_t i = 0; i < numTowers; ++i) {
         DCRTPoly::Integer modulus = cv[0].GetElementAtIndex(i).GetModulus();
 
         if (scaled128 < 0) {
@@ -327,7 +327,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     uint32_t numTowers              = cv[0].GetNumOfElements();
     std::vector<DCRTPoly::Integer> moduli(numTowers);
-    for (usint i = 0; i < numTowers; i++) {
+    for (size_t i = 0; i < numTowers; ++i) {
         moduli[i] = cv[0].GetElementAtIndex(i).GetModulus();
     }
 
@@ -354,7 +354,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     std::vector<DCRTPoly::Integer> factors(numTowers);
 
     if (large_abs > bound) {
-        for (usint i = 0; i < numTowers; i++) {
+        for (size_t i = 0; i < numTowers; ++i) {
             DoubleInteger reduced = large % moduli[i].ConvertToInt();
 
             factors[i] = (reduced < 0) ? static_cast<uint64_t>(reduced + moduli[i].ConvertToInt()) :
@@ -363,7 +363,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     }
     else {
         int64_t scConstant = static_cast<int64_t>(large);
-        for (usint i = 0; i < numTowers; i++) {
+        for (size_t i = 0; i < numTowers; ++i) {
             int64_t reduced = scConstant % static_cast<int64_t>(moduli[i].ConvertToInt());
 
             factors[i] = (reduced < 0) ? reduced + moduli[i].ConvertToInt() : reduced;
@@ -430,7 +430,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(ConstCiphertext<DCRT
         size_t sizeQl        = paramsQl->GetParams().size();
         DCRTPoly psiC0       = DCRTPoly(paramsQlP, Format::EVALUATION, true);
         auto cMult           = ciphertext->GetElements()[0].TimesNoCheck(cryptoParams->GetPModq());
-        for (usint i = 0; i < sizeQl; i++) {
+        for (size_t i = 0; i < sizeQl; ++i) {
             psiC0.SetElementAtIndex(i, cMult.GetElementAtIndex(i));
         }
         (*cTilda)[0] += psiC0;
@@ -453,7 +453,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::MultByInteger(ConstCiphertext<DCRTPoly> 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
     std::vector<DCRTPoly> resultDCRT(cv.size());
-    for (usint i = 0; i < cv.size(); i++)
+    for (size_t i = 0; i < cv.size(); ++i)
         resultDCRT[i] = cv[i].Times(NativeInteger(integer));
 
     Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
@@ -464,7 +464,7 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::MultByInteger(ConstCiphertext<DCRTPoly> 
 void LeveledSHECKKSRNS::MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, uint64_t integer) const {
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
-    for (usint i = 0; i < cv.size(); i++)
+    for (size_t i = 0; i < cv.size(); ++i)
         cv[i] = cv[i].Times(NativeInteger(integer));
 }
 
@@ -613,7 +613,7 @@ void LeveledSHECKKSRNS::EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, do
 
     std::vector<DCRTPoly::Integer> factors = GetElementForEvalMult(ciphertext, constant);
     std::vector<DCRTPoly>& cv              = ciphertext->GetElements();
-    for (usint i = 0; i < cv.size(); ++i) {
+    for (size_t i = 0; i < cv.size(); ++i) {
         cv[i] = cv[i] * factors;
     }
     ciphertext->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg() + 1);
