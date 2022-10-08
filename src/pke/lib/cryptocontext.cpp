@@ -43,19 +43,6 @@
 namespace lbcrypto {
 
 template <typename Element>
-template <typename T>
-void CryptoContextImpl<Element>::CheckKey(const T& key, CALLER_INFO_ARGS_CPP) const {
-    if (key == nullptr) {
-        std::string errorMsg(std::string("Key is nullptr") + CALLER_INFO);
-        OPENFHE_THROW(config_error, errorMsg);
-    }
-    if (Mismatched(key->GetCryptoContext())) {
-        std::string errorMsg(std::string("Key was not generated with the same crypto context") + CALLER_INFO);
-        OPENFHE_THROW(config_error, errorMsg);
-    }
-}
-
-template <typename Element>
 void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
     // check if the scheme is an RNS scheme
     auto schemeRNSPtr = dynamic_cast<SchemeRNS*>(&(*scheme));
