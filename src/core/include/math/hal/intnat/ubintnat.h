@@ -208,9 +208,9 @@ public:
                   std::is_same<T, int16_t>::value || std::is_same<T, uint16_t>::value ||
                       std::is_same<T, int32_t>::value || std::is_same<T, uint32_t>::value ||
                       std::is_same<T, int64_t>::value || std::is_same<T, uint64_t>::value ||
-                      std::is_same<T, unsigned int>::value || std::is_same<T, long>::value ||            // NOLINT
-                      std::is_same<T, unsigned long>::value || std::is_same<T, long long>::value ||      // NOLINT
-                      std::is_same<T, unsigned long long>::value || std::is_same<T, uint64_t>::value ||  // NOLINT
+                      std::is_same<T, unsigned int>::value || std::is_same<T, long>::value ||        // NOLINT
+                      std::is_same<T, unsigned long>::value || std::is_same<T, long long>::value ||  // NOLINT
+                      std::is_same<T, unsigned long long>::value ||                                  // NOLINT
 #if defined(HAVE_INT128)
                       std::is_same<T, __int128>::value || std::is_same<T, unsigned __int128>::value ||
 #endif
@@ -230,8 +230,9 @@ public:
                   !std::is_same<T, int16_t>::value && !std::is_same<T, uint16_t>::value &&
                       !std::is_same<T, int32_t>::value && !std::is_same<T, uint32_t>::value &&
                       !std::is_same<T, int64_t>::value && !std::is_same<T, uint64_t>::value &&
-                      !std::is_same<T, unsigned int>::value && !std::is_same<T, long long>::value &&  // NOLINT
-                      !std::is_same<T, unsigned long long>::value &&                                  // NOLINT
+                      !std::is_same<T, unsigned int>::value && !std::is_same<T, long>::value &&        // NOLINT
+                      !std::is_same<T, unsigned long>::value && !std::is_same<T, long long>::value &&  // NOLINT
+                      !std::is_same<T, unsigned long long>::value &&                                   // NOLINT
 #if defined(HAVE_INT128)
                       !std::is_same<T, __int128>::value && !std::is_same<T, unsigned __int128>::value &&
 #endif
@@ -2151,17 +2152,17 @@ private:
         res.lo = x.lo * y;
         asm("umulh %0, %1, %2\n\t" : "=r"(res.hi) : "r"(x.lo), "r"(y));
         res.hi += x.hi * y;
-#elif defined(__arm__)         // 32 bit processor
+#elif defined(__arm__)  // 32 bit processor
         uint64_t wres(0), wa(a), wb(b);
 
         wres   = wa * wb;  // should give us the lower 64 bits of 32*32
         res.hi = wres >> 32;
         res.lo = (uint32_t)wres & 0xFFFFFFFF;
 #elif __riscv
-	U128BITS wres(0), wa(a), wb(b);
-	wres = wa * wb;  // should give us 128 bits  of 64 * 64 
-	res.hi = (uint64_t)(wres >> 64);
-	res.lo = (uint64_t)wres;
+        U128BITS wres(0), wa(a), wb(b);
+        wres   = wa * wb;  // should give us 128 bits  of 64 * 64
+        res.hi = (uint64_t)(wres >> 64);
+        res.lo = (uint64_t)wres;
 #elif defined(__EMSCRIPTEN__)  // web assembly
         U64BITS a1 = a >> 32;
         U64BITS a2 = (uint32_t)a;
