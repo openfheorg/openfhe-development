@@ -35,7 +35,7 @@
 
 namespace lbcrypto {
 
-std::ostream& operator<<(std::ostream& s, BINFHEPARAMSET f) {
+std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
     switch (f) {
         case TOY:
             s << "TOY";
@@ -95,7 +95,7 @@ std::ostream& operator<<(std::ostream& s, BINFHEPARAMSET f) {
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, BINFHEOUTPUT f) {
+std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f) {
     switch (f) {
         case FRESH:
             s << "FRESH";
@@ -110,7 +110,7 @@ std::ostream& operator<<(std::ostream& s, BINFHEOUTPUT f) {
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, BINFHEMETHOD f) {
+std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f) {
     switch (f) {
         case AP:
             s << "DM";

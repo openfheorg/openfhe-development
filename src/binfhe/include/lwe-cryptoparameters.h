@@ -32,13 +32,13 @@
 #ifndef _LWE_CRYPTOPARAMETERS_H_
 #define _LWE_CRYPTOPARAMETERS_H_
 
-#include <string>
-#include <utility>
-#include <vector>
-
 #include "math/hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "utils/serializable.h"
+
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -48,7 +48,7 @@ namespace lbcrypto {
 class LWECryptoParams : public Serializable {
 public:
     // NativeInteger m_qKS = 1<<20; //PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(26, 2048), 2048);
-    LWECryptoParams() : m_n(0), m_N(0), m_q(0), m_Q(0), m_qKS(0), m_baseKS(0) {}
+    LWECryptoParams() = default;
 
     /**
    * Main constructor for LWECryptoParams
@@ -176,9 +176,9 @@ public:
         ar(::cereal::make_nvp("q", m_q));
         ar(::cereal::make_nvp("Q", m_Q));
         ar(::cereal::make_nvp("qKS", m_qKS));
-        double sigma;
+        double sigma = 0;
         ar(::cereal::make_nvp("sigma", sigma));
-        double sigmaKS;
+        double sigmaKS = 0;
         ar(::cereal::make_nvp("sigmaKS", sigmaKS));
         m_dgg.SetStd(sigma);
         m_ks_dgg.SetStd(sigmaKS);
@@ -194,21 +194,21 @@ public:
 
 private:
     // lattice parameter for the additive LWE scheme
-    uint32_t m_n;
+    uint32_t m_n = 0;
     // ring dimension for RingGSW/RingLWE scheme
-    uint32_t m_N;
+    uint32_t m_N = 0;
     // modulus for the additive LWE scheme
-    NativeInteger m_q;
+    NativeInteger m_q = 0;
     // modulus for the RingGSW/RingLWE scheme
-    NativeInteger m_Q;
+    NativeInteger m_Q = 0;
     // modulus for key-switching
-    NativeInteger m_qKS;
+    NativeInteger m_qKS = 0;
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
     // Error distribution generator for key switching
     DiscreteGaussianGeneratorImpl<NativeVector> m_ks_dgg;
     // Base used in key switching
-    uint32_t m_baseKS;
+    uint32_t m_baseKS = 0;
 };
 
 }  // namespace lbcrypto

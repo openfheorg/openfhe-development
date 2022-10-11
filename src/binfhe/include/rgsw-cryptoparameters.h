@@ -32,12 +32,6 @@
 #ifndef _RGSW_CRYPTOPARAMETERS_H_
 #define _RGSW_CRYPTOPARAMETERS_H_
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-#include <map>
-
 #include "lattice/lat-hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
@@ -50,6 +44,12 @@
 #include "lwe-keyswitchkey.h"
 #include "lwe-cryptoparameters.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+#include <map>
+
 namespace lbcrypto {
 
 /**
@@ -58,7 +58,7 @@ namespace lbcrypto {
  */
 class RingGSWCryptoParams : public Serializable {
 public:
-    RingGSWCryptoParams() : m_N(0), m_Q(0), m_q(0), m_baseG(0), m_digitsG(0), m_baseR(0) {}
+    RingGSWCryptoParams() = default;
 
     /**
    * Main constructor for RingGSWCryptoParams
@@ -69,7 +69,7 @@ public:
    * @param method bootstrapping method (DM or CGGI)
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
-                                 BINFHEMETHOD method, double std, bool signEval = false)
+                                 BINFHE_METHOD method, double std, bool signEval = false)
         : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_method(method) {
         if (!IsPowerOfTwo(baseG)) {
             OPENFHE_THROW(config_error, "Gadget base should be a power of two.");
@@ -90,7 +90,7 @@ public:
                 (uint32_t)std::ceil(log(static_cast<double>(q.ConvertToInt())) / log(static_cast<double>(m_baseR)));
             // Populate digits
             NativeInteger value = 1;
-            for (uint32_t i = 0; i < digitCountR; i++) {
+            for (size_t i = 0; i < digitCountR; ++i) {
                 m_digitsR.push_back(value);
                 value *= m_baseR;
             }
@@ -99,12 +99,12 @@ public:
         // Computes baseG^i
         if (signEval) {
             uint32_t baseGlist[3] = {1 << 14, 1 << 18, 1 << 27};
-            for (size_t j = 0; j < 3; j++) {
+            for (size_t j = 0; j < 3; ++j) {
                 NativeInteger vTemp = NativeInteger(1);
                 auto tempdigits =
                     (uint32_t)std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(baseGlist[j])));
                 std::vector<NativeInteger> tempvec(tempdigits);
-                for (uint32_t i = 0; i < tempdigits; i++) {
+                for (size_t i = 0; i < tempdigits; ++i) {
                     tempvec[i] = vTemp;
                     vTemp      = vTemp.ModMul(NativeInteger(baseGlist[j]), Q);
                 }
@@ -115,7 +115,7 @@ public:
         }
         else {
             NativeInteger vTemp = NativeInteger(1);
-            for (uint32_t i = 0; i < m_digitsG; i++) {
+            for (size_t i = 0; i < m_digitsG; ++i) {
                 m_Gpower.push_back(vTemp);
                 vTemp = vTemp.ModMul(NativeInteger(m_baseG), Q);
             }
@@ -135,7 +135,7 @@ public:
         // CGGI bootstrapping
         if (m_method == GINX) {
             // loop for positive values of m
-            for (uint32_t i = 0; i < N; i++) {
+            for (size_t i = 0; i < N; ++i) {
                 NativePoly aPoly = NativePoly(m_polyParams, Format::COEFFICIENT, true);
                 aPoly[i].ModAddEq(NativeInteger(1), Q);  // X^m
                 aPoly[0].ModSubEq(NativeInteger(1), Q);  // -1
@@ -144,7 +144,7 @@ public:
             }
 
             // loop for negative values of m
-            for (uint32_t i = 0; i < N; i++) {
+            for (size_t i = 0; i < N; ++i) {
                 NativePoly aPoly = NativePoly(m_polyParams, Format::COEFFICIENT, true);
                 aPoly[i].ModSubEq(NativeInteger(1), Q);  // -X^m
                 aPoly[0].ModSubEq(NativeInteger(1), Q);  // -1
@@ -211,7 +211,7 @@ public:
         return m_monomials[i];
     }
 
-    BINFHEMETHOD GetMethod() const {
+    BINFHE_METHOD GetMethod() const {
         return m_method;
     }
 
@@ -246,7 +246,7 @@ public:
         ar(::cereal::make_nvp("bR", m_baseR));
         ar(::cereal::make_nvp("bG", m_baseG));
         // ar(::cereal::make_nvp("bmethod", m_method));
-        double sigma;
+        double sigma = 0;
         ar(::cereal::make_nvp("bs", sigma));
         m_dgg.SetStd(sigma);
 
@@ -270,22 +270,22 @@ public:
 
 private:
     // ring dimension for RingGSW/RingLWE scheme
-    uint32_t m_N;
+    uint32_t m_N = 0;
 
     // modulus for the RingGSW/RingLWE scheme
-    NativeInteger m_Q;
+    NativeInteger m_Q = 0;
 
     // modulus for the RingLWE scheme
-    NativeInteger m_q;
+    NativeInteger m_q = 0;
 
     // gadget base used in bootstrapping
-    uint32_t m_baseG;
+    uint32_t m_baseG = 0;
 
     // number of digits in decomposing integers mod Q
-    uint32_t m_digitsG;
+    uint32_t m_digitsG = 0;
 
     // base used for the refreshing key (used only for DM bootstrapping)
-    uint32_t m_baseR;
+    uint32_t m_baseR = 0;
 
     // powers of m_baseR (used only for DM bootstrapping)
     std::vector<NativeInteger> m_digitsR;
@@ -310,7 +310,7 @@ private:
     std::vector<NativePoly> m_monomials;
 
     // Bootstrapping method (DM or CGGI)
-    BINFHEMETHOD m_method;
+    BINFHE_METHOD m_method = BINFHE_METHOD::INVALID_METHOD;
 };
 
 }  // namespace lbcrypto

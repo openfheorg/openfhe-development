@@ -40,7 +40,7 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
             (uint32_t)std::ceil(log(static_cast<double>(m_q.ConvertToInt())) / log(static_cast<double>(m_baseR)));
         // Populate digits
         NativeInteger value = 1;
-        for (uint32_t i = 0; i < digitCountR; i++) {
+        for (size_t i = 0; i < digitCountR; ++i) {
             m_digitsR.push_back(value);
             value *= m_baseR;
         }
@@ -49,11 +49,11 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
     // Computes baseG^i
     if (signEval) {
         uint32_t baseGlist[3] = {1 << 14, 1 << 18, 1 << 27};
-        for (size_t j = 0; j < 3; j++) {
+        for (size_t j = 0; j < 3; ++j) {
             NativeInteger vTemp = NativeInteger(1);
             auto tempdigits = (uint32_t)std::ceil(log(m_Q.ConvertToDouble()) / log(static_cast<double>(baseGlist[j])));
             std::vector<NativeInteger> tempvec(tempdigits);
-            for (uint32_t i = 0; i < tempdigits; i++) {
+            for (size_t i = 0; i < tempdigits; ++i) {
                 tempvec[i] = vTemp;
                 vTemp      = vTemp.ModMul(NativeInteger(baseGlist[j]), m_Q);
             }
@@ -64,7 +64,7 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
     }
     else {
         NativeInteger vTemp = NativeInteger(1);
-        for (uint32_t i = 0; i < m_digitsG; i++) {
+        for (size_t i = 0; i < m_digitsG; ++i) {
             m_Gpower.push_back(vTemp);
             vTemp = vTemp.ModMul(NativeInteger(m_baseG), m_Q);
         }
@@ -84,7 +84,7 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
     // CGGI bootstrapping
     if (m_method == GINX) {
         // loop for positive values of m
-        for (uint32_t i = 0; i < m_N; i++) {
+        for (size_t i = 0; i < m_N; ++i) {
             NativePoly aPoly = NativePoly(m_polyParams, Format::COEFFICIENT, true);
             aPoly[i].ModAddEq(NativeInteger(1), m_Q);  // X^m
             aPoly[0].ModSubEq(NativeInteger(1), m_Q);  // -1
@@ -93,7 +93,7 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
         }
 
         // loop for negative values of m
-        for (uint32_t i = 0; i < m_N; i++) {
+        for (size_t i = 0; i < m_N; ++i) {
             NativePoly aPoly = NativePoly(m_polyParams, Format::COEFFICIENT, true);
             aPoly[i].ModSubEq(NativeInteger(1), m_Q);  // -X^m
             aPoly[0].ModSubEq(NativeInteger(1), m_Q);  // -1

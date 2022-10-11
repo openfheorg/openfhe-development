@@ -52,7 +52,7 @@ using namespace lbcrypto;
  * Context setup utility methods
  */
 
-BinFHEContext GenerateFHEWContext(BINFHEPARAMSET set) {
+BinFHEContext GenerateFHEWContext(BINFHE_PARAMSET set) {
     auto cc = BinFHEContext();
     cc.GenerateBinFHEContext(set, GINX);
     return cc;
@@ -64,7 +64,7 @@ BinFHEContext GenerateFHEWContext(BINFHEPARAMSET set) {
 
 template <class ParamSet>
 void FHEW_NOT(benchmark::State& state, ParamSet param_set) {
-    BINFHEPARAMSET param(param_set);
+    BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
 
     LWEPrivateKey sk = cc.KeyGen();
@@ -83,7 +83,7 @@ BENCHMARK_CAPTURE(FHEW_NOT, STD128, STD128)->Unit(benchmark::kMicrosecond);
 template <class ParamSet, class BinGate>
 void FHEW_BINGATE(benchmark::State& state, ParamSet param_set, BinGate bin_gate) {
     BINGATE gate(bin_gate);
-    BINFHEPARAMSET param(param_set);
+    BINFHE_PARAMSET param(param_set);
 
     BinFHEContext cc = GenerateFHEWContext(param);
 
@@ -134,7 +134,7 @@ BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_XNOR_FAST, STD128, XNOR_FAST)->Unit(bench
 // benchmark for key switching
 template <class ParamSet>
 void FHEW_KEYSWITCH(benchmark::State& state, ParamSet param_set) {
-    BINFHEPARAMSET param(param_set);
+    BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
 
     LWEPrivateKey sk  = cc.KeyGen();

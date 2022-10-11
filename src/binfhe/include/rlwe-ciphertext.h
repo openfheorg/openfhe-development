@@ -32,12 +32,6 @@
 #ifndef _RGSW_CIPHERTEXT_H_
 #define _RGSW_CIPHERTEXT_H_
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-#include <map>
-
 #include "lattice/lat-hal.h"
 
 #include "math/discretegaussiangenerator.h"
@@ -49,6 +43,12 @@
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
 #include "lwe-cryptoparameters.h"
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+#include <map>
 
 namespace lbcrypto {
 
@@ -64,7 +64,7 @@ using ConstRLWECiphertext = const std::shared_ptr<const RLWECiphertextImpl>;
  */
 class RLWECiphertextImpl : public Serializable {
 public:
-    RLWECiphertextImpl() {}
+    RLWECiphertextImpl() = default;
 
     explicit RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
 
@@ -95,7 +95,7 @@ public:
     }
 
     void SetFormat(const Format format) {
-        for (uint32_t i = 0; i < m_elements.size(); i++)
+        for (size_t i = 0; i < m_elements.size(); ++i)
             m_elements[i].SetFormat(format);
     }
 

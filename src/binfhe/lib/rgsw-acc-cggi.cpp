@@ -47,7 +47,7 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCry
     // handles ternary secrets using signed mod 3 arithmetic; 0 -> {0,0}, 1 ->
     // {1,0}, -1 -> {0,1}
 #pragma omp parallel for
-    for (uint32_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         int32_t s = (int32_t)sv[i].ConvertToInt();
         if (s > modHalf) {
             s -= mod;
@@ -82,7 +82,7 @@ void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> 
     uint32_t M      = 2 * params->GetN();
     uint32_t modInt = mod.ConvertToInt();
 
-    for (uint32_t i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; ++i) {
         // handles -a*E(1) and handles -a*E(-1) = a*E(1)
         AddToAccCGGI(params, (*ek)[0][0][i], (*ek)[0][1][i], mod.ModSub(a[i], mod) * (M / modInt), acc);
     }
@@ -104,13 +104,13 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
     // tempA is introduced to minimize the number of NTTs
     std::vector<NativePoly> tempA(digitsG2);
 
-    for (uint32_t i = 0; i < digitsG2; ++i) {
+    for (size_t i = 0; i < digitsG2; ++i) {
         (*result)[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
         tempA[i]        = (*result)[i][0];
         (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
     }
 
-    for (uint32_t i = 0; i < digitsG; ++i) {
+    for (size_t i = 0; i < digitsG; ++i) {
         if (m > 0) {
             // Add G Multiple
             (*result)[2 * i][0][0].ModAddEq(Gpow[i], Q);
@@ -121,7 +121,7 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
 
     // 3*digitsG2 NTTs are called
     result->SetFormat(Format::EVALUATION);
-    for (uint32_t i = 0; i < digitsG2; ++i) {
+    for (size_t i = 0; i < digitsG2; ++i) {
         tempA[i].SetFormat(Format::EVALUATION);
         (*result)[i][1] += tempA[i] * skNTT;
     }
@@ -145,17 +145,17 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     std::vector<NativePoly> dct(digitsG2);
 
     // initialize dct to zeros
-    for (uint32_t i = 0; i < digitsG2; i++)
+    for (size_t i = 0; i < digitsG2; ++i)
         dct[i] = NativePoly(polyParams, Format::COEFFICIENT, true);
 
     // calls 2 NTTs
-    for (uint32_t i = 0; i < 2; i++)
+    for (size_t i = 0; i < 2; ++i)
         ct[i].SetFormat(Format::COEFFICIENT);
 
-    SignedDigitDecompose(params, ct, &dct);
+    SignedDigitDecompose(params, ct, dct);
 
-    for (uint32_t j = 0; j < digitsG2; j++)
-        dct[j].SetFormat(Format::EVALUATION);
+    for (size_t i = 0; i < digitsG2; ++i)
+        dct[i].SetFormat(Format::EVALUATION);
 
     // First obtain both monomial(index) for sk = 1 and monomial(-index) for sk = -1
     auto aNeg         = M.ModSub(a, M);
@@ -173,27 +173,20 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     // acc = acc + dct * ek1 * monomial + dct * ek2 * negative_monomial;
     // uses in-place * operators for the last call to dct[i] to gain performance
     // improvement. Needs to be done using two loops for ternary secrets.
+    // TODO (dsuponit): benchmark cases with operator*() and operator*=(). Make a copy of dct?
     const std::vector<std::vector<NativePoly>>& ev1 = ek1->GetElements();
-    for (uint32_t j = 0; j < 2; j++) {
-        NativePoly temp1 = (j < 1) ? dct[0] * ev1[0][j] : (dct[0] * ev1[0][j]);
-        for (uint32_t l = 1; l < digitsG2; l++) {
-            if (j == 0)
-                temp1 += dct[l] * ev1[l][j];
-            else
-                temp1 += (dct[l] * ev1[l][j]);
-        }
+    for (size_t j = 0; j < 2; ++j) {
+        NativePoly temp1(dct[0] * ev1[0][j]);
+        for (size_t l = 1; l < digitsG2; ++l)
+            temp1 += (dct[l] * ev1[l][j]);
         acc->GetElements()[j] += (temp1 * monomial);
     }
 
     const std::vector<std::vector<NativePoly>>& ev2 = ek2->GetElements();
-    for (uint32_t j = 0; j < 2; j++) {
-        NativePoly temp1 = (j < 1) ? dct[0] * ev2[0][j] : (dct[0] * ev2[0][j]);
-        for (uint32_t l = 1; l < digitsG2; l++) {
-            if (j == 0)
-                temp1 += dct[l] * ev2[l][j];
-            else
-                temp1 += (dct[l] * ev2[l][j]);
-        }
+    for (size_t j = 0; j < 2; ++j) {
+        NativePoly temp1(dct[0] * ev2[0][j]);
+        for (size_t l = 1; l < digitsG2; ++l)
+            temp1 += (dct[l] * ev2[l][j]);
         acc->GetElements()[j] += (temp1 * monomialNeg);
     }
 }

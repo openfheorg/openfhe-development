@@ -32,11 +32,6 @@
 #ifndef BINFHE_FHEW_H
 #define BINFHE_FHEW_H
 
-#include <map>
-#include <vector>
-#include <memory>
-#include <string>
-
 #include "binfhe-base-params.h"
 #include "lwe-pke.h"
 #include "rlwe-ciphertext.h"
@@ -44,6 +39,11 @@
 #include "rgsw-acc.h"
 #include "rgsw-acc-dm.h"
 #include "rgsw-acc-cggi.h"
+
+#include <map>
+#include <vector>
+
+#include <memory>
 
 namespace lbcrypto {
 
@@ -61,11 +61,9 @@ typedef struct {
  */
 class BinFHEScheme {
 public:
-    BinFHEScheme() {
-        LWEscheme = std::make_shared<LWEEncryptionScheme>();
-    }
+    BinFHEScheme() = default;
 
-    void SetACCTechnique(BINFHEMETHOD method) {
+    explicit BinFHEScheme(BINFHE_METHOD method) {
         if (method == AP) {
             ACCscheme = std::make_shared<RingGSWAccumulatorDM>();
         }
@@ -98,8 +96,8 @@ public:
    * @param lwescheme a shared pointer to additive LWE scheme
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
-                              const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const;
+    LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate, const RingGSWBTKey& EK,
+                              ConstLWECiphertext ct1, ConstLWECiphertext ct2) const;
 
     /**
    * Evaluates NOT gate
@@ -150,7 +148,7 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalFloor(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                            ConstLWECiphertext ct, const NativeInteger beta, const uint32_t roundbits = 0) const;
+                            ConstLWECiphertext ct, const NativeInteger beta, uint32_t roundbits = 0) const;
 
     /**
    * Evaluate a sign function over large precision
@@ -194,7 +192,7 @@ private:
    * @param lwescheme a shared pointer to additive LWE scheme
    * @return the output RingLWE accumulator
    */
-    RLWECiphertext BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
+    RLWECiphertext BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
                                      const RingGSWACCKey ek, ConstLWECiphertext ct) const;
 
     // Below is for arbitrary function evaluation purpose
@@ -228,8 +226,8 @@ private:
                                 ConstLWECiphertext ct, const Func f, const NativeInteger fmod) const;
 
 protected:
-    std::shared_ptr<LWEEncryptionScheme> LWEscheme;
-    std::shared_ptr<RingGSWAccumulator> ACCscheme;
+    std::shared_ptr<LWEEncryptionScheme> LWEscheme = std::make_shared<LWEEncryptionScheme>();
+    std::shared_ptr<RingGSWAccumulator> ACCscheme  = nullptr;
 };
 
 }  // namespace lbcrypto

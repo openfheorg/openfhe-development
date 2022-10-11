@@ -32,28 +32,22 @@
 #ifndef _LWE_PRIVATEKEY_H_
 #define _LWE_PRIVATEKEY_H_
 
+#include "lwe-privatekey-fwd.h"
+#include "math/hal.h"
+#include "utils/serializable.h"
+
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "math/hal.h"
-#include "utils/serializable.h"
-
 namespace lbcrypto {
-
-class LWEPrivateKeyImpl;
-
-using LWEPrivateKey = std::shared_ptr<LWEPrivateKeyImpl>;
-
-using ConstLWEPrivateKey = const std::shared_ptr<const LWEPrivateKeyImpl>;
-
 /**
  * @brief Class that stores the LWE scheme secret key; contains a vector
  */
 class LWEPrivateKeyImpl : public Serializable {
 public:
-    LWEPrivateKeyImpl() {}
+    LWEPrivateKeyImpl() = default;
 
     explicit LWEPrivateKeyImpl(const NativeVector& s) : m_s(s) {}
 

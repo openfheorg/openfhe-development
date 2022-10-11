@@ -32,29 +32,22 @@
 #ifndef _LWE_CIPHERTEXT_H_
 #define _LWE_CIPHERTEXT_H_
 
-#include <memory>
+#include "lwe-ciphertext-fwd.h"
+#include "math/hal.h"
+#include "utils/serializable.h"
+
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "math/hal.h"
-#include "utils/serializable.h"
-
 namespace lbcrypto {
-
-class LWECiphertextImpl;
-
-using LWECiphertext = std::shared_ptr<LWECiphertextImpl>;
-
-using ConstLWECiphertext = const std::shared_ptr<const LWECiphertextImpl>;
-
 /**
  * @brief Class that stores a LWE scheme ciphertext; composed of a vector "a"
  * and integer "b"
  */
 class LWECiphertextImpl : public Serializable {
 public:
-    LWECiphertextImpl() {}
+    LWECiphertextImpl() = default;
 
     explicit LWECiphertextImpl(const NativeVector&& a, const NativeInteger& b) : m_a(std::move(a)), m_b(b) {}
 
@@ -164,7 +157,7 @@ public:
 
 private:
     NativeVector m_a;
-    NativeInteger m_b;
+    NativeInteger m_b = 0;
 };
 
 }  // namespace lbcrypto

@@ -32,12 +32,9 @@
 #ifndef _RGSW_ACC_CGGI_H_
 #define _RGSW_ACC_CGGI_H_
 
-#include <map>
-#include <vector>
-#include <memory>
-#include <string>
-
 #include "rgsw-acc.h"
+
+#include <memory>
 
 namespace lbcrypto {
 
@@ -47,7 +44,7 @@ namespace lbcrypto {
  */
 class RingGSWAccumulatorCGGI : public RingGSWAccumulator {
 public:
-    RingGSWAccumulatorCGGI() {}
+    RingGSWAccumulatorCGGI() = default;
 
     virtual ~RingGSWAccumulatorCGGI() {}
 

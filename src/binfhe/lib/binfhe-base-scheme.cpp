@@ -55,32 +55,27 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> para
 }
 
 // Full evaluation as described in https://eprint.iacr.org/2020/08
-LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
+LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
                                         const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const {
     if (ct1 == ct2) {
-        std::string errMsg = "ERROR: Please only use independent ciphertexts as inputs.";
-        OPENFHE_THROW(config_error, errMsg);
+        OPENFHE_THROW(config_error, "Input ciphertexts should be independant");
     }
 
-    // By default, we compute XOR/XNOR using a combination of AND, OR, and NOT
-    // gates
+    // By default, we compute XOR/XNOR using a combination of AND, OR, and NOT gates
     if ((gate == XOR) || (gate == XNOR)) {
         auto ct1NOT = EvalNOT(params, ct1);
         auto ct2NOT = EvalNOT(params, ct2);
         auto ctAND1 = EvalBinGate(params, AND, EK, ct1, ct2NOT);
         auto ctAND2 = EvalBinGate(params, AND, EK, ct1NOT, ct2);
         auto ctOR   = EvalBinGate(params, OR, EK, ctAND1, ctAND2);
+
         // NOT is free so there is not cost to do it an extra time for XNOR
-        if (gate == XOR)
-            return ctOR;
-        else  // XNOR
-            return EvalNOT(params, ctOR);
+        return (gate == XOR) ? ctOR : EvalNOT(params, ctOR);
     }
     else {
         LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
-        // the additive homomorphic operation for XOR/NXOR is different from the
-        // other gates we compute 2*(ct1 - ct2) mod 4 for XOR, me map 1,2 -> 1 and
-        // 3,0 -> 0
+        // the additive homomorphic operation for XOR/NXOR is different from the other gates we compute
+        // 2*(ct1 - ct2) mod 4 for XOR, me map 1,2 -> 1 and 3,0 -> 0
         if ((gate == XOR_FAST) || (gate == XNOR_FAST)) {
             LWEscheme->EvalSubEq(ctprep, ct2);
             LWEscheme->EvalAddEq(ctprep, ctprep);
@@ -154,7 +149,7 @@ LWECiphertext BinFHEScheme::EvalNOT(const std::shared_ptr<BinFHECryptoParams> pa
     uint32_t n      = ct->GetLength();
 
     NativeVector a(n, q);
-    for (uint32_t i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; ++i) {
         a[i] = ct->GetA(i) == 0 ? 0 : q - ct->GetA(i);
     }
 
@@ -164,10 +159,10 @@ LWECiphertext BinFHEScheme::EvalNOT(const std::shared_ptr<BinFHECryptoParams> pa
 }
 
 // Check what type of function the input function is.
-int checkInputFunction(std::vector<NativeInteger> lut, NativeInteger mod) {
-    int ret = 0;  // 0 for negacyclic, 1 for periodic, 2 for arbitrary
+uint32_t checkInputFunction(std::vector<NativeInteger> lut, NativeInteger mod) {
+    uint32_t ret = 0;  // 0 for negacyclic, 1 for periodic, 2 for arbitrary
     if (lut[0] == (mod - lut[lut.size() / 2])) {
-        for (size_t i = 1; i < lut.size() / 2; i++) {
+        for (size_t i = 1; i < lut.size() / 2; ++i) {
             if (lut[i] != (mod - lut[lut.size() / 2 + i])) {
                 ret = 2;
                 break;
@@ -176,7 +171,7 @@ int checkInputFunction(std::vector<NativeInteger> lut, NativeInteger mod) {
     }
     else if (lut[0] == lut[lut.size() / 2]) {
         ret = 1;
-        for (size_t i = 1; i < lut.size() / 2; i++) {
+        for (size_t i = 1; i < lut.size() / 2; ++i) {
             if (lut[i] != lut[lut.size() / 2 + i]) {
                 ret = 2;
                 break;
@@ -199,8 +194,8 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
 
     auto ct1 = std::make_shared<LWECiphertextImpl>(*ct);
     // Get what time of function it is
-    NativeInteger q      = ct->GetModulus();
-    int functionProperty = checkInputFunction(LUT, q);
+    NativeInteger q           = ct->GetModulus();
+    uint32_t functionProperty = checkInputFunction(LUT, q);
     if (functionProperty == 0) {  // negacyclic function only needs one bootstrap
         auto fLUT = [LUT](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
             return LUT[x.ConvertToInt()];
@@ -275,7 +270,7 @@ LWECiphertext BinFHEScheme::EvalFunc(const std::shared_ptr<BinFHECryptoParams> p
 
 // Evaluate Homomorphic Flooring
 LWECiphertext BinFHEScheme::EvalFloor(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
-                                      ConstLWECiphertext ct, const NativeInteger beta, const uint32_t roundbits) const {
+                                      ConstLWECiphertext ct, const NativeInteger beta, uint32_t roundbits) const {
     auto& LWEParams   = params->GetLWEParams();
     NativeInteger q   = roundbits == 0 ? LWEParams->Getq() : beta * 2 * (1 << roundbits);
     NativeInteger mod = ct->GetModulus();
@@ -345,11 +340,12 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams> p
         cttmp = LWEscheme->ModSwitch(mod, cttmp);
 
         if (EKs.size() == 3) {  // if dynamic
-            uint32_t base = 0;
-            if (ceil(log2(mod.ConvertToInt())) <= 17)
-                base = 1 << 27;
-            else if (ceil(log2(mod.ConvertToInt())) <= 26)
-                base = 1 << 18;
+            uint32_t binLog = static_cast<uint32_t>(ceil(log2(mod.ConvertToInt())));
+            uint32_t base   = 0;
+            if (binLog <= static_cast<uint32_t>(17))
+                base = static_cast<uint32_t>(1) << 27;
+            else if (binLog <= static_cast<uint32_t>(26))
+                base = static_cast<uint32_t>(1) << 18;
 
             if (0 != base) {  // if base is to change ...
                 RGSWParams->Change_BaseG(base);
@@ -412,11 +408,12 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
         cttmp = LWEscheme->ModSwitch(mod, cttmp);
 
         if (EKs.size() == 3) {  // if dynamic
-            uint32_t base = 0;
-            if (ceil(log2(mod.ConvertToInt())) <= 17)
-                base = 1 << 27;
-            else if (ceil(log2(mod.ConvertToInt())) <= 26)
-                base = 1 << 18;
+            uint32_t binLog = static_cast<uint32_t>(ceil(log2(mod.ConvertToInt())));
+            uint32_t base   = 0;
+            if (binLog <= static_cast<uint32_t>(17))
+                base = static_cast<uint32_t>(1) << 27;
+            else if (binLog <= static_cast<uint32_t>(26))
+                base = static_cast<uint32_t>(1) << 18;
 
             if (0 != base) {  // if base is to change ...
                 RGSWParams->Change_BaseG(base);
@@ -444,7 +441,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
 
 // private:
 
-RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams> params, const BINGATE gate,
+RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
                                                const RingGSWACCKey ek, ConstLWECiphertext ct) const {
     if (ek == nullptr) {
         std::string errMsg =
@@ -460,7 +457,7 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
     // Specifies the range [q1,q2) that will be used for mapping
     NativeInteger q  = ct->GetModulus();
     uint32_t qHalf   = q.ConvertToInt() >> 1;
-    NativeInteger q1 = RGSWParams->GetGateConst()[static_cast<int>(gate)];
+    NativeInteger q1 = RGSWParams->GetGateConst()[static_cast<size_t>(gate)];
     NativeInteger q2 = q1.ModAddFast(NativeInteger(qHalf), q);
 
     // depending on whether the value is the range, it will be set
@@ -476,7 +473,7 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
     uint32_t factor = (2 * N / q.ConvertToInt());
 
     const NativeInteger& b = ct->GetB();
-    for (uint32_t j = 0; j < qHalf; j++) {
+    for (size_t j = 0; j < qHalf; ++j) {
         NativeInteger temp = b.ModSub(j, q);
         if (q1 < q2)
             m[j * factor] = ((temp >= q1) && (temp < q2)) ? Q8Neg : Q8;
@@ -506,8 +503,7 @@ RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECrypt
                                                ConstLWECiphertext ct, const Func f, const NativeInteger fmod) const {
     if (ek == nullptr) {
         std::string errMsg =
-            "Bootstrapping keys have not been generated. Please call BTKeyGen "
-            "before calling bootstrapping.";
+            "Bootstrapping keys have not been generated. Please call BTKeyGen before calling bootstrapping.";
         OPENFHE_THROW(config_error, errMsg);
     }
 

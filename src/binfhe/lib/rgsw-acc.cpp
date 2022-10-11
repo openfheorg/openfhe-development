@@ -44,9 +44,9 @@
     note = {\url{https://eprint.iacr.org/2014/816}},
  */
 
-#include <string>
-
 #include "rgsw-acc.h"
+
+#include <string>
 
 namespace lbcrypto {
 
@@ -56,7 +56,7 @@ namespace lbcrypto {
 // results. The two variants are labeled A and B.
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params,
                                               const std::vector<NativePoly>& input,
-                                              std::vector<NativePoly>* output) const {
+                                              std::vector<NativePoly>& output) const {
     uint32_t N                           = params->GetN();
     uint32_t digitsG                     = params->GetDigitsG();
     NativeInteger Q                      = params->GetQ();
@@ -78,15 +78,15 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
     // (baseG >> 1)-1;
 
     // Signed digit decomposition
-    for (uint32_t j = 0; j < 2; j++) {
-        for (uint32_t k = 0; k < N; k++) {
+    for (size_t j = 0; j < 2; ++j) {
+        for (size_t k = 0; k < N; ++k) {
             NativeInteger t = input[j][k];
             if (t < QHalf)
                 d += t.ConvertToInt();
             else
                 d += (NativeInteger::SignedNativeInt)t.ConvertToInt() - Q_int;
 
-            for (uint32_t l = 0; l < digitsG; l++) {
+            for (size_t l = 0; l < digitsG; ++l) {
                 // remainder is signed
 
                 // This approach gives a slightly better performance
@@ -102,9 +102,9 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
                 d >>= gBits;
 
                 if (r >= 0)
-                    (*output)[j + 2 * l][k] += NativeInteger(r);
+                    output[j + 2 * l][k] += NativeInteger(r);
                 else
-                    (*output)[j + 2 * l][k] += NativeInteger(r + Q_int);
+                    output[j + 2 * l][k] += NativeInteger(r + Q_int);
             }
             d = 0;
         }

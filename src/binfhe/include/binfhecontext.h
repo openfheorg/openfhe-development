@@ -36,15 +36,15 @@
 #ifndef BINFHE_BINFHECONTEXT_H
 #define BINFHE_BINFHECONTEXT_H
 
-#include <memory>
-#include <string>
-#include <vector>
-#include <map>
+#include "binfhe-base-scheme.h"
 
 #include "utils/serializable.h"
 #include "lattice/stdlatticeparms.h"
 
-#include "binfhe-base-scheme.h"
+#include <memory>
+#include <string>
+#include <vector>
+#include <map>
 
 namespace lbcrypto {
 
@@ -55,7 +55,7 @@ namespace lbcrypto {
  */
 class BinFHEContext : public Serializable {
 public:
-    BinFHEContext() {}
+    BinFHEContext() = default;
 
     /**
    * Creates a crypto context using custom parameters.
@@ -74,7 +74,7 @@ public:
    * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q, double std,
-                               uint32_t baseKS, uint32_t baseG, uint32_t baseR, BINFHEMETHOD method = GINX);
+                               uint32_t baseKS, uint32_t baseG, uint32_t baseR, BINFHE_METHOD method = GINX);
 
     /**
    * Creates a crypto context using custom parameters.
@@ -89,8 +89,8 @@ public:
    * @param timeOptimization whether to use dynamic bootstrapping technique
    * @return creates the cryptocontext
    */
-    void GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint32_t logQ = 11, int64_t N = 0,
-                               BINFHEMETHOD method = GINX, bool timeOptimization = false);
+    void GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uint32_t logQ = 11, int64_t N = 0,
+                               BINFHE_METHOD method = GINX, bool timeOptimization = false);
 
     /**
    * Creates a crypto context using predefined parameters sets. Recommended for
@@ -100,7 +100,7 @@ public:
    * @param method the bootstrapping method (DM or CGGI)
    * @return create the cryptocontext
    */
-    void GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD method = GINX);
+    void GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method = GINX);
 
     /**
    * Gets the refreshing key (used for serialization).
@@ -153,7 +153,7 @@ public:
    * @param mod Encrypt according to mod instead of m_q if mod != 0
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHEOUTPUT output = BOOTSTRAPPED,
+    LWECiphertext Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHE_OUTPUT output = BOOTSTRAPPED,
                           LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
 
     /**
@@ -200,7 +200,7 @@ public:
    * @param baseG baseG corresponding to the given key
    * @param key struct with the bootstrapping keys
    */
-    void BTKeyMapLoadSingleElement(const uint32_t& baseG, const RingGSWBTKey& key) {
+    void BTKeyMapLoadSingleElement(uint32_t baseG, const RingGSWBTKey& key) {
         m_BTKey_map[baseG] = key;
     }
 
@@ -221,7 +221,7 @@ public:
    * @param ct2 second ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const;
+    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const;
 
     /**
    * Bootstraps a ciphertext (without peforming any operation)
@@ -257,7 +257,7 @@ public:
    * @param roundbits number of bits to be rounded
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalFloor(ConstLWECiphertext ct, const uint32_t roundbits = 0) const;
+    LWECiphertext EvalFloor(ConstLWECiphertext ct, uint32_t roundbits = 0) const;
 
     /**
    * Evaluate a sign function over large precisions
@@ -335,16 +335,16 @@ public:
 
 private:
     // Shared pointer to Ring GSW + LWE parameters
-    std::shared_ptr<BinFHECryptoParams> m_params;
+    std::shared_ptr<BinFHECryptoParams> m_params = nullptr;
 
     // Shared pointer to the underlying additive LWE scheme
-    std::shared_ptr<LWEEncryptionScheme> m_LWEscheme;
+    std::shared_ptr<LWEEncryptionScheme> m_LWEscheme = nullptr;
 
     // Shared pointer to the underlying RingGSW/RLWE scheme
-    std::shared_ptr<BinFHEScheme> m_binfhescheme;
+    std::shared_ptr<BinFHEScheme> m_binfhescheme = nullptr;
 
     // Struct containing the bootstrapping keys
-    RingGSWBTKey m_BTKey;
+    RingGSWBTKey m_BTKey = {0};
 
     // Struct containing the bootstrapping keys
     std::map<uint32_t, RingGSWBTKey> m_BTKey_map;

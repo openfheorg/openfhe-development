@@ -28,56 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#ifndef _RGSW_ACC_DM_H_
-#define _RGSW_ACC_DM_H_
-
-#include "rgsw-acc.h"
+#ifndef __LWE_PRIVATEKEY_FWD_H__
+#define __LWE_PRIVATEKEY_FWD_H__
 
 #include <memory>
 
 namespace lbcrypto {
+class LWEPrivateKeyImpl;
 
-/**
- * @brief Ring GSW accumulator schemes described in
- * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/08
- */
-class RingGSWAccumulatorDM : public RingGSWAccumulator {
-public:
-    RingGSWAccumulatorDM() = default;
-
-    virtual ~RingGSWAccumulatorDM() {}
-
-    /**
-   * Internal RingGSW encryption used in generating the refreshing key
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param skFFT secret key polynomial in the EVALUATION representation
-   * @param m plaintext (corresponds to a lookup entry for the LWE scheme secret
-   * key)
-   * @return a shared pointer to the resulting ciphertext
-   */
-    RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                            ConstLWEPrivateKey LWEsk) const override;
-
-    /**
-   * Main accumulator function used in bootstrapping - AP variant
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param &input input ciphertext
-   * @param acc previous value of the accumulator
-   */
-    void EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
-                 const NativeVector& a) const override;
-
-private:
-    RingGSWEvalKey KeyGenDM(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                            const LWEPlaintext& m) const;
-
-    void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
-                    RLWECiphertext& acc) const;
-};
-
+using LWEPrivateKey      = std::shared_ptr<LWEPrivateKeyImpl>;
+using ConstLWEPrivateKey = const std::shared_ptr<const LWEPrivateKeyImpl>;
 }  // namespace lbcrypto
 
-#endif  // _RGSW_ACC_DM_H_
+#endif  // __LWE_PRIVATEKEY_FWD_H__

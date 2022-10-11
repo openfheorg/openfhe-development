@@ -41,22 +41,21 @@ namespace lbcrypto {
 
 void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
                                           double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,
-                                          BINFHEMETHOD method) {
+                                          BINFHE_METHOD method) {
     auto lweparams  = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
     auto rgswparams = std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, true);
     m_params        = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
-    m_binfhescheme  = std::make_shared<BinFHEScheme>();
-    m_binfhescheme->SetACCTechnique(method);
+    m_binfhescheme  = std::make_shared<BinFHEScheme>(method);
 }
 
-void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint32_t logQ, int64_t N,
-                                          BINFHEMETHOD method, bool timeOptimization) {
+void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uint32_t logQ, int64_t N,
+                                          BINFHE_METHOD method, bool timeOptimization) {
     if (GINX != method) {
         std::string errMsg("ERROR: CGGI is the only supported method");
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
     if (set != STD128 && set != TOY) {
-        std::string errMsg("ERROR: STD128 and TOY are the onlysupported sets");
+        std::string errMsg("ERROR: STD128 and TOY are the only supported sets");
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
@@ -105,15 +104,14 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint
                                                             ((logQ != 11) && timeOptimization));
 
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
-    m_binfhescheme = std::make_shared<BinFHEScheme>();
-    m_binfhescheme->SetACCTechnique(method);
+    m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 
 #if defined(BINFHE_DEBUG)
     std::cout << ringDim << " " << Q < < < < " " << n << " " << q << " " << baseG << std::endl;
 #endif
 }
 
-void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD method) {
+void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method) {
     struct BinFHEContextParams {
         // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
         usint numberBits;
@@ -134,7 +132,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
     const double STD_DEV = 3.19;
     // clang-format off
-    const std::unordered_map<BINFHEPARAMSET, BinFHEContextParams> paramsMap({
+    const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap({
         //           numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase|baseRK
         { TOY,             { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23 } },
         { MEDIUM,          { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32 } },
@@ -167,18 +165,17 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
     NativeInteger Q(
         PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder));
 
-    usint ringDim   = params.cyclOrder / 2;
-    auto lweparams  = (PRIME == params.modKS) ?
-                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
+    usint ringDim  = params.cyclOrder / 2;
+    auto lweparams = (PRIME == params.modKS) ?
+                         std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
                                                            params.stdDev, params.baseKS) :
-                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
+                         std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
                                                            params.stdDev, params.baseKS);
     auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK,
                                                             method, params.stdDev);
 
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
-    m_binfhescheme = std::make_shared<BinFHEScheme>();
-    m_binfhescheme->SetACCTechnique(method);
+    m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
 
 LWEPrivateKey BinFHEContext::KeyGen() const {
@@ -191,7 +188,7 @@ LWEPrivateKey BinFHEContext::KeyGenN() const {
     return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
 }
 
-LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHEOUTPUT output,
+LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHE_OUTPUT output,
                                      LWEPlaintextModulus p, NativeInteger mod) const {
     auto& LWEParams = m_params->GetLWEParams();
     auto q          = LWEParams->Getq();
@@ -261,7 +258,7 @@ LWECiphertext BinFHEContext::EvalFunc(ConstLWECiphertext ct, const std::vector<N
     return m_binfhescheme->EvalFunc(m_params, m_BTKey, ct, LUT, beta);
 }
 
-LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext ct, const uint32_t roundbits) const {
+LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext ct, uint32_t roundbits) const {
     //    auto q = m_params->GetLWEParams()->Getq().ConvertToInt();
     //    if (roundbits != 0) {
     //        NativeInteger newp = this->GetMaxPlaintextSpace();

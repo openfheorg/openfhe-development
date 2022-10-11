@@ -32,12 +32,6 @@
 #ifndef _RGSW_BTKEY_H_
 #define _RGSW_BTKEY_H_
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-#include <map>
-
 #include "lattice/lat-hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
@@ -50,6 +44,12 @@
 #include "lwe-cryptoparameters.h"
 
 #include "rgsw-evalkey.h"
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+#include <map>
 
 namespace lbcrypto {
 
@@ -65,14 +65,14 @@ using ConstRingGSWACCKey = const std::shared_ptr<const RingGSWACCKeyImpl>;
  */
 class RingGSWACCKeyImpl : public Serializable {
 public:
-    RingGSWACCKeyImpl() {}
+    RingGSWACCKeyImpl() = default;
 
     explicit RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) {
         m_key.resize(dim1);
-        for (uint32_t i1 = 0; i1 < dim1; i1++) {
-            m_key[i1].resize(dim2);
-            for (uint32_t i2 = 0; i2 < dim2; i2++) {
-                m_key[i1][i2].resize(dim3);
+        for (size_t i = 0; i < dim1; ++i) {
+            m_key[i].resize(dim2);
+            for (size_t j = 0; j < dim2; ++j) {
+                m_key[i][j].resize(dim3);
             }
         }
     }

@@ -32,12 +32,6 @@
 #ifndef _BINFHE_BASE_PARAMS_H_
 #define _BINFHE_BASE_PARAMS_H_
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-#include <map>
-
 #include "lattice/lat-hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
@@ -51,6 +45,12 @@
 #include "lwe-cryptoparameters.h"
 #include "rgsw-cryptoparameters.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+#include <map>
+
 namespace lbcrypto {
 
 /**
@@ -59,7 +59,7 @@ namespace lbcrypto {
  */
 class BinFHECryptoParams : public Serializable {
 public:
-    BinFHECryptoParams() {}
+    BinFHECryptoParams() = default;
 
     /**
    * Main constructor for BinFHECryptoParams
@@ -115,10 +115,10 @@ public:
 
 private:
     // shared pointer to an instance of LWECryptoParams
-    std::shared_ptr<LWECryptoParams> m_LWEParams;
+    std::shared_ptr<LWECryptoParams> m_LWEParams = nullptr;
 
     // shared pointer to an instance of RGSWCryptoParams
-    std::shared_ptr<RingGSWCryptoParams> m_RGSWParams;
+    std::shared_ptr<RingGSWCryptoParams> m_RGSWParams = nullptr;
 };
 
 }  // namespace lbcrypto

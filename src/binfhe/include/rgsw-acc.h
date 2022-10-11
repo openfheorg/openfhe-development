@@ -32,14 +32,12 @@
 #ifndef _RGSW_FHE_H_
 #define _RGSW_FHE_H_
 
-#include <map>
-#include <vector>
-#include <memory>
-#include <string>
-
 #include "rlwe-ciphertext.h"
 #include "rgsw-acckey.h"
 #include "rgsw-cryptoparameters.h"
+
+#include <vector>
+#include <memory>
 
 namespace lbcrypto {
 
@@ -49,7 +47,7 @@ namespace lbcrypto {
  */
 class RingGSWAccumulator {
 public:
-    RingGSWAccumulator() {}
+    RingGSWAccumulator() = default;
 
     /**
    * Internal RingGSW encryption used in generating the refreshing key
@@ -83,10 +81,10 @@ public:
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param &input input RLWE ciphertext
-   * @param *output input RLWE ciphertext
+   * @param output input RLWE ciphertext
    */
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params, const std::vector<NativePoly>& input,
-                              std::vector<NativePoly>* output) const;
+                              std::vector<NativePoly>& output) const;
 };
 
 }  // namespace lbcrypto

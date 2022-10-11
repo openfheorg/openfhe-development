@@ -32,13 +32,13 @@
 #ifndef _LWE_PKE_H_
 #define _LWE_PKE_H_
 
-#include <memory>
-
 #include "binfhe-constants.h"
 #include "lwe-ciphertext.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
 #include "lwe-cryptoparameters.h"
+
+#include <memory>
 
 namespace lbcrypto {
 
@@ -46,8 +46,10 @@ namespace lbcrypto {
  * @brief Additive LWE scheme
  */
 class LWEEncryptionScheme {
+    NativeInteger RoundqQ(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q) const;
+
 public:
-    LWEEncryptionScheme() {}
+    LWEEncryptionScheme() = default;
 
     /**
    * Generates a secret key of dimension n using modulus q
@@ -134,8 +136,6 @@ public:
    */
     LWECiphertext NoiselessEmbedding(const std::shared_ptr<LWECryptoParams> params, const LWEPlaintext& m) const;
 };
-
-NativeInteger RoundqQ(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q);
 
 }  // namespace lbcrypto
 

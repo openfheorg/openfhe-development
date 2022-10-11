@@ -49,15 +49,15 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCrypt
     RingGSWACCKey ek                          = std::make_shared<RingGSWACCKeyImpl>(n, baseR, digitsR.size());
 
 #pragma omp parallel for
-    for (uint32_t i = 0; i < n; ++i) {
-        for (uint32_t j = 1; j < baseR; ++j) {
-            for (uint32_t k = 0; k < digitsR.size(); ++k) {
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = 1; j < baseR; ++j) {
+            for (size_t k = 0; k < digitsR.size(); ++k) {
                 int32_t s = (int32_t)sv[i].ConvertToInt();
                 if (s > modHalf) {
                     s -= mod;
                 }
 
-                (*ek)[i][j][k] = KeyGenDM(params, skNTT, s * (int32_t)j * (int32_t)digitsR[k].ConvertToInt());
+                (*ek)[i][j][k] = KeyGenDM(params, skNTT, s * j * (int32_t)digitsR[k].ConvertToInt());
             }
         }
     }
@@ -72,9 +72,9 @@ void RingGSWAccumulatorDM::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> pa
     auto q         = params->Getq();
     uint32_t n     = a.GetLength();
 
-    for (uint32_t i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; ++i) {
         NativeInteger aI = q.ModSub(a[i], q);
-        for (uint32_t k = 0; k < digitsR.size(); k++, aI /= NativeInteger(baseR)) {
+        for (size_t k = 0; k < digitsR.size(); ++k, aI /= NativeInteger(baseR)) {
             uint32_t a0 = (aI.Mod(baseR)).ConvertToInt();
             if (a0)
                 AddToAccDM(params, (*ek)[i][a0][k], acc);
@@ -109,7 +109,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
     // tempA is introduced to minimize the number of NTTs
     std::vector<NativePoly> tempA(digitsG2);
 
-    for (uint32_t i = 0; i < digitsG2; ++i) {
+    for (size_t i = 0; i < digitsG2; ++i) {
         // populate result[i][0] with uniform random a
         (*result)[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
         tempA[i]        = (*result)[i][0];
@@ -117,7 +117,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
         (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
     }
 
-    for (uint32_t i = 0; i < digitsG; ++i) {
+    for (size_t i = 0; i < digitsG; ++i) {
         if (sign > 0) {
             // Add G Multiple
             (*result)[2 * i][0][mm].ModAddEq(Gpow[i], Q);
@@ -134,7 +134,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
 
     // 3*digitsG2 NTTs are called
     result->SetFormat(Format::EVALUATION);
-    for (uint32_t i = 0; i < digitsG2; ++i) {
+    for (size_t i = 0; i < digitsG2; ++i) {
         tempA[i].SetFormat(Format::EVALUATION);
         (*result)[i][1] += tempA[i] * skNTT;
     }
@@ -152,27 +152,26 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
     std::vector<NativePoly> dct(digitsG2);
 
     // initialize dct to zeros
-    for (uint32_t i = 0; i < digitsG2; i++)
+    for (size_t i = 0; i < digitsG2; i++)
         dct[i] = NativePoly(polyParams, Format::COEFFICIENT, true);
 
     // calls 2 NTTs
-    for (uint32_t i = 0; i < 2; i++)
+    for (uint32_t i = 0; i < 2; ++i)
         ct[i].SetFormat(Format::COEFFICIENT);
 
-    SignedDigitDecompose(params, ct, &dct);
+    SignedDigitDecompose(params, ct, dct);
 
     // calls digitsG2 NTTs
-    for (uint32_t j = 0; j < digitsG2; j++)
+    for (size_t j = 0; j < digitsG2; ++j)
         dct[j].SetFormat(Format::EVALUATION);
-
-    const std::vector<std::vector<NativePoly>>& ev = ek->GetElements();
 
     // acc = dct * ek (matrix product);
     // uses in-place * operators for the last call to dct[i] to gain performance
     // improvement
-    for (uint32_t j = 0; j < 2; j++) {
+    const std::vector<std::vector<NativePoly>>& ev = ek->GetElements();
+    for (size_t j = 0; j < 2; ++j) {
         acc->GetElements()[j].SetValuesToZero();
-        for (uint32_t l = 0; l < digitsG2; l++) {
+        for (size_t l = 0; l < digitsG2; ++l) {
             if (j == 0)
                 acc->GetElements()[j] += dct[l] * ev[l][j];
             else

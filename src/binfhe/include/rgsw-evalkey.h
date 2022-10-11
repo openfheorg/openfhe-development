@@ -32,12 +32,6 @@
 #ifndef _RGSW_EVAL_KEY_H_
 #define _RGSW_EVAL_KEY_H_
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-#include <map>
-
 #include "lattice/lat-hal.h"
 
 #include "math/discretegaussiangenerator.h"
@@ -49,6 +43,12 @@
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
 #include "lwe-cryptoparameters.h"
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+#include <map>
 
 namespace lbcrypto {
 
@@ -64,11 +64,11 @@ using ConstRingGSWEvalKey = const std::shared_ptr<const RingGSWEvalKeyImpl>;
  */
 class RingGSWEvalKeyImpl : public Serializable {
 public:
-    RingGSWEvalKeyImpl() {}
+    RingGSWEvalKeyImpl() = default;
 
     RingGSWEvalKeyImpl(uint32_t rowSize, uint32_t colSize) {
         m_elements.resize(rowSize);
-        for (uint32_t i = 0; i < rowSize; i++)
+        for (size_t i = 0; i < rowSize; ++i)
             m_elements[i].resize(colSize);
     }
 
@@ -105,9 +105,9 @@ public:
    * representations using NTT
    */
     void SetFormat(const Format format) {
-        for (uint32_t i = 0; i < m_elements.size(); i++)
+        for (size_t i = 0; i < m_elements.size(); ++i)
             // column size is assume to be the same
-            for (uint32_t j = 0; j < m_elements[0].size(); j++)
+            for (size_t j = 0; j < m_elements[0].size(); ++j)
                 m_elements[i][j].SetFormat(format);
     }
 

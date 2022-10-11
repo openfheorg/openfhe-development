@@ -32,28 +32,23 @@
 #ifndef _LWE_KEYSWITCHKEY_H_
 #define _LWE_KEYSWITCHKEY_H_
 
+#include "lwe-keyswitchkey-fwd.h"
+
+#include "math/hal.h"
+#include "utils/serializable.h"
+
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "math/hal.h"
-#include "utils/serializable.h"
-
 namespace lbcrypto {
-
-class LWESwitchingKeyImpl;
-
-using LWESwitchingKey = std::shared_ptr<LWESwitchingKeyImpl>;
-
-using ConstLWESwitchingKey = const std::shared_ptr<const LWESwitchingKeyImpl>;
-
 /**
  * @brief Class that stores the LWE scheme switching key
  */
 class LWESwitchingKeyImpl : public Serializable {
 public:
-    LWESwitchingKeyImpl() {}
+    LWESwitchingKeyImpl() = default;
 
     explicit LWESwitchingKeyImpl(const std::vector<std::vector<std::vector<NativeVector>>>& keyA,
                                  const std::vector<std::vector<std::vector<NativeInteger>>>& keyB)
