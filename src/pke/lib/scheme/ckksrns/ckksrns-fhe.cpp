@@ -47,7 +47,7 @@ namespace lbcrypto {
 //------------------------------------------------------------------------------
 
 void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
-                                    std::vector<uint32_t> dim1, uint32_t numSlots) {
+                                    std::vector<uint32_t> dim1, uint32_t numSlots, double correctionFactor) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -61,6 +61,26 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     uint32_t M     = cc.GetCyclotomicOrder();
     uint32_t slots = (numSlots == 0) ? M / 4 : numSlots;
 
+    // Set correction factor by default, if it is not already set.
+    if (correctionFactor == 0.0) {
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+            // The default correction factors chosen yielded the best precision in our experiments.
+            // We chose the best fit line from our experiments by running ckks-bootstrapping-precision.cpp.
+            // The spreadsheet with our experiments is here:
+            // https://docs.google.com/spreadsheets/d/1WqmwBUMNGlX6Uvs9qLXt5yeddtCyWPP55BbJPu5iPAM/edit?usp=sharing
+            m_correctionFactor = std::round(-0.265 * (2 * std::log2(M / 2) + std::log2(slots)) + 19.1);
+            if (m_correctionFactor < 7)
+                m_correctionFactor = 7.0;
+            if (m_correctionFactor > 13.0)
+                m_correctionFactor = 13.0;
+        }
+        else {
+            m_correctionFactor = 9.0;
+        }
+    }
+    else {
+        m_correctionFactor = correctionFactor;
+    }
     m_bootPrecomMap[slots]                      = std::make_shared<CKKSBootstrapPrecom>();
     std::shared_ptr<CKKSBootstrapPrecom> precom = m_bootPrecomMap[slots];
 
@@ -264,7 +284,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     double powP  = pow(2, p);
 
     double deg        = std::round(std::log2(qDouble / powP));
-    double correction = 9.0 - deg;
+    double correction = m_correctionFactor - deg;
     double post       = std::pow(2, deg);
 
     double pre      = 1. / post;

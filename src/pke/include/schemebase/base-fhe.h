@@ -74,9 +74,10 @@ public:
    * @param dim1 - vector of inner dimension in the baby-step giant-step routine
    * for encoding and decoding
    * @param slots - number of slots to be bootstrapped
+   * @param correctionFactor - value to rescale message by to improve precision. If set to 0, we use the default logic.
    */
     virtual void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, std::vector<uint32_t> levelBudget,
-                                    std::vector<uint32_t> dim1, uint32_t slots) {
+                                    std::vector<uint32_t> dim1, uint32_t slots, double correctionFactor) {
         OPENFHE_THROW(not_implemented_error, "Not supported");
     }
 
