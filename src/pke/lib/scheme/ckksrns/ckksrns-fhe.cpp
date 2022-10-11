@@ -47,7 +47,7 @@ namespace lbcrypto {
 //------------------------------------------------------------------------------
 
 void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
-                                    std::vector<uint32_t> dim1, uint32_t numSlots, uint32_t correctionFactor) {
+                                    std::vector<uint32_t> dim1, uint32_t numSlots, double correctionFactor) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -65,20 +65,16 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     if (correctionFactor == 0) {
         if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
             cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-            // The default correction factors chosen yielded the best precision in our experiments.
             // We chose the best fit line from our experiments by running ckks-bootstrapping-precision.cpp.
             // The spreadsheet with our experiments is here:
-            // https://docs.google.com/spreadsheets/d/1WqmwBUMNGlX6Uvs9qLXt5yeddtCyWPP55BbJPu5iPAM/edit?usp=sharing
-            auto tmp = std::round(-0.265 * (2 * std::log2(M / 2) + std::log2(slots)) + 19.1);
-            if (tmp < 7)
-                m_correctionFactor = 7;
-            else if (tmp > 13)
-                m_correctionFactor = 13;
-            else
-                m_correctionFactor = static_cast<uint32_t>(tmp);
+            m_correctionFactor = std::round(-0.265 * (2 * std::log2(M / 2) + std::log2(slots)) + 19.1);
+            if (m_correctionFactor < 7)
+                m_correctionFactor = 7.0;
+            if (m_correctionFactor > 13.0)
+                m_correctionFactor = 13.0;
         }
         else {
-            m_correctionFactor = 9;
+            m_correctionFactor = 9.0;
         }
     }
     else {
@@ -286,16 +282,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     const auto p = cryptoParams->GetPlaintextModulus();
     double powP  = pow(2, p);
 
-    int32_t deg = std::round(std::log2(qDouble / powP));
-#if NATIVEINT != 128
-    if (deg > static_cast<int32_t>(m_correctionFactor)) {
-        OPENFHE_THROW(math_error, "Degree [" + std::to_string(deg) +
-                                      "] must be less than or equal to the correction factor [" +
-                                      std::to_string(m_correctionFactor) + "].");
-    }
-#endif
-    uint32_t correction = m_correctionFactor - deg;
-    double post         = std::pow(2, static_cast<double>(deg));
+    double deg        = std::round(std::log2(qDouble / powP));
+    double correction = m_correctionFactor - deg;
+    double post       = std::pow(2, deg);
 
     double pre      = 1. / post;
     uint64_t scalar = std::llround(post);
