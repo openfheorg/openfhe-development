@@ -287,11 +287,13 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     double powP  = pow(2, p);
 
     int32_t deg = std::round(std::log2(qDouble / powP));
+#if NATIVEINT != 128
     if (deg > static_cast<int32_t>(m_correctionFactor)) {
         OPENFHE_THROW(math_error, "Degree [" + std::to_string(deg) +
                                       "] must be less than or equal to the correction factor [" +
                                       std::to_string(m_correctionFactor) + "].");
     }
+#endif
     uint32_t correction = m_correctionFactor - deg;
     double post         = std::pow(2, static_cast<double>(deg));
 
