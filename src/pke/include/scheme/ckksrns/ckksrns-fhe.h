@@ -115,10 +115,10 @@ public:
 class FHECKKSRNS : public FHERNS {
     using ParmType = typename DCRTPoly::Params;
 
-    const double K_SPARSE     = 14.0;   // upper bound for the number of overflows in the sparse secret case
-    const double K_UNIFORM    = 512.0;  // upper bound for the number of overflows in the uniform secret case
-    static const int32_t R    = 6;      // number of double-angle iterations in CKKS bootsrtrapping
-    double m_correctionFactor = 0.0;    // correction factor, which we scale the message by to improve precision
+    const double K_SPARSE       = 14.0;   // upper bound for the number of overflows in the sparse secret case
+    const double K_UNIFORM      = 512.0;  // upper bound for the number of overflows in the uniform secret case
+    static const int32_t R      = 6;      // number of double-angle iterations in CKKS bootsrtrapping
+    uint32_t m_correctionFactor = 0;      // correction factor, which we scale the message by to improve precision
 
     // Chebyshev series coefficients for the SPARSE case
     const std::vector<double> g_coefficientsSparse{
@@ -177,9 +177,8 @@ public:
     //------------------------------------------------------------------------------
 
     void EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
-<<<<<<< HEAD
                             std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor) override;
-=======
+
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(const PrivateKey<DCRTPoly> privateKey,
 
     Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext) const override;
