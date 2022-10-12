@@ -274,14 +274,19 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     double alpha        = cryptoParamsBGVRNS->GetAssuranceMeasure();
     usint r             = cryptoParamsBGVRNS->GetDigitSize();
     double log2q        = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
+    SecurityLevel securityLevel = cryptoParamsBGVRNS->GetStdLevel();
 
     double B_e       = sqrt(alpha) * sigma;
     uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
     double Bkey      = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
 
     // get the flooding discrete gaussian distribution
-    auto dggFlooding   = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
+    auto& dggFlooding   = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
+    //auto dggTrapdoor   = cryptoParamsBGVRNS->GetTrapdoorDiscreteGaussianGenerator();
+
     double noise_param = 1;
+    double trapdoor_param = 1;
+    double rtilde = 1;
     if (PREMode == FIXED_NOISE_HRA) {
         noise_param = NOISE_FLOODING::PRE_SD;
     }
@@ -308,11 +313,27 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
             }
         }
     }
-    else if (PREMode == DIVIDE_AND_ROUND_HRA) {
-        OPENFHE_THROW(config_error, "Noise Flooding not applicable for PRE DIVIDE_AND_ROUND_HRA mode");
+    else if (PREMode == TRAPDOOR_HRA) {
+        //OPENFHE_THROW(config_error, "Noise Flooding not applicable for PRE TRAPDOOR_HRA mode");
+        double security_param = 128;
+        if (securityLevel == HEStd_128_classic) {
+            security_param = 128;
+        } else if (securityLevel == HEStd_192_classic) {
+            security_param = 192;
+        } else if (securityLevel == HEStd_256_classic) {
+            security_param = 256;
+        } else {
+            OPENFHE_THROW(config_error, "Required security level not set");
+        }
+        std::cout << "here in bgvrns-paramsgen initialize flooding trapdoor_hra if" << std::endl;
+        noise_param = sqrt(2/M_PI) * pow (2, r) * sqrt(log(2*ringDimension*log2q) + security_param);
+        rtilde = sqrt(ringDimension * log2q) * B_e * trapdoor_param;
+        dggFlooding.SetTrapdoorStd(rtilde);
+        std::cout << "noise_param in initializeflooding: " << noise_param << std::endl;
+        std::cout << "rtilde in initializeflooding: " << rtilde << std::endl;
     }
     // set the flooding distribution parameter to the distribution.
-    dggFlooding.SetStd(noise_param);
+    dggFlooding.SetStd(noise_param);    
 }
 
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
@@ -330,11 +351,21 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     if (!ptm)
         OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
 
-    if ((PREMode != INDCPA) && (PREMode != FIXED_NOISE_HRA) && (PREMode != NOISE_FLOODING_HRA) &&
-        (PREMode != NOT_SET)) {
-        std::stringstream s;
-        s << "This PRE mode " << PREMode << " is not supported for BGVRNS";
-        OPENFHE_THROW(not_available_error, s.str());
+    std:: cout << "PREmode in bgvrns-paramsgen is " << PREMode << std::endl;
+        std::cerr << __FILE__ << ":l." << __LINE__ << ": " << "PREmode: " << PREMode << std::endl;
+    switch(PREMode) {
+        case NOT_SET:
+        case INDCPA:
+        case FIXED_NOISE_HRA:
+        case NOISE_FLOODING_HRA:
+        case TRAPDOOR_HRA:
+            // this is a legit mode
+            break;
+        default:
+        {
+            std::string s("This PRE mode " + std::to_string(PREMode) + " is not supported for BGVRNS");
+            OPENFHE_THROW(not_available_error, s);
+        }
     }
 
     bool dcrtBitsSet = (dcrtBits == 0) ? false : true;
@@ -369,6 +400,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         // need to increase numPrimes to support new larger qBound
         numPrimes = static_cast<usint>((qBound - firstModSize) / static_cast<float>(dcrtBits) + 1);
     }
+        std::cerr << __FILE__ << ":l." << __LINE__ << ": " << "PREmode: " << PREMode << std::endl;
 
     uint32_t n = computeRingDimension(cryptoParams, qBound, cyclOrder);
     //// End HE Standards compliance logic/check
@@ -435,6 +467,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         }
     }
     auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
+        std::cerr << __FILE__ << ":l." << __LINE__ << ": " << "PREmode: " << PREMode << std::endl;
 
     ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, cyclOrder, moduliQ);
 
@@ -491,8 +524,13 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
             std::make_shared<EncodingParamsImpl>(encodingParams->GetPlaintextModulus(), batchSize));
         cryptoParamsBGVRNS->SetEncodingParams(encodingParamsNew);
     }
+        std::cerr << __FILE__ << ":l." << __LINE__ << ": " << "PREmode: " << PREMode << std::endl;
     cryptoParamsBGVRNS->PrecomputeCRTTables(ksTech, scalTech, encTech, multTech, numPartQ, auxBits, 0);
+
+    std:: cout << "PREmode in bgvrns-paramsgen before initializeflooding is " << PREMode << std::endl;
     InitializeFloodingDgg(cryptoParams, numPrimes);
+    std:: cout << "PREmode in bgvrns-paramsgen after initializeflooding is " << PREMode << std::endl;
+
     return true;
 }
 

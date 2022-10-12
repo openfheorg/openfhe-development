@@ -126,6 +126,19 @@ public:
    */
     void SetStd(double std);
 
+
+/**
+   * @brief  Returns the standard deviation of the generator for trapdoor sampling.
+   * @return The analytically obtained standard deviation of the generator for trapdooe sampling.
+   */
+    double GetTrapdoorStd() const;
+
+    /**
+   * @brief     Sets the standard deviation of the generator for trapdoor sampling.
+   * @param std The analytic standard deviation of the generator for trapdoor sampling.
+   */
+    void SetTrapdoorStd(double std);
+
     // BigVector DiscreteGaussianGenerator::GenerateIdentity(usint size, const
     // BigInteger &modulus);
 
@@ -269,6 +282,9 @@ private:
    * The standard deviation of the distribution.
    */
     double m_std;
+
+    double m_trapdoorStd;
+    
     bool peikert = false;
 };
 

@@ -70,7 +70,7 @@ constexpr usint keySwitchCount                            = 0;
 constexpr EncryptionTechnique encryptionTechnique         = STANDARD;
 constexpr MultiplicationTechnique multiplicationTechnique = HPS;
 constexpr usint multiHopModSize                           = 0;
-constexpr ProxyReEncryptionMode PREMode                   = INDCPA;
+constexpr ProxyReEncryptionMode PREMode                   = NOT_SET;
 };  // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {
@@ -102,7 +102,7 @@ constexpr usint keySwitchCount                            = 0;
 constexpr EncryptionTechnique encryptionTechnique         = STANDARD;
 constexpr MultiplicationTechnique multiplicationTechnique = HPSPOVERQLEVELED;
 constexpr usint multiHopModSize                           = 0;
-constexpr ProxyReEncryptionMode PREMode                   = INDCPA;
+constexpr ProxyReEncryptionMode PREMode                   = NOT_SET;
 };  // namespace BFVRNS_SCHEME_DEFAULTS
 
 namespace BGVRNS_SCHEME_DEFAULTS {
@@ -126,7 +126,7 @@ constexpr usint keySwitchCount                            = 3;
 constexpr EncryptionTechnique encryptionTechnique         = STANDARD;
 constexpr MultiplicationTechnique multiplicationTechnique = HPS;
 constexpr usint multiHopModSize                           = 0;
-constexpr ProxyReEncryptionMode PREMode                   = INDCPA;
+constexpr ProxyReEncryptionMode PREMode                   = NOT_SET;
 };  // namespace BGVRNS_SCHEME_DEFAULTS
 
 //====================================================================================================================

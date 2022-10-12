@@ -73,7 +73,7 @@ enum ProxyReEncryptionMode {
     INDCPA,
     FIXED_NOISE_HRA,
     NOISE_FLOODING_HRA,
-    DIVIDE_AND_ROUND_HRA,
+    TRAPDOOR_HRA,
 };
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
 

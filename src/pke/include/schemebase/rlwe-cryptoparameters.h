@@ -289,7 +289,7 @@ public:
 
     /**
    * Configures the security mode for pre
-   * @param PREMode is INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or MODULUS_SWITCHING_HRA.
+   * @param PREMode is INDCPA, FIXED_NOISE_HRA, NOISE_FLOODING_HRA or TRAPDOOR_HRA.
    */
     void SetPREMode(ProxyReEncryptionMode PREMode) {
         m_PREMode = PREMode;

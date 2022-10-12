@@ -74,6 +74,20 @@ double DiscreteGaussianGeneratorImpl<VecType>::GetStd() const {
 }
 
 template <typename VecType>
+void DiscreteGaussianGeneratorImpl<VecType>::SetTrapdoorStd(double std) {
+    m_trapdoorStd = std;
+    if (log2(m_trapdoorStd) > 59) {
+        std::string errorMsg(std::string("Standard deviation cannot exceed 59 bits"));
+        OPENFHE_THROW(config_error, errorMsg);
+    }
+}
+
+template <typename VecType>
+double DiscreteGaussianGeneratorImpl<VecType>::GetTrapdoorStd() const {
+    return m_trapdoorStd;
+}
+
+template <typename VecType>
 void DiscreteGaussianGeneratorImpl<VecType>::Initialize() {
     m_vals.clear();
 

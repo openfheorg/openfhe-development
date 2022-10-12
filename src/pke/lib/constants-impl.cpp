@@ -123,8 +123,8 @@ std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
         case NOISE_FLOODING_HRA:
             s << "NOISE_FLOODING_HRA";
             break;
-        case DIVIDE_AND_ROUND_HRA:
-            s << "DIVIDE_AND_ROUND_HRA";
+        case TRAPDOOR_HRA:
+            s << "TRAPDOOR_HRA";
             break;
         default:
             s << "UKNOWN";

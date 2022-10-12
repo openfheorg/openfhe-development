@@ -62,6 +62,8 @@ protected:
         usint firstqmod = 27;
 
         CCParams<CryptoContextBGVRNS> parameters;
+        //std::cerr << __FILE__ << ":l." << __LINE__ << std::endl;
+        //std::cerr << parameters << std::endl;
         parameters.SetPREMode(INDCPA);
         if (security_model == 0) {
             ringDimension = 1024;
@@ -105,6 +107,20 @@ protected:
             parameters.SetKeySwitchTechnique(HYBRID);
             parameters.SetNumLargeDigits(dnum);
         }
+        else if (security_model == 4) {
+            std::cout << "here in mode 4" << std::endl;
+            ringDimension = 2048;
+            digitSize     = 9;
+            dcrtbits      = 0;
+
+            qmodulus      = 54;
+            firstqmod     = 54;
+
+            parameters.SetPREMode(TRAPDOOR_HRA);
+            parameters.SetKeySwitchTechnique(BV);
+            //std::cerr << __FILE__ << ":l." << __LINE__ << std::endl;
+            //std::cerr << parameters << std::endl;
+        }
 
         parameters.SetMultiplicativeDepth(0);
         parameters.SetPlaintextModulus(plaintextModulus);
@@ -115,6 +131,8 @@ protected:
         parameters.SetScalingTechnique(FIXEDMANUAL);
         parameters.SetMultiHopModSize(qmodulus);
 
+        //std::cerr << __FILE__ << ":l." << __LINE__ << std::endl;
+        //std::cerr << parameters << std::endl;
         CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
         cryptoContext->Enable(PKE);
         cryptoContext->Enable(KEYSWITCH);
@@ -125,6 +143,9 @@ protected:
         // Perform Key Generation Operation
         ////////////////////////////////////////////////////////////
 
+        const auto cryptoParamstestcc = std::static_pointer_cast<CryptoParametersBGVRNS>(cryptoContext->GetCryptoParameters());
+        std::cout << "PREmode set in unittest cc right before keygen: " << cryptoParamstestcc->GetPREMode() << std::endl;
+
         // Initialize Key Pair Containers
         KeyPair<DCRTPoly> keyPair1;
 
@@ -133,6 +154,10 @@ protected:
         if (!keyPair1.good()) {
             OPENFHE_THROW(math_error, "Key generation failed!");
         }
+
+        const auto cryptoParamstestpubkp = std::static_pointer_cast<CryptoParametersRNS>(keyPair1.publicKey->GetCryptoParameters());
+        
+        std::cout << "PREmode set in unittest pk right after keygen: " << cryptoParamstestpubkp->GetPREMode() << std::endl;
 
         ////////////////////////////////////////////////////////////
         // Encode source data
@@ -179,6 +204,12 @@ protected:
         keyPairs.push_back(keyPair1);
         reEncryptedCTs.push_back(ciphertext1);
 
+        const auto cryptoParamstest = std::static_pointer_cast<CryptoParametersRNS>(ciphertext1->GetCryptoParameters());
+        const auto cryptoParamstestpub = std::static_pointer_cast<CryptoParametersRNS>(keyPair1.publicKey->GetCryptoParameters());
+
+        std::cout << "PREmode set in unittest ct: " << cryptoParamstest->GetPREMode() << std::endl;
+        std::cout << "PREmode set in unittest pk: " << cryptoParamstestpub->GetPREMode() << std::endl;
+
         for (int i = 0; i < num_of_hops; i++) {
             auto keyPair = cryptoContext->KeyGen();
             keyPairs.push_back(keyPair);
@@ -188,7 +219,7 @@ protected:
             switch (security_model) {
                 case 0:
                     // CPA secure PRE
-                    reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey);  // IND-CPA secure
+                    reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);  // IND-CPA secure
                     break;
                 case 1:
                     // Fixed noise (20 bits) practically secure PRE
@@ -206,6 +237,12 @@ protected:
                         cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey, keyPairs[i].publicKey);
                     reEncryptedCT = cryptoContext->ModReduce(reEncryptedCT1);  // mod reduction for noise flooding
                     break;
+                case 4:
+                   // Provable HRA secure PRE with trapdoor G-sampling
+                    std::cout << "here in reencrypt mode 4" << std::endl;
+                    reEncryptedCT = cryptoContext->ReEncrypt(reEncryptedCTs[i], reencryptionKey);
+                    break;
+
                 default:
                     OPENFHE_THROW(config_error, "Not a valid security mode");
             }
@@ -219,6 +256,7 @@ protected:
 
         cryptoContext->Decrypt(keyPairs[kp_size_vec - 1].secretKey, reEncryptedCTs[ct_size_vec - 1], &plaintextDec);
 
+        std::cout << "here after decryption" << std::endl;
         // verification
         std::vector<int64_t> unpackedPT, unpackedDecPT;
         unpackedPT    = plaintextDec1->GetCoefPackedValue();
@@ -229,17 +267,19 @@ protected:
                 OPENFHE_THROW(math_error, "Decryption failure");
             }
         }
-
+        
         return 0;
     }
 };
 
 TEST_P(UTGENERAL_MULTIHOP_PRE, MULTIHOP_PRE_TEST) {
-    auto test = GetParam();
+    int test = GetParam();
     run_demo_pre(test);
 }
 
-int Security_Model_Options[4] = {0, 1, 2, 3};
+//int Security_Model_Options[] = {2, 0, 3, 1};
+// int Security_Model_Options[5] = {0, 1, 2, 3, 4};
+ int Security_Model_Options[] = {4};
 
 INSTANTIATE_TEST_SUITE_P(MULTIHOP_PRE_TEST, UTGENERAL_MULTIHOP_PRE, ::testing::ValuesIn(Security_Model_Options));
 
