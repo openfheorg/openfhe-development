@@ -42,7 +42,7 @@ Specifically, we used this to choose the default correction factor for 64-bit FL
 
 using namespace lbcrypto;
 
-double MeasureBootstrapPrecision(uint32_t numSlots, double correctionFactor);
+double MeasureBootstrapPrecision(uint32_t numSlots, uint32_t correctionFactor);
 
 double CalculateApproximationError(const std::vector<std::complex<double>>& result,
                                    const std::vector<std::complex<double>>& expectedResult) {
@@ -61,23 +61,26 @@ double CalculateApproximationError(const std::vector<std::complex<double>>& resu
 
 int main(int argc, char* argv[]) {
 #if NATIVEINT == 64
-    size_t numIterations = 1;
-    uint32_t numSlots    = 1 << 3;
-    for (double i = 6; i < 16; i++) {
-        std::cout << "=======================================================================" << std::endl;
-        std::cout << "Correction Factor: " << i << std::endl;
-        double precision = 0.0;
-        for (size_t j = 0; j < numIterations; j++) {
-            precision += MeasureBootstrapPrecision(numSlots, i);
+    size_t numIterations           = 1;
+    std::vector<uint32_t> slotsVec = {32768};
+    for (uint32_t numSlots : slotsVec) {
+        for (double i = 8; i < 16; i++) {
+            std::cout << "=======================================================================" << std::endl;
+            std::cout << "Number of slots: " << numSlots << std::endl;
+            std::cout << "Correction Factor: " << i << std::endl;
+            double precision = 0.0;
+            for (size_t j = 0; j < numIterations; j++) {
+                precision += MeasureBootstrapPrecision(numSlots, 0);
+            }
+            precision /= numIterations;
+            std::cout << "Average precision over " << numIterations << " iterations: " << precision << std::endl;
+            std::cout << "=======================================================================" << std::endl;
         }
-        precision /= numIterations;
-        std::cout << "Average precision over " << numIterations << " iterations: " << precision << std::endl;
-        std::cout << "=======================================================================" << std::endl;
     }
 #endif
 }
 
-double MeasureBootstrapPrecision(uint32_t numSlots, double correctionFactor) {
+double MeasureBootstrapPrecision(uint32_t numSlots, uint32_t correctionFactor) {
     CCParams<CryptoContextCKKSRNS> parameters;
 
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
@@ -86,7 +89,7 @@ double MeasureBootstrapPrecision(uint32_t numSlots, double correctionFactor) {
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 12);
 
-    ScalingTechnique rescaleTech = FLEXIBLEAUTOEXT;
+    ScalingTechnique rescaleTech = FLEXIBLEAUTO;
     usint dcrtBits               = 59;
     usint firstMod               = 60;
     parameters.SetScalingModSize(dcrtBits);
