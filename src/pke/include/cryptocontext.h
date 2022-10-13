@@ -2664,9 +2664,13 @@ public:
    * FFT-like method or the linear method
    *
    * @param ciphertext the input ciphertext.
+   * @param numIterations number of iterations to run iterative bootstrapping (Meta-BTS). Increasing the iterations increases the precision of bootstrapping.
+   * @param precision precision of initial bootstrapping algorithm. This value is
+   * determined by the user experimentally by first running EvalBootstrap with numIterations = 1 and precision = 0 (unused).
    * @return the refreshed ciphertext.
    */
-    Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const;
+    Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
+                                      uint32_t precision = 0) const;
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {

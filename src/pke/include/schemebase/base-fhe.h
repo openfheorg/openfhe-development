@@ -100,7 +100,8 @@ public:
    * @param ciphertext the input ciphertext.
    * @return the refreshed ciphertext.
    */
-    virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
+    virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations,
+                                              uint32_t precision) const {
         OPENFHE_THROW(not_implemented_error, "EvalBootstrap is not implemented for this scheme");
     }
 };

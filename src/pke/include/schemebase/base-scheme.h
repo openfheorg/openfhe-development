@@ -1560,7 +1560,7 @@ public:
 
     void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, const std::vector<uint32_t>& levelBudget = {5, 4},
                             const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0,
-                            uint32_t correctionFactor = 0.0) {
+                            uint32_t correctionFactor = 0) {
         if (m_FHE) {
             m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor);
             return;
@@ -1578,9 +1578,10 @@ public:
         OPENFHE_THROW(config_error, "EvalBootstrapKeyGen operation has not been enabled");
     }
 
-    Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
+    Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
+                                      uint32_t precision = 0) const {
         if (m_FHE) {
-            return m_FHE->EvalBootstrap(ciphertext);
+            return m_FHE->EvalBootstrap(ciphertext, numIterations, precision);
         }
 
         OPENFHE_THROW(config_error, "EvalBootstrap operation has not been enabled");

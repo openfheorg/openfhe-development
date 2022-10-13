@@ -130,7 +130,8 @@ public:
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(const PrivateKey<DCRTPoly> privateKey,
 
-    Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext) const override;
+    Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
+                                       uint32_t precision) const override;
 
     //------------------------------------------------------------------------------
     // Find Rotation Indices

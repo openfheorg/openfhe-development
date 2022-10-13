@@ -226,7 +226,8 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
     return evalKeys;
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext) const {
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
+                                               uint32_t precision) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -244,6 +245,64 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     double timeDecode(0.0);
 #endif
 
+    auto cc     = ciphertext->GetCryptoContext();
+    uint32_t M  = cc->GetCyclotomicOrder();
+    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
+
+    if (numIterations > 1) {
+        uint32_t powerOfTwoModulus = std::pow(2, precision);
+        // Step 1: ct = Scale and mod up ciphertext to powerOfTwoModulus * q
+        Ciphertext<DCRTPoly> ct = ciphertext->Clone();
+        auto paramsQ            = ciphertext->GetElements()[0].GetParams()->GetParams();
+        auto sizeQ              = paramsQ.size();
+        std::vector<NativeInteger> moduliQ(sizeQ + 1);
+        std::vector<NativeInteger> rootsQ(sizeQ + 1);
+        for (size_t i = 0; i < sizeQ; i++) {
+            moduliQ[i] = paramsQ[i]->GetModulus();
+            rootsQ[i]  = paramsQ[i]->GetRootOfUnity();
+        }
+        moduliQ[sizeQ] = powerOfTwoModulus;
+        rootsQ[sizeQ]  = 1;  // Filler value because powerOfTwoModulus has no root of unity (mod M)
+        auto newParams = std::make_shared<ILDCRTParams<BigInteger>>(M, moduliQ, rootsQ);
+        // We multiply by powerOfTwoModulus, and leave the last CRT value to be 0 (mod powerOfTwoModulus).
+        for (auto& cv : ct->GetElements()) {
+            DCRTPoly scaleUp = cv * powerOfTwoModulus;
+            DCRTPoly modUp(newParams, EVALUATION, true);
+            for (size_t i = 0; i < sizeQ; i++) {
+                modUp.SetElementAtIndex(i, scaleUp.GetElementAtIndex(i));
+            }
+            cv = modUp;
+        }
+        ct->SetLevel(L0 - ct->GetElements()[0].GetNumOfElements());
+        // Step 2: ct_1 = ciphertext
+        // Step 3: ct_2 = EvalBootstrap(ct_1, numIterations - 1, precision)
+        auto ct2 = cc->EvalBootstrap(ciphertext, numIterations - 1, precision);
+        cc->GetScheme()->ModReduceInternalInPlace(ct2, 1);
+        // Step 4: ct_3 = powerOfTwoModulus * ct_2
+        Ciphertext<DCRTPoly> ct3 = ct2->Clone();
+        for (auto& cv : ct3->GetElements()) {
+            cv = cv * powerOfTwoModulus;
+        }
+        // Step 5: ct_4 = Mod-down ct_3 to powerOfTwoModulus * q
+        // We mod down, and leave the last CRT value to be 0 because it's divisible by powerOfTwoModulus.
+        auto ct4 = ct3->Clone();
+        for (auto& cv : ct4->GetElements()) {
+            DCRTPoly modDown(newParams, EVALUATION, true);
+            for (size_t i = 0; i < sizeQ; i++) {
+                modDown.SetElementAtIndex(i, cv.GetElementAtIndex(i));
+            }
+            cv = modDown;
+        }
+        ct4->SetLevel(L0 - ct4->GetElements()[0].GetNumOfElements());
+        // Step 6: ct_5 = EvalSub(ct_4, ct)
+        auto ct5 = cc->EvalSub(ct4, ct);
+        // Step 7: ct_6 = EvalBootstrap(ct_6, 1, 0)
+        auto ct6 = cc->EvalBootstrap(ct5, 1, 0);
+        cc->GetScheme()->ModReduceInternalInPlace(ct6, 1);
+        // Step 8: Return EvalSub(ct_3, ct_6).
+        return cc->EvalSub(ct3, ct6);
+    }
+
     uint32_t slots = ciphertext->GetSlots();
 
     auto pair = m_bootPrecomMap.find(slots);
@@ -254,12 +313,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         OPENFHE_THROW(type_error, errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
-
-    auto cc    = ciphertext->GetCryptoContext();
-    uint32_t M = cc->GetCyclotomicOrder();
-    size_t N   = cc->GetRingDimension();
-
-    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
+    size_t N                                          = cc->GetRingDimension();
 
     auto elementParamsRaised = *(cryptoParams->GetElementParams());
 

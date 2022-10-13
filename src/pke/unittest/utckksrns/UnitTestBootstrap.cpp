@@ -53,6 +53,7 @@ enum TEST_CASE_TYPE {
     BOOTSTRAP_EDGE,
     BOOTSTRAP_SPARSE,
     BOOTSTRAP_KEY_SWITCH,
+    BOOTSTRAP_ITERATIVE,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -69,6 +70,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case BOOTSTRAP_KEY_SWITCH:
             typeName = "BOOTSTRAP_KEY_SWITCH";
+            break;
+        case BOOTSTRAP_ITERATIVE:
+            typeName = "BOOTSTRAP_ITERATIVE";
             break;
         default:
             typeName = "UNKNOWN";
@@ -234,6 +238,9 @@ static std::vector<TEST_CASE_UTCKKSRNS_BOOT> testCases = {
     { BOOTSTRAP_KEY_SWITCH, "08", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
 #endif
     // ==========================================
+    // TestType,           Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, LvlBudget, Dim1,     Slots
+    { BOOTSTRAP_ITERATIVE, "01", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8}
+    // ==========================================
 };
 // clang-format on
 //===========================================================================================================
@@ -243,6 +250,23 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
     // The precision after which we consider two values equal.
     // This is necessary because CKKS works for approximate numbers.
     const double eps = 0.0001;
+
+    // CalculateApproximationError() calculates the precision number (or approximation error).
+    // The higher the precision, the less the error.
+    double CalculateApproximationError(const std::vector<std::complex<double>>& result,
+                                       const std::vector<std::complex<double>>& expectedResult) {
+        if (result.size() != expectedResult.size())
+            OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
+
+        // using the Euclidean norm
+        double avrg = 0;
+        for (size_t i = 0; i < result.size(); ++i) {
+            avrg += std::pow(std::abs(result[i].real() - expectedResult[i].real()), 2);
+        }
+
+        avrg = std::sqrt(avrg) / result.size();  // get the average
+        return std::abs(std::log2(avrg));
+    }
 
 protected:
     void SetUp() {}
@@ -388,6 +412,60 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
+
+    void UnitTest_Bootstrap_Iterative(const TEST_CASE_UTCKKSRNS_BOOT& testData,
+                                      const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalAtIndexKeyGen(keyPair.secretKey, {6});
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            std::vector<std::complex<double>> input(
+                Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
+            size_t encodedLength = input.size();
+
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, testData.slots);
+            auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
+            auto ciphertextAfter = cc->EvalBootstrap(ciphertext1);
+
+            Plaintext result;
+            cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
+            result->SetLength(encodedLength);
+            plaintext1->SetLength(encodedLength);
+            uint32_t precision =
+                std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue()));
+            std::cout << "Initial precision: " << precision << std::endl;
+
+            // Add two as a paramter.
+            auto ciphertextTwoIterations = cc->EvalBootstrap(ciphertext1, 2, precision);
+
+            cc->Decrypt(keyPair.secretKey, ciphertextTwoIterations, &result);
+            result->SetLength(encodedLength);
+            plaintext1->SetLength(encodedLength);
+            double precisionTwoIterations =
+                CalculateApproximationError(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue());
+
+            std::cout << "Two iterations of precision: " << precisionTwoIterations << std::endl;
+
+            EXPECT_GE(precisionTwoIterations, 2 * precision);
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
 };
 
 //===========================================================================================================
@@ -403,6 +481,9 @@ TEST_P(UTCKKSRNS_BOOT, CKKSRNS) {
             break;
         case BOOTSTRAP_KEY_SWITCH:
             UnitTest_Bootstrap_KeySwitching(test, test.buildTestName());
+            break;
+        case BOOTSTRAP_ITERATIVE:
+            UnitTest_Bootstrap_Iterative(test, test.buildTestName());
             break;
         default:
             break;
