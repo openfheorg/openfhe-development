@@ -421,8 +421,8 @@ protected:
             cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
 
             auto keyPair = cc->KeyGen();
+            cc->SetPrivateKey(keyPair.secretKey);
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
-            cc->EvalAtIndexKeyGen(keyPair.secretKey, {6});
             cc->EvalMultKeyGen(keyPair.secretKey);
 
             std::vector<std::complex<double>> input(
@@ -437,18 +437,25 @@ protected:
             cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
             result->SetLength(encodedLength);
             plaintext1->SetLength(encodedLength);
-            uint32_t precision =
-                std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue()));
+            uint32_t precision = std::floor(CalculateApproximationError(result->GetCKKSPackedValue(),
+                                                                        plaintext1->GetCKKSPackedValue())) -
+                                 3;
             std::cout << "Initial precision: " << precision << std::endl;
 
-            // Add two as a paramter.
+            // Add two as a parameter.
             auto ciphertextTwoIterations = cc->EvalBootstrap(ciphertext1, 2, precision);
 
             cc->Decrypt(keyPair.secretKey, ciphertextTwoIterations, &result);
             result->SetLength(encodedLength);
             plaintext1->SetLength(encodedLength);
-            double precisionTwoIterations =
-                CalculateApproximationError(result->GetCKKSPackedValue(), plaintext1->GetCKKSPackedValue());
+            auto actualResult = result->GetCKKSPackedValue();
+            for (size_t i = 0; i < encodedLength; i++) {
+                actualResult[i] /= (1 << precision);
+            }
+            checkEquality(actualResult, plaintext1->GetCKKSPackedValue(), eps,
+                          failmsg + " Bootstrapping with 2 iterations failed");
+            std::cout << "result: " << result << std::endl;
+            double precisionTwoIterations = CalculateApproximationError(actualResult, plaintext1->GetCKKSPackedValue());
 
             std::cout << "Two iterations of precision: " << precisionTwoIterations << std::endl;
 

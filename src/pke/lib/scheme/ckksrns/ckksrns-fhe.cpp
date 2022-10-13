@@ -248,6 +248,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     auto cc     = ciphertext->GetCryptoContext();
     uint32_t M  = cc->GetCyclotomicOrder();
     uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
+    Plaintext result;
 
     if (numIterations > 1) {
         uint32_t powerOfTwoModulus = std::pow(2, precision);

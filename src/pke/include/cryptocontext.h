@@ -288,6 +288,7 @@ public:
    *
    */
     void SetPrivateKey(const PrivateKey<Element> privateKey) {
+#define DEBUG_KEY
 #ifdef DEBUG_KEY
         std::cerr << "Warning - SetPrivateKey is only intended to be used for debugging "
                      "purposes - not for production systems."
