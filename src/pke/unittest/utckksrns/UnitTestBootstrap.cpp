@@ -421,7 +421,6 @@ protected:
             cc->EvalBootstrapSetup(testData.levelBudget, testData.dim1, testData.slots);
 
             auto keyPair = cc->KeyGen();
-            cc->SetPrivateKey(keyPair.secretKey);
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
             cc->EvalMultKeyGen(keyPair.secretKey);
 
@@ -454,7 +453,6 @@ protected:
             }
             checkEquality(actualResult, plaintext1->GetCKKSPackedValue(), eps,
                           failmsg + " Bootstrapping with 2 iterations failed");
-            std::cout << "result: " << result << std::endl;
             double precisionTwoIterations = CalculateApproximationError(actualResult, plaintext1->GetCKKSPackedValue());
 
             std::cout << "Two iterations of precision: " << precisionTwoIterations << std::endl;
