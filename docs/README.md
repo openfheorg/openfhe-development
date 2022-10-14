@@ -5,7 +5,7 @@ This README details the documentation present in the OpenFHE library. We support
 In this readme we detail:
 
 1. [The requirements to build the documentation](#Requirements)
-2. [Steps to build the documentation](#Building The Documentation) for both `Sphinx` and `Doxygen`
+2. [Steps to build the documentation](#Building-The-Documentation) for both `Sphinx` and `Doxygen`
 3. [Debugging the documentation build](#Debugging)
 
 ## Requirements
