@@ -183,12 +183,16 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     }
 
     const std::vector<std::vector<NativePoly>>& ev2 = ek2->GetElements();
-    for (size_t j = 0; j < 2; ++j) {
-        NativePoly temp1(dct[0] * ev2[0][j]);
-        for (size_t l = 1; l < digitsG2; ++l)
-            temp1 += (dct[l] * ev2[l][j]);
-        acc->GetElements()[j] += (temp1 * monomialNeg);
-    }
+    // for elements[0]:
+    NativePoly temp1(dct[0] * ev2[0][0]);
+    for (size_t l = 1; l < digitsG2; ++l)
+        temp1 += (dct[l] * ev2[l][0]);
+    acc->GetElements()[0] += (temp1 *= monomialNeg);
+    // for elements[1]:
+    NativePoly temp2(dct[0] * ev2[0][1]);
+    for (size_t l = 1; l < digitsG2; ++l)
+        temp2 += (dct[l] *= ev2[l][1]);
+    acc->GetElements()[1] += (temp2 *= monomialNeg);
 }
 
 };  // namespace lbcrypto

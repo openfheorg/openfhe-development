@@ -169,15 +169,14 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
     // uses in-place * operators for the last call to dct[i] to gain performance
     // improvement
     const std::vector<std::vector<NativePoly>>& ev = ek->GetElements();
-    for (size_t j = 0; j < 2; ++j) {
-        acc->GetElements()[j].SetValuesToZero();
-        for (size_t l = 0; l < digitsG2; ++l) {
-            if (j == 0)
-                acc->GetElements()[j] += dct[l] * ev[l][j];
-            else
-                acc->GetElements()[j] += (dct[l] *= ev[l][j]);
-        }
-    }
+    // for elements[0]:
+    acc->GetElements()[0].SetValuesToZero();
+    for (size_t l = 1; l < digitsG2; ++l)
+        acc->GetElements()[0] += (dct[l] * ev[l][0]);
+    // for elements[1]:
+    acc->GetElements()[1].SetValuesToZero();
+    for (size_t l = 1; l < digitsG2; ++l)
+        acc->GetElements()[1] += (dct[l] *= ev[l][1]);
 }
 
 };  // namespace lbcrypto
