@@ -37,8 +37,8 @@
 
 namespace lbcrypto {
 
-using LWEPlaintext        = int64_t;  // TODO (dsuponit): can this be uint64_t
-using LWEPlaintextModulus = int64_t;  // TODO (dsuponit): can this be uint64_t
+using LWEPlaintext        = int64_t;
+using LWEPlaintextModulus = uint64_t;
 
 /**
  * @brief Security levels for predefined parameter sets

@@ -87,7 +87,7 @@ void RingGSWAccumulatorDM::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> pa
 RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCryptoParams> params,
                                               const NativePoly& skNTT, const LWEPlaintext& m) const {
     NativeInteger Q   = params->GetQ();
-    int64_t q         = params->Getq().ConvertToInt();
+    uint64_t q        = params->Getq().ConvertToInt();
     uint32_t N        = params->GetN();
     uint32_t digitsG  = params->GetDigitsG();
     uint32_t digitsG2 = digitsG << 1;
@@ -99,11 +99,11 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
     dug.SetModulus(Q);
 
     // Reduce mod q (dealing with negative number as well)
-    int64_t mm   = (((m % q) + q) % q) * (2 * N / q);
-    int64_t sign = 1;
+    int64_t mm       = (((m % q) + q) % q) * (2 * N / q);
+    bool isReducedMM = false;
     if (mm >= N) {
         mm -= N;
-        sign = -1;
+        isReducedMM = true;
     }
 
     // tempA is introduced to minimize the number of NTTs
@@ -118,7 +118,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
     }
 
     for (size_t i = 0; i < digitsG; ++i) {
-        if (sign > 0) {
+        if (!isReducedMM) {
             // Add G Multiple
             (*result)[2 * i][0][mm].ModAddEq(Gpow[i], Q);
             // [a,as+e] + X^m*G

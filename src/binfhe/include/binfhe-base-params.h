@@ -69,8 +69,8 @@ public:
    * @param baseR the base for the refreshing key
    * @param method bootstrapping method (DM or CGGI)
    */
-    explicit BinFHECryptoParams(const std::shared_ptr<LWECryptoParams> lweparams,
-                                const std::shared_ptr<RingGSWCryptoParams> rgswparams)
+    BinFHECryptoParams(const std::shared_ptr<LWECryptoParams> lweparams,
+                       const std::shared_ptr<RingGSWCryptoParams> rgswparams)
         : m_LWEParams(lweparams), m_RGSWParams(rgswparams) {}
 
     const std::shared_ptr<LWECryptoParams> GetLWEParams() const {
