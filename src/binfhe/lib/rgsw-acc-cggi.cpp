@@ -179,7 +179,7 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
         NativePoly temp1(dct[0] * ev1[0][j]);
         for (size_t l = 1; l < digitsG2; ++l)
             temp1 += (dct[l] * ev1[l][j]);
-        acc->GetElements()[j] += (temp1 * monomial);
+        acc->GetElements()[j] += (temp1 *= monomial);
     }
 
     const std::vector<std::vector<NativePoly>>& ev2 = ek2->GetElements();
