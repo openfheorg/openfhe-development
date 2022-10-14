@@ -32,11 +32,7 @@
 /*
 
 Use this script to find the correction factor, which gives the best precision for CKKS bootstrapping.
-<<<<<<< HEAD
 Specifically, we used this to choose the default correction factor for 64-bit FLEXIBLEAUTO and FLEXIBLEAUTOEXT.
-=======
-Specifically, we used this to choose the default correction factor for 64-bit FLEXIBLEAUTOEXT.
->>>>>>> Format
 
 */
 
@@ -65,30 +61,20 @@ double CalculateApproximationError(const std::vector<std::complex<double>>& resu
 
 int main(int argc, char* argv[]) {
 #if NATIVEINT == 64
-<<<<<<< HEAD
     size_t numIterations           = 10;
     size_t maxCorrectionFactor     = 15;
     std::vector<uint32_t> slotsVec = {1 << 3, 1 << 11};
+
     for (uint32_t numSlots : slotsVec) {
         for (size_t correctionFactor = 1; correctionFactor <= maxCorrectionFactor; correctionFactor++) {
             std::cout << "=======================================================================" << std::endl;
             std::cout << "Number of slots: " << numSlots << std::endl;
             std::cout << "Correction Factor: " << correctionFactor << std::endl;
             double precision = 0.0;
+
             for (size_t i = 0; i < numIterations; i++) {
                 precision += MeasureBootstrapPrecision(numSlots, correctionFactor);
-=======
-    size_t numIterations           = 1;
-    std::vector<uint32_t> slotsVec = {32768};
-    for (uint32_t numSlots : slotsVec) {
-        for (double i = 8; i < 16; i++) {
-            std::cout << "=======================================================================" << std::endl;
-            std::cout << "Number of slots: " << numSlots << std::endl;
-            std::cout << "Correction Factor: " << i << std::endl;
-            double precision = 0.0;
-            for (size_t j = 0; j < numIterations; j++) {
-                precision += MeasureBootstrapPrecision(numSlots, 0);
->>>>>>> Format
+
             }
             precision /= numIterations;
             std::cout << "Average precision over " << numIterations << " iterations: " << precision << std::endl;
@@ -107,11 +93,8 @@ double MeasureBootstrapPrecision(uint32_t numSlots, uint32_t correctionFactor) {
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 12);
 
-<<<<<<< HEAD
     ScalingTechnique rescaleTech = FLEXIBLEAUTOEXT;
-=======
-    ScalingTechnique rescaleTech = FLEXIBLEAUTO;
->>>>>>> Format
+
     usint dcrtBits               = 59;
     usint firstMod               = 60;
     parameters.SetScalingModSize(dcrtBits);
