@@ -156,7 +156,7 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
         dct[i] = NativePoly(polyParams, Format::COEFFICIENT, true);
 
     // calls 2 NTTs
-    for (uint32_t i = 0; i < 2; ++i)
+    for (size_t i = 0; i < 2; ++i)
         ct[i].SetFormat(Format::COEFFICIENT);
 
     SignedDigitDecompose(params, ct, dct);

@@ -292,7 +292,7 @@ std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (
     NativeInteger outerval = interval;
     usint vecSize          = q.ConvertToInt();
     std::vector<NativeInteger> vec(vecSize);
-    for (usint i = 0; i < vecSize; ++i) {
+    for (size_t i = 0; i < vecSize; ++i) {
         auto temp = f(NativeInteger(i) / interval, p);
         if (temp >= p) {
             std::string errMsg("ERROR: input function should output in Z_{p_output}.");

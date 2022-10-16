@@ -110,8 +110,8 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
         (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
     }
 
-    for (size_t i = 0; i < digitsG; ++i) {
-        if (m > 0) {
+    if (m > 0) {
+        for (size_t i = 0; i < digitsG; ++i) {
             // Add G Multiple
             (*result)[2 * i][0][0].ModAddEq(Gpow[i], Q);
             // [a,as+e] + G

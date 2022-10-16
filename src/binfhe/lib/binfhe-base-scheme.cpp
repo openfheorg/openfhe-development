@@ -518,7 +518,7 @@ RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECrypt
     NativeInteger ctMod    = ct->GetModulus();
     uint32_t factor        = (2 * N / ctMod.ConvertToInt());
     const NativeInteger& b = ct->GetB();
-    for (uint32_t j = 0; j < (ctMod >> 1); j++) {
+    for (size_t j = 0; j < (ctMod >> 1); ++j) {
         NativeInteger temp = b.ModSub(j, ctMod);
         m[j * factor]      = Q.ConvertToInt() / fmod.ConvertToInt() * f(temp, ctMod, fmod);
     }
