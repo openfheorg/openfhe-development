@@ -1559,9 +1559,10 @@ public:
     //  const std::shared_ptr<PKEBase<Element>> getAlgorithm() const { return m_PKE; }
 
     void EvalBootstrapSetup(const CryptoContextImpl<Element>& cc, const std::vector<uint32_t>& levelBudget = {5, 4},
-                            const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0) {
+                            const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0,
+                            uint32_t correctionFactor = 0.0) {
         if (m_FHE) {
-            m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots);
+            m_FHE->EvalBootstrapSetup(cc, levelBudget, dim1, slots, correctionFactor);
             return;
         }
 

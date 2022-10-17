@@ -43,7 +43,7 @@
 namespace lbcrypto {
 
 //====================================================================================================================
-#define SET_TO_SCHEME_DEFAULT(SCHEME, var) var = SCHEME##_DEFAULTS::var  // see cryptocontextparams-defaults.h
+#define SET_TO_SCHEME_DEFAULT(SCHEME, var) this->var = SCHEME##_DEFAULTS::var  // see cryptocontextparams-defaults.h
 #define SET_TO_SCHEME_DEFAULTS(SCHEME)                          \
     {                                                           \
         SET_TO_SCHEME_DEFAULT(SCHEME, scheme);                  \

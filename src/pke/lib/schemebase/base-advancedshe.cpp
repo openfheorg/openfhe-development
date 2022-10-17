@@ -137,7 +137,8 @@ Ciphertext<Element> AdvancedSHEBase<Element>::AddRandomNoise(ConstCiphertext<Ele
             randomIntVector[i + 1].real(distribution(PseudoRandomNumberGenerator::GetPRNG()));
         }
 
-        plaintext = cc->MakeCKKSPackedPlaintext(randomIntVector, ciphertext->GetNoiseScaleDeg());
+        plaintext = cc->MakeCKKSPackedPlaintext(randomIntVector, ciphertext->GetNoiseScaleDeg(), 0, nullptr,
+                                                ciphertext->GetSlots());
     }
     else {
         DiscreteUniformGenerator dug;
@@ -366,7 +367,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalSumCols(
     auto cc   = ciphertext->GetCryptoContext();
     auto algo = cc->GetScheme();
 
-    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(mask, 1);
+    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(mask, 1, 0, nullptr, ciphertext->GetSlots());
     algo->EvalMultInPlace(newCiphertext, plaintext);
 
     return EvalSum2nComplexCols(newCiphertext, batchSize, m, evalSumColsKeyMap);
@@ -423,7 +424,7 @@ Ciphertext<Element> AdvancedSHEBase<Element>::EvalMerge(const std::vector<Cipher
     Plaintext plaintext;
     if (ciphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) {
         std::vector<std::complex<double>> mask({{1, 0}, {0, 0}});
-        plaintext = cc->MakeCKKSPackedPlaintext(mask);
+        plaintext = cc->MakeCKKSPackedPlaintext(mask, 1, 0, nullptr, ciphertextVec[0]->GetSlots());
     }
     else {
         std::vector<int64_t> mask = {1, 0};

@@ -237,7 +237,16 @@ protected:
     }
 
     template <typename T>
-    void CheckKey(const T& key, CALLER_INFO_ARGS_HDR) const;
+    void CheckKey(const T& key, CALLER_INFO_ARGS_HDR) const {
+        if (key == nullptr) {
+            std::string errorMsg(std::string("Key is nullptr") + CALLER_INFO);
+            OPENFHE_THROW(config_error, errorMsg);
+        }
+        if (Mismatched(key->GetCryptoContext())) {
+            std::string errorMsg(std::string("Key was not generated with the same crypto context") + CALLER_INFO);
+            OPENFHE_THROW(config_error, errorMsg);
+        }
+    }
 
     void CheckCiphertext(const ConstCiphertext<Element>& ciphertext, CALLER_INFO_ARGS_HDR) const {
         if (ciphertext == nullptr) {
@@ -2636,9 +2645,10 @@ public:
    * @param dim1 - vector of inner dimension in the baby-step giant-step routine
    * for encoding and decoding
    * @param slots - number of slots to be bootstrapped
+   * @param correctionFactor - value to rescale message by to improve precision. If set to 0, we use the default logic. This value is only used when NATIVE_SIZE=64.
    */
     void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0},
-                            uint32_t slots = 0);
+                            uint32_t slots = 0, uint32_t correctionFactor = 0);
 
     /**
    * Generates all automorphism keys for EvalBT.
