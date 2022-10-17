@@ -64,17 +64,14 @@ int main(int argc, char* argv[]) {
     size_t numIterations           = 10;
     size_t maxCorrectionFactor     = 15;
     std::vector<uint32_t> slotsVec = {1 << 3, 1 << 11};
-
     for (uint32_t numSlots : slotsVec) {
         for (size_t correctionFactor = 1; correctionFactor <= maxCorrectionFactor; correctionFactor++) {
             std::cout << "=======================================================================" << std::endl;
             std::cout << "Number of slots: " << numSlots << std::endl;
             std::cout << "Correction Factor: " << correctionFactor << std::endl;
             double precision = 0.0;
-
             for (size_t i = 0; i < numIterations; i++) {
                 precision += MeasureBootstrapPrecision(numSlots, correctionFactor);
-
             }
             precision /= numIterations;
             std::cout << "Average precision over " << numIterations << " iterations: " << precision << std::endl;
@@ -94,7 +91,6 @@ double MeasureBootstrapPrecision(uint32_t numSlots, uint32_t correctionFactor) {
     parameters.SetRingDim(1 << 12);
 
     ScalingTechnique rescaleTech = FLEXIBLEAUTOEXT;
-
     usint dcrtBits               = 59;
     usint firstMod               = 60;
     parameters.SetScalingModSize(dcrtBits);

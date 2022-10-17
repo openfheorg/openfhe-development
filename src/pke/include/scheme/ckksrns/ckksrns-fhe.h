@@ -129,6 +129,7 @@ public:
                             std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalBootstrapKeyGen(const PrivateKey<DCRTPoly> privateKey,
+                                                                            uint32_t slots) override;
 
     Ciphertext<DCRTPoly> EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
                                        uint32_t precision) const override;
