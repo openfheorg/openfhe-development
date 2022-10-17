@@ -1,3 +1,9 @@
+10/17/2022: OpenFHE 0.9.5 (development) is released
+
+* Improves precision of CKKS bootstrapping
+* Fixes a building error in MacOS
+* Includes other small bug fixes
+
 10/05/2022: OpenFHE 0.9.4 (development) is released
 
 * Fixes build errors for NATIVE_SIZE=32
