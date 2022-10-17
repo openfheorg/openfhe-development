@@ -47,6 +47,7 @@
 
 #include "schemebase/base-pke.h"
 #include "schemerns/rns-cryptoparameters.h"
+#include "binfhecontext.h"
 
 #include "utils/caller_info.h"
 #include "utils/serial.h"
@@ -80,6 +81,8 @@ template <typename Element>
 class CryptoContextImpl : public Serializable {
     using IntType  = typename Element::Integer;
     using ParmType = typename Element::Params;
+
+    BinFHEContext m_ccLWE;
 
     void SetKSTechniqueInScheme();
 
