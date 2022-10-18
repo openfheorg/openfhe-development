@@ -41,6 +41,12 @@ if( BUILD_STATIC )
   target_include_directories(OPENFHEcore_static INTERFACE 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
+  target_include_directories(OPENFHEcore_static INTERFACE 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/>
+    $<INSTALL_INTERFACE:include>)
+  target_include_directories(OPENFHEcore_static INTERFACE 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../third-party/cereal/include/>
+    $<INSTALL_INTERFACE:include>)
 	install(TARGETS OPENFHEcore_static
 		EXPORT OpenFHETargets
     DESTINATION ${CMAKE_BINARY_DIR}/lib)
