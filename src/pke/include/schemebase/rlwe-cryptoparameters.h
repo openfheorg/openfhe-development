@@ -175,7 +175,7 @@ public:
    *
    * @return maximum power of secret key
    */
-    size_t GetMaxRelinSkDeg() const {
+    uint32_t GetMaxRelinSkDeg() const {
         return m_maxRelinSkDeg;
     }
 
@@ -310,7 +310,7 @@ public:
    * relinearization key is generated
    * @param maxRelinSkDeg
    */
-    void SetMaxRelinSkDeg(size_t maxRelinSkDeg) {
+    void SetMaxRelinSkDeg(uint32_t maxRelinSkDeg) {
         m_maxRelinSkDeg = maxRelinSkDeg;
     }
 
