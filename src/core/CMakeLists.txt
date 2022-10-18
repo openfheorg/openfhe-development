@@ -36,11 +36,14 @@ endif()
 
 
 if( BUILD_STATIC )
-	add_library (OPENFHEcore_static STATIC $<TARGET_OBJECTS:coreobj>)
+  add_library (OPENFHEcore_static STATIC $<TARGET_OBJECTS:coreobj>)
 	set_property(TARGET OPENFHEcore_static PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+  target_include_directories(OPENFHEcore_static INTERFACE 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
 	install(TARGETS OPENFHEcore_static
 		EXPORT OpenFHETargets
-		DESTINATION lib)
+    DESTINATION ${CMAKE_BINARY_DIR}/lib)
 endif()
 
 install(DIRECTORY include/
