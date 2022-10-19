@@ -273,23 +273,24 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
         // Step 5: Mod-down to powerOfTwoModulus * q
         // We mod down, and leave the last CRT value to be 0 because it's divisible by powerOfTwoModulus.
-        auto bootstrappingSizeQ = ctInitialBootstrap->GetElements()[0].GetNumOfElements();
+        auto ctBootstrappedScaledDown = ctInitialBootstrap->Clone();
+        auto bootstrappingSizeQ       = ctBootstrappedScaledDown->GetElements()[0].GetNumOfElements();
         if (bootstrappingSizeQ <= initSizeQ) {
             OPENFHE_THROW(config_error, "Bootstrapping number of RNS moduli " + std::to_string(bootstrappingSizeQ) +
                                             " must be greater than initial number of RNS moduli " +
                                             std::to_string(initSizeQ));
         }
-        for (auto& cv : ctInitialBootstrap->GetElements()) {
+        for (auto& cv : ctBootstrappedScaledDown->GetElements()) {
             cv.DropLastElements(bootstrappingSizeQ - initSizeQ);
         }
-        ctInitialBootstrap->SetLevel(L0 - ctInitialBootstrap->GetElements()[0].GetNumOfElements());
+        ctBootstrappedScaledDown->SetLevel(L0 - ctBootstrappedScaledDown->GetElements()[0].GetNumOfElements());
 
         // Step 6 and 7: Calculate the bootstrapping error by subtracting the original ciphertext from the bootstrapped ciphertext. Mod down to q is done implicitly.
-        auto ctBootstrappingError = cc->EvalSub(ctInitialBootstrap, ctScaledUp);
+        auto ctBootstrappingError = cc->EvalSub(ctBootstrappedScaledDown, ctScaledUp);
 
         // Step 8: Bootstrap the error.
         auto ctBootstrappedError = cc->EvalBootstrap(ctBootstrappingError, 1, 0);
-        // cc->GetScheme()->ModReduceInternalInPlace(ctBootstrappedError, BASE_NUM_LEVELS_TO_DROP);
+        cc->GetScheme()->ModReduceInternalInPlace(ctBootstrappedError, BASE_NUM_LEVELS_TO_DROP);
 
         // Step 9: Subtract the bootstrapped error from the initial bootstrap to get even lower error.
         std::cout << "numIterations: " << numIterations << std::endl;
