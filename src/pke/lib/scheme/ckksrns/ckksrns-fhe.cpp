@@ -251,7 +251,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     Plaintext result;
 
     if (numIterations > 1) {
-        uint32_t powerOfTwoModulus = std::pow(2, precision);
+        auto sk                    = cc->GetPrivateKey();
+        uint32_t powerOfTwoModulus = 1 << precision;
         // Step 1: ct = Scale and mod up ciphertext to powerOfTwoModulus * q
         Ciphertext<DCRTPoly> ct = ciphertext->Clone();
         auto paramsQ            = ciphertext->GetElements()[0].GetParams()->GetParams();
@@ -278,7 +279,12 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // Step 2: ct_1 = ciphertext
         // Step 3: ct_2 = EvalBootstrap(ct_1, numIterations - 1, precision)
         auto ct2 = cc->EvalBootstrap(ciphertext, numIterations - 1, precision);
+        Plaintext result;
+        cc->Decrypt(sk, ct2, &result);
+        std::cout << "ct2: " << result << std::endl;
         cc->GetScheme()->ModReduceInternalInPlace(ct2, 1);
+        cc->Decrypt(sk, ct2, &result);
+        std::cout << "ct2 after mod reduce: " << result << std::endl;
         // Step 4: ct_3 = powerOfTwoModulus * ct_2
         Ciphertext<DCRTPoly> ct3 = ct2->Clone();
         for (auto& cv : ct3->GetElements()) {
@@ -299,9 +305,19 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         auto ct5 = cc->EvalSub(ct4, ct);
         // Step 7: ct_6 = EvalBootstrap(ct_6, 1, 0)
         auto ct6 = cc->EvalBootstrap(ct5, 1, 0);
+        cc->Decrypt(sk, ct6, &result);
+        std::cout << "ct6: " << result << std::endl;
         cc->GetScheme()->ModReduceInternalInPlace(ct6, 1);
+        cc->Decrypt(sk, ct6, &result);
+        std::cout << "ct6 after mod reduce: " << result << std::endl;
         // Step 8: Return EvalSub(ct_3, ct_6).
-        return cc->EvalSub(ct3, ct6);
+        auto ct7 = cc->EvalSub(ct3, ct6);
+        cc->Decrypt(sk, ct7, &result);
+        std::cout << "ct7: " << result << std::endl;
+
+        // Step 9: Scale down by powerOfTwoModulus.
+        cc->EvalMultInPlace(ct7, static_cast<double>(1) / powerOfTwoModulus);
+        return ct7;
     }
 
     uint32_t slots = ciphertext->GetSlots();
