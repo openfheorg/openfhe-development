@@ -616,8 +616,8 @@ void CryptoContextImpl<Element>::EvalBootstrapKeyGen(const PrivateKey<Element> p
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalBootstrap(ConstCiphertext<Element> ciphertext,
-                                                              uint32_t numIteratinos, uint32_t precision) const {
-    return GetScheme()->EvalBootstrap(ciphertext, numIteratinos, precision);
+                                                              uint32_t numIterations, uint32_t precision) const {
+    return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
 }
 
 }  // namespace lbcrypto
