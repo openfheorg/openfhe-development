@@ -227,19 +227,28 @@ static std::vector<TEST_CASE_UTCKKSRNS_BOOT> testCases = {
 #endif
     // ==========================================
     // TestType,            Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, LvlBudget, Dim1
-    { BOOTSTRAP_KEY_SWITCH, "01", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_KEY_SWITCH, "01", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
     { BOOTSTRAP_KEY_SWITCH, "02", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
-    { BOOTSTRAP_KEY_SWITCH, "03", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_KEY_SWITCH, "03", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
     { BOOTSTRAP_KEY_SWITCH, "04", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
 #if NATIVEINT != 128
-    { BOOTSTRAP_KEY_SWITCH, "05", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_KEY_SWITCH, "05", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
     { BOOTSTRAP_KEY_SWITCH, "06", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
-    { BOOTSTRAP_KEY_SWITCH, "07", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
+    { BOOTSTRAP_KEY_SWITCH, "07", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
     { BOOTSTRAP_KEY_SWITCH, "08", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 } },
 #endif
     // ==========================================
     // TestType,           Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, LvlBudget, Dim1,     Slots
-    { BOOTSTRAP_ITERATIVE, "01", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8}
+    { BOOTSTRAP_ITERATIVE, "01", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_ITERATIVE, "02", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_ITERATIVE, "03", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_ITERATIVE, "04", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8},
+#if NATIVEINT != 128
+    { BOOTSTRAP_ITERATIVE, "05", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_ITERATIVE, "06", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_ITERATIVE, "07", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8},
+    { BOOTSTRAP_ITERATIVE, "08", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8},
+#endif
     // ==========================================
 };
 // clang-format on
@@ -259,13 +268,14 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
             OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
 
         // using the Euclidean norm
-        double avrg = 0;
+        double maxError = 0;
         for (size_t i = 0; i < result.size(); ++i) {
-            avrg += std::pow(std::abs(result[i].real() - expectedResult[i].real()), 2);
+            double error = std::abs(result[i].real() - expectedResult[i].real());
+            if (maxError < error)
+                maxError = error;
         }
 
-        avrg = std::sqrt(avrg) / result.size();  // get the average
-        return std::abs(std::log2(avrg));
+        return std::abs(std::log2(maxError));
     }
 
 protected:
@@ -422,42 +432,57 @@ protected:
 
             auto keyPair = cc->KeyGen();
             cc->EvalBootstrapKeyGen(keyPair.secretKey, testData.slots);
+            cc->EvalAtIndexKeyGen(keyPair.secretKey, {6});
             cc->EvalMultKeyGen(keyPair.secretKey);
 
             std::vector<std::complex<double>> input(
                 Fill({0.111111, 0.222222, 0.333333, 0.444444, 0.555555, 0.666666, 0.777777, 0.888888}, testData.slots));
             size_t encodedLength = input.size();
 
-            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, testData.slots);
-            auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
-            auto ciphertextAfter = cc->EvalBootstrap(ciphertext1);
+            Plaintext plaintext  = cc->MakeCKKSPackedPlaintext(input, 1, MULT_DEPTH - 1, nullptr, testData.slots);
+            auto ciphertext      = cc->Encrypt(keyPair.publicKey, plaintext);
+            auto ciphertextAfter = cc->EvalBootstrap(ciphertext);
 
+            plaintext->SetLength(encodedLength);
             Plaintext result;
+            cc->Decrypt(keyPair.secretKey, ciphertext, &result);
+            result->SetLength(encodedLength);
+            uint32_t inputPrecision =
+                std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), plaintext->GetCKKSPackedValue()));
+            std::cout << "Input precision: " << inputPrecision << std::endl;
+
             cc->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
             result->SetLength(encodedLength);
-            plaintext1->SetLength(encodedLength);
-            uint32_t precision = std::floor(CalculateApproximationError(result->GetCKKSPackedValue(),
-                                                                        plaintext1->GetCKKSPackedValue())) -
-                                 3;
-            std::cout << "Initial precision: " << precision << std::endl;
+            uint32_t precision =
+                std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), plaintext->GetCKKSPackedValue()));
+            precision -= 1;
+            std::cout << "Initial bootstrapping precision: " << precision << std::endl;
 
-            // Add two as a parameter.
-            auto ciphertextTwoIterations = cc->EvalBootstrap(ciphertext1, 2, precision);
+            // Add numIterations as a parameter.
+            uint32_t numIterations       = 2;
+            auto ciphertextTwoIterations = cc->EvalBootstrap(ciphertext, numIterations, precision);
 
             cc->Decrypt(keyPair.secretKey, ciphertextTwoIterations, &result);
             result->SetLength(encodedLength);
-            plaintext1->SetLength(encodedLength);
             auto actualResult = result->GetCKKSPackedValue();
-            for (size_t i = 0; i < encodedLength; i++) {
-                actualResult[i] /= (1 << precision);
-            }
-            checkEquality(actualResult, plaintext1->GetCKKSPackedValue(), eps,
-                          failmsg + " Bootstrapping with 2 iterations failed");
-            double precisionTwoIterations = CalculateApproximationError(actualResult, plaintext1->GetCKKSPackedValue());
+            checkEquality(actualResult, plaintext->GetCKKSPackedValue(), eps,
+                          failmsg + " Bootstrapping with " + std::to_string(numIterations) + " iterations failed");
+            double precisionTwoIterations = CalculateApproximationError(actualResult, plaintext->GetCKKSPackedValue());
+            std::cout << "result: " << actualResult << std::endl;
+            std::cout << std::to_string(numIterations) + " iterations of bootstrapping precision: "
+                      << precisionTwoIterations << std::endl;
 
-            std::cout << "Two iterations of precision: " << precisionTwoIterations << std::endl;
+            EXPECT_GE(precisionTwoIterations, numIterations * precision);
 
-            EXPECT_GE(precisionTwoIterations, 2 * precision);
+            auto temp6 = input;
+            std::rotate(temp6.begin(), temp6.begin() + 6, temp6.end());
+
+            auto ciphertext6 = cc->EvalAtIndex(ciphertextAfter, 6);
+            Plaintext result6;
+            cc->Decrypt(keyPair.secretKey, ciphertext6, &result6);
+            result6->SetLength(encodedLength);
+            checkEquality(result6->GetCKKSPackedValue(), temp6, eps,
+                          failmsg + " EvalAtIndex after Bootstrapping for ciphertexts fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;

@@ -248,76 +248,67 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     auto cc     = ciphertext->GetCryptoContext();
     uint32_t M  = cc->GetCyclotomicOrder();
     uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
-    Plaintext result;
+    std::cout << "L0: " << L0 << std::endl;
 
     if (numIterations > 1) {
-        auto sk                    = cc->GetPrivateKey();
+        // Step 1: Get the input.
         uint32_t powerOfTwoModulus = 1 << precision;
-        // Step 1: ct = Scale and mod up ciphertext to powerOfTwoModulus * q
-        Ciphertext<DCRTPoly> ct = ciphertext->Clone();
-        auto paramsQ            = ciphertext->GetElements()[0].GetParams()->GetParams();
-        auto sizeQ              = paramsQ.size();
-        std::vector<NativeInteger> moduliQ(sizeQ + 1);
-        std::vector<NativeInteger> rootsQ(sizeQ + 1);
-        for (size_t i = 0; i < sizeQ; i++) {
-            moduliQ[i] = paramsQ[i]->GetModulus();
-            rootsQ[i]  = paramsQ[i]->GetRootOfUnity();
-        }
-        moduliQ[sizeQ] = powerOfTwoModulus;
-        rootsQ[sizeQ]  = 1;  // Filler value because powerOfTwoModulus has no root of unity (mod M)
-        auto newParams = std::make_shared<ILDCRTParams<BigInteger>>(M, moduliQ, rootsQ);
-        // We multiply by powerOfTwoModulus, and leave the last CRT value to be 0 (mod powerOfTwoModulus).
-        for (auto& cv : ct->GetElements()) {
-            DCRTPoly scaleUp = cv * powerOfTwoModulus;
-            DCRTPoly modUp(newParams, EVALUATION, true);
-            for (size_t i = 0; i < sizeQ; i++) {
-                modUp.SetElementAtIndex(i, scaleUp.GetElementAtIndex(i));
-            }
-            cv = modUp;
-        }
-        ct->SetLevel(L0 - ct->GetElements()[0].GetNumOfElements());
-        // Step 2: ct_1 = ciphertext
-        // Step 3: ct_2 = EvalBootstrap(ct_1, numIterations - 1, precision)
-        auto ct2 = cc->EvalBootstrap(ciphertext, numIterations - 1, precision);
-        Plaintext result;
-        cc->Decrypt(sk, ct2, &result);
-        std::cout << "ct2: " << result << std::endl;
-        cc->GetScheme()->ModReduceInternalInPlace(ct2, 1);
-        cc->Decrypt(sk, ct2, &result);
-        std::cout << "ct2 after mod reduce: " << result << std::endl;
-        // Step 4: ct_3 = powerOfTwoModulus * ct_2
-        Ciphertext<DCRTPoly> ct3 = ct2->Clone();
-        for (auto& cv : ct3->GetElements()) {
-            cv = cv * powerOfTwoModulus;
-        }
-        // Step 5: ct_4 = Mod-down ct_3 to powerOfTwoModulus * q
-        // We mod down, and leave the last CRT value to be 0 because it's divisible by powerOfTwoModulus.
-        auto ct4 = ct3->Clone();
-        for (auto& cv : ct4->GetElements()) {
-            DCRTPoly modDown(newParams, EVALUATION, true);
-            for (size_t i = 0; i < sizeQ; i++) {
-                modDown.SetElementAtIndex(i, cv.GetElementAtIndex(i));
-            }
-            cv = modDown;
-        }
-        ct4->SetLevel(L0 - ct4->GetElements()[0].GetNumOfElements());
-        // Step 6: ct_5 = EvalSub(ct_4, ct)
-        auto ct5 = cc->EvalSub(ct4, ct);
-        // Step 7: ct_6 = EvalBootstrap(ct_6, 1, 0)
-        auto ct6 = cc->EvalBootstrap(ct5, 1, 0);
-        cc->Decrypt(sk, ct6, &result);
-        std::cout << "ct6: " << result << std::endl;
-        cc->GetScheme()->ModReduceInternalInPlace(ct6, 1);
-        cc->Decrypt(sk, ct6, &result);
-        std::cout << "ct6 after mod reduce: " << result << std::endl;
-        // Step 8: Return EvalSub(ct_3, ct_6).
-        auto ct7 = cc->EvalSub(ct3, ct6);
-        cc->Decrypt(sk, ct7, &result);
-        std::cout << "ct7: " << result << std::endl;
+        auto initSizeQ             = ciphertext->GetElements()[0].GetNumOfElements();
 
-        // Step 9: Scale down by powerOfTwoModulus.
-        cc->EvalMultInPlace(ct7, static_cast<double>(1) / powerOfTwoModulus);
-        return ct7;
+        // Step 2: Scale up by powerOfTwoModulus, and extend the modulus to powerOfTwoModulus * q.
+        // Note that we extend the modulus implicitly without any code calls because the value always stays 0.
+        Ciphertext<DCRTPoly> ctScaledUp = ciphertext->Clone();
+        // We multiply by powerOfTwoModulus, and leave the last CRT value to be 0 (mod powerOfTwoModulus).
+        for (auto& cv : ctScaledUp->GetElements()) {
+            cv *= powerOfTwoModulus;
+        }
+        ctScaledUp->SetLevel(L0 - ctScaledUp->GetElements()[0].GetNumOfElements());
+
+        // Step 3: Bootstrap the initial ciphertext.
+        auto ctInitialBootstrap = cc->EvalBootstrap(ciphertext, numIterations - 1, precision);
+        cc->GetScheme()->ModReduceInternalInPlace(ctInitialBootstrap, BASE_NUM_LEVELS_TO_DROP);
+
+        // Step 4: Scale up by powerOfTwoModulus.
+        cc->GetScheme()->MultByIntegerInPlace(ctInitialBootstrap, powerOfTwoModulus);
+
+        // Step 5: Mod-down to powerOfTwoModulus * q
+        // We mod down, and leave the last CRT value to be 0 because it's divisible by powerOfTwoModulus.
+        auto bootstrappingSizeQ = ctInitialBootstrap->GetElements()[0].GetNumOfElements();
+        if (bootstrappingSizeQ <= initSizeQ) {
+            OPENFHE_THROW(config_error, "Bootstrapping number of RNS moduli " + std::to_string(bootstrappingSizeQ) +
+                                            " must be greater than initial number of RNS moduli " +
+                                            std::to_string(initSizeQ));
+        }
+        for (auto& cv : ctInitialBootstrap->GetElements()) {
+            cv.DropLastElements(bootstrappingSizeQ - initSizeQ);
+        }
+        ctInitialBootstrap->SetLevel(L0 - ctInitialBootstrap->GetElements()[0].GetNumOfElements());
+
+        // Step 6 and 7: Calculate the bootstrapping error by subtracting the original ciphertext from the bootstrapped ciphertext. Mod down to q is done implicitly.
+        auto ctBootstrappingError = cc->EvalSub(ctInitialBootstrap, ctScaledUp);
+
+        // Step 8: Bootstrap the error.
+        auto ctBootstrappedError = cc->EvalBootstrap(ctBootstrappingError, 1, 0);
+        // cc->GetScheme()->ModReduceInternalInPlace(ctBootstrappedError, BASE_NUM_LEVELS_TO_DROP);
+
+        // Step 9: Subtract the bootstrapped error from the initial bootstrap to get even lower error.
+        std::cout << "numIterations: " << numIterations << std::endl;
+        std::cout << "num moduli ciphertext: " << ciphertext->GetElements()[0].GetNumOfElements() << std::endl;
+        std::cout << "num moduli initialBootstrap: " << ctInitialBootstrap->GetElements()[0].GetNumOfElements()
+                  << std::endl;
+        std::cout << "num moduli bootstrappedError: " << ctInitialBootstrap->GetElements()[0].GetNumOfElements()
+                  << std::endl;
+        auto finalCiphertext = cc->EvalSub(ctInitialBootstrap, ctBootstrappedError);
+
+        // Step 10: Scale back down by powerOfTwoModulus to get the original message.
+        cc->EvalMultInPlace(finalCiphertext, static_cast<double>(1) / powerOfTwoModulus);
+        std::cout << "num moduli finalCiphertext: " << finalCiphertext->GetElements()[0].GetNumOfElements()
+                  << std::endl;
+        std::cout << "noise scale deg: " << finalCiphertext->GetNoiseScaleDeg() << std::endl;
+        // cc->GetScheme()->ModReduceInternalInPlace(finalCiphertext, BASE_NUM_LEVELS_TO_DROP);
+        std::cout << "num moduli finalCiphertext after rescaling: "
+                  << finalCiphertext->GetElements()[0].GetNumOfElements() << std::endl;
+        return finalCiphertext;
     }
 
     uint32_t slots = ciphertext->GetSlots();
