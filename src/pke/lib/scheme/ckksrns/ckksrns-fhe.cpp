@@ -237,6 +237,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         OPENFHE_THROW(config_error,
                       "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
+    if (numIterations != 1 && numIterations != 2) {
+        OPENFHE_THROW(config_error, "CKKS Iterative Bootstrapping is only supported for 1 or 2 iterations.");
+    }
 
 #ifdef BOOTSTRAPTIMING
     TimeVar t;
@@ -248,7 +251,6 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     auto cc     = ciphertext->GetCryptoContext();
     uint32_t M  = cc->GetCyclotomicOrder();
     uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
-    std::cout << "L0: " << L0 << std::endl;
 
     if (numIterations > 1) {
         // Step 1: Get the input.
@@ -293,22 +295,10 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         cc->GetScheme()->ModReduceInternalInPlace(ctBootstrappedError, BASE_NUM_LEVELS_TO_DROP);
 
         // Step 9: Subtract the bootstrapped error from the initial bootstrap to get even lower error.
-        std::cout << "numIterations: " << numIterations << std::endl;
-        std::cout << "num moduli ciphertext: " << ciphertext->GetElements()[0].GetNumOfElements() << std::endl;
-        std::cout << "num moduli initialBootstrap: " << ctInitialBootstrap->GetElements()[0].GetNumOfElements()
-                  << std::endl;
-        std::cout << "num moduli bootstrappedError: " << ctInitialBootstrap->GetElements()[0].GetNumOfElements()
-                  << std::endl;
         auto finalCiphertext = cc->EvalSub(ctInitialBootstrap, ctBootstrappedError);
 
         // Step 10: Scale back down by powerOfTwoModulus to get the original message.
         cc->EvalMultInPlace(finalCiphertext, static_cast<double>(1) / powerOfTwoModulus);
-        std::cout << "num moduli finalCiphertext: " << finalCiphertext->GetElements()[0].GetNumOfElements()
-                  << std::endl;
-        std::cout << "noise scale deg: " << finalCiphertext->GetNoiseScaleDeg() << std::endl;
-        // cc->GetScheme()->ModReduceInternalInPlace(finalCiphertext, BASE_NUM_LEVELS_TO_DROP);
-        std::cout << "num moduli finalCiphertext after rescaling: "
-                  << finalCiphertext->GetElements()[0].GetNumOfElements() << std::endl;
         return finalCiphertext;
     }
 
