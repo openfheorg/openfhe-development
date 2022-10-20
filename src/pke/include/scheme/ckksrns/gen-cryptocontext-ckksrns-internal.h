@@ -81,7 +81,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetScalingTechnique(),
         parameters.GetEncryptionTechnique(),
         parameters.GetMultiplicationTechnique(),
-        parameters.GetPREMode());
+        parameters.GetPREMode(),
+        parameters.GetMultipartyMode());
 
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);

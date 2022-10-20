@@ -98,28 +98,32 @@ protected:
                         float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
                         usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
-                        EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS)
+                        EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
+                        MultipartyMode multipartyMode = NO_MULTIPARTY)
         : CryptoParametersRLWE<DCRTPoly>(params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
                                          distributionParameter, assuranceMeasure, securityLevel, digitSize,
                                          maxRelinSkDeg, secretKeyDist) {
-        m_ksTechnique   = ksTech;
-        m_scalTechnique = scalTech;
-        m_encTechnique  = encTech;
-        m_multTechnique = multTech;
+        m_ksTechnique    = ksTech;
+        m_scalTechnique  = scalTech;
+        m_encTechnique   = encTech;
+        m_multTechnique  = multTech;
+        m_multipartyMode = multipartyMode;
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
                         float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
                         SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                         ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
-                        MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA)
+                        MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,
+                        MultipartyMode multipartyMode = NO_MULTIPARTY)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist) {
-        m_ksTechnique   = ksTech;
-        m_scalTechnique = scalTech;
-        m_encTechnique  = encTech;
-        m_multTechnique = multTech;
-        m_PREMode       = PREMode;
+        m_ksTechnique    = ksTech;
+        m_scalTechnique  = scalTech;
+        m_encTechnique   = encTech;
+        m_multTechnique  = multTech;
+        m_PREMode        = PREMode;
+        m_multipartyMode = multipartyMode;
     }
 
     virtual ~CryptoParametersRNS() {}

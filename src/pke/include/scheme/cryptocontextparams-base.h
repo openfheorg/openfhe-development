@@ -91,13 +91,16 @@ class Params {
 
     // PRE security mode
     ProxyReEncryptionMode PREMode;
+
+    // Multiparty security mode
+    MultipartyMode multipartyMode;
+
     // The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
     // other q_i have same number of bits and is equal to scalingModSize
     // the prime q' is not explicitly given,
     // but it is used internally in CKKS and BGV schemes (in *EXT scaling methods)
-
     usint firstModSize;
 
     usint scalingModSize;
@@ -149,7 +152,7 @@ public:
     Params(Params&& obj)      = default;
 
     Params& operator=(const Params& obj) = default;
-    Params& operator=(Params&& obj)      = default;
+    Params& operator=(Params&& obj) = default;
 
     ~Params() = default;
 
@@ -174,6 +177,9 @@ public:
     }
     ProxyReEncryptionMode GetPREMode() const {
         return PREMode;
+    }
+    MultipartyMode GetMultipartyMode() const {
+        return multipartyMode;
     }
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
@@ -236,6 +242,9 @@ public:
     }
     void SetPREMode(ProxyReEncryptionMode PREMode0) {
         PREMode = PREMode0;
+    }
+    void SetMultipartyMode(MultipartyMode multipartyMode0) {
+        multipartyMode = multipartyMode0;
     }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;

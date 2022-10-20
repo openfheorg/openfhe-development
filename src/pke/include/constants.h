@@ -77,6 +77,13 @@ enum ProxyReEncryptionMode {
 };
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
 
+enum MultipartyMode {
+    NO_MULTIPARTY = 0,
+    FIXED_NOISE_MULTIPARTY,
+    NOISE_FLOODING_MULTIPARTY,
+};
+std::ostream& operator<<(std::ostream& s, MultipartyMode t);
+
 enum KeySwitchTechnique {
     INVALID_KS_TECH = 0,
     BV,
