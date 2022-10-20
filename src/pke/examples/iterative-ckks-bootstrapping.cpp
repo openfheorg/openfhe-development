@@ -62,7 +62,7 @@ double CalculateApproximationError(const std::vector<std::complex<double>>& resu
     if (result.size() != expectedResult.size())
         OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
 
-    // using the Euclidean norm
+    // using the infinity norm
     double maxError = 0;
     for (size_t i = 0; i < result.size(); ++i) {
         double error = std::abs(result[i].real() - expectedResult[i].real());
@@ -80,14 +80,6 @@ void IterativeBootstrapExample() {
     parameters.SetSecretKeyDist(secretKeyDist);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 12);
-
-    /*  A3) Key switching parameters.
-    * By default, we use HYBRID key switching with a digit size of 3.
-    * Choosing a larger digit size can reduce complexity, but the size of keys will increase.
-    * Note that you can leave these lines of code out completely, since these are the default values.
-    */
-    parameters.SetNumLargeDigits(3);
-    parameters.SetKeySwitchTechnique(HYBRID);
 
 #if NATIVEINT == 128
     // Currently, only FIXEDMANUAL and FIXEDAUTO modes are supported for 128-bit CKKS bootstrapping.
@@ -109,7 +101,7 @@ void IterativeBootstrapExample() {
     uint32_t approxBootstrapDepth     = 9;
     std::vector<uint32_t> bsgsDim     = {0, 0};
 
-    uint32_t levelsUsedBeforeBootstrap = 10;
+    uint32_t levelsUsedBeforeBootstrap = 9;
     usint depth =
         levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
@@ -176,7 +168,7 @@ void IterativeBootstrapExample() {
     precision = 17;
     std::cout << "Precision input to algorithm: " << precision << std::endl;
 
-    // Run bootstrapping with multiple iterations. Note that we currently only support the number of iterations being 1 or 2.
+    // Step 6: Run bootstrapping with multiple iterations. Note that we currently only support the number of iterations being 1 or 2.
     uint32_t numIterations       = 2;
     auto ciphertextTwoIterations = cryptoContext->EvalBootstrap(ciph, numIterations, precision);
 

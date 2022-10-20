@@ -261,9 +261,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // Note that we extend the modulus implicitly without any code calls because the value always stays 0.
         Ciphertext<DCRTPoly> ctScaledUp = ciphertext->Clone();
         // We multiply by powerOfTwoModulus, and leave the last CRT value to be 0 (mod powerOfTwoModulus).
-        for (auto& cv : ctScaledUp->GetElements()) {
-            cv *= powerOfTwoModulus;
-        }
+        cc->GetScheme()->MultByIntegerInPlace(ctScaledUp, powerOfTwoModulus);
         ctScaledUp->SetLevel(L0 - ctScaledUp->GetElements()[0].GetNumOfElements());
 
         // Step 3: Bootstrap the initial ciphertext.

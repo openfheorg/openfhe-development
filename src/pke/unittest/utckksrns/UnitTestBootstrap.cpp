@@ -250,15 +250,15 @@ static std::vector<TEST_CASE_UTCKKSRNS_BOOT> testCases = {
     { BOOTSTRAP_ITERATIVE, "08", {CKKSRNS_SCHEME,  2048, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, 8},
 #endif
     // TestType,           Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, LvlBudget, Dim1,     Slots
-    { BOOTSTRAP_ITERATIVE, "09", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
-    { BOOTSTRAP_ITERATIVE, "10", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
-    { BOOTSTRAP_ITERATIVE, "11", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
-    { BOOTSTRAP_ITERATIVE, "12", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
+    { BOOTSTRAP_ITERATIVE, "09", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
+    { BOOTSTRAP_ITERATIVE, "10", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
+    { BOOTSTRAP_ITERATIVE, "11", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
+    { BOOTSTRAP_ITERATIVE, "12", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
 #if NATIVEINT != 128
-    { BOOTSTRAP_ITERATIVE, "13", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
-    { BOOTSTRAP_ITERATIVE, "14", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
-    { BOOTSTRAP_ITERATIVE, "15", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  8,       SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
-    { BOOTSTRAP_ITERATIVE, "16", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  8,       UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
+    { BOOTSTRAP_ITERATIVE, "13", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
+    { BOOTSTRAP_ITERATIVE, "14", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
+    { BOOTSTRAP_ITERATIVE, "15", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
+    { BOOTSTRAP_ITERATIVE, "16", {CKKSRNS_SCHEME,  RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   { 3, 2 },  { 0, 0 }, RDIM/2},
 #endif
     // ==========================================
 };
@@ -278,7 +278,7 @@ class UTCKKSRNS_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_BOOT>
         if (result.size() != expectedResult.size())
             OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
 
-        // using the Euclidean norm
+        // using the infinity norm
         double maxError = 0;
         for (size_t i = 0; i < result.size(); ++i) {
             double error = std::abs(result[i].real() - expectedResult[i].real());
