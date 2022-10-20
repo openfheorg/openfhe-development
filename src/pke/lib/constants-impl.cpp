@@ -135,8 +135,8 @@ std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
 
 std::ostream& operator<<(std::ostream& s, MultipartyMode t) {
     switch (t) {
-        case INVALID_MULTIPARTY_MODE:
-            s << "INVALID_MULTIPARTY_MODE";
+        case NO_MULTIPARTY:
+            s << "NO_MULTIPARTY";
             break;
         case FIXED_NOISE_MULTIPARTY:
             s << "FIXED_NOISE_MULTIPARTY";

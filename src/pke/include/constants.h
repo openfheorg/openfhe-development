@@ -81,7 +81,7 @@ enum ProxyReEncryptionMode {
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
 
 enum MultipartyMode {
-    INVALID_MULTIPARTY_MODE = 0,
+    NO_MULTIPARTY = 0,
     FIXED_NOISE_MULTIPARTY,
     NOISE_FLOODING_MULTIPARTY,
 };

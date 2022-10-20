@@ -99,7 +99,7 @@ protected:
                         usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
+                        MultipartyMode multipartyMode = NO_MULTIPARTY)
         : CryptoParametersRLWE<DCRTPoly>(params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
                                          distributionParameter, assuranceMeasure, securityLevel, digitSize,
                                          maxRelinSkDeg, secretKeyDist) {
@@ -115,7 +115,7 @@ protected:
                         SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                         ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
                         MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,
-                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
+                        MultipartyMode multipartyMode = NO_MULTIPARTY)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist) {
         m_ksTechnique    = ksTech;
