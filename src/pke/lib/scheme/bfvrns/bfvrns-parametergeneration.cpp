@@ -331,7 +331,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
             moduliQ[1]  = PreviousPrime<NativeInteger>(moduliQ[1], 2 * n);
             lastModulus = moduliQ[1];
         }
-        rootsQ[1] = RootOfUnity<NativeInteger>(2 * n, moduliQ[1]);
+        rootsQ[1] = RootOfUnity<NativeInteger>(2 * n, moduliQ[0]);
 
         for (size_t i = 2; i < 1 + NOISE_FLOODING::NUM_MODULI_MULTIPARTY; i++) {
             moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], 2 * n);
@@ -341,15 +341,18 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         }
     }
 
-    size_t index = 1 + (sizeQ - numInitialModuli);
-    if (index < sizeQ) {
-        moduliQ[index] = PreviousPrime<NativeInteger>(lastModulus, 2 * n);
-        rootsQ[index]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[index]);
-        for (size_t i = index + 1; i < sizeQ; i++) {
-            moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], 2 * n);
-            rootsQ[i]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[i]);
-        }
+    size_t index   = 1 + (sizeQ - numInitialModuli);
+    moduliQ[index] = PreviousPrime<NativeInteger>(lastModulus, 2 * n);
+    rootsQ[index]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[index]);
+    for (size_t i = index + 1; i < sizeQ; i++) {
+        moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], 2 * n);
+        rootsQ[i]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[i]);
     }
+
+    std::cout << "dcrtBits: " << dcrtBits << std::endl;
+    std::cout << "multipartyMode: " << multipartyMode << std::endl;
+    std::cout << "sizeQ: " << sizeQ << std::endl;
+    std::cout << "moduli: " << moduliQ << std::endl;
 
     auto params = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQ, rootsQ);
 

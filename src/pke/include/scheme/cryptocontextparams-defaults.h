@@ -71,7 +71,7 @@ constexpr EncryptionTechnique encryptionTechnique         = STANDARD;
 constexpr MultiplicationTechnique multiplicationTechnique = HPS;
 constexpr usint multiHopModSize                           = 0;
 constexpr ProxyReEncryptionMode PREMode                   = INDCPA;
-constexpr MultipartyMode multipartyMode                   = FIXED_NOISE_MULTIPARTY;
+constexpr MultipartyMode multipartyMode                   = NO_MULTIPARTY;
 };  // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {

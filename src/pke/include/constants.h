@@ -33,6 +33,7 @@
 #define _CONSTANTS_H_
 
 #include <iosfwd>
+#include "math/hal.h"
 
 // TODO: Review whether we need to include hal.h.
 #include "math/hal.h"
