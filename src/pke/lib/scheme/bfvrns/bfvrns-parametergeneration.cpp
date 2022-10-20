@@ -61,6 +61,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     EncryptionTechnique encTech      = cryptoParamsBFVRNS->GetEncryptionTechnique();
     MultiplicationTechnique multTech = cryptoParamsBFVRNS->GetMultiplicationTechnique();
     ProxyReEncryptionMode PREMode    = cryptoParamsBFVRNS->GetPREMode();
+    MultipartyMode multipartyMode    = cryptoParamsBFVRNS->GetMultipartyMode();
 
     if ((PREMode != INDCPA) && (PREMode != NOT_SET)) {
         std::stringstream s;
@@ -305,9 +306,12 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         OPENFHE_THROW(config_error, errMsg);
     }
 
-    const size_t sizeQ = static_cast<size_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
-    if (sizeQ < 1)
-        OPENFHE_THROW(config_error, "sizeQ must be greater than 0.");
+    const size_t numInitialModuli = static_cast<size_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
+    if (numInitialModuli < 1)
+        OPENFHE_THROW(config_error, "numInitialModuli must be greater than 0.");
+    const size_t sizeQ = multipartyMode == NOISE_FLOODING_MULTIPARTY ?
+                             numInitialModuli + NOISE_FLOODING::NUM_MODULI_MULTIPARTY :
+                             numInitialModuli;
 
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);
@@ -316,13 +320,39 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     // optimizations
     NativeInteger firstInteger = FirstPrime<NativeInteger>(dcrtBits, 2 * n);
 
-    moduliQ[0] = PreviousPrime<NativeInteger>(firstInteger, 2 * n);
-    rootsQ[0]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[0]);
+    moduliQ[0]                = PreviousPrime<NativeInteger>(firstInteger, 2 * n);
+    rootsQ[0]                 = RootOfUnity<NativeInteger>(2 * n, moduliQ[0]);
+    NativeInteger lastModulus = moduliQ[0];
 
-    for (size_t i = 1; i < sizeQ; i++) {
+    if (multipartyMode == NOISE_FLOODING_MULTIPARTY) {
+        NativeInteger multipartyModulus = FirstPrime<NativeInteger>(NOISE_FLOODING::MULTIPARTY_MOD_SIZE, 2 * n);
+        moduliQ[1]                      = PreviousPrime<NativeInteger>(multipartyModulus, 2 * n);
+        if (moduliQ[1] == lastModulus) {
+            moduliQ[1]  = PreviousPrime<NativeInteger>(moduliQ[1], 2 * n);
+            lastModulus = moduliQ[1];
+        }
+        rootsQ[1] = RootOfUnity<NativeInteger>(2 * n, moduliQ[0]);
+
+        for (size_t i = 2; i < 1 + NOISE_FLOODING::NUM_MODULI_MULTIPARTY; i++) {
+            moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], 2 * n);
+            rootsQ[i]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[i]);
+            if (lastModulus != moduliQ[0])
+                lastModulus = moduliQ[i];
+        }
+    }
+
+    size_t index   = 1 + (sizeQ - numInitialModuli);
+    moduliQ[index] = PreviousPrime<NativeInteger>(lastModulus, 2 * n);
+    rootsQ[index]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[index]);
+    for (size_t i = index + 1; i < sizeQ; i++) {
         moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], 2 * n);
         rootsQ[i]  = RootOfUnity<NativeInteger>(2 * n, moduliQ[i]);
     }
+
+    std::cout << "dcrtBits: " << dcrtBits << std::endl;
+    std::cout << "multipartyMode: " << multipartyMode << std::endl;
+    std::cout << "sizeQ: " << sizeQ << std::endl;
+    std::cout << "moduli: " << moduliQ << std::endl;
 
     auto params = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQ, rootsQ);
 

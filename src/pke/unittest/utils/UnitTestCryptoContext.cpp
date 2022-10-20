@@ -97,6 +97,9 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.PREMode)) {
         parameters.SetPREMode(static_cast<ProxyReEncryptionMode>(std::round(params.PREMode)));
     }
+    if (!isDefaultValue(params.multipartyMode)) {
+        parameters.SetMultipartyMode(static_cast<MultipartyMode>(std::round(params.multipartyMode)));
+    }
 }
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {

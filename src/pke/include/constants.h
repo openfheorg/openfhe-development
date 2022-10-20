@@ -33,6 +33,7 @@
 #define _CONSTANTS_H_
 
 #include <iosfwd>
+#include "math/hal.h"
 
 /**
  * @brief Lists all features supported by public key encryption schemes
@@ -135,6 +136,14 @@ const double MP_SD = 1048576;
 const double PRE_SD = 1048576;
 // statistical security parameter for noise flooding in PRE
 const double STAT_SECURITY = 30;
+// number of additional moduli in NOISE_FLOODING_MULTIPARTY mode
+const size_t NUM_MODULI_MULTIPARTY = 2;
+// modulus size for additional moduli in NOISE_FLOODING_MULTIPARTY mode
+#if NATIVEINT == 128
+const size_t MULTIPARTY_MOD_SIZE = 60;
+#else
+const size_t MULTIPARTY_MOD_SIZE = MAX_MODULUS_SIZE;
+#endif
 };  // namespace NOISE_FLOODING
 
 #endif  // _CONSTANTS_H_
