@@ -31,7 +31,14 @@
 
 /*
 
-Example for CKKS bootstrapping with sparse packing
+Example for multiple iterations of CKKS bootstrapping to improve precision. Note that you need to run a
+single iteration of bootstrapping first, to measure the precision. Then, you can input the measured
+precision as a parameter to EvalBootstrap with multiple iterations. With 2 iterations, you can achieve
+double the precision of a single bootstrapping.
+
+* Source: Bae Y., Cheon J., Cho W., Kim J., and Kim T. META-BTS: Bootstrapping Precision
+* Beyond the Limit. Cryptology ePrint Archive, Report
+* 2022/1167. (https://eprint.iacr.org/2022/1167.pdf)
 
 */
 
@@ -41,53 +48,39 @@ Example for CKKS bootstrapping with sparse packing
 
 using namespace lbcrypto;
 
-void BootstrapExample(uint32_t numSlots);
+void IterativeBootstrapExample();
 
 int main(int argc, char* argv[]) {
-    // We run the example with 8 slots and ring dimension 4096 to illustrate how to run bootstrapping with a sparse plaintext.
-    // Using a sparse plaintext and specifying the smaller number of slots gives a performance improvement (typically up to 3x).
-    BootstrapExample(8);
+    // We run the example with 8 slots and ring dimension 4096.
+    IterativeBootstrapExample();
 }
 
-void BootstrapExample(uint32_t numSlots) {
+// CalculateApproximationError() calculates the precision number (or approximation error).
+// The higher the precision, the less the error.
+double CalculateApproximationError(const std::vector<std::complex<double>>& result,
+                                   const std::vector<std::complex<double>>& expectedResult) {
+    if (result.size() != expectedResult.size())
+        OPENFHE_THROW(config_error, "Cannot compare vectors with different numbers of elements");
+
+    // using the infinity norm
+    double maxError = 0;
+    for (size_t i = 0; i < result.size(); ++i) {
+        double error = std::abs(result[i].real() - expectedResult[i].real());
+        if (maxError < error)
+            maxError = error;
+    }
+
+    return std::abs(std::log2(maxError));
+}
+
+void IterativeBootstrapExample() {
     // Step 1: Set CryptoContext
     CCParams<CryptoContextCKKSRNS> parameters;
-
-    // A. Specify main parameters
-    /*  A1) Secret key distribution
-    * The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY.
-    * The SPARSE_TERNARY distribution was used in the original CKKS paper,
-    * but in this example, we use UNIFORM_TERNARY because this is included in the homomorphic
-    * encryption standard.
-    */
     SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
-
-    /*  A2) Desired security level based on FHE standards.
-    * In this example, we use the "NotSet" option, so the example can run more quickly with
-    * a smaller ring dimension. Note that this should be used only in
-    * non-production environments, or by experts who understand the security
-    * implications of their choices. In production-like environments, we recommend using
-    * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-    * or 256-bit security, respectively. If you choose one of these as your security level,
-    * you do not need to set the ring dimension.
-    */
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(1 << 12);
 
-    /*  A3) Key switching parameters.
-    * By default, we use HYBRID key switching with a digit size of 3.
-    * Choosing a larger digit size can reduce complexity, but the size of keys will increase.
-    * Note that you can leave these lines of code out completely, since these are the default values.
-    */
-    parameters.SetNumLargeDigits(3);
-    parameters.SetKeySwitchTechnique(HYBRID);
-
-    /*  A4) Scaling parameters.
-    * By default, we set the modulus sizes and rescaling technique to the following values
-    * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
-    * below unless you are an FHE expert.
-    */
 #if NATIVEINT == 128
     // Currently, only FIXEDMANUAL and FIXEDAUTO modes are supported for 128-bit CKKS bootstrapping.
     ScalingTechnique rescaleTech = FIXEDAUTO;
@@ -104,33 +97,15 @@ void BootstrapExample(uint32_t numSlots) {
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    /*  A4) Bootstrapping parameters.
-    * We set a budget for the number of levels we can consume in bootstrapping for encoding and decoding, respectively.
-    * Using larger numbers of levels reduces the complexity and number of rotation keys,
-    * but increases the depth required for bootstrapping.
-	* We must choose values smaller than ceil(log2(slots)). A level budget of {4, 4} is good for higher ring
-    * dimensions (65536 and higher).
-    */
+    // Here, we specify the number of iterations to run bootstrapping. Note that we currently only support 1 or 2 iterations.
+    // Two iterations should give us approximately double the precision of one iteration.
+    uint32_t numIterations = 2;
+
     std::vector<uint32_t> levelBudget = {3, 3};
-
-    // We approximate the number of levels bootstrapping will consume to help set our initial multiplicative depth.
-    uint32_t approxBootstrapDepth = 8;
-
-    /* We give the user the option of configuring values for an optimization algorithm in bootstrapping.
-    * Here, we specify the giant step for the baby-step-giant-step algorithm in linear transforms
-    * for encoding and decoding, respectively. Either choose this to be a power of 2
-    * or an exact divisor of the number of slots. Setting it to have the default value of {0, 0} allows OpenFHE to choose
-    * the values automatically.
-    */
+    // Each extra iteration on top of 1 requires an extra level to be consumed.
+    uint32_t approxBootstrapDepth = 8 + (numIterations - 1);
     std::vector<uint32_t> bsgsDim = {0, 0};
 
-    /*  A5) Multiplicative depth.
-    * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
-    * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
-    * needs to consume a few levels to run. We compute the number of bootstrapping levels required
-    * using GetBootstrapDepth, and add it to levelsUsedBeforeBootstrap to set our initial multiplicative
-    * depth.
-    */
     uint32_t levelsUsedBeforeBootstrap = 10;
     usint depth =
         levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
@@ -150,6 +125,8 @@ void BootstrapExample(uint32_t numSlots) {
     std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
 
     // Step 2: Precomputations for bootstrapping
+    // We use a sparse packing.
+    uint32_t numSlots = 8;
     cryptoContext->EvalBootstrapSetup(levelBudget, bsgsDim, numSlots);
 
     // Step 3: Key Generation
@@ -182,18 +159,33 @@ void BootstrapExample(uint32_t numSlots) {
     // Encrypt the encoded vectors
     Ciphertext<DCRTPoly> ciph = cryptoContext->Encrypt(keyPair.publicKey, ptxt);
 
-    std::cout << "Initial number of levels remaining: " << depth - ciph->GetLevel() << std::endl;
-
-    // Step 5: Perform the bootstrapping operation. The goal is to increase the number of levels remaining
-    // for HE computation.
+    // Step 5: Measure the precision of a single bootstrapping operation.
     auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
 
-    std::cout << "Number of levels remaining after bootstrapping: " << depth - ciphertextAfter->GetLevel() << std::endl
-              << std::endl;
-
-    // Step 7: Decryption and output
     Plaintext result;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(numSlots);
-    std::cout << "Output after bootstrapping \n\t" << result << std::endl;
+    uint32_t precision =
+        std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
+    std::cout << "Bootstrapping precision after 1 iteration: " << precision << std::endl;
+
+    // Set precision equal to empirically measured value after many test runs.
+    precision = 17;
+    std::cout << "Precision input to algorithm: " << precision << std::endl;
+
+    // Step 6: Run bootstrapping with multiple iterations.
+    auto ciphertextTwoIterations = cryptoContext->EvalBootstrap(ciph, numIterations, precision);
+
+    Plaintext resultTwoIterations;
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextTwoIterations, &resultTwoIterations);
+    result->SetLength(numSlots);
+    auto actualResult = resultTwoIterations->GetCKKSPackedValue();
+
+    std::cout << "Output after two iterations of bootstrapping: " << actualResult << std::endl;
+    double precisionMultipleIterations = CalculateApproximationError(actualResult, ptxt->GetCKKSPackedValue());
+
+    // Output the precision of bootstrapping after two iterations. It should be approximately double the original precision.
+    std::cout << "Bootstrapping precision after 2 iterations: " << precisionMultipleIterations << std::endl;
+    std::cout << "Number of levels remaining after 2 bootstrappings: " << depth - ciphertextTwoIterations->GetLevel()
+              << std::endl;
 }

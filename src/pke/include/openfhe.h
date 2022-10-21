@@ -69,7 +69,6 @@
 #include "scheme/bfvrns/bfvrns-scheme.h"
 #include "scheme/ckksrns/ckksrns-scheme.h"
 
-
 #include "gen-cryptocontext.h"
 #include "scheme/ckksrns/cryptocontext-ckksrns.h"
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
