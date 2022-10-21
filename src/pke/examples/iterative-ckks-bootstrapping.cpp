@@ -97,11 +97,16 @@ void IterativeBootstrapExample() {
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    std::vector<uint32_t> levelBudget = {3, 3};
-    uint32_t approxBootstrapDepth     = 9;
-    std::vector<uint32_t> bsgsDim     = {0, 0};
+    // Here, we specify the number of iterations to run bootstrapping. Note that we currently only support 1 or 2 iterations.
+    // Two iterations should give us approximately double the precision of one iteration.
+    uint32_t numIterations = 2;
 
-    uint32_t levelsUsedBeforeBootstrap = 9;
+    std::vector<uint32_t> levelBudget = {3, 3};
+    // Each extra iteration on top of 1 requires an extra level to be consumed.
+    uint32_t approxBootstrapDepth = 8 + (numIterations - 1);
+    std::vector<uint32_t> bsgsDim = {0, 0};
+
+    uint32_t levelsUsedBeforeBootstrap = 10;
     usint depth =
         levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
@@ -168,8 +173,7 @@ void IterativeBootstrapExample() {
     precision = 17;
     std::cout << "Precision input to algorithm: " << precision << std::endl;
 
-    // Step 6: Run bootstrapping with multiple iterations. Note that we currently only support the number of iterations being 1 or 2.
-    uint32_t numIterations       = 2;
+    // Step 6: Run bootstrapping with multiple iterations.
     auto ciphertextTwoIterations = cryptoContext->EvalBootstrap(ciph, numIterations, precision);
 
     Plaintext resultTwoIterations;
@@ -182,4 +186,6 @@ void IterativeBootstrapExample() {
 
     // Output the precision of bootstrapping after two iterations. It should be approximately double the original precision.
     std::cout << "Bootstrapping precision after 2 iterations: " << precisionMultipleIterations << std::endl;
+    std::cout << "Number of levels remaining after 2 bootstrappings: " << depth - ciphertextTwoIterations->GetLevel()
+              << std::endl;
 }
