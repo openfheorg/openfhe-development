@@ -33,8 +33,6 @@
 CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
  */
 
-#define PROFILE
-
 #include "cryptocontext.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "globals.h"
@@ -57,7 +55,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);
 
-    for (size_t i = 0; i < sizeQ; i++) {
+    for (size_t i = 0; i < sizeQ; ++i) {
         moduliQ[i] = GetElementParams()->GetParams()[i]->GetModulus();
         rootsQ[i]  = GetElementParams()->GetParams()[i]->GetRootOfUnity();
     }
@@ -69,7 +67,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
     m_QlQlInvModqlDivqlModqPrecon.resize(sizeQ - 1);
     m_qlInvModq.resize(sizeQ - 1);
     m_qlInvModqPrecon.resize(sizeQ - 1);
-    for (size_t k = 0; k < sizeQ - 1; k++) {
+    for (size_t k = 0; k < sizeQ - 1; ++k) {
         size_t l = sizeQ - (k + 1);
         modulusQ = modulusQ / BigInteger(moduliQ[l]);
         m_QlQlInvModqlDivqlModq[k].resize(l);
@@ -78,7 +76,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         m_qlInvModqPrecon[k].resize(l);
         BigInteger QlInvModql = modulusQ.ModInverse(moduliQ[l]);
         BigInteger result     = (QlInvModql * modulusQ) / BigInteger(moduliQ[l]);
-        for (usint i = 0; i < l; i++) {
+        for (size_t i = 0; i < l; ++i) {
             m_QlQlInvModqlDivqlModq[k][i]       = result.Mod(moduliQ[i]).ConvertToInt();
             m_QlQlInvModqlDivqlModqPrecon[k][i] = m_QlQlInvModqlDivqlModq[k][i].PrepModMulConst(moduliQ[i]);
             m_qlInvModq[k][i]                   = moduliQ[l].ModInverse(moduliQ[i]);
@@ -92,7 +90,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         m_scalingFactorsReal[0] = moduliQ[sizeQ - 1].ConvertToDouble();
 
         if (extraBits == 0) {
-            for (uint32_t k = 1; k < sizeQ; k++) {
+            for (size_t k = 1; k < sizeQ; ++k) {
                 double prevSF           = m_scalingFactorsReal[k - 1];
                 m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
                 double ratio            = m_scalingFactorsReal[k] / m_scalingFactorsReal[0];
@@ -107,7 +105,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         }
         else {
             m_scalingFactorsReal[1] = moduliQ[sizeQ - 2].ConvertToDouble();
-            for (uint32_t k = 2; k < sizeQ; k++) {
+            for (size_t k = 2; k < sizeQ; ++k) {
                 double prevSF           = m_scalingFactorsReal[k - 1];
                 m_scalingFactorsReal[k] = prevSF * prevSF / moduliQ[sizeQ - k].ConvertToDouble();
                 double ratio            = m_scalingFactorsReal[k] / m_scalingFactorsReal[1];
@@ -130,14 +128,14 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
             else {
                 m_scalingFactorsRealBig[0] = m_scalingFactorsReal[0] * m_scalingFactorsReal[1];
             }
-            for (uint32_t k = 1; k < sizeQ - 1; k++) {
+            for (size_t k = 1; k < sizeQ - 1; ++k) {
                 m_scalingFactorsRealBig[k] = m_scalingFactorsReal[k] * m_scalingFactorsReal[k];
             }
         }
 
         // Moduli as real
         m_dmoduliQ.resize(sizeQ);
-        for (uint32_t i = 0; i < sizeQ; ++i) {
+        for (size_t i = 0; i < sizeQ; ++i) {
             m_dmoduliQ[i] = moduliQ[i].ConvertToDouble();
         }
     }
@@ -151,7 +149,7 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         const BigInteger TwoPower64("18446744073709551616");                            // 2^64
 
         m_modqBarrettMu.resize(sizeQ);
-        for (uint32_t i = 0; i < sizeQ; i++) {
+        for (size_t i = 0; i < sizeQ; ++i) {
             BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[i]);
             uint64_t val[2];
             val[0] = (mu % TwoPower64).ConvertToInt();
