@@ -371,15 +371,15 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
             m_multipartyQHatInvModq[sizeQ - l - 2].resize(sizeQ - 1 - l);
             m_multipartyQHatInvModqPrecon[sizeQ - l - 2].resize(sizeQ - 1 - l);
-            m_multipartyQHatModq0[sizeQ - l - 2].resize(sizeQ - 1 - l);
+            m_multipartyQHatModq0[sizeQ - l - 2].resize(1);
+            m_multipartyQHatModq0[sizeQ - l - 2][0].resize(sizeQ - 1 - l);
             for (size_t i = 1; i < sizeQ - l; i++) {
-                m_multipartyQHatModq0[sizeQ - l - 2][i - 1].resize(1);
                 BigInteger QHati                              = modulusQ / BigInteger(moduliQ[i]);
                 BigInteger QHatInvModqi                       = QHati.ModInverse(moduliQ[i]);
                 m_multipartyQHatInvModq[sizeQ - l - 2][i - 1] = QHatInvModqi.ConvertToInt();
                 m_multipartyQHatInvModqPrecon[sizeQ - l - 2][i - 1] =
                     m_multipartyQHatInvModq[sizeQ - l - 2][i - 1].PrepModMulConst(moduliQ[i]);
-                m_multipartyQHatModq0[sizeQ - l - 2][i - 1][0] = QHati.Mod(moduliQ[0]);
+                m_multipartyQHatModq0[sizeQ - l - 2][0][i - 1] = QHati.Mod(moduliQ[0]);
             }
         }
 

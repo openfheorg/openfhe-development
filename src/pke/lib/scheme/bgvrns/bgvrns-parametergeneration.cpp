@@ -393,7 +393,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
                 newQBound += ceil(ceil(static_cast<double>(newQBound) / numPartQ) / auxBits) * auxBits;
         }
         cyclOrder    = 2 * n;
-        modulusOrder = cyclOrder;
+        modulusOrder = getCyclicOrder(n, ptm, scalTech);
 
         for (size_t i = 0; i < vecSize; i++) {
             rootsQ[i] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[i]);
@@ -444,13 +444,10 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
             while (std::count(moduliQ.begin(), moduliQ.end(), extraModulus)) {
                 extraModulus = PreviousPrime<NativeInteger>(extraModulus, modulusOrder);
             }
-            moduliQ.insert(moduliQ.begin() + 1, extraModulus);
-            rootsQ.insert(rootsQ.begin() + 1, RootOfUnity<NativeInteger>(cyclOrder, extraModulus));
+            moduliQ.insert(moduliQ.begin() + i + 1, extraModulus);
+            rootsQ.insert(rootsQ.begin() + i + 1, RootOfUnity<NativeInteger>(cyclOrder, extraModulus));
         }
     }
-    std::cout << "dcrtBits: " << dcrtBits << std::endl;
-    std::cout << "multipartyMode: " << multipartyMode << std::endl;
-    std::cout << "moduli: " << moduliQ << std::endl;
     auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
 
     ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, cyclOrder, moduliQ);

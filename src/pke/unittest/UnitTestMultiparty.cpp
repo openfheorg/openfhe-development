@@ -568,8 +568,6 @@ protected:
             else {
                 checkEquality(plaintextMultipartyNew->GetPackedValue(), plaintextSumInput->GetPackedValue(), eps,
                               errMsg);
-                std::cout << "plaintextMultipartyNew: " << plaintextMultipartyNew << std::endl;
-                std::cout << "plaintextSumInput: " << plaintextSumInput << std::endl;
             }
             //====================================================================
             if (BGVRNS_TEST == testData.testCaseType && testData.star) {  // TODO (dsuponit): is this necessary???
