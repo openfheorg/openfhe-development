@@ -568,13 +568,12 @@ protected:
             else {
                 checkEquality(plaintextMultipartyNew->GetPackedValue(), plaintextSumInput->GetPackedValue(), eps,
                               errMsg);
-                std::cout << "plaintextMultipartyNew: " << plaintextMultipartyNew << std::endl;
-                std::cout << "plaintextSumInput: " << plaintextSumInput << std::endl;
             }
             //====================================================================
             if (BGVRNS_TEST == testData.testCaseType && testData.star) {  // TODO (dsuponit): is this necessary???
                 uint32_t targetTowers = (testData.params.scalTech == FIXEDMANUAL) ? 1 : 2;
-                ciphertextMult        = cc->Compress(ciphertextMult, targetTowers);
+                targetTowers   = (testData.params.multipartyMode == NOISE_FLOODING_MULTIPARTY) ? 3 : targetTowers;
+                ciphertextMult = cc->Compress(ciphertextMult, targetTowers);
             }
             Plaintext plaintextMultipartyMult;
             ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextMult}, kp1.secretKey);

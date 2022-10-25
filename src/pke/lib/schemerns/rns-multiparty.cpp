@@ -88,6 +88,10 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
 
     DCRTPoly noise;
     if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
+        if (sizeQl < 3) {
+            OPENFHE_THROW(config_error, "sizeQl " + std::to_string(sizeQl) +
+                                            " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
+        }
         DugType dug;
         auto params                            = cv[0].GetParams();
         auto cyclOrder                         = params->GetCyclotomicOrder();
@@ -104,11 +108,17 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
             std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
         DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
 
+        // auto debug = e.CRTInterpolate().at(0);
+        // std::cout << "crt interpolate before base change: " << debug << std::endl;
+
         e.ExpandCRTBasisReverseOrder(
             params, paramsFirst, cryptoParams->GetMultipartyQHatInvModq(sizeQl - 2),
             cryptoParams->GetMultipartyQHatInvModqPrecon(sizeQl - 2), cryptoParams->GetMultipartyQHatModq0(sizeQl - 2),
             cryptoParams->GetMultipartyAlphaQModq0(sizeQl - 2), cryptoParams->GetMultipartyModq0BarrettMu(),
             cryptoParams->GetMultipartyQInv(), Format::EVALUATION);
+
+        // auto debug2 = e.CRTInterpolate().at(0);
+        // std::cout << "crt interpolate after base change: " << debug2 << std::endl;
 
         noise = e;
     }
