@@ -59,7 +59,7 @@ uint32_t Degree(const std::vector<double>& coefficients) {
     uint32_t deg = 1;
     if (coefficients.size() > 1) {
         for (size_t i = coefficients.size() - 1; i > 0; --i) {
-            if (coefficients[i] == 0) {
+            if (coefficients[i] == 0) {  // TODO (dsuponit): new function to check if double is zero - isZero(double d);
                 ++deg;
             }
             else
@@ -283,7 +283,7 @@ std::vector<std::complex<double>> Rotate(const std::vector<std::complex<double>>
 
     std::vector<std::complex<double>> result(slots);
 
-    if (index < 0 || static_cast<size_t>(index) > slots) {
+    if (index < 0 || index > static_cast<int32_t>(slots)) {
         index = ReduceRotation(index, slots);
     }
 
@@ -524,6 +524,10 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
 std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollapse(
     const std::vector<std::complex<double>>& pows, const std::vector<uint32_t>& rotGroup, uint32_t levelBudget,
     bool flag_i) {
+    if (0 == levelBudget) {
+        OPENFHE_THROW(config_error, "LevelBudget cannot be zero");
+    }
+
     size_t slots = rotGroup.size();
     // Need to compute how many layers are collapsed in each of the level from the budget.
     // If there is no exact division between the maximum number of possible levels (log(slots)) and the
@@ -543,20 +547,20 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffDecodingCollaps
 
     // Coeff stores the coefficients for the given budget of levels
     std::vector<std::vector<std::vector<std::complex<double>>>> coeff(levelBudget);
-    if (levelBudget > 0) {
+    {
         for (size_t i = 0; i < (levelBudget - 1); ++i) {
             coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotations);
             for (size_t j = 0; j < numRotations; ++j) {
                 coeff[i][j] = std::vector<std::complex<double>>(slots);
             }
         }
+        size_t i              = (levelBudget - 1);
+        uint32_t maxRotations = (flagRem) ? numRotationsRem : numRotations;
+
         // remainder corresponds to the first index in encoding and to the last one in decoding
-        if (flagRem) {
-            size_t i = (levelBudget - 1);
-            coeff[i] = std::vector<std::vector<std::complex<double>>>(numRotationsRem);
-            for (size_t j = 0; j < numRotationsRem; ++j) {
-                coeff[i][j] = std::vector<std::complex<double>>(slots);
-            }
+        coeff[i] = std::vector<std::vector<std::complex<double>>>(maxRotations);
+        for (size_t j = 0; j < maxRotations; ++j) {
+            coeff[i][j] = std::vector<std::complex<double>>(slots);
         }
     }
 
