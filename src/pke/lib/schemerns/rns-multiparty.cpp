@@ -74,12 +74,11 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
             std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
         DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
 
-        e.ExpandCRTBasisReverseOrder(params, paramsFirst, cryptoParams->GetMultipartyQHatInvModqAtIndex(sizeQl - 2),
-                                     cryptoParams->GetMultipartyQHatInvModqPreconAtIndex(sizeQl - 2),
-                                     cryptoParams->GetMultipartyQHatModq0AtIndex(sizeQl - 2),
-                                     cryptoParams->GetMultipartyAlphaQModq0AtIndex(sizeQl - 2),
-                                     cryptoParams->GetMultipartyModq0BarrettMu(), cryptoParams->GetMultipartyQInv(),
-                                     Format::EVALUATION);
+        e.ExpandCRTBasisReverseOrder(
+            params, paramsFirst, cryptoParams->GetMultipartyQHatInvModq(sizeQl - 2),
+            cryptoParams->GetMultipartyQHatInvModqPrecon(sizeQl - 2), cryptoParams->GetMultipartyQHatModq0(sizeQl - 2),
+            cryptoParams->GetMultipartyAlphaQModq0(sizeQl - 2), cryptoParams->GetMultipartyModq0BarrettMu(),
+            cryptoParams->GetMultipartyQInv(), Format::EVALUATION);
 
         noise = e;
     }
@@ -142,17 +141,11 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
             std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
         DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
 
-        // auto debug = e.CRTInterpolate().at(0);
-        // std::cout << "crt interpolate before base change: " << debug << std::endl;
-
         e.ExpandCRTBasisReverseOrder(
             params, paramsFirst, cryptoParams->GetMultipartyQHatInvModq(sizeQl - 2),
             cryptoParams->GetMultipartyQHatInvModqPrecon(sizeQl - 2), cryptoParams->GetMultipartyQHatModq0(sizeQl - 2),
             cryptoParams->GetMultipartyAlphaQModq0(sizeQl - 2), cryptoParams->GetMultipartyModq0BarrettMu(),
             cryptoParams->GetMultipartyQInv(), Format::EVALUATION);
-
-        // auto debug2 = e.CRTInterpolate().at(0);
-        // std::cout << "crt interpolate after base change: " << debug2 << std::endl;
 
         noise = e;
     }
