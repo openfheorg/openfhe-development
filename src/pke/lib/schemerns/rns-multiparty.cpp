@@ -52,11 +52,44 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
 
     s.DropLastElements(diffQl);
 
-    DggType dgg(NOISE_FLOODING::MP_SD);
-    DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
+    DCRTPoly noise;
+    if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
+        if (sizeQl < 3) {
+            OPENFHE_THROW(config_error, "sizeQl " + std::to_string(sizeQl) +
+                                            " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
+        }
+        DugType dug;
+        auto params                            = cv[0].GetParams();
+        auto cyclOrder                         = params->GetCyclotomicOrder();
+        std::vector<NativeInteger> moduliFirst = {params->GetParams()[0]->GetModulus()};
+        std::vector<NativeInteger> rootsFirst  = {params->GetParams()[0]->GetRootOfUnity()};
+        auto paramsFirst = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliFirst, rootsFirst);
+        std::vector<NativeInteger> moduliAllButFirst(sizeQl - 1);
+        std::vector<NativeInteger> rootsAllButFirst(sizeQl - 1);
+        for (size_t i = 1; i < sizeQl; i++) {
+            moduliAllButFirst[i - 1] = params->GetParams()[i]->GetModulus();
+            rootsAllButFirst[i - 1]  = params->GetParams()[i]->GetRootOfUnity();
+        }
+        auto paramsAllButFirst =
+            std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
+        DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
+
+        e.ExpandCRTBasisReverseOrder(
+            params, paramsFirst, cryptoParams->GetMultipartyQHatInvModq(sizeQl - 2),
+            cryptoParams->GetMultipartyQHatInvModqPrecon(sizeQl - 2), cryptoParams->GetMultipartyQHatModq0(sizeQl - 2),
+            cryptoParams->GetMultipartyAlphaQModq0(sizeQl - 2), cryptoParams->GetMultipartyModq0BarrettMu(),
+            cryptoParams->GetMultipartyQInv(), Format::EVALUATION);
+
+        noise = e;
+    }
+    else {
+        DggType dgg(NOISE_FLOODING::MP_SD);
+        DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
+        noise = e;
+    }
 
     // e is added to do noise flooding
-    DCRTPoly b = cv[0] + s * cv[1] + ns * e;
+    DCRTPoly b = cv[0] + s * cv[1] + ns * noise;
 
     Ciphertext<DCRTPoly> result = ciphertext->CloneEmpty();
 
@@ -108,17 +141,11 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
             std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
         DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
 
-        // auto debug = e.CRTInterpolate().at(0);
-        // std::cout << "crt interpolate before base change: " << debug << std::endl;
-
         e.ExpandCRTBasisReverseOrder(
             params, paramsFirst, cryptoParams->GetMultipartyQHatInvModq(sizeQl - 2),
             cryptoParams->GetMultipartyQHatInvModqPrecon(sizeQl - 2), cryptoParams->GetMultipartyQHatModq0(sizeQl - 2),
             cryptoParams->GetMultipartyAlphaQModq0(sizeQl - 2), cryptoParams->GetMultipartyModq0BarrettMu(),
             cryptoParams->GetMultipartyQInv(), Format::EVALUATION);
-
-        // auto debug2 = e.CRTInterpolate().at(0);
-        // std::cout << "crt interpolate after base change: " << debug2 << std::endl;
 
         noise = e;
     }

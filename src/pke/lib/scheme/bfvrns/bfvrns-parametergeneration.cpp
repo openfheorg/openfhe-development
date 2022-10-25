@@ -351,12 +351,6 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         }
     }
 
-    std::cout << "dcrtBits: " << dcrtBits << std::endl;
-    std::cout << "multipartyMode: " << multipartyMode << std::endl;
-    std::cout << "numInitialModuli: " << numInitialModuli << std::endl;
-    std::cout << "sizeQ: " << sizeQ << std::endl;
-    std::cout << "moduli: " << moduliQ << std::endl;
-
     auto params = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQ, rootsQ);
 
     ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, 2 * n, moduliQ);
