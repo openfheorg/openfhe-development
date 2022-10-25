@@ -1261,7 +1261,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetMultipartyQHatInvModqAtIndex(usint l) const {
+    std::vector<NativeInteger> const& GetMultipartyQHatInvModq(usint l = 0) const {
         return m_multipartyQHatInvModq[l];
     }
 
@@ -1270,7 +1270,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetMultipartyQHatInvModqPreconAtIndex(usint l) const {
+    std::vector<NativeInteger> const& GetMultipartyQHatInvModqPrecon(usint l = 0) const {
         return m_multipartyQHatInvModqPrecon[l];
     }
 
@@ -1279,7 +1279,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetMultipartyQHatModq0AtIndex(usint l) const {
+    std::vector<std::vector<NativeInteger>> const& GetMultipartyQHatModq0(usint l = 0) const {
         return m_multipartyQHatModq0[l];
     }
 
@@ -1288,7 +1288,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetMultipartyAlphaQModq0AtIndex(usint l) const {
+    std::vector<std::vector<NativeInteger>> const& GetMultipartyAlphaQModq0(usint l = 0) const {
         return m_multipartyAlphaQModq0[l];
     }
 

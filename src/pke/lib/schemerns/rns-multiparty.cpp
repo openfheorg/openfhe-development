@@ -122,27 +122,27 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
 
     DCRTPoly noise;
     if (cryptoParams->GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
-        if (sizeQl < 3) {
-            OPENFHE_THROW(config_error, "sizeQl " + std::to_string(sizeQl) +
-                                            " must be at least 3 in NOISE_FLOODING_MULTIPARTY mode.");
-        }
         DugType dug;
-        auto params                         = cv[0].GetParams();
-        ILDCRTParams<BigInteger> paramsCopy = *params;
-        paramsCopy.PopFirstParam();
-        auto paramsAllButFirst = std::make_shared<ILDCRTParams<BigInteger>>(paramsCopy);
-        DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
-
+        auto params                            = cv[0].GetParams();
         auto cyclOrder                         = params->GetCyclotomicOrder();
         std::vector<NativeInteger> moduliFirst = {params->GetParams()[0]->GetModulus()};
         std::vector<NativeInteger> rootsFirst  = {params->GetParams()[0]->GetRootOfUnity()};
         auto paramsFirst = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliFirst, rootsFirst);
-        e.ExpandCRTBasisReverseOrder(params, paramsFirst, cryptoParams->GetMultipartyQHatInvModqAtIndex(sizeQl - 2),
-                                     cryptoParams->GetMultipartyQHatInvModqPreconAtIndex(sizeQl - 2),
-                                     cryptoParams->GetMultipartyQHatModq0AtIndex(sizeQl - 2),
-                                     cryptoParams->GetMultipartyAlphaQModq0AtIndex(sizeQl - 2),
-                                     cryptoParams->GetMultipartyModq0BarrettMu(), cryptoParams->GetMultipartyQInv(),
-                                     Format::EVALUATION);
+        std::vector<NativeInteger> moduliAllButFirst(sizeQl - 1);
+        std::vector<NativeInteger> rootsAllButFirst(sizeQl - 1);
+        for (size_t i = 1; i < sizeQl; i++) {
+            moduliAllButFirst[i - 1] = params->GetParams()[i]->GetModulus();
+            rootsAllButFirst[i - 1]  = params->GetParams()[i]->GetRootOfUnity();
+        }
+        auto paramsAllButFirst =
+            std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
+        DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
+
+        e.ExpandCRTBasisReverseOrder(
+            params, paramsFirst, cryptoParams->GetMultipartyQHatInvModq(sizeQl - 2),
+            cryptoParams->GetMultipartyQHatInvModqPrecon(sizeQl - 2), cryptoParams->GetMultipartyQHatModq0(sizeQl - 2),
+            cryptoParams->GetMultipartyAlphaQModq0(sizeQl - 2), cryptoParams->GetMultipartyModq0BarrettMu(),
+            cryptoParams->GetMultipartyQInv(), Format::EVALUATION);
 
         noise = e;
     }

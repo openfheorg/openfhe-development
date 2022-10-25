@@ -1797,15 +1797,20 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasisReverseOrder(
     size_t sizeP  = partP.m_vectors.size();
     size_t sizeQP = sizeP + sizeQ;
 
-    std::vector<PolyType> temp;
-    temp.reserve(sizeQP);
-    temp.insert(temp.end(), std::make_move_iterator(partP.m_vectors.begin()),
-                std::make_move_iterator(partP.m_vectors.end()));
-    temp.insert(temp.end(), std::make_move_iterator(m_vectors.begin()), std::make_move_iterator(m_vectors.end()));
+    m_vectors.resize(sizeQP);
 
 #pragma omp parallel for
-    for (size_t i = 0; i < sizeQP; i++) {
-        temp[i].SetFormat(resultFormat);
+    // populate the towers corresponding to CRT basis P and convert them to
+    // evaluation representation
+    // Put moduli P before moduli Q
+    for (size_t i = 0; i < sizeQ; i++) {
+        m_vectors[sizeP + i] = m_vectors[i];
+        m_vectors[sizeP + i].SetFormat(resultFormat);
+    }
+
+    for (size_t j = 0; j < sizeP; j++) {
+        m_vectors[j] = partP.m_vectors[j];
+        m_vectors[j].SetFormat(resultFormat);
     }
 
     if (resultFormat == Format::EVALUATION) {
@@ -1813,18 +1818,17 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasisReverseOrder(
         // for Q from it
         if (polyInNTT.size() > 0) {
             for (size_t i = 0; i < sizeQ; i++)
-                temp[sizeP + i] = polyInNTT[i];
+                m_vectors[sizeP + i] = polyInNTT[i];
         }
         else {
             // else call NTT for the towers for Q
 #pragma omp parallel for
             for (size_t i = 0; i < sizeQ; i++)
-                temp[sizeP + i].SetFormat(resultFormat);
+                m_vectors[sizeP + i].SetFormat(resultFormat);
         }
     }
     this->m_format = resultFormat;
     this->m_params = paramsQP;
-    m_vectors      = temp;
 }
 
 #if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
