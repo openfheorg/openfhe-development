@@ -327,6 +327,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     EncryptionTechnique encTech      = cryptoParamsBGVRNS->GetEncryptionTechnique();
     MultiplicationTechnique multTech = cryptoParamsBGVRNS->GetMultiplicationTechnique();
     ProxyReEncryptionMode PREMode    = cryptoParamsBGVRNS->GetPREMode();
+    MultipartyMode multipartyMode    = cryptoParamsBGVRNS->GetMultipartyMode();
     if (!ptm)
         OPENFHE_THROW(config_error, "plaintextModulus cannot be zero.");
 
@@ -376,6 +377,7 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     uint32_t vecSize = (scalTech != FLEXIBLEAUTOEXT) ? numPrimes : numPrimes + 1;
     std::vector<NativeInteger> moduliQ(vecSize);
     std::vector<NativeInteger> rootsQ(vecSize);
+    uint64_t modulusOrder = 0;
 
     if ((scalTech == FIXEDAUTO || scalTech == FLEXIBLEAUTO || scalTech == FLEXIBLEAUTOEXT) && (dcrtBitsSet == false)) {
         auto moduliInfo    = computeModuli(cryptoParams, n, evalAddCount, keySwitchCount, auxBits, numPrimes);
@@ -390,7 +392,8 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
             if (ksTech == HYBRID)
                 newQBound += ceil(ceil(static_cast<double>(newQBound) / numPartQ) / auxBits) * auxBits;
         }
-        cyclOrder = 2 * n;
+        cyclOrder    = 2 * n;
+        modulusOrder = cyclOrder;
 
         for (size_t i = 0; i < vecSize; i++) {
             rootsQ[i] = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[i]);
@@ -411,29 +414,43 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
         if (pow2ptm < cyclOrder)
             pow2ptm = cyclOrder;
 
-        uint64_t lcmCyclOrderPtm = (uint64_t)pow2ptm * plaintextModulus;
+        modulusOrder = (uint64_t)pow2ptm * plaintextModulus;
 
         // Get the largest prime with size less or equal to firstModSize bits.
-        NativeInteger firstInteger = FirstPrime<NativeInteger>(firstModSize, lcmCyclOrderPtm);
+        NativeInteger firstInteger = FirstPrime<NativeInteger>(firstModSize, modulusOrder);
 
-        firstInteger = PreviousPrime<NativeInteger>(firstInteger, lcmCyclOrderPtm);
+        firstInteger = PreviousPrime<NativeInteger>(firstInteger, modulusOrder);
 
-        moduliQ[0] = PreviousPrime<NativeInteger>(firstInteger, lcmCyclOrderPtm);
+        moduliQ[0] = PreviousPrime<NativeInteger>(firstInteger, modulusOrder);
         rootsQ[0]  = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[0]);
 
         if (numPrimes > 1) {
             NativeInteger q =
-                (firstModSize != dcrtBits) ? FirstPrime<NativeInteger>(dcrtBits, lcmCyclOrderPtm) : moduliQ[0];
+                (firstModSize != dcrtBits) ? FirstPrime<NativeInteger>(dcrtBits, modulusOrder) : moduliQ[0];
 
-            moduliQ[1] = PreviousPrime<NativeInteger>(q, lcmCyclOrderPtm);
+            moduliQ[1] = PreviousPrime<NativeInteger>(q, modulusOrder);
             rootsQ[1]  = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[1]);
 
             for (size_t i = 2; i < numPrimes; i++) {
-                moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], lcmCyclOrderPtm);
+                moduliQ[i] = PreviousPrime<NativeInteger>(moduliQ[i - 1], modulusOrder);
                 rootsQ[i]  = RootOfUnity<NativeInteger>(cyclOrder, moduliQ[i]);
             }
         }
     }
+    if (multipartyMode == NOISE_FLOODING_MULTIPARTY) {
+        NativeInteger extraModulus = FirstPrime<NativeInteger>(NOISE_FLOODING::MULTIPARTY_MOD_SIZE, modulusOrder);
+        extraModulus               = PreviousPrime<NativeInteger>(extraModulus, modulusOrder);
+        for (size_t i = 0; i < NOISE_FLOODING::NUM_MODULI_MULTIPARTY; i++) {
+            while (std::count(moduliQ.begin(), moduliQ.end(), extraModulus)) {
+                extraModulus = PreviousPrime<NativeInteger>(extraModulus, modulusOrder);
+            }
+            moduliQ.insert(moduliQ.begin() + 1, extraModulus);
+            rootsQ.insert(rootsQ.begin() + 1, RootOfUnity<NativeInteger>(cyclOrder, extraModulus));
+        }
+    }
+    std::cout << "dcrtBits: " << dcrtBits << std::endl;
+    std::cout << "multipartyMode: " << multipartyMode << std::endl;
+    std::cout << "moduli: " << moduliQ << std::endl;
     auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
 
     ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsQ, cyclOrder, moduliQ);

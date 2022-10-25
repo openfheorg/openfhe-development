@@ -1740,6 +1740,62 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasis(
     this->m_params = paramsQP;
 }
 
+template <typename VecType>
+void DCRTPolyImpl<VecType>::ExpandCRTBasisReverseOrder(
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQP, const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::vector<NativeInteger>& QHatInvModq, const std::vector<NativeInteger>& QHatInvModqPrecon,
+    const std::vector<std::vector<NativeInteger>>& QHatModp, const std::vector<std::vector<NativeInteger>>& alphaQModp,
+    const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv, Format resultFormat) {
+    std::vector<PolyType> polyInNTT;
+
+    // if the input polynomial is in evaluation representation, store it for
+    // later use to reduce the number of NTTs
+    if (this->GetFormat() == Format::EVALUATION) {
+        polyInNTT = m_vectors;
+        this->SetFormat(Format::COEFFICIENT);
+    }
+
+    DCRTPolyType partP =
+        SwitchCRTBasis(paramsP, QHatInvModq, QHatInvModqPrecon, QHatModp, alphaQModp, modpBarrettMu, qInv);
+
+    size_t sizeQ  = m_vectors.size();
+    size_t sizeP  = partP.m_vectors.size();
+    size_t sizeQP = sizeP + sizeQ;
+
+    m_vectors.resize(sizeQP);
+
+#pragma omp parallel for
+    // populate the towers corresponding to CRT basis P and convert them to
+    // evaluation representation
+    // Put moduli P before moduli Q
+    for (size_t i = 0; i < sizeQ; i++) {
+        m_vectors[sizeP + i] = m_vectors[i];
+        m_vectors[sizeP + i].SetFormat(resultFormat);
+    }
+
+    for (size_t j = 0; j < sizeP; j++) {
+        m_vectors[j] = partP.m_vectors[j];
+        m_vectors[j].SetFormat(resultFormat);
+    }
+
+    if (resultFormat == Format::EVALUATION) {
+        // if the input polynomial was in evaluation representation, use the towers
+        // for Q from it
+        if (polyInNTT.size() > 0) {
+            for (size_t i = 0; i < sizeQ; i++)
+                m_vectors[sizeP + i] = polyInNTT[i];
+        }
+        else {
+            // else call NTT for the towers for Q
+#pragma omp parallel for
+            for (size_t i = 0; i < sizeQ; i++)
+                m_vectors[sizeP + i].SetFormat(resultFormat);
+        }
+    }
+    this->m_format = resultFormat;
+    this->m_params = paramsQP;
+}
+
 #if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations precomputed) {

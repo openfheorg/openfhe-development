@@ -1248,12 +1248,66 @@ public:
     }
 
     /**
-   * Gets the NTL precomputions for [-(q_i)^{-1}]_{t*gamma}
+   * Gets the NTL precomputations for [-(q_i)^{-1}]_{t*gamma}
    *
    * @return the precomputed table
    */
     std::vector<NativeInteger> const& GetNegInvqModtgammaPrecon() const {
         return m_negInvqModtgammaPrecon;
+    }
+
+    /**
+   * Gets the precomputed table of [*(Q/q_i/q_0)^{-1}]_{q_i}
+   *
+   * @return the precomputed table
+   */
+    std::vector<NativeInteger> const& GetMultipartyQHatInvModq(usint l = 0) const {
+        return m_multipartyQHatInvModq[l];
+    }
+
+    /**
+   * Gets the NTL precomputations for [*(Q/q_i/q_0)^{-1}]_{q_i}
+   *
+   * @return the precomputed table
+   */
+    std::vector<NativeInteger> const& GetMultipartyQHatInvModqPrecon(usint l = 0) const {
+        return m_multipartyQHatInvModqPrecon[l];
+    }
+
+    /**
+   * Gets the precomputed table of [Q/q_i/q_0]_{q_0}
+   *
+   * @return the precomputed table
+   */
+    std::vector<std::vector<NativeInteger>> const& GetMultipartyQHatModq0(usint l = 0) const {
+        return m_multipartyQHatModq0[l];
+    }
+
+    /**
+   * Gets the precomputed table of [\alpha*Q/q_0]_{q_0} for 0 <= alpha <= 1
+   *
+   * @return the precomputed table
+   */
+    std::vector<std::vector<NativeInteger>> const& GetMultipartyAlphaQModq0(usint l = 0) const {
+        return m_multipartyAlphaQModq0[l];
+    }
+
+    /**
+   * Gets the Barrett modulo reduction precomputation for q_0
+   *
+   * @return the precomputed table
+   */
+    std::vector<DoubleNativeInt> const& GetMultipartyModq0BarrettMu() const {
+        return m_multipartyModq0BarrettMu;
+    }
+
+    /**
+   * Gets the precomputed table of \frac{1/q_i}
+   *
+   * @return the precomputed table
+   */
+    std::vector<double> const& GetMultipartyQInv() const {
+        return m_multipartyQInv;
     }
 
 protected:
@@ -1657,6 +1711,28 @@ protected:
     std::vector<NativeInteger> m_negInvqModtgamma;
     // Stores NTL precomputations for [-(q_i)^{-1}]_{t*gamma}
     std::vector<NativeInteger> m_negInvqModtgammaPrecon;
+
+    /////////////////////////////////////
+    // BFVrns and BGVrns : Multiparty Decryption : ExpandCRTBasis
+    /////////////////////////////////////
+
+    // Stores [*(Q/q_i/q_0)^{-1}]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_multipartyQHatInvModq;
+
+    // Stores NTL precomputations for [*(Q/q_i/q_0)^{-1}]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_multipartyQHatInvModqPrecon;
+
+    // Stores [Q/q_i/q_0]_{q_0}
+    std::vector<std::vector<std::vector<NativeInteger>>> m_multipartyQHatModq0;
+
+    // Stores [\alpha*Q/q_0]_{q_0} for 0 <= alpha <= 1
+    std::vector<std::vector<std::vector<NativeInteger>>> m_multipartyAlphaQModq0;
+
+    // Barrett modulo reduction precomputation for q_0
+    std::vector<DoubleNativeInt> m_multipartyModq0BarrettMu;
+
+    // Stores \frac{1/q_i}
+    std::vector<double> m_multipartyQInv;
 
 public:
     /////////////////////////////////////
