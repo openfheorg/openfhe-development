@@ -466,7 +466,7 @@ std::vector<std::vector<std::vector<std::complex<double>>>> CoeffEncodingCollaps
     }
 
     int32_t stop = (remCollapse == 0) ? -1 : 0;
-    for (int32_t s = dimCollapse - 1; s > stop; s--) {
+    for (int32_t s = dimCollapse - 1; s > stop; --s) {
         int32_t top = int32_t(std::log2(slots)) - (dimCollapse - 1 - s) * layersCollapse - 1;
 
         // TODO (dsuponit): is this only if layersCollapse is 1? Or should it be completely removed?

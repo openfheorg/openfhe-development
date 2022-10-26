@@ -251,7 +251,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         size_t alpha = static_cast<size_t>(ceil(static_cast<double>(sizeQ) / m_numPartQ));
         m_paramsComplPartQ.resize(sizeQ);
         m_modComplPartqBarrettMu.resize(sizeQ);
-        for (int32_t l = sizeQ - 1; l >= 0; l--) {
+        for (int32_t l = sizeQ - 1; l >= 0; --l) {
             size_t beta = static_cast<size_t>(ceil(static_cast<double>(l + 1) / alpha));
             m_paramsComplPartQ[l].resize(beta);
             m_modComplPartqBarrettMu[l].resize(beta);
@@ -289,10 +289,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 m_modComplPartqBarrettMu[l][j].resize(moduli.size());
                 for (size_t i = 0; i < moduli.size(); ++i) {
                     BigInteger mu = BarrettBase128Bit / BigInteger(moduli[i]);
-                    uint64_t val[2];
-                    val[0] = (mu % TwoPower64).ConvertToInt();
-                    val[1] = mu.RShift(64).ConvertToInt();
-
+                    uint64_t val[2]{(mu % TwoPower64).ConvertToInt(), mu.RShift(64).ConvertToInt()};
                     memcpy(&m_modComplPartqBarrettMu[l][j][i], val, sizeof(DoubleNativeInt));
                 }
             }
@@ -302,7 +299,7 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         m_PartQlHatInvModq.resize(m_numPartQ);
         m_PartQlHatInvModqPrecon.resize(m_numPartQ);
         for (size_t k = 0; k < m_numPartQ; ++k) {
-            auto params         = m_paramsPartQ[k]->GetParams();
+            const auto& params  = m_paramsPartQ[k]->GetParams();
             uint32_t sizePartQk = params.size();
             m_PartQlHatInvModq[k].resize(sizePartQk);
             m_PartQlHatInvModqPrecon[k].resize(sizePartQk);
@@ -330,9 +327,9 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             size_t beta  = static_cast<size_t>(ceil(static_cast<double>(l + 1) / alpha));
             m_PartQlHatModp[l].resize(beta);
             for (size_t k = 0; k < beta; ++k) {
-                auto paramsPartQ = GetParamsPartQ(k)->GetParams();
-                auto partQ       = GetParamsPartQ(k)->GetModulus();
-                size_t digitSize = paramsPartQ.size();
+                const auto& paramsPartQ = GetParamsPartQ(k)->GetParams();
+                auto partQ              = GetParamsPartQ(k)->GetModulus();
+                size_t digitSize        = paramsPartQ.size();
                 if (k == beta - 1) {
                     digitSize = l + 1 - k * alpha;
                     for (size_t idx = digitSize; idx < paramsPartQ.size(); ++idx) {
@@ -342,8 +339,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
                 m_PartQlHatModp[l][k].resize(digitSize);
                 for (size_t i = 0; i < digitSize; ++i) {
-                    BigInteger partQHat = partQ / BigInteger(paramsPartQ[i]->GetModulus());
-                    auto complBasis     = GetParamsComplPartQ(l, k);
+                    BigInteger partQHat    = partQ / BigInteger(paramsPartQ[i]->GetModulus());
+                    const auto& complBasis = GetParamsComplPartQ(l, k);
                     m_PartQlHatModp[l][k][i].resize(complBasis->GetParams().size());
                     for (size_t j = 0; j < complBasis->GetParams().size(); ++j) {
                         BigInteger QHatModpj        = partQHat.Mod(complBasis->GetParams()[j]->GetModulus());

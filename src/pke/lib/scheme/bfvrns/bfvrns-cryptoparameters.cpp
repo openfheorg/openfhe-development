@@ -71,9 +71,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
     m_modqBarrettMu.resize(sizeQ);
     for (uint32_t i = 0; i < sizeQ; i++) {
         BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[i]);
-        uint64_t val[2];
-        val[0] = (mu % TwoPower64).ConvertToInt();
-        val[1] = mu.RShift(64).ConvertToInt();
+        uint64_t val[2]{(mu % TwoPower64).ConvertToInt(), mu.RShift(64).ConvertToInt()};
         memcpy(&m_modqBarrettMu[i], val, sizeof(DoubleNativeInt));
     }
 
@@ -81,8 +79,9 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
     // BFVrns : Encrypt
     /////////////////////////////////////
 
-    NativeInteger modulusr = PreviousPrime<NativeInteger>(moduliQ[sizeQ - 1], 2 * n);
-    NativeInteger rootr    = RootOfUnity<NativeInteger>(2 * n, modulusr);
+    uint32_t cyclotomicOrder = 2 * n;
+    NativeInteger modulusr   = PreviousPrime<NativeInteger>(moduliQ[sizeQ - 1], cyclotomicOrder);
+    NativeInteger rootr      = RootOfUnity<NativeInteger>(cyclotomicOrder, modulusr);
 
     m_tInvModq.resize(sizeQ);
     for (uint32_t i = 0; i < sizeQ; i++) {
@@ -111,7 +110,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         }
         moduliQr[sizeQ] = modulusr;
         rootsQr[sizeQ]  = rootr;
-        m_paramsQr      = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQr, rootsQr);
+        m_paramsQr      = std::make_shared<ILDCRTParams<BigInteger>>(cyclotomicOrder, moduliQr, rootsQr);
 
         m_tInvModqr[sizeQ] = t.ModInverse(modulusr);
 
@@ -134,18 +133,15 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         rootsR[0]  = rootr;
 
         for (size_t j = 1; j < sizeR; j++) {
-            moduliR[j] = PreviousPrime<NativeInteger>(moduliR[j - 1], 2 * n);
-            rootsR[j]  = RootOfUnity<NativeInteger>(2 * n, moduliR[j]);
+            moduliR[j] = PreviousPrime<NativeInteger>(moduliR[j - 1], cyclotomicOrder);
+            rootsR[j]  = RootOfUnity<NativeInteger>(cyclotomicOrder, moduliR[j]);
         }
 
-        ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsR, 2 * n, moduliR);
+        ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootsR, cyclotomicOrder, moduliR);
         m_modrBarrettMu.resize(sizeR);
         for (uint32_t i = 0; i < sizeR; i++) {
             BigInteger mu = BarrettBase128Bit / BigInteger(moduliR[i]);
-            uint64_t val[2];
-            val[0] = (mu % TwoPower64).ConvertToInt();
-            val[1] = mu.RShift(64).ConvertToInt();
-
+            uint64_t val[2]{(mu % TwoPower64).ConvertToInt(), mu.RShift(64).ConvertToInt()};
             memcpy(&m_modrBarrettMu[i], val, sizeof(DoubleNativeInt));
         }
 
@@ -216,8 +212,8 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             m_paramsQl.resize(1);
             m_paramsRl.resize(1);
             m_paramsQlRl.resize(1);
-            m_paramsQl[0] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQ, rootsQ);
-            m_paramsRl[0] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliR, rootsR);
+            m_paramsQl[0] = std::make_shared<ILDCRTParams<BigInteger>>(cyclotomicOrder, moduliQ, rootsQ);
+            m_paramsRl[0] = std::make_shared<ILDCRTParams<BigInteger>>(cyclotomicOrder, moduliR, rootsR);
             std::vector<NativeInteger> moduliQR(sizeQ + sizeR);
             std::vector<NativeInteger> rootsQR(sizeQ + sizeR);
             for (size_t i = 0; i < sizeQ; i++) {
@@ -228,7 +224,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
                 moduliQR[sizeQ + j] = moduliR[j];
                 rootsQR[sizeQ + j]  = rootsR[j];
             }
-            m_paramsQlRl[0] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQR, rootsQR);
+            m_paramsQlRl[0] = std::make_shared<ILDCRTParams<BigInteger>>(cyclotomicOrder, moduliQR, rootsQR);
         }
         else if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
             m_paramsQl.resize(sizeQ);
@@ -245,25 +241,22 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             for (usint l = 0; l < sizeQ; ++l) {
                 moduliQl.push_back(moduliQ[l]);
                 rootsQl.push_back(rootsQ[l]);
-                m_paramsQl[l] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQl, rootsQl);
+                m_paramsQl[l] = std::make_shared<ILDCRTParams<BigInteger>>(cyclotomicOrder, moduliQl, rootsQl);
                 moduliRl.push_back(moduliR[l]);
                 rootsRl.push_back(rootsR[l]);
-                m_paramsRl[l] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliRl, rootsRl);
+                m_paramsRl[l] = std::make_shared<ILDCRTParams<BigInteger>>(cyclotomicOrder, moduliRl, rootsRl);
                 moduliQlRl.insert(moduliQlRl.begin() + l, moduliQ[l]);
                 rootsQlRl.insert(rootsQlRl.begin() + l, rootsQ[l]);
                 moduliQlRl.push_back(moduliR[l]);
                 rootsQlRl.push_back(rootsR[l]);
-                m_paramsQlRl[l] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQlRl, rootsQlRl);
+                m_paramsQlRl[l] = std::make_shared<ILDCRTParams<BigInteger>>(cyclotomicOrder, moduliQlRl, rootsQlRl);
             }
         }
 
         m_modrBarrettMu.resize(sizeR);
         for (uint32_t j = 0; j < moduliR.size(); j++) {
             BigInteger mu = BarrettBase128Bit / BigInteger(moduliR[j]);
-            uint64_t val[2];
-            val[0] = (mu % TwoPower64).ConvertToInt();
-            val[1] = mu.RShift(64).ConvertToInt();
-
+            uint64_t val[2]{(mu % TwoPower64).ConvertToInt(), mu.RShift(64).ConvertToInt()};
             memcpy(&m_modrBarrettMu[j], val, sizeof(DoubleNativeInt));
         }
 
@@ -677,20 +670,20 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         BigInteger B                   = 1;
         BigInteger maxConvolutionValue = BigInteger(2) * BigInteger(n) * Q * Q * tBig;
 
-        m_moduliB.push_back(PreviousPrime<NativeInteger>(moduliQ[m_numq - 1], 2 * n));
-        m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_moduliB[0]));
+        m_moduliB.push_back(PreviousPrime<NativeInteger>(moduliQ[m_numq - 1], cyclotomicOrder));
+        m_rootsBsk.push_back(RootOfUnity<NativeInteger>(cyclotomicOrder, m_moduliB[0]));
         B = B * BigInteger(m_moduliB[0]);
 
         for (usint i = 1; i < m_numq; i++) {  // we already added one prime
-            m_moduliB.push_back(PreviousPrime<NativeInteger>(m_moduliB[i - 1], 2 * n));
-            m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_moduliB[i]));
+            m_moduliB.push_back(PreviousPrime<NativeInteger>(m_moduliB[i - 1], cyclotomicOrder));
+            m_rootsBsk.push_back(RootOfUnity<NativeInteger>(cyclotomicOrder, m_moduliB[i]));
 
             B = B * BigInteger(m_moduliB[i]);
         }
 
         m_numb = m_numq;
 
-        m_msk = PreviousPrime<NativeInteger>(m_moduliB[m_numq - 1], 2 * n);
+        m_msk = PreviousPrime<NativeInteger>(m_moduliB[m_numq - 1], cyclotomicOrder);
 
         usint s           = 0;
         NativeInteger tmp = m_msk;
@@ -701,30 +694,27 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
         // check msk is large enough
         while (Q * B * BigInteger(m_msk) < maxConvolutionValue) {
-            NativeInteger firstInteger = FirstPrime<NativeInteger>(s + 1, 2 * n);
+            NativeInteger firstInteger = FirstPrime<NativeInteger>(s + 1, cyclotomicOrder);
 
-            m_msk = NextPrime<NativeInteger>(firstInteger, 2 * n);
+            m_msk = NextPrime<NativeInteger>(firstInteger, cyclotomicOrder);
             s++;
             if (s >= 60)
                 OPENFHE_THROW(math_error, "msk is larger than 60 bits");
         }
-        m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_msk));
+        m_rootsBsk.push_back(RootOfUnity<NativeInteger>(cyclotomicOrder, m_msk));
 
         m_moduliBsk = m_moduliB;
         m_moduliBsk.push_back(m_msk);
 
-        m_paramsBsk = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, m_moduliBsk, m_rootsBsk);
+        m_paramsBsk = std::make_shared<ILDCRTParams<BigInteger>>(cyclotomicOrder, m_moduliBsk, m_rootsBsk);
 
-        ChineseRemainderTransformFTT<NativeVector>().PreCompute(m_rootsBsk, 2 * n, m_moduliBsk);
+        ChineseRemainderTransformFTT<NativeVector>().PreCompute(m_rootsBsk, cyclotomicOrder, m_moduliBsk);
 
         // populate Barrett constant for m_BskModuli
         m_modbskBarrettMu.resize(m_moduliBsk.size());
         for (uint32_t i = 0; i < m_modbskBarrettMu.size(); i++) {
             BigInteger mu = BarrettBase128Bit / BigInteger(m_moduliBsk[i]);
-            uint64_t val[2];
-            val[0] = (mu % TwoPower64).ConvertToInt();
-            val[1] = mu.RShift(64).ConvertToInt();
-
+            uint64_t val[2]{(mu % TwoPower64).ConvertToInt(), mu.RShift(64).ConvertToInt()};
             memcpy(&m_modbskBarrettMu[i], val, sizeof(DoubleNativeInt));
         }
 

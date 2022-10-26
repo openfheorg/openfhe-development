@@ -318,8 +318,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         elementParamsRaised.PopLastParam();
     }
 
-    auto paramsQ = elementParamsRaised.GetParams();
-    usint sizeQ  = paramsQ.size();
+    const auto& paramsQ = elementParamsRaised.GetParams();
+    usint sizeQ         = paramsQ.size();
 
     std::vector<NativeInteger> moduli(sizeQ);
     std::vector<NativeInteger> roots(sizeQ);
@@ -434,9 +434,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         auto ctxtEnc = (isLTBootstrap) ? EvalLinearTransform(precom->m_U0hatTPre, raised) :
                                          EvalCoeffsToSlots(precom->m_U0hatTPreFFT, raised);
 
-        auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
-        auto conj       = Conjugate(ctxtEnc, evalKeyMap);
-        auto ctxtEncI   = cc->EvalSub(ctxtEnc, conj);
+        const auto& evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
+        const auto& conj       = Conjugate(ctxtEnc, evalKeyMap);
+        auto ctxtEncI          = cc->EvalSub(ctxtEnc, conj);
         cc->EvalAddInPlace(ctxtEnc, conj);
         algo->MultByMonomialInPlace(ctxtEncI, 3 * M / 4);
 
@@ -528,8 +528,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         auto ctxtEnc = (isLTBootstrap) ? EvalLinearTransform(precom->m_U0hatTPre, raised) :
                                          EvalCoeffsToSlots(precom->m_U0hatTPreFFT, raised);
 
-        auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
-        auto conj       = Conjugate(ctxtEnc, evalKeyMap);
+        const auto& evalKeyMap = cc->GetEvalAutomorphismKeyMap(ctxtEnc->GetKeyTag());
+        const auto& conj       = Conjugate(ctxtEnc, evalKeyMap);
         cc->EvalAddInPlace(ctxtEnc, conj);
 
         if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
@@ -902,10 +902,10 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
         elementParams.PopLastParam();
     }
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParams->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    const usint sizeQ   = paramsQ.size();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
+    const usint sizeP   = paramsP.size();
 
     std::vector<NativeInteger> moduli(sizeQ + sizeP);
     std::vector<NativeInteger> roots(sizeQ + sizeP);
@@ -980,10 +980,10 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
         elementParams.PopLastParam();
     }
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParams->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    const usint sizeQ   = paramsQ.size();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
+    const usint sizeP   = paramsP.size();
 
     std::vector<NativeInteger> moduli(sizeQ + sizeP);
     std::vector<NativeInteger> roots(sizeQ + sizeP);
@@ -1005,15 +1005,15 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
     if (orientation == 0) {
         // vertical concatenation - used during homomorphic encoding
         // #pragma omp parallel for
-        for (int j = 0; j < gStep; j++) {
+        for (int j = 0; j < gStep; ++j) {
             int offset = -bStep * j;
-            for (int i = 0; i < bStep; i++) {
+            for (int i = 0; i < bStep; ++i) {
                 if (bStep * j + i < static_cast<int>(slots)) {
-                    auto vecA = ExtractShiftedDiagonal(A, bStep * j + i);
-                    auto vecB = ExtractShiftedDiagonal(B, bStep * j + i);
+                    auto vecA        = ExtractShiftedDiagonal(A, bStep * j + i);
+                    const auto& vecB = ExtractShiftedDiagonal(B, bStep * j + i);
 
                     vecA.insert(vecA.end(), vecB.begin(), vecB.end());
-                    for (uint32_t k = 0; k < vecA.size(); k++)
+                    for (size_t k = 0; k < vecA.size(); ++k)
                         vecA[k] *= scale;
 
                     result[bStep * j + i] =
@@ -1028,8 +1028,8 @@ std::vector<ConstPlaintext> FHECKKSRNS::EvalLinearTransformPrecompute(
 
         //  A and B are concatenated horizontally
         for (uint32_t i = 0; i < A.size(); i++) {
-            auto vecA = A[i];
-            auto vecB = B[i];
+            auto vecA        = A[i];
+            const auto& vecB = B[i];
             vecA.insert(vecA.end(), vecB.begin(), vecB.end());
             newA[i] = vecA;
         }
@@ -1119,10 +1119,10 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
 
     uint32_t level0 = towersToDrop + levelBudget - 1;
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParams->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    usint sizeQ         = paramsQ.size();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
+    const usint sizeP   = paramsP.size();
 
     std::vector<NativeInteger> moduli(sizeQ + sizeP);
     std::vector<NativeInteger> roots(sizeQ + sizeP);
@@ -1203,20 +1203,22 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
         auto coeff  = CoeffEncodingCollapse(A, rotGroup, levelBudget, false);
         auto coeffi = CoeffEncodingCollapse(A, rotGroup, levelBudget, true);
 
-        for (int32_t s = levelBudget - 1; s > stop; s--) {
-            for (int32_t i = 0; i < b; i++) {
+        for (int32_t s = levelBudget - 1; s > stop; --s) {
+            bool doScaling = (flagRem == 0) && (s == stop + 1);
+            for (int32_t i = 0; i < b; ++i) {
+                uint32_t idx   = g * i;
+                int32_t rotIdx = -idx * (1 << ((s - flagRem) * layersCollapse + remCollapse));
 #if !defined(__MINGW32__) && !defined(__MINGW64__)
     #pragma omp parallel for
 #endif
-                for (int32_t j = 0; j < g; j++) {
-                    if (g * i + j != int32_t(numRotations)) {
-                        uint32_t rot =
-                            ReduceRotation(-g * i * (1 << ((s - flagRem) * layersCollapse + remCollapse)), M / 4);
+                for (int32_t j = idx; j < int32_t(idx + g); ++j) {
+                    if (j != numRotations) {
+                        uint32_t rot = ReduceRotation(rotIdx, M / 4);
                         // concatenate the coefficients horizontally on their third dimension, which corresponds to the # of slots
-                        auto clearTemp  = coeff[s][g * i + j];
-                        auto clearTempi = coeffi[s][g * i + j];
+                        auto clearTemp         = coeff[s][j];
+                        const auto& clearTempi = coeffi[s][j];
                         clearTemp.insert(clearTemp.end(), clearTempi.begin(), clearTempi.end());
-                        if ((flagRem == 0) && (s == stop + 1)) {
+                        if (doScaling) {
                             // do the scaling only at the last set of coefficients
                             for (uint32_t k = 0; k < clearTemp.size(); k++) {
                                 clearTemp[k] *= scale;
@@ -1224,7 +1226,7 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
                         }
 
                         auto rotateTemp = Rotate(clearTemp, rot);
-                        result[s][g * i + j] =
+                        result[s][j] =
                             MakeAuxPlaintext(cc, paramsVector[s - stop], rotateTemp, 1, level0 - s, rotateTemp.size());
                     }
                 }
@@ -1232,21 +1234,22 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalCoeffsToSlotsPrecompute
         }
 
         if (flagRem) {
-            for (int32_t i = 0; i < bRem; i++) {
+            for (int32_t i = 0; i < bRem; ++i) {
+                uint32_t idx = gRem * i;
 #pragma omp parallel for
-                for (int32_t j = 0; j < gRem; j++) {
-                    if (gRem * i + j != int32_t(numRotationsRem)) {
-                        uint32_t rot = ReduceRotation(-gRem * i, M / 4);
+                for (int32_t j = idx; j < int32_t(idx + gRem); ++j) {
+                    if (j != numRotationsRem) {
+                        uint32_t rot = ReduceRotation(-idx, M / 4);
                         // concatenate the coefficients on their third dimension, which corresponds to the # of slots
-                        auto clearTemp  = coeff[stop][gRem * i + j];
-                        auto clearTempi = coeffi[stop][gRem * i + j];
+                        auto clearTemp         = coeff[stop][j];
+                        const auto& clearTempi = coeffi[stop][j];
                         clearTemp.insert(clearTemp.end(), clearTempi.begin(), clearTempi.end());
-                        for (uint32_t k = 0; k < clearTemp.size(); k++) {
+                        for (size_t k = 0; k < clearTemp.size(); ++k) {
                             clearTemp[k] *= scale;
                         }
 
                         auto rotateTemp = Rotate(clearTemp, rot);
-                        result[stop][gRem * i + j] =
+                        result[stop][j] =
                             MakeAuxPlaintext(cc, paramsVector[0], rotateTemp, 1, level0, rotateTemp.size());
                     }
                 }
@@ -1309,10 +1312,10 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
         elementParams.PopLastParam();
     }
 
-    auto paramsQ = elementParams.GetParams();
-    usint sizeQ  = paramsQ.size();
-    auto paramsP = cryptoParams->GetParamsP()->GetParams();
-    usint sizeP  = paramsP.size();
+    const auto& paramsQ = elementParams.GetParams();
+    usint sizeQ         = paramsQ.size();
+    const auto& paramsP = cryptoParams->GetParamsP()->GetParams();
+    const usint sizeP   = paramsP.size();
 
     std::vector<NativeInteger> moduli(sizeQ + sizeP);
     std::vector<NativeInteger> roots(sizeQ + sizeP);
@@ -1396,8 +1399,8 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
                     if (j != numRotations) {
                         uint32_t rot = ReduceRotation(-idx, M / 4);
                         // concatenate the coefficients horizontally on their third dimension, which corresponds to the # of slots
-                        auto clearTemp  = coeff[s][j];
-                        auto clearTempi = coeffi[s][j];
+                        auto clearTemp         = coeff[s][j];
+                        const auto& clearTempi = coeffi[s][j];
                         clearTemp.insert(clearTemp.end(), clearTempi.begin(), clearTempi.end());
                         if ((flagRem == 0) && (s == levelBudget - flagRem - 1)) {
                             // do the scaling only at the last set of coefficients
@@ -1423,8 +1426,8 @@ std::vector<std::vector<ConstPlaintext>> FHECKKSRNS::EvalSlotsToCoeffsPrecompute
                     if (j != numRotationsRem) {
                         uint32_t rot = ReduceRotation(-idx, M / 4);
                         // concatenate the coefficients horizontally on their third dimension, which corresponds to the # of slots
-                        auto clearTemp  = coeff[s][j];
-                        auto clearTempi = coeffi[s][j];
+                        auto clearTemp         = coeff[s][j];
+                        const auto& clearTempi = coeffi[s][j];
                         clearTemp.insert(clearTemp.end(), clearTempi.begin(), clearTempi.end());
                         for (size_t k = 0; k < clearTemp.size(); ++k) {
                             clearTemp[k] *= scale;
@@ -1487,10 +1490,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlai
         }
 
         if (j == 0) {
-            first         = cc->KeySwitchDownFirstElement(inner);
-            auto elements = inner->GetElements();
+            first          = cc->KeySwitchDownFirstElement(inner);
+            auto& elements = inner->GetElements();
             elements[0].SetValuesToZero();
-            inner->SetElements(elements);
             result = inner;
         }
         else {
@@ -1507,10 +1509,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalLinearTransform(const std::vector<ConstPlai
         }
     }
 
-    result        = cc->KeySwitchDown(result);
-    auto elements = result->GetElements();
+    result         = cc->KeySwitchDown(result);
+    auto& elements = result->GetElements();
     elements[0] += first;
-    result->SetElements(elements);
 
     return result;
 }
@@ -1618,10 +1619,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
             }
 
             if (i == 0) {
-                first         = cc->KeySwitchDownFirstElement(inner);
-                auto elements = inner->GetElements();
+                first          = cc->KeySwitchDownFirstElement(inner);
+                auto& elements = inner->GetElements();
                 elements[0].SetValuesToZero();
-                inner->SetElements(elements);
                 outer = inner;
             }
             else {
@@ -1637,9 +1637,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
                 }
                 else {
                     first += cc->KeySwitchDownFirstElement(inner);
-                    auto elements = inner->GetElements();
+                    auto& elements = inner->GetElements();
                     elements[0].SetValuesToZero();
-                    inner->SetElements(elements);
                     EvalAddExtInPlace(outer, inner);
                 }
             }
@@ -1680,10 +1679,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
             }
 
             if (i == 0) {
-                first         = cc->KeySwitchDownFirstElement(inner);
-                auto elements = inner->GetElements();
+                first          = cc->KeySwitchDownFirstElement(inner);
+                auto& elements = inner->GetElements();
                 elements[0].SetValuesToZero();
-                inner->SetElements(elements);
                 outer = inner;
             }
             else {
@@ -1699,9 +1697,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalCoeffsToSlots(const std::vector<std::vector
                 }
                 else {
                     first += cc->KeySwitchDownFirstElement(inner);
-                    auto elements = inner->GetElements();
+                    auto& elements = inner->GetElements();
                     elements[0].SetValuesToZero();
-                    inner->SetElements(elements);
                     EvalAddExtInPlace(outer, inner);
                 }
             }
@@ -1825,10 +1822,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
             }
 
             if (i == 0) {
-                first         = cc->KeySwitchDownFirstElement(inner);
-                auto elements = inner->GetElements();
+                first          = cc->KeySwitchDownFirstElement(inner);
+                auto& elements = inner->GetElements();
                 elements[0].SetValuesToZero();
-                inner->SetElements(elements);
                 outer = inner;
             }
             else {
@@ -1844,9 +1840,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
                 }
                 else {
                     first += cc->KeySwitchDownFirstElement(inner);
-                    auto elements = inner->GetElements();
+                    auto& elements = inner->GetElements();
                     elements[0].SetValuesToZero();
-                    inner->SetElements(elements);
                     EvalAddExtInPlace(outer, inner);
                 }
             }
@@ -1887,10 +1882,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
             }
 
             if (i == 0) {
-                first         = cc->KeySwitchDownFirstElement(inner);
-                auto elements = inner->GetElements();
+                first          = cc->KeySwitchDownFirstElement(inner);
+                auto& elements = inner->GetElements();
                 elements[0].SetValuesToZero();
-                inner->SetElements(elements);
                 outer = inner;
             }
             else {
@@ -1906,9 +1900,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
                 }
                 else {
                     first += cc->KeySwitchDownFirstElement(inner);
-                    auto elements = inner->GetElements();
+                    auto& elements = inner->GetElements();
                     elements[0].SetValuesToZero();
-                    inner->SetElements(elements);
                     EvalAddExtInPlace(outer, inner);
                 }
             }
