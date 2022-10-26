@@ -68,6 +68,10 @@ namespace lbcrypto {
         SET_TO_SCHEME_DEFAULT(SCHEME, multiHopModSize);         \
         SET_TO_SCHEME_DEFAULT(SCHEME, PREMode);                 \
         SET_TO_SCHEME_DEFAULT(SCHEME, multipartyMode);          \
+        SET_TO_SCHEME_DEFAULT(SCHEME, executionMode);           \
+        SET_TO_SCHEME_DEFAULT(SCHEME, decryptionNoiseMode);     \
+        SET_TO_SCHEME_DEFAULT(SCHEME, noiseEstimate);           \
+        SET_TO_SCHEME_DEFAULT(SCHEME, desiredPrecision);        \
     }
 void Params::SetToDefaults(SCHEME scheme) {
     switch (scheme) {
@@ -110,7 +114,11 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; multiplicationTechnique: " << obj.multiplicationTechnique
         << "; multiHopModSize: " << obj.multiHopModSize
         << "; PREMode: " << obj.PREMode
-        << "; multipartyMode: " << obj.multipartyMode;
+        << "; multipartyMode: " << obj.multipartyMode
+        << "; executionMode: " << obj.executionMode
+        << "; decryptionNoiseMode: " << obj.decryptionNoiseMode
+        << "; noiseEstimate: " << obj.noiseEstimate
+        << "; desiredPrecision: " << obj.desiredPrecision;
 
     return os;
 }

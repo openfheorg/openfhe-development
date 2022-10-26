@@ -92,8 +92,25 @@ class Params {
     // PRE security mode
     ProxyReEncryptionMode PREMode;
 
-    // Multiparty security mode
+    // Multiparty security mode in BFV/BGV
+    // NOISE_FLOODING_MULTIPARTY is more secure than FIXED_NOISE_MULTIPARTY.
     MultipartyMode multipartyMode;
+
+    // Execution mode in CKKS
+    // In EXEC_NOISE_ESTIMATION mode, we estimate the noise we need to add to the actual computation to guarantee good security.
+    // In EXEC_EVALUATION mode, we input our noise estimate and perform the desired secure encrypted computation.
+    ExecutionMode executionMode;
+
+    // Decryption noise mode in CKKS
+    // NOISE_FLOODING_DECRYPT is more secure than FIXED_NOISE_DECRYPT, but it requires executing all computations twice.
+    DecryptionNoiseMode decryptionNoiseMode;
+
+    // Noise estimate in CKKS for NOISE_FLOODING_DECRYPT mode.
+    // This estimate is obtained from running the computation in EXEC_NOISE_ESTIMATION mode.
+    double noiseEstimate;
+
+    // Desired precision for 128-bit CKKS. We use this value in NOISE_FLOODING_DECRYPT mode to determine the scaling factor.
+    double desiredPrecision;
 
     // The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
@@ -181,6 +198,18 @@ public:
     MultipartyMode GetMultipartyMode() const {
         return multipartyMode;
     }
+    ExecutionMode GetExecutionMode() const {
+        return executionMode;
+    }
+    DecryptionNoiseMode GetDecryptionNoiseMode() const {
+        return decryptionNoiseMode;
+    }
+    double GetNoiseEstimate() const {
+        return noiseEstimate;
+    }
+    double GetDesiredPrecision() const {
+        return desiredPrecision;
+    }
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
     }
@@ -245,6 +274,18 @@ public:
     }
     void SetMultipartyMode(MultipartyMode multipartyMode0) {
         multipartyMode = multipartyMode0;
+    }
+    void SetExecutionMode(ExecutionMode executionMode0) {
+        executionMode = executionMode0;
+    }
+    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) {
+        decryptionNoiseMode = decryptionNoiseMode0;
+    }
+    void SetNoiseEstimate(double noiseEstimate0) {
+        noiseEstimate = noiseEstimate0;
+    }
+    void SetDesiredPrecision(double desiredPrecision0) {
+        desiredPrecision = desiredPrecision0;
     }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;

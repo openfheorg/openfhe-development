@@ -72,6 +72,10 @@ constexpr MultiplicationTechnique multiplicationTechnique = HPS;
 constexpr usint multiHopModSize                           = 0;
 constexpr ProxyReEncryptionMode PREMode                   = INDCPA;
 constexpr MultipartyMode multipartyMode                   = FIXED_NOISE_MULTIPARTY;
+constexpr ExecutionMode executionMode                     = EXEC_EVALUATION;
+constexpr DecryptionNoiseMode decryptionNoiseMode         = FIXED_NOISE_DECRYPT;
+constexpr double noiseEstimate                            = 0;
+constexpr double desiredPrecision                         = 0;
 };  // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {
@@ -105,6 +109,10 @@ constexpr MultiplicationTechnique multiplicationTechnique = HPSPOVERQLEVELED;
 constexpr usint multiHopModSize                           = 0;
 constexpr ProxyReEncryptionMode PREMode                   = INDCPA;
 constexpr MultipartyMode multipartyMode                   = FIXED_NOISE_MULTIPARTY;
+constexpr ExecutionMode executionMode                     = EXEC_EVALUATION;
+constexpr DecryptionNoiseMode decryptionNoiseMode         = FIXED_NOISE_DECRYPT;
+constexpr double noiseEstimate                            = 0;
+constexpr double desiredPrecision                         = 0;
 };  // namespace BFVRNS_SCHEME_DEFAULTS
 
 namespace BGVRNS_SCHEME_DEFAULTS {
@@ -130,6 +138,10 @@ constexpr MultiplicationTechnique multiplicationTechnique = HPS;
 constexpr usint multiHopModSize                           = 0;
 constexpr ProxyReEncryptionMode PREMode                   = INDCPA;
 constexpr MultipartyMode multipartyMode                   = FIXED_NOISE_MULTIPARTY;
+constexpr ExecutionMode executionMode                     = EXEC_EVALUATION;
+constexpr DecryptionNoiseMode decryptionNoiseMode         = FIXED_NOISE_DECRYPT;
+constexpr double noiseEstimate                            = 0;
+constexpr double desiredPrecision                         = 0;
 };  // namespace BGVRNS_SCHEME_DEFAULTS
 
 //====================================================================================================================

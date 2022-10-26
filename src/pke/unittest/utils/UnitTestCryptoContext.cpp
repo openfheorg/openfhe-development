@@ -100,6 +100,9 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.multipartyMode)) {
         parameters.SetMultipartyMode(static_cast<MultipartyMode>(std::round(params.multipartyMode)));
     }
+    if (!isDefaultValue(params.decryptionNoiseMode)) {
+        parameters.SetDecryptionNoiseMode(static_cast<DecryptionNoiseMode>(std::round(params.decryptionNoiseMode)));
+    }
 }
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
