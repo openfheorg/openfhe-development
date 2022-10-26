@@ -63,6 +63,10 @@ void RunBGVrnsAdditive() {
     CCParams<CryptoContextBGVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
 
+    // NOISE_FLOODING_MULTIPARTY adds extra noise to the ciphertext before decrypting
+    // and is most secure mode of threshold FHE for BFV and BGV.
+    parameters.SetMultipartyMode(NOISE_FLOODING_MULTIPARTY);
+
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     // Enable features that you wish to use
     cc->Enable(PKE);
@@ -200,6 +204,9 @@ void RunBFVrns() {
     parameters.SetPlaintextModulus(65537);
     parameters.SetBatchSize(batchSize);
     parameters.SetMultiplicativeDepth(2);
+    // NOISE_FLOODING_MULTIPARTY adds extra noise to the ciphertext before decrypting
+    // and is most secure mode of threshold FHE for BFV and BGV.
+    parameters.SetMultipartyMode(NOISE_FLOODING_MULTIPARTY);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     // enable features that you wish to use
