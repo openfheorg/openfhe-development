@@ -74,11 +74,12 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
             std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliAllButFirst, rootsAllButFirst);
         DCRTPoly e(dug, paramsAllButFirst, Format::EVALUATION);
 
-        e.ExpandCRTBasisReverseOrder(
-            params, paramsFirst, cryptoParams->GetMultipartyQHatInvModq(sizeQl - 2),
-            cryptoParams->GetMultipartyQHatInvModqPrecon(sizeQl - 2), cryptoParams->GetMultipartyQHatModq0(sizeQl - 2),
-            cryptoParams->GetMultipartyAlphaQModq0(sizeQl - 2), cryptoParams->GetMultipartyModq0BarrettMu(),
-            cryptoParams->GetMultipartyQInv(), Format::EVALUATION);
+        e.ExpandCRTBasisReverseOrder(params, paramsFirst, cryptoParams->GetMultipartyQHatInvModqAtIndex(sizeQl - 2),
+                                     cryptoParams->GetMultipartyQHatInvModqPreconAtIndex(sizeQl - 2),
+                                     cryptoParams->GetMultipartyQHatModq0AtIndex(sizeQl - 2),
+                                     cryptoParams->GetMultipartyAlphaQModq0AtIndex(sizeQl - 2),
+                                     cryptoParams->GetMultipartyModq0BarrettMu(), cryptoParams->GetMultipartyQInv(),
+                                     Format::EVALUATION);
 
         noise = e;
     }
@@ -136,11 +137,12 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
         std::vector<NativeInteger> moduliFirst = {params->GetParams()[0]->GetModulus()};
         std::vector<NativeInteger> rootsFirst  = {params->GetParams()[0]->GetRootOfUnity()};
         auto paramsFirst = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliFirst, rootsFirst);
-        e.ExpandCRTBasisReverseOrder(
-            params, paramsFirst, cryptoParams->GetMultipartyQHatInvModq(sizeQl - 2),
-            cryptoParams->GetMultipartyQHatInvModqPrecon(sizeQl - 2), cryptoParams->GetMultipartyQHatModq0(sizeQl - 2),
-            cryptoParams->GetMultipartyAlphaQModq0(sizeQl - 2), cryptoParams->GetMultipartyModq0BarrettMu(),
-            cryptoParams->GetMultipartyQInv(), Format::EVALUATION);
+        e.ExpandCRTBasisReverseOrder(params, paramsFirst, cryptoParams->GetMultipartyQHatInvModqAtIndex(sizeQl - 2),
+                                     cryptoParams->GetMultipartyQHatInvModqPreconAtIndex(sizeQl - 2),
+                                     cryptoParams->GetMultipartyQHatModq0AtIndex(sizeQl - 2),
+                                     cryptoParams->GetMultipartyAlphaQModq0AtIndex(sizeQl - 2),
+                                     cryptoParams->GetMultipartyModq0BarrettMu(), cryptoParams->GetMultipartyQInv(),
+                                     Format::EVALUATION);
 
         noise = e;
     }

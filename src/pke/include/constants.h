@@ -33,6 +33,8 @@
 #define _CONSTANTS_H_
 
 #include <iosfwd>
+
+// TODO: Review whether we need to include hal.h.
 #include "math/hal.h"
 
 /**
@@ -79,7 +81,7 @@ enum ProxyReEncryptionMode {
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
 
 enum MultipartyMode {
-    NO_MULTIPARTY = 0,
+    INVALID_MULTIPARTY_MODE = 0,
     FIXED_NOISE_MULTIPARTY,
     NOISE_FLOODING_MULTIPARTY,
 };

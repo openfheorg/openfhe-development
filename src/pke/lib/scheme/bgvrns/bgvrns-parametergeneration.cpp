@@ -440,13 +440,24 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     if (multipartyMode == NOISE_FLOODING_MULTIPARTY) {
         NativeInteger extraModulus = FirstPrime<NativeInteger>(NOISE_FLOODING::MULTIPARTY_MOD_SIZE, modulusOrder);
         extraModulus               = PreviousPrime<NativeInteger>(extraModulus, modulusOrder);
+        std::vector<NativeInteger> extraModuli(NOISE_FLOODING::NUM_MODULI_MULTIPARTY);
+        std::vector<NativeInteger> extraRoots(NOISE_FLOODING::NUM_MODULI_MULTIPARTY);
+
         for (size_t i = 0; i < NOISE_FLOODING::NUM_MODULI_MULTIPARTY; i++) {
-            while (std::count(moduliQ.begin(), moduliQ.end(), extraModulus)) {
+            while (std::find(moduliQ.begin(), moduliQ.end(), extraModulus) != moduliQ.end() ||
+                   std::find(extraModuli.begin(), extraModuli.end(), extraModulus) != extraModuli.end()) {
                 extraModulus = PreviousPrime<NativeInteger>(extraModulus, modulusOrder);
             }
-            moduliQ.insert(moduliQ.begin() + i + 1, extraModulus);
-            rootsQ.insert(rootsQ.begin() + i + 1, RootOfUnity<NativeInteger>(cyclOrder, extraModulus));
+            extraModuli[i] = extraModulus;
+            extraRoots[i]  = RootOfUnity<NativeInteger>(cyclOrder, extraModulus);
         }
+        moduliQ.reserve(moduliQ.size() + extraModuli.size());
+        rootsQ.reserve(rootsQ.size() + extraRoots.size());
+        // We insert the extraModuli after the first modulus to improve security in multiparty decryption.
+        moduliQ.insert(moduliQ.begin() + 1, std::make_move_iterator(extraModuli.begin()),
+                       std::make_move_iterator(extraModuli.end()));
+        rootsQ.insert(rootsQ.begin() + 1, std::make_move_iterator(extraRoots.begin()),
+                      std::make_move_iterator(extraRoots.end()));
     }
     auto paramsDCRT = std::make_shared<ILDCRTParams<BigInteger>>(cyclOrder, moduliQ, rootsQ);
 
