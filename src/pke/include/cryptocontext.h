@@ -50,6 +50,8 @@
 #include "cryptocontextfactory.h"
 
 #include "utils/serial.h"
+#include "../../binfhe/include/binfhecontext.h"
+// #include "../../binfhe/lib/binfhecontext.cpp"
 
 namespace lbcrypto {
 
@@ -2686,8 +2688,89 @@ public:
         return 1;
     }
 
+    //------------------------------------------------------------------------------
+    // SCHEME SWITCHING
+    //------------------------------------------------------------------------------
+    std::vector<std::vector<std::complex<double>>> EvalLTPrecomputeNew(
+    const std::vector<std::vector<std::complex<double>>>& A, const std::vector<std::vector<std::complex<double>>>& B,
+    uint32_t dim1, uint32_t orientation, double scale, uint32_t L);
+
+    Ciphertext<Element> EvalLTWithPrecompNew(
+                                                        const std::vector<std::vector<std::complex<double>>>& A,
+                                                                     ConstCiphertext<Element> ct, uint32_t dim1, uint32_t L);
+
+    std::vector<std::vector<std::complex<double>>> EvalLTPrecomputeRectNew(
+    const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1, double scale, uint32_t L) const;
+
+    Ciphertext<Element> EvalLTRectNew(
+                                                const std::vector<std::vector<std::complex<double>>>& A,
+                                                          ConstCiphertext<Element> ct, uint32_t dim1, double scale, uint32_t L);
+
+    Ciphertext<DCRTPoly> getPaddingCT() const {return m_CTforPadding;};
+
+    void SetbridgingUpperbound(uint32_t bridgingUpperbound) {m_bridgingUpperbound = bridgingUpperbound;};
+    uint32_t GetbridgingUpperbound() const {return m_bridgingUpperbound;};
+    bool GetInnerCC() {return m_innerCC;};
+
+    /**
+     * Sets all parameters for Bridge
+     *
+     * @param dynamic whether to use dynamic mode for FHEW
+     * @param logQ preicions of large-precision sign evaluation based on FHEW
+     * @param sl security level
+     * @param bridgingUpperbound the upper bound for the number of slots to compare (or getting argmin/argmax)
+     * @param init_size initial mult depth
+     * @param dcrtBits CKKS precision
+     * @return a pair of keys, one for FHEW, one for the inner CKKS cryptocontext
+     */
+    std::pair<KeyPair<DCRTPoly>, LWEPrivateKey> 
+    EvalBridgeSetup(bool dynamic = false, uint32_t logQ = 29, SecurityLevel sl = HEStd_128_classic, 
+                        uint32_t bridgingUpperbound = 1024, uint64_t init_size = 30, uint64_t dcrtBits = 50);
+
+    /**
+     * Generates all automorphism and switching keys for Bridged evaluations.
+     * 
+     * @param keys keys from EvalBridgeSetup
+     * @param thiskey keys for this cryptocontext
+     */
+    void EvalBridgeKeyGen(const std::pair<KeyPair<DCRTPoly>, LWEPrivateKey>& keys,
+                          const KeyPair<DCRTPoly>& thiskey);
+    
+    /**
+     * Evaluate argmin of the input ciphertext
+     * 
+     * @param input a ciphertext
+     * @param w number of rows
+     * @param k number of columns
+     * @param normalizing_coeff the scaling (down) factor for the input
+     * @param zero_out whether need to zero out the input ciphertexts after the kth slots
+     * 
+     * @return a ciphertext with the first w*k_padded_to_the_nearest_power_of_two slots being the oneHot encoding of the argmin result
+     */
+    Ciphertext<DCRTPoly> EvalArgMinOneHot(const Ciphertext<DCRTPoly>& input, uint64_t w, uint64_t k,
+                                          double normalizing_coeff = 0, bool zero_out = false);
+
+
 protected:
     std::vector<usint> m_autoIdxList;
+
+private:
+    Ciphertext<DCRTPoly> m_CTforPadding;
+    // For Bridging
+    CryptoContext<DCRTPoly> m_ccCKKSinside;
+    BinFHEContext m_ccLWE;
+    EvalKey<DCRTPoly> m_CKKStoFHEWswkOutside;
+    Ciphertext<DCRTPoly> m_FHEWtoCKKSswkOutside;
+    EvalKey<DCRTPoly> m_CKKStoFHEWswkInside;
+    Ciphertext<DCRTPoly> m_FHEWtoCKKSswkInside;
+    uint64_t m_modulus_to;
+    uint64_t m_init_size_inner;
+    uint64_t m_dcrtBits;
+    uint32_t m_bridgingUpperbound;
+    bool m_innerCC;
+    // For Bridging optimization
+    CryptoContext<DCRTPoly> m_ccCKKSlower;
+    uint32_t m_blockDimension; // XXX!!!
 };
 
 }  // namespace lbcrypto

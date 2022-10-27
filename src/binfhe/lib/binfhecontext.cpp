@@ -296,6 +296,12 @@ LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext ct1, const NativeIntege
     return m_RingGSWscheme->EvalSign(params, m_BTKey_map, ct1, m_LWEscheme, beta, bigger_q);
 }
 
+LWECiphertext BinFHEContext::EvalSignSchemeSwitching(ConstLWECiphertext ct1, const NativeInteger bigger_q) {
+    auto params        = std::make_shared<RingGSWCryptoParams>(*m_params);
+    NativeInteger beta = GetBeta();
+    return m_RingGSWscheme->EvalSignSchemeSwitching(params, m_BTKey_map, ct1, m_LWEscheme, beta, bigger_q);
+}
+
 std::vector<LWECiphertext> BinFHEContext::EvalDecomp(ConstLWECiphertext ct1, const NativeInteger bigger_q) {
     NativeInteger beta = GetBeta();
     return m_RingGSWscheme->EvalDecomp(m_params, m_BTKey_map, ct1, m_LWEscheme, beta, bigger_q);

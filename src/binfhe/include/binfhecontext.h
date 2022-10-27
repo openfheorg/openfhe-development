@@ -326,6 +326,14 @@ public:
     LWECiphertext EvalSign(ConstLWECiphertext ct1, const NativeInteger bigger_q = 0);
 
     /**
+   * Evaluate a sign function over large precisions for scheme switching
+   *
+   * @param ct1 ciphertext to be bootstrapped
+   * @return a shared pointer to the resulting ciphertext
+   */
+    LWECiphertext EvalSignSchemeSwitching(ConstLWECiphertext ct1, const NativeInteger bigger_q = 0);
+
+    /**
    * Evaluate ciphertext decomposition
    *
    * @param ct1 ciphertext to be bootstrapped

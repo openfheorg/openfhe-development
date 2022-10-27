@@ -700,7 +700,7 @@ template <typename Func>
 std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::Bootstrap(
     const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey& EK,
     const std::shared_ptr<const LWECiphertextImpl> ct1, const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
-    const Func f, const NativeInteger bigger_q) const {
+    const Func f, const NativeInteger bigger_q, bool forschemeswitching) const {
     NativeInteger q     = params->GetLWEParams()->Getq();
     NativeInteger Q     = params->GetLWEParams()->GetQ();
     uint32_t n          = params->GetLWEParams()->Getn();
@@ -731,9 +731,11 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::Bootstrap(
 
     // Modulus switching to a middle step Q'
     auto eQN = LWEscheme->ModSwitch(params->GetLWEParams()->GetqKS(), std::make_shared<LWECiphertextImpl>(aNew, bNew));
+    if(forschemeswitching) {params->SetQ(bigger_q);}
 
     // Key switching
     const std::shared_ptr<const LWECiphertextImpl> eQ = LWEscheme->KeySwitch(params->GetLWEParams(), EK.KSkey, eQN);
+    if(forschemeswitching) {params->SetQ(q);}
 
     // Modulus switching
     return LWEscheme->ModSwitch(bigger_q, eQ);
@@ -977,6 +979,88 @@ std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalSign(
 
     params->Change_BaseG(curBase);
     return res;
+}
+
+std::shared_ptr<LWECiphertextImpl> RingGSWAccumulatorScheme::EvalSignSchemeSwitching(
+    const std::shared_ptr<RingGSWCryptoParams> paramsinput, 
+    std::map<uint32_t,RingGSWEvalKey> &EKs,
+    const std::shared_ptr<const LWECiphertextImpl> ct1,
+    const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
+    const NativeInteger beta,
+    const NativeInteger bigger_q) const {
+  
+  auto params = std::make_shared<RingGSWCryptoParams>(paramsinput->GetLWEParams(),
+                                                          paramsinput->GetBaseG(),
+                                                          paramsinput->GetBaseR(),
+                                                          paramsinput->GetMethod(), 
+                                                          true);
+
+
+  const auto curBase = params->GetBaseG();
+  RingGSWEvalKey curEK = EKs[curBase];
+
+  auto theBigger_q = bigger_q;
+  NativeInteger q = params->GetLWEParams()->Getq();
+  uint32_t n = params->GetLWEParams()->Getn();
+
+  if(theBigger_q <= q){ 
+    std::string errMsg =
+          "ERROR: EvalSign is only for large precision. For small pricision, please directly use bootstrapping.";
+      OPENFHE_THROW(not_implemented_error, errMsg);
+      return nullptr;
+  }
+
+  NativeVector a = ct1->GetA();
+  NativeInteger b = ct1->GetB();
+  auto ct = std::make_shared<LWECiphertextImpl>(std::move(a), std::move(b)); 
+  
+  while(theBigger_q > q){
+    ct = EvalFloor(params, curEK, ct, LWEscheme, beta, theBigger_q);
+    auto temp = theBigger_q;
+    theBigger_q = theBigger_q/q * 2*beta;
+
+    if(EKs.size() == 3){
+      if(ceil(log2(theBigger_q.ConvertToInt())) <= 17){
+        params->Change_BaseG(1<<27);
+        curEK = EKs[1<<27];
+      } else if (ceil(log2(theBigger_q.ConvertToInt())) <= 26) {
+        curEK = EKs[1<<18];
+        params->Change_BaseG(1<<18);
+      }
+    }
+    
+
+    // round Q to 2betaQ/q
+    NativeVector a_round(n, theBigger_q);
+    for (uint32_t i = 0; i < n; ++i) a_round[i] = RoundqQ(ct->GetA()[i], theBigger_q, temp);
+    NativeInteger b_round = RoundqQ(ct->GetB(), theBigger_q, temp);
+    ct = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a_round, b_round));
+  }
+
+  auto a1 = ct->GetA();
+  auto b1 = ct->GetB();
+  b1 = b1.ModAddFast(beta, theBigger_q);
+
+  auto ct2 =
+      std::make_shared<LWECiphertextImpl>(std::move(a1), std::move(b1));
+  
+  auto f3 = [](NativeInteger m, NativeInteger q, NativeInteger Q) -> NativeInteger{
+    if(m < q/2)
+      return Q - Q/4;
+    else
+      return Q/4;
+  };
+
+  params->SetQ(theBigger_q); // if the ended q is smaller than q, we need to change the param for the final boostrapping
+  std::shared_ptr<const LWECiphertextImpl> tmp;
+  tmp = Bootstrap(params, curEK, ct2, LWEscheme, f3, bigger_q, true); // this is 1/4q_small or -1/4q_small mod q
+
+  NativeVector a_round = tmp->GetA();
+  NativeInteger b_round = tmp->GetB();
+  auto res = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a_round, b_round));
+
+  params->Change_BaseG(curBase);
+  return res;
 }
 
 // Evaluate Ciphertext Decomposition

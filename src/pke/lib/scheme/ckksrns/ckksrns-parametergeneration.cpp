@@ -57,6 +57,12 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     EncryptionTechnique encTech      = cryptoParamsCKKSRNS->GetEncryptionTechnique();
     MultiplicationTechnique multTech = cryptoParamsCKKSRNS->GetMultiplicationTechnique();
 
+    usint numPrimesAux = numPrimes;
+    if(numPrimes > 10000){
+      numPrimesAux -= 10000;
+      numPrimes = 3;
+    }
+
     usint extraModSize = 0;
     if (scalTech == FLEXIBLEAUTOEXT) {
         // TODO: Allow the user to specify this?
@@ -107,20 +113,20 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
 
     usint dcrtBits = scalingModSize;
 
-    uint32_t vecSize = (extraModSize == 0) ? numPrimes : numPrimes + 1;
+    uint32_t vecSize = (extraModSize == 0) ? numPrimesAux : numPrimesAux + 1;
     std::vector<NativeInteger> moduliQ(vecSize);
     std::vector<NativeInteger> rootsQ(vecSize);
 
     NativeInteger q        = FirstPrime<NativeInteger>(dcrtBits, cyclOrder);
-    moduliQ[numPrimes - 1] = q;
-    rootsQ[numPrimes - 1]  = RootOfUnity(cyclOrder, moduliQ[numPrimes - 1]);
+    moduliQ[numPrimesAux - 1] = q;
+    rootsQ[numPrimesAux - 1]  = RootOfUnity(cyclOrder, moduliQ[numPrimesAux - 1]);
 
     NativeInteger qNext = q;
     NativeInteger qPrev = q;
-    if (numPrimes > 1) {
+    if (numPrimesAux > 1) {
         if (scalTech != FLEXIBLEAUTO && scalTech != FLEXIBLEAUTOEXT) {
             uint32_t cnt = 0;
-            for (usint i = numPrimes - 2; i >= 1; i--) {
+            for (usint i = numPrimesAux - 2; i >= 1; i--) {
                 if ((cnt % 2) == 0) {
                     qPrev = lbcrypto::PreviousPrime(qPrev, cyclOrder);
                     q     = qPrev;
@@ -145,9 +151,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
        * scale factor of level 0 as possible.
        */
 
-            double sf    = moduliQ[numPrimes - 1].ConvertToDouble();
+            double sf    = moduliQ[numPrimesAux - 1].ConvertToDouble();
             uint32_t cnt = 0;
-            for (usint i = numPrimes - 2; i >= 1; i--) {
+            for (usint i = numPrimesAux - 2; i >= 1; i--) {
                 sf = static_cast<double>(pow(sf, 2) / moduliQ[i + 1].ConvertToDouble());
                 if ((cnt % 2) == 0) {
                     NativeInteger sfInt = std::llround(sf);
@@ -158,7 +164,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
                     while (hasSameMod) {
                         hasSameMod = false;
                         qPrev      = lbcrypto::PreviousPrime(qPrev, cyclOrder);
-                        for (uint32_t j = i + 1; j < numPrimes; j++) {
+                        for (uint32_t j = i + 1; j < numPrimesAux; j++) {
                             if (qPrev == moduliQ[j]) {
                                 hasSameMod = true;
                             }
@@ -174,7 +180,7 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
                     while (hasSameMod) {
                         hasSameMod = false;
                         qNext      = lbcrypto::NextPrime(qNext, cyclOrder);
-                        for (uint32_t j = i + 1; j < numPrimes; j++) {
+                        for (uint32_t j = i + 1; j < numPrimesAux; j++) {
                             if (qNext == moduliQ[j]) {
                                 hasSameMod = true;
                             }
@@ -188,6 +194,8 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
             }
         }
     }
+    moduliQ.resize(numPrimes);
+    rootsQ.resize(numPrimes);
 
     if (firstModSize == dcrtBits) {  // this requires dcrtBits < 60
         moduliQ[0] = PreviousPrime<NativeInteger>(qPrev, cyclOrder);

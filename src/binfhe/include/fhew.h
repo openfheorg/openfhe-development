@@ -168,7 +168,7 @@ public:
                                                 const std::map<uint32_t, RingGSWEvalKey>& EKs,
                                                 const std::shared_ptr<const LWECiphertextImpl> ct1,
                                                 const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
-                                                const NativeInteger beta, const NativeInteger bigger_q) const;
+                                                const NativeInteger beta, const NativeInteger bigger_q) const;                                        
 
     /**
    * Evaluate a degit decomposition process over a large precision LWE ciphertext
@@ -187,6 +187,24 @@ public:
                                                                const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
                                                                const NativeInteger beta,
                                                                const NativeInteger bigger_q) const;
+    
+   // Auxiliary for scheme switching
+   /**
+   * Evaluate a sign function over large precision
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param &EK a shared pointer to the bootstrapping keys
+   * @param ct1 input ciphertext
+   * @param lwescheme a shared pointer to additive LWE scheme
+   * @param beta the error bound
+   * @param bigger_q the ciphertext modulus
+   * @return a shared pointer to the resulting ciphertext
+   */
+    std::shared_ptr<LWECiphertextImpl> EvalSignSchemeSwitching(const std::shared_ptr<RingGSWCryptoParams> paramsinput, 
+                                                std::map<uint32_t, RingGSWEvalKey>& EKs,
+                                                const std::shared_ptr<const LWECiphertextImpl> ct1,
+                                                const std::shared_ptr<LWEEncryptionScheme> LWEscheme,
+                                                const NativeInteger beta, const NativeInteger bigger_q) const;   
 
 private:
     /**
@@ -326,7 +344,7 @@ private:
                                                  const RingGSWEvalKey& EK,
                                                  const std::shared_ptr<const LWECiphertextImpl> ct1,
                                                  const std::shared_ptr<LWEEncryptionScheme> LWEscheme, const Func f,
-                                                 const NativeInteger bigger_q) const;
+                                                 const NativeInteger bigger_q, bool forschemeswitching = false) const;  
 };
 
 }  // namespace lbcrypto

@@ -253,6 +253,28 @@ public:
         return "FHECKKSRNS";
     }
 
+    //------------------------------------------------------------------------------
+    // SCHEME SWITCHING
+    //------------------------------------------------------------------------------
+    std::vector<std::vector<std::complex<double>>> EvalLTPrecomputeNew(const CryptoContextImpl<DCRTPoly>& cc,
+    const std::vector<std::vector<std::complex<double>>>& A, const std::vector<std::vector<std::complex<double>>>& B,
+    uint32_t dim1, uint32_t orientation, double scale, uint32_t L);
+
+    template <typename Element>
+    Ciphertext<Element> EvalLTWithPrecompNew(const CryptoContextImpl<DCRTPoly>& cc,
+                                                        const std::vector<std::vector<std::complex<double>>>& A,
+                                                                     ConstCiphertext<Element> ct, uint32_t dim1, uint32_t L);
+
+    std::vector<std::vector<std::complex<double>>> EvalLTPrecomputeRectNew(const CryptoContextImpl<DCRTPoly>& cc,
+    const std::vector<std::vector<std::complex<double>>>& A, uint32_t dim1, double scale, uint32_t L) const;
+
+    template <typename Element>
+    Ciphertext<Element> EvalLTRectNew(const CryptoContextImpl<DCRTPoly>& cc,
+                                                const std::vector<std::vector<std::complex<double>>>& A,
+                                                          ConstCiphertext<Element> ct, uint32_t dim1, double scale, uint32_t L);
+
+    int getPaddingCT() {return 0;};
+
 private:
     //------------------------------------------------------------------------------
     // Auxiliary Bootstrap Functions
