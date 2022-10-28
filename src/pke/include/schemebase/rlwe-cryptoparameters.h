@@ -97,7 +97,7 @@ public:
     CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams,
                          float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel, usint digitSize,
                          int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN, PlaintextModulus noiseScale = 1,
-                         ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = NO_MULTIPARTY)
+                         ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
         m_assuranceMeasure      = assuranceMeasure;
@@ -408,11 +408,7 @@ protected:
     ProxyReEncryptionMode m_PREMode = NOT_SET;
 
     // specifies the security mode used for multiparty decryption
-<<<<<<< HEAD
     MultipartyMode m_multipartyMode = FIXED_NOISE_MULTIPARTY;
-=======
-    MultipartyMode m_multipartyMode = NO_MULTIPARTY;
->>>>>>> Add MultipartyMode for security.
 };
 
 }  // namespace lbcrypto

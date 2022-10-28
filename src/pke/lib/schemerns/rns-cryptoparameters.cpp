@@ -365,21 +365,20 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         m_multipartyQHatModq0.resize(sizeQ - 1);
         // l will run from 0 to size-2, but modulusQ values
         // run from Q^(l-1) to Q^(0)
-        for (size_t l = 0; l < sizeQ - 1; l++) {
+        for (size_t l = 0, m = sizeQ - l - 2; l < sizeQ - 1; ++l, --m) {
             if (l > 0)
                 modulusQ = modulusQ / BigInteger(moduliQ[sizeQ - l]);
 
-            m_multipartyQHatInvModq[sizeQ - l - 2].resize(sizeQ - 1 - l);
-            m_multipartyQHatInvModqPrecon[sizeQ - l - 2].resize(sizeQ - 1 - l);
-            m_multipartyQHatModq0[sizeQ - l - 2].resize(1);
-            m_multipartyQHatModq0[sizeQ - l - 2][0].resize(sizeQ - 1 - l);
-            for (size_t i = 1; i < sizeQ - l; i++) {
-                BigInteger QHati                              = modulusQ / BigInteger(moduliQ[i]);
-                BigInteger QHatInvModqi                       = QHati.ModInverse(moduliQ[i]);
-                m_multipartyQHatInvModq[sizeQ - l - 2][i - 1] = QHatInvModqi.ConvertToInt();
-                m_multipartyQHatInvModqPrecon[sizeQ - l - 2][i - 1] =
-                    m_multipartyQHatInvModq[sizeQ - l - 2][i - 1].PrepModMulConst(moduliQ[i]);
-                m_multipartyQHatModq0[sizeQ - l - 2][0][i - 1] = QHati.Mod(moduliQ[0]);
+            m_multipartyQHatInvModq[m].resize(m + 1);
+            m_multipartyQHatInvModqPrecon[m].resize(m + 1);
+            m_multipartyQHatModq0[m].resize(1);
+            m_multipartyQHatModq0[m][0].resize(m + 1);
+            for (size_t i = 1; i < m + 2; i++) {
+                BigInteger QHati                        = modulusQ / BigInteger(moduliQ[i]);
+                BigInteger QHatInvModqi                 = QHati.ModInverse(moduliQ[i]);
+                m_multipartyQHatInvModq[m][i - 1]       = QHatInvModqi.ConvertToInt();
+                m_multipartyQHatInvModqPrecon[m][i - 1] = m_multipartyQHatInvModq[m][i - 1].PrepModMulConst(moduliQ[i]);
+                m_multipartyQHatModq0[m][0][i - 1]      = QHati.Mod(moduliQ[0]);
             }
         }
 

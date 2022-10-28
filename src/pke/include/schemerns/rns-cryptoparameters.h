@@ -99,7 +99,7 @@ protected:
                         usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                        MultipartyMode multipartyMode = NO_MULTIPARTY)
+                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
         : CryptoParametersRLWE<DCRTPoly>(params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
                                          distributionParameter, assuranceMeasure, securityLevel, digitSize,
                                          maxRelinSkDeg, secretKeyDist) {
@@ -115,7 +115,7 @@ protected:
                         SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                         ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
                         MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,
-                        MultipartyMode multipartyMode = NO_MULTIPARTY)
+                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist) {
         m_ksTechnique    = ksTech;
@@ -1261,7 +1261,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetMultipartyQHatInvModq(usint l = 0) const {
+    std::vector<NativeInteger> const& GetMultipartyQHatInvModqAtIndex(usint l) const {
         return m_multipartyQHatInvModq[l];
     }
 
@@ -1270,7 +1270,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<NativeInteger> const& GetMultipartyQHatInvModqPrecon(usint l = 0) const {
+    std::vector<NativeInteger> const& GetMultipartyQHatInvModqPreconAtIndex(usint l) const {
         return m_multipartyQHatInvModqPrecon[l];
     }
 
@@ -1279,7 +1279,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetMultipartyQHatModq0(usint l = 0) const {
+    std::vector<std::vector<NativeInteger>> const& GetMultipartyQHatModq0AtIndex(usint l) const {
         return m_multipartyQHatModq0[l];
     }
 
@@ -1288,7 +1288,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<std::vector<NativeInteger>> const& GetMultipartyAlphaQModq0(usint l = 0) const {
+    std::vector<std::vector<NativeInteger>> const& GetMultipartyAlphaQModq0AtIndex(usint l) const {
         return m_multipartyAlphaQModq0[l];
     }
 
