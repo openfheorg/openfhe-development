@@ -289,7 +289,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                 m_modComplPartqBarrettMu[l][j].resize(moduli.size());
                 for (size_t i = 0; i < moduli.size(); ++i) {
                     BigInteger mu = BarrettBase128Bit / BigInteger(moduli[i]);
-                    uint64_t val[2]{(mu % TwoPower64).ConvertToInt(), mu.RShift(64).ConvertToInt()};
+                    uint64_t val[2]{static_cast<uint64_t>((mu % TwoPower64).ConvertToInt()),
+                                    static_cast<uint64_t>(mu.RShift(64).ConvertToInt())};
                     memcpy(&m_modComplPartqBarrettMu[l][j][i], val, sizeof(DoubleNativeInt));
                 }
             }
@@ -380,12 +381,12 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         modulusQ = BigInteger(GetElementParams()->GetModulus()) / BigInteger(moduliQ[0]);
         m_multipartyAlphaQModq0.resize(sizeQ - 1);
-        for (usint l = sizeQ - 1; l > 0; l--) {
+        for (size_t l = sizeQ - 1; l > 0; --l) {
             if (l < sizeQ - 1)
                 modulusQ = modulusQ / BigInteger(moduliQ[l + 1]);
             m_multipartyAlphaQModq0[l - 1].resize(l + 1);
             NativeInteger QlModq0 = modulusQ.Mod(moduliQ[0]).ConvertToInt();
-            for (usint j = 0; j < l + 1; ++j) {
+            for (size_t j = 0; j < l + 1; ++j) {
                 m_multipartyAlphaQModq0[l - 1][j] = {QlModq0.ModMul(NativeInteger(j), moduliQ[0])};
             }
         }
@@ -395,9 +396,8 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
         const BigInteger TwoPower64("18446744073709551616");                            // 2^64
         m_multipartyModq0BarrettMu.resize(1);
         BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[0]);
-        uint64_t val[2];
-        val[0] = (mu % TwoPower64).ConvertToInt();
-        val[1] = mu.RShift(64).ConvertToInt();
+        uint64_t val[2]{static_cast<uint64_t>((mu % TwoPower64).ConvertToInt()),
+                        static_cast<uint64_t>(mu.RShift(64).ConvertToInt())};
         memcpy(&m_multipartyModq0BarrettMu[0], val, sizeof(DoubleNativeInt));
 
         // Stores \frac{1/q_i}

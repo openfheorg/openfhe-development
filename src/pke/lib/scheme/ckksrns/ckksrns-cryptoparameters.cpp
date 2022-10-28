@@ -151,7 +151,8 @@ void CryptoParametersCKKSRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Sca
         m_modqBarrettMu.resize(sizeQ);
         for (size_t i = 0; i < sizeQ; ++i) {
             BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[i]);
-            uint64_t val[2]{(mu % TwoPower64).ConvertToInt(), mu.RShift(64).ConvertToInt()};
+            uint64_t val[2]{static_cast<uint64_t>((mu % TwoPower64).ConvertToInt()),
+                            static_cast<uint64_t>(mu.RShift(64).ConvertToInt())};
             memcpy(&m_modqBarrettMu[i], val, sizeof(DoubleNativeInt));
         }
     }
