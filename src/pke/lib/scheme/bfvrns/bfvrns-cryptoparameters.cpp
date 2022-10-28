@@ -353,11 +353,11 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             m_alphaQlModr.resize(sizeQ);
             for (usint l = sizeQ; l > 0; l--) {
                 m_alphaQlModr[l - 1].resize(l + 1);
-                for (usint j = 0; j < sizeR; j++) {
-                    BigInteger rj(moduliR[j].ConvertToInt());
-                    NativeInteger QlModrj = Ql[l].Mod(rj).ConvertToInt();
+                for (usint i = 0; i < sizeR; i++) {
+                    BigInteger ri(moduliR[i].ConvertToInt());
+                    NativeInteger QlModri = Ql[l].Mod(ri).ConvertToInt();
                     for (usint j = 0; j < l + 1; ++j) {
-                        m_alphaQlModr[l - 1][j].push_back(QlModrj.ModMul(NativeInteger(j), rj));
+                        m_alphaQlModr[l - 1][j].push_back(QlModri.ModMul(NativeInteger(j), ri));
                     }
                 }
             }

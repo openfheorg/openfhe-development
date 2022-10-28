@@ -54,7 +54,8 @@ std::string UnitTestCCParams::toString() const {
        << "keySwitchCount [" << keySwitchCount << "], "
        << "multiplicationTechnique [" << multiplicationTechnique << "], "
        << "encryptionTechnique [" << encryptionTechnique << "], "
-       << "PREMode [" << PREMode << "], ";
+       << "PREMode [" << PREMode << "], "
+       << "multipartyMode [" << multipartyMode << "], ";
     return ss.str();
 }
 //===========================================================================================================

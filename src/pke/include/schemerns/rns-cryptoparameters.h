@@ -98,28 +98,32 @@ protected:
                         float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
                         usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
-                        EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS)
+                        EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
+                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
         : CryptoParametersRLWE<DCRTPoly>(params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
                                          distributionParameter, assuranceMeasure, securityLevel, digitSize,
                                          maxRelinSkDeg, secretKeyDist) {
-        m_ksTechnique   = ksTech;
-        m_scalTechnique = scalTech;
-        m_encTechnique  = encTech;
-        m_multTechnique = multTech;
+        m_ksTechnique    = ksTech;
+        m_scalTechnique  = scalTech;
+        m_encTechnique   = encTech;
+        m_multTechnique  = multTech;
+        m_multipartyMode = multipartyMode;
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
                         float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
                         SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                         ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
-                        MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA)
+                        MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,
+                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist) {
-        m_ksTechnique   = ksTech;
-        m_scalTechnique = scalTech;
-        m_encTechnique  = encTech;
-        m_multTechnique = multTech;
-        m_PREMode       = PREMode;
+        m_ksTechnique    = ksTech;
+        m_scalTechnique  = scalTech;
+        m_encTechnique   = encTech;
+        m_multTechnique  = multTech;
+        m_PREMode        = PREMode;
+        m_multipartyMode = multipartyMode;
     }
 
     virtual ~CryptoParametersRNS() {}
@@ -1244,12 +1248,66 @@ public:
     }
 
     /**
-   * Gets the NTL precomputions for [-(q_i)^{-1}]_{t*gamma}
+   * Gets the NTL precomputations for [-(q_i)^{-1}]_{t*gamma}
    *
    * @return the precomputed table
    */
     std::vector<NativeInteger> const& GetNegInvqModtgammaPrecon() const {
         return m_negInvqModtgammaPrecon;
+    }
+
+    /**
+   * Gets the precomputed table of [*(Q/q_i/q_0)^{-1}]_{q_i}
+   *
+   * @return the precomputed table
+   */
+    std::vector<NativeInteger> const& GetMultipartyQHatInvModqAtIndex(usint l) const {
+        return m_multipartyQHatInvModq[l];
+    }
+
+    /**
+   * Gets the NTL precomputations for [*(Q/q_i/q_0)^{-1}]_{q_i}
+   *
+   * @return the precomputed table
+   */
+    std::vector<NativeInteger> const& GetMultipartyQHatInvModqPreconAtIndex(usint l) const {
+        return m_multipartyQHatInvModqPrecon[l];
+    }
+
+    /**
+   * Gets the precomputed table of [Q/q_i/q_0]_{q_0}
+   *
+   * @return the precomputed table
+   */
+    std::vector<std::vector<NativeInteger>> const& GetMultipartyQHatModq0AtIndex(usint l) const {
+        return m_multipartyQHatModq0[l];
+    }
+
+    /**
+   * Gets the precomputed table of [\alpha*Q/q_0]_{q_0} for 0 <= alpha <= 1
+   *
+   * @return the precomputed table
+   */
+    std::vector<std::vector<NativeInteger>> const& GetMultipartyAlphaQModq0AtIndex(usint l) const {
+        return m_multipartyAlphaQModq0[l];
+    }
+
+    /**
+   * Gets the Barrett modulo reduction precomputation for q_0
+   *
+   * @return the precomputed table
+   */
+    std::vector<DoubleNativeInt> const& GetMultipartyModq0BarrettMu() const {
+        return m_multipartyModq0BarrettMu;
+    }
+
+    /**
+   * Gets the precomputed table of \frac{1/q_i}
+   *
+   * @return the precomputed table
+   */
+    std::vector<double> const& GetMultipartyQInv() const {
+        return m_multipartyQInv;
     }
 
 protected:
@@ -1653,6 +1711,28 @@ protected:
     std::vector<NativeInteger> m_negInvqModtgamma;
     // Stores NTL precomputations for [-(q_i)^{-1}]_{t*gamma}
     std::vector<NativeInteger> m_negInvqModtgammaPrecon;
+
+    /////////////////////////////////////
+    // BFVrns and BGVrns : Multiparty Decryption : ExpandCRTBasis
+    /////////////////////////////////////
+
+    // Stores [*(Q/q_i/q_0)^{-1}]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_multipartyQHatInvModq;
+
+    // Stores NTL precomputations for [*(Q/q_i/q_0)^{-1}]_{q_i}
+    std::vector<std::vector<NativeInteger>> m_multipartyQHatInvModqPrecon;
+
+    // Stores [Q/q_i/q_0]_{q_0}
+    std::vector<std::vector<std::vector<NativeInteger>>> m_multipartyQHatModq0;
+
+    // Stores [\alpha*Q/q_0]_{q_0} for 0 <= alpha <= 1
+    std::vector<std::vector<std::vector<NativeInteger>>> m_multipartyAlphaQModq0;
+
+    // Barrett modulo reduction precomputation for q_0
+    std::vector<DoubleNativeInt> m_multipartyModq0BarrettMu;
+
+    // Stores \frac{1/q_i}
+    std::vector<double> m_multipartyQInv;
 
 public:
     /////////////////////////////////////

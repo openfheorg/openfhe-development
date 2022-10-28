@@ -139,8 +139,8 @@ public:
    * automorphism keys
    *
    * @param privateKey secret key share.
-   * @param eAuto a dictionary with prior joined automorphism keys.
-   * @param &indexList a vector of automorphism indices.
+   * @param evalKeyMap a dictionary with prior joined automorphism keys.
+   * @param &indexVec a vector of automorphism indices.
    * @return a dictionary with new joined automorphism keys.
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAutomorphismKeyGen(
@@ -152,9 +152,9 @@ public:
    * multi-party setting Currently works only for power-of-two and cyclic-group
    * cyclotomics
    *
-   * @param secretShare secret share
-   * @param partial evaluation key set from other party (parties)
-   * @param indexList list of indices to be computed
+   * @param privateKey secret share
+   * @param evalKeyMap evaluation key set from other party (parties)
+   * @param indexVec list of indices to be computed
    * @return returns the joined evaluation keys
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalAtIndexKeyGen(
@@ -167,7 +167,7 @@ public:
    * summation keys
    *
    * @param privateKey secret key share.
-   * @param eSum a dictionary with prior joined summation keys.
+   * @param evalKeyMap a dictionary with prior joined summation keys.
    * @return new joined summation keys.
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiEvalSumKeyGen(
@@ -180,8 +180,8 @@ public:
    * Threshold FHE: "Partial" decryption computed by all parties except for the
    * lead one
    *
-   * @param privateKey secret key share used for decryption.
    * @param ciphertext ciphertext that is being decrypted.
+   * @param privateKey secret key share used for decryption.
    */
     virtual Ciphertext<Element> MultipartyDecryptMain(ConstCiphertext<Element> ciphertext,
                                                       const PrivateKey<Element> privateKey) const;
@@ -190,8 +190,8 @@ public:
    * Threshold FHE: Method for decryption operation run by the lead decryption
    * client
    *
-   * @param privateKey secret key share used for decryption.
    * @param ciphertext ciphertext id decrypted.
+   * @param privateKey secret key share used for decryption.
    */
     virtual Ciphertext<Element> MultipartyDecryptLead(ConstCiphertext<Element> ciphertext,
                                                       const PrivateKey<Element> privateKey) const;
@@ -239,7 +239,7 @@ public:
     virtual EvalKey<Element> MultiAddEvalKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2) const;
 
     /**
-   * Threshold FHE: Adds two  partial evaluation keys for multiplication
+   * Threshold FHE: Adds two partial evaluation keys for multiplication
    *
    * @param evalKey1 first evaluation key.
    * @param evalKey2 second evaluation key.
@@ -252,8 +252,8 @@ public:
    * multiplication based on the current secret share and an existing partial
    * evaluation key
    *
+   * @param privateKey current secret share.
    * @param evalKey prior evaluation key.
-   * @param sk current secret share.
    * @return the new joined key.
    */
     virtual EvalKey<Element> MultiMultEvalKey(PrivateKey<Element> privateKey, EvalKey<Element> evalKey) const;
@@ -261,8 +261,8 @@ public:
    *
    * Threshold FHE: Adds two prior evaluation key sets for automorphisms
    *
-   * @param es1 first automorphism key set.
-   * @param es2 second automorphism key set.
+   * @param evalKeyMap1 first automorphism key set.
+   * @param evalKeyMap2 second automorphism key set.
    * @return the new joined key set for summation.
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalAutomorphismKeys(
@@ -272,8 +272,8 @@ public:
     /**
    * Threshold FHE: Adds two prior evaluation key sets for summation
    *
-   * @param es1 first summation key set.
-   * @param es2 second summation key set.
+   * @param evalKeyMap1 first summation key set.
+   * @param evalKeyMap2 second summation key set.
    * @return the new joined key set for summation.
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> MultiAddEvalSumKeys(

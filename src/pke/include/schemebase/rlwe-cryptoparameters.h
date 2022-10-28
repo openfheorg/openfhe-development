@@ -75,7 +75,8 @@ public:
         m_floodingDistributionParameter = rhs.m_floodingDistributionParameter;
         m_dgg.SetStd(m_distributionParameter);
         m_dggFlooding.SetStd(m_floodingDistributionParameter);
-        m_PREMode = rhs.m_PREMode;
+        m_PREMode        = rhs.m_PREMode;
+        m_multipartyMode = rhs.m_multipartyMode;
     }
 
     /**
@@ -96,17 +97,18 @@ public:
     CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams,
                          float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel, usint digitSize,
                          int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN, PlaintextModulus noiseScale = 1,
-                         ProxyReEncryptionMode PREMode = INDCPA)
+                         ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
         m_assuranceMeasure      = assuranceMeasure;
         m_noiseScale            = noiseScale;
         m_digitSize             = digitSize;
         m_dgg.SetStd(m_distributionParameter);
-        m_maxRelinSkDeg = maxRelinSkDeg;
-        m_secretKeyDist = secretKeyDist;
-        m_stdLevel      = stdLevel;
-        m_PREMode       = PREMode;
+        m_maxRelinSkDeg  = maxRelinSkDeg;
+        m_secretKeyDist  = secretKeyDist;
+        m_stdLevel       = stdLevel;
+        m_PREMode        = PREMode;
+        m_multipartyMode = multipartyMode;
     }
 
     /**
@@ -188,6 +190,15 @@ public:
    */
     ProxyReEncryptionMode GetPREMode() const {
         return m_PREMode;
+    }
+
+    /**
+   * Gets the multiparty security mode setting.
+   *
+   * @return the multiparty security mode setting.
+   */
+    MultipartyMode GetMultipartyMode() const {
+        return m_multipartyMode;
     }
 
     /**
@@ -296,6 +307,14 @@ public:
     }
 
     /**
+   * Configures the security mode for multiparty
+   * @param multipartyMode Security mode for multiparty decryption.
+   */
+    void SetMultipartyMode(MultipartyMode multipartyMode) {
+        m_multipartyMode = multipartyMode;
+    }
+
+    /**
    * == operator to compare to this instance of CryptoParametersRLWE object.
    *
    * @param &rhs CryptoParameters to check equality against.
@@ -334,6 +353,7 @@ public:
         ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
         ar(::cereal::make_nvp("pmo", m_PREMode));
+        ar(::cereal::make_nvp("mmo", m_multipartyMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
     }
@@ -348,6 +368,7 @@ public:
         ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
         ar(::cereal::make_nvp("pmo", m_PREMode));
+        ar(::cereal::make_nvp("mmo", m_multipartyMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
 
@@ -385,6 +406,9 @@ protected:
 
     // specifies the security mode used for PRE
     ProxyReEncryptionMode m_PREMode = NOT_SET;
+
+    // specifies the security mode used for multiparty decryption
+    MultipartyMode m_multipartyMode = FIXED_NOISE_MULTIPARTY;
 };
 
 }  // namespace lbcrypto

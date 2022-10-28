@@ -55,18 +55,22 @@ public:
                             float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
                             usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                             KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
-                            EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS)
+                            EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
+                            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
         : CryptoParametersRNS(params, plaintextModulus, distributionParameter, assuranceMeasure, securityLevel,
-                              digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech) {}
+                              digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech,
+                              multipartyMode) {}
 
     CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams,
                             float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
                             usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                             KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                             EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                            ProxyReEncryptionMode PREMode = NOT_SET)
+                            ProxyReEncryptionMode PREMode = NOT_SET,
+                            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
-                              secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode) {}
+                              secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
+                              multipartyMode) {}
 
     virtual ~CryptoParametersCKKSRNS() {}
 

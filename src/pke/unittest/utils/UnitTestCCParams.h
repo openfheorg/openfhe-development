@@ -63,6 +63,7 @@ struct UnitTestCCParams {
     double multiplicationTechnique = DFLT;  // BFVRNS,
     double encryptionTechnique     = DFLT;  // BFVRNS,
     double PREMode                 = DFLT;  // BGVRNS, BFVRNS, CKKSRNS
+    double multipartyMode          = DFLT;  // BGVRNS, BFVRNS
 
     std::string toString() const;
 };

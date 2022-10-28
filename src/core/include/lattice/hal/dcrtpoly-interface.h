@@ -1056,6 +1056,19 @@ public:
                                 Format resultFormat) = 0;
 
     /**
+   * @brief Performs modulus raising in reverse order:
+   * {X}_{Q} -> {X}_{P,Q}
+   */
+    virtual void ExpandCRTBasisReverseOrder(const std::shared_ptr<Params> paramsQP,
+                                            const std::shared_ptr<Params> paramsP,
+                                            const std::vector<NativeInteger>& QHatInvModq,
+                                            const std::vector<NativeInteger>& QHatInvModqPrecon,
+                                            const std::vector<std::vector<NativeInteger>>& QHatModp,
+                                            const std::vector<std::vector<NativeInteger>>& alphaQModp,
+                                            const std::vector<DoubleNativeInt>& modpBarrettMu,
+                                            const std::vector<double>& qInv, Format resultFormat) = 0;
+
+    /**
    * @brief Performs scale and round:
    * {X}_{Q} -> {\round(t/Q*X)}_t
    * {Q} = {q_1,...,q_l}
