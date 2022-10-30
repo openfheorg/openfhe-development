@@ -81,7 +81,7 @@ myZZ::myZZ(uint64_t d) : ZZ(0) {
     SetMSB();
 }
 
-    #if defined(HAVE_INT128)
+    #if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
 // 128-bit native arithmetic is not supported yet
 myZZ::myZZ(unsigned __int128 d) : myZZ((uint64_t)d) {}
     #endif
