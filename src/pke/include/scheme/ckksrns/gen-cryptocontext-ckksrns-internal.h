@@ -69,6 +69,11 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     double floodingNoiseStd = 0;
     if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
         parameters.GetExecutionMode() == EXEC_EVALUATION) {
+        if (parameters.GetNoiseEstimate() == 0) {
+            OPENFHE_THROW(
+                config_error,
+                "Noise estimate must be set in the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
+        }
         double logstd =
             parameters.GetStatisticalSecurity() / 2 + log2(sqrt(12 * parameters.GetNumAdversarialQueries()));
         floodingNoiseStd = pow(2, logstd + parameters.GetNoiseEstimate());
@@ -81,7 +86,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         if (logstd + parameters.GetNoiseEstimate() > scalingModSize - 3) {
             OPENFHE_THROW(config_error, "Precision of less than 3 bits is not supported. logstd " +
                                             std::to_string(logstd) + " + noiseEstimate " +
-                                            std::to_string(noiseEstimate) + " must be 56 or less.");
+                                            std::to_string(parameters.GetNoiseEstimate()) + " must be 56 or less.");
         }
 #endif
     }
