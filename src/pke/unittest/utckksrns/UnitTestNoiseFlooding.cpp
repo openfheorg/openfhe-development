@@ -177,6 +177,7 @@ protected:
         try {
             CCParams<CryptoContextCKKSRNS> parametersNoiseEstimation;
             setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersNoiseEstimation);
+            parametersNoiseEstimation.SetDecryptionNoiseMode(NOISE_FLOODING_DECRYPT);
             parametersNoiseEstimation.SetExecutionMode(EXEC_NOISE_ESTIMATION);
 
             auto cryptoContextNoiseEstimation = GenCryptoContext(parametersNoiseEstimation);
@@ -216,6 +217,7 @@ protected:
         // -------------------------------------------------------------------------------
         CCParams<CryptoContextCKKSRNS> parametersNoiseEstimation;
         setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersNoiseEstimation);
+        parametersNoiseEstimation.SetDecryptionNoiseMode(NOISE_FLOODING_DECRYPT);
         parametersNoiseEstimation.SetExecutionMode(EXEC_NOISE_ESTIMATION);
 
         auto cryptoContextNoiseEstimation = GenCryptoContext(parametersNoiseEstimation);
@@ -239,6 +241,7 @@ protected:
         // -------------------------------------------------------------------------------
         CCParams<CryptoContextCKKSRNS> parametersEvaluation;
         setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersEvaluation);
+        parametersEvaluation.SetDecryptionNoiseMode(NOISE_FLOODING_DECRYPT);
         parametersEvaluation.SetExecutionMode(EXEC_EVALUATION);
         parametersEvaluation.SetNoiseEstimate(noise);
 

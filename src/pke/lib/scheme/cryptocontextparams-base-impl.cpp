@@ -72,6 +72,8 @@ namespace lbcrypto {
         SET_TO_SCHEME_DEFAULT(SCHEME, decryptionNoiseMode);     \
         SET_TO_SCHEME_DEFAULT(SCHEME, noiseEstimate);           \
         SET_TO_SCHEME_DEFAULT(SCHEME, desiredPrecision);        \
+        SET_TO_SCHEME_DEFAULT(SCHEME, statisticalSecurity);     \
+        SET_TO_SCHEME_DEFAULT(SCHEME, numAdversarialQueries);   \
     }
 void Params::SetToDefaults(SCHEME scheme) {
     switch (scheme) {
@@ -118,7 +120,9 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; executionMode: " << obj.executionMode
         << "; decryptionNoiseMode: " << obj.decryptionNoiseMode
         << "; noiseEstimate: " << obj.noiseEstimate
-        << "; desiredPrecision: " << obj.desiredPrecision;
+        << "; desiredPrecision: " << obj.desiredPrecision
+        << "; statisticalSecurity: " << obj.statisticalSecurity
+        << "; numAdversarialQueries: " << obj.numAdversarialQueries;
 
     return os;
 }

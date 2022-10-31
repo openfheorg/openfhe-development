@@ -112,6 +112,14 @@ class Params {
     // Desired precision for 128-bit CKKS. We use this value in NOISE_FLOODING_DECRYPT mode to determine the scaling factor.
     double desiredPrecision;
 
+    // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
+    // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
+    double statisticalSecurity;
+
+    // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
+    // security of CKKS in NOISE_FLOODING_DECRYPT mode.
+    double numAdversarialQueries;
+
     // The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
@@ -210,6 +218,12 @@ public:
     double GetDesiredPrecision() const {
         return desiredPrecision;
     }
+    double GetStatisticalSecurity() const {
+        return statisticalSecurity;
+    }
+    double GetNumAdversarialQueries() const {
+        return numAdversarialQueries;
+    }
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
     }
@@ -286,6 +300,12 @@ public:
     }
     void SetDesiredPrecision(double desiredPrecision0) {
         desiredPrecision = desiredPrecision0;
+    }
+    void SetStatisticalSecurity(double statisticalSecurity0) {
+        statisticalSecurity = statisticalSecurity0;
+    }
+    void SetNumAdversarialQueries(double numAdversarialQueries0) {
+        numAdversarialQueries = numAdversarialQueries0;
     }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;

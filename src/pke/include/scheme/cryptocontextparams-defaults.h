@@ -75,7 +75,9 @@ constexpr MultipartyMode multipartyMode                   = FIXED_NOISE_MULTIPAR
 constexpr ExecutionMode executionMode                     = EXEC_EVALUATION;
 constexpr DecryptionNoiseMode decryptionNoiseMode         = FIXED_NOISE_DECRYPT;
 constexpr double noiseEstimate                            = 0;
-constexpr double desiredPrecision                         = 0;
+constexpr double desiredPrecision                         = 25;
+constexpr double statisticalSecurity                      = 30;
+constexpr double numAdversarialQueries                    = 1;
 };  // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {
@@ -113,6 +115,8 @@ constexpr ExecutionMode executionMode                     = EXEC_EVALUATION;
 constexpr DecryptionNoiseMode decryptionNoiseMode         = FIXED_NOISE_DECRYPT;
 constexpr double noiseEstimate                            = 0;
 constexpr double desiredPrecision                         = 0;
+constexpr double statisticalSecurity                      = 30;
+constexpr double numAdversarialQueries                    = 1;
 };  // namespace BFVRNS_SCHEME_DEFAULTS
 
 namespace BGVRNS_SCHEME_DEFAULTS {
@@ -142,6 +146,8 @@ constexpr ExecutionMode executionMode                     = EXEC_EVALUATION;
 constexpr DecryptionNoiseMode decryptionNoiseMode         = FIXED_NOISE_DECRYPT;
 constexpr double noiseEstimate                            = 0;
 constexpr double desiredPrecision                         = 0;
+constexpr double statisticalSecurity                      = 30;
+constexpr double numAdversarialQueries                    = 1;
 };  // namespace BGVRNS_SCHEME_DEFAULTS
 
 //====================================================================================================================

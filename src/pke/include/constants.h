@@ -97,7 +97,7 @@ enum DecryptionNoiseMode {
     FIXED_NOISE_DECRYPT = 0,
     NOISE_FLOODING_DECRYPT,
 };
-std::ostream& operator<<(std::ostream& s, ExecutionMode t);
+std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t);
 
 enum KeySwitchTechnique {
     INVALID_KS_TECH = 0,

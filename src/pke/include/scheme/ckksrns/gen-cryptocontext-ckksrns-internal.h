@@ -63,9 +63,37 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     constexpr float assuranceMeasure = 36;
 
     auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
+
+    usint scalingModSize    = parameters.GetScalingModSize();
+    usint firstModSize      = parameters.GetFirstModSize();
+    double floodingNoiseStd = 0;
+
     // In CKKS, the plaintext modulus is equal to the scaling factor.
-    EncodingParams encodingParams(
-        std::make_shared<EncodingParamsImpl>(parameters.GetScalingModSize(), parameters.GetBatchSize()));
+    std::cout << "decryption noise mode: " << parameters.GetDecryptionNoiseMode() << std::endl;
+    std::cout << "execution mode: " << parameters.GetExecutionMode() << std::endl;
+    if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+        parameters.GetExecutionMode() == EXEC_EVALUATION) {
+        double logstd =
+            parameters.GetStatisticalSecurity() / 2 + log2(sqrt(12 * parameters.GetNumAdversarialQueries()));
+        floodingNoiseStd = pow(2, logstd + parameters.GetNoiseEstimate());
+#if NATIVEINT == 128
+        scalingModSize = parameters.GetDesiredPrecision() + parameters.GetNoiseEstimate() + logstd;
+        firstModSize   = scalingModSize + 11;
+#else
+        scalingModSize = MAX_MODULUS_SIZE - 1;
+        firstModSize   = MAX_MODULUS_SIZE;
+        if (logstd + parameters.GetNoiseEstimate() > scalingModSize - 3) {
+            OPENFHE_THROW(config_error, "Precision of less than 3 bits is not supported. logstd " +
+                                            std::to_string(logstd) + " + noiseEstimate " +
+                                            std::to_string(noiseEstimate) + " must be 56 or less.");
+        }
+#endif
+        std::cout << "noise estimate: " << parameters.GetNoiseEstimate() << std::endl;
+        std::cout << "logstd: " << logstd << std::endl;
+        std::cout << "scalingModSize: " << scalingModSize << std::endl;
+        std::cout << "firstModSize: " << firstModSize << std::endl;
+    }
+    EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(scalingModSize, parameters.GetBatchSize()));
 
     // clang-format off
     auto params = std::make_shared<typename ContextGeneratorType::CryptoParams>(
@@ -83,10 +111,14 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetMultiplicationTechnique(),
         parameters.GetPREMode(),
         parameters.GetMultipartyMode(),
-        parameters.GetExecutionMode());
+        parameters.GetExecutionMode(),
+        parameters.GetDecryptionNoiseMode());
 
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
+    params->SetFloodingDistributionParameter(floodingNoiseStd);
+
+    std::cout << "flooding noise: " << params->GetFloodingDistributionParameter() << std::endl;
 
     uint32_t numLargeDigits =
         ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
@@ -97,8 +129,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         params,
         2 * parameters.GetRingDim(),
         parameters.GetMultiplicativeDepth() + 1,
-        parameters.GetScalingModSize(),
-        parameters.GetFirstModSize(),
+        scalingModSize,
+        firstModSize,
         numLargeDigits);
     // clang-format on
 

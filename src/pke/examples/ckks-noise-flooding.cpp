@@ -105,10 +105,18 @@ void CKKSNoiseFloodingDemo() {
     // -------------------------------------------------------------------------------
     std::cout << "---------------------------------- PHASE 2 ------------------------------" << std::endl;
     CCParams<CryptoContextCKKSRNS> parametersEvaluation;
-    // EXEC_EVALUATION indicates that we are in phase 2 of computation, and will obtain the actual result.
+    // EXEC_EVALUATION indicates that we are in phase 2 of computation, and wil5 obtain the actual result.
     parametersEvaluation.SetExecutionMode(EXEC_EVALUATION);
     // Here, we set the noise of our previous computation
     parametersEvaluation.SetNoiseEstimate(noise);
+
+    // We can set our desired precision for 128-bit CKKS only. For NATIVE_SIZE=64, we ignore this parameter.
+    parametersEvaluation.SetDesiredPrecision(25);
+
+    // We can set the statistical security and number of adversarial queries, but we can also
+    // leave these lines out, as we are setting them to the default values here.
+    parametersEvaluation.SetStatisticalSecurity(30);
+    parametersEvaluation.SetNumAdversarialQueries(1);
 
     // The remaining parameters must be the same as the first CryptoContext. Note that we can choose to run the
     // first computation with NATIVEINT = 64 to estimate noise, and the second computation with NATIVEINT = 128,
