@@ -96,12 +96,14 @@ void CKKSNoiseFloodingDemo() {
     cryptoContextNoiseEstimation->Decrypt(keyPairNoiseEstimation.secretKey, noiseCiphertext, &noisePlaintext);
     noisePlaintext->SetLength(1);
     double noise = noisePlaintext->GetCKKSPackedValue()[0].real();
+    std::cout << "Noise \n\t" << noise << std::endl;
 
     // ----------------------- Setup second CryptoContext -----------------------------
     // Phase 2 will be for the actual evaluation.
     // IMPORTANT: We must use a different public/private key pair here to achieve the
     // security guarantees for noise flooding.
     // -------------------------------------------------------------------------------
+    std::cout << "---------------------------------- PHASE 2 ------------------------------" << std::endl;
     CCParams<CryptoContextCKKSRNS> parametersEvaluation;
     // EXEC_EVALUATION indicates that we are in phase 2 of computation, and will obtain the actual result.
     parametersEvaluation.SetExecutionMode(EXEC_EVALUATION);
@@ -138,18 +140,13 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
     // Specify main parameters
     parameters.SetSecretKeyDist(UNIFORM_TERNARY);
 
-    /* Desired security level based on FHE standards. Note that this is difference than NoiseDecryptionMode,
+    /* Desired security level based on FHE standards. Note that this is different than NoiseDecryptionMode,
     * which also gives us enhanced security in CKKS when using NOISE_FLOODING_DECRYPT.
-    * In this example, we use the "NotSet" option, so the example can run more quickly with
-    * a smaller ring dimension. Note that this should be used only in
-    * non-production environments, or by experts who understand the security
-    * implications of their choices. In production-like environments, we recommend using
+    * In production-like environments, we recommend using
     * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-    * or 256-bit security, respectively. If you choose one of these as your security level,
-    * you do not need to set the ring dimension.
+    * or 256-bit security, respectively.
     */
-    parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1 << 12);
+    parameters.SetSecurityLevel(HEStd_128_classic);
 
     /* Scaling parameters.
     * By default, we set the modulus sizes and rescaling technique to the following values

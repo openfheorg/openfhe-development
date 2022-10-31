@@ -77,6 +77,7 @@ public:
         m_dggFlooding.SetStd(m_floodingDistributionParameter);
         m_PREMode        = rhs.m_PREMode;
         m_multipartyMode = rhs.m_multipartyMode;
+        m_executionMode  = rhs.m_executionMode;
     }
 
     /**
@@ -97,7 +98,8 @@ public:
     CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams,
                          float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel, usint digitSize,
                          int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN, PlaintextModulus noiseScale = 1,
-                         ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
+                         ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                         ExecutionMode executionMode = EXEC_EVALUATION)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
         m_assuranceMeasure      = assuranceMeasure;
@@ -109,6 +111,7 @@ public:
         m_stdLevel       = stdLevel;
         m_PREMode        = PREMode;
         m_multipartyMode = multipartyMode;
+        m_executionMode  = executionMode;
     }
 
     /**
@@ -199,6 +202,15 @@ public:
    */
     MultipartyMode GetMultipartyMode() const {
         return m_multipartyMode;
+    }
+
+    /**
+   * Gets the execution mode setting.
+   *
+   * @return the execution mode setting.
+   */
+    ExecutionMode GetExecutionMode() const {
+        return m_executionMode;
     }
 
     /**
@@ -315,6 +327,14 @@ public:
     }
 
     /**
+   * Configures the execution for CKKS noise flooding
+   * @param executionMode Execution mode.
+   */
+    void SetExecutionMode(ExecutionMode executionMode) {
+        m_executionMode = executionMode;
+    }
+
+    /**
    * == operator to compare to this instance of CryptoParametersRLWE object.
    *
    * @param &rhs CryptoParameters to check equality against.
@@ -354,6 +374,7 @@ public:
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
         ar(::cereal::make_nvp("pmo", m_PREMode));
         ar(::cereal::make_nvp("mmo", m_multipartyMode));
+        ar(::cereal::make_nvp("exm", m_executionMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
     }
@@ -369,6 +390,7 @@ public:
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
         ar(::cereal::make_nvp("pmo", m_PREMode));
         ar(::cereal::make_nvp("mmo", m_multipartyMode));
+        ar(::cereal::make_nvp("exm", m_executionMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
 
@@ -409,6 +431,9 @@ protected:
 
     // specifies the security mode used for multiparty decryption
     MultipartyMode m_multipartyMode = FIXED_NOISE_MULTIPARTY;
+
+    // specifies the execution mode used for NOISE_FLOODING_DECRYPT mode in CKKS
+    ExecutionMode m_executionMode = EXEC_EVALUATION;
 };
 
 }  // namespace lbcrypto

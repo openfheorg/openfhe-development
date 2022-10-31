@@ -56,10 +56,11 @@ public:
                             usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                             KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                             EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
+                            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                            ExecutionMode executionMode   = EXEC_EVALUATION)
         : CryptoParametersRNS(params, plaintextModulus, distributionParameter, assuranceMeasure, securityLevel,
                               digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech,
-                              multipartyMode) {}
+                              multipartyMode, executionMode) {}
 
     CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams,
                             float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
@@ -67,10 +68,11 @@ public:
                             KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                             EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
                             ProxyReEncryptionMode PREMode = NOT_SET,
-                            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
+                            MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                            ExecutionMode executionMode   = EXEC_EVALUATION)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
                               secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
-                              multipartyMode) {}
+                              multipartyMode, executionMode) {}
 
     virtual ~CryptoParametersCKKSRNS() {}
 

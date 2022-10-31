@@ -99,7 +99,8 @@ protected:
                         usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
                         KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
                         EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
-                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
+                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                        ExecutionMode executionMode   = EXEC_EVALUATION)
         : CryptoParametersRLWE<DCRTPoly>(params, EncodingParams(std::make_shared<EncodingParamsImpl>(plaintextModulus)),
                                          distributionParameter, assuranceMeasure, securityLevel, digitSize,
                                          maxRelinSkDeg, secretKeyDist) {
@@ -108,6 +109,7 @@ protected:
         m_encTechnique   = encTech;
         m_multTechnique  = multTech;
         m_multipartyMode = multipartyMode;
+        m_executionMode  = executionMode;
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
@@ -115,7 +117,8 @@ protected:
                         SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
                         ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
                         MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = INDCPA,
-                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
+                        MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                        ExecutionMode executionMode   = EXEC_EVALUATION)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist) {
         m_ksTechnique    = ksTech;
@@ -124,6 +127,7 @@ protected:
         m_multTechnique  = multTech;
         m_PREMode        = PREMode;
         m_multipartyMode = multipartyMode;
+        m_executionMode  = executionMode;
     }
 
     virtual ~CryptoParametersRNS() {}
@@ -157,7 +161,8 @@ public:
         return CryptoParametersBase<DCRTPoly>::operator==(rhs) && m_scalTechnique == el->GetScalingTechnique() &&
                m_ksTechnique == el->GetKeySwitchTechnique() && m_multTechnique == el->GetMultiplicationTechnique() &&
                m_encTechnique == el->GetEncryptionTechnique() && m_numPartQ == el->GetNumPartQ() &&
-               m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits();
+               m_auxBits == el->GetAuxBits() && m_extraBits == el->GetExtraBits() &&
+               m_executionMode == el->GetExecutionMode();
     }
 
     void PrintParameters(std::ostream& os) const override {
