@@ -142,7 +142,8 @@ class UTCKKSRNS_NOISE_FLOODING : public ::testing::TestWithParam<TEST_CASE_UTCKK
 
     // The precision after which we consider two values equal.
     // This is necessary because CKKS works for approximate numbers.
-    const double eps = 0.0001;
+    const double eps    = 0.0001;
+    const double buffer = 3;
 
     Ciphertext<DCRTPoly> EncryptedComputation(CryptoContext<DCRTPoly>& cryptoContext, PublicKey<DCRTPoly> publicKey) {
         // Encoding and encryption of inputs
@@ -192,11 +193,9 @@ protected:
             Plaintext noisePlaintext;
             cryptoContextNoiseEstimation->Decrypt(keyPairNoiseEstimation.secretKey, noiseCiphertext, &noisePlaintext);
             noisePlaintext->SetLength(1);
-            double noise = noisePlaintext->GetCKKSPackedValue()[0].real();
-
-            std::cout << "Noise: " << noise << std::endl;
-
-            EXPECT_TRUE(checkEquality(noise, 1.0, eps)) << failmsg + " CKKS Noise estimation fails";
+            double noise         = noisePlaintext->GetCKKSPackedValue()[0].real();
+            double expectedNoise = 20.9827;
+            EXPECT_TRUE(checkEquality(noise, expectedNoise, buffer)) << failmsg + " CKKS Noise estimation fails";
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;

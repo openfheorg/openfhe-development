@@ -83,6 +83,12 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptLead(ConstCiphertext<DCRTPo
 
         noise = e;
     }
+    else if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+             cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+        auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
+        DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
+        noise = e;
+    }
     else {
         DggType dgg(NOISE_FLOODING::MP_SD);
         DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
@@ -144,6 +150,12 @@ Ciphertext<DCRTPoly> MultipartyRNS::MultipartyDecryptMain(ConstCiphertext<DCRTPo
                                      cryptoParams->GetMultipartyModq0BarrettMu(), cryptoParams->GetMultipartyQInv(),
                                      Format::EVALUATION);
 
+        noise = e;
+    }
+    else if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+             cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+        auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
+        DCRTPoly e(dgg, cv[0].GetParams(), Format::EVALUATION);
         noise = e;
     }
     else {
