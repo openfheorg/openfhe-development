@@ -75,6 +75,8 @@ void CKKSNoiseFloodingDemo() {
     // ----------------------- Setup first CryptoContext -----------------------------
     // Phase 1 will be for noise estimation.
     // -------------------------------------------------------------------------------
+    std::cout << "---------------------------------- PHASE 1: NOISE ESTIMATION ----------------------------------"
+              << std::endl;
     CCParams<CryptoContextCKKSRNS> parametersNoiseEstimation;
     // EXEC_NOISE_ESTIMATION indicates that the resulting plaintext will estimate the amount of noise in the computation.
     parametersNoiseEstimation.SetExecutionMode(EXEC_NOISE_ESTIMATION);
@@ -103,7 +105,8 @@ void CKKSNoiseFloodingDemo() {
     // IMPORTANT: We must use a different public/private key pair here to achieve the
     // security guarantees for noise flooding.
     // -------------------------------------------------------------------------------
-    std::cout << "---------------------------------- PHASE 2 ------------------------------" << std::endl;
+    std::cout << "---------------------------------- PHASE 2: EVALUATION ----------------------------------"
+              << std::endl;
     CCParams<CryptoContextCKKSRNS> parametersEvaluation;
     // EXEC_EVALUATION indicates that we are in phase 2 of computation, and wil5 obtain the actual result.
     parametersEvaluation.SetExecutionMode(EXEC_EVALUATION);
@@ -156,22 +159,9 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
     */
     parameters.SetSecurityLevel(HEStd_128_classic);
 
-    /* Scaling parameters.
-    * By default, we set the modulus sizes and rescaling technique to the following values
-    * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
-    * below unless you are an FHE expert.
-    */
-#if NATIVEINT == 128
-    // Currently, only FIXEDMANUAL and FIXEDAUTO modes are supported for 128-bit CKKS bootstrapping.
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    usint dcrtBits               = 78;
-    usint firstMod               = 89;
-#else
-    // All modes are supported for 64-bit CKKS bootstrapping.
-    ScalingTechnique rescaleTech = FLEXIBLEAUTO;
     usint dcrtBits               = 59;
     usint firstMod               = 60;
-#endif
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
