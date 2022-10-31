@@ -344,6 +344,11 @@ class UTGENERAL_MULTIPARTY : public ::testing::TestWithParam<TEST_CASE_UTGENERAL
 protected:
     void SetUp() {}
     void TearDown() {
+        // destroy all staic key maps
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
+        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+
         CryptoContextFactory<Element>::ReleaseAllContexts();
     }
 
