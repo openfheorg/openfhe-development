@@ -67,10 +67,6 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     usint scalingModSize    = parameters.GetScalingModSize();
     usint firstModSize      = parameters.GetFirstModSize();
     double floodingNoiseStd = 0;
-
-    // In CKKS, the plaintext modulus is equal to the scaling factor.
-    std::cout << "decryption noise mode: " << parameters.GetDecryptionNoiseMode() << std::endl;
-    std::cout << "execution mode: " << parameters.GetExecutionMode() << std::endl;
     if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
         parameters.GetExecutionMode() == EXEC_EVALUATION) {
         double logstd =
@@ -88,10 +84,6 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
                                             std::to_string(noiseEstimate) + " must be 56 or less.");
         }
 #endif
-        std::cout << "noise estimate: " << parameters.GetNoiseEstimate() << std::endl;
-        std::cout << "logstd: " << logstd << std::endl;
-        std::cout << "scalingModSize: " << scalingModSize << std::endl;
-        std::cout << "firstModSize: " << firstModSize << std::endl;
     }
     EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(scalingModSize, parameters.GetBatchSize()));
 
@@ -117,8 +109,6 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
     params->SetFloodingDistributionParameter(floodingNoiseStd);
-
-    std::cout << "flooding noise: " << params->GetFloodingDistributionParameter() << std::endl;
 
     uint32_t numLargeDigits =
         ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());

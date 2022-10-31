@@ -50,7 +50,7 @@
 using namespace lbcrypto;
 
 //===========================================================================================================
-enum TEST_CASE_TYPE { NOISE_ESTIMATION, FULL_NOISE_FLOODING };
+enum TEST_CASE_TYPE { NOISE_ESTIMATION, FULL_NOISE_FLOODING, MULTIPARTY_NOISE_FLOODING };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
@@ -60,6 +60,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case FULL_NOISE_FLOODING:
             typeName = "FULL_NOISE_FLOODING";
+            break;
+        case MULTIPARTY_NOISE_FLOODING:
+            typeName = "MULTIPARTY_NOISE_FLOODING";
             break;
         default:
             typeName = "UNKNOWN";
@@ -132,6 +135,17 @@ static std::vector<TEST_CASE_UTCKKSRNS_NOISE_FLOODING> testCases = {
     { FULL_NOISE_FLOODING, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
     { FULL_NOISE_FLOODING, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
     { FULL_NOISE_FLOODING, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+#endif
+    // TestType,                Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, DecryptionNoiseMode
+    { MULTIPARTY_NOISE_FLOODING, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+    { MULTIPARTY_NOISE_FLOODING, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+    { MULTIPARTY_NOISE_FLOODING, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+    { MULTIPARTY_NOISE_FLOODING, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+#if NATIVEINT != 128
+    { MULTIPARTY_NOISE_FLOODING, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+    { MULTIPARTY_NOISE_FLOODING, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+    { MULTIPARTY_NOISE_FLOODING, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+    { MULTIPARTY_NOISE_FLOODING, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
 
 #endif
 };
@@ -164,6 +178,33 @@ class UTCKKSRNS_NOISE_FLOODING : public ::testing::TestWithParam<TEST_CASE_UTCKK
         Ciphertext<DCRTPoly> ciphResult = cryptoContext->EvalAdd(ciphMult2, ciph2);
 
         return ciphResult;
+    }
+
+    Ciphertext<DCRTPoly> EncryptedMultipartyComputation(CryptoContext<DCRTPoly>& cryptoContext,
+                                                        PublicKey<DCRTPoly> publicKey) {
+        // Encoding and encryption of inputs
+        // Generate random input
+        std::vector<double> vec1 = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+        std::vector<double> vec2 = {1, 1, 0, 0, 1, 0, 0, 1};
+
+        // Encoding as plaintexts and encrypt
+        Plaintext ptxt1            = cryptoContext->MakeCKKSPackedPlaintext(vec1);
+        Plaintext ptxt2            = cryptoContext->MakeCKKSPackedPlaintext(vec2);
+        Ciphertext<DCRTPoly> ciph1 = cryptoContext->Encrypt(publicKey, ptxt1);
+        Ciphertext<DCRTPoly> ciph2 = cryptoContext->Encrypt(publicKey, ptxt2);
+
+        Ciphertext<DCRTPoly> ciphMult = cryptoContext->EvalMult(ciph1, ciph2);
+        return ciphMult;
+    }
+
+    void GenerateMultipartyKeys(CryptoContext<DCRTPoly>& cryptoContext, KeyPair<DCRTPoly> kp1, KeyPair<DCRTPoly> kp2) {
+        auto evalMultKey   = cryptoContext->KeySwitchGen(kp1.secretKey, kp1.secretKey);
+        auto evalMultKey2  = cryptoContext->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
+        auto evalMultAB    = cryptoContext->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
+        auto evalMultBAB   = cryptoContext->MultiMultEvalKey(kp2.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
+        auto evalMultAAB   = cryptoContext->MultiMultEvalKey(kp1.secretKey, evalMultAB, kp2.publicKey->GetKeyTag());
+        auto evalMultFinal = cryptoContext->MultiAddEvalMultKeys(evalMultAAB, evalMultBAB, evalMultAB->GetKeyTag());
+        cryptoContext->InsertEvalMultKey({evalMultFinal});
     }
 
 protected:
@@ -262,6 +303,79 @@ protected:
 
         checkEquality(result->GetCKKSPackedValue(), expectedResult, eps, failmsg + " Noise flooding computation fails");
     }
+
+    void UnitTest_MultipartyNoiseFlooding(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
+                                          const std::string& failmsg = std::string()) {
+        // ----------------------- Setup first CryptoContext -----------------------------
+        // Phase 1 will be for noise estimation.
+        // -------------------------------------------------------------------------------
+        CCParams<CryptoContextCKKSRNS> parametersNoiseEstimation;
+        setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersNoiseEstimation);
+        parametersNoiseEstimation.SetDecryptionNoiseMode(NOISE_FLOODING_DECRYPT);
+        parametersNoiseEstimation.SetExecutionMode(EXEC_NOISE_ESTIMATION);
+
+        auto cryptoContextNoiseEstimation = GenCryptoContext(parametersNoiseEstimation);
+        cryptoContextNoiseEstimation->Enable(PKE);
+        cryptoContextNoiseEstimation->Enable(LEVELEDSHE);
+        cryptoContextNoiseEstimation->Enable(MULTIPARTY);
+
+        auto kpNoiseEst1 = cryptoContextNoiseEstimation->KeyGen();
+        KeyPair<Element> kpNoiseEst2 =
+            cryptoContextNoiseEstimation->MultipartyKeyGen(kpNoiseEst1.publicKey, false, true);
+        GenerateMultipartyKeys(cryptoContextNoiseEstimation, kpNoiseEst1, kpNoiseEst2);
+        auto pubKeyForEncryptionNoiseEst = cryptoContextNoiseEstimation->MultiAddPubKeys(
+            kpNoiseEst1.publicKey, kpNoiseEst2.publicKey, kpNoiseEst2.publicKey->GetKeyTag());
+
+        auto noiseCiphertext =
+            EncryptedMultipartyComputation(cryptoContextNoiseEstimation, pubKeyForEncryptionNoiseEst);
+
+        Plaintext noisePlaintext;
+        auto ciphertextPartialNoiseEst1 =
+            cryptoContextNoiseEstimation->MultipartyDecryptLead({noiseCiphertext}, kpNoiseEst1.secretKey);
+        auto ciphertextPartialNoiseEst2 =
+            cryptoContextNoiseEstimation->MultipartyDecryptMain({noiseCiphertext}, kpNoiseEst2.secretKey);
+        std::vector<Ciphertext<Element>> partialCiphertextVecMultNoiseEst{ciphertextPartialNoiseEst1[0],
+                                                                          ciphertextPartialNoiseEst2[0]};
+        cryptoContextNoiseEstimation->MultipartyDecryptFusion(partialCiphertextVecMultNoiseEst, &noisePlaintext);
+        noisePlaintext->SetLength(1);
+        double noise = noisePlaintext->GetCKKSPackedValue()[0].real();
+
+        // ----------------------- Setup second CryptoContext -----------------------------
+        // Phase 2 will be for the actual evaluation.
+        // IMPORTANT: We must use a different public/private key pair here to achieve the
+        // security guarantees for noise flooding.
+        // -------------------------------------------------------------------------------
+        CCParams<CryptoContextCKKSRNS> parametersEvaluation;
+        setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersEvaluation);
+        parametersEvaluation.SetDecryptionNoiseMode(NOISE_FLOODING_DECRYPT);
+        parametersEvaluation.SetExecutionMode(EXEC_EVALUATION);
+        parametersEvaluation.SetNoiseEstimate(noise);
+
+        auto cryptoContextEvaluation = GenCryptoContext(parametersEvaluation);
+        cryptoContextEvaluation->Enable(PKE);
+        cryptoContextEvaluation->Enable(LEVELEDSHE);
+        cryptoContextEvaluation->Enable(MULTIPARTY);
+
+        auto kpEval1             = cryptoContextEvaluation->KeyGen();
+        KeyPair<Element> kpEval2 = cryptoContextEvaluation->MultipartyKeyGen(kpEval1.publicKey, false, true);
+        GenerateMultipartyKeys(cryptoContextEvaluation, kpEval1, kpEval2);
+        auto pubKeyForEncryptionEval = cryptoContextEvaluation->MultiAddPubKeys(kpEval1.publicKey, kpEval2.publicKey,
+                                                                                kpEval2.publicKey->GetKeyTag());
+
+        auto ciphertextResult = EncryptedMultipartyComputation(cryptoContextEvaluation, pubKeyForEncryptionEval);
+
+        Plaintext result;
+        auto ciphertextPartial1 = cryptoContextEvaluation->MultipartyDecryptLead({ciphertextResult}, kpEval1.secretKey);
+        auto ciphertextPartial2 = cryptoContextEvaluation->MultipartyDecryptMain({ciphertextResult}, kpEval2.secretKey);
+        std::vector<Ciphertext<Element>> partialCiphertextVecMult{ciphertextPartial1[0], ciphertextPartial2[0]};
+        cryptoContextEvaluation->MultipartyDecryptFusion(partialCiphertextVecMult, &result);
+        size_t vecSize = 8;
+        result->SetLength(vecSize);
+
+        std::vector<std::complex<double>> expectedResult = {0.1, 0.2, 0, 0, 0.5, 0, 0, 0.8};
+
+        checkEquality(result->GetCKKSPackedValue(), expectedResult, eps, failmsg + " Noise flooding computation fails");
+    }
 };
 
 //===========================================================================================================
@@ -275,6 +389,9 @@ TEST_P(UTCKKSRNS_NOISE_FLOODING, CKKSRNS) {
             break;
         case FULL_NOISE_FLOODING:
             UnitTest_FullNoiseFlooding(test, test.buildTestName());
+            break;
+        case MULTIPARTY_NOISE_FLOODING:
+            UnitTest_MultipartyNoiseFlooding(test, test.buildTestName());
             break;
         default:
             break;
