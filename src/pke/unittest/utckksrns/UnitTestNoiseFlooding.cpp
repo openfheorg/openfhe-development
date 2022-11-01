@@ -103,14 +103,8 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_NOIS
 constexpr uint32_t MULT_DEPTH   = 25;
 constexpr uint32_t RDIM         = 512;
 constexpr uint32_t NUM_LRG_DIGS = 3;
-
-#if 0
-constexpr uint32_t SMODSIZE = 78;
-constexpr uint32_t FMODSIZE = 89;
-#else
-constexpr uint32_t SMODSIZE = 59;
-constexpr uint32_t FMODSIZE = 60;
-#endif
+constexpr uint32_t SMODSIZE     = 59;
+constexpr uint32_t FMODSIZE     = 60;
 
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_NOISE_FLOODING> testCases = {
