@@ -65,6 +65,7 @@ struct UnitTestCCParams {
     double PREMode                 = DFLT;  // BGVRNS, BFVRNS, CKKSRNS
     double multipartyMode          = DFLT;  // BGVRNS, BFVRNS
     double decryptionNoiseMode     = DFLT;  // CKKSRNS
+    double executionMode           = DFLT;  // CKKSRNS
 
     std::string toString() const;
 };

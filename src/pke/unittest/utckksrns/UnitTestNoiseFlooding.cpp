@@ -50,14 +50,11 @@
 using namespace lbcrypto;
 
 //===========================================================================================================
-enum TEST_CASE_TYPE { NOISE_ESTIMATION, FULL_NOISE_FLOODING, MULTIPARTY_NOISE_FLOODING };
+enum TEST_CASE_TYPE { FULL_NOISE_FLOODING, MULTIPARTY_NOISE_FLOODING };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
-        case NOISE_ESTIMATION:
-            typeName = "NOISE_ESTIMATION";
-            break;
         case FULL_NOISE_FLOODING:
             typeName = "FULL_NOISE_FLOODING";
             break;
@@ -108,17 +105,6 @@ constexpr uint32_t FMODSIZE     = 60;
 
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_NOISE_FLOODING> testCases = {
-    // TestType,       Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, DecryptionNoiseMode
-    { NOISE_ESTIMATION, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { NOISE_ESTIMATION, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { NOISE_ESTIMATION, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { NOISE_ESTIMATION, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-#if NATIVEINT != 128
-    { NOISE_ESTIMATION, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { NOISE_ESTIMATION, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { NOISE_ESTIMATION, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { NOISE_ESTIMATION, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-#endif
     // TestType,          Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, DecryptionNoiseMode
     { FULL_NOISE_FLOODING, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
     { FULL_NOISE_FLOODING, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
@@ -208,42 +194,6 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTest_NoiseEstimation(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
-                                  const std::string& failmsg = std::string()) {
-        try {
-            CCParams<CryptoContextCKKSRNS> parametersNoiseEstimation;
-            setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersNoiseEstimation);
-            parametersNoiseEstimation.SetDecryptionNoiseMode(NOISE_FLOODING_DECRYPT);
-            parametersNoiseEstimation.SetExecutionMode(EXEC_NOISE_ESTIMATION);
-
-            auto cryptoContextNoiseEstimation = GenCryptoContext(parametersNoiseEstimation);
-            cryptoContextNoiseEstimation->Enable(PKE);
-            cryptoContextNoiseEstimation->Enable(LEVELEDSHE);
-
-            auto keyPairNoiseEstimation = cryptoContextNoiseEstimation->KeyGen();
-            cryptoContextNoiseEstimation->EvalMultKeyGen(keyPairNoiseEstimation.secretKey);
-
-            auto noiseCiphertext = EncryptedComputation(cryptoContextNoiseEstimation, keyPairNoiseEstimation.publicKey);
-
-            Plaintext noisePlaintext;
-            cryptoContextNoiseEstimation->Decrypt(keyPairNoiseEstimation.secretKey, noiseCiphertext, &noisePlaintext);
-            noisePlaintext->SetLength(1);
-            double noise         = noisePlaintext->GetCKKSPackedValue()[0].real();
-            double expectedNoise = testData.params.scalTech == FLEXIBLEAUTOEXT ? 2 : 5.5;
-            EXPECT_TRUE(checkEquality(noise, expectedNoise, buffer)) << failmsg + " CKKS Noise estimation fails";
-        }
-        catch (std::exception& e) {
-            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
-        }
-        catch (...) {
-            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
-            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            // make it fail
-            EXPECT_TRUE(0 == 1) << failmsg;
-        }
-    }
     void UnitTest_FullNoiseFlooding(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
                                     const std::string& failmsg = std::string()) {
         // ----------------------- Setup first CryptoContext -----------------------------
@@ -251,7 +201,6 @@ protected:
         // -------------------------------------------------------------------------------
         CCParams<CryptoContextCKKSRNS> parametersNoiseEstimation;
         setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersNoiseEstimation);
-        parametersNoiseEstimation.SetDecryptionNoiseMode(NOISE_FLOODING_DECRYPT);
         parametersNoiseEstimation.SetExecutionMode(EXEC_NOISE_ESTIMATION);
 
         auto cryptoContextNoiseEstimation = GenCryptoContext(parametersNoiseEstimation);
@@ -275,7 +224,6 @@ protected:
         // -------------------------------------------------------------------------------
         CCParams<CryptoContextCKKSRNS> parametersEvaluation;
         setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersEvaluation);
-        parametersEvaluation.SetDecryptionNoiseMode(NOISE_FLOODING_DECRYPT);
         parametersEvaluation.SetExecutionMode(EXEC_EVALUATION);
         parametersEvaluation.SetNoiseEstimate(noise);
 
@@ -305,7 +253,6 @@ protected:
         // -------------------------------------------------------------------------------
         CCParams<CryptoContextCKKSRNS> parametersNoiseEstimation;
         setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersNoiseEstimation);
-        parametersNoiseEstimation.SetDecryptionNoiseMode(NOISE_FLOODING_DECRYPT);
         parametersNoiseEstimation.SetExecutionMode(EXEC_NOISE_ESTIMATION);
 
         auto cryptoContextNoiseEstimation = GenCryptoContext(parametersNoiseEstimation);
@@ -341,7 +288,6 @@ protected:
         // -------------------------------------------------------------------------------
         CCParams<CryptoContextCKKSRNS> parametersEvaluation;
         setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersEvaluation);
-        parametersEvaluation.SetDecryptionNoiseMode(NOISE_FLOODING_DECRYPT);
         parametersEvaluation.SetExecutionMode(EXEC_EVALUATION);
         parametersEvaluation.SetNoiseEstimate(noise);
 
@@ -378,9 +324,6 @@ TEST_P(UTCKKSRNS_NOISE_FLOODING, CKKSRNS) {
     auto test = GetParam();
 
     switch (test.testCaseType) {
-        case NOISE_ESTIMATION:
-            UnitTest_NoiseEstimation(test, test.buildTestName());
-            break;
         case FULL_NOISE_FLOODING:
             UnitTest_FullNoiseFlooding(test, test.buildTestName());
             break;

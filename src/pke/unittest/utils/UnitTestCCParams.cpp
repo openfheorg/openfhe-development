@@ -56,7 +56,8 @@ std::string UnitTestCCParams::toString() const {
        << "encryptionTechnique [" << encryptionTechnique << "], "
        << "PREMode [" << PREMode << "], "
        << "multipartyMode [" << multipartyMode << "], "
-       << "decryptionNoiseMode [" << decryptionNoiseMode << "], ";
+       << "decryptionNoiseMode [" << decryptionNoiseMode << "], "
+       << "executionMode [" << executionMode << "], ";
     return ss.str();
 }
 //===========================================================================================================

@@ -103,6 +103,9 @@ void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParams& para
     if (!isDefaultValue(params.decryptionNoiseMode)) {
         parameters.SetDecryptionNoiseMode(static_cast<DecryptionNoiseMode>(std::round(params.decryptionNoiseMode)));
     }
+    if (!isDefaultValue(params.executionMode)) {
+        parameters.SetExecutionMode(static_cast<ExecutionMode>(std::round(params.executionMode)));
+    }
 }
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
