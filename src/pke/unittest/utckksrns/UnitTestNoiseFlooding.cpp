@@ -50,11 +50,14 @@
 using namespace lbcrypto;
 
 //===========================================================================================================
-enum TEST_CASE_TYPE { FULL_NOISE_FLOODING, MULTIPARTY_NOISE_FLOODING };
+enum TEST_CASE_TYPE { NOISE_ESTIMATION, FULL_NOISE_FLOODING, MULTIPARTY_NOISE_FLOODING };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
+        case NOISE_ESTIMATION:
+            typeName = "NOISE_ESTIMATION";
+            break;
         case FULL_NOISE_FLOODING:
             typeName = "FULL_NOISE_FLOODING";
             break;
@@ -97,35 +100,50 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_NOIS
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr uint32_t MULT_DEPTH   = 25;
-constexpr uint32_t RDIM         = 512;
-constexpr uint32_t NUM_LRG_DIGS = 3;
-constexpr uint32_t SMODSIZE     = 59;
-constexpr uint32_t FMODSIZE     = 60;
+constexpr uint32_t MULT_DEPTH                    = 25;
+constexpr uint32_t RDIM                          = 512;
+constexpr uint32_t NUM_LRG_DIGS                  = 3;
+constexpr uint32_t SMODSIZE                      = 59;
+constexpr uint32_t FMODSIZE                      = 60;
+constexpr double NOISE_ESTIMATE_FLEX_AUTO_EXT    = 2;
+constexpr double NOISE_ESTIMATE                  = 5.5;
+constexpr double MP_NOISE_ESTIMATE_FLEX_AUTO_EXT = 1;
+constexpr double MP_NOISE_ESTIMATE               = 3.5;
 
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_NOISE_FLOODING> testCases = {
-    // TestType,          Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, DecryptionNoiseMode
-    { FULL_NOISE_FLOODING, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { FULL_NOISE_FLOODING, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { FULL_NOISE_FLOODING, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { FULL_NOISE_FLOODING, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+    // TestType,       Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, DecryptionNoiseMode,    ExecutionMode,         NoiseEstimate
+    { NOISE_ESTIMATION, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_NOISE_ESTIMATION, DFLT}},
+    { NOISE_ESTIMATION, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_NOISE_ESTIMATION, DFLT}},
+    { NOISE_ESTIMATION, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_NOISE_ESTIMATION, DFLT}},
+    { NOISE_ESTIMATION, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_NOISE_ESTIMATION, DFLT}},
 #if NATIVEINT != 128
-    { FULL_NOISE_FLOODING, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { FULL_NOISE_FLOODING, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { FULL_NOISE_FLOODING, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { FULL_NOISE_FLOODING, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+    { NOISE_ESTIMATION, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_NOISE_ESTIMATION, DFLT}},
+    { NOISE_ESTIMATION, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_NOISE_ESTIMATION, DFLT}},
+    { NOISE_ESTIMATION, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_NOISE_ESTIMATION, DFLT}},
+    { NOISE_ESTIMATION, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_NOISE_ESTIMATION, DFLT}},
 #endif
-    // TestType,                Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, DecryptionNoiseMode
-    { MULTIPARTY_NOISE_FLOODING, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { MULTIPARTY_NOISE_FLOODING, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { MULTIPARTY_NOISE_FLOODING, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { MULTIPARTY_NOISE_FLOODING, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+    // TestType,          Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, DecryptionNoiseMode,    ExecutionMode,   NoiseEstimate
+    { FULL_NOISE_FLOODING, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE}},
+    { FULL_NOISE_FLOODING, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE}},
+    { FULL_NOISE_FLOODING, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE}},
+    { FULL_NOISE_FLOODING, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE}},
 #if NATIVEINT != 128
-    { MULTIPARTY_NOISE_FLOODING, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { MULTIPARTY_NOISE_FLOODING, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { MULTIPARTY_NOISE_FLOODING, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
-    { MULTIPARTY_NOISE_FLOODING, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT}},
+    { FULL_NOISE_FLOODING, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE}},
+    { FULL_NOISE_FLOODING, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE}},
+    { FULL_NOISE_FLOODING, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE_FLEX_AUTO_EXT}},
+    { FULL_NOISE_FLOODING, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, NOISE_ESTIMATE_FLEX_AUTO_EXT}},
+#endif
+    // TestType,                Descr, Scheme,          RDim, MultDepth,  SModSize,     DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize,  SecLvl,       KSTech, ScalTech,        LDigits,      PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode, MultipartyMode, DecryptionNoiseMode,    ExecutionMode,
+    { MULTIPARTY_NOISE_FLOODING, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, MP_NOISE_ESTIMATE}},
+    { MULTIPARTY_NOISE_FLOODING, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDAUTO,       NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, MP_NOISE_ESTIMATE}},
+    { MULTIPARTY_NOISE_FLOODING, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, MP_NOISE_ESTIMATE}},
+    { MULTIPARTY_NOISE_FLOODING, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FIXEDMANUAL,     NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, MP_NOISE_ESTIMATE}},
+#if NATIVEINT != 128
+    { MULTIPARTY_NOISE_FLOODING, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, MP_NOISE_ESTIMATE}},
+    { MULTIPARTY_NOISE_FLOODING, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, MP_NOISE_ESTIMATE}},
+    { MULTIPARTY_NOISE_FLOODING, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    SPARSE_TERNARY,  DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, MP_NOISE_ESTIMATE_FLEX_AUTO_EXT}},
+    { MULTIPARTY_NOISE_FLOODING, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          FMODSIZE,  HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, NUM_LRG_DIGS, DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    DFLT,           NOISE_FLOODING_DECRYPT, EXEC_EVALUATION, MP_NOISE_ESTIMATE_FLEX_AUTO_EXT}},
 
 #endif
 };
@@ -194,50 +212,50 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
+    void UnitTest_NoiseEstimation(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
+                                  const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
+            cc->Enable(PKE);
+            cc->Enable(LEVELEDSHE);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            auto noiseCiphertext = EncryptedComputation(cc, keyPair.publicKey);
+
+            Plaintext noisePlaintext;
+            cc->Decrypt(keyPair.secretKey, noiseCiphertext, &noisePlaintext);
+            double noise = noisePlaintext->GetLogError();
+            double expectedNoise =
+                testData.params.scalTech == FLEXIBLEAUTOEXT ? NOISE_ESTIMATE_FLEX_AUTO_EXT : NOISE_ESTIMATE;
+            EXPECT_TRUE(checkEquality(noise, expectedNoise, buffer)) << failmsg + " CKKS Noise estimation fails";
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
     void UnitTest_FullNoiseFlooding(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
                                     const std::string& failmsg = std::string()) {
-        // ----------------------- Setup first CryptoContext -----------------------------
-        // Phase 1 will be for noise estimation.
-        // -------------------------------------------------------------------------------
-        CCParams<CryptoContextCKKSRNS> parametersNoiseEstimation;
-        setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersNoiseEstimation);
-        parametersNoiseEstimation.SetExecutionMode(EXEC_NOISE_ESTIMATION);
+        CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
+        cc->Enable(PKE);
+        cc->Enable(LEVELEDSHE);
 
-        auto cryptoContextNoiseEstimation = GenCryptoContext(parametersNoiseEstimation);
-        cryptoContextNoiseEstimation->Enable(PKE);
-        cryptoContextNoiseEstimation->Enable(LEVELEDSHE);
+        auto keyPair = cc->KeyGen();
+        cc->EvalMultKeyGen(keyPair.secretKey);
 
-        auto keyPairNoiseEstimation = cryptoContextNoiseEstimation->KeyGen();
-        cryptoContextNoiseEstimation->EvalMultKeyGen(keyPairNoiseEstimation.secretKey);
-
-        auto noiseCiphertext = EncryptedComputation(cryptoContextNoiseEstimation, keyPairNoiseEstimation.publicKey);
-
-        Plaintext noisePlaintext;
-        cryptoContextNoiseEstimation->Decrypt(keyPairNoiseEstimation.secretKey, noiseCiphertext, &noisePlaintext);
-        noisePlaintext->SetLength(1);
-        double noise = noisePlaintext->GetCKKSPackedValue()[0].real();
-
-        // ----------------------- Setup second CryptoContext -----------------------------
-        // Phase 2 will be for the actual evaluation.
-        // IMPORTANT: We must use a different public/private key pair here to achieve the
-        // security guarantees for noise flooding.
-        // -------------------------------------------------------------------------------
-        CCParams<CryptoContextCKKSRNS> parametersEvaluation;
-        setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersEvaluation);
-        parametersEvaluation.SetExecutionMode(EXEC_EVALUATION);
-        parametersEvaluation.SetNoiseEstimate(noise);
-
-        auto cryptoContextEvaluation = GenCryptoContext(parametersEvaluation);
-        cryptoContextEvaluation->Enable(PKE);
-        cryptoContextEvaluation->Enable(LEVELEDSHE);
-
-        auto keyPairEvaluation = cryptoContextEvaluation->KeyGen();
-        cryptoContextEvaluation->EvalMultKeyGen(keyPairEvaluation.secretKey);
-
-        auto ciphertextResult = EncryptedComputation(cryptoContextEvaluation, keyPairEvaluation.publicKey);
+        auto ciphertextResult = EncryptedComputation(cc, keyPair.publicKey);
 
         Plaintext result;
-        cryptoContextEvaluation->Decrypt(keyPairEvaluation.secretKey, ciphertextResult, &result);
+        cc->Decrypt(keyPair.secretKey, ciphertextResult, &result);
         size_t vecSize = 8;
         result->SetLength(vecSize);
 
@@ -248,67 +266,23 @@ protected:
 
     void UnitTest_MultipartyNoiseFlooding(const TEST_CASE_UTCKKSRNS_NOISE_FLOODING& testData,
                                           const std::string& failmsg = std::string()) {
-        // ----------------------- Setup first CryptoContext -----------------------------
-        // Phase 1 will be for noise estimation.
-        // -------------------------------------------------------------------------------
-        CCParams<CryptoContextCKKSRNS> parametersNoiseEstimation;
-        setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersNoiseEstimation);
-        parametersNoiseEstimation.SetExecutionMode(EXEC_NOISE_ESTIMATION);
+        CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData.params));
+        cc->Enable(PKE);
+        cc->Enable(LEVELEDSHE);
+        cc->Enable(MULTIPARTY);
 
-        auto cryptoContextNoiseEstimation = GenCryptoContext(parametersNoiseEstimation);
-        cryptoContextNoiseEstimation->Enable(PKE);
-        cryptoContextNoiseEstimation->Enable(LEVELEDSHE);
-        cryptoContextNoiseEstimation->Enable(MULTIPARTY);
+        auto kp1             = cc->KeyGen();
+        KeyPair<Element> kp2 = cc->MultipartyKeyGen(kp1.publicKey, false, true);
+        GenerateMultipartyKeys(cc, kp1, kp2);
+        auto pubKeyForEncryption = cc->MultiAddPubKeys(kp1.publicKey, kp2.publicKey, kp2.publicKey->GetKeyTag());
 
-        auto kpNoiseEst1 = cryptoContextNoiseEstimation->KeyGen();
-        KeyPair<Element> kpNoiseEst2 =
-            cryptoContextNoiseEstimation->MultipartyKeyGen(kpNoiseEst1.publicKey, false, true);
-        GenerateMultipartyKeys(cryptoContextNoiseEstimation, kpNoiseEst1, kpNoiseEst2);
-        auto pubKeyForEncryptionNoiseEst = cryptoContextNoiseEstimation->MultiAddPubKeys(
-            kpNoiseEst1.publicKey, kpNoiseEst2.publicKey, kpNoiseEst2.publicKey->GetKeyTag());
-
-        auto noiseCiphertext =
-            EncryptedMultipartyComputation(cryptoContextNoiseEstimation, pubKeyForEncryptionNoiseEst);
-
-        Plaintext noisePlaintext;
-        auto ciphertextPartialNoiseEst1 =
-            cryptoContextNoiseEstimation->MultipartyDecryptLead({noiseCiphertext}, kpNoiseEst1.secretKey);
-        auto ciphertextPartialNoiseEst2 =
-            cryptoContextNoiseEstimation->MultipartyDecryptMain({noiseCiphertext}, kpNoiseEst2.secretKey);
-        std::vector<Ciphertext<Element>> partialCiphertextVecMultNoiseEst{ciphertextPartialNoiseEst1[0],
-                                                                          ciphertextPartialNoiseEst2[0]};
-        cryptoContextNoiseEstimation->MultipartyDecryptFusion(partialCiphertextVecMultNoiseEst, &noisePlaintext);
-        noisePlaintext->SetLength(1);
-        double noise = noisePlaintext->GetCKKSPackedValue()[0].real();
-
-        // ----------------------- Setup second CryptoContext -----------------------------
-        // Phase 2 will be for the actual evaluation.
-        // IMPORTANT: We must use a different public/private key pair here to achieve the
-        // security guarantees for noise flooding.
-        // -------------------------------------------------------------------------------
-        CCParams<CryptoContextCKKSRNS> parametersEvaluation;
-        setCryptoContextParametersFromUnitTestCCParams(testData.params, parametersEvaluation);
-        parametersEvaluation.SetExecutionMode(EXEC_EVALUATION);
-        parametersEvaluation.SetNoiseEstimate(noise);
-
-        auto cryptoContextEvaluation = GenCryptoContext(parametersEvaluation);
-        cryptoContextEvaluation->Enable(PKE);
-        cryptoContextEvaluation->Enable(LEVELEDSHE);
-        cryptoContextEvaluation->Enable(MULTIPARTY);
-
-        auto kpEval1             = cryptoContextEvaluation->KeyGen();
-        KeyPair<Element> kpEval2 = cryptoContextEvaluation->MultipartyKeyGen(kpEval1.publicKey, false, true);
-        GenerateMultipartyKeys(cryptoContextEvaluation, kpEval1, kpEval2);
-        auto pubKeyForEncryptionEval = cryptoContextEvaluation->MultiAddPubKeys(kpEval1.publicKey, kpEval2.publicKey,
-                                                                                kpEval2.publicKey->GetKeyTag());
-
-        auto ciphertextResult = EncryptedMultipartyComputation(cryptoContextEvaluation, pubKeyForEncryptionEval);
+        auto ciphertextResult = EncryptedMultipartyComputation(cc, pubKeyForEncryption);
 
         Plaintext result;
-        auto ciphertextPartial1 = cryptoContextEvaluation->MultipartyDecryptLead({ciphertextResult}, kpEval1.secretKey);
-        auto ciphertextPartial2 = cryptoContextEvaluation->MultipartyDecryptMain({ciphertextResult}, kpEval2.secretKey);
+        auto ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextResult}, kp1.secretKey);
+        auto ciphertextPartial2 = cc->MultipartyDecryptMain({ciphertextResult}, kp2.secretKey);
         std::vector<Ciphertext<Element>> partialCiphertextVecMult{ciphertextPartial1[0], ciphertextPartial2[0]};
-        cryptoContextEvaluation->MultipartyDecryptFusion(partialCiphertextVecMult, &result);
+        cc->MultipartyDecryptFusion(partialCiphertextVecMult, &result);
         size_t vecSize = 8;
         result->SetLength(vecSize);
 
@@ -324,6 +298,9 @@ TEST_P(UTCKKSRNS_NOISE_FLOODING, CKKSRNS) {
     auto test = GetParam();
 
     switch (test.testCaseType) {
+        case NOISE_ESTIMATION:
+            UnitTest_NoiseEstimation(test, test.buildTestName());
+            break;
         case FULL_NOISE_FLOODING:
             UnitTest_FullNoiseFlooding(test, test.buildTestName());
             break;

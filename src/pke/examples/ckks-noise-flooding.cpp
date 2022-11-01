@@ -98,8 +98,7 @@ void CKKSNoiseFloodingDemo() {
     // Decrypt  noise
     Plaintext noisePlaintext;
     cryptoContextNoiseEstimation->Decrypt(keyPairNoiseEstimation.secretKey, noiseCiphertext, &noisePlaintext);
-    noisePlaintext->SetLength(1);
-    double noise = noisePlaintext->GetCKKSPackedValue()[0].real();
+    double noise = noisePlaintext->GetLogError();
     std::cout << "Noise \n\t" << noise << std::endl;
 
     // ----------------------- Setup second CryptoContext -----------------------------

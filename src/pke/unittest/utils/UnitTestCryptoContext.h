@@ -40,7 +40,4 @@ using Element = lbcrypto::DCRTPoly;
 
 lbcrypto::CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& testData);
 
-template <typename U>
-void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParams& params, U& parameters);
-
 #endif  // __UNITTESTCRYPTOCONTEXT_H__

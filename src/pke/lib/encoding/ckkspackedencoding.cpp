@@ -496,7 +496,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, enum
     double logstd = std::log2(stddev);
 
     if (executionMode == EXEC_NOISE_ESTIMATION) {
-        value.push_back(logstd);
+        m_logError = logstd;
     }
     else {
         // if stddev < sqrt{N}/8 (minimum approximation error that can be achieved)

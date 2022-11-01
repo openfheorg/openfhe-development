@@ -38,7 +38,7 @@
 using namespace lbcrypto;
 
 template <typename U>
-void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParams& params, U& parameters) {
+static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParams& params, U& parameters) {
     if (!isDefaultValue(params.ringDimension)) {
         parameters.SetRingDim(static_cast<usint>(std::round(params.ringDimension)));
     }
@@ -105,6 +105,9 @@ void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParams& para
     }
     if (!isDefaultValue(params.executionMode)) {
         parameters.SetExecutionMode(static_cast<ExecutionMode>(std::round(params.executionMode)));
+    }
+    if (!isDefaultValue(params.noiseEstimate)) {
+        parameters.SetNoiseEstimate(params.noiseEstimate);
     }
 }
 //===========================================================================================================
