@@ -571,6 +571,66 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
 }
 
 //------------------------------------------------------------------------------
+// Advanced SHE CHEBYSHEV SERIES EXAMPLES
+//------------------------------------------------------------------------------
+
+template <typename Element>
+std::vector<double> CryptoContextImpl<Element>::EvalChebyshevCoefficients(std::function<double(double)> func, double a,
+                                                                          double b, uint32_t degree) const {
+    std::vector<double> coefficients(degree);
+
+    double bMinusA = 0.5 * (b - a);
+    double bPlusA  = 0.5 * (b + a);
+    std::vector<double> functionPoints(degree);
+    for (size_t i = 0; i < degree; i++) {
+        functionPoints[i] = func(std::cos(M_PI * (i + 0.5) / degree) * bMinusA + bPlusA);
+    }
+    double multFactor = 2.0 / degree;
+
+    for (size_t i = 0; i < degree; i++) {
+        coefficients[i] = 0;
+        for (size_t j = 0; j < degree; j++) {
+            coefficients[i] += functionPoints[j] * std::cos(M_PI * i * (j + 0.5) / degree);
+        }
+        coefficients[i] *= multFactor;
+    }
+
+    return coefficients;
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalSin(ConstCiphertext<Element> ciphertext, double a, double b,
+                                                        uint32_t degree) const {
+    std::vector<double> coefficients =
+        EvalChebyshevCoefficients([](double x) -> double { return std::sin(x); }, a, b, degree);
+    return EvalChebyshevSeries(ciphertext, coefficients, a, b);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalCos(ConstCiphertext<Element> ciphertext, double a, double b,
+                                                        uint32_t degree) const {
+    std::vector<double> coefficients =
+        EvalChebyshevCoefficients([](double x) -> double { return std::cos(x); }, a, b, degree);
+    return EvalChebyshevSeries(ciphertext, coefficients, a, b);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalLogistic(ConstCiphertext<Element> ciphertext, double a, double b,
+                                                             uint32_t degree) const {
+    std::vector<double> coefficients =
+        EvalChebyshevCoefficients([](double x) -> double { return 1 / (1 + std::exp(-x)); }, a, b, degree);
+    return EvalChebyshevSeries(ciphertext, coefficients, a, b);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Element> ciphertext, double a, double b,
+                                                           uint32_t degree) const {
+    std::vector<double> coefficients =
+        EvalChebyshevCoefficients([](double x) -> double { return 1 / x; }, a, b, degree);
+    return EvalChebyshevSeries(ciphertext, coefficients, a, b);
+}
+
+//------------------------------------------------------------------------------
 // Advanced SHE LINEAR TRANSFORMATION
 //------------------------------------------------------------------------------
 

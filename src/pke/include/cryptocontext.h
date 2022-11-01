@@ -51,6 +51,7 @@
 #include "utils/caller_info.h"
 #include "utils/serial.h"
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -2232,7 +2233,8 @@ public:
    * @param degree Desired degree of approximation
    * @return the coefficients of the Chebyshev approximation.
    */
-    std::vector<double> EvalChebyshevCoefficients(double (*func)(double), double a, double b, uint32_t degree) const;
+    std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func, double a, double b,
+                                                  uint32_t degree) const;
 
     /**
    * Evaluate approximate sine function on a ciphertext using the Chebyshev approximation.

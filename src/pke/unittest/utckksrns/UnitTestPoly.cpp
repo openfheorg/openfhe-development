@@ -54,6 +54,10 @@ enum TEST_CASE_TYPE {
     EVAL_CHEB_LOGIT_NOLIN,
     EVAL_CHEB_SINE,
     EVAL_CHEB_POLY,
+    EVAL_DIVIDE,
+    EVAL_LOGISTIC,
+    EVAL_SIN,
+    EVAL_COS,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -76,6 +80,18 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case EVAL_CHEB_POLY:
             typeName = "EVAL_CHEB_POLY";
+            break;
+        case EVAL_DIVIDE:
+            typeName = "EVAL_DIVIDE";
+            break;
+        case EVAL_LOGISTIC:
+            typeName = "EVAL_LOGISTIC";
+            break;
+        case EVAL_SIN:
+            typeName = "EVAL_SIN";
+            break;
+        case EVAL_COS:
+            typeName = "EVAL_COS";
             break;
         default:
             typeName = "UNKNOWN";
@@ -191,17 +207,53 @@ static std::vector<TEST_CASE_UTCKKSRNS_EVAL_POLY> testCases = {
     { EVAL_CHEB_SINE, "08", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
  #endif
     // ==========================================
-    // TestType,      Descr, Scheme,         RDim,     MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits,    PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
-    { EVAL_CHEB_POLY, "01", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
-    { EVAL_CHEB_POLY, "02", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
-    { EVAL_CHEB_POLY, "03", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
-    { EVAL_CHEB_POLY, "04", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    // TestType,   Descr, Scheme,         RDim, MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits,    PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { EVAL_DIVIDE, "01", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_DIVIDE, "02", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_DIVIDE, "03", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_DIVIDE, "04", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
 #if NATIVEINT != 128
-    { EVAL_CHEB_POLY, "05", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
-    { EVAL_CHEB_POLY, "06", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
-    { EVAL_CHEB_POLY, "07", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
-    { EVAL_CHEB_POLY, "08", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_DIVIDE, "05", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_DIVIDE, "06", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_DIVIDE, "07", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_DIVIDE, "08", {CKKSRNS_SCHEME, RDIM, MULT_DEPTH, SMODSIZE,   DFLT,  BATCH,   UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
 #endif
+    // ==========================================
+    // TestType,     Descr, Scheme,         RDim,     MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits,    PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { EVAL_LOGISTIC, "01", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_LOGISTIC, "02", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_LOGISTIC, "03", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_LOGISTIC, "04", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+ #if NATIVEINT != 128
+    { EVAL_LOGISTIC, "05", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_LOGISTIC, "06", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_LOGISTIC, "07", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_LOGISTIC, "08", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+ #endif
+    // ==========================================
+    // TestType Descr, Scheme,         RDim,     MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits,    PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { EVAL_SIN, "01", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_SIN, "02", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_SIN, "03", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_SIN, "04", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+ #if NATIVEINT != 128
+    { EVAL_SIN, "05", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_SIN, "06", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_SIN, "07", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_SIN, "08", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+ #endif
+    // ==========================================
+    // TestType Descr, Scheme,         RDim,     MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits,    PtMod, StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { EVAL_COS, "01", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_COS, "02", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_COS, "03", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_COS, "04", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FIXEDAUTO,       DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+ #if NATIVEINT != 128
+    { EVAL_COS, "05", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_COS, "06", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_COS, "07", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+    { EVAL_COS, "08", {CKKSRNS_SCHEME, RDIM_LRG, MULT_DEPTH, SMODSIZE,   DFLT,  16,      UNIFORM_TERNARY, DFLT,          FMODSIZE, HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,       DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT} },
+ #endif
     // ==========================================
 };
 // clang-format on
@@ -580,6 +632,144 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
+
+    void UnitTest_EvalDivide(const TEST_CASE_UTCKKSRNS_EVAL_POLY& testData,
+                             const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            std::vector<std::complex<double>> input{2.0, 16.0, 64.0, 128.0, 512.0};
+            size_t encodedLength = input.size();
+
+            std::vector<std::complex<double>> output1{0.500067, 0.0624609, 0.0156279, 0.00781142, 0.00195297};
+            Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
+
+            auto keyPair = cc->KeyGen();
+            cc->EvalMultKeyGen(keyPair.secretKey);
+
+            Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(input);
+            auto ciphertext1     = cc->Encrypt(keyPair.publicKey, plaintext1);
+
+            double a        = 1;
+            double b        = 1024;
+            uint32_t degree = 129;
+            auto result     = cc->EvalDivide(ciphertext1, a, b, degree);
+
+            Plaintext plaintextDec;
+            cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
+            plaintextDec->SetLength(encodedLength);
+
+            std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
+            finalResult.resize(encodedLength);
+            checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
+                          failmsg + " EvalDivide Chebyshev approximation fails");
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+    void UnitTest_EvalLogistic(const TEST_CASE_UTCKKSRNS_EVAL_POLY& testData,
+                               const std::string& failmsg = std::string()) {
+        CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+        std::vector<std::complex<double>> input{-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0};
+        size_t encodedLength = input.size();
+
+        std::vector<std::complex<double>> output1(
+            {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
+
+        Plaintext plaintext1       = cc->MakeCKKSPackedPlaintext(input);
+        Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
+
+        auto keyPair = cc->KeyGen();
+        cc->EvalMultKeyGen(keyPair.secretKey);
+        auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
+
+        double a        = -4;
+        double b        = 4;
+        uint32_t degree = 16;
+        auto result     = cc->EvalLogistic(ciphertext1, a, b, degree);
+
+        Plaintext plaintextDec;
+        cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
+        plaintextDec->SetLength(encodedLength);
+
+        std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
+        finalResult.resize(encodedLength);
+
+        checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
+                      failmsg + " EvalLogistic Chebyshev approximation fails");
+    }
+    void UnitTest_EvalSin(const TEST_CASE_UTCKKSRNS_EVAL_POLY& testData, const std::string& failmsg = std::string()) {
+        CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+        std::vector<std::complex<double>> input{-1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1.};
+        size_t encodedLength = input.size();
+
+        std::vector<std::complex<double>> output1{-0.841470, -0.717356, -0.564642, -0.389418, -0.198669, 0,
+                                                  0.198669,  0.389418,  0.564642,  0.717356,  0.841470};
+
+        Plaintext plaintext1       = cc->MakeCKKSPackedPlaintext(input);
+        Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
+
+        auto keyPair = cc->KeyGen();
+        cc->EvalMultKeyGen(keyPair.secretKey);
+        auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
+
+        double a        = -1;
+        double b        = 1;
+        uint32_t degree = 129;
+        auto result     = cc->EvalSin(ciphertext1, a, b, degree);
+
+        Plaintext plaintextDec;
+        cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
+        plaintextDec->SetLength(encodedLength);
+
+        std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
+        finalResult.resize(encodedLength);
+
+        checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
+                      failmsg + " EvalSin Chebyshev approximation fails");
+    }
+    void UnitTest_EvalCos(const TEST_CASE_UTCKKSRNS_EVAL_POLY& testData, const std::string& failmsg = std::string()) {
+        CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+        std::vector<std::complex<double>> input{-1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1.};
+        size_t encodedLength = input.size();
+
+        std::vector<std::complex<double>> output1{0.540302, 0.696706, 0.825335, 0.921060, 0.980066, 1.0,
+                                                  0.980066, 0.921060, 0.825335, 0.696706, 0.540302};
+
+        Plaintext plaintext1       = cc->MakeCKKSPackedPlaintext(input);
+        Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
+
+        auto keyPair = cc->KeyGen();
+        cc->EvalMultKeyGen(keyPair.secretKey);
+        auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
+
+        double a        = -1;
+        double b        = 1;
+        uint32_t degree = 129;
+        auto result     = cc->EvalCos(ciphertext1, a, b, degree);
+
+        Plaintext plaintextDec;
+        cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
+        plaintextDec->SetLength(encodedLength);
+
+        std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
+        finalResult.resize(encodedLength);
+
+        checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
+                      failmsg + " EvalCos Chebyshev approximation fails");
+    }
 };
 
 //===========================================================================================================
@@ -605,6 +795,18 @@ TEST_P(UTCKKSRNS_EVAL_POLY, CKKSRNS) {
             break;
         case EVAL_CHEB_POLY:
             UnitTest_EvalChebPoly(test, test.buildTestName());
+            break;
+        case EVAL_DIVIDE:
+            UnitTest_EvalDivide(test, test.buildTestName());
+            break;
+        case EVAL_LOGISTIC:
+            UnitTest_EvalLogistic(test, test.buildTestName());
+            break;
+        case EVAL_SIN:
+            UnitTest_EvalSin(test, test.buildTestName());
+            break;
+        case EVAL_COS:
+            UnitTest_EvalCos(test, test.buildTestName());
             break;
         default:
             break;
