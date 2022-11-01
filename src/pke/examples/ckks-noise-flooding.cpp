@@ -35,8 +35,10 @@
   is a preliminary run to measure noise, and the second iteration is the actual run, which
   will input the noise as a parameter. We use the noise to enhance security within decryption.
 
-  Note that a user can choose to run the first computation with NATIVEINT = 64 to estimate noise,
-  and the second computation with NATIVEINT = 128, or vice versa, if they wish.
+  Note that a user can choose to run the first computation with NATIVE_SIZE = 64 to estimate noise,
+  and the second computation with NATIVE_SIZE = 128, if they wish. This would require a
+  different set of binaries: first, with NATIVE_SIZE = 64 and the second one with NATIVE_SIZE = 128.
+  It can be considered as an optimization for the case when we need NATIVE_SIZE = 128.
  */
 
 #include "openfhe.h"
