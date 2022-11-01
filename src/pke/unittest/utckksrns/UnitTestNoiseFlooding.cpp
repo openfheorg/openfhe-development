@@ -100,15 +100,17 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTCKKSRNS_NOIS
     return os << test.toString();
 }
 //===========================================================================================================
-constexpr uint32_t MULT_DEPTH                    = 25;
-constexpr uint32_t RDIM                          = 512;
-constexpr uint32_t NUM_LRG_DIGS                  = 3;
-constexpr uint32_t SMODSIZE                      = 59;
-constexpr uint32_t FMODSIZE                      = 60;
-constexpr double NOISE_ESTIMATE_FLEX_AUTO_EXT    = 2;
-constexpr double NOISE_ESTIMATE                  = 5.5;
+constexpr uint32_t MULT_DEPTH                 = 25;
+constexpr uint32_t RDIM                       = 512;
+constexpr uint32_t NUM_LRG_DIGS               = 3;
+constexpr uint32_t SMODSIZE                   = 59;
+constexpr uint32_t FMODSIZE                   = 60;
+constexpr double NOISE_ESTIMATE_FLEX_AUTO_EXT = 2;
+constexpr double NOISE_ESTIMATE               = 5.5;
+#if NATIVEINT != 128
 constexpr double MP_NOISE_ESTIMATE_FLEX_AUTO_EXT = 1;
-constexpr double MP_NOISE_ESTIMATE               = 3.5;
+#endif
+constexpr double MP_NOISE_ESTIMATE = 3.5;
 
 // clang-format off
 static std::vector<TEST_CASE_UTCKKSRNS_NOISE_FLOODING> testCases = {
