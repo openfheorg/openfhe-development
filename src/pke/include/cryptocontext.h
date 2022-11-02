@@ -2237,6 +2237,20 @@ public:
                                                   uint32_t degree) const;
 
     /**
+   * Method for calculating Chebyshev evaluation on a ciphertext for an input function
+   * over the range [a,b].
+   *
+   * @param func is the function to be approximated
+   * @param ciphertext input ciphertext
+   * @param a - lower bound of argument for which the coefficients were found
+   * @param b - upper bound of argument for which the coefficients were found
+   * @param degree Desired degree of approximation
+   * @return the coefficients of the Chebyshev approximation.
+   */
+    Ciphertext<Element> EvalChebyshevFunction(std::function<double(double)> func, ConstCiphertext<Element> ciphertext,
+                                              double a, double b, uint32_t degree) const;
+
+    /**
    * Evaluate approximate sine function on a ciphertext using the Chebyshev approximation.
    *
    * @param ciphertext input ciphertext
