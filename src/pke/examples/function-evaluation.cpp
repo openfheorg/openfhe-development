@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Example of evaluating non-polynomial functions with the Chebyshev approximation using CKKS.
+  Example of evaluating arbitrary smooth functions with the Chebyshev approximation using CKKS.
  */
 
 #include "openfhe.h"
@@ -72,7 +72,8 @@ void EvalLogisticExample() {
     // Choosing a higher degree yields better precision, but a longer runtime.
     uint32_t polyDegree = 16;
 
-    // TODO: Check this with Yuriy.
+    // The multiplicative depth depends on the polynomial degree.
+    // See the function-evaluation.md file for a table mapping polynomial degrees to multiplicative depths.
     uint32_t multDepth = 6;
 
     parameters.SetMultiplicativeDepth(multDepth);
@@ -132,7 +133,8 @@ void EvalFunctionExample() {
     // Choosing a higher degree yields better precision, but a longer runtime.
     uint32_t polyDegree = 50;
 
-    // TODO: Check this with Yuriy.
+    // The multiplicative depth depends on the polynomial degree.
+    // See the function-evaluation.md file for a table mapping polynomial degrees to multiplicative depths.
     uint32_t multDepth = 7;
 
     parameters.SetMultiplicativeDepth(multDepth);

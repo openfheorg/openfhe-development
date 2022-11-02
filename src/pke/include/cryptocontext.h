@@ -2223,8 +2223,8 @@ public:
     //------------------------------------------------------------------------------
 
     /**
-   * Method for calculating Chebyshev evaluation on a ciphertext for an input function
-   * over the range [a,b].
+   * Method for calculating Chebyshev evaluation on a ciphertext for a smooth input
+   * function over the range [a,b].
    *
    * @param func is the function to be approximated
    * @param ciphertext input ciphertext
