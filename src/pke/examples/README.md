@@ -28,7 +28,7 @@ File Listing
 - [depth-bgvrns.cpp](depth-bgvrns.cpp): demonstrates use of the BGVrns scheme for basic homomorphic encryption
 - [iterative-ckks-bootstrapping.cpp](iterative-ckks-bootstrapping.cpp): demonstrates how to run multiple iterations of CKKS bootstrapping to improve precision
 - [linearwsum-evaluation.cpp](linearwsum.cpp): demonstrates the evaluation of a linear weighted sum using CKKS
-- [non-poly-function-evaluation.cpp](non-poly-function-evaluation.cpp): demonstrates the evaluation of a non-polynomial function using a Chebyshev approximation using CKKS
+- [function-evaluation.cpp](function-evaluation.cpp): demonstrates the evaluation of a non-polynomial function using a Chebyshev approximation using CKKS
 - [polynomial-evaluation.cpp](polynomial-evaluation.cpp): demonstrates an evaluation of a polynomial (power series) using CKKS
 - [pre-buffer.cpp](pre-buffer.cpp): demonstrates use of OpenFHE for encryption, re-encryption and decryption of packed vector of binary data
 - [rotation.cpp](rotation.cpp): demonstrates use of EvalRotate for different schemes
@@ -110,6 +110,8 @@ Now your code should look like this:
 
 ## Description of the CryptoContext parameters
 Choosing the CryptoContext parameters is important for obtaining the best performance for your encrypted application, while maintaining the desired level of security. We strongly recommend that you specify the security level and have OpenFHE automatically select the other parameters, unless you are an expert in homomorphic encryption. If you would like to modify the parameters to understand how they affect noise growth and performance, we provide descriptions below.
+
+The default values for all the parameters can be found in [cryptocontextparams-defaults.h](../include/scheme/cryptocontextparams-defaults.h)
 
 **PlaintextModulus ptModulus** - plaintext modulus(for BGV/BFV), which impacts noise growth
 
