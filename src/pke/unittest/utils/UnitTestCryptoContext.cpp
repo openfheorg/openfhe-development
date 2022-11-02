@@ -100,6 +100,15 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.multipartyMode)) {
         parameters.SetMultipartyMode(static_cast<MultipartyMode>(std::round(params.multipartyMode)));
     }
+    if (!isDefaultValue(params.decryptionNoiseMode)) {
+        parameters.SetDecryptionNoiseMode(static_cast<DecryptionNoiseMode>(std::round(params.decryptionNoiseMode)));
+    }
+    if (!isDefaultValue(params.executionMode)) {
+        parameters.SetExecutionMode(static_cast<ExecutionMode>(std::round(params.executionMode)));
+    }
+    if (!isDefaultValue(params.noiseEstimate)) {
+        parameters.SetNoiseEstimate(params.noiseEstimate);
+    }
 }
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {

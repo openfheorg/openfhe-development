@@ -87,6 +87,18 @@ enum MultipartyMode {
 };
 std::ostream& operator<<(std::ostream& s, MultipartyMode t);
 
+enum ExecutionMode {
+    EXEC_EVALUATION = 0,
+    EXEC_NOISE_ESTIMATION,
+};
+std::ostream& operator<<(std::ostream& s, ExecutionMode t);
+
+enum DecryptionNoiseMode {
+    FIXED_NOISE_DECRYPT = 0,
+    NOISE_FLOODING_DECRYPT,
+};
+std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t);
+
 enum KeySwitchTechnique {
     INVALID_KS_TECH = 0,
     BV,
