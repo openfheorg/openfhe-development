@@ -78,8 +78,9 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
             parameters.GetStatisticalSecurity() / 2 + log2(sqrt(12 * parameters.GetNumAdversarialQueries()));
         floodingNoiseStd = pow(2, logstd + parameters.GetNoiseEstimate());
 #if NATIVEINT == 128
-        scalingModSize = parameters.GetDesiredPrecision() + parameters.GetNoiseEstimate() + logstd;
-        firstModSize   = scalingModSize + 11;
+        scalingModSize = parameters.GetDesiredPrecision() + parameters.GetNoiseEstimate() + logstd +
+                         0.5 * log2(parameters.GetRingDim());
+        firstModSize = scalingModSize + 11;
 #else
         scalingModSize = MAX_MODULUS_SIZE - 1;
         firstModSize   = MAX_MODULUS_SIZE;

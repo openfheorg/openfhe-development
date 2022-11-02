@@ -39,6 +39,11 @@
   and the second computation with NATIVE_SIZE = 128, if they wish. This would require a
   different set of binaries: first, with NATIVE_SIZE = 64 and the second one with NATIVE_SIZE = 128.
   It can be considered as an optimization for the case when we need NATIVE_SIZE = 128.
+
+  For NATIVE_SIZE=128, we automatically choose the scaling mod size and first mod size in the second iteration
+  based on the input noise estimate. This means that we currently do not support bootstrapping in the
+  NOISE_FLOODING_DECRYPT mode, since the scaling mod size and first mod size affect the noise estimate for
+  bootstrapping. We plan to add support for bootstrapping in NOISE_FLOODING_DECRYPT mode in a future release.
  */
 
 #include "openfhe.h"
@@ -154,15 +159,26 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
 
     /* Desired security level based on FHE standards. Note that this is different than NoiseDecryptionMode,
     * which also gives us enhanced security in CKKS when using NOISE_FLOODING_DECRYPT.
-    * In production-like environments, we recommend using
-    * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-    * or 256-bit security, respectively.
+    * We must always use the same ring dimension in both iterations, so we set the security level to HEStd_NotSet,
+    * and manually set the ring dimension.
     */
-    parameters.SetSecurityLevel(HEStd_128_classic);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    parameters.SetRingDim(1 << 16);
 
     ScalingTechnique rescaleTech = FIXEDAUTO;
-    usint dcrtBits               = 59;
-    usint firstMod               = 60;
+
+    // TODO: Figure out why the modulus sizes affect noise estimation.
+    // Note that the modulus sizes do not affect the noise estimation, except in the case of bootstrapping.
+    // Without bootstrapping, we are free to choose different parameters in each iteration.
+    // In 128-bit CKKS, for the evaluation phase, we choose the first mod size and scaling mod size based on the input noise estimate.
+    // We will add support for bootstrapping in a future release.
+#if NATIVEINT == 128
+    usint dcrtBits = 78;
+    usint firstMod = 89; /*firstMod*/
+#else
+    usint dcrtBits = 59;
+    usint firstMod = 60; /*firstMod*/
+#endif
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
