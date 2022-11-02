@@ -166,21 +166,11 @@ CryptoContext<DCRTPoly> GetCryptoContext(CCParams<CryptoContextCKKSRNS>& paramet
     parameters.SetRingDim(1 << 16);
 
     ScalingTechnique rescaleTech = FIXEDAUTO;
+    usint dcrtBits               = 59;
+    usint firstMod               = 60;
 
-    // TODO: Figure out why the modulus sizes affect noise estimation.
-    // Note that the modulus sizes do not affect the noise estimation, except in the case of bootstrapping.
-    // Without bootstrapping, we are free to choose different parameters in each iteration.
-    // In 128-bit CKKS, for the evaluation phase, we choose the first mod size and scaling mod size based on the input noise estimate.
-    // We will add support for bootstrapping in a future release.
-#if NATIVEINT == 128
-    usint dcrtBits = 78;
-    usint firstMod = 89; /*firstMod*/
-#else
-    usint dcrtBits = 59;
-    usint firstMod = 60; /*firstMod*/
-#endif
-    parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
+    parameters.SetScalingModSize(dcrtBits);
     parameters.SetFirstModSize(firstMod);
 
     // In this example, we perform two multiplications and an addition.
