@@ -36,6 +36,7 @@
 #ifndef LBCRYPTO_MATH_CHEBYSHEV_H
 #define LBCRYPTO_MATH_CHEBYSHEV_H
 
+#include <cstdint>
 #include <functional>
 #include <vector>
 

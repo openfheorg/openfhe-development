@@ -35,7 +35,6 @@
  */
 
 #include "math/chebyshev.h"
-#include <cstdint>
 #include <cmath>
 
 namespace lbcrypto {
