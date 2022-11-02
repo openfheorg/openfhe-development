@@ -51,6 +51,7 @@
 #include "utils/caller_info.h"
 #include "utils/serial.h"
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -2216,6 +2217,68 @@ public:
 
         return GetScheme()->EvalChebyshevSeriesPS(ciphertext, coefficients, a, b);
     }
+
+    //------------------------------------------------------------------------------
+    // Advanced SHE CHEBYSHEV SERIES EXAMPLES
+    //------------------------------------------------------------------------------
+
+    /**
+   * Method for calculating Chebyshev evaluation on a ciphertext for a smooth input
+   * function over the range [a,b].
+   *
+   * @param func is the function to be approximated
+   * @param ciphertext input ciphertext
+   * @param a - lower bound of argument for which the coefficients were found
+   * @param b - upper bound of argument for which the coefficients were found
+   * @param degree Desired degree of approximation
+   * @return the coefficients of the Chebyshev approximation.
+   */
+    Ciphertext<Element> EvalChebyshevFunction(std::function<double(double)> func, ConstCiphertext<Element> ciphertext,
+                                              double a, double b, uint32_t degree) const;
+
+    /**
+   * Evaluate approximate sine function on a ciphertext using the Chebyshev approximation.
+   *
+   * @param ciphertext input ciphertext
+   * @param a - lower bound of argument for which the coefficients were found
+   * @param b - upper bound of argument for which the coefficients were found
+   * @param degree Desired degree of approximation
+   * @return the result of polynomial evaluation.
+   */
+    Ciphertext<Element> EvalSin(ConstCiphertext<Element> ciphertext, double a, double b, uint32_t degree) const;
+
+    /**
+   * Evaluate approximate cosine function on a ciphertext using the Chebyshev approximation.
+   *
+   * @param ciphertext input ciphertext
+   * @param a - lower bound of argument for which the coefficients were found
+   * @param b - upper bound of argument for which the coefficients were found
+   * @param degree Desired degree of approximation
+   * @return the result of polynomial evaluation.
+   */
+    Ciphertext<Element> EvalCos(ConstCiphertext<Element> ciphertext, double a, double b, uint32_t degree) const;
+
+    /**
+   * Evaluate approximate logistic function 1/(1 + exp(-x)) on a ciphertext using the Chebyshev approximation.
+   *
+   * @param ciphertext input ciphertext
+   * @param a - lower bound of argument for which the coefficients were found
+   * @param b - upper bound of argument for which the coefficients were found
+   * @param degree Desired degree of approximation
+   * @return the result of polynomial evaluation.
+   */
+    Ciphertext<Element> EvalLogistic(ConstCiphertext<Element> ciphertext, double a, double b, uint32_t degree) const;
+
+    /**
+   * Evaluate approximate division function 1/x where x >= 1 on a ciphertext using the Chebyshev approximation.
+   *
+   * @param ciphertext input ciphertext
+   * @param a - lower bound of argument for which the coefficients were found
+   * @param b - upper bound of argument for which the coefficients were found
+   * @param degree Desired degree of approximation
+   * @return the result of polynomial evaluation.
+   */
+    Ciphertext<Element> EvalDivide(ConstCiphertext<Element> ciphertext, double a, double b, uint32_t degree) const;
 
     //------------------------------------------------------------------------------
     // Advanced SHE EVAL SUM
