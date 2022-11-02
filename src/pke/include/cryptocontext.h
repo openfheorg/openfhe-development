@@ -2223,20 +2223,6 @@ public:
     //------------------------------------------------------------------------------
 
     /**
-   * Method for calculating Chebyshev coefficients for an input function
-   * over the range [a,b]. These coefficents can be input into
-   * EValChebyshevSeries to evaluate the function.
-   *
-   * @param func is the function to be approximated
-   * @param a - lower bound of argument for which the coefficients were found
-   * @param b - upper bound of argument for which the coefficients were found
-   * @param degree Desired degree of approximation
-   * @return the coefficients of the Chebyshev approximation.
-   */
-    std::vector<double> EvalChebyshevCoefficients(std::function<double(double)> func, double a, double b,
-                                                  uint32_t degree) const;
-
-    /**
    * Method for calculating Chebyshev evaluation on a ciphertext for an input function
    * over the range [a,b].
    *
