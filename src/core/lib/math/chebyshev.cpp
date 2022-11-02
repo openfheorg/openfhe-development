@@ -31,7 +31,7 @@
 //==================================================================================
 
 /*
-  This code provides Chebyshev approximation functionalities
+  This code provides Chebyshev approximation utilities
  */
 
 #include "math/chebyshev.h"
