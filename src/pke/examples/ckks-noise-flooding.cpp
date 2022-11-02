@@ -30,7 +30,8 @@
 //==================================================================================
 
 /*
-  Example for using CKKS with NOISE_FLOODING_DECRYPT mode. This mode gives us equivalent security levels to
+  Example for using CKKS with the experimental NOISE_FLOODING_DECRYPT mode. We do not recommend
+  this mode for production yet. This experimental mode gives us equivalent security levels to
   BGV and BFV, but it requires the user to run all encrypted operations twice. The first iteration
   is a preliminary run to measure noise, and the second iteration is the actual run, which
   will input the noise as a parameter. We use the noise to enhance security within decryption.
