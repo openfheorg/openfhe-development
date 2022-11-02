@@ -641,8 +641,7 @@ protected:
             std::vector<std::complex<double>> input{2.0, 16.0, 64.0, 128.0, 512.0};
             size_t encodedLength = input.size();
 
-            std::vector<std::complex<double>> output1{0.500067, 0.0624609, 0.0156279, 0.00781142, 0.00195297};
-            Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
+            std::vector<std::complex<double>> expectedOutput{0.500067, 0.0624609, 0.0156279, 0.00781142, 0.00195297};
 
             auto keyPair = cc->KeyGen();
             cc->EvalMultKeyGen(keyPair.secretKey);
@@ -660,9 +659,7 @@ protected:
             plaintextDec->SetLength(encodedLength);
 
             std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
-            finalResult.resize(encodedLength);
-            checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
-                          failmsg + " EvalDivide Chebyshev approximation fails");
+            checkEquality(expectedOutput, finalResult, eps, failmsg + " EvalDivide Chebyshev approximation fails");
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -683,30 +680,27 @@ protected:
         std::vector<std::complex<double>> input{-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0};
         size_t encodedLength = input.size();
 
-        std::vector<std::complex<double>> output1(
+        std::vector<std::complex<double>> expectedOutput(
             {0.0179885, 0.0474289, 0.119205, 0.268936, 0.5, 0.731064, 0.880795, 0.952571, 0.982011});
 
-        Plaintext plaintext1       = cc->MakeCKKSPackedPlaintext(input);
-        Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
+        Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input);
 
         auto keyPair = cc->KeyGen();
         cc->EvalMultKeyGen(keyPair.secretKey);
-        auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
+        auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
         double a        = -4;
         double b        = 4;
         uint32_t degree = 16;
-        auto result     = cc->EvalLogistic(ciphertext1, a, b, degree);
+        auto result     = cc->EvalLogistic(ciphertext, a, b, degree);
 
         Plaintext plaintextDec;
         cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
         plaintextDec->SetLength(encodedLength);
 
         std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
-        finalResult.resize(encodedLength);
 
-        checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
-                      failmsg + " EvalLogistic Chebyshev approximation fails");
+        checkEquality(expectedOutput, finalResult, eps, failmsg + " EvalLogistic Chebyshev approximation fails");
     }
     void UnitTest_EvalSin(const TEST_CASE_UTCKKSRNS_EVAL_POLY& testData, const std::string& failmsg = std::string()) {
         CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -714,30 +708,27 @@ protected:
         std::vector<std::complex<double>> input{-1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1.};
         size_t encodedLength = input.size();
 
-        std::vector<std::complex<double>> output1{-0.841470, -0.717356, -0.564642, -0.389418, -0.198669, 0,
-                                                  0.198669,  0.389418,  0.564642,  0.717356,  0.841470};
+        std::vector<std::complex<double>> expectedOutput{-0.841470, -0.717356, -0.564642, -0.389418, -0.198669, 0,
+                                                         0.198669,  0.389418,  0.564642,  0.717356,  0.841470};
 
-        Plaintext plaintext1       = cc->MakeCKKSPackedPlaintext(input);
-        Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
+        Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input);
 
         auto keyPair = cc->KeyGen();
         cc->EvalMultKeyGen(keyPair.secretKey);
-        auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
+        auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
         double a        = -1;
         double b        = 1;
         uint32_t degree = 129;
-        auto result     = cc->EvalSin(ciphertext1, a, b, degree);
+        auto result     = cc->EvalSin(ciphertext, a, b, degree);
 
         Plaintext plaintextDec;
         cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
         plaintextDec->SetLength(encodedLength);
 
         std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
-        finalResult.resize(encodedLength);
 
-        checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
-                      failmsg + " EvalSin Chebyshev approximation fails");
+        checkEquality(expectedOutput, finalResult, eps, failmsg + " EvalSin Chebyshev approximation fails");
     }
     void UnitTest_EvalCos(const TEST_CASE_UTCKKSRNS_EVAL_POLY& testData, const std::string& failmsg = std::string()) {
         CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
@@ -745,30 +736,27 @@ protected:
         std::vector<std::complex<double>> input{-1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1.};
         size_t encodedLength = input.size();
 
-        std::vector<std::complex<double>> output1{0.540302, 0.696706, 0.825335, 0.921060, 0.980066, 1.0,
-                                                  0.980066, 0.921060, 0.825335, 0.696706, 0.540302};
+        std::vector<std::complex<double>> expectedOutput{0.540302, 0.696706, 0.825335, 0.921060, 0.980066, 1.0,
+                                                         0.980066, 0.921060, 0.825335, 0.696706, 0.540302};
 
-        Plaintext plaintext1       = cc->MakeCKKSPackedPlaintext(input);
-        Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(output1);
+        Plaintext plaintext = cc->MakeCKKSPackedPlaintext(input);
 
         auto keyPair = cc->KeyGen();
         cc->EvalMultKeyGen(keyPair.secretKey);
-        auto ciphertext1 = cc->Encrypt(keyPair.publicKey, plaintext1);
+        auto ciphertext = cc->Encrypt(keyPair.publicKey, plaintext);
 
         double a        = -1;
         double b        = 1;
         uint32_t degree = 129;
-        auto result     = cc->EvalCos(ciphertext1, a, b, degree);
+        auto result     = cc->EvalCos(ciphertext, a, b, degree);
 
         Plaintext plaintextDec;
         cc->Decrypt(keyPair.secretKey, result, &plaintextDec);
         plaintextDec->SetLength(encodedLength);
 
         std::vector<std::complex<double>> finalResult = plaintextDec->GetCKKSPackedValue();
-        finalResult.resize(encodedLength);
 
-        checkEquality(plaintextResult1->GetCKKSPackedValue(), finalResult, eps,
-                      failmsg + " EvalCos Chebyshev approximation fails");
+        checkEquality(expectedOutput, finalResult, eps, failmsg + " EvalCos Chebyshev approximation fails");
     }
 };
 
