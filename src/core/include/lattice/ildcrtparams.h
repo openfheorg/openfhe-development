@@ -287,6 +287,15 @@ public:
     }
 
     /**
+   * @brief Removes the first parameter set and adjust the multiplied moduli.
+   *
+   */
+    void PopFirstParam() {
+        this->ciphertextModulus /= IntType(m_parms[0]->GetModulus().ConvertToInt());
+        m_parms.erase(m_parms.begin());
+    }
+
+    /**
    * Destructor.
    */
     ~ILDCRTParams() {}

@@ -52,37 +52,34 @@ namespace lbcrypto {
 class Params {
     // NOTE: if any data member (below) is added/removed then update
     // cryptocontextparams-case.cpp and cryptocontextparams-defaults.h
+
+    // Scheme ID
     SCHEME scheme;
-    // Used in BGV/BFV type schemes
-    // Has impact on noise growth, thus has impact on parameter generation
+
+    // PlaintextModulus ptModulus is used in BGV/BFV type schemes and impacts noise growth
     PlaintextModulus ptModulus;
 
-    // Used in BV Key Switching only (KeySwitchTechnique = BV)
-    // Has impact on noise growth, thus has impact on parameter generation
+    // digitSize is used in BV Key Switching only (KeySwitchTechnique = BV) and impacts noise growth
     usint digitSize;
 
-    // Used for Gaussian error generation
-    // Has impact on parameter generation
+    // standardDeviation is used for Gaussian error generation
     float standardDeviation;
 
-    // GAUSSIAN means Gaussian secret key distribution
-    // UNIFORM_TERNARY means Ternary secret key distribution
-    // SPARSE_TERNARY means sparse secret key distribution
+    // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
     SecretKeyDist secretKeyDist;
 
     // Max relinearization degree of secret key polynomial (used for lazy relinearization)
-    int maxRelinSkDeg;
+    usint maxRelinSkDeg;
 
     // key switching technique: BV or HYBRID currently
     // For BV we do not have extra modulus, so the security depends on ciphertext modulus Q.
     // For HYBRID we do have extra modulus P, so the security depends on modulus P*Q
     // For BV we need digitSize - digit size in digit decomposition
     // For HYBRID we need numLargeDigits - number of digits in digit decomposition
-    // it is good to have alternative to numLargeDigits - numPrimesInDigit
+    // it is good to have alternative to numLargeDigits (possibly numPrimesInDigit?)
     KeySwitchTechnique ksTech;
 
-    // rescaling/modulus switching technique used in CKKS/BGV
-    // The options are FIXEDMANUL, FIXEDAUTO, FLEXIBLEAUTO, and FLEXIBLEAUTOEXT (default)
+    // rescaling/modulus switching technique used in CKKS/BGV: FLEXIBLEAUTOEXT, FIXEDMANUL, FLEXIBLEAUTO, etc.
     // see https://eprint.iacr.org/2022/915 for details
     ScalingTechnique scalTech;
 
@@ -91,21 +88,48 @@ class Params {
 
     // PRE security mode
     ProxyReEncryptionMode PREMode;
-    // The ciphertext modulus should be seen as:
+
+    // Multiparty security mode in BFV/BGV
+    // NOISE_FLOODING_MULTIPARTY is more secure than FIXED_NOISE_MULTIPARTY.
+    MultipartyMode multipartyMode;
+
+    // Execution mode in CKKS
+    // In EXEC_NOISE_ESTIMATION mode, we estimate the noise we need to add to the actual computation to guarantee good security.
+    // In EXEC_EVALUATION mode, we input our noise estimate and perform the desired secure encrypted computation.
+    ExecutionMode executionMode;
+
+    // Decryption noise mode in CKKS
+    // NOISE_FLOODING_DECRYPT is more secure than FIXED_NOISE_DECRYPT, but it requires executing all computations twice.
+    DecryptionNoiseMode decryptionNoiseMode;
+
+    // Noise estimate in CKKS for NOISE_FLOODING_DECRYPT mode.
+    // This estimate is obtained from running the computation in EXEC_NOISE_ESTIMATION mode.
+    double noiseEstimate;
+
+    // Desired precision for 128-bit CKKS. We use this value in NOISE_FLOODING_DECRYPT mode to determine the scaling factor.
+    double desiredPrecision;
+
+    // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
+    // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
+    double statisticalSecurity;
+
+    // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
+    // security of CKKS in NOISE_FLOODING_DECRYPT mode.
+    double numAdversarialQueries;
+
+    // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
     // other q_i have same number of bits and is equal to scalingModSize
     // the prime q' is not explicitly given,
     // but it is used internally in CKKS and BGV schemes (in *EXT scaling methods)
-
     usint firstModSize;
-
     usint scalingModSize;
 
     // see KeySwitchTechnique - number of digits in HYBRID key switching
     usint numLargeDigits;
 
-    // multiplicative depth for these parameters
+    // multiplicative depth
     usint multiplicativeDepth;
 
     // security level:
@@ -128,13 +152,11 @@ class Params {
     usint multiHopModSize;
 
     // STANDARD or EXTENDED mode for BFV encryption
-    // EXTENDED slightly reduces the size of Q (by few bits) but makes encryption
-    // somewhat slower
+    // EXTENDED slightly reduces the size of Q (by few bits) but makes encryption somewhat slower
     // see https://eprint.iacr.org/2022/915 for details
     EncryptionTechnique encryptionTechnique;
 
-    // multiplication method in BFV:
-    // BEHZ, HPS, HPSPOVEQ, or HPSPOVERQLEVELED (default)
+    // multiplication method in BFV: BEHZ, HPS, etc.
     // see https://eprint.iacr.org/2022/915 for details
     MultiplicationTechnique multiplicationTechnique;
 
@@ -149,7 +171,7 @@ public:
     Params(Params&& obj)      = default;
 
     Params& operator=(const Params& obj) = default;
-    Params& operator=(Params&& obj)      = default;
+    Params& operator=(Params&& obj) = default;
 
     ~Params() = default;
 
@@ -169,11 +191,32 @@ public:
     SecretKeyDist GetSecretKeyDist() const {
         return secretKeyDist;
     }
-    int GetMaxRelinSkDeg() const {
+    usint GetMaxRelinSkDeg() const {
         return maxRelinSkDeg;
     }
     ProxyReEncryptionMode GetPREMode() const {
         return PREMode;
+    }
+    MultipartyMode GetMultipartyMode() const {
+        return multipartyMode;
+    }
+    ExecutionMode GetExecutionMode() const {
+        return executionMode;
+    }
+    DecryptionNoiseMode GetDecryptionNoiseMode() const {
+        return decryptionNoiseMode;
+    }
+    double GetNoiseEstimate() const {
+        return noiseEstimate;
+    }
+    double GetDesiredPrecision() const {
+        return desiredPrecision;
+    }
+    double GetStatisticalSecurity() const {
+        return statisticalSecurity;
+    }
+    double GetNumAdversarialQueries() const {
+        return numAdversarialQueries;
     }
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
@@ -231,11 +274,32 @@ public:
     void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
         secretKeyDist = secretKeyDist0;
     }
-    void SetMaxRelinSkDeg(int maxRelinSkDeg0) {
+    void SetMaxRelinSkDeg(usint maxRelinSkDeg0) {
         maxRelinSkDeg = maxRelinSkDeg0;
     }
     void SetPREMode(ProxyReEncryptionMode PREMode0) {
         PREMode = PREMode0;
+    }
+    void SetMultipartyMode(MultipartyMode multipartyMode0) {
+        multipartyMode = multipartyMode0;
+    }
+    void SetExecutionMode(ExecutionMode executionMode0) {
+        executionMode = executionMode0;
+    }
+    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) {
+        decryptionNoiseMode = decryptionNoiseMode0;
+    }
+    void SetNoiseEstimate(double noiseEstimate0) {
+        noiseEstimate = noiseEstimate0;
+    }
+    void SetDesiredPrecision(double desiredPrecision0) {
+        desiredPrecision = desiredPrecision0;
+    }
+    void SetStatisticalSecurity(double statisticalSecurity0) {
+        statisticalSecurity = statisticalSecurity0;
+    }
+    void SetNumAdversarialQueries(double numAdversarialQueries0) {
+        numAdversarialQueries = numAdversarialQueries0;
     }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;

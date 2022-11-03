@@ -982,6 +982,18 @@ public:
                         const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv,
                         Format resultFormat) override;
 
+    /**
+   * @brief Performs modulus raising in reverse order:
+   * {X}_{Q} -> {X}_{P,Q}
+   */
+    void ExpandCRTBasisReverseOrder(const std::shared_ptr<Params> paramsQP, const std::shared_ptr<Params> paramsP,
+                                    const std::vector<NativeInteger>& QHatInvModq,
+                                    const std::vector<NativeInteger>& QHatInvModqPrecon,
+                                    const std::vector<std::vector<NativeInteger>>& QHatModp,
+                                    const std::vector<std::vector<NativeInteger>>& alphaQModp,
+                                    const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv,
+                                    Format resultFormat) override;
+
     struct CRTBasisExtensionPrecomputations {
         const std::shared_ptr<DCRTPolyImpl::Params> paramsQlPl;
         const std::shared_ptr<DCRTPolyImpl::Params> paramsPl;

@@ -1,3 +1,11 @@
+11/03/2022: OpenFHE 1.0.0 (development) is released
+
+* Doubles the precision of CKKS bootstrapping
+* Adds support for evaluating arbitrary smooth functions, including logistic function, sine, cosine, and division
+* Implements recommendations for INDCPA^D secure implemementation of CKKS proposed in https://eprint.iacr.org/2022/816 (CRYPTO'22)
+* Adds a new security mode for threshold FHE
+* Fixes many bugs
+
 10/17/2022: OpenFHE 0.9.5 (development) is released
 
 * Improves precision of CKKS bootstrapping

@@ -146,7 +146,7 @@ public:
             "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(noiseScaleDeg,scalingFactor,scalTech) instead.");
     }
 
-    bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech);
+    bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode);
 
     const std::vector<std::complex<double>>& GetCKKSPackedValue() const {
         return value;

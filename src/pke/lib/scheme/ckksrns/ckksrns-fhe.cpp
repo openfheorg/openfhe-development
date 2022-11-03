@@ -226,7 +226,8 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
     return evalKeys;
 }
 
-Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext) const {
+Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
+                                               uint32_t precision) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
@@ -236,6 +237,9 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         OPENFHE_THROW(config_error,
                       "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
 #endif
+    if (numIterations != 1 && numIterations != 2) {
+        OPENFHE_THROW(config_error, "CKKS Iterative Bootstrapping is only supported for 1 or 2 iterations.");
+    }
 
 #ifdef BOOTSTRAPTIMING
     TimeVar t;
@@ -243,6 +247,58 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     double timeModReduce(0.0);
     double timeDecode(0.0);
 #endif
+
+    auto cc     = ciphertext->GetCryptoContext();
+    uint32_t M  = cc->GetCyclotomicOrder();
+    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
+
+    if (numIterations > 1) {
+        // Step 1: Get the input.
+        uint32_t powerOfTwoModulus = 1 << precision;
+        auto initSizeQ             = ciphertext->GetElements()[0].GetNumOfElements();
+
+        // Step 2: Scale up by powerOfTwoModulus, and extend the modulus to powerOfTwoModulus * q.
+        // Note that we extend the modulus implicitly without any code calls because the value always stays 0.
+        Ciphertext<DCRTPoly> ctScaledUp = ciphertext->Clone();
+        // We multiply by powerOfTwoModulus, and leave the last CRT value to be 0 (mod powerOfTwoModulus).
+        cc->GetScheme()->MultByIntegerInPlace(ctScaledUp, powerOfTwoModulus);
+        ctScaledUp->SetLevel(L0 - ctScaledUp->GetElements()[0].GetNumOfElements());
+
+        // Step 3: Bootstrap the initial ciphertext.
+        auto ctInitialBootstrap = cc->EvalBootstrap(ciphertext, numIterations - 1, precision);
+        cc->GetScheme()->ModReduceInternalInPlace(ctInitialBootstrap, BASE_NUM_LEVELS_TO_DROP);
+
+        // Step 4: Scale up by powerOfTwoModulus.
+        cc->GetScheme()->MultByIntegerInPlace(ctInitialBootstrap, powerOfTwoModulus);
+
+        // Step 5: Mod-down to powerOfTwoModulus * q
+        // We mod down, and leave the last CRT value to be 0 because it's divisible by powerOfTwoModulus.
+        auto ctBootstrappedScaledDown = ctInitialBootstrap->Clone();
+        auto bootstrappingSizeQ       = ctBootstrappedScaledDown->GetElements()[0].GetNumOfElements();
+        if (bootstrappingSizeQ <= initSizeQ) {
+            OPENFHE_THROW(config_error, "Bootstrapping number of RNS moduli " + std::to_string(bootstrappingSizeQ) +
+                                            " must be greater than initial number of RNS moduli " +
+                                            std::to_string(initSizeQ));
+        }
+        for (auto& cv : ctBootstrappedScaledDown->GetElements()) {
+            cv.DropLastElements(bootstrappingSizeQ - initSizeQ);
+        }
+        ctBootstrappedScaledDown->SetLevel(L0 - ctBootstrappedScaledDown->GetElements()[0].GetNumOfElements());
+
+        // Step 6 and 7: Calculate the bootstrapping error by subtracting the original ciphertext from the bootstrapped ciphertext. Mod down to q is done implicitly.
+        auto ctBootstrappingError = cc->EvalSub(ctBootstrappedScaledDown, ctScaledUp);
+
+        // Step 8: Bootstrap the error.
+        auto ctBootstrappedError = cc->EvalBootstrap(ctBootstrappingError, 1, 0);
+        cc->GetScheme()->ModReduceInternalInPlace(ctBootstrappedError, BASE_NUM_LEVELS_TO_DROP);
+
+        // Step 9: Subtract the bootstrapped error from the initial bootstrap to get even lower error.
+        auto finalCiphertext = cc->EvalSub(ctInitialBootstrap, ctBootstrappedError);
+
+        // Step 10: Scale back down by powerOfTwoModulus to get the original message.
+        cc->EvalMultInPlace(finalCiphertext, static_cast<double>(1) / powerOfTwoModulus);
+        return finalCiphertext;
+    }
 
     uint32_t slots = ciphertext->GetSlots();
 
@@ -254,12 +310,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         OPENFHE_THROW(type_error, errorMsg);
     }
     const std::shared_ptr<CKKSBootstrapPrecom> precom = pair->second;
-
-    auto cc    = ciphertext->GetCryptoContext();
-    uint32_t M = cc->GetCyclotomicOrder();
-    size_t N   = cc->GetRingDimension();
-
-    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
+    size_t N                                          = cc->GetRingDimension();
 
     auto elementParamsRaised = *(cryptoParams->GetElementParams());
 

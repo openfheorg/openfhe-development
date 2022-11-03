@@ -56,10 +56,10 @@ int main() {
     std::cout << "Generating keys." << std::endl;
 
     // Generating the secret key
-    auto sk1 = cc1.KeyGen(Q);
+    auto sk1 = cc1.KeyGen();
 
     // Generate the bootstrapping keys
-    cc1.BTKeyGen(sk1, Q);
+    cc1.BTKeyGen(sk1);
 
     std::cout << "Done generating all keys." << std::endl;
 
@@ -138,14 +138,14 @@ int main() {
 
     // deserializing the refreshing and switching keys (forbootstrapping)
 
-    std::shared_ptr<RingGSWBTKey> refreshKey;
+    RingGSWACCKey refreshKey;
     if (Serial::DeserializeFromFile(DATAFOLDER + "/refreshKey.txt", refreshKey, SerType::BINARY) == false) {
         std::cerr << "Could not deserialize the refresh key" << std::endl;
         return 1;
     }
     std::cout << "The refresh key has been deserialized." << std::endl;
 
-    std::shared_ptr<LWESwitchingKey> ksKey;
+    LWESwitchingKey ksKey;
     if (Serial::DeserializeFromFile(DATAFOLDER + "/ksKey.txt", ksKey, SerType::BINARY) == false) {
         std::cerr << "Could not deserialize the switching key" << std::endl;
         return 1;
@@ -161,7 +161,7 @@ int main() {
             return 1;
         }
 
-        std::shared_ptr<LWESwitchingKey> ksKey;
+        LWESwitchingKey ksKey;
         if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "ksKey.txt", ksKey,
                                         SerType::BINARY) == false) {
             std::cerr << "Could not deserialize the switching key" << std::endl;
@@ -201,10 +201,10 @@ int main() {
         auto ct1 = cc.Encrypt(sk, p / 2 + i - 3, FRESH, p, Q);
 
         // Get the MSB
-        ct1 = cc.EvalSign(ct1, Q);
+        ct1 = cc.EvalSign(ct1);
 
         LWEPlaintext result;
-        cc.Decrypt(sk, ct1, &result, 2, q);
+        cc.Decrypt(sk, ct1, &result, 2);
         std::cout << "Input: " << i << ". Expected sign: " << (i >= 3)
                   << ". "
                      "Evaluated Sign: "

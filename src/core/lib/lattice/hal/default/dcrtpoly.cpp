@@ -1645,6 +1645,41 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_pt
     usint sizeQ   = m_vectors.size();
     usint sizeP   = ans.m_vectors.size();
 
+    if (sizeQ == 0) {
+        OPENFHE_THROW(config_error, "sizeQ must be positive");
+    }
+    if (sizeP == 0) {
+        OPENFHE_THROW(config_error, "sizeP must be positive");
+    }
+    if (QHatInvModq.size() < sizeQ) {
+        OPENFHE_THROW(config_error, "Size of QHatInvModq " + std::to_string(QHatInvModq.size()) +
+                                        " is less than sizeQ " + std::to_string(sizeQ));
+    }
+    if (QHatInvModqPrecon.size() < sizeQ) {
+        OPENFHE_THROW(config_error, "Size of QHatInvModqPrecon " + std::to_string(QHatInvModqPrecon.size()) +
+                                        " is less than sizeQ " + std::to_string(sizeQ));
+    }
+    if (qInv.size() < sizeQ) {
+        OPENFHE_THROW(config_error,
+                      "Size of qInv " + std::to_string(qInv.size()) + " is less than sizeQ " + std::to_string(sizeQ));
+    }
+    if (alphaQModp.size() < sizeQ + 1) {
+        OPENFHE_THROW(config_error, "Size of alphaQModp " + std::to_string(alphaQModp.size()) +
+                                        " is less than sizeQ + 1 " + std::to_string(sizeQ + 1));
+    }
+    if (alphaQModp[0].size() < sizeP) {
+        OPENFHE_THROW(config_error, "Size of alphaQModp[0] " + std::to_string(alphaQModp[0].size()) +
+                                        " is less than sizeP " + std::to_string(sizeP));
+    }
+    if (QHatModp.size() < sizeP) {
+        OPENFHE_THROW(config_error, "Size of QHatModp " + std::to_string(QHatModp.size()) + " is less than sizeP " +
+                                        std::to_string(sizeP));
+    }
+    if (QHatModp[0].size() < sizeQ) {
+        OPENFHE_THROW(config_error, "Size of QHatModp[0] " + std::to_string(QHatModp[0].size()) +
+                                        " is less than sizeQ " + std::to_string(sizeQ));
+    }
+
     #pragma omp parallel for
     for (usint ri = 0; ri < ringDim; ri++) {
         std::vector<NativeInteger> xQHatInvModq(sizeQ);
@@ -1738,6 +1773,58 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasis(
     }
     this->m_format = resultFormat;
     this->m_params = paramsQP;
+}
+
+template <typename VecType>
+void DCRTPolyImpl<VecType>::ExpandCRTBasisReverseOrder(
+    const std::shared_ptr<DCRTPolyImpl::Params> paramsQP, const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
+    const std::vector<NativeInteger>& QHatInvModq, const std::vector<NativeInteger>& QHatInvModqPrecon,
+    const std::vector<std::vector<NativeInteger>>& QHatModp, const std::vector<std::vector<NativeInteger>>& alphaQModp,
+    const std::vector<DoubleNativeInt>& modpBarrettMu, const std::vector<double>& qInv, Format resultFormat) {
+    std::vector<PolyType> polyInNTT;
+
+    // if the input polynomial is in evaluation representation, store it for
+    // later use to reduce the number of NTTs
+    if (this->GetFormat() == Format::EVALUATION) {
+        polyInNTT = m_vectors;
+        this->SetFormat(Format::COEFFICIENT);
+    }
+
+    DCRTPolyType partP =
+        SwitchCRTBasis(paramsP, QHatInvModq, QHatInvModqPrecon, QHatModp, alphaQModp, modpBarrettMu, qInv);
+
+    size_t sizeQ  = m_vectors.size();
+    size_t sizeP  = partP.m_vectors.size();
+    size_t sizeQP = sizeP + sizeQ;
+
+    std::vector<PolyType> temp;
+    temp.reserve(sizeQP);
+    temp.insert(temp.end(), std::make_move_iterator(partP.m_vectors.begin()),
+                std::make_move_iterator(partP.m_vectors.end()));
+    temp.insert(temp.end(), std::make_move_iterator(m_vectors.begin()), std::make_move_iterator(m_vectors.end()));
+
+#pragma omp parallel for
+    for (size_t i = 0; i < sizeQP; i++) {
+        temp[i].SetFormat(resultFormat);
+    }
+
+    if (resultFormat == Format::EVALUATION) {
+        // if the input polynomial was in evaluation representation, use the towers
+        // for Q from it
+        if (polyInNTT.size() > 0) {
+            for (size_t i = 0; i < sizeQ; i++)
+                temp[sizeP + i] = polyInNTT[i];
+        }
+        else {
+            // else call NTT for the towers for Q
+#pragma omp parallel for
+            for (size_t i = 0; i < sizeQ; i++)
+                temp[sizeP + i].SetFormat(resultFormat);
+        }
+    }
+    this->m_format = resultFormat;
+    this->m_params = paramsQP;
+    m_vectors      = temp;
 }
 
 #if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)

@@ -63,9 +63,35 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
     constexpr float assuranceMeasure = 36;
 
     auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
-    // In CKKS, the plaintext modulus is equal to the scaling factor.
-    EncodingParams encodingParams(
-        std::make_shared<EncodingParamsImpl>(parameters.GetScalingModSize(), parameters.GetBatchSize()));
+
+    usint scalingModSize    = parameters.GetScalingModSize();
+    usint firstModSize      = parameters.GetFirstModSize();
+    double floodingNoiseStd = 0;
+    if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+        parameters.GetExecutionMode() == EXEC_EVALUATION) {
+        if (parameters.GetNoiseEstimate() == 0) {
+            OPENFHE_THROW(
+                config_error,
+                "Noise estimate must be set in the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
+        }
+        double logstd =
+            parameters.GetStatisticalSecurity() / 2 + log2(sqrt(12 * parameters.GetNumAdversarialQueries()));
+        floodingNoiseStd = pow(2, logstd + parameters.GetNoiseEstimate());
+#if NATIVEINT == 128
+        scalingModSize = parameters.GetDesiredPrecision() + parameters.GetNoiseEstimate() + logstd +
+                         0.5 * log2(parameters.GetRingDim());
+        firstModSize = scalingModSize + 11;
+#else
+        scalingModSize = MAX_MODULUS_SIZE - 1;
+        firstModSize   = MAX_MODULUS_SIZE;
+        if (logstd + parameters.GetNoiseEstimate() > scalingModSize - 3) {
+            OPENFHE_THROW(config_error, "Precision of less than 3 bits is not supported. logstd " +
+                                            std::to_string(logstd) + " + noiseEstimate " +
+                                            std::to_string(parameters.GetNoiseEstimate()) + " must be 56 or less.");
+        }
+#endif
+    }
+    EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(scalingModSize, parameters.GetBatchSize()));
 
     // clang-format off
     auto params = std::make_shared<typename ContextGeneratorType::CryptoParams>(
@@ -81,10 +107,14 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetScalingTechnique(),
         parameters.GetEncryptionTechnique(),
         parameters.GetMultiplicationTechnique(),
-        parameters.GetPREMode());
+        parameters.GetPREMode(),
+        parameters.GetMultipartyMode(),
+        parameters.GetExecutionMode(),
+        parameters.GetDecryptionNoiseMode());
 
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
+    params->SetFloodingDistributionParameter(floodingNoiseStd);
 
     uint32_t numLargeDigits =
         ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
@@ -95,8 +125,8 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         params,
         2 * parameters.GetRingDim(),
         parameters.GetMultiplicativeDepth() + 1,
-        parameters.GetScalingModSize(),
-        parameters.GetFirstModSize(),
+        scalingModSize,
+        firstModSize,
         numLargeDigits);
     // clang-format on
 

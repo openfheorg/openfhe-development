@@ -37,6 +37,7 @@
 
 #include "key/privatekey.h"
 #include "key/publickey.h"
+#include "math/chebyshev.h"
 #include "schemerns/rns-scheme.h"
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
@@ -571,6 +572,42 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
 }
 
 //------------------------------------------------------------------------------
+// Advanced SHE CHEBYSHEV SERIES EXAMPLES
+//------------------------------------------------------------------------------
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalChebyshevFunction(std::function<double(double)> func,
+                                                                      ConstCiphertext<Element> ciphertext, double a,
+                                                                      double b, uint32_t degree) const {
+    std::vector<double> coefficients = EvalChebyshevCoefficients(func, a, b, degree);
+    return EvalChebyshevSeries(ciphertext, coefficients, a, b);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalSin(ConstCiphertext<Element> ciphertext, double a, double b,
+                                                        uint32_t degree) const {
+    return EvalChebyshevFunction([](double x) -> double { return std::sin(x); }, ciphertext, a, b, degree);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalCos(ConstCiphertext<Element> ciphertext, double a, double b,
+                                                        uint32_t degree) const {
+    return EvalChebyshevFunction([](double x) -> double { return std::cos(x); }, ciphertext, a, b, degree);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalLogistic(ConstCiphertext<Element> ciphertext, double a, double b,
+                                                             uint32_t degree) const {
+    return EvalChebyshevFunction([](double x) -> double { return 1 / (1 + std::exp(-x)); }, ciphertext, a, b, degree);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Element> ciphertext, double a, double b,
+                                                           uint32_t degree) const {
+    return EvalChebyshevFunction([](double x) -> double { return 1 / x; }, ciphertext, a, b, degree);
+}
+
+//------------------------------------------------------------------------------
 // Advanced SHE LINEAR TRANSFORMATION
 //------------------------------------------------------------------------------
 
@@ -615,8 +652,9 @@ void CryptoContextImpl<Element>::EvalBootstrapKeyGen(const PrivateKey<Element> p
 }
 
 template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
-    return GetScheme()->EvalBootstrap(ciphertext);
+Ciphertext<Element> CryptoContextImpl<Element>::EvalBootstrap(ConstCiphertext<Element> ciphertext,
+                                                              uint32_t numIterations, uint32_t precision) const {
+    return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
 }
 
 }  // namespace lbcrypto
@@ -680,7 +718,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> cip
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
 
         decryptedCKKS->Decode(ciphertext->GetNoiseScaleDeg(), ciphertext->GetScalingFactor(),
-                              cryptoParamsCKKS->GetScalingTechnique());
+                              cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
     }
     else {
         decrypted->Decode();
@@ -732,7 +770,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
         decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
         decryptedCKKS->Decode(partialCiphertextVec[0]->GetNoiseScaleDeg(), partialCiphertextVec[0]->GetScalingFactor(),
-                              cryptoParamsCKKS->GetScalingTechnique());
+                              cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
     }
     else {
         decrypted->Decode();

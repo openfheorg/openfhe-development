@@ -43,10 +43,12 @@
 CEREAL_REGISTER_TYPE(lbcrypto::LWECryptoParams);
 CEREAL_REGISTER_TYPE(lbcrypto::LWECiphertextImpl);
 CEREAL_REGISTER_TYPE(lbcrypto::LWEPrivateKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::LWESwitchingKey);
+CEREAL_REGISTER_TYPE(lbcrypto::LWESwitchingKeyImpl);
+CEREAL_REGISTER_TYPE(lbcrypto::RLWECiphertextImpl);
 CEREAL_REGISTER_TYPE(lbcrypto::RingGSWCryptoParams);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWCiphertext);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWBTKey);
+CEREAL_REGISTER_TYPE(lbcrypto::RingGSWEvalKeyImpl);
+CEREAL_REGISTER_TYPE(lbcrypto::RingGSWACCKeyImpl);
+CEREAL_REGISTER_TYPE(lbcrypto::BinFHECryptoParams);
 CEREAL_REGISTER_TYPE(lbcrypto::BinFHEContext);
 
 #endif

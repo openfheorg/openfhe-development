@@ -354,6 +354,62 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             }
         }
     }
+    /////////////////////////////////////
+    // BFVrns and BGVrns : Multiparty Decryption : ExpandCRTBasis
+    /////////////////////////////////////
+    if (GetMultipartyMode() == NOISE_FLOODING_MULTIPARTY) {
+        // Pre-compute values [*(Q/q_i/q_0)^{-1}]_{q_i}
+        BigInteger modulusQ = BigInteger(GetElementParams()->GetModulus()) / BigInteger(moduliQ[0]);
+        m_multipartyQHatInvModq.resize(sizeQ - 1);
+        m_multipartyQHatInvModqPrecon.resize(sizeQ - 1);
+        m_multipartyQHatModq0.resize(sizeQ - 1);
+        // l will run from 0 to size-2, but modulusQ values
+        // run from Q^(l-1) to Q^(0)
+        for (size_t l = 0, m = sizeQ - l - 2; l < sizeQ - 1; ++l, --m) {
+            if (l > 0)
+                modulusQ = modulusQ / BigInteger(moduliQ[sizeQ - l]);
+
+            m_multipartyQHatInvModq[m].resize(m + 1);
+            m_multipartyQHatInvModqPrecon[m].resize(m + 1);
+            m_multipartyQHatModq0[m].resize(1);
+            m_multipartyQHatModq0[m][0].resize(m + 1);
+            for (size_t i = 1; i < m + 2; i++) {
+                BigInteger QHati                        = modulusQ / BigInteger(moduliQ[i]);
+                BigInteger QHatInvModqi                 = QHati.ModInverse(moduliQ[i]);
+                m_multipartyQHatInvModq[m][i - 1]       = QHatInvModqi.ConvertToInt();
+                m_multipartyQHatInvModqPrecon[m][i - 1] = m_multipartyQHatInvModq[m][i - 1].PrepModMulConst(moduliQ[i]);
+                m_multipartyQHatModq0[m][0][i - 1]      = QHati.Mod(moduliQ[0]);
+            }
+        }
+
+        modulusQ = BigInteger(GetElementParams()->GetModulus()) / BigInteger(moduliQ[0]);
+        m_multipartyAlphaQModq0.resize(sizeQ - 1);
+        for (usint l = sizeQ - 1; l > 0; l--) {
+            if (l < sizeQ - 1)
+                modulusQ = modulusQ / BigInteger(moduliQ[l + 1]);
+            m_multipartyAlphaQModq0[l - 1].resize(l + 1);
+            NativeInteger QlModq0 = modulusQ.Mod(moduliQ[0]).ConvertToInt();
+            for (usint j = 0; j < l + 1; ++j) {
+                m_multipartyAlphaQModq0[l - 1][j] = {QlModq0.ModMul(NativeInteger(j), moduliQ[0])};
+            }
+        }
+
+        // Barrett modulo reduction precomputation for q_0
+        const BigInteger BarrettBase128Bit("340282366920938463463374607431768211456");  // 2^128
+        const BigInteger TwoPower64("18446744073709551616");                            // 2^64
+        m_multipartyModq0BarrettMu.resize(1);
+        BigInteger mu = BarrettBase128Bit / BigInteger(moduliQ[0]);
+        uint64_t val[2];
+        val[0] = (mu % TwoPower64).ConvertToInt();
+        val[1] = mu.RShift(64).ConvertToInt();
+        memcpy(&m_multipartyModq0BarrettMu[0], val, sizeof(DoubleNativeInt));
+
+        // Stores \frac{1/q_i}
+        m_multipartyQInv.resize(sizeQ - 1);
+        for (size_t i = 1; i < sizeQ; i++) {
+            m_multipartyQInv[i - 1] = 1. / static_cast<double>(moduliQ[i].ConvertToInt());
+        }
+    }
 }
 
 uint64_t CryptoParametersRNS::FindAuxPrimeStep() const {

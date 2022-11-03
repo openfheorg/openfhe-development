@@ -98,7 +98,7 @@ void SimpleBootstrapExample() {
     * depth. We recommend using the input parameters below to get started.
     */
     std::vector<uint32_t> levelBudget = {4, 4};
-    uint32_t approxBootstrapDepth     = 9;
+    uint32_t approxBootstrapDepth     = 8;
 
     uint32_t levelsUsedBeforeBootstrap = 10;
     usint depth =

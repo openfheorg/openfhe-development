@@ -45,7 +45,7 @@ void BootstrapExample(uint32_t numSlots);
 
 int main(int argc, char* argv[]) {
     // We run the example with 8 slots and ring dimension 4096 to illustrate how to run bootstrapping with a sparse plaintext.
-    // Using a sparse plaintext and specifying the smaller number of slots gives a performance improvement (typicall up to 3x).
+    // Using a sparse plaintext and specifying the smaller number of slots gives a performance improvement (typically up to 3x).
     BootstrapExample(8);
 }
 
@@ -114,7 +114,7 @@ void BootstrapExample(uint32_t numSlots) {
     std::vector<uint32_t> levelBudget = {3, 3};
 
     // We approximate the number of levels bootstrapping will consume to help set our initial multiplicative depth.
-    uint32_t approxBootstrapDepth = 9;
+    uint32_t approxBootstrapDepth = 8;
 
     /* We give the user the option of configuring values for an optimization algorithm in bootstrapping.
     * Here, we specify the giant step for the baby-step-giant-step algorithm in linear transforms

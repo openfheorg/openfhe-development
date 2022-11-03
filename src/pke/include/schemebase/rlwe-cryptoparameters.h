@@ -75,7 +75,10 @@ public:
         m_floodingDistributionParameter = rhs.m_floodingDistributionParameter;
         m_dgg.SetStd(m_distributionParameter);
         m_dggFlooding.SetStd(m_floodingDistributionParameter);
-        m_PREMode = rhs.m_PREMode;
+        m_PREMode             = rhs.m_PREMode;
+        m_multipartyMode      = rhs.m_multipartyMode;
+        m_executionMode       = rhs.m_executionMode;
+        m_decryptionNoiseMode = rhs.m_decryptionNoiseMode;
     }
 
     /**
@@ -95,18 +98,23 @@ public:
    */
     CryptoParametersRLWE(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams,
                          float distributionParameter, float assuranceMeasure, SecurityLevel stdLevel, usint digitSize,
-                         int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN, PlaintextModulus noiseScale = 1,
-                         ProxyReEncryptionMode PREMode = INDCPA)
+                         int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
+                         ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
+                         ExecutionMode executionMode             = EXEC_EVALUATION,
+                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
         m_assuranceMeasure      = assuranceMeasure;
         m_noiseScale            = noiseScale;
         m_digitSize             = digitSize;
         m_dgg.SetStd(m_distributionParameter);
-        m_maxRelinSkDeg = maxRelinSkDeg;
-        m_secretKeyDist = secretKeyDist;
-        m_stdLevel      = stdLevel;
-        m_PREMode       = PREMode;
+        m_maxRelinSkDeg       = maxRelinSkDeg;
+        m_secretKeyDist       = secretKeyDist;
+        m_stdLevel            = stdLevel;
+        m_PREMode             = PREMode;
+        m_multipartyMode      = multipartyMode;
+        m_executionMode       = executionMode;
+        m_decryptionNoiseMode = decryptionNoiseMode;
     }
 
     /**
@@ -167,7 +175,7 @@ public:
    *
    * @return maximum power of secret key
    */
-    size_t GetMaxRelinSkDeg() const {
+    uint32_t GetMaxRelinSkDeg() const {
         return m_maxRelinSkDeg;
     }
 
@@ -188,6 +196,33 @@ public:
    */
     ProxyReEncryptionMode GetPREMode() const {
         return m_PREMode;
+    }
+
+    /**
+   * Gets the multiparty security mode setting.
+   *
+   * @return the multiparty security mode setting.
+   */
+    MultipartyMode GetMultipartyMode() const {
+        return m_multipartyMode;
+    }
+
+    /**
+   * Gets the execution mode setting.
+   *
+   * @return the execution mode setting.
+   */
+    ExecutionMode GetExecutionMode() const {
+        return m_executionMode;
+    }
+
+    /**
+   * Gets the decryption noise mode setting.
+   *
+   * @return the decryption noise mode setting.
+   */
+    DecryptionNoiseMode GetDecryptionNoiseMode() {
+        return m_decryptionNoiseMode;
     }
 
     /**
@@ -275,7 +310,7 @@ public:
    * relinearization key is generated
    * @param maxRelinSkDeg
    */
-    void SetMaxRelinSkDeg(size_t maxRelinSkDeg) {
+    void SetMaxRelinSkDeg(uint32_t maxRelinSkDeg) {
         m_maxRelinSkDeg = maxRelinSkDeg;
     }
 
@@ -296,6 +331,30 @@ public:
     }
 
     /**
+   * Configures the security mode for multiparty
+   * @param multipartyMode Security mode for multiparty decryption.
+   */
+    void SetMultipartyMode(MultipartyMode multipartyMode) {
+        m_multipartyMode = multipartyMode;
+    }
+
+    /**
+   * Configures the execution for CKKS noise flooding
+   * @param executionMode Execution mode.
+   */
+    void SetExecutionMode(ExecutionMode executionMode) {
+        m_executionMode = executionMode;
+    }
+
+    /**
+   * Configures the decryption noise mode for CKKS noise flooding
+   * @param decryptionNoiseMode Decryption noise mode.
+   */
+    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode) {
+        m_decryptionNoiseMode = decryptionNoiseMode;
+    }
+
+    /**
    * == operator to compare to this instance of CryptoParametersRLWE object.
    *
    * @param &rhs CryptoParameters to check equality against.
@@ -313,7 +372,10 @@ public:
                m_distributionParameter == el->GetDistributionParameter() &&
                m_assuranceMeasure == el->GetAssuranceMeasure() && m_noiseScale == el->GetNoiseScale() &&
                m_digitSize == el->GetDigitSize() && m_secretKeyDist == el->GetSecretKeyDist() &&
-               m_stdLevel == el->GetStdLevel();
+               m_stdLevel == el->GetStdLevel() && m_maxRelinSkDeg == el->GetMaxRelinSkDeg() &&
+               m_PREMode == el->GetPREMode() && m_multipartyMode == el->GetMultipartyMode() &&
+               m_executionMode == el->GetExecutionMode() &&
+               m_floodingDistributionParameter == el->GetFloodingDistributionParameter();
     }
 
     void PrintParameters(std::ostream& os) const {
@@ -334,6 +396,9 @@ public:
         ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
         ar(::cereal::make_nvp("pmo", m_PREMode));
+        ar(::cereal::make_nvp("mmo", m_multipartyMode));
+        ar(::cereal::make_nvp("exm", m_executionMode));
+        ar(::cereal::make_nvp("dnm", m_decryptionNoiseMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
     }
@@ -348,6 +413,9 @@ public:
         ar(::cereal::make_nvp("md", m_maxRelinSkDeg));
         ar(::cereal::make_nvp("mo", m_secretKeyDist));
         ar(::cereal::make_nvp("pmo", m_PREMode));
+        ar(::cereal::make_nvp("mmo", m_multipartyMode));
+        ar(::cereal::make_nvp("exm", m_executionMode));
+        ar(::cereal::make_nvp("dnm", m_decryptionNoiseMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
 
@@ -385,6 +453,15 @@ protected:
 
     // specifies the security mode used for PRE
     ProxyReEncryptionMode m_PREMode = NOT_SET;
+
+    // specifies the security mode used for multiparty decryption
+    MultipartyMode m_multipartyMode = FIXED_NOISE_MULTIPARTY;
+
+    // specifies the execution mode used for NOISE_FLOODING_DECRYPT mode in CKKS
+    ExecutionMode m_executionMode = EXEC_EVALUATION;
+
+    // specifies the noise mode used for decryption in CKKS
+    DecryptionNoiseMode m_decryptionNoiseMode = FIXED_NOISE_DECRYPT;
 };
 
 }  // namespace lbcrypto

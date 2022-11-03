@@ -97,10 +97,20 @@ public:
     /**
    * Defines the bootstrapping evaluation of ciphertext
    *
+   * The flavor of bootstrapping that uses the numIterations and precision parameters is described
+   * in the Meta-BTS paper.
+   * Source: Bae Y., Cheon J., Cho W., Kim J., and Kim T. META-BTS: Bootstrapping Precision
+   * Beyond the Limit. Cryptology ePrint Archive, Report
+   * 2022/1167. (https://eprint.iacr.org/2022/1167.pdf)
+   *
    * @param ciphertext the input ciphertext.
+   * @param numIterations number of iterations to run iterative bootstrapping (Meta-BTS). Increasing the iterations increases the precision of bootstrapping.
+   * @param precision precision of initial bootstrapping algorithm. This value is
+   * determined by the user experimentally by first running EvalBootstrap with numIterations = 1 and precision = 0 (unused).
    * @return the refreshed ciphertext.
    */
-    virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext) const {
+    virtual Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations,
+                                              uint32_t precision) const {
         OPENFHE_THROW(not_implemented_error, "EvalBootstrap is not implemented for this scheme");
     }
 };

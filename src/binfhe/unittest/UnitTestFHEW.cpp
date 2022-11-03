@@ -51,8 +51,8 @@ TEST(UnitTestFHEWAP, KeySwitch) {
     auto sk  = cc.KeyGen();
     auto skN = cc.KeyGenN();
 
-    auto ctQN1 = cc.Encrypt(skN, 1, FRESH);
-    auto ctQN0 = cc.Encrypt(skN, 0, FRESH);
+    auto ctQN1 = cc.Encrypt(skN, 1, FRESH, 4, Q);
+    auto ctQN0 = cc.Encrypt(skN, 0, FRESH, 4, Q);
 
     NativeVector newSK = sk->GetElement();
     newSK.SwitchModulus(Q);
@@ -60,10 +60,8 @@ TEST(UnitTestFHEWAP, KeySwitch) {
 
     auto keySwitchHint = cc.KeySwitchGen(sk, skN);
 
-    std::shared_ptr<LWECiphertextImpl> eQ1 =
-        cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
-    std::shared_ptr<LWECiphertextImpl> eQ0 =
-        cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
+    LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
+    LWECiphertext eQ0 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
 
     LWEPlaintext resultAfterKeySwitch1;
     cc.Decrypt(skQ, eQ1, &resultAfterKeySwitch1);
@@ -87,8 +85,8 @@ TEST(UnitTestFHEWGINX, KeySwitch) {
     auto sk  = cc.KeyGen();
     auto skN = cc.KeyGenN();
 
-    auto ctQN1 = cc.Encrypt(skN, 1, FRESH);
-    auto ctQN0 = cc.Encrypt(skN, 0, FRESH);
+    auto ctQN1 = cc.Encrypt(skN, 1, FRESH, 4, Q);
+    auto ctQN0 = cc.Encrypt(skN, 0, FRESH, 4, Q);
 
     NativeVector newSK = sk->GetElement();
     newSK.SwitchModulus(Q);
@@ -96,10 +94,8 @@ TEST(UnitTestFHEWGINX, KeySwitch) {
 
     auto keySwitchHint = cc.KeySwitchGen(sk, skN);
 
-    std::shared_ptr<LWECiphertextImpl> eQ1 =
-        cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
-    std::shared_ptr<LWECiphertextImpl> eQ0 =
-        cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
+    LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
+    LWECiphertext eQ0 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
 
     LWEPlaintext resultAfterKeySwitch1;
     cc.Decrypt(skQ, eQ1, &resultAfterKeySwitch1);
@@ -127,8 +123,8 @@ TEST(UnitTestFHEWAP, ModSwitch) {
     newSK.SwitchModulus(Q);
     auto skQ = std::make_shared<LWEPrivateKeyImpl>(newSK);
 
-    auto ctQ1 = cc.Encrypt(skQ, 1, FRESH);
-    auto ctQ0 = cc.Encrypt(skQ, 0, FRESH);
+    auto ctQ1 = cc.Encrypt(skQ, 1, FRESH, 4, Q);
+    auto ctQ0 = cc.Encrypt(skQ, 0, FRESH, 4, Q);
 
     // switches the modulus from Q to q
     auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ1);
@@ -160,8 +156,8 @@ TEST(UnitTestFHEWGINX, ModSwitch) {
     newSK.SwitchModulus(Q);
     auto skQ = std::make_shared<LWEPrivateKeyImpl>(newSK);
 
-    auto ctQ1 = cc.Encrypt(skQ, 1, FRESH);
-    auto ctQ0 = cc.Encrypt(skQ, 0, FRESH);
+    auto ctQ1 = cc.Encrypt(skQ, 1, FRESH, 4, Q);
+    auto ctQ0 = cc.Encrypt(skQ, 0, FRESH, 4, Q);
 
     // switches the modulus from Q to q
     auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ1);

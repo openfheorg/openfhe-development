@@ -79,15 +79,13 @@ public:
    * Method for computing all derived parameters based on chosen primitive
    * parameters.
    *
-   * @param *cryptoParams the crypto parameters object to be populated with parameters.
+   * @param cryptoParams the crypto parameters object to be populated with parameters.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
    * @param scalingModSize the bit-width for plaintexts and DCRTPoly's.
-   * @param digitSize the digit size
-   * @param secretKeyDist
-   * @param ksTech the key switching technique used (e.g., BV or GHS)
    * @param firstModSize the bit-size of the first modulus
-   * @param scalTech the scaling technique used (e.g., FIXEDMANUAL or FLEXIBLEAUTO)
+   * @param numPartQ number of partitions of Q for HYBRID key switching
+   *
    */
     bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
                           usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ) const override {

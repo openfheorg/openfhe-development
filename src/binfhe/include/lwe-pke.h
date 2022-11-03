@@ -29,26 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  LWE Encryption Scheme as described in
-  https://eprint.iacr.org/2014/816 Full reference:
-  @misc{cryptoeprint:2014:816,
-    author = {Leo Ducas and Daniele Micciancio},
-    title = {FHEW: Bootstrapping Homomorphic Encryption in less than a second},
-    howpublished = {Cryptology ePrint Archive, Report 2014/816},
-    year = {2014},
-    note = {\url{https://eprint.iacr.org/2014/816}},
- */
+#ifndef _LWE_PKE_H_
+#define _LWE_PKE_H_
 
-#ifndef BINFHE_LWE_H
-#define BINFHE_LWE_H
-
-// undefine to output the noise value during decryption
-// #define BINFHE_DEBUG
+#include "binfhe-constants.h"
+#include "lwe-ciphertext.h"
+#include "lwe-keyswitchkey.h"
+#include "lwe-privatekey.h"
+#include "lwe-cryptoparameters.h"
 
 #include <memory>
-
-#include "lwecore.h"
 
 namespace lbcrypto {
 
@@ -56,8 +46,10 @@ namespace lbcrypto {
  * @brief Additive LWE scheme
  */
 class LWEEncryptionScheme {
+    NativeInteger RoundqQ(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q) const;
+
 public:
-    LWEEncryptionScheme() {}
+    LWEEncryptionScheme() = default;
 
     /**
    * Generates a secret key of dimension n using modulus q
@@ -65,15 +57,7 @@ public:
    * @param params a shared pointer to LWE scheme parameters
    * @return a shared pointer to the secret key
    */
-    std::shared_ptr<LWEPrivateKeyImpl> KeyGen(const std::shared_ptr<LWECryptoParams> params) const;
-
-    /**
-   * Generates a secret key of dimension N using modulus Q
-   *
-   * @param params a shared pointer to LWE scheme parameters
-   * @return a shared pointer to the secret key
-   */
-    std::shared_ptr<LWEPrivateKeyImpl> KeyGenN(const std::shared_ptr<LWECryptoParams> params) const;
+    LWEPrivateKey KeyGen(usint size, const NativeInteger& modulus) const;
 
     /**
    * Encrypts a bit using a secret key (symmetric key encryption)
@@ -84,9 +68,8 @@ public:
    * @param &p - the plaintext space
    * @return a shared pointer to the ciphertext
    */
-    std::shared_ptr<LWECiphertextImpl> Encrypt(const std::shared_ptr<LWECryptoParams> params,
-                                               const std::shared_ptr<const LWEPrivateKeyImpl> sk, const LWEPlaintext& m,
-                                               const LWEPlaintextModulus& p = 4) const;
+    LWECiphertext Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk, const LWEPlaintext& m,
+                          const LWEPlaintextModulus& p = 4, const NativeInteger& mod = 0) const;
 
     /**
    * Decrypts the ciphertext using secret key sk
@@ -97,9 +80,20 @@ public:
    * @param &p the plaintext space
    * @param *result plaintext result
    */
-    void Decrypt(const std::shared_ptr<LWECryptoParams> params, const std::shared_ptr<const LWEPrivateKeyImpl> sk,
-                 const std::shared_ptr<const LWECiphertextImpl> ct, LWEPlaintext* result,
-                 const LWEPlaintextModulus& p = 4) const;
+    void Decrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk, ConstLWECiphertext ct,
+                 LWEPlaintext* result, const LWEPlaintextModulus& p = 4) const;
+
+    void EvalAddEq(LWECiphertext& ct1, ConstLWECiphertext ct2) const;
+
+    void EvalAddConstEq(LWECiphertext& ct, NativeInteger cnst) const;
+
+    void EvalSubEq(LWECiphertext& ct1, ConstLWECiphertext ct2) const;
+
+    void EvalSubEq2(ConstLWECiphertext ct1, LWECiphertext& ct2) const;
+
+    void EvalSubConstEq(LWECiphertext& ct, NativeInteger cnst) const;
+
+    void EvalMultConstEq(LWECiphertext& ct, NativeInteger cnst) const;
 
     /**
    * Changes an LWE ciphertext modulo Q into an LWE ciphertext modulo q
@@ -108,8 +102,7 @@ public:
    * @param ctQ the input ciphertext
    * @return resulting ciphertext
    */
-    std::shared_ptr<LWECiphertextImpl> ModSwitch(NativeInteger q,
-                                                 const std::shared_ptr<const LWECiphertextImpl> ctQ) const;
+    LWECiphertext ModSwitch(NativeInteger q, ConstLWECiphertext ctQ) const;
 
     /**
    * Generates a switching key to go from a secret key with (Q,N) to a secret
@@ -120,9 +113,8 @@ public:
    * @param skN old secret key
    * @return a shared pointer to the switching key
    */
-    std::shared_ptr<LWESwitchingKey> KeySwitchGen(const std::shared_ptr<LWECryptoParams> params,
-                                                  const std::shared_ptr<const LWEPrivateKeyImpl> sk,
-                                                  const std::shared_ptr<const LWEPrivateKeyImpl> skN) const;
+    LWESwitchingKey KeySwitchGen(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk,
+                                 ConstLWEPrivateKey skN) const;
 
     /**
    * Switches ciphertext from (Q,N) to (Q,n)
@@ -132,9 +124,8 @@ public:
    * @param ctQN input ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    std::shared_ptr<LWECiphertextImpl> KeySwitch(const std::shared_ptr<LWECryptoParams> params,
-                                                 const std::shared_ptr<LWESwitchingKey> K,
-                                                 const std::shared_ptr<const LWECiphertextImpl> ctQN) const;
+    LWECiphertext KeySwitch(const std::shared_ptr<LWECryptoParams> params, ConstLWESwitchingKey K,
+                            ConstLWECiphertext ctQN) const;
 
     /**
    * Embeds a plaintext bit without noise or encryption
@@ -143,11 +134,8 @@ public:
    * @param &m - the plaintext
    * @return a shared pointer to the ciphertext
    */
-    std::shared_ptr<LWECiphertextImpl> NoiselessEmbedding(const std::shared_ptr<LWECryptoParams> params,
-                                                          const LWEPlaintext& m) const;
+    LWECiphertext NoiselessEmbedding(const std::shared_ptr<LWECryptoParams> params, const LWEPlaintext& m) const;
 };
-
-NativeInteger RoundqQ(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q);
 
 }  // namespace lbcrypto
 
