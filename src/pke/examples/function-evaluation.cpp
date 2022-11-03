@@ -73,7 +73,7 @@ void EvalLogisticExample() {
     uint32_t polyDegree = 16;
 
     // The multiplicative depth depends on the polynomial degree.
-    // See the function-evaluation.md file for a table mapping polynomial degrees to multiplicative depths.
+    // See the FUNCTION_EVALUATION.md file for a table mapping polynomial degrees to multiplicative depths.
     uint32_t multDepth = 6;
 
     parameters.SetMultiplicativeDepth(multDepth);
