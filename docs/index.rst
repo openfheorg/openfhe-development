@@ -9,7 +9,7 @@ OpenFHE is an open-source FHE library that includes efficient implementations of
   - Brakerski/Fan-Vercauteren (BFV) scheme for integer arithmetic
   - Brakerski-Gentry-Vaikuntanathan (BGV) scheme for integer arithmetic
   - Cheon-Kim-Kim-Song (CKKS) scheme for real-number arithmetic (includes approximate bootstrapping)
-  - Ducas-Micciancio (DM) and Chillotti-Gama-Georgieva-Izabachene (CGGI) schemes for Boolean circuit evaluation
+  - Ducas-Micciancio (DM) and Chillotti-Gama-Georgieva-Izabachene (CGGI) schemes for evaluating Boolean circuits and arbitrary functions over larger plaintext spaces using lookup tables
 
 OpenFHE also includes the following multiparty extensions of FHE:
   - Threshold FHE for BGV, BFV, and CKKS schemes
