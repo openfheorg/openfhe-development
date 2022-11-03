@@ -6,7 +6,7 @@ OpenFHE is an open-source FHE library that includes efficient implementations of
   * Brakerski/Fan-Vercauteren (BFV) scheme for integer arithmetic
   * Brakerski-Gentry-Vaikuntanathan (BGV) scheme for integer arithmetic
   * Cheon-Kim-Kim-Song (CKKS) scheme for real-number arithmetic (includes approximate bootstrapping)
-  * Ducas-Micciancio (DM) and Chillotti-Gama-Georgieva-Izabachene (CGGI) schemes for Boolean circuit evaluation
+  * Ducas-Micciancio (DM) and Chillotti-Gama-Georgieva-Izabachene (CGGI) schemes for evaluating Boolean circuits and arbitrary functions over larger plaintext spaces using lookup tables
 
 OpenFHE also includes the following multiparty extensions of FHE:
   * Threshold FHE for BGV, BFV, and CKKS schemes
@@ -22,6 +22,7 @@ OpenFHE also includes the following multiparty extensions of FHE:
  * [Quickstart](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/quickstart.html)
  * [BSD 2-Clause License](LICENSE)
  * [Contributing to OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/contributing/contributing.html)
+ * [OpenFHE Governance](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/misc/governance.html)
  * [Openfhe-development Github Issues](https://github.com/openfheorg/openfhe-development/issues)
  * To report security vulnerabilities, please email us at contact@openfhe.org
 
@@ -52,12 +53,16 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-real-numbers.cpp)
        2. [Advanced Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers.cpp)
        2. [Advanced Code Example for High-Precision CKKS](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-real-numbers-128.cpp)
+       2. [Arbitrary Smooth Function Evaluation](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/function-evaluation.cpp)
        3. [Simple CKKS Bootstrapping Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-ckks-bootstrapping.cpp)
        4. [Advanced CKKS Bootstrapping Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/advanced-ckks-bootstrapping.cpp)
-   1. FHE for Boolean circuits (FHEW/TFHE):
+       5. [Double-Precision (Iterative) Bootstrapping Example](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/iterative-ckks-bootstrapping.cpp)
+   1. FHE for Boolean circuits and larger plaintext spaces (FHEW/TFHE):
        1. [Simple Code Example](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean.cpp)
        2. [Code with JSON serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean-serial-json.cpp)
        3. [Code with Binary Serialization](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/boolean-serial-binary.cpp)
+       4. [Large-Precision Comparison](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/eval-sign.cpp)
+       4. [Small-Precison Arbitrary Function Evaluation](https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/examples/eval-function.cpp)
    1. Threshold FHE:
        1. [Code Example for BGV, BFV, and CKKS](https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/threshold-fhe.cpp)
 
