@@ -30,6 +30,8 @@
 //==================================================================================
 
 /*
+  Please see CKKS_NOISE_FLOODING.md for technical details on CKKS noise flooding for the INDCPA^D scenario.
+  
   Example for using CKKS with the experimental NOISE_FLOODING_DECRYPT mode. We do not recommend
   this mode for production yet. This experimental mode gives us equivalent security levels to
   BGV and BFV, but it requires the user to run all encrypted operations twice. The first iteration
