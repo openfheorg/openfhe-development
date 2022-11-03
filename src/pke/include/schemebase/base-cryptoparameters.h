@@ -129,7 +129,7 @@ public:
    *
    * @return maximum power of secret key
    */
-    virtual size_t GetMaxRelinSkDeg() const {
+    virtual uint32_t GetMaxRelinSkDeg() const {
         return 0;
     }
 

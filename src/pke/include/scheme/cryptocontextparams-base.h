@@ -52,37 +52,34 @@ namespace lbcrypto {
 class Params {
     // NOTE: if any data member (below) is added/removed then update
     // cryptocontextparams-case.cpp and cryptocontextparams-defaults.h
+
+    // Scheme ID
     SCHEME scheme;
-    // Used in BGV/BFV type schemes
-    // Has impact on noise growth, thus has impact on parameter generation
+
+    // PlaintextModulus ptModulus is used in BGV/BFV type schemes and impacts noise growth
     PlaintextModulus ptModulus;
 
-    // Used in BV Key Switching only (KeySwitchTechnique = BV)
-    // Has impact on noise growth, thus has impact on parameter generation
+    // digitSize is used in BV Key Switching only (KeySwitchTechnique = BV) and impacts noise growth
     usint digitSize;
 
-    // Used for Gaussian error generation
-    // Has impact on parameter generation
+    // standardDeviation is used for Gaussian error generation
     float standardDeviation;
 
-    // GAUSSIAN means Gaussian secret key distribution
-    // UNIFORM_TERNARY means Ternary secret key distribution
-    // SPARSE_TERNARY means sparse secret key distribution
+    // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
     SecretKeyDist secretKeyDist;
 
     // Max relinearization degree of secret key polynomial (used for lazy relinearization)
-    int maxRelinSkDeg;
+    usint maxRelinSkDeg;
 
     // key switching technique: BV or HYBRID currently
     // For BV we do not have extra modulus, so the security depends on ciphertext modulus Q.
     // For HYBRID we do have extra modulus P, so the security depends on modulus P*Q
     // For BV we need digitSize - digit size in digit decomposition
     // For HYBRID we need numLargeDigits - number of digits in digit decomposition
-    // it is good to have alternative to numLargeDigits - numPrimesInDigit
+    // it is good to have alternative to numLargeDigits (possibly numPrimesInDigit?)
     KeySwitchTechnique ksTech;
 
-    // rescaling/modulus switching technique used in CKKS/BGV
-    // The options are FIXEDMANUL, FIXEDAUTO, FLEXIBLEAUTO, and FLEXIBLEAUTOEXT (default)
+    // rescaling/modulus switching technique used in CKKS/BGV: FLEXIBLEAUTOEXT, FIXEDMANUL, FLEXIBLEAUTO, etc.
     // see https://eprint.iacr.org/2022/915 for details
     ScalingTechnique scalTech;
 
@@ -120,20 +117,19 @@ class Params {
     // security of CKKS in NOISE_FLOODING_DECRYPT mode.
     double numAdversarialQueries;
 
-    // The ciphertext modulus should be seen as:
+    // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
     // other q_i have same number of bits and is equal to scalingModSize
     // the prime q' is not explicitly given,
     // but it is used internally in CKKS and BGV schemes (in *EXT scaling methods)
     usint firstModSize;
-
     usint scalingModSize;
 
     // see KeySwitchTechnique - number of digits in HYBRID key switching
     usint numLargeDigits;
 
-    // multiplicative depth for these parameters
+    // multiplicative depth
     usint multiplicativeDepth;
 
     // security level:
@@ -156,13 +152,11 @@ class Params {
     usint multiHopModSize;
 
     // STANDARD or EXTENDED mode for BFV encryption
-    // EXTENDED slightly reduces the size of Q (by few bits) but makes encryption
-    // somewhat slower
+    // EXTENDED slightly reduces the size of Q (by few bits) but makes encryption somewhat slower
     // see https://eprint.iacr.org/2022/915 for details
     EncryptionTechnique encryptionTechnique;
 
-    // multiplication method in BFV:
-    // BEHZ, HPS, HPSPOVEQ, or HPSPOVERQLEVELED (default)
+    // multiplication method in BFV: BEHZ, HPS, etc.
     // see https://eprint.iacr.org/2022/915 for details
     MultiplicationTechnique multiplicationTechnique;
 
@@ -197,7 +191,7 @@ public:
     SecretKeyDist GetSecretKeyDist() const {
         return secretKeyDist;
     }
-    int GetMaxRelinSkDeg() const {
+    usint GetMaxRelinSkDeg() const {
         return maxRelinSkDeg;
     }
     ProxyReEncryptionMode GetPREMode() const {
@@ -280,7 +274,7 @@ public:
     void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
         secretKeyDist = secretKeyDist0;
     }
-    void SetMaxRelinSkDeg(int maxRelinSkDeg0) {
+    void SetMaxRelinSkDeg(usint maxRelinSkDeg0) {
         maxRelinSkDeg = maxRelinSkDeg0;
     }
     void SetPREMode(ProxyReEncryptionMode PREMode0) {
