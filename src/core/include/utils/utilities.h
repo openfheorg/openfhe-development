@@ -141,6 +141,40 @@ constexpr usint GetIntegerTypeBitLength() {
     return sizeof(T) * CHAR_BIT;
 }
 
+/// COLLECTION OF FUNCTIONS COMPARING DOUBLES
+/**
+* @brief EPSILON_FOR_DOUBLE_COMPARISON default value for a parameter (error term) to functions comparing doubles
+*/
+constexpr double EPSILON_FOR_DOUBLE_COMPARISON = 0.000001;
+/**
+* @brief areEqual - function to determine if 2 doubles are equal as we cannot do this comparison directly
+* @param val1 first double value to compare
+* @param val2 second double value to compare
+* @param eps error term for the comparison; has the default value of EPSILON_FOR_DOUBLE_COMPARISON
+* @return true if 2 doubles are equal and false otherwise
+*/
+inline bool areEqual(double val1, double val2, double eps = EPSILON_FOR_DOUBLE_COMPARISON) {
+    return (eps > std::abs(val1 - val2));
+}
+/**
+* @brief isZero - function to determine if a double is equal to zero as we cannot do this comparison directly
+* @param val value to compare
+* @param eps error term for the comparison; has a default value of EPSILON_FOR_DOUBLE_COMPARISON
+* @return true if double is zero and false otherwise
+*/
+inline bool isZero(double val, double eps = EPSILON_FOR_DOUBLE_COMPARISON) {
+    return areEqual(val, 0, eps);
+}
+/**
+* @brief IsNotEqualOne - function to determine if a double is NOT equal to 1 as we cannot do this comparison directly
+* @param val value to compare
+* @param eps error term for the comparison; has a default value of EPSILON_FOR_DOUBLE_COMPARISON
+* @return true if double NOT equal to 1 and false otherwise
+*/
+inline bool IsNotEqualOne(double val, double eps = EPSILON_FOR_DOUBLE_COMPARISON) {
+    return !areEqual(val, 1, eps);
+}
+
 }  // namespace lbcrypto
 
 #endif

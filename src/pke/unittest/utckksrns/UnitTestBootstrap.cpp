@@ -293,6 +293,11 @@ protected:
     void SetUp() {}
 
     void TearDown() {
+        // destroy all static key maps
+        CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
+        CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
+        CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
+
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 

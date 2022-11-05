@@ -30,7 +30,8 @@
 //==================================================================================
 
 #include "scheme/ckksrns/ckksrns-utils.h"
-#include "utils/inttypes.h"
+
+#include "utils/utilities.h"
 #include "utils/exception.h"
 
 #include <cmath>
@@ -40,17 +41,6 @@
 namespace lbcrypto {
 
 const std::complex<double> I(0.0, 1.0);
-double PREC = std::pow(2, -20);
-
-inline bool IsNotEqualOne(double val) {
-    if (1 - PREC >= val) {
-        return true;
-    }
-    if (1 + PREC <= val) {
-        return true;
-    }
-    return false;
-}
 
 /*Return the degree of the polynomial described by coefficients,
 which is the index of the last non-zero element in the coefficients - 1.
@@ -59,7 +49,8 @@ uint32_t Degree(const std::vector<double>& coefficients) {
     uint32_t deg = 1;
     if (coefficients.size() > 1) {
         for (size_t i = coefficients.size() - 1; i > 0; --i) {
-            if (coefficients[i] == 0) {  // TODO (dsuponit): new function to check if double is zero - isZero(double d);
+            // TODO (dsuponit): potential bug as double comparison is implemented incorrectly. Use isZero() from utils/utilities.h
+            if (coefficients[i] == 0) {
                 ++deg;
             }
             else
