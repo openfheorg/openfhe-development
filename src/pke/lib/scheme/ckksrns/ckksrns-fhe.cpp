@@ -52,7 +52,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         OPENFHE_THROW(config_error,
                       "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
@@ -206,7 +206,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         OPENFHE_THROW(config_error,
                       "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
@@ -232,7 +232,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     if (cryptoParams->GetKeySwitchTechnique() != HYBRID)
         OPENFHE_THROW(config_error, "CKKS Bootstrapping is only supported for the Hybrid key switching method.");
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO || cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         OPENFHE_THROW(config_error,
                       "128-bit CKKS Bootstrapping is supported for FIXEDMANUAL and FIXEDAUTO methods only.");
@@ -2019,7 +2019,7 @@ void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext) co
     }
 }
 
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
                                        const std::vector<std::complex<double>>& value, size_t noiseScaleDeg,
                                        uint32_t level, usint slots) const {
@@ -2417,7 +2417,7 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>&
     }
 }
 
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
                                    NativeVector* nativeVec) const {
     NativeInteger bigValueHf((unsigned __int128)bigBound >> 1);

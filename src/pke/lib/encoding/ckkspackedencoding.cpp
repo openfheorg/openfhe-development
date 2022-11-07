@@ -111,7 +111,7 @@ std::vector<DCRTPoly::Integer> CKKSPackedEncoding::CRTMult(const std::vector<DCR
     return result;
 }
 
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 bool CKKSPackedEncoding::Encode() {
     if (this->isEncoded)
         return true;
@@ -590,7 +590,7 @@ void CKKSPackedEncoding::FitToNativeVector(const std::vector<int64_t>& vec, int6
     }
 }
 
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 void CKKSPackedEncoding::FitToNativeVector(const std::vector<__int128>& vec, __int128 bigBound,
                                            NativeVector* nativeVec) const {
     NativeInteger bigValueHf((unsigned __int128)bigBound >> 1);

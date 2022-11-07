@@ -32,13 +32,13 @@
 #ifndef __BASICINT_H__
 #define __BASICINT_H__
 
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     #define MAX_MODULUS_SIZE 121
 using BasicInteger = unsigned __int128;
 typedef unsigned __int128 DoubleNativeInt;
 typedef unsigned __int128 uint128_t;
 typedef __int128 int128_t;
-#elif NATIVEINT == 64 && defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#elif NATIVEINT == 64 && defined(HAVE_INT128)
     #define MAX_MODULUS_SIZE 60
 using BasicInteger = uint64_t;
 typedef unsigned __int128 DoubleNativeInt;
