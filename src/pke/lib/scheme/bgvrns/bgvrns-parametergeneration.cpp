@@ -273,11 +273,12 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     double sigma        = cryptoParamsBGVRNS->GetDistributionParameter();
     double alpha        = cryptoParamsBGVRNS->GetAssuranceMeasure();
     usint r             = cryptoParamsBGVRNS->GetDigitSize();
-    double log2q        = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
+    double B_e          = sqrt(alpha) * sigma;
+    uint32_t auxBits    = DCRT_MODULUS::MAX_SIZE;
+    double Bkey         = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
 
-    double B_e       = sqrt(alpha) * sigma;
-    uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
-    double Bkey      = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
+    double stat_sec    = cryptoParamsBGVRNS->GetStatisticalSecurity();
+    double num_queries = cryptoParamsBGVRNS->GetNumAdversarialQueries();
 
     // get the flooding discrete gaussian distribution
     auto dggFlooding   = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
@@ -288,8 +289,8 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     else if (PREMode == NOISE_FLOODING_HRA) {
         if (ksTech == BV) {
             if (r > 0) {
-                noise_param = pow(2, NOISE_FLOODING::STAT_SECURITY) * (1 + 2 * Bkey) * (numPrimes + 1) *
-                              (log2q / r + 1) * sqrt(ringDimension) * (pow(2, r) - 1) * B_e;
+                noise_param = sqrt(12 * num_queries) * pow(2, stat_sec) * (1 + 2 * Bkey) * numPrimes *
+                              (auxBits / r + 1) * sqrt(ringDimension) * (pow(2, r) - 1) * B_e;
             }
             else {
                 OPENFHE_THROW(config_error, "Relinwindow value cannot be 0 for BV keyswitching");
@@ -300,8 +301,8 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
                 double numTowersPerDigit = cryptoParamsBGVRNS->GetNumPerPartQ();
                 int numDigits            = cryptoParamsBGVRNS->GetNumPartQ();
                 noise_param              = numTowersPerDigit * numDigits * sqrt(ringDimension) * B_e * (1 + 2 * Bkey);
-                noise_param += auxBits * (1 + sqrt(ringDimension));
-                noise_param = pow(2, NOISE_FLOODING::STAT_SECURITY) * noise_param;
+                noise_param += auxBits * (1 + sqrt(ringDimension) * Bkey);
+                noise_param = sqrt(12 * num_queries) * pow(2, stat_sec) * noise_param;
             }
             else {
                 OPENFHE_THROW(config_error, "Relinwindow value can only  be zero for Hybrid keyswitching");

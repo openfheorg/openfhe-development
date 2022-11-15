@@ -149,7 +149,7 @@ const double MP_SD = 1048576;
 // noise flooding distribution parameter for fixed 20 bits noise multihop PRE
 const double PRE_SD = 1048576;
 // statistical security parameter for noise flooding in PRE
-const double STAT_SECURITY = 30;
+const double STAT_SECURITY = 32;
 // number of additional moduli in NOISE_FLOODING_MULTIPARTY mode
 const size_t NUM_MODULI_MULTIPARTY = 2;
 // modulus size for additional moduli in NOISE_FLOODING_MULTIPARTY mode
