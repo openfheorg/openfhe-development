@@ -164,6 +164,7 @@ std::shared_ptr<std::vector<DCRTPoly>> PKERNS::EncryptZeroCore(const PublicKey<D
     DCRTPoly v = cryptoParams->GetSecretKeyDist() == GAUSSIAN ? DCRTPoly(dgg, elementParams, Format::EVALUATION) :
                                                                 DCRTPoly(tug, elementParams, Format::EVALUATION);
 
+    // noise generation with the discrete gaussian generator dgg
     DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
     DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
 

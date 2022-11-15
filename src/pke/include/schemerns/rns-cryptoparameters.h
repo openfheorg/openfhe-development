@@ -120,7 +120,7 @@ protected:
                         MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
                         ExecutionMode executionMode             = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-                        double statisticalSecurity = 30, double numAdversarialQueries = 1)
+                        uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist, PREMode, multipartyMode,
                                          executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,

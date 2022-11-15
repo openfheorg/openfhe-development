@@ -104,7 +104,7 @@ public:
                          ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
                          ExecutionMode executionMode             = EXEC_EVALUATION,
                          DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-                         double statisticalSecurity = 30, double numAdversarialQueries = 1)
+                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
         m_assuranceMeasure      = assuranceMeasure;
@@ -380,7 +380,7 @@ public:
    * Configures the decryption noise mode for CKKS noise flooding and PRE
    * @param statisticalSecurity.
    */
-    void SetStatisticalSecurity(double statisticalSecurity) {
+    void SetStatisticalSecurity(uint32_t statisticalSecurity) {
         m_statisticalSecurity = statisticalSecurity;
     }
 
@@ -388,7 +388,7 @@ public:
    * Configures the decryption noise mode for CKKS noise flooding and PRE
    * @param numAdversarialQueries.
    */
-    void SetNumAdversarialQueries(double numAdversarialQueries) {
+    void SetNumAdversarialQueries(uint32_t numAdversarialQueries) {
         m_numAdversarialQueries = numAdversarialQueries;
     }
 

@@ -111,11 +111,11 @@ class Params {
 
     // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
     // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
-    double statisticalSecurity;
+    uint32_t statisticalSecurity;
 
     // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
     // security of CKKS in NOISE_FLOODING_DECRYPT mode.
-    double numAdversarialQueries;
+    uint32_t numAdversarialQueries;
 
     // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
@@ -171,7 +171,7 @@ public:
     Params(Params&& obj)      = default;
 
     Params& operator=(const Params& obj) = default;
-    Params& operator=(Params&& obj) = default;
+    Params& operator=(Params&& obj)      = default;
 
     ~Params() = default;
 
@@ -295,10 +295,10 @@ public:
     void SetDesiredPrecision(double desiredPrecision0) {
         desiredPrecision = desiredPrecision0;
     }
-    void SetStatisticalSecurity(double statisticalSecurity0) {
+    void SetStatisticalSecurity(uint32_t statisticalSecurity0) {
         statisticalSecurity = statisticalSecurity0;
     }
-    void SetNumAdversarialQueries(double numAdversarialQueries0) {
+    void SetNumAdversarialQueries(uint32_t numAdversarialQueries0) {
         numAdversarialQueries = numAdversarialQueries0;
     }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {

@@ -49,7 +49,7 @@ template <class Element>
 Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
                                                 const PublicKey<Element> publicKey) const {
     auto algo               = ciphertext->GetCryptoContext()->GetScheme();
-    const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
 
     Ciphertext<Element> result = ciphertext->Clone();
     std::vector<Element>& cv   = result->GetElements();
@@ -61,12 +61,9 @@ Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphert
     }
 
     if ((cryptoParams->GetPREMode() == FIXED_NOISE_HRA) || (cryptoParams->GetPREMode() == NOISE_FLOODING_HRA)) {
-        // noise flooding distribution
-        auto elementParams          = cryptoParams->GetElementParams();
-        const DggType& floodingdist = cryptoParams->GetFloodingDiscreteGaussianGenerator();
-
         // noiseflooding
-        Element enf(floodingdist, elementParams, Format::EVALUATION);
+        Element enf(cryptoParams->GetFloodingDiscreteGaussianGenerator(), cryptoParams->GetElementParams(),
+                    Format::EVALUATION);
 
         cv[0] += enf;
     }

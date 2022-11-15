@@ -69,8 +69,8 @@ public:
                            MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
                            ExecutionMode executionMode             = EXEC_EVALUATION,
                            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
-                           PlaintextModulus noiseScale = 1, double statisticalSecurity = 30,
-                           double numAdversarialQueries = 1)
+                           PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
+                           uint32_t numAdversarialQueries = 1)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
                               secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
                               multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,

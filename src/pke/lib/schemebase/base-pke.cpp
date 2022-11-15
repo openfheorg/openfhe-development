@@ -167,6 +167,7 @@ std::shared_ptr<std::vector<Element>> PKEBase<Element>::EncryptZeroCore(const Pu
     Element v = cryptoParams->GetSecretKeyDist() == GAUSSIAN ? Element(dgg, elementParams, Format::EVALUATION) :
                                                                Element(tug, elementParams, Format::EVALUATION);
 
+    // noise generation with the discrete gaussian generator dgg
     Element e0(dgg, elementParams, Format::EVALUATION);
     Element e1(dgg, elementParams, Format::EVALUATION);
 

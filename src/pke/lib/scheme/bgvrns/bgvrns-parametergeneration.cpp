@@ -275,7 +275,9 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     usint r             = cryptoParamsBGVRNS->GetDigitSize();
     double B_e          = sqrt(alpha) * sigma;
     uint32_t auxBits    = DCRT_MODULUS::MAX_SIZE;
-    double Bkey         = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
+    // bound on the secret key is sigma*sqrt(alpha) if the secret is sampled from discrete gaussian distribution
+    // and is 1 if the secret is sampled from ternary distribution.
+    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
 
     double stat_sec    = cryptoParamsBGVRNS->GetStatisticalSecurity();
     double num_queries = cryptoParamsBGVRNS->GetNumAdversarialQueries();
@@ -289,6 +291,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     else if (PREMode == NOISE_FLOODING_HRA) {
         if (ksTech == BV) {
             if (r > 0) {
+                // sqrt(12*num_queries) factor required for security analysis
                 noise_param = sqrt(12 * num_queries) * pow(2, stat_sec) * (1 + 2 * Bkey) * numPrimes *
                               (auxBits / r + 1) * sqrt(ringDimension) * (pow(2, r) - 1) * B_e;
             }
@@ -302,6 +305,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
                 int numDigits            = cryptoParamsBGVRNS->GetNumPartQ();
                 noise_param              = numTowersPerDigit * numDigits * sqrt(ringDimension) * B_e * (1 + 2 * Bkey);
                 noise_param += auxBits * (1 + sqrt(ringDimension) * Bkey);
+                // sqrt(12*num_queries) factor required for security analysis
                 noise_param = sqrt(12 * num_queries) * pow(2, stat_sec) * noise_param;
             }
             else {
