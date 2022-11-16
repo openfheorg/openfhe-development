@@ -49,6 +49,7 @@ enum TEST_CASE_TYPE {
     BFVRNS_TEST,
     BGVRNS_TEST,
     BFVRNS_TEST_EXTRA,
+    TEST_ABORTS,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -83,6 +84,7 @@ struct TEST_CASE_UTGENERAL_MULTIPARTY {
     // additional test case data
     bool star;
     uint32_t slots = 0;
+    std::string sharingScheme;
 
     std::string buildTestName() const {
         std::stringstream ss;
@@ -318,7 +320,7 @@ static std::vector<TEST_CASE_UTGENERAL_MULTIPARTY> testCases = {
     { BGVRNS_TEST, "63", {BGVRNS_SCHEME,   256,  2,         DFLT,     3,    BATCH,   UNIFORM_TERNARY, 1,             60,       HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    NOISE_FLOODING_MULTIPARTY}, true,     0},
     { BGVRNS_TEST, "64", {BGVRNS_SCHEME,   256,  2,         DFLT,     3,    BATCH,   GAUSSIAN,        DFLT,          60,       HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT,    NOISE_FLOODING_MULTIPARTY}, true,     0},
     // ==========================================
-    // TestType,   Descr, Scheme,          RDim, MultDepth, SModSize, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,     LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,  PREMode, Star, Slots
+    // TestType,         Descr, Scheme,        RDim, MultDepth, SModSize, DSize,BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,     LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,  PREMode, Star, Slots
     { BFVRNS_TEST_EXTRA, "01", {BFVRNS_SCHEME, DFLT, DFLT,  60,       20,   DFLT,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    4,     DFLT,   DFLT,      DFLT, HPS,              STANDARD, DFLT},   false,    0},
     { BFVRNS_TEST_EXTRA, "02", {BFVRNS_SCHEME, DFLT, DFLT,  60,       20,   DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    16,    DFLT,   DFLT,      DFLT, HPS,              STANDARD, DFLT},   false,    0},
     { BFVRNS_TEST_EXTRA, "03", {BFVRNS_SCHEME, DFLT, DFLT,  60,       20,   DFLT,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    4,     DFLT,   DFLT,      DFLT, BEHZ,             STANDARD, DFLT},   false,    0},
@@ -335,6 +337,11 @@ static std::vector<TEST_CASE_UTGENERAL_MULTIPARTY> testCases = {
     { BFVRNS_TEST_EXTRA, "14", {BFVRNS_SCHEME, DFLT, DFLT,  60,       20,   DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    16,    DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED, DFLT},   false,    0},
     { BFVRNS_TEST_EXTRA, "15", {BFVRNS_SCHEME, DFLT, DFLT,  60,       20,   DFLT,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    4,     DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED, DFLT},   false,    0},
     { BFVRNS_TEST_EXTRA, "16", {BFVRNS_SCHEME, DFLT, DFLT,  60,       20,   DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    16,    DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED, DFLT},   false,    0},
+    // ==========================================
+    // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,     LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,  PREMode, MultipartyMode, Star, Slots
+    { TEST_ABORTS, "01", {BFVRNS_SCHEME, DFLT, 4,         DFLT,     DFLT,  DFLT,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, HPS,              STANDARD, DFLT,    DFLT},          false,    0 },
+    { TEST_ABORTS, "02", {BFVRNS_SCHEME, DFLT, 4,         DFLT,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, HPS,              STANDARD, DFLT,    DFLT},          false,    0 },
+    // ==========================================
 };
 // clang-format on
 //===========================================================================================================
@@ -359,7 +366,14 @@ protected:
             std::vector<int32_t> indices = {2};
             //====================================================================
             KeyPair<Element> kp1 = cc->KeyGen();
-            auto evalMultKey     = cc->KeySwitchGen(kp1.secretKey, kp1.secretKey);
+
+            // some additional operations for the aborts
+            std::unordered_map<uint32_t, DCRTPoly> kp1smap;
+            if (TEST_ABORTS == testData.testCaseType) {
+                // specific code for the aborts
+                int x = 0;
+            }
+            auto evalMultKey = cc->KeySwitchGen(kp1.secretKey, kp1.secretKey);
             cc->EvalSumKeyGen(kp1.secretKey);
             auto evalSumKeys =
                 std::make_shared<std::map<usint, EvalKey<Element>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
