@@ -114,8 +114,7 @@ public:
                                                            const std::shared_ptr<ParmType> params) const override;
 
     std::shared_ptr<std::vector<DCRTPoly>> EncryptZeroCore(const PublicKey<DCRTPoly> publicKey,
-                                                           const std::shared_ptr<ParmType> params,
-                                                           const DggType& dgg) const override;
+                                                           const std::shared_ptr<ParmType> params) const override;
 
     DCRTPoly DecryptCore(const std::vector<DCRTPoly>& cv, const PrivateKey<DCRTPoly> privateKey) const override;
 

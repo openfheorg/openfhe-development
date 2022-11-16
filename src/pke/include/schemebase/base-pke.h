@@ -136,8 +136,7 @@ public:
                                                                    const std::shared_ptr<ParmType> params) const;
 
     virtual std::shared_ptr<std::vector<Element> > EncryptZeroCore(const PublicKey<Element> publicKey,
-                                                                   const std::shared_ptr<ParmType> params,
-                                                                   const DggType& dgg) const;
+                                                                   const std::shared_ptr<ParmType> params) const;
 
     virtual Element DecryptCore(const std::vector<Element>& cv, const PrivateKey<Element> privateKey) const;
 };

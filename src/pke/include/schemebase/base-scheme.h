@@ -245,13 +245,12 @@ public:
         OPENFHE_THROW(config_error, "EncryptZeroCore operation has not been enabled");
     }
 
-    std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PublicKey<Element> publicKey,
-                                                          const DggType& dgg) const {
+    std::shared_ptr<std::vector<Element>> EncryptZeroCore(const PublicKey<Element> publicKey) const {
         if (m_PKE) {
             if (!publicKey)
                 OPENFHE_THROW(config_error, "Input public key is nullptr");
 
-            return m_PKE->EncryptZeroCore(publicKey, nullptr, dgg);
+            return m_PKE->EncryptZeroCore(publicKey, nullptr);
         }
         OPENFHE_THROW(config_error, "EncryptZeroCore operation has not been enabled");
     }
