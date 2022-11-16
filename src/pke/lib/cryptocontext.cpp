@@ -781,6 +781,325 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
     return result;
 }
 
+// Function for sharing and recovery of secret for Threshold FHE with aborts
+template <>
+std::vector<DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk, usint N, usint threshold,
+                                                             usint index, const std::string shareType) {
+    usint num_of_shares = N - 1;
+    std::vector<DCRTPoly> SecretShares;
+
+    const auto cryptoParams = sk->GetCryptoContext()->GetCryptoParameters();
+    auto elementParams      = cryptoParams->GetElementParams();
+    auto vecSize            = elementParams->GetParams().size();
+    auto ring_dimension     = elementParams->GetRingDimension();
+
+    // conditions on N and threshold for security with aborts
+    if (N < 2) {
+        std::cerr << "Number of parties needs to be atleast 3 for aborts" << std::endl;
+        OPENFHE_THROW(config_error,
+                      "Number of parties needs to be atleast 3 for aborts"
+                      "crypto context");
+    }
+
+    if (threshold <= N / 2) {
+        std::cerr << "Threshold required to be majority (more than N/2)" << std::endl;
+        OPENFHE_THROW(config_error,
+                      "Threshold required to be majority (more than N/2)"
+                      "crypto context");
+    }
+
+    // condition for inverse in lagrange coeff to exist.
+    for (usint k = 0; k < vecSize; k++) {
+        auto modq_k = elementParams->GetParams()[k]->GetModulus();
+        if (N >= modq_k) {
+            std::cerr << "Number of parties N needs to be less than DCRTPoly moduli" << std::endl;
+            OPENFHE_THROW(math_error,
+                          "Number of parties N needs to be less than DCRTPoly moduli"
+                          "crypto context");
+        }
+    }
+
+    // secret sharing
+    if (shareType == "additive") {
+        DCRTPoly rsum;
+
+        typename DCRTPoly::DugType dug;
+
+        // generate a random share of N-2 elements and create the last share as sk - (sk_1 + ... + sk_N-2)
+        DCRTPoly r(dug, elementParams, Format::EVALUATION);
+        rsum = r;
+        SecretShares.push_back(r);
+        for (usint i = 1; i < num_of_shares; i++) {
+            if (i == num_of_shares - 1) {
+                SecretShares.push_back(sk->GetPrivateElement() - rsum);
+            }
+            else {
+                DCRTPoly r(dug, elementParams, Format::EVALUATION);
+                rsum = rsum + r;
+                SecretShares.push_back(r);
+            }
+        }
+    }
+    else if (shareType == "shamir") {
+        DCRTPoly ske = sk->GetPrivateElement();
+
+        // set the secret element in coefficient format
+        ske.SetFormat(Format::COEFFICIENT);
+
+        typename DCRTPoly::DugType dug;
+
+        // vector to store columnwise randomly generated coefficients for polynomial f from Z_q for every secret key entry
+        std::vector<DCRTPoly> fs(threshold);
+
+        // initialize format of fs elements
+        for (usint i = 0; i < threshold; i++) {
+            fs[i].SetFormat(Format::COEFFICIENT);
+        }
+
+        // set constant term of polynomial f_i to s_i
+        fs[0] = ske;
+
+        // generate random coefficients
+        for (usint i = 1; i < threshold; i++) {
+            DCRTPoly fvals(dug, elementParams, Format::COEFFICIENT);
+            fs[i] = fvals;
+        }
+
+        // evaluate the polynomial at the index of the parties 1 to N
+
+        for (usint i = 1; i <= N; i++) {
+            if (i != index) {
+                DCRTPoly feval(elementParams, Format::COEFFICIENT, true);
+                for (usint k = 0; k < vecSize; k++) {
+                    NativeInteger powtemp = (NativeInteger)1;
+
+                    auto modq_k = elementParams->GetParams()[k]->GetModulus();
+
+                    NativeVector powtempvec(ring_dimension, modq_k);
+                    NativePoly powtemppoly(elementParams->GetParams()[k], Format::COEFFICIENT);
+                    NativePoly fevalpoly(elementParams->GetParams()[k], Format::COEFFICIENT, true);
+
+                    for (usint t = 1; t < threshold; t++) {
+                        powtemp = (NativeInteger)powtemp.ModMul(i, modq_k);
+
+                        for (usint d = 0; d < ring_dimension; d++) {
+                            powtempvec.at(d) = powtemp;
+                        }
+
+                        powtemppoly.SetValues(powtempvec, Format::COEFFICIENT);
+
+                        auto fst = fs[t].GetElementAtIndex(k);
+
+                        for (usint l = 0; l < ring_dimension; l++) {
+                            fevalpoly.at(l) += powtemppoly.at(l).ModMul(fst.at(l), modq_k);
+                        }
+                    }
+                    auto fs0  = fs[0].GetElementAtIndex(k);
+                    fevalpoly = fevalpoly + fs0;
+
+                    fevalpoly.SetFormat(Format::COEFFICIENT);
+                    feval.SetElementAtIndex(k, fevalpoly);
+                }
+                // assign fi
+                SecretShares.push_back(feval);
+            }
+        }
+    }
+    return SecretShares;
+}
+
+//**********************************************************************************
+template <>
+void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
+                                                   std::unordered_map<uint32_t, DCRTPoly>& sk_shares, usint N,
+                                                   usint threshold, const std::string shareType) {
+    if (!sk) {
+        std::cout << "sk is null" << std::endl;
+    }
+
+    const auto cryptoParams = sk->GetCryptoContext()->GetCryptoParameters();
+    auto elementParams      = cryptoParams->GetElementParams();
+    auto ring_dimension     = elementParams->GetRingDimension();
+    auto vecSize            = elementParams->GetParams().size();
+
+    // conditions on N and threshold for security with aborts
+    if (N < 2) {
+        std::cerr << "Number of parties needs to be atleast 3 for aborts" << std::endl;
+        OPENFHE_THROW(config_error,
+                      "Number of parties needs to be atleast 3 for aborts"
+                      "crypto context");
+    }
+
+    if (threshold <= N / 2) {
+        std::cerr << "Threshold required to be majority (more than N/2)" << std::endl;
+        OPENFHE_THROW(config_error,
+                      "Threshold required to be majority (more than N/2)"
+                      "crypto context");
+    }
+
+    // condition for inverse in lagrange coeff to exist.
+    for (usint k = 0; k < vecSize; k++) {
+        auto modq_k = elementParams->GetParams()[k]->GetModulus();
+        if (N >= modq_k) {
+            std::cerr << "Number of parties N needs to be less than DCRTPoly moduli" << std::endl;
+            OPENFHE_THROW(not_implemented_error,
+                          "Number of parties N needs to be less than DCRTPoly moduli"
+                          "crypto context");
+        }
+    }
+
+    if (sk_shares.size() < threshold) {
+        std::cout << "Number of shares available less than threshold of the sharing scheme" << std::endl;
+    }
+
+    // todo:check that no indexes are repeated so that all secret shares are available to recover the secret
+    // vector of indexes of the clients
+    std::vector<int64_t> client_indexes;
+    for (usint i = 1; i <= N; i++) {
+        if (sk_shares.find(i) != sk_shares.end()) {
+            client_indexes.push_back(i);
+        }
+    }
+
+    auto client_indexes_size = client_indexes.size();
+
+    std::vector<int64_t> duplicate_indexes;
+
+    // duplicates code from:https://www.geeksforgeeks.org/find-print-duplicate-words-stdvectorstring-using-stl-functions/
+    // STL function to sort the array of string
+    std::sort(client_indexes.begin(), client_indexes.end());
+
+    for (size_t i = 1; i < client_indexes_size; i++) {
+        if (client_indexes[i - 1] == client_indexes[i]) {
+            // STL function to push the duplicate
+            // words in a new vector string
+            if (duplicate_indexes.empty())
+                duplicate_indexes.push_back(client_indexes[i]);
+            else if (client_indexes[i] != duplicate_indexes.back())
+                duplicate_indexes.push_back(client_indexes[i]);
+        }
+    }
+
+    if (duplicate_indexes.size() != 0) {
+        std::cerr << "Not enough shares to recover the secret" << std::endl;
+    }
+
+    if (shareType == "additive") {
+        // check that the vector size is the threshold for the sharing scheme
+
+        // recover secret from the shares
+        // sk = sk_1 + ... + sk_N-1;
+        DCRTPoly sum_of_elems;
+        sum_of_elems.SetFormat(Format::EVALUATION);
+
+        // retrieve all shares from the map
+        std::vector<DCRTPoly> sk_sharesElements;
+
+        for (usint i = 1; i <= N; i++) {
+            if (sk_shares.find(i) != sk_shares.end()) {
+                sk_sharesElements.push_back(sk_shares[i]);
+            }
+        }
+
+        sum_of_elems = sk_sharesElements[0];
+
+        for (usint i = 1; i < threshold; i++) {
+            sum_of_elems += sk_sharesElements[i];
+        }
+
+        sk->SetPrivateElement(sum_of_elems);
+    }
+    else if (shareType == "shamir") {
+        // use lagrange interpolation to recover the secret
+
+        // vector of lagrange coefficients L_j = Pdt_i ne j (i (i-j)^-1)
+        std::unordered_map<usint, DCRTPoly> Lagrange_coeffs;
+
+        // initialize the coefficients
+        for (usint i = 0; i < client_indexes_size; i++) {
+            Lagrange_coeffs[client_indexes[i]] = DCRTPoly(elementParams, Format::EVALUATION);
+        }
+
+        // recovery of the secret with lagrange coefficients and the secret shares
+        DCRTPoly lagrange_sum_of_elems(elementParams, Format::COEFFICIENT, true);
+
+        for (usint j = 0; j < client_indexes_size; j++) {
+            for (usint k = 0; k < vecSize; k++) {
+                auto modq_k = elementParams->GetParams()[k]->GetModulus();
+
+                NativeVector multvec(ring_dimension, modq_k);
+                NativePoly multpoly(elementParams->GetParams()[k], Format::COEFFICIENT);
+
+                auto mult = (NativeInteger)1;
+
+                for (usint d = 0; d < ring_dimension; d++) {
+                    multvec.at(d) = mult;
+                }
+
+                multpoly.SetValues(multvec, Format::COEFFICIENT);
+
+                for (usint i = 0; i < client_indexes_size; i++) {
+                    if (client_indexes[j] != client_indexes[i]) {
+                        NativeVector indexvec(ring_dimension, modq_k);
+                        NativePoly indexpoly(elementParams->GetParams()[k], Format::COEFFICIENT);
+
+                        NativeVector denomvec(ring_dimension, modq_k);
+                        NativePoly denompoly(elementParams->GetParams()[k], Format::COEFFICIENT);
+
+                        auto denominator             = client_indexes[i] - client_indexes[j];
+                        NativeInteger denom_positive = 0;
+                        if (denominator < 0) {
+                            denom_positive = (NativeInteger)(-1) * denominator;
+                            denom_positive = modq_k - denom_positive;
+                        }
+                        else {
+                            denom_positive = denominator;
+                        }
+                        NativeInteger den_nativeint = (NativeInteger)denom_positive;
+                        NativeInteger denom_inv     = (NativeInteger)den_nativeint.ModInverse(modq_k);
+
+                        for (usint d = 0; d < ring_dimension; d++) {
+                            indexvec.at(d) = client_indexes[i];
+                            denomvec.at(d) = denom_inv;
+                        }
+
+                        indexpoly.SetValues(indexvec, Format::COEFFICIENT);
+                        denompoly.SetValues(denomvec, Format::COEFFICIENT);
+
+                        for (usint l = 0; l < ring_dimension; l++) {
+                            multpoly.at(l) =
+                                multpoly.at(l).ModMul(indexpoly.at(l).ModMul(denompoly.at(l), modq_k), modq_k);
+                        }
+                    }
+                }
+                multpoly.SetFormat(Format::EVALUATION);
+
+                Lagrange_coeffs[client_indexes[j]].SetElementAtIndex(k, multpoly);
+            }
+        }
+
+        lagrange_sum_of_elems.SetFormat(Format::COEFFICIENT);
+
+        for (usint k = 0; k < vecSize; k++) {
+            NativePoly lagrange_sum_of_elems_poly(elementParams->GetParams()[k], Format::COEFFICIENT, true);
+            auto modq_k = elementParams->GetParams()[k]->GetModulus();
+            for (usint i = 0; i < client_indexes_size; i++) {
+                Lagrange_coeffs[client_indexes[i]].SetFormat(Format::COEFFICIENT);
+                sk_shares[client_indexes[i]].SetFormat(Format::COEFFICIENT);
+                for (usint l = 0; l < ring_dimension; l++) {
+                    lagrange_sum_of_elems_poly.at(l) +=
+                        Lagrange_coeffs[client_indexes[i]].GetElementAtIndex(k).at(l).ModMul(
+                            sk_shares[client_indexes[i]].GetElementAtIndex(k).at(l), modq_k);
+                }
+            }
+            lagrange_sum_of_elems.SetElementAtIndex(k, lagrange_sum_of_elems_poly);
+        }
+
+        lagrange_sum_of_elems.SetFormat(Format::EVALUATION);
+        sk->SetPrivateElement(lagrange_sum_of_elems);
+    }
+}
+
 template class CryptoContextImpl<DCRTPoly>;
 
 }  // namespace lbcrypto
