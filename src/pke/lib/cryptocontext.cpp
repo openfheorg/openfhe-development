@@ -783,10 +783,11 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
 
 // Function for sharing and recovery of secret for Threshold FHE with aborts
 template <>
-std::vector<DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk, usint N, usint threshold,
-                                                             usint index, const std::string shareType) {
+std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk, usint N,
+                                                                              usint threshold, usint index,
+                                                                              const std::string shareType) {
     usint num_of_shares = N - 1;
-    std::vector<DCRTPoly> SecretShares;
+    std::unordered_map<uint32_t, DCRTPoly> SecretShares;
 
     const auto cryptoParams = sk->GetCryptoContext()->GetCryptoParameters();
     auto elementParams      = cryptoParams->GetElementParams();
@@ -827,16 +828,16 @@ std::vector<DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DC
 
         // generate a random share of N-2 elements and create the last share as sk - (sk_1 + ... + sk_N-2)
         DCRTPoly r(dug, elementParams, Format::EVALUATION);
-        rsum = r;
-        SecretShares.push_back(r);
-        for (usint i = 1; i < num_of_shares; i++) {
-            if (i == num_of_shares - 1) {
-                SecretShares.push_back(sk->GetPrivateElement() - rsum);
+        rsum            = r;
+        SecretShares[1] = r;
+        for (usint i = 2; i <= num_of_shares; i++) {
+            if (i == num_of_shares) {
+                SecretShares[i] = sk->GetPrivateElement() - rsum;
             }
             else {
                 DCRTPoly r(dug, elementParams, Format::EVALUATION);
-                rsum = rsum + r;
-                SecretShares.push_back(r);
+                rsum            = rsum + r;
+                SecretShares[i] = r;
             }
         }
     }
@@ -901,7 +902,7 @@ std::vector<DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DC
                     feval.SetElementAtIndex(k, fevalpoly);
                 }
                 // assign fi
-                SecretShares.push_back(feval);
+                SecretShares[i] = feval;
             }
         }
     }
@@ -952,7 +953,6 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
         std::cout << "Number of shares available less than threshold of the sharing scheme" << std::endl;
     }
 
-    // todo:check that no indexes are repeated so that all secret shares are available to recover the secret
     // vector of indexes of the clients
     std::vector<int64_t> client_indexes;
     for (usint i = 1; i <= N; i++) {
@@ -980,7 +980,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
         }
     }
 
-    if (duplicate_indexes.size() != 0) {
+    if (duplicate_indexes.size() != 0 && sk_shares.size() == threshold) {
         std::cerr << "Not enough shares to recover the secret" << std::endl;
     }
 

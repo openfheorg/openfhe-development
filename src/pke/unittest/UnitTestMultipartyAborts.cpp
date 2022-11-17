@@ -81,13 +81,7 @@ protected:
         usint N      = 3;
         usint thresh = 2;
 
-        auto kp1s = cc->ShareKeys(kp1.secretKey, N, thresh, 1, sharing_scheme);
-
-        // assign each share to party index in a map
-        std::unordered_map<uint32_t, DCRTPoly> kp1smap;
-        for (usint i = 2; i <= N; i++) {
-            kp1smap[i] = kp1s[i - 2];
-        }
+        auto kp1smap = cc->ShareKeys(kp1.secretKey, N, thresh, 1, sharing_scheme);
 
         // Generate evalmult key part for A
         auto evalMultKey = cc->KeySwitchGen(kp1.secretKey, kp1.secretKey);
@@ -100,7 +94,7 @@ protected:
         // Round 2 (party B)
         kp2 = cc->MultipartyKeyGen(kp1.publicKey);
 
-        auto kp2s         = cc->ShareKeys(kp2.secretKey, N, thresh, 2, sharing_scheme);
+        auto kp2smap      = cc->ShareKeys(kp2.secretKey, N, thresh, 2, sharing_scheme);
         auto evalMultKey2 = cc->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
 
         auto evalMultAB = cc->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
@@ -111,7 +105,7 @@ protected:
 
         kp3 = cc->MultipartyKeyGen(kp2.publicKey);
 
-        auto kp3s = cc->ShareKeys(kp3.secretKey, N, thresh, 3, sharing_scheme);
+        auto kp3smap = cc->ShareKeys(kp3.secretKey, N, thresh, 3, sharing_scheme);
 
         auto evalMultKey3 = cc->MultiKeySwitchGen(kp3.secretKey, kp3.secretKey, evalMultAB);
 
@@ -272,19 +266,19 @@ protected:
         auto plaintextMultipartyEvalSumVal = plaintextMultipartyEvalSum->GetPackedValue();
 
         // compare expected and actual results for addition, multiplication and summation
-        for (int i = 0; i < encodedLength; i++) {
+        for (size_t i = 0; i < encodedLength; i++) {
             allTrue[i] = 0;
             tmp[i]     = abs(plaintextMultipartyNewVal[i] - sumInput[i]);
         }
         EXPECT_TRUE(tmp == allTrue) << "Addition failed";
 
-        for (int i = 0; i < encodedLength; i++) {
+        for (size_t i = 0; i < encodedLength; i++) {
             allTrue[i] = 0;
             tmp[i]     = abs(plaintextMultipartyMultVal[i] - multInput[i]);
         }
         EXPECT_TRUE(tmp == allTrue) << "Multiplication failed";
 
-        for (int i = 0; i < encodedLength; i++) {
+        for (size_t i = 0; i < encodedLength; i++) {
             allTrue[i] = 0;
             tmp[i]     = abs(plaintextMultipartyEvalSumVal[i] - evalSumInput[i]);
         }
