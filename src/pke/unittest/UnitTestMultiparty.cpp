@@ -67,6 +67,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         case BFVRNS_TEST_EXTRA:
             typeName = "BFVRNS_TEST_EXTRA";
             break;
+        case TEST_ABORTS:
+            typeName = "TEST_ABORTS";
+            break;
         default:
             typeName = "UNKNOWN";
             break;
@@ -86,10 +89,7 @@ struct TEST_CASE_UTGENERAL_MULTIPARTY {
     uint32_t slots = 0;
 
     // specific parameters for threhold FHE aborts
-    usint N      = 3;  // number of parties
-    usint thresh = 2;  // threshold number of parties
-
-    std::string sharingScheme;
+    std::string sharingScheme = "additive";
 
     std::string buildTestName() const {
         std::stringstream ss;
@@ -343,11 +343,19 @@ static std::vector<TEST_CASE_UTGENERAL_MULTIPARTY> testCases = {
     { BFVRNS_TEST_EXTRA, "15", {BFVRNS_SCHEME, DFLT, DFLT,  60,       20,   DFLT,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    4,     DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED, DFLT},   false,    0, "NA"},
     { BFVRNS_TEST_EXTRA, "16", {BFVRNS_SCHEME, DFLT, DFLT,  60,       20,   DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    16,    DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED, DFLT},   false,    0, "NA"},
      // ==========================================
-    // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,     LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,  PREMode, MultipartyMode, Star, Slots, sharingScheme
-    { TEST_ABORTS, "01", {BFVRNS_SCHEME, DFLT, 4,         DFLT,     DFLT,  DFLT,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, HPS,              STANDARD, DFLT,    DFLT},          false,    0, "shamir" },
-    { TEST_ABORTS, "02", {BFVRNS_SCHEME, DFLT, 4,         DFLT,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, HPS,              STANDARD, DFLT,    DFLT},          false,    0, "shamir" },
-    { TEST_ABORTS, "02", {BFVRNS_SCHEME, DFLT, 4,         DFLT,     DFLT,  DFLT,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, HPS,              STANDARD, DFLT,    DFLT},          false,    0, "additive" },
-    { TEST_ABORTS, "02", {BFVRNS_SCHEME, DFLT, 4,         DFLT,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, HPS,              STANDARD, DFLT,    DFLT},          false,    0, "additive" },
+    // TestType,   Descr, Scheme,         RDim, MultDepth, SModSize, DSize, BatchSz, SecKeyDist,      MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,     LDigits, PtMod, StdDev, EvalAddCt, KSCt, MultTech,         EncTech,  PREMode, MultipartyMode, Star, Slots, sharingScheme
+    { TEST_ABORTS, "01", {BFVRNS_SCHEME,  DFLT,  2,         DFLT,     DFLT,  DFLT,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,         STANDARD, DFLT,    DFLT},    false,    0, "shamir"},
+    { TEST_ABORTS, "02", {BFVRNS_SCHEME,  DFLT,  2,         DFLT,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,         STANDARD, DFLT,    DFLT},    false,    0, "shamir"},
+    { TEST_ABORTS, "03", {BFVRNS_SCHEME,  DFLT,  2,         DFLT,     DFLT,  DFLT,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,         STANDARD, DFLT,    DFLT},    false,    0, "additive"},
+    { TEST_ABORTS, "04", {BFVRNS_SCHEME,  DFLT,  2,         DFLT,     DFLT,  DFLT,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         DFLT,   DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,         STANDARD, DFLT,    DFLT},    false,    0, "additive"},
+    { TEST_ABORTS, "05", {BGVRNS_SCHEME,  DFLT,  2,         DFLT,     3,     BATCH,   GAUSSIAN,        DFLT,            60,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,         STANDARD,     DFLT,    DFLT},    false,    0, "shamir"},
+    { TEST_ABORTS, "06", {BGVRNS_SCHEME,  DFLT,  2,         DFLT,     3,     BATCH,   UNIFORM_TERNARY, DFLT,            60,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,         STANDARD,     DFLT,    DFLT},    false,    0, "shamir"},
+    { TEST_ABORTS, "07", {BGVRNS_SCHEME,  DFLT,  2,         DFLT,     3,     BATCH,   GAUSSIAN,        DFLT,            60,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,         STANDARD,     DFLT,    DFLT},    false,    0, "additive"},
+    { TEST_ABORTS, "08", {BGVRNS_SCHEME,  DFLT,  2,         DFLT,     3,     BATCH,   UNIFORM_TERNARY, DFLT,            60,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,         STANDARD,     DFLT,    DFLT},    false,    0, "additive"},
+    { TEST_ABORTS, "09", {CKKSRNS_SCHEME, DFLT,  2,         50,     3,     BATCH,   GAUSSIAN,        DFLT,          60,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   0,            0, DFLT,         STANDARD,         DFLT,    DFLT},    false,    0, "shamir"},
+    { TEST_ABORTS, "10", {CKKSRNS_SCHEME, DFLT,  2,         50,     3,     BATCH,   UNIFORM_TERNARY,        DFLT,          60,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   0,            0, DFLT,         STANDARD,         DFLT,    DFLT},    false,    0, "shamir"},
+    { TEST_ABORTS, "11", {CKKSRNS_SCHEME, DFLT,  2,         50,     3,     BATCH,   GAUSSIAN,        DFLT,          60,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   0,            0, DFLT,         STANDARD,         DFLT,    DFLT},    false,    0, "additive"},
+    { TEST_ABORTS, "12", {CKKSRNS_SCHEME, DFLT,  2,         50,     3,     BATCH,   UNIFORM_TERNARY,        DFLT,          60,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   0,            0, DFLT,         STANDARD,         DFLT,    DFLT},    false,    0, "additive"},
     // ==========================================
 };
 // clang-format on
@@ -364,6 +372,7 @@ protected:
     // in order to avoid redundancy, UnitTest_MultiParty() uses 2 conditions:
     //  - testData.star false/true
     //  - CKKSRNS_TEST false/true
+    // runs for two parties only
     void UnitTest_MultiParty(const TEST_CASE_UTGENERAL_MULTIPARTY& testData,
                              const std::string& failmsg = std::string()) {
         try {
@@ -655,14 +664,18 @@ protected:
         }
     }
 
+    // runs for three parties only
     void UnitTestMultiparty(const TEST_CASE_UTGENERAL_MULTIPARTY& testData,
                             const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
-
             ////////////////////////////////////////////////////////////
             // Perform Key Generation Operation
             ////////////////////////////////////////////////////////////
+            const usint N = 3;  // number of parties
+            // threshold number of parties
+            const usint THRESH =
+                (testData.sharingScheme == "shamir") ? static_cast<usint>(std::floor(N / 2)) + 1 : N - 1;
 
             KeyPair<Element> kp1 = cc->KeyGen();
             ASSERT_TRUE(kp1.good()) << failmsg + "kp1 generation failed!";
@@ -673,12 +686,11 @@ protected:
             KeyPair<Element> kp3 = cc->MultipartyKeyGen(kp1.publicKey, false, true);
             ASSERT_TRUE(kp3.good()) << failmsg + "kp3 generation failed!";
 
-            // some additional operations for the aborts
-            std::unordered_map<uint32_t, DCRTPoly> kp1smap, kp2smap, kp3smap;
-            if (TEST_ABORTS == testData.testCaseType) {
-                auto kp1smap = cc->ShareKeys(kp1.secretKey, testData.N, testData.thresh, 1, testData.sharingScheme);
-                auto kp2smap = cc->ShareKeys(kp2.secretKey, testData.N, testData.thresh, 2, testData.sharingScheme);
-                auto kp3smap = cc->ShareKeys(kp3.secretKey, testData.N, testData.thresh, 3, testData.sharingScheme);
+            std::unordered_map<uint32_t, Element> kp1smap, kp2smap, kp3smap;
+            if (testData.testCaseType == TEST_ABORTS) {
+                kp1smap = cc->ShareKeys(kp1.secretKey, N, THRESH, 1, testData.sharingScheme);
+                kp2smap = cc->ShareKeys(kp2.secretKey, N, THRESH, 2, testData.sharingScheme);
+                kp3smap = cc->ShareKeys(kp3.secretKey, N, THRESH, 3, testData.sharingScheme);
             }
             ////////////////////////////////////////////////////////////
             // Perform the second key generation operation.
@@ -706,11 +718,12 @@ protected:
             std::vector<int64_t> vectorOfInts1 = {1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0};
             std::vector<int64_t> vectorOfInts2 = {1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0};
             std::vector<int64_t> vectorOfInts3 = {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
-            Plaintext plaintext1               = cc->MakeCoefPackedPlaintext(vectorOfInts1);
-            Plaintext plaintext2               = cc->MakeCoefPackedPlaintext(vectorOfInts2);
-            Plaintext plaintext3               = cc->MakeCoefPackedPlaintext(vectorOfInts3);
 
             auto plaintextModulus = cc->GetCryptoParameters()->GetPlaintextModulus();
+            // if ((testData.testCaseType == TEST_ABORTS) && (testData.params.schemeId == CKKSRNS_SCHEME))
+            //    plaintextModulus = testData.params.plaintextModulus;
+
+            std::cout << "here before vecofintssum ptmodulus" << plaintextModulus << std::endl;
             int64_t half(plaintextModulus >> 1);
             std::vector<int64_t> vectorOfIntsSum(vectorOfInts1.size());
             for (size_t i = 0; i < vectorOfInts1.size(); i++) {
@@ -718,6 +731,25 @@ protected:
                 if (value > half)
                     value -= plaintextModulus;
                 vectorOfIntsSum[i] = value;
+            }
+
+            std::cout << "here before plaintext encoding" << std::endl;
+            Plaintext plaintext1, plaintext2, plaintext3, plaintextevaladd;
+            if ((testData.params.schemeId == CKKSRNS_SCHEME) && testData.testCaseType == TEST_ABORTS) {
+                plaintext1 =
+                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts1), 1, 0, nullptr, testData.slots);
+                plaintext2 =
+                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts2), 1, 0, nullptr, testData.slots);
+                plaintext3 =
+                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts3), 1, 0, nullptr, testData.slots);
+                plaintextevaladd =
+                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfIntsSum), 1, 0, nullptr, testData.slots);
+            }
+            else {
+                plaintext1       = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+                plaintext2       = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+                plaintext3       = cc->MakeCoefPackedPlaintext(vectorOfInts3);
+                plaintextevaladd = cc->MakeCoefPackedPlaintext(vectorOfIntsSum);
             }
 
             ////////////////////////////////////////////////////////////
@@ -755,16 +787,19 @@ protected:
             // Decryption after Accumulation Operation on Re-Encrypted Data with
             // Multiparty
             ////////////////////////////////////////////////////////////
-            Ciphertext<Element> ciphertextPartial1;
-            if (TEST_ABORTS == testData.testCaseType) {
+            std::vector<Ciphertext<Element>> ciphertextPartial1, ciphertextPartial2, ciphertextPartial3;
+            if (testData.testCaseType == TEST_ABORTS) {
                 // Aborts - recovering kp1.secret key from the shares assuming party A dropped out (need a protocol to identify this)
                 PrivateKey<DCRTPoly> kp1_recovered_sk = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
-                cc->RecoverSharedKey(kp1_recovered_sk, kp1smap, testData.N, testData.thresh, testData.sharingScheme);
-                auto ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextAddNew}, kp1_recovered_sk);
-            }
+                cc->RecoverSharedKey(kp1_recovered_sk, kp1smap, N, THRESH, testData.sharingScheme);
 
-            auto ciphertextPartial2 = cc->MultipartyDecryptMain({ciphertextAddNew}, kp2.secretKey);
-            auto ciphertextPartial3 = cc->MultipartyDecryptMain({ciphertextAddNew}, kp3.secretKey);
+                ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextAddNew}, kp1_recovered_sk);
+            }
+            else {
+                ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextAddNew}, kp1.secretKey);
+            }
+            ciphertextPartial2 = cc->MultipartyDecryptMain({ciphertextAddNew}, kp2.secretKey);
+            ciphertextPartial3 = cc->MultipartyDecryptMain({ciphertextAddNew}, kp3.secretKey);
 
             std::vector<Ciphertext<Element>> partialCiphertextVec{ciphertextPartial1[0], ciphertextPartial2[0],
                                                                   ciphertextPartial3[0]};
@@ -775,11 +810,22 @@ protected:
 
             const double eps   = EPSILON;
             std::string errMsg = failmsg + " Multiparty: Does not match plaintext addition";
-            checkEquality(vectorOfIntsSum, plaintextMultipartyNew->GetCoefPackedValue(), eps, errMsg);
 
+            // if ()
+            if ((testData.testCaseType == TEST_ABORTS) && (testData.params.schemeId == CKKSRNS_SCHEME))
+                checkEquality(plaintextevaladd->GetCKKSPackedValue(), plaintextMultipartyNew->GetCKKSPackedValue(), eps,
+                              errMsg);
+            else
+                checkEquality(plaintextevaladd->GetCoefPackedValue(), plaintextMultipartyNew->GetCoefPackedValue(), eps,
+                              errMsg);
             errMsg = failmsg + " Multiparty: Does not match the results of direction encryption";
-            checkEquality(plaintextAddNew->GetCoefPackedValue(), plaintextMultipartyNew->GetCoefPackedValue(), eps,
-                          errMsg);
+
+            if ((testData.testCaseType == TEST_ABORTS) && (testData.params.schemeId == CKKSRNS_SCHEME))
+                checkEquality(plaintextAddNew->GetCKKSPackedValue(), plaintextMultipartyNew->GetCKKSPackedValue(), eps,
+                              errMsg);
+            else
+                checkEquality(plaintextAddNew->GetCoefPackedValue(), plaintextMultipartyNew->GetCoefPackedValue(), eps,
+                              errMsg);
         }
         catch (std::exception& e) {
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
@@ -793,15 +839,292 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
+
+    /*  // runs for three parties only
+    void UnitTestMultipartyAborts(const TEST_CASE_UTGENERAL_MULTIPARTY& testData,
+                            const std::string& failmsg = std::string()) {
+        ////////////////////////////////////////////////////////////
+        // Set-up of parameters
+        ////////////////////////////////////////////////////////////
+        std::cout << "before cc" << std::endl;
+        CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+        std::cout << "after cc" << std::endl;
+        const usint N      = 3;  // number of parties
+        // threshold number of parties
+        const usint THRESH = (testData.sharingScheme == "shamir") ? static_cast<usint>(std::floor(N/2)) + 1 : N-1;
+
+        // Initialize Public Key Containers for two parties A and B
+        KeyPair<DCRTPoly> kp1;
+        KeyPair<DCRTPoly> kp2;
+        KeyPair<DCRTPoly> kp3;
+        KeyPair<DCRTPoly> kpMultiparty;
+
+        ////////////////////////////////////////////////////////////
+        // Perform Key Generation Operation
+        ////////////////////////////////////////////////////////////
+        std::cout << "before keygen" << std::endl;
+        // Round 1 (party A)
+        kp1          = cc->KeyGen();
+
+        std::cout << "before sharekeys aborts" << std::endl;
+        auto kp1smap = cc->ShareKeys(kp1.secretKey, N, THRESH, 1, testData.sharingScheme);
+        std::cout << "after sharekeys aborts" << std::endl;
+
+        // Generate evalmult key part for A
+        auto evalMultKey = cc->KeySwitchGen(kp1.secretKey, kp1.secretKey);
+
+        // Generate evalsum key part for A
+        cc->EvalSumKeyGen(kp1.secretKey);
+        auto evalSumKeys =
+            std::make_shared<std::map<usint, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
+
+        // Round 2 (party B)
+        kp2 = cc->MultipartyKeyGen(kp1.publicKey);
+
+        auto kp2smap      = cc->ShareKeys(kp2.secretKey, N, THRESH, 2, testData.sharingScheme);
+        auto evalMultKey2 = cc->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
+
+        auto evalMultAB = cc->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
+
+        auto evalSumKeysB = cc->MultiEvalSumKeyGen(kp2.secretKey, evalSumKeys, kp2.publicKey->GetKeyTag());
+
+        auto evalSumKeysAB = cc->MultiAddEvalSumKeys(evalSumKeys, evalSumKeysB, kp2.publicKey->GetKeyTag());
+
+        kp3 = cc->MultipartyKeyGen(kp2.publicKey);
+
+        auto kp3smap = cc->ShareKeys(kp3.secretKey, N, THRESH, 3, testData.sharingScheme);
+
+        auto evalMultKey3 = cc->MultiKeySwitchGen(kp3.secretKey, kp3.secretKey, evalMultAB);
+
+        auto evalMultABC = cc->MultiAddEvalKeys(evalMultAB, evalMultKey3, kp3.publicKey->GetKeyTag());
+
+        auto evalMultCABC = cc->MultiMultEvalKey(kp3.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
+
+        auto evalSumKeysC = cc->MultiEvalSumKeyGen(kp3.secretKey, evalSumKeysB, kp3.publicKey->GetKeyTag());
+
+        auto evalSumKeysJoin = cc->MultiAddEvalSumKeys(evalSumKeysC, evalSumKeysAB, kp3.publicKey->GetKeyTag());
+
+        cc->InsertEvalSumKey(evalSumKeysJoin);
+
+        auto evalMultBABC = cc->MultiMultEvalKey(kp2.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
+
+        auto evalMultBCABC = cc->MultiAddEvalMultKeys(evalMultCABC, evalMultBABC, evalMultCABC->GetKeyTag());
+
+        auto evalMultAABC = cc->MultiMultEvalKey(kp1.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
+
+        auto evalMultFinal = cc->MultiAddEvalMultKeys(evalMultAABC, evalMultBCABC, evalMultAABC->GetKeyTag());
+
+        cc->InsertEvalMultKey({evalMultFinal});
+
+        ////////////////////////////////////////////////////////////
+        // Encode source data
+        ////////////////////////////////////////////////////////////
+        std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0};
+        std::vector<int64_t> vectorOfInts2 = {1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0};
+        std::vector<int64_t> vectorOfInts3 = {2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 0};
+
+        Plaintext plaintext1, plaintext2, plaintext3;
+        if (CKKSRNS_SCHEME == testData.params.schemeId) {
+                // TODO (dsuponit): we have to rename MakeCKKSPackedPlaintext() to MakePackedPlaintext(). All of them have different input params
+                // for CKKS we need to convert vectors of integers to vectors of complex numbers
+                plaintext1 =
+                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts1), 1, 0, nullptr, testData.slots);
+                plaintext2 =
+                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts2), 1, 0, nullptr, testData.slots);
+                plaintext3 =
+                    cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts3), 1, 0, nullptr, testData.slots);
+        } else {
+            plaintext1 = cc->MakePackedPlaintext(vectorOfInts1);
+            plaintext2 = cc->MakePackedPlaintext(vectorOfInts2);
+            plaintext3 = cc->MakePackedPlaintext(vectorOfInts3);
+        }
+
+
+        // compute expected results in plain
+        size_t encodedLength = vectorOfInts1.size();
+        std::vector<int64_t> sumInput(encodedLength);
+        std::vector<int64_t> multInput(encodedLength);
+        std::vector<int64_t> evalSumInput(encodedLength);
+        std::vector<int64_t> allTrue(encodedLength);
+        std::vector<int64_t> tmp(encodedLength);
+
+        for (size_t i = 0; i < encodedLength; i++) {
+            sumInput[i]  = vectorOfInts1[i] + vectorOfInts2[i] + vectorOfInts3[i];
+            multInput[i] = vectorOfInts1[i] * vectorOfInts3[i];
+            if (i == 0)
+                evalSumInput[encodedLength - i - 1] = vectorOfInts3[encodedLength - i - 1];
+            else
+                evalSumInput[encodedLength - i - 1] =
+                    evalSumInput[encodedLength - i] + vectorOfInts3[encodedLength - i - 1];
+        }
+
+        ////////////////////////////////////////////////////////////
+        // Encryption
+        ////////////////////////////////////////////////////////////
+
+        Ciphertext<DCRTPoly> ciphertext1;
+        Ciphertext<DCRTPoly> ciphertext2;
+        Ciphertext<DCRTPoly> ciphertext3;
+
+        ciphertext1 = cc->Encrypt(kp3.publicKey, plaintext1);
+        ciphertext2 = cc->Encrypt(kp3.publicKey, plaintext2);
+        ciphertext3 = cc->Encrypt(kp3.publicKey, plaintext3);
+
+        ////////////////////////////////////////////////////////////
+        // Homomorphic Operations
+        ////////////////////////////////////////////////////////////
+
+        Ciphertext<DCRTPoly> ciphertextAdd12;
+        Ciphertext<DCRTPoly> ciphertextAdd123;
+
+        ciphertextAdd12  = cc->EvalAdd(ciphertext1, ciphertext2);
+        ciphertextAdd123 = cc->EvalAdd(ciphertextAdd12, ciphertext3);
+
+        auto ciphertextMult = cc->EvalMult(ciphertext1, ciphertext3);
+        if (CKKSRNS_SCHEME == testData.params.schemeId) {
+                ciphertextMult = cc->ModReduce(ciphertextMult);
+                ciphertext1    = cc->EvalMult(ciphertext1, 1);
+        }
+
+        auto ciphertextEvalSum = cc->EvalSum(ciphertext3, BATCH);
+
+        ////////////////////////////////////////////////////////////
+        // Decryption after Accumulation Operation on Encrypted Data with Multiparty
+        ////////////////////////////////////////////////////////////
+
+        Plaintext plaintextAddNew1;
+        Plaintext plaintextAddNew2;
+        Plaintext plaintextAddNew3;
+
+        DCRTPoly partialPlaintext1;
+        DCRTPoly partialPlaintext2;
+        DCRTPoly partialPlaintext3;
+
+        Plaintext plaintextMultipartyNew;
+
+        auto cryptoParams  = kp1.secretKey->GetCryptoParameters();
+        auto elementParams = cryptoParams->GetElementParams();
+
+        std::cout << "before recovery aborts" << std::endl;
+        // Aborts - recovering kp1.secret key from the shares assuming party A dropped out (need a protocol to identify this)
+        PrivateKey<DCRTPoly> kp1_recovered_sk = std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc);
+
+        cc->RecoverSharedKey(kp1_recovered_sk, kp1smap, N, THRESH, testData.sharingScheme);
+
+        std::cout << "after recovery aborts" << std::endl;
+        // Distributed decryption
+
+        // partial decryption by party A
+        auto ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextAdd123}, kp1_recovered_sk);
+
+        // partial decryption by party B
+        auto ciphertextPartial2 = cc->MultipartyDecryptMain({ciphertextAdd123}, kp2.secretKey);
+
+        // partial decryption by party C
+        auto ciphertextPartial3 = cc->MultipartyDecryptMain({ciphertextAdd123}, kp3.secretKey);
+
+        std::vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
+        partialCiphertextVec.push_back(ciphertextPartial1[0]);
+        partialCiphertextVec.push_back(ciphertextPartial2[0]);
+        partialCiphertextVec.push_back(ciphertextPartial3[0]);
+
+        // Two partial decryptions are combined
+        cc->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultipartyNew);
+
+        plaintextMultipartyNew->SetLength(plaintext1->GetLength());
+
+        Plaintext plaintextMultipartyMult;
+
+        ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextMult}, kp1_recovered_sk);
+
+        ciphertextPartial2 = cc->MultipartyDecryptMain({ciphertextMult}, kp2.secretKey);
+
+        ciphertextPartial3 = cc->MultipartyDecryptMain({ciphertextMult}, kp3.secretKey);
+
+        std::vector<Ciphertext<DCRTPoly>> partialCiphertextVecMult;
+        partialCiphertextVecMult.push_back(ciphertextPartial1[0]);
+        partialCiphertextVecMult.push_back(ciphertextPartial2[0]);
+        partialCiphertextVecMult.push_back(ciphertextPartial3[0]);
+
+        cc->MultipartyDecryptFusion(partialCiphertextVecMult, &plaintextMultipartyMult);
+
+        plaintextMultipartyMult->SetLength(plaintext1->GetLength());
+
+        Plaintext plaintextMultipartyEvalSum;
+
+        ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextEvalSum}, kp1_recovered_sk);
+
+        ciphertextPartial2 = cc->MultipartyDecryptMain({ciphertextEvalSum}, kp2.secretKey);
+
+        ciphertextPartial3 = cc->MultipartyDecryptMain({ciphertextEvalSum}, kp3.secretKey);
+
+        std::vector<Ciphertext<DCRTPoly>> partialCiphertextVecEvalSum;
+        partialCiphertextVecEvalSum.push_back(ciphertextPartial1[0]);
+        partialCiphertextVecEvalSum.push_back(ciphertextPartial2[0]);
+        partialCiphertextVecEvalSum.push_back(ciphertextPartial3[0]);
+
+        cc->MultipartyDecryptFusion(partialCiphertextVecEvalSum, &plaintextMultipartyEvalSum);
+
+        plaintextMultipartyEvalSum->SetLength(plaintext1->GetLength());
+
+        if (CKKSRNS_SCHEME == testData.params.schemeId) {
+            auto plaintextMultipartyNewVal     = plaintextMultipartyNew->GetCKKSPackedValue();
+            auto plaintextMultipartyMultVal    = plaintextMultipartyMult->GetCKKSPackedValue();
+            auto plaintextMultipartyEvalSumVal = plaintextMultipartyEvalSum->GetCKKSPackedValue();
+            // compare expected and actual results for addition, multiplication and summation
+            for (size_t i = 0; i < encodedLength; i++) {
+                allTrue[i] = 0;
+                tmp[i]     = abs(plaintextMultipartyNewVal[i] - sumInput[i]);
+            }
+            EXPECT_TRUE(tmp == allTrue) << "Addition failed";
+
+            for (size_t i = 0; i < encodedLength; i++) {
+                allTrue[i] = 0;
+                tmp[i]     = abs(plaintextMultipartyMultVal[i] - multInput[i]);
+            }
+            EXPECT_TRUE(tmp == allTrue) << "Multiplication failed";
+
+            for (size_t i = 0; i < encodedLength; i++) {
+                allTrue[i] = 0;
+                tmp[i]     = abs(plaintextMultipartyEvalSumVal[i] - evalSumInput[i]);
+            }
+            EXPECT_TRUE(tmp == allTrue) << "Summation failed";
+        } else {
+            auto plaintextMultipartyNewVal     = plaintextMultipartyNew->GetPackedValue();
+            auto plaintextMultipartyMultVal    = plaintextMultipartyMult->GetPackedValue();
+            auto plaintextMultipartyEvalSumVal = plaintextMultipartyEvalSum->GetPackedValue();
+
+            // compare expected and actual results for addition, multiplication and summation
+            for (size_t i = 0; i < encodedLength; i++) {
+                allTrue[i] = 0;
+                tmp[i]     = abs(plaintextMultipartyNewVal[i] - sumInput[i]);
+            }
+            EXPECT_TRUE(tmp == allTrue) << "Addition failed";
+
+            for (size_t i = 0; i < encodedLength; i++) {
+                allTrue[i] = 0;
+                tmp[i]     = abs(plaintextMultipartyMultVal[i] - multInput[i]);
+            }
+            EXPECT_TRUE(tmp == allTrue) << "Multiplication failed";
+
+            for (size_t i = 0; i < encodedLength; i++) {
+                allTrue[i] = 0;
+                tmp[i]     = abs(plaintextMultipartyEvalSumVal[i] - evalSumInput[i]);
+            }
+            EXPECT_TRUE(tmp == allTrue) << "Summation failed";
+        }
+    } */
 };
 //===========================================================================================================
 TEST_P(UTGENERAL_MULTIPARTY, Multiparty) {
     setupSignals();
     auto test = GetParam();
-    if (test.testCaseType == BFVRNS_TEST_EXTRA)
+    if ((test.testCaseType == BFVRNS_TEST_EXTRA) || (test.testCaseType == TEST_ABORTS))
         UnitTestMultiparty(test, test.buildTestName());
     else
         UnitTest_MultiParty(test, test.buildTestName());
+    // else if(test.testCaseType == TEST_ABORTS)
+    //    UnitTestMultipartyAborts(test, test.buildTestName());
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTGENERAL_MULTIPARTY, ::testing::ValuesIn(testCases), testName);

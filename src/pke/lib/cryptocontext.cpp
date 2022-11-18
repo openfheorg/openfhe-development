@@ -950,7 +950,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
     }
 
     if (sk_shares.size() < threshold) {
-        std::cout << "Number of shares available less than threshold of the sharing scheme" << std::endl;
+        OPENFHE_THROW(config_error, "Number of shares available less than threshold of the sharing scheme");
     }
 
     // vector of indexes of the clients
