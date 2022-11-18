@@ -2697,8 +2697,8 @@ public:
    * @param shareType - Type of secret sharing to be used - additive or shamir sharing.
    * @return the secret shares of the secret key sk.
    */
-    std::unordered_map<uint32_t, DCRTPoly> ShareKeys(const PrivateKey<Element>& sk, usint N, usint threshold,
-                                                     usint index, const std::string shareType);
+    std::unordered_map<uint32_t, Element> ShareKeys(const PrivateKey<Element>& sk, usint N, usint threshold,
+                                                    usint index, const std::string shareType);
 
     /**
    * Threshold FHE: Adds two  partial evaluation keys for multiplication
