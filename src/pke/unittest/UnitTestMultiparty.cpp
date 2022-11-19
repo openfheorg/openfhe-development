@@ -944,7 +944,12 @@ protected:
         ciphertextAdd12  = cc->EvalAdd(ciphertext1, ciphertext2);
         ciphertextAdd123 = cc->EvalAdd(ciphertextAdd12, ciphertext3);
 
-        auto ciphertextMult    = cc->EvalMult(ciphertext1, ciphertext3);
+        auto ciphertextMult = cc->EvalMult(ciphertext1, ciphertext3);
+        if (CKKSRNS_SCHEME == testData.params.schemeId) {
+            ciphertextMult = cc->ModReduce(ciphertextMult);
+            ciphertext1    = cc->EvalMult(ciphertext1, 1);
+        }
+
         auto ciphertextEvalSum = cc->EvalSum(ciphertext3, BATCH);
 
         ////////////////////////////////////////////////////////////
