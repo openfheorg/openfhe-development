@@ -352,10 +352,10 @@ static std::vector<TEST_CASE_UTGENERAL_MULTIPARTY> testCases = {
     { TEST_ABORTS, "06", {BGVRNS_SCHEME,  DFLT,  2,         DFLT,     3,     BATCH,    UNIFORM_TERNARY, DFLT,          60,       DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "shamir"},
     { TEST_ABORTS, "07", {BGVRNS_SCHEME,  DFLT,  2,         DFLT,     3,     BATCH,    GAUSSIAN,        DFLT,          60,       DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "additive"},
     { TEST_ABORTS, "08", {BGVRNS_SCHEME,  DFLT,  2,         DFLT,     3,     BATCH,    UNIFORM_TERNARY, DFLT,          60,       DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   DFLT,      DFLT, DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "additive"},
-    { TEST_ABORTS, "09", {CKKSRNS_SCHEME, DFLT,  2,         50,       3,     BATCH,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   0,         0,    DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "shamir"},
-    { TEST_ABORTS, "10", {CKKSRNS_SCHEME, DFLT,  2,         50,       3,     BATCH,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   0,         0,    DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "shamir"},
-    { TEST_ABORTS, "11", {CKKSRNS_SCHEME, DFLT,  2,         50,       3,     BATCH,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   0,         0,    DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "additive"},
-    { TEST_ABORTS, "12", {CKKSRNS_SCHEME, DFLT,  2,         50,       3,     BATCH,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     DFLT,         DFLT,    65537, DFLT,   0,         0,    DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "additive"},
+    { TEST_ABORTS, "09", {CKKSRNS_SCHEME, DFLT,  2,         50,       3,     BATCH,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     DFLT,         DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "shamir"},
+    { TEST_ABORTS, "10", {CKKSRNS_SCHEME, DFLT,  2,         50,       3,     BATCH,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     DFLT,         DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "shamir"},
+    { TEST_ABORTS, "11", {CKKSRNS_SCHEME, DFLT,  2,         50,       3,     BATCH,    GAUSSIAN,        DFLT,          DFLT,     DFLT,         BV,     DFLT,         DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "additive"},
+    { TEST_ABORTS, "12", {CKKSRNS_SCHEME, DFLT,  2,         50,       3,     BATCH,    UNIFORM_TERNARY, DFLT,          DFLT,     DFLT,         BV,     DFLT,         DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,            DFLT,     DFLT,     DFLT},        false,    0, "additive"},
     // ==========================================
 };
 // clang-format on
@@ -944,12 +944,7 @@ protected:
         ciphertextAdd12  = cc->EvalAdd(ciphertext1, ciphertext2);
         ciphertextAdd123 = cc->EvalAdd(ciphertextAdd12, ciphertext3);
 
-        auto ciphertextMult = cc->EvalMult(ciphertext1, ciphertext3);
-        if (CKKSRNS_SCHEME == testData.params.schemeId) {
-            ciphertextMult = cc->ModReduce(ciphertextMult);
-            ciphertext1    = cc->EvalMult(ciphertext1, 1);
-        }
-
+        auto ciphertextMult    = cc->EvalMult(ciphertext1, ciphertext3);
         auto ciphertextEvalSum = cc->EvalSum(ciphertext3, BATCH);
 
         ////////////////////////////////////////////////////////////
@@ -1028,7 +1023,7 @@ protected:
 
         plaintextMultipartyEvalSum->SetLength(plaintext1->GetLength());
 
-        const double eps   = EPSILON;
+        const double eps   = EPSILON_HIGH;
         std::string errMsg = failmsg + " Multiparty: Does not match plaintext computaion results";
 
         if ((testData.testCaseType == TEST_ABORTS) && (testData.params.schemeId == CKKSRNS_SCHEME)) {
