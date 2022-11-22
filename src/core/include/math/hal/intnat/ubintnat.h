@@ -78,7 +78,7 @@
 
 using U32BITS = uint32_t;
 using U64BITS = uint64_t;
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
 using U128BITS = unsigned __int128;
 #endif
 
@@ -122,7 +122,7 @@ struct DoubleDataType<uint32_t> {
  */
 template <>
 struct DoubleDataType<uint64_t> {
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
     using DoubleType = __uint128_t;
 #else
     using DoubleType = uint64_t;
@@ -130,7 +130,7 @@ struct DoubleDataType<uint64_t> {
     using SignedType = int64_t;
 };
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
 template <>
 struct DoubleDataType<unsigned __int128> {
     using DoubleType = __uint128_t;
@@ -211,7 +211,7 @@ public:
                       std::is_same<T, unsigned int>::value || std::is_same<T, long>::value ||        // NOLINT
                       std::is_same<T, unsigned long>::value || std::is_same<T, long long>::value ||  // NOLINT
                       std::is_same<T, unsigned long long>::value ||                                  // NOLINT
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
                       std::is_same<T, __int128>::value || std::is_same<T, unsigned __int128>::value ||
 #endif
                       std::is_same<T, NativeInt>::value,
@@ -233,7 +233,7 @@ public:
                       !std::is_same<T, unsigned int>::value && !std::is_same<T, long>::value &&        // NOLINT
                       !std::is_same<T, unsigned long>::value && !std::is_same<T, long long>::value &&  // NOLINT
                       !std::is_same<T, unsigned long long>::value &&                                   // NOLINT
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
                       !std::is_same<T, __int128>::value && !std::is_same<T, unsigned __int128>::value &&
 #endif
                       !std::is_same<T, const std::string>::value && !std::is_same<T, const char*>::value &&
@@ -1960,7 +1960,7 @@ public:
         ar(::cereal::make_nvp("v", m_value));
     }
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
     template <class Archive>
     typename std::enable_if<
         std::is_same<NativeInt, U128BITS>::value && !cereal::traits::is_text_archive<Archive>::value, void>::type
@@ -2000,7 +2000,7 @@ public:
         ar(::cereal::make_nvp("v", m_value));
     }
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
     template <class Archive>
     typename std::enable_if<
         std::is_same<NativeInt, U128BITS>::value && !cereal::traits::is_text_archive<Archive>::value, void>::type
@@ -2192,7 +2192,7 @@ private:
 #endif
     }
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
     static inline void MultD(U128BITS a, U128BITS b, typeD& res) {
         // TODO: The performance of this function can be improved
         // Instead of 128-bit multiplication, we can use MultD from intnat
@@ -2262,7 +2262,7 @@ private:
         return std::to_string(value);
     }
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
     static inline std::string toString(unsigned __int128 value) {
         constexpr uint32_t maxChars = 15;  // max number of digits/chars we may have
                                            // in every part after division below

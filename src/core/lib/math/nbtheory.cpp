@@ -479,7 +479,7 @@ void PrimeFactorize(IntType n, std::set<IntType>& primeFactors) {
 // issue-881: make sure we don't overflow an IntType
 template <typename IntType>
 IntType FirstPrime(uint64_t nBits, uint64_t m) {
-#if (NATIVEINT == 64 && !defined(HAVE_INT128)) || ((NATIVEINT == 128) && !defined(__EMSCRIPTEN__))
+#if (NATIVEINT == 64 && !defined(HAVE_INT128)) || (NATIVEINT == 128 && !defined(__EMSCRIPTEN__))
     if ((typeid(IntType) == typeid(NativeInteger)) && (nBits >= MAX_MODULUS_SIZE)) {
         OPENFHE_THROW(math_error, "Requested modulus size " + std::to_string(nBits + 1) +
                                       " exceeds maximum allowed size " + std::to_string(MAX_MODULUS_SIZE));

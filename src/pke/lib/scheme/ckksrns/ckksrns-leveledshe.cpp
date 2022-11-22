@@ -333,7 +333,7 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
 
     double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
 
-    #if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+    #if defined(HAVE_INT128)
     typedef int128_t DoubleInteger;
     int32_t MAX_BITS_IN_WORD = 126;
     #else

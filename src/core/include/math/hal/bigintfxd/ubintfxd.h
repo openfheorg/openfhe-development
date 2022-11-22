@@ -90,7 +90,7 @@ BigIntegerFixedT operations for a specific application - to achieve smaller runt
 namespace bigintfxd {
 
 using U64BITS = uint64_t;
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
 using U128BITS = unsigned __int128;
 #endif
 
@@ -240,7 +240,7 @@ struct DoubleDataType<uint32_t> {
  */
 template <>
 struct DoubleDataType<uint64_t> {
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
     typedef __uint128_t T;
 #else
     typedef uint64_t T;
@@ -294,7 +294,7 @@ public:
    * @param val is the initial integer represented as a uint64_t.
    */
     BigIntegerFixedT(uint64_t val);  // NOLINT
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
     BigIntegerFixedT(U128BITS val);  // NOLINT
 #endif
 
@@ -318,7 +318,7 @@ public:
                               !std::is_same<T, int>::value && !std::is_same<T, uint32_t>::value &&
                                   !std::is_same<T, uint64_t>::value && !std::is_same<T, long>::value &&  // NOLINT
                                   !std::is_same<T, long long>::value &&                                  // NOLINT
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
                                   !std::is_same<T, U128BITS>::value &&
 #endif
                                   !std::is_same<T, const std::string>::value && !std::is_same<T, const char*>::value &&

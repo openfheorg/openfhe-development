@@ -36,7 +36,7 @@
 
 namespace lbcrypto {
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
 /**
  * 64-bit uint multiplier, result is 128-bit
  * @param a: operand 1

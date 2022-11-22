@@ -379,7 +379,7 @@ public:
    * @param val is the initial integer represented as a uint64_t.
    */
     ubint(uint64_t val);  // NOLINT
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
     ubint(unsigned __int128 val);  // NOLINT
 #endif
 

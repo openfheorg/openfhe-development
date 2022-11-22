@@ -675,7 +675,7 @@ inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeInt
     }
 }
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
 template <class Archive, class A>
 inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar,
                                       std::vector<intnat::NativeIntegerT<unsigned __int128>, A> const& vec) {
@@ -705,7 +705,7 @@ inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeInt
     }
 }
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
 template <class Archive, class A>
 inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeIntegerT<unsigned __int128>, A>& vec) {
     cereal::size_type size;

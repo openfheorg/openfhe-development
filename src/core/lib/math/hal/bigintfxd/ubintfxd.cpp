@@ -111,7 +111,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>::BigIntegerFixedT(uint64_t val) {
     }
 }
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
 template <typename uint_type, usint BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>::BigIntegerFixedT(U128BITS val) {
     m_MSB = lbcrypto::GetMSB(val);

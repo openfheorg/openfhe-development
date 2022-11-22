@@ -54,7 +54,7 @@
 
 namespace {  // to define local (or C-style static) functions here
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
 inline int clz_u128(unsigned __int128 u) {
     uint64_t hi   = u >> 64;
     uint64_t lo   = u;
@@ -194,7 +194,7 @@ inline usint GetMSB(uint32_t x) {
     return GetMSB((uint64_t)x);
 }
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
 template <>
 inline usint GetMSB(unsigned __int128 x) {
     if (x == 0)

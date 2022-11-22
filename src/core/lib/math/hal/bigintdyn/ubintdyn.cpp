@@ -131,7 +131,7 @@ ubint<limb_t>::ubint(uint64_t val) {
     m_state     = INITIALIZED;
 }
 
-#if defined(HAVE_INT128) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128)
 template <typename limb_t>
 ubint<limb_t>::ubint(unsigned __int128 val) {
     m_MSB = lbcrypto::GetMSB(val);
