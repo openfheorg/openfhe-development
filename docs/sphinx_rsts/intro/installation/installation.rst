@@ -94,6 +94,5 @@ OpenFHE users have reported successful operation on the following systems:
 * FreeBSD
 * Ubuntu [16.04]
 * Arch Linux
-* Manjaro Linux
 
 Please let us know the results if you have run OpenFHE any additional systems not listed above.
