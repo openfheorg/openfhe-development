@@ -151,7 +151,7 @@ enum NOISE_FLOODING {
     // number of additional moduli in NOISE_FLOODING_MULTIPARTY mode
     NUM_MODULI_MULTIPARTY = 2,
 // modulus size for additional moduli in NOISE_FLOODING_MULTIPARTY mode
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     MULTIPARTY_MOD_SIZE = 60,
 #else
     MULTIPARTY_MOD_SIZE = MAX_MODULUS_SIZE,

@@ -52,7 +52,7 @@ constexpr SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
 constexpr int maxRelinSkDeg           = 2;
 constexpr KeySwitchTechnique ksTech   = HYBRID;
 // Backend-specific settings for CKKS
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 constexpr ScalingTechnique scalTech = FIXEDAUTO;
 constexpr usint firstModSize        = 105;
 #else
