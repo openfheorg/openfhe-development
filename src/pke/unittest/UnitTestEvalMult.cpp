@@ -114,7 +114,7 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_EVAL
     return os << test.toString();
 }
 //===========================================================================================================
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 constexpr usint SCALE = 78;
 #else
 constexpr usint SCALE = 50;
@@ -408,7 +408,11 @@ protected:
                 EXPECT_EQ(1, 1);
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -524,7 +528,11 @@ protected:
                 EXPECT_EQ(1, 1);
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -653,7 +661,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
