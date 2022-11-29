@@ -801,17 +801,11 @@ protected:
         // threshold number of parties
         const usint THRESH = (testData.sharingScheme == "shamir") ? static_cast<usint>(std::floor(N / 2)) + 1 : N - 1;
 
-        // Initialize Public Key Containers for two parties A and B
-        KeyPair<DCRTPoly> kp1;
-        KeyPair<DCRTPoly> kp2;
-        KeyPair<DCRTPoly> kp3;
-        KeyPair<DCRTPoly> kpMultiparty;
-
         ////////////////////////////////////////////////////////////
         // Perform Key Generation Operation
         ////////////////////////////////////////////////////////////
         // Round 1 (party A)
-        kp1          = cc->KeyGen();
+        KeyPair<DCRTPoly> kp1          = cc->KeyGen();
         auto kp1smap = cc->ShareKeys(kp1.secretKey, N, THRESH, 1, testData.sharingScheme);
 
         // Generate evalmult key part for A
@@ -823,39 +817,28 @@ protected:
             std::make_shared<std::map<usint, EvalKey<DCRTPoly>>>(cc->GetEvalSumKeyMap(kp1.secretKey->GetKeyTag()));
 
         // Round 2 (party B)
-        kp2 = cc->MultipartyKeyGen(kp1.publicKey);
+        KeyPair<DCRTPoly> kp2 = cc->MultipartyKeyGen(kp1.publicKey);
 
         auto kp2smap      = cc->ShareKeys(kp2.secretKey, N, THRESH, 2, testData.sharingScheme);
         auto evalMultKey2 = cc->MultiKeySwitchGen(kp2.secretKey, kp2.secretKey, evalMultKey);
-
         auto evalMultAB = cc->MultiAddEvalKeys(evalMultKey, evalMultKey2, kp2.publicKey->GetKeyTag());
-
         auto evalSumKeysB = cc->MultiEvalSumKeyGen(kp2.secretKey, evalSumKeys, kp2.publicKey->GetKeyTag());
-
         auto evalSumKeysAB = cc->MultiAddEvalSumKeys(evalSumKeys, evalSumKeysB, kp2.publicKey->GetKeyTag());
 
-        kp3 = cc->MultipartyKeyGen(kp2.publicKey);
+        KeyPair<DCRTPoly> kp3 = cc->MultipartyKeyGen(kp2.publicKey);
 
         auto kp3smap = cc->ShareKeys(kp3.secretKey, N, THRESH, 3, testData.sharingScheme);
-
         auto evalMultKey3 = cc->MultiKeySwitchGen(kp3.secretKey, kp3.secretKey, evalMultAB);
-
         auto evalMultABC = cc->MultiAddEvalKeys(evalMultAB, evalMultKey3, kp3.publicKey->GetKeyTag());
-
         auto evalMultCABC = cc->MultiMultEvalKey(kp3.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
-
         auto evalSumKeysC = cc->MultiEvalSumKeyGen(kp3.secretKey, evalSumKeysB, kp3.publicKey->GetKeyTag());
-
         auto evalSumKeysJoin = cc->MultiAddEvalSumKeys(evalSumKeysC, evalSumKeysAB, kp3.publicKey->GetKeyTag());
 
         cc->InsertEvalSumKey(evalSumKeysJoin);
 
         auto evalMultBABC = cc->MultiMultEvalKey(kp2.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
-
         auto evalMultBCABC = cc->MultiAddEvalMultKeys(evalMultCABC, evalMultBABC, evalMultCABC->GetKeyTag());
-
         auto evalMultAABC = cc->MultiMultEvalKey(kp1.secretKey, evalMultABC, kp3.publicKey->GetKeyTag());
-
         auto evalMultFinal = cc->MultiAddEvalMultKeys(evalMultAABC, evalMultBCABC, evalMultAABC->GetKeyTag());
 
         cc->InsertEvalMultKey({evalMultFinal});
@@ -872,8 +855,6 @@ protected:
         std::vector<int64_t> sumInput(encodedLength);
         std::vector<int64_t> multInput(encodedLength);
         std::vector<int64_t> evalSumInput(encodedLength);
-        std::vector<int64_t> allTrue(encodedLength);
-        std::vector<int64_t> tmp(encodedLength);
 
         for (size_t i = 0; i < encodedLength; i++) {
             sumInput[i]  = vectorOfInts1[i] + vectorOfInts2[i] + vectorOfInts3[i];
@@ -883,10 +864,10 @@ protected:
         if (CKKSRNS_SCHEME == testData.params.schemeId) {
             // For CKKS there is different logic, depending on slots value
             uint32_t slots = (testData.slots != 0) ? testData.slots : (BATCH != 0) ? BATCH : cc->GetRingDimension() / 2;
-            for (usint i = 0; i < encodedLength; ++i) {
+            for (size_t i = 0; i < encodedLength; ++i) {
                 evalSumInput[i] = 0;
                 // we add to evalSumInput[i] value vectorOfInts3[(i + j) % BATCH];
-                for (usint j = 0; j < BATCH; ++j) {
+                for (size_t j = 0; j < BATCH; ++j) {
                     if ((i + j) % slots < encodedLength) {
                         evalSumInput[i] += vectorOfInts3[(i + j) % slots];
                     }
@@ -895,7 +876,7 @@ protected:
         }
         else {
             // For BGV and BFV no slots is given
-            for (usint i = 0, rev = (encodedLength - 1); i < encodedLength; ++i, --rev) {
+            for (size_t i = 0, rev = (encodedLength - 1); i < encodedLength; ++i, --rev) {
                 if (i == 0)
                     evalSumInput[rev] = vectorOfInts3[rev];
                 else
@@ -903,7 +884,12 @@ protected:
             }
         }
 
-        Plaintext plaintext1, plaintext2, plaintext3, plaintextevaladd, plaintextevalmult, plaintextevalsum;
+        Plaintext plaintext1;
+        Plaintext plaintext2;
+        Plaintext plaintext3;
+        Plaintext plaintextevaladd;
+        Plaintext plaintextevalmult;
+        Plaintext plaintextevalsum;
         if (CKKSRNS_SCHEME == testData.params.schemeId) {
             plaintext1 = cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts1), 1, 0, nullptr, testData.slots);
             plaintext2 = cc->MakeCKKSPackedPlaintext(toComplexDoubleVec(vectorOfInts2), 1, 0, nullptr, testData.slots);
@@ -926,23 +912,16 @@ protected:
         // Encryption
         ////////////////////////////////////////////////////////////
 
-        Ciphertext<DCRTPoly> ciphertext1;
-        Ciphertext<DCRTPoly> ciphertext2;
-        Ciphertext<DCRTPoly> ciphertext3;
-
-        ciphertext1 = cc->Encrypt(kp3.publicKey, plaintext1);
-        ciphertext2 = cc->Encrypt(kp3.publicKey, plaintext2);
-        ciphertext3 = cc->Encrypt(kp3.publicKey, plaintext3);
+        Ciphertext<DCRTPoly> ciphertext1 = cc->Encrypt(kp3.publicKey, plaintext1);
+        Ciphertext<DCRTPoly> ciphertext2 = cc->Encrypt(kp3.publicKey, plaintext2);
+        Ciphertext<DCRTPoly> ciphertext3 = cc->Encrypt(kp3.publicKey, plaintext3);
 
         ////////////////////////////////////////////////////////////
         // Homomorphic Operations
         ////////////////////////////////////////////////////////////
 
-        Ciphertext<DCRTPoly> ciphertextAdd12;
-        Ciphertext<DCRTPoly> ciphertextAdd123;
-
-        ciphertextAdd12  = cc->EvalAdd(ciphertext1, ciphertext2);
-        ciphertextAdd123 = cc->EvalAdd(ciphertextAdd12, ciphertext3);
+        Ciphertext<DCRTPoly> ciphertextAdd12  = cc->EvalAdd(ciphertext1, ciphertext2);
+        Ciphertext<DCRTPoly> ciphertextAdd123 = cc->EvalAdd(ciphertextAdd12, ciphertext3);
 
         auto ciphertextMult    = cc->EvalMult(ciphertext1, ciphertext3);
         auto ciphertextEvalSum = cc->EvalSum(ciphertext3, BATCH);
@@ -950,16 +929,6 @@ protected:
         ////////////////////////////////////////////////////////////
         // Decryption after Accumulation Operation on Encrypted Data with Multiparty
         ////////////////////////////////////////////////////////////
-
-        Plaintext plaintextAddNew1;
-        Plaintext plaintextAddNew2;
-        Plaintext plaintextAddNew3;
-
-        DCRTPoly partialPlaintext1;
-        DCRTPoly partialPlaintext2;
-        DCRTPoly partialPlaintext3;
-
-        Plaintext plaintextMultipartyNew;
 
         auto cryptoParams  = kp1.secretKey->GetCryptoParameters();
         auto elementParams = cryptoParams->GetElementParams();
@@ -985,16 +954,14 @@ protected:
         partialCiphertextVec.push_back(ciphertextPartial3[0]);
 
         // Two partial decryptions are combined
+        Plaintext plaintextMultipartyNew;
         cc->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultipartyNew);
 
         plaintextMultipartyNew->SetLength(plaintext1->GetLength());
 
         Plaintext plaintextMultipartyMult;
-
         ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextMult}, kp1_recovered_sk);
-
         ciphertextPartial2 = cc->MultipartyDecryptMain({ciphertextMult}, kp2.secretKey);
-
         ciphertextPartial3 = cc->MultipartyDecryptMain({ciphertextMult}, kp3.secretKey);
 
         std::vector<Ciphertext<DCRTPoly>> partialCiphertextVecMult;
@@ -1007,11 +974,8 @@ protected:
         plaintextMultipartyMult->SetLength(plaintext1->GetLength());
 
         Plaintext plaintextMultipartyEvalSum;
-
         ciphertextPartial1 = cc->MultipartyDecryptLead({ciphertextEvalSum}, kp1_recovered_sk);
-
         ciphertextPartial2 = cc->MultipartyDecryptMain({ciphertextEvalSum}, kp2.secretKey);
-
         ciphertextPartial3 = cc->MultipartyDecryptMain({ciphertextEvalSum}, kp3.secretKey);
 
         std::vector<Ciphertext<DCRTPoly>> partialCiphertextVecEvalSum;

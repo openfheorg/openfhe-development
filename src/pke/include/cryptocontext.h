@@ -2698,7 +2698,7 @@ public:
    * @return the secret shares of the secret key sk.
    */
     std::unordered_map<uint32_t, Element> ShareKeys(const PrivateKey<Element>& sk, usint N, usint threshold,
-                                                    usint index, const std::string shareType);
+                                                    usint index, const std::string& shareType) const;
 
     /**
    * Threshold FHE: Adds two  partial evaluation keys for multiplication
@@ -2711,7 +2711,7 @@ public:
    * @return the recovered key from the secret shares assigned to sk.
    */
     void RecoverSharedKey(PrivateKey<Element>& sk, std::unordered_map<uint32_t, Element>& sk_shares, usint N,
-                          usint threshold, const std::string shareType);
+                          usint threshold, const std::string& shareType) const;
 
     //------------------------------------------------------------------------------
     // FHE Bootstrap Methods
