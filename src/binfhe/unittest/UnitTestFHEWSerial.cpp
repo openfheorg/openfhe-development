@@ -84,8 +84,8 @@ void UnitTestFHEWSerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_METH
     cc2.BTKeyLoad({refreshKey,switchKey});
 
     // Check the keys after adding them to cc2
-    // EXPECT_EQ( *(cc2.GetRefreshKey()), *(cc1.GetRefreshKey())) << errMsg << "Bootstrapping key mismatch: refresh key (2)";
-    EXPECT_EQ( *(cc2.GetSwitchKey()), *(cc1.GetSwitchKey())) << errMsg << "Bootstrapping key mismatch: switching key (2)";
+    EXPECT_EQ( *(cc2.GetRefreshKey()), *(cc1.GetRefreshKey())) << errMsg << "Bootstrapping key mismatch: refresh key";
+    EXPECT_EQ( *(cc2.GetSwitchKey()), *(cc1.GetSwitchKey())) << errMsg << "Bootstrapping key mismatch: switching key";
 
     LWEPrivateKey sk2;
     {
