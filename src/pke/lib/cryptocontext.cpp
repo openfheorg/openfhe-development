@@ -786,14 +786,6 @@ template <>
 std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk, usint N,
                                                                               usint threshold, usint index,
                                                                               const std::string shareType) {
-    usint num_of_shares = N - 1;
-    std::unordered_map<uint32_t, DCRTPoly> SecretShares;
-
-    const auto cryptoParams = sk->GetCryptoContext()->GetCryptoParameters();
-    auto elementParams      = cryptoParams->GetElementParams();
-    auto vecSize            = elementParams->GetParams().size();
-    auto ring_dimension     = elementParams->GetRingDimension();
-
     // conditions on N and threshold for security with aborts
     if (N < 2) {
         std::cerr << "Number of parties needs to be atleast 3 for aborts" << std::endl;
@@ -809,6 +801,15 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
                       "crypto context");
     }
 
+    usint num_of_shares = N - 1;
+    std::unordered_map<uint32_t, DCRTPoly> SecretShares;
+    std::vector<DCRTPoly> SecretSharesVec;
+
+    const auto cryptoParams = sk->GetCryptoContext()->GetCryptoParameters();
+    auto elementParams      = cryptoParams->GetElementParams();
+    auto vecSize            = elementParams->GetParams().size();
+    auto ring_dimension     = elementParams->GetRingDimension();
+
     // condition for inverse in lagrange coeff to exist.
     for (usint k = 0; k < vecSize; k++) {
         auto modq_k = elementParams->GetParams()[k]->GetModulus();
@@ -822,22 +823,23 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
 
     // secret sharing
     if (shareType == "additive") {
-        DCRTPoly rsum;
-
         typename DCRTPoly::DugType dug;
 
         // generate a random share of N-2 elements and create the last share as sk - (sk_1 + ... + sk_N-2)
-        DCRTPoly r(dug, elementParams, Format::EVALUATION);
-        rsum            = r;
-        SecretShares[1] = r;
-        for (usint i = 2; i <= num_of_shares; i++) {
-            if (i == num_of_shares) {
-                SecretShares[i] = sk->GetPrivateElement() - rsum;
-            }
-            else {
-                DCRTPoly r(dug, elementParams, Format::EVALUATION);
-                rsum            = rsum + r;
-                SecretShares[i] = r;
+        DCRTPoly rsum(dug, elementParams, Format::EVALUATION);
+        SecretSharesVec.push_back(rsum);
+        for (usint i = 1; i < num_of_shares - 1; i++) {
+            DCRTPoly r(dug, elementParams, Format::EVALUATION);
+            SecretSharesVec.push_back(r);
+            rsum += r;
+        }
+        SecretSharesVec.push_back(sk->GetPrivateElement() - rsum);
+
+        usint ctr = 0;
+        for (usint i = 1; i <= N; i++) {
+            if (i != index) {
+                SecretShares[i] = SecretSharesVec[ctr];
+                ctr++;
             }
         }
     }
@@ -918,11 +920,6 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
         std::cout << "sk is null" << std::endl;
     }
 
-    const auto cryptoParams = sk->GetCryptoContext()->GetCryptoParameters();
-    auto elementParams      = cryptoParams->GetElementParams();
-    auto ring_dimension     = elementParams->GetRingDimension();
-    auto vecSize            = elementParams->GetParams().size();
-
     // conditions on N and threshold for security with aborts
     if (N < 2) {
         std::cerr << "Number of parties needs to be atleast 3 for aborts" << std::endl;
@@ -937,6 +934,11 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
                       "Threshold required to be majority (more than N/2)"
                       "crypto context");
     }
+
+    const auto cryptoParams = sk->GetCryptoContext()->GetCryptoParameters();
+    auto elementParams      = cryptoParams->GetElementParams();
+    auto ring_dimension     = elementParams->GetRingDimension();
+    auto vecSize            = elementParams->GetParams().size();
 
     // condition for inverse in lagrange coeff to exist.
     for (usint k = 0; k < vecSize; k++) {
