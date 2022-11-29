@@ -120,7 +120,25 @@ public:
     }
 
     bool operator==(const RingGSWEvalKeyImpl& other) const {
-        return m_elements == other.m_elements;
+        if(m_elements.size() == other.m_elements.size()) {
+            for (size_t i = 0; i < m_elements.size(); ++i) {
+                const auto& l1 = m_elements[i];
+                const auto& o1 = other.m_elements[i];
+
+                if(l1.size() == o1.size()) {
+                    for (size_t j = 0; j < l1.size(); ++j) {
+                        const auto& l2 = l1[j];
+                        const auto& o2 = o1[j];
+
+                        if(l2 != o2)
+                            return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        return false;
     }
 
     bool operator!=(const RingGSWEvalKeyImpl& other) const {
