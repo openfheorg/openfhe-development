@@ -230,8 +230,10 @@ public:
         ar(::cereal::make_nvp("bq", m_q));
         ar(::cereal::make_nvp("bR", m_baseR));
         ar(::cereal::make_nvp("bG", m_baseG));
-        // ar(::cereal::make_nvp("bmethod", m_method));
+        ar(::cereal::make_nvp("bmethod", m_method));
         ar(::cereal::make_nvp("bs", m_dgg.GetStd()));
+        ar(::cereal::make_nvp("bdigitsG", m_digitsG));
+        ar(::cereal::make_nvp("bparams", m_polyParams));
     }
 
     template <class Archive>
@@ -245,10 +247,12 @@ public:
         ar(::cereal::make_nvp("bq", m_q));
         ar(::cereal::make_nvp("bR", m_baseR));
         ar(::cereal::make_nvp("bG", m_baseG));
-        // ar(::cereal::make_nvp("bmethod", m_method));
+        ar(::cereal::make_nvp("bmethod", m_method));
         double sigma = 0;
         ar(::cereal::make_nvp("bs", sigma));
         m_dgg.SetStd(sigma);
+        ar(::cereal::make_nvp("bdigitsG", m_digitsG));
+        ar(::cereal::make_nvp("bparams", m_polyParams));
 
         PreCompute();
     }
