@@ -41,14 +41,25 @@ File Listings
 - Defines all options for ``BINFHEPARAMSET``, ``BINFHE_METHOD``, and ``BINFHE_METHOD`` enums
 
 `LWE Ciphertext (lwe-ciphertext) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-ciphertext.h>`_
+
 `LWE Crypto Parameters (lwe-cryptoparameters) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-cryptoparameters.h>`_
+
 `LWE Switching Key (lwe-keyswitchkey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-keyswitchkey.h>`_
+
 `LWE Scheme (lwe-pke) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-pke.h>`_
+
 `LWE Private Key (lwe-privatekey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-privatekey.h>`_
+
 `Parent RGSW Accumulator Scheme (rgsw-acc) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acc.h>`_
+
 `CGGI RGSW Accumulator Scheme (rgsw-acc-cggi) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acc-cggi.h>`_
+
 `DM RGSW Accumulator Scheme (rgsw-acc-dm) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acc-dm.h>`_
+
 `RGSW Refreshing Key (rgsw-acckey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acckey.h>`_
+
 `RGSW Crypto Parameters (rgsw-cryptoparameters) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-cryptoparameters.h>`_
+
 `RGSW Evaluation Key/Ciphertext (rgsw-evalkey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-evalkey.h>`_
+
 `RLWE Ciphertext (rlwe-ciphertext) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rlwe-ciphertext.h>`_
