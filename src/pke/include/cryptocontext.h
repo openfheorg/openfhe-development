@@ -58,6 +58,7 @@
 #include <utility>
 #include <vector>
 #include <algorithm>
+#include <unordered_map>
 
 namespace lbcrypto {
 
@@ -131,7 +132,6 @@ class CryptoContextImpl : public Serializable {
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
                                                                level, scFact, slots));
         }
-
         p->Encode();
 
         // In FLEXIBLEAUTOEXT mode, a fresh plaintext at level 0 always has noiseScaleDeg 2.
@@ -878,13 +878,13 @@ public:
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
                 scf = cryptoParams->GetScalingFactorIntBig(level);
                 p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                    this->GetEncodingParams(), getSchemeId(), 1, level, scf);
+                                                      this->GetEncodingParams(), getSchemeId(), 1, level, scf);
                 p->SetNoiseScaleDeg(2);
             }
             else {
                 scf = cryptoParams->GetScalingFactorInt(level);
                 p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                    this->GetEncodingParams(), getSchemeId(), depth, level, scf);
+                                                      this->GetEncodingParams(), getSchemeId(), depth, level, scf);
             }
         }
         else {
@@ -2686,6 +2686,32 @@ public:
 
         return GetScheme()->MultiAddEvalMultKeys(evalKey1, evalKey2, keyId);
     }
+
+    /**
+   * Threshold FHE: secret sharing of secret key for Aborts
+   *
+   * @param sk secret key to be shared.
+   * @param N total number of parties.
+   * @param threshold - threshold number of parties.
+   * @param index - index of the party invoking the function.
+   * @param shareType - Type of secret sharing to be used - additive or shamir sharing.
+   * @return the secret shares of the secret key sk.
+   */
+    std::unordered_map<uint32_t, Element> ShareKeys(const PrivateKey<Element>& sk, usint N, usint threshold,
+                                                    usint index, const std::string& shareType) const;
+
+    /**
+   * Threshold FHE: Adds two  partial evaluation keys for multiplication
+   *
+   * @param sk secret recovered from the secret shares.
+   * @param sk_shares secret shares.
+   * @param N total number of parties.
+   * @param threshold - threshold number of parties.
+   * @param shareType - Type of secret sharing to be used - additive or shamir sharing
+   * @return the recovered key from the secret shares assigned to sk.
+   */
+    void RecoverSharedKey(PrivateKey<Element>& sk, std::unordered_map<uint32_t, Element>& sk_shares, usint N,
+                          usint threshold, const std::string& shareType) const;
 
     //------------------------------------------------------------------------------
     // FHE Bootstrap Methods
