@@ -131,11 +131,11 @@ void EvalFunctionExample() {
     parameters.SetFirstModSize(firstModSize);
 
     // Choosing a higher degree yields better precision, but a longer runtime.
-    uint32_t polyDegree = 50;
+    uint32_t polyDegree = 40;
 
     // The multiplicative depth depends on the polynomial degree.
     // See the FUNCTION_EVALUATION.md file for a table mapping polynomial degrees to multiplicative depths.
-    uint32_t multDepth = 7;
+    uint32_t multDepth = 9;
 
     parameters.SetMultiplicativeDepth(multDepth);
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);

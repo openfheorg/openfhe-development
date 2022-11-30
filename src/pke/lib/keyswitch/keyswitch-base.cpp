@@ -44,8 +44,10 @@ namespace lbcrypto {
 template <typename Element>
 Ciphertext<Element> KeySwitchBase<Element>::KeySwitch(ConstCiphertext<Element> ciphertext,
                                                       const EvalKey<Element> evalKey) const {
+    std::cout << "KeySwitchBase<Element>::KeySwitch begins" << std::endl;
     Ciphertext<Element> result = ciphertext->Clone();
     KeySwitchInPlace(result, evalKey);
+    std::cout << "KeySwitchBase<Element>::KeySwitch ends" << std::endl;
     return result;
 }
 

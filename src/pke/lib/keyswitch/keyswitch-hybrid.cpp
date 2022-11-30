@@ -293,6 +293,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
 }
 
 void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> ek) const {
+    std::cout << "KeySwitchHYBRID::KeySwitchInPlace begins" << std::endl;
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
     std::shared_ptr<std::vector<DCRTPoly>> ba = (cv.size() == 2) ? KeySwitchCore(cv[1], ek) : KeySwitchCore(cv[2], ek);
@@ -308,9 +309,11 @@ void KeySwitchHYBRID::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const E
         cv[1] = (*ba)[1];
     }
     cv.resize(2);
+    std::cout << "KeySwitchHYBRID::KeySwitchInPlace ends" << std::endl;
 }
 
 Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> ciphertext, bool addFirst) const {
+    std::cout << "KeySwitchHYBRID::KeySwitchExt begins" << std::endl;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
@@ -334,6 +337,7 @@ Ciphertext<DCRTPoly> KeySwitchHYBRID::KeySwitchExt(ConstCiphertext<DCRTPoly> cip
 
     Ciphertext<DCRTPoly> result = ciphertext->CloneZero();
     result->SetElements(resultElements);
+    std::cout << "KeySwitchHYBRID::KeySwitchExt ends" << std::endl;
     return result;
 }
 
@@ -527,6 +531,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(
     const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
     const std::shared_ptr<ParmType> paramsQl) const {
+    std::cout << "KeySwitchHYBRID::EvalFastKeySwitchCoreExt begins" << std::endl;
     const auto cryptoParams         = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
     const std::vector<DCRTPoly>& bv = evalKey->GetBVector();
     const std::vector<DCRTPoly>& av = evalKey->GetAVector();
@@ -563,7 +568,7 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt
             cTilda1.SetElementAtIndex(i, cTilda1.GetElementAtIndex(i) + cji * aji);
         }
     }
-
+    std::cout << "KeySwitchHYBRID::EvalFastKeySwitchCoreExt ends" << std::endl;
     return std::make_shared<std::vector<DCRTPoly>>(
         std::initializer_list<DCRTPoly>{std::move(cTilda0), std::move(cTilda1)});
 }

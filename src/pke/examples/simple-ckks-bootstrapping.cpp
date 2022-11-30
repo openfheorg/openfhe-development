@@ -69,7 +69,7 @@ void SimpleBootstrapExample() {
     * you do not need to set the ring dimension.
     */
     parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1 << 12);
+    parameters.SetRingDim(1 << 17);
 
     /*  A3) Scaling parameters.
     * By default, we set the modulus sizes and rescaling technique to the following values
@@ -123,6 +123,8 @@ void SimpleBootstrapExample() {
     auto keyPair = cryptoContext->KeyGen();
     cryptoContext->EvalMultKeyGen(keyPair.secretKey);
     cryptoContext->EvalBootstrapKeyGen(keyPair.secretKey, numSlots);
+
+    std::cout << "Finished key generation" << std::endl;
 
     std::vector<double> x = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
     size_t encodedLength  = x.size();

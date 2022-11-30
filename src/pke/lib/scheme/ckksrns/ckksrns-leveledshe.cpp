@@ -102,6 +102,7 @@ void LeveledSHECKKSRNS::EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext, double
 /////////////////////////////////////
 
 void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertext, size_t levels) const {
+    std::cout << "LeveledSHECKKSRNS::ModReduceInternalInPlace begins" << std::endl;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
 
     std::vector<DCRTPoly>& cv = ciphertext->GetElements();
@@ -126,6 +127,7 @@ void LeveledSHECKKSRNS::ModReduceInternalInPlace(Ciphertext<DCRTPoly>& ciphertex
         double modReduceFactor = cryptoParams->GetModReduceFactor(sizeQl - 1 - i);
         ciphertext->SetScalingFactor(ciphertext->GetScalingFactor() / modReduceFactor);
     }
+    std::cout << "LeveledSHECKKSRNS::ModReduceInternalInPlace ends" << std::endl;
 }
 
 /////////////////////////////////////

@@ -375,8 +375,10 @@ Ciphertext<DCRTPoly> LeveledSHERNS::Compress(ConstCiphertext<DCRTPoly> ciphertex
 /////////////////////////////////////////
 
 Ciphertext<DCRTPoly> LeveledSHERNS::ModReduceInternal(ConstCiphertext<DCRTPoly> ciphertext, size_t levels) const {
+    std::cout << "LeveledSHERNS::ModReduceInternal begins" << std::endl;
     auto result = ciphertext->Clone();
     ModReduceInternalInPlace(result, levels);
+    std::cout << "LeveledSHERNS::ModReduceInternal ends" << std::endl;
     return result;
 }
 
