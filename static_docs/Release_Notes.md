@@ -1,3 +1,8 @@
+11/30/2022: OpenFHE 1.0.1 (stable) is released
+
+* Fixed the serialization bug affecting DM/CGGI schemes (binfhe module)
+* Added support for the Emscripten compiler (for WebAssembly compilation)
+
 11/03/2022: OpenFHE 1.0.0 (development) is released
 
 * Doubles the precision of CKKS bootstrapping
