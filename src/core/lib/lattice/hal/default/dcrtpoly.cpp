@@ -1409,7 +1409,7 @@ void DCRTPolyImpl<VecType>::TimesQovert(const std::shared_ptr<DCRTPolyImpl::Para
     *this = this->Times(tInvModq);
 }
 
-#if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsQ, const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
@@ -1572,7 +1572,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     return ans;
 }
 
-#if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SwitchCRTBasis(const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
                                                             const std::vector<NativeInteger>& QHatInvModq,
@@ -1827,7 +1827,7 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasisReverseOrder(
     m_vectors      = temp;
 }
 
-#if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastExpandCRTBasisPloverQ(const CRTBasisExtensionPrecomputations precomputed) {
     usint ringDim = this->GetRingDimension();
@@ -2243,7 +2243,7 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
     return result;
 }
 
-#if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
@@ -2317,7 +2317,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(
 }
 #endif
 
-#if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsOutput,
@@ -2498,7 +2498,7 @@ void DCRTPolyImpl<VecType>::ScaleAndRoundPOverQ(const std::shared_ptr<DCRTPolyIm
     this->m_params = paramsQ;
 }
 
-#if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsBsk, const std::vector<NativeInteger>& moduliQ,
@@ -2756,7 +2756,7 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     ximtildeQHatModqi = nullptr;
 }
 #endif
-#if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastRNSFloorq(
     const NativeInteger& t, const std::vector<NativeInteger>& moduliQ, const std::vector<NativeInteger>& moduliBsk,
@@ -2884,7 +2884,7 @@ void DCRTPolyImpl<VecType>::FastRNSFloorq(
 }
 #endif
 
-#if defined(HAVE_INT128) && NATIVEINT == 64 && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 void DCRTPolyImpl<VecType>::FastBaseConvSK(
     const std::shared_ptr<Params> paramsQ, const std::vector<DoubleNativeInt>& modqBarrettMu,

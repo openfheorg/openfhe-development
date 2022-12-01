@@ -60,7 +60,7 @@
 #include "utils/openfhebase64.h"
 #include "utils/serializable.h"
 
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     // need the BigInteger to handle double 128-bit word
     #include "math/hal/bigintbackend.h"
 #endif

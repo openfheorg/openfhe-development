@@ -22,47 +22,44 @@ File Listings
 - CryptoContext for the boolean circuit FHE scheme.
 - A CryptoContext is the primary object through which we interact with the various ``OpenFHE`` capabilities
 
-.. note:: various parameter ``enum`` are also provided, primarily ``BINFHEPARAMSET`` and ``BINFHEOUTPUT`` which define the level of security, and type of ciphertext generated when the ``encrypt`` method is called.
+.. note:: various parameter ``enum`` are also provided
+.. - ``BINFHEPARAMSET`` that defines the security level and parameters
+.. - ``BINFHE_METHOD`` to choose the bootstrapping method: AP (DM/FHEW scheme) or GINX (CGGI/TFHE scheme)
+.. - ``BINFHE_METHOD`` specifies whther fresh ciphertext should be bootstrapped.
 
-`FHEW (fhew.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/fhew.h>`_
+`DM/CGGI Cryptosystem (binfhe-base-scheme) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/binfhe-base-scheme.h>`_
 
-- The FHEW scheme (RingGSW accumulator) implementation
-- The scheme is described in `Bootstrapping in FHEW-like Cryptosystems <https://eprint.iacr.org/2014/816>`_ from Daniele Micciancio and Yuriy Polyakov as published in Cryptology ePrint Archive, Report 2020/086
-- The object containing the parameters for encoding. These parameters are kept and continually reused (can be modified) during the encoding of new values
-- Defines the ``RingGSWAccumulatorScheme``: the ring GSW accumulator scheme described in the aforementioned paper.
+- The main cryptosystem implementation used for DM/CGGI schemes
+- The scheme is described in `Bootstrapping in FHEW-like Cryptosystems <https://eprint.iacr.org/2020/086>`_ from Daniele Micciancio and Yuriy Polyakov as published in Cryptology ePrint Archive, Report 2020/086
 
-`Learning with Error (lwe.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe.h>`_
+`Parameters for DM/CGGI Cryptosystem (binfhe-base-params) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/binfhe-base-params.h>`_
 
-- LWE Encryption Scheme implementation
-- The scheme described in `FHEW: Bootstrapping Homomorphic Encryption in less than a second <https://eprint.iacr.org/2014/816>`_ from Leo Ducas and Daniele Micciancio
+- Stores the parameters for all cryptographic schemes, including LWE, RLWE, and RGSW
 
-`LWE Core (lwecore.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwecore.h>`_
+`Constants for DM/CGGI Cryptosystem (binfhe-base-params) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/binfhe-constants.h>`_
 
-- Main ring class for boolean FHE
-- Defines the following:
+- Defines all options for ``BINFHEPARAMSET``, ``BINFHE_METHOD``, and ``BINFHE_METHOD`` enums
 
-  - ``LWECryptoParams``: stores parameters for use in the LWE scheme
+`LWE Ciphertext (lwe-ciphertext) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-ciphertext.h>`_
 
-  - ``LWE Ciphertext Impl``: the ciphertext implementation for `LWE`
+`LWE Crypto Parameters (lwe-cryptoparameters) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-cryptoparameters.h>`_
 
-  - ``LWEPrivateKeyImpl``: stores the LWE scheme secret key in a vector
+`LWE Switching Key (lwe-keyswitchkey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-keyswitchkey.h>`_
 
-  - ``LWESwitchingKey``: stores the LWE scheme switching key
+`LWE Scheme (lwe-pke) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-pke.h>`_
 
-`Ring Core (ringcore.h) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/ringcore.h>`_
+`LWE Private Key (lwe-privatekey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-privatekey.h>`_
 
-- Main ring class for boolean FHE
-- Defines the enum for the supported boolean gates:
+`Parent RGSW Accumulator Scheme (rgsw-acc) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acc.h>`_
 
-  - ``OR``, ``XOR_FAST``, ``XOR``
+`CGGI RGSW Accumulator Scheme (rgsw-acc-cggi) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acc-cggi.h>`_
 
-  - ``AND``, ``NAND``
+`DM RGSW Accumulator Scheme (rgsw-acc-dm) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acc-dm.h>`_
 
-  - ``NOR``, ``XNOR_FAST``, ``XNOR``
+`RGSW Refreshing Key (rgsw-acckey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acckey.h>`_
 
-- Defines the enums for the bin-FHE methods: ``AP`` and ``GINX``
-- Defines the following:
+`RGSW Crypto Parameters (rgsw-cryptoparameters) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-cryptoparameters.h>`_
 
-  - ``RingGSWCiphertext``: two-dimensional vector of ring elements
+`RGSW Evaluation Key/Ciphertext (rgsw-evalkey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-evalkey.h>`_
 
-  - ``RingGSWBTKey``: stores the refreshing key used in bootstrapping. Is a 3-d vector of ``RingGSW`` ciphertexts
+`RLWE Ciphertext (rlwe-ciphertext) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rlwe-ciphertext.h>`_
