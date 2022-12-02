@@ -8,12 +8,11 @@ These instructions were tested in macOS Mojave but should also work for other re
 
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
-2. Install pre-requisites ``cmake``, ``autoconf``, and ``OpenMP`` library using Homebrew:
+2. Install pre-requisites ``cmake`` and ``OpenMP`` library using Homebrew:
 
 ::
 
     brew install cmake
-    brew install autoconf
     brew install libomp
 
 3. Clone the repo.
@@ -40,7 +39,14 @@ Cmake will check for any system dependencies that are needed for the build proce
 
   If you get an error about OMP asking to rerun cmake, just run "cmake .." once more.
 
-5. The OpenFHE distribution includes some external libraries, such as GMP. NTL and tcmalloc. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
+5. The OpenFHE distribution includes some external libraries, such as ``GMP``, ``NTL`` and ``tcmalloc``. If you want to use any of these libraries:
+    a) install ``autoconf`` using Homebrew:
+
+    ::
+
+        brew install autoconf
+
+    b) enable them when you run cmake to force them to build (see instructions on cmake options)
 
 6. Build OpenFHE by running the following command (this will take few minutes; using the ``-j #`` make command-line flag is suggested to speed up the build, where # is the number of cores on your machine).
 
