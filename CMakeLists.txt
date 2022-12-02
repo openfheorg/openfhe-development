@@ -358,20 +358,21 @@ install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION include/ope
 find_program(TAR "gtar")
 find_program(TAR "tar")
 
-### several of the third-party tools use auto-make and autoconf
-### we need to make sure that they are installed
-execute_process(COMMAND autogen --version OUTPUT_VARIABLE AUTOGEN_VER)
-# execute_process in MINGW by default does not run in a shell
-if(MINGW)
-	execute_process(COMMAND sh autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
-else()
-	execute_process(COMMAND autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
-endif()
+if(WITH_TCM OR WITH_NTL)
+    ### tcmalloc, NTL and GMP require autoconf/automake/libtool to be installed.
+    ### we need to make sure that they are:
+    execute_process(COMMAND autogen --version OUTPUT_VARIABLE AUTOGEN_VER)
+    # execute_process in MINGW by default does not run in a shell
+    if(MINGW)
+	    execute_process(COMMAND sh autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
+    else()
+	    execute_process(COMMAND autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
+    endif()
 
-string(LENGTH "${AUTOCONF_VER}" AUTOCONF_VER_LEN)
-
-if( ${AUTOCONF_VER_LEN} EQUAL 0 )
-	message(SEND_ERROR "Autoconf is not installed.")
+    string(LENGTH "${AUTOCONF_VER}" AUTOCONF_VER_LEN)
+    if( ${AUTOCONF_VER_LEN} EQUAL 0 )
+	    message(SEND_ERROR "Autoconf is not installed.")
+    endif()
 endif()
 
 #--------------------------------------------------------------------

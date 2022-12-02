@@ -28,7 +28,7 @@ Build Instructions
 We use CMake to build OpenFHE.
 
 
-1. Install system prerequisites (if not already installed), including a C++ compiler with OMP support, cmake, make, and autoconf.
+1. Install system prerequisites (if not already installed), including a C++ compiler with OMP support, cmake, make.
 
 2. Clone the OpenFHE repo to your local machine.
 

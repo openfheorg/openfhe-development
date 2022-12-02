@@ -22,13 +22,12 @@ Installing OpenFHE on Linux
     Note that ``sudo apt-get install g++-<version>`` can be used to install a specific version of the compiler. You can use "g++ --version" to check the version of g++ that is found by the system.
 
 
-    Install ``g++``, ``cmake``, ``make``, and ``autoconf``. Sample commands using apt-get are listed below. It is possible that these are already installed
+    Install ``g++``, ``cmake`` and ``make``. Sample commands using apt-get are listed below. It is possible that these are already installed
 
     ::
 
         sudo apt-get install build-essential #this already includes g++
         sudo apt-get install cmake
-        sudo apt-get install autoconf
 
 .. topic:: clang
 
@@ -75,7 +74,14 @@ Installing OpenFHE on Linux
 .. note:: Note that cmake will check for any system dependencies that are needed for the build process.
 
 
-4. The OpenFHE distribution includes some external libraries, such as ``GMP``. ``NTL`` and ``tcmalloc``. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
+4. The OpenFHE distribution includes some external libraries, such as ``GMP``, ``NTL`` and ``tcmalloc``. If you want to use any of these libraries:
+    a) install ``autoconf``:
+
+    ::
+
+        sudo apt-get install autoconf
+
+    b) enable them when you run cmake to force them to build (see instructions on cmake options).
 
 5. Build OpenFHE by running the following command (this will take few minutes; using the ``-j <threads>`` command-line flag is suggested to speed up the build)
 
