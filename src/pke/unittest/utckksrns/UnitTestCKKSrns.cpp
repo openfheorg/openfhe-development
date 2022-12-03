@@ -166,7 +166,7 @@ constexpr usint RING_DIM      = 512;
 constexpr usint RING_DIM_HALF = 256;
 constexpr usint DSIZE         = 10;
 constexpr usint BATCH         = 8;
-#if NATIVEINT == 128
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 constexpr usint SMODSIZE = 90;
 #else
 constexpr usint RING_DIM_PREC = 4096;  // for test cases with approximation error comparison only
@@ -394,6 +394,7 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { EVAL_FAST_ROTATION, "39", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   BATCH},
     { EVAL_FAST_ROTATION, "40", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   BATCH},
 #endif
+#if !defined(EMSCRIPTEN)
     { EVAL_FAST_ROTATION, "41", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   RING_DIM_HALF},
     { EVAL_FAST_ROTATION, "42", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   RING_DIM_HALF},
     { EVAL_FAST_ROTATION, "43", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FIXEDMANUAL,     DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT},   RING_DIM_HALF},
@@ -517,6 +518,7 @@ static std::vector<TEST_CASE_UTCKKSRNS> testCases = {
     { EVALSQUARE, "06", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTO,    DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { EVALSQUARE, "07", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, BV,     FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     { EVALSQUARE, "08", {CKKSRNS_SCHEME, RING_DIM, 7,     SMODSIZE, DSIZE, BATCH,   DFLT,       DFLT,          DFLT,     HEStd_NotSet, HYBRID, FLEXIBLEAUTOEXT, DFLT,    DFLT,  DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+#endif
 #endif
     // ==========================================
 };
@@ -780,7 +782,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -914,7 +920,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -1115,7 +1125,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -1358,7 +1372,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -1398,7 +1416,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -1475,7 +1497,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -1556,7 +1582,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -1635,7 +1665,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -1693,7 +1727,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -1750,7 +1788,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -1864,7 +1906,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -2015,7 +2061,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
@@ -2066,7 +2116,11 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
             std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;

@@ -58,7 +58,7 @@ You need to run MinGW64 as an administrator unless you are specifying some other
 
 To run MinGW64 as an administrator, open Task Manager, go to File -> Run New Task, select the location of the executable for MinGW64, and check the box "Create this task with administrative privileges".
 
-8. If **not** running ``make install``, add the following paths to the ``PATH`` variable (to find the dlls): ``lib`` (no NTL) or ``lib:third-party/bin`` (with NTL). For example, the following commands can be used
+8. Add the following paths to the ``PATH`` variable (to find the dlls): ``lib`` (no NTL) or ``lib:third-party/bin`` (with NTL). For example, the following commands can be used
 
 Without NTL:
 

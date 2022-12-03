@@ -315,6 +315,7 @@ public:
                                                  " is from a later version of the library");
         }
         ar(::cereal::make_nvp("params", m_params));
+        m_binfhescheme = std::make_shared<BinFHEScheme>(m_params->GetRingGSWParams()->GetMethod());
     }
 
     std::string SerializedObjectName() const {
