@@ -2504,9 +2504,9 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsBsk, const std::vector<NativeInteger>& moduliQ,
     const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
     const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
-    const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint16_t>& QHatModmtilde,
+    const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
     const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
-    const uint16_t& negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
+    const uint64_t& negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
     const std::vector<NativeInteger>& mtildeInvModbskPrecon) {
     // Input: poly in basis q
     // Output: poly in base Bsk = {B U msk}
@@ -2564,12 +2564,16 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     }
 
     // mod mtilde = 2^16
-    std::vector<uint16_t> result_mtilde(n);
+    const uint64_t mtilde      = (uint64_t)1 << 16;
+    uint64_t mtilde_half = mtilde >> 1;
+
+    std::vector<uint64_t> result_mtilde(n);
     #pragma omp parallel for
     for (uint32_t k = 0; k < n; k++) {
         result_mtilde[k] = 0;
         for (uint32_t i = 0; i < numQ; i++)
             result_mtilde[k] += ximtildeQHatModqi[i * n + k].ConvertToInt() * QHatModmtilde[i];
+        result_mtilde[k] = result_mtilde[k] & (mtilde-1);
     }
 
     // now we have input in Basis (q U Bsk U mtilde)
@@ -2577,12 +2581,10 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     // ----------------------- step 1 -----------------------
     // NativeInteger *r_m_tildes = new NativeInteger[n];
 
-    uint64_t mtilde      = (uint64_t)1 << 16;
-    uint64_t mtilde_half = mtilde >> 1;
-
     #pragma omp parallel for
     for (uint32_t k = 0; k < n; k++) {
         result_mtilde[k] *= negQInvModmtilde;
+        result_mtilde[k] = result_mtilde[k] & (mtilde-1);
     }
 
     for (uint32_t i = 0; i < numBsk; i++) {
@@ -2631,9 +2633,9 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsBsk, const std::vector<NativeInteger>& moduliQ,
     const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
     const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
-    const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint16_t>& QHatModmtilde,
+    const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
     const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
-    const uint16_t& negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
+    const uint64_t& negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
     const std::vector<NativeInteger>& mtildeInvModbskPrecon) {
     // Input: poly in basis q
     // Output: poly in base Bsk = {B U msk}
@@ -2694,12 +2696,16 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     }
 
     // mod mtilde = 2^16
-    std::vector<uint16_t> result_mtilde(n);
+    const uint64_t mtilde      = (uint64_t)1 << 16;
+    uint64_t mtilde_half = mtilde >> 1;
+
+    std::vector<uint64_t> result_mtilde(n);
     #pragma omp parallel for
     for (uint32_t k = 0; k < n; k++) {
         result_mtilde[k] = 0;
         for (uint32_t i = 0; i < numQ; i++)
             result_mtilde[k] += ximtildeQHatModqi[i * n + k].ConvertToInt() * QHatModmtilde[i];
+        result_mtilde[k] = result_mtilde[k] & (mtilde - 1);
     }
 
     // now we have input in Basis (q U Bsk U mtilde)
@@ -2707,12 +2713,10 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     // ----------------------- step 1 -----------------------
     // NativeInteger *r_m_tildes = new NativeInteger[n];
 
-    uint64_t mtilde      = (uint64_t)1 << 16;
-    uint64_t mtilde_half = mtilde >> 1;
-
     #pragma omp parallel for
     for (uint32_t k = 0; k < n; k++) {
         result_mtilde[k] *= negQInvModmtilde;
+        result_mtilde[k] = result_mtilde[k] & (mtilde - 1);
     }
 
     for (uint32_t i = 0; i < numBsk; i++) {

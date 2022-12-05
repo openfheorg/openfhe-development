@@ -1212,9 +1212,9 @@ public:
         const std::shared_ptr<Params> paramsBsk, const std::vector<NativeInteger>& moduliQ,
         const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
         const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
-        const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint16_t>& QHatModmtilde,
+        const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
         const std::vector<NativeInteger>& QModbsk, const std::vector<NativeInteger>& QModbskPrecon,
-        const uint16_t& negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
+        const uint64_t& negQInvModmtilde, const std::vector<NativeInteger>& mtildeInvModbsk,
         const std::vector<NativeInteger>& mtildeInvModbskPrecon) override;
 
     /**
