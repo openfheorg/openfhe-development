@@ -37,6 +37,10 @@
 // TODO: Review whether we need to include hal.h.
 #include "math/hal.h"
 
+#include <string>
+
+namespace lbcrypto {
+
 /**
  * @brief Lists all features supported by public key encryption schemes
  */
@@ -59,6 +63,7 @@ enum SecretKeyDist {
     UNIFORM_TERNARY = 1,
     SPARSE_TERNARY  = 2,
 };
+SecretKeyDist convertToSecretKeyDist(const std::string& str);
 std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
 enum ScalingTechnique {
@@ -69,6 +74,7 @@ enum ScalingTechnique {
     NORESCALE,
     INVALID_RS_TECHNIQUE,  // TODO (dsuponit): make this the first value
 };
+ScalingTechnique convertToScalingTechnique(const std::string& str);
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 
 enum ProxyReEncryptionMode {
@@ -78,6 +84,7 @@ enum ProxyReEncryptionMode {
     NOISE_FLOODING_HRA,
     DIVIDE_AND_ROUND_HRA,
 };
+ProxyReEncryptionMode convertToProxyReEncryptionMode(const std::string& str);
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
 
 enum MultipartyMode {
@@ -85,18 +92,21 @@ enum MultipartyMode {
     FIXED_NOISE_MULTIPARTY,
     NOISE_FLOODING_MULTIPARTY,
 };
+MultipartyMode convertToMultipartyMode(const std::string& str);
 std::ostream& operator<<(std::ostream& s, MultipartyMode t);
 
 enum ExecutionMode {
     EXEC_EVALUATION = 0,
     EXEC_NOISE_ESTIMATION,
 };
+ExecutionMode convertToExecutionMode(const std::string& str);
 std::ostream& operator<<(std::ostream& s, ExecutionMode t);
 
 enum DecryptionNoiseMode {
     FIXED_NOISE_DECRYPT = 0,
     NOISE_FLOODING_DECRYPT,
 };
+DecryptionNoiseMode convertToDecryptionNoiseMode(const std::string& str);
 std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t);
 
 enum KeySwitchTechnique {
@@ -104,12 +114,14 @@ enum KeySwitchTechnique {
     BV,
     HYBRID,
 };
+KeySwitchTechnique convertToKeySwitchTechnique(const std::string& str);
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t);
 
 enum EncryptionTechnique {
     STANDARD = 0,
     EXTENDED,
 };
+EncryptionTechnique convertToEncryptionTechnique(const std::string& str);
 std::ostream& operator<<(std::ostream& s, EncryptionTechnique t);
 
 enum MultiplicationTechnique {
@@ -118,6 +130,7 @@ enum MultiplicationTechnique {
     HPSPOVERQ,
     HPSPOVERQLEVELED,
 };
+MultiplicationTechnique convertToMultiplicationTechnique(const std::string& str);
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
 enum PlaintextEncodings {
@@ -157,5 +170,7 @@ enum NOISE_FLOODING {
     MULTIPARTY_MOD_SIZE = MAX_MODULUS_SIZE,
 #endif
 };  // namespace NOISE_FLOODING
+
+}  // namespace lbcrypto
 
 #endif  // _CONSTANTS_H_

@@ -45,6 +45,8 @@
 #include "constants.h"
 
 #include <iosfwd>
+#include <string>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -111,11 +113,11 @@ class Params {
 
     // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
     // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
-    uint32_t statisticalSecurity;
+    usint statisticalSecurity;
 
     // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
     // security of CKKS in NOISE_FLOODING_DECRYPT mode.
-    uint32_t numAdversarialQueries;
+    usint numAdversarialQueries;
 
     // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
@@ -167,13 +169,122 @@ public:
         SetToDefaults(scheme0);
     }
 
+    /**
+     * This Params' constructor is to be used for unittests only.
+     *
+     * @param vals - vector with override values. sequence of vals' elements must be the same as we get it from getAllParamsDataMembers()
+     * @return a vector with names of all data members of Params
+     */
+    explicit Params(const std::vector<std::string>& vals) {
+        if (getAllParamsDataMembers().size() != vals.size()) {
+            std::string errMsg(std::string("The number of data members and the number of values do not match: ") +
+                               std::to_string(getAllParamsDataMembers().size()) + " != " + std::to_string(vals.size()));
+            OPENFHE_THROW(config_error, errMsg);
+        }
+
+        auto it = vals.begin();
+        SetToDefaults(convertToSCHEME(*it));
+
+        if (!(++it)->empty())
+            ptModulus = static_cast<PlaintextModulus>(std::stoul(*it));
+        if (!(++it)->empty())
+            digitSize = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            standardDeviation = static_cast<float>(std::stof(*it));
+        if (!(++it)->empty())
+            secretKeyDist = convertToSecretKeyDist(*it);
+        if (!(++it)->empty())
+            maxRelinSkDeg = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            ksTech = convertToKeySwitchTechnique(*it);
+        if (!(++it)->empty())
+            scalTech = convertToScalingTechnique(*it);
+        if (!(++it)->empty())
+            firstModSize = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            batchSize = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            numLargeDigits = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            multiplicativeDepth = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            scalingModSize = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            securityLevel = convertToSecurityLevel(*it);
+        if (!(++it)->empty())
+            ringDim = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            evalAddCount = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            keySwitchCount = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            encryptionTechnique = convertToEncryptionTechnique(*it);
+        if (!(++it)->empty())
+            multiplicationTechnique = convertToMultiplicationTechnique(*it);
+        if (!(++it)->empty())
+            multiHopModSize = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            PREMode = convertToProxyReEncryptionMode(*it);
+        if (!(++it)->empty())
+            multipartyMode = convertToMultipartyMode(*it);
+        if (!(++it)->empty())
+            executionMode = convertToExecutionMode(*it);
+        if (!(++it)->empty())
+            decryptionNoiseMode = convertToDecryptionNoiseMode(*it);
+        if (!(++it)->empty())
+            noiseEstimate = std::stod(*it);
+        if (!(++it)->empty())
+            desiredPrecision = std::stod(*it);
+        if (!(++it)->empty())
+            statisticalSecurity = static_cast<usint>(std::stoul(*it));
+        if (!(++it)->empty())
+            numAdversarialQueries = static_cast<usint>(std::stoul(*it));
+    }
+
     Params(const Params& obj) = default;
     Params(Params&& obj)      = default;
 
     Params& operator=(const Params& obj) = default;
-    Params& operator=(Params&& obj)      = default;
+    Params& operator=(Params&& obj) = default;
 
     ~Params() = default;
+
+    /**
+     * getAllParamsDataMembers() returns names of all data members of Params and the scheme enum ALWAYS goes first.
+     * This function is meant for unittests only and holds the correct sequence of the parameters/column names.
+     *
+     * @return a vector with names of all data members of Params
+     */
+    static std::vector<std::string> getAllParamsDataMembers() {
+        return {"scheme",
+                "ptModulus",
+                "digitSize",
+                "standardDeviation",
+                "secretKeyDist",
+                "maxRelinSkDeg",
+                "ksTech",
+                "scalTech",
+                "firstModSize",
+                "batchSize",
+                "numLargeDigits",
+                "multiplicativeDepth",
+                "scalingModSize",
+                "securityLevel",
+                "ringDim",
+                "evalAddCount",
+                "keySwitchCount",
+                "encryptionTechnique",
+                "multiplicationTechnique",
+                "multiHopModSize",
+                "PREMode",
+                "multipartyMode",
+                "executionMode",
+                "decryptionNoiseMode",
+                "noiseEstimate",
+                "desiredPrecision",
+                "statisticalSecurity",
+                "numAdversarialQueries"};
+    }
 
     // getters
     SCHEME GetScheme() const {

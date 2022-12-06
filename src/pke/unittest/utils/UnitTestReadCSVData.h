@@ -28,41 +28,23 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#ifndef __UNITTESTREADCSVDATA_H__
+#define __UNITTESTREADCSVDATA_H__
 
-/*
-  Defines scheme id enums
- */
-
-#ifndef _SCHEME_ID_H_
-#define _SCHEME_ID_H_
-
-#include <iosfwd>
 #include <string>
+#include <vector>
 
-namespace lbcrypto {
+/**
+ * createDataFileName() builds the name of the test data file. It should have the same name as sourceFileName, but
+ * the extension is "csv".
+ * @param sourceFileName is the source file name
+ * @return test data file name
+ */
+std::string createDataFileName(const std::string& sourceFileName);
+std::string createDataFileName(const char* sourceFileName);
 
-//====================================================================================================================
-enum SCHEME {
-    INVALID_SCHEME = 0,
-    CKKSRNS_SCHEME,
-    BFVRNS_SCHEME,
-    BGVRNS_SCHEME,
-};
-//====================================================================================================================
-SCHEME convertToSCHEME(const std::string& str);
-//====================================================================================================================
-std::ostream& operator<<(std::ostream& os, SCHEME schemeId);
-//====================================================================================================================
-inline bool isCKKS(SCHEME schemeId) {
-    return (schemeId == CKKSRNS_SCHEME);
-}
-inline bool isBFVRNS(SCHEME schemeId) {
-    return (schemeId == BFVRNS_SCHEME);
-}
-inline bool isBGVRNS(SCHEME schemeId) {
-    return (schemeId == BGVRNS_SCHEME);
-}
+std::vector<std::string> tokenize(const std::string& str, const char delim);
 
-}  // namespace lbcrypto
+std::vector<std::vector<std::string>> readDataFile(const std::string& dataFileName);
 
-#endif  // _SCHEME_ID_H_
+#endif  // __UNITTESTREADCSVDATA_H__

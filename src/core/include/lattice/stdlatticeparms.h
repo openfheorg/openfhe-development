@@ -41,6 +41,8 @@
 #include <utility>
 #include "math/hal.h"
 
+#include <string>
+
 namespace lbcrypto {
 
 // this is the representation of the standard lattice parameters defined in the
@@ -66,7 +68,7 @@ enum SecurityLevel {
     HEStd_256_classic,
     HEStd_NotSet,
 };
-
+SecurityLevel convertToSecurityLevel(const std::string& str);
 inline std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
     switch (sl) {
         case HEStd_128_classic:
