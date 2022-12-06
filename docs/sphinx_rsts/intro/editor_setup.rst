@@ -235,17 +235,22 @@ After saving this file with the configuration for the multiple targets, the debu
 Build and Debug
 ^^^^^^^^^^^^^^^^
 
-To enable rebuilding with cmake options before debugging use the ``task.json``. This file is stored in ``.vscode`` directory.
+To enable rebuilding with cmake options before debugging use the ``tasks.json``. This file is stored in ``.vscode`` directory.
 
-``task.json``
+``tasks.json``
 
 .. code-block:: json
 
     {
-        "label": "buildCmake",
-        "type": "shell",
-        "command": "cd build && rm CMakeCache.txt && cmake .. -DCMAKE_BUILD_TYPE=Debug && make"
-    },
+      "version": "2.0.0",
+      "tasks": [
+        {
+            "label": "buildCmake",
+            "type": "shell",
+            "command": "cd build && rm CMakeCache.txt && cmake .. -DCMAKE_BUILD_TYPE=Debug && make"
+        }        
+      ]
+    }
 
 and add it to your launch options in ``launch.json``
 
@@ -253,7 +258,7 @@ and add it to your launch options in ``launch.json``
 
 .. code-block:: json
 
-            "preLaunchTask": "buildCmake32",
+            "preLaunchTask": "buildCmake",
 
 .. note:: this goes at the same level as ``name``, ``type``, etc.
 
