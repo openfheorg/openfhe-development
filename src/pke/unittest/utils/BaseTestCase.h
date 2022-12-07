@@ -36,6 +36,8 @@
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "scheme/cryptocontextparams-base.h"
 
+#include "utils/exception.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -99,8 +101,14 @@ public:
         scheme = lbcrypto::convertToSCHEME(*start);
 
         // get the subset of elements with the parameter override values
-        paramOverrides = std::vector<std::string>(start, start + numOverrides);
-
+        try {
+            paramOverrides = std::vector<std::string>(start, start + numOverrides);
+        }
+        catch (...) {
+            std::string errMsg("Check the number of parameter overrides in the .csv file. It should be [" +
+                               std::to_string(numOverrides) + "]");
+            OPENFHE_THROW(lbcrypto::config_error, errMsg);
+        }
         return numOverrides;
     }
 };

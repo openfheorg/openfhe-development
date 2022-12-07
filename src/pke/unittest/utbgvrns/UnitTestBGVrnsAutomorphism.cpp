@@ -156,12 +156,18 @@ std::vector<TEST_CASE_UTBGVRNS_AUTOMORPHISM> getTestData(std::string fileName) {
         size_t numOverrides = testCase.setCryptoContextParamsOverrides(++it);
 
         it += numOverrides;
-        testCase.error = convertStringToCaseError(*it);
-        std::string indexListStr(*(it + 1));
-        if (!isEmpty(indexListStr)) {
-            std::vector<std::string> indices = tokenize(indexListStr, '|');
-            for (std::string& i : indices) {
-                testCase.indexList.push_back(static_cast<uint32_t>(std::stoul(i)));
+        if (it != vec.end()) {
+            // process TEST_CASE_ERROR
+            testCase.error = convertStringToCaseError(*it);
+            if (++it != vec.end()) {
+                // process list of indices
+                std::string indexListStr(*it);
+                if (!isEmpty(indexListStr)) {
+                    std::vector<std::string> indices = tokenize(indexListStr, '|');
+                    for (std::string& i : indices) {
+                        testCase.indexList.push_back(static_cast<uint32_t>(std::stoul(i)));
+                    }
+                }
             }
         }
 
