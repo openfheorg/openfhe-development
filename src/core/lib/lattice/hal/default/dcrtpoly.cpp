@@ -2564,17 +2564,17 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     }
 
     // mod mtilde = 2^16
-    uint64_t mtilde      = (uint64_t)1 << 16;
-    uint64_t mtilde_half = mtilde >> 1;
+    const uint64_t mtilde      = (uint64_t)1 << 16;
+    const uint64_t mtilde_half = mtilde >> 1;
+    const uint64_t mtilde_minus_1 = mtilde-1;
 
-    std::vector<uint64_t> result_mtilde(n);
+    std::vector<uint64_t> result_mtilde(n, 0);
     #pragma omp parallel for
     for (uint32_t k = 0; k < n; k++) {
-        result_mtilde[k] = 0;
         for (uint32_t i = 0; i < numQ; i++) {
             result_mtilde[k] += ximtildeQHatModqi[i * n + k].ConvertToInt() * QHatModmtilde[i];
         }
-        result_mtilde[k] &= (mtilde-1);
+        result_mtilde[k] &= mtilde_minus_1;
     }
 
     // now we have input in Basis (q U Bsk U mtilde)
@@ -2585,7 +2585,7 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     #pragma omp parallel for
     for (uint32_t k = 0; k < n; k++) {
         result_mtilde[k] *= negQInvModmtilde;
-        result_mtilde[k] &= (mtilde-1);
+        result_mtilde[k] &= mtilde_minus_1;
     }
 
     for (uint32_t i = 0; i < numBsk; i++) {
@@ -2697,17 +2697,17 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     }
 
     // mod mtilde = 2^16
-    uint64_t mtilde      = (uint64_t)1 << 16;
-    uint64_t mtilde_half = mtilde >> 1;
+    const uint64_t mtilde      = (uint64_t)1 << 16;
+    const uint64_t mtilde_half = mtilde >> 1;
+    const uint64_t mtilde_minus_1 = mtilde-1;
 
-    std::vector<uint64_t> result_mtilde(n);
+    std::vector<uint64_t> result_mtilde(n, 0);
     #pragma omp parallel for
     for (uint32_t k = 0; k < n; k++) {
-        result_mtilde[k] = 0;
         for (uint32_t i = 0; i < numQ; i++) {
             result_mtilde[k] += ximtildeQHatModqi[i * n + k].ConvertToInt() * QHatModmtilde[i];
         }
-        result_mtilde[k] &= (mtilde-1);
+        result_mtilde[k] &= mtilde_minus_1;
     }
 
     // now we have input in Basis (q U Bsk U mtilde)
@@ -2718,7 +2718,7 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     #pragma omp parallel for
     for (uint32_t k = 0; k < n; k++) {
         result_mtilde[k] *= negQInvModmtilde;
-        result_mtilde[k] &= (mtilde-1);
+        result_mtilde[k] &= mtilde_minus_1;
     }
 
     for (uint32_t i = 0; i < numBsk; i++) {
