@@ -270,7 +270,11 @@ else()
 endif()
 
 if(ARCHITECTURE)
-  message(STATUS "Architecture is " ${ARCHITECTURE})
+    if (${ARCHITECTURE} MATCHES "i386")
+        message(SEND_ERROR "The " ${ARCHITECTURE} " architecture is not supported")
+    else()
+        message(STATUS "Architecture is " ${ARCHITECTURE})
+    endif()
 endif()
 
 # Size checks
