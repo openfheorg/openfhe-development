@@ -878,13 +878,13 @@ public:
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
                 scf = cryptoParams->GetScalingFactorIntBig(level);
                 p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                    this->GetEncodingParams(), getSchemeId(), 1, level, scf);
+                                                      this->GetEncodingParams(), getSchemeId(), 1, level, scf);
                 p->SetNoiseScaleDeg(2);
             }
             else {
                 scf = cryptoParams->GetScalingFactorInt(level);
                 p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                    this->GetEncodingParams(), getSchemeId(), depth, level, scf);
+                                                      this->GetEncodingParams(), getSchemeId(), depth, level, scf);
             }
         }
         else {
@@ -956,6 +956,27 @@ public:
 
     /**
    * MakeCKKSPackedPlaintext constructs a CKKSPackedEncoding in this context
+   * from a iterator of real numbers
+   * @param begin - begin iterator
+   * @param end - end iterator
+   * @param value - input vector
+   * @paran depth - depth used to encode the vector
+   * @param level - level at each the vector will get encrypted
+   * @param params - parameters to be usef for the ciphertext
+   * @return plaintext
+   */
+    template <class Iterator, typename = typename std::enable_if_t<
+                                  std::is_same<typename std::iterator_traits<Iterator>::value_type, double>::value>>
+    Plaintext MakeCKKSPackedPlaintext(const Iterator begin, const Iterator end, size_t depth = 1, uint32_t level = 0,
+                                      const std::shared_ptr<ParmType> params = nullptr, usint slots = 0) const {
+        std::vector<std::complex<double>> complexValue(end - begin);
+        std::transform(begin, end, complexValue.begin(), [](double da) { return std::complex<double>(da); });
+
+        return MakeCKKSPackedPlaintextInternal(complexValue, depth, level, params, slots);
+    }
+
+    /**
+   * MakeCKKSPackedPlaintext constructs a CKKSPackedEncoding in this context
    * from a vector of real numbers
    * @param value - input vector
    * @paran depth - depth used to encode the vector
@@ -965,11 +986,7 @@ public:
    */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<double>& value, size_t depth = 1, uint32_t level = 0,
                                       const std::shared_ptr<ParmType> params = nullptr, usint slots = 0) const {
-        std::vector<std::complex<double>> complexValue(value.size());
-        std::transform(value.begin(), value.end(), complexValue.begin(),
-                       [](double da) { return std::complex<double>(da); });
-
-        return MakeCKKSPackedPlaintextInternal(complexValue, depth, level, params, slots);
+        return MakeCKKSPackedPlaintext(value.begin(), value.end(), depth, level, params, slots);
     }
 
     /**
