@@ -100,7 +100,6 @@ public:
         OPENFHE_DEBUGEXP(cyclotomic_order);
         OPENFHE_DEBUGEXP(modulus);
         OPENFHE_DEBUGEXP(rootOfUnity);
-        usint numOfTower = 1;
         std::vector<NativeInteger> moduli;
         std::vector<NativeInteger> rootsOfUnity;
 
@@ -115,7 +114,6 @@ public:
                 break;
 
             q = NextPrime(q, cyclotomic_order);
-            numOfTower++;
         }
         originalModulus = modulus;
         OPENFHE_DEBUGEXP(compositeModulus);
