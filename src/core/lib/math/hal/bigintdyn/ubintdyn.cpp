@@ -1200,7 +1200,6 @@ ubint<limb_t> ubint<limb_t>::ModExp(const ubint& b, const ubint& modulus) const 
     ubint product(1);
     ubint Exp(b);
 
-    unsigned int loops = 0;
 #if 1
     while (true) {
         // product is multiplied only if lsb bitvalue is 1
@@ -1216,7 +1215,6 @@ ubint<limb_t> ubint<limb_t>::ModExp(const ubint& b, const ubint& modulus) const 
         }
         mid = mid * mid;
         mid = (mid.Mod(modulus));
-        loops++;
     }
 #else
     while (true) {
@@ -1228,7 +1226,6 @@ ubint<limb_t> ubint<limb_t>::ModExp(const ubint& b, const ubint& modulus) const 
             break;
         }
         mid = (mid.ModMul(mid, modulus));
-        loops++;
     }
 #endif
     return product;
