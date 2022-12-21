@@ -142,7 +142,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
     return result;
 }
 
-// AP Accumulation as described in https://eprint.iacr.org/2020/08
+// AP Accumulation as described in https://eprint.iacr.org/2020/086
 void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
                                       RLWECiphertext& acc) const {
     uint32_t digitsG2 = params->GetDigitsG() << 1;

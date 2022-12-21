@@ -54,7 +54,7 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> para
     return ek;
 }
 
-// Full evaluation as described in https://eprint.iacr.org/2020/08
+// Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
                                         const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const {
     if (ct1 == ct2) {
@@ -112,7 +112,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     }
 }
 
-// Full evaluation as described in https://eprint.iacr.org/2020/08
+// Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
                                       ConstLWECiphertext ct) const {
     LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct);
@@ -537,7 +537,7 @@ RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECrypt
     return acc;
 }
 
-// Full evaluation as described in https://eprint.iacr.org/2020/08
+// Full evaluation as described in https://eprint.iacr.org/2020/086
 template <typename Func>
 LWECiphertext BinFHEScheme::BootstrapFunc(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
                                           ConstLWECiphertext ct, const Func f, const NativeInteger fmod) const {
