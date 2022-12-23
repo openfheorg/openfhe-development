@@ -1050,7 +1050,7 @@ public:
    *
    * @return the precomputed table
    */
-    std::vector<uint16_t> const& GetQHatModmtilde() const {
+    std::vector<uint64_t> const& GetQHatModmtilde() const {
         return m_QHatModmtilde;
     }
 
@@ -1077,7 +1077,7 @@ public:
    *
    * @return the precomputed value
    */
-    uint16_t const& GetNegQInvModmtilde() const {
+    uint64_t const& GetNegQInvModmtilde() const {
         return m_negQInvModmtilde;
     }
 
@@ -1653,7 +1653,7 @@ protected:
     std::vector<std::vector<NativeInteger>> m_qInvModbsk;
 
     // Stores [Q/q_i]_{mtilde}
-    std::vector<uint16_t> m_QHatModmtilde;
+    std::vector<uint64_t> m_QHatModmtilde;
 
     // Stores [Q]_{bsk_j}
     std::vector<NativeInteger> m_QModbsk;
@@ -1661,7 +1661,7 @@ protected:
     std::vector<NativeInteger> m_QModbskPrecon;
 
     // Stores [-Q^{-1}]_{mtilde}
-    uint16_t m_negQInvModmtilde = 0;
+    uint64_t m_negQInvModmtilde = 0;
 
     // Stores [mtilde^{-1}]_{bsk_j}
     std::vector<NativeInteger> m_mtildeInvModbsk;
