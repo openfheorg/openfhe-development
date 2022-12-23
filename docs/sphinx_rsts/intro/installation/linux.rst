@@ -12,8 +12,8 @@ Installing OpenFHE on Linux
         sudo yum install cmake3
         ln -s /usr/bin/cmake3 ~/bin/cmake
 
-    If you need to install a specific version of gcc, do the following (this example is for g++ v7):
-    ``sudo yum install devtoolset-7-gcc-c++``
+    If you need to install a specific version of gcc, do the following (this example is for g++ v10):
+    ``sudo yum install devtoolset-10-gcc-c++``
 
 1. Install pre-requisites (if not already installed) and set the default compiler.
 
@@ -33,9 +33,9 @@ Installing OpenFHE on Linux
 
     Typically g++ is the default compiler for Linux but clang++ can also be installed.
 
-    First install clang++, e.g., ``sudo apt-get install clang-9`` to install clang 9.
+    First install clang++, e.g., ``sudo apt-get install clang-11`` to install clang 11.
 
-    If installing an older version of clang, e.g., v6, you may also need to install OpenMP. The commands for this case are
+    If installing an older version of clang, you may also need to install OpenMP. The commands for this case are
 
     ::
 
@@ -44,12 +44,12 @@ Installing OpenFHE on Linux
         sudo apt-get install libomp-dev
 
 
-    Then run the following two commands to configure clang/clang++ as the default compiler for C and C++ (default paths are used here). For clang 9:
+    Then run the following two commands to configure clang/clang++ as the default compiler for C and C++ (default paths are used here). For clang 11:
 
     ::
 
-        export CC=/usr/bin/clang-9
-        export CXX=/usr/bin/clang++-9
+        export CC=/usr/bin/clang-11
+        export CXX=/usr/bin/clang++-11
 
 
     For a default version of clang, e.g., v6 in Ubuntu 20.04:
@@ -120,13 +120,3 @@ To remove the files built by make, you can execute
         make clean
 
 To change the compiler, e.g., from g++ to clang++, or completely remove any cmake/make build files, delete the "build" folder and recreate it.
-
-Installing pre-requisites for doxygen
--------------------------------------
-
-To generate doxygen documentation, doxygen and graphviz dot need to be installed:
-
-    ::
-
-        sudo apt-get install doxygen
-        sudo apt-get install graphviz

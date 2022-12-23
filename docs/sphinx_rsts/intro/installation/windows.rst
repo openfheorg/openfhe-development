@@ -94,12 +94,3 @@ To remove the files built by make, you can execute
 ::
 
     make clean
-
-Installing pre-requisites for doxygen
--------------------------------------
-To generate doxygen documentation, doxygen and graphviz dot need to be installed:
-
-::
-
-    pacman -S doxygen
-    pacman -S mingw-w64-x86_64-graphviz

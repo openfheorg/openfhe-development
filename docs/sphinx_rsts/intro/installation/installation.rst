@@ -25,7 +25,7 @@ Welcome to the OpenFHE installation instructions! For OS-specific instructions, 
 
 Build Instructions
 ##################
-We use CMake to build OpenFHE.
+We use CMake to build OpenFHE. OpenFHE supports any GNU C++ compiler version 9 or above and clang C++ compiler version 10 or above.
 
 
 1. Install system prerequisites (if not already installed), including a C++ compiler with OMP support, cmake, make.
