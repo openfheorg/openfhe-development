@@ -6,15 +6,15 @@ Homomorphic Encryption
 
 -  Liu, Z., Micciancio, D., and Polyakov, Y., “Large-Precision
    Homomorphic Sign Evaluation using FHEW/TFHE Bootstrapping”,
-   [https://eprint.iacr.org/2021/1337].
+   ASIACRYPT 2022 [https://eprint.iacr.org/2021/1337].
+   
+-  Kim, A., Papadimitriou, A., and Polyakov, Y., “Approximate
+   Homomorphic Encryption with Reduced Approximation Error”,
+   CT-RSA 2022 [https://eprint.iacr.org/2020/1118].
 
 -  Kim, A., Polyakov, Y., and Zucca, V., “Revisiting Homomorphic
    Encryption Schemes for Finite Fields”, ASIACRYPT 2021
    [https://eprint.iacr.org/2021/204].
-
--  Kim, A., Papadimitriou, A., and Polyakov, Y., “Approximate
-   Homomorphic Encryption with Reduced Approximation Error”,
-   [https://eprint.iacr.org/2020/1118].
 
 -  Micciancio, D. and Polyakov, Y., “Bootstrapping in FHEW-like
    Cryptosystems”, WAHC 2021 – 9th Workshop on Encrypted Computing &
@@ -23,12 +23,12 @@ Homomorphic Encryption
 -  Al Badawi, A., Polyakov, Y., Mi Mi Aung, K., Veeravalli, B., and
    Rohloff, K., “Implementation and Performance Evaluation of RNS
    Variants of the BFV Homomorphic Encryption Scheme”, IEEE Transactions
-   on Emerging Topics in Computing (IEEE TETC), to appear
+   on Emerging Topics in Computing (IEEE TETC), 2021, Vol. 9, No. 2., pp. 941-956
    [https://eprint.iacr.org/2018/589].
 
 -  Blatt, M., Gusev, A., Polyakov, Y., Rohloff, K., and Vaikuntanathan,
    V., “Optimized Homomorphic Encryption Solution for Secure Genome-Wide
-   Association Studies”, BMC Medical Genomics, to appear
+   Association Studies”, BMC Medical Genomics, 2020, Vol. 13, Suppl. 7, No. 83
    [https://eprint.iacr.org/2019/223].
 
 -  Halevi, S., Polyakov, Y., and Shoup, V., “An Improved RNS Variant of

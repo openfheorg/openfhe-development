@@ -57,6 +57,8 @@ We gratefully acknowledge intellectual and software contributions to the library
 
 * Daniele Micciancio (University of California San Diego, Duality Technologies)
 
+* Rener Oliveira (BOCOM BBM Bank)
+
 * Antonis Papadimitriou (Duality Technologies)
 
 * Nishanth Pasham (New Jersey Institute of Technology)
@@ -66,6 +68,8 @@ We gratefully acknowledge intellectual and software contributions to the library
 * Yuriy Polyakov (Duality Technologies)
 
 * Ian Quah (Duality Technologies)
+
+* Bastiaan Quast (International Telecommunication Union)
 
 * Saraswathy Ramanathapuram Vancheeswaran (Duality Technologies)
 
