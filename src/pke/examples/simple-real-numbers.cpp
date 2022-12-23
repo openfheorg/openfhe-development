@@ -154,10 +154,13 @@ int main() {
    * right shift and positive to left shift. Look at the output of this demo for
    * an illustration of this.
    *
-   * Keep in mind that rotations work on the entire ring dimension, not the
-   * specified batch size. This means that, if ring dimension is 8 and batch
-   * size is 4, then an input (1,2,3,4,0,0,0,0) rotated by 2 will become
-   * (3,4,0,0,0,0,1,2) and not (3,4,1,2,0,0,0,0). Also, as someone can observe
+   * Keep in mind that rotations work over the batch size or entire ring dimension (if the batch size is not specified).
+   * This means that, if ring dimension is 8 and batch
+   * size is not specified, then an input (1,2,3,4,0,0,0,0) rotated by 2 will become
+   * (3,4,0,0,0,0,1,2) and not (3,4,1,2,0,0,0,0).
+   * If ring dimension is 8 and batch
+   * size is set to 4, then the rotation of (1,2,3,4) by 2 will become (3,4,1,2).
+   * Also, as someone can observe
    * in the output of this demo, since CKKS is approximate, zeros are not exact
    * - they're just very small numbers.
    */

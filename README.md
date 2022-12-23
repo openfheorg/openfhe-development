@@ -12,6 +12,8 @@ OpenFHE also includes the following multiparty extensions of FHE:
   * Threshold FHE for BGV, BFV, and CKKS schemes
   * Proxy Re-Encryption for BGV, BFV, and CKKS schemes
 
+OpenFHE supports any GNU C++ compiler version 9 or above and clang C++ compiler version 10 or above.
+
 ## Links and Resources
 
  * [OpenFHE documentation](https://openfhe-development.readthedocs.io/en/latest/)

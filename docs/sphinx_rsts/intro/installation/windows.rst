@@ -16,7 +16,6 @@ to update all packages (you may need to run it twice as it often fails the first
 
     pacman -S mingw-w64-x86_64-gcc
     pacman -S mingw-w64-x86_64-cmake
-    pacman -S autoconf
     pacman -S make
     pacman -S git
 
@@ -32,7 +31,15 @@ to update all packages (you may need to run it twice as it often fails the first
 
 Note that cmake will check for any system dependencies that are needed for the build process.
 
-4. The OpenFHE distribution includes some external libraries, such as ``GMP`` and ``NTL``. If you want to use any of these libraries, enable them when you run cmake to force them to build (see instructions on cmake options).
+4. The OpenFHE distribution includes some external libraries, such as ``GMP`` and ``NTL``. If you want to use any of these libraries:
+
+    a) install ``autoconf``:
+
+    ::
+
+        pacman -S autoconf
+
+    b) enable them when you run cmake to force them to build (see instructions on cmake options).
 
 5. Build OpenFHE by running the following command (this will take few minutes; using the ``-j <threads>`` make command-line flag is suggested to speed up the build where threads is typically the number of cores or threads on your machine)
 
@@ -87,12 +94,3 @@ To remove the files built by make, you can execute
 ::
 
     make clean
-
-Installing pre-requisites for doxygen
--------------------------------------
-To generate doxygen documentation, doxygen and graphviz dot need to be installed:
-
-::
-
-    pacman -S doxygen
-    pacman -S mingw-w64-x86_64-graphviz

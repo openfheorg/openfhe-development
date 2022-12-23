@@ -18,8 +18,8 @@ endif()
 ### To use gcc/g++ on a Macintosh, you must set the Compilers
 ### here, not inside the project
 ##if(APPLE)
-##       set(CMAKE_C_COMPILER "/usr/local/bin/gcc-7")
-##       set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-7")
+##       set(CMAKE_C_COMPILER "/usr/local/bin/gcc-10")
+##       set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-10")
 ##endif()
 ### TODO: for now, we use CLang for Mac
 
@@ -27,7 +27,7 @@ project (OpenFHE C CXX)
 
 set(OPENFHE_VERSION_MAJOR 1)
 set(OPENFHE_VERSION_MINOR 0)
-set(OPENFHE_VERSION_PATCH 1)
+set(OPENFHE_VERSION_PATCH 2)
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -270,7 +270,11 @@ else()
 endif()
 
 if(ARCHITECTURE)
-  message(STATUS "Architecture is " ${ARCHITECTURE})
+    if (${ARCHITECTURE} MATCHES "i386")
+        message(SEND_ERROR "The " ${ARCHITECTURE} " architecture is not supported")
+    else()
+        message(STATUS "Architecture is " ${ARCHITECTURE})
+    endif()
 endif()
 
 # Size checks
@@ -361,20 +365,21 @@ install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION include/ope
 find_program(TAR "gtar")
 find_program(TAR "tar")
 
-### several of the third-party tools use auto-make and autoconf
-### we need to make sure that they are installed
-execute_process(COMMAND autogen --version OUTPUT_VARIABLE AUTOGEN_VER)
-# execute_process in MINGW by default does not run in a shell
-if(MINGW)
-	execute_process(COMMAND sh autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
-else()
-	execute_process(COMMAND autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
-endif()
+if(WITH_TCM OR WITH_NTL)
+    ### tcmalloc, NTL and GMP require autoconf/automake/libtool to be installed.
+    ### we need to make sure that they are:
+    execute_process(COMMAND autogen --version OUTPUT_VARIABLE AUTOGEN_VER)
+    # execute_process in MINGW by default does not run in a shell
+    if(MINGW)
+	    execute_process(COMMAND sh autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
+    else()
+	    execute_process(COMMAND autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
+    endif()
 
-string(LENGTH "${AUTOCONF_VER}" AUTOCONF_VER_LEN)
-
-if( ${AUTOCONF_VER_LEN} EQUAL 0 )
-	message(SEND_ERROR "Autoconf is not installed.")
+    string(LENGTH "${AUTOCONF_VER}" AUTOCONF_VER_LEN)
+    if( ${AUTOCONF_VER_LEN} EQUAL 0 )
+	    message(SEND_ERROR "Autoconf is not installed.")
+    endif()
 endif()
 
 #--------------------------------------------------------------------
