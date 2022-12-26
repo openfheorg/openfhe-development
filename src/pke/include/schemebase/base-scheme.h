@@ -1292,8 +1292,12 @@ public:
     virtual EvalKey<Element> MultiAddEvalMultKeys(EvalKey<Element> evalKey1, EvalKey<Element> evalKey2,
                                                   const std::string& keyId);
 
-  	virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const;
-
+  	virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+			if (m_Multiparty) {
+					return m_Multiparty->IntMPBootAdjustScale(ciphertext);
+			}
+			OPENFHE_THROW(config_error, "IntMPBootAdjustScale operation has not been enabled");
+  	}
 
     // FHE METHODS
 

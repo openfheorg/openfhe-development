@@ -812,6 +812,11 @@ DecryptResult CryptoContextImpl<DCRTPoly>::MultipartyDecryptFusion(
     return result;
 }
 
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+		return GetScheme()->IntMPBootAdjustScale(ciphertext);
+}
+
 // Function for sharing and recovery of secret for Threshold FHE with aborts
 template <>
 std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk, usint N,

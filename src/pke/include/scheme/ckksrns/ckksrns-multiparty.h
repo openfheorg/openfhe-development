@@ -52,6 +52,8 @@ public:
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
                                           NativePoly* plaintext) const override;
 
+    Ciphertext<DCRTPoly> IntMPBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const override;
+
     /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////

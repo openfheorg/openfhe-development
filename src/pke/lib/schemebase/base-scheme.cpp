@@ -444,17 +444,6 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> SchemeBase<Element>::EvalAuto
     return evalKeyMap;
 }
 
-template <typename Element>
-Ciphertext<Element> SchemeBase<Element>::IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
-    if (m_Multiparty) {
-        CheckMultipartyDecryptCompatibility(ciphertext);
-
-        auto result = m_Multiparty->IntMPBootAdjustScale(ciphertext);
-        return result;
-    }
-    OPENFHE_THROW(config_error, "IntMPBootAdjustScale operation has not been enabled");
-}
-
 template class SchemeBase<DCRTPoly>;
 
 }  // namespace lbcrypto
