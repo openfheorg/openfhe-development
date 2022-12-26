@@ -46,6 +46,7 @@
 #include "key/keypair.h"
 
 #include "schemebase/base-pke.h"
+#include "schemebase/base-scheme.h"
 #include "schemerns/rns-cryptoparameters.h"
 
 #include "utils/caller_info.h"
