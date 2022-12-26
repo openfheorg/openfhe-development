@@ -88,6 +88,8 @@ public:
 
     EvalKey<DCRTPoly> MultiMultEvalKey(PrivateKey<DCRTPoly> privateKey, EvalKey<DCRTPoly> evalKey) const override;
 
+    Ciphertext<DCRTPoly> IntMPBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const override;
+
     /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////

@@ -280,6 +280,15 @@ public:
         const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap1,
         const std::shared_ptr<std::map<usint, EvalKey<Element>>> evalKeyMap2) const;
 
+    /**
+   * Threshold FHE: Prepare a ciphertext for Multi-Party Interactive Bootstrapping
+   *
+	 * @param ciphertext: Input Ciphertext
+	 * @return: Resulting Ciphertext
+   */
+  	virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const;
+
+
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {}
 

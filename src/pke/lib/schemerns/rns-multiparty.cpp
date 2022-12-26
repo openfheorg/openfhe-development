@@ -247,4 +247,74 @@ EvalKey<DCRTPoly> MultipartyRNS::MultiMultEvalKey(PrivateKey<DCRTPoly> privateKe
     return evalKeyResult;
 }
 
+Ciphertext<DCRTPoly> MultipartyRNS::IntMPBootAdjustScale( ConstCiphertext<DCRTPoly> ciphertext) const {
+
+  if (ciphertext->GetElements().size() == 0) {
+     std::string msg =
+ 	  "IntMPBootAdjustScale: no polynomials in the input ciphertext.";
+     OPENFHE_THROW(openfhe_error, msg);
+  }
+
+  const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(ciphertext->GetCryptoParameters());
+
+	auto cc = ciphertext->GetCryptoContext();
+
+	// TODO:: fix this
+//	auto compressionLevel = std::dynamic_pointer_cast<DltCryptoContextImpl
+//			<DCRTPoly>>(cc)->GetMMpIntBootCiphertextCompressionLevel();
+
+	size_t compressionLevel = 3;
+
+	// Compress ctxt and reduce it to numPrimesToKeep towers
+	// 1 is for the message itself (assuming 1 tower (60-bit) for msg)
+	size_t scalingFactorBits = cc->GetEncodingParams()->GetPlaintextModulus();
+	size_t firstModulusSize = std::ceil(std::log2(ciphertext->GetElements()[0].
+				GetAllElements()[0].GetParams()->GetModulus().ConvertToInt()));
+	size_t numTowersToKeep = ( scalingFactorBits / firstModulusSize + 1) + compressionLevel;
+
+#if 0
+  if (cryptoParams->GetRescalingTechnique() == EXACTRESCALE) {
+
+      if (ciphertext->GetElements()[0].GetNumOfElements()<3) {
+	string msg =
+	  "IntMPBootAdjustScale: not enough towers in the input polynomial.";
+	PALISADE_THROW(config_error, msg);
+      }
+
+      auto ciphertextAdjusted = Compress(ciphertext, numTowersToKeep+1);
+
+      double targetSF = cryptoParams->GetScalingFactorOfLevel(0);
+      double sourceSF = ciphertextAdjusted->GetScalingFactor();
+      uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
+      double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers-1]->GetModulus().ConvertToDouble();
+      double adjustmentFactor = (targetSF/sourceSF)*(modToDrop/sourceSF);
+
+      // in the case of EXACTRESCALE, we need to bring the ciphertext to the right scale using a
+      // a scaling multiplication. Note the at currently EXACTRESCALE is only supported for NATIVEINT = 64.
+
+      ciphertextAdjusted = EvalMult(ciphertextAdjusted, adjustmentFactor);
+
+      ciphertextAdjusted = ModReduceInternal(ciphertextAdjusted);
+      ciphertextAdjusted->SetScalingFactor(targetSF);
+      return ciphertextAdjusted;
+
+  } else {
+
+      if (ciphertext->GetElements()[0].GetNumOfElements()<numTowersToKeep) {
+	string msg =
+	  "IntMPBootAdjustScale: not enough towers in the input polynomial.";
+	PALISADE_THROW(palisade_error, msg);
+      }
+
+      return Compress(ciphertext,numTowersToKeep);
+#endif
+
+  if (ciphertext->GetElements()[0].GetNumOfElements()<numTowersToKeep) {
+		std::string msg = "IntMPBootAdjustScale: not enough towers in the input polynomial.";
+		OPENFHE_THROW(openfhe_error, msg);
+	}
+
+  return cc->Compress(ciphertext, numTowersToKeep);
+}
+
 }  // namespace lbcrypto

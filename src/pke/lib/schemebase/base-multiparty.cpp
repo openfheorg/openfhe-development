@@ -424,6 +424,16 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
     return EvalKeyMapSum;
 }
 
+template<class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntMPBootAdjustScale(
+		ConstCiphertext<Element> ciphertext) const {
+
+  std::string msg =
+	"IntMPBootAdjustScale: supports only DCRTPoly as input";
+  OPENFHE_THROW(not_available_error, msg);
+
+}
+
 }  // namespace lbcrypto
 
 // the code below is from base-multiparty-impl.cpp

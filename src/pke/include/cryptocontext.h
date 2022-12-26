@@ -2837,6 +2837,19 @@ public:
     }
 
     /**
+   * Threshold FHE: Prepare a ciphertext for Multi-Party Interactive Bootstrapping.
+   *
+	 * @param ciphertext: Input Ciphertext
+   * @return: Resulting Ciphertext
+   */
+    Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const {
+      if (ciphertext == NULL || this->Mismatched(ciphertext->GetCryptoContext()))
+        OPENFHE_THROW(config_error,
+        		"Information passed to IntMPBootAdjustScale was not generated with this crypto context");
+      return GetScheme()->IntMPBootAdjustScale(ciphertext);
+    }
+
+    /**
    * Threshold FHE: secret sharing of secret key for Aborts
    *
    * @param sk secret key to be shared.
