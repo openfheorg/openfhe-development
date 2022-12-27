@@ -33,6 +33,7 @@
 #define LBCRYPTO_CRYPTO_CKKSRNS_MULTIPARTY_H
 
 #include "schemerns/rns-multiparty.h"
+#include "ckksrns-cryptoparameters.h"
 
 #include <string>
 #include <vector>
@@ -53,6 +54,9 @@ public:
                                           NativePoly* plaintext) const override;
 
     Ciphertext<DCRTPoly> IntMPBootAdjustScale(ConstCiphertext<DCRTPoly> ciphertext) const override;
+
+    Ciphertext<DCRTPoly> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+    		const PublicKey<DCRTPoly> publicKey) const override;
 
     /////////////////////////////////////
     // SERIALIZATION

@@ -2846,6 +2846,15 @@ public:
     Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const;
 
     /**
+   * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping
+   *
+   * @param publicKey: the scheme public key (you can also provide the lead party's public-key)
+   * @return: Resulting ring element
+   */
+  	Ciphertext<Element> IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const;
+
+
+    /**
    * Threshold FHE: secret sharing of secret key for Aborts
    *
    * @param sk secret key to be shared.

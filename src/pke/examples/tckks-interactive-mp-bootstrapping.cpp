@@ -236,7 +236,6 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 	std::cout << "Compressing ctxt to the smallest possible number of towers!\n";
 	inCtxt = cryptoContext->IntMPBootAdjustScale(inCtxt);
 
-#if 0
 	// INTERACTIVE BOOTSTRAPPING STARTS
 
 	std::cout << "\n============================ INTERACTIVE BOOTSTRAPPING STARTS ============================\n";
@@ -246,6 +245,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 	Ciphertext<DCRTPoly> a = cryptoContext->IntMPBootRandomElementGen(parties[0].kpShard.publicKey);
 	std::cout << "Common Random Poly (a) has been generated with coefficient modulus Q\n";
 
+#if 0
 	// Each party generates its own shares: maskedDecryptionShare and reEncryptionShare
 	vector<vector<Ciphertext<DCRTPoly>>> sharesPairVec;
 

@@ -1299,6 +1299,14 @@ public:
 			OPENFHE_THROW(config_error, "IntMPBootAdjustScale operation has not been enabled");
   	}
 
+  	virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> cryptoParameters,
+  			const PublicKey<Element> publicKey) const {
+  		if (m_Multiparty) {
+					return m_Multiparty->IntMPBootRandomElementGen(cryptoParameters, publicKey);
+			}
+			OPENFHE_THROW(config_error, "IntMPBootRandomElementGen operation has not been enabled");
+  	}
+
     // FHE METHODS
 
     // TODO Andrey: do we need this method?

@@ -38,6 +38,7 @@
 #include "cryptocontext-fwd.h"
 #include "ciphertext-fwd.h"
 #include "decrypt-result.h"
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 
 #include <vector>
 #include <memory>
@@ -287,6 +288,15 @@ public:
 	 * @return: Resulting Ciphertext
    */
   	virtual Ciphertext<Element> IntMPBootAdjustScale(ConstCiphertext<Element> ciphertext) const;
+
+    /**
+   * Threshold FHE: Generate a common random polynomial for Multi-Party Interactive Bootstrapping
+   *
+   * @param publicKey: the scheme public key (you can also provide the lead party's public-key)
+   * @return: Resulting ring element
+   */
+  	virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
+  			const PublicKey<Element> publicKey) const;
 
 
     template <class Archive>

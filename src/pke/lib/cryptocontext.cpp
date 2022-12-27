@@ -817,6 +817,12 @@ Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootAdjustScale(ConstCipher
 		return GetScheme()->IntMPBootAdjustScale(ciphertext);
 }
 
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(const PublicKey<Element> publicKey) const {
+		const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(this->GetCryptoParameters());
+		return GetScheme()->IntMPBootRandomElementGen(cryptoParamsCKKS, publicKey);
+}
+
 // Function for sharing and recovery of secret for Threshold FHE with aborts
 template <>
 std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk, usint N,

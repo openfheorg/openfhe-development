@@ -434,6 +434,17 @@ Ciphertext<Element> MultipartyBase<Element>::IntMPBootAdjustScale(
 
 }
 
+template<class Element>
+Ciphertext<Element> MultipartyBase<Element>::IntMPBootRandomElementGen(
+		std::shared_ptr<CryptoParametersCKKSRNS> params,
+		const PublicKey<Element> publicKey) const {
+
+  std::string msg =
+	"IntMPBootRandomElementGen: supports only DCRTPoly as input";
+  OPENFHE_THROW(not_available_error, msg);
+
+}
+
 }  // namespace lbcrypto
 
 // the code below is from base-multiparty-impl.cpp

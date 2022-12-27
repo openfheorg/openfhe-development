@@ -41,6 +41,8 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 #include "ciphertext.h"
 #include "cryptocontext.h"
 
+#include <memory>
+
 namespace lbcrypto {
 
 DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
@@ -168,5 +170,21 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale( ConstCiphertext<DC
 
   return cc->Compress(ciphertext, numTowersToKeep);
 }
+
+Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen( std::shared_ptr<CryptoParametersCKKSRNS> params,
+		const PublicKey<DCRTPoly> publicKey) const {
+
+	auto ildcrtparams = params->GetElementParams();
+	typename DCRTPoly::DugType dug;
+	DCRTPoly crp(dug, ildcrtparams);
+	crp.SetFormat(Format::EVALUATION);
+
+	Ciphertext<DCRTPoly> outCtxt(
+		 std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
+
+	outCtxt->SetElements({ std::move(crp) });
+	return outCtxt;
+}
+
 
 }  // namespace lbcrypto
