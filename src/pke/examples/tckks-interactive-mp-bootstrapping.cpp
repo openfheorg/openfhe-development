@@ -157,6 +157,9 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
   parameters.SetMultiplicativeDepth(8-1);
   parameters.SetKeySwitchTechnique(KeySwitchTechnique::HYBRID);
 
+  uint32_t batchSize = 4;
+  parameters.SetBatchSize(batchSize);
+
   CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
   cryptoContext->Enable(PKE);
@@ -167,9 +170,10 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
   usint ringDim = cryptoContext->GetRingDimension();
   // This is the maximum number of slots that can be used for full packing.
-  usint numSlots = ringDim / 2;
-  std::cout << "TCKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
-  std::cout << "TCKKS scheme number of slots         " << numSlots << std::endl << std::endl;
+  usint maxNumSlots = ringDim / 2;
+  std::cout << "TCKKS scheme is using ring dimension " << ringDim << std::endl;
+  std::cout << "TCKKS scheme number of slots         " << batchSize << std::endl;
+  std::cout << "TCKKS scheme max number of slots     " << maxNumSlots << std::endl;
   std::cout << "TCKKS example with Scaling Technique " << scaleTechStr << std::endl;
 
   const usint numParties = 3; // n: number of parties involved in the interactive protocol

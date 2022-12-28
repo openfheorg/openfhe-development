@@ -506,6 +506,7 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPol
   outCtxt->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
   outCtxt->SetLevel(0);
   outCtxt->SetMetadataMap(ciphertext->GetMetadataMap());
+  outCtxt->SetSlots(ciphertext->GetSlots());
 
   return outCtxt;
 }
