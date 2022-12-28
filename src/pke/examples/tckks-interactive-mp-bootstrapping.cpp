@@ -173,6 +173,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
   std::cout << "TCKKS example with Scaling Technique " << scaleTechStr << std::endl;
 
   const usint numParties = 3; // n: number of parties involved in the interactive protocol
+  // TODO:: fix this
 #if 0
 	// Protocol-specific parameters
 	auto compressionLevel = COMPRESSION_LEVEL::COMPACT;
@@ -260,9 +261,10 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 		sharesPairVec.push_back(parties[i].sharesPair);
 	}
 
-#if 0
+
 	// P0 finalizes the protocol by aggregating the shares and reEncrypting the results
 	auto aggregatedSharesPair = cryptoContext->IntMPBootAdd(sharesPairVec);
+#if 0
 	// Make sure you provide the non-striped ciphertext (inCtxt) in IntMPBootEncrypt
 	auto outCtxt = cryptoContext->IntMPBootEncrypt(parties[0].kpShard.publicKey, aggregatedSharesPair, a, inCtxt);
 

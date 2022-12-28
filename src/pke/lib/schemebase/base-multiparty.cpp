@@ -454,6 +454,17 @@ std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootDecrypt(const
 
 }
 
+template<class Element>
+std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootAdd(
+				std::vector<std::vector<Ciphertext<Element>>> &sharesPairVec) const {
+
+  std::string msg =
+	"IntMPBootAdd: supports only DCRTPoly as input";
+  OPENFHE_THROW(not_available_error, msg);
+
+}
+
+
 }  // namespace lbcrypto
 
 // the code below is from base-multiparty-impl.cpp

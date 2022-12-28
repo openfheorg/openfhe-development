@@ -1315,6 +1315,14 @@ public:
 			OPENFHE_THROW(config_error, "IntMPBootDecrypt operation has not been enabled");
   	}
 
+  	std::vector<Ciphertext<Element>> IntMPBootAdd(
+  	        std::vector<std::vector<Ciphertext<Element>>> &sharesPairVec) const {
+  		if (m_Multiparty) {
+					return m_Multiparty->IntMPBootAdd(sharesPairVec);
+			}
+			OPENFHE_THROW(config_error, "IntMPBootAdd operation has not been enabled");
+  	}
+
     // FHE METHODS
 
     // TODO Andrey: do we need this method?

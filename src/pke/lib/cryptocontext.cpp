@@ -829,6 +829,12 @@ std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootDecrypt(co
 		return GetScheme()->IntMPBootDecrypt(privateKey, ciphertext, a);
 }
 
+template <typename Element>
+std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootAdd(
+			std::vector<std::vector<Ciphertext<Element>>> &sharesPairVec) const {
+		return GetScheme()->IntMPBootAdd(sharesPairVec);
+}
+
 // Function for sharing and recovery of secret for Threshold FHE with aborts
 template <>
 std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk, usint N,

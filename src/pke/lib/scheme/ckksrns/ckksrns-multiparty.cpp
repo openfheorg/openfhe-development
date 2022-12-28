@@ -443,5 +443,24 @@ std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootDecrypt(
 
 }
 
+std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootAdd(std::vector<std::vector<Ciphertext<DCRTPoly>>> &sharesPairVec) const {
+  if (sharesPairVec.size() == 0) {
+     std::string msg =
+ 	  "IntMPBootAdd: no polynomials in input share(s).";
+     OPENFHE_THROW(openfhe_error, msg);
+  }
+
+  std::vector<Ciphertext<DCRTPoly>> result = sharesPairVec[0];
+	for (size_t i = 1 ; i < sharesPairVec.size() ; i++)
+	{
+		// h_0 = h_0,0 + h_0,i
+		result[0]->GetElements()[0] = result[0]->GetElements()[0] + sharesPairVec[i][0]->GetElements()[0];
+		// h_1 = h_1,0 + h_1,i
+		result[1]->GetElements()[0] = result[1]->GetElements()[0] + sharesPairVec[i][1]->GetElements()[0];
+	}
+
+  return result;
+}
+
 
 }  // namespace lbcrypto
