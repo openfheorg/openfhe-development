@@ -245,7 +245,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 	Ciphertext<DCRTPoly> a = cryptoContext->IntMPBootRandomElementGen(parties[0].kpShard.publicKey);
 	std::cout << "Common Random Poly (a) has been generated with coefficient modulus Q\n";
 
-#if 0
+
 	// Each party generates its own shares: maskedDecryptionShare and reEncryptionShare
 	vector<vector<Ciphertext<DCRTPoly>>> sharesPairVec;
 
@@ -260,6 +260,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 		sharesPairVec.push_back(parties[i].sharesPair);
 	}
 
+#if 0
 	// P0 finalizes the protocol by aggregating the shares and reEncrypting the results
 	auto aggregatedSharesPair = cryptoContext->IntMPBootAdd(sharesPairVec);
 	// Make sure you provide the non-striped ciphertext (inCtxt) in IntMPBootEncrypt

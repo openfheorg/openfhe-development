@@ -298,6 +298,18 @@ public:
   	virtual Ciphertext<Element> IntMPBootRandomElementGen(std::shared_ptr<CryptoParametersCKKSRNS> params,
   			const PublicKey<Element> publicKey) const;
 
+  	 /**
+  	* Threshold FHE: Does masked decryption as part of Multi-Party Interactive Bootstrapping.
+  	* Each party calls this function as part of the protocol
+  	*
+  	* @param privateKey: secret key share for party i
+  	* @param ciphertext: input ciphertext
+  	* @param a: input common random polynomial
+  	* @return: Resulting masked decryption
+  	*/
+  	virtual std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
+  	      ConstCiphertext<Element> ciphertext, ConstCiphertext<Element> a) const;
+
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {}

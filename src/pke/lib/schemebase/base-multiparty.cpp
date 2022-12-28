@@ -445,6 +445,15 @@ Ciphertext<Element> MultipartyBase<Element>::IntMPBootRandomElementGen(
 
 }
 
+template<class Element>
+std::vector<Ciphertext<Element>> MultipartyBase<Element>::IntMPBootDecrypt(const PrivateKey<Element> privateKey,
+      ConstCiphertext<Element> ciphertext, ConstCiphertext<Element> a) const {
+  std::string msg =
+	"IntMPBootDecrypt: supports only DCRTPoly as input";
+  OPENFHE_THROW(not_available_error, msg);
+
+}
+
 }  // namespace lbcrypto
 
 // the code below is from base-multiparty-impl.cpp

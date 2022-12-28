@@ -823,6 +823,12 @@ Ciphertext<Element> CryptoContextImpl<Element>::IntMPBootRandomElementGen(const 
 		return GetScheme()->IntMPBootRandomElementGen(cryptoParamsCKKS, publicKey);
 }
 
+template <typename Element>
+std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::IntMPBootDecrypt(const PrivateKey<Element> privateKey,
+      ConstCiphertext<Element> ciphertext, ConstCiphertext<Element> a) const {
+		return GetScheme()->IntMPBootDecrypt(privateKey, ciphertext, a);
+}
+
 // Function for sharing and recovery of secret for Threshold FHE with aborts
 template <>
 std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(const PrivateKey<DCRTPoly>& sk, usint N,

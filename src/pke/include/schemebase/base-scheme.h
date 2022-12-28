@@ -1307,6 +1307,14 @@ public:
 			OPENFHE_THROW(config_error, "IntMPBootRandomElementGen operation has not been enabled");
   	}
 
+  	virtual std::vector<Ciphertext<Element>> IntMPBootDecrypt(const PrivateKey<Element> privateKey,
+  	      ConstCiphertext<Element> ciphertext, ConstCiphertext<Element> a) const {
+  		if (m_Multiparty) {
+					return m_Multiparty->IntMPBootDecrypt(privateKey, ciphertext, a);
+			}
+			OPENFHE_THROW(config_error, "IntMPBootDecrypt operation has not been enabled");
+  	}
+
     // FHE METHODS
 
     // TODO Andrey: do we need this method?
