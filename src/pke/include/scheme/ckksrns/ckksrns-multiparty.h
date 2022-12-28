@@ -64,6 +64,9 @@ public:
     std::vector<Ciphertext<DCRTPoly>> IntMPBootAdd(
         std::vector<std::vector<Ciphertext<DCRTPoly>>> &sharesPairVec) const override;
 
+    Ciphertext<DCRTPoly> IntMPBootEncrypt(const PublicKey<DCRTPoly> publicKey, const std::vector<Ciphertext<DCRTPoly>> &sharesPair,
+                         ConstCiphertext<DCRTPoly> a, ConstCiphertext<DCRTPoly> ciphertext) const override;
+
     /////////////////////////////////////
     // SERIALIZATION
     /////////////////////////////////////

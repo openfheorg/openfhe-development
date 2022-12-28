@@ -1316,11 +1316,19 @@ public:
   	}
 
   	std::vector<Ciphertext<Element>> IntMPBootAdd(
-  	        std::vector<std::vector<Ciphertext<Element>>> &sharesPairVec) const {
+					std::vector<std::vector<Ciphertext<Element>>> &sharesPairVec) const {
   		if (m_Multiparty) {
 					return m_Multiparty->IntMPBootAdd(sharesPairVec);
 			}
 			OPENFHE_THROW(config_error, "IntMPBootAdd operation has not been enabled");
+  	}
+
+    Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey, const std::vector<Ciphertext<Element>> &sharesPair,
+				 ConstCiphertext<Element> a, ConstCiphertext<Element> ciphertext) const {
+  		if (m_Multiparty) {
+					return m_Multiparty->IntMPBootEncrypt(publicKey, sharesPair, a, ciphertext);
+			}
+			OPENFHE_THROW(config_error, "IntMPBootEncrypt operation has not been enabled");
   	}
 
     // FHE METHODS

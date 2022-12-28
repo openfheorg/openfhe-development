@@ -462,5 +462,53 @@ std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootAdd(std::vector<st
   return result;
 }
 
+Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootEncrypt(const PublicKey<DCRTPoly> publicKey, const std::vector<Ciphertext<DCRTPoly>> &sharesPair,
+		 ConstCiphertext<DCRTPoly> a, ConstCiphertext<DCRTPoly> ciphertext) const {
+  if (ciphertext->GetElements().size() == 0) {
+     std::string msg =
+ 	  "IntMPBootEncrypt: no polynomials in the input ciphertext.";
+     OPENFHE_THROW(openfhe_error, msg);
+  }
+
+  auto cc = ciphertext->GetCryptoContext();
+
+	DCRTPoly c0Prime = ciphertext->GetElements()[0] + sharesPair[0]->GetElements()[0];
+  // Init RNS parameters - we generate these params online as of now - should be cheap
+  // Extending Mi parameters:
+  RNSExtensionTables C0ForReEncryptRNSExtTables; // extending c0 from R_q to R_Q
+  PrecomputeRNSExtensionTables(cc, c0Prime.GetAllElements().size(), a->GetElements()[0].GetAllElements().size(), C0ForReEncryptRNSExtTables);
+
+	c0Prime.ExpandCRTBasis(C0ForReEncryptRNSExtTables.paramsQP,
+			C0ForReEncryptRNSExtTables.paramsP,
+			C0ForReEncryptRNSExtTables.QHatInvModq,
+			C0ForReEncryptRNSExtTables.QHatInvModqPrecon,
+			C0ForReEncryptRNSExtTables.QHatModp,
+			C0ForReEncryptRNSExtTables.alphaQModp,
+			C0ForReEncryptRNSExtTables.modpBarrettMu,
+			C0ForReEncryptRNSExtTables.qInv,
+      EVALUATION);
+
+	c0Prime = c0Prime + sharesPair[1]->GetElements()[0];
+
+  Ciphertext<DCRTPoly> outCtxt(
+     std::make_shared<CiphertextImpl<DCRTPoly>>(publicKey));
+
+  outCtxt->SetElements({ std::move(c0Prime), std::move(a->GetElements()[0]) });
+
+  // Ciphertext depth, level, and scaling factor should be
+  // equal to that of the plaintext. However, Encrypt does
+  // not take Plaintext as input (only DCRTPoly), so we
+  // don't have access to these here and we copy them
+  // from the input ciphertext.
+
+  outCtxt->SetEncodingType(ciphertext->GetEncodingType());
+  outCtxt->SetScalingFactor(ciphertext->GetScalingFactor());
+  outCtxt->SetNoiseScaleDeg(ciphertext->GetNoiseScaleDeg());
+  outCtxt->SetLevel(0);
+  outCtxt->SetMetadataMap(ciphertext->GetMetadataMap());
+
+  return outCtxt;
+}
+
 
 }  // namespace lbcrypto

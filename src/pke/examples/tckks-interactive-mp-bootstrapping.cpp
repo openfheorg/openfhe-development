@@ -264,7 +264,6 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
 	// P0 finalizes the protocol by aggregating the shares and reEncrypting the results
 	auto aggregatedSharesPair = cryptoContext->IntMPBootAdd(sharesPairVec);
-#if 0
 	// Make sure you provide the non-striped ciphertext (inCtxt) in IntMPBootEncrypt
 	auto outCtxt = cryptoContext->IntMPBootEncrypt(parties[0].kpShard.publicKey, aggregatedSharesPair, a, inCtxt);
 
@@ -279,58 +278,25 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
 	std::cout << "Party 0 started its part in the collective decryption protocol\n";
 	partialCiphertextVec.push_back(
-			cryptoContext->MultipartyDecryptLead(parties[0].kpShard.secretKey, {outCtxt})[0]
+			cryptoContext->MultipartyDecryptLead({outCtxt}, parties[0].kpShard.secretKey)[0]
 			);
 
 	for (usint i = 1 ; i < numParties ; i++)
 	{
 		std::cout << "Party " << i << " started its part in the collective decryption protocol\n";
-		partialCiphertextVec.push_back( cryptoContext->MultipartyDecryptMain(parties[i].kpShard.secretKey, {outCtxt})[0]
-				);
+		partialCiphertextVec.push_back(
+			cryptoContext->MultipartyDecryptMain({outCtxt}, parties[i].kpShard.secretKey)[0]
+			);
 	}
 
 	// Checking the results
+	std::cout << "MultipartyDecryptFusion ...\n";
 	Plaintext plaintextMultiparty;
 	cryptoContext->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultiparty);
 	plaintextMultiparty->SetLength(msg1.size());
 
 	std::cout << "Original plaintext \n\t" << ptxt1->GetCKKSPackedValue() << std::endl;
 	std::cout << "Result after bootstrapping \n\t" << plaintextMultiparty->GetCKKSPackedValue() << std::endl;
-
-#else
-
-	auto outCtxt = inCtxt;
-
-		// INTERACTIVE BOOTSTRAPPING ENDS
-		std::cout << "\n============================ INTERACTIVE BOOTSTRAPPING ENDED ============================\n";
-
-		// Distributed decryption
-
-		std::cout << "\n============================ INTERACTIVE DECRYPTION STARTED ============================ \n";
-
-		vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
-
-		std::cout << "Party 0 started its part in the collective decryption protocol\n";
-		partialCiphertextVec.push_back(
-				cryptoContext->MultipartyDecryptLead({outCtxt}, parties[0].kpShard.secretKey)[0]
-				);
-
-		for (usint i = 1 ; i < numParties ; i++)
-		{
-			std::cout << "Party " << i << " started its part in the collective decryption protocol\n";
-			partialCiphertextVec.push_back( cryptoContext->MultipartyDecryptMain({outCtxt}, parties[i].kpShard.secretKey)[0]
-					);
-		}
-
-		// Checking the results
-		Plaintext plaintextMultiparty;
-		cryptoContext->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultiparty);
-		plaintextMultiparty->SetLength(msg1.size());
-
-		std::cout << "Original plaintext \n\t" << ptxt1->GetCKKSPackedValue() << std::endl;
-		std::cout << "Result after bootstrapping \n\t" << plaintextMultiparty->GetCKKSPackedValue() << std::endl;
-
-#endif
 
 	std::cout << "\n============================ INTERACTIVE DECRYPTION ENDED ============================\n";
 }

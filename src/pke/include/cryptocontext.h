@@ -2876,6 +2876,21 @@ public:
     std::vector<Ciphertext<Element>> IntMPBootAdd(
           std::vector<std::vector<Ciphertext<Element>>> &sharesPairVec) const;
 
+    /**
+     *  Threshold FHE: Does public key encryption of lead party's masked decryption
+     * as part of interactive multi-party bootstrapping, which increases
+     * the ciphertext modulus and enables future computations.
+     * This operation is done by the lead party as the final step
+     * of interactive multi-party bootstrapping.
+     *
+     * @param publicKey: the lead party's public key
+     * @param sharesPair: aggregated decryption and re-encryption shares
+     * @param a: common random ring element
+     * @param ciphertext: input ciphertext
+     * @return: Resulting encryption
+     */
+    Ciphertext<Element> IntMPBootEncrypt(const PublicKey<Element> publicKey, const std::vector<Ciphertext<Element>> &sharesPair,
+				 ConstCiphertext<Element> a, ConstCiphertext<Element> ciphertext) const;
 
     /**
    * Threshold FHE: secret sharing of secret key for Aborts
