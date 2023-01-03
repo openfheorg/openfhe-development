@@ -1,13 +1,13 @@
 How To Migrate A User Project From Palisade To OpenFHE
 ======================================================
 
-This migration guide describes how to migrate user projects from Palisade to OpenFHE using `src/pke/examples/simple-integers.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers.cpp>`_ as an example.
+This migration guide describes how to migrate user projects from Palisade to OpenFHE The guide uses `src/pke/examples/simple-integers.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers.cpp>`_ as an example.
 
-2 prerequisites for making any changes to simple-integers.cpp:
+Before making any changes to simple-integers.cpp:
 
 - install OpenFHE (see instructions `here <https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html>`_)
 
-- change the ``CMakeLists.User.txt`` (see instructions `here <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/examples#how-to-link-your-own-project-after-having-openfhe-installed>`_)
+- change the ``CMakeLists.User.txt``: replace all instances of **Palisade** with **OpenFHE** and all instances of **PALISADE** with **OPENFHE**
 
 Code changes (in src/pke/examples/simple-integers.cpp):
 
@@ -28,7 +28,7 @@ The parameter object is created using a template and for BFV it should be
 
     CCParams<CryptoContextBGVRNS> parameters;
 
-2. All other changes are mostly cosmetic as some functions are renamed:
+2. All other changes are mostly cosmetic as some types and functions were renamed for simplicity:
 
 - ``KeyPair<DCRTPoly>`` instead of ``LPKeyPair<DCRTPoly>``
 - ``EvalRotateKeyGen()`` instead of ``EvalAtIndexKeyGen()``
@@ -40,9 +40,9 @@ Palisade-OpenFHE type mappings and new parameter types
 ----------------------------------------------------------
 
 .. csv-table:: components
-   :header: "Palisade", "OpenFHE"
+   :header: "In Palisade", "In OpenFHE"
    ^^^^^^^^^^^^^^^^^^^^^
-   **"Arguments to cryptoContext->Enable()"**, ""
+   **"Arguments to cryptoContext->Enable()", ""**
    "ENCRYPTION","PKE"
    "PRE","PRE"
    "SHE","LEVELEDSHE"
@@ -51,24 +51,24 @@ Palisade-OpenFHE type mappings and new parameter types
    "MULTIPARTY","MULTIPARTY"
    "FHE","FHE"
    ^^^^^^^^^^^^^^^^^^^^^
-   **"MODE"**,**"SecretKeyDist"**
+   **"MODE","SecretKeyDist"**
    "RLWE","GAUSSIAN"
    "OPTIMIZED","UNIFORM_TERNARY"
    "SPARSE","SPARSE_TERNARY"
    ^^^^^^^^^^^^^^^^^^^^^
-   **"KeySwitchTechnique"**,**"KeySwitchTechnique"**
+   **"KeySwitchTechnique","KeySwitchTechnique"**
    "HYBRID","HYBRID"
    "BV","BV"
    "GHS","No longer supported"
    ^^^^^^^^^^^^^^^^^^^^^
-   **"RescalingTechnique"**,**"ScalingTechnique"**
+   **"RescalingTechnique","ScalingTechnique"**
    "APPROXRESCALE","FIXEDMANUAL"
    "APPROXAUTO","FIXEDAUTO"
    "EXACTRESCALE","FLEXIBLEAUTO"
    "","FLEXIBLEAUTOEXT (new)"
    "","NORESCALE (new)"
    ^^^^^^^^^^^^^^^^^^^^^
-   **"BFV CryptoContext Call"**,**"MultiplicationTechnique (BFV only)"**
+   **"BFV CryptoContext Call","MultiplicationTechnique (BFV only)"**
    "genCryptoContextBFVrnsB","BEHZ"
    "genCryptoContextBFVrns","HPS"
    "","HPSPOVERQ (new)"
@@ -97,22 +97,22 @@ If your project includes serialization, then the following files are to be inclu
 
 4. … and the scheme-related serialization header file
 
-- CKKS
+- for CKKS
 
 ::
 
     #include "scheme/ckksrns/ckksrns-ser.h"
-- BGV
+- for BGV
 
 ::
 
     #include "scheme/bgvrns/bgvrns-ser.h"
-- BFV
+- for BFV
 
 ::
 
     #include "scheme/bfvrns/bfvrns-ser.h"
 
-See the `difference <https://github.com/openfheorg/openfhe-development/compare/a98984b..e6151ad>`_ in ``simple-integers.cpp`` before and after the migration.
+See the `code difference <https://github.com/openfheorg/migration/compare/dd717a0..a4629a8?diff=split>`_ in ``simple-integers.cpp`` before and after the migration.
 
-For advanced users: openfhe-genomic-examples before and after the migration
+For advanced users: see the `code difference <https://github.com/openfheorg/migration/compare/b25e60e..6b01291?diff=split>`_ in openfhe-genomic-examples before and after the migration.
