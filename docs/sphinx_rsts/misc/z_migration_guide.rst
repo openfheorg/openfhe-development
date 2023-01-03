@@ -1,9 +1,12 @@
 How To Migrate A User Project From Palisade To OpenFHE
-====================================
+======================================================
+
 This migration guide describes how to migrate user projects from Palisade to OpenFHE using `src/pke/examples/simple-integers.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers.cpp>`_ as an example.
 
 2 prerequisites for making any changes to simple-integers.cpp:
+
 - install OpenFHE (see instructions `here <https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html>`_)
+
 - change the ``CMakeLists.User.txt`` (see instructions `here <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/examples#how-to-link-your-own-project-after-having-openfhe-installed>`_)
 
 Code changes (in src/pke/examples/simple-integers.cpp):
@@ -34,7 +37,7 @@ The parameter object is created using a template and for BFV it should be
 After you make all the changes mentioned above, you can link and run the example.
 
 Palisade-OpenFHE type mappings and new parameter types
------------------------------
+----------------------------------------------------------
 
 .. csv-table:: components
    :header: "Palisade", "OpenFHE"
