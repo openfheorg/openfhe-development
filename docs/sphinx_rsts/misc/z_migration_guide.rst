@@ -3,13 +3,13 @@ How To Migrate A User Project From Palisade To OpenFHE
 
 This migration guide describes how to migrate user projects from Palisade to OpenFHE The guide uses `src/pke/examples/simple-integers.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/simple-integers.cpp>`_ as an example.
 
-Before making any changes to simple-integers.cpp:
+Before making any changes to `simple-integers.cpp`:
 
 - install OpenFHE (see instructions `here <https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html>`_)
 
 - change the ``CMakeLists.User.txt``: replace all instances of **Palisade** with **OpenFHE** and all instances of **PALISADE** with **OPENFHE**
 
-Code changes (in src/pke/examples/simple-integers.cpp):
+Code changes (in `src/pke/examples/simple-integers.cpp`):
 
 1. Generate CryptoContext (see instructions `here <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/examples#generating-cryptocontext-using-gencryptocontext>`_).
 You don’t need to set multiple arguments anymore to generate CryptoContext. A separate parameter object is required instead and every parameter in the object has a default value. All default values can be seen by simply printing the object. Set only those parameters that you want to change.
