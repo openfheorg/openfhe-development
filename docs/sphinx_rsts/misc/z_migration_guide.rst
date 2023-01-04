@@ -12,7 +12,7 @@ Before making any changes to simple-integers.cpp:
 Code changes (in src/pke/examples/simple-integers.cpp):
 
 1. Generate CryptoContext (see instructions `here <https://github.com/openfheorg/openfhe-development/tree/main/src/pke/examples#generating-cryptocontext-using-gencryptocontext>`_).
-You don’t need to set multiple arguments in order to generate CryptoContext anymore. A separate object with parameters is required instead with every parameter having a default value. Set only those parameters that you want to change.
+You don’t need to set multiple arguments anymore to generate CryptoContext. A separate parameter object is required instead and every parameter in the object has a default value. All default values can be seen by simply printing the object. Set only those parameters that you want to change.
 For this example we changed 2 of them:
 
 ::
@@ -21,14 +21,13 @@ For this example we changed 2 of them:
     parameters.SetPlaintextModulus(65537);
     parameters.SetMultiplicativeDepth(2);
 
-All default values can be seen by simply printing the object.
 The parameter object is created using a template and for BFV it should be
 
 ::
 
     CCParams<CryptoContextBGVRNS> parameters;
 
-2. All other changes are mostly cosmetic as some types and functions were renamed for simplicity:
+2. All other changes are mostly cosmetic as some types and functions were renamed:
 
 - ``KeyPair<DCRTPoly>`` instead of ``LPKeyPair<DCRTPoly>``
 - ``EvalRotateKeyGen()`` instead of ``EvalAtIndexKeyGen()``
@@ -39,40 +38,63 @@ After you make all the changes mentioned above, you can link and run the example
 Palisade-OpenFHE type mappings and new parameter types
 ----------------------------------------------------------
 
-.. csv-table:: components
-   :header: "In Palisade", "In OpenFHE"
-   ^^^^^^^^^^^^^^^^^^^^^
-   **"Arguments to cryptoContext->Enable()", ""**
-   "ENCRYPTION","PKE"
-   "PRE","PRE"
-   "SHE","LEVELEDSHE"
-   "LEVELEDSHE","LEVELEDSHE"
-   "ADVANCEDSHE","ADVANCEDSHE"
-   "MULTIPARTY","MULTIPARTY"
-   "FHE","FHE"
-   ^^^^^^^^^^^^^^^^^^^^^
-   **"MODE","SecretKeyDist"**
-   "RLWE","GAUSSIAN"
-   "OPTIMIZED","UNIFORM_TERNARY"
-   "SPARSE","SPARSE_TERNARY"
-   ^^^^^^^^^^^^^^^^^^^^^
-   **"KeySwitchTechnique","KeySwitchTechnique"**
-   "HYBRID","HYBRID"
-   "BV","BV"
-   "GHS","No longer supported"
-   ^^^^^^^^^^^^^^^^^^^^^
-   **"RescalingTechnique","ScalingTechnique"**
-   "APPROXRESCALE","FIXEDMANUAL"
-   "APPROXAUTO","FIXEDAUTO"
-   "EXACTRESCALE","FLEXIBLEAUTO"
-   "","FLEXIBLEAUTOEXT (new)"
-   "","NORESCALE (new)"
-   ^^^^^^^^^^^^^^^^^^^^^
-   **"BFV CryptoContext Call","MultiplicationTechnique (BFV only)"**
-   "genCryptoContextBFVrnsB","BEHZ"
-   "genCryptoContextBFVrns","HPS"
-   "","HPSPOVERQ (new)"
-   "","HPSPOVERQLEVELED (new)"
+.. list-table::
+   :header-rows: 1
+
+   * - In Palisade
+     - In OpenFHE
+   * - **Arguments to cryptoContext->Enable()**
+     -
+   * - ENCRYPTION
+     - PKE
+   * - PRE
+     - PRE
+   * - SHE
+     - LEVELEDSHE
+   * - ADVANCEDSHE
+     - ADVANCEDSHE
+   * - MULTIPARTY
+     - MULTIPARTY
+   * - FHE
+     - FHE
+   * - **MODE**
+     - **SecretKeyDist**
+   * - RLWE
+     - GAUSSIAN
+   * - OPTIMIZED
+     - UNIFORM_TERNARY
+   * - SPARSE
+     - SPARSE_TERNARY
+   * - **KeySwitchTechnique**
+     - **KeySwitchTechnique**
+   * - HYBRID
+     - HYBRID
+   * - BV
+     - BV
+   * - GHS
+     - No longer supported
+   * - **RescalingTechnique**
+     - **ScalingTechnique**
+   * - APPROXRESCALE
+     - FIXEDMANUAL
+   * - APPROXAUTO
+     - FIXEDAUTO
+   * - EXACTRESCALE
+     - FLEXIBLEAUTO
+   * - 
+     - FLEXIBLEAUTOEXT (new)
+   * - 
+     - NORESCALE (new)
+   * - **BFV CryptoContext Call**
+     - **MultiplicationTechnique (BFV only)**
+   * - genCryptoContextBFVrnsB
+     - BEHZ
+   * - genCryptoContextBFVrns
+     - HPS
+   * - 
+     - HPSPOVERQ (new)
+   * - 
+     - HPSPOVERQLEVELED (new)
 
 
 If your project includes serialization, then the following files are to be included in addition to “openfhe.h”:
@@ -115,4 +137,4 @@ If your project includes serialization, then the following files are to be inclu
 
 See the `code difference <https://github.com/openfheorg/migration/compare/dd717a0..a4629a8?diff=split>`_ in ``simple-integers.cpp`` before and after the migration.
 
-For advanced users: see the `code difference <https://github.com/openfheorg/migration/compare/b25e60e..6b01291?diff=split>`_ in openfhe-genomic-examples before and after the migration.
+**For advanced users:** see the `code difference <https://github.com/openfheorg/migration/compare/b25e60e..6b01291?diff=split>`_ in ``openfhe-genomic-examples`` before and after the migration.
