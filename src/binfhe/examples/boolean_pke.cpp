@@ -69,25 +69,20 @@ int main() {
     auto ct1 = cc.Encrypt(keyTriple->publicKey, keyTriple->keySwitchingKey, 1);
     auto ct2 = cc.Encrypt(keyTriple->publicKey, keyTriple->keySwitchingKey, 1);
 
-    std::cout << "here in boolean_pke after encrypt" << std::endl;
     // Sample Program: Step 4: Evaluation
 
     // Compute (1 AND 1) = 1; Other binary gate options are OR, NAND, and NOR
     auto ctAND1 = cc.EvalBinGate(AND, ct1, ct2);
 
-    std::cout << "here in boolean_pke after evalbingate" << std::endl;
     // Compute (NOT 1) = 0
     auto ct2Not = cc.EvalNOT(ct2);
 
-    std::cout << "here in boolean_pke after evalnot" << std::endl;
     // Compute (1 AND (NOT 1)) = 0
     auto ctAND2 = cc.EvalBinGate(AND, ct2Not, ct1);
 
-    std::cout << "here in boolean_pke after evalbingate 2" << std::endl;
     // Computes OR of the results in ctAND1 and ctAND2 = 1
     auto ctResult = cc.EvalBinGate(OR, ctAND1, ctAND2);
 
-    std::cout << "here in boolean_pke after evalbingate 3" << std::endl;
     // Sample Program: Step 5: Decryption
 
     LWEPlaintext result;
