@@ -29,10 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _LWE_PRIVATEKEY_H_
-#define _LWE_PRIVATEKEY_H_
+#ifndef _LWE_PUBLICKEY_H_
+#define _LWE_PUBLICKEY_H_
 
-#include "lwe-privatekey-fwd.h"
+#include "lwe-publickey-fwd.h"
 #include "math/hal.h"
 #include "utils/serializable.h"
 
@@ -45,61 +45,70 @@ namespace lbcrypto {
 /**
  * @brief Class that stores the LWE scheme secret key; contains a vector
  */
-class LWEPrivateKeyImpl : public Serializable {
+class LWEPublicKeyImpl : public Serializable {
 public:
-    LWEPrivateKeyImpl() = default;
+    LWEPublicKeyImpl() = default;
 
-    explicit LWEPrivateKeyImpl(const NativeVector& s) : m_s(s) {}
+    //explicit LWEPublicKeyImpl(const std::vector<NativeVector> A, const NativeVector& b) : m_A(A), m_b(b) {}
 
-    explicit LWEPrivateKeyImpl(LWEPrivateKeyImpl& rhs) {
-        this->m_s = rhs.m_s;
+    explicit LWEPublicKeyImpl(LWEPublicKeyImpl&& rhs) {
+        this->m_A = std::move(rhs.m_A);
+        this->m_v = std::move(rhs.m_v);
     }
 
-    explicit LWEPrivateKeyImpl(const LWEPrivateKeyImpl& rhs) {
-        this->m_s = rhs.m_s;
+    explicit LWEPublicKeyImpl(const LWEPublicKeyImpl& rhs) {
+        this->m_A = rhs.m_A;
+        this->m_v = rhs.m_v;
     }
 
-    explicit LWEPrivateKeyImpl(const LWEPrivateKeyImpl&& rhs) {
-        this->m_s = std::move(rhs.m_s);
-    }
-
-    const LWEPrivateKeyImpl& operator=(const LWEPrivateKeyImpl& rhs) {
-        this->m_s = rhs.m_s;
+    const LWEPublicKeyImpl& operator=(const LWEPublicKeyImpl& rhs) {
+        this->m_A = rhs.m_A;
+        this->m_v = rhs.m_v;
         return *this;
     }
 
-    const LWEPrivateKeyImpl& operator=(const LWEPrivateKeyImpl&& rhs) {
-        this->m_s = std::move(rhs.m_s);
+    const LWEPublicKeyImpl& operator=(const LWEPublicKeyImpl&& rhs) {
+        this->m_A = std::move(rhs.m_A);
+        this->m_v = std::move(rhs.m_v);
         return *this;
     }
 
-    const NativeVector& GetElement() const {
-        return m_s;
+    const std::vector<NativeVector>& GetA() const {
+        return m_A;
     }
 
-    void SetElement(const NativeVector& s) {
-        m_s = s;
+    const NativeVector& Getv() const {
+        return m_v;
+    }
+
+    void SetA(const std::vector<NativeVector>& A) {
+        m_A = A;
+    }
+
+    void Setv(const NativeVector& v) {
+        m_v = v;
     }
 
     uint32_t GetLength() const {
-        return m_s.GetLength();
+        return m_v.GetLength();
     }
 
     const NativeInteger& GetModulus() const {
-        return m_s.GetModulus();
+        return m_v.GetModulus();
     }
 
-    bool operator==(const LWEPrivateKeyImpl& other) const {
-        return m_s == other.m_s;
+    bool operator==(const LWEPublicKeyImpl& other) const {
+        return (m_A == other.m_A) && (m_v == other.m_v);
     }
 
-    bool operator!=(const LWEPrivateKeyImpl& other) const {
+    bool operator!=(const LWEPublicKeyImpl& other) const {
         return !(*this == other);
     }
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
-        ar(::cereal::make_nvp("s", m_s));
+        ar(::cereal::make_nvp("A", m_A));
+        ar(::cereal::make_nvp("v", m_v));
     }
 
     template <class Archive>
@@ -109,20 +118,22 @@ public:
                                                  " is from a later version of the library");
         }
 
-        ar(::cereal::make_nvp("s", m_s));
+        ar(::cereal::make_nvp("A", m_A));
+        ar(::cereal::make_nvp("v", m_v));
     }
 
     std::string SerializedObjectName() const {
-        return "LWEPrivateKey";
+        return "LWEPublicKey";
     }
     static uint32_t SerializedVersion() {
         return 1;
     }
 
 private:
-    NativeVector m_s;
+    std::vector<NativeVector> m_A;
+    NativeVector m_v;
 };
 
 }  // namespace lbcrypto
 
-#endif  // _LWE_PRIVATEKEY_H_
+#endif  // _LWE_PUBLICKEY_H_
