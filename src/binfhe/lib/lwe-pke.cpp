@@ -54,20 +54,30 @@ LWEPrivateKey LWEEncryptionScheme::KeyGen(usint size, const NativeInteger& modul
 //LWEKeyTriplet LWEEncryptionScheme::KenGenTriplet(int size, const NativeInteger& modulus) const {
 LWEKeyTriplet LWEEncryptionScheme::KenGenTriplet(const std::shared_ptr<LWECryptoParams> params) const {
     int size = params->GetN();
-    NativeInteger modulus = params->GetQ();
+    NativeInteger modulus = params->GetqKS();//GetQ();
+
     TernaryUniformGeneratorImpl<NativeVector> tug;
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(modulus);
+    
     DiscreteGaussianGeneratorImpl<NativeVector> dgg;
 
     // generate secret vector s
-    auto sk = std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(tug.GenerateVector(size, modulus)));
-    std::vector<NativeVector> A (size);
+    auto skN = std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(tug.GenerateVector(size, modulus)));
+    
+    std::vector<NativeVector> A(size);
 
     // generate random A
     for (int i = 0; i < size; i++) {
-        A[i] = dug.GenerateVector(size);
+        NativeVector a = dug.GenerateVector(size);
+        A[i] = std::move(a);
     }
+    std::cout << "param Q " << modulus << std::endl;
+    std::cout << "param q " << params->Getq()<< std::endl;
+    std::cout << "param N " << size << std::endl;
+    std::cout << "param n " << params->Getn() << std::endl;
+
+    
 
     // generate error vector e
     NativeVector e = dgg.GenerateVector(size, modulus);
@@ -77,7 +87,7 @@ LWEKeyTriplet LWEEncryptionScheme::KenGenTriplet(const std::shared_ptr<LWECrypto
 
     NativeVector v = e;
 
-    NativeVector ske = sk->GetElement();
+    NativeVector ske = skN->GetElement();
     for (int j = 0; j < size; ++j) {
         for (int i = 0; i < size; ++i) {
             v[j] += A[j][i].ModMulFast(ske[i], modulus, mu);
@@ -85,21 +95,17 @@ LWEKeyTriplet LWEEncryptionScheme::KenGenTriplet(const std::shared_ptr<LWECrypto
         v[j].ModEq(modulus);
     }
 
-    std::cout << "here in keygentriple before setting A" << std::endl;
+    LWEPublicKeyImpl Av(A, v);
+    //Av->SetA(A);
+    //Av->Setv(v);
 
-    LWEPublicKey Av;
-    Av->SetA(A);
+    auto Avs = std::make_shared<LWEPublicKeyImpl>(Av);
 
-    std::cout << "here in keygentriple after setting A" << std::endl;
-    Av->Setv(v);
-
-    std::cout << "here in keygentriple after setting v" << std::endl;
     LWEPrivateKey skn = KeyGen(params->Getn(), params->Getq());
 
-    auto ksKey = KeySwitchGen(params, sk, skn);
+    auto ksKey = KeySwitchGen(params, skN, skn);
 
-    std::cout << "here in keygentriple after key switchgen" << std::endl;
-    auto lweKeyTriplet = LWEKeyTripletImpl(Av, skn, ksKey);
+    auto lweKeyTriplet = LWEKeyTripletImpl(Avs, skn, ksKey);
     // return the public key (A, v), private key sk pair
     return std::make_shared<LWEKeyTripletImpl>(lweKeyTriplet);
 }
@@ -151,11 +157,11 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
-    //NativeVector s = sk->GetElement();
     NativeVector bp = pk->Getv();
     std::vector<NativeVector> A = pk->GetA();
 
     uint32_t N     = bp.GetLength();
+    std::cout << "length of v in encrypt " << N << std::endl;
     bp.SwitchModulus(mod); // todo : this is probably not required
 
     auto dgg = params->GetDgg();
