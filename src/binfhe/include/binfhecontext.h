@@ -135,6 +135,14 @@ public:
    * @return a shared pointer to the secret key
    */
     LWEPrivateKey KeyGen() const;
+  
+    /**
+   * Generates a public key, secret key pair and key switching key for the main LWE scheme
+   *
+   * @return a shared pointer to the public key, secret key pair
+   */
+
+    LWEKeyTriplet KenGenTriplet() const;
 
     /**
    * Generates a secret key used in bootstrapping
@@ -156,6 +164,20 @@ public:
     LWECiphertext Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHE_OUTPUT output = BOOTSTRAPPED,
                           LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
 
+    /**
+   * Encrypts a bit using a public key (public key encryption)
+   *
+   * @param pk - the public key
+   * @param &m - the plaintext
+   * @param output - FRESH to generate fresh ciphertext, BOOTSTRAPPED to
+   * generate a refreshed ciphertext (default)
+   * @param p - plaintext modulus
+   * @param mod Encrypt according to mod instead of m_q if mod != 0
+   * @return a shared pointer to the ciphertext
+   */
+    LWECiphertext Encrypt(ConstLWEPublicKey pk, ConstLWESwitchingKey ksk, const LWEPlaintext& m, BINFHE_OUTPUT output = BOOTSTRAPPED,
+                          LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
+                    
     /**
    * Decrypts a ciphertext using a secret key
    *
