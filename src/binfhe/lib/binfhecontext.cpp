@@ -183,6 +183,12 @@ LWEPrivateKey BinFHEContext::KeyGen() const {
     return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
 }
 
+LWEKeyTriplet BinFHEContext::KenGenTriplet() const {
+    auto& LWEParams = m_params->GetLWEParams();
+    return m_LWEscheme->KenGenTriplet(LWEParams);
+    //return m_LWEscheme->KenGenTriplet(LWEParams->GetN(), LWEParams->GetQ());
+}
+
 LWEPrivateKey BinFHEContext::KeyGenN() const {
     auto& LWEParams = m_params->GetLWEParams();
     return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
@@ -195,6 +201,22 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& 
     if (mod == 0)
         mod = q;
     LWECiphertext ct = m_LWEscheme->Encrypt(LWEParams, sk, m, p, mod);
+
+    if ((output != FRESH) && (p == 4)) {
+        ct = m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
+    }
+
+    return ct;
+}
+
+LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey pk, ConstLWESwitchingKey ksk, const LWEPlaintext& m, BINFHE_OUTPUT output,
+                                     LWEPlaintextModulus p, NativeInteger mod) const {
+    auto& LWEParams = m_params->GetLWEParams();
+    auto Q          = LWEParams->GetQ();
+    if (mod == 0)
+        mod = Q;
+
+    LWECiphertext ct = m_LWEscheme->Encrypt(LWEParams, pk, ksk, m, p, mod);
 
     if ((output != FRESH) && (p == 4)) {
         ct = m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
