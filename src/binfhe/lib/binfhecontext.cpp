@@ -183,10 +183,10 @@ LWEPrivateKey BinFHEContext::KeyGen() const {
     return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
 }
 
-LWEKeyTriple BinFHEContext::KenGenTriple() const {
+LWEKeyTriplet BinFHEContext::KenGenTriplet() const {
     auto& LWEParams = m_params->GetLWEParams();
-    return m_LWEscheme->KenGenTriple(LWEParams);
-    //return m_LWEscheme->KenGenTriple(LWEParams->GetN(), LWEParams->GetQ());
+    return m_LWEscheme->KenGenTriplet(LWEParams);
+    //return m_LWEscheme->KenGenTriplet(LWEParams->GetN(), LWEParams->GetQ());
 }
 
 LWEPrivateKey BinFHEContext::KeyGenN() const {

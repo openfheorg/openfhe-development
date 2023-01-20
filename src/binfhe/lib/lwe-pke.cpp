@@ -51,32 +51,25 @@ LWEPrivateKey LWEEncryptionScheme::KeyGen(usint size, const NativeInteger& modul
 }
 
 // size is the ring dimension N, modulus is the large Q used in RGSW encryption of bootstrapping.
-//LWEKeyTriple LWEEncryptionScheme::KenGenTriple(int size, const NativeInteger& modulus) const {
-LWEKeyTriple LWEEncryptionScheme::KenGenTriple(const std::shared_ptr<LWECryptoParams> params) const {
+//LWEKeyTriplet LWEEncryptionScheme::KenGenTriplet(int size, const NativeInteger& modulus) const {
+LWEKeyTriplet LWEEncryptionScheme::KenGenTriplet(const std::shared_ptr<LWECryptoParams> params) const {
     int size = params->GetN();
-    //NativeInteger modulus = params->GetqKS();
     NativeInteger modulus = params->GetQ();
-
-    // generate secret vector s
-    auto skN = KeyGen(size, modulus);
-    
+    TernaryUniformGeneratorImpl<NativeVector> tug;
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(modulus);
-    std::vector<NativeVector> A(size);
+    DiscreteGaussianGeneratorImpl<NativeVector> dgg;
+
+    // generate secret vector s
+    auto sk = std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(tug.GenerateVector(size, modulus)));
+    std::vector<NativeVector> A (size);
 
     // generate random A
     for (int i = 0; i < size; i++) {
-        NativeVector a = dug.GenerateVector(size);
-        A[i] = std::move(a);
+        A[i] = dug.GenerateVector(size);
     }
-    std::cout << "param Q " << modulus << std::endl;
-    std::cout << "param qKS " << params->GetqKS()<< std::endl;
-    std::cout << "param q " << params->Getq()<< std::endl;
-    std::cout << "param N " << size << std::endl;
-    std::cout << "param n " << params->Getn() << std::endl;
 
     // generate error vector e
-    DiscreteGaussianGeneratorImpl<NativeVector> dgg;
     NativeVector e = dgg.GenerateVector(size, modulus);
 
     // compute b = As + e
@@ -84,30 +77,31 @@ LWEKeyTriple LWEEncryptionScheme::KenGenTriple(const std::shared_ptr<LWECryptoPa
 
     NativeVector v = e;
 
-
-    //std::cout << "error in keygen N " << e << std::endl;
-    NativeVector ske = skN->GetElement();
+    NativeVector ske = sk->GetElement();
     for (int j = 0; j < size; ++j) {
         for (int i = 0; i < size; ++i) {
-            v[j] += A[i][j].ModMulFast(ske[i], modulus, mu);
+            v[j] += A[j][i].ModMulFast(ske[i], modulus, mu);
         }
         v[j].ModEq(modulus);
     }
 
-    LWEPublicKeyImpl Av(A, v);
-    //Av->SetA(A);
-    //Av->Setv(v);
+    std::cout << "here in keygentriple before setting A" << std::endl;
 
-    auto Avs = std::make_shared<LWEPublicKeyImpl>(Av);
+    LWEPublicKey Av;
+    Av->SetA(A);
 
+    std::cout << "here in keygentriple after setting A" << std::endl;
+    Av->Setv(v);
+
+    std::cout << "here in keygentriple after setting v" << std::endl;
     LWEPrivateKey skn = KeyGen(params->Getn(), params->Getq());
 
-    auto ksKey = KeySwitchGen(params, skn, skN);//skN, skn);
+    auto ksKey = KeySwitchGen(params, sk, skn);
 
-    auto lweKeyTriple = LWEKeyTripleImpl(Avs, skn, ksKey); //correct one
-
-    // return the public key (A, v), private key sk pair and key switching key from skN to skn
-    return std::make_shared<LWEKeyTripleImpl>(lweKeyTriple);
+    std::cout << "here in keygentriple after key switchgen" << std::endl;
+    auto lweKeyTriplet = LWEKeyTripletImpl(Av, skn, ksKey);
+    // return the public key (A, v), private key sk pair
+    return std::make_shared<LWEKeyTripletImpl>(lweKeyTriplet);
 }
 
 // classical LWE encryption
@@ -157,6 +151,7 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
+    //NativeVector s = sk->GetElement();
     NativeVector bp = pk->Getv();
     std::vector<NativeVector> A = pk->GetA();
 
@@ -193,13 +188,15 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     b.ModEq(mod);
 
     auto ctExt = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
-
+    //using larger modulus
+    //**************to edit **********
     // Modulus switching to a middle step Q'
     auto ctMS = ModSwitch(params->GetqKS(), ctExt);
     // Key switching
     auto ctKS = KeySwitch(params, ksk, ctMS);
     // Modulus switching
     return ModSwitch(params->Getq(), ctKS);
+    //*****************
 }
 
 // classical LWE decryption

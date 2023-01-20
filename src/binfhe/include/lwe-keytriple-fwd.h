@@ -34,10 +34,10 @@
 #include <memory>
 
 namespace lbcrypto {
-class LWEKeyTripleImpl;
+class LWEKeyTripletImpl;
 
-using LWEKeyTriple      = std::shared_ptr<LWEKeyTripleImpl>;
-using ConstLWEKeyTriple = const std::shared_ptr<const LWEKeyTripleImpl>;
+using LWEKeyTriplet      = std::shared_ptr<LWEKeyTripletImpl>;
+using ConstLWEKeyTriplet = const std::shared_ptr<const LWEKeyTripletImpl>;
 }  // namespace lbcrypto
 
 #endif  // __LWE_KEYTRIPLE_FWD_H__
