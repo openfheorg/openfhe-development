@@ -48,20 +48,20 @@ namespace lbcrypto {
 /**
  * @brief Class that stores the LWE scheme secret key, public key pair; ((A, b), s)
  */
-class LWEKeyTripletImpl {
+class LWEKeyTripleImpl {
 public:
     LWEPublicKey publicKey;
     LWEPrivateKey secretKey;
     LWESwitchingKey keySwitchingKey; // key switching key from skN to skn
 
-    LWEKeyTripletImpl(LWEPublicKey Av, LWEPrivateKey s, LWESwitchingKey ksKey) : publicKey(Av), secretKey(s), keySwitchingKey(ksKey) {}
+    LWEKeyTripleImpl(LWEPublicKey Av, LWEPrivateKey s, LWESwitchingKey ksKey) : publicKey(Av), secretKey(s), keySwitchingKey(ksKey) {}
 
-//    LWEKeyTripletImpl(LWEPublicKey Av, LWEPrivateKey s) {
+//    LWEKeyTripleImpl(LWEPublicKey Av, LWEPrivateKey s) {
 //        publicKey = Av;
 //        secretKey = s;
 //    } 
 
-    //explicit LWEKeyTripletImpl(LWEPublicKey* Av = nullptr, LWEPrivateKey* s = nullptr)
+    //explicit LWEKeyTripleImpl(LWEPublicKey* Av = nullptr, LWEPrivateKey* s = nullptr)
     //    : publicKey(Av), secretKey(s) {}
 
     bool good() {
