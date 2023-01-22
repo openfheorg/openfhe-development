@@ -170,77 +170,12 @@ public:
     }
 
     /**
-     * This Params' constructor is to be used for unittests only.
+     * This Params' constructor "explicit Params(const std::vector<std::string>& vals)" is to be used by unittests only.
      *
      * @param vals - vector with override values. sequence of vals' elements must be the same as we get it from getAllParamsDataMembers()
-     * @return a vector with names of all data members of Params
      */
-    explicit Params(const std::vector<std::string>& vals) {
-        if (getAllParamsDataMembers().size() != vals.size()) {
-            std::string errMsg(std::string("The number of data members and the number of values do not match: ") +
-                               std::to_string(getAllParamsDataMembers().size()) + " != " + std::to_string(vals.size()));
-            OPENFHE_THROW(config_error, errMsg);
-        }
-
-        auto it = vals.begin();
-        SetToDefaults(convertToSCHEME(*it));
-
-        if (!(++it)->empty())
-            ptModulus = static_cast<PlaintextModulus>(std::stoul(*it));
-        if (!(++it)->empty())
-            digitSize = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            standardDeviation = static_cast<float>(std::stof(*it));
-        if (!(++it)->empty())
-            secretKeyDist = convertToSecretKeyDist(*it);
-        if (!(++it)->empty())
-            maxRelinSkDeg = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            ksTech = convertToKeySwitchTechnique(*it);
-        if (!(++it)->empty())
-            scalTech = convertToScalingTechnique(*it);
-        if (!(++it)->empty())
-            firstModSize = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            batchSize = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            numLargeDigits = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            multiplicativeDepth = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            scalingModSize = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            securityLevel = convertToSecurityLevel(*it);
-        if (!(++it)->empty())
-            ringDim = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            evalAddCount = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            keySwitchCount = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            encryptionTechnique = convertToEncryptionTechnique(*it);
-        if (!(++it)->empty())
-            multiplicationTechnique = convertToMultiplicationTechnique(*it);
-        if (!(++it)->empty())
-            multiHopModSize = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            PREMode = convertToProxyReEncryptionMode(*it);
-        if (!(++it)->empty())
-            multipartyMode = convertToMultipartyMode(*it);
-        if (!(++it)->empty())
-            executionMode = convertToExecutionMode(*it);
-        if (!(++it)->empty())
-            decryptionNoiseMode = convertToDecryptionNoiseMode(*it);
-        if (!(++it)->empty())
-            noiseEstimate = std::stod(*it);
-        if (!(++it)->empty())
-            desiredPrecision = std::stod(*it);
-        if (!(++it)->empty())
-            statisticalSecurity = static_cast<usint>(std::stoul(*it));
-        if (!(++it)->empty())
-            numAdversarialQueries = static_cast<usint>(std::stoul(*it));
-    }
-
+    explicit Params(const std::vector<std::string>& vals);
+    
     Params(const Params& obj) = default;
     Params(Params&& obj)      = default;
 
