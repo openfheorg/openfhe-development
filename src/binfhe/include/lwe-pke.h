@@ -67,8 +67,8 @@ public:
    * @param params a shared pointer to LWE scheme parameters
    * @return a shared pointer to the public key, secret key pair
    */
-    //LWEKeyTriplet KenGenTriplet(int size, const NativeInteger& modulus) const;
-    LWEKeyTriplet KenGenTriplet(const std::shared_ptr<LWECryptoParams> params) const;
+    //LWEKeyTriple KenGenTriple(int size, const NativeInteger& modulus) const;
+    LWEKeyTriple KenGenTriple(const std::shared_ptr<LWECryptoParams> params) const;
 
     /**
    * Encrypts a bit using a secret key (symmetric key encryption)
