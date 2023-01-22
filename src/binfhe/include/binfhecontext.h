@@ -142,7 +142,7 @@ public:
    * @return a shared pointer to the public key, secret key pair
    */
 
-    LWEKeyTriplet KenGenTriplet() const;
+    LWEKeyTriple KenGenTriple() const;
 
     /**
    * Generates a secret key used in bootstrapping
