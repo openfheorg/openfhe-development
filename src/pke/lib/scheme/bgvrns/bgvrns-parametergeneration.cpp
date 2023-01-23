@@ -263,7 +263,6 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                       usint numPrimes) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
-    const auto cryptoParamsRNS    = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParams);
 
     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS->GetKeySwitchTechnique();
     ProxyReEncryptionMode PREMode = cryptoParamsBGVRNS->GetPREMode();
@@ -319,6 +318,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     }
     // set the flooding distribution parameter to the distribution.
     dggFlooding.SetStd(noise_param);
+    const auto cryptoParamsRNS = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParams);
     cryptoParamsRNS->SetFloodingDistributionParameter(noise_param);
 }
 
