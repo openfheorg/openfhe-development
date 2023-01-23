@@ -65,7 +65,8 @@ Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphert
         Element enf(cryptoParams->GetFloodingDiscreteGaussianGenerator(), cryptoParams->GetElementParams(),
                     Format::EVALUATION);
 
-        cv[0] += enf;
+        auto noise_scale = cryptoParams->GetPlaintextModulus();
+        cv[0] += noise_scale * enf;
     }
     algo->KeySwitchInPlace(result, evalKey);
 

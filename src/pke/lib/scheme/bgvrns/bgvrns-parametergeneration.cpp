@@ -263,6 +263,7 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                                                       usint numPrimes) const {
     const auto cryptoParamsBGVRNS = std::dynamic_pointer_cast<CryptoParametersBGVRNS>(cryptoParams);
+    const auto cryptoParamsRNS    = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParams);
 
     KeySwitchTechnique ksTech     = cryptoParamsBGVRNS->GetKeySwitchTechnique();
     ProxyReEncryptionMode PREMode = cryptoParamsBGVRNS->GetPREMode();
@@ -279,8 +280,8 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     // and is 1 if the secret is sampled from ternary distribution.
     double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
 
-    double stat_sec    = cryptoParamsBGVRNS->GetStatisticalSecurity();
-    double num_queries = cryptoParamsBGVRNS->GetNumAdversarialQueries();
+    double stat_sec_half = cryptoParamsBGVRNS->GetStatisticalSecurity() / 2;
+    double num_queries   = cryptoParamsBGVRNS->GetNumAdversarialQueries();
 
     // get the flooding discrete gaussian distribution
     auto dggFlooding   = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
@@ -292,7 +293,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
         if (ksTech == BV) {
             if (r > 0) {
                 // sqrt(12*num_queries) factor required for security analysis
-                noise_param = sqrt(12 * num_queries) * pow(2, stat_sec) * (1 + 2 * Bkey) * numPrimes *
+                noise_param = sqrt(12 * num_queries) * pow(2, stat_sec_half) * (1 + 2 * Bkey) * numPrimes *
                               (auxBits / r + 1) * sqrt(ringDimension) * (pow(2, r) - 1) * B_e;
             }
             else {
@@ -306,7 +307,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
                 noise_param              = numTowersPerDigit * numDigits * sqrt(ringDimension) * B_e * (1 + 2 * Bkey);
                 noise_param += auxBits * (1 + sqrt(ringDimension) * Bkey);
                 // sqrt(12*num_queries) factor required for security analysis
-                noise_param = sqrt(12 * num_queries) * pow(2, stat_sec) * noise_param;
+                noise_param = sqrt(12 * num_queries) * pow(2, stat_sec_half) * noise_param;
             }
             else {
                 OPENFHE_THROW(config_error, "Relinwindow value can only  be zero for Hybrid keyswitching");
@@ -318,6 +319,7 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     }
     // set the flooding distribution parameter to the distribution.
     dggFlooding.SetStd(noise_param);
+    cryptoParamsRNS->SetFloodingDistributionParameter(noise_param);
 }
 
 bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
