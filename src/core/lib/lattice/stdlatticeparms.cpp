@@ -38,6 +38,20 @@
 
 namespace lbcrypto {
 
+SecurityLevel convertToSecurityLevel(const std::string& str) {
+    if (str == "HEStd_128_classic")
+        return HEStd_128_classic;
+    else if (str == "HEStd_192_classic")
+        return HEStd_192_classic;
+    else if (str == "HEStd_256_classic")
+        return HEStd_256_classic;
+    else if (str == "HEStd_NotSet")
+        return HEStd_NotSet;
+
+    std::string errMsg(std::string("Unknown SecurityLevel ") + str);
+    OPENFHE_THROW(config_error, errMsg);
+}
+
 std::map<usint, StdLatticeParm*> StdLatticeParm::byRing[3][3];
 std::map<usint, StdLatticeParm*> StdLatticeParm::byLogQ[3][3];
 

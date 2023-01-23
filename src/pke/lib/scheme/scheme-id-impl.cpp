@@ -40,6 +40,18 @@
 
 namespace lbcrypto {
 
+SCHEME convertToSCHEME(const std::string& str) {
+    if (str == "CKKSRNS_SCHEME")
+        return CKKSRNS_SCHEME;
+    else if (str == "BFVRNS_SCHEME")
+        return BFVRNS_SCHEME;
+    else if (str == "BGVRNS_SCHEME")
+        return BGVRNS_SCHEME;
+
+    std::string errMsg(std::string("Unknown schemeId ") + str);
+    OPENFHE_THROW(config_error, errMsg);
+}
+
 std::ostream& operator<<(std::ostream& os, SCHEME schemeId) {
     switch (schemeId) {
         case CKKSRNS_SCHEME:

@@ -38,6 +38,9 @@
 
 #include "scheme/cryptocontextparams-base.h"
 
+#include <string>
+#include <vector>
+
 namespace lbcrypto {
 
 class CryptoContextBGVRNS;
@@ -52,6 +55,7 @@ template <>
 class CCParams<CryptoContextBGVRNS> : public Params {
 public:
     CCParams() : Params(BGVRNS_SCHEME) {}
+    explicit CCParams(const std::vector<std::string>& vals) : Params(vals) {}
     CCParams(const CCParams& obj) = default;
     CCParams(CCParams&& obj)      = default;
 };

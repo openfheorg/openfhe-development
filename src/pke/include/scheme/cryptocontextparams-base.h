@@ -45,6 +45,8 @@
 #include "constants.h"
 
 #include <iosfwd>
+#include <string>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -111,11 +113,11 @@ class Params {
 
     // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
     // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
-    uint32_t statisticalSecurity;
+    usint statisticalSecurity;
 
     // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
     // security of CKKS in NOISE_FLOODING_DECRYPT mode.
-    uint32_t numAdversarialQueries;
+    usint numAdversarialQueries;
 
     // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
@@ -167,13 +169,57 @@ public:
         SetToDefaults(scheme0);
     }
 
+    /**
+     * This Params' constructor "explicit Params(const std::vector<std::string>& vals)" is to be used by unittests only.
+     *
+     * @param vals - vector with override values. sequence of vals' elements must be the same as we get it from getAllParamsDataMembers()
+     */
+    explicit Params(const std::vector<std::string>& vals);
+    
     Params(const Params& obj) = default;
     Params(Params&& obj)      = default;
 
     Params& operator=(const Params& obj) = default;
-    Params& operator=(Params&& obj)      = default;
+    Params& operator=(Params&& obj) = default;
 
     ~Params() = default;
+
+    /**
+     * getAllParamsDataMembers() returns names of all data members of Params and the scheme enum ALWAYS goes first.
+     * This function is meant for unittests only and holds the correct sequence of the parameters/column names.
+     *
+     * @return a vector with names of all data members of Params
+     */
+    static std::vector<std::string> getAllParamsDataMembers() {
+        return {"scheme",
+                "ptModulus",
+                "digitSize",
+                "standardDeviation",
+                "secretKeyDist",
+                "maxRelinSkDeg",
+                "ksTech",
+                "scalTech",
+                "firstModSize",
+                "batchSize",
+                "numLargeDigits",
+                "multiplicativeDepth",
+                "scalingModSize",
+                "securityLevel",
+                "ringDim",
+                "evalAddCount",
+                "keySwitchCount",
+                "encryptionTechnique",
+                "multiplicationTechnique",
+                "multiHopModSize",
+                "PREMode",
+                "multipartyMode",
+                "executionMode",
+                "decryptionNoiseMode",
+                "noiseEstimate",
+                "desiredPrecision",
+                "statisticalSecurity",
+                "numAdversarialQueries"};
+    }
 
     // getters
     SCHEME GetScheme() const {
