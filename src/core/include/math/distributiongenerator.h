@@ -45,7 +45,7 @@
 #include "math/hal.h"
 #include "utils/prng/blake2engine.h"
 
-// #define FIXED_SEED // if defined, then uses a fixed seed number for
+ #define FIXED_SEED // if defined, then uses a fixed seed number for
 // reproducible results during debug. Use only one OMP thread to ensure
 // reproducibility
 

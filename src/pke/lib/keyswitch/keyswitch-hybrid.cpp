@@ -405,6 +405,11 @@ DCRTPoly KeySwitchHYBRID::KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ci
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(DCRTPoly a,
                                                                       const EvalKey<DCRTPoly> evalKey) const {
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
     const auto cryptoParamsBase                   = evalKey->GetCryptoParameters();
     std::shared_ptr<std::vector<DCRTPoly>> digits = EvalKeySwitchPrecomputeCore(a, cryptoParamsBase);
     std::shared_ptr<std::vector<DCRTPoly>> result = EvalFastKeySwitchCore(digits, evalKey, a.GetParams());
@@ -413,6 +418,11 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(DCRTPoly a
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
     DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParamsBase);
 
     const std::shared_ptr<ParmType> paramsQl  = c.GetParams();
@@ -503,6 +513,13 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
     const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
     const std::shared_ptr<ParmType> paramsQl) const {
+
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
+
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
 
     std::shared_ptr<std::vector<DCRTPoly>> cTilda = EvalFastKeySwitchCoreExt(digits, evalKey, paramsQl);
@@ -527,6 +544,13 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCore(
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt(
     const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
     const std::shared_ptr<ParmType> paramsQl) const {
+
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
+
     const auto cryptoParams         = std::dynamic_pointer_cast<CryptoParametersRNS>(evalKey->GetCryptoParameters());
     const std::vector<DCRTPoly>& bv = evalKey->GetBVector();
     const std::vector<DCRTPoly>& av = evalKey->GetAVector();

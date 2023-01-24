@@ -198,6 +198,12 @@ void NativeVectorT<IntegerType>::SetModulus(const IntegerType& value) {
  */
 template <class IntegerType>
 void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& newModulus) {
+
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
     IntegerType oldModulus(this->m_modulus);
     IntegerType oldModulusByTwo(oldModulus >> 1);
     IntegerType diff((oldModulus > newModulus) ? (oldModulus - newModulus) : (newModulus - oldModulus));
@@ -218,6 +224,10 @@ void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& newModulus) {
         }
     }
     this->SetModulus(newModulus);
+
+#if defined(ENABLE_INSTRUMENTATION)
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " switch modulus " << counter << " ended " << "\n";
+#endif
 }
 
 template <class IntegerType>
@@ -329,6 +339,13 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const NativeVector
 
 template <class IntegerType>
 const NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddEq(const NativeVectorT& b) {
+
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
+
     if ((this->m_data.size() != b.m_data.size()) || this->m_modulus != b.m_modulus) {
         OPENFHE_THROW(lbcrypto::math_error, "ModAddEq called on NativeVectorT's with different parameters.");
     }
@@ -396,6 +413,13 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const IntegerType&
 
 template <class IntegerType>
 const NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulEq(const IntegerType& b) {
+
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
+
     IntegerType modulus = this->m_modulus;
     IntegerType bLocal  = b;
     if (bLocal >= modulus) {

@@ -512,6 +512,13 @@ PolyImpl<VecType> PolyImpl<VecType>::Minus(const Integer& element) const {
 
 template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Times(const Integer& element) const {
+
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
+
     PolyImpl<VecType> tmp = CloneParametersOnly();
     tmp.SetValues(GetValues().ModMul(element), this->m_format);
     return tmp;

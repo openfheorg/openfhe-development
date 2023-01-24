@@ -1447,6 +1447,13 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsQ, const std::shared_ptr<DCRTPolyImpl::Params> paramsP,
     const std::vector<NativeInteger>& QHatInvModq, const std::vector<NativeInteger>& QHatInvModqPrecon,
     const std::vector<std::vector<NativeInteger>>& QHatModp, const std::vector<DoubleNativeInt>& modpBarrettMu) const {
+
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
+
     DCRTPolyType ans(paramsP, this->GetFormat(), true);
 
     usint sizeQ = (m_vectors.size() > paramsQ->GetParams().size()) ? paramsQ->GetParams().size() : m_vectors.size();
@@ -1454,7 +1461,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxSwitchCRTBasis(
 
     for (usint i = 0; i < sizeQ; i++) {
         auto xQHatInvModqi = m_vectors[i] * QHatInvModq[i];
-    #pragma omp parallel for
+//    #pragma omp parallel for
         for (usint j = 0; j < sizeP; j++) {
             auto temp = xQHatInvModqi;
             temp.SwitchModulus(ans.m_vectors[j].GetModulus(), ans.m_vectors[j].GetRootOfUnity(), 0, 0);
@@ -3112,7 +3119,7 @@ void DCRTPolyImpl<VecType>::SwitchFormat() {
         this->m_format = Format::COEFFICIENT;
     }
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (usint i = 0; i < m_vectors.size(); i++) {
         m_vectors[i].SwitchFormat();
     }

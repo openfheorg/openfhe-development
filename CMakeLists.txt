@@ -88,6 +88,17 @@ option( WITH_NATIVEOPT "Use machine-specific optimizations"                     
 option( WITH_COVTEST "Turn on to enable coverage testing"                       OFF )
 option( USE_MACPORTS "Use MacPorts installed packages"                          OFF )
 
+# CZR added this to enable function instrumentation
+option( ENABLE_INSTRUMENTATION "Enable function instrumentation is ON"         ON  )
+
+if( NOT ENABLE_INSTRUMENTATION )
+   message( "ENABLE_INSTRUMENTATION is OFF!" )
+endif()
+if( ENABLE_INSTRUMENTATION )
+   message( "ENABLE_INSTRUMENTATION is ON!" )
+   add_definitions(-DENABLE_INSTRUMENTATION)
+endif()
+
 # Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
 if( NOT NATIVE_SIZE )
    set( NATIVE_SIZE 64 )
@@ -174,8 +185,8 @@ else()
    set (NATIVE_OPT "")
 endif()
 
-set(C_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DOPENFHE_VERSION=${OPENFHE_VERSION}")
-set(CXX_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DOPENFHE_VERSION=${OPENFHE_VERSION} ${IGNORE_WARNINGS}")
+set(C_COMPILE_FLAGS "-Wall -O0 ${NATIVE_OPT} -DOPENFHE_VERSION=${OPENFHE_VERSION}")
+set(CXX_COMPILE_FLAGS "-Wall -O0 ${NATIVE_OPT} -DOPENFHE_VERSION=${OPENFHE_VERSION} ${IGNORE_WARNINGS}")
 
 if ( EMSCRIPTEN )
 	set(EMSCRIPTEN_IGNORE_WARNINGS "-Wno-unused-but-set-variable -Wno-unknown-warning-option")

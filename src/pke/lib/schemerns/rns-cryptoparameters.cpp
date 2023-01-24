@@ -83,6 +83,16 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         m_numPerPartQ = a;
 
+//        std::cout << "CZR - moduliQ: " << "\n";
+//        for (auto& num: moduliQ)
+//        	std::cout << num << ", ";
+//        std::cout << "\n";
+//
+//        std::cout << "CZR - rootsQ: " << "\n";
+//        for (auto& num: rootsQ)
+//        	std::cout << num << ", ";
+//        std::cout << "\n";
+
         // Compute the composite digits PartQ = Q_j
         std::vector<BigInteger> moduliPartQ;
         moduliPartQ.resize(m_numPartQ);
@@ -94,6 +104,11 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             }
         }
 
+//        std::cout << "CZR - digits in Q (PartQ = Q_j): " << "\n";
+//        for (auto& num: moduliPartQ)
+//        	std::cout << num << ", ";
+//        std::cout << "\n";
+
         // Compute PartQHat_i = Q/Q_j
         std::vector<BigInteger> PartQHat;
         PartQHat.resize(m_numPartQ);
@@ -104,6 +119,11 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
                     PartQHat[i] *= moduliPartQ[j];
             }
         }
+
+//        std::cout << "CZR - PartQHat_i = Q/Q_j: " << "\n";
+//        for (auto& num: PartQHat)
+//        	std::cout << num << ", ";
+//        std::cout << "\n";
 
         // Compute [QHat_j]_{q_i} and [QHat_j^{-1}]_{q_i}
         // used in fast basis conversion
@@ -177,6 +197,11 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
 
         // Store the created moduli and roots in m_paramsP
         m_paramsP = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliP, rootsP);
+
+//        std::cout << "CZR - moduliP: " << "\n";
+//        for (auto& num: moduliP)
+//        	std::cout << num << ", ";
+//        std::cout << "\n";
 
         // Create the moduli and roots for the extended CRT basis QP
         std::vector<NativeInteger> moduliQP(sizeQ + sizeP);
@@ -333,27 +358,60 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             for (uint32_t k = 0; k < beta; k++) {
                 auto paramsPartQ   = GetParamsPartQ(k)->GetParams();
                 auto partQ         = GetParamsPartQ(k)->GetModulus();
+//                std::cout << "CZR - partQ: " << partQ << std::endl;
                 uint32_t digitSize = paramsPartQ.size();
                 if (k == beta - 1) {
                     digitSize = l + 1 - k * alpha;
                     for (uint32_t idx = digitSize; idx < paramsPartQ.size(); idx++) {
-                        partQ = partQ / BigInteger(paramsPartQ[idx]->GetModulus());
+//                    	std::cout << "CZR - partQ div : " << paramsPartQ[idx]->GetModulus() << std::endl;
+                    	partQ = partQ / BigInteger(paramsPartQ[idx]->GetModulus());
                     }
-                }
 
+                }
+//                std::cout << "CZR - remaining partQ: " << partQ << std::endl;
                 m_PartQlHatModp[l][k].resize(digitSize);
                 for (uint32_t i = 0; i < digitSize; i++) {
                     BigInteger partQHat = partQ / BigInteger(paramsPartQ[i]->GetModulus());
                     auto complBasis     = GetParamsComplPartQ(l, k);
+//                    std::cout << "CZR - complBasis:" << *complBasis << std::endl;
                     m_PartQlHatModp[l][k][i].resize(complBasis->GetParams().size());
+
+//                    std::cout << "CZR - partQHat: " << partQHat << std::endl;
+
                     for (size_t j = 0; j < complBasis->GetParams().size(); j++) {
-                        BigInteger QHatModpj        = partQHat.Mod(complBasis->GetParams()[j]->GetModulus());
+//                    	std::cout << "CZR - partQHat div : " << complBasis->GetParams()[j]->GetModulus() << std::endl;
+                    	BigInteger QHatModpj        = partQHat.Mod(complBasis->GetParams()[j]->GetModulus());
                         m_PartQlHatModp[l][k][i][j] = QHatModpj.ConvertToInt();
                     }
                 }
             }
         }
     }
+
+    uint32_t count = 0;
+    for (size_t ii = 0; ii < m_PartQlHatModp.size(); ii++)
+    	for (size_t jj = 0; jj<m_PartQlHatModp[ii].size(); jj++)
+    		for (size_t kk = 0; kk < m_PartQlHatModp[ii][jj].size(); kk++)
+    			for (size_t ll = 0 ; ll < m_PartQlHatModp[ii][jj][kk].size(); ll++)
+    				count++;
+
+//    for (size_t ii = 0; ii < m_PartQlHatModp.size(); ii++) {
+//    	std::cout << "Level: " << ii << "\n";
+//    	for (size_t jj = 0; jj<m_PartQlHatModp[ii].size(); jj++) {
+//    		std::cout << "cur digit: " << jj << "\n";
+//    		for (size_t kk = 0; kk < m_PartQlHatModp[ii][jj].size(); kk++) {
+//    			std::cout << "cur tow: " << kk << "\n";
+//    			for (size_t ll = 0 ; ll < m_PartQlHatModp[ii][jj][kk].size(); ll++) {
+//    				std::cout << m_PartQlHatModp[ii][jj][kk][ll] << " ";
+//    			}
+//    			std::cout << "\n";
+//    		}
+//    		std::cout << "\n";
+//    	}
+//    	std::cout << "\n";
+//    }
+//
+//    std::cout << "\n\nTotal num of words in m_PartQlHatModp: " << count << "\n";
     /////////////////////////////////////
     // BFVrns and BGVrns : Multiparty Decryption : ExpandCRTBasis
     /////////////////////////////////////
