@@ -39,7 +39,11 @@
 
 using namespace lbcrypto;
 
+//extern "C" void moncontrol(int);
+
 int main() {
+
+//	moncontrol(0);
 
 	std::cout << "main started ... \n\n";
 
@@ -232,10 +236,11 @@ int main() {
 //    for (int i = -1; i >= -2; i-=2) {
 //    	std::cout << "Rotation human idx: " << i << std::endl;
 //    	std::cout << "Rotation human idx: " << +1 << std::endl;
+//    moncontrol(1);
     std::cout << "\n>>>>>>>>>>>>>>>>>>> Calling EvalRotate >>>>>>>>>>>>>>>>>>> \n\n";
     	cRot1 = cc->EvalRotate(c1, 1); // + rotate left
     std::cout << "\n>>>>>>>>>>>>>>>>>>> EvalRotate finished >>>>>>>>>>>>>>>>>>> \n\n";
-
+//    moncontrol(0);
 
 
 //    	auto deleme1 = cc->EvalMult(c1, cRot1);

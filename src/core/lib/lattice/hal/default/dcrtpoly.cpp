@@ -618,7 +618,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::Minus(const DCRTPolyImpl& element) 
 
 template <typename VecType>
 const DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator+=(const DCRTPolyImpl& rhs) {
-#pragma omp parallel for
+//#pragma omp parallel for
     for (usint i = 0; i < this->GetNumOfElements(); i++) {
         this->m_vectors[i] += rhs.m_vectors[i];
     }
@@ -1535,6 +1535,12 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
     usint sizeP  = paramsP->GetParams().size();
     usint sizeQ  = sizeQP - sizeP;
 
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
+
     DCRTPolyType partP(paramsP, this->GetFormat(), true);
 
     for (usint i = sizeQ, j = 0; i < sizeQP; i++, j++) {
@@ -1545,7 +1551,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
 
     // Multiply everything by -t^(-1) mod P (BGVrns only)
     if (t > 0) {
-#pragma omp parallel for
+//#pragma omp parallel for
         for (usint j = 0; j < sizeP; j++) {
             partP.m_vectors[j] *= tInvModp[j];
         }
@@ -1562,7 +1568,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
 
     // Multiply everything by t mod Q (BGVrns only)
     if (t > 0) {
-#pragma omp parallel for
+//#pragma omp parallel for
         for (usint i = 0; i < sizeQ; i++) {
             partPSwitchedToQ.m_vectors[i] *= t;
         }
@@ -1570,7 +1576,7 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxModDown(
 
     partPSwitchedToQ.SetFormat(EVALUATION);
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (usint i = 0; i < sizeQ; i++) {
         auto diff        = m_vectors[i] - partPSwitchedToQ.m_vectors[i];
         ans.m_vectors[i] = diff * PInvModq[i];

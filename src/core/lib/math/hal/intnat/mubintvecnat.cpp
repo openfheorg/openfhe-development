@@ -224,10 +224,6 @@ void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& newModulus) {
         }
     }
     this->SetModulus(newModulus);
-
-#if defined(ENABLE_INSTRUMENTATION)
-	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " switch modulus " << counter << " ended " << "\n";
-#endif
 }
 
 template <class IntegerType>
@@ -390,6 +386,13 @@ const NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModSubEq(const Nat
     if ((this->m_data.size() != b.m_data.size()) || this->m_modulus != b.m_modulus) {
         OPENFHE_THROW(lbcrypto::math_error, "ModSubEq called on NativeVectorT's with different parameters.");
     }
+
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
+
     for (usint i = 0; i < this->m_data.size(); i++) {
         this->m_data[i].ModSubFastEq(b.m_data[i], this->m_modulus);
     }
@@ -398,6 +401,13 @@ const NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModSubEq(const Nat
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const IntegerType& b) const {
+
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
+
     NativeVectorT ans(*this);
     IntegerType modulus = this->m_modulus;
     IntegerType bLocal  = b;
@@ -449,6 +459,13 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const NativeVector
 
 template <class IntegerType>
 const NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModMulEq(const NativeVectorT& b) {
+
+#if defined(ENABLE_INSTRUMENTATION)
+	static int counter = 0;
+	counter++;
+	std::cout << __FILE__ << ":" << __LINE__ << ": " << __PRETTY_FUNCTION__ << " invoke id: " << counter << "\n";
+#endif
+
     if ((this->m_data.size() != b.m_data.size()) || this->m_modulus != b.m_modulus) {
         OPENFHE_THROW(lbcrypto::math_error, "ModMulEq called on NativeVectorT's with different parameters.");
     }
