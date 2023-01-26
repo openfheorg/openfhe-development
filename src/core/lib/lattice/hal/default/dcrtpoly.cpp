@@ -1021,7 +1021,7 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
     lastPoly.SetFormat(Format::COEFFICIENT);
     DCRTPolyType extra(this->m_params, COEFFICIENT, true);
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (usint i = 0; i < extra.m_vectors.size(); i++) {
         auto temp = lastPoly;
         temp.SwitchModulus(m_vectors[i].GetModulus(), m_vectors[i].GetRootOfUnity(), 0, 0);
@@ -1031,7 +1031,7 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
     if (this->GetFormat() == Format::EVALUATION)
         extra.SetFormat(Format::EVALUATION);
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (usint i = 0; i < m_vectors.size(); i++) {
         m_vectors[i] *= qlInvModq[i];
         m_vectors[i] += extra.m_vectors[i];
