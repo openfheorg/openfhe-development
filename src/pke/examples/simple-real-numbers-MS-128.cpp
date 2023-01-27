@@ -132,7 +132,7 @@ int main() {
     parameters.SetSecurityLevel(HEStd_NotSet);
 //    parameters.SetSecurityLevel(HEStd_128_classic);
     parameters.SetRingDim(16);
-    parameters.SetScalingTechnique(FIXEDAUTO);
+    parameters.SetScalingTechnique(FIXEDMANUAL);
 
     // HKS with dnum
     usint dnum = 3;
@@ -197,8 +197,14 @@ int main() {
     Ciphertext<DCRTPoly> ciph2 = cc->Encrypt(keys.publicKey, ptxt2);
 
     std::cout << "\n>>>>>>>>>>>>>>>>>>> Calling EvalMult twice >>>>>>>>>>>>>>>>>>> \n\n";
-    Ciphertext<DCRTPoly> ciphMult   = cc->EvalMult(ciph1, ciph2);
-    Ciphertext<DCRTPoly> ciphResult = cc->EvalMult(ciphMult, ciph1);
+//    Ciphertext<DCRTPoly> ciphResult   = cc->EvalMult(ciph1, ciph2);
+//    ciphResult = cc->Rescale(ciphResult);
+
+    Ciphertext<DCRTPoly> cmult_depth2 = cc->EvalMult(ciph1, ciph2);
+    Ciphertext<DCRTPoly> cmult_depth1 = cc->Rescale(cmult_depth2);
+    Ciphertext<DCRTPoly> ciphResult = cmult_depth1;
+
+//    Ciphertext<DCRTPoly> ciphResult = cc->EvalMult(ciphMult, ciph1);
     std::cout << "\n>>>>>>>>>>>>>>>>>>> EvalMult twice finished >>>>>>>>>>>>>>>>>>> \n\n";
 
     // Step 4: Decryption and output

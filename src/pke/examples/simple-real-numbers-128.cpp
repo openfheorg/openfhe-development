@@ -237,6 +237,9 @@ int main() {
 //    	std::cout << "Rotation human idx: " << i << std::endl;
 //    	std::cout << "Rotation human idx: " << +1 << std::endl;
 //    moncontrol(1);
+
+    std::cout << "Secret key: " << keys.secretKey->GetPrivateElement() << std::endl;
+
     std::cout << "\n>>>>>>>>>>>>>>>>>>> Calling EvalRotate >>>>>>>>>>>>>>>>>>> \n\n";
     	cRot1 = cc->EvalRotate(c1, 1); // + rotate left
     std::cout << "\n>>>>>>>>>>>>>>>>>>> EvalRotate finished >>>>>>>>>>>>>>>>>>> \n\n";
