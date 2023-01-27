@@ -131,6 +131,14 @@ bool TestB4 = false;
 bool TestB6 = false;
 bool TestNative = true;
 
+inline const std::string& GetMathBackendParameters() {
+    static std::string id = "Backend " + std::to_string(MATHBACKEND) +
+        (MATHBACKEND == 2 ? " internal int size " + std::to_string(sizeof(integral_dtype) * 8) +
+            " BitLength " + std::to_string(BigIntegerBitLength) :
+         "");
+    return id;
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
 
