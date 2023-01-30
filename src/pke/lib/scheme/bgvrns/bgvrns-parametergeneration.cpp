@@ -94,7 +94,8 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     // Bound of the key polynomial
     // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
     // (UNIFORM_TERNARY) cases
-    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
+    uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
+    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sqrt(thresholdParties) * sigma * sqrt(alpha) : thresholdParties * 1;
 
     // delta
     auto expansionFactor = 2. * sqrt(ringDimension);
@@ -275,9 +276,11 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     usint r             = cryptoParamsBGVRNS->GetDigitSize();
     double B_e          = sqrt(alpha) * sigma;
     uint32_t auxBits    = DCRT_MODULUS::MAX_SIZE;
+    uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
     // bound on the secret key is sigma*sqrt(alpha) if the secret is sampled from discrete gaussian distribution
-    // and is 1 if the secret is sampled from ternary distribution.
-    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
+    // and is 1 * threshold number of parties if the secret is sampled from ternary distribution. The threshold number of
+    // parties is 1 by default but can be set to the number of parties in a threshold application.
+    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1 * thresholdParties;
 
     double stat_sec    = cryptoParamsBGVRNS->GetStatisticalSecurity();
     double num_queries = cryptoParamsBGVRNS->GetNumAdversarialQueries();
