@@ -30,26 +30,57 @@
 //==================================================================================
 
 /*
-  Header file adding serialization support to Boolean circuit FHE
+  Example for the FHEW scheme homomorphic flooring function
  */
 
-#ifndef BINFHE_BINFHECONTEXT_SER_H
-#define BINFHE_BINFHECONTEXT_SER_H
-
 #include "binfhecontext.h"
-#include "utils/serial.h"
 
-// Registers types needed for serialization
-CEREAL_REGISTER_TYPE(lbcrypto::LWECryptoParams);
-CEREAL_REGISTER_TYPE(lbcrypto::LWECiphertextImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::LWEPrivateKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::LWEPublicKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::LWESwitchingKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::RLWECiphertextImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWCryptoParams);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWEvalKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWACCKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::BinFHECryptoParams);
-CEREAL_REGISTER_TYPE(lbcrypto::BinFHEContext);
+using namespace lbcrypto;
 
-#endif
+int main() {
+    // Sample Program: Step 1: Set CryptoContext
+    auto cc = BinFHEContext();
+
+    cc.GenerateBinFHEContext(STD128, false);
+
+    // Sample Program: Step 2: Key Generation
+
+    // Generate the secret key
+    auto kt = cc.KeyGenTriple();
+    auto sk = kt->secretKey;
+    auto pk = kt->publicKey;
+    auto ksk = kt->keySwitchingKey;
+
+    std::cout << "Generating the bootstrapping keys..." << std::endl;
+
+    // Generate the bootstrapping keys (refresh and switching keys)
+    cc.BTKeyGen(sk);
+
+    std::cout << "Completed the key generation." << std::endl;
+
+    // Sample Program: Step 3: Encryption
+
+    // Obtain the maximum plaintext space
+    // With the default parameter, p = 8
+    int p = cc.GetMaxPlaintextSpace().ConvertToInt();
+
+    // Number of bits to round down
+    auto bits      = 1;
+    uint32_t input = 6;
+    std::cout << "Homomorphically round down the input by " << bits << " bits." << std::endl;
+
+    auto ct1N = cc.EncryptN(pk, input % p, p);
+    auto ct1 = cc.Encryptn(ksk, ct1N, FRESH);
+
+    // Sample Program: Step 4: Evaluation
+    auto ctRounded = cc.EvalFloor(ct1, bits);
+
+    // Sample Program: Step 5: Decryption
+    LWEPlaintext result;
+
+    cc.Decrypt(sk, ctRounded, &result, p / (1 << bits));
+
+    std::cout << "Input: " << input << ". Expected: " << (input >> bits) << ". Evaluated = " << result << std::endl;
+
+    return 0;
+}

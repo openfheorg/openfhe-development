@@ -51,41 +51,30 @@ LWEPrivateKey LWEEncryptionScheme::KeyGen(usint size, const NativeInteger& modul
 }
 
 // size is the ring dimension N, modulus is the large Q used in RGSW encryption of bootstrapping.
-//LWEKeyTriple LWEEncryptionScheme::KenGenTriple(int size, const NativeInteger& modulus) const {
-LWEKeyTriple LWEEncryptionScheme::KenGenTriple(const std::shared_ptr<LWECryptoParams> params) const {
+LWEKeyTriple LWEEncryptionScheme::KeyGenTriple(const std::shared_ptr<LWECryptoParams> params) const {
     int size = params->GetN();
-    //NativeInteger modulus = params->GetqKS();
     NativeInteger modulus = params->GetQ();
 
-    // generate secret vector s
+    // generate secret vector s of ring dimension N
     auto skN = KeyGen(size, modulus);
     
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(modulus);
     std::vector<NativeVector> A(size);
 
-    // generate random A
+    // generate random matrix A of dimension N x N
     for (int i = 0; i < size; i++) {
         NativeVector a = dug.GenerateVector(size);
         A[i] = std::move(a);
     }
-    std::cout << "param Q " << modulus << std::endl;
-    std::cout << "param qKS " << params->GetqKS()<< std::endl;
-    std::cout << "param q " << params->Getq()<< std::endl;
-    std::cout << "param N " << size << std::endl;
-    std::cout << "param n " << params->Getn() << std::endl;
-
+    
     // generate error vector e
     DiscreteGaussianGeneratorImpl<NativeVector> dgg;
     NativeVector e = dgg.GenerateVector(size, modulus);
 
-    // compute b = As + e
+    // compute v = As + e
     NativeInteger mu = modulus.ComputeMu();
-
     NativeVector v = e;
-
-
-    //std::cout << "error in keygen N " << e << std::endl;
     NativeVector ske = skN->GetElement();
     for (int j = 0; j < size; ++j) {
         for (int i = 0; i < size; ++i) {
@@ -94,17 +83,15 @@ LWEKeyTriple LWEEncryptionScheme::KenGenTriple(const std::shared_ptr<LWECryptoPa
         v[j].ModEq(modulus);
     }
 
+    // generate secret key skn of dimension n and key switching key from skN to skn
+    LWEPrivateKey skn = KeyGen(params->Getn(), params->Getq());
+    auto ksKey = KeySwitchGen(params, skn, skN);
+
+    //public key A, v
     LWEPublicKeyImpl Av(A, v);
-    //Av->SetA(A);
-    //Av->Setv(v);
 
     auto Avs = std::make_shared<LWEPublicKeyImpl>(Av);
-
-    LWEPrivateKey skn = KeyGen(params->Getn(), params->Getq());
-
-    auto ksKey = KeySwitchGen(params, skn, skN);//skN, skn);
-
-    auto lweKeyTriple = LWEKeyTripleImpl(Avs, skn, ksKey); //correct one
+    auto lweKeyTriple = LWEKeyTripleImpl(Avs, skn, ksKey);
 
     // return the public key (A, v), private key sk pair and key switching key from skN to skn
     return std::make_shared<LWEKeyTripleImpl>(lweKeyTriple);
@@ -147,10 +134,10 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
 }
 
 // classical public key LWE encryption
-// a is a randomly uniform vector of dimension n; with integers mod q
-// b = a*s + e + m floor(q/4) is an integer mod q
-LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPublicKey pk,
-                                           ConstLWESwitchingKey& ksk, const LWEPlaintext& m, const LWEPlaintextModulus& p,
+// a = As' + e' of dimension n; with integers mod q
+// b = vs' + e'' + m floor(q/4) is an integer mod q
+LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParams> params, ConstLWEPublicKey pk,
+                                           const LWEPlaintext& m, const LWEPlaintextModulus& p,
                                            const NativeInteger& mod) const {
     if (mod % p != 0 && mod.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
@@ -176,10 +163,9 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     NativeVector sp = tug.GenerateVector(N, mod);
     NativeVector ep = dgg.GenerateVector(N, mod);
 
+    // compute a in the ciphertext (a, b)
     NativeInteger mu = mod.ComputeMu();
-
     NativeVector a = ep;
-    //compute a in the ciphertext (a, b)
     for (size_t j = 0; j < N; ++j) {
         for (size_t i = 0; i < N; ++i) {
             a[j] += A[j][i].ModMulFast(sp[i], mod, mu);
@@ -192,10 +178,15 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     }
     b.ModEq(mod);
 
-    auto ctExt = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+}
+
+// convert ciphertext with modulus Q and dimension N to ciphertext with modulus q and dimension n
+LWECiphertext LWEEncryptionScheme::Encryptn(const std::shared_ptr<LWECryptoParams> params,
+                                           ConstLWESwitchingKey& ksk, ConstLWECiphertext ct) const {
 
     // Modulus switching to a middle step Q'
-    auto ctMS = ModSwitch(params->GetqKS(), ctExt);
+    auto ctMS = ModSwitch(params->GetqKS(), ct);
     // Key switching
     auto ctKS = KeySwitch(params, ksk, ctMS);
     // Modulus switching

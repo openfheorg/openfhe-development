@@ -142,7 +142,7 @@ public:
    * @return a shared pointer to the public key, secret key pair
    */
 
-    LWEKeyTriple KenGenTriple() const;
+    LWEKeyTriple KeyGenTriple() const;
 
     /**
    * Generates a secret key used in bootstrapping
@@ -169,14 +169,22 @@ public:
    *
    * @param pk - the public key
    * @param &m - the plaintext
-   * @param output - FRESH to generate fresh ciphertext, BOOTSTRAPPED to
-   * generate a refreshed ciphertext (default)
    * @param p - plaintext modulus
    * @param mod Encrypt according to mod instead of m_q if mod != 0
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(ConstLWEPublicKey pk, ConstLWESwitchingKey ksk, const LWEPlaintext& m, BINFHE_OUTPUT output = BOOTSTRAPPED,
+    LWECiphertext EncryptN(ConstLWEPublicKey pk, const LWEPlaintext& m,
                           LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
+
+    /**
+   * Converts a ciphertext (public key encryption) with modulus Q and dimension N to ciphertext with q and n
+   *
+   * @param ksk - the key switching key from secret key of dimension N to secret key of dimension n
+   * @param output - FRESH to generate fresh ciphertext, BOOTSTRAPPED to
+   * generate a refreshed ciphertext (default)
+   * @return a shared pointer to the ciphertext
+   */
+    LWECiphertext Encryptn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct, BINFHE_OUTPUT output = BOOTSTRAPPED) const;
                     
     /**
    * Decrypts a ciphertext using a secret key

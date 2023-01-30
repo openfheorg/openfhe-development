@@ -63,6 +63,33 @@ BinFHEContext GenerateFHEWContext(BINFHE_PARAMSET set) {
  */
 
 template <class ParamSet>
+void FHEW_KEYGEN(benchmark::State& state, ParamSet param_set) {
+    BINFHE_PARAMSET param(param_set);
+    BinFHEContext cc = GenerateFHEWContext(param);
+
+    for (auto _ : state) {
+        LWEPrivateKey sk = cc.KeyGen();
+    }
+}
+
+BENCHMARK_CAPTURE(FHEW_KEYGEN, MEDIUM, MEDIUM)->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_KEYGEN, STD128, STD128)->Unit(benchmark::kMicrosecond);
+
+template <class ParamSet>
+void FHEW_ENCRYPT(benchmark::State& state, ParamSet param_set) {
+    BINFHE_PARAMSET param(param_set);
+    BinFHEContext cc = GenerateFHEWContext(param);
+
+    LWEPrivateKey sk = cc.KeyGen();
+    for (auto _ : state) {
+        LWECiphertext ct1 = cc.Encrypt(sk, 1, FRESH);
+    }
+}
+
+BENCHMARK_CAPTURE(FHEW_ENCRYPT, MEDIUM, MEDIUM)->Unit(benchmark::kMicrosecond);
+BENCHMARK_CAPTURE(FHEW_ENCRYPT, STD128, STD128)->Unit(benchmark::kMicrosecond);
+
+template <class ParamSet>
 void FHEW_NOT(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
