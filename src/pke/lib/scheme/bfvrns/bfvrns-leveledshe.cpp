@@ -76,6 +76,7 @@ void LeveledSHEBFVRNS::EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPla
 
 uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
                           uint32_t dcrtBits, bool keySwitch = false) {
+
     const auto cryptoParamsBFVrns    = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cryptoParams);
     double sigma                     = cryptoParamsBFVrns->GetDistributionParameter();
     double alpha                     = cryptoParamsBFVrns->GetAssuranceMeasure();
@@ -87,7 +88,8 @@ uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParam
 
     uint32_t k        = cryptoParamsBFVrns->GetNumPerPartQ();
     uint32_t numPartQ = cryptoParamsBFVrns->GetNumPartQ();
-    const double Bkey = 1.0;
+    uint32_t thresholdParties = cryptoParamsBFVrns->GetThresholdNumOfParties();
+    const double Bkey = (cryptoParamsBFVrns->GetSecretKeyDist() == GAUSSIAN) ? sqrt(thresholdParties) * sigma * sqrt(alpha) : thresholdParties * 1;
 
     double w = relinWindow == 0 ? pow(2, dcrtBits) : pow(2, relinWindow);
 
@@ -136,7 +138,7 @@ uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParam
     // initial values
     double logqPrev = 6. * log(10);
     double logq     = logqBFV(n, logqPrev);
-
+    
     while (fabs(logq - logqPrev) > log(1.001)) {
         logqPrev = logq;
         logq     = logqBFV(n, logqPrev);
@@ -148,7 +150,7 @@ uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParam
     double logExtra = keySwitch ? log2(noiseKS(n, logq, w)) : log2(delta(n));
 
     // adding the cushon to the error (see Appendix D of https://eprint.iacr.org/2021/204.pdf for details)
-    int32_t levels = std::floor((loge - 2 * multiplicativeDepth - 4 - logExtra) / dcrtBits);
+    int32_t levels = std::floor((loge - 2 * multiplicativeDepth - 16 - logExtra) / dcrtBits); //subtraction 10 resolves the issue
     size_t sizeQ   = cryptoParamsBFVrns->GetElementParams()->GetParams().size();
 
     if (levels < 0)
@@ -178,6 +180,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
     size_t cv2Size    = cv2.size();
     size_t cvMultSize = cv1Size + cv2Size - 1;
     size_t sizeQ      = cv1[0].GetNumOfElements();
+
     // l is index correspinding to leveled parameters in cryptoParameters precomputations in HPSPOVERQLEVELED
     size_t l = 0;
 
