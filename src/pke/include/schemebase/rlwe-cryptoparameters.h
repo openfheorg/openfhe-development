@@ -105,7 +105,8 @@ public:
                          ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
                          ExecutionMode executionMode             = EXEC_EVALUATION,
                          DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1, usint thresholdNumOfParties = 1)
+                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
+                         uint32_t thresholdNumOfParties = 1)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
         m_assuranceMeasure      = assuranceMeasure;
@@ -279,14 +280,14 @@ public:
     }
 
     /**
-   * Gets the number of threshold number of parties
+   * Gets the threshold number of parties
    *
-   * @return the number of threshold number of parties.
+   * @return the threshold number of parties.
    */
     double GetThresholdNumOfParties() const {
         return m_thresholdNumOfParties;
     }
-    
+
     // @Set Properties
 
     /**
@@ -405,8 +406,8 @@ public:
     }
 
     /**
-   * Configures the decryption noise mode for CKKS noise flooding and PRE
-   * @param numAdversarialQueries.
+   * Configures the number of parties in thresholdFHE
+   * @param thresholdNumOfParties.
    */
     void SetThresholdNumOfParties(uint32_t thresholdNumOfParties) {
         m_thresholdNumOfParties = thresholdNumOfParties;
