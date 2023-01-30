@@ -492,7 +492,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
         result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
     }
 
-    if (result.isValid == false)
+    if (result.isValid == false) // TODO (dsuponit): why don't we throw an exception here?
         return result;
 
     decrypted->SetScalingFactorInt(result.scalingFactorInt);
