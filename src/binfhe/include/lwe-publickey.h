@@ -47,7 +47,7 @@ namespace lbcrypto {
  */
 class LWEPublicKeyImpl : public Serializable {
 public:
-    //LWEPublicKeyImpl() = default;
+    LWEPublicKeyImpl() = default;
 
     explicit LWEPublicKeyImpl(const std::vector<NativeVector>& A, const NativeVector& v) : m_A(A), m_v(v) {}
 

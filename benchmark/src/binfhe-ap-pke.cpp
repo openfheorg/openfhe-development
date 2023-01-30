@@ -66,7 +66,7 @@ void FHEW_KEYGEN(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
     for (auto _ : state) {
-        LWEPrivateKey sk = cc.KeyGen();
+        LWEKeyTriple kt = cc.KeyGenTriple();
     }
 }
 
@@ -79,9 +79,15 @@ void FHEW_ENCRYPT(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEPrivateKey sk = cc.KeyGen();
+    LWEKeyTriple kt = cc.KeyGenTriple();
+
+    auto sk = kt->secretKey;
+    auto pk = kt->publicKey;
+    auto ksk = kt->keySwitchingKey;
+
     for (auto _ : state) {
-        LWECiphertext ct1 = cc.Encrypt(sk, 1, FRESH);
+        LWECiphertext ct1N = cc.EncryptN(pk, 1);
+        LWECiphertext ct1 = cc.Encryptn(ksk, ct1N, FRESH);
     }
 }
 
@@ -94,9 +100,13 @@ void FHEW_NOT(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEPrivateKey sk = cc.KeyGen();
+    LWEKeyTriple kt = cc.KeyGenTriple();
+    auto sk = kt->secretKey;
+    auto pk = kt->publicKey;
+    auto ksk = kt->keySwitchingKey;
 
-    LWECiphertext ct1 = cc.Encrypt(sk, 1, FRESH);
+    LWECiphertext ct1N = cc.EncryptN(pk, 1);
+    LWECiphertext ct1 = cc.Encryptn(ksk, ct1N, FRESH);
 
     for (auto _ : state) {
         LWECiphertext ct11 = cc.EvalNOT(ct1);
@@ -115,12 +125,18 @@ void FHEW_BINGATE(benchmark::State& state, ParamSet param_set, BinGate bin_gate)
 
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEPrivateKey sk = cc.KeyGen();
+    LWEKeyTriple kt = cc.KeyGenTriple();
+    auto sk = kt->secretKey;
+    auto pk = kt->publicKey;
+    auto ksk = kt->keySwitchingKey;
 
     cc.BTKeyGen(sk);
 
-    LWECiphertext ct1 = cc.Encrypt(sk, 1);
-    LWECiphertext ct2 = cc.Encrypt(sk, 1);
+    LWECiphertext ct1N = cc.EncryptN(pk, 1);
+    LWECiphertext ct1 = cc.Encryptn(ksk, ct1N);
+
+    LWECiphertext ct2N = cc.EncryptN(pk, 1);
+    LWECiphertext ct2 = cc.Encryptn(ksk, ct2N);
 
     for (auto _ : state) {
         LWECiphertext ct11 = cc.EvalBinGate(gate, ct1, ct2);
@@ -174,28 +190,5 @@ BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_AP_XNOR, STD128_AP, XNOR)->Unit(benchmark
 BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_AP_XOR_FAST, STD128_AP, XOR_FAST)->Unit(benchmark::kMicrosecond);
 
 BENCHMARK_CAPTURE(FHEW_BINGATE, STD128_AP_XNOR_FAST, STD128_AP, XNOR_FAST)->Unit(benchmark::kMicrosecond);
-
-// benchmark for key switching
-template <class ParamSet>
-void FHEW_KEYSWITCH(benchmark::State& state, ParamSet param_set) {
-    BINFHE_PARAMSET param(param_set);
-    BinFHEContext cc = GenerateFHEWContext(param);
-
-    LWEPrivateKey sk  = cc.KeyGen();
-    LWEPrivateKey skN = cc.KeyGenN();
-
-    auto ctQN1         = cc.Encrypt(skN, 1, FRESH);
-    auto keySwitchHint = cc.KeySwitchGen(sk, skN);
-
-    for (auto _ : state) {
-        LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
-    }
-}
-
-BENCHMARK_CAPTURE(FHEW_KEYSWITCH, MEDIUM, MEDIUM)->Unit(benchmark::kMicrosecond)->MinTime(1.0);
-
-BENCHMARK_CAPTURE(FHEW_KEYSWITCH, STD128, STD128)->Unit(benchmark::kMicrosecond)->MinTime(1.0);
-
-BENCHMARK_CAPTURE(FHEW_KEYSWITCH, STD128_AP, STD128_AP)->Unit(benchmark::kMicrosecond)->MinTime(1.0);
 
 BENCHMARK_MAIN();

@@ -67,8 +67,8 @@ public:
    * @param params a shared pointer to LWE scheme parameters
    * @return a shared pointer to the public key, secret key pair
    */
-    //LWEKeyTriple KenGenTriple(int size, const NativeInteger& modulus) const;
-    LWEKeyTriple KenGenTriple(const std::shared_ptr<LWECryptoParams> params) const;
+    //LWEKeyTriple KeyGenTriple(int size, const NativeInteger& modulus) const;
+    LWEKeyTriple KeyGenTriple(const std::shared_ptr<LWECryptoParams> params) const;
 
     /**
    * Encrypts a bit using a secret key (symmetric key encryption)
@@ -82,7 +82,7 @@ public:
     LWECiphertext Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk, const LWEPlaintext& m,
                           const LWEPlaintextModulus& p = 4, const NativeInteger& mod = 0) const;
 
-/**
+   /**
    * Encrypts a bit using a public key (asymmetric key encryption)
    *
    * @param params a shared pointer to LWE scheme parameters
@@ -91,8 +91,17 @@ public:
    * @param &p - the plaintext space
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPublicKey pk, ConstLWESwitchingKey& ksk, const LWEPlaintext& m,
+    LWECiphertext EncryptN(const std::shared_ptr<LWECryptoParams> params, ConstLWEPublicKey pk, const LWEPlaintext& m,
                           const LWEPlaintextModulus& p = 4, const NativeInteger& mod = 0) const;
+
+   /**
+   * Encrypts a bit using a public key (asymmetric key encryption)
+   *
+   * @param params a shared pointer to LWE scheme parameters
+   * @param ksk - key switching key from secret key of dimension N to secret key of dimension n
+   * @return a shared pointer to the ciphertext
+   */
+    LWECiphertext Encryptn(const std::shared_ptr<LWECryptoParams> params, ConstLWESwitchingKey& ksk, ConstLWECiphertext ct) const;
 
     /**
    * Decrypts the ciphertext using secret key sk
