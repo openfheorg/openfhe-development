@@ -283,7 +283,8 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
     // bound on the secret key is sigma*sqrt(alpha) if the secret is sampled from discrete gaussian distribution
     // and is 1 * threshold number of parties if the secret is sampled from ternary distribution. The threshold number of
     // parties is 1 by default but can be set to the number of parties in a threshold application.
-    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1 * thresholdParties;
+    // Bkey set to thresholdParties * 1 for ternary distribution
+    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : thresholdParties;
 
     double stat_sec_half = cryptoParamsBGVRNS->GetStatisticalSecurity() / 2;
     double num_queries   = cryptoParamsBGVRNS->GetNumAdversarialQueries();
