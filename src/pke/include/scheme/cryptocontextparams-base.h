@@ -117,6 +117,8 @@ class Params {
     // security of CKKS in NOISE_FLOODING_DECRYPT mode.
     double numAdversarialQueries;
 
+    // This is the number of parties in a threshold application, which is used for bound on the joint secret key
+    usint thresholdNumOfParties;
     // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be seen as:
     // Q = q_0 * q_1 * ... * q_n * q'
     // where q_0 is first prime, and it's number of bits is firstModSize
@@ -218,6 +220,11 @@ public:
     double GetNumAdversarialQueries() const {
         return numAdversarialQueries;
     }
+
+    usint GetThresholdNumOfParties() const {
+        return thresholdNumOfParties;
+    }
+    
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
     }
@@ -300,6 +307,10 @@ public:
     }
     void SetNumAdversarialQueries(double numAdversarialQueries0) {
         numAdversarialQueries = numAdversarialQueries0;
+    }
+
+    void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) {
+        thresholdNumOfParties = thresholdNumOfParties0;
     }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;

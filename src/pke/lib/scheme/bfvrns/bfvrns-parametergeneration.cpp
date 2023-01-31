@@ -83,14 +83,16 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
     DistributionType distType;
 
+    uint32_t thresholdParties = cryptoParamsBFVRNS->GetThresholdNumOfParties();
     // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
     // (UNIFORM_TERNARY) cases
     if (cryptoParamsBFVRNS->GetSecretKeyDist() == GAUSSIAN) {
-        Bkey     = sigma * sqrt(alpha);
+        Bkey     = sqrt(thresholdParties) * sigma * sqrt(alpha);
         distType = HEStd_error;
     }
     else {
-        Bkey     = 1;
+        // Bkey set to thresholdParties * 1 for ternary distribution
+        Bkey     = thresholdParties;
         distType = HEStd_ternary;
     }
 

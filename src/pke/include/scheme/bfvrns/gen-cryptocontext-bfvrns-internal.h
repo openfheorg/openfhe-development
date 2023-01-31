@@ -75,7 +75,13 @@ typename ContextGeneratorType::ContextType genCryptoContextBFVRNSInternal(
         parameters.GetEncryptionTechnique(),
         parameters.GetMultiplicationTechnique(),
         parameters.GetPREMode(),
-        parameters.GetMultipartyMode());
+        parameters.GetMultipartyMode(),
+        parameters.GetExecutionMode(),
+        parameters.GetDecryptionNoiseMode(),
+        parameters.GetPlaintextModulus(),
+        parameters.GetStatisticalSecurity(),
+        parameters.GetNumAdversarialQueries(),
+        parameters.GetThresholdNumOfParties());
 
     // for BFV scheme noise scale is always set to 1
     params->SetNoiseScale(1);
