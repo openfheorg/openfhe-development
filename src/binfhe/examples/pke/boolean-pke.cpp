@@ -46,7 +46,7 @@ int main() {
     // and HE standard. Other common options are TOY, MEDIUM, STD192, and STD256.
     // MEDIUM corresponds to the level of more than 100 bits for both quantum and
     // classical computer attacks.
-    cc.GenerateBinFHEContext(STD128Q_OPT);//STD128);
+    cc.GenerateBinFHEContext(STD128);
 
     // Sample Program: Step 2: Key Generation
 
@@ -67,10 +67,10 @@ int main() {
     // If you wish to get a fresh encryption without bootstrapping, write
     // auto   ct1 = cc.Encrypt(sk, 1, FRESH);
     auto ct1N = cc.EncryptN(keyTriple->publicKey, 1);
-    auto ct1 = cc.Encryptn(keyTriple->keySwitchingKey, ct1N);
-    
+    auto ct1  = cc.Encryptn(keyTriple->keySwitchingKey, ct1N);
+
     auto ct2N = cc.EncryptN(keyTriple->publicKey, 1);
-    auto ct2 = cc.Encryptn(keyTriple->keySwitchingKey, ct2N);
+    auto ct2  = cc.Encryptn(keyTriple->keySwitchingKey, ct2N);
 
     LWEPlaintext result;
 
@@ -79,7 +79,6 @@ int main() {
 
     std::cout << "Result of encrypted ciphertext of 1 = " << result << std::endl;
 
-    
     // Sample Program: Step 4: Evaluation
 
     // Compute (1 AND 1) = 1; Other binary gate options are OR, NAND, and NOR
