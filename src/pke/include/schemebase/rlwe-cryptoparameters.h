@@ -284,7 +284,7 @@ public:
    *
    * @return the threshold number of parties.
    */
-    double GetThresholdNumOfParties() const {
+    uint32_t GetThresholdNumOfParties() const {
         return m_thresholdNumOfParties;
     }
 
