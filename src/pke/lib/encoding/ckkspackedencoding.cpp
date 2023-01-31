@@ -408,7 +408,7 @@ bool CKKSPackedEncoding::Encode() {
 }
 #endif
 
-bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, enum ScalingTechnique scalTech,
+bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, ScalingTechnique scalTech,
                                 ExecutionMode executionMode) {
     double p       = encodingParams->GetPlaintextModulus();
     double powP    = 0.0;

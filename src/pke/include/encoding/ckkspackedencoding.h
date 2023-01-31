@@ -61,7 +61,7 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep) {}
+    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKSRNS_SCHEME) {}
 
     /*
    * @param noiseScaleDeg degree of the scaling factor of a plaintext
@@ -75,7 +75,7 @@ public:
                                                   bool>::type = true>
     CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::vector<std::complex<double>>& coeffs,
                        size_t noiseScaleDeg, uint32_t level, double scFact, size_t slots)
-        : PlaintextImpl(vp, ep), value(coeffs) {
+        : PlaintextImpl(vp, ep, CKKSRNS_SCHEME), value(coeffs) {
         // validate the number of slots
         if ((slots & (slots - 1)) != 0) {
             OPENFHE_THROW(config_error, "The number of slots should be a power of two");
@@ -106,7 +106,7 @@ public:
    * @param rhs - The input object to copy.
    */
     explicit CKKSPackedEncoding(const std::vector<std::complex<double>>& rhs, size_t slots)
-        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value(rhs) {
+        : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKSRNS_SCHEME), value(rhs) {
         // validate the number of slots
         if ((slots & (slots - 1)) != 0) {
             OPENFHE_THROW(config_error, "The number of slots should be a power of two");
@@ -130,7 +130,7 @@ public:
     /**
    * @brief Default empty constructor with empty uninitialized data elements.
    */
-    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr), value() {}
+    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKSRNS_SCHEME), value() {}
 
     CKKSPackedEncoding(const CKKSPackedEncoding& rhs)
         : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
@@ -143,7 +143,7 @@ public:
     bool Decode() {
         OPENFHE_THROW(
             not_available_error,
-            "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(noiseScaleDeg,scalingFactor,scalTech) instead.");
+            "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(...) instead.");
     }
 
     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode);
