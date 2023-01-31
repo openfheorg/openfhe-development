@@ -165,11 +165,11 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     NativeInteger Q(
         PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder));
 
-    usint ringDim  = params.cyclOrder / 2;
-    auto lweparams = (PRIME == params.modKS) ?
-                         std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
+    usint ringDim   = params.cyclOrder / 2;
+    auto lweparams  = (PRIME == params.modKS) ?
+                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
                                                            params.stdDev, params.baseKS) :
-                         std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
+                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
                                                            params.stdDev, params.baseKS);
     auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK,
                                                             method, params.stdDev);
@@ -208,8 +208,8 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& 
     return ct;
 }
 
-LWECiphertext BinFHEContext::EncryptN(ConstLWEPublicKey pk, const LWEPlaintext& m,
-                                     LWEPlaintextModulus p, NativeInteger mod) const {
+LWECiphertext BinFHEContext::EncryptN(ConstLWEPublicKey pk, const LWEPlaintext& m, LWEPlaintextModulus p,
+                                      NativeInteger mod) const {
     auto& LWEParams = m_params->GetLWEParams();
     auto Q          = LWEParams->GetQ();
     if (mod == 0)
@@ -222,15 +222,19 @@ LWECiphertext BinFHEContext::EncryptN(ConstLWEPublicKey pk, const LWEPlaintext& 
 
 LWECiphertext BinFHEContext::Encryptn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct, BINFHE_OUTPUT output) const {
     auto& LWEParams = m_params->GetLWEParams();
-    //auto Q          = LWEParams->GetQ();
-    //if (mod == 0)
-    //    mod = Q;
+    auto Q          = LWEParams->GetQ();
+    auto N          = LWEParams->GetN();
+
+    if ((ct->GetLength() != N) && (ct->GetModulus() != Q)) {
+        std::string errMsg("ERROR: Ciphertext dimension and modulus are not large N and Q");
+        OPENFHE_THROW(config_error, errMsg);
+    }
 
     LWECiphertext ct1 = m_LWEscheme->Encryptn(LWEParams, ksk, ct);
 
-    //if ((output != FRESH) && (p == 4)) {
+    // if ((output != FRESH) && (p == 4)) {
     //    ct = m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
-    //}
+    // }
 
     return ct1;
 }
