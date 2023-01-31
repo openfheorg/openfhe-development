@@ -81,6 +81,7 @@ public:
         m_decryptionNoiseMode   = rhs.m_decryptionNoiseMode;
         m_statisticalSecurity   = rhs.m_statisticalSecurity;
         m_numAdversarialQueries = rhs.m_numAdversarialQueries;
+        m_thresholdNumOfParties = rhs.m_thresholdNumOfParties;
     }
 
     /**
@@ -104,7 +105,8 @@ public:
                          ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
                          ExecutionMode executionMode             = EXEC_EVALUATION,
                          DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1)
+                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
+                         uint32_t thresholdNumOfParties = 1)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
         m_assuranceMeasure      = assuranceMeasure;
@@ -120,6 +122,7 @@ public:
         m_decryptionNoiseMode   = decryptionNoiseMode;
         m_statisticalSecurity   = statisticalSecurity;
         m_numAdversarialQueries = numAdversarialQueries;
+        m_thresholdNumOfParties = thresholdNumOfParties;
     }
 
     /**
@@ -275,6 +278,16 @@ public:
     double GetNumAdversarialQueries() const {
         return m_numAdversarialQueries;
     }
+
+    /**
+   * Gets the threshold number of parties
+   *
+   * @return the threshold number of parties.
+   */
+    uint32_t GetThresholdNumOfParties() const {
+        return m_thresholdNumOfParties;
+    }
+
     // @Set Properties
 
     /**
@@ -393,6 +406,14 @@ public:
     }
 
     /**
+   * Configures the number of parties in thresholdFHE
+   * @param thresholdNumOfParties.
+   */
+    void SetThresholdNumOfParties(uint32_t thresholdNumOfParties) {
+        m_thresholdNumOfParties = thresholdNumOfParties;
+    }
+
+    /**
    * == operator to compare to this instance of CryptoParametersRLWE object.
    *
    * @param &rhs CryptoParameters to check equality against.
@@ -415,7 +436,8 @@ public:
                m_executionMode == el->GetExecutionMode() &&
                m_floodingDistributionParameter == el->GetFloodingDistributionParameter() &&
                m_statisticalSecurity == el->GetStatisticalSecurity() &&
-               m_numAdversarialQueries == el->GetNumAdversarialQueries();
+               m_numAdversarialQueries == el->GetNumAdversarialQueries() &&
+               m_thresholdNumOfParties == el->GetThresholdNumOfParties();
     }
 
     void PrintParameters(std::ostream& os) const {
@@ -443,6 +465,7 @@ public:
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
         ar(::cereal::make_nvp("ss", m_statisticalSecurity));
         ar(::cereal::make_nvp("aq", m_numAdversarialQueries));
+        ar(::cereal::make_nvp("tp", m_thresholdNumOfParties));
     }
 
     template <class Archive>
@@ -462,6 +485,7 @@ public:
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
         ar(::cereal::make_nvp("ss", m_statisticalSecurity));
         ar(::cereal::make_nvp("aq", m_numAdversarialQueries));
+        ar(::cereal::make_nvp("tp", m_thresholdNumOfParties));
 
         m_dgg.SetStd(m_distributionParameter);
         m_dggFlooding.SetStd(m_floodingDistributionParameter);
@@ -514,6 +538,8 @@ protected:
     // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
     // security of CKKS in NOISE_FLOODING_DECRYPT mode.
     double m_numAdversarialQueries = 1;
+
+    usint m_thresholdNumOfParties = 1;
 };
 
 }  // namespace lbcrypto
