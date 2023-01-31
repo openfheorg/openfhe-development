@@ -91,7 +91,8 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         distType = HEStd_error;
     }
     else {
-        Bkey     = thresholdParties * 1;
+        // Bkey set to thresholdParties * 1 for ternary distribution
+        Bkey     = thresholdParties;
         distType = HEStd_ternary;
     }
 

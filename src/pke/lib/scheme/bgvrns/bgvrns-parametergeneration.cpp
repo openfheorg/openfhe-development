@@ -95,7 +95,10 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
     // (UNIFORM_TERNARY) cases
     uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
-    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sqrt(thresholdParties) * sigma * sqrt(alpha) : thresholdParties * 1;
+
+    // Bkey set to thresholdParties * 1 for ternary distribution
+    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sqrt(thresholdParties) * sigma * sqrt(alpha) :
+                                                                         thresholdParties;
 
     // delta
     auto expansionFactor = 2. * sqrt(ringDimension);
@@ -270,12 +273,12 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
 
     // compute the flooding distribution parameter based on the security mode for pre
     // get the re-encryption level and set the level after re-encryption
-    usint ringDimension = cryptoParamsBGVRNS->GetElementParams()->GetRingDimension();
-    double sigma        = cryptoParamsBGVRNS->GetDistributionParameter();
-    double alpha        = cryptoParamsBGVRNS->GetAssuranceMeasure();
-    usint r             = cryptoParamsBGVRNS->GetDigitSize();
-    double B_e          = sqrt(alpha) * sigma;
-    uint32_t auxBits    = DCRT_MODULUS::MAX_SIZE;
+    usint ringDimension       = cryptoParamsBGVRNS->GetElementParams()->GetRingDimension();
+    double sigma              = cryptoParamsBGVRNS->GetDistributionParameter();
+    double alpha              = cryptoParamsBGVRNS->GetAssuranceMeasure();
+    usint r                   = cryptoParamsBGVRNS->GetDigitSize();
+    double B_e                = sqrt(alpha) * sigma;
+    uint32_t auxBits          = DCRT_MODULUS::MAX_SIZE;
     uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
     // bound on the secret key is sigma*sqrt(alpha) if the secret is sampled from discrete gaussian distribution
     // and is 1 * threshold number of parties if the secret is sampled from ternary distribution. The threshold number of
