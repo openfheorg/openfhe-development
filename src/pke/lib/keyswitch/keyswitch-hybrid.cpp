@@ -555,6 +555,9 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalFastKeySwitchCoreExt
     const std::vector<DCRTPoly>& bv = evalKey->GetBVector();
     const std::vector<DCRTPoly>& av = evalKey->GetAVector();
 
+//    std::cout << "\n\n---av: " << av << std::endl<< std::endl;
+//    std::cout << "\n\n---bv: " << bv << std::endl<< std::endl;
+
     const std::shared_ptr<ParmType> paramsP   = cryptoParams->GetParamsP();
     const std::shared_ptr<ParmType> paramsQlP = (*digits)[0].GetParams();
 
