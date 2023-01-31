@@ -88,9 +88,10 @@ uint32_t FindLevelsToDrop(usint multiplicativeDepth, std::shared_ptr<CryptoParam
     uint32_t k                = cryptoParamsBFVrns->GetNumPerPartQ();
     uint32_t numPartQ         = cryptoParamsBFVrns->GetNumPartQ();
     uint32_t thresholdParties = cryptoParamsBFVrns->GetThresholdNumOfParties();
-    const double Bkey         = (cryptoParamsBFVrns->GetSecretKeyDist() == GAUSSIAN) ?
-                                    sqrt(thresholdParties) * sigma * sqrt(alpha) :
-                                    thresholdParties * 1;
+    // Bkey set to thresholdParties * 1 for ternary distribution
+    const double Bkey = (cryptoParamsBFVrns->GetSecretKeyDist() == GAUSSIAN) ?
+                            sqrt(thresholdParties) * sigma * sqrt(alpha) :
+                            thresholdParties;
 
     double w = relinWindow == 0 ? pow(2, dcrtBits) : pow(2, relinWindow);
 
