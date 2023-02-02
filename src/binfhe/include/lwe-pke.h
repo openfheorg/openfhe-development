@@ -75,7 +75,7 @@ public:
    * @param skN a secret key of dimension N
    * @return a shared pointer to the public key
    */
-    LWEPublicKey PubKeyGen(const std::shared_ptr<LWECryptoParams> params, LWEPrivateKey skN) const;
+    LWEPublicKey PubKeyGen(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey skN) const;
 
     /**
    * Encrypts a bit using a secret key (symmetric key encryption)

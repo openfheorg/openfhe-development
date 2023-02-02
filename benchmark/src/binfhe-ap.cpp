@@ -67,6 +67,7 @@ void FHEW_KEYGEN(benchmark::State& state, ParamSet param_set) {
     BinFHEContext cc = GenerateFHEWContext(param);
     for (auto _ : state) {
         LWEPrivateKey sk = cc.KeyGen();
+        cc.BTKeyGen(sk);
     }
 }
 

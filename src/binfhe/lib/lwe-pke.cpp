@@ -66,7 +66,8 @@ LWEKeyPair LWEEncryptionScheme::KeyGenPair(const std::shared_ptr<LWECryptoParams
 }
 
 // size is the ring dimension N, modulus is the large Q used in RGSW encryption of bootstrapping.
-LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParams> params, LWEPrivateKey skN) const {
+LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParams> params,
+                                            ConstLWEPrivateKey skN) const {
     int size              = params->GetN();
     NativeInteger modulus = params->GetQ();
 

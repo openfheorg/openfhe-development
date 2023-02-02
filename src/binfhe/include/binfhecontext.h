@@ -155,6 +155,14 @@ public:
     LWEKeyPair KeyGenPair() const;
 
     /**
+   * Generates a public key for a secret key for the main LWE scheme
+   *
+   * @return a shared pointer to the public key
+   */
+
+    LWEPublicKey PubKeyGen(ConstLWEPrivateKey sk) const;
+
+    /**
    * Generates a secret key used in bootstrapping
    * @return a shared pointer to the secret key
    */
