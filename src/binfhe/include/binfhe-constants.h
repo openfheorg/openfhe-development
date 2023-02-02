@@ -88,6 +88,8 @@ enum BINFHE_OUTPUT {
     INVALID_OUTPUT = 0,
     FRESH,         // a fresh encryption
     BOOTSTRAPPED,  // a freshly encrypted ciphertext is bootstrapped
+    LARGEN,
+    SMALLN,
 };
 std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f);
 

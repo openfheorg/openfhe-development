@@ -50,19 +50,17 @@ int main() {
     std::cout << "Generating keys." << std::endl;
 
     // Generating the secret key
-    auto kt1 = cc1.KeyGenTriple();
-    auto sk1 = kt1->secretKey;
-    auto pk1 = kt1->publicKey;
-    auto ksk1 = kt1->keySwitchingKey;
+    auto sk1 = cc1.KeyGen();
 
     // Generate the bootstrapping keys
-    cc1.BTKeyGen(sk1);
+    cc1.BTKeyGen(sk1, true);
+
+    auto pk1 = cc1.GetPublicKey();
 
     std::cout << "Done generating all keys." << std::endl;
 
     // Encryption for a ciphertext that will be serialized
-    auto ct1N = cc1.EncryptN(pk1, 1);
-    auto ct1 = cc1.Encryptn(ksk1, ct1N);
+    auto ct1 = cc1.Encrypt(pk1, 1);
 
     // CODE FOR SERIALIZATION
 
@@ -95,14 +93,6 @@ int main() {
         return 1;
     }
     std::cout << "The secret key sk1 key been serialized." << std::endl;
-
-    // Serializing public key switching keys
-
-    if (!Serial::SerializeToFile(DATAFOLDER + "/ksk1.txt", ksk1, SerType::JSON)) {
-        std::cerr << "Error serializing ksk1" << std::endl;
-        return 1;
-    }
-    std::cout << "The public key switching key ksk1 key been serialized." << std::endl;
 
     // Serializing public keys
 
@@ -159,13 +149,6 @@ int main() {
     }
     std::cout << "The secret key has been deserialized." << std::endl;
 
-    LWESwitchingKey ksk;
-    if (Serial::DeserializeFromFile(DATAFOLDER + "/ksk1.txt", ksk, SerType::JSON) == false) {
-        std::cerr << "Could not deserialize the public key switching key" << std::endl;
-        return 1;
-    }
-    std::cout << "The public key switching key has been deserialized." << std::endl;
-
     LWEPublicKey pk;
     if (Serial::DeserializeFromFile(DATAFOLDER + "/pk1.txt", pk, SerType::JSON) == false) {
         std::cerr << "Could not deserialize the public key" << std::endl;
@@ -184,8 +167,7 @@ int main() {
 
     // OPERATIONS WITH DESERIALIZED KEYS AND CIPHERTEXTS
 
-    auto ct2N = cc.EncryptN(pk1, 1);
-    auto ct2 = cc.Encryptn(ksk1, ct2N);
+    auto ct2 = cc.Encrypt(pk, 1);
 
     std::cout << "Running the computation" << std::endl;
 

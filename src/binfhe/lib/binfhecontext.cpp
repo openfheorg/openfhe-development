@@ -183,9 +183,9 @@ LWEPrivateKey BinFHEContext::KeyGen() const {
     return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
 }
 
-LWEKeyTriple BinFHEContext::KeyGenTriple() const {
+LWEKeyPair BinFHEContext::KeyGenPair() const {
     auto& LWEParams = m_params->GetLWEParams();
-    return m_LWEscheme->KeyGenTriple(LWEParams);
+    return m_LWEscheme->KeyGenPair(LWEParams);
 }
 
 LWEPrivateKey BinFHEContext::KeyGenN() const {
@@ -201,10 +201,28 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& 
         mod = q;
     LWECiphertext ct = m_LWEscheme->Encrypt(LWEParams, sk, m, p, mod);
 
-    if ((output != FRESH) && (p == 4)) {
-        ct = m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
-    }
+    // BINFHE_OUTPUT is kept as it is for backward compatibility but
+    // this logic is obsolete now and commented out
+    // if ((output != FRESH) && (p == 4)) {
+    //    ct = m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
+    //}
 
+    return ct;
+}
+
+LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey pk, const LWEPlaintext& m, BINFHE_OUTPUT output,
+                                     LWEPlaintextModulus p, NativeInteger mod) const {
+    auto& LWEParams = m_params->GetLWEParams();
+    auto Q          = LWEParams->GetQ();
+    if (mod == 0)
+        mod = Q;
+
+    LWECiphertext ct = m_LWEscheme->EncryptN(LWEParams, pk, m, p, mod);
+
+    if (output == SMALLN) {
+        LWECiphertext ct1 = Encryptn(m_BTKey.KSkey, ct);
+        return ct1;
+    }
     return ct;
 }
 
@@ -220,7 +238,7 @@ LWECiphertext BinFHEContext::EncryptN(ConstLWEPublicKey pk, const LWEPlaintext& 
     return ct;
 }
 
-LWECiphertext BinFHEContext::Encryptn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct, BINFHE_OUTPUT output) const {
+LWECiphertext BinFHEContext::Encryptn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct) const {
     auto& LWEParams = m_params->GetLWEParams();
     auto Q          = LWEParams->GetQ();
     auto N          = LWEParams->GetN();
@@ -231,10 +249,6 @@ LWECiphertext BinFHEContext::Encryptn(ConstLWESwitchingKey ksk, ConstLWECipherte
     }
 
     LWECiphertext ct1 = m_LWEscheme->Encryptn(LWEParams, ksk, ct);
-
-    // if ((output != FRESH) && (p == 4)) {
-    //    ct = m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
-    // }
 
     return ct1;
 }
@@ -249,7 +263,7 @@ LWESwitchingKey BinFHEContext::KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPriva
     return m_LWEscheme->KeySwitchGen(m_params->GetLWEParams(), sk, skN);
 }
 
-void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk) {
+void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk, bool publicKeyFlag) {
     auto& RGSWParams = m_params->GetRingGSWParams();
 
     auto temp = RGSWParams->GetBaseG();
@@ -259,7 +273,7 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk) {
         for (std::map<uint32_t, std::vector<NativeInteger>>::iterator it = gpowermap.begin(); it != gpowermap.end();
              ++it) {
             RGSWParams->Change_BaseG(it->first);
-            m_BTKey_map[it->first] = m_binfhescheme->KeyGen(m_params, sk);
+            m_BTKey_map[it->first] = m_binfhescheme->KeyGen(m_params, sk, publicKeyFlag);
         }
         RGSWParams->Change_BaseG(temp);
     }
@@ -268,7 +282,7 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk) {
         m_BTKey = m_BTKey_map[temp];
     }
     else {
-        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk);
+        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk, publicKeyFlag);
         m_BTKey_map[temp] = m_BTKey;
     }
 }

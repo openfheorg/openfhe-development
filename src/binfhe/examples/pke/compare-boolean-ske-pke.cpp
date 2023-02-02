@@ -47,28 +47,30 @@ int main() {
     // and HE standard. Other common options are TOY, MEDIUM, STD192, and STD256.
     // MEDIUM corresponds to the level of more than 100 bits for both quantum and
     // classical computer attacks.
-    cc.GenerateBinFHEContext(STD128Q_OPT);//STD128);
+    cc.GenerateBinFHEContext(STD128Q_OPT);
 
     // Sample Program: Step 2: Key Generation
 
-    TIC(t);
     // Generate the key triple
-    auto keyTriple = cc.KeyGenTriple();
+    auto sk = cc.KeyGen();
+
+    std::cout << "Generating the bootstrapping keys..." << std::endl;
+    TIC(t);
+
+    // Generate the bootstrapping keys (refresh and switching keys)
+    cc.BTKeyGen(sk);
 
     auto elapsed_time = TOC_US(t);
-    std::cout << "time for key triple generation: " << elapsed_time << " microseconds" << std::endl;
+    std::cout << "time for bootstrap key generation without pk : " << elapsed_time << " microseconds" << std::endl;
 
     // Generate the secret key
     TIC(t);
-    auto sk = cc.KeyGen();
-
-    elapsed_time = TOC_US(t);
-    std::cout << "time for secret key generation: " << elapsed_time << " microseconds" << std::endl;
-
-    std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh and switching keys)
-    cc.BTKeyGen(keyTriple->secretKey);
+    cc.BTKeyGen(sk, true);
+
+    elapsed_time = TOC_US(t);
+    std::cout << "time for bootstrap key generation with pk: " << elapsed_time << " microseconds" << std::endl;
 
     std::cout << "Completed the key generation." << std::endl;
 
@@ -78,47 +80,46 @@ int main() {
     // By default, freshly encrypted ciphertexts are bootstrapped.
     // If you wish to get a fresh encryption without bootstrapping, write
     // auto   ct1 = cc.Encrypt(sk, 1, FRESH);
+    auto pk = cc.GetPublicKey();
+
     TIC(t);
-    auto ct1N = cc.EncryptN(keyTriple->publicKey, 1);
-    auto ct1 = cc.Encryptn(keyTriple->keySwitchingKey, ct1N);
+    auto ct1     = cc.Encrypt(pk, 1);
     elapsed_time = TOC_US(t);
     std::cout << "time for pke ciphertext generation: " << elapsed_time << " microseconds" << std::endl;
-    
+
     TIC(t);
-    auto ct2 = cc.Encrypt(sk, 1);
+    auto ct2     = cc.Encrypt(sk, 1);
     elapsed_time = TOC_US(t);
     std::cout << "time for ske ciphertext generation: " << elapsed_time << " microseconds" << std::endl;
-
 
     LWEPlaintext result;
 
     // decryption check before computation
-    cc.Decrypt(keyTriple->secretKey, ct1, &result);
+    cc.Decrypt(sk, ct1, &result);
 
     std::cout << "Result of encrypted ciphertext of 1 = " << result << std::endl;
 
-    
     // Sample Program: Step 4: Evaluation
 
     // Compute (1 AND 1) = 1; Other binary gate options are OR, NAND, and NOR
     LWEPlaintext result1;
     auto ctAND1 = cc.EvalBinGate(AND, ct1, ct2);
 
-    cc.Decrypt(keyTriple->secretKey, ctAND1, &result1);
+    cc.Decrypt(sk, ctAND1, &result1);
 
     std::cout << "Result of encrypted computation of (1 AND 1) = " << result1 << std::endl;
 
     // Compute (NOT 1) = 0
     auto ct2Not = cc.EvalNOT(ct2);
 
-    cc.Decrypt(keyTriple->secretKey, ct2Not, &result);
+    cc.Decrypt(sk, ct2Not, &result);
 
     std::cout << "Result of encrypted computation of (NOT 1) = " << result << std::endl;
 
     // Compute (1 AND (NOT 1)) = 0
     auto ctAND2 = cc.EvalBinGate(AND, ct2Not, ct1);
 
-    cc.Decrypt(keyTriple->secretKey, ctAND2, &result);
+    cc.Decrypt(sk, ctAND2, &result);
 
     std::cout << "Result of encrypted computation of (1 AND (NOT 1)) = " << result << std::endl;
 
@@ -126,7 +127,7 @@ int main() {
     auto ctResult = cc.EvalBinGate(OR, ctAND1, ctAND2);
 
     // Sample Program: Step 5: Decryption
-    cc.Decrypt(keyTriple->secretKey, ctResult, &result);
+    cc.Decrypt(sk, ctResult, &result);
 
     std::cout << "Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = " << result << std::endl;
 

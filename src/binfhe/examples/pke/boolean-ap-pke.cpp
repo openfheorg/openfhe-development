@@ -54,16 +54,15 @@ int main() {
     // Sample Program: Step 2: Key Generation
 
     // Generate the secret key
-    auto kt = cc.KeyGenTriple();
-    auto sk = kt->secretKey;
-    auto pk = kt->publicKey;
-    auto ksk = kt->keySwitchingKey;
+    auto sk = cc.KeyGen();
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh and switching keys)
-    cc.BTKeyGen(sk);
+    cc.BTKeyGen(sk, true);
 
+    auto pk  = cc.GetPublicKey();
+    auto ksk = cc.GetSwitchKey();
     std::cout << "Completed the key generation." << std::endl;
 
     // Sample Program: Step 3: Encryption
@@ -72,11 +71,8 @@ int main() {
     // By default, freshly encrypted ciphertexts are bootstrapped.
     // If you wish to get a fresh encryption without bootstrapping, write
     // auto   ct1 = cc.Encrypt(sk, 1, FRESH);
-    auto ct1N = cc.EncryptN(pk, 1);
-    auto ct1 = cc.Encryptn(ksk, ct1N);
-
-    auto ct2N = cc.EncryptN(pk, 1);
-    auto ct2 = cc.Encryptn(ksk, ct2N);
+    auto ct1 = cc.Encrypt(pk, 1);
+    auto ct2 = cc.EncryptN(pk, 1);
 
     // Sample Program: Step 4: Evaluation
 

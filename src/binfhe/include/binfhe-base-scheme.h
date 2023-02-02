@@ -53,6 +53,8 @@ typedef struct {
     RingGSWACCKey BSkey;
     // switching key
     LWESwitchingKey KSkey;
+    // public key
+    LWEPublicKey Pkey;
 } RingGSWBTKey;
 
 /**
@@ -80,10 +82,12 @@ public:
    * @param params a shared pointer to RingGSW scheme parameters
    * @param lwescheme a shared pointer to additive LWE scheme
    * @param LWEsk a shared pointer to the secret key of the underlying additive
+   * @param publicKeyFlag boolean flag to indicate generation of a public key for LWEsk
    * LWE scheme
    * @return a shared pointer to the refreshing key
    */
-    RingGSWBTKey KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk) const;
+    RingGSWBTKey KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk,
+                        bool publicKeyFlag) const;
 
     /**
    * Evaluates a binary gate (calls bootstrapping as a subroutine)

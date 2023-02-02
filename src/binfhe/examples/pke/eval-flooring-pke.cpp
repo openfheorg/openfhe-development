@@ -46,15 +46,12 @@ int main() {
     // Sample Program: Step 2: Key Generation
 
     // Generate the secret key
-    auto kt = cc.KeyGenTriple();
-    auto sk = kt->secretKey;
-    auto pk = kt->publicKey;
-    auto ksk = kt->keySwitchingKey;
+    auto sk = cc.KeyGen();
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh and switching keys)
-    cc.BTKeyGen(sk);
+    cc.BTKeyGen(sk, true);
 
     std::cout << "Completed the key generation." << std::endl;
 
@@ -69,8 +66,9 @@ int main() {
     uint32_t input = 6;
     std::cout << "Homomorphically round down the input by " << bits << " bits." << std::endl;
 
-    auto ct1N = cc.EncryptN(pk, input % p, p);
-    auto ct1 = cc.Encryptn(ksk, ct1N, FRESH);
+    auto pk = cc.GetPublicKey();
+
+    auto ct1 = cc.Encrypt(pk, input % p, SMALLN, p);
 
     // Sample Program: Step 4: Evaluation
     auto ctRounded = cc.EvalFloor(ct1, bits);

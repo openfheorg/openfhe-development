@@ -54,15 +54,14 @@ int main() {
     // Sample Program: Step 2: Key Generation
 
     // Generate the secret key
-    auto kt = cc.KeyGenTriple();
-    auto sk = kt->secretKey;
-    auto pk = kt->publicKey;
-    auto ksk = kt->keySwitchingKey;
+    auto sk = cc.KeyGen();
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh and switching keys)
-    cc.BTKeyGen(sk);
+    cc.BTKeyGen(sk, true);
+
+    auto pk = cc.GetPublicKey();
 
     std::cout << "Completed the key generation."
               << "\n"
@@ -71,17 +70,13 @@ int main() {
     // Sample Program: Step 3: Encryption
 
     // Encrypt two ciphertexts representing Boolean True (1)
-    auto ct10N = cc.EncryptN(pk, 1);
-    auto ct11N = cc.EncryptN(pk, 1);
+    auto ct10 = cc.Encrypt(pk, 1);
+    auto ct11 = cc.Encrypt(pk, 1);
 
-    auto ct10 = cc.Encryptn(ksk, ct10N);
-    auto ct11 = cc.Encryptn(ksk, ct11N);
     // Encrypt two ciphertexts representing Boolean False (0)
-    auto ct00N = cc.EncryptN(pk, 0);
-    auto ct01N = cc.EncryptN(pk, 0);
+    auto ct00 = cc.Encrypt(pk, 0);
+    auto ct01 = cc.Encrypt(pk, 0);
 
-    auto ct00 = cc.Encryptn(ksk, ct00N);
-    auto ct01 = cc.Encryptn(ksk, ct01N);
     // Sample Program: Step 4: Evaluation of NAND gates
 
     auto ctNAND1 = cc.EvalBinGate(NAND, ct10, ct11);
