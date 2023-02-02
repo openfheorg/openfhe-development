@@ -138,7 +138,7 @@ void FHEW_BINGATE(benchmark::State& state, ParamSet param_set, BinGate bin_gate)
 
     LWEPrivateKey sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk);
+    cc.BTKeyGen(sk, true);
 
     LWEPublicKey pk = cc.GetPublicKey();
 
