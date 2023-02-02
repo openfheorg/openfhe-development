@@ -58,7 +58,7 @@ int main() {
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
-    // Generate the bootstrapping keys (refresh and switching keys)
+    // Generate the bootstrapping keys (refresh, switching and public keys)
     cc.BTKeyGen(sk, true);
 
     auto pk = cc.GetPublicKey();

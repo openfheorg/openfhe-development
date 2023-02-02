@@ -50,7 +50,9 @@ int main() {
 
     // verifying public key encrypt and decrypt without bootstrap
     // Generate the secret, public key pair
-    auto kp  = cc.KeyGenPair();
+    auto kp = cc.KeyGenPair();
+
+    // LARGEN specifies the dimension of the output ciphertext
     auto ctp = cc.Encrypt(kp->publicKey, 1, LARGEN);
 
     LWEPlaintext result;
@@ -67,7 +69,7 @@ int main() {
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
-    // Generate the bootstrapping keys (refresh and switching keys)
+    // Generate the bootstrapping keys (refresh, switching and public keys)
     cc.BTKeyGen(sk, true);
 
     std::cout << "Completed the key generation." << std::endl;
