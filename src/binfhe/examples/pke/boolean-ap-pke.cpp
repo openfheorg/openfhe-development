@@ -62,8 +62,7 @@ int main() {
     // Public keys are generated when the publicKeyFlag is set to true
     cc.BTKeyGen(sk, true);
 
-    auto pk  = cc.GetPublicKey();
-    auto ksk = cc.GetSwitchKey();
+    auto pk = cc.GetPublicKey();
     std::cout << "Completed the key generation." << std::endl;
 
     // Sample Program: Step 3: Encryption
