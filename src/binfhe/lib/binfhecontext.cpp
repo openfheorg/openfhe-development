@@ -183,14 +183,19 @@ LWEPrivateKey BinFHEContext::KeyGen() const {
     return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
 }
 
+LWEPrivateKey BinFHEContext::KeyGenN() const {
+    auto& LWEParams = m_params->GetLWEParams();
+    return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
+}
+
 LWEKeyPair BinFHEContext::KeyGenPair() const {
     auto& LWEParams = m_params->GetLWEParams();
     return m_LWEscheme->KeyGenPair(LWEParams);
 }
 
-LWEPrivateKey BinFHEContext::KeyGenN() const {
+LWEPublicKey BinFHEContext::PubKeyGen(ConstLWEPrivateKey sk) const {
     auto& LWEParams = m_params->GetLWEParams();
-    return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
+    return m_LWEscheme->PubKeyGen(LWEParams, sk);
 }
 
 LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHE_OUTPUT output,
