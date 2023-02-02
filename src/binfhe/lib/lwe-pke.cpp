@@ -140,7 +140,7 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
 
 // classical public key LWE encryption
 // a = As' + e' of dimension n; with integers mod q
-// b = vs' + e'' + m floor(q/4) is an integer mod q
+// b = vs' + e" + m floor(q/4) is an integer mod q
 LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParams> params, ConstLWEPublicKey pk,
                                             const LWEPlaintext& m, const LWEPlaintextModulus& p,
                                             const NativeInteger& mod) const {

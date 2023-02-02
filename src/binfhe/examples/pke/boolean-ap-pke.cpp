@@ -58,7 +58,8 @@ int main() {
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
-    // Generate the bootstrapping keys (refresh and switching keys)
+    // Generate the bootstrapping keys (refresh, switching and public keys)
+    // Public keys are generated when the publicKeyFlag is set to true
     cc.BTKeyGen(sk, true);
 
     auto pk  = cc.GetPublicKey();
@@ -68,11 +69,8 @@ int main() {
     // Sample Program: Step 3: Encryption
 
     // Encrypt two ciphertexts representing Boolean True (1)
-    // By default, freshly encrypted ciphertexts are bootstrapped.
-    // If you wish to get a fresh encryption without bootstrapping, write
-    // auto   ct1 = cc.Encrypt(sk, 1, FRESH);
     auto ct1 = cc.Encrypt(pk, 1);
-    auto ct2 = cc.EncryptN(pk, 1);
+    auto ct2 = cc.Encrypt(pk, 1);
 
     // Sample Program: Step 4: Evaluation
 

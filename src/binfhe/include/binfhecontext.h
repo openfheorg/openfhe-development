@@ -195,7 +195,7 @@ public:
     LWECiphertext Encrypt(ConstLWEPublicKey pk, const LWEPlaintext& m, BINFHE_OUTPUT output = SMALLN,
                           LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
     /**
-   * Encrypts a bit using a public key (public key encryption)
+   * Encrypts a bit using a public key (public key encryption) with larger dimension N and modulus Q
    *
    * @param pk - the public key
    * @param &m - the plaintext

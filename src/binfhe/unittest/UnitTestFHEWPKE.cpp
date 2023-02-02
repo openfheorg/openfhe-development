@@ -48,11 +48,10 @@ TEST(UNITTestFHEWPKEAP, NOT) {
     auto sk = cc.KeyGen();
 
     cc.BTKeyGen(sk, true);
-    std::cout << "here before encrypt" << std::endl;
+
     auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
 
-    std::cout << "here after encrypt" << std::endl;
     auto ct1Not = cc.EvalNOT(ct1);
     auto ct0Not = cc.EvalNOT(ct0);
 
