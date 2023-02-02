@@ -48,15 +48,27 @@ int main() {
     // classical computer attacks.
     cc.GenerateBinFHEContext(STD128);
 
+    // verifying public key encrypt and decrypt without bootstrap
+    // Generate the secret, public key pair
+    auto kp  = cc.KeyGenPair();
+    auto ctp = cc.Encrypt(kp->publicKey, 1, LARGEN);
+
+    LWEPlaintext result;
+
+    // decryption check before computation
+    cc.Decrypt(kp->secretKey, ctp, &result);
+
+    std::cout << "Result of encrypted ciphertext of 1 = " << result << std::endl;
+
     // Sample Program: Step 2: Key Generation
 
     // Generate the secret key
-    auto keyTriple = cc.KeyGenTriple();
+    auto sk = cc.KeyGen();
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh and switching keys)
-    cc.BTKeyGen(keyTriple->secretKey);
+    cc.BTKeyGen(sk, true);
 
     std::cout << "Completed the key generation." << std::endl;
 
@@ -66,16 +78,11 @@ int main() {
     // By default, freshly encrypted ciphertexts are bootstrapped.
     // If you wish to get a fresh encryption without bootstrapping, write
     // auto   ct1 = cc.Encrypt(sk, 1, FRESH);
-    auto ct1N = cc.EncryptN(keyTriple->publicKey, 1);
-    auto ct1  = cc.Encryptn(keyTriple->keySwitchingKey, ct1N);
-
-    auto ct2N = cc.EncryptN(keyTriple->publicKey, 1);
-    auto ct2  = cc.Encryptn(keyTriple->keySwitchingKey, ct2N);
-
-    LWEPlaintext result;
+    auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
+    auto ct2 = cc.Encrypt(cc.GetPublicKey(), 1);
 
     // decryption check before computation
-    cc.Decrypt(keyTriple->secretKey, ct1, &result);
+    cc.Decrypt(sk, ct1, &result);
 
     std::cout << "Result of encrypted ciphertext of 1 = " << result << std::endl;
 
@@ -85,21 +92,21 @@ int main() {
     LWEPlaintext result1;
     auto ctAND1 = cc.EvalBinGate(AND, ct1, ct2);
 
-    cc.Decrypt(keyTriple->secretKey, ctAND1, &result1);
+    cc.Decrypt(sk, ctAND1, &result1);
 
     std::cout << "Result of encrypted computation of (1 AND 1) = " << result1 << std::endl;
 
     // Compute (NOT 1) = 0
     auto ct2Not = cc.EvalNOT(ct2);
 
-    cc.Decrypt(keyTriple->secretKey, ct2Not, &result);
+    cc.Decrypt(sk, ct2Not, &result);
 
     std::cout << "Result of encrypted computation of (NOT 1) = " << result << std::endl;
 
     // Compute (1 AND (NOT 1)) = 0
     auto ctAND2 = cc.EvalBinGate(AND, ct2Not, ct1);
 
-    cc.Decrypt(keyTriple->secretKey, ctAND2, &result);
+    cc.Decrypt(sk, ctAND2, &result);
 
     std::cout << "Result of encrypted computation of (1 AND (NOT 1)) = " << result << std::endl;
 
@@ -107,7 +114,7 @@ int main() {
     auto ctResult = cc.EvalBinGate(OR, ctAND1, ctAND2);
 
     // Sample Program: Step 5: Decryption
-    cc.Decrypt(keyTriple->secretKey, ctResult, &result);
+    cc.Decrypt(sk, ctResult, &result);
 
     std::cout << "Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = " << result << std::endl;
 

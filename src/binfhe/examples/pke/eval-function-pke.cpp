@@ -45,15 +45,14 @@ int main() {
     // Sample Program: Step 2: Key Generation
 
     // Generate the secret key
-    auto kt = cc.KeyGenTriple();
-    auto sk = kt->secretKey;
-    auto pk = kt->publicKey;
-    auto ksk = kt->keySwitchingKey;
+    auto sk = cc.KeyGen();
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh and switching keys)
-    cc.BTKeyGen(sk);
+    cc.BTKeyGen(sk, true);
+
+    auto pk = cc.GetPublicKey();
 
     std::cout << "Completed the key generation." << std::endl;
 
@@ -75,8 +74,7 @@ int main() {
     // Sample Program: Step 4: evalute f(x) homomorphically and decrypt
     // Note that we check for all the possible plaintexts.
     for (int i = 0; i < p; i++) {
-        auto ct1N = cc.EncryptN(pk, i % p, p);
-        auto ct1 = cc.Encryptn(ksk, ct1N, FRESH);
+        auto ct1 = cc.Encrypt(pk, i % p, SMALLN, p);
 
         auto ct_cube = cc.EvalFunc(ct1, lut);
 

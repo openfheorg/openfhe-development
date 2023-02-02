@@ -66,7 +66,8 @@ void FHEW_KEYGEN(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
     for (auto _ : state) {
-        LWEKeyTriple kt = cc.KeyGenTriple();
+        LWEPrivateKey sk = cc.KeyGen();
+        cc.BTKeyGen(sk, true);
     }
 }
 
@@ -79,15 +80,15 @@ void FHEW_ENCRYPT(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEKeyTriple kt = cc.KeyGenTriple();
+    LWEPrivateKey sk = cc.KeyGen();
 
-    auto sk = kt->secretKey;
-    auto pk = kt->publicKey;
-    auto ksk = kt->keySwitchingKey;
+    cc.BTKeyGen(sk, true);
+    LWEPublicKey pk     = cc.GetPublicKey();
+    LWESwitchingKey ksk = cc.GetSwitchKey();
 
     for (auto _ : state) {
         LWECiphertext ct1N = cc.EncryptN(pk, 1);
-        LWECiphertext ct1 = cc.Encryptn(ksk, ct1N, FRESH);
+        LWECiphertext ct1  = cc.Encryptn(ksk, ct1N);
     }
 }
 
@@ -100,13 +101,14 @@ void FHEW_NOT(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEKeyTriple kt = cc.KeyGenTriple();
-    auto sk = kt->secretKey;
-    auto pk = kt->publicKey;
-    auto ksk = kt->keySwitchingKey;
+    LWEPrivateKey sk = cc.KeyGen();
+
+    cc.BTKeyGen(sk, true);
+    LWEPublicKey pk     = cc.GetPublicKey();
+    LWESwitchingKey ksk = cc.GetSwitchKey();
 
     LWECiphertext ct1N = cc.EncryptN(pk, 1);
-    LWECiphertext ct1 = cc.Encryptn(ksk, ct1N, FRESH);
+    LWECiphertext ct1  = cc.Encryptn(ksk, ct1N);
 
     for (auto _ : state) {
         LWECiphertext ct11 = cc.EvalNOT(ct1);
@@ -125,18 +127,18 @@ void FHEW_BINGATE(benchmark::State& state, ParamSet param_set, BinGate bin_gate)
 
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEKeyTriple kt = cc.KeyGenTriple();
-    auto sk = kt->secretKey;
-    auto pk = kt->publicKey;
-    auto ksk = kt->keySwitchingKey;
+    LWEPrivateKey sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk);
+    cc.BTKeyGen(sk, true);
+
+    LWEPublicKey pk     = cc.GetPublicKey();
+    LWESwitchingKey ksk = cc.GetSwitchKey();
 
     LWECiphertext ct1N = cc.EncryptN(pk, 1);
-    LWECiphertext ct1 = cc.Encryptn(ksk, ct1N);
+    LWECiphertext ct1  = cc.Encryptn(ksk, ct1N);
 
     LWECiphertext ct2N = cc.EncryptN(pk, 1);
-    LWECiphertext ct2 = cc.Encryptn(ksk, ct2N);
+    LWECiphertext ct2  = cc.Encryptn(ksk, ct2N);
 
     for (auto _ : state) {
         LWECiphertext ct11 = cc.EvalBinGate(gate, ct1, ct2);

@@ -36,11 +36,21 @@
 namespace lbcrypto {
 
 // wrapper for KeyGen methods
-RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk) const {
-    auto& LWEParams        = params->GetLWEParams();
-    ConstLWEPrivateKey skN = LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
+RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk,
+                                  bool publicKeyFlag = false) const {
+    auto& LWEParams = params->GetLWEParams();
 
+    LWEPrivateKey skN;
     RingGSWBTKey ek;
+    if (!publicKeyFlag) {
+        skN = LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
+    }
+    else {
+        ConstLWEKeyPair kpN = LWEscheme->KeyGenPair(LWEParams);
+        skN                 = kpN->secretKey;
+        ek.Pkey             = kpN->publicKey;
+    }
+
     ek.KSkey = LWEscheme->KeySwitchGen(LWEParams, LWEsk, skN);
 
     auto& RGSWParams   = params->GetRingGSWParams();

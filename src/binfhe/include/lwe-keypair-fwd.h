@@ -28,47 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#ifndef _LWE_KEYTRIPLE_H_
-#define _LWE_KEYTRIPLE_H_
-
-#include "lwe-privatekey.h"
-#include "lwe-publickey.h"
-#include "lwe-keyswitchkey.h"
-#include "lwe-keytriple-fwd.h"
-#include "math/hal.h"
-#include "utils/serializable.h"
+#ifndef __LWE_KEYPAIR_FWD_H__
+#define __LWE_KEYPAIR_FWD_H__
 
 #include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace lbcrypto {
-/**
- * @brief Class that stores the LWE scheme secret key, public key pair; ((A, b), s)
- */
-class LWEKeyTripleImpl {
-public:
-    LWEPublicKey publicKey;
-    LWEPrivateKey secretKey;
-    LWESwitchingKey keySwitchingKey; // key switching key from skN to skn
+class LWEKeyPairImpl;
 
-    LWEKeyTripleImpl(LWEPublicKey Av, LWEPrivateKey s, LWESwitchingKey ksKey) : publicKey(Av), secretKey(s), keySwitchingKey(ksKey) {}
-
-//    LWEKeyTripleImpl(LWEPublicKey Av, LWEPrivateKey s) {
-//        publicKey = Av;
-//        secretKey = s;
-//    } 
-
-    //explicit LWEKeyTripleImpl(LWEPublicKey* Av = nullptr, LWEPrivateKey* s = nullptr)
-    //    : publicKey(Av), secretKey(s) {}
-
-    bool good() {
-        return publicKey && secretKey;
-    }
-};
-
+using LWEKeyPair      = std::shared_ptr<LWEKeyPairImpl>;
+using ConstLWEKeyPair = const std::shared_ptr<const LWEKeyPairImpl>;
 }  // namespace lbcrypto
 
-#endif  // _LWE_KEYTRIPLE_H_
+#endif  // __LWE_KEYPAIR_FWD_H__

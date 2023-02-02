@@ -119,6 +119,16 @@ public:
     const LWESwitchingKey GetSwitchKey() const {
         return m_BTKey.KSkey;
     }
+
+    /**
+   * Gets the public key (used for serialization).
+   *
+   * @return a shared pointer to the switching key
+   */
+    const LWEPublicKey GetPublicKey() const {
+        return m_BTKey.Pkey;
+    }
+
     /**
     * Gets the bootstrapping key map (used for serialization).
     *
@@ -135,14 +145,14 @@ public:
    * @return a shared pointer to the secret key
    */
     LWEPrivateKey KeyGen() const;
-  
+
     /**
-   * Generates a public key, secret key pair and key switching key for the main LWE scheme
+   * Generates a public key, secret key pair for the main LWE scheme
    *
    * @return a shared pointer to the public key, secret key pair
    */
 
-    LWEKeyTriple KeyGenTriple() const;
+    LWEKeyPair KeyGenPair() const;
 
     /**
    * Generates a secret key used in bootstrapping
@@ -171,21 +181,31 @@ public:
    * @param &m - the plaintext
    * @param p - plaintext modulus
    * @param mod Encrypt according to mod instead of m_q if mod != 0
+   * @param output - SMALLN to generate ciphertext with dimension N (default)
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext EncryptN(ConstLWEPublicKey pk, const LWEPlaintext& m,
+    LWECiphertext Encrypt(ConstLWEPublicKey pk, const LWEPlaintext& m, BINFHE_OUTPUT output = SMALLN,
                           LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
+    /**
+   * Encrypts a bit using a public key (public key encryption)
+   *
+   * @param pk - the public key
+   * @param &m - the plaintext
+   * @param p - plaintext modulus
+   * @param mod Encrypt according to mod instead of m_q if mod != 0
+   * @return a shared pointer to the ciphertext
+   */
+    LWECiphertext EncryptN(ConstLWEPublicKey pk, const LWEPlaintext& m, LWEPlaintextModulus p = 4,
+                           NativeInteger mod = 0) const;
 
     /**
    * Converts a ciphertext (public key encryption) with modulus Q and dimension N to ciphertext with q and n
    *
    * @param ksk - the key switching key from secret key of dimension N to secret key of dimension n
-   * @param output - FRESH to generate fresh ciphertext, BOOTSTRAPPED to
-   * generate a refreshed ciphertext (default)
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encryptn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct, BINFHE_OUTPUT output = BOOTSTRAPPED) const;
-                    
+    LWECiphertext Encryptn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct) const;
+
     /**
    * Decrypts a ciphertext using a secret key
    *
@@ -213,7 +233,7 @@ public:
    * @param sk secret key
    * @param DiffQ BTKeyGen according to DiffQ instead of m_q if DiffQ != 0
    */
-    void BTKeyGen(ConstLWEPrivateKey sk);
+    void BTKeyGen(ConstLWEPrivateKey sk, bool publicKeyFlag = false);
 
     /**
    * Loads bootstrapping keys in the context (typically after deserializing)
@@ -240,6 +260,7 @@ public:
     void ClearBTKeys() {
         m_BTKey.BSkey.reset();
         m_BTKey.KSkey.reset();
+        m_BTKey.Pkey.reset();
         m_BTKey_map.clear();
     }
 
