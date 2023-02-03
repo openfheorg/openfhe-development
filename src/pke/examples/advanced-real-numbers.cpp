@@ -218,93 +218,93 @@ void AutomaticRescaleDemo(ScalingTechnique scalTech) {
    * and observe the changes in scaling factors and depths.
    */
 
-    // #if 0
-    //  const auto cryptoParamsCKKS =
-    //      std::dynamic_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
-    //          cc->GetCryptoParameters());
-    //
-    //  std::cout << fixed;
-    //  std::cout.precision(2);
-    //  // We have designed FLEXIBLEAUTO so that ciphertexts of a
-    //  // given level have a specific scaling factor.
-    //  std::cout << "\nScaling factors of levels: " << std::endl;
-    //  for (uint32_t i = 0; i < multDepth; i++) {
-    //    std::cout << "Level " << i << ": "
-    //              << cryptoParamsCKKS->GetScalingFactorOfLevel(i) << std::endl;
-    //  }
-    //
-    //  std::cout << std::endl;
-    //
-    //  // The initial ciphertext has level 0 and depth 1.
-    //  // One can use additional arguments in
-    //  // cc->MakeCKKSPackedPlaintext(x, depth, level) create
-    //  // plaintexts/ciphertexts at any desired depth/level.
-    //  // Also, in all of the following, notice that scaling
-    //  // factors change at every level and they match the
-    //  // ones printed above.
-    //  std::cout << "Ciphertext c:" << std::endl;
-    //  std::cout << "\t scaling factor: " << c->GetScalingFactor() << std::endl;
-    //  std::cout << "\t scaling factor degree: " << c->GetNoiseScaleDeg() << std::endl;
-    //  std::cout << "\t level: " << c->GetLevel() << std::endl;
-    //
-    //  // Notice how the result of EvalMult(c,c) is of depth 2.
-    //  // This is because the Rescale operation is performed lazily,
-    //  // i.e., only when we want to multiply ciphertexts of depth > 1.
-    //  // Level is still 0 because no rescale operation has been run.
-    //  std::cout << "Ciphertext c2:" << std::endl;
-    //  std::cout << "\t scaling factor: (" << sqrt(c2->GetScalingFactor()) << ")^2"
-    //            << std::endl;
-    //  std::cout << "\t scaling factor degree: " << c2->GetNoiseScaleDeg() << std::endl;
-    //  std::cout << "\t level: " << c2->GetLevel() << std::endl;
-    //
-    //  // Here, the c2 inputs where of depth 2, so they had to be rescaled
-    //  // before computing c4. Hence, the level has become 1. Again,
-    //  // rescaling happens lazily, so depth of the result is 2.
-    //  std::cout << "Ciphertext c4:" << std::endl;
-    //  std::cout << "\t scaling factor: (" << sqrt(c4->GetScalingFactor()) << ")^2"
-    //            << std::endl;
-    //  std::cout << "\t scaling factor degree: " << c4->GetNoiseScaleDeg() << std::endl;
-    //  std::cout << "\t level: " << c4->GetLevel() << std::endl;
-    //
-    //  std::cout << "Ciphertext c8:" << std::endl;
-    //  std::cout << "\t scaling factor: (" << sqrt(c8->GetScalingFactor()) << ")^2"
-    //            << std::endl;
-    //  std::cout << "\t scaling factor degree: " << c8->GetNoiseScaleDeg() << std::endl;
-    //  std::cout << "\t level: " << c8->GetLevel() << std::endl;
-    //
-    //  std::cout << "Ciphertext c16:" << std::endl;
-    //  std::cout << "\t scaling factor: (" << sqrt(c16->GetScalingFactor()) << ")^2"
-    //            << std::endl;
-    //  std::cout << "\t scaling factor degree: " << c16->GetNoiseScaleDeg() << std::endl;
-    //  std::cout << "\t level: " << c16->GetLevel() << std::endl;
-    //
-    //  // c9 is the result of EvalMult between c8 (depth:2, level:2) and
-    //  // c (depth: 1, level: 0). Inputs are automatically brought to the
-    //  // correct depth and level before the operation and the user does
-    //  // not need to care about these low level details.
-    //  std::cout << "Ciphertext c9:" << std::endl;
-    //  std::cout << "\t scaling factor: (" << sqrt(c9->GetScalingFactor()) << ")^2"
-    //            << std::endl;
-    //  std::cout << "\t scaling factor degree: " << c9->GetNoiseScaleDeg() << std::endl;
-    //  std::cout << "\t level: " << c9->GetLevel() << std::endl;
-    //
-    //  std::cout << "Ciphertext c18:" << std::endl;
-    //  std::cout << "\t scaling factor: (" << sqrt(c18->GetScalingFactor()) << ")^2"
-    //            << std::endl;
-    //  std::cout << "\t scaling factor degree: " << c18->GetNoiseScaleDeg() << std::endl;
-    //  std::cout << "\t level: " << c18->GetLevel() << std::endl;
-    //
-    //  // The result has the same depth and level as c18 because
-    //  // additions do not require any rescaling.
-    //  std::cout << "Ciphertext cRes:" << std::endl;
-    //  std::cout << "\t scaling factor: (" << sqrt(cRes->GetScalingFactor()) << ")^2"
-    //            << std::endl;
-    //  std::cout << "\t scaling factor degree: " << cRes->GetNoiseScaleDeg() << std::endl;
-    //  std::cout << "\t level: " << cRes->GetLevel() << std::endl;
-    //
-    //  std::cout << defaultfloat;
-    //  std::cout.precision(8);
-    // #endif
+     //#if 0
+     // const auto cryptoParamsCKKS =
+     //     std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+     //         cc->GetCryptoParameters());
+    
+     // std::cout << std::fixed;
+     // std::cout.precision(2);
+     // // We have designed FLEXIBLEAUTO so that ciphertexts of a
+     // // given level have a specific scaling factor.
+     // std::cout << "\nScaling factors of levels: " << std::endl;
+     // for (uint32_t i = 0; i < parameters.GetMultiplicativeDepth(); i++) {
+     //   std::cout << "Level " << i << ": "
+     //             << cryptoParamsCKKS->GetScalingFactorReal(i) << std::endl;
+     // }
+    
+     // std::cout << std::endl;
+    
+     // // The initial ciphertext has level 0 and depth 1.
+     // // One can use additional arguments in
+     // // cc->MakeCKKSPackedPlaintext(x, depth, level) create
+     // // plaintexts/ciphertexts at any desired depth/level.
+     // // Also, in all of the following, notice that scaling
+     // // factors change at every level and they match the
+     // // ones printed above.
+     // std::cout << "Ciphertext c:" << std::endl;
+     // std::cout << "\t scaling factor: " << c->GetScalingFactor() << std::endl;
+     // std::cout << "\t scaling factor degree: " << c->GetNoiseScaleDeg() << std::endl;
+     // std::cout << "\t level: " << c->GetLevel() << std::endl;
+    
+     // // Notice how the result of EvalMult(c,c) is of depth 2.
+     // // This is because the Rescale operation is performed lazily,
+     // // i.e., only when we want to multiply ciphertexts of depth > 1.
+     // // Level is still 0 because no rescale operation has been run.
+     // std::cout << "Ciphertext c2:" << std::endl;
+     // std::cout << "\t scaling factor: (" << sqrt(c2->GetScalingFactor()) << ")^2"
+     //           << std::endl;
+     // std::cout << "\t scaling factor degree: " << c2->GetNoiseScaleDeg() << std::endl;
+     // std::cout << "\t level: " << c2->GetLevel() << std::endl;
+    
+     // // Here, the c2 inputs where of depth 2, so they had to be rescaled
+     // // before computing c4. Hence, the level has become 1. Again,
+     // // rescaling happens lazily, so depth of the result is 2.
+     // std::cout << "Ciphertext c4:" << std::endl;
+     // std::cout << "\t scaling factor: (" << sqrt(c4->GetScalingFactor()) << ")^2"
+     //           << std::endl;
+     // std::cout << "\t scaling factor degree: " << c4->GetNoiseScaleDeg() << std::endl;
+     // std::cout << "\t level: " << c4->GetLevel() << std::endl;
+    
+     // std::cout << "Ciphertext c8:" << std::endl;
+     // std::cout << "\t scaling factor: (" << sqrt(c8->GetScalingFactor()) << ")^2"
+     //           << std::endl;
+     // std::cout << "\t scaling factor degree: " << c8->GetNoiseScaleDeg() << std::endl;
+     // std::cout << "\t level: " << c8->GetLevel() << std::endl;
+    
+     // std::cout << "Ciphertext c16:" << std::endl;
+     // std::cout << "\t scaling factor: (" << sqrt(c16->GetScalingFactor()) << ")^2"
+     //           << std::endl;
+     // std::cout << "\t scaling factor degree: " << c16->GetNoiseScaleDeg() << std::endl;
+     // std::cout << "\t level: " << c16->GetLevel() << std::endl;
+    
+     // // c9 is the result of EvalMult between c8 (depth:2, level:2) and
+     // // c (depth: 1, level: 0). Inputs are automatically brought to the
+     // // correct depth and level before the operation and the user does
+     // // not need to care about these low level details.
+     // std::cout << "Ciphertext c9:" << std::endl;
+     // std::cout << "\t scaling factor: (" << sqrt(c9->GetScalingFactor()) << ")^2"
+     //           << std::endl;
+     // std::cout << "\t scaling factor degree: " << c9->GetNoiseScaleDeg() << std::endl;
+     // std::cout << "\t level: " << c9->GetLevel() << std::endl;
+    
+     // std::cout << "Ciphertext c18:" << std::endl;
+     // std::cout << "\t scaling factor: (" << sqrt(c18->GetScalingFactor()) << ")^2"
+     //           << std::endl;
+     // std::cout << "\t scaling factor degree: " << c18->GetNoiseScaleDeg() << std::endl;
+     // std::cout << "\t level: " << c18->GetLevel() << std::endl;
+    
+     // // The result has the same depth and level as c18 because
+     // // additions do not require any rescaling.
+     // std::cout << "Ciphertext cRes:" << std::endl;
+     // std::cout << "\t scaling factor: (" << sqrt(cRes->GetScalingFactor()) << ")^2"
+     //           << std::endl;
+     // std::cout << "\t scaling factor degree: " << cRes->GetNoiseScaleDeg() << std::endl;
+     // std::cout << "\t level: " << cRes->GetLevel() << std::endl;
+    
+     // std::cout << std::defaultfloat;
+     // std::cout.precision(8);
+     //#endif
 }
 
 void ManualRescaleDemo(ScalingTechnique scalTech) {
@@ -512,41 +512,41 @@ void HybridKeySwitchingDemo1() {
    * and how these change with the number of digits
    * dnum.
    */
-    // #if 0
-    //  const auto cryptoParamsCKKS =
-    //      std::dynamic_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
-    //          cc->GetCryptoParameters());
-    //
-    //  auto paramsQ = cc->GetElementParams()->GetParams();
-    //  std::cout << "\nModuli in Q:" << std::endl;
-    //  for (uint32_t i = 0; i < paramsQ.size(); i++) {
-    //    // q0 is a bit larger because its default size is 60 bits.
-    //    // One can change this by supplying the firstModSize argument
-    //    // in genCryptoContextCKKS.
-    //    std::cout << "q" << i << ": " << paramsQ[i]->GetModulus() << std::endl;
-    //  }
-    //  auto paramsQP = cryptoParamsCKKS->GetExtendedElementParams();
-    //  std::cout << "Moduli in P: " << std::endl;
-    //  BigInteger P = BigInteger(1);
-    //  for (uint32_t i = 0; i < paramsQP->GetParams().size(); i++) {
-    //    if (i > paramsQ.size()) {
-    //      P = P * BigInteger(paramsQP->GetParams()[i]->GetModulus());
-    //      std::cout << "p" << i - paramsQ.size() << ": "
-    //                << paramsQP->GetParams()[i]->GetModulus() << std::endl;
-    //    }
-    //  }
-    //  auto QBitLength = cc->GetModulus().GetLengthForBase(2);
-    //  auto PBitLength = P.GetLengthForBase(2);
-    //  std::cout << "\nQ = " << cc->GetModulus() << " (bit length: " << QBitLength
-    //            << ")" << std::endl;
-    //  std::cout << "P = " << P << " (bit length: " << PBitLength << ")"
-    //            << std::endl;
-    //  std::cout << "Total bit-length of ciphertext modulus: "
-    //            << QBitLength + PBitLength << std::endl;
-    //  std::cout << "Given this ciphertext modulus, a ring dimension of "
-    //            << cc->GetRingDimension() << " gives us 128-bit security."
-    //            << std::endl;
-    // #endif
+     //#if 0
+     // const auto cryptoParamsCKKS =
+     //     std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+     //         cc->GetCryptoParameters());
+    
+     // auto paramsQ = cc->GetElementParams()->GetParams();
+     // std::cout << "\nModuli in Q:" << std::endl;
+     // for (uint32_t i = 0; i < paramsQ.size(); i++) {
+     //   // q0 is a bit larger because its default size is 60 bits.
+     //   // One can change this by supplying the firstModSize argument
+     //   // in genCryptoContextCKKS.
+     //   std::cout << "q" << i << ": " << paramsQ[i]->GetModulus() << std::endl;
+     // }
+     // auto paramsQP = cryptoParamsCKKS->GetParamsQP();
+     // std::cout << "Moduli in P: " << std::endl;
+     // BigInteger P = BigInteger(1);
+     // for (uint32_t i = 0; i < paramsQP->GetParams().size(); i++) {
+     //   if (i > paramsQ.size()) {
+     //     P = P * BigInteger(paramsQP->GetParams()[i]->GetModulus());
+     //     std::cout << "p" << i - paramsQ.size() << ": "
+     //               << paramsQP->GetParams()[i]->GetModulus() << std::endl;
+     //   }
+     // }
+     // auto QBitLength = cc->GetModulus().GetLengthForBase(2);
+     // auto PBitLength = P.GetLengthForBase(2);
+     // std::cout << "\nQ = " << cc->GetModulus() << " (bit length: " << QBitLength
+     //           << ")" << std::endl;
+     // std::cout << "P = " << P << " (bit length: " << PBitLength << ")"
+     //           << std::endl;
+     // std::cout << "Total bit-length of ciphertext modulus: "
+     //           << QBitLength + PBitLength << std::endl;
+     // std::cout << "Given this ciphertext modulus, a ring dimension of "
+     //           << cc->GetRingDimension() << " gives us 128-bit security."
+     //           << std::endl;
+     //#endif
 }
 
 void HybridKeySwitchingDemo2() {
@@ -625,39 +625,39 @@ void HybridKeySwitchingDemo2() {
    * and how these change with the number of digits
    * dnum.
    */
-    // #if 0
-    //  const auto cryptoParamsCKKS =
-    //      std::dynamic_pointer_cast<LPCryptoParametersCKKS<DCRTPoly>>(
-    //          cc->GetCryptoParameters());
-    //
-    //  auto paramsQ = cc->GetElementParams()->GetParams();
-    //  std::cout << "\nModuli in Q:" << std::endl;
-    //  for (uint32_t i = 0; i < paramsQ.size(); i++) {
-    //    // q0 is a bit larger because its default size is 60 bits.
-    //    // One can change this by supplying the firstModSize argument
-    //    // in genCryptoContextCKKS.
-    //    std::cout << "q" << i << ": " << paramsQ[i]->GetModulus() << std::endl;
-    //  }
-    //  auto paramsQP = cryptoParamsCKKS->GetExtendedElementParams();
-    //  std::cout << "Moduli in P: " << std::endl;
-    //  BigInteger P = BigInteger(1);
-    //  for (uint32_t i = 0; i < paramsQP->GetParams().size(); i++) {
-    //    if (i > paramsQ.size()) {
-    //      P = P * BigInteger(paramsQP->GetParams()[i]->GetModulus());
-    //      std::cout << "p" << i - paramsQ.size() << ": "
-    //                << paramsQP->GetParams()[i]->GetModulus() << std::endl;
-    //    }
-    //  }
-    //  auto QBitLength = cc->GetModulus().GetLengthForBase(2);
-    //  auto PBitLength = P.GetLengthForBase(2);
-    //  std::cout << "\nQ = " << cc->GetModulus() << " (bit length: " << QBitLength
-    //            << ")" << std::endl;
-    //  std::cout << "P = " << P << " (bit length: " << PBitLength << ")"
-    //            << std::endl;
-    //  std::cout << "Given this ciphertext modulus, a ring dimension of "
-    //            << cc->GetRingDimension() << " gives us 128-bit security."
-    //            << std::endl;
-    // #endif
+     //#if 0
+     // const auto cryptoParamsCKKS =
+     //     std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(
+     //         cc->GetCryptoParameters());
+    
+     // auto paramsQ = cc->GetElementParams()->GetParams();
+     // std::cout << "\nModuli in Q:" << std::endl;
+     // for (uint32_t i = 0; i < paramsQ.size(); i++) {
+     //   // q0 is a bit larger because its default size is 60 bits.
+     //   // One can change this by supplying the firstModSize argument
+     //   // in genCryptoContextCKKS.
+     //   std::cout << "q" << i << ": " << paramsQ[i]->GetModulus() << std::endl;
+     // }
+     // auto paramsQP = cryptoParamsCKKS->GetParamsQP();
+     // std::cout << "Moduli in P: " << std::endl;
+     // BigInteger P = BigInteger(1);
+     // for (uint32_t i = 0; i < paramsQP->GetParams().size(); i++) {
+     //   if (i > paramsQ.size()) {
+     //     P = P * BigInteger(paramsQP->GetParams()[i]->GetModulus());
+     //     std::cout << "p" << i - paramsQ.size() << ": "
+     //               << paramsQP->GetParams()[i]->GetModulus() << std::endl;
+     //   }
+     // }
+     // auto QBitLength = cc->GetModulus().GetLengthForBase(2);
+     // auto PBitLength = P.GetLengthForBase(2);
+     // std::cout << "\nQ = " << cc->GetModulus() << " (bit length: " << QBitLength
+     //           << ")" << std::endl;
+     // std::cout << "P = " << P << " (bit length: " << PBitLength << ")"
+     //           << std::endl;
+     // std::cout << "Given this ciphertext modulus, a ring dimension of "
+     //           << cc->GetRingDimension() << " gives us 128-bit security."
+     //           << std::endl;
+     //#endif
 }
 
 void FastRotationsDemo1() {
