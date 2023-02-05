@@ -362,6 +362,10 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
     const EncodingParams encodingParams = cryptoParamsBFVRNS->GetEncodingParams();
     if (encodingParams->GetBatchSize() > n)
         OPENFHE_THROW(config_error, "The batch size cannot be larger than the ring dimension.");
+
+    if (encodingParams->GetBatchSize() & (encodingParams->GetBatchSize() - 1))
+        OPENFHE_THROW(config_error, "The batch size can only be set to zero (for full packing) or a power of two.");
+
     // if no batch size was specified, we set batchSize = n by default (for full
     // packing)
     if (encodingParams->GetBatchSize() == 0) {
