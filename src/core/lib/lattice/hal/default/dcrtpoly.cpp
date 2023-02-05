@@ -303,7 +303,8 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const BugType& bug, const std::shared_ptr<DC
 template <typename VecType>
 DCRTPolyImpl<VecType>::DCRTPolyImpl(const TugType& tug, const std::shared_ptr<DCRTPolyImpl::Params> dcrtParams,
                                     Format format, uint32_t h) {
-    this->m_format = format;
+//    OPENFHE_DEBUG_FLAG(true);
+	this->m_format = format;
     this->m_params = dcrtParams;
 
     size_t numberOfTowers = dcrtParams->GetParams().size();
@@ -335,8 +336,23 @@ DCRTPolyImpl<VecType>::DCRTPolyImpl(const TugType& tug, const std::shared_ptr<DC
         PolyType ilvector(dcrtParams->GetParams()[i]);
         // the random values are set in coefficient format
         ilvector.SetValues(std::move(ilTugValues), Format::COEFFICIENT);
+
+//        std::cout << "seckey[" << i << "]: COEFF: " << ilvector << std::endl;
+
         // set the format to what the caller asked for.
         ilvector.SetFormat(this->m_format);
+
+//        std::cout << "seckey[" << i << "]: EVAL: " << ilvector << std::endl;
+//        OPENFHE_DEBUG(">>>>> seckey[" << i << "]: EVAL: " << ilvector );
+
+#if 0
+        std::cout << "[FATAL] must delete this\n";
+        ilvector.SetFormat(Format::COEFFICIENT);
+        std::cout << "seckey[" << i << "]: COEFF again: " << ilvector << std::endl;
+        ilvector.SetFormat(this->m_format);
+        std::cout << "seckey[" << i << "]: COEFF again: " << ilvector << std::endl;
+#endif
+
         m_vectors.push_back(std::move(ilvector));
     }
 }

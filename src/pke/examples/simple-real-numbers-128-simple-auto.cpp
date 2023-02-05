@@ -43,8 +43,6 @@ using namespace lbcrypto;
 
 int main() {
 
-//	moncontrol(0);
-
 	std::cout << "main (simple auto) started ... \n\n";
 
     // Step 1: Setup CryptoContext
@@ -199,14 +197,11 @@ int main() {
 
     // Inputs
     std::vector<double> x1 = {0.25, 0.5, 0.75, 1.0, 2.0, 3.0, 4.0, 5.0};
-    std::vector<double> x2 = {5.0, 4.0, 3.0, 2.0, 1.0, 0.75, 0.5, 0.25};
 
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1);
-    Plaintext ptxt2 = cc->MakeCKKSPackedPlaintext(x2);
 
     std::cout << "Input x1: " << ptxt1 << std::endl;
-    std::cout << "Input x2: " << ptxt2 << std::endl;
 
 //    auto initParams = cc->GetCryptoParameters();
 //    std::cout << "CZR - " << __FILE__ << ":" << __LINE__ << ":" <<
@@ -214,7 +209,6 @@ int main() {
 
     // Encrypt the encoded vectors
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-    auto c2 = cc->Encrypt(keys.publicKey, ptxt2);
 
     // Step 4: Evaluation
 

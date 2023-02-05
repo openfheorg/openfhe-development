@@ -483,7 +483,11 @@ public:
     DCRTPolyType AutomorphismTransform(usint i, const std::vector<usint>& vec) const override {
         DCRTPolyType result(*this);
         for (usint k = 0; k < m_vectors.size(); k++) {
+//        	std::cout << "vec before auto: \n"
+//        			<< m_vectors[k] << "\n";
             result.m_vectors[k] = m_vectors[k].AutomorphismTransform(i, vec);
+//            std::cout << "vec after  auto: \n"
+//                    			<< result.m_vectors[k] << "\n";
         }
         return result;
     }
