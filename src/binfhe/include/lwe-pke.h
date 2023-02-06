@@ -108,8 +108,8 @@ public:
    * @param ksk - key switching key from secret key of dimension N to secret key of dimension n
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encryptn(const std::shared_ptr<LWECryptoParams> params, ConstLWESwitchingKey& ksk,
-                           ConstLWECiphertext ct) const;
+    LWECiphertext SwitchCTtoqn(const std::shared_ptr<LWECryptoParams> params, ConstLWESwitchingKey& ksk,
+                               ConstLWECiphertext ct) const;
 
     /**
    * Decrypts the ciphertext using secret key sk

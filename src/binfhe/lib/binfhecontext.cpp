@@ -224,8 +224,11 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey pk, const LWEPlaintext& m
 
     LWECiphertext ct = m_LWEscheme->EncryptN(LWEParams, pk, m, p, mod);
 
+    // Switch from ct of modulus Q and dimension N to smaller q and n
+    // This is done by default while calling Encrypt but the output could
+    // be set to LARGEN to skip this switching
     if (output == SMALLN) {
-        LWECiphertext ct1 = Encryptn(m_BTKey.KSkey, ct);
+        LWECiphertext ct1 = SwitchCTtoqn(m_BTKey.KSkey, ct);
         return ct1;
     }
     return ct;
@@ -243,7 +246,7 @@ LWECiphertext BinFHEContext::EncryptN(ConstLWEPublicKey pk, const LWEPlaintext& 
     return ct;
 }
 
-LWECiphertext BinFHEContext::Encryptn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct) const {
+LWECiphertext BinFHEContext::SwitchCTtoqn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct) const {
     auto& LWEParams = m_params->GetLWEParams();
     auto Q          = LWEParams->GetQ();
     auto N          = LWEParams->GetN();
@@ -253,7 +256,7 @@ LWECiphertext BinFHEContext::Encryptn(ConstLWESwitchingKey ksk, ConstLWECipherte
         OPENFHE_THROW(config_error, errMsg);
     }
 
-    LWECiphertext ct1 = m_LWEscheme->Encryptn(LWEParams, ksk, ct);
+    LWECiphertext ct1 = m_LWEscheme->SwitchCTtoqn(LWEParams, ksk, ct);
 
     return ct1;
 }
@@ -268,7 +271,7 @@ LWESwitchingKey BinFHEContext::KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPriva
     return m_LWEscheme->KeySwitchGen(m_params->GetLWEParams(), sk, skN);
 }
 
-void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk, bool publicKeyFlag) {
+void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk, KEYGEN_MODE keygenMode) {
     auto& RGSWParams = m_params->GetRingGSWParams();
 
     auto temp = RGSWParams->GetBaseG();
@@ -278,7 +281,7 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk, bool publicKeyFlag) {
         for (std::map<uint32_t, std::vector<NativeInteger>>::iterator it = gpowermap.begin(); it != gpowermap.end();
              ++it) {
             RGSWParams->Change_BaseG(it->first);
-            m_BTKey_map[it->first] = m_binfhescheme->KeyGen(m_params, sk, publicKeyFlag);
+            m_BTKey_map[it->first] = m_binfhescheme->KeyGen(m_params, sk, keygenMode);
         }
         RGSWParams->Change_BaseG(temp);
     }
@@ -287,7 +290,7 @@ void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk, bool publicKeyFlag) {
         m_BTKey = m_BTKey_map[temp];
     }
     else {
-        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk, publicKeyFlag);
+        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk, keygenMode);
         m_BTKey_map[temp] = m_BTKey;
     }
 }
