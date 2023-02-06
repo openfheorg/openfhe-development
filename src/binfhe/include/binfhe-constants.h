@@ -88,8 +88,8 @@ enum BINFHE_OUTPUT {
     INVALID_OUTPUT = 0,
     FRESH,         // a fresh encryption
     BOOTSTRAPPED,  // a freshly encrypted ciphertext is bootstrapped
-    LARGEN,
-    SMALLN,
+    LARGEN,        // a fresh encryption with dimension N
+    SMALLN,        // a freshly encrypted ciphertext of dimension N and modulus Q switched to n and q
 };
 std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f);
 
@@ -110,7 +110,7 @@ enum KEYGEN_MODE {
     SKONLY = 0,  // symmetric (secret) key encryption
     KEYPAIR,     // public key encryption
 };
-std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f);
+std::ostream& operator<<(std::ostream& s, KEYGEN_MODE f);
 
 }  // namespace lbcrypto
 

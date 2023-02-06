@@ -189,7 +189,7 @@ public:
    * @param &m - the plaintext
    * @param p - plaintext modulus
    * @param mod Encrypt according to mod instead of m_q if mod != 0
-   * @param output - SMALLN to generate ciphertext with dimension N (default)
+   * @param output - SMALLN to generate ciphertext with dimension n (default)
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext Encrypt(ConstLWEPublicKey pk, const LWEPlaintext& m, BINFHE_OUTPUT output = SMALLN,
