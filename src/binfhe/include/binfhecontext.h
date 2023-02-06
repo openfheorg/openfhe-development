@@ -212,7 +212,7 @@ public:
    * @param ksk - the key switching key from secret key of dimension N to secret key of dimension n
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encryptn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct) const;
+    LWECiphertext SwitchCTtoqn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct) const;
 
     /**
    * Decrypts a ciphertext using a secret key
@@ -241,7 +241,7 @@ public:
    * @param sk secret key
    * @param DiffQ BTKeyGen according to DiffQ instead of m_q if DiffQ != 0
    */
-    void BTKeyGen(ConstLWEPrivateKey sk, bool publicKeyFlag = false);
+    void BTKeyGen(ConstLWEPrivateKey sk, KEYGEN_MODE keygenMode = SKONLY);
 
     /**
    * Loads bootstrapping keys in the context (typically after deserializing)

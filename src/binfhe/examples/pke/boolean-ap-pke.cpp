@@ -59,8 +59,8 @@ int main() {
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh, switching and public keys)
-    // Public keys are generated when the publicKeyFlag is set to true
-    cc.BTKeyGen(sk, true);
+    // Public keys are generated when the keygenMode is set to KEYPAIR
+    cc.BTKeyGen(sk, KEYPAIR);
 
     auto pk = cc.GetPublicKey();
     std::cout << "Completed the key generation." << std::endl;

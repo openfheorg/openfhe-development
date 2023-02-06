@@ -37,18 +37,21 @@ namespace lbcrypto {
 
 // wrapper for KeyGen methods
 RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk,
-                                  bool publicKeyFlag = false) const {
+                                  KEYGEN_MODE keygenMode = SKONLY) const {
     auto& LWEParams = params->GetLWEParams();
 
     LWEPrivateKey skN;
     RingGSWBTKey ek;
-    if (!publicKeyFlag) {
+    if (keygenMode == SKONLY) {
         skN = LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
     }
-    else {
+    else if (keygenMode == KEYPAIR) {
         ConstLWEKeyPair kpN = LWEscheme->KeyGenPair(LWEParams);
         skN                 = kpN->secretKey;
         ek.Pkey             = kpN->publicKey;
+    }
+    else {
+        OPENFHE_THROW(config_error, "Invalid KeyGen mode");
     }
 
     ek.KSkey = LWEscheme->KeySwitchGen(LWEParams, LWEsk, skN);

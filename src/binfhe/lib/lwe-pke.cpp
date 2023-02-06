@@ -55,8 +55,9 @@ LWEKeyPair LWEEncryptionScheme::KeyGenPair(const std::shared_ptr<LWECryptoParams
     int size              = params->GetN();
     NativeInteger modulus = params->GetQ();
 
-    // generate secret vector s of ring dimension N
+    // generate secret vector skN of ring dimension N
     auto skN = KeyGen(size, modulus);
+    // generate public key pkN corresponding to secret key skN
     auto pkN = PubKeyGen(params, skN);
 
     auto lweKeyPair = LWEKeyPairImpl(pkN, skN);
@@ -86,14 +87,12 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
     NativeVector e = dgg.GenerateVector(size, modulus);
 
     // compute v = As + e
-    NativeInteger mu = modulus.ComputeMu();
     NativeVector v   = e;
     NativeVector ske = skN->GetElement();
+
     for (int j = 0; j < size; ++j) {
-        for (int i = 0; i < size; ++i) {
-            v[j] += A[i][j].ModMulFast(ske[i], modulus, mu);
-        }
-        v[j].ModEq(modulus);
+        // column wise v = A_1s1 + ... + A_NsN
+        v.ModAdd(A[j].ModMul(ske[j]));
     }
 
     // public key A, v
@@ -167,12 +166,12 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
     NativeVector ep = dgg.GenerateVector(N, mod);
 
     // compute a in the ciphertext (a, b)
-    NativeInteger mu = mod.ComputeMu();
     NativeVector a   = ep;
+    NativeInteger mu = mod.ComputeMu();
+
     for (size_t j = 0; j < N; ++j) {
-        for (size_t i = 0; i < N; ++i) {
-            a[j] += A[j][i].ModMulFast(sp[i], mod, mu);
-        }
+        // columnwise a = A_1s1 + ... + A_NsN
+        a.ModAdd(A[j].ModMul(sp[j]));
     }
 
     // compute b in ciphertext (a,b)
@@ -185,8 +184,8 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
 }
 
 // convert ciphertext with modulus Q and dimension N to ciphertext with modulus q and dimension n
-LWECiphertext LWEEncryptionScheme::Encryptn(const std::shared_ptr<LWECryptoParams> params, ConstLWESwitchingKey& ksk,
-                                            ConstLWECiphertext ct) const {
+LWECiphertext LWEEncryptionScheme::SwitchCTtoqn(const std::shared_ptr<LWECryptoParams> params,
+                                                ConstLWESwitchingKey& ksk, ConstLWECiphertext ct) const {
     // Modulus switching to a middle step Q'
     auto ctMS = ModSwitch(params->GetqKS(), ct);
     // Key switching

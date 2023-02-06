@@ -67,7 +67,7 @@ void FHEW_BTKEYGEN(benchmark::State& state, ParamSet param_set) {
     BinFHEContext cc = GenerateFHEWContext(param);
     for (auto _ : state) {
         LWEPrivateKey sk = cc.KeyGen();
-        cc.BTKeyGen(sk, true);
+        cc.BTKeyGen(sk, KEYPAIR);
     }
 }
 
@@ -96,7 +96,7 @@ void FHEW_ENCRYPT(benchmark::State& state, ParamSet param_set) {
 
     LWEPrivateKey sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, true);
+    cc.BTKeyGen(sk, KEYPAIR);
     LWEPublicKey pk = cc.GetPublicKey();
 
     for (auto _ : state) {
@@ -115,7 +115,7 @@ void FHEW_NOT(benchmark::State& state, ParamSet param_set) {
 
     LWEPrivateKey sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, true);
+    cc.BTKeyGen(sk, KEYPAIR);
     LWEPublicKey pk = cc.GetPublicKey();
 
     LWECiphertext ct1 = cc.Encrypt(pk, 1);
@@ -139,7 +139,7 @@ void FHEW_BINGATE(benchmark::State& state, ParamSet param_set, BinGate bin_gate)
 
     LWEPrivateKey sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, true);
+    cc.BTKeyGen(sk, KEYPAIR);
 
     LWEPublicKey pk = cc.GetPublicKey();
 
