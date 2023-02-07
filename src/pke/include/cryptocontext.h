@@ -123,11 +123,24 @@ class CryptoContextImpl : public Serializable {
             else {
                 elemParamsPtr = cryptoParams->GetElementParams();
             }
-
+            // Check if plaintext has got enough slots for data (value)
+            usint ringDim = elemParamsPtr->GetRingDimension();
+            size_t valueSize = value.size();
+            if (valueSize > ringDim / 2) {
+                OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+            }
+            // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
                                                                noiseScaleDeg, level, scFact, slots));
         }
         else {
+            // Check if plaintext has got enough slots for data (value)
+            usint ringDim = params->GetRingDimension();
+            size_t valueSize = value.size();
+            if (valueSize > ringDim / 2) {
+                OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+            }
+            // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
                                                                level, scFact, slots));
         }
@@ -140,6 +153,62 @@ class CryptoContextImpl : public Serializable {
         }
         return p;
     }
+
+    /**
+    * MakePlaintext constructs a CoefPackedEncoding or PackedEncoding in this context
+    * @param encoding is PACKED_ENCODING or COEF_PACKED_ENCODING
+    * @param value is the value to encode
+    * @param depth is the multiplicative depth to encode the plaintext at
+    * @param level is the level to encode the plaintext at
+    * @return plaintext
+    */
+    Plaintext MakePlaintext(const PlaintextEncodings encoding, const std::vector<int64_t>& value, size_t depth,
+        uint32_t level) const {
+        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
+        Plaintext p;
+        if (getSchemeId() == SCHEME::BGVRNS_SCHEME && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
+            cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
+            NativeInteger scf;
+            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
+                scf = cryptoParams->GetScalingFactorIntBig(level);
+                p = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
+                    this->GetEncodingParams(), getSchemeId(), 1, level, scf);
+                p->SetNoiseScaleDeg(2);
+            }
+            else {
+                scf = cryptoParams->GetScalingFactorInt(level);
+                p = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
+                    this->GetEncodingParams(), getSchemeId(), depth, level, scf);
+            }
+        }
+        else {
+            auto elementParams = this->GetElementParams();
+            p = PlaintextFactory::MakePlaintext(value, encoding, elementParams, this->GetEncodingParams(),
+                getSchemeId());
+        }
+
+        return p;
+    }
+
+    /**
+    * MakePlaintext static that takes a cc and calls the Plaintext Factory
+    * @param encoding
+    * @param cc
+    * @param value
+    * @return
+    */
+    template <typename Value1>
+    static Plaintext MakePlaintext(PlaintextEncodings encoding, CryptoContext<Element> cc, const Value1& value) {
+        return PlaintextFactory::MakePlaintext(value, encoding, cc->GetElementParams(), cc->GetEncodingParams());
+    }
+
+    template <typename Value1, typename Value2>
+    static Plaintext MakePlaintext(PlaintextEncodings encoding, CryptoContext<Element> cc, const Value1& value,
+        const Value2& value2) {
+        return PlaintextFactory::MakePlaintext(encoding, cc->GetElementParams(), cc->GetEncodingParams(), value,
+            value2);
+    }
+
 
 protected:
     // crypto parameters used for this context
@@ -860,43 +929,6 @@ public:
     }
 
     /**
-   * MakePlaintext constructs a CoefPackedEncoding or PackedEncoding in this context
-   * @param encoding is PACKED_ENCODING or COEF_PACKED_ENCODING
-   * @param value is the value to encode
-   * @param depth is the multiplicative depth to encode the plaintext at
-   * @param level is the level to encode the plaintext at
-   * @return plaintext
-   */
-    // TODO (dsuponit): verify and make MakePlaintext() a private member function
-    Plaintext MakePlaintext(const PlaintextEncodings encoding, const std::vector<int64_t>& value, size_t depth,
-                            uint32_t level) const {
-        const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
-        Plaintext p;
-        if (getSchemeId() == SCHEME::BGVRNS_SCHEME && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-                                                       cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
-            NativeInteger scf;
-            if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
-                scf = cryptoParams->GetScalingFactorIntBig(level);
-                p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                    this->GetEncodingParams(), getSchemeId(), 1, level, scf);
-                p->SetNoiseScaleDeg(2);
-            }
-            else {
-                scf = cryptoParams->GetScalingFactorInt(level);
-                p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                                                    this->GetEncodingParams(), getSchemeId(), depth, level, scf);
-            }
-        }
-        else {
-            auto elementParams = this->GetElementParams();
-            p = PlaintextFactory::MakePlaintext(value, encoding, elementParams, this->GetEncodingParams(),
-                                                getSchemeId());
-        }
-
-        return p;
-    }
-
-    /**
    * MakeCoefPackedPlaintext constructs a CoefPackedEncoding in this context
    * @param value
    * @param depth is the multiplicative depth to encode the plaintext at
@@ -916,25 +948,6 @@ public:
    */
     Plaintext MakePackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1, uint32_t level = 0) const {
         return MakePlaintext(PACKED_ENCODING, value, depth, level);
-    }
-
-    /**
-   * MakePlaintext static that takes a cc and calls the Plaintext Factory
-   * @param encoding
-   * @param cc
-   * @param value
-   * @return
-   */
-    template <typename Value1>
-    static Plaintext MakePlaintext(PlaintextEncodings encoding, CryptoContext<Element> cc, const Value1& value) {
-        return PlaintextFactory::MakePlaintext(value, encoding, cc->GetElementParams(), cc->GetEncodingParams());
-    }
-
-    template <typename Value1, typename Value2>
-    static Plaintext MakePlaintext(PlaintextEncodings encoding, CryptoContext<Element> cc, const Value1& value,
-                                   const Value2& value2) {
-        return PlaintextFactory::MakePlaintext(encoding, cc->GetElementParams(), cc->GetEncodingParams(), value,
-                                               value2);
     }
 
     /**
