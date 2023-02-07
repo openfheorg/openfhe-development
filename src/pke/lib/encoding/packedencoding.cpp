@@ -39,6 +39,7 @@
 
 namespace lbcrypto {
 
+// TODO (dsuponit): we should not have globals!
 std::map<ModulusM, NativeInteger> PackedEncoding::m_initRoot;
 std::map<ModulusM, NativeInteger> PackedEncoding::m_bigModulus;
 std::map<ModulusM, NativeInteger> PackedEncoding::m_bigRoot;
