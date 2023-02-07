@@ -83,10 +83,10 @@ public:
         usint ringDim = vp->GetRingDimension();
         size_t valueSize = value.size();
         if (SCHEME::CKKSRNS_SCHEME == schemeID && valueSize > ringDim / 2) {
-            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "]");
+            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "] if the scheme is CKKS");
         }
         else if (valueSize > ringDim) {
-            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim [" + std::to_string(ringDim) + "]");
+            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim [" + std::to_string(ringDim) + "] if the scheme is NOT CKKS");
         }
         Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
         pt->SetIntVectorValue(value);
@@ -108,10 +108,10 @@ public:
         usint ringDim = vp->GetRingDimension();
         size_t valueSize = value.size();
         if (SCHEME::CKKSRNS_SCHEME == schemeID && valueSize > ringDim / 2) {
-            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim/2) + "]");
+            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "] if the scheme is CKKS");
         }
         else if (valueSize > ringDim) {
-            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim [" + std::to_string(ringDim) + "]");
+            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim [" + std::to_string(ringDim) + "] if the scheme is NOT CKKS");
         }
         Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
         pt->SetStringValue(value);
