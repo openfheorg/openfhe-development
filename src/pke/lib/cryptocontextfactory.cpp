@@ -49,20 +49,38 @@ int CryptoContextFactory<Element>::GetContextCount() {
 }
 
 template <typename Element>
-CryptoContext<Element> CryptoContextFactory<Element>::GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
-                                                                 std::shared_ptr<SchemeBase<Element>> scheme,
-                                                                 SCHEME schemeId) {
+CryptoContext<Element> CryptoContextFactory<Element>::FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
+    std::shared_ptr<SchemeBase<Element>> scheme) {
     for (CryptoContext<Element> cc : CryptoContextFactory<Element>::AllContexts) {
         if (*cc->GetScheme().get() == *scheme.get() && *cc->GetCryptoParameters().get() == *params.get()) {
+            if (cc->GetEncodingParams()->GetPlaintextRootOfUnity() != 0) {
+                PackedEncoding::SetParams(cc->GetCyclotomicOrder(), cc->GetEncodingParams());
+            }
             return cc;
         }
     }
 
-    CryptoContext<Element> cc(std::make_shared<CryptoContextImpl<Element>>(params, scheme, schemeId));
+    return nullptr;
+}
+
+template <typename Element>
+void CryptoContextFactory<Element>::AddContext(CryptoContext<Element> cc) {
     AllContexts.push_back(cc);
 
     if (cc->GetEncodingParams()->GetPlaintextRootOfUnity() != 0) {
         PackedEncoding::SetParams(cc->GetCyclotomicOrder(), cc->GetEncodingParams());
+    }
+}
+
+template <typename Element>
+CryptoContext<Element> CryptoContextFactory<Element>::GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
+                                                                 std::shared_ptr<SchemeBase<Element>> scheme,
+                                                                 SCHEME schemeId) {
+    CryptoContext<Element> cc = FindContext(params, scheme);
+    // if the context is not found we should create one
+    if (nullptr == cc) {
+        cc = std::make_shared<CryptoContextImpl<Element>>(params, scheme, schemeId);
+        AddContext(cc);
     }
 
     return cc;

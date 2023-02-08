@@ -56,6 +56,11 @@ template <typename Element>
 class CryptoContextFactory {
     static std::vector<CryptoContext<Element>> AllContexts;
 
+protected:
+    static CryptoContext<Element> FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
+        std::shared_ptr<SchemeBase<Element>> scheme);
+    static void AddContext(CryptoContext<Element>);
+
 public:
     static void ReleaseAllContexts();
 
