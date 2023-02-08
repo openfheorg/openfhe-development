@@ -101,7 +101,7 @@ int main() {
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1);
     std::cout << "Input x1: " << ptxt1 << std::endl;
 
-    // Encrypt the encoded vectors
+    // Encrypt the encoded vector
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Evaluation
@@ -116,14 +116,11 @@ int main() {
 
     std::cout << std::endl << "Results of homomorphic computations: " << std::endl;
 
-    // Decrypt input for sanity check
-    cc->Decrypt(keys.secretKey, c1, &result);
-    std::cout << "x1 = \n" << result;
-    std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
-
     // Decrypt the result of rotations
 
     cc->Decrypt(keys.secretKey, cRot1, &result);
+    std::cout << "x1 = \n" << ptxt1;
+    std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
     std::cout << std::endl << "In rotations, very small outputs (~10^-10 here) correspond to 0's:" << std::endl;
     std::cout << "x1 rotated by 1 = \n" << result << std::endl;
 
