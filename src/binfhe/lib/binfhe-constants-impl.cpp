@@ -118,6 +118,9 @@ std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f) {
         case GINX:
             s << "CGGI";
             break;
+        case LMKCDEY:
+            s << "LMKCDEY";
+            break;
         default:
             s << "UKNOWN";
             break;

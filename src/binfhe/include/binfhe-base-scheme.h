@@ -39,6 +39,7 @@
 #include "rgsw-acc.h"
 #include "rgsw-acc-dm.h"
 #include "rgsw-acc-cggi.h"
+#include "rgsw-acc-lmkcdey.h"
 
 #include <map>
 #include <vector>
@@ -71,6 +72,9 @@ public:
         }
         else if (method == GINX) {
             ACCscheme = std::make_shared<RingGSWAccumulatorCGGI>();
+        }
+        else if (method == LMKCDEY) {
+            ACCscheme = std::make_shared<RingGSWAccumulatorLMKCDEY>();
         }
         else
             OPENFHE_THROW(config_error, "method is invalid");

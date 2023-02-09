@@ -97,6 +97,7 @@ enum BINFHE_METHOD {
     INVALID_METHOD = 0,
     AP,    // Ducas-Micciancio variant
     GINX,  // Chillotti-Gama-Georgieva-Izabachene variant
+    LMKCDEY, // Lee-Micciancio-Kim-Choi-Deryabin-Eom-Yoo variant, ia.cr/2022/198
 };
 std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f);
 
