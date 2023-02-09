@@ -51,10 +51,6 @@ public:
 
     explicit LWEPrivateKeyImpl(const NativeVector& s) : m_s(s) {}
 
-    explicit LWEPrivateKeyImpl(LWEPrivateKeyImpl& rhs) {
-        this->m_s = rhs.m_s;
-    }
-
     explicit LWEPrivateKeyImpl(const LWEPrivateKeyImpl& rhs) {
         this->m_s = rhs.m_s;
     }

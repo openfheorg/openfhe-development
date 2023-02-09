@@ -105,7 +105,7 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
 // a is a randomly uniform vector of dimension n; with integers mod q
 // b = a*s + e + m floor(q/4) is an integer mod q
 LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk,
-                                           const LWEPlaintext& m, const LWEPlaintextModulus& p,
+                                           LWEPlaintext m, const LWEPlaintextModulus& p,
                                            const NativeInteger& mod) const {
     if (mod % p != 0 && mod.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
@@ -118,10 +118,10 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
 
     NativeInteger b = (m % p) * (mod / p) + params->GetDgg().GenerateInteger(mod);
 
-#if defined(BINFHE_DEBUG)
-    std::cout << b % mod << std::endl;
-    std::cout << (m % p) * (mod / p) << std::endl;
-#endif
+    // #if defined(BINFHE_DEBUG)
+    //    std::cout << b % mod << std::endl;
+    //    std::cout << (m % p) * (mod / p) << std::endl;
+    // #endif
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(mod);
@@ -141,7 +141,7 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
 // a = As' + e' of dimension n; with integers mod q
 // b = vs' + e" + m floor(q/4) is an integer mod q
 LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParams> params, ConstLWEPublicKey pk,
-                                            const LWEPlaintext& m, const LWEPlaintextModulus& p,
+                                            LWEPlaintext m, const LWEPlaintextModulus& p,
                                             const NativeInteger& mod) const {
     if (mod % p != 0 && mod.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
@@ -156,10 +156,10 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
     auto dgg        = params->GetDgg();
     NativeInteger b = (m % p) * (mod / p) + dgg.GenerateInteger(mod);
 
-#if defined(BINFHE_DEBUG)
-    std::cout << b % mod << std::endl;
-    std::cout << (m % p) * (mod / p) << std::endl;
-#endif
+    // #if defined(BINFHE_DEBUG)
+    //    std::cout << b % mod << std::endl;
+    //    std::cout << (m % p) * (mod / p) << std::endl;
+    // #endif
 
     TernaryUniformGeneratorImpl<NativeVector> tug;
     NativeVector sp = tug.GenerateVector(N, mod);

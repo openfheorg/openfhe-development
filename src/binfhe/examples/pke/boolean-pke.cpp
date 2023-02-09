@@ -52,8 +52,8 @@ int main() {
     // Generate the secret, public key pair
     auto kp = cc.KeyGenPair();
 
-    // LARGEN specifies the dimension of the output ciphertext
-    auto ctp = cc.Encrypt(kp->publicKey, 1, LARGEN);
+    // LARGE_DIM specifies the dimension of the output ciphertext
+    auto ctp = cc.Encrypt(kp->publicKey, 1, LARGE_DIM);
 
     LWEPlaintext result;
 
@@ -70,7 +70,7 @@ int main() {
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh, switching and public keys)
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     std::cout << "Completed the key generation." << std::endl;
 

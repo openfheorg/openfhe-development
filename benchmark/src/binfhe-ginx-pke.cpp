@@ -33,18 +33,8 @@
  * This file benchmarks FHEW-GINX gate evaluation operations
  */
 
-#define PROFILE
 #include "benchmark/benchmark.h"
-
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <limits>
-#include <random>
-
 #include "binfhecontext.h"
-
-#include "utils/debug.h"
 
 using namespace lbcrypto;
 
@@ -68,7 +58,7 @@ void FHEW_BTKEYGEN(benchmark::State& state, ParamSet param_set) {
 
     for (auto _ : state) {
         LWEPrivateKey sk = cc.KeyGen();
-        cc.BTKeyGen(sk, KEYPAIR);
+        cc.BTKeyGen(sk, PUB_ENCRYPT);
     }
 }
 
@@ -95,7 +85,7 @@ void FHEW_ENCRYPT(benchmark::State& state, ParamSet param_set) {
     BinFHEContext cc = GenerateFHEWContext(param);
 
     LWEPrivateKey sk = cc.KeyGen();
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     LWEPublicKey pk = cc.GetPublicKey();
 
@@ -114,7 +104,7 @@ void FHEW_NOT(benchmark::State& state, ParamSet param_set) {
 
     LWEPrivateKey sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     LWEPublicKey pk = cc.GetPublicKey();
 
@@ -138,7 +128,7 @@ void FHEW_BINGATE(benchmark::State& state, ParamSet param_set, BinGate bin_gate)
 
     LWEPrivateKey sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     LWEPublicKey pk = cc.GetPublicKey();
 

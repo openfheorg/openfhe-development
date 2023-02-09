@@ -198,13 +198,12 @@ LWEPublicKey BinFHEContext::PubKeyGen(ConstLWEPrivateKey sk) const {
     return m_LWEscheme->PubKeyGen(LWEParams, sk);
 }
 
-LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHE_OUTPUT output,
-                                     LWEPlaintextModulus p, NativeInteger mod) const {
-    auto& LWEParams = m_params->GetLWEParams();
-    auto q          = LWEParams->Getq();
-    if (mod == 0)
-        mod = q;
-    LWECiphertext ct = m_LWEscheme->Encrypt(LWEParams, sk, m, p, mod);
+LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, LWEPlaintext m, BINFHE_OUTPUT output, LWEPlaintextModulus p,
+                                     const NativeInteger& mod) const {
+    const auto& LWEParams = m_params->GetLWEParams();
+
+    LWECiphertext ct = (mod == 0) ? m_LWEscheme->Encrypt(LWEParams, sk, m, p, LWEParams->Getq()) :
+                                    m_LWEscheme->Encrypt(LWEParams, sk, m, p, mod);
 
     // BINFHE_OUTPUT is kept as it is for backward compatibility but
     // this logic is obsolete now and commented out
@@ -215,41 +214,27 @@ LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& 
     return ct;
 }
 
-LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey pk, const LWEPlaintext& m, BINFHE_OUTPUT output,
-                                     LWEPlaintextModulus p, NativeInteger mod) const {
-    auto& LWEParams = m_params->GetLWEParams();
-    auto Q          = LWEParams->GetQ();
-    if (mod == 0)
-        mod = Q;
+LWECiphertext BinFHEContext::Encrypt(ConstLWEPublicKey pk, LWEPlaintext m, BINFHE_OUTPUT output, LWEPlaintextModulus p,
+                                     const NativeInteger& mod) const {
+    const auto& LWEParams = m_params->GetLWEParams();
 
-    LWECiphertext ct = m_LWEscheme->EncryptN(LWEParams, pk, m, p, mod);
+    LWECiphertext ct = (mod == 0) ? m_LWEscheme->EncryptN(LWEParams, pk, m, p, LWEParams->GetQ()) :
+                                    m_LWEscheme->EncryptN(LWEParams, pk, m, p, mod);
 
     // Switch from ct of modulus Q and dimension N to smaller q and n
     // This is done by default while calling Encrypt but the output could
-    // be set to LARGEN to skip this switching
-    if (output == SMALLN) {
+    // be set to LARGE_DIM to skip this switching
+    if (output == SMALL_DIM) {
         LWECiphertext ct1 = SwitchCTtoqn(m_BTKey.KSkey, ct);
         return ct1;
     }
     return ct;
 }
 
-LWECiphertext BinFHEContext::EncryptN(ConstLWEPublicKey pk, const LWEPlaintext& m, LWEPlaintextModulus p,
-                                      NativeInteger mod) const {
-    auto& LWEParams = m_params->GetLWEParams();
-    auto Q          = LWEParams->GetQ();
-    if (mod == 0)
-        mod = Q;
-
-    LWECiphertext ct = m_LWEscheme->EncryptN(LWEParams, pk, m, p, mod);
-
-    return ct;
-}
-
 LWECiphertext BinFHEContext::SwitchCTtoqn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct) const {
-    auto& LWEParams = m_params->GetLWEParams();
-    auto Q          = LWEParams->GetQ();
-    auto N          = LWEParams->GetN();
+    const auto& LWEParams = m_params->GetLWEParams();
+    auto Q                = LWEParams->GetQ();
+    auto N                = LWEParams->GetN();
 
     if ((ct->GetLength() != N) && (ct->GetModulus() != Q)) {
         std::string errMsg("ERROR: Ciphertext dimension and modulus are not large N and Q");

@@ -47,7 +47,7 @@ TEST(UNITTestFHEWPKEAP, NOT) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -73,7 +73,7 @@ TEST(UNITTestFHEWPKEGINX, NOT) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
     auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
 
@@ -98,7 +98,7 @@ TEST(UNITTestFHEWPKEAP, Bootstrap) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -124,7 +124,7 @@ TEST(UNITTestFHEWPKEGINX, Bootstrap) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1 = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0 = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -150,7 +150,7 @@ TEST(UNITTestFHEWPKEAP, AND) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -186,7 +186,7 @@ TEST(UNITTestFHEWPKEGINX, AND) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -224,7 +224,7 @@ TEST(UNITTestFHEWPKEGINX, SIGNED_MOD) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -260,7 +260,7 @@ TEST(UNITTestFHEWPKEAP, OR) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -296,7 +296,7 @@ TEST(UNITTestFHEWPKEGINX, OR) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -332,7 +332,7 @@ TEST(UNITTestFHEWPKEAP, NAND) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -368,7 +368,7 @@ TEST(UNITTestFHEWPKEGINX, NAND) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -404,7 +404,7 @@ TEST(UNITTestFHEWPKEAP, NOR) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -440,7 +440,7 @@ TEST(UNITTestFHEWPKEGINX, NOR) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -476,7 +476,7 @@ TEST(UNITTestFHEWPKEAP, XOR) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -512,7 +512,7 @@ TEST(UNITTestFHEWPKEGINX, XOR) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -548,7 +548,7 @@ TEST(UNITTestFHEWPKEAP, XNOR) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -584,7 +584,7 @@ TEST(UNITTestFHEWPKEGINX, XNOR) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -620,7 +620,7 @@ TEST(UNITTestFHEWPKEAP, XOR_FAST) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -656,7 +656,7 @@ TEST(UNITTestFHEWPKEGINX, XOR_FAST) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -692,7 +692,7 @@ TEST(UNITTestFHEWPKEAP, XNOR_FAST) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);
@@ -728,7 +728,7 @@ TEST(UNITTestFHEWPKEGINX, XNOR_FAST) {
 
     auto sk = cc.KeyGen();
 
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto ct1    = cc.Encrypt(cc.GetPublicKey(), 1);
     auto ct0    = cc.Encrypt(cc.GetPublicKey(), 0);

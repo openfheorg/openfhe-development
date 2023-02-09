@@ -82,8 +82,8 @@ public:
    * @param params a shared pointer to RingGSW scheme parameters
    * @param lwescheme a shared pointer to additive LWE scheme
    * @param LWEsk a shared pointer to the secret key of the underlying additive
-   * @param keygenMode boolean flag to indicate generation of a public key for LWEsk
-   * LWE scheme
+   * @param keygenMode enum to indicate generation of secret key only (SYM_ENCRYPT) or
+   * secret key, public key pair (PUB_ENCRYPT)
    * @return a shared pointer to the refreshing key
    */
     RingGSWBTKey KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk,

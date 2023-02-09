@@ -41,7 +41,6 @@
 #include "lwe-cryptoparameters.h"
 
 #include <memory>
-
 namespace lbcrypto {
 
 /**
@@ -86,7 +85,7 @@ public:
    * @param &p - the plaintext space
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk, const LWEPlaintext& m,
+    LWECiphertext Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk, LWEPlaintext m,
                           const LWEPlaintextModulus& p = 4, const NativeInteger& mod = 0) const;
 
     /**
@@ -98,7 +97,7 @@ public:
    * @param &p - the plaintext space
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext EncryptN(const std::shared_ptr<LWECryptoParams> params, ConstLWEPublicKey pk, const LWEPlaintext& m,
+    LWECiphertext EncryptN(const std::shared_ptr<LWECryptoParams> params, ConstLWEPublicKey pk, LWEPlaintext m,
                            const LWEPlaintextModulus& p = 4, const NativeInteger& mod = 0) const;
 
     /**

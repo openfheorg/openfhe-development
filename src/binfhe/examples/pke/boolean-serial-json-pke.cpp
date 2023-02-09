@@ -53,7 +53,7 @@ int main() {
     auto sk1 = cc1.KeyGen();
 
     // Generate the bootstrapping keys and public key
-    cc1.BTKeyGen(sk1, KEYPAIR);
+    cc1.BTKeyGen(sk1, PUB_ENCRYPT);
 
     auto pk1 = cc1.GetPublicKey();
 

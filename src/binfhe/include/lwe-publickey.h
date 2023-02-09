@@ -82,12 +82,6 @@ public:
     }
 
     void SetA(const std::vector<NativeVector>& A) {
-        std::cout << "here in set A" << std::endl;
-        std::cout << "A size " << A.size() << std::endl;
-        /*for (size_t i = 0; i < A.size(); i++) {
-            std::cout << "i " << i << std::endl;
-            m_A[i] = A[i];
-        }*/
         m_A = A;
     }
 

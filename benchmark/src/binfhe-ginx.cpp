@@ -33,18 +33,8 @@
  * This file benchmarks FHEW-GINX gate evaluation operations
  */
 
-#define PROFILE
 #include "benchmark/benchmark.h"
-
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <limits>
-#include <random>
-
 #include "binfhecontext.h"
-
-#include "utils/debug.h"
 
 using namespace lbcrypto;
 

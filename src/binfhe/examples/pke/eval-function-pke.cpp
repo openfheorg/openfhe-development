@@ -50,7 +50,7 @@ int main() {
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh, switching and public keys)
-    cc.BTKeyGen(sk, KEYPAIR);
+    cc.BTKeyGen(sk, PUB_ENCRYPT);
 
     auto pk = cc.GetPublicKey();
 
@@ -74,7 +74,7 @@ int main() {
     // Sample Program: Step 4: evalute f(x) homomorphically and decrypt
     // Note that we check for all the possible plaintexts.
     for (int i = 0; i < p; i++) {
-        auto ct1 = cc.Encrypt(pk, i % p, SMALLN, p);
+        auto ct1 = cc.Encrypt(pk, i % p, SMALL_DIM, p);
 
         auto ct_cube = cc.EvalFunc(ct1, lut);
 

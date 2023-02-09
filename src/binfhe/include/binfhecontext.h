@@ -179,8 +179,8 @@ public:
    * @param mod Encrypt according to mod instead of m_q if mod != 0
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHE_OUTPUT output = BOOTSTRAPPED,
-                          LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
+    LWECiphertext Encrypt(ConstLWEPrivateKey sk, LWEPlaintext m, BINFHE_OUTPUT output = BOOTSTRAPPED,
+                          LWEPlaintextModulus p = 4, const NativeInteger& mod = 0) const;
 
     /**
    * Encrypts a bit using a public key (public key encryption)
@@ -189,22 +189,11 @@ public:
    * @param &m - the plaintext
    * @param p - plaintext modulus
    * @param mod Encrypt according to mod instead of m_q if mod != 0
-   * @param output - SMALLN to generate ciphertext with dimension n (default)
+   * @param output - SMALL_DIM to generate ciphertext with dimension n (default). LARGE_DIM to generate ciphertext with dimension N
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(ConstLWEPublicKey pk, const LWEPlaintext& m, BINFHE_OUTPUT output = SMALLN,
-                          LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
-    /**
-   * Encrypts a bit using a public key (public key encryption) with larger dimension N and modulus Q
-   *
-   * @param pk - the public key
-   * @param &m - the plaintext
-   * @param p - plaintext modulus
-   * @param mod Encrypt according to mod instead of m_q if mod != 0
-   * @return a shared pointer to the ciphertext
-   */
-    LWECiphertext EncryptN(ConstLWEPublicKey pk, const LWEPlaintext& m, LWEPlaintextModulus p = 4,
-                           NativeInteger mod = 0) const;
+    LWECiphertext Encrypt(ConstLWEPublicKey pk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
+                          LWEPlaintextModulus p = 4, const NativeInteger& mod = 0) const;
 
     /**
    * Converts a ciphertext (public key encryption) with modulus Q and dimension N to ciphertext with q and n
@@ -241,7 +230,7 @@ public:
    * @param sk secret key
    * @param DiffQ BTKeyGen according to DiffQ instead of m_q if DiffQ != 0
    */
-    void BTKeyGen(ConstLWEPrivateKey sk, KEYGEN_MODE keygenMode = SKONLY);
+    void BTKeyGen(ConstLWEPrivateKey sk, KEYGEN_MODE keygenMode = SYM_ENCRYPT);
 
     /**
    * Loads bootstrapping keys in the context (typically after deserializing)

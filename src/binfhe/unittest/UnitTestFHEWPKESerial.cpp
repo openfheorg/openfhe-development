@@ -48,7 +48,7 @@ void UnitTestFHEWPKESerial(const ST& sertype, BINFHE_PARAMSET secLevel, BINFHE_M
     cc1.GenerateBinFHEContext(secLevel, variant);
 
     auto sk1 = cc1.KeyGen();
-    cc1.BTKeyGen(sk1, KEYPAIR);
+    cc1.BTKeyGen(sk1, PUB_ENCRYPT);
 
     LWEPublicKey pk1 = cc1.GetPublicKey();
     // Encryption for a ciphertext that will be serialized
