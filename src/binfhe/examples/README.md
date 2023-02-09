@@ -54,7 +54,7 @@ Note that for these advanced features, only GINX bootstrapping with 128-bit secu
 - Eval Function:
     - [`eval-function.cpp`](https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/eval-function.cpp)
         - evaluates a function _f: Z<sub>p</sub> -> Z<sub>p</sub>_ on the input ciphertext
-    -[`eval-function-pke.cpp`](https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/pke/eval-function-pke.cpp)
+    - [`eval-function-pke.cpp`](https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/pke/eval-function-pke.cpp)
         - PKE version of the `eval-function.cpp` example
 
 - [Eval Sign](https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/eval-sign.cpp): - `eval-sign.cpp`

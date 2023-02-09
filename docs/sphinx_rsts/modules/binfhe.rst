@@ -10,7 +10,7 @@ Boolean FHE (BinFHE) documentation
 
 - `Chillotti-Gama-Georgieva-Izabachene (CGGI or TFHE)  <https://eprint.iacr.org/2018/421.pdf>`_
 
-`Github Source <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/pke>`_: Implements the public key encryption (pke) version of the boolean examples.
+`Github Source PKE <https://github.com/openfheorg/openfhe-development/tree/main/src/binfhe/examples/pke>`_: Implements the public key encryption (pke) version of the boolean examples.
 
 File Listings
 -----------------------
@@ -25,10 +25,10 @@ File Listings
 - A CryptoContext is the primary object through which we interact with the various ``OpenFHE`` capabilities
 
 .. note:: various parameter ``enum`` are also provided
-.. - ``BINFHEPARAMSET`` that defines the security level and parameters
-.. - ``BINFHE_METHOD`` to choose the bootstrapping method: AP (DM/FHEW scheme) or GINX (CGGI/TFHE scheme)
-.. - ``BINFHE_OUTPUT`` specifies whether fresh ciphertext should be bootstrapped. The FRESH and BOOTSTRAPPED are now obsolete. This option is now used to specify LARGE_DIM (ciphertext of dimension N) or SMALL_DIM (ciphertext of dimension n after modswitch and keyswitch)
-.. - ``KEYGEN_MODE`` specifies if a public key along with the bootstrapping keys are generated
+- ``BINFHEPARAMSET`` that defines the security level and parameters
+- ``BINFHE_METHOD`` to choose the bootstrapping method: AP (DM/FHEW scheme) or GINX (CGGI/TFHE scheme)
+- ``BINFHE_OUTPUT`` specifies whether fresh ciphertext should be bootstrapped. The FRESH and BOOTSTRAPPED are now obsolete but kept for backward compatibility. This option is now used to specify LARGE_DIM (ciphertext of dimension N) or SMALL_DIM (ciphertext of dimension n after modswitch and keyswitch)
+- ``KEYGEN_MODE`` specifies if a public key along with the bootstrapping keys are generated
 
 `DM/CGGI Cryptosystem (binfhe-base-scheme) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/binfhe-base-scheme.h>`_
 
