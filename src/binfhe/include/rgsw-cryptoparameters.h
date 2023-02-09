@@ -66,7 +66,7 @@ public:
    * @param lweparams a shared poiter to an instance of LWECryptoParams
    * @param baseG the gadget base used in the bootstrapping
    * @param baseR the base for the refreshing key
-   * @param method bootstrapping method (DM or CGGI)
+   * @param method bootstrapping method (DM or CGGI or LMKCDEY)
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
                                  BINFHE_METHOD method, double std, bool signEval = false)
@@ -313,7 +313,7 @@ private:
     // (used only for CGGI bootstrapping)
     std::vector<NativePoly> m_monomials;
 
-    // Bootstrapping method (DM or CGGI)
+    // Bootstrapping method (DM or CGGI or LMKCDEY)
     BINFHE_METHOD m_method = BINFHE_METHOD::INVALID_METHOD;
 };
 
