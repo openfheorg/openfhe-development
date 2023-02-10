@@ -77,6 +77,9 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
     // Bound of the Gaussian error polynomial
     double Berr = sigma * sqrt(alpha);
+    std::cout << "sigma: " << sigma << std::endl;
+    std::cout << "Berr: " << Berr << std::endl;
+    std::cout << "alpha: " << alpha << std::endl;
 
     // Bound of the key polynomial
     double Bkey;
@@ -95,6 +98,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         Bkey     = thresholdParties;
         distType = HEStd_ternary;
     }
+    std::cout << "Bkey: " << Bkey << std::endl;
 
     // expansion factor delta
     auto delta = [](uint32_t n) -> double {
@@ -307,8 +311,15 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
         OPENFHE_THROW(config_error, errMsg);
     }
+    std::cout << "delta: " << delta(n) << std::endl;
+    std::cout << "t: " << p << std::endl;
+    std::cout << "V: " << Vnorm(n) << std::endl;
+    std::cout << "dcrtBits: " << dcrtBits << std::endl;
 
     const size_t numInitialModuli = static_cast<size_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
+    std::cout << "mult depth: " << multiplicativeDepth << std::endl;
+    std::cout << "n: " << n << std::endl;
+    std::cout << "numInitialModuli: " << numInitialModuli << std::endl;
     if (numInitialModuli < 1)
         OPENFHE_THROW(config_error, "numInitialModuli must be greater than 0.");
     const size_t sizeQ = multipartyMode == NOISE_FLOODING_MULTIPARTY ?
@@ -317,6 +328,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
     std::vector<NativeInteger> moduliQ(sizeQ);
     std::vector<NativeInteger> rootsQ(sizeQ);
+    std::cout << "sizeQ: " << sizeQ << std::endl;
 
     // makes sure the first integer is less than 2^60-1 to take advantage of NTL
     // optimizations

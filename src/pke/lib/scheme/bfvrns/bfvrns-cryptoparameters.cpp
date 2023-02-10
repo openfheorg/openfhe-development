@@ -173,7 +173,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
                 }
 
                 for (size_t i = 0; i < sizeQ - l; i++) {
-                    m_QlHatModr[sizeQ - l - 1][i].resize(sizeR);
                     BigInteger QHati                 = tmpModulusQ / BigInteger(moduliQ[i]);
                     BigInteger QHatInvModqi          = QHati.ModInverse(moduliQ[i]);
                     m_QlHatInvModq[sizeQ - l - 1][i] = QHatInvModqi.ConvertToInt();
@@ -192,20 +191,18 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
             m_QlHatInvModq[0].resize(sizeQ);
             m_QlHatInvModqPrecon[0].resize(sizeQ);
+            m_QlHatModr.resize(1);
+            m_QlHatModr[0].resize(sizeR);
+            for (usint j = 0; j < sizeR; j++) {
+                m_QlHatModr[0][j].resize(sizeQ);
+            }
 
             for (size_t i = 0; i < sizeQ; i++) {
                 BigInteger QHati           = modulusQ / BigInteger(moduliQ[i]);
                 BigInteger QHatInvModqi    = QHati.ModInverse(moduliQ[i]);
                 m_QlHatInvModq[0][i]       = QHatInvModqi.ConvertToInt();
                 m_QlHatInvModqPrecon[0][i] = m_QlHatInvModq[0][i].PrepModMulConst(moduliQ[i]);
-            }
-
-            m_QlHatModr.resize(1);
-            m_QlHatModr[0].resize(sizeR);
-            for (usint j = 0; j < sizeR; j++) {
-                m_QlHatModr[0][j].resize(sizeQ);
-                for (usint i = 0; i < sizeQ; i++) {
-                    BigInteger QHati     = modulusQ / BigInteger(moduliQ[i]);
+                for (usint j = 0; j < sizeR; j++) {
                     m_QlHatModr[0][j][i] = QHati.Mod(moduliR[j]).ConvertToInt();
                 }
             }
@@ -255,16 +252,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
                 rootsQlRl.push_back(rootsR[l]);
                 m_paramsQlRl[l] = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, moduliQlRl, rootsQlRl);
             }
-        }
-
-        m_modrBarrettMu.resize(sizeR);
-        for (uint32_t j = 0; j < moduliR.size(); j++) {
-            BigInteger mu = BarrettBase128Bit / BigInteger(moduliR[j]);
-            uint64_t val[2];
-            val[0] = (mu % TwoPower64).ConvertToInt();
-            val[1] = mu.RShift(64).ConvertToInt();
-
-            memcpy(&m_modrBarrettMu[j], val, sizeof(DoubleNativeInt));
         }
 
         m_qInv.resize(sizeQ);
@@ -318,14 +305,12 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         std::vector<BigInteger> Rl(sizeQ + 1);
         std::vector<BigInteger> QlRl(sizeQ + 1);
         std::vector<BigInteger> QlHat(sizeQ + 1);
-        std::vector<BigInteger> RlHat(sizeQ + 1);
 
         if (multTech == HPSPOVERQLEVELED || multTech == HPSPOVERQ) {
             Ql[0]    = 1;
             Rl[0]    = 1;
             QlRl[0]  = 1;
             QlHat[0] = modulusQ;
-            RlHat[0] = modulusR;
             for (usint l = 0; l < sizeQ; ++l) {
                 BigInteger ql(moduliQ[l].ConvertToInt());
                 BigInteger rl(moduliR[l].ConvertToInt());
@@ -334,7 +319,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
                 QlRl[l + 1]  = QlRl[l] * ql;
                 QlRl[l + 1]  = QlRl[l + 1] * rl;
                 QlHat[l + 1] = QlHat[l] / ql;
-                RlHat[l + 1] = RlHat[l] / rl;
             }
         }
 
