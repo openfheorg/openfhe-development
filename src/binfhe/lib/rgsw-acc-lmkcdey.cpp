@@ -29,62 +29,67 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include "rgsw-acc-dm.h"
+#include "rgsw-acc-lmkcdey.h"
 
 #include <string>
 
 namespace lbcrypto {
 
-// Key generation as described in Section 4 of https://eprint.iacr.org/2014/816
-RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params,
+// Key generation as described in https://eprint.iacr.org/2022/198
+RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params,
                                               const NativePoly& skNTT, ConstLWEPrivateKey LWEsk) const {
     auto sv     = LWEsk->GetElement();
     int32_t mod = sv.GetModulus().ConvertToInt();
-
     int32_t modHalf = mod >> 1;
+    uint32_t N = params->GetN();
 
-    uint32_t baseR                            = params->GetBaseR();
-    const std::vector<NativeInteger>& digitsR = params->GetDigitsR();
     uint32_t n                                = sv.GetLength();
-    RingGSWACCKey ek                          = std::make_shared<RingGSWACCKeyImpl>(n, baseR, digitsR.size());
+    RingGSWACCKey ek                          = 
+    // dim2, 0: for RGSW key, 1: for automorphism keys
+    // only w automorphism keys required
+    // allocates (n - w) more memory for pointer (not critical for performance)
+    std::make_shared<RingGSWACCKeyImpl>(1, 2, n);  
 
 #pragma omp parallel for
     for (size_t i = 0; i < n; ++i) {
-        for (size_t j = 1; j < baseR; ++j) {
-            for (size_t k = 0; k < digitsR.size(); ++k) {
-                int32_t s = (int32_t)sv[i].ConvertToInt();
-                if (s > modHalf) {
-                    s -= mod;
-                }
-
-                (*ek)[i][j][k] = KeyGenDM(params, skNTT, s * j * (int32_t)digitsR[k].ConvertToInt());
-            }
+        int32_t s = (int32_t)sv[i].ConvertToInt();
+        if (s > modHalf) {
+            s -= mod;
         }
-    }
 
+        (*ek)[0][0][n] = KeyGenLMKCDEY(params, skNTT, s);
+    }
+    
+    // window size, consider parameterization in the future
+    uint32_t window = 10; 
+    NativeInteger gen = NativeInteger(5);
+    
+    (*ek)[0][1][0] = KeyGenAuto(params, skNTT, 2*N - gen);
+
+    for (size_t i = 1; i < window+1; i++)
+    {
+        (*ek)[0][1][i] = KeyGenAuto(params, skNTT, 
+            gen.ModExp(i, 2*N).ConvertToInt());
+    }
+    
     return ek;
 }
 
-void RingGSWAccumulatorDM::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
+void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
                                    RLWECiphertext& acc, const NativeVector& a) const {
     uint32_t baseR = params->GetBaseR();
     auto digitsR   = params->GetDigitsR();
     auto q         = params->Getq();
     uint32_t n     = a.GetLength();
 
-    for (size_t i = 0; i < n; ++i) {
-        NativeInteger aI = q.ModSub(a[i], q);
-        for (size_t k = 0; k < digitsR.size(); ++k, aI /= NativeInteger(baseR)) {
-            uint32_t a0 = (aI.Mod(baseR)).ConvertToInt();
-            if (a0)
-                AddToAccDM(params, (*ek)[i][a0][k], acc);
-        }
-    }
+    // TODO: Accumulation of LMKCDEY
+
 }
 
-// Encryption as described in Section 5 of https://eprint.iacr.org/2014/816
+// Encryption as described in Section 5 of https://eprint.iacr.org/2022/198
+// Same as KeyGenAP, but only for X^{s_i}
 // skNTT corresponds to the secret key z
-RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCryptoParams> params,
+RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams> params,
                                               const NativePoly& skNTT, const LWEPlaintext& m) const {
     NativeInteger Q   = params->GetQ();
     uint64_t q        = params->Getq().ConvertToInt();
@@ -142,8 +147,34 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
     return result;
 }
 
-// AP Accumulation as described in https://eprint.iacr.org/2020/08
-void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
+// Generation of an autormorphism key
+RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams> params,
+                                              const NativePoly& skNTT, const LWEPlaintext& k) const {
+    NativeInteger Q   = params->GetQ();
+    uint32_t digitsG  = params->GetDigitsG();
+    auto polyParams   = params->GetPolyParams();
+    auto Gpow         = params->GetGPower();
+    auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG, 2);
+    
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    dug.SetModulus(Q);
+
+    auto skAuto = skNTT.AutomorphismTransform(k);
+
+    for (uint32_t i = 0; i < digitsG; ++i) {
+        (*result)[i][0] = NativePoly(dug, polyParams, EVALUATION);
+        (*result)[i][1] = NativePoly(params->GetLWEParams()->GetDgg(),
+            polyParams, EVALUATION);
+        (*result)[i][1] -= skAuto * Gpow[i];
+        (*result)[i][1] += (*result)[i][0] * skNTT; 
+    }
+
+    return result;
+}
+
+// LMKCDEY Accumulation as described in https://eprint.iacr.org/2022/198
+// Same as AP, but multiplied once
+void RingGSWAccumulatorLMKCDEY::AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
                                       RLWECiphertext& acc) const {
     uint32_t digitsG2 = params->GetDigitsG() << 1;
     auto polyParams   = params->GetPolyParams();
@@ -177,6 +208,51 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
     acc->GetElements()[1].SetValuesToZero();
     for (size_t l = 1; l < digitsG2; ++l)
         acc->GetElements()[1] += (dct[l] *= ev[l][1]);
+}
+
+// Automorphism 
+void RingGSWAccumulatorScheme::Automorphism(const std::shared_ptr<RingGSWCryptoParams> params,
+                        const NativeInteger &a,
+                        const RingGSWCiphertext &ak,
+                        std::shared_ptr<RingGSWCiphertext> acc) const {
+    uint32_t digitsG = params->GetDigitsG();
+    auto polyParams   = params->GetPolyParams();
+
+    NativePoly cta = acc->GetElements()[0];
+    NativePoly ctb = acc->GetElements()[1];
+
+    cta.SetFormat(COEFFICIENT);
+    ctb.SetFormat(COEFFICIENT);
+
+    cta = cta.AutomorphismTransform(a.ConvertToInt());
+    ctb = ctb.AutomorphismTransform(a.ConvertToInt());
+
+    std::vector<NativePoly> dctKS(digitsG);
+    for (uint32_t i = 0; i < digitsG; i++)
+        dcta[i] = NativePoly(polyParams, COEFFICIENT, true);
+
+    SignedDigitDecompose(params, cta, &dctKS);
+
+    // d NTTs
+    for (uint32_t i = 0; i < digitsG; i++) {
+        dcta[i].SetFormat(EVALUATION);
+    }
+
+    // acc = dct * input (matrix product);
+    // uses in-place * operators for the last call to dct[i] to gain performance
+    // improvement
+    const std::vector<std::vector<NativePoly>>& ev = ak->GetElements();
+    // for elements[0]:
+    acc->GetElements()[0].SetValuesToZero();
+    for (size_t l = 1; l < digitsG; ++l)
+        acc->GetElements()[0] += (dcta[l] * ev[l][0]);
+    // for elements[1]:
+    acc->GetElements()[1].SetValuesToZero();
+    for (size_t l = 1; l < digitsG; ++l)
+        acc->GetElements()[1] += (dcta[l] *= ev[l][1]);
+
+    ctb.SetFormat(EVALUATION);
+    acc->GetElements()[1] += ctb;
 }
 
 };  // namespace lbcrypto

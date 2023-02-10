@@ -102,4 +102,44 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
         }
     }
 }
+
+
+// Decompose a ring element, not ciphertext
+void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params,
+                                              const NativePoly& input,
+                                              std::vector<NativePoly>& output) const {
+    uint32_t N                           = params->GetN();
+    uint32_t digitsG                     = params->GetDigitsG();
+    NativeInteger Q                      = params->GetQ();
+    NativeInteger QHalf                  = Q >> 1;
+    NativeInteger::SignedNativeInt Q_int = Q.ConvertToInt();
+
+    NativeInteger::SignedNativeInt baseG = NativeInteger(params->GetBaseG()).ConvertToInt();
+
+    NativeInteger::SignedNativeInt gBits = (NativeInteger::SignedNativeInt)std::log2(baseG);
+
+    // VARIANT A
+    NativeInteger::SignedNativeInt gBitsMaxBits = NativeInteger::MaxBits() - gBits;
+
+    // Signed digit decomposition
+    for (size_t k = 0; k < N; ++k) {
+        const NativeInteger& t           = input[k];
+        NativeInteger::SignedNativeInt d = (t < QHalf) ? t.ConvertToInt() : (t.ConvertToInt() - Q_int);
+
+        for (size_t l = 0; l < digitsG; ++l) {
+            // remainder is signed
+            NativeInteger::SignedNativeInt r = d << gBitsMaxBits;
+            r >>= gBitsMaxBits;
+
+            d -= r;
+            d >>= gBits;
+
+            if (r < 0)
+                r += Q_int;
+
+            output[l][k] += r;
+        }
+    }
+    
+}
 };  // namespace lbcrypto

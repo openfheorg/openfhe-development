@@ -73,6 +73,9 @@ public:
 private:
     RingGSWEvalKey KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
                             const LWEPlaintext& m) const;
+                            
+    RingGSWEvalKey KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
+                            const LWEPlaintext& k) const;
 
     void AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
                     RLWECiphertext& acc) const;
