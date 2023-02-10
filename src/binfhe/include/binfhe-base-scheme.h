@@ -53,11 +53,13 @@ typedef struct {
     RingGSWACCKey BSkey;
     // switching key
     LWESwitchingKey KSkey;
+    // public key
+    LWEPublicKey Pkey;
 } RingGSWBTKey;
 
 /**
  * @brief Ring GSW accumulator schemes described in
- * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/08
+ * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/086
  */
 class BinFHEScheme {
 public:
@@ -80,10 +82,12 @@ public:
    * @param params a shared pointer to RingGSW scheme parameters
    * @param lwescheme a shared pointer to additive LWE scheme
    * @param LWEsk a shared pointer to the secret key of the underlying additive
-   * LWE scheme
+   * @param keygenMode enum to indicate generation of secret key only (SYM_ENCRYPT) or
+   * secret key, public key pair (PUB_ENCRYPT)
    * @return a shared pointer to the refreshing key
    */
-    RingGSWBTKey KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk) const;
+    RingGSWBTKey KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk,
+                        KEYGEN_MODE keygenMode) const;
 
     /**
    * Evaluates a binary gate (calls bootstrapping as a subroutine)

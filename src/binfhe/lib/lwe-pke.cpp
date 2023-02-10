@@ -50,11 +50,62 @@ LWEPrivateKey LWEEncryptionScheme::KeyGen(usint size, const NativeInteger& modul
     return std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(tug.GenerateVector(size, modulus)));
 }
 
+// size is the ring dimension N, modulus is the large Q used in RGSW encryption of bootstrapping.
+LWEKeyPair LWEEncryptionScheme::KeyGenPair(const std::shared_ptr<LWECryptoParams> params) const {
+    int size              = params->GetN();
+    NativeInteger modulus = params->GetQ();
+
+    // generate secret vector skN of ring dimension N
+    auto skN = KeyGen(size, modulus);
+    // generate public key pkN corresponding to secret key skN
+    auto pkN = PubKeyGen(params, skN);
+
+    auto lweKeyPair = LWEKeyPairImpl(pkN, skN);
+
+    // return the public key (A, v), private key sk pair
+    return std::make_shared<LWEKeyPairImpl>(lweKeyPair);
+}
+
+// size is the ring dimension N, modulus is the large Q used in RGSW encryption of bootstrapping.
+LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParams> params,
+                                            ConstLWEPrivateKey skN) const {
+    int size              = params->GetN();
+    NativeInteger modulus = params->GetQ();
+
+    DiscreteUniformGeneratorImpl<NativeVector> dug;
+    dug.SetModulus(modulus);
+    std::vector<NativeVector> A(size);
+
+    // generate random matrix A of dimension N x N
+    for (int i = 0; i < size; i++) {
+        NativeVector a = dug.GenerateVector(size);
+        A[i]           = std::move(a);
+    }
+
+    // generate error vector e
+    DiscreteGaussianGeneratorImpl<NativeVector> dgg;
+    NativeVector e = dgg.GenerateVector(size, modulus);
+
+    // compute v = As + e
+    NativeVector v   = e;
+    NativeVector ske = skN->GetElement();
+
+    for (int j = 0; j < size; ++j) {
+        // column wise v = A_1s1 + ... + A_NsN
+        v.ModAdd(A[j].ModMul(ske[j]));
+    }
+
+    // public key A, v
+    LWEPublicKeyImpl Av(A, v);
+
+    return std::make_shared<LWEPublicKeyImpl>(Av);
+}
+
 // classical LWE encryption
 // a is a randomly uniform vector of dimension n; with integers mod q
 // b = a*s + e + m floor(q/4) is an integer mod q
 LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk,
-                                           const LWEPlaintext& m, const LWEPlaintextModulus& p,
+                                           LWEPlaintext m, const LWEPlaintextModulus& p,
                                            const NativeInteger& mod) const {
     if (mod % p != 0 && mod.ConvertToInt() & (1 == 0)) {
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
@@ -67,10 +118,10 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
 
     NativeInteger b = (m % p) * (mod / p) + params->GetDgg().GenerateInteger(mod);
 
-#if defined(BINFHE_DEBUG)
-    std::cout << b % mod << std::endl;
-    std::cout << (m % p) * (mod / p) << std::endl;
-#endif
+    // #if defined(BINFHE_DEBUG)
+    //    std::cout << b % mod << std::endl;
+    //    std::cout << (m % p) * (mod / p) << std::endl;
+    // #endif
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(mod);
@@ -84,6 +135,63 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     b.ModEq(mod);
 
     return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+}
+
+// classical public key LWE encryption
+// a = As' + e' of dimension n; with integers mod q
+// b = vs' + e" + m floor(q/4) is an integer mod q
+LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParams> params, ConstLWEPublicKey pk,
+                                            LWEPlaintext m, const LWEPlaintextModulus& p,
+                                            const NativeInteger& mod) const {
+    if (mod % p != 0 && mod.ConvertToInt() & (1 == 0)) {
+        std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
+        OPENFHE_THROW(not_implemented_error, errMsg);
+    }
+    NativeVector bp             = pk->Getv();
+    std::vector<NativeVector> A = pk->GetA();
+
+    uint32_t N = bp.GetLength();
+    bp.SwitchModulus(mod);  // todo : this is probably not required
+
+    auto dgg        = params->GetDgg();
+    NativeInteger b = (m % p) * (mod / p) + dgg.GenerateInteger(mod);
+
+    // #if defined(BINFHE_DEBUG)
+    //    std::cout << b % mod << std::endl;
+    //    std::cout << (m % p) * (mod / p) << std::endl;
+    // #endif
+
+    TernaryUniformGeneratorImpl<NativeVector> tug;
+    NativeVector sp = tug.GenerateVector(N, mod);
+    NativeVector ep = dgg.GenerateVector(N, mod);
+
+    // compute a in the ciphertext (a, b)
+    NativeVector a   = ep;
+    NativeInteger mu = mod.ComputeMu();
+
+    for (size_t j = 0; j < N; ++j) {
+        // columnwise a = A_1s1 + ... + A_NsN
+        a.ModAdd(A[j].ModMul(sp[j]));
+    }
+
+    // compute b in ciphertext (a,b)
+    for (size_t i = 0; i < N; ++i) {
+        b += bp[i].ModMulFast(sp[i], mod, mu);
+    }
+    b.ModEq(mod);
+
+    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+}
+
+// convert ciphertext with modulus Q and dimension N to ciphertext with modulus q and dimension n
+LWECiphertext LWEEncryptionScheme::SwitchCTtoqn(const std::shared_ptr<LWECryptoParams> params,
+                                                ConstLWESwitchingKey& ksk, ConstLWECiphertext ct) const {
+    // Modulus switching to a middle step Q'
+    auto ctMS = ModSwitch(params->GetqKS(), ct);
+    // Key switching
+    auto ctKS = KeySwitch(params, ksk, ctMS);
+    // Modulus switching
+    return ModSwitch(params->Getq(), ctKS);
 }
 
 // classical LWE decryption
@@ -120,6 +228,7 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params,
     // But the method below is a more efficient way of doing the rounding
     // the idea is that Round(4/q x) = q/8 + Floor(4/q x)
     r.ModAddFastEq((mod / (p * 2)), mod);
+
     *result = ((NativeInteger(p) * r) / mod).ConvertToInt();
 
 #if defined(BINFHE_DEBUG)

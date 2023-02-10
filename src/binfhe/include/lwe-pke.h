@@ -36,10 +36,11 @@
 #include "lwe-ciphertext.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
+#include "lwe-publickey.h"
+#include "lwe-keypair.h"
 #include "lwe-cryptoparameters.h"
 
 #include <memory>
-
 namespace lbcrypto {
 
 /**
@@ -60,6 +61,22 @@ public:
     LWEPrivateKey KeyGen(usint size, const NativeInteger& modulus) const;
 
     /**
+   * Generates a public key of dimension N and modulus Q, secret key of dimension n using modulus q pair
+   * @param params a shared pointer to LWE scheme parameters
+   * @return a shared pointer to the public key, secret key pair
+   */
+    LWEKeyPair KeyGenPair(const std::shared_ptr<LWECryptoParams> params) const;
+
+    /**
+   * Generates a public key corresponding to a secret key of dimension N using modulus Q
+   *
+   * @param params a shared pointer to LWE scheme parameters
+   * @param skN a secret key of dimension N
+   * @return a shared pointer to the public key
+   */
+    LWEPublicKey PubKeyGen(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey skN) const;
+
+    /**
    * Encrypts a bit using a secret key (symmetric key encryption)
    *
    * @param params a shared pointer to LWE scheme parameters
@@ -68,8 +85,30 @@ public:
    * @param &p - the plaintext space
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk, const LWEPlaintext& m,
+    LWECiphertext Encrypt(const std::shared_ptr<LWECryptoParams> params, ConstLWEPrivateKey sk, LWEPlaintext m,
                           const LWEPlaintextModulus& p = 4, const NativeInteger& mod = 0) const;
+
+    /**
+   * Encrypts a bit using a public key (asymmetric key encryption)
+   *
+   * @param params a shared pointer to LWE scheme parameters
+   * @param pk - the secret key
+   * @param &m - the plaintext
+   * @param &p - the plaintext space
+   * @return a shared pointer to the ciphertext
+   */
+    LWECiphertext EncryptN(const std::shared_ptr<LWECryptoParams> params, ConstLWEPublicKey pk, LWEPlaintext m,
+                           const LWEPlaintextModulus& p = 4, const NativeInteger& mod = 0) const;
+
+    /**
+   * Encrypts a bit using a public key (asymmetric key encryption)
+   *
+   * @param params a shared pointer to LWE scheme parameters
+   * @param ksk - key switching key from secret key of dimension N to secret key of dimension n
+   * @return a shared pointer to the ciphertext
+   */
+    LWECiphertext SwitchCTtoqn(const std::shared_ptr<LWECryptoParams> params, ConstLWESwitchingKey& ksk,
+                               ConstLWECiphertext ct) const;
 
     /**
    * Decrypts the ciphertext using secret key sk

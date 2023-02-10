@@ -63,6 +63,11 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        3. [Code with Binary Serialization](src/binfhe/examples/boolean-serial-binary.cpp)
        4. [Large-Precision Comparison](src/binfhe/examples/eval-sign.cpp)
        4. [Small-Precison Arbitrary Function Evaluation](src/binfhe/examples/eval-function.cpp)
+       4. Examples with Public Key Encryption (PKE)
+            1. [Simple Code Example with PKE](src/binfhe/examples/pke/boolean-pke.cpp)
+            1. [Code with JSON serialization](src/binfhe/examples/pke/boolean-serial-json-pke.cpp)
+            1. [Code with Binary Serialization](src/binfhe/examples/pke/boolean-serial-binary-pke.cpp)
+            1. [Small-Precison Arbitrary Function Evaluation](src/binfhe/examples/pke/eval-function-pke.cpp)
    1. Threshold FHE:
        1. [Code Example for BGV, BFV, and CKKS](src/pke/examples/threshold-fhe.cpp)
        1. [Code Example for BFV with 5 parties](src/pke/examples/threshold-fhe-5p.cpp)
