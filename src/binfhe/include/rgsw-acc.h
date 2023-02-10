@@ -81,12 +81,26 @@ public:
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param &input input RLWE ciphertext
-   * @param output input RLWE ciphertext
+   * @param output output RLWE' ciphertext
    */
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params, const std::vector<NativePoly>& input,
                               std::vector<NativePoly>& output) const;
-};
 
+    /**
+   * Takes a ring element input and outputs a vector of its digits, i.e., 
+   * decompose(a) = (a_0, ..., a_{d-1}) = R^d.
+   * Only for automorphism key switching LMKCDEY
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param &input input ring element
+   * @param output decomposed value
+   */
+    void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params,
+    const NativePoly& input,
+                            std::vector<NativePoly>& output) {
+        OPENFHE_THROW(not_implemented_error, "Key switching operation not supported");
+    }
+};
 }  // namespace lbcrypto
 
 #endif
