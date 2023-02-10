@@ -89,7 +89,7 @@ option( WITH_COVTEST "Turn on to enable coverage testing"                       
 option( USE_MACPORTS "Use MacPorts installed packages"                          OFF )
 
 # CZR added this to enable function instrumentation
-option( ENABLE_INSTRUMENTATION "Enable function instrumentation is ON"         ON  )
+option( ENABLE_INSTRUMENTATION "Enable function instrumentation is OFF"         OFF  )
 
 if( NOT ENABLE_INSTRUMENTATION )
    message( "ENABLE_INSTRUMENTATION is OFF!" )

@@ -91,7 +91,7 @@ int main() {
     auto keys = cc->KeyGen(); // generate encryption key pair (pk, sk)
     cc->EvalMultKeyGen(keys.secretKey); // generate multiplication key
     cc->EvalRotateKeyGen(keys.secretKey,
-    	{0,1,2,3,4,5,6,7,8,-1,-2,-3,-4,-5,-6,-7,-8}); // Generate the rotation keys
+    	{1, 2, 3, 4, 5, 6, 7, 8}); // Generate the rotation keys
 
     // Step 3: Encoding and encryption of inputs
 
@@ -103,6 +103,13 @@ int main() {
 
     // Encrypt the encoded vector
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+
+    // std::cout << "number of total evalKeys: " << cc->GetAllEvalAutomorphismKeys().size() << "\n";
+    std::cout << "number of total evalKeys: " << 
+        cc->GetEvalAutomorphismKeyMap(c1->GetKeyTag()).size() + 1 << "\n";
+   
+
+
 
     // Step 4: Evaluation
     auto cRot1 = cc->EvalRotate(c1, 1); // + rotate left

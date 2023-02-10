@@ -71,7 +71,7 @@ void SimpleBootstrapExample() {
     * you do not need to set the ring dimension.
     */
     parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1 << 3);
+    parameters.SetRingDim(1 << 17);
 
     /*  A3) Scaling parameters.
     * By default, we set the modulus sizes and rescaling technique to the following values
@@ -135,6 +135,9 @@ void SimpleBootstrapExample() {
 
     std::cout << "Initial number of levels remaining: " << depth - ciph->GetLevel() << std::endl;
 
+    std::cout << "number of total evalKeys: " << 
+        cryptoContext->GetEvalAutomorphismKeyMap(ciph->GetKeyTag()).size() + 1 << "\n";
+
     // Perform the bootstrapping operation. The goal is to increase the number of levels remaining
     // for HE computation.
     auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
@@ -146,7 +149,7 @@ void SimpleBootstrapExample() {
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
     result->SetLength(encodedLength);
     std::cout << "Initial number of levels remaining: " << depth - ciph->GetLevel() << std::endl;
-    std::cout << "Number of levels after bootstrap  : " << result->GetLevel() << "\n";
+    std::cout << "Number of levels after bootstrap  : " << ciphertextAfter->GetLevel() << "\n";
     std::cout << "Input before bootstrapping \n\t" << ptxt << std::endl;
-    std::cout << "Output after bootstrapping \n\t" << result << std::endl;
+    std::cout << "Output after bootstrapping \n\t" << result << std::endl; 
 }
