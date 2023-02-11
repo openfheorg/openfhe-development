@@ -103,7 +103,6 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
     }
 }
 
-
 // Decompose a ring element, not ciphertext
 void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params,
                                               const NativePoly& input,

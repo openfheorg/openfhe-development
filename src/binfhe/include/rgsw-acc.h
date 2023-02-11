@@ -96,10 +96,7 @@ public:
    * @param output decomposed value
    */
     void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params,
-    const NativePoly& input,
-                            std::vector<NativePoly>& output) {
-        OPENFHE_THROW(not_implemented_error, "Key switching operation not supported");
-    }
+    const NativePoly& input, std::vector<NativePoly>& output) const;
 };
 }  // namespace lbcrypto
 
