@@ -64,7 +64,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
     uint32_t window = 10; 
     NativeInteger gen = NativeInteger(5);
     
-    (*ek)[0][1][0] = KeyGenAuto(params, skNTT, 2*N - gen);
+    (*ek)[0][1][0] = KeyGenAuto(params, skNTT, 2*N - gen.ConvertToInt());
 
     for (size_t i = 1; i < window+1; i++)
     {
@@ -77,13 +77,13 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
 
 void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
                                    RLWECiphertext& acc, const NativeVector& a) const {
-    uint32_t baseR = params->GetBaseR();
-    auto digitsR   = params->GetDigitsR();
-    auto q         = params->Getq();
-    uint32_t n     = a.GetLength();
+    // uint32_t baseR = params->GetBaseR();
+    // auto digitsR   = params->GetDigitsR();
+    // auto q         = params->Getq();
+    // uint32_t n     = a.GetLength();
 
     // TODO: Accumulation of LMKCDEY
-
+    return;
 }
 
 // Encryption as described in Section 5 of https://eprint.iacr.org/2022/198
@@ -163,7 +163,7 @@ RingGSWEvalKey RingGSWAccumulatorLMKCDEY::KeyGenAuto(const std::shared_ptr<RingG
 
     for (uint32_t i = 0; i < digitsG; ++i) {
         (*result)[i][0] = NativePoly(dug, polyParams, EVALUATION);
-        (*result)[i][1] = NativePoly(params->GetLWEParams()->GetDgg(),
+        (*result)[i][1] = NativePoly(params->GetDgg(),
             polyParams, EVALUATION);
         (*result)[i][1] -= skAuto * Gpow[i];
         (*result)[i][1] += (*result)[i][0] * skNTT; 
@@ -211,10 +211,9 @@ void RingGSWAccumulatorLMKCDEY::AddToAccLMKCDEY(const std::shared_ptr<RingGSWCry
 }
 
 // Automorphism 
-void RingGSWAccumulatorScheme::Automorphism(const std::shared_ptr<RingGSWCryptoParams> params,
+void RingGSWAccumulatorLMKCDEY::Automorphism(const std::shared_ptr<RingGSWCryptoParams> params, 
                         const NativeInteger &a,
-                        const RingGSWCiphertext &ak,
-                        std::shared_ptr<RingGSWCiphertext> acc) const {
+                        const RingGSWEvalKey ak, RLWECiphertext& acc) const {
     uint32_t digitsG = params->GetDigitsG();
     auto polyParams   = params->GetPolyParams();
 
@@ -227,11 +226,11 @@ void RingGSWAccumulatorScheme::Automorphism(const std::shared_ptr<RingGSWCryptoP
     cta = cta.AutomorphismTransform(a.ConvertToInt());
     ctb = ctb.AutomorphismTransform(a.ConvertToInt());
 
-    std::vector<NativePoly> dctKS(digitsG);
+    std::vector<NativePoly> dcta(digitsG);
     for (uint32_t i = 0; i < digitsG; i++)
         dcta[i] = NativePoly(polyParams, COEFFICIENT, true);
 
-    SignedDigitDecompose(params, cta, &dctKS);
+    SignedDigitDecompose(params, cta, dcta);
 
     // d NTTs
     for (uint32_t i = 0; i < digitsG; i++) {

@@ -79,6 +79,9 @@ private:
 
     void AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
                     RLWECiphertext& acc) const;
+
+    void Automorphism(const std::shared_ptr<RingGSWCryptoParams> params, const NativeInteger &a,
+                        const RingGSWEvalKey ak, RLWECiphertext& acc) const;
 };
 
 }  // namespace lbcrypto
