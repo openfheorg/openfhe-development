@@ -223,6 +223,8 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNS::EvalBootstrapKey
     auto conjKey       = ConjugateKeyGen(privateKey);
     (*evalKeys)[M - 1] = conjKey;
 
+    std::cout << "Adding conjugate key (M-1): " << std::endl;
+
     return evalKeys;
 }
 
@@ -642,6 +644,9 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, ui
         std::vector<int32_t> indexListCtS = FindCoeffsToSlotsRotationIndices(slots, M);
         std::vector<int32_t> indexListStC = FindSlotsToCoeffsRotationIndices(slots, M);
 
+        std::cout << "indexListCtS: " << indexListCtS << std::endl;
+        std::cout << "indexListStC: " << indexListStC << std::endl;
+
         fullIndexList.insert(fullIndexList.end(), indexListCtS.begin(), indexListCtS.end());
         fullIndexList.insert(fullIndexList.end(), indexListStC.begin(), indexListStC.end());
     }
@@ -653,6 +658,8 @@ std::vector<int32_t> FHECKKSRNS::FindBootstrapRotationIndices(uint32_t slots, ui
     // remove automorphisms corresponding to 0
     fullIndexList.erase(std::remove(fullIndexList.begin(), fullIndexList.end(), 0), fullIndexList.end());
     fullIndexList.erase(std::remove(fullIndexList.begin(), fullIndexList.end(), M / 4), fullIndexList.end());
+
+    std::cout << "fullIndexList (no conjugate key): " << fullIndexList << std::endl;
 
     return fullIndexList;
 }

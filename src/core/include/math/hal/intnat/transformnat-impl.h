@@ -539,7 +539,7 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
         logt1++;
     }
 
-    std::cout << "CZR - INTT before nInv: \n" << *element << std::endl;
+    // std::cout << "CZR - INTT before nInv: \n" << *element << std::endl;
 
     for (i = 0; i < n; i++) {
         (*element)[i].ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
