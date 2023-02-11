@@ -29,27 +29,37 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  Header file adding serialization support to Boolean circuit FHE
+#ifndef _LWE_KEYTRIPLE_H_
+#define _LWE_KEYTRIPLE_H_
+
+#include "lwe-privatekey.h"
+#include "lwe-publickey.h"
+#include "lwe-keyswitchkey.h"
+#include "lwe-keypair-fwd.h"
+#include "math/hal.h"
+#include "utils/serializable.h"
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace lbcrypto {
+/**
+ * @brief Class that stores the LWE scheme secret key, public key pair; ((A, b), s)
  */
+class LWEKeyPairImpl {
+public:
+    LWEPublicKey publicKey;
+    LWEPrivateKey secretKey;
 
-#ifndef BINFHE_BINFHECONTEXT_SER_H
-#define BINFHE_BINFHECONTEXT_SER_H
+    LWEKeyPairImpl(LWEPublicKey Av, LWEPrivateKey s) : publicKey(Av), secretKey(s) {}
 
-#include "binfhecontext.h"
-#include "utils/serial.h"
+    bool good() {
+        return publicKey && secretKey;
+    }
+};
 
-// Registers types needed for serialization
-CEREAL_REGISTER_TYPE(lbcrypto::LWECryptoParams);
-CEREAL_REGISTER_TYPE(lbcrypto::LWECiphertextImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::LWEPrivateKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::LWEPublicKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::LWESwitchingKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::RLWECiphertextImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWCryptoParams);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWEvalKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWACCKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::BinFHECryptoParams);
-CEREAL_REGISTER_TYPE(lbcrypto::BinFHEContext);
+}  // namespace lbcrypto
 
-#endif
+#endif  // _LWE_KEYPAIR_H_

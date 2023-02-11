@@ -88,7 +88,7 @@ void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> 
     }
 }
 
-// Encryption for the CGGI variant, as described in https://eprint.iacr.org/2020/08
+// Encryption for the CGGI variant, as described in https://eprint.iacr.org/2020/086
 RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams> params,
                                                   const NativePoly& skNTT, const LWEPlaintext& m) const {
     NativeInteger Q   = params->GetQ();
@@ -129,7 +129,7 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
     return result;
 }
 
-// CGGI Accumulation as described in https://eprint.iacr.org/2020/08
+// CGGI Accumulation as described in https://eprint.iacr.org/2020/086
 // Added ternary MUX introduced in paper https://eprint.iacr.org/2022/074.pdf section 5
 // We optimize the algorithm by multiplying the monomial after the external product
 // This reduces the number of polynomial multiplications which further reduces the runtime

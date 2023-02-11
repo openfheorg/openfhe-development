@@ -28,28 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#ifndef __LWE_PUBLICKEY_FWD_H__
+#define __LWE_PUBLICKEY_FWD_H__
 
-/*
-  Header file adding serialization support to Boolean circuit FHE
- */
+#include <memory>
 
-#ifndef BINFHE_BINFHECONTEXT_SER_H
-#define BINFHE_BINFHECONTEXT_SER_H
+namespace lbcrypto {
+class LWEPublicKeyImpl;
 
-#include "binfhecontext.h"
-#include "utils/serial.h"
+using LWEPublicKey      = std::shared_ptr<LWEPublicKeyImpl>;
+using ConstLWEPublicKey = const std::shared_ptr<const LWEPublicKeyImpl>;
+}  // namespace lbcrypto
 
-// Registers types needed for serialization
-CEREAL_REGISTER_TYPE(lbcrypto::LWECryptoParams);
-CEREAL_REGISTER_TYPE(lbcrypto::LWECiphertextImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::LWEPrivateKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::LWEPublicKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::LWESwitchingKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::RLWECiphertextImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWCryptoParams);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWEvalKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::RingGSWACCKeyImpl);
-CEREAL_REGISTER_TYPE(lbcrypto::BinFHECryptoParams);
-CEREAL_REGISTER_TYPE(lbcrypto::BinFHEContext);
-
-#endif
+#endif  // __LWE_PUBLICKEY_FWD_H__

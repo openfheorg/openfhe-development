@@ -36,11 +36,24 @@
 namespace lbcrypto {
 
 // wrapper for KeyGen methods
-RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk) const {
-    auto& LWEParams        = params->GetLWEParams();
-    ConstLWEPrivateKey skN = LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
+RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> params, ConstLWEPrivateKey LWEsk,
+                                  KEYGEN_MODE keygenMode = SYM_ENCRYPT) const {
+    const auto& LWEParams = params->GetLWEParams();
 
+    LWEPrivateKey skN;
     RingGSWBTKey ek;
+    if (keygenMode == SYM_ENCRYPT) {
+        skN = LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
+    }
+    else if (keygenMode == PUB_ENCRYPT) {
+        ConstLWEKeyPair kpN = LWEscheme->KeyGenPair(LWEParams);
+        skN                 = kpN->secretKey;
+        ek.Pkey             = kpN->publicKey;
+    }
+    else {
+        OPENFHE_THROW(config_error, "Invalid KeyGen mode");
+    }
+
     ek.KSkey = LWEscheme->KeySwitchGen(LWEParams, LWEsk, skN);
 
     auto& RGSWParams   = params->GetRingGSWParams();
@@ -54,7 +67,7 @@ RingGSWBTKey BinFHEScheme::KeyGen(const std::shared_ptr<BinFHECryptoParams> para
     return ek;
 }
 
-// Full evaluation as described in https://eprint.iacr.org/2020/08
+// Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
                                         const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const {
     if (ct1 == ct2) {
@@ -112,7 +125,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     }
 }
 
-// Full evaluation as described in https://eprint.iacr.org/2020/08
+// Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
                                       ConstLWECiphertext ct) const {
     LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct);
@@ -537,7 +550,7 @@ RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECrypt
     return acc;
 }
 
-// Full evaluation as described in https://eprint.iacr.org/2020/08
+// Full evaluation as described in https://eprint.iacr.org/2020/086
 template <typename Func>
 LWECiphertext BinFHEScheme::BootstrapFunc(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
                                           ConstLWECiphertext ct, const Func f, const NativeInteger fmod) const {
