@@ -60,13 +60,12 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
         (*ek)[0][0][n] = KeyGenLMKCDEY(params, skNTT, s);
     }
     
-    // window size, consider parameterization in the future
-    uint32_t window = 10; 
     NativeInteger gen = NativeInteger(5);
     
     (*ek)[0][1][0] = KeyGenAuto(params, skNTT, 2*N - gen.ConvertToInt());
 
-    for (size_t i = 1; i < window+1; i++)
+    // m_window: window size, consider parameterization in the future
+    for (size_t i = 1; i < m_window+1; i++)
     {
         (*ek)[0][1][i] = KeyGenAuto(params, skNTT, 
             gen.ModExp(i, 2*N).ConvertToInt());
@@ -77,12 +76,98 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
 
 void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
                                    RLWECiphertext& acc, const NativeVector& a) const {
-    // uint32_t baseR = params->GetBaseR();
-    // auto digitsR   = params->GetDigitsR();
-    // auto q         = params->Getq();
-    // uint32_t n     = a.GetLength();
+    auto mod        = a.GetModulus(); // assume a is all-odd ciphertext (using round-to-odd technique)
+    uint32_t n      = a.GetLength();
+    uint32_t Nh     = params->GetN() / 2;
+    uint32_t M      = 2 * params->GetN();
+    auto q         = params->Getq();
 
     // TODO: Accumulation of LMKCDEY
+    NativeInteger MNative(M);
+
+    auto logGen = params->GetLogGen();
+    std::unordered_map<int32_t, std::vector<int32_t>> permuteMap;
+
+    for (size_t i = 0; i < n; i++) { // put ail a_i in the permuteMap
+        NativeInteger aI = MNative.ModSub(a[i], MNative);
+        int32_t index = logGen[aI.ConvertToInt()];
+
+        if(permuteMap.find(index) == permuteMap.end()){ // first time
+            std::vector<int32_t> indexVec;
+            permuteMap[index] = indexVec;
+        }
+
+        auto &indexVec = permuteMap[index];
+        indexVec.push_back(i);
+    }
+    
+    NativeInteger gen(5);
+    uint32_t genInt = 5;
+    
+    uint32_t nSkips = 0;
+
+    acc->GetElements()[1] = (acc->GetElements()[1]).AutomorphismTransform(M - genInt);
+
+    // for a_j = -5^i
+    for (uint32_t i = Nh - 1; i > 0; i--) {
+        if (permuteMap.find(-i) != permuteMap.end()){
+            if (nSkips != 0){ // Rotation by 5^nSkips
+                Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc); 
+                nSkips = 0;
+            }
+            
+            auto &indexVec = permuteMap[-i];
+            for (size_t j = 0; j < indexVec.size(); j ++) {
+                AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
+            }
+        }
+        nSkips++;
+
+        if(nSkips == m_window || i == 1){
+            Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
+            nSkips = 0;
+        }
+    }
+
+    // for -1
+    if(permuteMap.find(M) != permuteMap.end()){
+        auto &indexVec = permuteMap[M];
+        for (size_t j = 0; j < indexVec.size(); j ++) {
+            AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
+        }
+    }
+    
+    Automorphism(params, NativeInteger(M - genInt), (*ek)[0][1][0], acc);
+    
+    // for a_j = 5^i
+    for (size_t i = Nh - 1; i > 0; i--) {
+        if(permuteMap.find(i) != permuteMap.end()) {
+            if (nSkips != 0){ // Rotation by 5^nSkips
+                Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
+                nSkips = 0;
+            }
+
+            auto &indexVec = permuteMap[i];
+            for (size_t j = 0; j < indexVec.size(); j++) {
+                AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
+            }
+        }
+        nSkips++;
+
+        if(nSkips == m_window || i == 1){
+            Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
+            nSkips = 0;
+        }
+    }
+
+    // for 0
+    if(permuteMap.find(0) != permuteMap.end()) {
+        auto &indexVec = permuteMap[0];
+        for (size_t j = 0; j < indexVec.size(); j++) {
+            AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
+        }
+    }
+    
     return;
 }
 

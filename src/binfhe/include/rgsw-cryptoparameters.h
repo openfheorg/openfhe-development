@@ -121,6 +121,24 @@ public:
             }
         }
 
+        if (m_method == LMKCDEY){
+            uint32_t M = 2*N;
+
+            m_logGen.resize(M);
+            uint32_t gen = 5;
+            uint32_t gPow = 1;
+
+            m_logGen[gPow] = 0; // for 1
+            m_logGen[M - gPow] = M; // for -1
+
+            for (size_t i = 1; i < N/2; i++)
+            {
+                gPow = (gPow*gen) % M;
+                m_logGen[gPow] = i;
+                m_logGen[M - gPow] = -i;
+            }
+        }
+
         // Sets the gate constants for supported binary operations
         m_gateConst = {
             NativeInteger(5) * (q >> 3),  // OR
@@ -193,6 +211,10 @@ public:
 
     const std::vector<NativeInteger>& GetGPower() const {
         return m_Gpower;
+    }
+
+    const std::vector<int32_t>& GetLogGen() const {
+        return m_logGen;
     }
 
     const std::map<uint32_t, std::vector<NativeInteger>>& GetGPowerMap() const {
@@ -296,6 +318,14 @@ private:
 
     // A vector of powers of baseG
     std::vector<NativeInteger> m_Gpower;
+
+    // A vector of log by generator g (=5) (only for LMKCDEY)
+    // Not exactly log, but a mapping similar to logarithm for efficiency
+    // m_logGen[5^i (mod M)] = i (i > 0)
+    // m_logGen[-5^i (mod M)] = -i () 
+    // m_logGen[1] = 0
+    // m_logGen[-1 (mod M)] = M (special case for efficiency)
+    std::vector<int32_t> m_logGen;
 
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
