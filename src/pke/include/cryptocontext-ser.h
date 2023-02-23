@@ -52,33 +52,6 @@ CEREAL_CLASS_VERSION(lbcrypto::CryptoContextImpl<lbcrypto::DCRTPoly>,
 // serialize-*.h file
 
 namespace lbcrypto {
-
-template <typename Element>
-template <typename ST>
-bool CryptoContextImpl<Element>::SerializeEvalMultKey(std::ostream& ser, const ST& sertype, std::string id) {
-    std::map<std::string, std::vector<EvalKey<Element>>>* smap;
-    std::map<std::string, std::vector<EvalKey<Element>>> omap;
-
-    if (id.length() == 0) {
-        smap = &GetAllEvalMultKeys();
-    }
-    else {
-        const auto k = GetAllEvalMultKeys().find(id);
-
-        if (k == GetAllEvalMultKeys().end())
-            return false;  // no such id
-
-        smap           = &omap;
-        omap[k->first] = k->second;
-    }
-
-    Serial::Serialize(*smap, ser, sertype);
-    return true;
-}
-
-}  // namespace lbcrypto
-
-namespace lbcrypto {
 // ================================= JSON serialization/deserialization
 namespace Serial {
 /**

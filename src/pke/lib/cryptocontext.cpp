@@ -492,7 +492,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
         result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
     }
 
-    if (result.isValid == false) // TODO (dsuponit): why don't we throw an exception here?
+    if (result.isValid == false)  // TODO (dsuponit): why don't we throw an exception here?
         return result;
 
     decrypted->SetScalingFactorInt(result.scalingFactorInt);
@@ -514,56 +514,6 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
     }
 
     *plaintext = std::move(decrypted);
-    return result;
-}
-
-template <typename Element>
-DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
-    const std::vector<Ciphertext<Element>>& partialCiphertextVec, Plaintext* plaintext) const {
-    DecryptResult result;
-
-    // Make sure we're processing ciphertexts.
-    size_t last_ciphertext = partialCiphertextVec.size();
-    if (last_ciphertext < 1)
-        return result;
-
-    for (size_t i = 0; i < last_ciphertext; i++) {
-        if (partialCiphertextVec[i] == nullptr || Mismatched(partialCiphertextVec[i]->GetCryptoContext()))
-            OPENFHE_THROW(config_error,
-                          "A ciphertext passed to MultipartyDecryptFusion was not "
-                          "generated with this crypto context");
-        if (partialCiphertextVec[i]->GetEncodingType() != partialCiphertextVec[0]->GetEncodingType())
-            OPENFHE_THROW(type_error,
-                          "Ciphertexts passed to MultipartyDecryptFusion have "
-                          "mismatched encoding types");
-    }
-
-    // determine which type of plaintext that you need to decrypt into
-    Plaintext decrypted =
-        GetPlaintextForDecrypt(partialCiphertextVec[0]->GetEncodingType(),
-                               partialCiphertextVec[0]->GetElements()[0].GetParams(), this->GetEncodingParams());
-
-    if ((partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) && (typeid(Element) != typeid(NativePoly)))
-        result = GetScheme()->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<Poly>());
-    else
-        result = GetScheme()->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<NativePoly>());
-
-    if (result.isValid == false)
-        return result;
-
-    if (partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) {
-        auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
-        decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
-        const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersRNS>(this->GetCryptoParameters());
-        decryptedCKKS->Decode(partialCiphertextVec[0]->GetNoiseScaleDeg(), partialCiphertextVec[0]->GetScalingFactor(),
-                              cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
-    }
-    else {
-        decrypted->Decode();
-    }
-
-    *plaintext = std::move(decrypted);
-
     return result;
 }
 
@@ -814,7 +764,7 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
         SecretSharesVec.reserve(num_of_shares);
         SecretSharesVec.push_back(rsum);
         for (size_t i = 1; i < num_of_shares - 1; ++i) {
-            DCRTPoly r(dug, elementParams, Format::EVALUATION); // should re-generate uniform r for each share
+            DCRTPoly r(dug, elementParams, Format::EVALUATION);  // should re-generate uniform r for each share
             rsum += r;
             SecretSharesVec.push_back(std::move(r));
         }
@@ -984,7 +934,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
                 multpoly.SetValues(multvec, Format::COEFFICIENT);
                 for (size_t i = 0; i < client_indexes_size; i++) {
                     if (client_indexes[j] != client_indexes[i]) {
-                        auto denominator             = client_indexes[i] - client_indexes[j];
+                        auto denominator = client_indexes[i] - client_indexes[j];
                         NativeInteger denom_positive(0);
                         if (denominator < 0) {
                             denom_positive = NativeInteger(-1) * denominator;
