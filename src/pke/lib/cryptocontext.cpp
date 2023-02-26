@@ -63,73 +63,6 @@ void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
 /////////////////////////////////////////
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element> key) {
-    if (key == nullptr || Mismatched(key->GetCryptoContext()))
-        OPENFHE_THROW(config_error, "Key passed to EvalMultKeyGen were not generated with this crypto context");
-
-    EvalKey<Element> k = GetScheme()->EvalMultKeyGen(key);
-
-    GetAllEvalMultKeys()[k->GetKeyTag()] = {k};
-}
-
-template <typename Element>
-void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element> key) {
-    if (key == nullptr || Mismatched(key->GetCryptoContext()))
-        OPENFHE_THROW(config_error, "Key passed to EvalMultsKeyGen were not generated with this crypto context");
-
-    const std::vector<EvalKey<Element>>& evalKeys = GetScheme()->EvalMultKeysGen(key);
-
-    GetAllEvalMultKeys()[evalKeys[0]->GetKeyTag()] = evalKeys;
-}
-
-template <typename Element>
-const std::vector<EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalMultKeyVector(const std::string& keyID) {
-    auto ekv = GetAllEvalMultKeys().find(keyID);
-    if (ekv == GetAllEvalMultKeys().end())
-        OPENFHE_THROW(not_available_error,
-                      "You need to use EvalMultKeyGen so that you have an "
-                      "EvalMultKey available for this ID");
-    return ekv->second;
-}
-
-template <typename Element>
-std::map<std::string, std::vector<EvalKey<Element>>>& CryptoContextImpl<Element>::GetAllEvalMultKeys() {
-    return evalMultKeyMap();
-}
-
-template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalMultKeys() {
-    GetAllEvalMultKeys().clear();
-}
-
-/**
- * ClearEvalMultKeys - flush EvalMultKey cache for a given id
- * @param id
- */
-template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalMultKeys(const std::string& id) {
-    auto kd = GetAllEvalMultKeys().find(id);
-    if (kd != GetAllEvalMultKeys().end())
-        GetAllEvalMultKeys().erase(kd);
-}
-
-/**
- * ClearEvalMultKeys - flush EvalMultKey cache for a given context
- * @param cc
- */
-template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalMultKeys(const CryptoContext<Element> cc) {
-    for (auto it = GetAllEvalMultKeys().begin(); it != GetAllEvalMultKeys().end();) {
-        if (it->second[0]->GetCryptoContext() == cc) {
-            it = GetAllEvalMultKeys().erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
-}
-
-template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Element>>& vectorToInsert) {
     GetAllEvalMultKeys()[vectorToInsert[0]->GetKeyTag()] = vectorToInsert;
 }
@@ -299,12 +232,6 @@ std::map<usint, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalAutomorphi
                       "You need to use EvalAutomorphismKeyGen so that you have "
                       "EvalAutomorphismKeys available for this ID");
     return *ekv->second;
-}
-
-template <typename Element>
-std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
-CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys() {
-    return evalAutomorphismKeyMap();
 }
 
 template <typename Element>
@@ -563,45 +490,44 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Eleme
 // FHE Bootstrap Methods
 //------------------------------------------------------------------------------
 
-template <typename Element>
-void CryptoContextImpl<Element>::EvalBootstrapSetup(std::vector<uint32_t> levelBudget, std::vector<uint32_t> dim1,
-                                                    uint32_t numSlots, uint32_t correctionFactor) {
-    GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, numSlots, correctionFactor);
-}
+// template <typename Element>
+// void CryptoContextImpl<Element>::EvalBootstrapSetup(std::vector<uint32_t> levelBudget, std::vector<uint32_t> dim1,
+//                                                     uint32_t numSlots, uint32_t correctionFactor) {
+//     GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, numSlots, correctionFactor);
+// }
+// template <>
+// void CryptoContextImpl<DCRTPoly>::EvalBootstrapKeyGen(const PrivateKey<DCRTPoly> privateKey, uint32_t slots) {
+//     if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
+//         OPENFHE_THROW(config_error,
+//                       "Private key passed to " + std::string(__func__) + " was not generated with this cryptocontext");
+//     }
 
-template <typename Element>
-void CryptoContextImpl<Element>::EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, uint32_t slots) {
-    if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "Private key passed to EvalBootstapKeyGen was not generated with this crypto context");
-    }
+//     auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, slots);
 
-    auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, slots);
+//     auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
+//     if (ekv == GetAllEvalAutomorphismKeys().end()) {
+//         GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
+//     }
+//     else {
+//         auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
+//         auto iterRowKeys = evalKeys->begin();
+//         while (iterRowKeys != evalKeys->end()) {
+//             auto idx = iterRowKeys->first;
+//             // Search current rotation key map and add key
+//             // only if it doesn't exist
+//             if (currRotMap.find(idx) == currRotMap.end()) {
+//                 currRotMap.insert(*iterRowKeys);
+//             }
+//             iterRowKeys++;
+//         }
+//     }
+// }
 
-    auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
-}
-
-template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalBootstrap(ConstCiphertext<Element> ciphertext,
-                                                              uint32_t numIterations, uint32_t precision) const {
-    return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
-}
+// template <typename Element>
+// Ciphertext<Element> CryptoContextImpl<Element>::EvalBootstrap(ConstCiphertext<Element> ciphertext,
+//                                                               uint32_t numIterations, uint32_t precision) const {
+//     return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
+// }
 
 }  // namespace lbcrypto
 

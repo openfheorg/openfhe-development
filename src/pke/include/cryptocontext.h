@@ -86,9 +86,9 @@ class CryptoContextImpl : public Serializable {
 
     void SetKSTechniqueInScheme();
 
-    CryptoContext<Element> GetContextForPointer(const CryptoContextImpl<Element>* cc) const {
-        auto contexts = CryptoContextFactory<Element>::GetAllContexts();
-        for (CryptoContext<Element> ctx : contexts) {
+    const CryptoContext<Element> GetContextForPointer(const CryptoContextImpl<Element>* cc) const {
+        const auto& contexts = CryptoContextFactory<Element>::GetAllContexts();
+        for (const auto& ctx : contexts) {
             if (cc == ctx.get())
                 return ctx;
         }
@@ -591,19 +591,34 @@ public:
     /**
    * ClearEvalMultKeys - flush EvalMultKey cache
    */
-    static void ClearEvalMultKeys();
+    static void ClearEvalMultKeys() {
+        GetAllEvalMultKeys().clear();
+    }
 
     /**
    * ClearEvalMultKeys - flush EvalMultKey cache for a given id
    * @param id
    */
-    static void ClearEvalMultKeys(const std::string& id);
+    static void ClearEvalMultKeys(const std::string& id) {
+        auto kd = GetAllEvalMultKeys().find(id);
+        if (kd != GetAllEvalMultKeys().end())
+            GetAllEvalMultKeys().erase(kd);
+    }
 
     /**
    * ClearEvalMultKeys - flush EvalMultKey cache for a given context
    * @param cc
    */
-    static void ClearEvalMultKeys(const CryptoContext<Element> cc);
+    static void ClearEvalMultKeys(const CryptoContext<Element> cc) {
+        for (auto it = GetAllEvalMultKeys().begin(); it != GetAllEvalMultKeys().end();) {
+            if (it->second[0]->GetCryptoContext() == cc) {
+                it = GetAllEvalMultKeys().erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+    }
 
     /**
    * InsertEvalMultKey - add the given vector of keys to the map, replacing the
@@ -919,11 +934,23 @@ public:
     // KEYS GETTERS
     //------------------------------------------------------------------------------
 
-    static std::map<std::string, std::vector<EvalKey<Element>>>& GetAllEvalMultKeys();
+    static std::map<std::string, std::vector<EvalKey<Element>>>& GetAllEvalMultKeys() {
+        return evalMultKeyMap();
+    }
 
-    static const std::vector<EvalKey<Element>>& GetEvalMultKeyVector(const std::string& keyID);
+    static const std::vector<EvalKey<Element>>& GetEvalMultKeyVector(const std::string& keyID) {
+        auto ekv = GetAllEvalMultKeys().find(keyID);
+        if (ekv == GetAllEvalMultKeys().end()) {
+            OPENFHE_THROW(not_available_error,
+                          "You need to use EvalMultKeyGen so that you have an "
+                          "EvalMultKey available for this ID");
+        }
+        return ekv->second;
+    }
 
-    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys();
+    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& GetAllEvalAutomorphismKeys() {
+        return evalAutomorphismKeyMap();
+    }
 
     static std::map<usint, EvalKey<Element>>& GetEvalAutomorphismKeyMap(const std::string& id);
 
@@ -1453,7 +1480,14 @@ public:
    * the new evaluation key is stored in cryptocontext
    * @param key
    */
-    void EvalMultKeyGen(const PrivateKey<Element> privateKey);
+    void EvalMultKeyGen(const PrivateKey<Element> key) {
+        if (key == nullptr || Mismatched(key->GetCryptoContext()))
+            OPENFHE_THROW(config_error, "Key passed to EvalMultKeyGen were not generated with this crypto context");
+
+        EvalKey<Element> k = GetScheme()->EvalMultKeyGen(key);
+
+        GetAllEvalMultKeys()[k->GetKeyTag()] = {k};
+    }
 
     /**
    * EvalMultsKeyGen creates a vector evalmult keys that can be used with the
@@ -1464,7 +1498,14 @@ public:
    *
    * @param key
    */
-    void EvalMultKeysGen(const PrivateKey<Element> privateKey);
+    void EvalMultKeysGen(const PrivateKey<Element> key) {
+        if (key == nullptr || Mismatched(key->GetCryptoContext()))
+            OPENFHE_THROW(config_error, "Key passed to EvalMultsKeyGen were not generated with this crypto context");
+
+        const std::vector<EvalKey<Element>>& evalKeys = GetScheme()->EvalMultKeysGen(key);
+
+        GetAllEvalMultKeys()[evalKeys[0]->GetKeyTag()] = evalKeys;
+    }
 
     /**
    * EvalMult - OpenFHE EvalMult method for a pair of ciphertexts - with key
@@ -2530,6 +2571,15 @@ public:
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
+    void MultipartyDecryptFusion(const PrivateKey<Element> key) {
+        if (key == nullptr || Mismatched(key->GetCryptoContext()))
+            OPENFHE_THROW(config_error, "Key passed to EvalMultsKeyGen were not generated with this crypto context");
+
+        const std::vector<EvalKey<Element>>& evalKeys = GetScheme()->EvalMultKeysGen(key);
+
+        GetAllEvalMultKeys()[evalKeys[0]->GetKeyTag()] = evalKeys;
+    }
+
     DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<Element>>& partialCiphertextVec,
                                           Plaintext* plaintext) const {
         std::string datatype = demangle(typeid(Element).name());
@@ -2838,8 +2888,9 @@ public:
    * @param correctionFactor - value to rescale message by to improve precision. If set to 0, we use the default logic. This value is only used when NATIVE_SIZE=64.
    */
     void EvalBootstrapSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0},
-                            uint32_t slots = 0, uint32_t correctionFactor = 0);
-
+                            uint32_t slots = 0, uint32_t correctionFactor = 0) {
+        GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, slots, correctionFactor);
+    }
     /**
    * Generates all automorphism keys for EvalBT.
    * EvalBootstrapKeyGen uses the baby-step/giant-step strategy.
@@ -2847,8 +2898,32 @@ public:
    * @param privateKey private key.
    * @param slots number of slots to support permutations on
    */
-    void EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, uint32_t slots);
+    void EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, uint32_t slots) {
+        if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
+            OPENFHE_THROW(config_error, "Private key passed to " + std::string(__func__) +
+                                            " was not generated with this cryptocontext");
+        }
 
+        auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, slots);
+
+        auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
+        if (ekv == GetAllEvalAutomorphismKeys().end()) {
+            GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
+        }
+        else {
+            auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
+            auto iterRowKeys = evalKeys->begin();
+            while (iterRowKeys != evalKeys->end()) {
+                auto idx = iterRowKeys->first;
+                // Search current rotation key map and add key
+                // only if it doesn't exist
+                if (currRotMap.find(idx) == currRotMap.end()) {
+                    currRotMap.insert(*iterRowKeys);
+                }
+                iterRowKeys++;
+            }
+        }
+    }
     /**
    * Defines the bootstrapping evaluation of ciphertext using either the
    * FFT-like method or the linear method
@@ -2860,7 +2935,9 @@ public:
    * @return the refreshed ciphertext.
    */
     Ciphertext<Element> EvalBootstrap(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
-                                      uint32_t precision = 0) const;
+                                      uint32_t precision = 0) const {
+        return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
+    }
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
