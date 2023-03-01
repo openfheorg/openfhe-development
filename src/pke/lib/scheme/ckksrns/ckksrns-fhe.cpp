@@ -248,14 +248,14 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
     double timeDecode(0.0);
 #endif
 
-    auto cc     = ciphertext->GetCryptoContext();
-    uint32_t M  = cc->GetCyclotomicOrder();
-    uint32_t L0 = cryptoParams->GetElementParams()->GetParams().size();
+    auto cc        = ciphertext->GetCryptoContext();
+    uint32_t M     = cc->GetCyclotomicOrder();
+    uint32_t L0    = cryptoParams->GetElementParams()->GetParams().size();
+    auto initSizeQ = ciphertext->GetElements()[0].GetNumOfElements();
 
     if (numIterations > 1) {
         // Step 1: Get the input.
         uint32_t powerOfTwoModulus = 1 << precision;
-        auto initSizeQ             = ciphertext->GetElements()[0].GetNumOfElements();
 
         // Step 2: Scale up by powerOfTwoModulus, and extend the modulus to powerOfTwoModulus * q.
         // Note that we extend the modulus implicitly without any code calls because the value always stays 0.
@@ -276,9 +276,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         auto ctBootstrappedScaledDown = ctInitialBootstrap->Clone();
         auto bootstrappingSizeQ       = ctBootstrappedScaledDown->GetElements()[0].GetNumOfElements();
         if (bootstrappingSizeQ <= initSizeQ) {
-            OPENFHE_THROW(config_error, "Bootstrapping number of RNS moduli " + std::to_string(bootstrappingSizeQ) +
-                                            " must be greater than initial number of RNS moduli " +
-                                            std::to_string(initSizeQ));
+            return ciphertext->Clone();
         }
         for (auto& cv : ctBootstrappedScaledDown->GetElements()) {
             cv.DropLastElements(bootstrappingSizeQ - initSizeQ);
@@ -611,6 +609,11 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 
     std::cout << "Decoding time: " << timeDecode / 1000.0 << " s" << std::endl;
 #endif
+
+    auto bootstrappingNumTowers = ctxtDec->GetElements()[0].GetNumOfElements();
+    if (bootstrappingNumTowers <= initSizeQ) {
+        return ciphertext->Clone();
+    }
 
     return ctxtDec;
 }
