@@ -275,6 +275,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // We mod down, and leave the last CRT value to be 0 because it's divisible by powerOfTwoModulus.
         auto ctBootstrappedScaledDown = ctInitialBootstrap->Clone();
         auto bootstrappingSizeQ       = ctBootstrappedScaledDown->GetElements()[0].GetNumOfElements();
+
+        // If we start with more towers, than we obtain from bootstrapping, return the original ciphertext.
         if (bootstrappingSizeQ <= initSizeQ) {
             return ciphertext->Clone();
         }
@@ -611,6 +613,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
 #endif
 
     auto bootstrappingNumTowers = ctxtDec->GetElements()[0].GetNumOfElements();
+
+    // If we start with more towers, than we obtain from bootstrapping, return the original ciphertext.
     if (bootstrappingNumTowers <= initSizeQ) {
         return ciphertext->Clone();
     }
