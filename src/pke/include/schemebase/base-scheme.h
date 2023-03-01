@@ -43,6 +43,10 @@
 #include "schemebase/base-pre.h"
 #include "ciphertext.h"
 
+#include "key/keypair.h"
+// #include "key/privatekey.h"
+// #include "key/publickey.h"
+
 #include "utils/exception.h"
 #include "utils/caller_info.h"
 
@@ -183,7 +187,12 @@ public:
     // PKE WRAPPER
     /////////////////////////////////////////
 
-    virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc, bool makeSparse);
+    virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc, bool makeSparse) {
+        if (m_PKE) {
+            return m_PKE->KeyGenInternal(cc, makeSparse);
+        }
+        OPENFHE_THROW(config_error, std::string(__func__) + " operation has not been enabled");
+    }
 
     virtual Ciphertext<Element> Encrypt(const Element& plaintext, const PrivateKey<Element> privateKey) const {
         if (m_PKE) {
@@ -272,14 +281,46 @@ public:
     /////////////////////////////////////////
 
     virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                          const PrivateKey<Element> newPrivateKey) const;
+                                          const PrivateKey<Element> newPrivateKey) const {
+        if (m_KeySwitch) {
+            if (!oldPrivateKey)
+                OPENFHE_THROW(config_error, "Input first private key is nullptr");
+            if (!newPrivateKey)
+                OPENFHE_THROW(config_error, "Input second private key is nullptr");
+
+            return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPrivateKey);
+        }
+        OPENFHE_THROW(config_error, std::string(__func__) + " operation has not been enabled");
+    }
 
     virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
                                           const PrivateKey<Element> newPrivateKey,
-                                          const EvalKey<Element> evalKey) const;
+                                          const EvalKey<Element> evalKey) const {
+        if (m_KeySwitch) {
+            if (!oldPrivateKey)
+                OPENFHE_THROW(config_error, "Input first private key is nullptr");
+            if (!newPrivateKey)
+                OPENFHE_THROW(config_error, "Input second private key is nullptr");
+            if (!evalKey)
+                OPENFHE_THROW(config_error, "Input eval key is nullptr");
+
+            return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPrivateKey, evalKey);
+        }
+        OPENFHE_THROW(config_error, std::string(__func__) + " operation has not been enabled");
+    }
 
     virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                          const PublicKey<Element> newPublicKey) const;
+                                          const PublicKey<Element> newPublicKey) const {
+        if (m_KeySwitch) {
+            if (!oldPrivateKey)
+                OPENFHE_THROW(config_error, "Input first private key is nullptr");
+            if (!newPublicKey)
+                OPENFHE_THROW(config_error, "Input second public key is nullptr");
+
+            return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPublicKey);
+        }
+        OPENFHE_THROW(config_error, std::string(__func__) + " operation has not been enabled");
+    }
 
     virtual Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const {
         if (m_KeySwitch) {

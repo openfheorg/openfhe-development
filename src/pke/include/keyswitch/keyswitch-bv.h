@@ -64,14 +64,15 @@ public:
 
     virtual ~KeySwitchBV(){};
 
-    EvalKey<DCRTPoly> KeySwitchGen(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                   const PrivateKey<DCRTPoly> newPrivateKey) const override;
+    EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
+                                           const PrivateKey<DCRTPoly> newPrivateKey) const override;
 
-    EvalKey<DCRTPoly> KeySwitchGen(const PrivateKey<DCRTPoly> oldPrivateKey, const PrivateKey<DCRTPoly> newPrivateKey,
-                                   const EvalKey<DCRTPoly> evalKey) const override;
+    EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
+                                           const PrivateKey<DCRTPoly> newPrivateKey,
+                                           const EvalKey<DCRTPoly> evalKey) const override;
 
-    EvalKey<DCRTPoly> KeySwitchGen(const PrivateKey<DCRTPoly> oldPrivateKey,
-                                   const PublicKey<DCRTPoly> newPublicKey) const override;
+    EvalKey<DCRTPoly> KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldPrivateKey,
+                                           const PublicKey<DCRTPoly> newPublicKey) const override;
 
     void KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const override;
 

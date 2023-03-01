@@ -45,6 +45,7 @@ Base class for key switching algorithms.
 
 #include <memory>
 #include <vector>
+#include <string>
 
 /**
  * @namespace lbcrypto
@@ -73,20 +74,20 @@ public:
    * @param *KeySwitchHint is where the resulting keySwitchHint will be
    * placed.
    */
-    virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                          const PrivateKey<Element> newPrivateKey) const {
-        OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
+    virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
+                                                  const PrivateKey<Element> newPrivateKey) const {
+        OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
     }
 
-    virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                          const PrivateKey<Element> newPrivateKey,
-                                          const EvalKey<Element> evalKey) const {
-        OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
+    virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
+                                                  const PrivateKey<Element> newPrivateKey,
+                                                  const EvalKey<Element> evalKey) const {
+        OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
     }
 
-    virtual EvalKey<Element> KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                          const PublicKey<Element> newPublicKey) const {
-        OPENFHE_THROW(config_error, "KeySwitchGen is not supported");
+    virtual EvalKey<Element> KeySwitchGenInternal(const PrivateKey<Element> oldPrivateKey,
+                                                  const PublicKey<Element> newPublicKey) const {
+        OPENFHE_THROW(config_error, std::string(__func__) + " is not supported");
     }
 
     virtual Ciphertext<Element> KeySwitch(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey) const;

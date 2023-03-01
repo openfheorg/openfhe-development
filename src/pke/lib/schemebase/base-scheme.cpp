@@ -36,66 +36,6 @@
 
 // the code below is from base-scheme-impl.cpp
 namespace lbcrypto {
-template <typename Element>
-KeyPair<Element> SchemeBase<Element>::KeyGen(CryptoContext<Element> cc, bool makeSparse) {
-    if (m_PKE) {
-        auto kp = m_PKE->KeyGen(cc, makeSparse);
-        kp.publicKey->SetKeyTag(kp.secretKey->GetKeyTag());
-        return kp;
-    }
-    OPENFHE_THROW(config_error, "KeyGen operation has not been enabled");
-}
-
-template <typename Element>
-EvalKey<Element> SchemeBase<Element>::KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                                   const PrivateKey<Element> newPrivateKey) const {
-    if (m_KeySwitch) {
-        if (!oldPrivateKey)
-            OPENFHE_THROW(config_error, "Input first private key is nullptr");
-        if (!newPrivateKey)
-            OPENFHE_THROW(config_error, "Input second private key is nullptr");
-
-        auto result = m_KeySwitch->KeySwitchGen(oldPrivateKey, newPrivateKey);
-        result->SetKeyTag(newPrivateKey->GetKeyTag());
-        return result;
-    }
-    OPENFHE_THROW(config_error, "KeySwitchGen operation has not been enabled");
-}
-
-template <typename Element>
-EvalKey<Element> SchemeBase<Element>::KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                                   const PrivateKey<Element> newPrivateKey,
-                                                   const EvalKey<Element> evalKey) const {
-    if (m_KeySwitch) {
-        if (!oldPrivateKey)
-            OPENFHE_THROW(config_error, "Input first private key is nullptr");
-        if (!newPrivateKey)
-            OPENFHE_THROW(config_error, "Input second private key is nullptr");
-        if (!evalKey)
-            OPENFHE_THROW(config_error, "Input eval key is nullptr");
-
-        auto result = m_KeySwitch->KeySwitchGen(oldPrivateKey, newPrivateKey, evalKey);
-        result->SetKeyTag(newPrivateKey->GetKeyTag());
-        return result;
-    }
-    OPENFHE_THROW(config_error, "KeySwitchGen operation has not been enabled");
-}
-
-template <typename Element>
-EvalKey<Element> SchemeBase<Element>::KeySwitchGen(const PrivateKey<Element> oldPrivateKey,
-                                                   const PublicKey<Element> newPublicKey) const {
-    if (m_KeySwitch) {
-        if (!oldPrivateKey)
-            OPENFHE_THROW(config_error, "Input first private key is nullptr");
-        if (!newPublicKey)
-            OPENFHE_THROW(config_error, "Input second public key is nullptr");
-
-        auto result = m_KeySwitch->KeySwitchGen(oldPrivateKey, newPublicKey);
-        result->SetKeyTag(newPublicKey->GetKeyTag());
-        return result;
-    }
-    OPENFHE_THROW(config_error, "KeySwitchGen operation has not been enabled");
-}
 
 template <typename Element>
 EvalKey<Element> SchemeBase<Element>::ReKeyGen(const PrivateKey<Element> oldPrivateKey,

@@ -40,7 +40,7 @@ namespace lbcrypto {
 
 // makeSparse is not used by this scheme
 template <class Element>
-KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc, bool makeSparse) {
+KeyPair<Element> PKEBase<Element>::KeyGenInternal(CryptoContext<Element> cc, bool makeSparse) {
     KeyPair<Element> keyPair(std::make_shared<PublicKeyImpl<Element>>(cc),
                              std::make_shared<PrivateKeyImpl<Element>>(cc));
 
@@ -88,6 +88,7 @@ KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc, bool makeSp
     keyPair.secretKey->SetPrivateElement(std::move(s));
     keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
     keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
+    keyPair.publicKey->SetKeyTag(keyPair.secretKey->GetKeyTag());
 
     return keyPair;
 }

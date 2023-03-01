@@ -45,13 +45,14 @@
 
 namespace lbcrypto {
 
-EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
-                                                const PrivateKey<DCRTPoly> newKey) const {
-    return KeySwitchHYBRID::KeySwitchGen(oldKey, newKey, nullptr);
+EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
+                                                        const PrivateKey<DCRTPoly> newKey) const {
+    return KeySwitchHYBRID::KeySwitchGenInternal(oldKey, newKey, nullptr);
 }
 
-EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey, const PrivateKey<DCRTPoly> newKey,
-                                                const EvalKey<DCRTPoly> ekPrev) const {
+EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
+                                                        const PrivateKey<DCRTPoly> newKey,
+                                                        const EvalKey<DCRTPoly> ekPrev) const {
     EvalKeyRelin<DCRTPoly> ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
@@ -129,12 +130,12 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
 
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
-
+    ek->SetKeyTag(newKey->GetKeyTag());
     return ek;
 }
 
-EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
-                                                const PublicKey<DCRTPoly> newKey) const {
+EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
+                                                        const PublicKey<DCRTPoly> newKey) const {
     EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext());
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
@@ -204,6 +205,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
 
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
+    ek->SetKeyTag(newKey->GetKeyTag());
 
     return ek;
 }
