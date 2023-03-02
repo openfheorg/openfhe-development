@@ -69,7 +69,7 @@ LWEKeyPair LWEEncryptionScheme::KeyGenPair(const std::shared_ptr<LWECryptoParams
 // size is the ring dimension N, modulus is the large Q used in RGSW encryption of bootstrapping.
 LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParams> params,
                                             ConstLWEPrivateKey skN) const {
-    int size              = params->GetN();
+    uint32_t size              = params->GetN();
     NativeInteger modulus = params->GetQ();
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
@@ -77,7 +77,7 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
     std::vector<NativeVector> A(size);
 
     // generate random matrix A of dimension N x N
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
         NativeVector a = dug.GenerateVector(size);
         A[i]           = std::move(a);
     }
@@ -89,10 +89,13 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
     // compute v = As + e
     NativeVector v   = e;
     NativeVector ske = skN->GetElement();
+    NativeInteger mu = modulus.ComputeMu();
 
-    for (int j = 0; j < size; ++j) {
-        // column wise v = A_1s1 + ... + A_NsN
-        v.ModAdd(A[j].ModMul(ske[j]));
+    for (size_t j = 0; j < size; ++j) {
+        for (size_t i = 0; i < size; ++i) {
+            v[j] += A[j][i].ModMulFast(ske[i], modulus, mu);
+        }
+        v.ModEq(modulus);
     }
 
     // public key A, v
@@ -171,7 +174,7 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
 
     for (size_t j = 0; j < N; ++j) {
         // columnwise a = A_1s1 + ... + A_NsN
-        a.ModAdd(A[j].ModMul(sp[j]));
+        a = a.ModAddEq(A[j].ModMul(sp[j]));
     }
 
     // compute b in ciphertext (a,b)
