@@ -69,30 +69,32 @@ LWEKeyPair LWEEncryptionScheme::KeyGenPair(const std::shared_ptr<LWECryptoParams
 // size is the ring dimension N, modulus is the large Q used in RGSW encryption of bootstrapping.
 LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParams> params,
                                             ConstLWEPrivateKey skN) const {
-    int size              = params->GetN();
+    size_t dim            = params->GetN();
     NativeInteger modulus = params->GetQ();
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(modulus);
-    std::vector<NativeVector> A(size);
+    std::vector<NativeVector> A(dim);
 
     // generate random matrix A of dimension N x N
-    for (int i = 0; i < size; i++) {
-        NativeVector a = dug.GenerateVector(size);
+    for (size_t i = 0; i < dim; i++) {
+        NativeVector a = dug.GenerateVector(dim);
         A[i]           = std::move(a);
     }
 
     // generate error vector e
     DiscreteGaussianGeneratorImpl<NativeVector> dgg;
-    NativeVector e = dgg.GenerateVector(size, modulus);
+    NativeVector e = dgg.GenerateVector(dim, modulus);
 
     // compute v = As + e
     NativeVector v   = e;
     NativeVector ske = skN->GetElement();
+    NativeInteger mu = modulus.ComputeMu();
 
-    for (int j = 0; j < size; ++j) {
-        // column wise v = A_1s1 + ... + A_NsN
-        v.ModAdd(A[j].ModMul(ske[j]));
+    for (size_t j = 0; j < dim; ++j) {
+        for (size_t i = 0; i < dim; ++i) {
+            v[j].ModAddEq(A[j][i].ModMulFast(ske[i], modulus, mu), modulus);
+        }
     }
 
     // public key A, v
@@ -171,14 +173,13 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
 
     for (size_t j = 0; j < N; ++j) {
         // columnwise a = A_1s1 + ... + A_NsN
-        a.ModAdd(A[j].ModMul(sp[j]));
+        a.ModAddEq(A[j].ModMul(sp[j]));
     }
 
     // compute b in ciphertext (a,b)
     for (size_t i = 0; i < N; ++i) {
-        b += bp[i].ModMulFast(sp[i], mod, mu);
+        b.ModAddEq(bp[i].ModMulFast(sp[i], mod, mu), mod);
     }
-    b.ModEq(mod);
 
     return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
 }
