@@ -27,6 +27,11 @@ if( BUILD_SHARED )
 	install(TARGETS OPENFHEpke
 		EXPORT OpenFHETargets
 		DESTINATION lib)
+	target_include_directories(OPENFHEpke PUBLIC
+		$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src/core>
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/core/include>
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/pke/include>
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third-party/cereal/include>)
 endif()
 
 if( BUILD_STATIC )
@@ -36,6 +41,11 @@ if( BUILD_STATIC )
 	install(TARGETS OPENFHEpke_static
 		EXPORT OpenFHETargets
 		DESTINATION lib)
+	target_include_directories(OPENFHEpke_static PUBLIC
+		$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src/core>
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/core/include>
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/pke/include>
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third-party/cereal/include>)
 endif()
 
 install(DIRECTORY include/
