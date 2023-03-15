@@ -124,10 +124,12 @@ class CryptoContextImpl : public Serializable {
                 elemParamsPtr = cryptoParams->GetElementParams();
             }
             // Check if plaintext has got enough slots for data (value)
-            usint ringDim = elemParamsPtr->GetRingDimension();
+            usint ringDim    = elemParamsPtr->GetRingDimension();
             size_t valueSize = value.size();
             if (valueSize > ringDim / 2) {
-                OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+                OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) +
+                                                "] of the vector with values should not be greater than ringDim/2 [" +
+                                                std::to_string(ringDim / 2) + "] if the scheme is CKKS");
             }
             // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(elemParamsPtr, this->GetEncodingParams(), value,
@@ -135,10 +137,12 @@ class CryptoContextImpl : public Serializable {
         }
         else {
             // Check if plaintext has got enough slots for data (value)
-            usint ringDim = params->GetRingDimension();
+            usint ringDim    = params->GetRingDimension();
             size_t valueSize = value.size();
             if (valueSize > ringDim / 2) {
-                OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+                OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) +
+                                                "] of the vector with values should not be greater than ringDim/2 [" +
+                                                std::to_string(ringDim / 2) + "] if the scheme is CKKS");
             }
             // TODO (dsuponit): we should call a version of MakePlaintext instead of calling Plaintext() directly here
             p = Plaintext(std::make_shared<CKKSPackedEncoding>(params, this->GetEncodingParams(), value, noiseScaleDeg,
@@ -163,28 +167,28 @@ class CryptoContextImpl : public Serializable {
     * @return plaintext
     */
     Plaintext MakePlaintext(const PlaintextEncodings encoding, const std::vector<int64_t>& value, size_t depth,
-        uint32_t level) const {
+                            uint32_t level) const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
         Plaintext p;
         if (getSchemeId() == SCHEME::BGVRNS_SCHEME && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
-            cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
+                                                       cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
             NativeInteger scf;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
                 scf = cryptoParams->GetScalingFactorIntBig(level);
-                p = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                    this->GetEncodingParams(), getSchemeId(), 1, level, scf);
+                p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
+                                                      this->GetEncodingParams(), getSchemeId(), 1, level, scf);
                 p->SetNoiseScaleDeg(2);
             }
             else {
                 scf = cryptoParams->GetScalingFactorInt(level);
-                p = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
-                    this->GetEncodingParams(), getSchemeId(), depth, level, scf);
+                p   = PlaintextFactory::MakePlaintext(value, encoding, this->GetElementParams(),
+                                                      this->GetEncodingParams(), getSchemeId(), depth, level, scf);
             }
         }
         else {
             auto elementParams = this->GetElementParams();
             p = PlaintextFactory::MakePlaintext(value, encoding, elementParams, this->GetEncodingParams(),
-                getSchemeId());
+                                                getSchemeId());
         }
 
         return p;
@@ -204,11 +208,10 @@ class CryptoContextImpl : public Serializable {
 
     template <typename Value1, typename Value2>
     static Plaintext MakePlaintext(PlaintextEncodings encoding, CryptoContext<Element> cc, const Value1& value,
-        const Value2& value2) {
+                                   const Value2& value2) {
         return PlaintextFactory::MakePlaintext(encoding, cc->GetElementParams(), cc->GetEncodingParams(), value,
-            value2);
+                                               value2);
     }
-
 
 protected:
     // crypto parameters used for this context
@@ -936,6 +939,9 @@ public:
    * @return plaintext
    */
     Plaintext MakeCoefPackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1, uint32_t level = 0) const {
+        if (!value.size())
+            OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
+
         return MakePlaintext(COEF_PACKED_ENCODING, value, depth, level);
     }
 
@@ -947,6 +953,9 @@ public:
    * @return plaintext
    */
     Plaintext MakePackedPlaintext(const std::vector<int64_t>& value, size_t depth = 1, uint32_t level = 0) const {
+        if (!value.size())
+            OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
+
         return MakePlaintext(PACKED_ENCODING, value, depth, level);
     }
 
@@ -964,6 +973,9 @@ public:
     Plaintext MakeCKKSPackedPlaintext(const std::vector<std::complex<double>>& value, size_t depth = 1,
                                       uint32_t level = 0, const std::shared_ptr<ParmType> params = nullptr,
                                       usint slots = 0) const {
+        if (!value.size())
+            OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
+
         return MakeCKKSPackedPlaintextInternal(value, depth, level, params, slots);
     }
 
@@ -978,6 +990,9 @@ public:
    */
     Plaintext MakeCKKSPackedPlaintext(const std::vector<double>& value, size_t depth = 1, uint32_t level = 0,
                                       const std::shared_ptr<ParmType> params = nullptr, usint slots = 0) const {
+        if (!value.size())
+            OPENFHE_THROW(config_error, "Cannot encode an empty value vector");
+
         std::vector<std::complex<double>> complexValue(value.size());
         std::transform(value.begin(), value.end(), complexValue.begin(),
                        [](double da) { return std::complex<double>(da); });
