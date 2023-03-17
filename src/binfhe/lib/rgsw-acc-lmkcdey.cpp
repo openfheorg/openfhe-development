@@ -90,7 +90,8 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
 
     for (size_t i = 0; i < n; i++) { // put ail a_i in the permuteMap
         NativeInteger aI = MNative.ModSub(a[i], MNative);
-        int32_t index = logGen[aI.ConvertToInt()];
+        int32_t aIOdd = (aI.ConvertToInt()%2 == 0)? aI.ConvertToInt()+1:aI.ConvertToInt();
+        int32_t index = logGen[aIOdd];
 
         if(permuteMap.find(index) == permuteMap.end()){ // first time
             std::vector<int32_t> indexVec;
@@ -136,7 +137,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
             AddToAccLMKCDEY(params, (*ek)[0][0][indexVec[j]], acc);
         }
     }
-    
+
     Automorphism(params, NativeInteger(M - genInt), (*ek)[0][1][0], acc);
     
     // for a_j = 5^i
