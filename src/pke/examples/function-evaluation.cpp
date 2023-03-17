@@ -63,7 +63,7 @@ void EvalLogisticExample() {
     usint scalingModSize = 78;
     usint firstModSize   = 89;
 #else
-    usint scalingModSize = 59;
+    usint scalingModSize = 50;
     usint firstModSize   = 60;
 #endif
     parameters.SetScalingModSize(scalingModSize);
@@ -93,8 +93,8 @@ void EvalLogisticExample() {
     Plaintext plaintext  = cc->MakeCKKSPackedPlaintext(input);
     auto ciphertext      = cc->Encrypt(keyPair.publicKey, plaintext);
 
-    double lowerBound = -4;
-    double upperBound = 4;
+    double lowerBound = -5;
+    double upperBound = 5;
     auto result       = cc->EvalLogistic(ciphertext, lowerBound, upperBound, polyDegree);
 
     Plaintext plaintextDec;
@@ -124,7 +124,7 @@ void EvalFunctionExample() {
     usint scalingModSize = 78;
     usint firstModSize   = 89;
 #else
-    usint scalingModSize = 59;
+    usint scalingModSize = 50;
     usint firstModSize   = 60;
 #endif
     parameters.SetScalingModSize(scalingModSize);
@@ -154,8 +154,8 @@ void EvalFunctionExample() {
     Plaintext plaintext  = cc->MakeCKKSPackedPlaintext(input);
     auto ciphertext      = cc->Encrypt(keyPair.publicKey, plaintext);
 
-    double lowerBound = 1;
-    double upperBound = 9;
+    double lowerBound = 0;
+    double upperBound = 10;
 
     // We can input any lambda function, which inputs a double and returns a double.
     auto result = cc->EvalChebyshevFunction([](double x) -> double { return std::sqrt(x); }, ciphertext, lowerBound,
