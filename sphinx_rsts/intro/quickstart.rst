@@ -174,3 +174,7 @@ Misc. Operations across Schemes
 -  `threshold-fhe.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/threshold-fhe.cpp>`__:
 
    - shows several examples of threshold FHE in ``BGVrns``, ``BFVrns``, and ``CKKSrns``
+
+-  `threshold-fhe-5p.cpp <https://github.com/openfheorg/openfhe-development/blob/main/src/pke/examples/threshold-fhe-5p.cpp>`__:
+
+   - shows example of threshold FHE with 5 parties in ``BFVrns``
