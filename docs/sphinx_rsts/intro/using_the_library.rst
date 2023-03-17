@@ -44,27 +44,21 @@ Anything done in OpenFHE is done through the CryptoContext. All operations are C
 Saving to string or disk file
 -----------------------------
 
-Serialization
-^^^^^^^^^^^^^
+Serialization and Deserialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Objects created by a CryptoContext usually have a ``Serialize`` method that converts the
-object into a cereal object that can be saved to a string or to a disk file. A serialization can be ``Deserialized``
-through the use of several of the CryptoContext's Deserialize methods.
+An object created by a CryptoContext usually has a ``Serialize`` method that converts the object into a cereal object that can be saved to a string or to a disk file:
 
-Deserialization
-^^^^^^^^^^^^^^^^^
+* Serial::Serialize()
 
-The following ``Deserialization`` methods are provided:
+* Serial::SerializeToFile()
 
-* DeserializePublicKey
+A serialized object can be ``Deserialized`` using the following functions, respectively:
 
-* DeserializeSecretKey
+* Serial::Deserialize()
 
-* DeserializeCiphertext
+* Serial::DeserializeFromFile()
 
-* DeserializeEvalKey
-
-Each of these methods will convert a ``Serialized`` object into a newly Deserialized object in the CryptoContext.
 The Deserialize process will ensure that the serialized object's parameters match the CryptoContext. If they do, then
 the new object "belongs to" the CryptoContext and can be used with other objects from the same CryptoContext.
 

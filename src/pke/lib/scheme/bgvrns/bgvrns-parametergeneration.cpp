@@ -94,7 +94,11 @@ BGVNoiseEstimates ParameterGenerationBGVRNS::computeNoiseEstimates(
     // Bound of the key polynomial
     // supports both discrete Gaussian (GAUSSIAN) and ternary uniform distribution
     // (UNIFORM_TERNARY) cases
-    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
+    uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
+
+    // Bkey set to thresholdParties * 1 for ternary distribution
+    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sqrt(thresholdParties) * sigma * sqrt(alpha) :
+                                                                         thresholdParties;
 
     // delta
     auto expansionFactor = 2. * sqrt(ringDimension);
@@ -269,15 +273,19 @@ void ParameterGenerationBGVRNS::InitializeFloodingDgg(std::shared_ptr<CryptoPara
 
     // compute the flooding distribution parameter based on the security mode for pre
     // get the re-encryption level and set the level after re-encryption
-    usint ringDimension = cryptoParamsBGVRNS->GetElementParams()->GetRingDimension();
-    double sigma        = cryptoParamsBGVRNS->GetDistributionParameter();
-    double alpha        = cryptoParamsBGVRNS->GetAssuranceMeasure();
-    usint r             = cryptoParamsBGVRNS->GetDigitSize();
-    double log2q        = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
-
-    double B_e       = sqrt(alpha) * sigma;
-    uint32_t auxBits = DCRT_MODULUS::MAX_SIZE;
-    double Bkey      = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : 1;
+    usint ringDimension       = cryptoParamsBGVRNS->GetElementParams()->GetRingDimension();
+    double sigma              = cryptoParamsBGVRNS->GetDistributionParameter();
+    double alpha              = cryptoParamsBGVRNS->GetAssuranceMeasure();
+    usint r                   = cryptoParamsBGVRNS->GetDigitSize();
+    double log2q              = log2(cryptoParamsBGVRNS->GetElementParams()->GetModulus().ConvertToDouble());
+    double B_e                = sqrt(alpha) * sigma;
+    uint32_t auxBits          = DCRT_MODULUS::MAX_SIZE;
+    uint32_t thresholdParties = cryptoParamsBGVRNS->GetThresholdNumOfParties();
+    // bound on the secret key is sigma*sqrt(alpha) if the secret is sampled from discrete gaussian distribution
+    // and is 1 * threshold number of parties if the secret is sampled from ternary distribution. The threshold number of
+    // parties is 1 by default but can be set to the number of parties in a threshold application.
+    // Bkey set to thresholdParties * 1 for ternary distribution
+    double Bkey = (cryptoParamsBGVRNS->GetSecretKeyDist() == GAUSSIAN) ? sigma * sqrt(alpha) : thresholdParties;
 
     // get the flooding discrete gaussian distribution
     auto dggFlooding   = cryptoParamsBGVRNS->GetFloodingDiscreteGaussianGenerator();
@@ -468,6 +476,9 @@ bool ParameterGenerationBGVRNS::ParamsGenBGVRNS(std::shared_ptr<CryptoParameters
     const EncodingParams encodingParams = cryptoParamsBGVRNS->GetEncodingParams();
     if (encodingParams->GetBatchSize() > n)
         OPENFHE_THROW(config_error, "The batch size cannot be larger than the ring dimension.");
+
+    if (encodingParams->GetBatchSize() & (encodingParams->GetBatchSize() - 1))
+        OPENFHE_THROW(config_error, "The batch size can only be set to zero (for full packing) or a power of two.");
 
     // if no batch size was specified compute a default value
     if (encodingParams->GetBatchSize() == 0) {

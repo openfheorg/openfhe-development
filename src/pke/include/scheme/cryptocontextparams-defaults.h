@@ -55,14 +55,15 @@ constexpr KeySwitchTechnique ksTech   = HYBRID;
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 constexpr ScalingTechnique scalTech = FIXEDAUTO;
 constexpr usint firstModSize        = 105;
+constexpr usint scalingModSize      = 78;
 #else
 constexpr ScalingTechnique scalTech = FLEXIBLEAUTOEXT;
 constexpr usint firstModSize        = 60;
+constexpr usint scalingModSize      = 59;
 #endif
 constexpr usint batchSize                                 = 0;
 constexpr uint32_t numLargeDigits                         = 0;
 constexpr usint multiplicativeDepth                       = 1;
-constexpr usint scalingModSize                            = 0;
 constexpr SecurityLevel securityLevel                     = HEStd_128_classic;
 constexpr usint ringDim                                   = 0;
 constexpr usint evalAddCount                              = 0;
@@ -76,8 +77,9 @@ constexpr ExecutionMode executionMode                     = EXEC_EVALUATION;
 constexpr DecryptionNoiseMode decryptionNoiseMode         = FIXED_NOISE_DECRYPT;
 constexpr double noiseEstimate                            = 0;
 constexpr double desiredPrecision                         = 25;
-constexpr double statisticalSecurity                      = 30;
-constexpr double numAdversarialQueries                    = 1;
+constexpr uint32_t statisticalSecurity                    = 30;
+constexpr uint32_t numAdversarialQueries                  = 1;
+constexpr uint32_t thresholdNumOfParties                  = 1;
 };  // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {
@@ -92,7 +94,7 @@ constexpr ScalingTechnique scalTech   = NORESCALE;
 #if defined(HAVE_INT128) || NATIVEINT != 64
 constexpr usint firstModSize = 60;
 #else
-constexpr usint firstModSize        = 57;
+constexpr usint firstModSize = 57;
 #endif
 constexpr usint batchSize           = 0;
 constexpr uint32_t numLargeDigits   = 0;
@@ -100,7 +102,7 @@ constexpr usint multiplicativeDepth = 1;
 #if defined(HAVE_INT128) || NATIVEINT != 64
 constexpr usint scalingModSize = 60;
 #else
-constexpr usint scalingModSize      = 57;
+constexpr usint scalingModSize = 57;
 #endif
 constexpr SecurityLevel securityLevel                     = HEStd_128_classic;
 constexpr usint ringDim                                   = 0;
@@ -115,8 +117,9 @@ constexpr ExecutionMode executionMode                     = EXEC_EVALUATION;
 constexpr DecryptionNoiseMode decryptionNoiseMode         = FIXED_NOISE_DECRYPT;
 constexpr double noiseEstimate                            = 0;
 constexpr double desiredPrecision                         = 0;
-constexpr double statisticalSecurity                      = 30;
-constexpr double numAdversarialQueries                    = 1;
+constexpr uint32_t statisticalSecurity                    = 30;
+constexpr uint32_t numAdversarialQueries                  = 1;
+constexpr uint32_t thresholdNumOfParties                  = 1;
 };  // namespace BFVRNS_SCHEME_DEFAULTS
 
 namespace BGVRNS_SCHEME_DEFAULTS {
@@ -146,8 +149,9 @@ constexpr ExecutionMode executionMode                     = EXEC_EVALUATION;
 constexpr DecryptionNoiseMode decryptionNoiseMode         = FIXED_NOISE_DECRYPT;
 constexpr double noiseEstimate                            = 0;
 constexpr double desiredPrecision                         = 0;
-constexpr double statisticalSecurity                      = 30;
-constexpr double numAdversarialQueries                    = 1;
+constexpr uint32_t statisticalSecurity                    = 30;
+constexpr uint32_t numAdversarialQueries                  = 1;
+constexpr uint32_t thresholdNumOfParties                  = 1;
 };  // namespace BGVRNS_SCHEME_DEFAULTS
 
 //====================================================================================================================

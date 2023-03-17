@@ -75,10 +75,13 @@ public:
         m_floodingDistributionParameter = rhs.m_floodingDistributionParameter;
         m_dgg.SetStd(m_distributionParameter);
         m_dggFlooding.SetStd(m_floodingDistributionParameter);
-        m_PREMode             = rhs.m_PREMode;
-        m_multipartyMode      = rhs.m_multipartyMode;
-        m_executionMode       = rhs.m_executionMode;
-        m_decryptionNoiseMode = rhs.m_decryptionNoiseMode;
+        m_PREMode               = rhs.m_PREMode;
+        m_multipartyMode        = rhs.m_multipartyMode;
+        m_executionMode         = rhs.m_executionMode;
+        m_decryptionNoiseMode   = rhs.m_decryptionNoiseMode;
+        m_statisticalSecurity   = rhs.m_statisticalSecurity;
+        m_numAdversarialQueries = rhs.m_numAdversarialQueries;
+        m_thresholdNumOfParties = rhs.m_thresholdNumOfParties;
     }
 
     /**
@@ -101,20 +104,25 @@ public:
                          int maxRelinSkDeg = 2, SecretKeyDist secretKeyDist = GAUSSIAN,
                          ProxyReEncryptionMode PREMode = INDCPA, MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY,
                          ExecutionMode executionMode             = EXEC_EVALUATION,
-                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1)
+                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
+                         uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
+                         uint32_t thresholdNumOfParties = 1)
         : CryptoParametersBase<Element>(params, encodingParams) {
         m_distributionParameter = distributionParameter;
         m_assuranceMeasure      = assuranceMeasure;
         m_noiseScale            = noiseScale;
         m_digitSize             = digitSize;
         m_dgg.SetStd(m_distributionParameter);
-        m_maxRelinSkDeg       = maxRelinSkDeg;
-        m_secretKeyDist       = secretKeyDist;
-        m_stdLevel            = stdLevel;
-        m_PREMode             = PREMode;
-        m_multipartyMode      = multipartyMode;
-        m_executionMode       = executionMode;
-        m_decryptionNoiseMode = decryptionNoiseMode;
+        m_maxRelinSkDeg         = maxRelinSkDeg;
+        m_secretKeyDist         = secretKeyDist;
+        m_stdLevel              = stdLevel;
+        m_PREMode               = PREMode;
+        m_multipartyMode        = multipartyMode;
+        m_executionMode         = executionMode;
+        m_decryptionNoiseMode   = decryptionNoiseMode;
+        m_statisticalSecurity   = statisticalSecurity;
+        m_numAdversarialQueries = numAdversarialQueries;
+        m_thresholdNumOfParties = thresholdNumOfParties;
     }
 
     /**
@@ -253,6 +261,33 @@ public:
         return m_dggFlooding;
     }
 
+    /**
+   * Gets the statistical security level
+   *
+   * @return the statistical security level.
+   */
+    double GetStatisticalSecurity() const {
+        return m_statisticalSecurity;
+    }
+
+    /**
+   * Gets the number of adversarial queries
+   *
+   * @return the number of adversarial queries.
+   */
+    double GetNumAdversarialQueries() const {
+        return m_numAdversarialQueries;
+    }
+
+    /**
+   * Gets the threshold number of parties
+   *
+   * @return the threshold number of parties.
+   */
+    uint32_t GetThresholdNumOfParties() const {
+        return m_thresholdNumOfParties;
+    }
+
     // @Set Properties
 
     /**
@@ -355,6 +390,30 @@ public:
     }
 
     /**
+   * Configures the decryption noise mode for CKKS noise flooding and PRE
+   * @param statisticalSecurity.
+   */
+    void SetStatisticalSecurity(uint32_t statisticalSecurity) {
+        m_statisticalSecurity = statisticalSecurity;
+    }
+
+    /**
+   * Configures the decryption noise mode for CKKS noise flooding and PRE
+   * @param numAdversarialQueries.
+   */
+    void SetNumAdversarialQueries(uint32_t numAdversarialQueries) {
+        m_numAdversarialQueries = numAdversarialQueries;
+    }
+
+    /**
+   * Configures the number of parties in thresholdFHE
+   * @param thresholdNumOfParties.
+   */
+    void SetThresholdNumOfParties(uint32_t thresholdNumOfParties) {
+        m_thresholdNumOfParties = thresholdNumOfParties;
+    }
+
+    /**
    * == operator to compare to this instance of CryptoParametersRLWE object.
    *
    * @param &rhs CryptoParameters to check equality against.
@@ -375,7 +434,10 @@ public:
                m_stdLevel == el->GetStdLevel() && m_maxRelinSkDeg == el->GetMaxRelinSkDeg() &&
                m_PREMode == el->GetPREMode() && m_multipartyMode == el->GetMultipartyMode() &&
                m_executionMode == el->GetExecutionMode() &&
-               m_floodingDistributionParameter == el->GetFloodingDistributionParameter();
+               m_floodingDistributionParameter == el->GetFloodingDistributionParameter() &&
+               m_statisticalSecurity == el->GetStatisticalSecurity() &&
+               m_numAdversarialQueries == el->GetNumAdversarialQueries() &&
+               m_thresholdNumOfParties == el->GetThresholdNumOfParties();
     }
 
     void PrintParameters(std::ostream& os) const {
@@ -401,6 +463,9 @@ public:
         ar(::cereal::make_nvp("dnm", m_decryptionNoiseMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
+        ar(::cereal::make_nvp("ss", m_statisticalSecurity));
+        ar(::cereal::make_nvp("aq", m_numAdversarialQueries));
+        ar(::cereal::make_nvp("tp", m_thresholdNumOfParties));
     }
 
     template <class Archive>
@@ -418,6 +483,9 @@ public:
         ar(::cereal::make_nvp("dnm", m_decryptionNoiseMode));
         ar(::cereal::make_nvp("slv", m_stdLevel));
         ar(::cereal::make_nvp("fdp", m_floodingDistributionParameter));
+        ar(::cereal::make_nvp("ss", m_statisticalSecurity));
+        ar(::cereal::make_nvp("aq", m_numAdversarialQueries));
+        ar(::cereal::make_nvp("tp", m_thresholdNumOfParties));
 
         m_dgg.SetStd(m_distributionParameter);
         m_dggFlooding.SetStd(m_floodingDistributionParameter);
@@ -462,6 +530,16 @@ protected:
 
     // specifies the noise mode used for decryption in CKKS
     DecryptionNoiseMode m_decryptionNoiseMode = FIXED_NOISE_DECRYPT;
+
+    // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
+    // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
+    double m_statisticalSecurity = 30;
+
+    // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
+    // security of CKKS in NOISE_FLOODING_DECRYPT mode.
+    double m_numAdversarialQueries = 1;
+
+    usint m_thresholdNumOfParties = 1;
 };
 
 }  // namespace lbcrypto

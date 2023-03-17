@@ -224,6 +224,9 @@ bool ParameterGenerationCKKSRNS::ParamsGenCKKSRNS(std::shared_ptr<CryptoParamete
     if (encodingParams->GetBatchSize() > n / 2)
         OPENFHE_THROW(config_error, "The batch size cannot be larger than ring dimension / 2.");
 
+    if (encodingParams->GetBatchSize() & (encodingParams->GetBatchSize() - 1))
+        OPENFHE_THROW(config_error, "The batch size can only be set to zero (for full packing) or a power of two.");
+
     // if no batch size was specified, we set batchSize = n/2 by default (for full
     // packing)
     if (encodingParams->GetBatchSize() == 0) {

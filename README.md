@@ -67,6 +67,7 @@ To get familiar with the main API of OpenFHE, we recommend looking at the code o
        4. [Small-Precison Arbitrary Function Evaluation](src/binfhe/examples/eval-function.cpp)
    1. Threshold FHE:
        1. [Code Example for BGV, BFV, and CKKS](src/pke/examples/threshold-fhe.cpp)
+       1. [Code Example for BFV with 5 parties](src/pke/examples/threshold-fhe-5p.cpp)
 
 ## Code of Conduct
 
