@@ -57,7 +57,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
             s -= mod;
         }
 
-        (*ek)[0][0][n] = KeyGenLMKCDEY(params, skNTT, s);
+        (*ek)[0][0][i] = KeyGenLMKCDEY(params, skNTT, s);
     }
     
     NativeInteger gen = NativeInteger(5);
