@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+=======
+12/23/2022: OpenFHE 1.0.2 (stable) is released
+
+* Fixes several compilation errors affecting selected environments
+* Includes several documentation fixes
+
+>>>>>>> main
 11/30/2022: OpenFHE 1.0.1 (stable) is released
 
 * Fixed the serialization bug affecting DM/CGGI schemes (binfhe module)

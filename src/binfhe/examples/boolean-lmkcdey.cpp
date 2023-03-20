@@ -49,12 +49,12 @@ int main() {
     // (AP or GINX). The default method is GINX. Here we explicitly set AP. GINX
     // typically provides better performance: the bootstrapping key is much
     // smaller in GINX (by 20x) while the runtime is roughly the same.
-    cc.GenerateBinFHEContext(STD128, LMKCDEY);
+    cc.GenerateBinFHEContext(STD128_LMKCDEY, LMKCDEY);
 
     // Sample Program: Step 2: Key Generation
 
     // Generate the secret key
-    auto sk = cc.KeyGen();
+    auto sk = cc.KeyGenGaussian();
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 

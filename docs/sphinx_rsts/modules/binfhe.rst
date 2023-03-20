@@ -25,10 +25,16 @@ File Listings
 - A CryptoContext is the primary object through which we interact with the various ``OpenFHE`` capabilities
 
 .. note:: various parameter ``enum`` are also provided
+<<<<<<< HEAD
 - ``BINFHEPARAMSET`` that defines the security level and parameters
 - ``BINFHE_METHOD`` to choose the bootstrapping method: AP (DM/FHEW scheme) or GINX (CGGI/TFHE scheme)
 - ``BINFHE_OUTPUT`` specifies whether fresh ciphertext should be bootstrapped. The FRESH and BOOTSTRAPPED are now obsolete but kept for backward compatibility. This option is now used to specify LARGE_DIM (ciphertext of dimension N) or SMALL_DIM (ciphertext of dimension n after modswitch and keyswitch)
 - ``KEYGEN_MODE`` specifies if a public key along with the bootstrapping keys are generated
+=======
+.. - ``BINFHEPARAMSET`` that defines the security level and parameters
+.. - ``BINFHE_METHOD`` to choose the bootstrapping method: AP (DM/FHEW scheme) or GINX (CGGI/TFHE scheme)
+.. - ``BINFHE_METHOD`` specifies whther fresh ciphertext should be bootstrapped.
+>>>>>>> main
 
 `DM/CGGI Cryptosystem (binfhe-base-scheme) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/binfhe-base-scheme.h>`_
 
@@ -41,7 +47,11 @@ File Listings
 
 `Constants for DM/CGGI Cryptosystem (binfhe-base-params) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/binfhe-constants.h>`_
 
+<<<<<<< HEAD
 - Defines all options for ``BINFHEPARAMSET``, ``BINFHE_METHOD``, and ``BINFHE_OUTPUT`` enums
+=======
+- Defines all options for ``BINFHEPARAMSET``, ``BINFHE_METHOD``, and ``BINFHE_METHOD`` enums
+>>>>>>> main
 
 `LWE Ciphertext (lwe-ciphertext) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-ciphertext.h>`_
 
@@ -53,6 +63,7 @@ File Listings
 
 `LWE Private Key (lwe-privatekey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-privatekey.h>`_
 
+<<<<<<< HEAD
 `LWE Public Key (lwe-publickey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-publickey.h>`_
 
 `LWE Key Pair (lwe-keypair) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/lwe-keypair.h>`_
@@ -69,4 +80,18 @@ File Listings
 
 `RGSW Evaluation Key/Ciphertext (rgsw-evalkey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-evalkey.h>`_
 
+=======
+`Parent RGSW Accumulator Scheme (rgsw-acc) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acc.h>`_
+
+`CGGI RGSW Accumulator Scheme (rgsw-acc-cggi) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acc-cggi.h>`_
+
+`DM RGSW Accumulator Scheme (rgsw-acc-dm) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acc-dm.h>`_
+
+`RGSW Refreshing Key (rgsw-acckey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-acckey.h>`_
+
+`RGSW Crypto Parameters (rgsw-cryptoparameters) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-cryptoparameters.h>`_
+
+`RGSW Evaluation Key/Ciphertext (rgsw-evalkey) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rgsw-evalkey.h>`_
+
+>>>>>>> main
 `RLWE Ciphertext (rlwe-ciphertext) <https://github.com/openfheorg/openfhe-development/blob/main/src/binfhe/include/rlwe-ciphertext.h>`_

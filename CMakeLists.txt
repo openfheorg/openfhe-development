@@ -18,8 +18,8 @@ endif()
 ### To use gcc/g++ on a Macintosh, you must set the Compilers
 ### here, not inside the project
 ##if(APPLE)
-##       set(CMAKE_C_COMPILER "/usr/local/bin/gcc-7")
-##       set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-7")
+##       set(CMAKE_C_COMPILER "/usr/local/bin/gcc-10")
+##       set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-10")
 ##endif()
 ### TODO: for now, we use CLang for Mac
 
@@ -27,7 +27,11 @@ project (OpenFHE C CXX)
 
 set(OPENFHE_VERSION_MAJOR 1)
 set(OPENFHE_VERSION_MINOR 0)
+<<<<<<< HEAD
 set(OPENFHE_VERSION_PATCH 1)
+=======
+set(OPENFHE_VERSION_PATCH 2)
+>>>>>>> main
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
