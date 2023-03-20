@@ -71,12 +71,6 @@
 #include "math/hal/bigintdyn/backenddyn.h"
 #include "math/hal/bigintntl/backendntl.h"
 
-#ifndef MATHBACKEND
-    #define MATHBACKEND 2
-// #define MATHBACKEND 4
-// #define MATHBACKEND 6
-#endif
-
 #if MATHBACKEND != 2 && MATHBACKEND != 4 && MATHBACKEND != 6
     #error "MATHBACKEND value is not valid"
 #endif
