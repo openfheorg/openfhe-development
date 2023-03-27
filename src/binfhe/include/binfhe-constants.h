@@ -46,6 +46,9 @@ using LWEPlaintextModulus = uint64_t;
 enum BINFHE_PARAMSET {
     TOY,             // no security
     MEDIUM,          // 108 bits of security for classical and 100 bits for quantum
+    STD128_LMKCDEY,  // Optimized for LMKCDEY (using Gaussian secrets) -
+                     // more than 128 bits of security for classical computer attacks -
+                     // optimize runtime by finding a non-power-of-two n
     STD128_AP,       // Optimized for AP (has higher failure probability for GINX) -
                      // more than 128 bits of security for classical
                      // computer attacks - uses the same setup as HE standard
@@ -97,6 +100,7 @@ enum BINFHE_METHOD {
     INVALID_METHOD = 0,
     AP,    // Ducas-Micciancio variant
     GINX,  // Chillotti-Gama-Georgieva-Izabachene variant
+    LMKCDEY, // Lee-Micciancio-Kim-Choi-Deryabin-Eom-Yoo variant, ia.cr/2022/198
 };
 std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f);
 

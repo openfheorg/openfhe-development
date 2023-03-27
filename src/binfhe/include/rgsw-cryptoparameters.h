@@ -66,7 +66,7 @@ public:
    * @param lweparams a shared poiter to an instance of LWECryptoParams
    * @param baseG the gadget base used in the bootstrapping
    * @param baseR the base for the refreshing key
-   * @param method bootstrapping method (DM or CGGI)
+   * @param method bootstrapping method (DM or CGGI or LMKCDEY)
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
                                  BINFHE_METHOD method, double std, bool signEval = false)
@@ -118,6 +118,24 @@ public:
             for (size_t i = 0; i < m_digitsG; ++i) {
                 m_Gpower.push_back(vTemp);
                 vTemp = vTemp.ModMul(NativeInteger(m_baseG), Q);
+            }
+        }
+
+        if (m_method == LMKCDEY){
+            uint32_t M = 2*N;
+
+            m_logGen.resize(M);
+            uint32_t gen = 5;
+            uint32_t gPow = 1;
+
+            m_logGen[gPow] = 0; // for 1
+            m_logGen[M - gPow] = M; // for -1
+
+            for (size_t i = 1; i < N/2; i++)
+            {
+                gPow = (gPow*gen) % M;
+                m_logGen[gPow] = i;
+                m_logGen[M - gPow] = -i;
             }
         }
 
@@ -193,6 +211,10 @@ public:
 
     const std::vector<NativeInteger>& GetGPower() const {
         return m_Gpower;
+    }
+
+    const std::vector<int32_t>& GetLogGen() const {
+        return m_logGen;
     }
 
     const std::map<uint32_t, std::vector<NativeInteger>>& GetGPowerMap() const {
@@ -297,6 +319,14 @@ private:
     // A vector of powers of baseG
     std::vector<NativeInteger> m_Gpower;
 
+    // A vector of log by generator g (=5) (only for LMKCDEY)
+    // Not exactly log, but a mapping similar to logarithm for efficiency
+    // m_logGen[5^i (mod M)] = i (i > 0)
+    // m_logGen[-5^i (mod M)] = -i () 
+    // m_logGen[1] = 0
+    // m_logGen[-1 (mod M)] = M (special case for efficiency)
+    std::vector<int32_t> m_logGen;
+
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
 
@@ -313,7 +343,7 @@ private:
     // (used only for CGGI bootstrapping)
     std::vector<NativePoly> m_monomials;
 
-    // Bootstrapping method (DM or CGGI)
+    // Bootstrapping method (DM or CGGI or LMKCDEY)
     BINFHE_METHOD m_method = BINFHE_METHOD::INVALID_METHOD;
 };
 
