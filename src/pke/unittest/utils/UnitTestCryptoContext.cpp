@@ -152,7 +152,7 @@ CryptoContext<Element> UnitTestGenerateContext(const BaseTestCase& testCase) {
     auto paramOverrides       = testCase.getCryptoContextParamOverrides();
     lbcrypto::SCHEME schemeId = lbcrypto::convertToSCHEME(*paramOverrides.begin());
     if (CKKSRNS_SCHEME == schemeId) {
-        CCParams<CryptoContextBFVRNS> parameters(paramOverrides);
+        CCParams<CryptoContextCKKSRNS> parameters(paramOverrides);
         cc = GenCryptoContext(parameters);
     }
     else if (BFVRNS_SCHEME == schemeId) {
