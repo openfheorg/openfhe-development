@@ -235,9 +235,9 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
 }
 
 /*  Populate statically the parameter m for the Paterson-Stockmeyer algorithm up
-    to UPPER_BOUND_PS.*/
-static std::vector<uint32_t> PopulateParameterPS(const uint32_t UPPER_BOUND_PS) {
-    std::vector<uint32_t> mlist(UPPER_BOUND_PS);
+    to the degree value of upperBoundDegree.*/
+static std::vector<uint32_t> PopulateParameterPS(const uint32_t upperBoundDegree) {
+    std::vector<uint32_t> mlist(upperBoundDegree);
     std::fill(mlist.begin(), mlist.begin() + 2, 1);            // n in [1,2], m = 1
     std::fill(mlist.begin() + 2, mlist.begin() + 11, 2);       // n in [3,11], m = 2
     std::fill(mlist.begin() + 11, mlist.begin() + 13, 3);      // n in [12,13], m = 3
