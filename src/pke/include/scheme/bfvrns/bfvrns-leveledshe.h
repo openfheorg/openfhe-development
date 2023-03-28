@@ -49,8 +49,6 @@ class LeveledSHEBFVRNS : public LeveledSHERNS {
 public:
     virtual ~LeveledSHEBFVRNS() {}
 
-    using LeveledSHERNS::EvalAddInPlace;
-
     /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
@@ -60,8 +58,6 @@ public:
    */
     void EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
-    using LeveledSHERNS::EvalSubInPlace;
-
     /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
@@ -70,12 +66,6 @@ public:
    * @param plaintext the input plaintext.
    */
     void EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
-
-    using LeveledSHERNS::EvalMult;
-    using LeveledSHERNS::EvalMultInPlace;
-
-    using LeveledSHERNS::EvalSquare;
-    using LeveledSHERNS::EvalSquareInPlace;
 
     /**
    * Virtual function to define the interface for multiplicative homomorphic

@@ -53,9 +53,6 @@ public:
     // SHE ADDITION
     /////////////////////////////////////////
 
-    using LeveledSHERNS::EvalAdd;
-    using LeveledSHERNS::EvalAddInPlace;
-
     /////////////////////////////////////////
     // SHE ADDITION PLAINTEXT
     /////////////////////////////////////////
@@ -80,9 +77,6 @@ public:
     // SHE SUBTRACTION CONSTANT
     /////////////////////////////////////////
 
-    using LeveledSHERNS::EvalSub;
-    using LeveledSHERNS::EvalSubInPlace;
-
     Ciphertext<DCRTPoly> EvalSub(ConstCiphertext<DCRTPoly> ciphertext, double constant) const override;
 
     void EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, double constant) const override;
@@ -98,9 +92,6 @@ public:
     /////////////////////////////////////////
     // SHE MULTIPLICATION CONSTANT
     /////////////////////////////////////////
-
-    using LeveledSHEBase<DCRTPoly>::EvalMult;
-    using LeveledSHEBase<DCRTPoly>::EvalMultInPlace;
 
     Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext, double constant) const override;
 

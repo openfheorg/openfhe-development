@@ -60,11 +60,6 @@ public:
     // SHE ADDITION
     /////////////////////////////////////////
 
-    using LeveledSHEBase<DCRTPoly>::EvalAdd;
-    using LeveledSHEBase<DCRTPoly>::EvalAddInPlace;
-    using LeveledSHEBase<DCRTPoly>::EvalAddMutable;
-    using LeveledSHEBase<DCRTPoly>::EvalAddMutableInPlace;
-
     /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
@@ -143,11 +138,6 @@ public:
     /////////////////////////////////////////
     // SHE SUBTRACTION
     /////////////////////////////////////////
-
-    using LeveledSHEBase<DCRTPoly>::EvalSub;
-    using LeveledSHEBase<DCRTPoly>::EvalSubInPlace;
-    using LeveledSHEBase<DCRTPoly>::EvalSubMutable;
-    using LeveledSHEBase<DCRTPoly>::EvalSubMutableInPlace;
 
     /**
    * Virtual function to define the interface for homomorphic subtraction of
@@ -229,11 +219,6 @@ public:
     /////////////////////////////////////////
     // SHE MULTIPLICATION
     /////////////////////////////////////////
-
-    using LeveledSHEBase<DCRTPoly>::EvalMult;
-    using LeveledSHEBase<DCRTPoly>::EvalMultInPlace;
-    using LeveledSHEBase<DCRTPoly>::EvalMultMutable;
-    using LeveledSHEBase<DCRTPoly>::EvalMultMutableInPlace;
 
     Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext1,
                                   ConstCiphertext<DCRTPoly> ciphertext2) const override;

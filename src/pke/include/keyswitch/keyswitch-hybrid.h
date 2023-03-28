@@ -72,8 +72,6 @@ public:
 
     virtual ~KeySwitchHYBRID(){};
 
-    using KeySwitchRNS::KeySwitchGen;
-
     EvalKey<DCRTPoly> KeySwitchGen(const PrivateKey<DCRTPoly> oldPrivateKey,
                                    const PrivateKey<DCRTPoly> newPrivateKey) const override;
 
