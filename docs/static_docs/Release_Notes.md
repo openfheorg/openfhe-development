@@ -1,3 +1,18 @@
+03/17/2023: OpenFHE 1.0.3 (stable) is released
+
+* Corrects the noise estimation for BGV/BFV multiparty scenarios (#273)
+* Adjusts the logic when trying to bootstrap CKKS ciphertexts with remaining levels (#305)
+* Adds exception handling for several reported issues
+* Fixes several examples
+* Includes several documentation fixes
+
+The detailed list is available at https://github.com/openfheorg/openfhe-development/pulls?q=is%3Apr+is%3Aclosed+milestone%3A%22Release+1.0.3%22
+
+12/23/2022: OpenFHE 1.0.2 (stable) is released
+
+* Fixes several compilation errors affecting selected environments
+* Includes several documentation fixes
+
 11/30/2022: OpenFHE 1.0.1 (stable) is released
 
 * Fixed the serialization bug affecting DM/CGGI schemes (binfhe module)
