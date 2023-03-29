@@ -30,7 +30,9 @@ Each run of EvalChebyshevFunction requires a certain number of multiplications w
 | 14-27         | 6                    |
 | 28-59         | 7                    |
 | 60-119        | 8                    |
-| 120-200       | 9                    |
-| 201-288       | 10                   |
+| 120-247       | 9                    |
+| 248-495       | 10                   |
+| 496-1007      | 11                   |
+| 1008-2031     | 12                   |
 
 Note that if we use a range $(a, b) = (-1, 1),$ the multiplicative depth is 1 less than the depths listed in the table.
