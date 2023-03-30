@@ -76,7 +76,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
 
 void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
                                    RLWECiphertext& acc, const NativeVector& a) const {
-    auto mod        = a.GetModulus(); // assume a is all-odd ciphertext (using round-to-odd technique)
+    // assume a is all-odd ciphertext (using round-to-odd technique)
     uint32_t n      = a.GetLength();
     uint32_t Nh     = params->GetN() / 2;
     uint32_t M      = 2 * params->GetN();
@@ -90,10 +90,11 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
 
     for (size_t i = 0; i < n; i++) { // put ail a_i in the permuteMap
         NativeInteger aI = MNative.ModSub(a[i], MNative);
-        int32_t aIOdd = (aI.ConvertToInt()%2 == 0)? aI.ConvertToInt()+1:aI.ConvertToInt();
+        int32_t aIOdd = (aI.ConvertToInt()/2)*2+1; 
+        // make it odd; round-to-odd(https://eprint.iacr.org/2022/198) will improve error.
         int32_t index = logGen[aIOdd];
 
-        if(permuteMap.find(index) == permuteMap.end()){ // first time
+        if(permuteMap.find(index) == permuteMap.end()){
             std::vector<int32_t> indexVec;
             permuteMap[index] = indexVec;
         }
