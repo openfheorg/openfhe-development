@@ -302,6 +302,18 @@ LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext 
     return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2);
 }
 
+//LWECiphertext BinFHEContext::EvalBinGateVector(const BINGATE gate, std::vector<LWECiphertext> cts) const {
+//    return m_binfhescheme->EvalBinGateVector(m_params, gate, m_BTKey, cts);
+//}
+
+LWECiphertext BinFHEContext::EvalBinGateThreeInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3) const {
+    return m_binfhescheme->EvalBinGateThreeInput(m_params, gate, m_BTKey, ct1, ct2, ct3);
+}
+
+LWECiphertext BinFHEContext::EvalBinGateFourInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3, ConstLWECiphertext ct4) const {
+    return m_binfhescheme->EvalBinGateFourInput(m_params, gate, m_BTKey, ct1, ct2, ct3, ct4);
+}
+
 LWECiphertext BinFHEContext::Bootstrap(ConstLWECiphertext ct) const {
     return m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
 }

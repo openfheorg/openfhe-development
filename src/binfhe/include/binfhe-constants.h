@@ -57,6 +57,8 @@ enum BINFHE_PARAMSET {
                      // optimize runtime by finding a non-power-of-two n
     STD128,          // more than 128 bits of security for classical
                      // computer attacks - uses the same setup as HE standard
+    STD128_3,
+    STD128_AP_3,
     STD128_OPT,      // more than 128 bits of security for classical computer attacks -
                      // optimize runtime by finding a non-power-of-two n
     STD192,          // more than 192 bits of security for classical computer attacks -
@@ -104,7 +106,7 @@ enum BINFHE_METHOD {
 };
 std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f);
 
-enum BINGATE { OR, AND, NOR, NAND, XOR_FAST, XNOR_FAST, XOR, XNOR };
+enum BINGATE { OR, AND, NOR, NAND, XOR_FAST, XNOR_FAST, MAJORITY, AND3, OR3, AND4, OR4, CMUX, XOR, XNOR };
 std::ostream& operator<<(std::ostream& s, BINGATE f);
 
 /**

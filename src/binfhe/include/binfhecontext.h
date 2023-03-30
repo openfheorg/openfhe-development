@@ -273,6 +273,17 @@ public:
     LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const;
 
     /**
+   * Evaluates a binary gate on vector of ciphertexts (calls bootstrapping as a subroutine)
+   *
+   * @param gate the gate; can be MAJORITY as of now
+   * @param cts vector of ciphertexts
+   * @return a shared pointer to the resulting ciphertext
+   */
+    //LWECiphertext EvalBinGateVector(BINGATE gate, std::vector<LWECiphertext> cts) const;
+    LWECiphertext EvalBinGateThreeInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3) const;
+    LWECiphertext EvalBinGateFourInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3, ConstLWECiphertext ct4) const;
+
+    /**
    * Bootstraps a ciphertext (without peforming any operation)
    *
    * @param ct1 ciphertext to be bootstrapped
