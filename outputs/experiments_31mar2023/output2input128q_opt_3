@@ -1,0 +1,4223 @@
+iteration 1
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6533 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 360 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 2
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6666 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 3
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6679 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 363 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 4
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6694 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 5
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6654 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 6
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6640 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 7
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6961 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 382 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 8
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6898 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 9
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7157 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 381 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 10
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6982 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 11
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6980 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 12
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6852 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 13
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6834 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 391 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 14
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6796 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 399 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 15
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6901 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 377 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 16
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6770 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 381 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 17
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6881 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 18
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7021 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 19
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7130 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 429 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 20
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6968 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 382 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 21
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6999 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 377 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 22
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6974 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 23
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6767 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 24
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7131 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 406 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 25
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7101 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 383 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 26
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6778 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 27
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6978 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 28
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6787 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 360 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 29
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6850 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 30
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7618 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 424 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 31
+Generating the bootstrapping keys...
+time for bootstrapping key generation 10351 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 514 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 32
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7532 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 33
+Generating the bootstrapping keys...
+time for bootstrapping key generation 9151 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 400 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 34
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6948 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 381 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 35
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6845 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 36
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6870 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 37
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6798 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 378 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 38
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6801 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 39
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6798 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 40
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6762 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 41
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7132 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 586 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 42
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6842 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 43
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6854 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 44
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7235 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 385 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 45
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6946 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 46
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6893 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 47
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6802 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 48
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6778 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 49
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6802 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 50
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6762 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 51
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6774 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 52
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6733 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 53
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7017 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 451 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 54
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8088 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 446 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 55
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7550 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 56
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6725 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 354 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 57
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6795 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 363 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 58
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6730 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 59
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6778 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 60
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7300 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 443 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 61
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6724 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 62
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6748 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 63
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6808 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 64
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6824 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 65
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6719 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 360 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 66
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6773 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 67
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6897 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 411 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 68
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6841 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 69
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6735 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 70
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6773 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 380 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 71
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6793 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 360 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 72
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8356 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 73
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6765 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 401 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 74
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6807 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 75
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7161 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 378 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 76
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6784 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 77
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6804 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 78
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6915 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 79
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6864 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 363 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 80
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6795 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 360 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 81
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6810 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 358 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 82
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6820 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 83
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6771 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 84
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6767 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 85
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6795 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 86
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6800 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 399 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 87
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6727 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 410 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 88
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6857 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 89
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6839 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 90
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6760 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 91
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6811 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 359 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 92
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6819 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 352 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 93
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6748 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 94
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6810 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 95
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6850 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 380 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 96
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6765 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 97
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6957 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 98
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6743 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 99
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6784 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 100
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6754 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 101
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6761 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 102
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6755 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 103
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6744 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 104
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6749 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 105
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6774 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 106
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6741 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 386 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 107
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6737 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 408 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 108
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6799 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 393 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 109
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6760 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 379 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 110
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6768 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 475 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 111
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6811 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 396 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 112
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6852 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 356 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 113
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6777 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 403 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 114
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6824 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 354 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 115
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6945 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 358 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 116
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6735 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 363 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 117
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6747 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 118
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6715 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 119
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6756 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 120
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6745 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 121
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6850 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 122
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6783 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 398 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 123
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6850 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 124
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6747 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 125
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6745 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 384 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 126
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6769 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 127
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6723 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 363 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 128
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6928 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 129
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6744 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 130
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6959 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 131
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6766 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 132
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6793 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 133
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6806 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 134
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6802 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 135
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6765 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 136
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6832 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 137
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6783 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 138
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6782 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 139
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8075 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 140
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7045 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 447 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 141
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6865 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 384 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 142
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8202 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 411 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 143
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6908 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 384 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 144
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6805 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 145
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6787 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 358 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 146
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6834 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 147
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6798 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 358 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 148
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6863 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 356 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 149
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6785 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 360 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 150
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6866 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 360 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 151
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6952 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 152
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6765 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 153
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6797 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 154
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6752 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 155
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6813 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 156
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6819 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 386 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 157
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6764 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 158
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6731 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 382 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 159
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6859 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 394 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 160
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6771 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 357 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 161
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6792 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 360 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 162
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6728 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 163
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6826 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 358 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 164
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6693 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 165
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6848 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 166
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6784 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 167
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6797 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 379 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 168
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6784 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 169
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6803 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 359 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 170
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6844 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 171
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6758 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 357 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 172
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6918 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 173
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6809 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 174
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6755 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 175
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6776 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 350 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 176
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6789 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 383 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 177
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6757 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 378 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 178
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6777 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 395 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 179
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6743 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 402 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 180
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6818 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 181
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6809 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 182
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6742 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 183
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6922 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 357 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 184
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6840 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 185
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6852 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 186
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6768 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 354 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 187
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6826 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 379 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 188
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6933 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 189
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6760 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 190
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6671 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 428 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 191
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6734 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 388 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 192
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6776 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 193
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6946 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 194
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6763 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 388 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 195
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6768 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 394 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 196
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6862 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 385 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 197
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6715 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 419 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 198
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6786 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 199
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6765 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 200
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6779 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 363 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 201
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6708 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 202
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6737 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 363 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 203
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6821 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 380 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 204
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6690 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 205
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6844 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 206
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6731 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 207
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6918 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 208
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6775 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 209
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6802 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 359 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 210
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6766 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 211
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6796 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 212
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6734 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 213
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6773 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 868 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 214
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8085 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 505 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 215
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7397 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 380 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 216
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7257 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 409 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 217
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7147 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 218
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6833 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 383 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 219
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7001 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 220
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7108 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 399 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 221
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7154 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 397 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 222
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6974 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 223
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6864 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 224
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6853 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 225
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6833 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 401 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 226
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6846 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 227
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7134 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 451 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 228
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7332 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 349 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 229
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6920 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 363 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 230
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6926 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 413 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 231
+Generating the bootstrapping keys...
+time for bootstrapping key generation 9463 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 439 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 232
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8320 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 468 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 233
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7981 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 546 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 234
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7190 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 235
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6856 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 359 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 236
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6784 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 386 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 237
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6753 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 238
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6746 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 239
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6750 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 240
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6840 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 241
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6736 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 379 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 242
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6975 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 448 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 243
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7218 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 244
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8011 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 405 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 245
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8068 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 384 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 246
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7366 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 247
+Generating the bootstrapping keys...
+time for bootstrapping key generation 9332 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 396 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 248
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7485 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 403 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 249
+Generating the bootstrapping keys...
+time for bootstrapping key generation 9719 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 406 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 250
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6949 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 357 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 251
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7292 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 415 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 252
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7078 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 396 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 253
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7236 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 385 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 254
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7218 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 255
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7144 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 256
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7106 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 384 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 257
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7133 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 358 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 258
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7110 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 259
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7224 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 521 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 260
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7393 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 406 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 261
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7197 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 427 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 262
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7280 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 450 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 263
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7910 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 412 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 264
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7276 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 265
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7031 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 402 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 266
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7059 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 382 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 267
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6993 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 387 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 268
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6873 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 269
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7140 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 395 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 270
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7243 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 379 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 271
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7051 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 392 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 272
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6933 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 386 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 273
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6895 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 274
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7117 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 275
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6891 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 276
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6990 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 423 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 277
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6843 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 278
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6924 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 279
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6880 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 280
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6851 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 281
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6865 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 382 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 282
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6884 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 283
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6871 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 284
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6833 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 381 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 285
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6854 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 286
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6869 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 287
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6822 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 288
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7373 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 382 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 289
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6940 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 290
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6852 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 291
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6787 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 292
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6844 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 293
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7089 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 294
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6915 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 295
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8583 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 405 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 296
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7306 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 434 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 297
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8231 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 473 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 298
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7895 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 557 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 299
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7767 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 423 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 300
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7206 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 378 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 301
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7732 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 471 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 302
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7381 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 420 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 303
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7610 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 429 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 304
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8341 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 442 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 305
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7978 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 397 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 306
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7300 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 307
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6892 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 388 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 308
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6867 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 383 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 309
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6865 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 310
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6900 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 311
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7406 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 357 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 312
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6926 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 313
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6841 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 314
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6883 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 315
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6846 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 316
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6865 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 380 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 317
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6886 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 493 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 318
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6837 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 319
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6879 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 320
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6934 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 321
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6912 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 381 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 322
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6814 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 323
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6860 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 324
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6881 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 325
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6921 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 326
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6773 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 327
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6938 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 363 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 328
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6857 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 329
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6769 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 389 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 330
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6828 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 331
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6945 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 332
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6930 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 359 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 333
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6949 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 334
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6893 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 378 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 335
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7301 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 377 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 336
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7294 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 337
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6917 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 338
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6877 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 339
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6978 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 377 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 340
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6974 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 341
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7006 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 377 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 342
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6855 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 343
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7043 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 344
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6893 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 345
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7647 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 346
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8258 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 470 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 347
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7678 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 395 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 348
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7742 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 349
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8098 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 441 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 350
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7216 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 351
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8339 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 486 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 352
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7959 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 353
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8875 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 786 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 354
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7319 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 355
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7044 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 382 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 356
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6883 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 380 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 357
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6876 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 358
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6850 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 359
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6830 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 360
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6849 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 361
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6906 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 397 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 362
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6845 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 363
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6931 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 364
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6885 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 386 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 365
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7748 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 437 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 366
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7539 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 397 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 367
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7290 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 391 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 368
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7247 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 399 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 369
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6746 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 378 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 370
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7185 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 371
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6707 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 372
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6785 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 373
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6751 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 374
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6790 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 386 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 375
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6795 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 385 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 376
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6778 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 377
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6746 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 384 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 378
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6718 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 379
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6798 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 379 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 380
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6835 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 381
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7579 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 586 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 382
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7745 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 391 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 383
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7442 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 358 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 384
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6781 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 355 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 385
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6817 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 386
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6784 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 387
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6808 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 388
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6950 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 389
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6815 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 390
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6938 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 391
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6806 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 392
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6812 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 393
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6695 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 397 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 394
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6806 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 395
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6792 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 396
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7049 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 398 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 397
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6760 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 410 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 398
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6811 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 360 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 399
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6789 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 400
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6824 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 401
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6769 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 402
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6876 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 403
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6845 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 404
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6802 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 380 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 405
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6765 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 406
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6845 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 407
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6729 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 408
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6856 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 444 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 409
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6825 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 359 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 410
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6838 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 372 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 411
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7143 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 412
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6767 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 388 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 413
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6841 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 414
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6804 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 415
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6801 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 416
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7057 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 362 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 417
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7571 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 419 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 418
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7245 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 426 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 419
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6819 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 367 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 420
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6755 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 421
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6796 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 422
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6724 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 423
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6769 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 424
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6754 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 425
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6815 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 400 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 426
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6779 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 427
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6773 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 428
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6783 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 429
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6825 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 430
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6785 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 431
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6711 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 432
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6746 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 433
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6832 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 434
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6757 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 435
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6769 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 436
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6749 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 384 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 437
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6762 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 438
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6909 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 439
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6744 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 440
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6791 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 441
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6903 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 382 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 442
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6824 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 361 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 443
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6732 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 444
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6758 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 445
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6846 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 375 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 446
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6743 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 376 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 447
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6721 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 373 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 448
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6888 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 369 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 449
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6771 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 450
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6764 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 451
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6832 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 366 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 452
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6704 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 378 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 453
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6728 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 363 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 454
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6780 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 431 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 455
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6785 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 402 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 456
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6804 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 364 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 457
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6767 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 458
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6711 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 371 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 459
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8329 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 460
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7324 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 368 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 461
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8806 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 365 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 462
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7070 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 463
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6943 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 370 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 464
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6734 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 383 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 465
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6725 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 374 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 466
+Generating the bootstrapping keys...
+time for bootstrapping key generation 6911 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 386 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 467
+Generating the bootstrapping keys...
+time for bootstrapping key generation 8615 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 434 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 468
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7594 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 404 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 469
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7445 milliseconds
+Completed the key generation.
+ciphertext size: 4725
+time for gate evaluation 438 milliseconds
+Result of encrypted computation of (1 AND 1) = 1
+Result of encrypted computation of (1 AND (NOT 1)) = 0
+Result of encrypted computation of (1 AND 1) OR (1 AND (NOT 1)) = 1
+iteration 470
+Generating the bootstrapping keys...

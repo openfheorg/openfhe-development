@@ -1,0 +1,1327 @@
+iteration 1
+Generating the bootstrapping keys...
+time for bootstrapping key generation 2524 milliseconds
+Completed the key generation.
+time for gate evaluation 1734 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 2
+Generating the bootstrapping keys...
+time for bootstrapping key generation 2461 milliseconds
+Completed the key generation.
+time for gate evaluation 1738 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 3
+Generating the bootstrapping keys...
+time for bootstrapping key generation 2385 milliseconds
+Completed the key generation.
+time for gate evaluation 1734 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 4
+Generating the bootstrapping keys...
+time for bootstrapping key generation 2467 milliseconds
+Completed the key generation.
+time for gate evaluation 2075 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 5
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3409 milliseconds
+Completed the key generation.
+time for gate evaluation 2033 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 6
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3390 milliseconds
+Completed the key generation.
+time for gate evaluation 2010 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 7
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3530 milliseconds
+Completed the key generation.
+time for gate evaluation 2029 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 8
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3233 milliseconds
+Completed the key generation.
+time for gate evaluation 2001 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 9
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3326 milliseconds
+Completed the key generation.
+time for gate evaluation 2039 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 10
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3344 milliseconds
+Completed the key generation.
+time for gate evaluation 2001 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 11
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3225 milliseconds
+Completed the key generation.
+time for gate evaluation 2013 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 12
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3262 milliseconds
+Completed the key generation.
+time for gate evaluation 2015 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 13
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3327 milliseconds
+Completed the key generation.
+time for gate evaluation 2006 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 14
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3352 milliseconds
+Completed the key generation.
+time for gate evaluation 2005 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 15
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3334 milliseconds
+Completed the key generation.
+time for gate evaluation 2007 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 16
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3227 milliseconds
+Completed the key generation.
+time for gate evaluation 2003 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 17
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3349 milliseconds
+Completed the key generation.
+time for gate evaluation 2025 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 18
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3278 milliseconds
+Completed the key generation.
+time for gate evaluation 1997 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 19
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3350 milliseconds
+Completed the key generation.
+time for gate evaluation 2001 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 20
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3290 milliseconds
+Completed the key generation.
+time for gate evaluation 2043 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 21
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3309 milliseconds
+Completed the key generation.
+time for gate evaluation 2047 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 22
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3438 milliseconds
+Completed the key generation.
+time for gate evaluation 2047 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 23
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3339 milliseconds
+Completed the key generation.
+time for gate evaluation 2001 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 24
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3283 milliseconds
+Completed the key generation.
+time for gate evaluation 2043 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 25
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3249 milliseconds
+Completed the key generation.
+time for gate evaluation 2270 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 26
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3559 milliseconds
+Completed the key generation.
+time for gate evaluation 2005 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 27
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3350 milliseconds
+Completed the key generation.
+time for gate evaluation 1999 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 28
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3360 milliseconds
+Completed the key generation.
+time for gate evaluation 2018 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 29
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3348 milliseconds
+Completed the key generation.
+time for gate evaluation 2010 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 30
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3281 milliseconds
+Completed the key generation.
+time for gate evaluation 2026 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 31
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3298 milliseconds
+Completed the key generation.
+time for gate evaluation 2015 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 32
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3331 milliseconds
+Completed the key generation.
+time for gate evaluation 2004 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 33
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3336 milliseconds
+Completed the key generation.
+time for gate evaluation 1999 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 34
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3256 milliseconds
+Completed the key generation.
+time for gate evaluation 2010 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 35
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3212 milliseconds
+Completed the key generation.
+time for gate evaluation 2014 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 36
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3307 milliseconds
+Completed the key generation.
+time for gate evaluation 2058 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 37
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3322 milliseconds
+Completed the key generation.
+time for gate evaluation 2018 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 38
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3214 milliseconds
+Completed the key generation.
+time for gate evaluation 2004 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 39
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3239 milliseconds
+Completed the key generation.
+time for gate evaluation 2325 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 40
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3294 milliseconds
+Completed the key generation.
+time for gate evaluation 1993 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 41
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3276 milliseconds
+Completed the key generation.
+time for gate evaluation 2023 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 42
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3299 milliseconds
+Completed the key generation.
+time for gate evaluation 2079 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 43
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3239 milliseconds
+Completed the key generation.
+time for gate evaluation 2014 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 44
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3280 milliseconds
+Completed the key generation.
+time for gate evaluation 2016 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 45
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3482 milliseconds
+Completed the key generation.
+time for gate evaluation 1992 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 46
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3275 milliseconds
+Completed the key generation.
+time for gate evaluation 2026 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 47
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3232 milliseconds
+Completed the key generation.
+time for gate evaluation 2016 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 48
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3244 milliseconds
+Completed the key generation.
+time for gate evaluation 2008 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 49
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3577 milliseconds
+Completed the key generation.
+time for gate evaluation 2029 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 50
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3612 milliseconds
+Completed the key generation.
+time for gate evaluation 2150 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 51
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3661 milliseconds
+Completed the key generation.
+time for gate evaluation 2109 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 52
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3667 milliseconds
+Completed the key generation.
+time for gate evaluation 2225 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 53
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3897 milliseconds
+Completed the key generation.
+time for gate evaluation 2043 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 54
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3597 milliseconds
+Completed the key generation.
+time for gate evaluation 2145 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 55
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3531 milliseconds
+Completed the key generation.
+time for gate evaluation 2070 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 56
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3420 milliseconds
+Completed the key generation.
+time for gate evaluation 1978 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 57
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3551 milliseconds
+Completed the key generation.
+time for gate evaluation 2004 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 58
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3321 milliseconds
+Completed the key generation.
+time for gate evaluation 2002 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 59
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3221 milliseconds
+Completed the key generation.
+time for gate evaluation 2005 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 60
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3307 milliseconds
+Completed the key generation.
+time for gate evaluation 2157 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 61
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3242 milliseconds
+Completed the key generation.
+time for gate evaluation 2027 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 62
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3192 milliseconds
+Completed the key generation.
+time for gate evaluation 2040 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 63
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3242 milliseconds
+Completed the key generation.
+time for gate evaluation 2000 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 64
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3299 milliseconds
+Completed the key generation.
+time for gate evaluation 2009 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 65
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3205 milliseconds
+Completed the key generation.
+time for gate evaluation 1971 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 66
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3194 milliseconds
+Completed the key generation.
+time for gate evaluation 1984 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 67
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3263 milliseconds
+Completed the key generation.
+time for gate evaluation 1975 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 68
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3256 milliseconds
+Completed the key generation.
+time for gate evaluation 2011 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 69
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3196 milliseconds
+Completed the key generation.
+time for gate evaluation 1980 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 70
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3255 milliseconds
+Completed the key generation.
+time for gate evaluation 2010 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 71
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3342 milliseconds
+Completed the key generation.
+time for gate evaluation 1953 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 72
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3602 milliseconds
+Completed the key generation.
+time for gate evaluation 2014 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 73
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3177 milliseconds
+Completed the key generation.
+time for gate evaluation 2071 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 74
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3187 milliseconds
+Completed the key generation.
+time for gate evaluation 1983 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 75
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3338 milliseconds
+Completed the key generation.
+time for gate evaluation 1931 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 76
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3344 milliseconds
+Completed the key generation.
+time for gate evaluation 1923 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 77
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3171 milliseconds
+Completed the key generation.
+time for gate evaluation 1985 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 78
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3228 milliseconds
+Completed the key generation.
+time for gate evaluation 1961 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 79
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3359 milliseconds
+Completed the key generation.
+time for gate evaluation 1976 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 80
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3294 milliseconds
+Completed the key generation.
+time for gate evaluation 1961 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 81
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3168 milliseconds
+Completed the key generation.
+time for gate evaluation 2095 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 82
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3361 milliseconds
+Completed the key generation.
+time for gate evaluation 2040 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 83
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3266 milliseconds
+Completed the key generation.
+time for gate evaluation 2024 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 84
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3739 milliseconds
+Completed the key generation.
+time for gate evaluation 2354 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 85
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3776 milliseconds
+Completed the key generation.
+time for gate evaluation 2388 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 86
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3285 milliseconds
+Completed the key generation.
+time for gate evaluation 1994 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 87
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3897 milliseconds
+Completed the key generation.
+time for gate evaluation 3554 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 88
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3187 milliseconds
+Completed the key generation.
+time for gate evaluation 1977 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 89
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3255 milliseconds
+Completed the key generation.
+time for gate evaluation 2062 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 90
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3228 milliseconds
+Completed the key generation.
+time for gate evaluation 1971 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 91
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3206 milliseconds
+Completed the key generation.
+time for gate evaluation 2235 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 92
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3181 milliseconds
+Completed the key generation.
+time for gate evaluation 1979 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 93
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3425 milliseconds
+Completed the key generation.
+time for gate evaluation 2120 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 94
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3583 milliseconds
+Completed the key generation.
+time for gate evaluation 2086 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 95
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3592 milliseconds
+Completed the key generation.
+time for gate evaluation 2731 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 96
+Generating the bootstrapping keys...
+time for bootstrapping key generation 4729 milliseconds
+Completed the key generation.
+time for gate evaluation 2010 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 97
+Generating the bootstrapping keys...
+time for bootstrapping key generation 3587 milliseconds
+Completed the key generation.
+time for gate evaluation 2252 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 98
+Generating the bootstrapping keys...
+time for bootstrapping key generation 7899 milliseconds
+Completed the key generation.
+time for gate evaluation 2168 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 99
+Generating the bootstrapping keys...
+time for bootstrapping key generation 4257 milliseconds
+Completed the key generation.
+time for gate evaluation 2544 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 100
+Generating the bootstrapping keys...
+time for bootstrapping key generation 4156 milliseconds
+Completed the key generation.
+time for gate evaluation 2338 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 101
+Generating the bootstrapping keys...
+time for bootstrapping key generation 4121 milliseconds
+Completed the key generation.
+time for gate evaluation 2376 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 102
+Generating the bootstrapping keys...
+time for bootstrapping key generation 4843 milliseconds
+Completed the key generation.
+time for gate evaluation 2236 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 103

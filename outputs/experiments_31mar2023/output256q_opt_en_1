@@ -1,0 +1,2713 @@
+iteration 1
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 10483 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 7
+time for gate evaluation 6541 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 2
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 10822 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 6703 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 3
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 10644 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 6694 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 4
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 10650 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 7
+keyswitching time 7
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 6573 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 5
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 11089 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 6808 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 6
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 10510 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 7
+keyswitching time 8
+time for gate evaluation 6871 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 7
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 11293 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 7257 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 8
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 11099 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 7
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 6957 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 9
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 11108 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 6839 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 10
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 11523 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 8844 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 11
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14759 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 11
+keyswitching time 10
+keyswitching time 50
+keyswitching time 15
+time for gate evaluation 15271 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 12
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 21535 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 11
+keyswitching time 9
+keyswitching time 10
+time for gate evaluation 9783 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 13
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 22608 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 10
+keyswitching time 9
+keyswitching time 9
+keyswitching time 12
+keyswitching time 10
+keyswitching time 9
+keyswitching time 10
+keyswitching time 10
+time for gate evaluation 9868 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 14
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 15712 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+keyswitching time 10
+time for gate evaluation 9300 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 15
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14265 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 10
+keyswitching time 10
+keyswitching time 14
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 9224 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 16
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13309 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8154 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 17
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13830 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 10
+keyswitching time 11
+keyswitching time 11
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8957 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 18
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13615 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 8290 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 19
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13487 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 8041 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 20
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13423 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 7918 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 21
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 15850 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+keyswitching time 11
+keyswitching time 10
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+time for gate evaluation 9139 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 22
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14544 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 10
+keyswitching time 9
+keyswitching time 10
+keyswitching time 12
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 9613 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 23
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14633 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 12
+keyswitching time 12
+time for gate evaluation 8381 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 24
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 16872 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 8105 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 25
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13052 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8334 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 26
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14340 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 11
+keyswitching time 11
+keyswitching time 12
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+time for gate evaluation 9533 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 27
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13891 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 10
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8656 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 28
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13080 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 7847 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 29
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12718 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 11
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 8045 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 30
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12553 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7846 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 31
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12681 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7898 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 32
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12676 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7713 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 33
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12794 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 11
+keyswitching time 10
+time for gate evaluation 9560 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 34
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14018 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 12
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 16
+keyswitching time 9
+time for gate evaluation 9414 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 35
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14742 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 12
+keyswitching time 9
+time for gate evaluation 8967 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 36
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13764 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 8247 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 37
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13093 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8088 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 38
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13437 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+keyswitching time 8
+time for gate evaluation 8192 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 39
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14307 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 10
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7996 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 40
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13397 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8257 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 41
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13344 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 8195 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 42
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13225 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 11
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 8414 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 43
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12997 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 8242 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 44
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13674 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+keyswitching time 11
+keyswitching time 10
+keyswitching time 10
+keyswitching time 10
+time for gate evaluation 9346 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 45
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 16201 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 11
+keyswitching time 12
+keyswitching time 10
+keyswitching time 10
+time for gate evaluation 9473 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 46
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14509 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8669 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 47
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14042 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8305 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 48
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13204 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 8180 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 49
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14332 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 14
+keyswitching time 10
+time for gate evaluation 8589 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 50
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 15824 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 10
+keyswitching time 10
+keyswitching time 10
+keyswitching time 9
+keyswitching time 9
+keyswitching time 14
+keyswitching time 12
+keyswitching time 10
+time for gate evaluation 9836 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 51
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 17759 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 10
+keyswitching time 10
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 9148 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 52
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 17338 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8288 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 53
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13275 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8195 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 54
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13698 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8875 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 55
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13598 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8232 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 56
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13188 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 8106 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 57
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13180 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 7921 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 58
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13050 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 8050 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 59
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12941 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 10
+time for gate evaluation 7858 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 60
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12600 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 7726 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 61
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12833 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 7850 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 62
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12683 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 7909 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 63
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12657 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 7850 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 64
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12517 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 7930 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 65
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12537 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 11
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+time for gate evaluation 8128 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 66
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12793 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7828 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 67
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12640 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 7802 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 68
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12739 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 10
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8012 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 69
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12425 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7683 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 70
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12341 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7931 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 71
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12422 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 14
+keyswitching time 10
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 8189 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 72
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12638 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 7810 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 73
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12663 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 7815 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 74
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12693 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7701 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 75
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12376 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7701 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 76
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12537 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 7703 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 77
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13044 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 7838 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 78
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12439 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 7939 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 79
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12718 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7898 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 80
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12643 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7663 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 81
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12774 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7646 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 82
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13043 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 7752 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 83
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12406 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 7801 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 84
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12450 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 7762 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 85
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12581 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7616 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 86
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12417 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+time for gate evaluation 7844 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 87
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12659 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 7887 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 88
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12742 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 10
+time for gate evaluation 7755 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 89
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12301 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+time for gate evaluation 7709 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 90
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12313 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 7646 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 91
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12601 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 7957 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 92
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12559 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 8
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 7805 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 93
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12371 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+time for gate evaluation 7829 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 94
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 17406 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 45
+keyswitching time 10
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 11183 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 95
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12671 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+time for gate evaluation 7857 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 96
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12491 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 8
+keyswitching time 9
+keyswitching time 9
+keyswitching time 8
+keyswitching time 10
+time for gate evaluation 7880 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 97
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 12691 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 8
+keyswitching time 9
+keyswitching time 12
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 10
+time for gate evaluation 8750 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 98
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 15395 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 11
+keyswitching time 9
+keyswitching time 13
+keyswitching time 12
+time for gate evaluation 9293 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 99
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14624 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 10
+keyswitching time 10
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 10
+time for gate evaluation 9217 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 100
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14796 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 9
+keyswitching time 10
+time for gate evaluation 8879 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 101
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14161 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 10
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 15
+keyswitching time 10
+keyswitching time 9
+time for gate evaluation 8802 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 102
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13033 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+keyswitching time 9
+time for gate evaluation 8077 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 103
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 14953 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 8
+keyswitching time 11
+keyswitching time 9
+keyswitching time 10
+keyswitching time 9
+keyswitching time 12
+keyswitching time 14
+time for gate evaluation 9539 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 104
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 15591 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400
+keyswitching time 9
+keyswitching time 9
+keyswitching time 12
+keyswitching time 10
+keyswitching time 9
+keyswitching time 10
+keyswitching time 12
+keyswitching time 9
+time for gate evaluation 8916 milliseconds
+Result of encrypted computation of AND(1, 0, 0) = 0
+Result of encrypted computation of AND(1, 1, 0) = 0
+Result of encrypted computation of AND(1, 1, 1) = 1
+Result of encrypted computation of AND(0, 0, 0) = 0
+Result of encrypted computation of OR(1, 0, 0) = 1
+Result of encrypted computation of OR(1, 1, 0) = 1
+Result of encrypted computation of OR(1, 1, 1) = 1
+Result of encrypted computation of OR(0, 0, 0) = 0
+iteration 105
+Generating the bootstrapping keys...
+bootstrapping key size: 368524894
+key switching key size: 552370213
+time for bootstrapping key generation 13901 milliseconds
+Completed the key generation.
+ciphertext size: 5637
+ciphertext modulus: 2048
+ciphertext dimension n: 1400

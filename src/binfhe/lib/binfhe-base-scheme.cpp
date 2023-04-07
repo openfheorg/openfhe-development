@@ -28,7 +28,7 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
+#define PROFILE
 #include "binfhe-base-scheme.h"
 
 #include <string>
@@ -157,7 +157,11 @@ LWECiphertext BinFHEScheme::EvalBinGateThreeInput(const std::shared_ptr<BinFHECr
         // Modulus switching to a middle step Q'
         auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
         // Key switching
+        TimeVar t;
+        TIC(t);
         auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
+        auto es = TOC_MS(t);
+        std::cout << "keyswitching time " << es << std::endl;
         // Modulus switching
         return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
     } else if (gate == CMUX) {

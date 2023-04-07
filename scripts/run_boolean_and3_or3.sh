@@ -1,7 +1,7 @@
 #!/bin/bash
 
-for k in {1..1000}
+for k in {1..150}
 do
   echo "iteration "$k
-  bin/examples/binfhe/boolean-4-AND-OR #single threaded
+  bin/examples/binfhe/boolean-3-AND-OR #single threaded
 done

@@ -97,7 +97,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(Q);
-
+    
     // Reduce mod q (dealing with negative number as well)
     int64_t mm       = (((m % q) + q) % q) * (2 * N / q);
     bool isReducedMM = false;

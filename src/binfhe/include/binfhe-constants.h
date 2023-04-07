@@ -59,6 +59,15 @@ enum BINFHE_PARAMSET {
                      // computer attacks - uses the same setup as HE standard
     STD128_3,
     STD128_AP_3,
+    STD128Q_3,
+    STD128Q_OPT_3,
+    STD128Q_OPT_3_en,
+    STD192Q_3,
+    STD192Q_OPT_3,
+    STD192Q_OPT_3_en,
+    STD256Q_3,
+    STD256Q_OPT_3,
+    STD256Q_OPT_3_en,
     STD128_OPT,      // more than 128 bits of security for classical computer attacks -
                      // optimize runtime by finding a non-power-of-two n
     STD192,          // more than 192 bits of security for classical computer attacks -
