@@ -84,7 +84,7 @@ int main() {
         ct1 = decomp[i];
         LWEPlaintext result;
         if (i == decomp.size() - 1) {
-            p = 2;
+            p = 8;
         }
         cc.Decrypt(sk, ct1, &result, p);
         std::cout << "(" << result << " * " << cc.GetMaxPlaintextSpace() << "^" << i << ")";
