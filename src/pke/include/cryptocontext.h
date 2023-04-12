@@ -2971,9 +2971,6 @@ public:
     static uint32_t SerializedVersion() {
         return 1;
     }
-
-protected:
-    std::vector<usint> m_autoIdxList;
 };
 
 // Member function specializations. Their implementations are in cryptocontext.cpp
