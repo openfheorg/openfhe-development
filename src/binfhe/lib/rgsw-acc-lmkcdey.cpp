@@ -42,13 +42,12 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
     int32_t mod = sv.GetModulus().ConvertToInt();
     int32_t modHalf = mod >> 1;
     uint32_t N = params->GetN();
+    uint32_t n = sv.GetLength();
 
-    uint32_t n                                = sv.GetLength();
-    RingGSWACCKey ek                          = 
-    // dim2, 0: for RGSW key, 1: for automorphism keys
+    // dim2, 0: for RGSW(X^si), 1: for automorphism keys
     // only w automorphism keys required
     // allocates (n - w) more memory for pointer (not critical for performance)
-    std::make_shared<RingGSWACCKeyImpl>(1, 2, n);  
+    RingGSWACCKey ek = std::make_shared<RingGSWACCKeyImpl>(1, 2, n);  
 
 #pragma omp parallel for
     for (size_t i = 0; i < n; ++i) {
@@ -80,18 +79,16 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
     uint32_t n      = a.GetLength();
     uint32_t Nh     = params->GetN() / 2;
     uint32_t M      = 2 * params->GetN();
-    auto q         = params->Getq();
 
-    // TODO: Accumulation of LMKCDEY
     NativeInteger MNative(M);
 
     auto logGen = params->GetLogGen();
     std::unordered_map<int32_t, std::vector<int32_t>> permuteMap;
 
     for (size_t i = 0; i < n; i++) { // put ail a_i in the permuteMap
+        // make it odd; round-to-odd(https://eprint.iacr.org/2022/198) will improve error.
         NativeInteger aI = MNative.ModSub(a[i], MNative);
         int32_t aIOdd = (aI.ConvertToInt()/2)*2+1; 
-        // make it odd; round-to-odd(https://eprint.iacr.org/2022/198) will improve error.
         int32_t index = logGen[aIOdd];
 
         if(permuteMap.find(index) == permuteMap.end()){
