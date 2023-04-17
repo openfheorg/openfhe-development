@@ -56,11 +56,15 @@ namespace lbcrypto {
  * @brief A class to represent field elements with power-of-2 dimension.
  */
 class Field2n : public std::vector<std::complex<double>>, public Serializable {
+private:
+    // Format of the field element
+    Format format{Format::COEFFICIENT};
+
 public:
     /**
    * @brief Default Constructor
    */
-    Field2n() : format(Format::COEFFICIENT) {}
+    constexpr Field2n() noexcept = default;
 
     explicit Field2n(Format f) : format(f) {}
 
@@ -72,10 +76,8 @@ public:
    * @param initializeElementToZero flag for initializing values to zero.  It is
    * set to false by default.
    */
-    Field2n(int size, Format f = Format::EVALUATION, bool initializeElementToZero = false)  // NOLINT
-        : std::vector<std::complex<double>>(size, initializeElementToZero ? 0 : -std::numeric_limits<double>::max()) {
-        this->format = f;
-    }
+    Field2n(usint size, Format f = Format::EVALUATION, bool initializeElementToZero = false)  // NOLINT
+        : std::vector<std::complex<double>>(size, initializeElementToZero ? 0 : -std::numeric_limits<double>::max()), format(f) {}
 
     /**
    * @brief Constructor from ring element
@@ -221,8 +223,8 @@ public:
    * @param &format the enum value corresponding to coefficient or evaluation
    * representation
    */
-    inline void SetFormat(Format format) {
-        if (this->format != format) {
+    inline void SetFormat(Format f) {
+        if (format != f) {
             SwitchFormat();
         }
     }
@@ -243,7 +245,7 @@ public:
    * @return element at the index
    */
     inline std::complex<double>& operator[](std::size_t idx) {
-        return (this->at(idx));
+        return (this->operator[](idx));
     }
 
     /**
@@ -253,7 +255,7 @@ public:
    * @return element at the index
    */
     inline const std::complex<double>& operator[](std::size_t idx) const {
-        return (this->at(idx));
+        return (this->operator[](idx));
     }
 
     /**
@@ -351,10 +353,6 @@ public:
     static uint32_t SerializedVersion() {
         return 1;
     }
-
-private:
-    // Format of the field element
-    Format format;
 };
 
 /**
