@@ -69,11 +69,6 @@
         #include "utils/memory.h"
 
         #include "utils/debug.h"
-// #ifdef WITH_INTEL_HEXL
-// #include "math/hal/intnat-hexl/backendnathexl.h"
-// #else
-// #include "math/hal/intnat/backendnat.h"
-// #endif
 
 /**
  *@namespace NTL

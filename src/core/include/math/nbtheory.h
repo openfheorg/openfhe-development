@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -41,16 +41,17 @@
  *    - Generator algorithm
  */
 
-#ifndef LBCRYPTO_MATH_NBTHEORY_H
-#define LBCRYPTO_MATH_NBTHEORY_H
+#ifndef LBCRYPTO_INC_MATH_NBTHEORY_H
+#define LBCRYPTO_INC_MATH_NBTHEORY_H
+
+#include "utils/inttypes.h"
+#include "utils/exception.h"
 
 #include <memory>
 #include <random>
 #include <set>
-#include <string>
+// #include <string>
 #include <vector>
-#include "utils/inttypes.h"
-#include "utils/exception.h"
 
 namespace {  // to define local (or C-style static) functions here
 

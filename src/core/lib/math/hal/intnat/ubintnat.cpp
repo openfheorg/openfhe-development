@@ -52,6 +52,6 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
 }
 
 // to stream internal representation
-template std::ostream& operator<<<uint64_t>(std::ostream& os, const std::vector<uint64_t>& v);
+template std::ostream& operator<< <uint64_t>(std::ostream& os, const std::vector<uint64_t>& v);
 
 }  // namespace intnat

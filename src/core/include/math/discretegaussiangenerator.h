@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -63,33 +63,27 @@
  * It should be also noted that the memory requirement grows with the standard
  * deviation, therefore it is advised to use it with smaller deviations.   */
 
-#ifndef LBCRYPTO_MATH_DISCRETEGAUSSIANGENERATOR_H_
-#define LBCRYPTO_MATH_DISCRETEGAUSSIANGENERATOR_H_
+#ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_H_
+#define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_H_
 
 #define _USE_MATH_DEFINES  // added for Visual Studio support
 
-#include <math.h>
+#include "math/hal.h"
+#include "math/distributiongenerator.h"
+
 #include <memory>
 #include <random>
 #include <vector>
-
-#include "math/hal.h"
-#include "math/distributiongenerator.h"
 
 namespace lbcrypto {
 
 const double KARNEY_THRESHOLD = 300;
 
-template <typename VecType>
-class DiscreteGaussianGeneratorImpl;
-
-typedef DiscreteGaussianGeneratorImpl<BigVector> DiscreteGaussianGenerator;
-
 /**
  * @brief The class for Discrete Gaussion Distribution generator.
  */
 template <typename VecType>
-class DiscreteGaussianGeneratorImpl : public DistributionGenerator<VecType> {
+class DiscreteGaussianGeneratorImpl {
 public:
     /**
    * @brief         Basic constructor for specifying distribution parameter and
@@ -102,7 +96,7 @@ public:
     /**
    * @brief Destructor
    */
-    ~DiscreteGaussianGeneratorImpl() {}
+    ~DiscreteGaussianGeneratorImpl() = default;
 
     /**
      * @brief Check if the gaussian generator has been initialized with a standard deviation
@@ -271,6 +265,8 @@ private:
     double m_std;
     bool peikert = false;
 };
+
+typedef DiscreteGaussianGeneratorImpl<BigVector> DiscreteGaussianGenerator;
 
 }  // namespace lbcrypto
 

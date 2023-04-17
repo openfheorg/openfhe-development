@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,20 +33,21 @@
   This code contains the discrete fourier transform definitions
  */
 
-#ifndef LBCRYPTO_MATH_DFTRANSFORM_H
-#define LBCRYPTO_MATH_DFTRANSFORM_H
+#ifndef LBCRYPTO_INC_MATH_DFTRANSFORM_H
+#define LBCRYPTO_INC_MATH_DFTRANSFORM_H
 
-#include <time.h>
-#include <chrono>
+// #include "math/hal.h"
+// #include "math/nbtheory.h"
+
+// #include "utils/utilities.h"
+
+// #include <time.h>
+// #include <chrono>
 #include <complex>
-#include <fstream>
-#include <map>
-#include <thread>
+// #include <fstream>
+// #include <map>
+// #include <thread>
 #include <vector>
-
-#include "math/hal.h"
-#include "math/nbtheory.h"
-#include "utils/utilities.h"
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846

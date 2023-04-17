@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,8 +33,8 @@
   This file contains the functionality to switch between math backends
  */
 
-#ifndef LBCRYPTO_MATH_HAL_H
-#define LBCRYPTO_MATH_HAL_H
+#ifndef LBCRYPTO_INC_MATH_HAL_H
+#define LBCRYPTO_INC_MATH_HAL_H
 
 // use of MS VC is not permitted because of various incompatibilities
 #ifdef _MSC_VER
@@ -45,12 +45,12 @@
 #include "version.h"
 
 #include "math/hal/vector.h"
-#include "utils/debug.h"
-#include "utils/exception.h"
-#include "utils/memory.h"
-#include "utils/openfhebase64.h"
-#include "utils/parallel.h"
-#include "utils/serializable.h"
+// #include "utils/debug.h"
+// #include "utils/exception.h"
+// #include "utils/memory.h"
+// #include "utils/openfhebase64.h"
+// #include "utils/parallel.h"
+// #include "utils/serializable.h"
 
 #include "math/hal/bigintbackend.h"
 #include "math/hal/nativeintbackend.h"
@@ -62,17 +62,11 @@ using BigVector  = bigintbackend::BigVector;
 }  // namespace lbcrypto
 
 //==============================================================================================
-#ifdef WITH_INTEL_HEXL
-template <typename VecType>
-using NatChineseRemainderTransformFTT = intnathexl::ChineseRemainderTransformFTTNat<VecType>;
-template <typename VecType>
-using NatChineseRemainderTransformArb = intnathexl::ChineseRemainderTransformArbNat<VecType>;
-#else
+// TODO: total hack ... move this!!!!!
 template <typename VecType>
 using NatChineseRemainderTransformFTT = intnat::ChineseRemainderTransformFTTNat<VecType>;
 template <typename VecType>
 using NatChineseRemainderTransformArb = intnat::ChineseRemainderTransformArbNat<VecType>;
-#endif
 
 //==============================================================================================
 

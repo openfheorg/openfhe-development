@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -35,12 +35,17 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
-#ifndef _SRC_LIB_CRYPTO_SIGNATURE_TRAPDOOR_CPP
-#define _SRC_LIB_CRYPTO_SIGNATURE_TRAPDOOR_CPP
+#ifndef LBCRYPTO_INC_LATTICE_TRAPDOOR_IMPL_H
+#define LBCRYPTO_INC_LATTICE_TRAPDOOR_IMPL_H
+
+#include "lattice/lat-hal.h"
+#include "lattice/trapdoor.h"
+
+#include "math/matrix-impl.h"
+
+#include "utils/debug.h"
 
 #include <memory>
-
-#include "lattice/trapdoor.h"
 
 namespace lbcrypto {
 
@@ -250,4 +255,5 @@ inline void RLWETrapdoorUtility<DCRTPoly>::ZSampleSigmaP(size_t n, double s, dou
 }
 
 }  // namespace lbcrypto
+
 #endif

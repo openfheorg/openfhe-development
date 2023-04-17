@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,21 +33,21 @@
   matrix class implementations and type specific implementations
  */
 
-#ifndef _SRC_LIB_CORE_MATH_MATRIX_IMPL_CPP
-#define _SRC_LIB_CORE_MATH_MATRIX_IMPL_CPP
+#ifndef LBCRYPTO_LIB_MATH_MATRIX_CPP
+#define LBCRYPTO_LIB_MATH_MATRIX_CPP
 
 #include "lattice/field2n.h"
-#include "math/matrix.cpp"  // NOLINT
-#include "math/matrixstrassen.h"
+
+#include "math/hal.h"
+#include "math/matrix-impl.h"
+
+#include "utils/exception.h"
+#include "utils/parallel.h"
 
 // this is the implementation of matrixes of things that are in core
 // and that need template specializations
 
 namespace lbcrypto {
-
-template class Matrix<double>;
-template class Matrix<int>;
-template class Matrix<int64_t>;
 
 #define MODEQ_FOR_TYPE(T)                             \
     template <>                                       \
@@ -230,6 +230,10 @@ void Matrix<Field2n>::SwitchFormat() {
         }
     }
 }
+
+template class Matrix<double>;
+template class Matrix<int>;
+template class Matrix<int64_t>;
 
 }  // namespace lbcrypto
 

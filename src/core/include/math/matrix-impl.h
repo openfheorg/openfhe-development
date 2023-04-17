@@ -33,10 +33,13 @@
   This code provide a templated matrix implementation
  */
 
-#ifndef _SRC_LIB_CORE_MATH_MATRIX_CPP
-#define _SRC_LIB_CORE_MATH_MATRIX_CPP
+#ifndef LBCRYPTO_INC_MATH_MATRIX_IMP_H
+#define LBCRYPTO_INC_MATH_MATRIX_IMP_H
 
 #include "math/matrix.h"
+
+#include "utils/exception.h"
+#include "utils/parallel.h"
 
 #include <utility>
 #include <vector>
@@ -112,7 +115,6 @@ Matrix<Element>& Matrix<Element>::operator+=(Matrix<Element> const& other) {
             data[i][j] += other.data[i][j];
         }
     }
-
     return *this;
 }
 
@@ -127,7 +129,6 @@ Matrix<Element>& Matrix<Element>::operator-=(Matrix<Element> const& other) {
             data[i][j] -= other.data[i][j];
         }
     }
-
     return *this;
 }
 
@@ -313,7 +314,6 @@ Matrix<Element> Matrix<Element>::MultByUnityVector() const {
             result.data[row][0] += data[row][col];
         }
     }
-
     return result;
 }
 

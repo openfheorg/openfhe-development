@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,9 +33,14 @@
   matrix strassen operations
  */
 
+#ifndef LBCRYPTO_INC_MATH_MATRIXSTRASSEN_IMPL_H
+#define LBCRYPTO_INC_MATH_MATRIXSTRASSEN_IMPL_H
+
 #include "math/matrixstrassen.h"
+
 #include "utils/parallel.h"
 
+#include <assert.h>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -1224,3 +1229,5 @@ long long MatrixStrassen<Element>::numEntriesPerProc(MatDescriptor desc) const {
 }
 
 }  // namespace lbcrypto
+
+#endif

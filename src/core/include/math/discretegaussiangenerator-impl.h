@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -34,26 +34,35 @@
   the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
+#ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
+#define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
+
+// #include "math/hal.h"
+#include "math/discretegaussiangenerator.h"
+// #include "math/nbtheory.h"
+
+#include "utils/debug.h"
+#include "utils/exception.h"
+
+#include <cmath>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-
-#include "math/hal.h"
-#include "math/discretegaussiangenerator.h"
-#include "math/nbtheory.h"
 
 namespace lbcrypto {
 
+// cast float then used to compare with double?
 #define KARNEY_THRESHOLD ((float)300.0)
+// #define KARNEY_THRESHOLD 300.0f
 
 template <typename VecType>
-DiscreteGaussianGeneratorImpl<VecType>::DiscreteGaussianGeneratorImpl(double std) : DistributionGenerator<VecType>() {
+DiscreteGaussianGeneratorImpl<VecType>::DiscreteGaussianGeneratorImpl(double std) {
     SetStd(std);
 }
 
 template <typename VecType>
 bool DiscreteGaussianGeneratorImpl<VecType>::IsInitialized() const {
-    return ((m_std - 1) > 1e-9) ? true : false;
+    return ((m_std - 1) > 1e-9);
 }
 template <typename VecType>
 void DiscreteGaussianGeneratorImpl<VecType>::SetStd(double std) {
@@ -490,4 +499,7 @@ bool DiscreteGaussianGeneratorImpl<VecType>::AlgorithmBDouble(PRNG& g, int32_t k
 
     return (n % 2) == 0;
 }
+
 }  // namespace lbcrypto
+
+#endif

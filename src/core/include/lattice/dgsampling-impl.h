@@ -35,10 +35,13 @@
   https://eprint.iacr.org/2018/1222.pdf
  */
 
-#ifndef _SRC_LIB_TRAPDOOR_DGSAMPLING_CPP
-#define _SRC_LIB_TRAPDOOR_DGSAMPLING_CPP
+#ifndef LBCRYPTO_INC_LATTICE_DGSAMPLING_IMPL_H
+#define LBCRYPTO_INC_LATTICE_DGSAMPLING_IMPL_H
 
 #include "lattice/dgsampling.h"
+
+#include "utils/inttypes.h"
+#include "utils/parallel.h"
 
 #include <memory>
 #include <vector>

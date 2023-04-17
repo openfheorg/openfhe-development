@@ -36,9 +36,13 @@
 //            declared in math/bigintfxd/transformfxd.h and
 //            MUST be included in the end of math/bigintfxd/transformfxd.h ONLY
 //            and nowhere else
+
+#include "math/nbtheory.h"
+
+#include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/utilities.h"
-#include "math/nbtheory.h"
+
 #include <map>
 #include <vector>
 

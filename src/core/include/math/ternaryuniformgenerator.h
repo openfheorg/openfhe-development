@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,34 +33,31 @@
   This code provides generation of a uniform distribution of binary values (modulus 2)
  */
 
-#ifndef LBCRYPTO_MATH_TERNARYUNIFORMGENERATOR_H_
-#define LBCRYPTO_MATH_TERNARYUNIFORMGENERATOR_H_
+#ifndef LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
+#define LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
+
+#include "math/distributiongenerator.h"
+#include "math/hal.h"
 
 #include <memory>
 #include <random>
-#include "math/distributiongenerator.h"
 
 namespace lbcrypto {
-
-template <typename VecType>
-class TernaryUniformGeneratorImpl;
-
-typedef TernaryUniformGeneratorImpl<BigVector> TernaryUniformGenerator;
 
 /**
  * @brief A generator of the Ternary Uniform Distribution.
  */
 template <typename VecType>
-class TernaryUniformGeneratorImpl : public DistributionGenerator<VecType> {
+class TernaryUniformGeneratorImpl {
 public:
     /**
    * @brief Basic constructor for Binary Uniform Generator.
    */
-    TernaryUniformGeneratorImpl() : DistributionGenerator<VecType>() {}
-    virtual ~TernaryUniformGeneratorImpl() {}
+    TernaryUniformGeneratorImpl()  = default;
+    ~TernaryUniformGeneratorImpl() = default;
 
     typename VecType::Integer GenerateInteger(const typename VecType::Integer&) const {
-        return (0);
+        return 0;
     }
 
     /**
@@ -88,6 +85,8 @@ private:
     static std::uniform_int_distribution<int> m_distribution;
 };
 
+typedef TernaryUniformGeneratorImpl<BigVector> TernaryUniformGenerator;
+
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_MATH_TERNARYUNIFORMGENERATOR_H_
+#endif  // LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_

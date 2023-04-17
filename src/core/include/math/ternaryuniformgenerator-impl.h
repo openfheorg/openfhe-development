@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,11 +33,16 @@
   This code provides generation of a uniform distribution of binary values (modulus 2)
  */
 
-#include <random>
-#include <memory>
+#ifndef LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_
+#define LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_IMPL_H_
 
 #include "math/binaryuniformgenerator.h"
 #include "math/ternaryuniformgenerator.h"
+
+#include "utils/inttypes.h"
+
+#include <memory>
+#include <random>
 
 namespace lbcrypto {
 
@@ -149,8 +154,9 @@ std::shared_ptr<int32_t> TernaryUniformGeneratorImpl<VecType>::GenerateIntVector
             }
         }
     }
-
     return ans;
 }
 
 }  // namespace lbcrypto
+
+#endif

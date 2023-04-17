@@ -36,14 +36,16 @@
 #ifndef LBCRYPTO_LATTICE_ELEMPARAMS_H
 #define LBCRYPTO_LATTICE_ELEMPARAMS_H
 
-#include <iostream>
-#include <string>
-#include <utility>
-
 #include "math/hal.h"
 #include "math/nbtheory.h"
+
+#include "utils/exception.h"
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
+
+// #include <iostream>
+#include <string>
+#include <utility>
 
 namespace lbcrypto {
 
@@ -67,46 +69,45 @@ public:
    * operations.
    * @param bigRUnity the big root of unity used for bit packing operations.
    */
+
+    // uint64_t GetTotient(const uint64_t n) but order/ringdimension are usint?
     ElemParams(usint order, const IntegerType& ctModulus, const IntegerType& rUnity = IntegerType(0),
-               const IntegerType& bigCtModulus = IntegerType(0), const IntegerType& bigRUnity = IntegerType(0)) {
-        cyclotomicOrder      = order;
-        ringDimension        = GetTotient(order);
-        isPowerOfTwo         = ringDimension == cyclotomicOrder / 2;
-        ciphertextModulus    = ctModulus;
-        rootOfUnity          = rUnity;
-        bigCiphertextModulus = bigCtModulus;
-        bigRootOfUnity       = bigRUnity;
-    }
+               const IntegerType& bigCtModulus = IntegerType(0), const IntegerType& bigRUnity = IntegerType(0))
+        : cyclotomicOrder(order),
+          ringDimension(GetTotient(order)),
+          isPowerOfTwo(ringDimension == cyclotomicOrder / 2),
+          ciphertextModulus(ctModulus),
+          rootOfUnity(rUnity),
+          bigCiphertextModulus(bigCtModulus),
+          bigRootOfUnity(bigRUnity) {}
 
     /**
    * @brief Copy constructor using assignment to copy wrapped elements.
    * @param rhs the input ElemParams copied.
    * @return the resulting parameter set with parameters copied.
    */
-    ElemParams(const ElemParams& rhs) {
-        cyclotomicOrder      = rhs.cyclotomicOrder;
-        ringDimension        = rhs.ringDimension;
-        isPowerOfTwo         = rhs.isPowerOfTwo;
-        ciphertextModulus    = rhs.ciphertextModulus;
-        rootOfUnity          = rhs.rootOfUnity;
-        bigCiphertextModulus = rhs.bigCiphertextModulus;
-        bigRootOfUnity       = rhs.bigRootOfUnity;
-    }
+    ElemParams(const ElemParams& rhs)
+        : cyclotomicOrder(rhs.cyclotomicOrder),
+          ringDimension(rhs.ringDimension),
+          isPowerOfTwo(rhs.isPowerOfTwo),
+          ciphertextModulus(rhs.ciphertextModulus),
+          rootOfUnity(rhs.rootOfUnity),
+          bigCiphertextModulus(rhs.bigCiphertextModulus),
+          bigRootOfUnity(rhs.bigRootOfUnity) {}
 
     /**
    * @brief Copy constructor using move semnantics to copy wrapped elements.
    * @param rhs the input ElemParams copied.
    * @return the resulting copy of the parameter set.
    */
-    ElemParams(const ElemParams&& rhs) {
-        cyclotomicOrder      = rhs.cyclotomicOrder;
-        ringDimension        = rhs.ringDimension;
-        isPowerOfTwo         = rhs.isPowerOfTwo;
-        ciphertextModulus    = std::move(rhs.ciphertextModulus);
-        rootOfUnity          = std::move(rhs.rootOfUnity);
-        bigCiphertextModulus = std::move(rhs.bigCiphertextModulus);
-        bigRootOfUnity       = std::move(rhs.bigRootOfUnity);
-    }
+    ElemParams(const ElemParams&& rhs)
+        : cyclotomicOrder(rhs.cyclotomicOrder),
+          ringDimension(rhs.ringDimension),
+          isPowerOfTwo(rhs.isPowerOfTwo),
+          ciphertextModulus(std::move(rhs.ciphertextModulus)),
+          rootOfUnity(std::move(rhs.rootOfUnity)),
+          bigCiphertextModulus(std::move(rhs.bigCiphertextModulus)),
+          bigRootOfUnity(std::move(rhs.bigRootOfUnity)) {}
 
     /**
    * @brief Assignment operator using assignment operations of wrapped elements.
@@ -127,7 +128,7 @@ public:
    * @brief Simple destructor method.
    * @return
    */
-    virtual ~ElemParams() {}
+    virtual ~ElemParams() = default;
 
     /**
    * @brief Simple getter method for cyclotomic order.
@@ -247,7 +248,7 @@ public:
         ar(::cereal::make_nvp("br", bigRootOfUnity));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "ElemParams";
     }
     static uint32_t SerializedVersion() {

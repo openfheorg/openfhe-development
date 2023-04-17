@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -34,15 +34,16 @@
   https://eprint.iacr.org/2018/946, and "Implementing Token-Based Obfuscation under (Ring) LWE" (not publicly available yet)
  */
 
-#ifndef LBCRYPTO_OBFMATH_DGSAMPLING_H
-#define LBCRYPTO_OBFMATH_DGSAMPLING_H
+#ifndef LBCRYPTO_INC_LATTICE_DGSAMPLING_H
+#define LBCRYPTO_INC_LATTICE_DGSAMPLING_H
+
+#include "lattice/field2n.h"
+
+#include "math/matrix.h"
+#include "math/nbtheory.h"
 
 #include <memory>
 #include <vector>
-
-#include "lattice/field2n.h"
-#include "math/matrix.h"
-#include "math/nbtheory.h"
 
 namespace lbcrypto {
 

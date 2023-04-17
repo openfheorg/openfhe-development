@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,8 +33,19 @@
   implementation of the power-of-2 fields
  */
 
-#include "lattice/field2n.h"
+#ifndef LBCRYPTO_INC_LATTICE_FIELD2N_IMPL_H
+#define LBCRYPTO_INC_LATTICE_FIELD2N_IMPL_H
 
+#include "lattice/field2n.h"
+#include "lattice/lat-hal.h"
+
+#include "math/dftransform.h"
+#include "math/hal.h"
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+
+#include <complex>
 #include <vector>
 
 namespace lbcrypto {
@@ -347,6 +358,7 @@ void Field2n::SwitchFormat() {
         format = Format::COEFFICIENT;
     }
 }
+
 }  // namespace lbcrypto
 
-CEREAL_CLASS_VERSION(lbcrypto::Field2n, lbcrypto::Field2n::SerializedVersion());
+#endif

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,9 +33,19 @@
   parameters for generalized double-crt parameters
  */
 
-#include <memory>
+#ifndef LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_IMPL_H
+#define LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_IMPL_H
 
+#include "lattice/elemparams.h"
 #include "lattice/ildcrtparams.h"
+
+#include "math/hal.h"
+#include "math/nbtheory-impl.h"
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+
+#include <memory>
 
 namespace lbcrypto {
 
@@ -68,9 +78,4 @@ ILDCRTParams<IntType>::ILDCRTParams(usint order, usint depth, usint bits) : Elem
 
 }  // namespace lbcrypto
 
-CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M2Integer>, lbcrypto::ILDCRTParams<M2Integer>::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M4Integer>, lbcrypto::ILDCRTParams<M4Integer>::SerializedVersion());
-#ifdef WITH_NTL
-CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M6Integer>, lbcrypto::ILDCRTParams<M6Integer>::SerializedVersion());
 #endif
-CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<NativeInteger>, lbcrypto::ILDCRTParams<NativeInteger>::SerializedVersion());

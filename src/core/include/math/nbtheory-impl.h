@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,22 +33,26 @@
   This code provides number theory utilities
  */
 
+#ifndef LBCRYPTO_INC_MATH_NBTHEORY_IMPL_H
+#define LBCRYPTO_INC_MATH_NBTHEORY_IMPL_H
+
 #define _USE_MATH_DEFINES
-
-#include <time.h>
-#include <cmath>
-
-#include <chrono>
-#include <sstream>
-#include <limits>
-#include <string>
-#include <set>
-#include <vector>
 
 #include "math/distributiongenerator.h"
 #include "math/nbtheory.h"
 
 #include "utils/debug.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+
+// #include <time.h>
+#include <cmath>
+// #include <chrono>
+#include <limits>
+#include <set>
+// #include <sstream>
+#include <string>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -739,3 +743,5 @@ IntVector SyntheticPolynomialDivision(const IntVector& dividend, const typename 
 }
 
 }  // namespace lbcrypto
+
+#endif

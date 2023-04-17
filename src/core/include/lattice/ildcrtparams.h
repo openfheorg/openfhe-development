@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,18 +33,22 @@
   Wraps parameters for integer lattice operations using double-CRT representation. Inherits from ElemParams
  */
 
-#ifndef __ILDCRTPARAMS_H__
-#define __ILDCRTPARAMS_H__
+#ifndef LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_H
+#define LBCRYPTO_INC_LATTICE_ILDCRTPARAMS_H
+
+#include "lattice/elemparams.h"
+#include "lattice/ilparams.h"
+
+#include "math/hal.h"
+#include "math/nbtheory.h"
+
+#include "utils/debug.h"
+#include "utils/exception.h"
+#include "utils/inttypes.h"
 
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "lattice/elemparams.h"
-#include "lattice/ilparams.h"
-#include "math/hal.h"
-#include "math/nbtheory.h"
-#include "utils/inttypes.h"
 
 namespace lbcrypto {
 
@@ -61,7 +65,7 @@ namespace lbcrypto {
  * Heidelberg
  */
 template <typename IntType>
-class ILDCRTParams : public ElemParams<IntType> {
+class ILDCRTParams final : public ElemParams<IntType> {
 public:
     static const usint DEFAULT_NBITS = 20;
 
@@ -84,6 +88,8 @@ public:
    * @param &modulus is the modulus for the primary ciphertext.
    * @param rootsOfUnity is unused
    */
+
+    // root of unity unused?
     ILDCRTParams(const usint cyclotomic_order, const IntType& modulus, const IntType& rootOfUnity)
         : ElemParams<IntType>(cyclotomic_order, modulus, 0, 0, 0) {
         // NOTE parms generation uses this constructor to make an empty parms that
@@ -145,7 +151,7 @@ public:
                  const std::vector<NativeInteger>& rootsOfUnityBig = {},
                  const IntType& inputOriginalModulus               = IntType(0))
         : ElemParams<IntType>(cyclotomic_order, 0, 0, 0, 0) {
-        this->originalModulus = inputOriginalModulus;
+        originalModulus = inputOriginalModulus;
         if (moduli.size() != rootsOfUnity.size()) {
             OPENFHE_THROW(math_error, "sizes of moduli and roots of unity do not match");
         }
@@ -155,7 +161,6 @@ public:
                 m_parms.push_back(std::make_shared<ILNativeParams>(cyclotomic_order, moduli[i], rootsOfUnity[i],
                                                                    moduliBig[i], rootsOfUnityBig[i]));
             }
-            RecalculateBigModulus();
         }
         else {
             for (size_t i = 0; i < moduli.size(); i++) {
@@ -176,8 +181,7 @@ public:
     ILDCRTParams(const usint cyclotomic_order, const std::vector<NativeInteger>& moduli,
                  const IntType& inputOriginalModulus = IntType(0))
         : ElemParams<IntType>(cyclotomic_order, 0, 0, 0, 0) {
-        this->originalModulus = inputOriginalModulus;
-
+        originalModulus = inputOriginalModulus;
         for (size_t i = 0; i < moduli.size(); i++) {
             m_parms.push_back(std::make_shared<ILNativeParams>(cyclotomic_order, moduli[i], 0, 0, 0));
         }
@@ -195,8 +199,7 @@ public:
     ILDCRTParams(const usint cyclotomic_order, std::vector<std::shared_ptr<ILNativeParams>>& parms,
                  const IntType& inputOriginalModulus = IntType(0))
         : ElemParams<IntType>(cyclotomic_order, 0, 0, 0, 0), m_parms(parms) {
-        this->originalModulus = inputOriginalModulus;
-
+        originalModulus = inputOriginalModulus;
         RecalculateModulus();
     }
 
@@ -208,10 +211,8 @@ public:
    */
     const ILDCRTParams& operator=(const ILDCRTParams& rhs) {
         ElemParams<IntType>::operator=(rhs);
-        originalModulus              = rhs.originalModulus;
-
-        m_parms = rhs.m_parms;
-
+        originalModulus = rhs.originalModulus;
+        m_parms         = rhs.m_parms;
         return *this;
     }
 
@@ -232,20 +233,14 @@ public:
    * @return A vector of the component polynomial parameters.
    */
     std::vector<std::shared_ptr<ILNativeParams>> GetParamPartition(uint32_t start, uint32_t end) const {
-        if (end < start || end > this->GetParams().size()) {
+        if (end < start || end >= m_parms.size()) {
             OPENFHE_THROW(math_error, "Incorrect parameters for GetParamPartition - (start: " + std::to_string(start) +
                                           ", end:" + std::to_string(end) + ")");
         }
 
-        std::vector<std::shared_ptr<ILNativeParams>> resParams =
-            std::vector<std::shared_ptr<ILNativeParams>>(end - start + 1);
-
-        IntType q = IntType(1);
-        for (uint32_t i = 0; i <= (end - start); i++) {
-            resParams[i] = this->GetParams()[i + start];
-            q            = q.Mul(IntType(this->GetParams()[i + start]->GetModulus()));
-        }
-
+        std::vector<std::shared_ptr<ILNativeParams>> resParams;
+        for (uint32_t i = start; i <= end; ++i)
+            resParams.push_back(m_parms[i]);
         return resParams;
     }
 
@@ -296,7 +291,7 @@ public:
     /**
    * Destructor.
    */
-    ~ILDCRTParams() {}
+    ~ILDCRTParams() override = default;
 
     /**
    * @brief Equality operator checks if the ElemParams are the same.
@@ -304,7 +299,7 @@ public:
    * @param &other ElemParams to compare against.
    * @return the equality check results.
    */
-    bool operator==(const ElemParams<IntType>& other) const {
+    bool operator==(const ElemParams<IntType>& other) const override {
         const auto* dcrtParams = dynamic_cast<const ILDCRTParams*>(&other);
 
         if (dcrtParams == nullptr)
@@ -370,7 +365,7 @@ public:
         ar(::cereal::make_nvp("m", originalModulus));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "DCRTParams";
     }
     static uint32_t SerializedVersion() {
@@ -378,7 +373,7 @@ public:
     }
 
 private:
-    std::ostream& doprint(std::ostream& out) const {
+    std::ostream& doprint(std::ostream& out) const override {
         out << "ILDCRTParams ";
         ElemParams<IntType>::doprint(out);
         out << std::endl << " Parms:" << std::endl;
@@ -389,17 +384,17 @@ private:
         return out;
     }
 
-    // array of smaller ILParams
-    std::vector<std::shared_ptr<ILNativeParams>> m_parms;
-
     // original modulus when being constructed from a Poly or when
     // ctor is passed that parameter
     // note orignalModulus will be <= composite modules
     //   i.e. \Prod_i=0^k-1 m_params[i]->GetModulus()
     // note not using ElemParams::ciphertextModulus due to object stripping
     Integer originalModulus;
+
+    // array of smaller ILParams
+    std::vector<std::shared_ptr<ILNativeParams>> m_parms;
 };
 
 }  // namespace lbcrypto
 
-#endif  // __ILDCRTPARAMS_H__
+#endif

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,12 +33,31 @@
   Defines aliases for the lattice default backend
  */
 
-#ifndef __LAT_BACKEND_DEFAULT_H__
-#define __LAT_BACKEND_DEFAULT_H__
+#ifndef LBCRYPTO_INC_LATTICE_HAL_LAT_BACKEND_H
+#define LBCRYPTO_INC_LATTICE_HAL_LAT_BACKEND_H
 
+#define POLY_IMPLEMENTATION     "lattice/hal/default/poly-impl.h"
+#define DCRTPOLY_IMPLEMENTATION "lattice/hal/default/dcrtpoly-impl.h"
+
+#define MAKE_POLY_TYPE(T)     template class PolyImpl<T>;
+#define MAKE_DCRTPOLY_TYPE(T) template class DCRTPolyImpl<T>;
+
+#include "lattice/hal/default/poly.h"
 #include "lattice/hal/default/dcrtpoly.h"
 
 namespace lbcrypto {
+
+using M2Poly = PolyImpl<M2Vector>;
+using M4Poly = PolyImpl<M4Vector>;
+#ifdef WITH_NTL
+using M6Poly = PolyImpl<M6Vector>;
+#else
+using M6Poly     = void;
+#endif
+
+using Poly         = PolyImpl<BigVector>;
+using NativePoly   = PolyImpl<NativeVector>;
+using NativePoly64 = NativePoly;
 
 using M2DCRTPoly = DCRTPolyImpl<M2Vector>;
 using M4DCRTPoly = DCRTPolyImpl<M4Vector>;
@@ -52,4 +71,4 @@ using DCRTPoly = DCRTPolyImpl<BigVector>;
 
 }  // namespace lbcrypto
 
-#endif  // __LAT_BACKEND_DEFAULT_H__
+#endif

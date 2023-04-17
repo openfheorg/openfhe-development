@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,14 +33,20 @@
   matrix strassen operations
  */
 
-#ifndef LBCRYPTO_MATH_MATRIXSTRASSEN_H
-#define LBCRYPTO_MATH_MATRIXSTRASSEN_H
+#ifndef LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
+#define LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H
 
-#include <assert.h>
+#include "lattice/lat-hal.h"
+
+#include "utils/exception.h"
+#include "utils/parallel.h"
+
+// #include <cmath>
+#include <functional>
+// #include <iostream>
 #include <memory>
+#include <utility>
 #include <vector>
-
-#include "math/matrix.h"
 
 namespace lbcrypto {
 
@@ -631,4 +637,5 @@ inline MatrixStrassen<Poly> SplitInt32IntoPolyElements(MatrixStrassen<int32_t> c
 inline MatrixStrassen<Poly> SplitInt32AltIntoPolyElements(MatrixStrassen<int32_t> const& other, size_t n,
                                                           const std::shared_ptr<ILParams> params);
 }  // namespace lbcrypto
-#endif  // LBCRYPTO_MATH_MATRIXSTRASSEN_H
+
+#endif  // LBCRYPTO_INC_MATH_MATRIXSTRASSEN_H

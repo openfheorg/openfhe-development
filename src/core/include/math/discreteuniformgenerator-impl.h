@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -34,12 +34,17 @@
   the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#include <bitset>
-#include <sstream>
+#ifndef LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_IMPL_H_
+#define LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_IMPL_H_
 
-#include "math/hal.h"
+// #include "math/hal.h"
 #include "math/discreteuniformgenerator.h"
 #include "math/distributiongenerator.h"
+
+#include "utils/inttypes.h"
+
+// #include <bitset>
+// #include <sstream>
 
 namespace lbcrypto {
 
@@ -48,7 +53,7 @@ std::uniform_int_distribution<uint32_t> DiscreteUniformGeneratorImpl<VecType>::m
     std::uniform_int_distribution<uint32_t>(CHUNK_MIN, CHUNK_MAX);
 
 template <typename VecType>
-DiscreteUniformGeneratorImpl<VecType>::DiscreteUniformGeneratorImpl() : DistributionGenerator<VecType>() {
+DiscreteUniformGeneratorImpl<VecType>::DiscreteUniformGeneratorImpl() {
     SetModulus(0);
 }
 
@@ -134,4 +139,25 @@ VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(const usint size) 
     return v;
 }
 
+template <typename VecType>
+VecType DiscreteUniformGeneratorImpl<VecType>::GenerateVector(const usint size,
+                                                              const typename VecType::Integer& modulus) {
+    /*
+    VecType v;
+    v.reserve(size);
+    v.SetModulus(modulus);
+    this->SetModulus(modulus);
+
+    for (usint i = 0; i < size; ++i) {
+        v.emplace_back(this->GenerateInteger());
+    }
+
+    return v;
+*/
+    this->SetModulus(modulus);
+    return this->GenerateVector(size);
+}
+
 }  // namespace lbcrypto
+
+#endif

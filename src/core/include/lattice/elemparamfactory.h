@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,16 +33,18 @@
   Creates ElemParams objects for OpenFHE
  */
 
-#ifndef SRC_CORE_LIB_LATTICE_ELEMPARAMFACTORY_H_
-#define SRC_CORE_LIB_LATTICE_ELEMPARAMFACTORY_H_
+#ifndef LBCRYPTO_INC_LATTICE_ELEMPARAMFACTORY_H_
+#define LBCRYPTO_INC_LATTICE_ELEMPARAMFACTORY_H_
+
+#include "lattice/ildcrtparams.h"
+// #include "lattice/ilparams.h"
+
+#include "utils/debug.h"
+#include "utils/inttypes.h"
+#include "utils/parmfactory.h"
 
 #include <memory>
 #include <string>
-
-#include "lattice/ildcrtparams.h"
-#include "lattice/ilparams.h"
-#include "math/hal.h"
-#include "utils/parmfactory.h"
 
 namespace lbcrypto {
 
@@ -166,6 +168,7 @@ inline std::shared_ptr<ILDCRTParams<M4Integer>> ElemParamFactory::GenElemParams<
     OPENFHE_DEBUGEXP(towersize);
     return GenerateDCRTParams<M4Integer>(m, towersize, bits);
 }
+
 #ifdef WITH_NTL
 template <>
 inline std::shared_ptr<ILDCRTParams<M6Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M6Integer>>(
@@ -180,6 +183,7 @@ inline std::shared_ptr<ILDCRTParams<M6Integer>> ElemParamFactory::GenElemParams<
     return GenerateDCRTParams<M6Integer>(m, towersize, bits);
 }
 #endif
+
 } /* namespace lbcrypto */
 
-#endif /* SRC_CORE_LIB_LATTICE_ELEMPARAMFACTORY_H_ */
+#endif

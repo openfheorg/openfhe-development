@@ -35,9 +35,9 @@
 
 #include "math/hal.h"
 #include "math/hal/intnat/mubintvecnat.h"
-#include "math/nbtheory.h"
-#include "utils/debug.h"
-#include "utils/serializable.h"
+#include "math/nbtheory-impl.h"
+
+#include "utils/exception.h"
 
 namespace intnat {
 

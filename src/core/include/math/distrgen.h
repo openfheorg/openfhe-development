@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,14 +33,14 @@
   This code provides basic noise generation functionality
  */
 
-#ifndef LBCRYPTO_MATH_DISTRGEN_H_
-#define LBCRYPTO_MATH_DISTRGEN_H_
+#ifndef LBCRYPTO_INC_MATH_DISTRGEN_H_
+#define LBCRYPTO_INC_MATH_DISTRGEN_H_
 
 #define _USE_MATH_DEFINES
-#include <bitset>
-#include <cmath>
-#include <random>
-#include <string>
+// #include <bitset>
+// #include <cmath>
+// #include <random>
+// #include <string>
 #include "math/binaryuniformgenerator.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/discretegaussiangeneratorgeneric.h"
@@ -48,4 +48,4 @@
 #include "math/distributiongenerator.h"
 #include "math/ternaryuniformgenerator.h"
 
-#endif  // LBCRYPTO_MATH_DISTRGEN_H_
+#endif  // LBCRYPTO_INC_MATH_DISTRGEN_H_

@@ -41,13 +41,12 @@
 #ifdef WITH_NTL
 
     #include "math/hal.h"
-    #include "math/binaryuniformgenerator.cpp"     // NOLINT
-    #include "math/discretegaussiangenerator.cpp"  // NOLINT
-    #include "math/discreteuniformgenerator.cpp"   // NOLINT
-    #include "math/matrix.cpp"                     // NOLINT
-    #include "math/matrix.h"
-    #include "math/nbtheory.cpp"                 // NOLINT
-    #include "math/ternaryuniformgenerator.cpp"  // NOLINT
+    #include "math/binaryuniformgenerator-impl.h"
+    #include "math/discretegaussiangenerator-impl.h"
+    #include "math/discreteuniformgenerator-impl.h"
+    #include "math/matrix-impl.h"
+    #include "math/nbtheory-impl.h"
+    #include "math/ternaryuniformgenerator-impl.h"
 
 namespace lbcrypto {
 

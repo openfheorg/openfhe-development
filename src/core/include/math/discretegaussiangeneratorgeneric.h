@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -94,23 +94,23 @@
  * sigma is the standard deviation of the base sampler and N is the smoothing
  * parameter
  *
- *
- *
  * */
 
-#ifndef LBCRYPTO_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
-#define LBCRYPTO_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
+#ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
+#define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
 
 #define MAX_LEVELS 4
 
-#include <math.h>
+// #include "math/hal.h"
+#include "math/distributiongenerator.h"
+// #include "math/nbtheory.h"
+
+#include "utils/inttypes.h"
+
+#include <cmath>
 #include <memory>
 #include <random>
 #include <vector>
-
-#include "math/hal.h"
-#include "math/distributiongenerator.h"
-#include "math/nbtheory.h"
 
 namespace lbcrypto {
 
@@ -127,7 +127,8 @@ class BitGenerator;
  */
 class BitGenerator {
 public:
-    BitGenerator() {}
+    BitGenerator()  = default;
+    ~BitGenerator() = default;
     /*
    * @brief Method for generating a random bit
    * @return A random bit
@@ -142,7 +143,6 @@ public:
         counter++;
         return bit;
     }
-    ~BitGenerator() {}
 
 private:
     uint32_t sequence = 0;
@@ -163,7 +163,7 @@ public:
    * @param bType Type of the base sampler
    */
     BaseSampler(double mean, double std, BitGenerator* generator, BaseSamplerType bType);
-    BaseSampler() {}
+    BaseSampler() = default;
     /*
    * @brief Method for generating integer from the base sampler
    * @return A random integer from the distribution
@@ -172,11 +172,7 @@ public:
     /*
    * @brief Destroyer for the base sampler
    */
-    virtual ~BaseSampler() {
-        /*if (DDGColumn != nullptr) {
-            delete[] DDGColumn;
-    }*/
-    }
+    virtual ~BaseSampler() = default;
     /*
    * @brief Method for generating a random bit from the bit generator within
    * @return A random bit
@@ -274,7 +270,7 @@ private:
  * @brief Class for combining samples from two base samplers, which is used for
  * UCSD generic sampling
  */
-class SamplerCombiner : public BaseSampler {
+class SamplerCombiner final : public BaseSampler {
 public:
     /**
    * @brief Constructor
@@ -289,13 +285,13 @@ public:
    * @brief Return the combined value for two samplers with given coefficients
    * @return Combined value of the samplers with given coefficents
    */
-    int64_t GenerateInteger() {
+    int64_t GenerateInteger() override {
         return x1 * sampler1->GenerateInteger() + x2 * sampler2->GenerateInteger();
     }
     /**
    * @brief Destructor
    */
-    ~SamplerCombiner() {}
+    ~SamplerCombiner() = default;
 
 private:
     // Samplers to be combined
@@ -307,7 +303,7 @@ private:
 /**
  * @brief The class for Generic Discrete Gaussion Distribution generator.
  */
-class DiscreteGaussianGeneratorGeneric : public DistributionGenerator<BigVector> {
+class DiscreteGaussianGeneratorGeneric {
 public:
     /**
    * @brief Basic constructor which does the precomputations.
@@ -366,4 +362,5 @@ private:
 };
 
 }  // namespace lbcrypto
-#endif  // LBCRYPTO_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_
+
+#endif  // LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATORGENERIC_H_

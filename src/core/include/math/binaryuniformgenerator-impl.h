@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -34,8 +34,14 @@
   the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#include <random>
+#ifndef LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_IMPL_H_
+#define LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_IMPL_H_
+
 #include "math/binaryuniformgenerator.h"
+
+#include "utils/inttypes.h"
+
+#include <random>
 
 namespace lbcrypto {
 
@@ -44,7 +50,7 @@ std::bernoulli_distribution BinaryUniformGeneratorImpl<VecType>::m_distribution 
 
 template <typename VecType>
 typename VecType::Integer BinaryUniformGeneratorImpl<VecType>::GenerateInteger() const {
-    return (m_distribution(PseudoRandomNumberGenerator::GetPRNG()) ? (1) : (0));
+    return m_distribution(PseudoRandomNumberGenerator::GetPRNG()) ? 1 : 0;
 }
 
 template <typename VecType>
@@ -52,11 +58,11 @@ VecType BinaryUniformGeneratorImpl<VecType>::GenerateVector(const usint size,
                                                             const typename VecType::Integer& modulus) const {
     VecType v(size);
     v.SetModulus(modulus);
-
-    for (usint i = 0; i < size; i++) {
-        v.at(i) = GenerateInteger();
-    }
+    for (usint i = 0; i < size; i++)
+        v[i] = GenerateInteger();
     return v;
 }
 
 }  // namespace lbcrypto
+
+#endif

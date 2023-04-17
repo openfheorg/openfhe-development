@@ -29,20 +29,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-//==================================================================================
-// This file is included only if WITH_INTEL_HEXL is set to ON in CMakeLists.txt
-//==================================================================================
-
 #ifndef __NATIVEINTBACKEND_H__
 #define __NATIVEINTBACKEND_H__
 
-#ifdef WITH_INTEL_HEXL
+#include "math/hal/intnat/ubintnat.h"
+#include "math/hal/intnat/mubintvecnat.h"
+#include "math/hal/intnat/transformnat.h"
 
-    #include "math/hal/intnat-hexl/backendnathexl.h"
-    #include "math/hal/intnat-hexl/transformnathexl.h"
-#else
-    #include "math/hal/intnat/backendnat.h"
-    #include "math/hal/intnat/transformnat.h"
+#include "math/hal/basicint.h"
+
+namespace lbcrypto {
+
+using NativeInteger = intnat::NativeInteger;
+using NativeVector  = intnat::NativeVector;
+
+}  // namespace lbcrypto
+
+// Promote to global namespace
+using NativeInteger = lbcrypto::NativeInteger;
+using NativeVector  = lbcrypto::NativeVector;
+
 #endif
-
-#endif  // __NATIVEINTBACKEND_H__

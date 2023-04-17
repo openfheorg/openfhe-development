@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -35,16 +35,15 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
-#include "dgsampling.cpp"  // NOLINT
-#include "math/matrix.h"
-#include "trapdoor.cpp"  // NOLINT
+#include "lattice/dgsampling-impl.h"
+#include "lattice/lat-hal.h"
+#include "lattice/trapdoor-impl.h"
+
+#include "math/matrix-impl.h"
+
+#include "utils/debug.h"
 
 namespace lbcrypto {
-
-template class LatticeGaussSampUtility<DCRTPoly>;
-template class RLWETrapdoorPair<DCRTPoly>;
-template class RLWETrapdoorUtility<DCRTPoly>;
-// template class Matrix<DCRTPoly>;
 
 // Trapdoor generation method as described in Algorithm 1 of
 // https://eprint.iacr.org/2017/844.pdf and
@@ -52,9 +51,9 @@ template class RLWETrapdoorUtility<DCRTPoly>;
 template <>
 std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRTPoly>::TrapdoorGen(
     std::shared_ptr<ParmType> params, double stddev, int64_t base, bool bal) {
-    auto zero_alloc     = DCRTPoly::Allocator(params, EVALUATION);
-    auto gaussian_alloc = DCRTPoly::MakeDiscreteGaussianCoefficientAllocator(params, COEFFICIENT, stddev);
-    auto uniform_alloc  = DCRTPoly::MakeDiscreteUniformAllocator(params, EVALUATION);
+    auto zero_alloc     = DCRTPoly::Allocator(params, Format::EVALUATION);
+    auto gaussian_alloc = DCRTPoly::MakeDiscreteGaussianCoefficientAllocator(params, Format::COEFFICIENT, stddev);
+    auto uniform_alloc  = DCRTPoly::MakeDiscreteUniformAllocator(params, Format::EVALUATION);
 
     NativeInteger q = params->GetParams()[0]->GetModulus();
 
@@ -92,9 +91,9 @@ std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRT
 template <>
 std::pair<Matrix<DCRTPoly>, RLWETrapdoorPair<DCRTPoly>> RLWETrapdoorUtility<DCRTPoly>::TrapdoorGenSquareMat(
     std::shared_ptr<ParmType> params, double stddev, size_t d, int64_t base, bool bal) {
-    auto zero_alloc     = DCRTPoly::Allocator(params, EVALUATION);
-    auto gaussian_alloc = DCRTPoly::MakeDiscreteGaussianCoefficientAllocator(params, COEFFICIENT, stddev);
-    auto uniform_alloc  = DCRTPoly::MakeDiscreteUniformAllocator(params, EVALUATION);
+    auto zero_alloc     = DCRTPoly::Allocator(params, Format::EVALUATION);
+    auto gaussian_alloc = DCRTPoly::MakeDiscreteGaussianCoefficientAllocator(params, Format::COEFFICIENT, stddev);
+    auto uniform_alloc  = DCRTPoly::MakeDiscreteUniformAllocator(params, Format::EVALUATION);
 
     NativeInteger q = params->GetParams()[0]->GetModulus();
 
@@ -149,7 +148,7 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSamp(size_t n, size_t k, co
     TIC(t1);
     TIC(t1_tot);
     const std::shared_ptr<ParmType> params = u.GetParams();
-    auto zero_alloc                        = DCRTPoly::Allocator(params, EVALUATION);
+    auto zero_alloc                        = DCRTPoly::Allocator(params, Format::EVALUATION);
 
     double c = (base + 1) * SIGMA;
 
@@ -229,7 +228,7 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSampSquareMat(size_t n, siz
                                                                    const Matrix<DCRTPoly>& U, DggType& dgg,
                                                                    DggType& dggLargeSigma, int64_t base) {
     const std::shared_ptr<ParmType> params = U(0, 0).GetParams();
-    auto zero_alloc                        = DCRTPoly::Allocator(params, EVALUATION);
+    auto zero_alloc                        = DCRTPoly::Allocator(params, Format::EVALUATION);
 
     double c = (base + 1) * SIGMA;
 
@@ -305,5 +304,9 @@ Matrix<DCRTPoly> RLWETrapdoorUtility<DCRTPoly>::GaussSampSquareMat(size_t n, siz
 
     return zHatPrime;
 }
+
+template class LatticeGaussSampUtility<DCRTPoly>;
+template class RLWETrapdoorPair<DCRTPoly>;
+template class RLWETrapdoorUtility<DCRTPoly>;
 
 }  // namespace lbcrypto

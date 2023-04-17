@@ -35,23 +35,15 @@
   https://eprint.iacr.org/2018/1222.pdf.
  */
 
-#include "dgsampling.cpp"   // NOLINT
-#include "math/matrix.cpp"  // NOLINT
-#include "trapdoor.cpp"     // NOLINT
+#include "lattice/dgsampling-impl.h"
+#include "lattice/lat-hal.h"
+#include "lattice/trapdoor-impl.h"
+
+#include "math/matrix-impl.h"
+
+#include "utils/debug.h"
 
 namespace lbcrypto {
-
-template class LatticeGaussSampUtility<Poly>;
-template class RLWETrapdoorPair<Poly>;
-template class RLWETrapdoorUtility<Poly>;
-// template class Matrix<Poly>;
-
-template class LatticeGaussSampUtility<NativePoly>;
-template class RLWETrapdoorPair<NativePoly>;
-template class RLWETrapdoorUtility<NativePoly>;
-// template class Matrix<NativePoly>;
-
-template class Matrix<Field2n>;
 
 template <>
 std::pair<Matrix<Poly>, RLWETrapdoorPair<Poly>> RLWETrapdoorUtility<Poly>::TrapdoorGen(
@@ -503,5 +495,13 @@ Matrix<NativePoly> RLWETrapdoorUtility<NativePoly>::GaussSampSquareMat(
 
     return zHatPrime;
 }
+
+template class LatticeGaussSampUtility<Poly>;
+template class RLWETrapdoorPair<Poly>;
+template class RLWETrapdoorUtility<Poly>;
+
+template class LatticeGaussSampUtility<NativePoly>;
+template class RLWETrapdoorPair<NativePoly>;
+template class RLWETrapdoorUtility<NativePoly>;
 
 }  // namespace lbcrypto

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -34,34 +34,31 @@
   relies on the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#ifndef LBCRYPTO_MATH_DISCRETEUNIFORMGENERATOR_H_
-#define LBCRYPTO_MATH_DISCRETEUNIFORMGENERATOR_H_
-
-#include <limits>
-#include <random>
+#ifndef LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
+#define LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
 
 #include "math/hal.h"
 #include "math/distributiongenerator.h"
 
+#include "utils/inttypes.h"
+
+#include <limits>
+#include <random>
+
 namespace lbcrypto {
-
-template <typename VecType>
-class DiscreteUniformGeneratorImpl;
-
-typedef DiscreteUniformGeneratorImpl<BigVector> DiscreteUniformGenerator;
 
 /**
  * @brief The class for Discrete Uniform Distribution generator over Zq.
  */
 template <typename VecType>
-class DiscreteUniformGeneratorImpl : public DistributionGenerator<VecType> {
+class DiscreteUniformGeneratorImpl {
 public:
     /**
    * @brief Constructs a new DiscreteUniformGenerator with the given modulus.
    */
     DiscreteUniformGeneratorImpl();
 
-    ~DiscreteUniformGeneratorImpl() {}
+    ~DiscreteUniformGeneratorImpl() = default;
 
     /**
    * @brief         Sets the modulus. Overrides parent function
@@ -79,6 +76,7 @@ public:
    * @brief Generates a vector of random integers using GenerateInteger()
    */
     VecType GenerateVector(const usint size) const;
+    VecType GenerateVector(const usint size, const typename VecType::Integer& modulus);
 
 private:
     // discrete uniform generator relies on the built-in C++ generator for 32-bit
@@ -101,6 +99,8 @@ private:
     typename VecType::Integer m_modulus;
 };
 
+typedef DiscreteUniformGeneratorImpl<BigVector> DiscreteUniformGenerator;
+
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_MATH_DISCRETEUNIFORMGENERATOR_H_
+#endif  // LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
