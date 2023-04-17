@@ -50,7 +50,7 @@ int main() {
     // However, we do not provide such a step in this example.
     // Therefore, we use a brute force way to create a large LWE ciphertext.
     uint32_t logQ = 23;
-    cc.GenerateBinFHEContext(STD128, false, logQ, 0, GINX, true);
+    cc.GenerateBinFHEContext(STD128, false, logQ, 0, GINX, false);
 
     uint32_t Q = 1 << logQ;
 

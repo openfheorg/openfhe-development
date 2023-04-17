@@ -481,14 +481,69 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Eleme
 }
 
 //------------------------------------------------------------------------------
-// Advanced SHE LINEAR TRANSFORMATION
+// SCHEMESWITCHING Methods
 //------------------------------------------------------------------------------
 
-// TODO Andrey add from bootstrapping
+template <typename Element>
+void CryptoContextImpl<Element>::EvalSchemeSwitchingSetup(std::vector<uint32_t> levelBudget, std::vector<uint32_t> dim1,
+                                                          uint32_t numSlots, uint32_t correctionFactor) {
+    GetScheme()->EvalSchemeSwitchingSetup(*this, levelBudget, dim1, numSlots, correctionFactor);
+}
 
-//------------------------------------------------------------------------------
-// FHE Bootstrap Methods
-//------------------------------------------------------------------------------
+template <typename Element>
+void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const PrivateKey<Element> privateKey, uint32_t slots) {
+    if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
+        OPENFHE_THROW(config_error,
+                      "Private key passed to EvalBootstapKeyGen was not generated with this crypto context");
+    }
+    GetScheme()->EvalSchemeSwitchingKeyGen(privateKey, slots);
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalSchemeSwitching(ConstCiphertext<Element> ciphertext, uint32_t numIterations,
+                                                     uint32_t precision) const {
+    return GetScheme()->EvalSchemeSwitching(ciphertext, numIterations, precision);
+}
+
+template <typename Element>
+std::pair<BinFHEContext, LWEPrivateKey> CryptoContextImpl<Element>::EvalCKKStoFHEWSetup(bool dynamic, uint32_t logQ,
+                                                                                        SecurityLevel sl,
+                                                                                        uint32_t numSlotsCKKS) {
+    return GetScheme()->EvalCKKStoFHEWSetup(*this, dynamic, logQ, sl, numSlotsCKKS);
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, LWEPrivateKey& lwesk) {
+    if (keyPair.secretKey == NULL || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {  // Add test for lwesk?
+        OPENFHE_THROW(config_error,
+                      "Private key passed to EvalCKKStoFHEWKeyGen was not generated with this crypto context");
+    }
+    auto evalKeys = GetScheme()->EvalCKKStoFHEWKeyGen(keyPair, lwesk);
+
+    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
+    if (ekv == GetAllEvalAutomorphismKeys().end()) {
+        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
+    }
+    else {
+        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
+        auto iterRowKeys = evalKeys->begin();
+        while (iterRowKeys != evalKeys->end()) {
+            auto idx = iterRowKeys->first;
+            // Search current rotation key map and add key
+            // only if it doesn't exist
+            if (currRotMap.find(idx) == currRotMap.end()) {
+                currRotMap.insert(*iterRowKeys);
+            }
+            iterRowKeys++;
+        }
+    }
+}
+
+template <typename Element>
+std::vector<std::shared_ptr<LWECiphertextImpl>> CryptoContextImpl<Element>::EvalCKKStoFHEW(
+    ConstCiphertext<Element> ciphertext, double scale, uint32_t numCtxts) const {
+    return GetScheme()->EvalCKKStoFHEW(ciphertext, scale, numCtxts);
+}
 
 }  // namespace lbcrypto
 

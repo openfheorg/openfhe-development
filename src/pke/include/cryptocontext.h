@@ -52,6 +52,8 @@
 #include "utils/serial.h"
 #include "utils/type_name.h"
 
+#include "../../binfhe/include/binfhecontext.h"
+
 #include <functional>
 #include <map>
 #include <memory>
@@ -2014,7 +2016,7 @@ public:
     /**
    * Only supported for hybrid key switching.
    * Takes a ciphertext in the normal basis Q
-   * and and extends it to extended basis P*Q.
+   * and extends it to extended basis P*Q.
    *
    * @param ciphertext input ciphertext in basis Q
    * @return resulting ciphertext in basis P*Q
@@ -2937,6 +2939,75 @@ public:
                                       uint32_t precision = 0) const {
         return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
     }
+
+    //------------------------------------------------------------------------------
+    // Scheme switching Methods
+    //------------------------------------------------------------------------------
+
+    /**
+   * Scheme switching between CKKS and FHEW functionality
+   * There are three methods that have to be called in this specific order:
+   * 1. EvalSchemeSwitchingSetup
+   * 2. EvalSchemeSwitchingKeyGen
+   * 3. EvalSchemeSwitching
+   * 1'. EvalCKKStoFHEWSetup: generates a FHEW cryptocontext and returns the key, computes and encodes
+   * the coefficients for encoding and decoding and stores the necessary parameters
+   * 2'. EvalCKKStoFHEWKeyGen: computes and stores the keys for rotations and conjugation
+   * 3'. EvalCKKStoFHEW: returns the FHEW/CGGI ciphertext
+   * 1''. EvalFHEWtoCKKSSetup
+   * 2''. EvalFHEWtoCKKSKeyGen
+   * 3''. EvalFHEWtoCKKS
+   * These last 3 methods should be in binfhecontext
+   */
+
+    /**
+     * Andreea: to modify
+    */
+    void EvalSchemeSwitchingSetup(std::vector<uint32_t> levelBudget = {5, 4}, std::vector<uint32_t> dim1 = {0, 0},
+                                  uint32_t slots = 0, uint32_t correctionFactor = 0);
+
+    /**
+   */
+    void EvalSchemeSwitchingKeyGen(const PrivateKey<Element> privateKey, uint32_t slots);
+
+    /**
+   */
+    void EvalSchemeSwitching(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
+                             uint32_t precision = 0) const;
+
+    /**
+   * Sets all parameters for switching from CKKS to FHEW
+   *
+   * @param dynamic whether to use dynamic mode for FHEW
+   * @param logQ preicions of large-precision sign evaluation based on FHEW
+   * @param sl security level
+   * @param numSlotsCKKS number of slots in CKKS encryption
+   * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
+   * from the secret key is created, then we can only return the secret key)
+   */
+    std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(bool dynamic = false, uint32_t logQ = 29,
+                                                                SecurityLevel sl      = HEStd_128_classic,
+                                                                uint32_t numSlotsCKKS = 0);
+
+    /**
+   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy,
+   * conjugation keys, switching key from CKKS to FHEW
+   * @param keypair CKKS key pair
+   * @param lwesk FHEW secret key
+   */
+    void EvalCKKStoFHEWKeyGen(
+        const KeyPair<Element>& keyPair,
+        LWEPrivateKey& lwesk);  // don't know how to transform ConstLWEPrivateKey to shared_ptr<LWEPrivateKeyImpl>
+
+    /**
+   * Performs the scheme switching on a CKKS ciphertext
+   * @param ciphertext CKKS ciphertext to switch
+   * @param scale factor to multiply the plaintext encoded into the ciphertext
+   * @param numCtxts number of coefficients to extract from the CKKS ciphertext. If it is zero, it defaults to number of slots
+   * @return a vector of LWE ciphertexts of length the numCtxts
+   */
+    std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element> ciphertext,
+                                                                   double scale = 1.0, uint32_t numCtxts = 0) const;
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {

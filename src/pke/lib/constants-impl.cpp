@@ -60,6 +60,9 @@ std::ostream& operator<<(std::ostream& s, PKESchemeFeature f) {
         case FHE:
             s << "FHE";
             break;
+        case SCHEMESWITCH:
+            s << "SCHEMESWITCH";
+            break;
         default:
             s << "UNKNOWN";
             break;

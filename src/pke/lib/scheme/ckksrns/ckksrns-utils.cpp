@@ -860,4 +860,42 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
             int32_t(numRotationsRem), bRem,           gRem};
 }
 
+uint32_t getRatioBSGS(double slots) {
+    if (slots < 128)
+        return ceil(sqrt(slots));
+
+    auto temp = ceil(sqrt(slots / 12.));
+    return ceil(slots / temp);
+}
+
+std::vector<int32_t> FindLTRotationIndicesSS(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
+    uint32_t slots;
+    // Set slots depending on packing mode (fully-packed or sparsely-packed)
+    if ((blockDimension == 0) || (blockDimension == m / 4))
+        slots = m / 4;
+    else
+        slots = blockDimension;
+
+    // Computing the baby-step g and the giant-step h
+    uint32_t bStep = (dim1 == 0) ? getRatioBSGS(static_cast<double>(slots)) : dim1;
+    uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
+
+    // Computing all indices for baby-step giant-step procedure
+    std::vector<int32_t> indexList;
+    indexList.reserve(bStep + gStep - 2);
+    for (uint32_t i = 0; i < bStep; i++)
+        indexList.emplace_back(i + 1);
+    for (uint32_t i = 2; i < gStep; i++)
+        indexList.emplace_back(bStep * i);
+
+    // Remove possible duplicates
+    sort(indexList.begin(), indexList.end());
+    indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());
+
+    // Remove automorphisms corresponding to 0
+    indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());
+
+    return indexList;
+}
+
 }  // namespace lbcrypto
