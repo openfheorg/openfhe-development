@@ -941,10 +941,10 @@ private:
     void ArbitrarySwitchFormat();
 };
 
-//template <>
-//inline PolyImpl<NativeVector> PolyImpl<NativeVector>::DecryptionCRTInterpolate(PlaintextModulus ptm) const {
+// template <>
+// inline PolyImpl<NativeVector> PolyImpl<NativeVector>::DecryptionCRTInterpolate(PlaintextModulus ptm) const {
 //    return this->Mod(ptm);
-//}
+// }
 
 // biginteger version
 template <>

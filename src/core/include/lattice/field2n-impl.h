@@ -35,6 +35,8 @@
 
 #include "lattice/field2n.h"
 
+#include <vector>
+
 namespace lbcrypto {
 
 // Constructor from ring element

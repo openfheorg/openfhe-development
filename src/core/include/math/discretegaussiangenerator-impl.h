@@ -34,6 +34,10 @@
   the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
+#include <string>
+#include <vector>
+#include <memory>
+
 #include "math/hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"

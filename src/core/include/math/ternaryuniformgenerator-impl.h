@@ -34,6 +34,7 @@
  */
 
 #include <random>
+#include <memory>
 
 #include "math/binaryuniformgenerator.h"
 #include "math/ternaryuniformgenerator.h"

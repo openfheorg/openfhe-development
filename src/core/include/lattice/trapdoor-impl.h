@@ -38,6 +38,8 @@
 #ifndef _SRC_LIB_CRYPTO_SIGNATURE_TRAPDOOR_CPP
 #define _SRC_LIB_CRYPTO_SIGNATURE_TRAPDOOR_CPP
 
+#include <memory>
+
 #include "lattice/trapdoor.h"
 
 namespace lbcrypto {

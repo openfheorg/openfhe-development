@@ -35,6 +35,9 @@
 
 #include <fstream>
 #include <memory>
+#include <utility>
+#include <vector>
+#include <string>
 
 #include "lattice/lat-hal.h"
 #include "utils/debug.h"

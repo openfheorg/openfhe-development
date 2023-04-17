@@ -30,37 +30,47 @@
 //==================================================================================
 
 /*
-  native integer implementation
+  parameters for generalized double-crt parameters
  */
 
-#define BLOCK_VECTOR_IMPLEMENT
-#include "lattice/lat-hal.h"
-#include "math/matrix.cpp"          // NOLINT
-#include "matrix-lattice-impl.cpp"  // NOLINT
+#include <memory>
 
-#include "elemparams.cpp"  // NOLINT
-#include "ilparams.cpp"    // NOLINT
-#include "poly.cpp"        // NOLINT
+#include "lattice/ildcrtparams.h"
 
 namespace lbcrypto {
 
-template class ElemParams<NativeInteger>;
-template class ILParamsImpl<NativeInteger>;
-template class PolyImpl<NativeVector>;
+template <typename IntType>
+ILDCRTParams<IntType>::ILDCRTParams(usint order, usint depth, usint bits) : ElemParams<IntType>(order, 0) {
+    if (order == 0)
+        return;
+    if (depth == 0)
+        OPENFHE_THROW(config_error, "Invalid depth for ILDCRTParams");
+    if (bits == 0 || bits > 64)
+        OPENFHE_THROW(config_error, "Invalid bits for ILDCRTParams");
 
-template class Matrix<NativePoly>;
-SPLIT64_FOR_TYPE(NativePoly)
-SPLIT64ALT_FOR_TYPE(NativePoly)
-SPLIT32ALT_FOR_TYPE(NativePoly)
-template Matrix<NativeVector> RotateVecResult(Matrix<NativePoly> const& inMat);
-template Matrix<NativeInteger> Rotate(Matrix<NativePoly> const& inMat);
+    m_parms.resize(depth);
+    this->ciphertextModulus = IntType(0);
 
-// native poly version
-template <>
-PolyImpl<NativeVector> PolyImpl<NativeVector>::ToNativePoly() const {
-    return *this;
+    NativeInteger q = FirstPrime<NativeInteger>(bits, order);
+
+    for (size_t j = 0;;) {
+        NativeInteger root = RootOfUnity<NativeInteger>(order, q);
+        m_parms[j]         = std::make_shared<ILNativeParams>(order, q, root);
+
+        if (++j >= depth)
+            break;
+
+        q = NextPrime<NativeInteger>(q, order);
+    }
+
+    RecalculateModulus();
 }
 
 }  // namespace lbcrypto
 
-CEREAL_CLASS_VERSION(lbcrypto::NativePoly, lbcrypto::NativePoly::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M2Integer>, lbcrypto::ILDCRTParams<M2Integer>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M4Integer>, lbcrypto::ILDCRTParams<M4Integer>::SerializedVersion());
+#ifdef WITH_NTL
+CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M6Integer>, lbcrypto::ILDCRTParams<M6Integer>::SerializedVersion());
+#endif
+CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<NativeInteger>, lbcrypto::ILDCRTParams<NativeInteger>::SerializedVersion());

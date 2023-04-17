@@ -35,6 +35,9 @@
 
 #include <cmath>
 #include <fstream>
+#include <utility>
+#include <vector>
+#include <memory>
 #include "lattice/lat-hal.h"
 
 #define DEMANGLER  // used for the demangling type namefunction.

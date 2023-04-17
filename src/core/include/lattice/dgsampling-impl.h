@@ -40,6 +40,9 @@
 
 #include "lattice/dgsampling.h"
 
+#include <memory>
+#include <vector>
+
 namespace lbcrypto {
 
 // Gaussian sampling from lattice for gagdet matrix G, syndrome u, and arbitrary

@@ -36,6 +36,10 @@
 #include "math/matrixstrassen.h"
 #include "utils/parallel.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 namespace lbcrypto {
 
 template <class Element>

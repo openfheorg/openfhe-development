@@ -40,6 +40,10 @@
 
 #include <chrono>
 #include <sstream>
+#include <limits>
+#include <string>
+#include <set>
+#include <vector>
 
 #include "math/distributiongenerator.h"
 #include "math/nbtheory.h"
