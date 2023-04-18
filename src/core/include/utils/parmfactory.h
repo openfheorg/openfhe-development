@@ -33,20 +33,23 @@
   parameter factory
  */
 
-#ifndef SRC_CORE_LIB_UTILS_PARMFACTORY_H_
-#define SRC_CORE_LIB_UTILS_PARMFACTORY_H_
+#ifndef SRC_CORE_INC_UTILS_PARMFACTORY_H_
+#define SRC_CORE_INC_UTILS_PARMFACTORY_H_
 
 // useful for testing
 
-#include <memory>
-#include <vector>
+// #include "lattice/lat-hal.h"
+#include "lattice/ildcrtparams.h"
 
-#include "math/hal.h"
+// #include "math/hal.h"
 #include "math/distrgen.h"
 
+#include "utils/debug.h"
+#include "utils/exception.h"
 #include "utils/inttypes.h"
 
-#include "lattice/lat-hal.h"
+#include <memory>
+#include <vector>
 
 using namespace lbcrypto;
 
@@ -94,4 +97,4 @@ inline std::shared_ptr<ILDCRTParams<I>> GenerateDCRTParams(usint m, usint numOfT
     return params;
 }
 
-#endif /* SRC_CORE_LIB_UTILS_PARMFACTORY_H_ */
+#endif
