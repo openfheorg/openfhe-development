@@ -64,6 +64,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
     (*ek)[0][1][0] = KeyGenAuto(params, skNTT, 2*N - gen.ConvertToInt());
 
     // m_window: window size, consider parameterization in the future
+#pragma omp parallel for
     for (size_t i = 1; i < m_window+1; i++)
     {
         (*ek)[0][1][i] = KeyGenAuto(params, skNTT, 

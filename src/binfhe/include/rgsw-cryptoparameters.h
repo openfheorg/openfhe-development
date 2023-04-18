@@ -121,24 +121,6 @@ public:
             }
         }
 
-        if (m_method == LMKCDEY){
-            uint32_t M = 2*N;
-
-            m_logGen.resize(M);
-            uint32_t gen = 5;
-            uint32_t gPow = 1;
-
-            m_logGen[gPow] = 0; // for 1
-            m_logGen[M - gPow] = M; // for -1
-
-            for (size_t i = 1; i < N/2; i++)
-            {
-                gPow = (gPow*gen) % M;
-                m_logGen[gPow] = i;
-                m_logGen[M - gPow] = -i;
-            }
-        }
-
         // Sets the gate constants for supported binary operations
         m_gateConst = {
             NativeInteger(5) * (q >> 3),  // OR
