@@ -38,7 +38,14 @@
 #include "schemebase/base-scheme.h"
 #include "cryptocontext.h"
 #include "ciphertext.h"
+#include "lattice/lat-hal.h"
 #include "math/dftransform.h"
+#include "utils/exception.h"
+#include "utils/parallel.h"
+
+#include <cmath>
+#include <memory>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -2202,18 +2209,18 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     int32_t logc = 0;
     for (size_t i = 0; i < slots; ++i) {
         inverse[i] *= powP;
-        int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
+        int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].real()))));
         if (logc < logci)
             logc = logci;
-        logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
+        logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].imag()))));
         if (logc < logci)
             logc = logci;
     }
     if (logc < 0) {
         OPENFHE_THROW(math_error, "Too small scaling factor");
     }
-    int32_t logValid = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
-    int32_t logApprox = logc - logValid;
+    int32_t logValid    = (logc <= MAX_BITS_IN_WORD) ? logc : MAX_BITS_IN_WORD;
+    int32_t logApprox   = logc - logValid;
     double approxFactor = pow(2, logApprox);
 
     std::vector<int64_t> temp(2 * slots);
@@ -2243,11 +2250,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
                 double imagVal = prodFactor.imag();
 
                 if (realVal > realMax) {
-                    realMax = realVal;
+                    realMax    = realVal;
                     realMaxIdx = idx;
                 }
                 if (imagVal > imagMax) {
-                    imagMax = imagVal;
+                    imagMax    = imagVal;
                     imagMaxIdx = idx;
                 }
             }
@@ -2270,11 +2277,11 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         int64_t re = std::llround(dre);
         int64_t im = std::llround(dim);
 
-        temp[i] = (re < 0) ? Max64BitValue() + re : re;
+        temp[i]         = (re < 0) ? Max64BitValue() + re : re;
         temp[i + slots] = (im < 0) ? Max64BitValue() + im : im;
     }
 
-    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams = plainElement.GetParams();
+    const std::shared_ptr<ILDCRTParams<BigInteger>> bigParams        = plainElement.GetParams();
     const std::vector<std::shared_ptr<ILNativeParams>>& nativeParams = bigParams->GetParams();
 
     for (size_t i = 0; i < nativeParams.size(); i++) {
@@ -2310,13 +2317,13 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     // Scale back up by the approxFactor to get the correct encoding.
     int32_t MAX_LOG_STEP = 60;
     if (logApprox > 0) {
-        int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+        int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
         DCRTPoly::Integer intStep = uint64_t(1) << logStep;
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 
         while (logApprox > 0) {
-            int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+            int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
             DCRTPoly::Integer intStep = uint64_t(1) << logStep;
             std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
             crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
