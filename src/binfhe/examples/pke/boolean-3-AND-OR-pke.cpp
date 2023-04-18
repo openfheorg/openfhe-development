@@ -32,8 +32,10 @@
 /*
   Example for the FHEW scheme using the default bootstrapping method (GINX)
  */
-
+#define PROFILE
 #include "binfhecontext.h"
+#include "utils/sertype.h"
+#include "utils/serial.h"
 
 using namespace lbcrypto;
 
@@ -46,19 +48,38 @@ int main() {
     // and HE standard. Other common options are TOY, MEDIUM, STD192, and STD256.
     // MEDIUM corresponds to the level of more than 100 bits for both quantum and
     // classical computer attacks.
-    cc.GenerateBinFHEContext(STD128_AP_3, AP);
+    cc.GenerateBinFHEContext(STD256Q);
 
     // Sample Program: Step 2: Key Generation
-
     // Generate the secret key
     auto sk = cc.KeyGen();
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
+    TimeVar t;
+    TIC(t);
     // Generate the bootstrapping keys (refresh and switching keys)
     cc.BTKeyGen(sk, PUB_ENCRYPT);
 
+    auto es = TOC_MS(t);
+    std::cout << "time for bootstrapping key generation " << es << " milliseconds" << std::endl;
+
     auto pk = cc.GetPublicKey();
+
+    auto bkey = cc.GetRefreshKey();
+    auto kskey = cc.GetSwitchKey();
+    std::ostringstream bkeystring;
+	  lbcrypto::Serial::Serialize(bkey, bkeystring, lbcrypto::SerType::BINARY);
+	  std::cout << "bootstrapping key size: " << bkeystring.str().size() << std::endl;
+
+    std::ostringstream kskeystring;
+	  lbcrypto::Serial::Serialize(kskey, kskeystring, lbcrypto::SerType::BINARY);
+	  std::cout << "key switching key size: " << kskeystring.str().size() << std::endl;
+
+    std::ostringstream pkstring;
+	  lbcrypto::Serial::Serialize(pk, pkstring, lbcrypto::SerType::BINARY);
+	  std::cout << "public key size: " << pkstring.str().size() << std::endl;
+
     std::cout << "Completed the key generation." << std::endl;
 
     // Sample Program: Step 3: Encryption
@@ -67,17 +88,18 @@ int main() {
     // By default, freshly encrypted ciphertexts are bootstrapped.
     // If you wish to get a fresh encryption without bootstrapping, write
     // auto   ct1 = cc.Encrypt(sk, 1, FRESH);
-    auto ct1 = cc.Encrypt(pk, 1, SMALL_DIM, 8);
-    auto ct2 = cc.Encrypt(pk, 1, SMALL_DIM, 8);
-    auto ct3 = cc.Encrypt(pk, 0, SMALL_DIM, 8);
-    auto ct4 = cc.Encrypt(pk, 0, SMALL_DIM, 8);
-    auto ct5 = cc.Encrypt(pk, 1, SMALL_DIM, 8);
-    auto ct6 = cc.Encrypt(pk, 0, SMALL_DIM, 8);
+    auto p = 6;
+    auto ct1 = cc.Encrypt(pk, 1, SMALL_DIM, p);
+    auto ct2 = cc.Encrypt(pk, 1, SMALL_DIM, p);
+    auto ct3 = cc.Encrypt(pk, 0, SMALL_DIM, p);
+    auto ct4 = cc.Encrypt(pk, 0, SMALL_DIM, p);
+    auto ct5 = cc.Encrypt(pk, 1, SMALL_DIM, p);
+    auto ct6 = cc.Encrypt(pk, 0, SMALL_DIM, p);
 
     // Sample Program: Step 4: Evaluation
 
     // Compute (1 AND 1 AND 1) = 1; Other binary gate options are OR, NAND, and NOR
-
+    TIC(t);
     //1, 0, 0
     auto ctAND1 = cc.EvalBinGateThreeInput(AND3, ct1, ct3, ct4);
     //1, 1, 0
@@ -100,6 +122,8 @@ int main() {
     //1, 1, 1
     auto ctOR4 = cc.EvalBinGateThreeInput(OR3, ct3, ct4, ct6);
 
+    es = TOC_MS(t);
+    std::cout << "time for gate evaluation " << es << " milliseconds" << std::endl;
     // Sample Program: Step 5: Decryption
 
     LWEPlaintext result;

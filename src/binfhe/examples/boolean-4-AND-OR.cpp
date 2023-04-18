@@ -47,7 +47,7 @@ int main() {
     // MEDIUM corresponds to the level of more than 100 bits for both quantum and
     // classical computer attacks.
     //cc.GenerateBinFHEContext(STD128_AP_3, AP);
-    cc.GenerateBinFHEContext(STD128_3);
+    cc.GenerateBinFHEContext(STD128Q_OPT_3_en);
 
     // Sample Program: Step 2: Key Generation
 
@@ -113,61 +113,61 @@ int main() {
 
     LWEPlaintext result;
 
-    cc.Decrypt(sk, ctAND1, &result);
+    cc.Decrypt(sk, ctAND1, &result, p);
     if (result != 0)
       OPENFHE_THROW(math_error, "Decryption failure");
 
     std::cout << "Result of encrypted computation of AND(1, 0, 0, 0) = " << result << std::endl;
 
-    cc.Decrypt(sk, ctAND2, &result);
+    cc.Decrypt(sk, ctAND2, &result, p);
     if (result != 0)
       OPENFHE_THROW(math_error, "Decryption failure");
 
     std::cout << "Result of encrypted computation of AND(1, 1, 0, 0) = " << result << std::endl;
 
-    cc.Decrypt(sk, ctAND3, &result);
+    cc.Decrypt(sk, ctAND3, &result, p);
     if (result != 0)
       OPENFHE_THROW(math_error, "Decryption failure");
 
     std::cout << "Result of encrypted computation of AND(1, 1, 1, 0) = " << result << std::endl;
 
-    cc.Decrypt(sk, ctAND4, &result);
+    cc.Decrypt(sk, ctAND4, &result, p);
     if (result != 1)
       OPENFHE_THROW(math_error, "Decryption failure");
 
     std::cout << "Result of encrypted computation of AND(1, 1, 1, 1) = " << result << std::endl;
 
-    cc.Decrypt(sk, ctAND5, &result);
+    cc.Decrypt(sk, ctAND5, &result, p);
     if (result != 0)
       OPENFHE_THROW(math_error, "Decryption failure");
 
     std::cout << "Result of encrypted computation of AND(0, 0, 0, 0) = " << result << std::endl;
 
-    cc.Decrypt(sk, ctOR1, &result);
+    cc.Decrypt(sk, ctOR1, &result, p);
     if (result != 1)
       OPENFHE_THROW(math_error, "Decryption failure");
 
     std::cout << "Result of encrypted computation of OR(1, 0, 0, 0) = " << result << std::endl;
 
-    cc.Decrypt(sk, ctOR2, &result);
+    cc.Decrypt(sk, ctOR2, &result, p);
     if (result != 1)
       OPENFHE_THROW(math_error, "Decryption failure");
 
     std::cout << "Result of encrypted computation of OR(1, 1, 0, 0) = " << result << std::endl;
 
-    cc.Decrypt(sk, ctOR3, &result);
+    cc.Decrypt(sk, ctOR3, &result, p);
     if (result != 1)
       OPENFHE_THROW(math_error, "Decryption failure");
 
     std::cout << "Result of encrypted computation of OR(1, 1, 1, 0) = " << result << std::endl;
 
-    cc.Decrypt(sk, ctOR4, &result);
+    cc.Decrypt(sk, ctOR4, &result, p);
     if (result != 1)
       OPENFHE_THROW(math_error, "Decryption failure");
 
     std::cout << "Result of encrypted computation of OR(1, 1, 1, 1) = " << result << std::endl;
 
-    cc.Decrypt(sk, ctOR5, &result);
+    cc.Decrypt(sk, ctOR5, &result, p);
     if (result != 0)
       OPENFHE_THROW(math_error, "Decryption failure");
 

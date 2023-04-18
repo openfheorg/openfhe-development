@@ -30,7 +30,7 @@
 //==================================================================================
 
 #include "rgsw-cryptoparameters.h"
-
+#include <cmath>
 namespace lbcrypto {
 
 void RingGSWCryptoParams::PreCompute(bool signEval) {
@@ -79,8 +79,8 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
         NativeInteger(5) * (m_q >> 3),  // XOR_FAST
         NativeInteger(1) * (m_q >> 3),   // XNOR_FAST
         NativeInteger(7) * (m_q >> 3),  // MAJORITY
-        NativeInteger(11) * ((m_q/12)+1),// >> 4),  13// AND3 TODO:if p =6, then cannot divide region as q power denom
-        NativeInteger(7) * ((m_q/12)+1),// >> 4),  9// OR3
+        NativeInteger(11) * (m_q/12),// >> 4),  13// AND3 TODO:if p =6, then cannot divide region as q power denom
+        NativeInteger(7) * (m_q/12),// >> 4),  9// OR3
         NativeInteger(15) * (m_q >> 4),  // AND4
         NativeInteger(9) * (m_q >> 4)  // OR4
 

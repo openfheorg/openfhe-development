@@ -37,20 +37,84 @@
 #include "binfhecontext.h"
 #include "utils/sertype.h"
 #include "utils/serial.h"
+#include <getopt.h>
 
 using namespace lbcrypto;
 
-int main() {
+std::string paramsetstring;
+BINFHE_PARAMSET paramset;
+usint Q = 0;
+usint dim_n = 0;
+usint Qks = 0;
+usint B_g = 0;
+usint B_ks = 0;
+void usage() {
+  std::cout << "-p Paramset"
+            << "-Q Large Q modulus"
+            << "-n Lattice Dimension"
+            << "-k Size of kew switching mod Qks"
+            << "-g Digit base B_g"
+            << "-b Key switching base B_ks"
+            << std::endl;
+}
+int main(int argc, char *argv[]) {
     // Sample Program: Step 1: Set CryptoContext
     TimeVar t;
     auto cc = BinFHEContext();
 
+    char opt(0);
+    //*********************
+    static struct option long_options[] =
+    {
+        {"Parameter Set",         required_argument, NULL, 'p'},
+        {"Large Q modulus",       required_argument, NULL, 'Q'},
+        {"Lattice dimension",       required_argument, NULL, 'n'},
+        {"size of kew switching mod Qks",       required_argument, NULL, 'k'},
+        {"Digit base B_g",       required_argument, NULL, 'g'},
+        {"Key switching base B_ks",       required_argument, NULL, 'b'},
+        {"help",                 no_argument,       NULL, 'h'},
+        {NULL, 0, NULL, 0}
+    };
+
+    const char* optstring = "p:Q:n:k:g:b:h";
+    while ((opt = getopt_long(argc, argv, optstring, long_options, NULL)) != -1) {
+        std::cerr << "opt1: " << opt << "; optarg: " << optarg << std::endl;
+        switch (opt) {
+        case 'p':
+            paramsetstring = optarg;
+            std::cout << "paramsetstring " << paramsetstring << std::endl;
+            paramset=static_cast<BINFHE_PARAMSET>(atoi(paramsetstring.c_str()));
+            std::cout << "paramset " << paramset << std::endl;
+            break;
+        case 'Q':
+            Q = atoi(optarg);
+            break;
+        case 'n':
+            dim_n = atoi(optarg);
+            break;
+        case 'k':
+            Qks = atoi(optarg);
+            break;
+        case 'g':
+            B_g = atoi(optarg);
+            break;
+        case 'b':
+            B_ks = atoi(optarg);
+            break;
+        case 'h':
+            usage();
+        default:
+            return false;
+        }
+    }
+    //********************
     // STD128 is the security level of 128 bits of security based on LWE Estimator
     // and HE standard. Other common options are TOY, MEDIUM, STD192, and STD256.
     // MEDIUM corresponds to the level of more than 100 bits for both quantum and
     // classical computer attacks.
     //cc.GenerateBinFHEContext(STD128_AP_3, AP);
-    cc.GenerateBinFHEContext(STD256Q_OPT_3);
+    
+    cc.GenerateBinFHEContext(paramset, Q, dim_n, Qks, B_g, B_ks);
     //cc.GenerateBinFHEContext(STD256Q_3, AP);
     //cc.GenerateBinFHEContext(STD128_3);
 
@@ -100,6 +164,12 @@ int main() {
     std::cout << "ciphertext modulus: " << ct1->GetModulus() << std::endl;
     std::cout << "ciphertext dimension n: " << ct1->GetLength() << std::endl;
 
+    //1, 0
+    //auto ctORmix = cc.EvalBinGate(OR, ct1, ct3);
+    //0, 0
+    //auto ctANDmix = cc.EvalBinGate(AND, ct3, ct4);
+
+    //auto ctANDmix = cc.EvalBinGateFourInput(AND3, ct1, ct2, ct3, ct4);
     // Sample Program: Step 4: Evaluation
     TIC(t);
     // Compute (1 AND 1 AND 1) = 1; Other binary gate options are OR, NAND, and NOR
@@ -132,53 +202,45 @@ int main() {
 
     LWEPlaintext result;
 
-    cc.Decrypt(sk, ctAND1, &result);
-    if (result != 0)
-      OPENFHE_THROW(math_error, "Decryption failure");
-
+    cc.Decrypt(sk, ctAND1, &result, p);
     std::cout << "Result of encrypted computation of AND(1, 0, 0) = " << result << std::endl;
-
-    cc.Decrypt(sk, ctAND2, &result);
     if (result != 0)
       OPENFHE_THROW(math_error, "Decryption failure");
 
+    cc.Decrypt(sk, ctAND2, &result, p);
     std::cout << "Result of encrypted computation of AND(1, 1, 0) = " << result << std::endl;
-
-    cc.Decrypt(sk, ctAND3, &result);
-    if (result != 1)
+    if (result != 0)
       OPENFHE_THROW(math_error, "Decryption failure");
 
+    cc.Decrypt(sk, ctAND3, &result, p);
     std::cout << "Result of encrypted computation of AND(1, 1, 1) = " << result << std::endl;
-
-    cc.Decrypt(sk, ctAND4, &result);
-    if (result != 0)
+    if (result != 1)
       OPENFHE_THROW(math_error, "Decryption failure");
 
+    cc.Decrypt(sk, ctAND4, &result, p);
     std::cout << "Result of encrypted computation of AND(0, 0, 0) = " << result << std::endl;
-
-    cc.Decrypt(sk, ctOR1, &result);
-    if (result != 1)
-      OPENFHE_THROW(math_error, "Decryption failure");
-
-    std::cout << "Result of encrypted computation of OR(1, 0, 0) = " << result << std::endl;
-
-    cc.Decrypt(sk, ctOR2, &result);
-    if (result != 1)
-      OPENFHE_THROW(math_error, "Decryption failure");
-
-    std::cout << "Result of encrypted computation of OR(1, 1, 0) = " << result << std::endl;
-
-    cc.Decrypt(sk, ctOR3, &result);
-    if (result != 1)
-      OPENFHE_THROW(math_error, "Decryption failure");
-
-    std::cout << "Result of encrypted computation of OR(1, 1, 1) = " << result << std::endl;
-
-    cc.Decrypt(sk, ctOR4, &result);
     if (result != 0)
       OPENFHE_THROW(math_error, "Decryption failure");
 
+    cc.Decrypt(sk, ctOR1, &result, p);
+    std::cout << "Result of encrypted computation of OR(1, 0, 0) = " << result << std::endl;
+    if (result != 1)
+      OPENFHE_THROW(math_error, "Decryption failure");
+
+    cc.Decrypt(sk, ctOR2, &result, p);
+    std::cout << "Result of encrypted computation of OR(1, 1, 0) = " << result << std::endl;
+    if (result != 1)
+      OPENFHE_THROW(math_error, "Decryption failure");
+
+    cc.Decrypt(sk, ctOR3, &result, p);
+    std::cout << "Result of encrypted computation of OR(1, 1, 1) = " << result << std::endl;
+    if (result != 1)
+      OPENFHE_THROW(math_error, "Decryption failure");
+
+    cc.Decrypt(sk, ctOR4, &result, p);
     std::cout << "Result of encrypted computation of OR(0, 0, 0) = " << result << std::endl;
+    if (result != 0)
+      OPENFHE_THROW(math_error, "Decryption failure");
 
     return 0;
 }

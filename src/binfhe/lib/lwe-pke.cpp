@@ -34,6 +34,7 @@
 #include "math/binaryuniformgenerator.h"
 #include "math/discreteuniformgenerator.h"
 #include "math/ternaryuniformgenerator.h"
+#include <iomanip>
 
 namespace lbcrypto {
 // the main rounding operation used in ModSwitch (as described in Section 3 of
@@ -124,7 +125,8 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
         std::string errMsg = "ERROR: ciphertext modulus q needs to be divisible by plaintext modulus p.";
         OPENFHE_THROW(not_implemented_error, errMsg);
     }
-
+    std::cout << "mod in encrypt " << mod << std::endl;
+    std::cout << "p in encrypt " << p << std::endl;
     NativeVector s = sk->GetElement();
     uint32_t n     = s.GetLength();
     s.SwitchModulus(mod);
@@ -147,7 +149,9 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     }
     b.ModEq(mod);
 
-    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    auto ct = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    ct->SetptModulus(p);
+    return ct;
 }
 
 // classical public key LWE encryption
@@ -236,19 +240,20 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params,
     r.ModSubFastEq(inner, mod);
 
     // Alternatively, rounding can be done as
-    // *result = (r.MultiplyAndRound(NativeInteger(4),q)).ConvertToInt();
+    //*result = (r.MultiplyAndRound(NativeInteger(4),q)).ConvertToInt();
     // But the method below is a more efficient way of doing the rounding
     // the idea is that Round(4/q x) = q/8 + Floor(4/q x)
     r.ModAddFastEq((mod / (p * 2)), mod);
 
     *result = ((NativeInteger(p) * r) / mod).ConvertToInt();
-
 //#if defined(BINFHE_DEBUG)
     double error =
         (static_cast<double>(p) * (r.ConvertToDouble() - mod.ConvertToInt() / (p * 2))) / mod.ConvertToDouble() -
         static_cast<double>(*result);
+
     //std::cerr << mod << " " << p << " " << r << " error:\t" << error << std::endl;
-    std::cerr << error * mod.ConvertToDouble() / static_cast<double>(p) << std::endl;
+    double errorest = error * double(mod.ConvertToDouble() / static_cast<double>(p));
+    std::cerr << errorest << std::endl;
 //#endif
 
     return;
