@@ -26,7 +26,7 @@ class SecLev(Enum):
     HEStd_192_classic = 1
     HEStd_256_classic = 2
     HEStd_NotSet = 3
-'''
+
 class Paramset(Enum):
     params128NQ1 = 0
     params128NQ2 = 1
@@ -49,38 +49,10 @@ class Paramset(Enum):
     params128nQks1 = 18
     params192nQks2 = 19
     params256nQks3 = 20
-'''    
+    
 LogQ = { }
 
 LogQks = { }
-
-#paramsetname: [securitylevel, dimension, modulussize, secret distribution]
-paramsDict = {
- 'params128NQ1': [SecLev.HEStd_128_classic, 1024, 27, DistType.HEStd_ternary],
- 'params192NQ1': [SecLev.HEStd_192_classic, 1024, 19, DistType.HEStd_ternary],
- 'params256NQ1': [SecLev.HEStd_256_classic, 1024, 14, DistType.HEStd_ternary],
- 'params128NQ2': [SecLev.HEStd_128_classic, 2048, 54, DistType.HEStd_ternary],
- 'params192NQ2': [SecLev.HEStd_192_classic, 2048, 37, DistType.HEStd_ternary],
- 'params256NQ2': [SecLev.HEStd_256_classic, 2048, 29, DistType.HEStd_ternary],
- 'params128NQ3': [SecLev.HEStd_128_classic, 4096, 109, DistType.HEStd_ternary],
- 'params192NQ3': [SecLev.HEStd_192_classic, 4096, 75, DistType.HEStd_ternary],
- 'params256NQ3': [SecLev.HEStd_256_classic, 4096, 58, DistType.HEStd_ternary],
- 'params128NQ4': [SecLev.HEStd_128_classic, 8192, 218, DistType.HEStd_ternary],
- 'params192NQ4': [SecLev.HEStd_192_classic, 8192, 152, DistType.HEStd_ternary],
- 'params256NQ4': [SecLev.HEStd_256_classic, 8192, 118, DistType.HEStd_ternary],
- 'params128NQ5': [SecLev.HEStd_128_classic, 16384, 438, DistType.HEStd_ternary],
- 'params192NQ5': [SecLev.HEStd_192_classic, 16384, 305, DistType.HEStd_ternary],
- 'params256NQ5': [SecLev.HEStd_256_classic, 16384, 237, DistType.HEStd_ternary],
- 'params128NQ6': [SecLev.HEStd_128_classic, 32768, 881, DistType.HEStd_ternary],
- 'params192NQ6': [SecLev.HEStd_192_classic, 32768, 611, DistType.HEStd_ternary],
- 'params256NQ6': [SecLev.HEStd_256_classic, 32768, 476, DistType.HEStd_ternary],
-
- 'params128Nnks1': [SecLev.HEStd_128_classic, 512, 14, 15, 5, DistType.HEStd_ternary],
- 'params192nQks1': [SecLev.HEStd_192_classic, 1024, 19, 15, 5, DistType.HEStd_ternary],
- 'params256nQks1': [SecLev.HEStd_256_classic, 1024, 14, 6, 4, DistType.HEStd_ternary],
- 
-  'params128Q_OPT_3_nQks1': [SecLev.HEStd_128_classic, 600, 15, 15, 5, DistType.HEStd_ternary],
-}
 '''
 LogQ[(DistType.HEStd_uniform, 1024, SecLev.HEStd_128_classic)] = 29
 LogQ[(DistType.HEStd_uniform, 1024, SecLev.HEStd_192_classic)] = 21
@@ -120,7 +92,28 @@ LogQ[(DistType.HEStd_error, 32768, SecLev.HEStd_128_classic)] = 883
 LogQ[(DistType.HEStd_error, 32768, SecLev.HEStd_192_classic)] = 613
 LogQ[(DistType.HEStd_error, 32768, SecLev.HEStd_256_classic)] = 478
 '''
+LogQ[(Paramset.params128NQ1, DistType.HEStd_ternary, 1024, SecLev.HEStd_128_classic)] = 27
+LogQ[(Paramset.params192NQ1, DistType.HEStd_ternary, 1024, SecLev.HEStd_192_classic)] = 19
+LogQ[(Paramset.params256NQ1, DistType.HEStd_ternary, 1024, SecLev.HEStd_256_classic)] = 14
+LogQ[(Paramset.params128NQ2, DistType.HEStd_ternary, 2048, SecLev.HEStd_128_classic)] = 54
+LogQ[(Paramset.params192NQ2, DistType.HEStd_ternary, 2048, SecLev.HEStd_192_classic)] = 37
+LogQ[(Paramset.params256NQ2,DistType.HEStd_ternary, 2048, SecLev.HEStd_256_classic)] = 29
+LogQ[(Paramset.params128NQ3,DistType.HEStd_ternary, 4096, SecLev.HEStd_128_classic)] = 109
+LogQ[(Paramset.params192NQ3,DistType.HEStd_ternary, 4096, SecLev.HEStd_192_classic)] = 75
+LogQ[(Paramset.params256NQ3,DistType.HEStd_ternary, 4096, SecLev.HEStd_256_classic)] = 58
+LogQ[(Paramset.params128NQ4,DistType.HEStd_ternary, 8192, SecLev.HEStd_128_classic)] = 218
+LogQ[(Paramset.params192NQ4,DistType.HEStd_ternary, 8192, SecLev.HEStd_192_classic)] = 152
+LogQ[(Paramset.params256NQ4,DistType.HEStd_ternary, 8192, SecLev.HEStd_256_classic)] = 118
+LogQ[(Paramset.params128NQ5,DistType.HEStd_ternary, 16384, SecLev.HEStd_128_classic)] = 438
+LogQ[(Paramset.params192NQ5,DistType.HEStd_ternary, 16384, SecLev.HEStd_192_classic)] = 305
+LogQ[(Paramset.params256NQ5,DistType.HEStd_ternary, 16384, SecLev.HEStd_256_classic)] = 237
+LogQ[(Paramset.params128NQ6,DistType.HEStd_ternary, 32768, SecLev.HEStd_128_classic)] = 881
+LogQ[(Paramset.params192NQ6,DistType.HEStd_ternary, 32768, SecLev.HEStd_192_classic)] = 611
+LogQ[(Paramset.params256NQ6,DistType.HEStd_ternary, 32768, SecLev.HEStd_256_classic)] = 476
 
+LogQks[(Paramset.params128Nnks1, DistType.HEStd_ternary, 512, SecLev.HEStd_128_classic)] = 14
+LogQks[(Paramset.params192nQks1, DistType.HEStd_ternary, 1024, SecLev.HEStd_192_classic)] = 19
+LogQks[(Paramset.params256nQks1, DistType.HEStd_ternary, 1024, SecLev.HEStd_256_classic)] = 14
 '''
 params128NQ1 = LWE.Parameters(n=1024, q=2^27, Xs=ND.SparseTernary(1024, 341, 341), Xe=ND.DiscreteGaussian(3.19))
 params128NQ2 = LWE.Parameters(n=2048, q=2^54, Xs=ND.SparseTernary(2048, 682, 682), Xe=ND.DiscreteGaussian(3.19))

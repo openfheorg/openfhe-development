@@ -103,7 +103,7 @@ public:
    */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method = GINX);
 
-    void GenerateBinFHEContext(BINFHE_PARAMSET set, usint numberBits, usint latticeParam, usint modKS, usint gadgetBase, usint baseKS, BINFHE_METHOD method = GINX);
+    void GenerateBinFHEContext(BINFHE_PARAMSET set, usint latticeParam, usint modKS, usint gadgetBase, usint baseKS, BINFHE_METHOD method = GINX);
     /**
    * Gets the refreshing key (used for serialization).
    *

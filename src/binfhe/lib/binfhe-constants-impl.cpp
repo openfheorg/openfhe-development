@@ -35,6 +35,83 @@
 
 namespace lbcrypto {
 
+BINFHE_PARAMSET findparamset(std::string s) {
+    BINFHE_PARAMSET returnParam;
+    if (s == "TOY") {
+        returnParam = TOY;
+    } else if (s == "MEDIUM") {
+        returnParam = MEDIUM;
+    } else if (s == "STD128_AP") {
+        returnParam = STD128_AP;
+    } else if (s == "STD128_APOPT") {
+        returnParam = STD128_APOPT;
+    } else if (s == "STD128") {
+        returnParam = STD128;
+    } else if (s == "STD128_3") {
+        returnParam = STD128_3;
+    } else if (s == "STD128_en") {
+        returnParam = STD128_en;
+    } else if (s == "STD128_en_3_1") {
+        returnParam = STD128_en_3_1;
+    } else if (s == "STD128_en_3_2") {
+        returnParam = STD128_en_3_2;
+    } else if (s == "STD128_AP_3") {
+        returnParam = STD128_AP_3;
+    } else if (s == "STD128Q_3") {
+        returnParam = STD128Q_3;
+    } else if (s == "STD128Q_OPT_3") {
+        returnParam = STD128Q_OPT_3;
+    } else if (s == "STD128Q_OPT_3_en") {
+        returnParam = STD128Q_OPT_3_en;
+    } else if (s == "STD192Q_3") {
+        returnParam = STD192Q_3;
+    } else if (s == "STD192Q_OPT_3") {
+        returnParam = STD192Q_OPT_3;
+    } else if (s == "STD192Q_OPT_3_en") {
+        returnParam = STD192Q_OPT_3_en;
+    } else if (s == "STD192Q_OPT_3_en_3") {
+        returnParam = STD192Q_OPT_3_en_3;
+    } else if (s == "STD256Q_3") {
+        returnParam = STD256Q_3;
+    } else if (s == "STD256Q_4") {
+        returnParam = STD256Q_4;
+    } else if (s == "STD256Q_OPT_3") {
+        returnParam = STD256Q_OPT_3;
+    } else if (s == "STD256Q_OPT_3_en_1") {
+        returnParam = STD256Q_OPT_3_en_1;
+    } else if (s == "STD256Q_OPT_3_en_2") {
+        returnParam = STD256Q_OPT_3_en_2;
+    } else if (s == "STD128_OPT") {
+        returnParam = STD128_OPT;
+    } else if (s == "STD192") {
+        returnParam = STD192;
+    } else if (s == "STD192_OPT") {
+        returnParam = STD192_OPT;
+    } else if (s == "STD256") {
+        returnParam = STD256;
+    } else if (s == "STD256_OPT") {
+        returnParam = STD256_OPT;
+    } else if (s == "STD128Q") {
+        returnParam = STD128Q;
+    } else if (s == "STD128Q_OPT") {
+        returnParam = STD128Q_OPT;
+    } else if (s == "STD192Q") {
+        returnParam = STD192Q;
+    } else if (s == "STD192Q_OPT") {
+        returnParam = STD192Q_OPT;
+    } else if (s == "STD256Q") {
+        returnParam = STD256Q;
+    } else if (s == "STD256Q_OPT") {
+        returnParam = STD256Q_OPT;
+    } else if (s == "SIGNED_MOD_TEST") {
+        returnParam = SIGNED_MOD_TEST;
+    }// else {
+    //    std::cout << "unknown" << std::endl; //change to openfhe_throw later
+    //}
+
+    return returnParam;
+}
+
 std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
     switch (f) {
         case TOY:
@@ -54,6 +131,9 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
             break;
         case STD128:
             s << "STD128";
+            break;
+        case STD128Q_OPT_3:
+            s << "STD128Q_OPT_3";
             break;
         case STD128_OPT:
             s << "STD128_OPT";

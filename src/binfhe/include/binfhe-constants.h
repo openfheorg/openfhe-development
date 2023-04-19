@@ -99,6 +99,7 @@ enum BINFHE_PARAMSET {
     SIGNED_MOD_TEST  // special parameter set for confirming the signed modular
                      // reduction in the accumulator updates works correctly
 };
+BINFHE_PARAMSET findparamset(std::string s);
 std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f);
 
 /**
@@ -111,6 +112,7 @@ enum BINFHE_OUTPUT {
     LARGE_DIM,     // a fresh encryption with dimension N
     SMALL_DIM,     // a freshly encrypted ciphertext of dimension N and modulus Q switched to n and q
 };
+
 std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f);
 
 enum BINFHE_METHOD {

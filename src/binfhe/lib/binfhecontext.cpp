@@ -168,6 +168,10 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     }
 
     BinFHEContextParams params = search->second;
+    std::cout << "params.latticeParam: " << params.latticeParam << std::endl;
+    std::cout << "params.modKS: " << params.modKS << std::endl;
+    std::cout << "params.gadgetBase: " << params.gadgetBase << std::endl;
+    std::cout << "params.baseKS: " << params.baseKS << std::endl;
     // intermediate prime
     NativeInteger Q(
         PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder));
@@ -186,7 +190,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
 }
 
 void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, 
-                        usint numberBits, usint latticeParam, usint modKS, usint gadgetBase, usint baseKS, BINFHE_METHOD method) {
+                        usint latticeParam, usint modKS, usint gadgetBase, usint baseKS, BINFHE_METHOD method) {
     struct BinFHEContextParams {
         // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
         usint numberBits;
@@ -255,9 +259,6 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set,
     
     BinFHEContextParams params = search->second;
     
-    if (numberBits != 0) {
-        params.numberBits = numberBits;
-    }
     if (latticeParam != 0) {
         params.latticeParam = latticeParam;
     }
@@ -270,6 +271,11 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set,
     if (baseKS != 0) {
         params.baseKS = baseKS;
     }
+    std::cout << "params.latticeParam: " << params.latticeParam << std::endl;
+    std::cout << "params.modKS: " << params.modKS << std::endl;
+    std::cout << "params.gadgetBase: " << params.gadgetBase << std::endl;
+    std::cout << "params.baseKS: " << params.baseKS << std::endl;
+
     // intermediate prime
     NativeInteger Q(
         PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder));
