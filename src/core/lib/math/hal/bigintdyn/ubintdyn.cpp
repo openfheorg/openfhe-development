@@ -898,6 +898,7 @@ ubint<limb_t> ubint<limb_t>::ModSub(const ubint& b, const ubint& modulus) const 
     if (b >= modulus) {
         b_op.ModEq(modulus);
     }
+#if 1
     if (a >= b_op) {
         a.SubEq(b_op);
         a.ModEq(modulus);
@@ -906,6 +907,11 @@ ubint<limb_t> ubint<limb_t>::ModSub(const ubint& b, const ubint& modulus) const 
         a.AddEq(modulus);
         a.SubEq(b_op);
     }
+#else
+    if (a < b_op)
+        a.AddEq(modulus);
+    a.SubEq(b_op);
+#endif
     return a;
 }
 
@@ -918,14 +924,20 @@ const ubint<limb_t>& ubint<limb_t>::ModSubEq(const ubint& b, const ubint& modulu
     if (b >= modulus) {
         b_op.ModEq(modulus);
     }
+#if 1
     if (*this >= b_op) {
         this->SubEq(b_op);
-        this->ModEq(modulus);
+        this->ModEq(modulus);  // is this needed?
     }
     else {
         this->AddEq(modulus);
         this->SubEq(b_op);
     }
+#else
+    if (*this < b_op)
+        this->AddEq(modulus);
+    this->SubEq(b_op);
+#endif
     return *this;
 }
 

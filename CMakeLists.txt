@@ -74,7 +74,7 @@ else()
     option( BUILD_UNITTESTS "Set to ON to build unit tests for the library"     ON  )
     option( BUILD_EXAMPLES "Set to ON to build examples for the library"        ON  )
     option( BUILD_BENCHMARKS "Set to ON to build benchmarks for the library"    ON  )
-    option( WITH_OPENMP "Use OpenMP to enable <omp.h>"                          ON  )
+    option( WITH_OPENMP "Use OpenMP to enable <omp.h>"                          OFF  )
 endif()
 
 option( BUILD_EXTRAS "Set to ON to build extras for the library"                OFF )
@@ -83,7 +83,7 @@ option( WITH_BE2 "Include Backend 2 in build by setting WITH_BE2 to ON"         
 option( WITH_BE4 "Include Backend 4 in build by setting WITH_BE4 to ON"         ON  )
 option( WITH_NTL "Include Backend 6 and NTL in build by setting WITH_NTL to ON" OFF )
 option( WITH_TCM "Activate tcmalloc by setting WITH_TCM to ON"                  OFF )
-option( WITH_NATIVEOPT "Use machine-specific optimizations"                     OFF )
+option( WITH_NATIVEOPT "Use machine-specific optimizations"                     ON )
 option( WITH_COVTEST "Turn on to enable coverage testing"                       OFF )
 option( USE_MACPORTS "Use MacPorts installed packages"                          OFF )
 

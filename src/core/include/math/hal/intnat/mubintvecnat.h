@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,26 +33,30 @@
  * This file contains the vector manipulation functionality for native integers
  */
 
-#ifndef LBCRYPTO_MATH_HAL_INTNAT_MUBINTVECNAT_H
-#define LBCRYPTO_MATH_HAL_INTNAT_MUBINTVECNAT_H
+#ifndef LBCRYPTO_INC_MATH_HAL_INTNAT_MUBINTVECNAT_H
+#define LBCRYPTO_INC_MATH_HAL_INTNAT_MUBINTVECNAT_H
+
+#include "math/hal/intnat/ubintnat.h"
+#include "math/hal/vector.h"
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
 
 #include <initializer_list>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "math/hal/intnat/ubintnat.h"
-#include "math/hal/vector.h"
-
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
-#include "utils/blockAllocator/xvector.h"
-
 // the following should be set to 1 in order to have native vector use block
 // allocations then determine if you want dynamic or static allocations by
 // settingdefining STAIC_POOLS on line 24 of
 // xallocator.cpp
 #define BLOCK_VECTOR_ALLOCATION 0  // set to 1 to use block allocations
+
+#if BLOCK_VECTOR_ALLOCATION == 1
+    #include "utils/blockAllocator/xvector.h"
+#endif
 
 /**
  * @namespace intnat
@@ -113,12 +117,10 @@ bool operator!=(const NAlloc<T>&, const NAlloc<U>&) { return false; }
 #endif
 
 template <class IntegerType>
-class NativeVectorT : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>, IntegerType>,
-                      public lbcrypto::Serializable {
+class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>, IntegerType>,
+                            public lbcrypto::Serializable {
 public:
     typedef IntegerType BVInt;
-
-    // CONSTRUCTORS
 
     /**
    * Basic constructor.
@@ -188,7 +190,7 @@ public:
     /**
    * Destructor.
    */
-    virtual ~NativeVectorT();
+    ~NativeVectorT() override = default;
 
     // ASSIGNMENT OPERATORS
 
@@ -233,10 +235,8 @@ public:
    * @return Assigned NativeVectorT.
    */
     inline const NativeVectorT& operator=(uint64_t val) {
-        this->m_data[0] = val;
-        for (size_t i = 1; i < GetLength(); ++i) {
-            this->m_data[i] = 0;
-        }
+        m_data[0] = val;
+        std::fill(m_data.begin() + 1, m_data.end(), 0);
         return *this;
     }
 
@@ -249,17 +249,15 @@ public:
    * @param index is the index to set a value at.
    */
     IntegerType& at(size_t i) {
-        if (!this->IndexCheck(i)) {
+        if (!this->IndexCheck(i))
             OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
-        }
-        return this->m_data[i];
+        return m_data[i];
     }
 
     const IntegerType& at(size_t i) const {
-        if (!this->IndexCheck(i)) {
+        if (!this->IndexCheck(i))
             OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
-        }
-        return this->m_data[i];
+        return m_data[i];
     }
 
     /**
@@ -267,12 +265,12 @@ public:
    * @param idx is the index to get a value at.
    * @return is the value at the index. return nullptr if invalid index.
    */
-    IntegerType& operator[](size_t idx) {
-        return (this->m_data[idx]);
+    inline IntegerType& operator[](size_t idx) {
+        return m_data[idx];
     }
 
-    const IntegerType& operator[](size_t idx) const {
-        return (this->m_data[idx]);
+    inline const IntegerType& operator[](size_t idx) const {
+        return m_data[idx];
     }
 
     /**
@@ -303,7 +301,7 @@ public:
    * @return vector length.
    */
     size_t GetLength() const {
-        return this->m_data.size();
+        return m_data.size();
     }
 
     // MODULAR ARITHMETIC OPERATIONS
@@ -633,7 +631,7 @@ public:
         ar(::cereal::make_nvp("m", m_modulus));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "NativeVectorT";
     }
 
@@ -653,11 +651,15 @@ private:
     IntegerType m_modulus = 0;
 
     // function to check if the index is a valid index.
-    bool IndexCheck(size_t length) const {
-        if (length > this->m_data.size()) {
-            return false;
-        }
-        return true;
+    //    bool IndexCheck(size_t length) const {
+    //        if (length > this->m_data.size()) {   <---- assume this is not correct?
+    //            return false;
+    //        }
+    //        return true;
+    //    }
+
+    inline bool IndexCheck(size_t length) const {
+        return (length < m_data.size());
     }
 };
 
