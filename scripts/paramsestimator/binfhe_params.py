@@ -14,7 +14,7 @@ def call_estimator(dim, mod, num_threads, is_quantum = True):
     #ternary_uniform_1m1 = dim//3;
 
     params = LWE.Parameters(n=dim, q=mod, Xs=ND.Uniform(-1, 1, dim), Xe=ND.DiscreteGaussian(3.19))
-        
+
     if is_quantum:
         estimateval = LWE.estimate(params, red_cost_model=RC.LaaMosPol14, deny_list=[
                                "bkw", "bdd", "bdd_mitm_hybrid", "dual", "dual_mitm_hybrid", "arora-gb"], jobs=num_threads)
@@ -36,7 +36,7 @@ def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, o
     modified = False
     sec_level_from_estimator = call_estimator(dim, mod, num_threads)
     done = False
-    
+
     while (sec_level_from_estimator < expected_sec_level or done):
         modified = True
         if (optimize_dim and (not optimize_mod)):
@@ -54,51 +54,79 @@ def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, o
     	print("cannot find optimal params")
     	dim1 = 0
     	mod1 = 0
-    	
+
     return dim1, mod1
 
 
 #optimized dim, mod values with least decryption failure rate
 def choose_params_with_dim_mod_noise(exp_sec_level, param_set, exp_dec_fail, ptmod, ctmod, comp, is_quantum=True):
     #dimN, modQks = optimize_params_security(128, dim, mod, False, True, False, True)
-    
+
     noise = get_noise_from_cpp_code(param_set)
     dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
     print("dec_fail_rate first ", dec_fail_rate)
-    
+
     dim, mod = get_dim_mod(param_set)
-    while (dec_fail_rate > exp_dec_fail):
+    dimopt1 = dim
+    modopt1 = mod
+    mod1 = mod
+    while ((dec_fail_rate > exp_dec_fail) or (mod1/mod == 16)):
         mod1 = mod1*2
-        dimopt1, modopt1 = optimize_params_security(exp_sec_level, dim, mod1, True, False, isPowerOfTwo(dim1), is_quantum)
+        dimopt1, modopt1 = optimize_params_security(exp_sec_level, dim, mod1, True, False, isPowerOfTwo(dim), is_quantum)
         noise = get_noise_from_cpp_code(param_set, dimopt1, modopt1)
         dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
         print("dec_fail_rate in loop ", dec_fail_rate)
-    
+
+    #try to optimize - could be made optional
+    mod1 = modopt1
+    ctr = 0
+    extraopt = True
+    while ((dec_fail_rate - exp_dec_fail) < -10) or ctr > 5:
+        mod1 = mod1/2
+        dimopt2, modopt2 = optimize_params_security(exp_sec_level, dimopt1, mod1, True, False, isPowerOfTwo(dimopt1), is_quantum)
+        noise = get_noise_from_cpp_code(param_set, dimopt2, modopt2)
+        dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
+        print("dec_fail_rate in loop ", dec_fail_rate)
+        ctr=ctr+1
+        if (dec_fail_rate > exp_dec_fail):
+            print("cannot optimize further - try adjusting digit dize for tighter parameters")
+            extraopt = False
+            break
+
     print(dimopt1, modopt1)
-    return dimopt1, modopt1
-    
+    print(dimopt2, modopt2)
+
+    dimopt = dimopt1
+    modopt = modopt1
+    if extraopt:
+        dimopt = dimopt2
+        modopt = modopt2
+
+    return dimopt, modopt
+
 #optimize accumulator digit size or key switching digit size to lower noise
 def choose_params_digit_size(exp_sec_level, param_set, exp_dec_fail, ptmod, ctmod, comp, optimize_Bg, optimize_Bks, is_quantum=True):
     noise = get_noise_from_cpp_code(param_set, "noise_file_name")
     dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
     print("dec_fail_rate first ", dec_fail_rate)
     dim, mod = get_dim_mod(param_set)
-    
+    B_g1 = B_g
+
+    print("B_g, B_ks before optimize: ", B_g, B_ks)
+    while ((dec_fail_rate > exp_dec_fail) or (B_g1/B_g == 16)):
+        B_g1 = B_g1/4
+        noise = get_noise_from_cpp_code(param_set, dim, mod, B_g1)
+        dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
+        print("dec_fail_rate in loop ", dec_fail_rate)
+
     return B_g, B_ks
 
-    
-def get_noise_from_cpp_code(param_set, dim=0, mod=0, B_g = 0, B_ks = 0, noise_file = "noise_file_name"):    
+
+def get_noise_from_cpp_code(param_set, dim=0, mod=0, B_g = 0, B_ks = 0, noise_file = "noise_file_name"):
     #arglist = 'arg1 arg2 arg3'
     #bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + param_set + " > out_file 2>" + noise_file
     bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + param_set + " " + str(dim) + " " + str(mod) + " " + str(B_g) + " " + str(B_ks) + " > out_file 2>" + noise_file
-    '''
-    if ((dim != 0) and (mod !=0) and (B_g != 0) and (B_ks != 0)):
-        bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + param_set + " " + str(dim) + " " + str(mod) + str(B_g) + str(B_ks) + " > out_file 2>" + noise_file
-    elif ((dim != 0) and (mod != 0) and (B_g != 0) and (B_ks == 0)):
-        bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + param_set + " " + str(dim) + str(0) + str(B_ks) + " > out_file 2>" + noise_file
-    elif ((dim == 0) and (mod !=0)):
-        bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + param_set + " " + str(mod) + " > out_file 2>" + noise_file
-    '''
+
     print(bashCommand)
     os.system(bashCommand)
     # parse noise values and compute stddev
@@ -108,7 +136,7 @@ def get_noise_from_cpp_code(param_set, dim=0, mod=0, B_g = 0, B_ks = 0, noise_fi
             noise.append(float(line.rstrip()))
     print("noise", stdev(noise))
     return stdev(noise)
-    
+
 def get_decryption_failure(noise_stddev, ptmod, ctmod, comp):
     num = ctmod/(2*ptmod)
     denom = sqrt(2*comp)*noise_stddev
@@ -131,7 +159,7 @@ def get_dim_mod(paramset):
 
     dim = params[1]
     mod = 2**params[2]
-    
+
     return dim, mod
 #********************end of helper functions***********************************
 
@@ -149,11 +177,15 @@ print(log2(modQks2))
 print("****")
 
 # now verify the decryption rate and optimize the n, Qks params -- higher Qks gives lower noise and better decryption failure
-choose_params_with_dim_mod_noise(128, "params128Q_OPT_3_nQks1", -32, 6, 4096, 3)
+#4 input gates
+#choose_params_with_dim_mod_noise(128, "STD128Q_OPT_3_nQks1", -32, 8, 4096, 4)
+#2 input gates
+dim, mod = choose_params_with_dim_mod_noise(128, "STD128Q_OPT_3_nQks1", -32, 4, 4096, 2)
 
-
+stdparams.paramsDict["STD128Q_OPT_3_nQks1"][1] = dim
+stdparams.paramsDict["STD128Q_OPT_3_nQks1"][2] = mod
 # then optimize B_g, B_ks for lower noise
-
+choose_params_digit_size(128, "STD128Q_OPT_3_nQks1", -32, 6, 4096, 3, True, False)
 # ---------------------------------------------------------------------------------
 # estimate_params(n=1024, q=2048, Qks=2^16, security_level=128, quantum/classical=true, logBg=7, logBks=5, decryption_failure_rate=-32, native_word_bound=64, num_threads):
 #sec_level_from_estimator = call_estimator(2048, 2**50, num_threads);

@@ -34,7 +34,7 @@
 
 #include <cstdint>
 #include <iosfwd>
-
+#include <string>
 namespace lbcrypto {
 
 using LWEPlaintext        = int64_t;
@@ -64,6 +64,7 @@ enum BINFHE_PARAMSET {
     STD128_AP_3,
     STD128Q_3,
     STD128Q_OPT_3,
+    STD128Q_OPT_3_nQks1,
     STD128Q_OPT_3_en,
     STD192Q_3,
     STD192Q_OPT_3,

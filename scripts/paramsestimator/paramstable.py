@@ -49,7 +49,7 @@ class Paramset(Enum):
     params128nQks1 = 18
     params192nQks2 = 19
     params256nQks3 = 20
-'''    
+'''
 LogQ = { }
 
 LogQks = { }
@@ -78,8 +78,8 @@ paramsDict = {
  'params128Nnks1': [SecLev.HEStd_128_classic, 512, 14, 15, 5, DistType.HEStd_ternary],
  'params192nQks1': [SecLev.HEStd_192_classic, 1024, 19, 15, 5, DistType.HEStd_ternary],
  'params256nQks1': [SecLev.HEStd_256_classic, 1024, 14, 6, 4, DistType.HEStd_ternary],
- 
-  'params128Q_OPT_3_nQks1': [SecLev.HEStd_128_classic, 600, 15, 15, 5, DistType.HEStd_ternary],
+
+  'STD128Q_OPT_3_nQks1': [SecLev.HEStd_128_classic, 600, 15, 15, 5, DistType.HEStd_ternary],
 }
 '''
 LogQ[(DistType.HEStd_uniform, 1024, SecLev.HEStd_128_classic)] = 29

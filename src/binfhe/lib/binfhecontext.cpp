@@ -189,8 +189,8 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
 
-void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, 
-                        usint latticeParam, usint modKS, usint gadgetBase, usint baseKS, BINFHE_METHOD method) {
+void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, usint latticeParam, usint modKS, usint gadgetBase,
+                                          usint baseKS, BINFHE_METHOD method) {
     struct BinFHEContextParams {
         // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
         usint numberBits;
@@ -219,7 +219,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set,
         { STD128_en_3_2,        { 27,     2048,        1024, 2048, 1 << 13, STD_DEV, 1 << 7,    1 <<  5,  32 } },
         { STD128_3,             { 27,     2048,         512, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  4,  32 } },
         { STD128Q_3,            { 50,     4096,        1024, 4096, 1 << 25, STD_DEV,     32,    1 << 25,  32 } },
-        { STD128Q_OPT_3,        { 50,     4096,         600, 4096, 1 << 15, STD_DEV,     32,    1 << 15,  32 } },
+        { STD128Q_OPT_3_nQks1,        { 50,     4096,         600, 4096, 1 << 15, STD_DEV,     32,    1 << 15,  32 } },
         { STD128Q_OPT_3_en,     { 50,     4096,         725, 4096, 1 << 18, STD_DEV,      8,    1 << 25,  32 } },
         { STD192Q_3,            { 35,     4096,        1024, 4096, 1 << 17, STD_DEV,     64,    1 <<  9,   32 } },
         { STD192Q_OPT_3,        { 35,     4096,         890, 4096, 1 << 15, STD_DEV,     32,    1 <<  9,   32 } },
@@ -256,9 +256,9 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set,
         std::string errMsg("ERROR: Unknown parameter set [" + std::to_string(set) + "] for FHEW.");
         OPENFHE_THROW(config_error, errMsg);
     }
-    
+
     BinFHEContextParams params = search->second;
-    
+
     if (latticeParam != 0) {
         params.latticeParam = latticeParam;
     }
@@ -410,15 +410,17 @@ LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext 
     return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2);
 }
 
-//LWECiphertext BinFHEContext::EvalBinGateVector(const BINGATE gate, std::vector<LWECiphertext> cts) const {
+// LWECiphertext BinFHEContext::EvalBinGateVector(const BINGATE gate, std::vector<LWECiphertext> cts) const {
 //    return m_binfhescheme->EvalBinGateVector(m_params, gate, m_BTKey, cts);
 //}
 
-LWECiphertext BinFHEContext::EvalBinGateThreeInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3) const {
+LWECiphertext BinFHEContext::EvalBinGateThreeInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
+                                                   ConstLWECiphertext ct3) const {
     return m_binfhescheme->EvalBinGateThreeInput(m_params, gate, m_BTKey, ct1, ct2, ct3);
 }
 
-LWECiphertext BinFHEContext::EvalBinGateFourInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3, ConstLWECiphertext ct4) const {
+LWECiphertext BinFHEContext::EvalBinGateFourInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
+                                                  ConstLWECiphertext ct3, ConstLWECiphertext ct4) const {
     return m_binfhescheme->EvalBinGateFourInput(m_params, gate, m_BTKey, ct1, ct2, ct3, ct4);
 }
 
