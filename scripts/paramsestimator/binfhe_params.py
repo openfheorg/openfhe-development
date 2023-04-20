@@ -1,248 +1,149 @@
 #!/usr/bin/python
 
-from math import log2, floor, sqrt, ceil, erfc
-from statistics import stdev
-import sys
-import os
+'''Approach for determining parameters for binfhe
+1)	Pick security level
+2)	Set expected decryption failure rate
+3)	Specify max number of inputs to a boolean gate
+Measure enc/rec/dec time, and throughput ( #bits in (3+/these times) and document.
+'''
+
 import paramstable as stdparams
-sys.path.insert(0, '/home/sara/lattice-estimator')
-from estimator import *
+import binfhe_params_helper as helperfncs
+import math
 
-num_threads = 8
+def parameter_selector():
+    print("Parameter selectorfor FHEW like schemes")
 
-def call_estimator(dim, mod, num_threads, is_quantum = True):
-    #ternary_uniform_1m1 = dim//3;
+    dist_type = int(input("Enter Distribution (0 = HEStd_uniform, 1 = HEStd_error, 2 = HEStd_ternary): "))
+    helperfncs.test_range(dist_type, 0, 2)
 
-    params = LWE.Parameters(n=dim, q=mod, Xs=ND.Uniform(-1, 1, dim), Xe=ND.DiscreteGaussian(3.19))
+    exp_sec_level = int(input("Enter Security level (0 = 128, 1 = 192, 2 = 256): "))
+    helperfncs.test_range(sec_level, 0, 2)
 
-    if is_quantum:
-        estimateval = LWE.estimate(params, red_cost_model=RC.LaaMosPol14, deny_list=[
-                               "bkw", "bdd", "bdd_mitm_hybrid", "dual", "dual_mitm_hybrid", "arora-gb"], jobs=num_threads)
-    else:
-        estimateval = LWE.estimate(params, red_cost_model=RC.BDGL16, deny_list=[
-                               "bkw", "bdd", "bdd_mitm_hybrid", "dual", "dual_mitm_hybrid", "arora-gb"], jobs=num_threads)
+    is_quantum = int(input("Include quantum attack estimates for security? (0 = False, 1 = True): "))
+    helperfncs.test_range(is_quantum, 0, 1)
 
-    usvprop = floor(log2(estimateval['usvp']['rop']))
-    dualhybridrop = floor(log2(estimateval['dual_hybrid']['rop']))
-    dechybridrop = floor(log2(estimateval['bdd_hybrid']['rop']))
-    print(estimateval)
-    return min(usvprop, dualhybridrop, dechybridrop)
+    exp_decryption_failure = int(input("Enter expected decryption failure rate (as a power of 2, for example, enter -32 for 2^-32 failure rate): "))
 
-#optimize dim, mod for an expected security level
-def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, optimize_mod=True, is_dim_pow2=True, is_quantum = True):
-    dim1 = dim
-    mod1 = mod
-    dimlog = log2(dim)
-    modified = False
-    sec_level_from_estimator = call_estimator(dim, mod, num_threads)
-    done = False
-
-    while (sec_level_from_estimator < expected_sec_level or done):
-        modified = True
-        if (optimize_dim and (not optimize_mod)):
-            dim1 = dim1+15
-            if ((dim1 >= 2*dim) and (not is_dim_pow2)):
-                done = true
-            elif is_dim_pow2:
-                dim1 = 2*dim
-            sec_level_from_estimator = call_estimator(dim1, mod, num_threads, is_quantum)
-        elif ((not optimize_dim) and optimize_mod):
-            mod1 = mod1/2
-            sec_level_from_estimator = call_estimator(dim, mod1, num_threads, is_quantum)
-
-    if (modified and sec_level_from_estimator < expected_sec_level):
-    	print("cannot find optimal params")
-    	dim1 = 0
-    	mod1 = 0
-
-    return dim1, mod1
+    num_of_inputs = int(input("Enter expected number of inputs to the boolean gate: "))
 
 
-#optimized dim, mod values with least decryption failure rate
-def choose_params_with_dim_mod_noise(exp_sec_level, param_set, exp_dec_fail, ptmod, ctmod, comp, is_quantum=True):
-    #dimN, modQks = optimize_params_security(128, dim, mod, False, True, False, True)
+    #Set ringsize n, Qks, N, Q based on the security level
 
-    noise = get_noise_from_cpp_code(param_set)
-    dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
-    print("dec_fail_rate first ", dec_fail_rate)
+        usint numberBits; #Q
+        usint cyclOrder; #2N
+        usint latticeParam; #n
+        usint mod;  #q
 
-    dim, mod = get_dim_mod(param_set)
-    dimopt1 = dim
-    modopt1 = mod
-    mod1 = mod
-    while ((dec_fail_rate > exp_dec_fail) or (mod1/mod == 16)):
-        mod1 = mod1*2
-        dimopt1, modopt1 = optimize_params_security(exp_sec_level, dim, mod1, True, False, isPowerOfTwo(dim), is_quantum)
-        noise = get_noise_from_cpp_code(param_set, dimopt1, modopt1)
-        dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
-        print("dec_fail_rate in loop ", dec_fail_rate)
+        usint modKS; #Qks
+        #double stdDev;
+        usint baseKS; #B_ks
 
-    #try to optimize - could be made optional
-    mod1 = modopt1
-    ctr = 0
-    extraopt = True
-    while ((dec_fail_rate - exp_dec_fail) < -10) or ctr > 5:
-        mod1 = mod1/2
-        dimopt2, modopt2 = optimize_params_security(exp_sec_level, dimopt1, mod1, True, False, isPowerOfTwo(dimopt1), is_quantum)
-        noise = get_noise_from_cpp_code(param_set, dimopt2, modopt2)
-        dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
-        print("dec_fail_rate in loop ", dec_fail_rate)
-        ctr=ctr+1
-        if (dec_fail_rate > exp_dec_fail):
-            print("cannot optimize further - try adjusting digit dize for tighter parameters")
-            extraopt = False
-            break
+        usint gadgetBase; #B_g
+        #usint baseRK;
 
-    print(dimopt1, modopt1)
-    print(dimopt2, modopt2)
+    while ringsize <= 32768:
+        set_r=0
+        set_qk=0
+        print("---\nadjusting parameters for ringsize: ", ringsize)
 
-    dimopt = dimopt1
-    modopt = modopt1
-    if extraopt:
-        dimopt = dimopt2
-        modopt = modopt2
+        logQ = stdlat.LogQ[(dist_type, ringsize, sec_level)]
 
-    return dimopt, modopt
+        if(optimize_r):
+            for this_r in range(math.ceil(logQ/3.0), 0, -1):
+            	if (logQ%this_r == 0):
+	                if(scheme=="indcpa"):
+        	            this_d = helperfncs.find_d_indcpa(logQ, ringsize, p, this_r)
+        	        elif(scheme=="fixednf"):
+        	            this_d = helperfncs.find_d_fixednoise(logQ, ringsize, p, this_r)
 
-#optimize accumulator digit size or key switching digit size to lower noise
-def choose_params_digit_size(exp_sec_level, param_set, exp_dec_fail, ptmod, ctmod, comp, optimize_Bg, optimize_Bks, is_quantum=True):
-    noise = get_noise_from_cpp_code(param_set, "noise_file_name")
-    dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
-    print("dec_fail_rate first ", dec_fail_rate)
-    dim, mod = get_dim_mod(param_set)
-    B_g1 = B_g
+        	        if (this_d >= min_hops):
+        	            r = this_r
+        	            set_r=1
+        	            print("resulting r ", r, "d ", this_d, " satisfies min hops, stopping")
+        	            break
 
-    print("B_g, B_ks before optimize: ", B_g, B_ks)
-    while ((dec_fail_rate > exp_dec_fail) or (B_g1/B_g == 16)):
-        B_g1 = B_g1/4
-        noise = get_noise_from_cpp_code(param_set, dim, mod, B_g1)
-        dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
-        print("dec_fail_rate in loop ", dec_fail_rate)
-
-    return B_g, B_ks
+        else:
+            this_r=1
+            if(scheme=="indcpa"):
+                this_d = helperfncs.find_d_indcpa(logQ, ringsize, p, this_r)
+            elif(scheme=="fixednf"):
+                this_d = helperfncs.find_d_fixednoise(logQ, ringsize, p, this_r)
+            if (this_d >= min_hops):
+                r = this_r
+                set_r=1
+                print("resulting r ", r, "d ", this_d, " satisfies min hops, stopping")
 
 
-def get_noise_from_cpp_code(param_set, dim=0, mod=0, B_g = 0, B_ks = 0, noise_file = "noise_file_name"):
-    #arglist = 'arg1 arg2 arg3'
-    #bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + param_set + " > out_file 2>" + noise_file
-    bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + param_set + " " + str(dim) + " " + str(mod) + " " + str(B_g) + " " + str(B_ks) + " > out_file 2>" + noise_file
 
-    print(bashCommand)
-    os.system(bashCommand)
-    # parse noise values and compute stddev
-    noise=[]
-    with open(noise_file) as file:
-        for line in file:
-            noise.append(float(line.rstrip()))
-    print("noise", stdev(noise))
-    return stdev(noise)
+        #verify Q is ok
+        if(set_r==1):
+            if(scheme=="indcpa"):
+                set_qk=1
+                qk = helperfncs.find_qk_indcpa(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 60)
+            elif(scheme=="fixednf"):
+                set_qk=1
+                qk = helperfncs.find_qk_fixednoise(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 476)
+            elif(scheme=="psnf"):
+                set_qk=1
+                qk = helperfncs.find_qk_noiseflooding_ps(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 476)
+            elif(scheme=="hybridpsnf"):
+                set_qk=1
+                qk = helperfncs.find_qk_noiseflooding_hybrid_ps(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 476)
+            elif(scheme=="dvr_psnf"):
+                set_qk=1
+                qk = helperfncs.find_qk_dvr_ps(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 476)
+            elif(scheme=="trapdoor_psnf"):
+                set_qk=1
+                qk = helperfncs.find_qk_trapdoor_ps(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 476)
 
-def get_decryption_failure(noise_stddev, ptmod, ctmod, comp):
-    num = ctmod/(2*ptmod)
-    denom = sqrt(2*comp)*noise_stddev
-    print("num", num)
-    print("denom", denom)
-    val = erfc(num/denom)
-    if (val == 0):
-        retval = 0
-    else:
-    	retval = log2(val)
-    return retval
+        if(set_qk==1):
+            if (qk <= logQ):
+                print("resulting qk: ", qk, " <= logQ: ",logQ, "  satisfies security")
+                break
 
-def isPowerOfTwo(n):
-    if (n == 0):
-        return False
-    return (ceil(log2(n)) == floor(log2(n)))
+            # if we get here qk is too big we need to move to a larger ring size
+            print("resulting qk: ", qk, " > logQ: ",logQ, " does not satisfy security")
+            print("increasing ringsize in an attempt to satisfy security")
+        ringsize = ringsize *2
 
-def get_dim_mod(paramset):
-    params = stdparams.paramsDict[paramset]
+    if(scheme=="indcpa"):
+        max_hops = helperfncs.find_d_indcpa(logQ, ringsize, p, r) - 1
+    elif(scheme=="fixednf"):
+        max_hops = helperfncs.find_d_fixednoise(logQ, ringsize, p, r) - 1
+    elif(scheme=="psnf"):
+        max_hops = helperfncs.find_d_noiseflooding_ps(logQ, ringsize, p, r) - 1
+    elif(scheme=="hybridpsnf"):
+        max_hops = helperfncs.find_d_noiseflooding_hybrid_ps(logQ, ringsize, p, r) - 1
+    elif(scheme=="dvr_psnf"):
+        max_hops = helperfncs.find_d_dvr_ps(logQ, ringsize, p, r) - 1
+    elif(scheme=="trapdoor_psnf"):
+        max_hops = helperfncs.find_d_trapdoor_ps(logQ, ringsize, p, r) - 1
 
-    dim = params[1]
-    mod = 2**params[2]
-
-    return dim, mod
-#********************end of helper functions***********************************
-
-# verify security of n, Qks and optimize
-dimn1, modQks1 = optimize_params_security(128, 585, 2**16, True, False, isPowerOfTwo(585), True)
-
-print("optimized sets")
-print(dimn1)
-print(log2(modQks1))
-print("****")
-dimn2, modQks2 = optimize_params_security(128, 585, 2**16, False, True, isPowerOfTwo(585), True)
-
-print(dimn2)
-print(log2(modQks2))
-print("****")
-
-# now verify the decryption rate and optimize the n, Qks params -- higher Qks gives lower noise and better decryption failure
-#4 input gates
-#choose_params_with_dim_mod_noise(128, "STD128Q_OPT_3_nQks1", -32, 8, 4096, 4)
-#2 input gates
-dim, mod = choose_params_with_dim_mod_noise(128, "STD128Q_OPT_3_nQks1", -32, 4, 4096, 2)
-
-stdparams.paramsDict["STD128Q_OPT_3_nQks1"][1] = dim
-stdparams.paramsDict["STD128Q_OPT_3_nQks1"][2] = mod
-# then optimize B_g, B_ks for lower noise
-choose_params_digit_size(128, "STD128Q_OPT_3_nQks1", -32, 6, 4096, 3, True, False)
-# ---------------------------------------------------------------------------------
-# estimate_params(n=1024, q=2048, Qks=2^16, security_level=128, quantum/classical=true, logBg=7, logBks=5, decryption_failure_rate=-32, native_word_bound=64, num_threads):
-#sec_level_from_estimator = call_estimator(2048, 2**50, num_threads);
-#print(sec_level_from_estimator)
-'''
-# verify security of N, Q
-dimN, modQ = optimize_params_security(128, N, Q, False, True, False, True)
-# verify security of n, Qks and optimize
-dimn, modQks = optimize_params_security(128, n, Qks, False, True, True, True)
-
-# verify security of n, Qks and optimize
-dimn1, modQks1 = optimize_params_security(128, n, Qks, True, True, False, True)
-'''
-
-'''
-print("first set")
-print(dimN)
-print(log2(modQ))
-print("second set")
-print(dimn)
-print(log2(modQks))
-print("third set")
-print(dimn1)
-print(log2(modQks1))
-'''
+    print("final parameters")
+    print("dist_type: ",dist_type)
+    print("sec_level: ", sec_level)
+    print("decryption failure rate: ", ringsize)
+    print("requested payload_bits: ", payload_bits)
+    print("max payload_bits: ", ringsize*math.log2(p))
+    print("p: ", p)
+    print("min_hops: ", min_hops)
+    print("max_hops (upto 2^60): ", max_hops)
+    print("min_depth: ", min_depth)
+    print("ringsize: ", ringsize)
+    print("r: ", r)
+    print("logQ: ", logQ)
+    print("logQ/r: %4.1f" % (logQ/r))
 
 
-'''
-while (sec_level_from_estimator < expected_sec_level):
-        if(((mod le 32) and (mod1 gt 32)) or ((mod le 64) and (mod1 gt 64))):
-    done = true
-'''
-'''
-Theoretical noise estimate
-n = 1024
-q = 1024
-Qks = 2**25
-N = 2048
-Q = 2**50
-logQ = log2(Q)
-logQks = log2(Qks)
-logBg = 25
-logBks = 5
-sec_level_from_estimator = call_estimator(n, Qks, num_threads);
-print(sec_level_from_estimator)
-u = 2
-sigmasq = 3.19*3.19
-Bg = 2**logBg
-Bks = 2**logBks
-dg = ceil(logQ/logBg)
-dks = ceil(logQks/logBks)
-sigmasqacc = (2*u*dg*n*N*(Bg**2)*sigmasq)//6
-psigmasqacc = ((Qks**2)/(Q**2))*sigmasqacc
-sigmasqKS = sigmasq*N*dks
-sigmasqMS1 = (N + 2)//6
-noise_sum = psigmasqacc + sigmasqKS + sigmasqMS1
-sigmasq_MS2 = (n + 2)//6
-noise_estimate_GINX = sqrt((q**2/Qks**2)*(noise_sum) + sigmasq_MS2)
-print(noise_estimate_GINX)
-'''
+#example call to function parameter_selector
+#parameter_selector("indcpa", False)
+#parameter_selector("fixednf", False)
+#parameter_selector("psnf", False)
+#parameter_selector("hybridpsnf", False)
+#parameter_selector("dvr_psnf", False)
+#parameter_selector("trapdoor_psnf", True)
+#parameter_selector(mode, digit_optimize)
+helperfncs.find_d_indcpa(27,1024,2,6)
+helperfncs.find_d_indcpa(27,1024,2,9)
+helperfncs.find_d_fixednoise(54,2048,65536,18)
