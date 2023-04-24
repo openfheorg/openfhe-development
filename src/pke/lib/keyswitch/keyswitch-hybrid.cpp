@@ -90,31 +90,37 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
     std::vector<DCRTPoly> av(numPartQ);
     std::vector<DCRTPoly> bv(numPartQ);
 
-    std::vector<NativeInteger> PModq                     = cryptoParams->GetPModq();
-    std::vector<std::vector<NativeInteger>> PartQHatModq = cryptoParams->GetPartQHatModq();
+    std::vector<NativeInteger> PModq = cryptoParams->GetPModq();
+    usint numPerPartQ                = cryptoParams->GetNumPerPartQ();
 
     for (usint part = 0; part < numPartQ; part++) {
         DCRTPoly a = DCRTPoly(dug, paramsQP, Format::EVALUATION);
         DCRTPoly e(dgg, paramsQP, Format::EVALUATION);
         DCRTPoly b(paramsQP, Format::EVALUATION, true);
 
-        // The part with basis Q
-        for (usint i = 0; i < sizeQ; i++) {
-            const NativeInteger& qi = paramsQ->GetParams()[i]->GetModulus();
-            auto ai                 = a.GetElementAtIndex(i);
-            auto ei                 = e.GetElementAtIndex(i);
-            auto sNewi              = sNewExt.GetElementAtIndex(i);
-            auto sOldi              = sOld.GetElementAtIndex(i);
-            auto factor             = PModq[i].ModMulFast(PartQHatModq[part][i], qi);
-            b.SetElementAtIndex(i, -ai * sNewi + factor * sOldi + ns * ei);
+        usint startPartIdx = numPerPartQ * part;
+        usint endPartIdx   = (sizeQ > startPartIdx + numPerPartQ) ? (startPartIdx + numPerPartQ) : sizeQ;
+
+        for (usint i = 0; i < startPartIdx; i++) {
+            auto ai    = a.GetElementAtIndex(i);
+            auto ei    = e.GetElementAtIndex(i);
+            auto sNewi = sNewExt.GetElementAtIndex(i);
+            b.SetElementAtIndex(i, -ai * sNewi + ns * ei);
         }
 
-        // The part with basis P
-        for (usint j = sizeQ; j < sizeQP; j++) {
-            auto aj       = a.GetElementAtIndex(j);
-            auto ej       = e.GetElementAtIndex(j);
-            auto sNewExtj = sNewExt.GetElementAtIndex(j);
-            b.SetElementAtIndex(j, -aj * sNewExtj + ns * ej);
+        for (usint i = startPartIdx; i < endPartIdx; i++) {
+            auto ai    = a.GetElementAtIndex(i);
+            auto ei    = e.GetElementAtIndex(i);
+            auto sNewi = sNewExt.GetElementAtIndex(i);
+            auto sOldi = sOld.GetElementAtIndex(i);
+            b.SetElementAtIndex(i, -ai * sNewi + PModq[i] * sOldi + ns * ei);
+        }
+
+        for (usint i = endPartIdx; i < sizeQP; i++) {
+            auto ai    = a.GetElementAtIndex(i);
+            auto ei    = e.GetElementAtIndex(i);
+            auto sNewi = sNewExt.GetElementAtIndex(i);
+            b.SetElementAtIndex(i, -ai * sNewi + ns * ei);
         }
 
         av[part] = a;
@@ -172,32 +178,38 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
     std::vector<DCRTPoly> av(numPartQ);
     std::vector<DCRTPoly> bv(numPartQ);
 
-    std::vector<NativeInteger> PModq                     = cryptoParams->GetPModq();
-    std::vector<std::vector<NativeInteger>> PartQHatModq = cryptoParams->GetPartQHatModq();
+    std::vector<NativeInteger> PModq = cryptoParams->GetPModq();
+    usint numPerPartQ                = cryptoParams->GetNumPerPartQ();
 
     for (usint part = 0; part < numPartQ; part++) {
         DCRTPoly a = ekPrev == nullptr ? DCRTPoly(dug, paramsQP, Format::EVALUATION) :  // single-key HE
-                         ekPrev->GetAVector()[part];                                    // threshold HE
+                                         ekPrev->GetAVector()[part];                                    // threshold HE
         DCRTPoly e(dgg, paramsQP, Format::EVALUATION);
         DCRTPoly b(paramsQP, Format::EVALUATION, true);
 
-        // The part with basis Q
-        for (usint i = 0; i < sizeQ; i++) {
-            const NativeInteger& qi = paramsQ->GetParams()[i]->GetModulus();
-            auto ai                 = a.GetElementAtIndex(i);
-            auto ei                 = e.GetElementAtIndex(i);
-            auto sNewi              = sNewExt.GetElementAtIndex(i);
-            auto sOldi              = sOld.GetElementAtIndex(i);
-            auto factor             = PModq[i].ModMulFast(PartQHatModq[part][i], qi);
-            b.SetElementAtIndex(i, -ai * sNewi + factor * sOldi + ns * ei);
+        usint startPartIdx = numPerPartQ * part;
+        usint endPartIdx   = (sizeQ > startPartIdx + numPerPartQ) ? (startPartIdx + numPerPartQ) : sizeQ;
+
+        for (usint i = 0; i < startPartIdx; i++) {
+            auto ai       = a.GetElementAtIndex(i);
+            auto ei       = e.GetElementAtIndex(i);
+            auto sNewExti = sNewExt.GetElementAtIndex(i);
+            b.SetElementAtIndex(i, -ai * sNewExti + ns * ei);
         }
 
-        // The part with basis P
-        for (usint j = sizeQ; j < sizeQP; j++) {
-            auto aj       = a.GetElementAtIndex(j);
-            auto ej       = e.GetElementAtIndex(j);
-            auto sNewExtj = sNewExt.GetElementAtIndex(j);
-            b.SetElementAtIndex(j, -aj * sNewExtj + ns * ej);
+        for (usint i = startPartIdx; i < endPartIdx; i++) {
+            auto ai    = a.GetElementAtIndex(i);
+            auto ei    = e.GetElementAtIndex(i);
+            auto sNewi = sNewExt.GetElementAtIndex(i);
+            auto sOldi = sOld.GetElementAtIndex(i);
+            b.SetElementAtIndex(i, -ai * sNewi + PModq[i] * sOldi + ns * ei);
+        }
+
+        for (usint i = endPartIdx; i < sizeQP; i++) {
+            auto ai    = a.GetElementAtIndex(i);
+            auto ei    = e.GetElementAtIndex(i);
+            auto sNewi = sNewExt.GetElementAtIndex(i);
+            b.SetElementAtIndex(i, -ai * sNewi + ns * ei);
         }
 
         av[part] = a;
@@ -237,8 +249,8 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
     std::vector<DCRTPoly> av(numPartQ);
     std::vector<DCRTPoly> bv(numPartQ);
 
-    std::vector<NativeInteger> PModq                     = cryptoParams->GetPModq();
-    std::vector<std::vector<NativeInteger>> PartQHatModq = cryptoParams->GetPartQHatModq();
+    std::vector<NativeInteger> PModq = cryptoParams->GetPModq();
+    usint numPerPartQ                = cryptoParams->GetNumPerPartQ();
 
     for (usint part = 0; part < numPartQ; part++) {
         DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ? DCRTPoly(dgg, paramsQP, Format::EVALUATION) :
@@ -250,36 +262,48 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
         DCRTPoly a(paramsQP, Format::EVALUATION, true);
         DCRTPoly b(paramsQP, Format::EVALUATION, true);
 
-        // The part with basis Q
-        for (usint i = 0; i < sizeQ; i++) {
-            const NativeInteger& qi = paramsQ->GetParams()[i]->GetModulus();
-            auto e0i                = e0.GetElementAtIndex(i);
-            auto e1i                = e1.GetElementAtIndex(i);
+        usint startPartIdx = numPerPartQ * part;
+        usint endPartIdx   = (sizeQ > startPartIdx + numPerPartQ) ? (startPartIdx + numPerPartQ) : sizeQ;
+
+        for (usint i = 0; i < startPartIdx; i++) {
+            auto e0i = e0.GetElementAtIndex(i);
+            auto e1i = e1.GetElementAtIndex(i);
 
             auto ui = u.GetElementAtIndex(i);
 
             auto newp0i = newp0.GetElementAtIndex(i);
             auto newp1i = newp1.GetElementAtIndex(i);
 
-            auto sOldi  = sOld.GetElementAtIndex(i);
-            auto factor = PModq[i].ModMulFast(PartQHatModq[part][i], qi);
-
             a.SetElementAtIndex(i, newp1i * ui + ns * e1i);
-            b.SetElementAtIndex(i, newp0i * ui + ns * e0i + factor * sOldi);
+            b.SetElementAtIndex(i, newp0i * ui + ns * e0i);
         }
 
-        // The part with basis P
-        for (usint j = sizeQ; j < sizeQP; j++) {
-            auto e0j = e0.GetElementAtIndex(j);
-            auto e1j = e1.GetElementAtIndex(j);
+        for (usint i = startPartIdx; i < endPartIdx; i++) {
+            auto e0i = e0.GetElementAtIndex(i);
+            auto e1i = e1.GetElementAtIndex(i);
 
-            auto uj = u.GetElementAtIndex(j);
+            auto ui = u.GetElementAtIndex(i);
 
-            auto newp0j = newp0.GetElementAtIndex(j);
-            auto newp1j = newp1.GetElementAtIndex(j);
+            auto newp0i = newp0.GetElementAtIndex(i);
+            auto newp1i = newp1.GetElementAtIndex(i);
 
-            a.SetElementAtIndex(j, newp1j * uj + ns * e1j);
-            b.SetElementAtIndex(j, newp0j * uj + ns * e0j);
+            auto sOldi = sOld.GetElementAtIndex(i);
+
+            a.SetElementAtIndex(i, newp1i * ui + ns * e1i);
+            b.SetElementAtIndex(i, newp0i * ui + ns * e0i + PModq[i] * sOldi);
+        }
+
+        for (usint i = endPartIdx; i < sizeQP; i++) {
+            auto e0i = e0.GetElementAtIndex(i);
+            auto e1i = e1.GetElementAtIndex(i);
+
+            auto ui = u.GetElementAtIndex(i);
+
+            auto newp0i = newp0.GetElementAtIndex(i);
+            auto newp1i = newp1.GetElementAtIndex(i);
+
+            a.SetElementAtIndex(i, newp1i * ui + ns * e1i);
+            b.SetElementAtIndex(i, newp0i * ui + ns * e0i);
         }
 
         av[part] = a;
@@ -455,13 +479,10 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
             partsCt[part] = DCRTPoly(cryptoParams->GetParamsPartQ(part), Format::EVALUATION, true);
         }
 
-        const std::vector<NativeInteger>& QHatInvModq = cryptoParams->GetPartQHatInvModq(part);
-
         usint sizePartQl   = partsCt[part].GetNumOfElements();
         usint startPartIdx = alpha * part;
         for (uint32_t i = 0, idx = startPartIdx; i < sizePartQl; i++, idx++) {
-            auto tmp = c.GetElementAtIndex(idx).Times(QHatInvModq[idx]);
-            partsCt[part].SetElementAtIndex(i, std::move(tmp));
+            partsCt[part].SetElementAtIndex(i, c.GetElementAtIndex(idx));
         }
     }
 
@@ -474,11 +495,11 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
 
         uint32_t sizePartQl = partsCt[part].GetNumOfElements();
         partsCtCompl[part]  = partCtClone.ApproxSwitchCRTBasis(
-            cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
-            cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
-            cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
-            cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
-            cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
+             cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
+             cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
+             cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
+             cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
+             cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
 
         partsCtCompl[part].SetFormat(Format::EVALUATION);
 

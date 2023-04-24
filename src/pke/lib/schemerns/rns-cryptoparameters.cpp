@@ -105,21 +105,6 @@ void CryptoParametersRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scaling
             }
         }
 
-        // Compute [QHat_j]_{q_i} and [QHat_j^{-1}]_{q_i}
-        // used in fast basis conversion
-        m_PartQHatModq.resize(m_numPartQ);
-        m_PartQHatInvModq.resize(m_numPartQ);
-        for (uint32_t j = 0; j < m_numPartQ; j++) {
-            m_PartQHatModq[j].resize(sizeQ);
-            m_PartQHatInvModq[j].resize(sizeQ);
-            for (uint32_t i = 0; i < sizeQ; i++) {
-                m_PartQHatModq[j][i] = PartQHat[j].Mod(moduliQ[i]).ConvertToInt();
-                if (i >= j * a && i <= ((j + 1) * a - 1)) {
-                    m_PartQHatInvModq[j][i] = PartQHat[j].ModInverse(moduliQ[i]).ConvertToInt();
-                }
-            }
-        }
-
         // Compute partitions of Q into numPartQ digits
         m_paramsPartQ.resize(m_numPartQ);
         for (uint32_t j = 0; j < m_numPartQ; j++) {
