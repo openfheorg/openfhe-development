@@ -169,8 +169,6 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
 
     const auto cryptoParamsBFVrns = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters());
 
-    size_t sizeQ = 2;
-
     // Generate the element "a" of the public key
     DCRTPoly a(params, Format::COEFFICIENT);
 
@@ -195,17 +193,17 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastExpandCRTBasisPloverQ) {
     a.SetElementAtIndex(0, poly0);
     a.SetElementAtIndex(1, poly1);
 
-    auto param1  = cryptoParamsBFVrns->GetParamsQlRl(sizeQ - 1);
-    auto param2  = cryptoParamsBFVrns->GetParamsRl(sizeQ - 1);
-    auto param3  = cryptoParamsBFVrns->GetParamsQl(sizeQ - 1);
-    auto param4  = cryptoParamsBFVrns->GetmNegRlQHatInvModq(sizeQ - 1);
-    auto param5  = cryptoParamsBFVrns->GetmNegRlQHatInvModqPrecon(sizeQ - 1);
+    auto param1  = cryptoParamsBFVrns->GetParamsQlRl();
+    auto param2  = cryptoParamsBFVrns->GetParamsRl();
+    auto param3  = cryptoParamsBFVrns->GetParamsQl();
+    auto param4  = cryptoParamsBFVrns->GetmNegRlQHatInvModq();
+    auto param5  = cryptoParamsBFVrns->GetmNegRlQHatInvModqPrecon();
     auto param6  = cryptoParamsBFVrns->GetqInvModr();
     auto param7  = cryptoParamsBFVrns->GetModrBarrettMu();
-    auto param8  = cryptoParamsBFVrns->GetRlHatInvModr(sizeQ - 1);
-    auto param9  = cryptoParamsBFVrns->GetRlHatInvModrPrecon(sizeQ - 1);
-    auto param10 = cryptoParamsBFVrns->GetRlHatModq(sizeQ - 1);
-    auto param11 = cryptoParamsBFVrns->GetalphaRlModq(sizeQ - 1);
+    auto param8  = cryptoParamsBFVrns->GetRlHatInvModr();
+    auto param9  = cryptoParamsBFVrns->GetRlHatInvModrPrecon();
+    auto param10 = cryptoParamsBFVrns->GetRlHatModq();
+    auto param11 = cryptoParamsBFVrns->GetalphaRlModq();
     auto param12 = cryptoParamsBFVrns->GetModqBarrettMu();
     auto param13 = cryptoParamsBFVrns->GetrInv();
     DCRTPoly::CRTBasisExtensionPrecomputations basisPQ(param1, param2, param3, param4, param5, param6, param7, param8,

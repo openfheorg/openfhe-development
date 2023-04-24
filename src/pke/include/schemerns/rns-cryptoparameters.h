@@ -120,7 +120,8 @@ protected:
                         MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
                         ExecutionMode executionMode             = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-                        uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
+                        uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
+                        uint32_t thresholdNumOfParties = 1)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist, PREMode, multipartyMode,
                                          executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
@@ -830,11 +831,11 @@ public:
         return m_alphaRlModq[l];
     }
 
-    const std::vector<double>& GettQlSlHatInvModsDivsFrac(usint l) const {
+    const std::vector<double>& GettQlSlHatInvModsDivsFrac(usint l = 0) const {
         return m_tQlSlHatInvModsDivsFrac[l];
     }
 
-    const std::vector<std::vector<NativeInteger>>& GettQlSlHatInvModsDivsModq(usint l) const {
+    const std::vector<std::vector<NativeInteger>>& GettQlSlHatInvModsDivsModq(usint l = 0) const {
         return m_tQlSlHatInvModsDivsModq[l];
     }
 
