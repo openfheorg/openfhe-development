@@ -1012,6 +1012,10 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
                                                     const std::vector<NativeInteger>& qlInvModqPrecon) {
     usint sizeQl = m_vectors.size();
 
+    if (sizeQl <= 1) {
+	    OPENFHE_THROW(config_error, "Removing the last element of a DCRTPoly object renders it invalid!");
+    }
+
     // last tower that will be dropped
     PolyType lastPoly(m_vectors[sizeQl - 1]);
 
