@@ -98,29 +98,23 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
         DCRTPoly e(dgg, paramsQP, Format::EVALUATION);
         DCRTPoly b(paramsQP, Format::EVALUATION, true);
 
+        // starting and ending position of current part
         usint startPartIdx = numPerPartQ * part;
         usint endPartIdx   = (sizeQ > startPartIdx + numPerPartQ) ? (startPartIdx + numPerPartQ) : sizeQ;
 
-        for (usint i = 0; i < startPartIdx; i++) {
+        for (usint i = 0; i < sizeQP; i++) {
             auto ai    = a.GetElementAtIndex(i);
             auto ei    = e.GetElementAtIndex(i);
             auto sNewi = sNewExt.GetElementAtIndex(i);
-            b.SetElementAtIndex(i, -ai * sNewi + ns * ei);
-        }
 
-        for (usint i = startPartIdx; i < endPartIdx; i++) {
-            auto ai    = a.GetElementAtIndex(i);
-            auto ei    = e.GetElementAtIndex(i);
-            auto sNewi = sNewExt.GetElementAtIndex(i);
-            auto sOldi = sOld.GetElementAtIndex(i);
-            b.SetElementAtIndex(i, -ai * sNewi + PModq[i] * sOldi + ns * ei);
-        }
-
-        for (usint i = endPartIdx; i < sizeQP; i++) {
-            auto ai    = a.GetElementAtIndex(i);
-            auto ei    = e.GetElementAtIndex(i);
-            auto sNewi = sNewExt.GetElementAtIndex(i);
-            b.SetElementAtIndex(i, -ai * sNewi + ns * ei);
+            if (i < startPartIdx || i >= endPartIdx) {
+                b.SetElementAtIndex(i, -ai * sNewi + ns * ei);
+            }
+            else {
+                // P * sOld is only applied for the current part
+                auto sOldi = sOld.GetElementAtIndex(i);
+                b.SetElementAtIndex(i, -ai * sNewi + PModq[i] * sOldi + ns * ei);
+            }
         }
 
         av[part] = a;
@@ -187,29 +181,23 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
         DCRTPoly e(dgg, paramsQP, Format::EVALUATION);
         DCRTPoly b(paramsQP, Format::EVALUATION, true);
 
+        // starting and ending position of current part
         usint startPartIdx = numPerPartQ * part;
         usint endPartIdx   = (sizeQ > startPartIdx + numPerPartQ) ? (startPartIdx + numPerPartQ) : sizeQ;
 
-        for (usint i = 0; i < startPartIdx; i++) {
-            auto ai       = a.GetElementAtIndex(i);
-            auto ei       = e.GetElementAtIndex(i);
-            auto sNewExti = sNewExt.GetElementAtIndex(i);
-            b.SetElementAtIndex(i, -ai * sNewExti + ns * ei);
-        }
-
-        for (usint i = startPartIdx; i < endPartIdx; i++) {
+        for (usint i = 0; i < sizeQP; i++) {
             auto ai    = a.GetElementAtIndex(i);
             auto ei    = e.GetElementAtIndex(i);
             auto sNewi = sNewExt.GetElementAtIndex(i);
-            auto sOldi = sOld.GetElementAtIndex(i);
-            b.SetElementAtIndex(i, -ai * sNewi + PModq[i] * sOldi + ns * ei);
-        }
 
-        for (usint i = endPartIdx; i < sizeQP; i++) {
-            auto ai    = a.GetElementAtIndex(i);
-            auto ei    = e.GetElementAtIndex(i);
-            auto sNewi = sNewExt.GetElementAtIndex(i);
-            b.SetElementAtIndex(i, -ai * sNewi + ns * ei);
+            if (i < startPartIdx || i >= endPartIdx) {
+                b.SetElementAtIndex(i, -ai * sNewi + ns * ei);
+            }
+            else {
+                // P * sOld is only applied for the current part
+                auto sOldi = sOld.GetElementAtIndex(i);
+                b.SetElementAtIndex(i, -ai * sNewi + PModq[i] * sOldi + ns * ei);
+            }
         }
 
         av[part] = a;
@@ -262,10 +250,11 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
         DCRTPoly a(paramsQP, Format::EVALUATION, true);
         DCRTPoly b(paramsQP, Format::EVALUATION, true);
 
+        // starting and ending position of current part
         usint startPartIdx = numPerPartQ * part;
         usint endPartIdx   = (sizeQ > startPartIdx + numPerPartQ) ? (startPartIdx + numPerPartQ) : sizeQ;
 
-        for (usint i = 0; i < startPartIdx; i++) {
+        for (usint i = 0; i < sizeQP; i++) {
             auto e0i = e0.GetElementAtIndex(i);
             auto e1i = e1.GetElementAtIndex(i);
 
@@ -275,35 +264,15 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGen(const PrivateKey<DCRTPoly> oldKe
             auto newp1i = newp1.GetElementAtIndex(i);
 
             a.SetElementAtIndex(i, newp1i * ui + ns * e1i);
-            b.SetElementAtIndex(i, newp0i * ui + ns * e0i);
-        }
 
-        for (usint i = startPartIdx; i < endPartIdx; i++) {
-            auto e0i = e0.GetElementAtIndex(i);
-            auto e1i = e1.GetElementAtIndex(i);
-
-            auto ui = u.GetElementAtIndex(i);
-
-            auto newp0i = newp0.GetElementAtIndex(i);
-            auto newp1i = newp1.GetElementAtIndex(i);
-
-            auto sOldi = sOld.GetElementAtIndex(i);
-
-            a.SetElementAtIndex(i, newp1i * ui + ns * e1i);
-            b.SetElementAtIndex(i, newp0i * ui + ns * e0i + PModq[i] * sOldi);
-        }
-
-        for (usint i = endPartIdx; i < sizeQP; i++) {
-            auto e0i = e0.GetElementAtIndex(i);
-            auto e1i = e1.GetElementAtIndex(i);
-
-            auto ui = u.GetElementAtIndex(i);
-
-            auto newp0i = newp0.GetElementAtIndex(i);
-            auto newp1i = newp1.GetElementAtIndex(i);
-
-            a.SetElementAtIndex(i, newp1i * ui + ns * e1i);
-            b.SetElementAtIndex(i, newp0i * ui + ns * e0i);
+            if (i < startPartIdx || i >= endPartIdx) {
+                b.SetElementAtIndex(i, newp0i * ui + ns * e0i);
+            }
+            else {
+                // P * sOld is only applied for the current part
+                auto sOldi = sOld.GetElementAtIndex(i);
+                b.SetElementAtIndex(i, newp0i * ui + ns * e0i + PModq[i] * sOldi);
+            }
         }
 
         av[part] = a;
