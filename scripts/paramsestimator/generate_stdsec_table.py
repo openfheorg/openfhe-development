@@ -1,18 +1,13 @@
 #!/usr/bin/python
 
-'''Approach for determining parameters for binfhe
-1)	Pick security level
-2)	Set expected decryption failure rate
-3)	Specify max number of inputs to a boolean gate
-Measure enc/rec/dec time, and throughput ( #bits in (3+/these times) and document.
-'''
+#Generate dimension and modulus for every security level - classical and quantum
 
 import paramstable as stdparams
 import binfhe_params_helper as helperfncs
 import math
 
 sec_levels = [128, 192, 256]
-dim_vals = [512, 1024, 2048, 4096, 8192, 16384, 32768]
+dim_vals = [4096, 8192, 16384, 32768]
 def generate_sec_table():
     for sec in sec_levels:
         for dim in dim_vals:

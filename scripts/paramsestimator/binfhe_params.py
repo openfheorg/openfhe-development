@@ -14,6 +14,7 @@ import math
 def parameter_selector():
     print("Parameter selectorfor FHEW like schemes")
 
+    #bootstrapping technique
     dist_type = int(input("Enter Distribution (0 = HEStd_uniform, 1 = HEStd_error, 2 = HEStd_ternary): "))
     helperfncs.test_range(dist_type, 0, 2)
 
@@ -27,123 +28,33 @@ def parameter_selector():
 
     num_of_inputs = int(input("Enter expected number of inputs to the boolean gate: "))
 
+    #set ptmod based on num of inputs
+    ptmod = 2*num_of_inputs
 
     #Set ringsize n, Qks, N, Q based on the security level
+    ringsize_n = 1024
+    ringsize_N = 2048
 
-        usint numberBits; #Q
-        usint cyclOrder; #2N
-        usint latticeParam; #n
-        usint mod;  #q
+        modulus_q = N
+        modulus_Qks = analytical_estimate(n) #find analytical estimate for starting point of Qks
+        modulus_Q = analytical_estimate(N)
 
-        usint modKS; #Qks
-        #double stdDev;
-        usint baseKS; #B_ks
+        #create paramset object
+        param_set_opt = paramsetvars("paramsetopt", modulus_Q, ringsize_N, ringsize_n, modulus_q, modulus_Qks, B_g, B_ks)
+    get_noise_from_cpp_code(param_set_opt)
+    dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
 
-        usint gadgetBase; #B_g
-        #usint baseRK;
+    #increase ctmod q to 2N and everything else constant
 
-    while ringsize <= 32768:
-        set_r=0
-        set_qk=0
-        print("---\nadjusting parameters for ringsize: ", ringsize)
+    #optimize n, Qks to reduce the noise
 
-        logQ = stdlat.LogQ[(dist_type, ringsize, sec_level)]
-
-        if(optimize_r):
-            for this_r in range(math.ceil(logQ/3.0), 0, -1):
-            	if (logQ%this_r == 0):
-	                if(scheme=="indcpa"):
-        	            this_d = helperfncs.find_d_indcpa(logQ, ringsize, p, this_r)
-        	        elif(scheme=="fixednf"):
-        	            this_d = helperfncs.find_d_fixednoise(logQ, ringsize, p, this_r)
-
-        	        if (this_d >= min_hops):
-        	            r = this_r
-        	            set_r=1
-        	            print("resulting r ", r, "d ", this_d, " satisfies min hops, stopping")
-        	            break
-
-        else:
-            this_r=1
-            if(scheme=="indcpa"):
-                this_d = helperfncs.find_d_indcpa(logQ, ringsize, p, this_r)
-            elif(scheme=="fixednf"):
-                this_d = helperfncs.find_d_fixednoise(logQ, ringsize, p, this_r)
-            if (this_d >= min_hops):
-                r = this_r
-                set_r=1
-                print("resulting r ", r, "d ", this_d, " satisfies min hops, stopping")
+    #increase ringsize_N if ringsize_n had to be increased to larger than current value of ringsize_N -- to be done within the optimizing function
 
 
+    #optimize B_g, B_ks to reduce the noise
 
-        #verify Q is ok
-        if(set_r==1):
-            if(scheme=="indcpa"):
-                set_qk=1
-                qk = helperfncs.find_qk_indcpa(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 60)
-            elif(scheme=="fixednf"):
-                set_qk=1
-                qk = helperfncs.find_qk_fixednoise(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 476)
-            elif(scheme=="psnf"):
-                set_qk=1
-                qk = helperfncs.find_qk_noiseflooding_ps(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 476)
-            elif(scheme=="hybridpsnf"):
-                set_qk=1
-                qk = helperfncs.find_qk_noiseflooding_hybrid_ps(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 476)
-            elif(scheme=="dvr_psnf"):
-                set_qk=1
-                qk = helperfncs.find_qk_dvr_ps(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 476)
-            elif(scheme=="trapdoor_psnf"):
-                set_qk=1
-                qk = helperfncs.find_qk_trapdoor_ps(min_hops, ringsize, p, r, lwl_k = logQ, upl_k = 476)
-
-        if(set_qk==1):
-            if (qk <= logQ):
-                print("resulting qk: ", qk, " <= logQ: ",logQ, "  satisfies security")
-                break
-
-            # if we get here qk is too big we need to move to a larger ring size
-            print("resulting qk: ", qk, " > logQ: ",logQ, " does not satisfy security")
-            print("increasing ringsize in an attempt to satisfy security")
-        ringsize = ringsize *2
-
-    if(scheme=="indcpa"):
-        max_hops = helperfncs.find_d_indcpa(logQ, ringsize, p, r) - 1
-    elif(scheme=="fixednf"):
-        max_hops = helperfncs.find_d_fixednoise(logQ, ringsize, p, r) - 1
-    elif(scheme=="psnf"):
-        max_hops = helperfncs.find_d_noiseflooding_ps(logQ, ringsize, p, r) - 1
-    elif(scheme=="hybridpsnf"):
-        max_hops = helperfncs.find_d_noiseflooding_hybrid_ps(logQ, ringsize, p, r) - 1
-    elif(scheme=="dvr_psnf"):
-        max_hops = helperfncs.find_d_dvr_ps(logQ, ringsize, p, r) - 1
-    elif(scheme=="trapdoor_psnf"):
-        max_hops = helperfncs.find_d_trapdoor_ps(logQ, ringsize, p, r) - 1
 
     print("final parameters")
     print("dist_type: ",dist_type)
     print("sec_level: ", sec_level)
     print("decryption failure rate: ", ringsize)
-    print("requested payload_bits: ", payload_bits)
-    print("max payload_bits: ", ringsize*math.log2(p))
-    print("p: ", p)
-    print("min_hops: ", min_hops)
-    print("max_hops (upto 2^60): ", max_hops)
-    print("min_depth: ", min_depth)
-    print("ringsize: ", ringsize)
-    print("r: ", r)
-    print("logQ: ", logQ)
-    print("logQ/r: %4.1f" % (logQ/r))
-
-
-#example call to function parameter_selector
-#parameter_selector("indcpa", False)
-#parameter_selector("fixednf", False)
-#parameter_selector("psnf", False)
-#parameter_selector("hybridpsnf", False)
-#parameter_selector("dvr_psnf", False)
-#parameter_selector("trapdoor_psnf", True)
-#parameter_selector(mode, digit_optimize)
-helperfncs.find_d_indcpa(27,1024,2,6)
-helperfncs.find_d_indcpa(27,1024,2,9)
-helperfncs.find_d_fixednoise(54,2048,65536,18)

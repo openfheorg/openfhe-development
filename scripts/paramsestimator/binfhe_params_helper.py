@@ -2,8 +2,10 @@
 
 from math import log2, floor, sqrt, ceil, erfc
 from statistics import stdev
+import random
 import sys
 import os
+#import paramstable as stdparams
 import paramstable as stdparams
 sys.path.insert(0, '/home/sara/lattice-estimator')
 from estimator import *
@@ -31,27 +33,39 @@ def call_estimator(dim, mod, num_threads, is_quantum = True):
 
 #generate dim, mod pairs for a given security level
 def generate_stdsec_dim_mod(expected_sec_level, dim, is_quantum = True):
+    if (dim == 512):
+        mod = 2**floor(log2(dim))
+    elif (dim == 1024):
+        mod = 2**(floor(log2(dim*sqrt(dim)))-1)
+    else:
+        mod = 2**(floor(log2(dim*dim))-1)
 
-    mod = 2**floor(log2(dim))
     mod_next = 2*mod
 
     sec_level_from_estimator = call_estimator(dim, mod, num_threads, is_quantum)
     sec_level_from_estimator_next = call_estimator(dim, mod_next, num_threads, is_quantum)
 
-    if (sec_level_from_estimator > expected_sec_level) and (sec_level_from_estimator_next < expected_sec_level):
+    if (sec_level_from_estimator >= expected_sec_level) and (sec_level_from_estimator_next < expected_sec_level):
         return dim, mod
     else:
-        while (True):
-	    #sec_level_from_estimator = call_estimator(dim, mod, num_threads, is_quantum)
-            if (sec_level_from_estimator > expected_sec_level) and (sec_level_from_estimator_next < expected_sec_level):
+        while (True or done):
+            if (sec_level_from_estimator >= expected_sec_level) and (sec_level_from_estimator_next < expected_sec_level):
+                done = True
                 break
             else:
-                mod = mod*2
+                if ((sec_level_from_estimator_next - expected_sec_level) >= 30):
+                    mod = mod*8
+                elif ((sec_level_from_estimator_next - expected_sec_level) >= 60):
+                    mod = mod*32
+                elif ((sec_level_from_estimator_next - expected_sec_level) >= 90):
+                    mod = mod*128
+                else:
+                    mod = mod*2
                 mod_next = 2*mod
                 sec_level_from_estimator = sec_level_from_estimator_next
                 sec_level_from_estimator_next = call_estimator(dim, mod_next, num_threads, is_quantum)
+                print("mod ", mod)
                 print("sec_level ", sec_level_from_estimator, "sec_level_next ", sec_level_from_estimator_next)
-
 
     return dim, log2(mod)
 
@@ -86,14 +100,17 @@ def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, o
 
 
 #optimized dim, mod values with least decryption failure rate
-def choose_params_with_dim_mod_noise(exp_sec_level, param_set, exp_dec_fail, ptmod, ctmod, comp, is_quantum=True):
-    #dimN, modQks = optimize_params_security(128, dim, mod, False, True, False, True)
+def choose_params_with_dim_mod_noise(exp_sec_level, param_set, exp_dec_fail, comp, is_quantum=True):
+
+    ptmod = 2*comp
+    ctmod = param_set.q
 
     noise = get_noise_from_cpp_code(param_set)
     dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
-    print("dec_fail_rate first ", dec_fail_rate)
+    print("choose_params_with_dim_mod_noise first dec_fail_rate first ", dec_fail_rate)
 
     dim, mod = get_dim_mod(param_set)
+
     dimopt1 = dim
     modopt1 = mod
     mod1 = mod
@@ -106,6 +123,9 @@ def choose_params_with_dim_mod_noise(exp_sec_level, param_set, exp_dec_fail, ptm
 
     #try to optimize - could be made optional
     mod1 = modopt1
+
+    dimopt2 = 0
+    modopt2 = 0
     ctr = 0
     extraopt = True
     while ((dec_fail_rate - exp_dec_fail) < -10) or ctr > 5:
@@ -113,7 +133,7 @@ def choose_params_with_dim_mod_noise(exp_sec_level, param_set, exp_dec_fail, ptm
         dimopt2, modopt2 = optimize_params_security(exp_sec_level, dimopt1, mod1, True, False, isPowerOfTwo(dimopt1), is_quantum)
         noise = get_noise_from_cpp_code(param_set, dimopt2, modopt2)
         dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
-        print("dec_fail_rate in loop ", dec_fail_rate)
+        print("dec_fail_rate in second loop ", dec_fail_rate)
         ctr=ctr+1
         if (dec_fail_rate > exp_dec_fail):
             print("cannot optimize further - try adjusting digit dize for tighter parameters")
@@ -132,33 +152,53 @@ def choose_params_with_dim_mod_noise(exp_sec_level, param_set, exp_dec_fail, ptm
     return dimopt, modopt
 
 #optimize accumulator digit size or key switching digit size to lower noise
-def choose_params_digit_size(exp_sec_level, param_set, exp_dec_fail, ptmod, ctmod, comp, optimize_Bg, optimize_Bks, is_quantum=True):
-    noise = get_noise_from_cpp_code(param_set, "noise_file_name")
+def choose_params_digit_size(exp_sec_level, param_set, exp_dec_fail, comp, optimize_Bg, optimize_Bks, is_quantum=True):
+    ptmod = 2*comp
+    ctmod = param_set.q
+
+    noise = get_noise_from_cpp_code(param_set)
     dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
     print("dec_fail_rate first ", dec_fail_rate)
+
     dim, mod = get_dim_mod(param_set)
+    B_g = 2**param_set.B_g
+    B_ks = 2**param_set.B_ks
+
     B_g1 = B_g
+    B_ks1 = B_ks
 
     print("B_g, B_ks before optimize: ", B_g, B_ks)
-    while ((dec_fail_rate > exp_dec_fail) or (B_g1/B_g == 16)):
-        B_g1 = B_g1/4
-        noise = get_noise_from_cpp_code(param_set, dim, mod, B_g1)
-        dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
-        print("dec_fail_rate in loop ", dec_fail_rate)
+
+    if (optimize_Bg and (not optimize_Bks)):
+        while ((dec_fail_rate > exp_dec_fail) or (B_g1/B_g == 16)):
+            B_g1 = B_g1/4
+            noise = get_noise_from_cpp_code(param_set, dim, mod, B_g1)
+            dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
+            print("B_g, B_ks before optimize: ", B_g, B_ks)
+            print("dec_fail_rate in loop ", dec_fail_rate)
+    elif ((not optimize_Bg) and optimize_Bks):
+        while ((dec_fail_rate > exp_dec_fail) or (B_ks1/B_ks == 16)):
+            B_ks1 = B_ks1/4
+            noise = get_noise_from_cpp_code(param_set, dim, mod, B_g, B_ks1)
+            dec_fail_rate = get_decryption_failure(noise, ptmod, ctmod, comp)
+            print("B_g, B_ks before optimize: ", B_g, B_ks1)
+            print("dec_fail_rate in loop ", dec_fail_rate)
 
     return B_g, B_ks
 
 
 def get_noise_from_cpp_code(param_set, dim=0, mod=0, B_g = 0, B_ks = 0, noise_file = "noise_file_name"):
-    #arglist = 'arg1 arg2 arg3'
-    #bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + param_set + " > out_file 2>" + noise_file
-    bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + param_set + " " + str(dim) + " " + str(mod) + " " + str(B_g) + " " + str(B_ks) + " > out_file 2>" + noise_file
+
+    filenamerandom = random.randrange(500)
+    param_set_name = param_set.name
+    print("get_noise_from_cpp_code paramset dim mod Bg Bks: ", param_set_name, dim, mod, B_g, B_ks)
+    bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + param_set_name + " " + str(dim) + " " + str(mod) + " " + str(B_g) + " " + str(B_ks) + " > out_file_" + str(filenamerandom) + " 2>" + noise_file + "_" + str(filenamerandom)
 
     print(bashCommand)
     os.system(bashCommand)
     # parse noise values and compute stddev
     noise=[]
-    with open(noise_file) as file:
+    with open(noise_file+"_"+str(filenamerandom)) as file:
         for line in file:
             noise.append(float(line.rstrip()))
     print("noise", stdev(noise))
@@ -182,12 +222,17 @@ def isPowerOfTwo(n):
     return (ceil(log2(n)) == floor(log2(n)))
 
 def get_dim_mod(paramset):
-    params = stdparams.paramsDict[paramset]
-
-    dim = params[1]
-    mod = 2**params[2]
+    print("get_dim_mod paramset.n ", paramset.n)
+    print("get_dim_mod params.Qks ", paramset.Qks)
+    dim = paramset.n
+    mod = 2**(paramset.Qks)
 
     return dim, mod
+
+#def run_time_complexity_estimate(dim, Q, B_g):
+#    d_g = Q/B_g
+
+#    2*dim*(d_g+1)
 #********************end of helper functions***********************************
 
 # verify security of n, Qks and optimize
@@ -207,12 +252,23 @@ def get_dim_mod(paramset):
 #4 input gates
 #choose_params_with_dim_mod_noise(128, "STD128Q_OPT_3_nQks1", -32, 8, 4096, 4)
 #2 input gates
-#dim, mod = choose_params_with_dim_mod_noise(128, "STD128Q_OPT_3_nQks1", -32, 4, 4096, 2)
+dim, mod = choose_params_with_dim_mod_noise(128, stdparams.STD128Q_OPT_3, -32, 6, 3)
 
+print("here after modulus, dimension optimization")
+print(dim, mod)
 #stdparams.paramsDict["STD128Q_OPT_3_nQks1"][1] = dim
 #stdparams.paramsDict["STD128Q_OPT_3_nQks1"][2] = mod
+
+stdparams.STD128Q_OPT_3.n = dim
+stdparams.STD128Q_OPT_3.Qks = log2(mod)
+
 # then optimize B_g, B_ks for lower noise
-#choose_params_digit_size(128, "STD128Q_OPT_3_nQks1", -32, 6, 4096, 3, True, False)
+B_gres, B_ksres = choose_params_digit_size(128, stdparams.STD128Q_OPT_3, -32, 6, 3, True, False) #change p to 2*comp
+print("here after B_g optimization")
+B_gres1, B_ksres1 = choose_params_digit_size(128, stdparams.STD128Q_OPT_3, -32, 6, 3, False, True)
+print("here after B_ks optimization")
+print("B_g, B_ks 1st set optimize B_g: ", B_gres, B_ksres)
+print("B_g, B_ks 2nd set optimize B_ks: ", B_gres1, B_ksres1)
 # ---------------------------------------------------------------------------------
 # estimate_params(n=1024, q=2048, Qks=2^16, security_level=128, quantum/classical=true, logBg=7, logBks=5, decryption_failure_rate=-32, native_word_bound=64, num_threads):
 #sec_level_from_estimator = call_estimator(2048, 2**50, num_threads);
@@ -226,7 +282,6 @@ dimn, modQks = optimize_params_security(128, n, Qks, False, True, True, True)
 # verify security of n, Qks and optimize
 dimn1, modQks1 = optimize_params_security(128, n, Qks, True, True, False, True)
 '''
-
 '''
 print("first set")
 print(dimN)

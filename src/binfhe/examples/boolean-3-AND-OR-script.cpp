@@ -107,6 +107,8 @@ int main(int argc, char* argv[]) {
     // classical computer attacks.
     // cc.GenerateBinFHEContext(STD128_AP_3, AP);
 
+    std::cout << "parameters from commandline paramset dim_n, Qks, B_g, B_ks: " << paramset << " " << dim_n << " "
+              << Qks << " " << B_g << " " << B_ks << std::endl;
     cc.GenerateBinFHEContext(paramset, dim_n, Qks, B_g, B_ks);
     // cc.GenerateBinFHEContext(STD256Q_3, AP);
     // cc.GenerateBinFHEContext(STD128_3);
