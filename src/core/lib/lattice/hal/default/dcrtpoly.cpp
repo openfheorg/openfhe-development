@@ -980,8 +980,12 @@ bool DCRTPolyImpl<VecType>::IsEmpty() const {
 template <typename VecType>
 void DCRTPolyImpl<VecType>::DropLastElement() {
     if (m_vectors.size() == 0) {
-        OPENFHE_THROW(math_error, "Last element being removed from empty list");
+        OPENFHE_THROW(config_error, "Input has no elements to drop!");
     }
+    if (m_vectors.size() == 1) {
+        OPENFHE_THROW(config_error, "Removing last element of DCRTPoly object renders it invalid!");
+    }
+
     m_vectors.resize(m_vectors.size() - 1);
 
     DCRTPolyImpl::Params* newP = new DCRTPolyImpl::Params(*this->m_params);
@@ -991,7 +995,7 @@ void DCRTPolyImpl<VecType>::DropLastElement() {
 
 template <typename VecType>
 void DCRTPolyImpl<VecType>::DropLastElements(size_t i) {
-    if (m_vectors.size() < i) {
+    if (m_vectors.size() <= i) {
         OPENFHE_THROW(config_error,
                       "There are not enough towers in the current ciphertext to "
                       "perform the modulus reduction");
@@ -1011,10 +1015,6 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
                                                     const std::vector<NativeInteger>& qlInvModq,
                                                     const std::vector<NativeInteger>& qlInvModqPrecon) {
     usint sizeQl = m_vectors.size();
-
-    if (sizeQl <= 1) {
-        OPENFHE_THROW(config_error, "Removing the last element of a DCRTPoly object renders it invalid!");
-    }
 
     // last tower that will be dropped
     PolyType lastPoly(m_vectors[sizeQl - 1]);
