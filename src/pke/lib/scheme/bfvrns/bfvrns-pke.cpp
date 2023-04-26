@@ -213,9 +213,7 @@ DecryptResult PKEBFVRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const Pri
         cryptoParams->GetMultiplicationTechnique() == HPSPOVERQLEVELED) {
         *plaintext =
             b.ScaleAndRound(cryptoParams->GetPlaintextModulus(), cryptoParams->GettQHatInvModqDivqModt(),
-                            cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqBDivqModt(),
-                            cryptoParams->GettQHatInvModqBDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac(),
-                            cryptoParams->GettQHatInvModqBDivqFrac());
+                            cryptoParams->GettQHatInvModqDivqModtPrecon(), cryptoParams->GettQHatInvModqDivqFrac());
     }
     else {
         *plaintext =

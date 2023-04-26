@@ -1072,12 +1072,9 @@ public:
    * @return the result of computation as a polynomial with native 64-bit
    * coefficients
    */
-    PolyType ScaleAndRound(const NativeInteger& t, const std::vector<NativeInteger>& tQHatInvModqDivqModt,
-                           const std::vector<NativeInteger>& tQHatInvModqDivqModtPrecon,
-                           const std::vector<NativeInteger>& tQHatInvModqBDivqModt,
-                           const std::vector<NativeInteger>& tQHatInvModqBDivqModtPrecon,
-                           const std::vector<double>& tQHatInvModqDivqFrac,
-                           const std::vector<double>& tQHatInvModqBDivqFrac) const override;
+    PolyType ScaleAndRound(const NativeInteger& t, const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqModt,
+                           const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqModtPrecon,
+                           const std::vector<std::vector<double>>& tQHatInvModqDivqFrac) const override;
 
     /**
    * @brief Computes approximate scale and round:

@@ -1095,12 +1095,10 @@ public:
    * @return the result of computation as a polynomial with native 64-bit
    * coefficients
    */
-    virtual TowerType ScaleAndRound(const NativeInteger& t, const std::vector<NativeInteger>& tQHatInvModqDivqModt,
-                                    const std::vector<NativeInteger>& tQHatInvModqDivqModtPrecon,
-                                    const std::vector<NativeInteger>& tQHatInvModqBDivqModt,
-                                    const std::vector<NativeInteger>& tQHatInvModqBDivqModtPrecon,
-                                    const std::vector<double>& tQHatInvModqDivqFrac,
-                                    const std::vector<double>& tQHatInvModqBDivqFrac) const = 0;
+    virtual TowerType ScaleAndRound(const NativeInteger& t,
+                                    const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqModt,
+                                    const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqModtPrecon,
+                                    const std::vector<std::vector<double>>& tQHatInvModqDivqFrac) const = 0;
 
     /**
    * @brief Computes approximate scale and round:

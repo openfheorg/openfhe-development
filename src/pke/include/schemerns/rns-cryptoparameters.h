@@ -861,60 +861,30 @@ public:
     /////////////////////////////////////
 
     /**
-   * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}/q_i}
+   * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}B^l/q_i}
    *
    * @return the precomputed table
    */
-    const std::vector<double>& GettQHatInvModqDivqFrac() const {
+    const std::vector<std::vector<double>>& GettQHatInvModqDivqFrac() const {
         return m_tQHatInvModqDivqFrac;
     }
 
     /**
-   * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-   * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}*B/q_i}
+   * Gets the precomputed table of [\floor{t*{Q/q_i}^{-1}B^l/q_i}]_t
    *
    * @return the precomputed table
    */
-    const std::vector<double>& GettQHatInvModqBDivqFrac() const {
-        return m_tQHatInvModqBDivqFrac;
-    }
-
-    /**
-   * Gets the precomputed table of [\floor{t*{Q/q_i}^{-1}/q_i}]_t
-   *
-   * @return the precomputed table
-   */
-    const std::vector<NativeInteger>& GettQHatInvModqDivqModt() const {
+    const std::vector<std::vector<NativeInteger>>& GettQHatInvModqDivqModt() const {
         return m_tQHatInvModqDivqModt;
     }
 
     /**
-   * Gets the NTL precomputations for [\floor{t*{Q/q_i}^{-1}/q_i}]_t
+   * Gets the NTL precomputations for [\floor{t*{Q/q_i}^{-1}B^l/q_i}]_t
    *
    * @return the precomputed table
    */
-    const std::vector<NativeInteger>& GettQHatInvModqDivqModtPrecon() const {
+    const std::vector<std::vector<NativeInteger>>& GettQHatInvModqDivqModtPrecon() const {
         return m_tQHatInvModqDivqModtPrecon;
-    }
-
-    /**
-   * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-   * Gets the precomputed table of [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
-   *
-   * @return the precomputed table
-   */
-    const std::vector<NativeInteger>& GettQHatInvModqBDivqModt() const {
-        return m_tQHatInvModqBDivqModt;
-    }
-
-    /**
-   * When log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-   * Gets the NTL precomputations for [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
-   *
-   * @return the precomputed table
-   */
-    const std::vector<NativeInteger>& GettQHatInvModqBDivqModtPrecon() const {
-        return m_tQHatInvModqBDivqModtPrecon;
     }
 
     const NativeInteger& GetScalingFactorInt(usint l) const {
@@ -1493,25 +1463,13 @@ protected:
     /////////////////////////////////////
 
     // Stores \frac{t*{Q/q_i}^{-1}/q_i}
-    std::vector<double> m_tQHatInvModqDivqFrac;
-
-    // when log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-    // Stores \frac{t*{Q/q_i}^{-1}*B/q_i}
-    std::vector<double> m_tQHatInvModqBDivqFrac;
+    std::vector<std::vector<double>> m_tQHatInvModqDivqFrac;
 
     // Stores [\floor{t*{Q/q_i}^{-1}/q_i}]_t
-    std::vector<NativeInteger> m_tQHatInvModqDivqModt;
+    std::vector<std::vector<NativeInteger>> m_tQHatInvModqDivqModt;
 
     // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}/q_i}]_t
-    std::vector<NativeInteger> m_tQHatInvModqDivqModtPrecon;
-
-    // when log2(q_i) >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-    // Stores [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
-    std::vector<NativeInteger> m_tQHatInvModqBDivqModt;
-
-    // when log2 q_i >= 45 bits, B = \floor[2^{\ceil{log2(q_i)/2}}
-    // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}*B/q_i}]_t
-    std::vector<NativeInteger> m_tQHatInvModqBDivqModtPrecon;
+    std::vector<std::vector<NativeInteger>> m_tQHatInvModqDivqModtPrecon;
 
     /////////////////////////////////////
     // BFVrns : Mult : ExpandCRTBasis

@@ -445,50 +445,34 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         // BFVrns : Decrypt : ScaleAndRound
         /////////////////////////////////////
 
-        usint qMSB     = moduliQ[0].GetMSB();
-        usint sizeQMSB = GetMSB64(sizeQ);
+        double logq     = std::log2(moduliQ[0].ConvertToDouble());
+        double logSizeQ = std::log2(static_cast<double>(sizeQ));
+
+        usint digitNum     = static_cast<usint>(std::ceil(logq / (52. - logSizeQ)));
+        usint logDigitSize = static_cast<usint>(std::ceil(logq / digitNum));
 
         m_tQHatInvModqDivqModt.resize(sizeQ);
         m_tQHatInvModqDivqModtPrecon.resize(sizeQ);
         m_tQHatInvModqDivqFrac.resize(sizeQ);
-        if (qMSB + sizeQMSB < 52) {
-            for (size_t i = 0; i < sizeQ; i++) {
-                BigInteger qi(moduliQ[i].ConvertToInt());
-                BigInteger tQHatInvModqi =
-                    ((modulusQ.DividedBy(qi)).ModInverse(qi) * BigInteger(GetPlaintextModulus()));
-                BigInteger tQHatInvModqDivqi    = tQHatInvModqi.DividedBy(qi);
-                m_tQHatInvModqDivqModt[i]       = tQHatInvModqDivqi.Mod(GetPlaintextModulus()).ConvertToInt();
-                m_tQHatInvModqDivqModtPrecon[i] = m_tQHatInvModqDivqModt[i].PrepModMulConst(GetPlaintextModulus());
+        for (size_t i = 0; i < sizeQ; i++) {
+            m_tQHatInvModqDivqModt[i].resize(digitNum);
+            m_tQHatInvModqDivqModtPrecon[i].resize(digitNum);
+            m_tQHatInvModqDivqFrac[i].resize(digitNum);
 
-                int64_t numerator         = tQHatInvModqi.Mod(qi).ConvertToInt();
-                int64_t denominator       = moduliQ[i].ConvertToInt();
-                m_tQHatInvModqDivqFrac[i] = static_cast<double>(numerator) / static_cast<double>(denominator);
-            }
-        }
-        else {
-            m_tQHatInvModqBDivqModt.resize(sizeQ);
-            m_tQHatInvModqBDivqModtPrecon.resize(sizeQ);
-            m_tQHatInvModqBDivqFrac.resize(sizeQ);
-            usint qMSBHf = qMSB >> 1;
-            for (size_t i = 0; i < sizeQ; i++) {
-                BigInteger qi(moduliQ[i].ConvertToInt());
-                BigInteger tQHatInvModqi =
-                    ((modulusQ.DividedBy(qi)).ModInverse(qi) * BigInteger(GetPlaintextModulus()));
-                BigInteger tQHatInvModqDivqi    = tQHatInvModqi.DividedBy(qi);
-                m_tQHatInvModqDivqModt[i]       = tQHatInvModqDivqi.Mod(GetPlaintextModulus()).ConvertToInt();
-                m_tQHatInvModqDivqModtPrecon[i] = m_tQHatInvModqDivqModt[i].PrepModMulConst(GetPlaintextModulus());
+            BigInteger qi(moduliQ[i].ConvertToInt());
+            BigInteger tQHatInvModqi = ((modulusQ.DividedBy(qi)).ModInverse(qi) * BigInteger(GetPlaintextModulus()));
+            int64_t denominator      = moduliQ[i].ConvertToInt();
 
-                int64_t numerator         = tQHatInvModqi.Mod(qi).ConvertToInt();
-                int64_t denominator       = moduliQ[i].ConvertToInt();
-                m_tQHatInvModqDivqFrac[i] = static_cast<double>(numerator) / static_cast<double>(denominator);
+            for (size_t di = 0; di < digitNum; di++) {
+                BigInteger tQHatInvModqDivqi  = tQHatInvModqi.DividedBy(qi);
+                m_tQHatInvModqDivqModt[i][di] = tQHatInvModqDivqi.Mod(GetPlaintextModulus()).ConvertToInt();
+                m_tQHatInvModqDivqModtPrecon[i][di] =
+                    m_tQHatInvModqDivqModt[i][di].PrepModMulConst(GetPlaintextModulus());
 
-                tQHatInvModqi.LShiftEq(qMSBHf);
-                tQHatInvModqDivqi                = tQHatInvModqi.DividedBy(qi);
-                m_tQHatInvModqBDivqModt[i]       = tQHatInvModqDivqi.Mod(GetPlaintextModulus()).ConvertToInt();
-                m_tQHatInvModqBDivqModtPrecon[i] = m_tQHatInvModqBDivqModt[i].PrepModMulConst(GetPlaintextModulus());
+                int64_t numerator             = tQHatInvModqi.Mod(qi).ConvertToInt();
+                m_tQHatInvModqDivqFrac[i][di] = static_cast<double>(numerator) / static_cast<double>(denominator);
 
-                numerator                  = tQHatInvModqi.Mod(qi).ConvertToInt();
-                m_tQHatInvModqBDivqFrac[i] = static_cast<double>(numerator) / static_cast<double>(denominator);
+                tQHatInvModqi.LShiftEq(logDigitSize);
             }
         }
 

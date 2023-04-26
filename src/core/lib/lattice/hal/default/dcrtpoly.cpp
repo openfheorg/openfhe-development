@@ -1964,137 +1964,78 @@ void DCRTPolyImpl<VecType>::ExpandCRTBasisQlHat(const std::shared_ptr<DCRTPolyIm
 
 template <typename VecType>
 PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
-    const NativeInteger& t, const std::vector<NativeInteger>& tQHatInvModqDivqModt,
-    const std::vector<NativeInteger>& tQHatInvModqDivqModtPrecon,
-    const std::vector<NativeInteger>& tQHatInvModqBDivqModt,
-    const std::vector<NativeInteger>& tQHatInvModqBDivqModtPrecon, const std::vector<double>& tQHatInvModqDivqFrac,
-    const std::vector<double>& tQHatInvModqDivqBFrac) const {
+    const NativeInteger& t, const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqModt,
+    const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqModtPrecon,
+    const std::vector<std::vector<double>>& tQHatInvModqDivqFrac) const {
     usint ringDim = this->GetRingDimension();
     usint sizeQ   = m_vectors.size();
 
-    // MSB of q_i
-    usint qMSB = m_vectors[0].GetModulus().GetMSB();
-    // MSB of t
-    usint tMSB = t.GetMSB();
-    // MSB of sizeQ
-    usint sizeQMSB = GetMSB64(sizeQ);
+    double logq     = std::log2(m_vectors[0].GetModulus().ConvertToDouble());
+    double logt     = std::log2(t.ConvertToDouble());
+    double logSizeQ = std::log2(static_cast<double>(sizeQ));
+
+    usint digitNum     = static_cast<usint>(std::ceil(logq / (52. - logSizeQ)));
+    usint logDigitSize = static_cast<usint>(std::ceil(logq / digitNum));
+    double logDigitNum = std::log2(digitNum);
 
     typename PolyType::Vector coefficients(ringDim, t.ConvertToInt());
     // For power of two t we can do modulo reduction easily
     if (IsPowerOfTwo(t.ConvertToInt())) {
-        uint64_t tMinus1 = t.ConvertToInt() - 1;
         // We try to keep floating point error of
-        // \sum x_i*tQHatInvModqDivqFrac[i] small.
-        if (qMSB + sizeQMSB < 52) {
-            // In our settings x_i <= q_i/2 and for double type floating point
-            // error is bounded by 2^{-53}. Thus the floating point error is bounded
-            // by sizeQ * q_i/2 * 2^{-53}. In case of qMSB + sizeQMSB < 52 the error
-            // is bounded by 1/4, and the rounding will be correct.
-            if ((qMSB + tMSB + sizeQMSB) < 63) {
-                // No intermediate modulo reductions are needed in this case
-                // we fit in 63 bits, so we can do multiplications and
-                // additions without modulo reduction, and do modulo reduction
-                // only once
+        // \sum x_ji*tQHatInvModqDivqFrac[j][i] small.
+        uint64_t tMinus1 = t.ConvertToInt() - 1;
+
+        // No intermediate modulo reductions are needed in this case
+        // we fit in 63 bits, so we can do multiplications and
+        // additions without modulo reduction, and do modulo reduction
+        // only once
+        if ((logDigitSize + logt + logSizeQ) < (63. - logDigitNum)) {
 #pragma omp parallel for
-                for (usint ri = 0; ri < ringDim; ri++) {
-                    double floatSum      = 0.5;
-                    NativeInteger intSum = 0, tmp;
-                    for (usint i = 0; i < sizeQ; i++) {
-                        tmp = m_vectors[i][ri];
+            for (usint ri = 0; ri < ringDim; ri++) {
+                double floatSum      = 0.5;
+                NativeInteger intSum = 0, tmp, digit;
+                for (usint i = 0; i < sizeQ; i++) {
+                    tmp = m_vectors[i][ri];
+                    for (usint di = 0; di < digitNum; di++) {
+                        digit = tmp;
+                        digit.RShiftEq(logDigitSize);
+                        digit.LShiftEq(logDigitSize);
+                        digit = tmp.SubFast(digit);
+                        tmp.RShiftEq(logDigitSize);
 
-                        floatSum += static_cast<double>(tmp.ConvertToInt()) * tQHatInvModqDivqFrac[i];
-
-                        // No intermediate modulo reductions are needed in this case
-                        tmp.MulEqFast(tQHatInvModqDivqModt[i]);
-                        intSum.AddEqFast(tmp);
+                        floatSum += static_cast<double>(digit.ConvertToInt()) * tQHatInvModqDivqFrac[i][di];
+                        digit.MulEqFast(tQHatInvModqDivqModt[i][di]);
+                        intSum.AddEqFast(digit);
                     }
-                    intSum += static_cast<uint64_t>(floatSum);
-                    // mod a power of two
-                    coefficients[ri] = intSum.ConvertToInt() & tMinus1;
                 }
-            }
-            else {
-                // In case of qMSB + sizeQMSB >= 52 we decompose x_i in the basis
-                // B=2^{qMSB/2} And split the sum \sum x_i*tQHatInvModqDivqFrac[i] to
-                // the sum \sum xLo_i*tQHatInvModqDivqFrac[i] +
-                // xHi_i*tQHatInvModqBDivqFrac[i] with also precomputed
-                // tQHatInvModqBDivqFrac = Frac{t*QHatInv_i*B/q_i} In our settings q_i <
-                // 2^60, so xLo_i, xHi_i < 2^30 and for double type floating point error
-                // is bounded by 2^{-53}. Thus the floating point error is bounded by
-                // sizeQ * 2^30 * 2^{-53}. We always have sizeQ < 2^11, which means the
-                // error is bounded by 1/4, and the rounding will be correct.
-#pragma omp parallel for
-                for (usint ri = 0; ri < ringDim; ri++) {
-                    double floatSum      = 0.5;
-                    NativeInteger intSum = 0, tmp;
-                    for (usint i = 0; i < sizeQ; i++) {
-                        tmp = m_vectors[i][ri];
-
-                        floatSum += static_cast<double>(tmp.ConvertToInt()) * tQHatInvModqDivqFrac[i];
-
-                        tmp.ModMulFastConstEq(tQHatInvModqDivqModt[i], t, tQHatInvModqDivqModtPrecon[i]);
-                        intSum.AddEqFast(tmp);
-                    }
-                    intSum += static_cast<uint64_t>(floatSum);
-                    // mod a power of two
-                    coefficients[ri] = intSum.ConvertToInt() & tMinus1;
-                }
+                intSum += static_cast<uint64_t>(floatSum);
+                // mod a power of two
+                coefficients[ri] = intSum.ConvertToInt() & tMinus1;
             }
         }
         else {
-            usint qMSBHf = qMSB >> 1;
-            if ((qMSBHf + tMSB + sizeQMSB) < 62) {
-                // No intermediate modulo reductions are needed in this case
-                // we fit in 62 bits, so we can do multiplications and
-                // additions without modulo reduction, and do modulo reduction
-                // only once
 #pragma omp parallel for
-                for (usint ri = 0; ri < ringDim; ri++) {
-                    double floatSum      = 0.5;
-                    NativeInteger intSum = 0;
-                    NativeInteger tmpHi, tmpLo;
-                    for (usint i = 0; i < sizeQ; i++) {
-                        tmpLo = m_vectors[i][ri];
-                        tmpHi = tmpLo.RShift(qMSBHf);
-                        tmpLo.SubEqFast(tmpHi.LShift(qMSBHf));
+            for (usint ri = 0; ri < ringDim; ri++) {
+                double floatSum      = 0.5;
+                NativeInteger intSum = 0, tmp, digit;
+                for (usint i = 0; i < sizeQ; i++) {
+                    tmp = m_vectors[i][ri];
+                    for (usint di = 0; di < digitNum; di++) {
+                        digit = tmp;
+                        digit.RShiftEq(logDigitSize);
+                        digit.LShiftEq(logDigitSize);
+                        digit = tmp.SubFast(digit);
+                        tmp.RShiftEq(logDigitSize);
 
-                        floatSum += static_cast<double>(tmpLo.ConvertToInt()) * tQHatInvModqDivqFrac[i];
-                        floatSum += static_cast<double>(tmpHi.ConvertToInt()) * tQHatInvModqDivqBFrac[i];
+                        floatSum += static_cast<double>(digit.ConvertToInt()) * tQHatInvModqDivqFrac[i][di];
 
-                        // No intermediate modulo reductions are needed in this case
-                        tmpLo.MulEqFast(tQHatInvModqDivqModt[i]);
-                        tmpHi.MulEqFast(tQHatInvModqBDivqModt[i]);
-                        intSum.AddEqFast(tmpLo);
-                        intSum.AddEqFast(tmpHi);
+                        digit.ModMulFastConstEq(tQHatInvModqDivqModt[i][di], t, tQHatInvModqDivqModtPrecon[i][di]);
+                        intSum.AddEqFast(digit);
                     }
-                    intSum += static_cast<uint64_t>(floatSum);
-                    // mod a power of two
-                    coefficients[ri] = intSum.ConvertToInt() & tMinus1;
                 }
-            }
-            else {
-#pragma omp parallel for
-                for (usint ri = 0; ri < ringDim; ri++) {
-                    double floatSum      = 0.5;
-                    NativeInteger intSum = 0;
-                    NativeInteger tmpHi, tmpLo;
-                    for (usint i = 0; i < sizeQ; i++) {
-                        tmpLo = m_vectors[i][ri];
-                        tmpHi = tmpLo.RShift(qMSBHf);
-                        tmpLo.SubEqFast(tmpHi.LShift(qMSBHf));
-
-                        floatSum += static_cast<double>(tmpLo.ConvertToInt()) * tQHatInvModqDivqFrac[i];
-                        floatSum += static_cast<double>(tmpHi.ConvertToInt()) * tQHatInvModqDivqBFrac[i];
-
-                        tmpLo.ModMulFastConstEq(tQHatInvModqDivqModt[i], t, tQHatInvModqDivqModtPrecon[i]);
-                        tmpHi.ModMulFastConstEq(tQHatInvModqBDivqModt[i], t, tQHatInvModqBDivqModtPrecon[i]);
-                        intSum.AddEqFast(tmpLo);
-                        intSum.AddEqFast(tmpHi);
-                    }
-                    intSum += static_cast<uint64_t>(floatSum);
-                    // mod a power of two
-                    coefficients[ri] = intSum.ConvertToInt() & tMinus1;
-                }
+                intSum += static_cast<uint64_t>(floatSum);
+                // mod a power of two
+                coefficients[ri] = intSum.ConvertToInt() & tMinus1;
             }
         }
     }
@@ -2103,133 +2044,66 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
         double td   = t.ConvertToInt();
         double tInv = 1. / td;
         // We try to keep floating point error of
-        // \sum x_i*tQHatInvModqDivqFrac[i] small.
-        if (qMSB + sizeQMSB < 52) {
-            // In our settings x_i <= q_i/2 and for double type floating point
-            // error is bounded by 2^{-53}. Thus the floating point error is bounded
-            // by sizeQ * q_i/2 * 2^{-53}. In case of qMSB + sizeQMSB < 52 the error
-            // is bounded by 1/4, and the rounding will be correct.
-            if ((qMSB + tMSB + sizeQMSB) < 52) {
-                // No intermediate modulo reductions are needed in this case
-                // we fit in 52 bits, so we can do multiplications and
-                // additions without modulo reduction, and do modulo reduction
-                // only once using floating point techniques
+        // \sum x_ji*tQHatInvModqDivqFrac[j][i] small.
+        if ((logDigitSize + logt + logSizeQ) < 52) {
 #pragma omp parallel for
-                for (usint ri = 0; ri < ringDim; ri++) {
-                    double floatSum      = 0.0;
-                    NativeInteger intSum = 0, tmp;
-                    for (usint i = 0; i < sizeQ; i++) {
-                        tmp = m_vectors[i][ri];
+            for (usint ri = 0; ri < ringDim; ri++) {
+                double floatSum      = 0.0;
+                NativeInteger intSum = 0;
+                NativeInteger tmp, digit;
+                for (usint i = 0; i < sizeQ; i++) {
+                    tmp = m_vectors[i][ri];
+                    for (usint di = 0; di < digitNum; di++) {
+                        digit = tmp;
+                        digit.RShiftEq(logDigitSize);
+                        digit.LShiftEq(logDigitSize);
+                        digit = tmp.SubFast(digit);
+                        tmp.RShiftEq(logDigitSize);
 
-                        floatSum += static_cast<double>(tmp.ConvertToInt()) * tQHatInvModqDivqFrac[i];
-
-                        // No intermediate modulo reductions are needed in this case
-                        tmp.MulEqFast(tQHatInvModqDivqModt[i]);
-                        intSum.AddEqFast(tmp);
+                        floatSum += static_cast<double>(digit.ConvertToInt()) * tQHatInvModqDivqFrac[i][di];
+                        digit.MulEqFast(tQHatInvModqDivqModt[i][di]);
+                        intSum.AddEqFast(digit);
                     }
-                    // compute modulo reduction by finding the quotient using doubles
-                    // and then substracting quotient * t
-                    floatSum += intSum.ConvertToInt();
-                    uint64_t quot = static_cast<uint64_t>(floatSum * tInv);
-                    floatSum -= td * quot;
-                    // rounding
-                    coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
                 }
-            }
-            else {
-                // In case of qMSB + sizeQMSB >= 52 we decompose x_i in the basis
-                // B=2^{qMSB/2} And split the sum \sum x_i*tQHatInvModqDivqFrac[i] to
-                // the sum \sum xLo_i*tQHatInvModqDivqFrac[i] +
-                // xHi_i*tQHatInvModqBDivqFrac[i] with also precomputed
-                // tQHatInvModqBDivqFrac = Frac{t*QHatInv_i*B/q_i} In our settings q_i <
-                // 2^60, so xLo_i, xHi_i < 2^30 and for double type floating point error
-                // is bounded by 2^{-53}. Thus the floating point error is bounded by
-                // sizeQ * 2^30 * 2^{-53}. We always have sizeQ < 2^11, which means the
-                // error is bounded by 1/4, and the rounding will be correct.
-#pragma omp parallel for
-                for (usint ri = 0; ri < ringDim; ri++) {
-                    double floatSum      = 0.0;
-                    NativeInteger intSum = 0, tmp;
-                    for (usint i = 0; i < sizeQ; i++) {
-                        tmp = m_vectors[i][ri];
 
-                        floatSum += static_cast<double>(tmp.ConvertToInt()) * tQHatInvModqDivqFrac[i];
-
-                        tmp.ModMulFastConstEq(tQHatInvModqDivqModt[i], t, tQHatInvModqDivqModtPrecon[i]);
-                        intSum.AddEqFast(tmp);
-                    }
-                    // compute modulo reduction by finding the quotient using doubles
-                    // and then substracting quotient * t
-                    floatSum += intSum.ConvertToInt();
-                    uint64_t quot = static_cast<uint64_t>(floatSum * tInv);
-                    floatSum -= td * quot;
-                    // rounding
-                    coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
-                }
+                // compute modulo reduction by finding the quotient using doubles
+                // and then substracting quotient * t
+                floatSum += intSum.ConvertToInt();
+                uint64_t quot = static_cast<uint64_t>(floatSum * tInv);
+                floatSum -= td * quot;
+                // rounding
+                coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
             }
         }
         else {
-            usint qMSBHf = qMSB >> 1;
-            if ((qMSBHf + tMSB + sizeQMSB) < 52) {
-                // No intermediate modulo reductions are needed in this case
-                // we fit in 52 bits, so we can do multiplications and
-                // additions without modulo reduction, and do modulo reduction
-                // only once using floating point techniques
 #pragma omp parallel for
-                for (usint ri = 0; ri < ringDim; ri++) {
-                    double floatSum      = 0.0;
-                    NativeInteger intSum = 0;
-                    NativeInteger tmpHi, tmpLo;
-                    for (usint i = 0; i < sizeQ; i++) {
-                        tmpLo = m_vectors[i][ri];
-                        tmpHi = tmpLo.RShift(qMSBHf);
-                        tmpLo.SubEqFast(tmpHi.LShift(qMSBHf));
+            for (usint ri = 0; ri < ringDim; ri++) {
+                double floatSum      = 0.0;
+                NativeInteger intSum = 0;
+                NativeInteger tmp, digit;
 
-                        floatSum += static_cast<double>(tmpLo.ConvertToInt()) * tQHatInvModqDivqFrac[i];
-                        floatSum += static_cast<double>(tmpHi.ConvertToInt()) * tQHatInvModqDivqBFrac[i];
+                for (usint i = 0; i < sizeQ; i++) {
+                    tmp = m_vectors[i][ri];
+                    for (usint di = 0; di < digitNum; di++) {
+                        digit = tmp;
+                        digit.RShiftEq(logDigitSize);
+                        digit.LShiftEq(logDigitSize);
+                        digit = tmp.SubFast(digit);
+                        tmp.RShiftEq(logDigitSize);
 
-                        // No intermediate modulo reductions are needed in this case
-                        tmpLo.MulEqFast(tQHatInvModqDivqModt[i]);
-                        tmpHi.MulEqFast(tQHatInvModqBDivqModt[i]);
-                        intSum.AddEqFast(tmpLo);
-                        intSum.AddEqFast(tmpHi);
+                        floatSum += static_cast<double>(digit.ConvertToInt()) * tQHatInvModqDivqFrac[i][di];
+                        digit.ModMulFastConstEq(tQHatInvModqDivqModt[i][di], t, tQHatInvModqDivqModtPrecon[i][di]);
+                        intSum.AddEqFast(digit);
                     }
-                    // compute modulo reduction by finding the quotient using doubles
-                    // and then substracting quotient * t
-                    floatSum += intSum.ConvertToInt();
-                    uint64_t quot = static_cast<uint64_t>(floatSum * tInv);
-                    floatSum -= td * quot;
-                    // rounding
-                    coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
                 }
-            }
-            else {
-#pragma omp parallel for
-                for (usint ri = 0; ri < ringDim; ri++) {
-                    double floatSum      = 0.0;
-                    NativeInteger intSum = 0;
-                    NativeInteger tmpHi, tmpLo;
-                    for (usint i = 0; i < sizeQ; i++) {
-                        tmpLo = m_vectors[i][ri];
-                        tmpHi = tmpLo.RShift(qMSBHf);
-                        tmpLo.SubEqFast(tmpHi.LShift(qMSBHf));
 
-                        floatSum += static_cast<double>(tmpLo.ConvertToInt()) * tQHatInvModqDivqFrac[i];
-                        floatSum += static_cast<double>(tmpHi.ConvertToInt()) * tQHatInvModqDivqBFrac[i];
-
-                        tmpLo.ModMulFastConstEq(tQHatInvModqDivqModt[i], t, tQHatInvModqDivqModtPrecon[i]);
-                        tmpHi.ModMulFastConstEq(tQHatInvModqBDivqModt[i], t, tQHatInvModqBDivqModtPrecon[i]);
-                        intSum.AddEqFast(tmpLo);
-                        intSum.AddEqFast(tmpHi);
-                    }
-                    // compute modulo reduction by finding the quotient using doubles
-                    // and then substracting quotient * t
-                    floatSum += intSum.ConvertToInt();
-                    uint64_t quot = static_cast<uint64_t>(floatSum * tInv);
-                    floatSum -= td * quot;
-                    // rounding
-                    coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
-                }
+                // compute modulo reduction by finding the quotient using doubles
+                // and then substracting quotient * t
+                floatSum += intSum.ConvertToInt();
+                uint64_t quot = static_cast<uint64_t>(floatSum * tInv);
+                floatSum -= td * quot;
+                // rounding
+                coefficients[ri] = static_cast<uint64_t>(floatSum + 0.5);
             }
         }
     }
@@ -2564,9 +2438,9 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     }
 
     // mod mtilde = 2^16
-    const uint64_t mtilde      = (uint64_t)1 << 16;
-    const uint64_t mtilde_half = mtilde >> 1;
-    const uint64_t mtilde_minus_1 = mtilde-1;
+    const uint64_t mtilde         = (uint64_t)1 << 16;
+    const uint64_t mtilde_half    = mtilde >> 1;
+    const uint64_t mtilde_minus_1 = mtilde - 1;
 
     std::vector<uint64_t> result_mtilde(n, 0);
     #pragma omp parallel for
@@ -2697,9 +2571,9 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     }
 
     // mod mtilde = 2^16
-    const uint64_t mtilde      = (uint64_t)1 << 16;
-    const uint64_t mtilde_half = mtilde >> 1;
-    const uint64_t mtilde_minus_1 = mtilde-1;
+    const uint64_t mtilde         = (uint64_t)1 << 16;
+    const uint64_t mtilde_half    = mtilde >> 1;
+    const uint64_t mtilde_minus_1 = mtilde - 1;
 
     std::vector<uint64_t> result_mtilde(n, 0);
     #pragma omp parallel for
