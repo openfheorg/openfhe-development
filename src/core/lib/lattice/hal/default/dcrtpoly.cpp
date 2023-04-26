@@ -1013,7 +1013,7 @@ void DCRTPolyImpl<VecType>::DropLastElementAndScale(const std::vector<NativeInte
     usint sizeQl = m_vectors.size();
 
     if (sizeQl <= 1) {
-	    OPENFHE_THROW(config_error, "Removing the last element of a DCRTPoly object renders it invalid!");
+        OPENFHE_THROW(config_error, "Removing the last element of a DCRTPoly object renders it invalid!");
     }
 
     // last tower that will be dropped
@@ -2568,9 +2568,9 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     }
 
     // mod mtilde = 2^16
-    const uint64_t mtilde      = (uint64_t)1 << 16;
-    const uint64_t mtilde_half = mtilde >> 1;
-    const uint64_t mtilde_minus_1 = mtilde-1;
+    const uint64_t mtilde         = (uint64_t)1 << 16;
+    const uint64_t mtilde_half    = mtilde >> 1;
+    const uint64_t mtilde_minus_1 = mtilde - 1;
 
     std::vector<uint64_t> result_mtilde(n, 0);
     #pragma omp parallel for
@@ -2701,9 +2701,9 @@ void DCRTPolyImpl<VecType>::FastBaseConvqToBskMontgomery(
     }
 
     // mod mtilde = 2^16
-    const uint64_t mtilde      = (uint64_t)1 << 16;
-    const uint64_t mtilde_half = mtilde >> 1;
-    const uint64_t mtilde_minus_1 = mtilde-1;
+    const uint64_t mtilde         = (uint64_t)1 << 16;
+    const uint64_t mtilde_half    = mtilde >> 1;
+    const uint64_t mtilde_minus_1 = mtilde - 1;
 
     std::vector<uint64_t> result_mtilde(n, 0);
     #pragma omp parallel for
