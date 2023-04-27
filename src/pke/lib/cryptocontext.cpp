@@ -545,6 +545,52 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> CryptoContextImpl<Element>::Eval
     return GetScheme()->EvalCKKStoFHEW(ciphertext, scale, numCtxts);
 }
 
+template <typename Element>
+void CryptoContextImpl<Element>::EvalFHEWtoCKKSSetup(const BinFHEContext& ccLWE, uint32_t numSlotsCKKS, uint32_t logQ) {
+    GetScheme()->EvalFHEWtoCKKSSetup(*this, ccLWE, numSlotsCKKS, logQ);
+}
+
+template <typename Element>
+void CryptoContextImpl<Element>::EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, LWEPrivateKey& lwesk) {
+    if (keyPair.secretKey == NULL || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {  // Add test for lwesk?
+        OPENFHE_THROW(config_error,
+                      "Private key passed to EvalFHEWtoCKKSKeyGen was not generated with this crypto context");
+    }
+    auto evalKeys = GetScheme()->EvalFHEWtoCKKSKeyGen(keyPair, lwesk);
+
+    auto ekv = GetAllEvalAutomorphismKeys().find(keyPair.secretKey->GetKeyTag());
+    if (ekv == GetAllEvalAutomorphismKeys().end()) {
+        GetAllEvalAutomorphismKeys()[keyPair.secretKey->GetKeyTag()] = evalKeys;
+    }
+    else {
+        auto& currRotMap = GetEvalAutomorphismKeyMap(keyPair.secretKey->GetKeyTag());
+        auto iterRowKeys = evalKeys->begin();
+        while (iterRowKeys != evalKeys->end()) {
+            auto idx = iterRowKeys->first;
+            // Search current rotation key map and add key
+            // only if it doesn't exist
+            if (currRotMap.find(idx) == currRotMap.end()) {
+                currRotMap.insert(*iterRowKeys);
+            }
+            iterRowKeys++;
+        }
+    }
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalFHEWtoCKKS(
+    std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts, double scale, uint32_t numSlots, double pmin,
+    double pmax) const {
+    return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, scale, numSlots, pmin, pmax);
+}
+
+template <typename Element>
+Ciphertext<Element> CryptoContextImpl<Element>::EvalFHEWtoCKKSPrototype(
+    std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts, uint32_t dim1_FC, double scale, uint32_t numSlots,
+    double pmin, double pmax) const {
+    return GetScheme()->EvalFHEWtoCKKSPrototype(LWECiphertexts, dim1_FC, scale, numSlots, pmin, pmax);
+}
+
 }  // namespace lbcrypto
 
 // the code below is from cryptocontext-impl.cpp

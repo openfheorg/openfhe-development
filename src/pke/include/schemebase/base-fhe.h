@@ -38,9 +38,6 @@
 #include "cryptocontext-fwd.h"
 #include "utils/exception.h"
 
-// Andreea: Temporary include for the SecurityLevel, BINFHE_PARAMSET
-#include "lattice/stdlatticeparms.h"
-// #include "../../binfhe/include/binfhe-constants.h"
 #include "../../binfhe/include/binfhecontext.h"
 #include "key/keypair.h"
 
@@ -142,6 +139,7 @@ public:
     /**
    * Sets all parameters for switching from CKKS to FHEW
    *
+   * @param ccCKKS the CKKS cryptocontext from which to switch to
    * @param dynamic whether to use dynamic mode for FHEW
    * @param logQ preicions of large-precision sign evaluation based on FHEW
    * @param sl security level
@@ -149,10 +147,10 @@ public:
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
    */
-    virtual std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& cc,
+    virtual std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS,
                                                                         bool dynamic, uint32_t logQ, SecurityLevel sl,
                                                                         uint32_t numSlotsCKKS) {
-        OPENFHE_THROW(not_implemented_error, "Not supported");
+        OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWSetup is not supported for this scheme");
     }
 
     /**
@@ -163,7 +161,7 @@ public:
    * @param lwesk FHEW secret key   */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
                                                                                     LWEPrivateKey& lwesk) {
-        OPENFHE_THROW(not_implemented_error, "Not supported");
+        OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWKeyGen is not supported for this scheme");
     }
 
     /**
@@ -176,6 +174,53 @@ public:
     virtual std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element> ciphertext,
                                                                            double scale, uint32_t numCtxts) const {
         OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEW is not implemented for this scheme");
+    }
+
+    /**
+   * Sets all parameters for switching from FHEW to CKKS. The CKKS cryptocontext to switch to is
+   * already generated.
+   *
+   * @param ccCKKS the CKKS cryptocontext to switch to
+   * @param ccLWE the FHEW cryptocontext from which to switch
+   * @param numSlotsCKKS number of FHEW ciphertexts that becomes the number of slots in CKKS encryption
+   * @param logQ the logarithm of a ciphertext modulus in FHEW
+   */
+    virtual void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const BinFHEContext& ccLWE,
+                                     uint32_t numSlotsCKKS, uint32_t logQ) {
+        OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSSetup is not supported for this scheme");
+    }
+
+    /**
+   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
+   * in the linear transform for the partial decryption, the switching key from FHEW to CKKS
+   *
+   * @param keypair CKKS key pair
+   * @param lwesk FHEW secret key
+   */
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
+                                                                                    LWEPrivateKey& lwesk) {
+        OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSKeyGen is not supported for this scheme");
+    }
+
+    /**
+   * Performs the scheme switching on a vector of FHEW ciphertexts
+   *
+   * @param LWECiphertexts FHEW/LWE ciphertexts to switch
+   * @param scale factor to multiply the LWE components
+   * @param numSlots number of slots to encode in the new CKKS/RLWE ciphertext
+   * @param pmin, pmax plaintext space of the LWE ciphertexts (by default [0,2] assuming
+   * the LWE ciphertext had plaintext modulus p = 4 and only bits were encrypted)
+   * @return a CKKS ciphertext encrypting in its slots the messages in the LWE ciphertexts
+   */
+    virtual Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
+                                               double scale, uint32_t numSlots, double pmin, double pmax) const {
+        OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKS is not implemented for this scheme");
+    }
+
+    virtual Ciphertext<Element> EvalFHEWtoCKKSPrototype(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
+                                                        uint32_t dim1_FC, double scale, uint32_t numSlots, double pmin,
+                                                        double pmax) const {
+        OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSPrototype is not implemented for this scheme");
     }
 };
 

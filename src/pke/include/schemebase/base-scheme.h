@@ -1379,6 +1379,45 @@ public:
         OPENFHE_THROW(config_error, "EvalCKKStoFHEW operation has not been enabled");
     }
 
+    void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const BinFHEContext& ccLWE,
+                             uint32_t numSlotsCKKS = 0, uint32_t logQ = 0) {
+        if (m_SchemeSwitch) {
+            m_SchemeSwitch->EvalFHEWtoCKKSSetup(ccCKKS, ccLWE, numSlotsCKKS, logQ);
+            return;
+        }
+
+        OPENFHE_THROW(config_error, "EvalFHEWtoCKKSSetup operation has not been enabled");
+    }
+
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
+                                                                            LWEPrivateKey& lwesk) {
+        if (m_SchemeSwitch) {
+            return m_SchemeSwitch->EvalFHEWtoCKKSKeyGen(keyPair, lwesk);
+        }
+
+        OPENFHE_THROW(config_error, "EvalFHEWtoCKKSKeyGen operation has not been enabled");
+    }
+
+    Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
+                                       double scale = 1.0, uint32_t numSlots = 0, double pmin = 0.0,
+                                       double pmax = 2.0) const {
+        if (m_SchemeSwitch) {
+            return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, scale, numSlots, pmin, pmax);
+        }
+
+        OPENFHE_THROW(config_error, "EvalFHEWtoCKKSW operation has not been enabled");
+    }
+
+    Ciphertext<Element> EvalFHEWtoCKKSPrototype(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
+                                                uint32_t dim1_FC = 0, double scale = 1.0, uint32_t numSlots = 0,
+                                                double pmin = 0.0, double pmax = 2.0) const {
+        if (m_SchemeSwitch) {
+            return m_SchemeSwitch->EvalFHEWtoCKKSPrototype(LWECiphertexts, dim1_FC, scale, numSlots, pmin, pmax);
+        }
+
+        OPENFHE_THROW(config_error, "EvalFHEWtoCKKSWPrototype operation has not been enabled");
+    }
+
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("enabled", GetEnabled()));

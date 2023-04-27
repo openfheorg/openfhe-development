@@ -2957,7 +2957,6 @@ public:
    * 1''. EvalFHEWtoCKKSSetup
    * 2''. EvalFHEWtoCKKSKeyGen
    * 3''. EvalFHEWtoCKKS
-   * These last 3 methods should be in binfhecontext
    */
 
     /**
@@ -2984,23 +2983,27 @@ public:
    * @param numSlotsCKKS number of slots in CKKS encryption
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
+   * Andreea: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
     std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(bool dynamic = false, uint32_t logQ = 29,
                                                                 SecurityLevel sl      = HEStd_128_classic,
                                                                 uint32_t numSlotsCKKS = 0);
 
     /**
-   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy,
-   * conjugation keys, switching key from CKKS to FHEW
+   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
+   * for the linear transform in the homomorphic decoding, conjugation keys, switching key from CKKS to FHEW
+   *
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
    */
     void EvalCKKStoFHEWKeyGen(
         const KeyPair<Element>& keyPair,
-        LWEPrivateKey& lwesk);  // don't know how to transform ConstLWEPrivateKey to shared_ptr<LWEPrivateKeyImpl>
+        LWEPrivateKey&
+            lwesk);  // Andreea: don't know how to transform ConstLWEPrivateKey to shared_ptr<LWEPrivateKeyImpl>
 
     /**
    * Performs the scheme switching on a CKKS ciphertext
+   *
    * @param ciphertext CKKS ciphertext to switch
    * @param scale factor to multiply the plaintext encoded into the ciphertext
    * @param numCtxts number of coefficients to extract from the CKKS ciphertext. If it is zero, it defaults to number of slots
@@ -3008,6 +3011,43 @@ public:
    */
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element> ciphertext,
                                                                    double scale = 1.0, uint32_t numCtxts = 0) const;
+
+    /**
+   * Sets all parameters for switching from FHEW to CKKS. The CKKS cryptocontext to switch to is
+   * already generated.
+   *
+   * @param ccLWE the FHEW cryptocontext from which to switch
+   * @param numSlotsCKKS number of FHEW ciphertexts that becomes the number of slots in CKKS encryption
+   * @param logQ the logarithm of a ciphertext modulus in FHEW
+   */
+    void EvalFHEWtoCKKSSetup(const BinFHEContext& ccLWE, uint32_t numSlotsCKKS = 0, uint32_t logQ = 0);
+
+    /**
+   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
+   * in the linear transform for the partial decryption, the switching key from FHEW to CKKS
+   *
+   * @param keypair CKKS key pair
+   * @param lwesk FHEW secret key
+   */
+    void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, LWEPrivateKey& lwesk);
+
+    /**
+   * Performs the scheme switching on a vector of FHEW ciphertexts
+   *
+   * @param LWECiphertexts FHEW/LWE ciphertexts to switch
+   * @param scale factor to multiply the LWE components
+   * @param numSlots number of slots to encode in the new CKKS/RLWE ciphertext
+   * @param pmin, pmax plaintext space of the LWE ciphertexts (by default [0,2] assuming
+   * the LWE ciphertext had plaintext modulus p = 4 and only bits were encrypted)
+   * @return a CKKS ciphertext encrypting in its slots the messages in the LWE ciphertexts
+   */
+    Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
+                                       double scale = 1.0, uint32_t numSlots = 0, double pmin = 0.0,
+                                       double pmax = 2.0) const;
+
+    Ciphertext<Element> EvalFHEWtoCKKSPrototype(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
+                                                uint32_t dim1_FC = 0, double scale = 1.0, uint32_t numSlots = 0,
+                                                double pmin = 0.0, double pmax = 2.0) const;
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
