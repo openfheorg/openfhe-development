@@ -56,7 +56,11 @@ int main() {
 
     int q      = 4096;                                               // q
     int factor = 1 << int(logQ - log2(q));                           // Q/q
+<<<<<<< HEAD
     uint64_t P = cc.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
+=======
+    int P      = cc.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
+>>>>>>> change to example to compute modulus for last digit instead of hardcoding, change to unittest to check all the digits
 
     // Sample Program: Step 2: Key Generation
     // Generate the secret key
