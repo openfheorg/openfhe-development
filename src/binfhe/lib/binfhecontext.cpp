@@ -112,6 +112,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
 }
 
 void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method) {
+#if 0
     struct BinFHEContextParams {
         // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
         usint numberBits;
@@ -135,6 +136,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
         // for key distribution
         SECRET_KEY_DIST keyDist;
     };
+#endif
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
     const double STD_DEV = 3.19;
     // clang-format off
@@ -189,88 +191,9 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
 
-void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, usint latticeParam, usint modKS, usint gadgetBase,
-                                          usint baseKS, BINFHE_METHOD method) {
-    struct BinFHEContextParams {
-        // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
-        usint numberBits;
-        usint cyclOrder;
-
-        // for LWE crypto parameters
-        usint latticeParam;
-        usint mod;  // modulus for additive LWE
-        // modulus for key switching; if it is zero, then it is replaced with intermediate prime for LWE crypto parameters
-        usint modKS;
-        double stdDev;
-        usint baseKS;  // base for key switching
-
-        // for Ring GSW + LWE parameters
-        usint gadgetBase;  // gadget base used in the bootstrapping
-        usint baseRK;      // base for the refreshing key
-    };
+void BinFHEContext::GenerateBinFHEContext(BinFHEContextParams params, BINFHE_METHOD method) {
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
-    const double STD_DEV = 3.19;
-    // clang-format off
-    const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap({
-        //                 numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase|baseRK
-      //{ STD256Q_3,            { 27,     4096,        2048, 4096, 1 << 16, STD_DEV, 1 << 4,    1 <<  6,  46 } },
-        { STD128_en,            { 27,     2048,         512, 1024, 1 << 13, STD_DEV, 1 << 7,    1 <<  7,  32 } },
-        { STD128_en_3_1,        { 27,     2048,         512, 2048, 1 << 13, STD_DEV, 1 << 7,    1 <<  5,  32 } },
-        { STD128_en_3_2,        { 27,     2048,        1024, 2048, 1 << 13, STD_DEV, 1 << 7,    1 <<  5,  32 } },
-        { STD128_3,             { 27,     2048,         512, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  4,  32 } },
-        { STD128Q_3,            { 50,     4096,        1024, 4096, 1 << 25, STD_DEV,     32,    1 << 25,  32 } },
-        { STD128Q_OPT_3,        { 50,     4096,         585, 4096, 1 << 15, STD_DEV,     32,    1 << 25,  32 } },
-        { STD128Q_OPT_3_en,     { 50,     4096,         725, 4096, 1 << 18, STD_DEV,      8,    1 << 25,  32 } },
-        { STD192Q_3,            { 35,     4096,        1024, 4096, 1 << 17, STD_DEV,     64,    1 <<  9,   32 } },
-        { STD192Q_OPT_3,        { 35,     4096,         890, 4096, 1 << 15, STD_DEV,     32,    1 <<  9,   32 } },
-        { STD192Q_OPT_3_en,     { 35,     4096,         950, 4096, 1 << 16, STD_DEV,      8,    1 << 12,  32 } },
-        { STD192Q_OPT_3_en_3,   { 35,     4096,         950, 4096, 1 << 16, STD_DEV,     16,     1 << 9,  32 } },
-        { STD256Q_3,            { 27,     4096,        2048, 4096, 1 << 16, STD_DEV,     16,    1 <<  6,  32 } },
-        { STD256Q_4,            { 27,     4096,        2048, 4096, 1 << 20, STD_DEV,     8,    1 <<  6,  32 } },
-        { STD256Q_OPT_3,        { 27,     4096,        1242, 4096, 1 << 16, STD_DEV,     16,    1 <<  7,  32 } },
-        { STD256Q_OPT_3_en_1,   { 27,     4096,        1400, 2048, 1 << 18, STD_DEV,     8,     1 <<  7,  32 } },
-        { STD256Q_OPT_3_en_2,   { 27,     4096,        1400, 2048, 1 << 18, STD_DEV,     16,    1 <<  7,  32 } },
-        { TOY,                  { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23 } },
-        { MEDIUM,               { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32 } },
-        { STD128_AP,            { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32 } },
-        { STD128_APOPT,         { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32 } },
-        { STD128,               { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32 } },
-        { STD128_AP_3,          { 27,     2048,         512, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32 } },
-        { STD128_OPT,           { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32 } },
-        { STD192,               { 37,     4096,        1024, 1024, 1 << 19, STD_DEV,     28,    1 << 13,  32 } },
-        { STD192_OPT,           { 37,     4096,         805, 1024, 1 << 15, STD_DEV,     32,    1 << 13,  32 } },
-        { STD256,               { 29,     4096,        1024, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46 } },
-        { STD256_OPT,           { 29,     4096,         990, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46 } },
-        { STD128Q,              { 50,     4096,        1024, 1024, 1 << 25, STD_DEV,     32,    1 << 25,  32 } },
-        { STD128Q_OPT,          { 50,     4096,         585, 1024, 1 << 15, STD_DEV,     32,    1 << 25,  32 } },
-        { STD192Q,              { 35,     4096,        1024, 1024, 1 << 17, STD_DEV,     64,    1 << 12,  32 } },
-        { STD192Q_OPT,          { 35,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 12,  32 } },
-        { STD256Q,              { 27,     4096,        2048, 2048, 1 << 16, STD_DEV,     16,    1 <<  7,  46 } },
-        { STD256Q_OPT,          { 27,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 <<  7,  32 } },
-        { SIGNED_MOD_TEST,      { 28,     2048,         512, 1024,   PRIME, STD_DEV,     25,    1 <<  7,  23 } },
-    });
-    // clang-format on
 
-    auto search = paramsMap.find(set);
-    if (paramsMap.end() == search) {
-        std::string errMsg("ERROR: Unknown parameter set [" + std::to_string(set) + "] for FHEW.");
-        OPENFHE_THROW(config_error, errMsg);
-    }
-
-    BinFHEContextParams params = search->second;
-
-    if (latticeParam != 0) {
-        params.latticeParam = latticeParam;
-    }
-    if (modKS != 0) {
-        params.modKS = modKS;
-    }
-    if (gadgetBase != 0) {
-        params.gadgetBase = gadgetBase;
-    }
-    if (baseKS != 0) {
-        params.baseKS = baseKS;
-    }
     std::cout << "params.latticeParam: " << params.latticeParam << std::endl;
     std::cout << "params.modKS: " << params.modKS << std::endl;
     std::cout << "params.gadgetBase: " << params.gadgetBase << std::endl;

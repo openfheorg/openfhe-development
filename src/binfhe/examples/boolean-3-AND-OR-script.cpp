@@ -41,19 +41,26 @@
 
 using namespace lbcrypto;
 
-std::string paramsetstring;
-BINFHE_PARAMSET paramset;
-usint Q     = 0;
-usint dim_n = 0;
-usint Qks   = 0;
-usint B_g   = 0;
-usint B_ks  = 0;
+usint dim_n  = 0;
+usint Qks    = 0;
+usint dim_N  = 0;
+usint ctmodq = 0;
+usint logQ   = 0;
+usint B_g    = 0;
+usint B_ks   = 0;
+usint B_rk   = 32;
+usint sigma  = 3.19;
+
 void usage() {
-    std::cout << "-p Paramset"
-              << "-n Lattice Dimension"
+    std::cout << "-n Lattice Dimension"
+              << "-N Ring dimension"
+              << "-q ct modulus"
+              << "-Q size of ring modulus"
               << "-k Size of kew switching mod Qks"
               << "-g Digit base B_g"
-              << "-b Key switching base B_ks" << std::endl;
+              << "-r Refreshing key base B_rk"
+              << "-b Key switching base B_ks"
+              << "-s sigma (standard deviation)" << std::endl;
 }
 int main(int argc, char* argv[]) {
     // Sample Program: Step 1: Set CryptoContext
@@ -62,25 +69,33 @@ int main(int argc, char* argv[]) {
 
     char opt(0);
     //*********************
-    static struct option long_options[] = {{"Parameter Set", required_argument, NULL, 'p'},
-                                           {"Lattice dimension", required_argument, NULL, 'n'},
+    static struct option long_options[] = {{"Lattice dimension", required_argument, NULL, 'n'},
+                                           {"Ring dimension", required_argument, NULL, 'N'},
+                                           {"ct modulus", required_argument, NULL, 'q'},
+                                           {"size of ring modulus", required_argument, NULL, 'Q'},
                                            {"size of kew switching mod Qks", required_argument, NULL, 'k'},
                                            {"Digit base B_g", required_argument, NULL, 'g'},
+                                           {"Refreshing key base B_rk", required_argument, NULL, 'r'},
                                            {"Key switching base B_ks", required_argument, NULL, 'b'},
+                                           {"sigma (standard deviation)", required_argument, NULL, 's'},
                                            {"help", no_argument, NULL, 'h'},
                                            {NULL, 0, NULL, 0}};
 
-    const char* optstring = "p:n:k:g:b:h";
+    const char* optstring = "n:k:g:b:h";
     while ((opt = getopt_long(argc, argv, optstring, long_options, NULL)) != -1) {
         std::cout << "opt1: " << opt << "; optarg: " << optarg << std::endl;
         switch (opt) {
-            case 'p':
-                paramsetstring = optarg;
-                std::cout << "paramsetstring " << paramsetstring.c_str() << std::endl;
-                // std::cout << "found paramset " << findparamset(paramsetstring.c_str()) << std::endl;
-                break;
             case 'n':
                 dim_n = atoi(optarg);
+                break;
+            case 'N':
+                dim_N = atoi(optarg);
+                break;
+            case 'Q':
+                logQ = atoi(optarg);
+                break;
+            case 'q':
+                ctmodq = atoi(optarg);
                 break;
             case 'k':
                 Qks = atoi(optarg);
@@ -91,15 +106,30 @@ int main(int argc, char* argv[]) {
             case 'b':
                 B_ks = atoi(optarg);
                 break;
+            case 'r':
+                B_rk = atoi(optarg);
+                break;
+            case 's':
+                sigma = atoi(optarg);
+                break;
             case 'h':
                 usage();
             default:
                 return false;
         }
     }
-    auto pmstring = paramsetstring.c_str();
-    paramset      = static_cast<BINFHE_PARAMSET>(findparamset(pmstring));
-    std::cout << "paramset " << paramset << std::endl;
+
+    BinFHEContextParams paramset;
+    paramset.cyclOrder    = 2 * dim_N;
+    paramset.modKS        = Qks;
+    paramset.gadgetBase   = B_g;
+    paramset.baseKS       = B_ks;
+    paramset.baseRK       = B_rk;
+    paramset.mod          = ctmodq;
+    paramset.numberBits   = logQ;
+    paramset.stdDev       = sigma;
+    paramset.latticeParam = dim_n;
+
     // ********************
     // STD128 is the security level of 128 bits of security based on LWE Estimator
     // and HE standard. Other common options are TOY, MEDIUM, STD192, and STD256.
@@ -107,11 +137,10 @@ int main(int argc, char* argv[]) {
     // classical computer attacks.
     // cc.GenerateBinFHEContext(STD128_AP_3, AP);
 
-    std::cout << "parameters from commandline paramset dim_n, Qks, B_g, B_ks: " << paramset << " " << dim_n << " "
-              << Qks << " " << B_g << " " << B_ks << std::endl;
-    cc.GenerateBinFHEContext(paramset, dim_n, Qks, B_g, B_ks);
-    // cc.GenerateBinFHEContext(STD256Q_3, AP);
-    // cc.GenerateBinFHEContext(STD128_3);
+    std::cout << "parameters from commandline dim_n, dim_N, logQ, q, Qks, B_g, B_ks: "
+              << " " << dim_n << " " << dim_N << " " << logQ << " " << ctmodq << " " << Qks << " " << B_g << " " << B_ks
+              << std::endl;
+    cc.GenerateBinFHEContext(paramset);
 
     // Sample Program: Step 2: Key Generation
 

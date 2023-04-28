@@ -25,22 +25,29 @@ LogQks = { }
 
 
 class paramsetvars:
-    def __init__(self, name, Q, N, n, q, Qks, B_g, B_ks):
-        self.name = name
-        self.Q = Q  #numberBits
-        self.N = N  # cyclOrder/2
+    def __init__(self, n, q, N, logQ, Qks, B_g, B_ks, B_rk, sigma):
         self.n = n #n
-        self.q = q #mod
-        self.Qks = Qks #modKS
+        self.q = q #mod_q
+        self.logQ = logQ  #mod_Q numberBits
+        self.N = N  # cyclOrder/2
+        self.Qks = Qks #Qks modKS
         self.B_g = B_g #gadgetBase
         self.B_ks = B_ks #baseKS
+        self.B_rk = B_rk #baseRK
+        self.sigma = sigma #sigma stddev
 
-    #double stdDev;
-    #usint baseRK;
+STD128Q_OPT_3_nQks1 = paramsetvars(600, 4096, 2048, 50, 2**15, 2**25, 2**5, 2**5, 3.19)
+STD128Q_OPT_3 = paramsetvars(585, 4096, 2048, 50, 2**15, 2**25, 2**5, 2**5, 3.19)
 
-STD128Q_OPT_3_nQks1 = paramsetvars("STD128Q_OPT_3_nQks1", 50, 2048, 600, 4096, 15, 25, 5)
-STD128Q_OPT_3 = paramsetvars("STD128Q_OPT_3", 50, 2048, 585, 4096, 15, 25, 5)
-
+#linear relation of log(modulus) and dimension as [a,b] for each standard security level - log(modulus) = a*dimension + b
+paramlinear = {
+    'STD128': [0.026243550051145488, -0.19332645282074845],
+    'STD128Q': [0.024334365322949414, 0.026487788095649],
+    'STD192': [0.01843137255110034, -0.6666666695778614]],
+    'STD192Q': [0.017254901960954656, -0.9019607843827292],
+    'STD256': [0.014352941174320843, -1.0014705882400903],
+    'STD256Q': [0.01339285714070515, -1.083333333337455]
+}
 '''
 LogQ[(Paramset.params128NQ1, DistType.HEStd_ternary, 1024, SecLev.HEStd_128_classic)] = 27
 LogQ[(Paramset.params192NQ1, DistType.HEStd_ternary, 1024, SecLev.HEStd_192_classic)] = 19

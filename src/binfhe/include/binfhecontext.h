@@ -47,7 +47,23 @@
 #include <map>
 
 namespace lbcrypto {
+struct BinFHEContextParams {
+    // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
+    usint numberBits;
+    usint cyclOrder;
 
+    // for LWE crypto parameters
+    usint latticeParam;
+    usint mod;  // modulus for additive LWE
+    // modulus for key switching; if it is zero, then it is replaced with intermediate prime for LWE crypto parameters
+    usint modKS;
+    double stdDev;
+    usint baseKS;  // base for key switching
+
+    // for Ring GSW + LWE parameters
+    usint gadgetBase;  // gadget base used in the bootstrapping
+    usint baseRK;      // base for the refreshing key
+};
 /**
  * @brief BinFHEContext
  *
@@ -103,7 +119,7 @@ public:
    */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method = GINX);
 
-    void GenerateBinFHEContext(BINFHE_PARAMSET set, usint latticeParam, usint modKS, usint gadgetBase, usint baseKS, BINFHE_METHOD method = GINX);
+    void GenerateBinFHEContext(BinFHEContextParams params, BINFHE_METHOD method = GINX);
     /**
    * Gets the refreshing key (used for serialization).
    *
@@ -280,9 +296,11 @@ public:
    * @param cts vector of ciphertexts
    * @return a shared pointer to the resulting ciphertext
    */
-    //LWECiphertext EvalBinGateVector(BINGATE gate, std::vector<LWECiphertext> cts) const;
-    LWECiphertext EvalBinGateThreeInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3) const;
-    LWECiphertext EvalBinGateFourInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3, ConstLWECiphertext ct4) const;
+    // LWECiphertext EvalBinGateVector(BINGATE gate, std::vector<LWECiphertext> cts) const;
+    LWECiphertext EvalBinGateThreeInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
+                                        ConstLWECiphertext ct3) const;
+    LWECiphertext EvalBinGateFourInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
+                                       ConstLWECiphertext ct3, ConstLWECiphertext ct4) const;
 
     /**
    * Bootstraps a ciphertext (without peforming any operation)
