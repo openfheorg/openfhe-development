@@ -440,6 +440,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
             }
         }
     }
+    RGSWParams->Change_BaseG(curBase);
     ret.push_back(std::move(cttmp));
     return ret;
 }

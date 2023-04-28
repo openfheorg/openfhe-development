@@ -56,7 +56,7 @@ int main() {
 
     int q      = 4096;                                               // q
     int factor = 1 << int(logQ - log2(q));                           // Q/q
-    int p      = cc.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
+    int P      = cc.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
 
     // Sample Program: Step 2: Key Generation
     // Generate the secret key
@@ -70,21 +70,22 @@ int main() {
     std::cout << "Completed the key generation." << std::endl;
 
     // Sample Program: Step 3: Encryption
-    auto ct1 = cc.Encrypt(sk, p / 2 + 1, FRESH, p, Q);
-    std::cout << "Encrypted value: " << p / 2 + 1 << std::endl;
+    auto ct1 = cc.Encrypt(sk, P / 2 + 1, FRESH, P, Q);
+    std::cout << "Encrypted value: " << P / 2 + 1 << std::endl;
 
     // Sample Program: Step 4: Evaluation
     // Decompose the large ciphertext into small ciphertexts that fit in q
     auto decomp = cc.EvalDecomp(ct1);
 
     // Sample Program: Step 5: Decryption
-    p = cc.GetMaxPlaintextSpace().ConvertToInt();
+    auto p = cc.GetMaxPlaintextSpace().ConvertToInt();
     std::cout << "Decomposed value: ";
     for (size_t i = 0; i < decomp.size(); i++) {
         ct1 = decomp[i];
         LWEPlaintext result;
         if (i == decomp.size() - 1) {
-            p = 8;
+            // after every evalfloor, the least significant digit is dropped so the last modulus is computed as log p = (log P) mod (log GetMaxPlaintextSpace)
+            p = pow(2, static_cast<int>(log2(P)) % static_cast<int>(log2(p)));
         }
         cc.Decrypt(sk, ct1, &result, p);
         std::cout << "(" << result << " * " << cc.GetMaxPlaintextSpace() << "^" << i << ")";
