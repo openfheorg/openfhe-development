@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from math import log2, floor, sqrt, ceil, erfc
+from scipy.special import erfcinv
 from statistics import stdev
 import random
 import sys
@@ -184,13 +185,13 @@ def get_noise_from_cpp_code(param_set, num_of_samples):
     mod_q = param_set.q #mod_q
     mod_logQ = param_set.logQ  #mod_Q numberBits
     dim_N = param_set.N  # cyclOrder/2
-    Qks = param_set.Qks #Qks modKS
+    mod_Qks = param_set.Qks #Qks modKS
     B_g = param_set.B_g #gadgetBase
     B_ks = param_set.B_ks #baseKS
     B_rk = param_set.B_rk #baseRK
     sigma = param_set.sigma #sigma stddev
-    print("get_noise_from_cpp_code paramset dim mod Bg Bks: ", param_set_name, dim, mod, B_g, B_ks)
-    bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + " " + str(dim_n) + " " + str(mod_q)+ " " + str(dim_N) + " " + str(logQ)+ " " + str(Qks) + " " + str(B_g) + " " + str(B_ks) + " " + str(B_rk) + " " + str(sigma) + " > out_file_" + str(filenamerandom) + " 2>noise_file_" + str(filenamerandom)
+    print("get_noise_from_cpp_code dim_n mod_q dim_N mod_logQ mod_Qks Bg Bks Brk: ", dim_n, mod_q, dim_N, mod_logQ, mod_Qks, B_g, B_ks, B_rk)
+    bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + str(dim_n) + " " + str(mod_q)+ " " + str(dim_N) + " " + str(mod_logQ)+ " " + str(mod_Qks) + " " + str(B_g) + " " + str(B_ks) + " " + str(B_rk) + " " + str(sigma) + " " + str(num_of_samples) + " > out_file_" + str(filenamerandom) + " 2>noise_file_" + str(filenamerandom)
 
     print(bashCommand)
     os.system(bashCommand)
@@ -234,6 +235,13 @@ def get_dim_mod(paramset):
     mod = 2**(paramset.Qks)
 
     return dim, mod
+
+def test_range(val, low, hi):
+    if val in range(low, hi+1):
+        return
+    else:
+        msg = f"input not in valid range ({low} - {hi})"
+        raise Exception(msg)
 
 '''
 def fit_data(data):
@@ -287,12 +295,12 @@ for n in [800, 900]:
     dimres, modres = optimize_params_security(128, n, 2**30, False, True, False, False) #classical
     #dimres, modres = optimize_params_security(256, n, 2**15, False, True, False, True) #quantum
     print("n dimres modres: ", n, dimres, log2(modres))
-'''
+
 for n in [1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100]:
     dimres, modres = optimize_params_security(128, n, 2**40, False, True, False, False) #classical
     #dimres, modres = optimize_params_security(256, n, 2**35, False, True, False, True) #quantum
     print("n dimres modres: ", n, dimres, log2(modres))
-
+'''
 
 # ---------------------------------------------------------------------------------
 # estimate_params(n=1024, q=2048, Qks=2^16, security_level=128, quantum/classical=true, logBg=7, logBks=5, decryption_failure_rate=-32, native_word_bound=64, num_threads):

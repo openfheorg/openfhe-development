@@ -9,7 +9,7 @@ Measure enc/rec/dec time, and throughput ( #bits in (3+/these times) and documen
 
 import paramstable as stdparams
 import binfhe_params_helper as helperfncs
-import math
+from math import log2, floor, sqrt, ceil
 
 def parameter_selector():
     print("Parameter selectorfor FHEW like schemes")
@@ -29,6 +29,8 @@ def parameter_selector():
 
     num_of_samples = int(input("Enter expected number of samples to estimate noise: "))
 
+    d_ks = int(input("Enter key switching digit size: "))
+
     #processing parameters based on the inputs
     if (exp_sec_level[-1] == "Q"):
         is_quantum = True
@@ -38,63 +40,95 @@ def parameter_selector():
     #set ptmod based on num of inputs
     ptmod = 2*num_of_inputs
 
+    B_rk = 32
+    sigma = 3.19
+
     for d_g in [2, 3, 4]:
         #Set ringsize n, Qks, N, Q based on the security level
-        ringsize_N = [1024, 2048]
 
-        #other variables
-        lattice_n = 500 #start with this value and binary search on n to find optimal parameter set
+        ringsize_N = 1024
+        while (ringsize_N <= 2048):
 
-        #compute target noise level for the expected decryption failure rate
-        target_noise_level = get_target_noise(exp_decryption_failure, ptmod, modulus_q, num_of_inputs)
+            #other variables
+            lattice_n = ringsize_N/2 #start with this value and binary search on n to find optimal parameter set
 
-        modulus_q = 2*ringsize_N #later optimize for either q = N or q = 2N
-        modulus_Qks = get_mod(lattice_n, exp_sec_level) #find analytical estimate for starting point of Qks
-        modulus_Q = get_mod(ringsize_N, exp_sec_level) #later add code to verify that this Q is optimal with estimator
+            modulus_q = 2*ringsize_N #later optimize for either q = N or q = 2N
+            logmodQks = get_mod(lattice_n, exp_sec_level) #find analytical estimate for starting point of Qks
+            modulus_Qks = 2**logmodQks
+            logmodQ = get_mod(ringsize_N, exp_sec_level) #later add code to verify that this Q is optimal with estimator
+            #todo - add another flag for nativeopt 32 depending on whether logQ <=32 or not
+            B_g = 2**floor(logmodQ/d_g)
+            B_ks = 2**floor(logmodQks/d_ks) #later - optimize for d_ks
 
-        #create paramset object
-        param_set_opt = paramsetvars("paramsetopt", modulus_Q, ringsize_N, ringsize_n, modulus_q, modulus_Qks, B_g, B_ks)
+            #create paramset object
+            param_set_opt = stdparams.paramsetvars(lattice_n, modulus_q, ringsize_N, logmodQ, modulus_Qks, B_g, B_ks, B_rk, sigma)
 
-        actual_noise = get_noise_from_cpp_code(param_set_opt, num_of_samples)##########################################################run script CPP###########
+            #optimize n, Qks to reduce the noise
+            #compute target noise level for the expected decryption failure rate
+            target_noise_level = helperfncs.get_target_noise(exp_decryption_failure, ptmod, modulus_q, num_of_inputs)
 
-        #if (actual_noise > target_noise_level):
-        #    param_set_opt.q = 2*ringsize_N
-        #    actual_noise = get_noise_from_cpp_code(param_set_opt, num_of_samples)##########################################################run script CPP###########
-        for ringsize_N in [1024, 2048]:
-        if (actual_noise > target_noise_level):
-            opt_n = optimize_noise(actual_noise, target_noise_level, param_set_opt)#lattice_n, ringsize_N)
-            param_set_opt.N =
-            if (opt_n == 0):
-                opt_n = optimize_noise(actual_noise, target_noise_level, lattice_n, ringsize_N)
+            actual_noise = helperfncs.get_noise_from_cpp_code(param_set_opt, num_of_samples//8)##########################################################run script CPP###########
 
-        #increase ctmod q to 2N and everything else constant
+            #if (actual_noise > target_noise_level):
+            #    param_set_opt.q = 2*ringsize_N
+            #    actual_noise = get_noise_from_cpp_code(param_set_opt, num_of_samples)##########################################################run script CPP###########
+            opt_n = 0
+            if (actual_noise > target_noise_level):
+                opt_n, optlogmodQks = optimize_noise(actual_noise, target_noise_level, param_set_opt)#lattice_n, ringsize_N)
 
-        #optimize n, Qks to reduce the noise
+            if (opt_n != 0):
+                break
+            else:
+                ringsize_N = ringsize_N*2
+        if (opt_n == 0):
+            print("cannot find parameters")
+        else:
+            #increase ctmod q to 2N and everything else constant - later
+            optQks = 2**optlogmodQks
+            B_g = floor(logmodQ/d_g)
+            B_ks = floor(logmodQks/3)
 
-        #increase ringsize_N if ringsize_n had to be increased to larger than current value of ringsize_N -- to be done within the optimizing function
-
-
-    print("final parameters")
-    print("dist_type: ",dist_type)
-    print("sec_level: ", sec_level)
-    print("decryption failure rate: ", ringsize)
+            print("final parameters")
+            print("Input parameters: ")
+            print("dist_type: ",dist_type)
+            print("sec_level: ", exp_sec_level)
+            print("decryption failure rate: ", exp_decryption_failure)
+            print("num_of_inputs: ", num_of_inputs)
+            print("num_of_samples: ", num_of_samples)
+            print("Output parameters: ")
+            print("lattice dimension n: ", opt_n)
+            print("ringsize N: ", ringsize_N)
+            print("lattice modulus: ", modulus_q)
+            print("size of ring modulus Q: ", logmodQ)
+            print("optimal key switching modulus  Qks: ", optQks)
+            print("gadget digit base B_g: ", B_g)
+            print("gadget digit base B_ks: ", B_ks)
 
 def get_mod(dim, exp_sec_level):
     #get linear relation coefficients for log(modulus) and dimension for the input security level
-    a = stdparams.paramlinDict[exp_sec_level][0]
-    b = stdparams.paramlinDict[exp_sec_level][1]
+    a = stdparams.paramlinear[exp_sec_level][0]
+    b = stdparams.paramlinear[exp_sec_level][1]
 
     mod = ceil(a*dim + b) #find analytical estimate for starting point of Qks
     return mod
 
-def optimize_noise(curr_noise, target_noise_level, start_n, end_N):
-    ringsize_N = end_N
-    found = False
+def optimize_noise(curr_noise, target_noise_level, params):
+    start_n = params.n
+    end_N = params.N
+
+
+    return n
+
+def binary_search_n(start_n, end_N, exp_sec_level, params):
     n = 0
     while(start_n < end_N):
         new_n = (start_n + end_N)/2
-        mod_Qks = get_mod(new_n, exp_sec_level)
-        new_noise = get_noise(params)
+        logmodQks = get_mod(new_n, exp_sec_level)
+        params.n = new_n
+        params.Qks = 2**logmodQks
+        B_ks = floor(logmodQks/3) #assuming d_ks = 2
+        params.B_ks = B_ks
+        new_noise = helperfncs.get_noise_from_cpp_code(params, num_of_samples)
         if (new_noise > target_noise_level and prev_noise <= target_noise_level):
             found = True
             n = prev_n
@@ -107,4 +141,6 @@ def optimize_noise(curr_noise, target_noise_level, start_n, end_N):
         prev_noise = new_noise
         prev_n = new_n
 
-    return n
+        return n, logmodQks
+
+parameter_selector()
