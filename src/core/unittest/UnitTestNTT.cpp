@@ -97,7 +97,6 @@ void switch_format_simple_double_crt(const std::string& msg) {
     std::vector<NativeInteger> init_rootsOfUnity(init_size);
 
     NativeInteger q = FirstPrime<NativeInteger>(28, init_m);
-    NativeInteger temp;
     typename Element::Integer modulus(1);
 
     for (size_t i = 0; i < init_size; i++) {
