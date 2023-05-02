@@ -1002,9 +1002,9 @@ typename DCRTPolyImpl<VecType>::PolyType DCRTPolyImpl<VecType>::ToNativePoly() c
 
 template <typename VecType>
 typename VecType::Integer DCRTPolyImpl<VecType>::GetWorkingModulus() const {
-    Integer modulusQ = 1;
+    typename VecType::Integer modulusQ = 1;
     for (auto& p : m_params->GetParams())
-        modulusQ *= p->GetModulus();
+        modulusQ.MulEq(p->GetModulus());
     return modulusQ;
 }
 

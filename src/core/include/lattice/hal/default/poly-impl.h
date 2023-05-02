@@ -333,14 +333,14 @@ PolyImpl<VecType> PolyImpl<VecType>::Times(NativeInteger::SignedNativeInt elemen
 
 template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Plus(const PolyImpl& element) const {
-    PolyImpl tmp(*this);
+    PolyImpl<VecType> tmp(*this);
     tmp.m_values->ModAddEq(*element.m_values);
     return tmp;
 }
 
 template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Minus(const PolyImpl& element) const {
-    PolyImpl tmp(*this);
+    PolyImpl<VecType> tmp(*this);
     tmp.m_values->ModSubEq(*element.m_values);
     return tmp;
 }
@@ -351,7 +351,7 @@ PolyImpl<VecType> PolyImpl<VecType>::Times(const PolyImpl& element) const {
         OPENFHE_THROW(not_implemented_error, "operator* for PolyImpl supported only in Format::EVALUATION");
     if (!(*m_params == *element.m_params))
         OPENFHE_THROW(type_error, "operator* called on PolyImpl's with different params");
-    PolyImpl tmp(*this);
+    PolyImpl<VecType> tmp(*this);
     tmp.m_values->ModMulEq(*element.m_values);
     return tmp;
 }

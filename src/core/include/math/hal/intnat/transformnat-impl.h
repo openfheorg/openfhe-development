@@ -761,7 +761,7 @@ template <typename VecType>
 void BluesteinFFTNat<VecType>::PreComputeDefaultNTTModulusRoot(usint cycloOrder, const IntType& modulus) {
     usint nttDim          = pow(2, ceil(log2(2 * cycloOrder - 1)));
     const auto nttModulus = lbcrypto::FirstPrime<IntType>(log2(nttDim) + 2 * modulus.GetMSB(), nttDim);
-    const auto nttRoot    = RootOfUnity(nttDim, nttModulus);
+    const auto nttRoot    = lbcrypto::RootOfUnity<IntType>(nttDim, nttModulus);
     const ModulusRoot<IntType> nttModulusRoot = {nttModulus, nttRoot};
     m_defaultNTTModulusRoot[modulus]          = nttModulusRoot;
 

@@ -279,58 +279,35 @@ typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateIntege
 
 template <typename VecType>
 int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, double stddev, size_t n) const {
-    OPENFHE_DEBUG_FLAG(false);
-    int32_t x;
+    if (std::isinf(mean))
+        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with mean == +-inf");
+    if (std::isinf(stddev))
+        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with stddev == +-inf");
 
     // this representation of log_2 is used for Visual Studio
     double t = log2(n) * stddev;
-    OPENFHE_DEBUG("DiscreteGaussianGeneratorImpl =========");
-    OPENFHE_DEBUG("mean " << mean);
-    OPENFHE_DEBUG("stddev " << stddev);
-    OPENFHE_DEBUG("n " << n);
-    OPENFHE_DEBUG("t " << t);
-
-    if (std::isinf(mean)) {
-        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with mean == +-inf");
-    }
-    if (std::isinf(stddev)) {
-        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with stddev == +-inf");
-    }
-    typename VecType::Integer result;
-
     std::uniform_int_distribution<int32_t> uniform_int(floor(mean - t), ceil(mean + t));
-    OPENFHE_DEBUG("uniform( " << floor(mean - t) << ", " << ceil(mean + t) << ")");
     std::uniform_real_distribution<double> uniform_real(0.0, 1.0);
 
-    double sigmaFactor = -1 / (2. * stddev * stddev);
-    OPENFHE_DEBUG("sigmaFactor " << sigmaFactor);
+    double sigmaFactor = 1 / (-2. * stddev * stddev);
+    usint count        = 0;
+    const usint limit  = 10000;
 
+    int32_t x;
     bool flagSuccess = false;
-
-    usint count       = 0;
-    const usint limit = 10000;
-    // OPENFHE_THROWopenfhe_throw, "dbg throw");
-
     while (!flagSuccess) {
         //  pick random int
         x = uniform_int(PseudoRandomNumberGenerator::GetPRNG());
-
         //  roll the uniform dice
-        double dice = uniform_real(PseudoRandomNumberGenerator::GetPRNG());
+        auto dice = uniform_real(PseudoRandomNumberGenerator::GetPRNG());
         //  check if dice land below pdf
-        if (dice <= UnnormalizedGaussianPDFOptimized(mean, sigmaFactor, x)) {
-            flagSuccess = true;
-        }
-        // OPENFHE_DEBUG("x "<<x<<" dice "<<dice);
-        count++;
-        if (count > limit) {
-            OPENFHE_DEBUG("x " << x << " dice " << dice);
+        flagSuccess = (dice <= UnnormalizedGaussianPDFOptimized(mean, sigmaFactor, x));
+        if (++count > limit)
             OPENFHE_THROW(not_available_error, "GenerateInteger could not find success after repeated attempts");
-        }
     }
-
     return x;
 }
+
 template <typename VecType>
 int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateIntegerKarney(double mean, double stddev) {
     int64_t result;
