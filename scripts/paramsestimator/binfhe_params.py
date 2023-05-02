@@ -45,7 +45,7 @@ def parameter_selector():
 
     for d_g in [2, 3, 4]:
         #Set ringsize n, Qks, N, Q based on the security level
-
+        print("d_g loop: ", d_g)
         ringsize_N = 1024
         while (ringsize_N <= 2048):
 
@@ -66,6 +66,7 @@ def parameter_selector():
             #optimize n, Qks to reduce the noise
             #compute target noise level for the expected decryption failure rate
             target_noise_level = helperfncs.get_target_noise(exp_decryption_failure, ptmod, modulus_q, num_of_inputs)
+            print("target noise: ", target_noise_level)
 
             actual_noise = helperfncs.get_noise_from_cpp_code(param_set_opt, num_of_samples//8)##########################################################run script CPP###########
 
@@ -73,13 +74,16 @@ def parameter_selector():
             #    param_set_opt.q = 2*ringsize_N
             #    actual_noise = get_noise_from_cpp_code(param_set_opt, num_of_samples)##########################################################run script CPP###########
             opt_n = 0
+
             if (actual_noise > target_noise_level):
-                opt_n, optlogmodQks = optimize_noise(actual_noise, target_noise_level, param_set_opt)#lattice_n, ringsize_N)
+                print("here in if actual greater than target noise")
+                opt_n, optlogmodQks = binary_search_n(lattice_n, ringsize_N, actual_noise, exp_sec_level, target_noise_level, num_of_samples//8, param_set_opt)#lattice_n, ringsize_N)
 
             if (opt_n != 0):
                 break
             else:
                 ringsize_N = ringsize_N*2
+
         if (opt_n == 0):
             print("cannot find parameters")
         else:
@@ -119,10 +123,13 @@ def optimize_noise(curr_noise, target_noise_level, params):
 
     return n
 
-def binary_search_n(start_n, end_N, exp_sec_level, params):
+def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_level, num_of_samples, params):
     n = 0
-    while(start_n < end_N):
+
+    while(start_n <= end_N):
         new_n = (start_n + end_N)/2
+        print("new n: ", new_n)
+
         logmodQks = get_mod(new_n, exp_sec_level)
         params.n = new_n
         params.Qks = 2**logmodQks
@@ -133,13 +140,13 @@ def binary_search_n(start_n, end_N, exp_sec_level, params):
             found = True
             n = prev_n
             break
-        if (new_noise < curr_noise):
+        if (new_noise < prev_noise):
             min_noise = new_noise
             end_N = new_n - 1
         else:
             start_n = new_n + 1
         prev_noise = new_noise
-        prev_n = new_n
+        start_n = new_n
 
         return n, logmodQks
 

@@ -219,7 +219,7 @@ def get_target_noise(decryption_failure, ptmod, ctmod, comp):
     num = ctmod/(2*ptmod)
     denom = sqrt(2*comp)
 
-    val = erfcinv(decryption_failure)
+    val = erfcinv(2**decryption_failure)
     target_noise = num/(denom*val)
     return target_noise
 
