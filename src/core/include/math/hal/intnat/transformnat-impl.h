@@ -301,13 +301,15 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
                                                                                VecType* element) {
     auto modulus = element->GetModulus();
     usint n      = (element->GetLength() >> 1);
+
+    // reduce 1st length/2 elements
     for (usint i = 0; i < n; ++i) {
         if ((*element)[i] >= modulus)
             (*element)[i] -= modulus;
     }
 
-    usint t     = n;
-    usint logt1 = lbcrypto::GetMSB64(t);
+    usint t      = n;
+    usint logt1  = lbcrypto::GetMSB64(t);
     for (usint m = 1; m < n; m <<= 1, t >>= 1, --logt1) {
         for (usint i = 0; i < m; ++i) {
             usint j1         = i << logt1;
@@ -320,8 +322,12 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
                 auto omegaFactor = (*element)[indexHi];
                 omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
                 auto loVal = (*element)[indexLo];
+
+                // fixes Clang slowdown issue, but requires lowVal be less than modulus
                 (*element)[indexLo] += omegaFactor - (omegaFactor >= (modulus - loVal) ? modulus : 0);
-                (*element)[indexHi] = loVal + (omegaFactor > loVal ? modulus : 0) - omegaFactor;
+                if (omegaFactor > loVal)
+                    loVal += modulus;
+                (*element)[indexHi] = loVal - omegaFactor;
             }
         }
     }
@@ -335,7 +341,9 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
         omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
         auto loVal = (*element)[j1];
         (*element)[j1] += omegaFactor - (omegaFactor >= (modulus - loVal) ? modulus : 0);
-        (*element)[j2] = loVal + (omegaFactor > loVal ? modulus : 0) - omegaFactor;
+        if (omegaFactor > loVal)
+            loVal += modulus;
+        (*element)[j2] = loVal - omegaFactor;
     }
 }
 
@@ -489,12 +497,13 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
         auto hiVal       = (*element)[j2];
         auto loVal       = (*element)[j1];
         auto omegaFactor = loVal + (hiVal > loVal ? modulus : 0) - hiVal;
-        loVal += hiVal - (hiVal >= (modulus - loVal) ? modulus : 0);
-        (*element)[j1] = loVal.ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
+        loVal += hiVal;
         omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
         (*element)[j2] = omegaFactor.ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
+        if (loVal >= modulus)
+            loVal -= modulus;
+        (*element)[j1] = loVal.ModMulFastConstEq(cycloOrderInv, modulus, preconCycloOrderInv);
     }
-
     usint t     = 2;
     usint logt1 = 2;
     for (usint m = (n >> 1); m >= 1; m >>= 1, t <<= 1, ++logt1) {
@@ -508,10 +517,13 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
                 usint indexHi = indexLo + t;
                 auto hiVal    = (*element)[indexHi];
                 auto loVal    = (*element)[indexLo];
-                (*element)[indexLo] += hiVal - (hiVal >= (modulus - loVal) ? modulus : 0);
                 auto omegaFactor = loVal + (hiVal > loVal ? modulus : 0) - hiVal;
+                loVal += hiVal;
                 omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);
                 (*element)[indexHi] = omegaFactor;
+                if (loVal >= modulus)
+                    loVal -= modulus;
+                (*element)[indexLo] = loVal;
             }
         }
     }
