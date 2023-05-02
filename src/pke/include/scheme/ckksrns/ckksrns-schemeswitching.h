@@ -60,46 +60,9 @@ class FHECKKSRNSSS : public FHERNS {
 public:
     virtual ~FHECKKSRNSSS() {}
 
-    // //------------------------------------------------------------------------------
-    // // Precomputations for SlotsToCoeffs in scheme switching CKKS to FHE
-    // //------------------------------------------------------------------------------
-
-    // std::vector<ConstPlaintext> EvalLTPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
-    //                                                const std::vector<std::vector<std::complex<double>>>& A,
-    //                                                const std::vector<std::vector<std::complex<double>>>& B,
-    //                                                uint32_t dim1 = 0, double scale = 1) const;
-
-    // Ciphertext<DCRTPoly> EvalLTWithPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
-    //                                             ConstCiphertext<DCRTPoly> ctxt,
-    //                                             const std::vector<ConstPlaintext>& A,
-    //                                             uint32_t dim1 = 0) const;
-
-    // std::vector<std::vector<ConstPlaintext>> EvalSlotsToCoeffsPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
-    //                                                                        const std::vector<std::complex<double>>& A,
-    //                                                                        const std::vector<uint32_t>& rotGroup,
-    //                                                                        bool flag_i, double scale = 1,
-    //                                                                        uint32_t L = 0) const;
-
-    // //------------------------------------------------------------------------------
-    // // Evaluation for scheme switching CKKS to FHE: SlotsToCoeffs
-    // //------------------------------------------------------------------------------
-
-    // Ciphertext<DCRTPoly> EvalLinearTransformSS(const std::vector<ConstPlaintext>& A,
-    //                                            ConstCiphertext<DCRTPoly> ctxt) const;
-
-    // Ciphertext<DCRTPoly> EvalSlotsToCoeffsSS(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt, uint64_t slots) const;
-
     //------------------------------------------------------------------------------
-    // Scheme Switching Wrapper
+    // Scheme Switching Wrappers
     //------------------------------------------------------------------------------
-
-    void EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc, std::vector<uint32_t> levelBudget,
-                                  std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor) override;
-
-    void EvalSchemeSwitchingKeyGen(const PrivateKey<DCRTPoly> privateKey, uint32_t slots) override;
-
-    void EvalSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext, uint32_t numIterations,
-                             uint32_t precision) const override;
 
     std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& cc, bool dynamic,
                                                                 uint32_t logQ, SecurityLevel sl,
@@ -117,12 +80,24 @@ public:
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalFHEWtoCKKSKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                              LWEPrivateKey& lwesk) override;
 
-    Ciphertext<DCRTPoly> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts, double scale,
-                                        uint32_t numSlots, double pmin, double pmax) const override;
+    Ciphertext<DCRTPoly> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
+                                        double prescale, uint32_t numSlots, uint32_t p, double pmin,
+                                        double pmax) const override;
 
     Ciphertext<DCRTPoly> EvalFHEWtoCKKSPrototype(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                                  uint32_t dim1_FC, double scale, uint32_t numSlots, double pmin,
                                                  double pmax) const override;
+
+    std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc,
+                                                                     bool dynamic, uint32_t logQ, SecurityLevel sl,
+                                                                     uint32_t numSlotsCKKS) override;
+
+    std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(const KeyPair<DCRTPoly>& keyPair,
+                                                                                  LWEPrivateKey& lwesk) override;
+
+    Ciphertext<DCRTPoly> EvalCompareSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext1,
+                                                    ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts,
+                                                    uint32_t pLWE, double scaleSign) const override;
 
     //------------------------------------------------------------------------------
     // SERIALIZATION

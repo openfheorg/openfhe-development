@@ -333,9 +333,9 @@ LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext& ct, uint32_t roundbit
     return m_binfhescheme->EvalFloor(m_params, m_BTKey, ct, GetBeta(), roundbits);
 }
 
-LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext& ct) {
+LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext& ct, bool schemeSwitch) {
     const auto& params = std::make_shared<BinFHECryptoParams>(*m_params);
-    return m_binfhescheme->EvalSign(params, m_BTKey_map, ct, GetBeta());
+    return m_binfhescheme->EvalSign(params, m_BTKey_map, ct, GetBeta(), schemeSwitch);
 }
 
 std::vector<LWECiphertext> BinFHEContext::EvalDecomp(ConstLWECiphertext& ct) {

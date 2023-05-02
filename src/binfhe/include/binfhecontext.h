@@ -355,9 +355,10 @@ public:
    * Evaluate a sign function over large precisions
    *
    * @param ct1 ciphertext to be bootstrapped
+   * @param schemeSwitch flag that indicates if it should be compatible to scheme switching
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalSign(ConstLWECiphertext& ct);
+    LWECiphertext EvalSign(ConstLWECiphertext& ct, bool schemeSwitch = false);
 
     /**
    * Evaluate ciphertext decomposition

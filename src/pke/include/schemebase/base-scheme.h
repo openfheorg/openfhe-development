@@ -1319,37 +1319,6 @@ public:
 
     // SCHEMESWITCHING methods
 
-    void EvalSchemeSwitchingSetup(const CryptoContextImpl<Element>& cc,
-                                  const std::vector<uint32_t>& levelBudget = {5, 4},
-                                  const std::vector<uint32_t>& dim1 = {0, 0}, uint32_t slots = 0,
-                                  uint32_t correctionFactor = 0) {
-        if (m_SchemeSwitch) {
-            m_SchemeSwitch->EvalSchemeSwitchingSetup(cc, levelBudget, dim1, slots, correctionFactor);
-            return;
-        }
-
-        OPENFHE_THROW(config_error, "EvalSchemeSwitchingSetup operation has not been enabled");
-    }
-
-    void EvalSchemeSwitchingKeyGen(const PrivateKey<Element> privateKey, uint32_t slots) {
-        if (m_SchemeSwitch) {
-            m_SchemeSwitch->EvalSchemeSwitchingKeyGen(privateKey, slots);
-            return;
-        }
-
-        OPENFHE_THROW(config_error, "EvalSchemeSwitchingKeyGen operation has not been enabled");
-    }
-
-    void EvalSchemeSwitching(ConstCiphertext<Element> ciphertext, uint32_t numIterations = 1,
-                             uint32_t precision = 0) const {
-        if (m_SchemeSwitch) {
-            m_SchemeSwitch->EvalSchemeSwitching(ciphertext, numIterations, precision);
-            return;
-        }
-
-        OPENFHE_THROW(config_error, "EvalSchemeSwitching operation has not been enabled");
-    }
-
     std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& cc,
                                                                 bool dynamic = false, uint32_t logQ = 29,
                                                                 SecurityLevel sl      = HEStd_128_classic,
@@ -1399,10 +1368,10 @@ public:
     }
 
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                       double scale = 1.0, uint32_t numSlots = 0, double pmin = 0.0,
+                                       double prescale = 1.0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
                                        double pmax = 2.0) const {
         if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, scale, numSlots, pmin, pmax);
+            return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, prescale, numSlots, p, pmin, pmax);
         }
 
         OPENFHE_THROW(config_error, "EvalFHEWtoCKKSW operation has not been enabled");
@@ -1416,6 +1385,36 @@ public:
         }
 
         OPENFHE_THROW(config_error, "EvalFHEWtoCKKSWPrototype operation has not been enabled");
+    }
+
+    std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc,
+                                                                     bool dynamic = false, uint32_t logQ = 29,
+                                                                     SecurityLevel sl      = HEStd_128_classic,
+                                                                     uint32_t numSlotsCKKS = 0) {
+        if (m_SchemeSwitch) {
+            return m_SchemeSwitch->EvalSchemeSwitchingSetup(cc, dynamic, logQ, sl, numSlotsCKKS);
+        }
+
+        OPENFHE_THROW(config_error, "EvalSchemeSwitchingSetup operation has not been enabled");
+    }
+
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair,
+                                                                                 LWEPrivateKey& lwesk) {
+        if (m_SchemeSwitch) {
+            return m_SchemeSwitch->EvalSchemeSwitchingKeyGen(keyPair, lwesk);
+        }
+
+        OPENFHE_THROW(config_error, "EvalSchemeSwitchingKeyGen operation has not been enabled");
+    }
+
+    Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
+                                                   ConstCiphertext<Element> ciphertext2, uint32_t numCtxts = 0,
+                                                   uint32_t pLWE = 0, double scaleSign = 1.0) {
+        if (m_SchemeSwitch) {
+            return m_SchemeSwitch->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, pLWE, scaleSign);
+        }
+
+        OPENFHE_THROW(config_error, "EvalCompareSchemeSwitching operation has not been enabled");
     }
 
     template <class Archive>

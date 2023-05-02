@@ -119,24 +119,6 @@ public:
     }
 
     /**
-   * Scheme switching functionality: // Andreea: to modify
-   */
-
-    virtual void EvalSchemeSwitchingSetup(const CryptoContextImpl<Element>& cc, std::vector<uint32_t> levelBudget,
-                                          std::vector<uint32_t> dim1, uint32_t slots, uint32_t correctionFactor) {
-        OPENFHE_THROW(not_implemented_error, "Not supported");
-    }
-
-    virtual void EvalSchemeSwitchingKeyGen(const PrivateKey<Element> privateKey, uint32_t slots) {
-        OPENFHE_THROW(not_implemented_error, "Not supported");
-    }
-
-    virtual void EvalSchemeSwitching(ConstCiphertext<Element> ciphertext, uint32_t numIterations,
-                                     uint32_t precision) const {
-        OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitching is not implemented for this scheme");
-    }
-
-    /**
    * Sets all parameters for switching from CKKS to FHEW
    *
    * @param ccCKKS the CKKS cryptocontext from which to switch to
@@ -206,14 +188,16 @@ public:
    * Performs the scheme switching on a vector of FHEW ciphertexts
    *
    * @param LWECiphertexts FHEW/LWE ciphertexts to switch
-   * @param scale factor to multiply the LWE components
+   * @param prescale factor to multiply the LWE components
+   * @param p plaintext modulus to use to decide postscaling, by default p = 4
    * @param numSlots number of slots to encode in the new CKKS/RLWE ciphertext
-   * @param pmin, pmax plaintext space of the LWE ciphertexts (by default [0,2] assuming
+   * @param pmin, pmax plaintext space of the resulting messages (by default [0,2] assuming
    * the LWE ciphertext had plaintext modulus p = 4 and only bits were encrypted)
    * @return a CKKS ciphertext encrypting in its slots the messages in the LWE ciphertexts
    */
     virtual Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                               double scale, uint32_t numSlots, double pmin, double pmax) const {
+                                               double prescale, uint32_t numSlots, uint32_t p, double pmin,
+                                               double pmax) const {
         OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKS is not implemented for this scheme");
     }
 
@@ -221,6 +205,54 @@ public:
                                                         uint32_t dim1_FC, double scale, uint32_t numSlots, double pmin,
                                                         double pmax) const {
         OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSPrototype is not implemented for this scheme");
+    }
+
+    /**
+   * Sets all parameters for switching from CKKS to FHEW and back
+   *
+   * @param dynamic whether to use dynamic mode for FHEW
+   * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
+   * @param sl security level
+   * @param numSlotsCKKS number of slots in CKKS encryption
+   * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
+   * from the secret key is created, then we can only return the secret key)
+   * Andreea: add an overload for when BinFHEContext is already generated and fed as a parameter
+   */
+    virtual std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS,
+                                                                             bool dynamic, uint32_t logQ,
+                                                                             SecurityLevel sl, uint32_t numSlotsCKKS) {
+        OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingSetup is not supported for this scheme");
+    }
+
+    /**
+   * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
+   * in the linear transform for the homomorphic encoding and partial decryption, the switching key from
+   * FHEW to CKKS
+   *
+   * @param keypair CKKS key pair
+   * @param lwesk FHEW secret key
+   */
+    virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
+        const KeyPair<Element>& keyPair, LWEPrivateKey& lwesk) {
+        OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingKeyGen is not supported for this scheme");
+    }
+
+    /**
+   * Performs the scheme switching on the difference of two CKKS ciphertexts to compare, evaluates the sign function
+   * over the resulting FHEW ciphertexts, then performs the scheme switching back to a CKKS ciphertext
+   *
+   * @param ciphertext1, ciphertext2 CKKS ciphertexts of messages that need to be compared
+   * @param numCtxts number of coefficients to extract from the CKKS ciphertext. If it is zero, it defaults to number of slots
+   * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts. If it is zero, it defaults to the large precision
+   * plaintext modulus Q/2beta
+   * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
+   * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
+   * @return a CKKS ciphertext encrypting in its slots the sign of  messages in the LWE ciphertexts
+   */
+    virtual Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
+                                                           ConstCiphertext<Element> ciphertext2, uint32_t numCtxts,
+                                                           uint32_t pLWE, double scaleSign) const {
+        OPENFHE_THROW(not_implemented_error, "EvalCompareSchemeSwitching is not supported for this scheme");
     }
 };
 
