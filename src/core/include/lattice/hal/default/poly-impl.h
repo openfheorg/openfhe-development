@@ -764,7 +764,7 @@ typename PolyImpl<VecType>::PolyNative PolyImpl<VecType>::ToNativePoly() const {
 }
 
 template <>
-inline PolyImpl<NativeVector> PolyImpl<NativeVector>::ToNativePoly() const {
+PolyImpl<NativeVector>::PolyNative PolyImpl<NativeVector>::ToNativePoly() const {
     return *this;
 }
 
