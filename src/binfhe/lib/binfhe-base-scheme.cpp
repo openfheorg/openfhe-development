@@ -427,14 +427,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
             }
         }
     }
-    LWEscheme->EvalAddConstEq(cttmp, beta);
-
-    auto f3 = [](NativeInteger x, NativeInteger q, NativeInteger Q) -> NativeInteger {
-        return (x < q / 2) ? (Q / 4) : (Q - Q / 4);
-    };
-    cttmp = BootstrapFunc(params, curEK, cttmp, f3, q);  // this is 1/4q_small or -1/4q_small mod q
     RGSWParams->Change_BaseG(curBase);
-    LWEscheme->EvalSubConstEq(cttmp, q >> 2);
     ret.push_back(std::move(cttmp));
     return ret;
 }
