@@ -90,9 +90,9 @@ public:
     explicit DCRTPolyImpl(const std::vector<PolyType>& elements);
     explicit DCRTPolyImpl(const DCRTPolyType&& element);
 
-    const DCRTPolyType& operator=(const PolyLargeType& element);
+    const DCRTPolyType& operator=(const PolyLargeType& rhs);
     const DCRTPolyType& operator=(const DCRTPolyType& rhs) override;
-    const DCRTPolyType& operator=(const PolyType& element) override;
+    const DCRTPolyType& operator=(const PolyType& rhs) override;
     const DCRTPolyType& operator=(DCRTPolyType&& rhs) override;
     DCRTPolyType& operator=(std::initializer_list<uint64_t> rhs) override;
     DCRTPolyType& operator=(uint64_t val) override;
@@ -110,11 +110,14 @@ public:
 
     bool operator==(const DCRTPolyType& rhs) const override;
     const DCRTPolyType& operator+=(const DCRTPolyType& rhs) override;
-    const DCRTPolyType& operator+=(const Integer& element) override;
+    const DCRTPolyType& operator+=(const Integer& rhs) override;
+    const DCRTPolyType& operator+=(const NativeInteger& rhs) override;
     const DCRTPolyType& operator-=(const DCRTPolyType& rhs) override;
-    const DCRTPolyType& operator-=(const Integer& element) override;
-    const DCRTPolyType& operator*=(const Integer& element) override;
-    const DCRTPolyType& operator*=(const DCRTPolyType& element) override;
+    const DCRTPolyType& operator-=(const Integer& rhs) override;
+    const DCRTPolyType& operator-=(const NativeInteger& rhs) override;
+    const DCRTPolyType& operator*=(const DCRTPolyType& rhs) override;
+    const DCRTPolyType& operator*=(const Integer& rhs) override;
+    const DCRTPolyType& operator*=(const NativeInteger& rhs) override;
 
     DCRTPolyType Negate() const override;
     DCRTPolyType operator-() const override;
@@ -126,26 +129,26 @@ public:
     DCRTPolyType AutomorphismTransform(const usint& i) const override;
     DCRTPolyType AutomorphismTransform(usint i, const std::vector<usint>& vec) const override;
 
-    DCRTPolyType Plus(const DCRTPolyType& element) const override;
-    DCRTPolyType Plus(const Integer& element) const override;
-    DCRTPolyType Plus(const std::vector<Integer>& element) const override;
+    DCRTPolyType Plus(const DCRTPolyType& rhs) const override;
+    DCRTPolyType Plus(const Integer& rhs) const override;
+    DCRTPolyType Plus(const std::vector<Integer>& rhs) const override;
 
-    DCRTPolyType Minus(const DCRTPolyType& element) const override;
-    DCRTPolyType Minus(const Integer& element) const override;
-    DCRTPolyType Minus(const std::vector<Integer>& element) const override;
+    DCRTPolyType Minus(const DCRTPolyType& rhs) const override;
+    DCRTPolyType Minus(const Integer& rhs) const override;
+    DCRTPolyType Minus(const std::vector<Integer>& rhs) const override;
 
-    DCRTPolyType Times(const DCRTPolyType& element) const override;
-    DCRTPolyType Times(const Integer& element) const override;
-    DCRTPolyType Times(const std::vector<Integer>& element) const override;
-    DCRTPolyType Times(NativeInteger::SignedNativeInt element) const override;
+    DCRTPolyType Times(const DCRTPolyType& rhs) const override;
+    DCRTPolyType Times(const Integer& rhs) const override;
+    DCRTPolyType Times(const std::vector<Integer>& rhs) const override;
+    DCRTPolyType Times(NativeInteger::SignedNativeInt rhs) const override;
 #if NATIVEINT != 64
-    DCRTPolyType Times(int64_t element) const override {
-        return Times(static_cast<NativeInteger::SignedNativeInt>(element));
+    DCRTPolyType Times(int64_t rhs) const override {
+        return Times(static_cast<NativeInteger::SignedNativeInt>(rhs));
     }
 #endif
 
-    DCRTPolyType Times(const std::vector<NativeInteger>& element) const override;
-    DCRTPolyType TimesNoCheck(const std::vector<NativeInteger>& element) const override;
+    DCRTPolyType Times(const std::vector<NativeInteger>& rhs) const override;
+    DCRTPolyType TimesNoCheck(const std::vector<NativeInteger>& rhs) const override;
     DCRTPolyType MultiplicativeInverse() const override;
 
     bool InverseExists() const override;

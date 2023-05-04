@@ -389,7 +389,7 @@ public:
    */
     virtual std::vector<DerivedType> CRTDecompose(uint32_t baseBits) const = 0;
 
-    virtual const DerivedType& operator=(const TowerType& element) = 0;
+    virtual const DerivedType& operator=(const TowerType& rhs) = 0;
 
     /**
    * @brief Assignment Operator.
@@ -522,7 +522,7 @@ public:
    * @param &element is the element to add with.
    * @return is the result of the addition.
    */
-    DerivedType Plus(const DerivedType& element) const override = 0;
+    DerivedType Plus(const DerivedType& rhs) const override = 0;
 
     /**
    * @brief Performs a multiplication operation and returns the result.
@@ -530,7 +530,7 @@ public:
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
    */
-    DerivedType Times(const DerivedType& element) const override = 0;
+    DerivedType Times(const DerivedType& rhs) const override = 0;
 
     /**
    * @brief Performs a subtraction operation and returns the result.
@@ -538,7 +538,7 @@ public:
    * @param &element is the element to subtract from.
    * @return is the result of the subtraction.
    */
-    DerivedType Minus(const DerivedType& element) const override = 0;
+    DerivedType Minus(const DerivedType& rhs) const override = 0;
 
     /**
    * @brief Scalar addition - add an element to the first index of each tower.
@@ -546,7 +546,7 @@ public:
    * @param &element is the element to add entry-wise.
    * @return is the result of the addition operation.
    */
-    DerivedType Plus(const BigIntType& element) const override = 0;
+    DerivedType Plus(const BigIntType& rhs) const override = 0;
 
     /**
    * @brief Scalar addition for elements in CRT format.
@@ -557,7 +557,7 @@ public:
    * @param &element is the element to add entry-wise.
    * @return is the result of the addition operation.
    */
-    virtual DerivedType Plus(const std::vector<BigIntType>& element) const = 0;
+    virtual DerivedType Plus(const std::vector<BigIntType>& rhs) const = 0;
 
     /**
    * @brief Scalar subtraction - subtract an element to all entries.
@@ -565,7 +565,7 @@ public:
    * @param &element is the element to subtract entry-wise.
    * @return is the return value of the minus operation.
    */
-    DerivedType Minus(const BigIntType& element) const override = 0;
+    DerivedType Minus(const BigIntType& rhs) const override = 0;
 
     /**
    * @brief Scalar subtraction for elements in CRT format.
@@ -576,7 +576,7 @@ public:
    * @param &element is the element to subtract entry-wise.
    * @return is the result of the subtraction operation.
    */
-    virtual DerivedType Minus(const std::vector<BigIntType>& element) const = 0;
+    virtual DerivedType Minus(const std::vector<BigIntType>& rhs) const = 0;
 
     /**
    * @brief Scalar multiplication - multiply all entries.
@@ -584,7 +584,7 @@ public:
    * @param &element is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
-    DerivedType Times(const BigIntType& element) const override = 0;
+    DerivedType Times(const BigIntType& rhs) const override = 0;
 
     /**
    * @brief Scalar multiplication - multiply by a signed integer
@@ -592,7 +592,7 @@ public:
    * @param &element is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
-    DerivedType Times(NativeInteger::SignedNativeInt element) const override = 0;
+    DerivedType Times(NativeInteger::SignedNativeInt rhs) const override = 0;
 
 #if NATIVEINT != 64
     /**
@@ -603,7 +603,7 @@ public:
    *
    * @note this is need for 128-bit so that the 64-bit inputs can be used.
    */
-    virtual DerivedType Times(int64_t element) const = 0;
+    virtual DerivedType Times(int64_t rhs) const = 0;
 #endif
 
     /**
@@ -612,7 +612,7 @@ public:
    * @param &element is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
-    virtual DerivedType Times(const std::vector<NativeInteger>& element) const = 0;
+    virtual DerivedType Times(const std::vector<NativeInteger>& rhs) const = 0;
 
     /**
    * @brief Performs a multiplication operation even when the multiplicands
@@ -621,7 +621,7 @@ public:
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
    */
-    virtual DerivedType TimesNoCheck(const std::vector<NativeInteger>& element) const = 0;
+    virtual DerivedType TimesNoCheck(const std::vector<NativeInteger>& rhs) const = 0;
 
     /**
    * @brief Scalar modular multiplication by an integer represented in CRT
@@ -632,7 +632,7 @@ public:
    *
    * @warning Should remove this, data is truncated to native-word size.
    */
-    virtual DerivedType Times(const std::vector<BigIntType>& element) const = 0;
+    virtual DerivedType Times(const std::vector<BigIntType>& rhs) const = 0;
 
     /**
    * @brief Scalar multiplication followed by division and rounding operation -
@@ -673,7 +673,8 @@ public:
    */
     virtual DerivedType Negate() const = 0;
 
-    const DerivedType& operator+=(const BigIntType& element) override = 0;
+    const DerivedType& operator+=(const BigIntType& rhs) override = 0;
+    virtual const DerivedType& operator+=(const LilIntType& rhs)  = 0;
 
     /**
    * @brief Performs a subtraction operation and returns the result.
@@ -681,7 +682,8 @@ public:
    * @param &element is the element to subtract from.
    * @return is the result of the subtraction.
    */
-    const DerivedType& operator-=(const BigIntType& element) override = 0;
+    const DerivedType& operator-=(const BigIntType& rhs) override = 0;
+    virtual const DerivedType& operator-=(const LilIntType& rhs)  = 0;
 
     /**
    * @brief Performs a multiplication operation and returns the result.
@@ -689,7 +691,8 @@ public:
    * @param &element is the element to multiply by.
    * @return is the result of the multiplication.
    */
-    const DerivedType& operator*=(const BigIntType& element) override = 0;
+    const DerivedType& operator*=(const BigIntType& rhs) override = 0;
+    virtual const DerivedType& operator*=(const LilIntType& rhs)  = 0;
 
     /**
    * @brief Performs an multiplication operation and returns the result.
@@ -697,7 +700,7 @@ public:
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
    */
-    const DerivedType& operator*=(const DerivedType& element) override = 0;
+    const DerivedType& operator*=(const DerivedType& rhs) override = 0;
 
     // multiplicative inverse operation
     /**
