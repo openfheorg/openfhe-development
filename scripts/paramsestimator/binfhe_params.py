@@ -109,8 +109,7 @@ def parameter_selector():
         else:
             #increase ctmod q to 2N and everything else constant - later
             optQks = 2**optlogmodQks
-            B_g = floor(logmodQ/d_g)
-            B_ks = floor(logmodQks/3)
+            B_g = 2**floor(logmodQ/d_g)
 
             param_set_final = stdparams.paramsetvars(opt_n, modulus_q, ringsize_N, logmodQ, optQks, B_g, 2**floor(log2(optQks)/d_ks), B_rk, sigma)
             finalnoise = helperfncs.get_noise_from_cpp_code(param_set_final, 1000)##########################################################run script CPP###########
