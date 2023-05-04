@@ -42,7 +42,7 @@
 using namespace lbcrypto;
 
 usint dim_n  = 0;
-usint Qks    = 0;
+int64_t Qks  = 0;
 usint dim_N  = 0;
 usint ctmodq = 0;
 usint logQ   = 0;
