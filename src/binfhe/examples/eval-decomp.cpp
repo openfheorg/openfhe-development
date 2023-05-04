@@ -85,7 +85,8 @@ int main() {
         LWEPlaintext result;
         if (i == decomp.size() - 1) {
             // after every evalfloor, the least significant digit is dropped so the last modulus is computed as log p = (log P) mod (log GetMaxPlaintextSpace)
-            p = pow(2, static_cast<int>(log2(P)) % static_cast<int>(log2(p)));
+            int logp = static_cast<int>(log2(P)) % static_cast<int>(log2(p));
+            p        = 1 << logp;
         }
         cc.Decrypt(sk, ct1, &result, p);
         std::cout << "(" << result << " * " << cc.GetMaxPlaintextSpace() << "^" << i << ")";
