@@ -56,7 +56,7 @@ int main() {
 
     int q      = 4096;                                               // q
     int factor = 1 << int(logQ - log2(q));                           // Q/q
-    int P      = cc.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
+    uint64_t P = cc.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
 
     // Sample Program: Step 2: Key Generation
     // Generate the secret key
@@ -78,15 +78,15 @@ int main() {
     auto decomp = cc.EvalDecomp(ct1);
 
     // Sample Program: Step 5: Decryption
-    auto p = cc.GetMaxPlaintextSpace().ConvertToInt();
+    uint64_t p = cc.GetMaxPlaintextSpace().ConvertToInt();
     std::cout << "Decomposed value: ";
     for (size_t i = 0; i < decomp.size(); i++) {
         ct1 = decomp[i];
         LWEPlaintext result;
         if (i == decomp.size() - 1) {
             // after every evalfloor, the least significant digit is dropped so the last modulus is computed as log p = (log P) mod (log GetMaxPlaintextSpace)
-            int logp = static_cast<int>(log2(P)) % static_cast<int>(log2(p));
-            p        = 1 << logp;
+            auto logp = GetMSB(P - 1) % GetMSB(p - 1);
+            p         = 1 << logp;
         }
         cc.Decrypt(sk, ct1, &result, p);
         std::cout << "(" << result << " * " << cc.GetMaxPlaintextSpace() << "^" << i << ")";
