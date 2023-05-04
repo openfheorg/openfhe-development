@@ -565,6 +565,11 @@ IntType PreviousPrime(const IntType& q, uint64_t m) {
 
     while (!MillerRabinPrimalityTest(qNew)) {
         qNew -= M;
+        // we need to check if qNew becomes < 0 by checking for an overflow
+        // this might happen if q is too small
+        if (qNew > q) {
+            OPENFHE_THROW(config_error, "Moduli size is not sufficient! Must be increased.");
+        }
     }
 
     return qNew;
