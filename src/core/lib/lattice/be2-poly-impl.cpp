@@ -45,7 +45,7 @@ namespace lbcrypto {
 
 template class ElemParams<M2Integer>;
 template class ILParamsImpl<M2Integer>;
-template class PolyImpl<M2Vector>;
+// template class PolyImpl<M2Vector>;
 // template class DCRTPolyImpl<M2Vector>;
 
 template class Matrix<M2Poly>;
