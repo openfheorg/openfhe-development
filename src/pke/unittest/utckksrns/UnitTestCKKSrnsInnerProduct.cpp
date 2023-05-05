@@ -110,6 +110,7 @@ TEST_F(UTCKKSRNS_INNERPRODUCT, Test_CKKSrns_INNERPRODUCT) {
     }
     auto innerProductHE = CKKSrnsInnerProduct(testVec);
 
-    int64_t expectedResult = plainInnerProduct(testVec);
-    EXPECT_EQ(innerProductHE, expectedResult);
+    double expectedResult = plainInnerProduct(testVec);
+
+    EXPECT_LT(std::abs(expectedResult - innerProductHE), 0.00001);
 }

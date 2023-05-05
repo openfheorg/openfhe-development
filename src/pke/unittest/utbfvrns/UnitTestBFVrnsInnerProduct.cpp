@@ -70,9 +70,6 @@ T plainInnerProduct(std::vector<T> vec) {
 // declaration for Automorphism Test on BFVrns scheme with polynomial operation
 // in power of 2 cyclotomics.
 int64_t BFVrnsInnerProduct(const std::vector<int64_t> testVec) {
-    using Element = DCRTPoly;
-
-
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(65537);
     parameters.SetMultiplicativeDepth(20);
