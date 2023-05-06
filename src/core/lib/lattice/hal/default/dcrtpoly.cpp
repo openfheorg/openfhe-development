@@ -1989,7 +1989,7 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
         // we fit in 63 bits, so we can do multiplications and
         // additions without modulo reduction, and do modulo reduction
         // only once
-        if ((logDigitSize + logt + logSizeQ) < (63. - logDigitNum)) {
+        if ((logDigitSize + logt + logSizeQ + logDigitNum) < 63.) {
 #pragma omp parallel for
             for (usint ri = 0; ri < ringDim; ri++) {
                 double floatSum      = 0.5;
@@ -2045,12 +2045,11 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
         double tInv = 1. / td;
         // We try to keep floating point error of
         // \sum x_ji*tQHatInvModqDivqFrac[j][i] small.
-        if ((logDigitSize + logt + logSizeQ) < 52) {
+        if ((logDigitSize + logt + logSizeQ + logDigitNum) < 52.) {
 #pragma omp parallel for
             for (usint ri = 0; ri < ringDim; ri++) {
                 double floatSum      = 0.0;
-                NativeInteger intSum = 0;
-                NativeInteger tmp, digit;
+                NativeInteger intSum = 0, tmp, digit;
                 for (usint i = 0; i < sizeQ; i++) {
                     tmp = m_vectors[i][ri];
                     for (usint di = 0; di < digitNum; di++) {
@@ -2079,8 +2078,7 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
 #pragma omp parallel for
             for (usint ri = 0; ri < ringDim; ri++) {
                 double floatSum      = 0.0;
-                NativeInteger intSum = 0;
-                NativeInteger tmp, digit;
+                NativeInteger intSum = 0, tmp, digit;
 
                 for (usint i = 0; i < sizeQ; i++) {
                     tmp = m_vectors[i][ri];
@@ -2196,7 +2194,8 @@ template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
     const std::shared_ptr<DCRTPolyImpl::Params> paramsOutput,
     const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
-    const std::vector<double>& tOSHatInvModsDivsFrac, const std::vector<DoubleNativeInt>& modoBarretMu) const {
+    const std::vector<NativeInteger>& tOSHatInvModsDivsMantissa,
+    const std::vector<DoubleNativeInt>& modoBarretMu) const {
     DCRTPolyType ans(paramsOutput, this->GetFormat(), true);
 
     usint ringDim = this->GetRingDimension();
@@ -2217,14 +2216,13 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
 
     #pragma omp parallel for
     for (usint ri = 0; ri < ringDim; ri++) {
-        double nu = 0.5;
-
+        DoubleNativeInt fracValue = 0;
         for (usint i = 0; i < sizeI; i++) {
             const NativeInteger& xi = m_vectors[i + inputIndex][ri];
-            nu += tOSHatInvModsDivsFrac[i] * xi.ConvertToInt();
+            fracValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsMantissa[i].ConvertToInt());
         }
 
-        NativeInteger alpha = static_cast<uint64_t>(nu);
+        fracValue >>= DOUBLE_PRECISION;
 
         for (usint j = 0; j < sizeO; j++) {
             DoubleNativeInt curValue = 0;
@@ -2242,6 +2240,9 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
 
             const NativeInteger& curNativeValue =
                 NativeInteger(BarrettUint128ModUint64(curValue, oj.ConvertToInt(), modoBarretMu[j]));
+
+            const NativeInteger& alpha =
+                NativeInteger(BarrettUint128ModUint64(fracValue, oj.ConvertToInt(), modoBarretMu[j]));
 
             ans.m_vectors[j][ri] = curNativeValue.ModAddFast(alpha, oj);
         }

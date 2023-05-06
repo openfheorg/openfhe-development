@@ -1154,7 +1154,7 @@ public:
    */
     virtual DerivedType ScaleAndRound(const std::shared_ptr<Params> paramsOutput,
                                       const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
-                                      const std::vector<double>& tOSHatInvModsDivsFrac,
+                                      const std::vector<NativeInteger>& tOSHatInvModsDivsFrac,
                                       const std::vector<DoubleNativeInt>& modoBarretMu) const = 0;
 
     /**

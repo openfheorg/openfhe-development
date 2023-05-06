@@ -673,8 +673,8 @@ public:
         return m_paramsQl[l];
     }
 
-    const std::vector<double>& GetQlQHatInvModqDivqFrac(usint l) const {
-        return m_QlQHatInvModqDivqFrac[l];
+    const std::vector<NativeInteger>& GetQlQHatInvModqDivqMantissa(usint l) const {
+        return m_QlQHatInvModqDivqMantissa[l];
     }
 
     const std::vector<std::vector<NativeInteger>>& GetQlQHatInvModqDivqModq(usint l) const {
@@ -777,8 +777,8 @@ public:
    *
    * @return the precomputed table
    */
-    const std::vector<double>& GettRSHatInvModsDivsFrac() const {
-        return m_tRSHatInvModsDivsFrac;
+    const std::vector<NativeInteger>& GettRSHatInvModsDivsMantissa() const {
+        return m_tRSHatInvModsDivsMantissa;
     }
 
     /**
@@ -831,8 +831,8 @@ public:
         return m_alphaRlModq[l];
     }
 
-    const std::vector<double>& GettQlSlHatInvModsDivsFrac(usint l = 0) const {
-        return m_tQlSlHatInvModsDivsFrac[l];
+    const std::vector<NativeInteger>& GettQlSlHatInvModsDivsMantissa(usint l = 0) const {
+        return m_tQlSlHatInvModsDivsMantissa[l];
     }
 
     const std::vector<std::vector<NativeInteger>>& GettQlSlHatInvModsDivsModq(usint l = 0) const {
@@ -1479,7 +1479,7 @@ protected:
     // used in homomorphic multiplication
     std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsQl;
 
-    std::vector<std::vector<double>> m_QlQHatInvModqDivqFrac;
+    std::vector<std::vector<NativeInteger>> m_QlQHatInvModqDivqMantissa;
     std::vector<std::vector<std::vector<NativeInteger>>> m_QlQHatInvModqDivqModq;
 
     // Auxiliary CRT basis {Rl} = {r_k}
@@ -1513,8 +1513,8 @@ protected:
     /////////////////////////////////////
 
     // S = QR
-    // Stores \frac{[t*R*(S/s_m)^{-1}]_{s_m}/s_m}
-    std::vector<double> m_tRSHatInvModsDivsFrac;
+    // Stores \round{\frac{[t*R*(S/s_m)^{-1}]_{s_m}/s_m} * 2^54}
+    std::vector<NativeInteger> m_tRSHatInvModsDivsMantissa;
 
     // S = QR
     // Stores [\floor{t*R*(S/s_m)^{-1}/s_m}]_{r_k}
@@ -1561,7 +1561,7 @@ protected:
     // BFVrns : Mult : ScaleAndRoundP
     /////////////////////////////////////
 
-    std::vector<std::vector<double>> m_tQlSlHatInvModsDivsFrac;
+    std::vector<std::vector<NativeInteger>> m_tQlSlHatInvModsDivsMantissa;
 
     std::vector<std::vector<std::vector<NativeInteger>>> m_tQlSlHatInvModsDivsModq;
 

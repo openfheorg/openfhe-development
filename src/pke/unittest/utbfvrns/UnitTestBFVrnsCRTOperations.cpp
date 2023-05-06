@@ -385,7 +385,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Constant) {
 
     DCRTPoly rounded =
         c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
-                        cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
+                        cryptoParamsBFVrns->GettRSHatInvModsDivsMantissa(), cryptoParamsBFVrns->GetModrBarrettMu());
 
     DCRTPoly roundedQ = rounded.SwitchCRTBasis(paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
                                                cryptoParamsBFVrns->GetRlHatInvModrPrecon(),
@@ -516,7 +516,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_Mult_by_Gaussian) {
 
     DCRTPoly rounded =
         c.ScaleAndRound(paramsR, cryptoParamsBFVrns->GettRSHatInvModsDivsModr(),
-                        cryptoParamsBFVrns->GettRSHatInvModsDivsFrac(), cryptoParamsBFVrns->GetModrBarrettMu());
+                        cryptoParamsBFVrns->GettRSHatInvModsDivsMantissa(), cryptoParamsBFVrns->GetModrBarrettMu());
 
     DCRTPoly roundedQ = rounded.SwitchCRTBasis(paramsQ, cryptoParamsBFVrns->GetRlHatInvModr(),
                                                cryptoParamsBFVrns->GetRlHatInvModrPrecon(),

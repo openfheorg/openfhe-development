@@ -284,13 +284,13 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
         const BigInteger modulust(GetPlaintextModulus());
 
-        m_tRSHatInvModsDivsFrac.resize(sizeQ);
+        m_tRSHatInvModsDivsMantissa.resize(sizeQ);
         for (size_t i = 0; i < sizeQ; i++) {
             BigInteger qi(moduliQ[i].ConvertToInt());
-            m_tRSHatInvModsDivsFrac[i] =
-                static_cast<double>(
-                    ((modulusQR.DividedBy(qi)).ModInverse(qi) * modulusR * modulust).Mod(qi).ConvertToInt()) /
-                static_cast<double>(qi.ConvertToInt());
+            m_tRSHatInvModsDivsMantissa[i] =
+                (((((modulusQR.DividedBy(qi)).ModInverse(qi) * modulusR * modulust).Mod(qi)).LShift(54))
+                     .DivideAndRound(qi))
+                    .ConvertToInt();
         }
 
         m_tRSHatInvModsDivsModr.resize(sizeR);
@@ -524,17 +524,18 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         /////////////////////////////////////
 
         if (multTech == HPSPOVERQLEVELED) {
-            m_tQlSlHatInvModsDivsFrac.resize(sizeQ);
+            m_tQlSlHatInvModsDivsMantissa.resize(sizeQ);
             m_tQlSlHatInvModsDivsModq.resize(sizeQ);
 
             for (usint l = sizeQ; l > 0; l--) {
-                m_tQlSlHatInvModsDivsFrac[l - 1].resize(l);
+                m_tQlSlHatInvModsDivsMantissa[l - 1].resize(l);
                 for (size_t j = 0; j < l; j++) {
                     BigInteger rj(moduliR[j].ConvertToInt());
-                    m_tQlSlHatInvModsDivsFrac[l - 1][j] =
-                        static_cast<double>(
-                            ((QlRl[l].DividedBy(rj)).ModInverse(rj) * Ql[l] * modulust).Mod(rj).ConvertToInt()) /
-                        static_cast<double>(rj.ConvertToInt());
+                    m_tQlSlHatInvModsDivsMantissa[l - 1][j] =
+                        (((((QlRl[l].DividedBy(rj)).ModInverse(rj) * Ql[l] * modulust).Mod(rj))
+                              .LShift(DOUBLE_PRECISION))
+                             .DivideAndRound(rj))
+                            .ConvertToInt();
                 }
                 m_tQlSlHatInvModsDivsModq[l - 1].resize(l);
                 for (usint i = 0; i < l; i++) {
@@ -553,15 +554,16 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             }
         }
         else {
-            m_tQlSlHatInvModsDivsFrac.resize(1);
+            m_tQlSlHatInvModsDivsMantissa.resize(1);
 
-            m_tQlSlHatInvModsDivsFrac[0].resize(sizeR);
+            m_tQlSlHatInvModsDivsMantissa[0].resize(sizeR);
             for (size_t j = 0; j < sizeR; j++) {
                 BigInteger rj(moduliR[j].ConvertToInt());
-                m_tQlSlHatInvModsDivsFrac[0][j] =
-                    static_cast<double>(
-                        ((modulusQR.DividedBy(rj)).ModInverse(rj) * modulusQ * modulust).Mod(rj).ConvertToInt()) /
-                    static_cast<double>(rj.ConvertToInt());
+                m_tQlSlHatInvModsDivsMantissa[0][j] =
+                    (((((modulusQR.DividedBy(rj)).ModInverse(rj) * modulusQ * modulust).Mod(rj))
+                          .LShift(DOUBLE_PRECISION))
+                         .DivideAndRound(rj))
+                        .ConvertToInt();
             }
             m_tQlSlHatInvModsDivsModq.resize(1);
             m_tQlSlHatInvModsDivsModq[0].resize(sizeQ);
@@ -586,14 +588,15 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
         if (multTech == HPSPOVERQLEVELED) {
             m_QlQHatInvModqDivqModq.resize(sizeQ);
-            m_QlQHatInvModqDivqFrac.resize(sizeQ);
+            m_QlQHatInvModqDivqMantissa.resize(sizeQ);
             for (usint l = sizeQ; l > 0; l--) {
-                m_QlQHatInvModqDivqFrac[l - 1].resize(sizeQ - l);
+                m_QlQHatInvModqDivqMantissa[l - 1].resize(sizeQ - l);
                 for (size_t j = 0; j < sizeQ - l; j++) {
                     BigInteger qj(moduliQ[j + l].ConvertToInt());
-                    m_QlQHatInvModqDivqFrac[l - 1][j] =
-                        static_cast<double>(((modulusQ.DividedBy(qj)).ModInverse(qj) * Ql[l]).Mod(qj).ConvertToInt()) /
-                        static_cast<double>(qj.ConvertToInt());
+                    m_QlQHatInvModqDivqMantissa[l - 1][j] =
+                        (((((modulusQ.DividedBy(qj)).ModInverse(qj) * Ql[l]).Mod(qj)).LShift(DOUBLE_PRECISION))
+                             .DivideAndRound(qj))
+                            .ConvertToInt();
                 }
                 m_QlQHatInvModqDivqModq[l - 1].resize(l);
                 for (usint i = 0; i < l; i++) {

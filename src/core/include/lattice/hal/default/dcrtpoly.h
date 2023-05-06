@@ -53,6 +53,9 @@
 
 namespace lbcrypto {
 
+// Double Precision
+const int32_t DOUBLE_PRECISION = 54;
+
 /**
  * @brief Ideal lattice for the double-CRT representation.
  * The implementation contains a vector of underlying native-integer lattices
@@ -1130,7 +1133,7 @@ public:
    */
     DCRTPolyType ScaleAndRound(const std::shared_ptr<Params> paramsOutput,
                                const std::vector<std::vector<NativeInteger>>& tOSHatInvModsDivsModo,
-                               const std::vector<double>& tOSHatInvModsDivsFrac,
+                               const std::vector<NativeInteger>& tOSHatInvModsDivsFrac,
                                const std::vector<DoubleNativeInt>& modoBarretMu) const override;
 
     /**
