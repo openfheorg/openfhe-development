@@ -861,12 +861,16 @@ public:
     /////////////////////////////////////
 
     /**
-   * Gets the precomputed table of \frac{t*{Q/q_i}^{-1}B^l/q_i}
+   * Gets the precomputed table of \round{\frac{t*{Q/q_i}^{-1}B^d/q_i} * 2^54}
    *
    * @return the precomputed table
    */
-    const std::vector<std::vector<double>>& GettQHatInvModqDivqFrac() const {
-        return m_tQHatInvModqDivqFrac;
+    const std::vector<std::vector<NativeInteger>>& GettQHatInvModqDivqMantissa() const {
+        return m_tQHatInvModqDivqMantissa;
+    }
+
+    const NativeInteger& GettInvMantissa() const {
+        return m_tInvMantissa;
     }
 
     /**
@@ -1462,14 +1466,17 @@ protected:
     // BFVrns : Decrypt : ScaleAndRound
     /////////////////////////////////////
 
-    // Stores \frac{t*{Q/q_i}^{-1}/q_i}
-    std::vector<std::vector<double>> m_tQHatInvModqDivqFrac;
+    // Stores \round{\frac{t*{Q/q_i}^{-1} * B^d/q_i} * 2^54}
+    std::vector<std::vector<NativeInteger>> m_tQHatInvModqDivqMantissa;
 
-    // Stores [\floor{t*{Q/q_i}^{-1}/q_i}]_t
+    // Stores [\floor{t*{Q/q_i}^{-1} * B^d/q_i}]_t
     std::vector<std::vector<NativeInteger>> m_tQHatInvModqDivqModt;
 
-    // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1}/q_i}]_t
+    // Stores NTL precomputations for [\floor{t*{Q/q_i}^{-1} * B^d/q_i}]_t
     std::vector<std::vector<NativeInteger>> m_tQHatInvModqDivqModtPrecon;
+
+    // Stores \round{1/t * 2^54}
+    NativeInteger m_tInvMantissa;
 
     /////////////////////////////////////
     // BFVrns : Mult : ExpandCRTBasis

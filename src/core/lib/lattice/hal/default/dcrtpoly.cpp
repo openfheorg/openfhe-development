@@ -2115,6 +2115,168 @@ PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
     return result;
 }
 
+template <typename VecType>
+PolyImpl<NativeVector> DCRTPolyImpl<VecType>::ScaleAndRound(
+    const NativeInteger& t, const NativeInteger& tInvMantissa,
+    const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqModt,
+    const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqModtPrecon,
+    const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqMantissa) const {
+    usint ringDim = this->GetRingDimension();
+    usint sizeQ   = m_vectors.size();
+
+    double logq     = std::log2(m_vectors[0].GetModulus().ConvertToDouble());
+    double logt     = std::log2(t.ConvertToDouble());
+    double logSizeQ = std::log2(static_cast<double>(sizeQ));
+
+    usint digitNum     = static_cast<usint>(std::ceil(logq / (52. - logSizeQ)));
+    usint logDigitSize = static_cast<usint>(std::ceil(logq / digitNum));
+    double logDigitNum = std::log2(digitNum);
+
+    typename PolyType::Vector coefficients(ringDim, t.ConvertToInt());
+    // For power of two t we can do modulo reduction easily
+    if (IsPowerOfTwo(t.ConvertToInt())) {
+        // We try to keep floating point error of
+        // \sum x_ji*tQHatInvModqDivqFrac[j][i] small.
+        uint64_t tMinus1 = t.ConvertToInt() - 1;
+
+        // No intermediate modulo reductions are needed in this case
+        // we fit in 63 bits, so we can do multiplications and
+        // additions without modulo reduction, and do modulo reduction
+        // only once
+        if ((logDigitSize + logt + logSizeQ + logDigitNum) < 63.) {
+#pragma omp parallel for
+            for (usint ri = 0; ri < ringDim; ri++) {
+                DoubleNativeInt floatSum = (1L << (DOUBLE_PRECISION - 1));
+                NativeInteger intSum     = 0, tmp, digit;
+                for (usint i = 0; i < sizeQ; i++) {
+                    tmp = m_vectors[i][ri];
+                    for (usint di = 0; di < digitNum; di++) {
+                        digit = tmp;
+                        digit.RShiftEq(logDigitSize);
+                        digit.LShiftEq(logDigitSize);
+                        digit = tmp.SubFast(digit);
+                        tmp.RShiftEq(logDigitSize);
+
+                        floatSum += Mul128(digit.ConvertToInt(), tQHatInvModqDivqMantissa[i][di].ConvertToInt());
+                        digit.MulEqFast(tQHatInvModqDivqModt[i][di]);
+                        intSum.AddEqFast(digit);
+                    }
+                }
+
+                floatSum >>= DOUBLE_PRECISION;
+                intSum += static_cast<uint64_t>(floatSum);
+                // mod a power of two
+                coefficients[ri] = intSum.ConvertToInt() & tMinus1;
+            }
+        }
+        else {
+#pragma omp parallel for
+            for (usint ri = 0; ri < ringDim; ri++) {
+                DoubleNativeInt floatSum = (1L << (DOUBLE_PRECISION - 1));
+                NativeInteger intSum     = 0, tmp, digit;
+                for (usint i = 0; i < sizeQ; i++) {
+                    tmp = m_vectors[i][ri];
+                    for (usint di = 0; di < digitNum; di++) {
+                        digit = tmp;
+                        digit.RShiftEq(logDigitSize);
+                        digit.LShiftEq(logDigitSize);
+                        digit = tmp.SubFast(digit);
+                        tmp.RShiftEq(logDigitSize);
+
+                        floatSum += Mul128(digit.ConvertToInt(), tQHatInvModqDivqMantissa[i][di].ConvertToInt());
+                        digit.ModMulFastConstEq(tQHatInvModqDivqModt[i][di], t, tQHatInvModqDivqModtPrecon[i][di]);
+                        intSum.AddEqFast(digit);
+                    }
+                }
+
+                floatSum >>= DOUBLE_PRECISION;
+                intSum += static_cast<uint64_t>(floatSum);
+                // mod a power of two
+                coefficients[ri] = intSum.ConvertToInt() & tMinus1;
+            }
+        }
+    }
+    else {
+        // We try to keep floating point error of
+        // \sum x_ji*tQHatInvModqDivqFrac[j][i] small.
+        if ((logDigitSize + logt + logSizeQ + logDigitNum) < 52.) {
+#pragma omp parallel for
+            for (usint ri = 0; ri < ringDim; ri++) {
+                DoubleNativeInt floatSum = (1L << (DOUBLE_PRECISION - 1));
+                NativeInteger intSum     = 0, tmp, digit;
+                for (usint i = 0; i < sizeQ; i++) {
+                    tmp = m_vectors[i][ri];
+                    for (usint di = 0; di < digitNum; di++) {
+                        digit = tmp;
+                        digit.RShiftEq(logDigitSize);
+                        digit.LShiftEq(logDigitSize);
+                        digit = tmp.SubFast(digit);
+                        tmp.RShiftEq(logDigitSize);
+
+                        floatSum += Mul128(digit.ConvertToInt(), tQHatInvModqDivqMantissa[i][di].ConvertToInt());
+                        digit.MulEqFast(tQHatInvModqDivqModt[i][di]);
+                        intSum.AddEqFast(digit);
+                    }
+                }
+
+                floatSum >>= DOUBLE_PRECISION;
+                floatSum += intSum.ConvertToInt();
+
+                DoubleNativeInt floatSumtInv = floatSum * tInvMantissa.ConvertToInt();
+
+                uint64_t quot =
+                    static_cast<uint64_t>(floatSumtInv >> (DOUBLE_PRECISION + static_cast<uint64_t>(std::ceil(logt))));
+                floatSum -= Mul128(t.ConvertToInt(), quot);
+
+                // rounding
+                coefficients[ri] = static_cast<uint64_t>(floatSum);
+            }
+        }
+        else {
+#pragma omp parallel for
+            for (usint ri = 0; ri < ringDim; ri++) {
+                DoubleNativeInt floatSum = (1L << (DOUBLE_PRECISION - 1));
+                NativeInteger intSum     = 0, tmp, digit;
+
+                for (usint i = 0; i < sizeQ; i++) {
+                    tmp = m_vectors[i][ri];
+                    for (usint di = 0; di < digitNum; di++) {
+                        digit = tmp;
+                        digit.RShiftEq(logDigitSize);
+                        digit.LShiftEq(logDigitSize);
+                        digit = tmp.SubFast(digit);
+                        tmp.RShiftEq(logDigitSize);
+
+                        floatSum += Mul128(digit.ConvertToInt(), tQHatInvModqDivqMantissa[i][di].ConvertToInt());
+                        digit.ModMulFastConstEq(tQHatInvModqDivqModt[i][di], t, tQHatInvModqDivqModtPrecon[i][di]);
+                        intSum.AddEqFast(digit);
+                    }
+                }
+
+                floatSum >>= DOUBLE_PRECISION;
+                floatSum += intSum.ConvertToInt();
+
+                DoubleNativeInt floatSumtInv = floatSum * tInvMantissa.ConvertToInt();
+
+                uint64_t quot =
+                    static_cast<uint64_t>(floatSumtInv >> (DOUBLE_PRECISION + static_cast<uint64_t>(std::ceil(logt))));
+                floatSum -= Mul128(t.ConvertToInt(), quot);
+
+                // rounding
+                coefficients[ri] = static_cast<uint64_t>(floatSum);
+            }
+        }
+    }
+
+    // Setting the root of unity to ONE as the calculation is expensive
+    // It is assumed that no polynomial multiplications in evaluation
+    // representation are performed after this
+    PolyType result(std::make_shared<typename PolyType::Params>(this->GetCyclotomicOrder(), t.ConvertToInt(), 1));
+    result.SetValues(std::move(coefficients), Format::COEFFICIENT);
+
+    return result;
+}
+
 #if defined(HAVE_INT128) && NATIVEINT == 64
 template <typename VecType>
 DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ApproxScaleAndRound(

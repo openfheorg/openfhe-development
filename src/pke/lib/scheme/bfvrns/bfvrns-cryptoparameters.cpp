@@ -447,34 +447,35 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
         double logq     = std::log2(moduliQ[0].ConvertToDouble());
         double logSizeQ = std::log2(static_cast<double>(sizeQ));
+        double logt     = std::log2(t.ConvertToDouble());
 
         usint digitNum     = static_cast<usint>(std::ceil(logq / (52. - logSizeQ)));
         usint logDigitSize = static_cast<usint>(std::ceil(logq / digitNum));
 
         m_tQHatInvModqDivqModt.resize(sizeQ);
         m_tQHatInvModqDivqModtPrecon.resize(sizeQ);
-        m_tQHatInvModqDivqFrac.resize(sizeQ);
+        m_tQHatInvModqDivqMantissa.resize(sizeQ);
         for (size_t i = 0; i < sizeQ; i++) {
             m_tQHatInvModqDivqModt[i].resize(digitNum);
             m_tQHatInvModqDivqModtPrecon[i].resize(digitNum);
-            m_tQHatInvModqDivqFrac[i].resize(digitNum);
+            m_tQHatInvModqDivqMantissa[i].resize(digitNum);
 
             BigInteger qi(moduliQ[i].ConvertToInt());
-            BigInteger tQHatInvModqi = ((modulusQ.DividedBy(qi)).ModInverse(qi) * BigInteger(GetPlaintextModulus()));
-            int64_t denominator      = moduliQ[i].ConvertToInt();
+            BigInteger tQHatInvModqi = ((modulusQ.DividedBy(qi)).ModInverse(qi) * BigInteger(t));
 
             for (size_t di = 0; di < digitNum; di++) {
-                BigInteger tQHatInvModqDivqi  = tQHatInvModqi.DividedBy(qi);
-                m_tQHatInvModqDivqModt[i][di] = tQHatInvModqDivqi.Mod(GetPlaintextModulus()).ConvertToInt();
-                m_tQHatInvModqDivqModtPrecon[i][di] =
-                    m_tQHatInvModqDivqModt[i][di].PrepModMulConst(GetPlaintextModulus());
+                BigInteger tQHatInvModqDivqi        = tQHatInvModqi.DividedBy(qi);
+                m_tQHatInvModqDivqModt[i][di]       = tQHatInvModqDivqi.Mod(t).ConvertToInt();
+                m_tQHatInvModqDivqModtPrecon[i][di] = m_tQHatInvModqDivqModt[i][di].PrepModMulConst(t);
 
-                int64_t numerator             = tQHatInvModqi.Mod(qi).ConvertToInt();
-                m_tQHatInvModqDivqFrac[i][di] = static_cast<double>(numerator) / static_cast<double>(denominator);
+                m_tQHatInvModqDivqMantissa[i][di] = tQHatInvModqi.Mod(qi).LShift(DOUBLE_PRECISION).DivideAndRound(qi);
 
                 tQHatInvModqi.LShiftEq(logDigitSize);
             }
         }
+        BigInteger pow2(1);
+        pow2.LShiftEq(DOUBLE_PRECISION + static_cast<uint64_t>(std::ceil(logt)));
+        m_tInvMantissa = pow2.DivideAndRound(t);
 
         /////////////////////////////////////
         // BFVrns : Mult : FastExpandCRTBasisPloverQ

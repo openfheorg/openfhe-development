@@ -1080,6 +1080,31 @@ public:
                            const std::vector<std::vector<double>>& tQHatInvModqDivqFrac) const override;
 
     /**
+   * @brief Performs scale and round:
+   * {X}_{Q} -> {\round(t/Q*X)}_t
+   * {Q} = {q_1,...,q_l}
+   * {P} = {p_1,...,p_k}
+   *
+   * Brief algorithm:
+   * [\sum_i x_i*[t*QHatInv_i*B^i/q_i]_t + Round(\sum_i x_i*{t*QHatInv_i*B^d/q_i})]_t
+   *
+   * Source: Halevi S., Polyakov Y., and Shoup V. An Improved RNS Variant of the
+   * BFV Homomorphic Encryption Scheme. Cryptology ePrint Archive, Report
+   * 2018/117. (https://eprint.iacr.org/2018/117)
+   *
+   * @param &t often corresponds to the plaintext modulus
+   * @param &tQHatInvModqDivqModt precomputed values for [Floor{t*QHatInv_i*B^d/q_i}]_t
+   * @param &tQHatInvModqDivqModtPrecon NTL-specific precomputations
+   * @param &tQHatInvModqDivqMantissa precomputed values for Frac{t*QHatInv_i*B^d/q_i} * 2^54
+   * @return the result of computation as a polynomial with native 64-bit
+   * coefficients
+   */
+    PolyType ScaleAndRound(const NativeInteger& t, const NativeInteger& tInvMantissa,
+                           const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqModt,
+                           const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqModtPrecon,
+                           const std::vector<std::vector<NativeInteger>>& tQHatInvModqDivqMantissa) const override;
+
+    /**
    * @brief Computes approximate scale and round:
    * {X}_{Q,P} -> {\approx{t/Q * X}}_{P}
    * {Q} = {q_1,...,q_l}
