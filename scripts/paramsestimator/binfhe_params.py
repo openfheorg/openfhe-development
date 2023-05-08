@@ -49,11 +49,11 @@ def parameter_selector():
         ringsize_N = 1024
         opt_n = 0
         while (ringsize_N <= 2048):
+            modulus_q = ringsize_N #later optimize for either q = N or q = 2N
             while (modulus_q <= 2*ringsize_N):
                 #other variables
                 lattice_n = 500 # for stdnum security, could set to ringsize_N/2 #start with this value and binary search on n to find optimal parameter set
 
-                modulus_q = ringsize_N #later optimize for either q = N or q = 2N
                 logmodQksu = get_mod(lattice_n, exp_sec_level) #find analytical estimate for starting point of Qks
                 logmodQu = get_mod(ringsize_N, exp_sec_level) #later add code to verify that this Q is optimal with estimator
 
