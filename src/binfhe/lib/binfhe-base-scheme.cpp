@@ -127,12 +127,13 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::EvalBinGateThreeInput(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
-                                        const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3) const {
-    if ((ct1 == ct2) || (ct2 == ct3) || (ct1 == ct3)){
+                                                  const RingGSWBTKey& EK, ConstLWECiphertext ct1,
+                                                  ConstLWECiphertext ct2, ConstLWECiphertext ct3) const {
+    if ((ct1 == ct2) || (ct2 == ct3) || (ct1 == ct3)) {
         OPENFHE_THROW(config_error, "Input ciphertexts should be independent");
     }
     NativeInteger p = ct1->GetptModulus();
-    std::cout << "pt modulus in evalbingatethreeinput: " << p << std::endl;
+    // std::cout << "pt modulus in evalbingatethreeinput: " << p << std::endl;
     LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
     ctprep->SetptModulus(p);
     if ((gate == MAJORITY) || (gate == AND3) || (gate == OR3)) {
@@ -153,8 +154,8 @@ LWECiphertext BinFHEScheme::EvalBinGateThreeInput(const std::shared_ptr<BinFHECr
         // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
         auto& LWEParams = params->GetLWEParams();
         NativeInteger Q = LWEParams->GetQ();
-        //NativeInteger b = Q / NativeInteger(8) + 1;
-        NativeInteger b = Q / NativeInteger(2*p) + 1;
+        // NativeInteger b = Q / NativeInteger(8) + 1;
+        NativeInteger b = Q / NativeInteger(2 * p) + 1;
         b.ModAddFastEq(accVec[1][0], Q);
 
         auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), std::move(b));
@@ -164,11 +165,12 @@ LWECiphertext BinFHEScheme::EvalBinGateThreeInput(const std::shared_ptr<BinFHECr
         auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
         // Modulus switching
         return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
-    } else if (gate == CMUX) {
-        auto ccNOT = EvalNOT(params, ct3);
+    }
+    else if (gate == CMUX) {
+        auto ccNOT   = EvalNOT(params, ct3);
         auto ctNAND1 = EvalBinGate(params, NAND, EK, ct1, ccNOT);
         auto ctNAND2 = EvalBinGate(params, NAND, EK, ct2, ct3);
-        auto ctCMUX   = EvalBinGate(params, NAND, EK, ctNAND1, ctNAND2);
+        auto ctCMUX  = EvalBinGate(params, NAND, EK, ctNAND1, ctNAND2);
         return ctCMUX;
     }
     else {
@@ -177,9 +179,9 @@ LWECiphertext BinFHEScheme::EvalBinGateThreeInput(const std::shared_ptr<BinFHECr
 }
 
 LWECiphertext BinFHEScheme::EvalBinGateFourInput(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
-                                        const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3,
-                                        ConstLWECiphertext ct4) const {
-    if ((ct1 == ct2) || (ct2 == ct3) || (ct1 == ct3) || (ct3 == ct4) || (ct2 == ct4) || (ct1 == ct4)){
+                                                 const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
+                                                 ConstLWECiphertext ct3, ConstLWECiphertext ct4) const {
+    if ((ct1 == ct2) || (ct2 == ct3) || (ct1 == ct3) || (ct3 == ct4) || (ct2 == ct4) || (ct1 == ct4)) {
         OPENFHE_THROW(config_error, "Input ciphertexts should be independent");
     }
     LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
@@ -212,11 +214,12 @@ LWECiphertext BinFHEScheme::EvalBinGateFourInput(const std::shared_ptr<BinFHECry
         auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
         // Modulus switching
         return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
-    } else if (gate == CMUX) {
-        auto ccNOT = EvalNOT(params, ct3);
+    }
+    else if (gate == CMUX) {
+        auto ccNOT   = EvalNOT(params, ct3);
         auto ctNAND1 = EvalBinGate(params, NAND, EK, ct1, ccNOT);
         auto ctNAND2 = EvalBinGate(params, NAND, EK, ct2, ct3);
-        auto ctCMUX   = EvalBinGate(params, NAND, EK, ctNAND1, ctNAND2);
+        auto ctCMUX  = EvalBinGate(params, NAND, EK, ctNAND1, ctNAND2);
         return ctCMUX;
     }
     else {
@@ -558,27 +561,27 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
     auto& LWEParams  = params->GetLWEParams();
     auto& RGSWParams = params->GetRingGSWParams();
     auto polyParams  = RGSWParams->GetPolyParams();
-    
+
     // Specifies the range [q1,q2) that will be used for mapping
     NativeInteger q  = ct->GetModulus();
-    NativeInteger p = ct->GetptModulus();
+    NativeInteger p  = ct->GetptModulus();
     uint32_t qHalf   = q.ConvertToInt() >> 1;
     NativeInteger q1 = RGSWParams->GetGateConst()[static_cast<size_t>(gate)];
     NativeInteger q2 = q1.ModAddFast(NativeInteger(qHalf), q);
 
-    #if 0
+#if 0
     std::cout << "gate " << static_cast<size_t>(gate) << std::endl;
     std::cout << "modulus q " << q << std::endl;
     std::cout << "gate constant q1 " << q1 << std::endl;
     std::cout << "gate constant q2 " << q2 << std::endl;
-    #endif
+#endif
     // depending on whether the value is the range, it will be set
     // to either Q/8 or -Q/8 to match binary arithmetic
-    NativeInteger Q     = LWEParams->GetQ();
-    //NativeInteger Q8    = Q / NativeInteger(8) + 1;
-    //NativeInteger Q8Neg = Q - Q8;
-    std::cout << "pt modulus in bootstrapgatecore: " << p << std::endl;
-    NativeInteger Q8    = Q / NativeInteger(2*p) + 1;
+    NativeInteger Q = LWEParams->GetQ();
+    // NativeInteger Q8    = Q / NativeInteger(8) + 1;
+    // NativeInteger Q8Neg = Q - Q8;
+    // std::cout << "pt modulus in bootstrapgatecore: " << p << std::endl;
+    NativeInteger Q8    = Q / NativeInteger(2 * p) + 1;
     NativeInteger Q8Neg = Q - Q8;
 
     uint32_t N = LWEParams->GetN();
