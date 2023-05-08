@@ -52,6 +52,7 @@
         #include <iostream>
         #include <limits>
         #include <memory>
+        #include <sstream>
         #include <string>
         #include <type_traits>
         #include <typeinfo>
@@ -63,11 +64,9 @@
         #include "utils/openfhebase64.h"
         #include "utils/parallel.h"
         #include "utils/serializable.h"
-
         #include "utils/exception.h"
         #include "utils/inttypes.h"
         #include "utils/memory.h"
-
         #include "utils/debug.h"
 
 /**
