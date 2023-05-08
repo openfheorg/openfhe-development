@@ -94,7 +94,7 @@ def parameter_selector():
 
                 if (actual_noise > target_noise_level):
                     print("here in if actual greater than target noise")
-                    opt_n, optlogmodQks = binary_search_n(lattice_n, ringsize_N, actual_noise, exp_sec_level, target_noise_level, num_of_samples//8, d_ks, param_set_opt)#lattice_n, ringsize_N)
+                    opt_n, optlogmodQks, optB_ks = binary_search_n(lattice_n, ringsize_N, actual_noise, exp_sec_level, target_noise_level, num_of_samples//8, d_ks, param_set_opt)#lattice_n, ringsize_N)
                     print("opt_n after binary search: ", opt_n)
                 else:
                     opt_n = lattice_n
@@ -116,7 +116,7 @@ def parameter_selector():
             optQks = 2**optlogmodQks
             B_g = 2**floor(logmodQ/d_g)
 
-            param_set_final = stdparams.paramsetvars(opt_n, modulus_q, ringsize_N, logmodQ, optQks, B_g, 2**floor(log2(optQks)/d_ks), B_rk, sigma)
+            param_set_final = stdparams.paramsetvars(opt_n, modulus_q, ringsize_N, logmodQ, optQks, B_g, optB_ks, B_rk, sigma)
             finalnoise = helperfncs.get_noise_from_cpp_code(param_set_final, 1000)##########################################################run script CPP###########
             final_dec_fail_rate = helperfncs.get_decryption_failure(finalnoise, ptmod, modulus_q, num_of_inputs)
 
@@ -156,6 +156,7 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
     n = 0
 
     retlogmodQks = 0
+    retBks = 0
     while(start_n <= end_N):
         new_n = floor((start_n + end_N)/2)
         print("new n: ", new_n)
@@ -188,10 +189,12 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
             found = True
             n = prev_n
             retlogmodQks = prevlogmodQks
+            retBks = prevBks
             break
         if (new_noise < target_noise_level):
             n = new_n
             retlogmodQks = logmodQks
+            retBks = B_ks
             end_N = new_n - 1
         else:
             start_n = new_n + 1
@@ -199,6 +202,7 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
         prev_noise = new_noise
         prev_n = new_n
         prevlogmodQks = logmodQks
+        prevBks = B_ks
 
         #start_n = new_n
         print("start_n at end of loop: ", start_n)
@@ -208,6 +212,6 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
     #if (new_noise > target_noise_level and prev_noise <= target_noise_level):
 
     print("n in function before return: ", n)
-    return n, retlogmodQks
+    return n, retlogmodQks, retBks
 
 parameter_selector()
