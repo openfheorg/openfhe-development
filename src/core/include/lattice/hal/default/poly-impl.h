@@ -280,7 +280,7 @@ void PolyImpl<VecType>::SetValuesToZero() {
 
 template <typename VecType>
 void PolyImpl<VecType>::SetValuesToMax() {
-    const auto max   = m_params->GetModulus() - 1;
+    const auto max   = m_params->GetModulus() - Integer(1);
     const usint size = m_params->GetRingDimension();
     m_values         = std::make_unique<VecType>(size, m_params->GetModulus());
     for (usint i = 0; i < size; ++i) {

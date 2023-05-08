@@ -33,11 +33,14 @@
   This file contains the vector manipulation functionality
  */
 
-#include "math/hal.h"
-#include "math/hal/bigintfxd/mubintvecfxd.h"
-#include "math/nbtheory.h"
-#include "utils/debug.h"
-#include "utils/serializable.h"
+#include "config_core.h"
+#ifdef WITH_BE2
+
+    #include "math/hal.h"
+    #include "math/hal/bigintfxd/mubintvecfxd.h"
+    #include "math/nbtheory.h"
+    #include "utils/debug.h"
+    #include "utils/serializable.h"
 
 namespace bigintfxd {
 
@@ -568,3 +571,5 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::GetDigitAtIndexForBas
 template class BigVectorFixedT<BigIntegerFixedT<integral_dtype, BigIntegerBitLength>>;
 
 }  // namespace bigintfxd
+
+#endif

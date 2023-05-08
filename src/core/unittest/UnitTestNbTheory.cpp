@@ -147,7 +147,7 @@ void method_factorize_returns_factors(const std::string& msg) {
 // NOLINTNEXTLINE
 TEST(UTNbTheory, method_factorize_returns_factors){
     RUN_ALL_BACKENDS_INT(method_factorize_returns_factors, "method_factorize_returns_factors")}
-
+#ifdef WITH_BE2
 TEST(UTNbTheory, first_prime_overflow) {
     // Failure case check
     usint m     = 512;
@@ -160,6 +160,7 @@ TEST(UTNbTheory, first_prime_overflow) {
 
     EXPECT_THROW(FirstPrime<M2Integer>(nBits, m), math_error) << "did not detect overflow and throw exception for BE2";
 }
+#endif
 
 template <typename T>
 void method_prime_modulus(const std::string& msg) {

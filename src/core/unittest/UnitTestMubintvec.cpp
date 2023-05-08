@@ -33,17 +33,20 @@
   This file contains google test code that exercises the big int vector library of the OpenFHE lattice encryption library.
  */
 
-#include <fstream>
-#include <iostream>
-#include "gtest/gtest.h"
+#include "config_core.h"
+#ifdef WITH_BE4
 
-#include "lattice/lat-hal.h"
-#include "math/hal.h"
-#include "math/nbtheory.h"
-#include "utils/inttypes.h"
+    #include <fstream>
+    #include <iostream>
+    #include "gtest/gtest.h"
 
-#include "math/distrgen.h"
-#include "utils/utilities.h"
+    #include "lattice/lat-hal.h"
+    #include "math/hal.h"
+    #include "math/nbtheory.h"
+    #include "utils/inttypes.h"
+
+    #include "math/distrgen.h"
+    #include "utils/utilities.h"
 
 using namespace lbcrypto;
 
@@ -688,3 +691,5 @@ TEST(UTmubintvec, basic_vector_vector_mod_math_big_numbers) {
     d3 *= b3;
     EXPECT_EQ(d3, modmul3) << "Failure big number vector vector *=";
 }
+
+#endif

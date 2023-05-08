@@ -33,16 +33,19 @@
   This file contains the vector manipulation functionality
  */
 
-#ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
-#define LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
+#include "config_core.h"
+#ifdef WITH_BE2
 
-#include <iostream>
-#include <string>
+    #ifndef LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
+        #define LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
 
-#include "utils/inttypes.h"
-#include "utils/serializable.h"
+        #include <iostream>
+        #include <string>
 
-#include "math/hal/bigintfxd/ubintfxd.h"
+        #include "utils/inttypes.h"
+        #include "utils/serializable.h"
+
+        #include "math/hal/bigintfxd/ubintfxd.h"
 
 /**
  * @namespace bigintfxd
@@ -592,14 +595,13 @@ private:
     IntegerType m_modulus = 0;
 
     // function to check if the index is a valid index.
-    bool IndexCheck(size_t length) const {
-        if (length > this->m_length) {
-            return false;
-        }
-        return true;
+    bool IndexCheck(usint length) const {
+        return length <= m_length;
     }
 };
 
 }  // namespace bigintfxd
 
-#endif  // LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
+    #endif  // LBCRYPTO_MATH_HAL_BIGINTFXD_MUBINVECFXD_H
+
+#endif

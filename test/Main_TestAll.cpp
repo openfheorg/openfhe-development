@@ -47,152 +47,163 @@ using namespace testing;
 static string lead = "****** ";
 
 class MinimalistPrinter : public EmptyTestEventListener {
- public:
-  void OnTestProgramStart(const ::testing::UnitTest& unit_test) {
-    cout << lead << "OpenFHE Version " << GetOPENFHEVersion() << endl;
-    cout << lead << "Date "
-         << testing::internal::FormatEpochTimeInMillisAsIso8601(
-                unit_test.start_timestamp())
-         << endl;
-  }
-  void OnTestIterationStart(const ::testing::UnitTest& unit_test,
-                            int iteration) {}
-  void OnEnvironmentsSetUpStart(const ::testing::UnitTest& unit_test) {}
-  void OnEnvironmentsSetUpEnd(const ::testing::UnitTest& unit_test) {}
-  void OnTestCaseStart(const ::testing::TestCase& test_case) {}
-  void OnTestStart(const ::testing::TestInfo& test_info) {}
-
-  // Called after a failed assertion or a SUCCEED() invocation.
-  void OnTestPartResult(const ::testing::TestPartResult& test_part_result) {}
-
-  void OnTestEnd(const ::testing::TestInfo& test_info) {
-    if (test_info.result()->Passed()) {
-      return;
+public:
+    void OnTestProgramStart(const ::testing::UnitTest& unit_test) {
+        cout << lead << "OpenFHE Version " << GetOPENFHEVersion() << endl;
+        cout << lead << "Date " << testing::internal::FormatEpochTimeInMillisAsIso8601(unit_test.start_timestamp())
+             << endl;
     }
+    void OnTestIterationStart(const ::testing::UnitTest& unit_test, int iteration) {}
+    void OnEnvironmentsSetUpStart(const ::testing::UnitTest& unit_test) {}
+    void OnEnvironmentsSetUpEnd(const ::testing::UnitTest& unit_test) {}
+    void OnTestCaseStart(const ::testing::TestCase& test_case) {}
+    void OnTestStart(const ::testing::TestInfo& test_info) {}
 
-    auto tr = test_info.result();
+    // Called after a failed assertion or a SUCCEED() invocation.
+    void OnTestPartResult(const ::testing::TestPartResult& test_part_result) {}
 
-    for (int i = 0; i < tr->total_part_count(); i++) {
-      auto pr = tr->GetTestPartResult(i);
-      if (pr.passed()) continue;
-
-      internal::ColoredPrintf(internal::COLOR_GREEN, "[ RUN      ] ");
-      printf("%s.%s\n", test_info.test_case_name(), test_info.name());
-      fflush(stdout);
-
-      auto n = pr.file_name();
-      if (n != NULL) cout << n << ":" << pr.line_number() << "\n";
-
-      cout << pr.summary() << endl;
-
-      internal::ColoredPrintf(internal::COLOR_RED, "[  FAILED  ] ");
-      printf("%s.%s\n", test_info.test_case_name(), test_info.name());
-      fflush(stdout);
-      internal::PrintFullTestCommentIfPresent(test_info);
-    }
-  }
-  void OnTestCaseEnd(const ::testing::TestCase& test_case) {}
-  void OnEnvironmentsTearDownStart(const ::testing::UnitTest& unit_test) {}
-  void OnEnvironmentsTearDownEnd(const ::testing::UnitTest& /*unit_test*/) {}
-  void OnTestIterationEnd(const ::testing::UnitTest& unit_test, int iteration) {
-  }
-
-  void OnTestProgramEnd(const ::testing::UnitTest& unit_test) {
-    cout << lead << "End " << unit_test.test_to_run_count() << " cases "
-         << unit_test.successful_test_count() << " passed "
-         << unit_test.failed_test_count() << " failed" << endl;
-
-    const int failed_test_count = unit_test.failed_test_count();
-    if (failed_test_count == 0) {
-      return;
-    }
-
-    for (int i = 0; i < unit_test.total_test_case_count(); ++i) {
-      const TestCase& test_case = *unit_test.GetTestCase(i);
-      if (!test_case.should_run() || (test_case.failed_test_count() == 0)) {
-        continue;
-      }
-      for (int j = 0; j < test_case.total_test_count(); ++j) {
-        const TestInfo& test_info = *test_case.GetTestInfo(j);
-        if (!test_info.should_run() || test_info.result()->Passed()) {
-          continue;
+    void OnTestEnd(const ::testing::TestInfo& test_info) {
+        if (test_info.result()->Passed()) {
+            return;
         }
-        internal::ColoredPrintf(internal::COLOR_RED, "[  FAILED  ] ");
-        printf("%s.%s", test_case.name(), test_info.name());
-        internal::PrintFullTestCommentIfPresent(test_info);
-        printf("\n");
-      }
+
+        auto tr = test_info.result();
+
+        for (int i = 0; i < tr->total_part_count(); i++) {
+            auto pr = tr->GetTestPartResult(i);
+            if (pr.passed())
+                continue;
+
+            internal::ColoredPrintf(internal::COLOR_GREEN, "[ RUN      ] ");
+            printf("%s.%s\n", test_info.test_case_name(), test_info.name());
+            fflush(stdout);
+
+            auto n = pr.file_name();
+            if (n != NULL)
+                cout << n << ":" << pr.line_number() << "\n";
+
+            cout << pr.summary() << endl;
+
+            internal::ColoredPrintf(internal::COLOR_RED, "[  FAILED  ] ");
+            printf("%s.%s\n", test_info.test_case_name(), test_info.name());
+            fflush(stdout);
+            internal::PrintFullTestCommentIfPresent(test_info);
+        }
     }
-  }
+    void OnTestCaseEnd(const ::testing::TestCase& test_case) {}
+    void OnEnvironmentsTearDownStart(const ::testing::UnitTest& unit_test) {}
+    void OnEnvironmentsTearDownEnd(const ::testing::UnitTest& /*unit_test*/) {}
+    void OnTestIterationEnd(const ::testing::UnitTest& unit_test, int iteration) {}
+
+    void OnTestProgramEnd(const ::testing::UnitTest& unit_test) {
+        cout << lead << "End " << unit_test.test_to_run_count() << " cases " << unit_test.successful_test_count()
+             << " passed " << unit_test.failed_test_count() << " failed" << endl;
+
+        const int failed_test_count = unit_test.failed_test_count();
+        if (failed_test_count == 0) {
+            return;
+        }
+
+        for (int i = 0; i < unit_test.total_test_case_count(); ++i) {
+            const TestCase& test_case = *unit_test.GetTestCase(i);
+            if (!test_case.should_run() || (test_case.failed_test_count() == 0)) {
+                continue;
+            }
+            for (int j = 0; j < test_case.total_test_count(); ++j) {
+                const TestInfo& test_info = *test_case.GetTestInfo(j);
+                if (!test_info.should_run() || test_info.result()->Passed()) {
+                    continue;
+                }
+                internal::ColoredPrintf(internal::COLOR_RED, "[  FAILED  ] ");
+                printf("%s.%s", test_case.name(), test_info.name());
+                internal::PrintFullTestCommentIfPresent(test_info);
+                printf("\n");
+            }
+        }
+    }
 };
 
-bool TestB2 = false;
-bool TestB4 = false;
-bool TestB6 = false;
+bool TestB2     = false;
+bool TestB4     = false;
+bool TestB6     = false;
 bool TestNative = true;
 
 inline const std::string& GetMathBackendParameters() {
     static std::string id = "Backend " + std::to_string(MATHBACKEND) +
-        (MATHBACKEND == 2 ? " internal int size " + std::to_string(sizeof(integral_dtype) * 8) +
-            " BitLength " + std::to_string(BigIntegerBitLength) :
-         "");
+#ifdef WITH_BE2
+                            (MATHBACKEND == 2 ? " internal int size " + std::to_string(sizeof(integral_dtype) * 8) +
+                                                    " BitLength " + std::to_string(BigIntegerBitLength) :
+                                                "") +
+#endif
+                            "";
     return id;
 }
 
 int main(int argc, char** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+    ::testing::InitGoogleTest(&argc, argv);
 
-  bool terse = false;
-  bool beset = false;
-  for (int i = 1; i < argc; i++) {
-    if (string(argv[i]) == "-t") {
-      terse = true;
-    } else if (string(argv[i]) == "-all") {
-      TestB2 = TestB4 = TestB6 = true;
-      beset = true;
-    } else if (string(argv[i]) == "-2") {
-      TestB2 = true;
-      beset = true;
-    } else if (string(argv[i]) == "-4") {
-      TestB4 = true;
-      beset = true;
-    } else if (string(argv[i]) == "-6") {
-      TestB6 = true;
-      beset = true;
+    bool terse = false;
+    bool beset = false;
+    for (int i = 1; i < argc; i++) {
+        if (string(argv[i]) == "-t") {
+            terse = true;
+        }
+        else if (string(argv[i]) == "-all") {
+#ifdef WITH_BE2
+            TestB2 = true;
+#endif
+#ifdef WITH_BE4
+            TestB4 = true;
+#endif
+#ifdef WITH_NTL
+            TestB6 = true;
+#endif
+            beset = true;
+        }
+        else if (string(argv[i]) == "-2") {
+            TestB2 = true;
+            beset  = true;
+        }
+        else if (string(argv[i]) == "-4") {
+            TestB4 = true;
+            beset  = true;
+        }
+        else if (string(argv[i]) == "-6") {
+            TestB6 = true;
+            beset  = true;
+        }
     }
-  }
 
-  // if there are no filters used, default to omitting VERY_LONG tests
-  // otherwise we lose control over which tests we can run
+    // if there are no filters used, default to omitting VERY_LONG tests
+    // otherwise we lose control over which tests we can run
 
-  if (::testing::GTEST_FLAG(filter) == "*") {
-    ::testing::GTEST_FLAG(filter) = "-*_VERY_LONG";
-  }
+    if (::testing::GTEST_FLAG(filter) == "*") {
+        ::testing::GTEST_FLAG(filter) = "-*_VERY_LONG";
+    }
 
-  ::testing::TestEventListeners& listeners =
-      ::testing::UnitTest::GetInstance()->listeners();
+    ::testing::TestEventListeners& listeners = ::testing::UnitTest::GetInstance()->listeners();
 
-  if (!beset) {
-    if (MATHBACKEND == 2)
-      TestB2 = true;
-    else if (MATHBACKEND == 4)
-      TestB4 = true;
-    else if (MATHBACKEND == 6)
-      TestB6 = true;
-  }
+    if (!beset) {
+        if (MATHBACKEND == 2)
+            TestB2 = true;
+        else if (MATHBACKEND == 4)
+            TestB4 = true;
+        else if (MATHBACKEND == 6)
+            TestB6 = true;
+    }
 
-  if (terse) {
-    // Adds a listener to the end.  Google Test takes the ownership.
-    delete listeners.Release(listeners.default_result_printer());
-    listeners.Append(new MinimalistPrinter);
-  } else {
-    cout << "OpenFHE Version " << GetOPENFHEVersion() << endl;
-    cout << "Default Backend " << GetMathBackendParameters() << endl;
-  }
+    if (terse) {
+        // Adds a listener to the end.  Google Test takes the ownership.
+        delete listeners.Release(listeners.default_result_printer());
+        listeners.Append(new MinimalistPrinter);
+    }
+    else {
+        cout << "OpenFHE Version " << GetOPENFHEVersion() << endl;
+        cout << "Default Backend " << GetMathBackendParameters() << endl;
+    }
 
-  std::cout << "Testing Backends: " << (TestB2 ? "2 " : "")
-            << (TestB4 ? "4 " : "") << (TestB6 ? "6 " : "")
-            << (TestNative ? "Native " : "") << std::endl;
+    std::cout << "Testing Backends: " << (TestB2 ? "2 " : "") << (TestB4 ? "4 " : "") << (TestB6 ? "6 " : "")
+              << (TestNative ? "Native " : "") << std::endl;
 
-  return RUN_ALL_TESTS();
+    return RUN_ALL_TESTS();
 }

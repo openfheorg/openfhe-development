@@ -33,13 +33,16 @@
   This file contains template instantiations for all math classes & functions using math be2
  */
 
-#include "math/hal.h"
-#include "math/binaryuniformgenerator-impl.h"
-#include "math/discretegaussiangenerator-impl.h"
-#include "math/discreteuniformgenerator-impl.h"
-#include "math/matrix-impl.h"
-#include "math/nbtheory-impl.h"
-#include "math/ternaryuniformgenerator-impl.h"
+#include "config_core.h"
+#ifdef WITH_BE2
+
+    #include "math/hal.h"
+    #include "math/binaryuniformgenerator-impl.h"
+    #include "math/discretegaussiangenerator-impl.h"
+    #include "math/discreteuniformgenerator-impl.h"
+    #include "math/matrix-impl.h"
+    #include "math/nbtheory-impl.h"
+    #include "math/ternaryuniformgenerator-impl.h"
 
 namespace bigintfxd {
 
@@ -83,3 +86,5 @@ template class Matrix<M2Vector>;
 
 CEREAL_CLASS_VERSION(M2Integer, M2Integer::SerializedVersion());
 CEREAL_CLASS_VERSION(M2Vector, M2Vector::SerializedVersion());
+
+#endif

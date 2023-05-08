@@ -33,18 +33,21 @@
   This file contains the linear transform interface functionality for the dynamic math backend
  */
 
-#ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
-#define LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
+#include "config_core.h"
+#ifdef WITH_BE4
 
-#include <map>
-#include <vector>
-#include <unordered_map>
-#include <mutex>
-#include <utility>
+    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
+        #define LBCRYPTO_MATH_HAL_BIGINTDYN_TRANSFORMDYN_H
 
-#include "math/hal/transform.h"
-#include "math/hal/bigintdyn/mubintvecdyn.h"
-#include "math/hal/bigintdyn/ubintdyn.h"
+        #include <map>
+        #include <vector>
+        #include <unordered_map>
+        #include <mutex>
+        #include <utility>
+
+        #include "math/hal/transform.h"
+        #include "math/hal/bigintdyn/mubintvecdyn.h"
+        #include "math/hal/bigintdyn/ubintdyn.h"
 
 /**
  * @namespace bigintdyn
@@ -607,6 +610,8 @@ private:
 
 }  // namespace bigintdyn
 
-#include "math/hal/bigintdyn/transformdyn-impl.h"
+        #include "math/hal/bigintdyn/transformdyn-impl.h"
+
+    #endif
 
 #endif

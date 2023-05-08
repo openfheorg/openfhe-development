@@ -36,56 +36,63 @@
   supported. a native double the base integer size is also needed.
  */
 
-#ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
-#define LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
+#include "config_core.h"
+#ifdef WITH_BE4
 
-#define NO_BARRETT  // currently barrett is slower than mod
+    #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
+        #define LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
 
-#include <fstream>
-#include <functional>
-#include <iostream>
-#include <limits>
-#include <memory>
-#include <string>
-#include <type_traits>
-#include <typeinfo>
-#include <vector>
-#include "math/nbtheory.h"
-#include "utils/inttypes.h"
-#include "utils/memory.h"
-#include "utils/serializable.h"
-#include "utils/utilities.h"
+        #define NO_BARRETT  // currently barrett is slower than mod
 
-#include "math/hal/integer.h"
+        #include <fstream>
+        #include <functional>
+        #include <iostream>
+        #include <limits>
+        #include <memory>
+        #include <string>
+        #include <type_traits>
+        #include <typeinfo>
+        #include <vector>
 
-////////// for bigintdyn, decide if you want 32 bit or 64 bit underlying
-/// integers in the implementation
-#define UBINT_32
-// #define UBINT_64
+        #include "utils/inttypes.h"
+        #include "utils/memory.h"
+        #include "utils/serializable.h"
+        #include "utils/utilities.h"
 
-#ifdef UBINT_32
-    #define MATH_UBBITS 32
+        #include "math/hal/integer.h"
+        #include "math/hal/basicint.h"
+        #include "math/nbtheory.h"
+
+        // should this be set to 64?
+
+        ////////// for bigintdyn, decide if you want 32 bit or 64 bit underlying
+        /// integers in the implementation
+        #define UBINT_32
+    // #define UBINT_64
+
+        #ifdef UBINT_32
+            #define MATH_UBBITS 32
 typedef uint32_t expdtype;
-    #undef UBINT_64  // cant have both accidentally
-#endif
+            #undef UBINT_64  // cant have both accidentally
+        #endif
 
-#ifdef UBINT_64
+        #ifdef UBINT_64
 
-    #define MATH_UBBITS 64
+            #define MATH_UBBITS 64
 typedef uint64_t expdtype;
-    #undef UBINT_32  // cant have both accidentally
+            #undef UBINT_32  // cant have both accidentally
 
-    #undef int128_t
-    #define int128_t our_int128_t
-    #undef uint128_t
-    #define uint128_t our_uint128_t
+            #undef int128_t
+            #define int128_t our_int128_t
+            #undef uint128_t
+            #define uint128_t our_uint128_t
 
 typedef __int128 int128_t;
 typedef unsigned __int128 uint128_t;
 
-    #define UINT128_MAX ((uint128_t)-1)
+            #define UINT128_MAX ((uint128_t)-1)
 
-#endif  // UBINT_64
+        #endif  // UBINT_64
 
 /**
  *@namespace bigintdyn
@@ -178,7 +185,7 @@ struct DataTypeChecker<uint64_t> {
     static const bool value = true;
 };
 
-#ifdef UBINT_64
+        #ifdef UBINT_64
 /**
  * @brief Struct for validating if Dtype is amongst {uint8_t, uint16_t,
  * uint32_t, uint64_t, uint128_t}. sets value true if datatype is unsigned
@@ -188,7 +195,7 @@ template <>
 struct DataTypeChecker<uint128_t> {
     static const bool value = true;
 };
-#endif
+        #endif
 
 /**
  * @brief Struct to determine a datatype that is twice as big(bitwise) as utype.
@@ -228,7 +235,7 @@ struct DoubleDataType<uint32_t> {
     typedef uint64_t T;
 };
 
-#ifdef UBINT_64
+        #ifdef UBINT_64
 /**
  * @brief Struct to determine a datatype that is twice as big(bitwise) as utype.
  * sets T as of type unsigned integer 128 bit if limb datatype is 64bit
@@ -237,7 +244,7 @@ template <>
 struct DoubleDataType<uint64_t> {
     typedef uint128_t T;
 };
-#endif
+        #endif
 
 /**
  * @brief Struct to determine a datatype that is the signed version of utype.
@@ -324,7 +331,7 @@ struct SignedDoubleDataType<uint32_t> {
     typedef int64_t T;
 };
 
-#ifdef UBINT_64
+        #ifdef UBINT_64
 /**
  * @brief Struct to determine a signed datatype that is twice as big(bitwise) as
  * utype. sets T as of type unsigned integer 128 bit if limb datatype is 64bit
@@ -333,7 +340,7 @@ template <>
 struct SignedDoubleDataType<uint64_t> {
     typedef int128_t T;
 };
-#endif
+        #endif
 
 const double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of Log base 2 of 10.
 
@@ -379,9 +386,9 @@ public:
    * @param val is the initial integer represented as a uint64_t.
    */
     ubint(uint64_t val);  // NOLINT
-#if defined(HAVE_INT128)
+        #if defined(HAVE_INT128)
     ubint(unsigned __int128 val);  // NOLINT
-#endif
+        #endif
 
     /**
    * Constructors from smaller basic types
@@ -1088,16 +1095,16 @@ public:
     const std::string ToString() const;
 
 public:
-#ifdef UBINT_32
+        #ifdef UBINT_32
     static const std::string IntegerTypeName() {
         return "UBDYNINT_32";
     }
-#endif
-#ifdef UBINT_64
+        #endif
+        #ifdef UBINT_64
     static const std::string IntegerTypeName() {
         return "UBDYNINT_64";
     }
-#endif
+        #endif
 
     /**
    * Delivers value of the internal limb storage
@@ -1332,7 +1339,7 @@ private:
     static void add_bitVal(uschar* a, uschar b);
 };
 
-#if 0
+        #if 0
 // stream helper function for vector of objects
 template <typename limb_t>
 inline std::ostream &operator<<(std::ostream &os,
@@ -1344,8 +1351,10 @@ inline std::ostream &operator<<(std::ostream &os,
   os << " ]";
   return os;
 }
-#endif
+        #endif
 
 }  // namespace bigintdyn
 
-#endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
+    #endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
+
+#endif

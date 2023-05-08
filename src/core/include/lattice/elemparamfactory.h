@@ -143,6 +143,7 @@ public:
     }
 };
 
+#ifdef WITH_BE2
 template <>
 inline std::shared_ptr<ILDCRTParams<M2Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M2Integer>>(
     usint m, usint bits, usint towersize) {
@@ -155,7 +156,9 @@ inline std::shared_ptr<ILDCRTParams<M2Integer>> ElemParamFactory::GenElemParams<
     OPENFHE_DEBUGEXP(towersize);
     return GenerateDCRTParams<M2Integer>(m, towersize, bits);
 }
+#endif
 
+#ifdef WITH_BE4
 template <>
 inline std::shared_ptr<ILDCRTParams<M4Integer>> ElemParamFactory::GenElemParams<ILDCRTParams<M4Integer>>(
     usint m, usint bits, usint towersize) {
@@ -168,6 +171,7 @@ inline std::shared_ptr<ILDCRTParams<M4Integer>> ElemParamFactory::GenElemParams<
     OPENFHE_DEBUGEXP(towersize);
     return GenerateDCRTParams<M4Integer>(m, towersize, bits);
 }
+#endif
 
 #ifdef WITH_NTL
 template <>

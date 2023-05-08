@@ -33,9 +33,12 @@
   This class provides a class for big integers
  */
 
-#include "math/hal.h"
-#include "utils/debug.h"
-#include "utils/serializable.h"
+#include "config_core.h"
+#ifdef WITH_BE2
+
+    #include "math/hal.h"
+    #include "utils/debug.h"
+    #include "utils/serializable.h"
 
 namespace bigintfxd {
 
@@ -111,7 +114,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>::BigIntegerFixedT(uint64_t val) {
     }
 }
 
-#if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
 template <typename uint_type, usint BITLENGTH>
 BigIntegerFixedT<uint_type, BITLENGTH>::BigIntegerFixedT(U128BITS val) {
     m_MSB = lbcrypto::GetMSB(val);
@@ -126,7 +129,7 @@ BigIntegerFixedT<uint_type, BITLENGTH>::BigIntegerFixedT(U128BITS val) {
         this->m_value[i] = 0;
     }
 }
-#endif
+    #endif
 
 /*
 template <typename uint_type, usint BITLENGTH>
@@ -1892,3 +1895,5 @@ void BigIntegerFixedT<uint_type, BITLENGTH>::add_bitVal(uschar* a, uschar b) {
 template class BigIntegerFixedT<integral_dtype, BigIntegerBitLength>;
 
 }  // namespace bigintfxd
+
+#endif

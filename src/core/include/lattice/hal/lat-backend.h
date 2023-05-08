@@ -47,27 +47,34 @@
 
 namespace lbcrypto {
 
-using M2Poly = PolyImpl<M2Vector>;
-using M4Poly = PolyImpl<M4Vector>;
-#ifdef WITH_NTL
-using M6Poly = PolyImpl<M6Vector>;
+using Poly       = PolyImpl<BigVector>;
+using NativePoly = PolyImpl<NativeVector>;
+// using NativePoly64 = NativePoly;
+using DCRTPoly = DCRTPolyImpl<BigVector>;
+
+#ifdef WITH_BE2
+using M2Poly     = PolyImpl<M2Vector>;
+using M2DCRTPoly = DCRTPolyImpl<M2Vector>;
 #else
-using M6Poly     = void;
+using M2Poly     = void;
+using M2DCRTPoly = void;
 #endif
 
-using Poly         = PolyImpl<BigVector>;
-using NativePoly   = PolyImpl<NativeVector>;
-using NativePoly64 = NativePoly;
-
-using M2DCRTPoly = DCRTPolyImpl<M2Vector>;
+#ifdef WITH_BE4
+using M4Poly     = PolyImpl<M4Vector>;
 using M4DCRTPoly = DCRTPolyImpl<M4Vector>;
+#else
+using M4Poly     = void;
+using M4DCRTPoly = void;
+#endif
+
 #ifdef WITH_NTL
+using M6Poly     = PolyImpl<M6Vector>;
 using M6DCRTPoly = DCRTPolyImpl<M6Vector>;
 #else
+using M6Poly     = void;
 using M6DCRTPoly = void;
 #endif
-
-using DCRTPoly = DCRTPolyImpl<BigVector>;
 
 }  // namespace lbcrypto
 

@@ -35,20 +35,23 @@
   Currently implementation based on uint32_t and uint64_t is supported. a native double the base integer size is also needed.
  */
 
-#define _SECURE_SCL 0  // to speed up VS
+#include "config_core.h"
+#ifdef WITH_BE4
 
-#include <time.h>
+    #define _SECURE_SCL 0  // to speed up VS
 
-#include <chrono>
-#include <fstream>
-#include <iostream>
+    #include <time.h>
 
-#include "math/hal.h"
+    #include <chrono>
+    #include <fstream>
+    #include <iostream>
 
-#include "utils/debug.h"
-#include "utils/serializable.h"
+    #include "math/hal.h"
 
-#define LimbReserveHint 4  // hint for reservation of limbs
+    #include "utils/debug.h"
+    #include "utils/serializable.h"
+
+    #define LimbReserveHint 4  // hint for reservation of limbs
 
 namespace bigintdyn {
 
@@ -116,7 +119,7 @@ ubint<limb_t>::ubint(uint64_t val) {
     if (init <= m_MaxLimb) {
         m_value.push_back((limb_t)init);
     }
-#ifdef UBINT_32  // does not occur for UBINT_64; NOLINTNEXTLINE
+    #ifdef UBINT_32  // does not occur for UBINT_64; NOLINTNEXTLINE
     else {
         usint ceilInt = ceilIntByUInt(msb);
         // setting the values of the array
@@ -126,12 +129,12 @@ ubint<limb_t>::ubint(uint64_t val) {
             init >>= m_limbBitLength;
         }
     }
-#endif
+    #endif
     this->m_MSB = msb;
     m_state     = INITIALIZED;
 }
 
-#if defined(HAVE_INT128)
+    #if defined(HAVE_INT128)
 template <typename limb_t>
 ubint<limb_t>::ubint(unsigned __int128 val) {
     m_MSB = lbcrypto::GetMSB(val);
@@ -149,7 +152,7 @@ ubint<limb_t>::ubint(unsigned __int128 val) {
     }
     m_state = INITIALIZED;
 }
-#endif
+    #endif
 
 template <typename limb_t>
 ubint<limb_t>::~ubint() {}
@@ -632,12 +635,12 @@ ubint<limb_t> ubint<limb_t>::Mod(const ubint& modulus) const {
             return ubint(1);
         }
     }
-#ifndef UBINT_64
+    #ifndef UBINT_64
     ubint ans(0);
     int f;
-    #ifndef OLD_DIV
+        #ifndef OLD_DIV
     ans.m_value.resize(modulus.m_value.size());
-    #endif
+        #endif
     f = divr_vect(ans, *this, modulus);
     if (f != 0) {
         OPENFHE_THROW(lbcrypto::math_error, "Mod() divr error");
@@ -646,7 +649,7 @@ ubint<limb_t> ubint<limb_t>::Mod(const ubint& modulus) const {
     ans.SetMSB();
     ans.m_state = INITIALIZED;
     return (ans);
-#else  // radically slow for 64 bit version.
+    #else  // radically slow for 64 bit version.
     int initial_shift = 0;
     if (this->m_MSB > modulus.m_MSB) {
         initial_shift = this->m_MSB - modulus.m_MSB - 1;
@@ -680,7 +683,7 @@ ubint<limb_t> ubint<limb_t>::Mod(const ubint& modulus) const {
     result.NormalizeLimbs();
     result.SetMSB();
     return result;
-#endif
+    #endif
 }
 
 template <typename limb_t>
@@ -715,13 +718,13 @@ const ubint<limb_t>& ubint<limb_t>::ModEq(const ubint& modulus) {
             return *this = 1;
         }
     }
-#ifndef UBINT_64
+    #ifndef UBINT_64
     // TODO do this in place!
     ubint ans(0);
     int f;
-    #ifndef OLD_DIV
+        #ifndef OLD_DIV
     ans.m_value.resize(modulus.m_value.size());
-    #endif
+        #endif
     f = divr_vect(ans, *this, modulus);
     if (f != 0) {
         OPENFHE_THROW(lbcrypto::math_error, "Mod() divr error");
@@ -730,7 +733,7 @@ const ubint<limb_t>& ubint<limb_t>::ModEq(const ubint& modulus) {
     ans.SetMSB();
     ans.m_state  = INITIALIZED;
     return *this = ans;
-#else  // radically slow for 64 bit version.
+    #else  // radically slow for 64 bit version.
     int initial_shift = 0;
     if (this->m_MSB > modulus.m_MSB) {
         initial_shift = this->m_MSB - modulus.m_MSB - 1;
@@ -764,7 +767,7 @@ const ubint<limb_t>& ubint<limb_t>::ModEq(const ubint& modulus) {
     result.NormalizeLimbs();
     result.SetMSB();
     return result;
-#endif
+    #endif
 }
 
 template <typename limb_t>
@@ -777,11 +780,11 @@ ubint<limb_t> ubint<limb_t>::ComputeMu() const {
 
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::Mod(const ubint& modulus, const ubint& mu) const {
-#ifdef NO_BARRETT
+    #ifdef NO_BARRETT
     ubint ans(*this);
     ans.ModEq(modulus);
     return ans;
-#else
+    #else
     if (*this < modulus) {
         ubint result(*this);
         return result;
@@ -803,14 +806,14 @@ ubint<limb_t> ubint<limb_t>::Mod(const ubint& modulus, const ubint& mu) const {
     }
 
     return z;
-#endif
+    #endif
 }
 
 template <typename limb_t>
 const ubint<limb_t>& ubint<limb_t>::ModEq(const ubint& modulus, const ubint& mu) {
-#ifdef NO_BARRETT
+    #ifdef NO_BARRETT
     return *this = this->ModEq(modulus);
-#else
+    #else
     if ((*this) < modulus) {
         return *this;
     }
@@ -830,7 +833,7 @@ const ubint<limb_t>& ubint<limb_t>::ModEq(const ubint& modulus, const ubint& mu)
     }
 
     return (*this);
-#endif
+    #endif
 }
 
 template <typename limb_t>
@@ -898,7 +901,7 @@ ubint<limb_t> ubint<limb_t>::ModSub(const ubint& b, const ubint& modulus) const 
     if (b >= modulus) {
         b_op.ModEq(modulus);
     }
-#if 1
+    #if 1
     if (a >= b_op) {
         a.SubEq(b_op);
         a.ModEq(modulus);
@@ -907,11 +910,11 @@ ubint<limb_t> ubint<limb_t>::ModSub(const ubint& b, const ubint& modulus) const 
         a.AddEq(modulus);
         a.SubEq(b_op);
     }
-#else
+    #else
     if (a < b_op)
         a.AddEq(modulus);
     a.SubEq(b_op);
-#endif
+    #endif
     return a;
 }
 
@@ -924,7 +927,7 @@ const ubint<limb_t>& ubint<limb_t>::ModSubEq(const ubint& b, const ubint& modulu
     if (b >= modulus) {
         b_op.ModEq(modulus);
     }
-#if 1
+    #if 1
     if (*this >= b_op) {
         this->SubEq(b_op);
         this->ModEq(modulus);  // is this needed?
@@ -933,11 +936,11 @@ const ubint<limb_t>& ubint<limb_t>::ModSubEq(const ubint& b, const ubint& modulu
         this->AddEq(modulus);
         this->SubEq(b_op);
     }
-#else
+    #else
     if (*this < b_op)
         this->AddEq(modulus);
     this->SubEq(b_op);
-#endif
+    #endif
     return *this;
 }
 
@@ -1074,9 +1077,9 @@ const ubint<limb_t>& ubint<limb_t>::ModMulEq(const ubint& b, const ubint& modulu
 
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::ModMul(const ubint& b, const ubint& modulus, const ubint& mu) const {
-#ifdef NO_BARRETT
+    #ifdef NO_BARRETT
     return this->ModMul(b, modulus);
-#else
+    #else
     ubint a(*this);
     ubint bb(b);
     if (*this > modulus) {
@@ -1089,14 +1092,14 @@ ubint<limb_t> ubint<limb_t>::ModMul(const ubint& b, const ubint& modulus, const 
     a.MulEq(bb);
     a.ModEq(modulus, mu);
     return a;
-#endif
+    #endif
 }
 
 template <typename limb_t>
 const ubint<limb_t>& ubint<limb_t>::ModMulEq(const ubint& b, const ubint& modulus, const ubint& mu) {
-#ifdef NO_BARRETT
+    #ifdef NO_BARRETT
     return *this = this->ModMul(b, modulus);
-#else
+    #else
     ubint bb(b);
     if ((*this) > modulus) {
         this->ModEq(modulus, mu);
@@ -1107,7 +1110,7 @@ const ubint<limb_t>& ubint<limb_t>::ModMulEq(const ubint& b, const ubint& modulu
     this->MulEq(bb);
     this->ModEq(modulus, mu);
     return *this;
-#endif
+    #endif
 }
 
 // TODO make this skip the mod
@@ -1124,25 +1127,25 @@ const ubint<limb_t>& ubint<limb_t>::ModMulFastEq(const ubint& b, const ubint& mo
 
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::ModMulFast(const ubint& b, const ubint& modulus, const ubint& mu) const {
-#ifdef NO_BARRETT
+    #ifdef NO_BARRETT
     return this->ModMul(b, modulus);
-#else
+    #else
     ubint a(*this);
     a.MulEq(b);
     a.ModEq(modulus, mu);
     return a;
-#endif
+    #endif
 }
 
 template <typename limb_t>
 const ubint<limb_t>& ubint<limb_t>::ModMulFastEq(const ubint& b, const ubint& modulus, const ubint& mu) {
-#ifdef NO_BARRETT
+    #ifdef NO_BARRETT
     return *this = this->ModMul(b, modulus);
-#else
+    #else
     this->MulEq(b);
     this->ModEq(modulus, mu);
     return *this;
-#endif
+    #endif
 }
 
 // Extended Euclid algorithm used to find the multiplicative inverse
@@ -1212,7 +1215,7 @@ ubint<limb_t> ubint<limb_t>::ModExp(const ubint& b, const ubint& modulus) const 
     ubint product(1);
     ubint Exp(b);
 
-#if 1
+    #if 1
     while (true) {
         // product is multiplied only if lsb bitvalue is 1
         if (Exp.m_value[0] % 2 == 1) {
@@ -1228,7 +1231,7 @@ ubint<limb_t> ubint<limb_t>::ModExp(const ubint& b, const ubint& modulus) const 
         mid = mid * mid;
         mid = (mid.Mod(modulus));
     }
-#else
+    #else
     while (true) {
         if ((Exp.m_value[0] & 1) == 1) {
             product = product.ModMul(mid, modulus);
@@ -1239,7 +1242,7 @@ ubint<limb_t> ubint<limb_t>::ModExp(const ubint& b, const ubint& modulus) const 
         }
         mid = (mid.ModMul(mid, modulus));
     }
-#endif
+    #endif
     return product;
 }
 
@@ -1820,16 +1823,16 @@ inline int nlz32(uint32_t x) {  // todo: needs to be flexible.
     }
     return n;
 }
-// todo figure out a C++ way to do this....
-#ifdef UBINT_32  // 32  bit code
-    #undef nlz
-    #define nlz(x) nlz32(x)
-#endif
+    // todo figure out a C++ way to do this....
+    #ifdef UBINT_32  // 32  bit code
+        #undef nlz
+        #define nlz(x) nlz32(x)
+    #endif
 
-#ifdef UBINT_64  // 64  bit code
-    #undef nlz
-    #define nlz(x) nlz64(x)
-#endif
+    #ifdef UBINT_64  // 64  bit code
+        #undef nlz
+        #define nlz(x) nlz64(x)
+    #endif
 
 // returns quotient and remainder
 template <typename limb_t>
@@ -2039,14 +2042,14 @@ int ubint<limb_t>::divq_vect(ubint& qin, const ubint& uin, const ubint& vin) con
 // remainder only
 template <typename limb_t>
 int ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) const {
-#ifdef OLD_DIV
+    #ifdef OLD_DIV
     std::vector<limb_t>& r       = (rin.m_value);
     const std::vector<limb_t>& u = (uin.m_value);
     const std::vector<limb_t>& v = (vin.m_value);
 
     int m = u.size();
     int n = v.size();
-#else
+    #else
     std::vector<limb_t>& r       = (rin.m_value);
     limb_t const* u              = (uin.m_value.data());
     const std::vector<limb_t>& v = (vin.m_value);
@@ -2054,7 +2057,7 @@ int ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) con
     int m    = uin.m_value.size();
     int n    = v.size();
 
-#endif
+    #endif
 
     const Dlimb_t ffs = (Dlimb_t)m_MaxLimb;      // Number  (2**64)-1.
     const Dlimb_t b   = (Dlimb_t)m_MaxLimb + 1;  // Number base (2**64).
@@ -2089,13 +2092,13 @@ int ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) con
 
     s = nlz(v[n - 1]);  // 0 <= s <= m_limbBitLenghth-1.
                         // std::cout<< "nlz of " << v[n-1]  << " = "<<  s;
-#ifdef OLD_DIV
+    #ifdef OLD_DIV
     std::vector<limb_t> vn(n);
     std::vector<limb_t> un(m + 1);
-#else
+    #else
     auto* vn = reinterpret_cast<limb_t*>(alloca(sizeof(limb_t) * n));
     auto* un = reinterpret_cast<limb_t*>(alloca(sizeof(limb_t) * (m + 1)));
-#endif
+    #endif
     for (i = n - 1; i > 0; i--) {
         vn[i] = (v[i] << s) | ((Dlimb_t)v[i - 1] >> (m_limbBitLength - s));
     }
@@ -2148,9 +2151,9 @@ int ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) con
 
     // the caller wants the remainder, unnormalize
     // it and pass it back.
-#ifdef OLD_DIV
+    #ifdef OLD_DIV
     r.resize(n);
-#endif
+    #endif
     for (i = 0; i < n - 1; i++) {
         r[i] = (un[i] >> s) | ((Dlimb_t)un[i + 1] << (m_limbBitLength - s));
     }
@@ -2368,18 +2371,20 @@ void ubint<limb_t>::PrintIntegerConstants(void) {
     std::cout << "sizeof uint16_t " << sizeof(uint16_t) << std::endl;
     std::cout << "sizeof uint32_t " << sizeof(uint32_t) << std::endl;
     std::cout << "sizeof uint64_t " << sizeof(uint64_t) << std::endl;
-#ifdef UBINT_64
+    #ifdef UBINT_64
     // std::cout << "sizeof UINT128_C "<< sizeof (UINT128_C(1)) << std::endl;
     // dbc commented out  unsupported on some machines
     std::cout << "sizeof uint128_t " << sizeof(uint128_t) << std::endl;
-#endif
+    #endif
 }
 
 template class bigintdyn::ubint<expdtype>;
 
-#if 0
+    #if 0
 // to stream internal representation
 template std::ostream &operator<<<expdtype>(std::ostream &os,
                                             const std::vector<expdtype> &v);
-#endif
+    #endif
 }  // namespace bigintdyn
+
+#endif

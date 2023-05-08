@@ -43,8 +43,6 @@
 
 using namespace lbcrypto;
 
-#define DO_BENCHMARK_TEMPLATE(X, Y) BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond);
-
 // four simple benchmarks to test constructing BigInts
 // typically the code to benchmark is in a 'function' that is then
 // called within the actual benchmark.
@@ -62,13 +60,6 @@ void BM_BigInt_constants(benchmark::State& state) {  // benchmark
     }
 }
 
-DO_BENCHMARK_TEMPLATE(BM_BigInt_constants, M2Integer)
-DO_BENCHMARK_TEMPLATE(BM_BigInt_constants, M4Integer)
-#ifdef WITH_NTL
-DO_BENCHMARK_TEMPLATE(BM_BigInt_constants, M6Integer)
-#endif
-DO_BENCHMARK_TEMPLATE(BM_BigInt_constants, NativeInteger)
-
 template <typename I>
 static void make_BigInt_small_variables(void) {  // function
     I a("10403"), b("103");
@@ -81,13 +72,6 @@ void BM_BigInt_small_variables(benchmark::State& state) {  // benchmark
     }
 }
 
-DO_BENCHMARK_TEMPLATE(BM_BigInt_small_variables, M2Integer)
-DO_BENCHMARK_TEMPLATE(BM_BigInt_small_variables, M4Integer)
-#ifdef WITH_NTL
-DO_BENCHMARK_TEMPLATE(BM_BigInt_small_variables, M6Integer)
-#endif
-DO_BENCHMARK_TEMPLATE(BM_BigInt_small_variables, NativeInteger)
-
 template <typename I>
 static void make_BigInt_large_variables(void) {  // function
     I a("18446744073709551616"), b("18446744073709551617");
@@ -99,12 +83,6 @@ void BM_BigInt_large_variables(benchmark::State& state) {  // benchmark
         make_BigInt_large_variables<I>();
     }
 }
-
-DO_BENCHMARK_TEMPLATE(BM_BigInt_large_variables, M2Integer)
-DO_BENCHMARK_TEMPLATE(BM_BigInt_large_variables, M4Integer)
-#ifdef WITH_NTL
-DO_BENCHMARK_TEMPLATE(BM_BigInt_large_variables, M6Integer)
-#endif
 
 static std::string smalla("10403"), smallb("103");
 static std::string largea("18446744073709551616"), largeb("18446744073709551617");
@@ -125,16 +103,6 @@ static void BM_BigInt_Add(benchmark::State& state) {  // benchmark
     }
 }
 
-BENCHMARK_TEMPLATE(BM_BigInt_Add, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Add, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-BENCHMARK_TEMPLATE(BM_BigInt_Add, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Add, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-#ifdef WITH_NTL
-BENCHMARK_TEMPLATE(BM_BigInt_Add, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Add, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-#endif
-BENCHMARK_TEMPLATE(BM_BigInt_Add, NativeInteger)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-
 // +=
 template <typename I>
 static void addeq_BigInt(I& a, const I& b) {  // function
@@ -150,16 +118,6 @@ static void BM_BigInt_Addeq(benchmark::State& state) {  // benchmark
         addeq_BigInt(a, b);
     }
 }
-
-BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-#ifdef WITH_NTL
-BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-#endif
-BENCHMARK_TEMPLATE(BM_BigInt_Addeq, NativeInteger)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
 
 // mult
 template <typename I>
@@ -177,16 +135,6 @@ static void BM_BigInt_Mult(benchmark::State& state) {  // benchmark
     }
 }
 
-BENCHMARK_TEMPLATE(BM_BigInt_Mult, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Mult, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-BENCHMARK_TEMPLATE(BM_BigInt_Mult, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Mult, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-#ifdef WITH_NTL
-BENCHMARK_TEMPLATE(BM_BigInt_Mult, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Mult, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-#endif
-BENCHMARK_TEMPLATE(BM_BigInt_Mult, NativeInteger)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-
 // *=
 template <typename I>
 static void multeq_BigInt(I& a, const I& b) {  // function
@@ -203,29 +151,12 @@ static void BM_BigInt_Multeq(benchmark::State& state) {  // benchmark
     }
 }
 
-BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-#ifdef WITH_NTL
-BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
-#endif
-BENCHMARK_TEMPLATE(BM_BigInt_Multeq, NativeInteger)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
-
 template <typename I>
 static void BM_BigInt_ModInverse(benchmark::State& state) {  // benchmark
     while (state.KeepRunning()) {
         I(3017).ModInverse(I(108));
     }
 }
-
-BENCHMARK_TEMPLATE(BM_BigInt_ModInverse, M2Integer)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_BigInt_ModInverse, M4Integer)->Unit(benchmark::kMicrosecond);
-#ifdef WITH_NTL
-BENCHMARK_TEMPLATE(BM_BigInt_ModInverse, M6Integer)->Unit(benchmark::kMicrosecond);
-#endif
-BENCHMARK_TEMPLATE(BM_BigInt_ModInverse, NativeInteger)->Unit(benchmark::kMicrosecond);
 
 template <typename I>
 static void BM_BigInt_ModInverseEq(benchmark::State& state) {  // benchmark
@@ -234,12 +165,62 @@ static void BM_BigInt_ModInverseEq(benchmark::State& state) {  // benchmark
     }
 }
 
+#define DO_BENCHMARK_TEMPLATE(X, Y) BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond);
+
+DO_BENCHMARK_TEMPLATE(BM_BigInt_constants, NativeInteger)
+DO_BENCHMARK_TEMPLATE(BM_BigInt_small_variables, NativeInteger)
+BENCHMARK_TEMPLATE(BM_BigInt_Add, NativeInteger)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Addeq, NativeInteger)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Mult, NativeInteger)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Multeq, NativeInteger)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_ModInverse, NativeInteger)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_BigInt_ModInverseEq, NativeInteger)->Unit(benchmark::kMicrosecond);
+
+#ifdef WITH_BE2
+DO_BENCHMARK_TEMPLATE(BM_BigInt_constants, M2Integer)
+DO_BENCHMARK_TEMPLATE(BM_BigInt_small_variables, M2Integer)
+DO_BENCHMARK_TEMPLATE(BM_BigInt_large_variables, M2Integer)
+BENCHMARK_TEMPLATE(BM_BigInt_Add, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Add, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_Mult, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Mult, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M2Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_ModInverse, M2Integer)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_BigInt_ModInverseEq, M2Integer)->Unit(benchmark::kMicrosecond);
+#endif
+#ifdef WITH_BE4
+DO_BENCHMARK_TEMPLATE(BM_BigInt_constants, M4Integer)
+DO_BENCHMARK_TEMPLATE(BM_BigInt_small_variables, M4Integer)
+DO_BENCHMARK_TEMPLATE(BM_BigInt_large_variables, M4Integer)
+BENCHMARK_TEMPLATE(BM_BigInt_Add, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Add, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_Mult, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Mult, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M4Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_ModInverse, M4Integer)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_BigInt_ModInverseEq, M4Integer)->Unit(benchmark::kMicrosecond);
+#endif
 #ifdef WITH_NTL
+DO_BENCHMARK_TEMPLATE(BM_BigInt_constants, M6Integer)
+DO_BENCHMARK_TEMPLATE(BM_BigInt_small_variables, M6Integer)
+DO_BENCHMARK_TEMPLATE(BM_BigInt_large_variables, M6Integer)
+BENCHMARK_TEMPLATE(BM_BigInt_Add, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Add, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Addeq, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_Mult, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Mult, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Small")->Arg(0);
+BENCHMARK_TEMPLATE(BM_BigInt_Multeq, M6Integer)->Unit(benchmark::kMicrosecond)->ArgName("Large")->Arg(1);
+BENCHMARK_TEMPLATE(BM_BigInt_ModInverse, M6Integer)->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_BigInt_ModInverseEq, M6Integer)->Unit(benchmark::kMicrosecond);
 #endif
-BENCHMARK_TEMPLATE(BM_BigInt_ModInverseEq, NativeInteger)->Unit(benchmark::kMicrosecond);
 
 // execute the benchmarks
 BENCHMARK_MAIN();

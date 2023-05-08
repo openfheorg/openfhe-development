@@ -33,13 +33,16 @@
   This file contains the cpp implementation of  mubintvec, a <vector> of ubint, with associated math operators
  */
 
-#include <chrono>
+#include "config_core.h"
+#ifdef WITH_BE4
 
-#include "math/hal.h"
-#include "math/hal/bigintdyn/mubintvecdyn.h"
-#include "time.h"
-#include "utils/debug.h"
-#include "utils/serializable.h"
+    #include <chrono>
+
+    #include "math/hal.h"
+    #include "math/hal/bigintdyn/mubintvecdyn.h"
+    #include "time.h"
+    #include "utils/debug.h"
+    #include "utils/serializable.h"
 
 namespace bigintdyn {
 
@@ -459,13 +462,13 @@ const mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModSubEq(const mubintvec& b)
 // method to multiply vector by scalar
 template <class ubint_el_t>
 mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModMul(const ubint_el_t& b) const {
-#ifdef NO_BARRETT  // non barrett way
+    #ifdef NO_BARRETT  // non barrett way
     mubintvec ans(*this);
     for (usint i = 0; i < this->m_data.size(); i++) {
         ans.m_data[i].ModMulEq(b, ans.m_modulus);
     }
     return ans;
-#else
+    #else
     mubintvec ans(*this);
     // Precompute the Barrett mu parameter
     ubint_el_t temp(ubint_el_t::ONE);
@@ -486,7 +489,7 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModMul(const ubint_el_t& b) const {
         ans.m_data[i].ModMulEq(b, this->m_modulus, mu);
     }
     return ans;
-#endif
+    #endif
 }
 
 template <class ubint_el_t>
@@ -499,7 +502,7 @@ const mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModMulEq(const ubint_el_t& b
 
 template <class ubint_el_t>
 mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModMul(const mubintvec& b) const {
-#ifdef NO_BARRETT
+    #ifdef NO_BARRETT
     mubintvec ans(*this);
     if (this->m_modulus != b.m_modulus) {
         OPENFHE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different moduli");
@@ -513,7 +516,7 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModMul(const mubintvec& b) const {
         }
         return ans;
     }
-#else  // bartett way
+    #else  // bartett way
     if ((this->m_data.size() != b.m_data.size()) || this->m_modulus != b.m_modulus) {
         OPENFHE_THROW(lbcrypto::math_error, "ModMul called on mubintvecs with different parameters.");
     }
@@ -529,7 +532,7 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModMul(const mubintvec& b) const {
         ans.m_data[i].ModMulEq(b.m_data[i], this->m_modulus, mu);
     }
     return ans;
-#endif
+    #endif
 }
 
 template <class ubint_el_t>
@@ -692,3 +695,5 @@ mubintvec<ubint_el_t> mubintvec<ubint_el_t>::GetDigitAtIndexForBase(usint index,
 template class mubintvec<BigInteger>;
 
 }  // namespace bigintdyn
+
+#endif
