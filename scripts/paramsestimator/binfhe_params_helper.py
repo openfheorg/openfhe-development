@@ -60,12 +60,21 @@ def generate_stdsec_dim_mod(expected_sec_level, dim, mod_start = 0, is_quantum =
 #optimize dim, mod for an expected security level - this is specifically for the dimension n, and key switch modulus Qks in FHEW. Increasing Qks helps reduce the bootstrapped noise
 def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, optimize_mod=True, is_dim_pow2=True, is_quantum = True):
     dim1 = dim
-    mod1 = mod
     dimlog = log2(dim)
     modified = False
-    sec_level_from_estimator = call_estimator(dim, mod, num_threads, is_quantum)
+    #sec_level_from_estimator = call_estimator(dim, mod, num_threads, is_quantum)
     done = False
 
+    while done is False:
+        try:
+            sec_level_from_estimator = call_estimator(dim, mod, num_threads, is_quantum)
+            done = True
+        except:
+            mod = mod*2
+            pass
+
+    done = False
+    mod1 = mod
     while (sec_level_from_estimator < expected_sec_level or done):
         modified = True
         if (optimize_dim and (not optimize_mod)):
@@ -77,7 +86,13 @@ def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, o
             sec_level_from_estimator = call_estimator(dim1, mod, num_threads, is_quantum)
         elif ((not optimize_dim) and optimize_mod):
             mod1 = mod1/2
-            sec_level_from_estimator = call_estimator(dim, mod1, num_threads, is_quantum)
+            moddone = False
+            while moddone is False:
+                try:
+                    sec_level_from_estimator = call_estimator(dim, mod1, num_threads, is_quantum)
+                    moddone = True
+                except:
+                    return 0, 0
 
     #also need to check if starting from a lower than possible mod - when the above condition is satisfied but not optimal
 

@@ -61,13 +61,34 @@ def parameter_selector():
                 dimn, modulus_Qks = helperfncs.optimize_params_security(stdparams.paramlinear[exp_sec_level][0], lattice_n, 2**logmodQksu, False, True, False, is_quantum)
                 dimN, modulus_Q = helperfncs.optimize_params_security(stdparams.paramlinear[exp_sec_level][0], ringsize_N, 2**logmodQu, False, True, False, is_quantum)
 
-                if ((dimn != lattice_n) or (dimN != ringsize_N)):
+                print("dimn, modulus_Qks first: ******* ", dimn, modulus_Qks)
+                if (dimn > dimN):
                     print("estimator adjusted the dimension")
                     break
+                elif ((dimn == 0) or (modulus_Qks == 0)):
+                    print("initial lattice dimension too small to run the estimator for this security level, increasing initial value")
 
+                while ((dimn == 0) and (modulus_Qks == 0)):
+                    lattice_n = lattice_n + 100
+                    logmodQksu = get_mod(lattice_n, exp_sec_level)
+                    print("***********lattice_n*********", lattice_n)
+                    print("***********logmodQksu*********", logmodQksu)
+                    dimn, modulus_Qks = helperfncs.optimize_params_security(stdparams.paramlinear[exp_sec_level][0], lattice_n, 2**logmodQksu, False, True, False, is_quantum)
+
+                #check again
+                if ((dimn > dimN) or (dimn == 0) or (modulus_Qks == 0)):
+                    print("starting lattice dimension is 0 or greater than large N")
+                    break
+
+                print("***********lattice_n after while*********", lattice_n)
+                print("***********modulus_Qks after while*********", modulus_Qks)
                 #modulus_Qks = 2**logmodQks
                 logmodQks = log2(modulus_Qks)
                 logmodQ = log2(modulus_Q)
+
+                while (logmodQ < 14):
+                    modulus_Q = modulus_Q*2
+                    logmodQ = log2(modulus_Q)
 
                 if (logmodQks >= 32):
                     logmodQks = 30
@@ -135,7 +156,7 @@ def parameter_selector():
             print("size of ring modulus Q: ", logmodQ)
             print("optimal key switching modulus  Qks: ", optQks)
             print("gadget digit base B_g: ", B_g)
-            print("key switching digit base B_ks: ", 2**floor(log2(optQks)/d_ks))
+            print("key switching digit base B_ks: ", optB_ks)
 
 def get_mod(dim, exp_sec_level):
     #get linear relation coefficients for log(modulus) and dimension for the input security level
