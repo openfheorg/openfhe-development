@@ -35,6 +35,12 @@
 
 #include "math/dftransform.h"
 
+#include "utils/debug.h"
+
+#include <complex>
+#include <iostream>
+#include <vector>
+
 using namespace lbcrypto;
 
 int main() {
