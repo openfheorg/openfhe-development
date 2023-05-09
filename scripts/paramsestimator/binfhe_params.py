@@ -97,7 +97,7 @@ def parameter_selector():
                 B_g = 2**floor(logmodQ/d_g)
                 B_ks = 2**floor(logmodQks/d_ks) #later - optimize for d_ks
 
-                while (B_ks >= 256):# or ()32gb limit on complexity:
+                while (B_ks >= 128):# or ()32gb limit on complexity:
                     B_ks = B_ks/2
                 #create paramset object
                 param_set_opt = stdparams.paramsetvars(lattice_n, modulus_q, ringsize_N, logmodQ, modulus_Qks, B_g, B_ks, B_rk, sigma)
@@ -189,7 +189,7 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
         params.n = new_n
         params.Qks = 2**logmodQks
         B_ks = 2**floor(logmodQks/d_ks)
-        while (B_ks >= 256):
+        while (B_ks >= 128):
             B_ks = B_ks/2
 
         params.B_ks = B_ks

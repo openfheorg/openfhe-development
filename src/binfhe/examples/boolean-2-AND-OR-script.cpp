@@ -41,16 +41,15 @@
 
 using namespace lbcrypto;
 
-usint dim_n     = 0;
-int64_t Qks     = 0;
-usint dim_N     = 0;
-usint ctmodq    = 0;
-usint logQ      = 0;
-usint B_g       = 0;
-usint B_ks      = 0;
-usint B_rk      = 32;
-usint sigma     = 3.19;
-int num_of_runs = 200;
+usint dim_n  = 0;
+int64_t Qks  = 0;
+usint dim_N  = 0;
+usint ctmodq = 0;
+usint logQ   = 0;
+usint B_g    = 0;
+usint B_ks   = 0;
+usint B_rk   = 32;
+usint sigma  = 3.19;
 
 void usage() {
     std::cout << "-n Lattice Dimension"
@@ -61,8 +60,7 @@ void usage() {
               << "-g Digit base B_g"
               << "-r Refreshing key base B_rk"
               << "-b Key switching base B_ks"
-              << "-s sigma (standard deviation)"
-              << "-i number of iterations" << std::endl;
+              << "-s sigma (standard deviation)" << std::endl;
 }
 int main(int argc, char* argv[]) {
     // Sample Program: Step 1: Set CryptoContext
@@ -80,11 +78,10 @@ int main(int argc, char* argv[]) {
                                            {"Refreshing key base B_rk", required_argument, NULL, 'r'},
                                            {"Key switching base B_ks", required_argument, NULL, 'b'},
                                            {"sigma (standard deviation)", required_argument, NULL, 's'},
-                                           {"number of iterations", required_argument, NULL, 'i'},
                                            {"help", no_argument, NULL, 'h'},
                                            {NULL, 0, NULL, 0}};
 
-    const char* optstring = "n:N:q:Q:k:g:r:b:s:i:h";
+    const char* optstring = "n:N:q:Q:k:g:r:b:s:h";
     while ((opt = getopt_long(argc, argv, optstring, long_options, NULL)) != -1) {
         std::cout << "opt1: " << opt << "; optarg: " << optarg << std::endl;
         switch (opt) {
@@ -114,9 +111,6 @@ int main(int argc, char* argv[]) {
                 break;
             case 's':
                 sigma = atoi(optarg);
-                break;
-            case 'i':
-                num_of_runs = atoi(optarg);
                 break;
             case 'h':
                 usage();
@@ -180,13 +174,13 @@ int main(int argc, char* argv[]) {
     // By default, freshly encrypted ciphertexts are bootstrapped.
     // If you wish to get a fresh encryption without bootstrapping, write
     // auto   ct1 = cc.Encrypt(sk, 1, FRESH);
-    auto p   = 6;
+    auto p   = 4;
     auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct2 = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct3 = cc.Encrypt(sk, 0, SMALL_DIM, p);
     auto ct4 = cc.Encrypt(sk, 0, SMALL_DIM, p);
-    auto ct5 = cc.Encrypt(sk, 1, SMALL_DIM, p);
-    auto ct6 = cc.Encrypt(sk, 0, SMALL_DIM, p);
+    // auto ct5 = cc.Encrypt(sk, 1, SMALL_DIM, p);
+    // auto ct6 = cc.Encrypt(sk, 0, SMALL_DIM, p);
 
     std::ostringstream ctstring;
     lbcrypto::Serial::Serialize(ct1, ctstring, lbcrypto::SerType::BINARY);
@@ -194,46 +188,46 @@ int main(int argc, char* argv[]) {
     std::cout << "ciphertext modulus: " << ct1->GetModulus() << std::endl;
     std::cout << "ciphertext dimension n: " << ct1->GetLength() << std::endl;
 
+    // 1, 0
+    // auto ctORmix = cc.EvalBinGate(OR, ct1, ct3);
+    // 0, 0
+    // auto ctANDmix = cc.EvalBinGate(AND, ct3, ct4);
+
+    // auto ctANDmix = cc.EvalBinGateFourInput(AND3, ct1, ct2, ct3, ct4);
     // Sample Program: Step 4: Evaluation
     TIC(t);
-    // 1, 0, 0
-    auto ctAND1 = cc.EvalBinGateThreeInput(AND3, ct1, ct3, ct4);
-    es          = TOC_MS(t);
+    // Compute (1 AND 1 AND 1) = 1; Other binary gate options are OR, NAND, and NOR
+
+    // 0, 0
+    auto ctAND1 = cc.EvalBinGate(AND3, ct3, ct4);
+    // 0, 1
+    auto ctAND2 = cc.EvalBinGate(AND3, ct3, ct2);
+
+    // 1, 1
+    auto ctAND3 = cc.EvalBinGate(AND3, ct1, ct2);
+
+    // 1, 0
+    auto ctAND4 = cc.EvalBinGate(AND3, ct2, ct3);
+
+    // 1, 0
+    auto ctOR1 = cc.EvalBinGate(OR3, ct2, ct4);
+    // 1, 1
+    auto ctOR2 = cc.EvalBinGate(OR3, ct1, ct2);
+
+    // 0, 1
+    auto ctOR3 = cc.EvalBinGate(OR3, ct3, ct1);
+
+    // 0, 0
+    auto ctOR4 = cc.EvalBinGate(OR3, ct3, ct4);
+
+    es = TOC_MS(t);
     std::cout << "time for gate evaluation " << es << " milliseconds" << std::endl;
+    // Sample Program: Step 5: Decryption
 
-    for (int i = 0; i < num_of_runs; i++) {
-        auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, p);
-        auto ct2 = cc.Encrypt(sk, 1, SMALL_DIM, p);
-        auto ct3 = cc.Encrypt(sk, 0, SMALL_DIM, p);
-        // 1, 1, 0
-        auto ctAND2 = cc.EvalBinGateThreeInput(AND3, ct1, ct2, ct3);
-        LWEPlaintext result;
+    LWEPlaintext result;
 
-        cc.Decrypt(sk, ctAND2, &result, p);
-        // std::cout << "Result of encrypted computation of AND(1, 0, 0) = " << result << std::endl;
-    }
-
-#if 0
-
-    // 1, 1, 1
-    auto ctAND3 = cc.EvalBinGateThreeInput(AND3, ct1, ct2, ct5);
-
-    // 0, 0, 0
-    auto ctAND4 = cc.EvalBinGateThreeInput(AND3, ct3, ct4, ct6);
-
-    // 1, 0, 0
-    auto ctOR1 = cc.EvalBinGateThreeInput(OR3, ct1, ct3, ct4);
-    // 1, 1, 0
-    auto ctOR2 = cc.EvalBinGateThreeInput(OR3, ct1, ct2, ct3);
-
-    // 1, 1, 1
-    auto ctOR3 = cc.EvalBinGateThreeInput(OR3, ct1, ct2, ct5);
-
-    // 1, 1, 1
-    auto ctOR4 = cc.EvalBinGateThreeInput(OR3, ct3, ct4, ct6);
-#endif
-
-#if 0
+    cc.Decrypt(sk, ctAND1, &result, p);
+    std::cout << "Result of encrypted computation of AND(1, 0, 0) = " << result << std::endl;
     // if (result != 0)
     //    OPENFHE_THROW(math_error, "Decryption failure");
 
@@ -271,6 +265,6 @@ int main(int argc, char* argv[]) {
     std::cout << "Result of encrypted computation of OR(0, 0, 0) = " << result << std::endl;
     // if (result != 0)
     //    OPENFHE_THROW(math_error, "Decryption failure");
-#endif
+
     return 0;
 }
