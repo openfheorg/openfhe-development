@@ -864,8 +864,8 @@ uint32_t getRatioBSGS(double slots) {
     if (slots < 128)
         return ceil(sqrt(slots));
 
-    auto temp = ceil(sqrt(slots / 12.));
-    // auto temp = ceil(sqrt(slots));
+    // auto temp = ceil(sqrt(slots / 12.));
+    auto temp = ceil(sqrt(slots));
     return ceil(slots / temp);
 }
 
