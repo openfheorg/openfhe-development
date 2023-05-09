@@ -107,7 +107,7 @@ def parameter_selector():
                 target_noise_level = helperfncs.get_target_noise(exp_decryption_failure, ptmod, modulus_q, num_of_inputs)
                 print("target noise: ", target_noise_level)
 
-                actual_noise = helperfncs.get_noise_from_cpp_code(param_set_opt, num_of_samples//8)##########################################################run script CPP###########
+                actual_noise = helperfncs.get_noise_from_cpp_code(param_set_opt, num_of_samples)##########################################################run script CPP###########
 
                 #if (actual_noise > target_noise_level):
                 #    param_set_opt.q = 2*ringsize_N
@@ -115,7 +115,7 @@ def parameter_selector():
 
                 if (actual_noise > target_noise_level):
                     print("here in if actual greater than target noise")
-                    opt_n, optlogmodQks, optB_ks = binary_search_n(lattice_n, ringsize_N, actual_noise, exp_sec_level, target_noise_level, num_of_samples//8, d_ks, param_set_opt)#lattice_n, ringsize_N)
+                    opt_n, optlogmodQks, optB_ks = binary_search_n(lattice_n, ringsize_N, actual_noise, exp_sec_level, target_noise_level, num_of_samples, d_ks, param_set_opt)#lattice_n, ringsize_N)
                     print("opt_n after binary search: ", opt_n)
                 else:
                     opt_n = lattice_n
