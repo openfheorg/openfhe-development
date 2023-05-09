@@ -416,7 +416,11 @@ Ciphertext<DCRTPoly> LeveledSHECKKSRNS::EvalFastRotationExt(ConstCiphertext<DCRT
     usint autoIndex = FindAutomorphismIndex2nComplex(index, M);
 
     // Retrieve the automorphism key that corresponds to the auto index.
-    auto evalKey = evalKeys.find(autoIndex)->second;
+    auto evalKeyIterator = evalKeys.find(autoIndex);
+    if (evalKeyIterator == evalKeys.end()) {
+        OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+    }
+    auto evalKey = evalKeyIterator->second;
 
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
     const auto paramsQl             = cv[0].GetParams();

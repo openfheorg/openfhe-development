@@ -416,6 +416,11 @@ template <class Element>
 Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<Element> ciphertext, usint i,
                                                               const std::map<usint, EvalKey<Element>>& evalKeyMap,
                                                               CALLER_INFO_ARGS_CPP) const {
+    // verify if the key i exists in the evalKeyMap
+    auto evalKeyIterator = evalKeyMap.find(i);
+    if (evalKeyIterator == evalKeyMap.end()) {
+        OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(i) + "] is not found." + CALLER_INFO);
+    }
     const std::vector<Element>& cv = ciphertext->GetElements();
 
     // we already have checks on higher level?
@@ -444,7 +449,7 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalAutomorphism(ConstCiphertext<El
 
     Ciphertext<Element> result = ciphertext->Clone();
 
-    algo->KeySwitchInPlace(result, evalKeyMap.at(i));
+    algo->KeySwitchInPlace(result, evalKeyIterator->second);
 
     std::vector<Element>& rcv = result->GetElements();
 
@@ -476,7 +481,13 @@ Ciphertext<Element> LeveledSHEBase<Element>::EvalFastRotation(
 
     usint autoIndex = FindAutomorphismIndex(index, m);
 
-    auto evalKey = cc->GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag()).find(autoIndex)->second;
+    auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
+    // verify if the key autoIndex exists in the evalKeyMap
+    auto evalKeyIterator = evalKeyMap.find(autoIndex);
+    if (evalKeyIterator == evalKeyMap.end()) {
+        OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+    }
+    auto evalKey = evalKeyIterator->second;
 
     auto algo                       = cc->GetScheme();
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();

@@ -439,6 +439,9 @@ public:
    */
     std::shared_ptr<Metadata> GetMetadataByKey(std::string key) const {
         auto it = m_metadataMap->find(key);
+        if(it == m_metadataMap->end()) {
+            OPENFHE_THROW(openfhe_error, "Metadata element with key [" + key + "] is not found in the Metadata map.");
+        }
         return std::make_shared<Metadata>(*(it->second));
     }
 
