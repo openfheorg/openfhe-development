@@ -511,7 +511,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersRNS>(this->GetCryptoParameters());
 
         decryptedCKKS->Decode(ciphertext->GetNoiseScaleDeg(), ciphertext->GetScalingFactor(),
-                              cryptoParamsCKKS->GetScalingTechnique());
+                              cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
     }
     else {
         decrypted->Decode();
@@ -560,7 +560,7 @@ DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
         decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
         const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersRNS>(this->GetCryptoParameters());
         decryptedCKKS->Decode(partialCiphertextVec[0]->GetNoiseScaleDeg(), partialCiphertextVec[0]->GetScalingFactor(),
-                              cryptoParamsCKKS->GetScalingTechnique());
+                              cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
     }
     else {
         decrypted->Decode();
