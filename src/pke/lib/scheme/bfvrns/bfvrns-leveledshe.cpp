@@ -797,7 +797,13 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalFastRotation(ConstCiphertext<DCRTPoly
 
     usint autoIndex = FindAutomorphismIndex(index, m);
 
-    auto evalKey = cc->GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag()).find(autoIndex)->second;
+    auto evalKeyMap = cc->GetEvalAutomorphismKeyMap(ciphertext->GetKeyTag());
+    // verify if the key autoIndex exists in the evalKeyMap
+    auto evalKeyIterator = evalKeyMap.find(autoIndex);
+    if (evalKeyIterator == evalKeyMap.end()) {
+        OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(autoIndex) + "] is not found.");
+    }
+    auto evalKey = evalKeyIterator->second;
 
     auto algo                       = cc->GetScheme();
     const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
