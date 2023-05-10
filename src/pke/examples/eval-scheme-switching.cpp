@@ -50,12 +50,12 @@ void IteratedSchemeSwitching();
 void ArgminViaSchemeSwitching();
 
 int main() {
-    // SwitchCKKSToFHEW();
-    // SwitchFHEWtoCKKS();
+    SwitchCKKSToFHEW();
+    SwitchFHEWtoCKKS();
     // FloorViaSchemeSwitching();
     // ComparisonViaSchemeSwitching();
     // ArbitraryFuncViaSchemeSwitching();
-    // IteratedSchemeSwitching();
+    IteratedSchemeSwitching();
     ArgminViaSchemeSwitching();
 
     return 0;
@@ -72,9 +72,10 @@ void SwitchCKKSToFHEW() {
     /* A2) Bit-length of scaling factor.
     */
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 8192;               // 2048;
-    SecurityLevel sl      = HEStd_128_classic;  // If this is not HEStd_NotSet, ensure ringDim is compatible
-    uint32_t logQ_ccLWE   = 27;
+    uint32_t ringDim      = 2048;  // 8192;
+    SecurityLevel sl =
+        HEStd_NotSet;  // HEStd_128_classic;  // If this is not HEStd_NotSet, ensure ringDim is compatible
+    uint32_t logQ_ccLWE = 27;
 
     /*Assumption: the CKKS ciphertext modulus when the switching is done (on the last level) has to be
     greater than the FHEW ciphertext modulus.*/
@@ -82,7 +83,7 @@ void SwitchCKKSToFHEW() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXED
+    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXEDMANUAL
     parameters.SetSecurityLevel(sl);
     parameters.SetRingDim(ringDim);
 
@@ -147,12 +148,16 @@ void SwitchCKKSToFHEW() {
     double scale1   = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE1);
     double scale2   = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE2);
 
-    auto U0 = cc->EvalCKKStoFHEWPrecompute(scale1);
+    cc->EvalCKKStoFHEWPrecompute(scale1);
 
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
     std::vector<double> x1 = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    // if (x1.size() < slots) { // To test correctness of full packing
+    //     std::vector<double> ones(slots - x1.size(), 1.0);
+    //     x1.insert(x1.end(), ones.begin(), ones.end());
+    // }
     std::vector<double> x2 = {271.0, 30000.0};
 
     // Encoding as plaintexts
@@ -166,7 +171,7 @@ void SwitchCKKSToFHEW() {
     // Step 4: Scheme switching from CKKS to FHEW
 
     // Transform the ciphertext from CKKS to FHEW
-    auto cTemp = cc->EvalCKKStoFHEW(c1, U0);
+    auto cTemp = cc->EvalCKKStoFHEW(c1);
 
     std::cout << "\n---Decrypting switched ciphertext small precision---\n" << std::endl;
 
@@ -180,10 +185,10 @@ void SwitchCKKSToFHEW() {
     std::cout << "\n" << std::endl;
 
     // Scale the matrix differently
-    U0 = cc->EvalCKKStoFHEWPrecompute(scale2);
+    cc->EvalCKKStoFHEWPrecompute(scale2);
 
     // Transform the ciphertext from CKKS to FHEW
-    auto cTemp2 = cc->EvalCKKStoFHEW(c2, U0, 2);
+    auto cTemp2 = cc->EvalCKKStoFHEW(c2, 2);
 
     std::cout << "\n---Decrypting switched ciphertext large precision---\n" << std::endl;
 
@@ -253,7 +258,7 @@ void SwitchFHEWtoCKKS() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXED
+    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXEDMANUAL
     parameters.SetSecurityLevel(sl);
     parameters.SetSecurityLevel(HEStd_NotSet);
     parameters.SetRingDim(ringDim);
@@ -499,7 +504,7 @@ void FloorViaSchemeSwitching() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXED
+    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXEDMANUAL
     parameters.SetSecurityLevel(sl);
     parameters.SetRingDim(ringDim);
 
@@ -569,7 +574,7 @@ void FloorViaSchemeSwitching() {
     double scaleCF = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE2);
 
     TIC(t);
-    auto U0     = cc->EvalCKKStoFHEWPrecompute(scaleCF);
+    cc->EvalCKKStoFHEWPrecompute(scaleCF);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
 
@@ -590,7 +595,7 @@ void FloorViaSchemeSwitching() {
 
     // Transform the ciphertext from CKKS to FHEW
     TIC(t);
-    auto cTemp = cc->EvalCKKStoFHEW(c1, U0);
+    auto cTemp = cc->EvalCKKStoFHEW(c1);
     timeEval   = TOC(t);
     std::cout << "Time to compute the switch from CKKS to FHEW: " << timeEval << " ms" << std::endl;
 
@@ -681,15 +686,14 @@ void FloorViaSchemeSwitching() {
     scaleCF = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE1);
     // scaleCF   = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE2);
 
-    // Andreea: Fix it for afterwards
     TIC(t);
-    U0          = cc->EvalCKKStoFHEWPrecompute(scaleCF);
+    cc->EvalCKKStoFHEWPrecompute(scaleCF);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
 
     // Transform the ciphertext from CKKS to FHEW
     TIC(t);
-    auto cTemp3 = cc->EvalCKKStoFHEW(c1, U0);
+    auto cTemp3 = cc->EvalCKKStoFHEW(c1);
     timeEval    = TOC(t);
     std::cout << "Time to compute the switch from CKKS to FHEW: " << timeEval << " ms" << std::endl;
 
@@ -786,10 +790,9 @@ void ComparisonViaSchemeSwitching() {
     /* A2) Bit-length of scaling factor.
     */
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 32768;  // 65536;
-    SecurityLevel sl =
-        HEStd_NotSet;  // HEStd_128_classic;  // If this is not HEStd_NotSet, ensure ringDim is compatible
-    uint32_t logQ_ccLWE = 29;
+    uint32_t ringDim      = 16384;         // 65536; //
+    SecurityLevel sl      = HEStd_NotSet;  // HEStd_128_classic; //
+    uint32_t logQ_ccLWE   = 17;
 
     /*Assumption: the CKKS ciphertext modulus when the switching is done (on the last level) has to be
     greater than the FHEW ciphertext modulus.*/
@@ -797,7 +800,7 @@ void ComparisonViaSchemeSwitching() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXED
+    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXEDMANUAL
     parameters.SetSecurityLevel(sl);
     parameters.SetRingDim(ringDim);
 
@@ -873,9 +876,10 @@ void ComparisonViaSchemeSwitching() {
     auto pLWE2       = modulus_LWE / (2 * beta);  // Large precision
 
     double scaleSignFHEW = 1.0;
+    ccLWE.BTKeyGen(privateKeyFHEW);  // For computing sign here
 
     TIC(t);
-    auto U0     = cc->EvalCompareSSPrecompute(pLWE1, 0, scaleSignFHEW);
+    cc->EvalCompareSSPrecompute(pLWE2, 0, scaleSignFHEW);
     timePrecomp = TOC(t);
     std::cout << "Time to perform precomputations: " << timePrecomp << " ms" << std::endl;
 
@@ -886,24 +890,47 @@ void ComparisonViaSchemeSwitching() {
     for (uint32_t i = 0; i < slots; ++i) {
         std::cout << pDiff->GetRealPackedValue()[i] << " ";
     }
+
+    const double eps = 0.0001;
     std::cout << "\nExpected sign result from CKKS: ";
     for (uint32_t i = 0; i < slots; ++i) {
-        std::cout << int(pDiff->GetRealPackedValue()[i] < 0) << " ";
+        std::cout << int(std::round(pDiff->GetRealPackedValue()[i] / eps) * eps < 0) << " ";
     }
     std::cout << "\n";
 
-    std::cout << "\nExpected sign result in FHEW with plaintext modulus " << pLWE1 << " and scale " << scaleSignFHEW
+    TIC(t);
+    auto LWECiphertexts = cc->EvalCKKStoFHEW(cDiff, slots);
+    timeEval            = TOC(t);
+    std::cout << "Time to perform comparisons in FHEW: " << timeEval << " ms" << std::endl;
+
+    LWEPlaintext plainLWE;
+    std::cout << "\nFHEW decryption with plaintext modulus " << pLWE2 << ": ";
+    for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
+        ccLWE.Decrypt(privateKeyFHEW, LWECiphertexts[i], &plainLWE, pLWE2);
+        std::cout << plainLWE << " ";
+    }
+    std::cout << "\nExpected sign result in FHEW with plaintext modulus " << pLWE2 << " and scale " << scaleSignFHEW
               << ": ";
     for (uint32_t i = 0; i < slots; ++i) {
-        std::cout << (static_cast<int>(std::round(pDiff->GetRealPackedValue()[i] * scaleSignFHEW)) % pLWE1 -
-                          pLWE1 / 2.0 >
+        std::cout << (static_cast<int>(std::round(pDiff->GetRealPackedValue()[i] * scaleSignFHEW)) % pLWE2 -
+                          pLWE2 / 2.0 >=
                       0)
                   << " ";
     }
     std::cout << "\n";
 
+    std::cout << "Obtained sign result in FHEW with plaintext modulus " << pLWE2 << " and scale " << scaleSignFHEW
+              << ": ";
+    std::vector<LWECiphertext> LWESign(LWECiphertexts.size());
+    for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
+        LWESign[i] = ccLWE.EvalSign(LWECiphertexts[i]);
+        ccLWE.Decrypt(privateKeyFHEW, LWESign[i], &plainLWE, 2);
+        std::cout << plainLWE << " ";
+    }
+    std::cout << "\n";
+
     TIC(t);
-    auto cResult = cc->EvalCompareSchemeSwitching(c1, c2, U0, slots, slots, pLWE1, scaleSignFHEW);
+    auto cResult = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots, pLWE2, scaleSignFHEW);
     timeEval     = TOC(t);
     std::cout << "Time to perform comparison via scheme switching: " << timeEval << " ms" << std::endl;
 
@@ -912,23 +939,41 @@ void ComparisonViaSchemeSwitching() {
     plaintextDec3->SetLength(slots);
     std::cout << "Decrypted switched result: " << plaintextDec3 << std::endl;
 
+    scaleSignFHEW = 8.0;
+    TIC(t);
+    cc->EvalCompareSSPrecompute(pLWE2, 0, scaleSignFHEW);
+    timePrecomp = TOC(t);
+    std::cout << "\nTime to perform precomputations: " << timePrecomp << " ms" << std::endl;
+    TIC(t);
+    LWECiphertexts = cc->EvalCKKStoFHEW(cDiff, slots);
+    timeEval       = TOC(t);
+    std::cout << "Time to perform comparisons in FHEW: " << timeEval << " ms" << std::endl;
+
+    std::cout << "\nFHEW decryption with plaintext modulus " << pLWE2 << " and scale " << scaleSignFHEW << ": ";
+    for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
+        ccLWE.Decrypt(privateKeyFHEW, LWECiphertexts[i], &plainLWE, pLWE2);
+        std::cout << plainLWE << " ";
+    }
     std::cout << "\nExpected sign result in FHEW with plaintext modulus " << pLWE2 << " and scale " << scaleSignFHEW
               << ": ";
     for (uint32_t i = 0; i < slots; ++i) {
         std::cout << (static_cast<int>(std::round(pDiff->GetRealPackedValue()[i] * scaleSignFHEW)) % pLWE2 -
-                          pLWE2 / 2.0 >
+                          pLWE2 / 2.0 >=
                       0)
                   << " ";
     }
     std::cout << "\n";
+    std::cout << "Obtained sign result in FHEW with plaintext modulus " << pLWE2 << " and scale " << scaleSignFHEW
+              << ": ";
+    for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
+        LWESign[i] = ccLWE.EvalSign(LWECiphertexts[i]);
+        ccLWE.Decrypt(privateKeyFHEW, LWESign[i], &plainLWE, 2);
+        std::cout << plainLWE << " ";
+    }
+    std::cout << "\n";
 
     TIC(t);
-    U0          = cc->EvalCompareSSPrecompute(pLWE2, 0, scaleSignFHEW);
-    timePrecomp = TOC(t);
-    std::cout << "Time to perform precomputations: " << timePrecomp << " ms" << std::endl;
-
-    TIC(t);
-    cResult  = cc->EvalCompareSchemeSwitching(c1, c2, U0, slots, slots, pLWE2, scaleSignFHEW);
+    cResult  = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots, pLWE2, scaleSignFHEW);
     timeEval = TOC(t);
     std::cout << "Time to perform comparison via scheme switching: " << timeEval << " ms" << std::endl;
 
@@ -936,24 +981,44 @@ void ComparisonViaSchemeSwitching() {
     plaintextDec3->SetLength(slots);
     std::cout << "Decrypted switched result: " << plaintextDec3 << std::endl;
 
-    scaleSignFHEW = 8.0;
-    std::cout << "\nExpected sign result in FHEW with plaintext modulus " << pLWE2 << " and scale " << scaleSignFHEW
+    std::cout
+        << "\nFor small LWE plaintext modulus and initial fractional inputs, the sign does not always behave properly close to the boundaries at 0 and p/2."
+        << std::endl;
+    scaleSignFHEW = 1.0;
+    TIC(t);
+    cc->EvalCompareSSPrecompute(pLWE1, 0, scaleSignFHEW);
+    timePrecomp = TOC(t);
+    std::cout << "\nTime to perform precomputations: " << timePrecomp << " ms" << std::endl;
+    TIC(t);
+    LWECiphertexts = cc->EvalCKKStoFHEW(cDiff, slots);
+    timeEval       = TOC(t);
+    std::cout << "Time to perform comparisons in FHEW: " << timeEval << " ms" << std::endl;
+
+    std::cout << "\nFHEW decryption with plaintext modulus " << pLWE1 << ": ";
+    for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
+        ccLWE.Decrypt(privateKeyFHEW, LWECiphertexts[i], &plainLWE, pLWE1);
+        std::cout << plainLWE << " ";
+    }
+    std::cout << "\nExpected sign result in FHEW with plaintext modulus " << pLWE1 << " and scale " << scaleSignFHEW
               << ": ";
     for (uint32_t i = 0; i < slots; ++i) {
-        std::cout << (static_cast<int>(std::round(pDiff->GetRealPackedValue()[i] * scaleSignFHEW)) % pLWE2 -
-                          pLWE2 / 2.0 >
+        std::cout << (static_cast<int>(std::round(pDiff->GetRealPackedValue()[i] * scaleSignFHEW)) % pLWE1 -
+                          pLWE1 / 2.0 >=
                       0)
                   << " ";
     }
     std::cout << "\n";
+    std::cout << "Obtained sign result in FHEW with plaintext modulus " << pLWE1 << " and scale " << scaleSignFHEW
+              << ": ";
+    for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
+        LWESign[i] = ccLWE.EvalSign(LWECiphertexts[i]);
+        ccLWE.Decrypt(privateKeyFHEW, LWESign[i], &plainLWE, 2);
+        std::cout << plainLWE << " ";
+    }
+    std::cout << "\n";
 
     TIC(t);
-    U0          = cc->EvalCompareSSPrecompute(pLWE2, 0, scaleSignFHEW);
-    timePrecomp = TOC(t);
-    std::cout << "Time to perform precomputations: " << timePrecomp << " ms" << std::endl;
-
-    TIC(t);
-    cResult  = cc->EvalCompareSchemeSwitching(c1, c2, U0, slots, slots, pLWE2, scaleSignFHEW);
+    cResult  = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots, 0);
     timeEval = TOC(t);
     std::cout << "Time to perform comparison via scheme switching: " << timeEval << " ms" << std::endl;
 
@@ -990,7 +1055,7 @@ void ArbitraryFuncViaSchemeSwitching() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXED
+    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXEDMANUAL
     parameters.SetSecurityLevel(sl);
     parameters.SetRingDim(ringDim);
 
@@ -1052,7 +1117,7 @@ void ArbitraryFuncViaSchemeSwitching() {
     double scaleCF  = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE1);
 
     TIC(t);
-    auto U0     = cc->EvalCKKStoFHEWPrecompute(scaleCF);
+    cc->EvalCKKStoFHEWPrecompute(scaleCF);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
 
@@ -1071,7 +1136,7 @@ void ArbitraryFuncViaSchemeSwitching() {
 
     // Transform the ciphertext from CKKS to FHEW
     TIC(t);
-    auto cTemp = cc->EvalCKKStoFHEW(c1, U0);
+    auto cTemp = cc->EvalCKKStoFHEW(c1);
     timeEval   = TOC(t);
     std::cout << "Time to compute the switch from CKKS to FHEW: " << timeEval << " ms" << std::endl;
 
@@ -1180,7 +1245,7 @@ void IteratedSchemeSwitching() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXED
+    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXEDMANUAL
     parameters.SetSecurityLevel(sl);
     parameters.SetRingDim(ringDim);
 
@@ -1246,7 +1311,7 @@ void IteratedSchemeSwitching() {
     double scaleCF  = modulus_CKKS_from.ConvertToInt() / (scFactor * pLWE);
 
     TIC(t);
-    auto U0     = cc->EvalCKKStoFHEWPrecompute(scaleCF);
+    cc->EvalCKKStoFHEWPrecompute(scaleCF);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
 
@@ -1269,7 +1334,7 @@ void IteratedSchemeSwitching() {
 
     // Transform the ciphertext from CKKS to FHEW
     TIC(t);
-    auto cTemp = cc->EvalCKKStoFHEW(c1, U0, numValues);
+    auto cTemp = cc->EvalCKKStoFHEW(c1, numValues);
     timeEval   = TOC(t);
     std::cout << "Time to compute the switch from CKKS to FHEW: " << timeEval << " ms" << std::endl;
 
@@ -1320,7 +1385,7 @@ void IteratedSchemeSwitching() {
 
     // Transform the ciphertext from CKKS to FHEW
     TIC(t);
-    cTemp    = cc->EvalCKKStoFHEW(c1, U0, numValues);
+    cTemp    = cc->EvalCKKStoFHEW(c1, numValues);
     timeEval = TOC(t);
     std::cout << "Time to compute the switch from CKKS to FHEW: " << timeEval << " ms" << std::endl;
 
@@ -1358,26 +1423,27 @@ void IteratedSchemeSwitching() {
 }
 
 void ArgminViaSchemeSwitching() {
-    TimeVar t, tIter, tTotal;
+    TimeVar t, tTotal;  // tIter
 
     TIC(tTotal);
 
-    double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0);  // timeEval(0.0), timeArgminIter(0.0);
+    double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEval(0.0);  // timeArgminIter(0.0);
 
     // Step 1: Setup CryptoContext for CKKS
 
     // A. Specify main parameters
     /* A1) Multiplicative depth:
     */
-    uint32_t multDepth = 9 + 3 + 1 + 4;  // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
+    uint32_t multDepth = 9 + 3 + 2 + 4;  // 1 for CKKS to FHEW, 13/14 for FHEW to CKKS, log2(numValues) for argmin
 
     /* A2) Bit-length of scaling factor.
     */
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 8192;
-    SecurityLevel sl      = HEStd_NotSet;
+    uint32_t ringDim      = 16384;         // 65536; // 8192; //
+    SecurityLevel sl      = HEStd_NotSet;  // HEStd_128_classic; //
     uint32_t logQ_ccLWE   = 23;
     bool arbFunc          = false;
+    bool oneHot           = true;
 
     /*Assumption: the CKKS ciphertext modulus when the switching is done (on the last level) has to be
     greater than the FHEW ciphertext modulus.*/
@@ -1385,7 +1451,7 @@ void ArgminViaSchemeSwitching() {
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXED
+    parameters.SetScalingTechnique(FIXEDMANUAL);  // Andreea: currently, we only support scaling for FIXEDMANUAL
     parameters.SetSecurityLevel(sl);
     parameters.SetRingDim(ringDim);
 
@@ -1396,9 +1462,7 @@ void ArgminViaSchemeSwitching() {
     uint32_t batchSize = slots;
     parameters.SetBatchSize(batchSize);
     // Have slots values encrypted but only want the argmin of the first numValues
-    uint32_t numValues = 8;
-
-    bool oneHot = true;
+    uint32_t numValues = 16;
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
@@ -1456,8 +1520,8 @@ void ArgminViaSchemeSwitching() {
     double scaleSign = 512.0;
 
     TIC(t);
-    // auto U0 = cc->EvalCKKStoFHEWPrecompute(scaleCF);
-    auto U0     = cc->EvalCompareSSPrecompute(pLWE, 0, scaleSign);
+    // cc->EvalCKKStoFHEWPrecompute(scaleCF);
+    cc->EvalCompareSSPrecompute(pLWE, 0, scaleSign);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
 
@@ -1517,7 +1581,7 @@ void ArgminViaSchemeSwitching() {
 
         // Transform the ciphertext from CKKS to FHEW
         TIC(t);
-        auto cTemp = cc->EvalCKKStoFHEW(cDiff, U0, numValues/(2*M));
+        auto cTemp = cc->EvalCKKStoFHEW(cDiff, numValues/(2*M));
         timeEval   = TOC(t);
         std::cout << "Time to compute the switch from CKKS to FHEW: " << timeEval << " ms" << std::endl;
 
@@ -1624,8 +1688,8 @@ void ArgminViaSchemeSwitching() {
         std::cout << "Indicator vector: " << ptxtMin << std::endl;
     }
     else {
-        cc->EvalSumKeyGen(keys.secretKey); // Andreea: ensure rotation keys are created, take onehot as flag
-        cInd = cc->EvalSum(cInd, numValues); // Andreea: What happens when the second parameter is not equal to batchsize?
+        cc->EvalSumKeyGen(keys.secretKey);
+        cInd = cc->EvalSum(cInd, numValues);
         cc->Decrypt(keys.secretKey, cInd, &ptxtMin);
         ptxtMin->SetLength(1);
         std::cout << "Argmin: " << ptxtMin << std::endl;
@@ -1633,9 +1697,11 @@ void ArgminViaSchemeSwitching() {
 
 */
 
-    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, U0, numValues, slots, oneHot);
+    TIC(t);
+    auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    timeEval    = TOC(t);
+    std::cout << "\nTime to compute min and argmin via scheme switching: " << timeEval << " ms\n" << std::endl;
 
-    std::cout << "\n---Finished computing the min and argmin---\n" << std::endl;
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
     ptxtMin->SetLength(1);
@@ -1650,9 +1716,11 @@ void ArgminViaSchemeSwitching() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, U0, numValues, slots, oneHot);
+    TIC(t);
+    result   = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
+    timeEval = TOC(t);
+    std::cout << "\nTime to compute max and argmax via scheme switching: " << timeEval << " ms\n" << std::endl;
 
-    std::cout << "\n---Finished computing the max and argmax---\n" << std::endl;
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
     ptxtMax->SetLength(1);

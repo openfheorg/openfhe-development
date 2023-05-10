@@ -61,7 +61,7 @@ public:
     virtual ~FHECKKSRNSSS() {}
 
     // Precomputed matrix for CKKS to FHEW switching
-    std::vector<ConstPlaintext> m_U0Pre;  // Andreea: Why can't I assign a value from a member function to this?
+    std::vector<ConstPlaintext> m_U0Pre;
 
     //------------------------------------------------------------------------------
     // Scheme Switching Wrappers
@@ -72,11 +72,10 @@ public:
                                                                 uint32_t numSlotsCKKS) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                             LWEPrivateKey& lwesk,
+                                                                             const LWEPrivateKey& lwesk,
                                                                              uint32_t dim1) override;
 
-    std::vector<ConstPlaintext> EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale,
-                                                         uint32_t dim1) const override;
+    void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale, uint32_t dim1) override;
 
     std::vector<ConstPlaintext> EvalLTPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
                                                    const std::vector<std::vector<std::complex<double>>>& A,
@@ -88,18 +87,16 @@ public:
                                                    uint32_t dim1, double scale, uint32_t L) const;
 
     Ciphertext<DCRTPoly> EvalSlotsToCoeffsSS(const CryptoContextImpl<DCRTPoly>& cc,
-                                             ConstCiphertext<DCRTPoly> ciphertext,
-                                             std::vector<ConstPlaintext> U0_Pre) const override;
+                                             ConstCiphertext<DCRTPoly> ciphertext) const;
 
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<DCRTPoly> ciphertext,
-                                                                   std::vector<ConstPlaintext> U0_Pre,
-                                                                   uint32_t numCtxts) const override;
+                                                                   uint32_t numCtxts) override;
 
     void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const BinFHEContext& ccLWE,
                              uint32_t numSlotsCKKS, uint32_t logQ) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalFHEWtoCKKSKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                             LWEPrivateKey& lwesk,
+                                                                             const LWEPrivateKey& lwesk,
                                                                              uint32_t numSlots) override;
 
     Ciphertext<DCRTPoly> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
@@ -119,25 +116,22 @@ public:
                                                                                   uint32_t dim1FC, uint32_t numValues,
                                                                                   bool oneHot) override;
 
-    std::vector<ConstPlaintext> EvalCompareSSPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE,
-                                                        uint32_t init_level, double scaleSign) const override;
+    void EvalCompareSSPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, uint32_t init_level,
+                                 double scaleSign) override;
 
     Ciphertext<DCRTPoly> EvalCompareSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext1,
-                                                    ConstCiphertext<DCRTPoly> ciphertext2,
-                                                    std::vector<ConstPlaintext> U0_Pre, uint32_t numCtxts,
-                                                    uint32_t numSlots, uint32_t pLWE, double scaleSign) const override;
+                                                    ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts,
+                                                    uint32_t numSlots, uint32_t pLWE, double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
-                                                             PublicKey<DCRTPoly> publicKey,
-                                                             std::vector<ConstPlaintext> U0_Pre, uint32_t numValues,
+                                                             PublicKey<DCRTPoly> publicKey, uint32_t numValues,
                                                              uint32_t numSlots, bool oneHot, uint32_t pLWE,
-                                                             double scaleSign) const override;
+                                                             double scaleSign) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
-                                                             PublicKey<DCRTPoly> publicKey,
-                                                             std::vector<ConstPlaintext> U0_Pre, uint32_t numValues,
+                                                             PublicKey<DCRTPoly> publicKey, uint32_t numValues,
                                                              uint32_t numSlots, bool oneHot, uint32_t pLWE,
-                                                             double scaleSign) const override;
+                                                             double scaleSign) override;
 
     //------------------------------------------------------------------------------
     // SERIALIZATION
@@ -159,9 +153,9 @@ public:
 
 private:
     // the LWE cryptocontext to generate when scheme switching from CKKS
-    BinFHEContext
-        m_ccLWE;  // Andreea: can't work with it in CKKStoFHEW"the object has type qualifiers that are not compatible with the member function". Differentiate between inner/outer?
-    CryptoContext<DCRTPoly> m_ccCKKS;  // Andreea: does it make sense to store? Differentiate between inner/outer
+    BinFHEContext m_ccLWE;
+    CryptoContext<DCRTPoly>
+        m_ccCKKS;  // Andreea: does it make sense to store? Only if we need to differentiate between inner/outer
     // the associated ciphertext modulus Q for the LWE cryptocontext
     uint64_t m_modulus_LWE;
     // the target ciphertext modulus Q for the CKKS cryptocontext (from FHEW to CKKS) // Andreea: might need inner and outer
@@ -170,7 +164,7 @@ private:
     EvalKey<DCRTPoly> m_CKKStoFHEWswk;
     // switching key from FHEW to CKKS ("outer", i.e., not for an inner functionality)
     Ciphertext<DCRTPoly> m_FHEWtoCKKSswk;
-    // number of slots encoded in the CKKS ciphertext // Andreea: check compatibility between precomputations/setup and what is used
+    // number of slots encoded in the CKKS ciphertext
     uint32_t m_numSlotsCKKS;
     // Baby-step dimensions for linear transform for CKKS->FHEW, FHEW->CKKS
     uint32_t m_dim1CF;
