@@ -94,6 +94,14 @@ void Params::SetToDefaults(SCHEME scheme) {
     }
 }
 //====================================================================================================================
+void Params::ValidateRingDim(usint ringDim) {
+    if (!IsPowerOfTwo(ringDim)) {
+        std::string errorMsg(
+            std::string("Invalid ringDim [") + std::to_string(ringDim) + "]. Ring dimension must be a power of 2.");
+        OPENFHE_THROW(config_error, errorMsg);
+    }
+}
+//====================================================================================================================
 Params::Params(const std::vector<std::string>& vals) {
     if (getAllParamsDataMembers().size() != vals.size()) {
         std::string errMsg(std::string("The number of data members and the number of values do not match: ") +
