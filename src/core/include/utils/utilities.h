@@ -135,8 +135,7 @@ inline uint32_t AdditionWithCarryOut(uint64_t a, uint64_t b, uint64_t& c) {
  * any class or struct (ex.: BigInteger, NativeIntegerT, etc.)
  * Ex: auto bitlen = GetIntegerTypeBitLength<short>(); bitlen == 16
  */
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, bool>::type = true>
+template <typename T, typename = std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, bool>>>
 constexpr usint GetIntegerTypeBitLength() {
     return sizeof(T) * CHAR_BIT;
 }
@@ -144,20 +143,22 @@ constexpr usint GetIntegerTypeBitLength() {
 // TODO (dsuponit): the name of this function Max64BitValue() is misleading as it returns the largest value
 // that can be converted from double to int64_t and not the max value of int64_t. The function must be renamed!!!
 constexpr int64_t Max64BitValue() {
-    // (2^63-1)-(2^10-1) => 2^63-2^10 - max value that could be rounded to int64_t
-    return static_cast<int64_t>((uint64_t(1) << 63) - (uint64_t(1) << 10));
+    // (2^63 - 2^9 - 1) = 9223372036854775295 is max int64_t value convertable to double and back to int64_t
+    // without overflow, but there is loss of precision, which causes a warning when implicitly casted to double.
+    // (2^63-1)-(2^10-1) = 9223372036854774784 = int64_t(double(9223372036854775295))
+    // return static_cast<int64_t>((uint64_t(1) << 63) - (uint64_t(1) << 10));
+
+    // can use this value in overflow check if you explicitly cast
+    return static_cast<int64_t>((uint64_t(1) << 63) - (uint64_t(1) << 9) - 1);
 }
 
 inline bool is64BitOverflow(double d) {
-    // 1. TODO (dsuponit): the name of this function is64BitOverflow() is misleading as it checks if
-    // double can be converted to int64_t. The name should reflect that. something like isConvertableToInt64() The function must be renamed!!!
-    // 2. TODO (dsuponit): the body of this function should probably be just 1 line as this function is asking a simple binary question if
-    // there is an overflow or not:
-    // return (std::abs(d) > Max64BitValue());
-    // TO BE REVIEWED...
-    const double EPSILON = 0.000001;
+    // TODO (dsuponit): the name of this function is64BitOverflow() is misleading as it checks if double can be
+    // converted to int64_t. The name should reflect that. something like isConvertableToInt64() The function must be renamed!!!
 
-    return EPSILON < (std::abs(d) - Max64BitValue());
+    // use of EPSILON check here is incorrect as this function asks a simple binary question: is there overflow or not.
+    // guaranteed to occur if std::abs(d) IS greater than some constant value, not CLOSE to some constant value
+    return std::abs(d) > static_cast<double>(Max64BitValue());
 }
 
 }  // namespace lbcrypto

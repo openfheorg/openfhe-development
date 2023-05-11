@@ -1926,128 +1926,105 @@ DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::ScaleAndRound(
     }
 
     std::vector<NativeInteger> mu(sizeO);
-    for (usint j = 0; j < sizeO; j++) {
+    for (size_t j = 0; j < sizeO; ++j)
         mu[j] = (paramsOutput->GetParams()[j]->GetModulus()).ComputeMu();
-    }
 
 #if defined(HAVE_INT128) && NATIVEINT == 64
     #pragma omp parallel for
-    for (usint ri = 0; ri < ringDim; ri++) {
+    for (usint ri = 0; ri < ringDim; ++ri) {
         double nu = 0.5;
-
-        for (usint i = 0; i < sizeI; i++) {
+        for (size_t i = 0; i < sizeI; ++i) {
+            // possible loss of precision if modulus greater than 2^53 + 1
             const NativeInteger& xi = m_vectors[i + inputIndex][ri];
-            nu += tOSHatInvModsDivsFrac[i] * xi.ConvertToInt();
+            nu += tOSHatInvModsDivsFrac[i] * xi.ConvertToDouble();
         }
-
         if (!is64BitOverflow(nu)) {
-            NativeInteger alpha = static_cast<uint64_t>(nu);
-
-            for (usint j = 0; j < sizeO; j++) {
-                DoubleNativeInt curValue = 0;
-
-                const NativeInteger& oj                                  = paramsOutput->GetParams()[j]->GetModulus();
-                const std::vector<NativeInteger>& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
-
-                for (usint i = 0; i < sizeI; i++) {
+            NativeInteger alpha = static_cast<BasicInteger>(nu);
+            for (size_t j = 0; j < sizeO; ++j) {
+                const auto& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
+                DoubleNativeInt curValue{0};
+                for (size_t i = 0; i < sizeI; ++i) {
                     const NativeInteger& xi = m_vectors[i + inputIndex][ri];
                     curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[i].ConvertToInt());
                 }
-
                 const NativeInteger& xi = m_vectors[outputIndex + j][ri];
                 curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[sizeI].ConvertToInt());
 
-                const NativeInteger& curNativeValue =
-                    NativeInteger(BarrettUint128ModUint64(curValue, oj.ConvertToInt(), modoBarretMu[j]));
+                const NativeInteger& oj = paramsOutput->GetParams()[j]->GetModulus();
+                auto&& curNativeValue   = BarrettUint128ModUint64(curValue, oj.ConvertToInt(), modoBarretMu[j]);
 
-                ans.m_vectors[j][ri] = curNativeValue.ModAdd(alpha, oj, mu[j]);
+                auto curAlpha{alpha};
+                if (alpha >= oj)
+                    curAlpha = alpha.Mod(oj, mu[j]);
+                ans.m_vectors[j][ri] = NativeInteger(curNativeValue).ModAddFast(curAlpha, oj);
             }
         }
         else {
-            int exp;
-            double mant           = std::frexp(nu, &exp);
-            uint64_t mantissa     = static_cast<uint64_t>(mant * (1ULL << 53));
-            uint64_t exponent     = static_cast<uint64_t>(1ULL << (exp - 53));
-            DoubleNativeInt alpha = Mul128(mantissa, exponent);
-
-            for (usint j = 0; j < sizeO; j++) {
-                DoubleNativeInt curValue = 0;
-
-                const NativeInteger& oj                                  = paramsOutput->GetParams()[j]->GetModulus();
-                const std::vector<NativeInteger>& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
-
-                for (usint i = 0; i < sizeI; i++) {
+            auto alpha = static_cast<DoubleNativeInt>(nu);
+            for (size_t j = 0; j < sizeO; ++j) {
+                const auto& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
+                DoubleNativeInt curValue{0};
+                for (size_t i = 0; i < sizeI; ++i) {
                     const NativeInteger& xi = m_vectors[i + inputIndex][ri];
                     curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[i].ConvertToInt());
                 }
-
                 const NativeInteger& xi = m_vectors[outputIndex + j][ri];
                 curValue += Mul128(xi.ConvertToInt(), tOSHatInvModsDivsModoj[sizeI].ConvertToInt());
 
-                const NativeInteger& curNativeValue =
-                    NativeInteger(BarrettUint128ModUint64(curValue, oj.ConvertToInt(), modoBarretMu[j]));
+                const NativeInteger& oj = paramsOutput->GetParams()[j]->GetModulus();
+                auto&& curNativeValue   = BarrettUint128ModUint64(curValue, oj.ConvertToInt(), modoBarretMu[j]);
 
                 ans.m_vectors[j][ri] =
-                    curNativeValue.ModAddFast(BarrettUint128ModUint64(alpha, oj.ConvertToInt(), modoBarretMu[j]), oj);
+                    NativeInteger(curNativeValue).ModAddFast(BarrettUint128ModUint64(alpha, oj.ConvertToInt(), modoBarretMu[j]), oj);
             }
         }
     }
-
     return ans;
 }
 
 #else
     #pragma omp parallel for
-    for (usint ri = 0; ri < ringDim; ri++) {
+    for (usint ri = 0; ri < ringDim; ++ri) {
         double nu = 0.5;
-
-        for (usint i = 0; i < sizeI; i++) {
+        for (size_t i = 0; i < sizeI; ++i) {
+            // possible loss of precision if modulus greater than 2^53 + 1
             const NativeInteger& xi = m_vectors[i + inputIndex][ri];
-            nu += tOSHatInvModsDivsFrac[i] * xi.ConvertToInt();
+            nu += tOSHatInvModsDivsFrac[i] * xi.ConvertToDouble();
         }
-
         if (!is64BitOverflow(nu)) {
-            NativeInteger alpha = static_cast<uint64_t>(nu);
-
-            for (usint j = 0; j < sizeO; j++) {
-                const NativeInteger& oj = paramsOutput->GetParams()[j]->GetModulus();
-                const std::vector<NativeInteger>& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
-
-                for (usint i = 0; i < sizeI; i++) {
-                    const NativeInteger& xi = m_vectors[i + inputIndex][ri];
-                    const NativeInteger& oj = ans.m_vectors[j].GetModulus();
-                    ans.m_vectors[j][ri].ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[i], oj, mu[j]), oj);
+            NativeInteger alpha = static_cast<BasicInteger>(nu);
+            for (size_t j = 0; j < sizeO; j++) {
+                const auto& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
+                const auto& oj                     = ans.m_vectors[j].GetModulus();
+                auto& curValue                     = ans.m_vectors[j][ri];
+                for (size_t i = 0; i < sizeI; i++) {
+                    const auto& xi = m_vectors[i + inputIndex][ri];
+                    curValue.ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[i], oj, mu[j]), oj);
                 }
-
-                const NativeInteger& xi = m_vectors[outputIndex + j][ri];
-                ans.m_vectors[j][ri].ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[sizeI], oj, mu[j]), oj);
-                ans.m_vectors[j][ri].ModAddEq(alpha, oj, mu[j]);
+                const auto& xi = m_vectors[outputIndex + j][ri];
+                curValue.ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[sizeI], oj, mu[j]), oj);
+                curValue.ModAddFastEq(alpha >= oj ? alpha.Mod(oj, mu[j]) : alpha, oj);
             }
         }
         else {
             int exp;
             double mant = std::frexp(nu, &exp);
-            NativeInteger mantissa = NativeInteger(static_cast<uint64_t>(mant * (1ULL << 53)));
-            NativeInteger exponent = NativeInteger(static_cast<uint64_t>(1ULL << (exp - 53)));
-
-            for (usint j = 0; j < sizeO; j++) {
-                const NativeInteger& oj = paramsOutput->GetParams()[j]->GetModulus();
-                const std::vector<NativeInteger>& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
-
-                for (usint i = 0; i < sizeI; i++) {
-                    const NativeInteger& xi = m_vectors[i + inputIndex][ri];
-                    const NativeInteger& oj = ans.m_vectors[j].GetModulus();
-                    ans.m_vectors[j][ri].ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[i], oj, mu[j]), oj);
+            NativeInteger mantissa = static_cast<BasicInteger>(mant * (1ULL << 53));
+            NativeInteger exponent = static_cast<BasicInteger>(1ULL << (exp - 53));
+            for (size_t j = 0; j < sizeO; j++) {
+                const auto& tOSHatInvModsDivsModoj = tOSHatInvModsDivsModo[j];
+                const auto& oj                     = ans.m_vectors[j].GetModulus();
+                auto& curValue                     = ans.m_vectors[j][ri];
+                for (size_t i = 0; i < sizeI; i++) {
+                    const auto& xi = m_vectors[i + inputIndex][ri];
+                    curValue.ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[i], oj, mu[j]), oj);
                 }
-                const NativeInteger& xi = m_vectors[outputIndex + j][ri];
-                ans.m_vectors[j][ri].ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[sizeI], oj, mu[j]), oj);
-
-                NativeInteger alpha = exponent.ModMul(mantissa, oj, mu[j]);
-                ans.m_vectors[j][ri].ModAddFastEq(alpha, oj);
+                const auto& xi = m_vectors[outputIndex + j][ri];
+                curValue.ModAddFastEq(xi.ModMulFast(tOSHatInvModsDivsModoj[sizeI], oj, mu[j]), oj);
+                curValue.ModAddFastEq(exponent.ModMul(mantissa, oj, mu[j]), oj);
             }
         }
     }
-
     return ans;
 }
 #endif

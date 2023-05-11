@@ -723,7 +723,6 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
     return SecretShares;
 }
 
-//**********************************************************************************
 template <>
 void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
                                                    std::unordered_map<uint32_t, DCRTPoly>& sk_shares, usint N,
@@ -741,10 +740,10 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
     if (threshold <= N / 2)
         OPENFHE_THROW(config_error, "Threshold required to be majority (more than N/2)");
 
-    const auto cryptoParams = sk->GetCryptoContext()->GetCryptoParameters();
-    auto elementParams      = cryptoParams->GetElementParams();
-    auto ring_dimension     = elementParams->GetRingDimension();
-    auto vecSize            = elementParams->GetParams().size();
+    const auto& cryptoParams  = sk->GetCryptoContext()->GetCryptoParameters();
+    const auto& elementParams = cryptoParams->GetElementParams();
+    size_t ring_dimension     = elementParams->GetRingDimension();
+    size_t vecSize            = elementParams->GetParams().size();
 
     // condition for inverse in lagrange coeff to exist.
     for (size_t k = 0; k < vecSize; k++) {
@@ -754,124 +753,65 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
     }
 
     // vector of indexes of the clients
-    std::vector<int64_t> client_indexes;
-    for (size_t i = 1; i <= N; i++) {
-        if (sk_shares.find(i) != sk_shares.end()) {
+    std::vector<uint32_t> client_indexes;
+    for (usint i = 1; i <= N; i++) {
+        if (sk_shares.find(i) != sk_shares.end())
             client_indexes.push_back(i);
-        }
+        // add early exit if client_indexes.size() == threshold?
     }
+    const usint client_indexes_size = client_indexes.size();
 
-    const auto client_indexes_size = client_indexes.size();
-    std::sort(client_indexes.begin(), client_indexes.end());
-
-    std::vector<int64_t> duplicate_indexes;
-    for (size_t i = 1; i < client_indexes_size; i++) {
-        if (client_indexes[i - 1] == client_indexes[i]) {
-            // STL function to push the duplicate words in a new vector string
-            if (duplicate_indexes.empty())
-                duplicate_indexes.push_back(client_indexes[i]);
-            else if (client_indexes[i] != duplicate_indexes.back())
-                duplicate_indexes.push_back(client_indexes[i]);
-        }
-    }
-    if (duplicate_indexes.size() != 0 && sk_shares.size() == threshold)
+    if (client_indexes_size < threshold)
         OPENFHE_THROW(config_error, "Not enough shares to recover the secret");
 
     if (shareType == "additive") {
-        // check that the vector size is the threshold for the sharing scheme
-
-        // retrieve all shares from the map
-        std::vector<DCRTPoly> sk_sharesElements;
-        for (size_t i = 1; i <= N; i++) {
-            if (sk_shares.find(i) != sk_shares.end()) {
-                sk_sharesElements.push_back(sk_shares[i]);
-            }
-        }
-
-        DCRTPoly sum_of_elems(sk_sharesElements[0]);
-        // recover secret from the shares
-        // sk = sk_1 + ... + sk_N-1;
-        for (size_t i = 1; i < threshold; i++) {
-            sum_of_elems += sk_sharesElements[i];
+        DCRTPoly sum_of_elems(elementParams, Format::EVALUATION, true);
+        for (usint i = 0; i < threshold; ++i) {
+            sum_of_elems += sk_shares[client_indexes[i]];
         }
         sk->SetPrivateElement(sum_of_elems);
     }
     else if (shareType == "shamir") {
         // use lagrange interpolation to recover the secret
-
         // vector of lagrange coefficients L_j = Pdt_i ne j (i (i-j)^-1)
-        std::unordered_map<usint, DCRTPoly> Lagrange_coeffs;
-        // initialize the coefficients
-        for (size_t i = 0; i < client_indexes_size; i++) {
-            Lagrange_coeffs[client_indexes[i]] = DCRTPoly(elementParams, Format::EVALUATION);
-        }
+        std::vector<DCRTPoly> Lagrange_coeffs(client_indexes_size, DCRTPoly(elementParams, Format::EVALUATION));
 
         // recovery of the secret with lagrange coefficients and the secret shares
-        for (size_t j = 0; j < client_indexes_size; j++) {
+        for (usint j = 0; j < client_indexes_size; j++) {
+            auto cj = client_indexes[j];
             for (size_t k = 0; k < vecSize; k++) {
                 auto modq_k = elementParams->GetParams()[k]->GetModulus();
-
-                NativeVector multvec(ring_dimension, modq_k);
-                NativeInteger mult(1);
-                for (size_t d = 0; d < ring_dimension; d++) {
-                    multvec.at(d) = mult;
-                }
-
-                NativePoly multpoly(elementParams->GetParams()[k], Format::COEFFICIENT);
-                multpoly.SetValues(multvec, Format::COEFFICIENT);
-                for (size_t i = 0; i < client_indexes_size; i++) {
-                    if (client_indexes[j] != client_indexes[i]) {
-                        auto denominator = client_indexes[i] - client_indexes[j];
-                        NativeInteger denom_positive(0);
-                        if (denominator < 0) {
-                            denom_positive = NativeInteger(-1) * denominator;
-                            denom_positive = modq_k - denom_positive;
-                        }
-                        else {
-                            denom_positive = denominator;
-                        }
-                        NativeInteger den_nativeint(denom_positive);
-                        NativeInteger denom_inv(den_nativeint.ModInverse(modq_k));
-
-                        NativeVector indexvec(ring_dimension, modq_k);
-                        NativeVector denomvec(ring_dimension, modq_k);
-                        for (size_t d = 0; d < ring_dimension; d++) {
-                            indexvec.at(d) = client_indexes[i];
-                            denomvec.at(d) = denom_inv;
-                        }
-
-                        NativePoly indexpoly(elementParams->GetParams()[k], Format::COEFFICIENT);
-                        NativePoly denompoly(elementParams->GetParams()[k], Format::COEFFICIENT);
-                        indexpoly.SetValues(indexvec, Format::COEFFICIENT);
-                        denompoly.SetValues(denomvec, Format::COEFFICIENT);
-
-                        for (size_t l = 0; l < ring_dimension; l++) {
-                            multpoly.at(l) =
-                                multpoly.at(l).ModMul(indexpoly.at(l).ModMul(denompoly.at(l), modq_k), modq_k);
-                        }
+                NativePoly multpoly(elementParams->GetParams()[k], Format::COEFFICIENT, true);
+                multpoly.AddILElementOne();
+                for (usint i = 0; i < client_indexes_size; i++) {
+                    auto ci = client_indexes[i];
+                    if (ci != cj) {
+                        auto&& denominator = (cj < ci) ? NativeInteger(ci - cj) : modq_k - NativeInteger(cj - ci);
+                        auto denom_inv{denominator.ModInverse(modq_k)};
+                        for (size_t d = 0; d < ring_dimension; ++d)
+                            multpoly[d].ModMulEq(NativeInteger(ci).ModMul(denom_inv, modq_k), modq_k);
                     }
                 }
                 multpoly.SetFormat(Format::EVALUATION);
-
-                Lagrange_coeffs[client_indexes[j]].SetElementAtIndex(k, multpoly);
+                Lagrange_coeffs[j].SetElementAtIndex(k, multpoly);
             }
+            Lagrange_coeffs[j].SetFormat(Format::COEFFICIENT);
         }
 
         DCRTPoly lagrange_sum_of_elems(elementParams, Format::COEFFICIENT, true);
-        for (size_t k = 0; k < vecSize; k++) {
-            NativePoly lagrange_sum_of_elems_poly(elementParams->GetParams()[k], Format::COEFFICIENT, true);
+        for (size_t k = 0; k < vecSize; ++k) {
             auto modq_k = elementParams->GetParams()[k]->GetModulus();
-            for (size_t i = 0; i < client_indexes_size; i++) {
-                Lagrange_coeffs[client_indexes[i]].SetFormat(Format::COEFFICIENT);
-                for (size_t l = 0; l < ring_dimension; l++) {
-                    lagrange_sum_of_elems_poly.at(l) +=
-                        Lagrange_coeffs[client_indexes[i]].GetElementAtIndex(k).at(l).ModMul(
-                            sk_shares[client_indexes[i]].GetElementAtIndex(k).at(l), modq_k);
+            NativePoly lagrange_sum_of_elems_poly(elementParams->GetParams()[k], Format::COEFFICIENT, true);
+            for (usint i = 0; i < client_indexes_size; ++i) {
+                // TODO: should we enable modmul of polys in coefficient format?
+                const auto& coeff = Lagrange_coeffs[i].GetAllElements()[k];
+                const auto& share = sk_shares[client_indexes[i]].GetAllElements()[k];
+                for (size_t d = 0; d < ring_dimension; ++d) {
+                    lagrange_sum_of_elems_poly[d].ModAddFastEq(coeff[d].ModMul(share[d], modq_k), modq_k);
                 }
             }
             lagrange_sum_of_elems.SetElementAtIndex(k, lagrange_sum_of_elems_poly);
         }
-
         lagrange_sum_of_elems.SetFormat(Format::EVALUATION);
         sk->SetPrivateElement(lagrange_sum_of_elems);
     }
