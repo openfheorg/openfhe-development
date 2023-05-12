@@ -223,7 +223,7 @@ public:
         if ((m_ksTechnique == HYBRID) && (m_PREMode != NOT_SET)) {
             return m_paramsQP;
         }
-        else if (m_encTechnique == EXTENDED) {
+        else if ((m_encTechnique == EXTENDED) && (m_paramsQr != nullptr)) {
             return m_paramsQr;
         }
         return m_params;
