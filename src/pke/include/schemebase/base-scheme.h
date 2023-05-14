@@ -44,8 +44,6 @@
 #include "ciphertext.h"
 
 #include "key/keypair.h"
-// #include "key/privatekey.h"
-// #include "key/publickey.h"
 
 #include "utils/exception.h"
 #include "utils/caller_info.h"

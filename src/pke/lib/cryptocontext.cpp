@@ -490,45 +490,6 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Eleme
 // FHE Bootstrap Methods
 //------------------------------------------------------------------------------
 
-// template <typename Element>
-// void CryptoContextImpl<Element>::EvalBootstrapSetup(std::vector<uint32_t> levelBudget, std::vector<uint32_t> dim1,
-//                                                     uint32_t numSlots, uint32_t correctionFactor) {
-//     GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, numSlots, correctionFactor);
-// }
-// template <>
-// void CryptoContextImpl<DCRTPoly>::EvalBootstrapKeyGen(const PrivateKey<DCRTPoly> privateKey, uint32_t slots) {
-//     if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
-//         OPENFHE_THROW(config_error,
-//                       "Private key passed to " + std::string(__func__) + " was not generated with this cryptocontext");
-//     }
-
-//     auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, slots);
-
-//     auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
-//     if (ekv == GetAllEvalAutomorphismKeys().end()) {
-//         GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
-//     }
-//     else {
-//         auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
-//         auto iterRowKeys = evalKeys->begin();
-//         while (iterRowKeys != evalKeys->end()) {
-//             auto idx = iterRowKeys->first;
-//             // Search current rotation key map and add key
-//             // only if it doesn't exist
-//             if (currRotMap.find(idx) == currRotMap.end()) {
-//                 currRotMap.insert(*iterRowKeys);
-//             }
-//             iterRowKeys++;
-//         }
-//     }
-// }
-
-// template <typename Element>
-// Ciphertext<Element> CryptoContextImpl<Element>::EvalBootstrap(ConstCiphertext<Element> ciphertext,
-//                                                               uint32_t numIterations, uint32_t precision) const {
-//     return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
-// }
-
 }  // namespace lbcrypto
 
 // the code below is from cryptocontext-impl.cpp
