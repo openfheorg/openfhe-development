@@ -6,12 +6,22 @@ from statistics import stdev
 import random
 import sys
 import os
+import io
 #import paramstable as stdparams
 import paramstable as stdparams
 sys.path.insert(0, '/home/sara/lattice-estimator')
 from estimator import *
 
 num_threads = 8
+
+def restore_print():
+    # restore stdout
+    sys.stdout = sys.__stdout__
+    #text_trap.getvalue()
+
+def block_print():
+    text_trap = io.StringIO()
+    sys.stdout = text_trap
 
 #calls the lattice-estimator to get the work factor for known attacks; currently only for ternary secrets. todo later: add other secret distributions
 def call_estimator(dim, mod, num_threads, is_quantum = True):
@@ -20,16 +30,19 @@ def call_estimator(dim, mod, num_threads, is_quantum = True):
     params = LWE.Parameters(n=dim, q=mod, Xs=ND.Uniform(-1, 1, dim), Xe=ND.DiscreteGaussian(3.19))
 
     if is_quantum:
+        block_print()
         estimateval = LWE.estimate(params, red_cost_model=RC.LaaMosPol14, deny_list=[
                                "bkw", "bdd_hybrid", "bdd_mitm_hybrid", "dual_hybrid", "dual_mitm_hybrid", "arora-gb"], jobs=num_threads)
+        restore_print()
     else:
+        block_print()
         estimateval = LWE.estimate(params, red_cost_model=RC.BDGL16, deny_list=[
                                "bkw", "bdd_hybrid", "bdd_mitm_hybrid", "dual_hybrid", "dual_mitm_hybrid", "arora-gb"], jobs=num_threads)
+        restore_print()
 
     usvprop = floor(log2(estimateval['usvp']['rop']))
     dualrop = floor(log2(estimateval['dual']['rop']))
     decrop = floor(log2(estimateval['bdd']['rop']))
-    print(estimateval)
     return min(usvprop, dualrop, decrop)
 
 #generate dim, mod pairs for a given security level
@@ -72,7 +85,6 @@ def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, o
         except:
             mod = mod*2
             pass
-
     done = False
     mod1 = mod
     while (sec_level_from_estimator < expected_sec_level or done):
@@ -205,7 +217,6 @@ def get_noise_from_cpp_code(param_set, num_of_samples):
     B_ks = param_set.B_ks #baseKS
     B_rk = param_set.B_rk #baseRK
     sigma = param_set.sigma #sigma stddev
-    print("get_noise_from_cpp_code dim_n mod_q dim_N mod_logQ mod_Qks Bg Bks Brk: ", dim_n, mod_q, dim_N, mod_logQ, mod_Qks, B_g, B_ks, B_rk)
     bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + str(dim_n) + " " + str(mod_q)+ " " + str(dim_N) + " " + str(mod_logQ)+ " " + str(mod_Qks) + " " + str(B_g) + " " + str(B_ks) + " " + str(B_rk) + " " + str(sigma) + " " + str(num_of_samples) + " > out_file_" + str(filenamerandom) + " 2>noise_file_" + str(filenamerandom)
 
     print(bashCommand)
@@ -244,8 +255,6 @@ def isPowerOfTwo(n):
     return (ceil(log2(n)) == floor(log2(n)))
 
 def get_dim_mod(paramset):
-    print("get_dim_mod paramset.n ", paramset.n)
-    print("get_dim_mod params.Qks ", paramset.Qks)
     dim = paramset.n
     mod = 2**(paramset.Qks)
 

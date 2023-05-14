@@ -193,12 +193,6 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
 
 void BinFHEContext::GenerateBinFHEContext(BinFHEContextParams params, BINFHE_METHOD method) {
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
-
-    std::cout << "params.latticeParam: " << params.latticeParam << std::endl;
-    std::cout << "params.modKS: " << params.modKS << std::endl;
-    std::cout << "params.gadgetBase: " << params.gadgetBase << std::endl;
-    std::cout << "params.baseKS: " << params.baseKS << std::endl;
-
     // intermediate prime
     NativeInteger Q(
         PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder));
