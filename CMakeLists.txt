@@ -477,9 +477,9 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 #--------------------------------------------------------------------
 # Submodule Update logic
 #--------------------------------------------------------------------
-find_package (Git REQUIRED)
 if(GIT_SUBMOD_AUTO AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     # Update submodules as needed
+    find_package (Git REQUIRED)
     message(STATUS "Submodule update")
     if(NOT GIT_SUBMODULE_SYNCED)
         # "git submodule sync --recursive" should run only once, when CMakeCache.txt doesn't exist'
