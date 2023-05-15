@@ -33,6 +33,7 @@
 #define SRC_PKE_CRYPTOCONTEXTFACTORY_H_
 
 #include "cryptocontext-fwd.h"
+#include "lattice/lat-hal.h"
 
 #include "scheme/scheme-id.h"
 
@@ -83,6 +84,10 @@ public:
         return AllContexts;
     }
 };
+
+template <>
+std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::AllContexts;
+
 }  // namespace lbcrypto
 
 #endif

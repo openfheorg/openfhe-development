@@ -35,8 +35,8 @@
 
 namespace lbcrypto {
 
-template <typename Element>
-std::vector<CryptoContext<Element>> CryptoContextFactory<Element>::AllContexts;
+template <>
+std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::AllContexts = {};
 
 template <typename Element>
 CryptoContext<Element> CryptoContextFactory<Element>::FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
