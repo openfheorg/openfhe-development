@@ -63,73 +63,6 @@ void CryptoContextImpl<Element>::SetKSTechniqueInScheme() {
 /////////////////////////////////////////
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalMultKeyGen(const PrivateKey<Element> key) {
-    if (key == nullptr || Mismatched(key->GetCryptoContext()))
-        OPENFHE_THROW(config_error, "Key passed to EvalMultKeyGen were not generated with this crypto context");
-
-    EvalKey<Element> k = GetScheme()->EvalMultKeyGen(key);
-
-    GetAllEvalMultKeys()[k->GetKeyTag()] = {k};
-}
-
-template <typename Element>
-void CryptoContextImpl<Element>::EvalMultKeysGen(const PrivateKey<Element> key) {
-    if (key == nullptr || Mismatched(key->GetCryptoContext()))
-        OPENFHE_THROW(config_error, "Key passed to EvalMultsKeyGen were not generated with this crypto context");
-
-    const std::vector<EvalKey<Element>>& evalKeys = GetScheme()->EvalMultKeysGen(key);
-
-    GetAllEvalMultKeys()[evalKeys[0]->GetKeyTag()] = evalKeys;
-}
-
-template <typename Element>
-const std::vector<EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalMultKeyVector(const std::string& keyID) {
-    auto ekv = GetAllEvalMultKeys().find(keyID);
-    if (ekv == GetAllEvalMultKeys().end())
-        OPENFHE_THROW(not_available_error,
-                      "You need to use EvalMultKeyGen so that you have an "
-                      "EvalMultKey available for this ID");
-    return ekv->second;
-}
-
-template <typename Element>
-std::map<std::string, std::vector<EvalKey<Element>>>& CryptoContextImpl<Element>::GetAllEvalMultKeys() {
-    return evalMultKeyMap();
-}
-
-template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalMultKeys() {
-    GetAllEvalMultKeys().clear();
-}
-
-/**
- * ClearEvalMultKeys - flush EvalMultKey cache for a given id
- * @param id
- */
-template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalMultKeys(const std::string& id) {
-    auto kd = GetAllEvalMultKeys().find(id);
-    if (kd != GetAllEvalMultKeys().end())
-        GetAllEvalMultKeys().erase(kd);
-}
-
-/**
- * ClearEvalMultKeys - flush EvalMultKey cache for a given context
- * @param cc
- */
-template <typename Element>
-void CryptoContextImpl<Element>::ClearEvalMultKeys(const CryptoContext<Element> cc) {
-    for (auto it = GetAllEvalMultKeys().begin(); it != GetAllEvalMultKeys().end();) {
-        if (it->second[0]->GetCryptoContext() == cc) {
-            it = GetAllEvalMultKeys().erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
-}
-
-template <typename Element>
 void CryptoContextImpl<Element>::InsertEvalMultKey(const std::vector<EvalKey<Element>>& vectorToInsert) {
     GetAllEvalMultKeys()[vectorToInsert[0]->GetKeyTag()] = vectorToInsert;
 }
@@ -299,12 +232,6 @@ std::map<usint, EvalKey<Element>>& CryptoContextImpl<Element>::GetEvalAutomorphi
                       "You need to use EvalAutomorphismKeyGen so that you have "
                       "EvalAutomorphismKeys available for this ID");
     return *ekv->second;
-}
-
-template <typename Element>
-std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>&
-CryptoContextImpl<Element>::GetAllEvalAutomorphismKeys() {
-    return evalAutomorphismKeyMap();
 }
 
 template <typename Element>
@@ -492,7 +419,7 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
         result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
     }
 
-    if (result.isValid == false) // TODO (dsuponit): why don't we throw an exception here?
+    if (result.isValid == false)  // TODO (dsuponit): why don't we throw an exception here?
         return result;
 
     decrypted->SetScalingFactorInt(result.scalingFactorInt);
@@ -514,56 +441,6 @@ DecryptResult CryptoContextImpl<Element>::Decrypt(ConstCiphertext<Element> ciphe
     }
 
     *plaintext = std::move(decrypted);
-    return result;
-}
-
-template <typename Element>
-DecryptResult CryptoContextImpl<Element>::MultipartyDecryptFusion(
-    const std::vector<Ciphertext<Element>>& partialCiphertextVec, Plaintext* plaintext) const {
-    DecryptResult result;
-
-    // Make sure we're processing ciphertexts.
-    size_t last_ciphertext = partialCiphertextVec.size();
-    if (last_ciphertext < 1)
-        return result;
-
-    for (size_t i = 0; i < last_ciphertext; i++) {
-        if (partialCiphertextVec[i] == nullptr || Mismatched(partialCiphertextVec[i]->GetCryptoContext()))
-            OPENFHE_THROW(config_error,
-                          "A ciphertext passed to MultipartyDecryptFusion was not "
-                          "generated with this crypto context");
-        if (partialCiphertextVec[i]->GetEncodingType() != partialCiphertextVec[0]->GetEncodingType())
-            OPENFHE_THROW(type_error,
-                          "Ciphertexts passed to MultipartyDecryptFusion have "
-                          "mismatched encoding types");
-    }
-
-    // determine which type of plaintext that you need to decrypt into
-    Plaintext decrypted =
-        GetPlaintextForDecrypt(partialCiphertextVec[0]->GetEncodingType(),
-                               partialCiphertextVec[0]->GetElements()[0].GetParams(), this->GetEncodingParams());
-
-    if ((partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) && (typeid(Element) != typeid(NativePoly)))
-        result = GetScheme()->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<Poly>());
-    else
-        result = GetScheme()->MultipartyDecryptFusion(partialCiphertextVec, &decrypted->GetElement<NativePoly>());
-
-    if (result.isValid == false)
-        return result;
-
-    if (partialCiphertextVec[0]->GetEncodingType() == CKKS_PACKED_ENCODING) {
-        auto decryptedCKKS = std::dynamic_pointer_cast<CKKSPackedEncoding>(decrypted);
-        decryptedCKKS->SetSlots(partialCiphertextVec[0]->GetSlots());
-        const auto cryptoParamsCKKS = std::dynamic_pointer_cast<CryptoParametersRNS>(this->GetCryptoParameters());
-        decryptedCKKS->Decode(partialCiphertextVec[0]->GetNoiseScaleDeg(), partialCiphertextVec[0]->GetScalingFactor(),
-                              cryptoParamsCKKS->GetScalingTechnique(), cryptoParamsCKKS->GetExecutionMode());
-    }
-    else {
-        decrypted->Decode();
-    }
-
-    *plaintext = std::move(decrypted);
-
     return result;
 }
 
@@ -612,46 +489,6 @@ Ciphertext<Element> CryptoContextImpl<Element>::EvalDivide(ConstCiphertext<Eleme
 //------------------------------------------------------------------------------
 // FHE Bootstrap Methods
 //------------------------------------------------------------------------------
-
-template <typename Element>
-void CryptoContextImpl<Element>::EvalBootstrapSetup(std::vector<uint32_t> levelBudget, std::vector<uint32_t> dim1,
-                                                    uint32_t numSlots, uint32_t correctionFactor) {
-    GetScheme()->EvalBootstrapSetup(*this, levelBudget, dim1, numSlots, correctionFactor);
-}
-
-template <typename Element>
-void CryptoContextImpl<Element>::EvalBootstrapKeyGen(const PrivateKey<Element> privateKey, uint32_t slots) {
-    if (privateKey == NULL || this->Mismatched(privateKey->GetCryptoContext())) {
-        OPENFHE_THROW(config_error,
-                      "Private key passed to EvalBootstapKeyGen was not generated with this crypto context");
-    }
-
-    auto evalKeys = GetScheme()->EvalBootstrapKeyGen(privateKey, slots);
-
-    auto ekv = GetAllEvalAutomorphismKeys().find(privateKey->GetKeyTag());
-    if (ekv == GetAllEvalAutomorphismKeys().end()) {
-        GetAllEvalAutomorphismKeys()[privateKey->GetKeyTag()] = evalKeys;
-    }
-    else {
-        auto& currRotMap = GetEvalAutomorphismKeyMap(privateKey->GetKeyTag());
-        auto iterRowKeys = evalKeys->begin();
-        while (iterRowKeys != evalKeys->end()) {
-            auto idx = iterRowKeys->first;
-            // Search current rotation key map and add key
-            // only if it doesn't exist
-            if (currRotMap.find(idx) == currRotMap.end()) {
-                currRotMap.insert(*iterRowKeys);
-            }
-            iterRowKeys++;
-        }
-    }
-}
-
-template <typename Element>
-Ciphertext<Element> CryptoContextImpl<Element>::EvalBootstrap(ConstCiphertext<Element> ciphertext,
-                                                              uint32_t numIterations, uint32_t precision) const {
-    return GetScheme()->EvalBootstrap(ciphertext, numIterations, precision);
-}
 
 }  // namespace lbcrypto
 
@@ -814,7 +651,7 @@ std::unordered_map<uint32_t, DCRTPoly> CryptoContextImpl<DCRTPoly>::ShareKeys(co
         SecretSharesVec.reserve(num_of_shares);
         SecretSharesVec.push_back(rsum);
         for (size_t i = 1; i < num_of_shares - 1; ++i) {
-            DCRTPoly r(dug, elementParams, Format::EVALUATION); // should re-generate uniform r for each share
+            DCRTPoly r(dug, elementParams, Format::EVALUATION);  // should re-generate uniform r for each share
             rsum += r;
             SecretSharesVec.push_back(std::move(r));
         }
@@ -984,7 +821,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
                 multpoly.SetValues(multvec, Format::COEFFICIENT);
                 for (size_t i = 0; i < client_indexes_size; i++) {
                     if (client_indexes[j] != client_indexes[i]) {
-                        auto denominator             = client_indexes[i] - client_indexes[j];
+                        auto denominator = client_indexes[i] - client_indexes[j];
                         NativeInteger denom_positive(0);
                         if (denominator < 0) {
                             denom_positive = NativeInteger(-1) * denominator;

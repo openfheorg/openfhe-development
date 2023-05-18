@@ -33,6 +33,7 @@
 #define SRC_PKE_CRYPTOCONTEXTFACTORY_H_
 
 #include "cryptocontext-fwd.h"
+#include "lattice/lat-hal.h"
 
 #include "scheme/scheme-id.h"
 
@@ -58,13 +59,17 @@ class CryptoContextFactory {
 
 protected:
     static CryptoContext<Element> FindContext(std::shared_ptr<CryptoParametersBase<Element>> params,
-        std::shared_ptr<SchemeBase<Element>> scheme);
+                                              std::shared_ptr<SchemeBase<Element>> scheme);
     static void AddContext(CryptoContext<Element>);
 
 public:
-    static void ReleaseAllContexts();
+    static void ReleaseAllContexts() {
+        AllContexts.clear();
+    }
 
-    static int GetContextCount();
+    static int GetContextCount() {
+        return AllContexts.size();
+    }
 
     static CryptoContext<Element> GetContext(std::shared_ptr<CryptoParametersBase<Element>> params,
                                              std::shared_ptr<SchemeBase<Element>> scheme,
@@ -75,8 +80,14 @@ public:
     // allows to avoid circular dependencies in some places by including cryptocontext-fwd.h
     static CryptoContext<Element> GetFullContextByDeserializedContext(const CryptoContext<Element> context);
 
-    static const std::vector<CryptoContext<Element>>& GetAllContexts();
+    static const std::vector<CryptoContext<Element>>& GetAllContexts() {
+        return AllContexts;
+    }
 };
+
+template <>
+std::vector<CryptoContext<DCRTPoly>> CryptoContextFactory<DCRTPoly>::AllContexts;
+
 }  // namespace lbcrypto
 
 #endif

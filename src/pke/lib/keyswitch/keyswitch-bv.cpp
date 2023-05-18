@@ -48,8 +48,8 @@
 
 namespace lbcrypto {
 
-EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
-                                            const PrivateKey<DCRTPoly> newKey) const {
+EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
+                                                    const PrivateKey<DCRTPoly> newKey) const {
     EvalKeyRelin<DCRTPoly> ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
@@ -116,12 +116,14 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
 
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
+    ek->SetKeyTag(newKey->GetKeyTag());
 
     return ek;
 }
 
-EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey, const PrivateKey<DCRTPoly> newKey,
-                                            const EvalKey<DCRTPoly> ek) const {
+EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldKey,
+                                                    const PrivateKey<DCRTPoly> newKey,
+                                                    const EvalKey<DCRTPoly> ek) const {
     EvalKeyRelin<DCRTPoly> evalKey(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(oldKey->GetCryptoParameters());
@@ -201,11 +203,13 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey, c
 
     evalKey->SetAVector(std::move(av));
     evalKey->SetBVector(std::move(bv));
+    evalKey->SetKeyTag(newKey->GetKeyTag());
 
     return evalKey;
 }
 
-EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldSk, const PublicKey<DCRTPoly> newPk) const {
+EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> oldSk,
+                                                    const PublicKey<DCRTPoly> newPk) const {
     EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newPk->GetCryptoContext());
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newPk->GetCryptoParameters());
@@ -273,6 +277,7 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldSk, co
 
     ek->SetAVector(std::move(av));
     ek->SetBVector(std::move(bv));
+    ek->SetKeyTag(newPk->GetKeyTag());
 
     return ek;
 }

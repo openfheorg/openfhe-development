@@ -43,7 +43,7 @@ BFV implementation. See https://eprint.iacr.org/2021/204 for details.
 
 namespace lbcrypto {
 
-KeyPair<DCRTPoly> PKEBFVRNS::KeyGen(CryptoContext<DCRTPoly> cc, bool makeSparse) {
+KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool makeSparse) {
     KeyPair<DCRTPoly> keyPair(std::make_shared<PublicKeyImpl<DCRTPoly>>(cc),
                               std::make_shared<PrivateKeyImpl<DCRTPoly>>(cc));
 
@@ -93,6 +93,7 @@ KeyPair<DCRTPoly> PKEBFVRNS::KeyGen(CryptoContext<DCRTPoly> cc, bool makeSparse)
     keyPair.secretKey->SetPrivateElement(std::move(s));
     keyPair.publicKey->SetPublicElementAtIndex(0, std::move(b));
     keyPair.publicKey->SetPublicElementAtIndex(1, std::move(a));
+    keyPair.publicKey->SetKeyTag(keyPair.secretKey->GetKeyTag());
 
     return keyPair;
 }

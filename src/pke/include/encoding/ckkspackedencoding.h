@@ -61,7 +61,12 @@ public:
                                                       std::is_same<T, NativePoly::Params>::value ||
                                                       std::is_same<T, DCRTPoly::Params>::value,
                                                   bool>::type = true>
-    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKSRNS_SCHEME) {}
+    CKKSPackedEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep, CKKSRNS_SCHEME) {
+        this->slots = GetDefaultSlotSize();
+        if (this->slots > (GetElementRingDimension() / 2)) {
+            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+        }
+    }
 
     /*
    * @param noiseScaleDeg degree of the scaling factor of a plaintext
@@ -81,13 +86,8 @@ public:
             OPENFHE_THROW(config_error, "The number of slots should be a power of two");
         }
 
-        if (0 == slots) {
-            auto batchSize = GetEncodingParams()->GetBatchSize();
-            this->slots    = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
-        }
-        else {
-            this->slots = slots;
-        }
+        this->slots = (slots) ? slots : GetDefaultSlotSize();
+
         if (this->slots < coeffs.size()) {
             OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
         }
@@ -112,13 +112,8 @@ public:
             OPENFHE_THROW(config_error, "The number of slots should be a power of two");
         }
 
-        if (0 == slots) {
-            auto batchSize = GetEncodingParams()->GetBatchSize();
-            this->slots    = (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
-        }
-        else {
-            this->slots = slots;
-        }
+        this->slots = (slots) ? slots : GetDefaultSlotSize();
+
         if (this->slots < rhs.size()) {
             OPENFHE_THROW(config_error, "The number of slots cannot be smaller than value vector size");
         }
@@ -130,7 +125,12 @@ public:
     /**
    * @brief Default empty constructor with empty uninitialized data elements.
    */
-    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKSRNS_SCHEME), value() {}
+    CKKSPackedEncoding() : PlaintextImpl(std::shared_ptr<Poly::Params>(0), nullptr, CKKSRNS_SCHEME) {
+        this->slots = GetDefaultSlotSize();
+        if (this->slots > (GetElementRingDimension() / 2)) {
+            OPENFHE_THROW(config_error, "The number of slots cannot be larger than half of ring dimension");
+        }
+    }
 
     CKKSPackedEncoding(const CKKSPackedEncoding& rhs)
         : PlaintextImpl(rhs), value(rhs.value), m_logError(rhs.m_logError) {}
@@ -254,6 +254,10 @@ private:
     double m_logError = 0;
 
 protected:
+    usint GetDefaultSlotSize() {
+        auto batchSize = GetEncodingParams()->GetBatchSize();
+        return (0 == batchSize) ? GetElementRingDimension() / 2 : batchSize;
+    }
     /**
    * Set modulus and recalculates the vector values to fit the modulus
    *
