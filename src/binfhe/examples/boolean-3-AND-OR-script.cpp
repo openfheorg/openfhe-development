@@ -153,53 +153,38 @@ int main(int argc, char* argv[]) {
     // Generate the secret key
     auto sk = cc.KeyGen();
 
-    std::cout << "Generating the bootstrapping keys..." << std::endl;
-
     TIC(t);
     // Generate the bootstrapping keys (refresh and switching keys)
     cc.BTKeyGen(sk);
 
     auto es = TOC_MS(t);
-    std::cout << "time for bootstrapping key generation " << es << " milliseconds" << std::endl;
+    std::cout << "BootstrapKeyGenTime: " << es << " milliseconds" << std::endl;
 
     auto bkey  = cc.GetRefreshKey();
     auto kskey = cc.GetSwitchKey();
     std::ostringstream bkeystring;
     lbcrypto::Serial::Serialize(bkey, bkeystring, lbcrypto::SerType::BINARY);
-    std::cout << "bootstrapping key size: " << bkeystring.str().size() << std::endl;
+    std::cout << "BootstrappingKeySize: " << bkeystring.str().size() << std::endl;
 
     std::ostringstream kskeystring;
     lbcrypto::Serial::Serialize(kskey, kskeystring, lbcrypto::SerType::BINARY);
-    std::cout << "key switching key size: " << kskeystring.str().size() << std::endl;
-
-    std::cout << "Completed the key generation." << std::endl;
+    std::cout << "KeySwitchingKeySize: " << kskeystring.str().size() << std::endl;
 
     // Sample Program: Step 3: Encryption
-
-    // Encrypt two ciphertexts representing Boolean True (1).
-    // By default, freshly encrypted ciphertexts are bootstrapped.
-    // If you wish to get a fresh encryption without bootstrapping, write
-    // auto   ct1 = cc.Encrypt(sk, 1, FRESH);
     auto p   = 6;
     auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct2 = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct3 = cc.Encrypt(sk, 0, SMALL_DIM, p);
-    auto ct4 = cc.Encrypt(sk, 0, SMALL_DIM, p);
-    auto ct5 = cc.Encrypt(sk, 1, SMALL_DIM, p);
-    auto ct6 = cc.Encrypt(sk, 0, SMALL_DIM, p);
 
     std::ostringstream ctstring;
     lbcrypto::Serial::Serialize(ct1, ctstring, lbcrypto::SerType::BINARY);
-    std::cout << "ciphertext size: " << ctstring.str().size() << std::endl;
-    std::cout << "ciphertext modulus: " << ct1->GetModulus() << std::endl;
-    std::cout << "ciphertext dimension n: " << ct1->GetLength() << std::endl;
-
+    std::cout << "CiphertextSize: " << ctstring.str().size() << std::endl;
     // Sample Program: Step 4: Evaluation
     TIC(t);
     // 1, 0, 0
-    auto ctAND1 = cc.EvalBinGateThreeInput(AND3, ct1, ct3, ct4);
+    auto ctAND1 = cc.EvalBinGateThreeInput(AND3, ct1, ct2, ct3);
     es          = TOC_MS(t);
-    std::cout << "time for gate evaluation " << es << " milliseconds" << std::endl;
+    std::cout << "EvalBinGateTime: " << es << " milliseconds" << std::endl;
 
     for (int i = 0; i < num_of_runs; i++) {
         auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, p);
@@ -210,67 +195,6 @@ int main(int argc, char* argv[]) {
         LWEPlaintext result;
 
         cc.Decrypt(sk, ctAND2, &result, p);
-        // std::cout << "Result of encrypted computation of AND(1, 0, 0) = " << result << std::endl;
     }
-
-#if 0
-
-    // 1, 1, 1
-    auto ctAND3 = cc.EvalBinGateThreeInput(AND3, ct1, ct2, ct5);
-
-    // 0, 0, 0
-    auto ctAND4 = cc.EvalBinGateThreeInput(AND3, ct3, ct4, ct6);
-
-    // 1, 0, 0
-    auto ctOR1 = cc.EvalBinGateThreeInput(OR3, ct1, ct3, ct4);
-    // 1, 1, 0
-    auto ctOR2 = cc.EvalBinGateThreeInput(OR3, ct1, ct2, ct3);
-
-    // 1, 1, 1
-    auto ctOR3 = cc.EvalBinGateThreeInput(OR3, ct1, ct2, ct5);
-
-    // 1, 1, 1
-    auto ctOR4 = cc.EvalBinGateThreeInput(OR3, ct3, ct4, ct6);
-#endif
-
-#if 0
-    // if (result != 0)
-    //    OPENFHE_THROW(math_error, "Decryption failure");
-
-    cc.Decrypt(sk, ctAND2, &result, p);
-    std::cout << "Result of encrypted computation of AND(1, 1, 0) = " << result << std::endl;
-    // if (result != 0)
-    //    OPENFHE_THROW(math_error, "Decryption failure");
-
-    cc.Decrypt(sk, ctAND3, &result, p);
-    std::cout << "Result of encrypted computation of AND(1, 1, 1) = " << result << std::endl;
-    // if (result != 1)
-    //    OPENFHE_THROW(math_error, "Decryption failure");
-
-    cc.Decrypt(sk, ctAND4, &result, p);
-    std::cout << "Result of encrypted computation of AND(0, 0, 0) = " << result << std::endl;
-    // if (result != 0)
-    //    OPENFHE_THROW(math_error, "Decryption failure");
-
-    cc.Decrypt(sk, ctOR1, &result, p);
-    std::cout << "Result of encrypted computation of OR(1, 0, 0) = " << result << std::endl;
-    // if (result != 1)
-    //    OPENFHE_THROW(math_error, "Decryption failure");
-
-    cc.Decrypt(sk, ctOR2, &result, p);
-    std::cout << "Result of encrypted computation of OR(1, 1, 0) = " << result << std::endl;
-    // if (result != 1)
-    //    OPENFHE_THROW(math_error, "Decryption failure");
-
-    cc.Decrypt(sk, ctOR3, &result, p);
-    std::cout << "Result of encrypted computation of OR(1, 1, 1) = " << result << std::endl;
-    // if (result != 1)
-    //    OPENFHE_THROW(math_error, "Decryption failure");
-
-    cc.Decrypt(sk, ctOR4, &result, p);
-    std::cout << "Result of encrypted computation of OR(0, 0, 0) = " << result << std::endl;
-    // if (result != 0)
-    //    OPENFHE_THROW(math_error, "Decryption failure");
-#endif
     return 0;
 }

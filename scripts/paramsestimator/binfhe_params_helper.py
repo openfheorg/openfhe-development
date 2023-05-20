@@ -46,7 +46,7 @@ def call_estimator(dim, mod, num_threads, is_quantum = True):
     return min(usvprop, dualrop, decrop)
 
 #generate dim, mod pairs for a given security level
-def generate_stdsec_dim_mod(expected_sec_level, dim, mod_start = 0, is_quantum = True):
+def generate_stdsec_dim_mod(expected_sec_level, dim, mod_start = 10, is_quantum = True):
 
     #analytical estimate from Appendix C.1 of https://eprint.iacr.org/2012/099.pdf
 
@@ -74,7 +74,6 @@ def generate_stdsec_dim_mod(expected_sec_level, dim, mod_start = 0, is_quantum =
 def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, optimize_mod=True, is_dim_pow2=True, is_quantum = True):
     dim1 = dim
     dimlog = log2(dim)
-    modified = False
     #sec_level_from_estimator = call_estimator(dim, mod, num_threads, is_quantum)
     done = False
 
@@ -87,9 +86,13 @@ def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, o
             pass
     done = False
     mod1 = mod
+
+    modifieddim = False
+    modifiedmod = False
+    #loop to adjust modulus if given dim, modulus provide less security than target
     while (sec_level_from_estimator < expected_sec_level or done):
-        modified = True
         if (optimize_dim and (not optimize_mod)):
+            modifieddim = True
             dim1 = dim1+15
             if ((dim1 >= 2*dim) and (not is_dim_pow2)):
                 done = true
@@ -98,17 +101,43 @@ def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, o
             sec_level_from_estimator = call_estimator(dim1, mod, num_threads, is_quantum)
         elif ((not optimize_dim) and optimize_mod):
             mod1 = mod1/2
-            moddone = False
-            while moddone is False:
+            while modifiedmod is False:
                 try:
                     sec_level_from_estimator = call_estimator(dim, mod1, num_threads, is_quantum)
-                    moddone = True
+                    modifiedmod = True
                 except:
                     return 0, 0
 
     #also need to check if starting from a lower than possible mod - when the above condition is satisfied but not optimal
+    #loop to adjust modulus if given dim, modulus provide more security than target
+    prev_sec_estimator = sec_level_from_estimator
+    prev_mod = mod1
+    modifieddim = False
+    modifiedmod = False
+    while (((prev_sec_estimator >= expected_sec_level) and (sec_level_from_estimator < expected_sec_level)) or done):
+        prev_sec_estimator = sec_level_from_estimator
+        if (optimize_dim and (not optimize_mod)):
+            modifieddim = True
+            dim1 = dim1-15
+            if ((dim1 <= 500) and (not is_dim_pow2)):
+                done = true
+            elif is_dim_pow2:
+                dim1 = dim/2
+            sec_level_from_estimator = call_estimator(dim1, mod, num_threads, is_quantum)
+        elif ((not optimize_dim) and optimize_mod):
+            mod1 = mod1*2
+            while modifiedmod is False:
+                try:
+                    sec_level_from_estimator = call_estimator(dim, mod1, num_threads, is_quantum)
+                    modifiedmod = True
+                except:
+                    return 0, 0
 
-    if (modified and sec_level_from_estimator < expected_sec_level):
+
+    if (modifiedmod and prev_sec_estimator >= expected_sec_level):
+        mod1 = mod1/2
+
+    if ((modifieddim or modifiedmod) and sec_level_from_estimator < expected_sec_level):
     	print("cannot find optimal params")
     	dim1 = 0
     	mod1 = 0
@@ -204,7 +233,7 @@ def choose_params_digit_size(exp_sec_level, param_set, exp_dec_fail, comp, optim
     return B_g, B_ks
 
 
-def get_noise_from_cpp_code(param_set, num_of_samples):
+def get_noise_from_cpp_code(param_set, num_of_samples, perfNumbers = False):
 
     filenamerandom = random.randrange(500)
 
@@ -227,7 +256,35 @@ def get_noise_from_cpp_code(param_set, num_of_samples):
         for line in file:
             noise.append(float(line.rstrip()))
     print("noise", stdev(noise))
-    return stdev(noise)
+
+
+    perfnum = get_performance("out_file_"+ str(filenamerandom))
+    if perfNumbers:
+        return stdev(noise), perfnum
+    else:
+        return stdev(noise)
+
+def get_performance(filename):
+    #stdparams.performanceNumbers(bootstrapKeySize, keyswitchKeySize, ciphertextSize, bootstrapKeygenTime, evalbingateTime)
+    perf = {}
+    with open(filename) as file:
+        for line in file:
+            s1 = line.split(":")
+            match s1[0]:
+                case "BootstrappingKeySize":
+                    perf.update({"BootstrappingKeySize": s1[1] + " bytes"})
+                case "KeySwitchingKeySize":
+                    perf.update({"KeySwitchingKeySize": s1[1] + " bytes"})
+                case "CiphertextSize":
+                    perf.update({"CiphertextSize": s1[1] + " bytes"})
+                case "BootstrapKeyGenTime":
+                    perf.update({"BootstrapKeyGenTime": s1[1] + " milliseconds"})
+                case "EvalBinGateTime":
+                    perf.update({"EvalBinGateTime": s1[1]+ " milliseconds"})
+
+    return perf
+
+
 
 def get_decryption_failure(noise_stddev, ptmod, ctmod, comp):
     num = ctmod/(2*ptmod)

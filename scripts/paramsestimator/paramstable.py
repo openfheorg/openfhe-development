@@ -36,6 +36,7 @@ class paramsetvars:
         self.B_rk = B_rk #baseRK
         self.sigma = sigma #sigma stddev
 
+
 STD128Q_OPT_3_nQks1 = paramsetvars(600, 4096, 2048, 50, 2**15, 2**25, 2**5, 2**5, 3.19)
 STD128Q_OPT_3 = paramsetvars(585, 4096, 2048, 50, 2**15, 2**25, 2**5, 2**5, 3.19)
 
@@ -49,6 +50,15 @@ paramlinear = {
     'STD256Q': [256, 0.01339285714070515, -1.083333333337455]
 }
 '''
+class performanceNumbers:
+    def __init__(self, bootstrapKeySize, keyswitchKeySize, ciphertextSize, bootstrapKeygenTime, evalbingateTime):
+    self.bootstrapKeySize = bootstrapKeySize
+    self.keyswitchKeySize = keyswitchKeySize
+    self.ciphertextSize = ciphertextSize
+    self.bootstrapKeygenTime = bootstrapKeygenTime
+    self.evalbingateTime = evalbingateTime
+
+
 LogQ[(Paramset.params128NQ1, DistType.HEStd_ternary, 1024, SecLev.HEStd_128_classic)] = 27
 LogQ[(Paramset.params192NQ1, DistType.HEStd_ternary, 1024, SecLev.HEStd_192_classic)] = 19
 LogQ[(Paramset.params256NQ1, DistType.HEStd_ternary, 1024, SecLev.HEStd_256_classic)] = 14
