@@ -270,17 +270,17 @@ def get_performance(filename):
     with open(filename) as file:
         for line in file:
             s1 = line.split(":")
-            match s1[0]:
-                case "BootstrappingKeySize":
-                    perf.update({"BootstrappingKeySize": s1[1] + " bytes"})
-                case "KeySwitchingKeySize":
-                    perf.update({"KeySwitchingKeySize": s1[1] + " bytes"})
-                case "CiphertextSize":
-                    perf.update({"CiphertextSize": s1[1] + " bytes"})
-                case "BootstrapKeyGenTime":
-                    perf.update({"BootstrapKeyGenTime": s1[1] + " milliseconds"})
-                case "EvalBinGateTime":
-                    perf.update({"EvalBinGateTime": s1[1]+ " milliseconds"})
+            ### need python 3.10 or higher to use match instead of ifelse
+            if (s1[0] == "BootstrappingKeySize"):
+                perf.update({"BootstrappingKeySize": s1[1] + " bytes"})
+            elif(s1[0] == "KeySwitchingKeySize"):
+                perf.update({"KeySwitchingKeySize": s1[1] + " bytes"})
+            elif(s1[0] == "CiphertextSize"):
+                perf.update({"CiphertextSize": s1[1] + " bytes"})
+            elif(s1[0] == "BootstrapKeyGenTime"):
+                perf.update({"BootstrapKeyGenTime": s1[1] + " milliseconds"})
+            elif(s1[0] == "EvalBinGateTime"):
+                perf.update({"EvalBinGateTime": s1[1]+ " milliseconds"})
 
     return perf
 

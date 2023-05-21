@@ -15,7 +15,7 @@ def parameter_selector():
     print("Parameter selectorfor FHEW like schemes")
 
     #bootstrapping technique
-    dist_type = int(input("Enter Bootstrapping technique (0 = GINX, 1 = AP, 2 = LMKDCEY: "))
+    dist_type = int(input("Enter Bootstrapping technique (0 = GINX, 1 = AP, 2 = LMKDCEY): "))
     helperfncs.test_range(dist_type, 0, 2)
 
     exp_sec_level = input("Enter Security level (STD128, STD128Q, STD192, STD192Q, STD256, STD256Q): ")
@@ -202,7 +202,9 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
             params.B_ks = B_ks
             new_noise = helperfncs.get_noise_from_cpp_code(params, num_of_samples)
 
-            if (new_noise > target_noise_level and prev_noise <= target_noise_level):
+            #if (new_noise > target_noise_level and prev_noise <= target_noise_level):
+            if (new_noise <= target_noise_level):
+                print("in qks search break if")
                 found = True
                 n = new_n
                 intlogmodQks = prevlogmodQks
@@ -213,17 +215,28 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
             if found:
                 break
 
-            if (new_noise < target_noise_level):
+            if (new_noise <= target_noise_level):
+                print("in qks search new noise < target noise")
                 endQks = newQks
             else:
+                print("in qks search new noise > target noise")
                 startQks = newQks
 
             prevlogmodQks = newlogmodQks
             prevBks = B_ks
             prev_noise = new_noise
 
-            newks = ceil((startQks + endQks)/2)
+            newQks = ceil((startQks + endQks)/2)
             newlogmodQks = log2(newQks)
+            print("newQks: ", newQks)
+            print("startQks: ", startQks)
+            print("endQks: ", endQks)
+
+        print("int_noise: ", int_noise)
+        print("new_noise: ", new_noise)
+
+        print("prev_found: ", prev_found)
+        print("found: ", found)
 
         if (prev_found and (not found) and (new_noise <= int_noise)):
             end_N = new_n - 1
@@ -237,6 +250,10 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
                 start_n = new_n + 1
             else:
                 end_N = new_n - 1
+
+        if (prev_found and (not found)):
+            retlogmodQks = intlogmodQks
+            retBks = intBks
 
 
     #add code to check if any n value lesser than the obtained n could result in the same or lower noise level
