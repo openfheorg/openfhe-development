@@ -152,6 +152,24 @@ public:
                 m_monomials.push_back(aPoly);
             }
         }
+
+        if (m_method == LMKCDEY){
+            uint32_t M = 2*m_N;
+
+            m_logGen.resize(M);
+            uint32_t gen = 5;
+            uint32_t gPow = 1;
+
+            m_logGen[gPow] = 0; // for 1
+            m_logGen[M - gPow] = M; // for -1
+
+            for (size_t i = 1; i < m_N/2; i++)
+            {
+                gPow = (gPow*gen) % M;
+                m_logGen[gPow] = i;
+                m_logGen[M - gPow] = -i;
+            }
+        }
     }
 
     /**
