@@ -37,7 +37,7 @@
 #define _SRC_LIB_CORE_MATH_MATRIX_IMPL_CPP
 
 #include "lattice/field2n.h"
-#include "math/matrix.cpp"
+#include "math/matrix.cpp"  // NOLINT
 #include "math/matrixstrassen.h"
 
 // this is the implementation of matrixes of things that are in core
@@ -49,30 +49,30 @@ template class Matrix<double>;
 template class Matrix<int>;
 template class Matrix<int64_t>;
 
-#define MODEQ_FOR_TYPE(T)                         \
-  template <>                                     \
-  Matrix<T> &Matrix<T>::ModEq(const T &element) { \
-    for (size_t row = 0; row < rows; ++row) {     \
-      for (size_t col = 0; col < cols; ++col) {   \
-        data[row][col].ModEq(element);            \
-      }                                           \
-    }                                             \
-    return *this;                                 \
-  }
+#define MODEQ_FOR_TYPE(T)                             \
+    template <>                                       \
+    Matrix<T>& Matrix<T>::ModEq(const T& element) {   \
+        for (size_t row = 0; row < rows; ++row) {     \
+            for (size_t col = 0; col < cols; ++col) { \
+                data[row][col].ModEq(element);        \
+            }                                         \
+        }                                             \
+        return *this;                                 \
+    }
 
 MODEQ_FOR_TYPE(NativeInteger)
 MODEQ_FOR_TYPE(BigInteger)
 
-#define MODSUBEQ_FOR_TYPE(T)                                             \
-  template <>                                                            \
-  Matrix<T> &Matrix<T>::ModSubEq(Matrix<T> const &b, const T &element) { \
-    for (size_t row = 0; row < rows; ++row) {                            \
-      for (size_t col = 0; col < cols; ++col) {                          \
-        data[row][col].ModSubEq(b.data[row][col], element);              \
-      }                                                                  \
-    }                                                                    \
-    return *this;                                                        \
-  }
+#define MODSUBEQ_FOR_TYPE(T)                                               \
+    template <>                                                            \
+    Matrix<T>& Matrix<T>::ModSubEq(Matrix<T> const& b, const T& element) { \
+        for (size_t row = 0; row < rows; ++row) {                          \
+            for (size_t col = 0; col < cols; ++col) {                      \
+                data[row][col].ModSubEq(b.data[row][col], element);        \
+            }                                                              \
+        }                                                                  \
+        return *this;                                                      \
+    }
 
 MODSUBEQ_FOR_TYPE(NativeInteger)
 MODSUBEQ_FOR_TYPE(BigInteger)
@@ -83,150 +83,152 @@ MODSUBEQ_FOR_TYPE(BigInteger)
 // coefficients because it is formed by discrete gaussians e and s; this implies
 // int32_t can be used This algorithm can be further improved - see the
 // Darmstadt paper section 4.4
-Matrix<double> Cholesky(const Matrix<int32_t> &input) {
-  //  http://eprint.iacr.org/2013/297.pdf
-  if (input.GetRows() != input.GetCols()) {
-    PALISADE_THROW(math_error, "not square");
-  }
-  size_t rows = input.GetRows();
-  Matrix<double> result([]() { return 0; }, rows, rows);
-
-  for (size_t i = 0; i < rows; ++i) {
-    for (size_t j = 0; j < rows; ++j) {
-      result(i, j) = input(i, j);
+Matrix<double> Cholesky(const Matrix<int32_t>& input) {
+    //  http://eprint.iacr.org/2013/297.pdf
+    if (input.GetRows() != input.GetCols()) {
+        OPENFHE_THROW(math_error, "not square");
     }
-  }
+    size_t rows = input.GetRows();
+    Matrix<double> result([]() { return 0; }, rows, rows);
 
-  for (size_t k = 0; k < rows; ++k) {
-    result(k, k) = sqrt(result(k, k));
-    // result(k, k) = sqrt(input(k, k));
-    for (size_t i = k + 1; i < rows; ++i) {
-      // result(i, k) = input(i, k) / result(k, k);
-      result(i, k) = result(i, k) / result(k, k);
-      //  zero upper-right triangle
-      result(k, i) = 0;
-    }
-    for (size_t j = k + 1; j < rows; ++j) {
-      for (size_t i = j; i < rows; ++i) {
-        if (result(i, k) != 0 && result(j, k) != 0) {
-          result(i, j) = result(i, j) - result(i, k) * result(j, k);
-          // result(i, j) = input(i, j) - result(i, k) * result(j, k);
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < rows; ++j) {
+            result(i, j) = input(i, j);
         }
-      }
     }
-  }
-  return result;
+
+    for (size_t k = 0; k < rows; ++k) {
+        result(k, k) = sqrt(result(k, k));
+        // result(k, k) = sqrt(input(k, k));
+        for (size_t i = k + 1; i < rows; ++i) {
+            // result(i, k) = input(i, k) / result(k, k);
+            result(i, k) = result(i, k) / result(k, k);
+            //  zero upper-right triangle
+            result(k, i) = 0;
+        }
+        for (size_t j = k + 1; j < rows; ++j) {
+            for (size_t i = j; i < rows; ++i) {
+                if (result(i, k) != 0 && result(j, k) != 0) {
+                    result(i, j) = result(i, j) - result(i, k) * result(j, k);
+                    // result(i, j) = input(i, j) - result(i, k) * result(j, k);
+                }
+            }
+        }
+    }
+    return result;
 }
 
-void Cholesky(const Matrix<int32_t> &input, Matrix<double> &result) {
-  //  http://eprint.iacr.org/2013/297.pdf
-  if (input.GetRows() != input.GetCols()) {
-    PALISADE_THROW(math_error, "not square");
-  }
-  size_t rows = input.GetRows();
-  //  Matrix<LargeFloat> result([]() { return make_unique<LargeFloat>(); },
-  // rows, rows);
-
-  for (size_t i = 0; i < rows; ++i) {
-    for (size_t j = 0; j < rows; ++j) {
-      result(i, j) = input(i, j);
+void Cholesky(const Matrix<int32_t>& input, Matrix<double>& result) {
+    //  http://eprint.iacr.org/2013/297.pdf
+    if (input.GetRows() != input.GetCols()) {
+        OPENFHE_THROW(math_error, "not square");
     }
-  }
+    size_t rows = input.GetRows();
+    //  Matrix<LargeFloat> result([]() { return make_unique<LargeFloat>(); },
+    // rows, rows);
 
-  for (size_t k = 0; k < rows; ++k) {
-    result(k, k) = sqrt(input(k, k));
-
-    for (size_t i = k + 1; i < rows; ++i) {
-      // result(i, k) = input(i, k) / result(k, k);
-      result(i, k) = result(i, k) / result(k, k);
-      //  zero upper-right triangle
-      result(k, i) = 0;
-    }
-    for (size_t j = k + 1; j < rows; ++j) {
-      for (size_t i = j; i < rows; ++i) {
-        if (result(i, k) != 0 && result(j, k) != 0) {
-          result(i, j) = result(i, j) - result(i, k) * result(j, k);
-          // result(i, j) = input(i, j) - result(i, k) * result(j, k);
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < rows; ++j) {
+            result(i, j) = input(i, j);
         }
-      }
     }
-  }
+
+    for (size_t k = 0; k < rows; ++k) {
+        result(k, k) = sqrt(input(k, k));
+
+        for (size_t i = k + 1; i < rows; ++i) {
+            // result(i, k) = input(i, k) / result(k, k);
+            result(i, k) = result(i, k) / result(k, k);
+            //  zero upper-right triangle
+            result(k, i) = 0;
+        }
+        for (size_t j = k + 1; j < rows; ++j) {
+            for (size_t i = j; i < rows; ++i) {
+                if (result(i, k) != 0 && result(j, k) != 0) {
+                    result(i, j) = result(i, j) - result(i, k) * result(j, k);
+                    // result(i, j) = input(i, j) - result(i, k) * result(j, k);
+                }
+            }
+        }
+    }
 }
 
 //  Convert from Z_q to [-q/2, q/2]
-Matrix<int32_t> ConvertToInt32(const Matrix<BigInteger> &input,
-                               const BigInteger &modulus) {
-  size_t rows = input.GetRows();
-  size_t cols = input.GetCols();
-  BigInteger negativeThreshold(modulus / BigInteger(2));
-  Matrix<int32_t> result([]() { return 0; }, rows, cols);
-  for (size_t i = 0; i < rows; ++i) {
-    for (size_t j = 0; j < cols; ++j) {
-      if (input(i, j) > negativeThreshold) {
-        result(i, j) = -1 * (modulus - input(i, j)).ConvertToInt();
-      } else {
-        result(i, j) = input(i, j).ConvertToInt();
-      }
+Matrix<int32_t> ConvertToInt32(const Matrix<BigInteger>& input, const BigInteger& modulus) {
+    size_t rows = input.GetRows();
+    size_t cols = input.GetCols();
+    BigInteger negativeThreshold(modulus / BigInteger(2));
+    Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
+            if (input(i, j) > negativeThreshold) {
+                result(i, j) = -1 * (modulus - input(i, j)).ConvertToInt();
+            }
+            else {
+                result(i, j) = input(i, j).ConvertToInt();
+            }
+        }
     }
-  }
-  return result;
+    return result;
 }
 
-Matrix<int32_t> ConvertToInt32(const Matrix<BigVector> &input,
-                               const BigInteger &modulus) {
-  size_t rows = input.GetRows();
-  size_t cols = input.GetCols();
-  BigInteger negativeThreshold(modulus / BigInteger(2));
-  Matrix<int32_t> result([]() { return 0; }, rows, cols);
-  for (size_t i = 0; i < rows; ++i) {
-    for (size_t j = 0; j < cols; ++j) {
-      const BigInteger &elem = input(i, j).at(0);
-      if (elem > negativeThreshold) {
-        result(i, j) = -1 * (modulus - elem).ConvertToInt();
-      } else {
-        result(i, j) = elem.ConvertToInt();
-      }
+Matrix<int32_t> ConvertToInt32(const Matrix<BigVector>& input, const BigInteger& modulus) {
+    size_t rows = input.GetRows();
+    size_t cols = input.GetCols();
+    BigInteger negativeThreshold(modulus / BigInteger(2));
+    Matrix<int32_t> result([]() { return 0; }, rows, cols);
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
+            const BigInteger& elem = input(i, j).at(0);
+            if (elem > negativeThreshold) {
+                result(i, j) = -1 * (modulus - elem).ConvertToInt();
+            }
+            else {
+                result(i, j) = elem.ConvertToInt();
+            }
+        }
     }
-  }
-  return result;
+    return result;
 }
 
 template <>
 void Matrix<Field2n>::SetFormat(Format f) {
-  if (rows == 1) {
-    for (size_t row = 0; row < rows; ++row) {
+    if (rows == 1) {
+        for (size_t row = 0; row < rows; ++row) {
 #pragma omp parallel for
-      for (size_t col = 0; col < cols; ++col) {
-        data[row][col].SetFormat(f);
-      }
+            for (size_t col = 0; col < cols; ++col) {
+                data[row][col].SetFormat(f);
+            }
+        }
     }
-  } else {
-    for (size_t col = 0; col < cols; ++col) {
+    else {
+        for (size_t col = 0; col < cols; ++col) {
 #pragma omp parallel for
-      for (size_t row = 0; row < rows; ++row) {
-        data[row][col].SetFormat(f);
-      }
+            for (size_t row = 0; row < rows; ++row) {
+                data[row][col].SetFormat(f);
+            }
+        }
     }
-  }
 }
 
 template <>
 void Matrix<Field2n>::SwitchFormat() {
-  if (rows == 1) {
-    for (size_t row = 0; row < rows; ++row) {
+    if (rows == 1) {
+        for (size_t row = 0; row < rows; ++row) {
 #pragma omp parallel for
-      for (size_t col = 0; col < cols; ++col) {
-        data[row][col].SwitchFormat();
-      }
+            for (size_t col = 0; col < cols; ++col) {
+                data[row][col].SwitchFormat();
+            }
+        }
     }
-  } else {
-    for (size_t col = 0; col < cols; ++col) {
+    else {
+        for (size_t col = 0; col < cols; ++col) {
 #pragma omp parallel for
-      for (size_t row = 0; row < rows; ++row) {
-        data[row][col].SwitchFormat();
-      }
+            for (size_t row = 0; row < rows; ++row) {
+                data[row][col].SwitchFormat();
+            }
+        }
     }
-  }
 }
 
 }  // namespace lbcrypto

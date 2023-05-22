@@ -30,88 +30,72 @@
 //==================================================================================
 
 /*
-Description:
-
-This code implements RNS variants of the Cheon-Kim-Kim-Song scheme.
-
-The CKKS scheme is introduced in the following paper:
-- Jung Hee Cheon, Andrey Kim, Miran Kim, and Yongsoo Song. Homomorphic
-encryption for arithmetic of approximate numbers. Cryptology ePrint Archive,
-Report 2016/421, 2016. https://eprint.iacr.org/2016/421.
-
- Our implementation builds from the designs here:
- - Marcelo Blatt, Alexander Gusev, Yuriy Polyakov, Kurt Rohloff, and Vinod
-Vaikuntanathan. Optimized homomorphic encryption solution for secure genomewide
-association studies. Cryptology ePrint Archive, Report 2019/223, 2019.
-https://eprint.iacr.org/2019/223.
- - Andrey Kim, Antonis Papadimitriou, and Yuriy Polyakov. Approximate
-homomorphic encryption with reduced approximation error. Cryptology ePrint
-Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
-1118.
+CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
  */
 
 #define PROFILE
 
-#include "cryptocontext.h"
-#include "scheme/ckksrns/ckksrns-pke.h"
 #include "scheme/ckksrns/ckksrns-multiparty.h"
+
+#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
+#include "ciphertext.h"
 
 namespace lbcrypto {
 
-DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
-    const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec, Poly *plaintext) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          ciphertextVec[0]->GetCryptoParameters());
-  const std::vector<DCRTPoly> &cv0 = ciphertextVec[0]->GetElements();
+DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                         Poly* plaintext) const {
+    const auto cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertextVec[0]->GetCryptoParameters());
+    const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 
-  DCRTPoly b = cv0[0];
-  for (size_t i = 1; i < ciphertextVec.size(); i++) {
-    const std::vector<DCRTPoly> &cvi = ciphertextVec[i]->GetElements();
-    b += cvi[0];
-  }
-  b.SetFormat(Format::COEFFICIENT);
+    DCRTPoly b = cv0[0];
+    for (size_t i = 1; i < ciphertextVec.size(); i++) {
+        const std::vector<DCRTPoly>& cvi = ciphertextVec[i]->GetElements();
+        b += cvi[0];
+    }
+    b.SetFormat(Format::COEFFICIENT);
 
-  size_t sizeQl = b.GetParams()->GetParams().size();
-  if (sizeQl > 1) {
     *plaintext = b.CRTInterpolate();
-  } else if (sizeQl == 1) {
-    *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
-  } else {
-    PALISADE_THROW(
-        math_error,
-        "Decryption failure: No towers left; consider increasing the depth.");
-  }
 
-  return DecryptResult(plaintext->GetLength());
+    //  size_t sizeQl = b.GetParams()->GetParams().size();
+    //  if (sizeQl > 1) {
+    //    *plaintext = b.CRTInterpolate();
+    //  } else if (sizeQl == 1) {
+    //    *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
+    //  } else {
+    //    OPENFHE_THROW(
+    //        math_error,
+    //        "Decryption failure: No towers left; consider increasing the depth.");
+    //  }
+
+    return DecryptResult(plaintext->GetLength());
 }
 
-DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(
-    const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
-    NativePoly *plaintext) const {
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersCKKSRNS>(
-          ciphertextVec[0]->GetCryptoParameters());
+DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                                         NativePoly* plaintext) const {
+    const auto cryptoParams =
+        std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertextVec[0]->GetCryptoParameters());
 
-  const std::vector<DCRTPoly> &cv0 = ciphertextVec[0]->GetElements();
+    const std::vector<DCRTPoly>& cv0 = ciphertextVec[0]->GetElements();
 
-  DCRTPoly b = cv0[0];
-  for (size_t i = 1; i < ciphertextVec.size(); i++) {
-    const std::vector<DCRTPoly> &cvi = ciphertextVec[i]->GetElements();
-    b += cvi[0];
-  }
-  b.SetFormat(Format::COEFFICIENT);
+    DCRTPoly b = cv0[0];
+    for (size_t i = 1; i < ciphertextVec.size(); i++) {
+        const std::vector<DCRTPoly>& cvi = ciphertextVec[i]->GetElements();
+        b += cvi[0];
+    }
+    b.SetFormat(Format::COEFFICIENT);
 
-  const size_t sizeQl = b.GetParams()->GetParams().size();
-  if (sizeQl == 1)
+    //  const size_t sizeQl = b.GetParams()->GetParams().size();
+    //  if (sizeQl == 1)
+    //    *plaintext = b.GetElementAtIndex(0);
+    //  else
+    //    OPENFHE_THROW(
+    //        math_error,
+    //        "Decryption failure: No towers left; consider increasing the depth.");
+
     *plaintext = b.GetElementAtIndex(0);
-  else
-    PALISADE_THROW(
-        math_error,
-        "Decryption failure: No towers left; consider increasing the depth.");
 
-  return DecryptResult(plaintext->GetLength());
-
+    return DecryptResult(plaintext->GetLength());
 }
 
-}
+}  // namespace lbcrypto

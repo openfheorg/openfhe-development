@@ -1,36 +1,20 @@
 # Documentation
 
-- contains all the assets and files for building our documentation. Refer to the folder structure below
+## Local Builds
 
-## Building the documentation
+- This is meant for testing locally, particularly if you do not have admin access on the [readthedocs](https://readthedocs.org/)
 
-### Requirements:
+- Building: run `make html` while in this directory.
 
-- doxygen
-- sphinx
+## Testing Changes
 
-#### Building Doxygen
+1) run `pip install restview`
 
-```bash
-# At the top-level
-mkdir build
-cd build
-cmake ..
-make Doxygen  # the files can now be accessed at build/docs/doxygen/html/index.html
-```
+2) run `restivew X.rst` which will render that file.
 
-#### Building Sphinx
 
-```bash
-# At the top-level
-mkdir build
-cd build
-cmake ..
-make Sphinx 2> sphinx_warnings.txt # the files can now be accessed at  build/docs/sphinx/index.html
-```
+## Remote Builds
 
-## Folders
+- Specifically for readthedocs, the system will automatically handle the builds for the `main` and `latest` branches. For anything else, reach
+out to the admins for permissions.
 
-[assets](assets) - styling, images, etc.
-
-[static docs](static_docs) - static markdown files. Used primarily for doxygen and markdown-rendered readmes.

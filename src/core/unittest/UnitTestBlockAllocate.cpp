@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code exercises the block allocator utility of the PALISADE lattice encryption library.
+  This code exercises the block allocator utility of the OpenFHE lattice encryption library.
  */
 
 // #define PROFILE    //define this is we want profiling output and statistics
@@ -51,13 +51,13 @@
 using namespace lbcrypto;
 
 class UnitTestBinInt : public ::testing::Test {
- protected:
-  virtual void SetUp() {}
+protected:
+    virtual void SetUp() {}
 
-  virtual void TearDown() {
-    // Code here will be called immediately after each test
-    // (right before the destructor).
-  }
+    virtual void TearDown() {
+        // Code here will be called immediately after each test
+        // (right before the destructor).
+    }
 };
 
 /************************************************/
@@ -69,8 +69,8 @@ class UnitTestBinInt : public ::testing::Test {
 typedef char Block[BLOCKSIZE];  // define Block as char array of size BLOCKSIZE
 
 class MyClass {
-  DECLARE_ALLOCATOR
-  // remaining class definition
+    DECLARE_ALLOCATOR
+    // remaining class definition
 };
 IMPLEMENT_ALLOCATOR(MyClass, 0, 0)
 
@@ -96,19 +96,18 @@ static const int MAX_BLOCKS = 4096;
 static const int MAX_BLOCK_SIZE = 8196;
 char* memoryPtrs[MAX_BLOCKS];
 char* memoryPtrs2[MAX_BLOCKS];
-AllocatorPool<char[MAX_BLOCK_SIZE], MAX_BLOCKS * 2>
-    allocatorStaticPoolBenchmark;
+AllocatorPool<char[MAX_BLOCK_SIZE], MAX_BLOCKS * 2> allocatorStaticPoolBenchmark;
 Allocator allocatorHeapBlocksBenchmark(MAX_BLOCK_SIZE);
 
 static void out_of_memory() {
-  // new-handler function called by Allocator when pool is out of memory
+    // new-handler function called by Allocator when pool is out of memory
 
-  std::cerr << "out_of_memory in block allocator";
+    std::cerr << "out_of_memory in block allocator";
 #if 0
   std::bad_alloc exception;
   throw(exception);
 #else
-  assert(0);
+    assert(0);
 #endif
 }
 
@@ -125,127 +124,129 @@ void DeallocHeapBlocks(char* ptr);
 //------------------------------------------------------------------------------
 // AllocHeap
 //------------------------------------------------------------------------------
-char* AllocHeap(int size) { return new char[size]; }
+char* AllocHeap(int size) {
+    return new char[size];
+}
 
 //------------------------------------------------------------------------------
 // DeallocHeap
 //------------------------------------------------------------------------------
-void DeallocHeap(char* ptr) { delete[] ptr; }
+void DeallocHeap(char* ptr) {
+    delete[] ptr;
+}
 
 //------------------------------------------------------------------------------
 // AllocStaticPool
 //------------------------------------------------------------------------------
 char* AllocStaticPool(int size) {
-  return reinterpret_cast<char*>(allocatorStaticPoolBenchmark.Allocate(size));
+    return reinterpret_cast<char*>(allocatorStaticPoolBenchmark.Allocate(size));
 }
 
 //------------------------------------------------------------------------------
 // DeallocStaticPool
 //------------------------------------------------------------------------------
 void DeallocStaticPool(char* ptr) {
-  allocatorStaticPoolBenchmark.Deallocate(ptr);
+    allocatorStaticPoolBenchmark.Deallocate(ptr);
 }
 
 //------------------------------------------------------------------------------
 // AllocHeapBlocks
 //------------------------------------------------------------------------------
 char* AllocHeapBlocks(int size) {
-  return reinterpret_cast<char*>(allocatorHeapBlocksBenchmark.Allocate(size));
+    return reinterpret_cast<char*>(allocatorHeapBlocksBenchmark.Allocate(size));
 }
 
 //------------------------------------------------------------------------------
 // DeallocHeapBlocks
 //------------------------------------------------------------------------------
 void DeallocHeapBlocks(char* ptr) {
-  allocatorHeapBlocksBenchmark.Deallocate(ptr);
+    allocatorHeapBlocksBenchmark.Deallocate(ptr);
 }
 
 //------------------------------------------------------------------------------
 // Benchmark
 //------------------------------------------------------------------------------
 void Benchmark(const char* name, AllocFunc allocFunc, DeallocFunc deallocFunc) {
-  TimeVar t1, t_total;
+    TimeVar t1, t_total;
 
-  float ElapsedMicroseconds, TotalElapsedMicroseconds = {0};
-  // Allocate MAX_BLOCKS blocks MAX_BLOCK_SIZE / 2 sized blocks
+    float ElapsedMicroseconds, TotalElapsedMicroseconds = {0};
+    // Allocate MAX_BLOCKS blocks MAX_BLOCK_SIZE / 2 sized blocks
 
-  TIC(t_total);
-  TIC(t1);
-  for (int i = 0; i < MAX_BLOCKS; i++)
-    memoryPtrs[i] = allocFunc(MAX_BLOCK_SIZE / 2);
-  ElapsedMicroseconds = TOC_US(t1);
+    TIC(t_total);
+    TIC(t1);
+    for (int i = 0; i < MAX_BLOCKS; i++)
+        memoryPtrs[i] = allocFunc(MAX_BLOCK_SIZE / 2);
+    ElapsedMicroseconds = TOC_US(t1);
 
-  PROFILELOG(name << " 1 allocate time: " << ElapsedMicroseconds);
-  TotalElapsedMicroseconds += ElapsedMicroseconds;
+    PROFILELOG(name << " 1 allocate time: " << ElapsedMicroseconds);
+    TotalElapsedMicroseconds += ElapsedMicroseconds;
 
-  // Deallocate MAX_BLOCKS blocks (every other one)
-  TIC(t1);
-  for (int i = 0; i < MAX_BLOCKS; i += 2) deallocFunc(memoryPtrs[i]);
-  ElapsedMicroseconds = TOC_US(t1);
-  PROFILELOG(name << " 1 deallocate time: " << ElapsedMicroseconds);
-  TotalElapsedMicroseconds += ElapsedMicroseconds;
+    // Deallocate MAX_BLOCKS blocks (every other one)
+    TIC(t1);
+    for (int i = 0; i < MAX_BLOCKS; i += 2)
+        deallocFunc(memoryPtrs[i]);
+    ElapsedMicroseconds = TOC_US(t1);
+    PROFILELOG(name << " 1 deallocate time: " << ElapsedMicroseconds);
+    TotalElapsedMicroseconds += ElapsedMicroseconds;
 
-  // Allocate MAX_BLOCKS blocks MAX_BLOCK_SIZE sized blocks
-  TIC(t1);
-  for (int i = 0; i < MAX_BLOCKS; i++)
-    memoryPtrs2[i] = allocFunc(MAX_BLOCK_SIZE);
-  ElapsedMicroseconds = TOC_US(t1);
-  PROFILELOG(name << " 2 allocate time: " << ElapsedMicroseconds);
-  TotalElapsedMicroseconds += ElapsedMicroseconds;
+    // Allocate MAX_BLOCKS blocks MAX_BLOCK_SIZE sized blocks
+    TIC(t1);
+    for (int i = 0; i < MAX_BLOCKS; i++)
+        memoryPtrs2[i] = allocFunc(MAX_BLOCK_SIZE);
+    ElapsedMicroseconds = TOC_US(t1);
+    PROFILELOG(name << " 2 allocate time: " << ElapsedMicroseconds);
+    TotalElapsedMicroseconds += ElapsedMicroseconds;
 
-  // Deallocate MAX_BLOCKS blocks (every other one)
-  TIC(t1);
-  for (int i = 1; i < MAX_BLOCKS; i += 2) deallocFunc(memoryPtrs[i]);
-  ElapsedMicroseconds = TOC_US(t1);
-  PROFILELOG(name << " 2 deallocate time: " << ElapsedMicroseconds);
-  TotalElapsedMicroseconds += ElapsedMicroseconds;
+    // Deallocate MAX_BLOCKS blocks (every other one)
+    TIC(t1);
+    for (int i = 1; i < MAX_BLOCKS; i += 2)
+        deallocFunc(memoryPtrs[i]);
+    ElapsedMicroseconds = TOC_US(t1);
+    PROFILELOG(name << " 2 deallocate time: " << ElapsedMicroseconds);
+    TotalElapsedMicroseconds += ElapsedMicroseconds;
 
-  // Deallocate MAX_BLOCKS blocks
-  TIC(t1);
-  for (int i = MAX_BLOCKS - 1; i >= 0; i--) deallocFunc(memoryPtrs2[i]);
-  ElapsedMicroseconds = TOC_US(t1);
-  PROFILELOG(name << " 2 deallocate time: " << ElapsedMicroseconds);
-  TotalElapsedMicroseconds += ElapsedMicroseconds;
+    // Deallocate MAX_BLOCKS blocks
+    TIC(t1);
+    for (int i = MAX_BLOCKS - 1; i >= 0; i--)
+        deallocFunc(memoryPtrs2[i]);
+    ElapsedMicroseconds = TOC_US(t1);
+    PROFILELOG(name << " 2 deallocate time: " << ElapsedMicroseconds);
+    TotalElapsedMicroseconds += ElapsedMicroseconds;
 
-  PROFILELOG(name << "           TOTAL TIME: " << TotalElapsedMicroseconds);
-  (void)TotalElapsedMicroseconds;  // Avoid unused variable warning
+    PROFILELOG(name << "           TOTAL TIME: " << TotalElapsedMicroseconds);
+    (void)TotalElapsedMicroseconds;  // Avoid unused variable warning
 }
 
 TEST(UTBlockAllocate, block_allocator_test) {
-  std::set_new_handler(out_of_memory);
+    std::set_new_handler(out_of_memory);
 
-  // Allocate MyClass using fixed block allocator
-  MyClass* myClass = new MyClass();
-  delete myClass;
+    // Allocate MyClass using fixed block allocator
+    MyClass* myClass = new MyClass();
+    delete myClass;
 
-  // Allocate BLOCKSIZE bytes in fixed block allocator, then deallocate
-  char* memory1 =
-      reinterpret_cast<char*>(allocatorHeapBlocks.Allocate(BLOCKSIZE));
-  allocatorHeapBlocks.Deallocate(memory1);
+    // Allocate BLOCKSIZE bytes in fixed block allocator, then deallocate
+    char* memory1 = reinterpret_cast<char*>(allocatorHeapBlocks.Allocate(BLOCKSIZE));
+    allocatorHeapBlocks.Deallocate(memory1);
 
-  char* memory2 =
-      reinterpret_cast<char*>(allocatorHeapBlocks.Allocate(BLOCKSIZE));
-  allocatorHeapBlocks.Deallocate(memory2);
+    char* memory2 = reinterpret_cast<char*>(allocatorHeapBlocks.Allocate(BLOCKSIZE));
+    allocatorHeapBlocks.Deallocate(memory2);
 
-  char* memory3 =
-      reinterpret_cast<char*>(allocatorHeapPool.Allocate(BLOCKSIZE));
-  allocatorHeapPool.Deallocate(memory3);
+    char* memory3 = reinterpret_cast<char*>(allocatorHeapPool.Allocate(BLOCKSIZE));
+    allocatorHeapPool.Deallocate(memory3);
 
-  char* memory4 =
-      reinterpret_cast<char*>(allocatorStaticPool.Allocate(BLOCKSIZE));
-  allocatorStaticPool.Deallocate(memory4);
+    char* memory4 = reinterpret_cast<char*>(allocatorStaticPool.Allocate(BLOCKSIZE));
+    allocatorStaticPool.Deallocate(memory4);
 
-  char* memory5 =
-      reinterpret_cast<char*>(allocatorStaticPool2.Allocate(sizeof(MyClass)));
-  allocatorStaticPool2.Deallocate(memory5);
+    char* memory5 = reinterpret_cast<char*>(allocatorStaticPool2.Allocate(sizeof(MyClass)));
+    allocatorStaticPool2.Deallocate(memory5);
 
-  Benchmark("Heap (Run 1)", AllocHeap, DeallocHeap);
-  Benchmark("Heap (Run 2)", AllocHeap, DeallocHeap);
-  Benchmark("Heap (Run 3)", AllocHeap, DeallocHeap);
-  Benchmark("Static Pool (Run 1)", AllocStaticPool, DeallocStaticPool);
-  Benchmark("Static Pool (Run 2)", AllocStaticPool, DeallocStaticPool);
-  Benchmark("Static Pool (Run 3)", AllocStaticPool, DeallocStaticPool);
-  Benchmark("Heap Blocks (Run 1)", AllocHeapBlocks, DeallocHeapBlocks);
-  Benchmark("Heap Blocks (Run 2)", AllocHeapBlocks, DeallocHeapBlocks);
-  Benchmark("Heap Blocks (Run 3)", AllocHeapBlocks, DeallocHeapBlocks);
+    Benchmark("Heap (Run 1)", AllocHeap, DeallocHeap);
+    Benchmark("Heap (Run 2)", AllocHeap, DeallocHeap);
+    Benchmark("Heap (Run 3)", AllocHeap, DeallocHeap);
+    Benchmark("Static Pool (Run 1)", AllocStaticPool, DeallocStaticPool);
+    Benchmark("Static Pool (Run 2)", AllocStaticPool, DeallocStaticPool);
+    Benchmark("Static Pool (Run 3)", AllocStaticPool, DeallocStaticPool);
+    Benchmark("Heap Blocks (Run 1)", AllocHeapBlocks, DeallocHeapBlocks);
+    Benchmark("Heap Blocks (Run 2)", AllocHeapBlocks, DeallocHeapBlocks);
+    Benchmark("Heap Blocks (Run 3)", AllocHeapBlocks, DeallocHeapBlocks);
 }

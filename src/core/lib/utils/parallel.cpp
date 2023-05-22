@@ -37,5 +37,5 @@
 
 namespace lbcrypto {
 
-ParallelControls PalisadeParallelControls;
+ParallelControls OpenFHEParallelControls;
 }

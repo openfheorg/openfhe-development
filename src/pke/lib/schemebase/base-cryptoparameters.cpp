@@ -28,16 +28,14 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#ifndef LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_C
-#define LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_C
-
 #include "cryptocontext.h"
 #include "schemebase/base-cryptoparameters.h"
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
-namespace lbcrypto {}
 
-#endif
+// the code below is from base-cryptoparameters-impl.cpp
+namespace lbcrypto {
+
+// template class CryptoParametersBase<Poly>;
+// template class CryptoParametersBase<NativePoly>;
+template class CryptoParametersBase<DCRTPoly>;
+
+}  // namespace lbcrypto

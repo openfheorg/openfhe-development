@@ -34,6 +34,8 @@
 
 #include "schemerns/rns-pre.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -42,23 +44,25 @@ namespace lbcrypto {
 
 class PREBGVRNS : public PRERNS {
 public:
-  virtual ~PREBGVRNS() {}
+    virtual ~PREBGVRNS() {}
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<PRERNS>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<PRERNS>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<PRERNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<PRERNS>(this));
+    }
 
-  std::string SerializedObjectName() const { return "PREBGVRNS"; }
+    std::string SerializedObjectName() const {
+        return "PREBGVRNS";
+    }
 };
 }  // namespace lbcrypto
 

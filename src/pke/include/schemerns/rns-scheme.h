@@ -46,6 +46,11 @@
 
 #include "keyswitch/keyswitch-hybrid.h"
 #include "keyswitch/keyswitch-bv.h"
+#include "constants.h"
+#include "utils/exception.h"
+
+#include <string>
+#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -59,33 +64,38 @@ namespace lbcrypto {
  */
 class SchemeRNS : public SchemeBase<DCRTPoly> {
 public:
-  SchemeRNS() {}
+    SchemeRNS() {}
 
-  virtual ~SchemeRNS() {}
+    virtual ~SchemeRNS() {}
 
-  void SetKeySwitchingTechnique(KeySwitchTechnique ksTech) {
-    if (ksTech == BV) {
-      m_KeySwitch = std::make_shared<KeySwitchBV>();
-    } else {
-      m_KeySwitch = std::make_shared<KeySwitchHYBRID>();
+    void SetKeySwitchingTechnique(KeySwitchTechnique ksTech) {
+        if (ksTech == BV) {
+            m_KeySwitch = std::make_shared<KeySwitchBV>();
+        }
+        else if (ksTech == HYBRID) {
+            m_KeySwitch = std::make_shared<KeySwitchHYBRID>();
+        }
+        else
+            OPENFHE_THROW(config_error, "ksTech is invalid");
     }
-  }
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(cereal::base_class<SchemeBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(cereal::base_class<SchemeBase<DCRTPoly>>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    ar(cereal::base_class<SchemeBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        ar(cereal::base_class<SchemeBase<DCRTPoly>>(this));
+    }
 
-  virtual std::string SerializedObjectName() const override { return "SchemeRNS"; }
+    std::string SerializedObjectName() const override {
+        return "SchemeRNS";
+    }
 };
 
 }  // namespace lbcrypto

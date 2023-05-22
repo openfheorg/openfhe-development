@@ -36,6 +36,9 @@
 
 #include "schemebase/base-parametergeneration.h"
 
+#include <string>
+#include <memory>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -47,10 +50,10 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
- public:
-  virtual ~ParameterGenerationRNS() {}
+public:
+    virtual ~ParameterGenerationRNS() {}
 
-  /**
+    /**
    * Method for computing all derived parameters based on chosen primitive
    * parameters
    *
@@ -58,7 +61,7 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * parameters.
    * @param evalAddCount number of EvalAdds assuming no EvalMult and KeySwitch
    * operations are performed.
-   * @param evalMultCount number of EvalMults assuming no EvalAdd and
+   * @param multiplicativeDepth number of EvalMults assuming no EvalAdd and
    * KeySwitch operations are performed.
    * @param keySwitchCount number of KeySwitch operations assuming no EvalAdd
    * and EvalMult operations are performed.
@@ -66,96 +69,70 @@ class ParameterGenerationRNS : public ParameterGenerationBase<DCRTPoly> {
    * @param n ring dimension in case the user wants to use a custom ring
    * dimension
    */
-  virtual bool ParamsGenBFVRNS(
-      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-      int32_t evalAddCount = 0,
-      int32_t evalMultCount = 0,
-      int32_t keySwitchCount = 0,
-      size_t dcrtBits = 0,
-      uint32_t n = 0,
-      enum KeySwitchTechnique ksTech = BV,
-      enum RescalingTechnique rsTech = FIXEDMANUAL,
-      enum EncryptionTechnique encTech = STANDARD,
-      enum MultiplicationTechnique multTech = HPS) const override {
-    PALISADE_THROW(
-        config_error,
-        "This signature for ParamsGen is not supported for this scheme.");
-  }
+    bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+                         uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t numPartQ,
+                         uint32_t n) const override {
+        OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
+    }
 
-  /**
+    /**
    * Method for computing all derived parameters based on chosen primitive
    * parameters.
    *
-   * @param *cryptoParams the crypto parameters object to be populated with
-   * parameters.
+   * @param cryptoParams the crypto parameters object to be populated with parameters.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
-   * @param scaleExp the bit-width for plaintexts and DCRTPoly's.
-   * @param relinWindow the relinearization window
-   * @param mode
-   * @param ksTech the key switching technique used (e.g., BV or GHS)
+   * @param scalingModSize the bit-width for plaintexts and DCRTPoly's.
    * @param firstModSize the bit-size of the first modulus
-   * @param rsTech the rescaling technique used (e.g., FIXEDMANUAL or
-   * FLEXIBLEAUTO)
+   * @param numPartQ number of partitions of Q for HYBRID key switching
+   *
    */
-  virtual bool ParamsGenCKKSRNS(
-      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-      usint cyclOrder,
-      usint numPrimes,
-      usint scaleExp,
-      usint relinWindow,
-      enum MODE mode,
-      usint firstModSize = 60,
-      uint32_t mulPartQ = 4,
-      enum KeySwitchTechnique ksTech = BV,
-      enum RescalingTechnique rsTech = FIXEDMANUAL,
-      enum EncryptionTechnique encTech = STANDARD,
-      enum MultiplicationTechnique multTech = HPS) const override {
-    PALISADE_THROW(
-        config_error,
-        "This signature for ParamsGen is not supported for this scheme.");
-  }
+    bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
+                          usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t mulPartQ) const override {
+        OPENFHE_THROW(config_error, "This signature for ParamsGen is not supported for this scheme.");
+    }
 
-  /**
+    /**
    * Method for computing all derived parameters based on chosen primitive
    * parameters. This is intended for BGVrns
    * @param *cryptoParams the crypto parameters object to be populated with
    * parameters.
+   * @param evalAddCount number of EvalAdds per level.
+   * @param keySwitchCount number of KeySwitch operations per level.
    * @param cyclOrder the cyclotomic order.
    * @param numPrimes number of modulus towers to support.
-   * @param relinWindow the relinearization window
-   * @param mode
+   * @param digitSize the digit size
+   * @param secretKeyDist
    * @param ksTech the key switching technique used (e.g., BV or GHS)
    * @param firstModSize the bit-size of the first modulus
    * @param dcrtBits the bit-width of moduli.
    */
-  virtual bool ParamsGenBGVRNS(
-      std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, usint cyclOrder,
-      usint ptm, usint numPrimes, usint relinWindow, MODE mode,
-      usint firstModSize = 60,
-      usint dcrtBits = 60,
-      uint32_t numPartQ = 4,
-      usint multihopQBound = 0,
-      enum KeySwitchTechnique ksTech = BV,
-      enum RescalingTechnique rsTech = FIXEDMANUAL,
-      enum EncryptionTechnique encTech = STANDARD,
-      enum MultiplicationTechnique multTech = HPS) const override {
-    PALISADE_THROW(
-        not_implemented_error,
-        "This signature for ParamsGen is not supported for this scheme.");
-  }
+    bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+                         uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize, usint dcrtBits,
+                         uint32_t numPartQ, usint multihopQBound) const override {
+        OPENFHE_THROW(not_implemented_error, "This signature for ParamsGen is not supported for this scheme.");
+    }
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {}
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {}
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
 
-  std::string SerializedObjectName() const { return "ParameterGenerationRNS"; }
+    std::string SerializedObjectName() const {
+        return "ParameterGenerationRNS";
+    }
+
+protected:
+    enum DCRT_MODULUS {
+        DEFAULT_EXTRA_MOD_SIZE = 20,
+        MIN_SIZE               = 30,
+        MAX_SIZE               = 60,
+    };
 };
 
 }  // namespace lbcrypto

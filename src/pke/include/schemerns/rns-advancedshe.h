@@ -36,6 +36,8 @@
 
 #include "schemebase/base-advancedshe.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -47,24 +49,26 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class AdvancedSHERNS : public AdvancedSHEBase<DCRTPoly> {
- public:
-  virtual ~AdvancedSHERNS() {}
+public:
+    virtual ~AdvancedSHERNS() {}
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<AdvancedSHEBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<AdvancedSHEBase<DCRTPoly>>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<AdvancedSHEBase<DCRTPoly>>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<AdvancedSHEBase<DCRTPoly>>(this));
+    }
 
-  std::string SerializedObjectName() const { return "AdvancedSHERNS"; }
+    std::string SerializedObjectName() const {
+        return "AdvancedSHERNS";
+    }
 };
 
 }  // namespace lbcrypto

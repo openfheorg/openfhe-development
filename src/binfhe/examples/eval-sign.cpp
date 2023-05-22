@@ -60,12 +60,12 @@ int main() {
 
     // Sample Program: Step 2: Key Generation
     // Generate the secret key
-    auto sk = cc.KeyGen(Q);
+    auto sk = cc.KeyGen();
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh and switching keys)
-    cc.BTKeyGen(sk, Q);
+    cc.BTKeyGen(sk);
 
     std::cout << "Completed the key generation." << std::endl;
 
@@ -76,10 +76,10 @@ int main() {
         auto ct1 = cc.Encrypt(sk, p / 2 + i - 3, FRESH, p, Q);
 
         // Get the MSB
-        ct1 = cc.EvalSign(ct1, Q);
+        ct1 = cc.EvalSign(ct1);
 
         LWEPlaintext result;
-        cc.Decrypt(sk, ct1, &result, 2, q);
+        cc.Decrypt(sk, ct1, &result, 2);
         std::cout << "Input: " << i << ". Expected sign: " << (i >= 3)
                   << ". "
                      "Evaluated Sign: "

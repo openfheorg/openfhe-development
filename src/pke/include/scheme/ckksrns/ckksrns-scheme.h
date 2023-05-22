@@ -36,11 +36,15 @@
 
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-parametergeneration.h"
+#include "scheme/ckksrns/ckksrns-fhe.h"
 #include "scheme/ckksrns/ckksrns-pke.h"
 #include "scheme/ckksrns/ckksrns-pre.h"
 #include "scheme/ckksrns/ckksrns-leveledshe.h"
 #include "scheme/ckksrns/ckksrns-advancedshe.h"
 #include "scheme/ckksrns/ckksrns-multiparty.h"
+
+#include <string>
+#include <memory>
 
 /**
  * @namespace lbcrypto
@@ -49,38 +53,36 @@
 namespace lbcrypto {
 
 class SchemeCKKSRNS : public SchemeRNS {
-
 public:
+    SchemeCKKSRNS() {
+        this->m_ParamsGen = std::make_shared<ParameterGenerationCKKSRNS>();
+    }
 
-  SchemeCKKSRNS() {
-    this->m_ParamsGen =
-        std::make_shared<ParameterGenerationCKKSRNS>();
-  }
+    virtual ~SchemeCKKSRNS() {}
 
-  virtual ~SchemeCKKSRNS() {}
+    bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
+        return dynamic_cast<const SchemeCKKSRNS*>(&sch) != nullptr;
+    }
 
-  virtual bool operator==(const SchemeBase<DCRTPoly> &sch) const override {
-    return dynamic_cast<const SchemeCKKSRNS *>(&sch) !=
-           nullptr;
-  }
+    void Enable(PKESchemeFeature feature) override;
 
-  virtual void Enable(PKESchemeFeature feature) override;
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(cereal::base_class<SchemeRNS>(this));
+    }
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(cereal::base_class<SchemeRNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        ar(cereal::base_class<SchemeRNS>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    ar(cereal::base_class<SchemeRNS>(this));
-  }
-
-  virtual std::string SerializedObjectName() const override { return "SchemeCKKSRNS"; }
+    std::string SerializedObjectName() const override {
+        return "SchemeCKKSRNS";
+    }
 };
 
 }  // namespace lbcrypto

@@ -28,19 +28,10 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#ifndef LBCRYPTO_CRYPTO_KEY_EVALKEY_C
-#define LBCRYPTO_CRYPTO_KEY_EVALKEY_C
-
 #include "cryptocontext.h"
 #include "key/evalkey.h"
 
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
+// the code below is from evalkey-impl.cpp
 namespace lbcrypto {
-
-}
-
-#endif
+template class EvalKeyImpl<DCRTPoly>;
+}  // namespace lbcrypto

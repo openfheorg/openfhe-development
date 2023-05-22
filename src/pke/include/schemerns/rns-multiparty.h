@@ -36,6 +36,8 @@
 
 #include "schemebase/base-multiparty.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -69,37 +71,36 @@ namespace lbcrypto {
  * @tparam Element a ring element.
  */
 class MultipartyRNS : public MultipartyBase<DCRTPoly> {
-  using ParmType = typename DCRTPoly::Params;
-  using IntType = typename DCRTPoly::Integer;
-  using DugType = typename DCRTPoly::DugType;
-  using DggType = typename DCRTPoly::DggType;
-  using TugType = typename DCRTPoly::TugType;
+    using ParmType = typename DCRTPoly::Params;
+    using IntType  = typename DCRTPoly::Integer;
+    using DugType  = typename DCRTPoly::DugType;
+    using DggType  = typename DCRTPoly::DggType;
+    using TugType  = typename DCRTPoly::TugType;
 
 public:
-  virtual ~MultipartyRNS() {}
+    virtual ~MultipartyRNS() {}
 
-  virtual Ciphertext<DCRTPoly> MultipartyDecryptMain(
-      ConstCiphertext<DCRTPoly> ciphertext,
-      const PrivateKey<DCRTPoly> privateKey) const override;
+    Ciphertext<DCRTPoly> MultipartyDecryptMain(ConstCiphertext<DCRTPoly> ciphertext,
+                                               const PrivateKey<DCRTPoly> privateKey) const override;
 
-  virtual Ciphertext<DCRTPoly> MultipartyDecryptLead(
-      ConstCiphertext<DCRTPoly> ciphertext,
-      const PrivateKey<DCRTPoly> privateKey) const override;
+    Ciphertext<DCRTPoly> MultipartyDecryptLead(ConstCiphertext<DCRTPoly> ciphertext,
+                                               const PrivateKey<DCRTPoly> privateKey) const override;
 
-  virtual EvalKey<DCRTPoly> MultiMultEvalKey(PrivateKey<DCRTPoly> privateKey,
-                                             EvalKey<DCRTPoly> evalKey) const override;
+    EvalKey<DCRTPoly> MultiMultEvalKey(PrivateKey<DCRTPoly> privateKey, EvalKey<DCRTPoly> evalKey) const override;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {}
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {}
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
 
-  std::string SerializedObjectName() const { return "MultipartyRNS"; }
+    std::string SerializedObjectName() const {
+        return "MultipartyRNS";
+    }
 };
 
 }  // namespace lbcrypto

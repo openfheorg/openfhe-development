@@ -36,25 +36,24 @@
 #ifndef _CRYPTOCONTEXTPARAMS_BFVRNS_H_
 #define _CRYPTOCONTEXTPARAMS_BFVRNS_H_
 
-#include "scheme/bfvrns/cryptocontextparams-bfvrns-base.h"
+#include "scheme/cryptocontextparams-base.h"
 
 namespace lbcrypto {
 
 class CryptoContextBFVRNS;
 
-// every CCParams class should include the following forward declaration as there is 
+// every CCParams class should include the following forward declaration as there is
 // no general CCParams class template. This way we may create scheme specific classes
 // derived from Params or have them completely independent.
 template <typename T>
 class CCParams;
 //====================================================================================================================
 template <>
-class CCParams<CryptoContextBFVRNS> : public BFVRNSParams {
-    // ATTN: after the bfvrns* schemes are combined, we must remove class BFVRNSParams and derive from Params directly
+class CCParams<CryptoContextBFVRNS> : public Params {
 public:
-    CCParams() : BFVRNSParams(BFVRNS_SCHEME) {}
+    CCParams() : Params(BFVRNS_SCHEME) {}
     CCParams(const CCParams& obj) = default;
-    CCParams(CCParams&& obj) = default;
+    CCParams(CCParams&& obj)      = default;
 };
 //====================================================================================================================
 

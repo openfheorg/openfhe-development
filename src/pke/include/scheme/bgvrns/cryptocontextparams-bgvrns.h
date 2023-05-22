@@ -42,7 +42,7 @@ namespace lbcrypto {
 
 class CryptoContextBGVRNS;
 
-// every CCParams class should include the following forward declaration as there is 
+// every CCParams class should include the following forward declaration as there is
 // no general CCParams class template. This way we may create scheme specific classes
 // derived from Params or have them completely independent.
 template <typename T>
@@ -53,12 +53,10 @@ class CCParams<CryptoContextBGVRNS> : public Params {
 public:
     CCParams() : Params(BGVRNS_SCHEME) {}
     CCParams(const CCParams& obj) = default;
-    CCParams(CCParams&& obj) = default;
+    CCParams(CCParams&& obj)      = default;
 };
 //====================================================================================================================
 
 }  // namespace lbcrypto
 
-
-#endif // _CRYPTOCONTEXTPARAMS_BGVRNS_H_
-
+#endif  // _CRYPTOCONTEXTPARAMS_BGVRNS_H_

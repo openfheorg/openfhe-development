@@ -30,15 +30,14 @@
 //==================================================================================
 
 /*
-  This code benchmarks functions of the math directory  of the PALISADE lattice
-  encryption library.
+  This code benchmarks vector operations.
  */
 #define _USE_MATH_DEFINES
-#include "benchmark/benchmark.h"
 
-#include "palisade.h"
 #include "vechelper.h"
 #include "lattice/elemparamfactory.h"
+
+#include "benchmark/benchmark.h"
 
 #include <iostream>
 

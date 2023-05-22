@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -40,13 +39,14 @@
 #include "UnitTestCCParams.h"
 #include "UnitTestCryptoContext.h"
 #include "utils/exception.h"
+#include "globals.h"  // for SERIALIZE_PRECOMPUTE
 
 #include "include/gtest/gtest.h"
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include <cxxabi.h>
-
+#include "utils/demangle.h"
 
 using namespace lbcrypto;
 
@@ -59,25 +59,25 @@ enum TEST_CASE_TYPE {
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
     std::string typeName;
     switch (type) {
-    case CONTEXT:
-        typeName = "CONTEXT";
-        break;
-    case KEYS_AND_CIPHERTEXTS:
-        typeName = "KEYS_AND_CIPHERTEXTS";
-        break;
-    default:
-        typeName = "UNKNOWN";
-        break;
+        case CONTEXT:
+            typeName = "CONTEXT";
+            break;
+        case KEYS_AND_CIPHERTEXTS:
+            typeName = "KEYS_AND_CIPHERTEXTS";
+            break;
+        default:
+            typeName = "UNKNOWN";
+            break;
     }
     return os << typeName;
 }
 //===========================================================================================================
-struct TEST_CASE {
+struct TEST_CASE_UTBGVRNS_SER {
     TEST_CASE_TYPE testCaseType;
     // test case description - MUST BE UNIQUE
     std::string description;
 
-    UnitTestCCParams  params;
+    UnitTestCCParams params;
 
     // additional test case data
     // ........
@@ -96,61 +96,68 @@ struct TEST_CASE {
 
 // this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
 // the name MUST be constructed from digits, letters and '_' only
-static auto testName = [](const testing::TestParamInfo<TEST_CASE>& test) {
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTBGVRNS_SER>& test) {
     return test.param.buildTestName();
 };
 
-static std::ostream& operator<<(std::ostream& os, const TEST_CASE& test) {
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SER& test) {
     return os << test.toString();
 }
 //===========================================================================================================
 /***
- * ORDER:      Cyclotomic order. Must be a power of 2 for BGVrns. RING_DIM = cyclOrder / 2
  * SIZEMODULI: bit-length of the moduli composing the ciphertext modulus (size of each co-prime in bits or
  *             scaling factor bits).
  * 		       Should fit into a machine word, i.e., less than 64.
- * NUMPRIME:   Number of towers comprising the ciphertext modulus. It is equal to the desired depth of the computation.
- *             MultDepth = NUMPRIME - 1
- * RELIN:      The bit decomposition count used in relinearization.
+ * DSIZE:      The bit decomposition count used in relinearization.
  *  	       Use 0 to go with max possible. Use small values (3-4?) if you need rotations before any multiplications.
  * PTM:        The plaintext modulus.
  * BATCH:      The length of the packed vectors to be used with CKKS.
  */
-constexpr usint ORDER = 1024;  // 16384;
-constexpr usint RING_DIM = ORDER / 2;
-constexpr usint NUMPRIME = 4;
-constexpr usint MULT_DEPTH = NUMPRIME - 1;
-constexpr usint MAX_DEPTH = 1;
-constexpr usint SIZEMODULI = 50; // scaling factor bits
-constexpr usint RELIN = 20;
-constexpr usint PTM = 65537;
-constexpr usint BATCH = 16;
-constexpr usint FIRST_MOD_SIZE = 60;
-constexpr double STD_DEV = 3.2;
+constexpr usint RING_DIM        = 512;
+constexpr usint MULT_DEPTH      = 3;
+constexpr usint MAX_RELIN_DEG   = 2;
+constexpr usint DSIZE           = 4;
+constexpr usint PTM             = 65537;
+constexpr usint BATCH           = 16;
+constexpr usint FIRST_MOD_SIZE  = 60;
 constexpr SecurityLevel SEC_LVL = HEStd_NotSet;
 // TODO (dsuponit): are there any changes under this condition - #if NATIVEINT != 128?
 
-static std::vector<TEST_CASE> testCases = {
-    // TestType, Descr, Scheme,     RDim,     MultDepth,  SFBits,     RWin,  BatchSz, Mode, Depth, MDepth,    ModSize,        SecLvl,  KSTech, RSTech,       LDigits, PtMod, StdDev,   EvalAddCt, EvalMultCt, KSCt, MultTech
-    { CONTEXT, "1", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    { CONTEXT, "2", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    { CONTEXT, "3", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    { CONTEXT, "4", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
+// clang-format off
+static std::vector<TEST_CASE_UTBGVRNS_SER> testCases = {
+    // TestType, Descr, Scheme,      RDim,     MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { CONTEXT, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "02", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "04", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "05", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "06", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "07", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { CONTEXT, "08", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     // ==========================================
-    // TestType,          Descr, Scheme,         RDim,     MultDepth,  SFBits,     RWin,  BatchSz, Mode, Depth, MDepth,    ModSize,        SecLvl,  KSTech, RSTech,       LDigits, PtMod, StdDev,   EvalAddCt, EvalMultCt, KSCt, MultTech
-    { KEYS_AND_CIPHERTEXTS, "1", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "2", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "3", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "4", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, RELIN, BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "5", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "6", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "7", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO, DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
-    { KEYS_AND_CIPHERTEXTS, "8", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, SIZEMODULI, 0,     BATCH,   DFLT, DFLT,  MAX_DEPTH, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,  DFLT,    PTM,   STD_DEV,  DFLT,      DFLT,       DFLT, DFLT}, },
+    // TestType,           Descr, Scheme,         RDim,     MultDepth,  SModSize,   DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize,       SecLvl,  KSTech, ScalTech,        LDigits, PtMod, StdDev,   EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { KEYS_AND_CIPHERTEXTS, "01", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "02", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "03", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "04", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "05", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "06", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "07", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "08", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       0,     BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, HYBRID, FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "09", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "10", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "11", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "12", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "13", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTO,    DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "14", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDMANUAL,     DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "15", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FIXEDAUTO,       DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { KEYS_AND_CIPHERTEXTS, "16", {BGVRNS_SCHEME, RING_DIM, MULT_DEPTH, DFLT,       DSIZE, BATCH,   DFLT,       MAX_RELIN_DEG, FIRST_MOD_SIZE, SEC_LVL, BV,     FLEXIBLEAUTOEXT, DFLT,    PTM,   DFLT,     DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
     // ==========================================
 };
+// clang-format on
 //===========================================================================================================
-class UTBGVRNS_SER : public ::testing::TestWithParam<TEST_CASE> {
-    using Element = DCRTPoly;
+class UTBGVRNS_SER : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_SER> {
+    using Element    = DCRTPoly;
     const double eps = EPSILON;
 
 protected:
@@ -160,7 +167,7 @@ protected:
         CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
     }
 
-    void UnitTestContext(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTestContext(const TEST_CASE_UTBGVRNS_SER& testData, const std::string& failmsg = std::string()) {
         CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
         UnitTestContextWithSertype(cc, SerType::JSON, "json");
@@ -168,11 +175,12 @@ protected:
     }
 
     template <typename ST>
-    void TestKeysAndCiphertexts(const TEST_CASE& testData, const ST& sertype, const std::string& failmsg = std::string()) {
+    void TestKeysAndCiphertexts(const TEST_CASE_UTBGVRNS_SER& testData, const ST& sertype,
+                                const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-            DEBUG_FLAG(false);
+            OPENFHE_DEBUG_FLAG(false);
 
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
@@ -181,7 +189,7 @@ protected:
             // // The batch size for our tests.
             int vecSize = 10;
 
-            DEBUG("step 0");
+            OPENFHE_DEBUG("step 0");
             {
                 std::stringstream s;
                 Serial::Serialize(cc, s, sertype);
@@ -194,37 +202,38 @@ protected:
                 ASSERT_TRUE(CryptoContextFactory<DCRTPoly>::GetContextCount() == 1);
             }
 
+            DisablePrecomputeCRTTablesAfterDeserializaton();
             KeyPair<DCRTPoly> kp = cc->KeyGen();
             KeyPair<DCRTPoly> kpnew;
 
             // Update the batchSize from the default value
             const auto cryptoParamsBGVrns =
-                std::static_pointer_cast<CryptoParametersBGVRNS>(kp.publicKey->GetCryptoParameters());
+                std::dynamic_pointer_cast<CryptoParametersBGVRNS>(kp.publicKey->GetCryptoParameters());
 
             EncodingParams encodingParamsNew(
                 std::make_shared<EncodingParamsImpl>(cc->GetEncodingParams()->GetPlaintextModulus(), vecSize));
             cryptoParamsBGVrns->SetEncodingParams(encodingParamsNew);
 
-            DEBUG("step 1");
+            OPENFHE_DEBUG("step 1");
             {
                 std::stringstream s;
                 Serial::Serialize(kp.publicKey, s, sertype);
                 Serial::Deserialize(kpnew.publicKey, s, sertype);
                 EXPECT_EQ(*kp.publicKey, *kpnew.publicKey) << "Public key mismatch after ser/deser";
             }
-            DEBUG("step 2");
+            OPENFHE_DEBUG("step 2");
             {
                 std::stringstream s;
                 Serial::Serialize(kp.secretKey, s, sertype);
                 Serial::Deserialize(kpnew.secretKey, s, sertype);
                 EXPECT_EQ(*kp.secretKey, *kpnew.secretKey) << "Secret key mismatch after ser/deser";
             }
-            DEBUG("step 3");
-            std::vector<int64_t> vals = { 1, 3, 5, 7, 9, 2, 4, 6, 8, 11 };
-            Plaintext plaintextShort = cc->MakePackedPlaintext(vals);
+            OPENFHE_DEBUG("step 3");
+            std::vector<int64_t> vals       = {1, 3, 5, 7, 9, 2, 4, 6, 8, 11};
+            Plaintext plaintextShort        = cc->MakePackedPlaintext(vals);
             Ciphertext<DCRTPoly> ciphertext = cc->Encrypt(kp.publicKey, plaintextShort);
 
-            DEBUG("step 4");
+            OPENFHE_DEBUG("step 4");
             Ciphertext<DCRTPoly> newC;
             {
                 std::stringstream s;
@@ -233,14 +242,18 @@ protected:
                 EXPECT_EQ(*ciphertext, *newC) << "Ciphertext mismatch";
             }
 
-            DEBUG("step 5");
+            OPENFHE_DEBUG("step 5");
             Plaintext plaintextShortNew;
             cc->Decrypt(kp.secretKey, newC, &plaintextShortNew);
+            plaintextShortNew->SetLength(plaintextShort->GetLength());
 
+            std::stringstream bufferShort;
+            bufferShort << "should be: " << plaintextShortNew->GetPackedValue()
+                        << " - we get: " << plaintextShort->GetPackedValue();
             checkEquality(plaintextShortNew->GetPackedValue(), plaintextShort->GetPackedValue(), eps,
-                failmsg + " Decrypted serialization test fails");
+                          failmsg + " Decrypted serialization test fails" + bufferShort.str());
 
-            DEBUG("step 6");
+            OPENFHE_DEBUG("step 6");
             KeyPair<DCRTPoly> kp2 = cc->KeyGen();
 
             cc->EvalMultKeyGen(kp.secretKey);
@@ -248,7 +261,7 @@ protected:
             cc->EvalSumKeyGen(kp.secretKey);
             cc->EvalSumKeyGen(kp2.secretKey);
 
-            DEBUG("step 7");
+            OPENFHE_DEBUG("step 7");
             // serialize a bunch of mult keys
             std::stringstream ser0;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser0, sertype, kp.secretKey->GetKeyTag()), true)
@@ -260,7 +273,7 @@ protected:
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalMultKey(ser3, sertype), true)
                 << "all context eval mult key ser fails";
 
-            DEBUG("step 8");
+            OPENFHE_DEBUG("step 8");
             // serialize a bunch of sum keys
             std::stringstream aser0;
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser0, sertype, kp.secretKey->GetKeyTag()), true)
@@ -272,7 +285,7 @@ protected:
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::SerializeEvalSumKey(aser3, sertype), true)
                 << "all eval sum key ser fails";
 
-            DEBUG("step 9");
+            OPENFHE_DEBUG("step 9");
             cc.reset();
 
             // test mult deserialize
@@ -302,7 +315,7 @@ protected:
             EXPECT_EQ(CryptoContextFactory<DCRTPoly>::GetContextCount(), 1) << "all-key deser, context";
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::GetAllEvalMultKeys().size(), 2U) << "all-key deser, keys";
 
-            DEBUG("step 10");
+            OPENFHE_DEBUG("step 10");
             // test sum deserialize
 
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
@@ -330,27 +343,33 @@ protected:
             EXPECT_EQ(CryptoContextImpl<DCRTPoly>::GetAllEvalSumKeys().size(), 2U) << "all-key deser, keys";
 
             // ending cleanup
+            EnablePrecomputeCRTTablesAfterDeserializaton();
             CryptoContextImpl<DCRTPoly>::ClearEvalMultKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalSumKeys();
             CryptoContextImpl<DCRTPoly>::ClearEvalAutomorphismKeys();
             CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
         }
         catch (std::exception& e) {
+            EnablePrecomputeCRTTablesAfterDeserializaton();
             std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
         catch (...) {
-            int status = 0;
-            char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+            EnablePrecomputeCRTTablesAfterDeserializaton();
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
             std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-            std::free(name);
             // make it fail
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
 
-    void UnitTestKeysAndCiphertexts(const TEST_CASE& testData, const std::string& failmsg = std::string()) {
+    void UnitTestKeysAndCiphertexts(const TEST_CASE_UTBGVRNS_SER& testData,
+                                    const std::string& failmsg = std::string()) {
         TestKeysAndCiphertexts(testData, SerType::JSON, "json");
         TestKeysAndCiphertexts(testData, SerType::BINARY, "binary");
     }
@@ -367,5 +386,3 @@ TEST_P(UTBGVRNS_SER, BGVSer) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS_SER, ::testing::ValuesIn(testCases), testName);
-
-#endif

@@ -30,12 +30,16 @@
 //==================================================================================
 
 /*
- * This file benchmarks a small number of operations in order to exercise large
- * pieces of the library
+ * Compares the performance of BFV and BFV (default modes)
+ * using EvalMultMany operation.
  */
 
 #define PROFILE
 #define _USE_MATH_DEFINES
+#include "scheme/bfvrns/cryptocontext-bfvrns.h"
+#include "scheme/bgvrns/cryptocontext-bgvrns.h"
+#include "gen-cryptocontext.h"
+
 #include "benchmark/benchmark.h"
 
 #include <iostream>
@@ -43,13 +47,6 @@
 #include <limits>
 #include <iterator>
 #include <random>
-
-#include "palisade.h"
-#include "utils/debug.h"
-
-#include "scheme/bfvrns/cryptocontext-bfvrns.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
 
 using namespace lbcrypto;
 
@@ -61,9 +58,9 @@ usint mult_depth = 3;
 CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
     CCParams<CryptoContextBFVRNS> parameters;
     parameters.SetPlaintextModulus(ptm);
-    parameters.SetStandardDeviation(3.19);
-    parameters.SetEvalMultCount(mult_depth);
-    parameters.SetScalingFactorBits(60);
+    parameters.SetMultiplicativeDepth(mult_depth);
+    parameters.SetScalingModSize(60);
+    parameters.SetKeySwitchTechnique(BV);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     // enable features that you wish to use
@@ -71,14 +68,6 @@ CryptoContext<DCRTPoly> GenerateBFVrnsContext(usint ptm) {
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
-
-    // std::cout << "\nParameters BFVrns for depth " << mult_depth << std::endl;
-    // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
-    // std::endl; std::cout << "n = " <<
-    // cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2 <<
-    // std::endl; std::cout << "log2 q = " <<
-    // log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
-    // << "\n" << std::endl;
 
     return cc;
 }
@@ -88,21 +77,13 @@ CryptoContext<DCRTPoly> GenerateBGVrnsContext(usint ptm) {
     parameters.SetMultiplicativeDepth(mult_depth);
     parameters.SetPlaintextModulus(ptm);
     parameters.SetKeySwitchTechnique(BV);
-    parameters.SetRescalingTechnique(FIXEDAUTO);
+    parameters.SetScalingTechnique(FIXEDMANUAL);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
-
-    // std::cout << "\nParameters BGVrns for depth " << mult_depth << std::endl;
-    // std::cout << "p = " << cc->GetCryptoParameters()->GetPlaintextModulus() <<
-    // std::endl; std::cout << "n = " <<
-    // cc->GetCryptoParameters()->GetElementParams()->GetCyclotomicOrder() / 2 <<
-    // std::endl; std::cout << "log2 q = " <<
-    // log2(cc->GetCryptoParameters()->GetElementParams()->GetModulus().ConvertToDouble())
-    // << "\n" << std::endl;
 
     return cc;
 }

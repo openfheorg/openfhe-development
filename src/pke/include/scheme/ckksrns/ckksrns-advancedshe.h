@@ -34,6 +34,9 @@
 
 #include "schemerns/rns-advancedshe.h"
 
+#include <vector>
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -42,34 +45,76 @@ namespace lbcrypto {
 
 class AdvancedSHECKKSRNS : public AdvancedSHERNS {
 public:
+    virtual ~AdvancedSHECKKSRNS() {}
 
-  virtual ~AdvancedSHECKKSRNS() {}
+    //------------------------------------------------------------------------------
+    // LINEAR WEIGHTED SUM
+    //------------------------------------------------------------------------------
 
-  virtual Ciphertext<DCRTPoly> EvalLinearWSum(
-      std::vector<ConstCiphertext<DCRTPoly>>& ciphertexts, const std::vector<double> &constants) const override;
+    Ciphertext<DCRTPoly> EvalLinearWSum(std::vector<ConstCiphertext<DCRTPoly>>& ciphertexts,
+                                        const std::vector<double>& constants) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalLinearWSumMutable(
-      std::vector<Ciphertext<DCRTPoly>>& ciphertexts, const std::vector<double> &constants) const override;
+    Ciphertext<DCRTPoly> EvalLinearWSumMutable(std::vector<Ciphertext<DCRTPoly>>& ciphertexts,
+                                               const std::vector<double>& constants) const override;
 
-  virtual Ciphertext<DCRTPoly> EvalPoly(
-      ConstCiphertext<DCRTPoly> ciphertext,
-      const std::vector<double> &coefficients) const override;
+    //------------------------------------------------------------------------------
+    // EVAL POLYNOMIAL
+    //------------------------------------------------------------------------------
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    Ciphertext<DCRTPoly> EvalPoly(ConstCiphertext<DCRTPoly> ciphertext,
+                                  const std::vector<double>& coefficients) const override;
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<AdvancedSHERNS>(this));
-  }
+    Ciphertext<DCRTPoly> EvalPolyLinear(ConstCiphertext<DCRTPoly> x,
+                                        const std::vector<double>& coefficients) const override;
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<AdvancedSHERNS>(this));
-  }
+    Ciphertext<DCRTPoly> InnerEvalPolyPS(ConstCiphertext<DCRTPoly> x, const std::vector<double>& coefficients,
+                                         uint32_t k, uint32_t m, std::vector<Ciphertext<DCRTPoly>>& powers,
+                                         std::vector<Ciphertext<DCRTPoly>>& powers2) const;
 
-  std::string SerializedObjectName() const { return "AdvancedSHECKKSRNS"; }
+    Ciphertext<DCRTPoly> EvalPolyPS(ConstCiphertext<DCRTPoly> x,
+                                    const std::vector<double>& coefficients) const override;
+
+    //------------------------------------------------------------------------------
+    // EVAL CHEBYSHEV SERIES
+    //------------------------------------------------------------------------------
+
+    Ciphertext<DCRTPoly> EvalChebyshevSeries(ConstCiphertext<DCRTPoly> ciphertext,
+                                             const std::vector<double>& coefficients, double a,
+                                             double b) const override;
+
+    Ciphertext<DCRTPoly> EvalChebyshevSeriesLinear(ConstCiphertext<DCRTPoly> ciphertext,
+                                                   const std::vector<double>& coefficients, double a,
+                                                   double b) const override;
+
+    Ciphertext<DCRTPoly> InnerEvalChebyshevPS(ConstCiphertext<DCRTPoly> x, const std::vector<double>& coefficients,
+                                              uint32_t k, uint32_t m, std::vector<Ciphertext<DCRTPoly>>& T,
+                                              std::vector<Ciphertext<DCRTPoly>>& T2) const;
+
+    Ciphertext<DCRTPoly> EvalChebyshevSeriesPS(ConstCiphertext<DCRTPoly> ciphertext,
+                                               const std::vector<double>& coefficients, double a,
+                                               double b) const override;
+
+    //------------------------------------------------------------------------------
+    // EVAL LINEAR TRANSFORMATION
+    //------------------------------------------------------------------------------
+
+    //------------------------------------------------------------------------------
+    // SERIALIZATION
+    //------------------------------------------------------------------------------
+
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<AdvancedSHERNS>(this));
+    }
+
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<AdvancedSHERNS>(this));
+    }
+
+    std::string SerializedObjectName() const {
+        return "AdvancedSHECKKSRNS";
+    }
 };
 
 }  // namespace lbcrypto

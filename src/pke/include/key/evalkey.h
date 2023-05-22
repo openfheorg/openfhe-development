@@ -32,7 +32,12 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_EVALKEY_H
 #define LBCRYPTO_CRYPTO_KEY_EVALKEY_H
 
+#include "key/evalkey-fwd.h"
 #include "key/key.h"
+
+#include <memory>
+#include <vector>
+#include <string>
 
 /**
  * @namespace lbcrypto
@@ -40,224 +45,213 @@
  */
 namespace lbcrypto {
 
-template <typename Element>
-class EvalKeyImpl;
-
-template <typename Element>
-using EvalKey = std::shared_ptr<EvalKeyImpl<Element>>;
-
 /**
  * @brief Abstract interface for evaluation/proxy keys
  * @tparam Element a ring element.
  */
 template <class Element>
 class EvalKeyImpl : public Key<Element> {
- public:
-  /**
+public:
+    /**
    * Basic constructor for setting crypto params
    *
    * @param &cryptoParams is the reference to cryptoParams
    */
 
-  explicit EvalKeyImpl(CryptoContext<Element> cc = 0) : Key<Element>(cc) {}
+    explicit EvalKeyImpl(CryptoContext<Element> cc = 0) : Key<Element>(cc) {}
 
-  virtual ~EvalKeyImpl() {}
+    virtual ~EvalKeyImpl() {}
 
-  /**
+    /**
    * Setter function to store Relinearization Element Vector A.
    * Throws exception, to be overridden by derived class.
    *
    * @param &a is the Element vector to be copied.
    */
 
-  virtual void SetAVector(const std::vector<Element> &a) {
-    PALISADE_THROW(not_implemented_error,
-                   "SetAVector copy operation not supported");
-  }
+    virtual void SetAVector(const std::vector<Element>& a) {
+        OPENFHE_THROW(not_implemented_error, "SetAVector copy operation not supported");
+    }
 
-  /**
+    /**
    * Setter function to store Relinearization Element Vector A.
    * Throws exception, to be overridden by derived class.
    *
    * @param &&a is the Element vector to be moved.
    */
 
-  virtual void SetAVector(std::vector<Element> &&a) {
-    PALISADE_THROW(not_implemented_error,
-                   "SetAVector move operation not supported");
-  }
+    virtual void SetAVector(std::vector<Element>&& a) {
+        OPENFHE_THROW(not_implemented_error, "SetAVector move operation not supported");
+    }
 
-  /**
+    /**
    * Getter function to access Relinearization Element Vector A.
    * Throws exception, to be overridden by derived class.
    *
    * @return Element vector A.
    */
 
-  virtual const std::vector<Element> &GetAVector() const {
-    PALISADE_THROW(not_implemented_error, "GetAVector operation not supported");
-  }
+    virtual const std::vector<Element>& GetAVector() const {
+        OPENFHE_THROW(not_implemented_error, "GetAVector operation not supported");
+    }
 
-  /**
+    /**
    * Setter function to store Relinearization Element Vector B.
    * Throws exception, to be overridden by derived class.
    *
    * @param &b is the Element vector to be copied.
    */
 
-  virtual void SetBVector(const std::vector<Element> &b) {
-    PALISADE_THROW(not_implemented_error,
-                   "SetBVector copy operation not supported");
-  }
+    virtual void SetBVector(const std::vector<Element>& b) {
+        OPENFHE_THROW(not_implemented_error, "SetBVector copy operation not supported");
+    }
 
-  /**
+    /**
    * Setter function to store Relinearization Element Vector B.
    * Throws exception, to be overridden by derived class.
    *
    * @param &&b is the Element vector to be moved.
    */
 
-  virtual void SetBVector(std::vector<Element> &&b) {
-    PALISADE_THROW(not_implemented_error,
-                   "SetBVector move operation not supported");
-  }
+    virtual void SetBVector(std::vector<Element>&& b) {
+        OPENFHE_THROW(not_implemented_error, "SetBVector move operation not supported");
+    }
 
-  /**
+    /**
    * Getter function to access Relinearization Element Vector B.
    * Throws exception, to be overridden by derived class.
    *
    * @return  Element vector B.
    */
 
-  virtual const std::vector<Element> &GetBVector() const {
-    PALISADE_THROW(not_implemented_error, "GetBVector operation not supported");
-  }
+    virtual const std::vector<Element>& GetBVector() const {
+        OPENFHE_THROW(not_implemented_error, "GetBVector operation not supported");
+    }
 
-  /**
+    /**
    * Setter function to store key switch Element.
    * Throws exception, to be overridden by derived class.
    *
    * @param &a is the Element to be copied.
    */
 
-  virtual void SetA(const Element &a) {
-    PALISADE_THROW(not_implemented_error, "SetA copy operation not supported");
-  }
+    virtual void SetA(const Element& a) {
+        OPENFHE_THROW(not_implemented_error, "SetA copy operation not supported");
+    }
 
-  /**
+    /**
    * Setter function to store key switch Element.
    * Throws exception, to be overridden by derived class.
    *
    * @param &&a is the Element to be moved.
    */
-  virtual void SetA(Element &&a) {
-    PALISADE_THROW(not_implemented_error, "SetA move operation not supported");
-  }
+    virtual void SetA(Element&& a) {
+        OPENFHE_THROW(not_implemented_error, "SetA move operation not supported");
+    }
 
-  /**
+    /**
    * Getter function to access key switch Element.
    * Throws exception, to be overridden by derived class.
    *
    * @return  Element.
    */
 
-  virtual const Element &GetA() const {
-    PALISADE_THROW(not_implemented_error, "GetA operation not supported");
-  }
+    virtual const Element& GetA() const {
+        OPENFHE_THROW(not_implemented_error, "GetA operation not supported");
+    }
 
-  /**
+    /**
    * Setter function to store key switch Element.
    * Throws exception, to be overridden by derived class.
    *
    * @param &a is the Element to be copied.
    */
 
-  virtual void SetAinDCRT(const DCRTPoly &a) {
-    PALISADE_THROW(not_implemented_error,
-                   "SetAinDCRT copy operation not supported");
-  }
+    virtual void SetAinDCRT(const DCRTPoly& a) {
+        OPENFHE_THROW(not_implemented_error, "SetAinDCRT copy operation not supported");
+    }
 
-  /**
+    /**
    * Setter function to store key switch Element.
    * Throws exception, to be overridden by derived class.
    *
    * @param &&a is the Element to be moved.
    */
-  virtual void SetAinDCRT(DCRTPoly &&a) {
-    PALISADE_THROW(not_implemented_error,
-                   "SetAinDCRT move operation not supported");
-  }
+    virtual void SetAinDCRT(DCRTPoly&& a) {
+        OPENFHE_THROW(not_implemented_error, "SetAinDCRT move operation not supported");
+    }
 
-  /**
+    /**
    * Getter function to access key switch Element.
    * Throws exception, to be overridden by derived class.
    *
    * @return  Element.
    */
 
-  virtual const DCRTPoly &GetAinDCRT() const {
-    PALISADE_THROW(not_implemented_error, "GetAinDCRT operation not supported");
-  }
+    virtual const DCRTPoly& GetAinDCRT() const {
+        OPENFHE_THROW(not_implemented_error, "GetAinDCRT operation not supported");
+    }
 
-  /**
+    /**
    * Setter function to store key switch Element.
    * Throws exception, to be overridden by derived class.
    *
    * @param &b is the Element to be copied.
    */
 
-  virtual void SetBinDCRT(const DCRTPoly &b) {
-    PALISADE_THROW(not_implemented_error,
-                   "SetAinDCRT copy operation not supported");
-  }
+    virtual void SetBinDCRT(const DCRTPoly& b) {
+        OPENFHE_THROW(not_implemented_error, "SetAinDCRT copy operation not supported");
+    }
 
-  /**
+    /**
    * Setter function to store key switch Element.
    * Throws exception, to be overridden by derived class.
    *
    * @param &&b is the Element to be moved.
    */
-  virtual void SetBinDCRT(DCRTPoly &&b) {
-    PALISADE_THROW(not_implemented_error,
-                   "SetAinDCRT move operation not supported");
-  }
+    virtual void SetBinDCRT(DCRTPoly&& b) {
+        OPENFHE_THROW(not_implemented_error, "SetAinDCRT move operation not supported");
+    }
 
-  /**
+    /**
    * Getter function to access key switch Element.
    * Throws exception, to be overridden by derived class.
    *
    * @return  Element.
    */
 
-  virtual const DCRTPoly &GetBinDCRT() const {
-    PALISADE_THROW(not_implemented_error, "GetAinDCRT operation not supported");
-  }
+    virtual const DCRTPoly& GetBinDCRT() const {
+        OPENFHE_THROW(not_implemented_error, "GetAinDCRT operation not supported");
+    }
 
-  virtual void ClearKeys() {
-    PALISADE_THROW(not_implemented_error,
-                   "ClearKeys operation is not supported");
-  }
+    virtual void ClearKeys() {
+        OPENFHE_THROW(not_implemented_error, "ClearKeys operation is not supported");
+    }
 
-  friend bool operator==(const EvalKeyImpl &a, const EvalKeyImpl &b) {
-    return a.key_compare(b);
-  }
+    friend bool operator==(const EvalKeyImpl& a, const EvalKeyImpl& b) {
+        return a.key_compare(b);
+    }
 
-  friend bool operator!=(const EvalKeyImpl &a, EvalKeyImpl &b) {
-    return !(a == b);
-  }
+    friend bool operator!=(const EvalKeyImpl& a, EvalKeyImpl& b) {
+        return !(a == b);
+    }
 
-  virtual bool key_compare(const EvalKeyImpl &other) const { return false; }
+    virtual bool key_compare(const EvalKeyImpl& other) const {
+        return false;
+    }
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(::cereal::base_class<Key<Element>>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(::cereal::base_class<Key<Element>>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    ar(::cereal::base_class<Key<Element>>(this));
-  }
-  std::string SerializedObjectName() const { return "EvalKey"; }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        ar(::cereal::base_class<Key<Element>>(this));
+    }
+    std::string SerializedObjectName() const {
+        return "EvalKey";
+    }
 };
 
 }  // namespace lbcrypto

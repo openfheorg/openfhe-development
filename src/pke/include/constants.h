@@ -34,44 +34,130 @@
 
 #include <iosfwd>
 
+// TODO: Review whether we need to include hal.h.
+#include "math/hal.h"
+
 /**
  * @brief Lists all features supported by public key encryption schemes
  */
 enum PKESchemeFeature {
-  PKE = 0x01,
-  KEYSWITCH = 0x02,
-  PRE = 0x04,
-  LEVELEDSHE = 0x08,
-  ADVANCEDSHE = 0x10,
-  MULTIPARTY = 0x20,
-  FHE = 0x40
+    PKE         = 0x01,
+    KEYSWITCH   = 0x02,
+    PRE         = 0x04,
+    LEVELEDSHE  = 0x08,
+    ADVANCEDSHE = 0x10,
+    MULTIPARTY  = 0x20,
+    FHE         = 0x40,
 };
-
 std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
 
 /**
  * @brief Lists all modes for RLWE schemes, such as BGV and BFV
  */
-enum MODE { RLWE = 0, OPTIMIZED = 1, SPARSE = 2 };
-std::ostream& operator<<(std::ostream& s, MODE m);
-
-enum RescalingTechnique {
-  FIXEDMANUAL,
-  FIXEDAUTO,
-  FLEXIBLEAUTO,
-  NORESCALE,
-  INVALID_RS_TECHNIQUE  // TODO (dsuponit): make this the first value
+enum SecretKeyDist {
+    GAUSSIAN        = 0,
+    UNIFORM_TERNARY = 1,
+    SPARSE_TERNARY  = 2,
 };
-std::ostream& operator<<(std::ostream& s, RescalingTechnique t);
+std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
-enum KeySwitchTechnique { BV, HYBRID };
+enum ScalingTechnique {
+    FIXEDMANUAL = 0,
+    FIXEDAUTO,
+    FLEXIBLEAUTO,
+    FLEXIBLEAUTOEXT,
+    NORESCALE,
+    INVALID_RS_TECHNIQUE,  // TODO (dsuponit): make this the first value
+};
+std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
+
+enum ProxyReEncryptionMode {
+    NOT_SET = 0,
+    INDCPA,
+    FIXED_NOISE_HRA,
+    NOISE_FLOODING_HRA,
+    DIVIDE_AND_ROUND_HRA,
+};
+std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
+
+enum MultipartyMode {
+    INVALID_MULTIPARTY_MODE = 0,
+    FIXED_NOISE_MULTIPARTY,
+    NOISE_FLOODING_MULTIPARTY,
+};
+std::ostream& operator<<(std::ostream& s, MultipartyMode t);
+
+enum ExecutionMode {
+    EXEC_EVALUATION = 0,
+    EXEC_NOISE_ESTIMATION,
+};
+std::ostream& operator<<(std::ostream& s, ExecutionMode t);
+
+enum DecryptionNoiseMode {
+    FIXED_NOISE_DECRYPT = 0,
+    NOISE_FLOODING_DECRYPT,
+};
+std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t);
+
+enum KeySwitchTechnique {
+    INVALID_KS_TECH = 0,
+    BV,
+    HYBRID,
+};
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t);
 
-enum EncryptionTechnique { STANDARD, POVERQ };
+enum EncryptionTechnique {
+    STANDARD = 0,
+    EXTENDED,
+};
 std::ostream& operator<<(std::ostream& s, EncryptionTechnique t);
 
-enum MultiplicationTechnique { BEHZ, HPS, HPSPOVERQ, HPSPOVERQLEVELED };
+enum MultiplicationTechnique {
+    BEHZ = 0,
+    HPS,
+    HPSPOVERQ,
+    HPSPOVERQLEVELED,
+};
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
+enum PlaintextEncodings {
+    INVALID_ENCODING = 0,
+    COEF_PACKED_ENCODING,
+    PACKED_ENCODING,
+    STRING_ENCODING,
+    CKKS_PACKED_ENCODING,
+};
+std::ostream& operator<<(std::ostream& s, PlaintextEncodings p);
+
+enum LargeScalingFactorConstants {
+    MAX_BITS_IN_WORD = 62,
+    MAX_LOG_STEP     = 60,
+};
+
+/**
+ * @brief  BASE_NUM_LEVELS_TO_DROP is the most common value for levels/towers to drop (do not make it a default argument
+ * as default arguments work differently for virtual functions)
+ */
+// TODO (dsuponit): remove BASE_NUM_LEVELS_TO_DROP
+enum {
+    BASE_NUM_LEVELS_TO_DROP = 1,
+};
+
+namespace NOISE_FLOODING {
+// noise flooding distribution parameter for distributed decryption in threshold FHE
+const double MP_SD = 1048576;
+// noise flooding distribution parameter for fixed 20 bits noise multihop PRE
+const double PRE_SD = 1048576;
+// statistical security parameter for noise flooding in PRE
+const double STAT_SECURITY = 30;
+// number of additional moduli in NOISE_FLOODING_MULTIPARTY mode
+const size_t NUM_MODULI_MULTIPARTY = 2;
+// modulus size for additional moduli in NOISE_FLOODING_MULTIPARTY mode
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+const size_t MULTIPARTY_MOD_SIZE = 60;
+#else
+const size_t MULTIPARTY_MOD_SIZE = MAX_MODULUS_SIZE;
+#endif
+};  // namespace NOISE_FLOODING
 
 #endif  // _CONSTANTS_H_

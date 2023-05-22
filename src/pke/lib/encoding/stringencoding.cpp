@@ -30,74 +30,74 @@
 //==================================================================================
 
 /*
-  Represents and defines string-encoded plaintext objects in Palisade
+  Represents and defines string-encoded plaintext objects in OpenFHE
  */
 
 #include "encoding/stringencoding.h"
 
 namespace lbcrypto {
 
-static const size_t charPtm = (1 << 8);
+static const size_t charPtm      = (1 << 8);
 static const uint32_t CHARMARKER = (1 << 7);
 
 bool StringEncoding::Encode() {
-  if (this->isEncoded) return true;
-  auto mod = this->encodingParams->GetPlaintextModulus();
+    if (this->isEncoded)
+        return true;
+    auto mod = this->encodingParams->GetPlaintextModulus();
 
-  if (mod != 256) {
-    PALISADE_THROW(config_error, "Plaintext modulus must be " +
-                                     std::to_string(charPtm) +
-                                     " for string encoding");
-  }
+    if (mod != 256) {
+        OPENFHE_THROW(config_error, "Plaintext modulus must be " + std::to_string(charPtm) + " for string encoding");
+    }
 
-  if (this->typeFlag == IsNativePoly) {
-    this->encodedNativeVector.SetValuesToZero();
-    size_t i = 0;
-    for (; i < ptx.size() && i < this->encodedNativeVector.GetLength(); i++) {
-      this->encodedNativeVector[i] = static_cast<uint32_t>(ptx[i]);
+    if (this->typeFlag == IsNativePoly) {
+        this->encodedNativeVector.SetValuesToZero();
+        size_t i = 0;
+        for (; i < ptx.size() && i < this->encodedNativeVector.GetLength(); i++) {
+            this->encodedNativeVector[i] = static_cast<uint32_t>(ptx[i]);
+        }
+        for (; i < this->encodedNativeVector.GetLength(); i++) {
+            this->encodedNativeVector[i] = CHARMARKER;
+        }
     }
-    for (; i < this->encodedNativeVector.GetLength(); i++) {
-      this->encodedNativeVector[i] = CHARMARKER;
+    else {
+        this->encodedVector.SetValuesToZero();
+        size_t i = 0;
+        for (; i < ptx.size() && i < this->encodedVector.GetLength(); i++) {
+            this->encodedVector[i] = static_cast<uint32_t>(ptx[i]);
+        }
+        for (; i < this->encodedVector.GetLength(); i++) {
+            this->encodedVector[i] = CHARMARKER;
+        }
     }
-  } else {
-    this->encodedVector.SetValuesToZero();
-    size_t i = 0;
-    for (; i < ptx.size() && i < this->encodedVector.GetLength(); i++) {
-      this->encodedVector[i] = static_cast<uint32_t>(ptx[i]);
-    }
-    for (; i < this->encodedVector.GetLength(); i++) {
-      this->encodedVector[i] = CHARMARKER;
-    }
-  }
 
-  if (this->typeFlag == IsDCRTPoly) {
-    this->encodedVectorDCRT = this->encodedVector;
-  }
+    if (this->typeFlag == IsDCRTPoly) {
+        this->encodedVectorDCRT = this->encodedVector;
+    }
 
-  this->isEncoded = true;
-  return true;
+    this->isEncoded = true;
+    return true;
 }
 
 template <typename P>
-static void fillPlaintext(const P& poly, std::string& str,
-                          const PlaintextModulus& mod) {
-  str.clear();
-  for (size_t i = 0; i < poly.GetLength(); i++) {
-    uint32_t ch = (poly[i].ConvertToInt() % mod) & 0xff;
-    if (ch == CHARMARKER) break;
-    str += static_cast<char>(ch);
-  }
+static void fillPlaintext(const P& poly, std::string& str, const PlaintextModulus& mod) {
+    str.clear();
+    for (size_t i = 0; i < poly.GetLength(); i++) {
+        uint32_t ch = (poly[i].ConvertToInt() % mod) & 0xff;
+        if (ch == CHARMARKER)
+            break;
+        str += static_cast<char>(ch);
+    }
 }
 
 bool StringEncoding::Decode() {
-  auto mod = this->encodingParams->GetPlaintextModulus();
+    auto mod = this->encodingParams->GetPlaintextModulus();
 
-  if (this->typeFlag == IsNativePoly)
-    fillPlaintext(this->encodedNativeVector, this->ptx, mod);
-  else
-    fillPlaintext(this->encodedVector, this->ptx, mod);
+    if (this->typeFlag == IsNativePoly)
+        fillPlaintext(this->encodedNativeVector, this->ptx, mod);
+    else
+        fillPlaintext(this->encodedVector, this->ptx, mod);
 
-  return true;
+    return true;
 }
 
 } /* namespace lbcrypto */

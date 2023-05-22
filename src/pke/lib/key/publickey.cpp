@@ -28,24 +28,10 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-/*
-  Public key implementation
- */
-
-
-#ifndef LBCRYPTO_CRYPTO_KEY_PUBLICKEY_C
-#define LBCRYPTO_CRYPTO_KEY_PUBLICKEY_C
-
 #include "cryptocontext.h"
 #include "key/publickey.h"
 
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
+// the code below is from publickey-impl.cpp
 namespace lbcrypto {
-
-}
-
-#endif
+template class PublicKeyImpl<DCRTPoly>;
+}  // namespace lbcrypto

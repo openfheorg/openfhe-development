@@ -34,6 +34,11 @@
 
 #include "schemerns/rns-leveledshe.h"
 
+#include <string>
+#include <map>
+#include <memory>
+#include <vector>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -42,38 +47,37 @@ namespace lbcrypto {
 
 class LeveledSHEBFVRNS : public LeveledSHERNS {
 public:
-  virtual ~LeveledSHEBFVRNS() {}
+    virtual ~LeveledSHEBFVRNS() {}
 
-  using LeveledSHERNS::EvalAddInPlace;
+    using LeveledSHERNS::EvalAddInPlace;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
    *
    * @param ciphertext the input ciphertext.
    * @param plaintext the input plaintext.
    */
-  virtual void EvalAddInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                              ConstPlaintext plaintext) const override;
+    void EvalAddInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
-  using LeveledSHERNS::EvalSubInPlace;
+    using LeveledSHERNS::EvalSubInPlace;
 
-  /**
+    /**
    * Virtual function to define the interface for homomorphic addition of
    * ciphertexts.
    *
    * @param ciphertext the input ciphertext.
    * @param plaintext the input plaintext.
    */
-  virtual void EvalSubInPlace(Ciphertext<DCRTPoly> &ciphertext,
-                              ConstPlaintext plaintext) const override;
+    void EvalSubInPlace(Ciphertext<DCRTPoly>& ciphertext, ConstPlaintext plaintext) const override;
 
-  using LeveledSHERNS::EvalMult;
-//  using LeveledSHERNS::EvalMultInPlace;
-//  using LeveledSHERNS::EvalMultMutable;
-//  using LeveledSHERNS::EvalMultMutableInPlace;
+    using LeveledSHERNS::EvalMult;
+    using LeveledSHERNS::EvalMultInPlace;
 
-  /**
+    using LeveledSHERNS::EvalSquare;
+    using LeveledSHERNS::EvalSquareInPlace;
+
+    /**
    * Virtual function to define the interface for multiplicative homomorphic
    * evaluation of ciphertext.
    *
@@ -81,27 +85,60 @@ public:
    * @param ciphertext2 the input ciphertext.
    * @return the new ciphertext.
    */
-  virtual Ciphertext<DCRTPoly> EvalMult(
-      ConstCiphertext<DCRTPoly> ciphertext1,
-      ConstCiphertext<DCRTPoly> ciphertext2) const override;
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext1,
+                                  ConstCiphertext<DCRTPoly> ciphertext2) const override;
 
-  void EvalMultCoreInPlace(Ciphertext<DCRTPoly> &ciphertext, const NativeInteger& constant) const;
+    Ciphertext<DCRTPoly> EvalSquare(ConstCiphertext<DCRTPoly> ciphertext) const override;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    Ciphertext<DCRTPoly> EvalMult(ConstCiphertext<DCRTPoly> ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2,
+                                  const EvalKey<DCRTPoly> evalKey) const override;
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<LeveledSHERNS>(this));
-  }
+    void EvalMultInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2,
+                         const EvalKey<DCRTPoly> evalKey) const override;
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<LeveledSHERNS>(this));
-  }
+    Ciphertext<DCRTPoly> EvalSquare(ConstCiphertext<DCRTPoly> ciphertext,
+                                    const EvalKey<DCRTPoly> evalKey) const override;
 
-  std::string SerializedObjectName() const { return "LeveledSHEBFVRNS"; }
+    void EvalSquareInPlace(Ciphertext<DCRTPoly>& ciphertext1, const EvalKey<DCRTPoly> evalKey) const override;
+
+    void EvalMultCoreInPlace(Ciphertext<DCRTPoly>& ciphertext, const NativeInteger& constant) const;
+
+    /////////////////////////////////////
+    // AUTOMORPHISM
+    /////////////////////////////////////
+
+    Ciphertext<DCRTPoly> EvalAutomorphism(ConstCiphertext<DCRTPoly> ciphertext, usint i,
+                                          const std::map<usint, EvalKey<DCRTPoly>>& evalKeyMap,
+                                          CALLER_INFO_ARGS_HDR) const override;
+
+    Ciphertext<DCRTPoly> EvalFastRotation(ConstCiphertext<DCRTPoly> ciphertext, const usint index, const usint m,
+                                          const std::shared_ptr<std::vector<DCRTPoly>> digits) const override;
+
+    std::shared_ptr<std::vector<DCRTPoly>> EvalFastRotationPrecompute(
+        ConstCiphertext<DCRTPoly> ciphertext) const override;
+
+    usint FindAutomorphismIndex(usint index, usint m) const override;
+
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
+
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<LeveledSHERNS>(this));
+    }
+
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<LeveledSHERNS>(this));
+    }
+
+    std::string SerializedObjectName() const {
+        return "LeveledSHEBFVRNS";
+    }
+
+private:
+    void RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> evalKey) const;
 };
 }  // namespace lbcrypto
 

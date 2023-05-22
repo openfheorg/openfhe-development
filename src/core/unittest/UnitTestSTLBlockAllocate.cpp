@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code exercises the block allocator utility of the PALISADE lattice encryption library
+  This code exercises the block allocator utility of the OpenFHE lattice encryption library
  */
 
 // #define PROFILE  //uncomment to print out elapsed time
@@ -59,13 +59,13 @@
 using namespace lbcrypto;
 
 class UnitTestBinInt : public ::testing::Test {
- protected:
-  virtual void SetUp() {}
+protected:
+    virtual void SetUp() {}
 
-  virtual void TearDown() {
-    // Code here will be called immediately after each test
-    // (right before the destructor).
-  }
+    virtual void TearDown() {
+        // Code here will be called immediately after each test
+        // (right before the destructor).
+    }
 };
 
 /************************************************/
@@ -89,13 +89,13 @@ void StringFixedBlockTest();
 void Benchmark(const char* name, TestFunc testFunc);
 
 static void out_of_memory() {
-  // new-handler function called by Allocator when pool is out of memory
-  xalloc_stats();
+    // new-handler function called by Allocator when pool is out of memory
+    xalloc_stats();
 #if 0
   std::bad_alloc exception;
   throw(exception);
 #else
-  assert(0);
+    assert(0);
 #endif
 }
 
@@ -103,166 +103,172 @@ static void out_of_memory() {
 // MapGlobalHeapTest
 //------------------------------------------------------------------------------
 void MapGlobalHeapTest() {
-  std::map<int, char> myMap;
-  for (int i = 0; i < MAX_BENCHMARK; i++) myMap[i] = 'a';
-  myMap.clear();
+    std::map<int, char> myMap;
+    for (int i = 0; i < MAX_BENCHMARK; i++)
+        myMap[i] = 'a';
+    myMap.clear();
 }
 
 //------------------------------------------------------------------------------
 // MapFixedBlockTest
 //------------------------------------------------------------------------------
 void MapFixedBlockTest() {
-  xmap<int, char> myMap;
-  for (int i = 0; i < MAX_BENCHMARK; i++) myMap[i] = 'a';
-  myMap.clear();
+    xmap<int, char> myMap;
+    for (int i = 0; i < MAX_BENCHMARK; i++)
+        myMap[i] = 'a';
+    myMap.clear();
 }
 
 //------------------------------------------------------------------------------
 // ListGlobalHeapTest
 //------------------------------------------------------------------------------
 void ListGlobalHeapTest() {
-  std::list<int> myList;
-  for (int i = 0; i < MAX_BENCHMARK; i++) myList.push_back(123);
-  myList.clear();
+    std::list<int> myList;
+    for (int i = 0; i < MAX_BENCHMARK; i++)
+        myList.push_back(123);
+    myList.clear();
 }
 
 //------------------------------------------------------------------------------
 // ListFixedBlockTest
 //------------------------------------------------------------------------------
 void ListFixedBlockTest() {
-  xlist<int> myList;
-  for (int i = 0; i < MAX_BENCHMARK; i++) myList.push_back(123);
-  myList.clear();
+    xlist<int> myList;
+    for (int i = 0; i < MAX_BENCHMARK; i++)
+        myList.push_back(123);
+    myList.clear();
 }
 
 //------------------------------------------------------------------------------
 // VectorGlobalHeapTest
 //------------------------------------------------------------------------------
 void VectorGlobalHeapTest() {
-  std::vector<int> myVector;
-  for (int i = 0; i < MAX_BENCHMARK; i++) myVector.push_back(123);
-  myVector.clear();
+    std::vector<int> myVector;
+    for (int i = 0; i < MAX_BENCHMARK; i++)
+        myVector.push_back(123);
+    myVector.clear();
 }
 
 //------------------------------------------------------------------------------
 // VectorFixedBlockTest
 //------------------------------------------------------------------------------
 void VectorFixedBlockTest() {
-  xvector<int> myVector;
-  for (int i = 0; i < MAX_BENCHMARK; i++) myVector.push_back(123);
-  myVector.clear();
+    xvector<int> myVector;
+    for (int i = 0; i < MAX_BENCHMARK; i++)
+        myVector.push_back(123);
+    myVector.clear();
 }
 
 //------------------------------------------------------------------------------
 // StringGlobalHeapTest
 //------------------------------------------------------------------------------
 void StringGlobalHeapTest() {
-  std::list<std::string> myList;
-  for (int i = 0; i < MAX_BENCHMARK; i++) {
-    std::string myString("benchmark");
-    myString +=
-        "benchmark test benchmark test benchmark test benchmark test benchmark "
-        "test benchmark test benchmark test "
-        "benchmark test benchmark test benchmark test benchmark test benchmark "
-        "test benchmark test benchmark test";
-    myList.push_back(myString);
-  }
-  myList.clear();
+    std::list<std::string> myList;
+    for (int i = 0; i < MAX_BENCHMARK; i++) {
+        std::string myString("benchmark");
+        myString +=
+            "benchmark test benchmark test benchmark test benchmark test benchmark "
+            "test benchmark test benchmark test "
+            "benchmark test benchmark test benchmark test benchmark test benchmark "
+            "test benchmark test benchmark test";
+        myList.push_back(myString);
+    }
+    myList.clear();
 }
 
 //------------------------------------------------------------------------------
 // StringFixedBlockTest
 //------------------------------------------------------------------------------
 void StringFixedBlockTest() {
-  xlist<xstring> myList;
-  for (int i = 0; i < MAX_BENCHMARK; i++) {
-    xstring myString("benchmark");
-    myString +=
-        "benchmark test benchmark test benchmark test benchmark test benchmark "
-        "test benchmark test benchmark test "
-        "benchmark test benchmark test benchmark test benchmark test benchmark "
-        "test benchmark test benchmark test";
-    myList.push_back(myString);
-  }
-  myList.clear();
+    xlist<xstring> myList;
+    for (int i = 0; i < MAX_BENCHMARK; i++) {
+        xstring myString("benchmark");
+        myString +=
+            "benchmark test benchmark test benchmark test benchmark test benchmark "
+            "test benchmark test benchmark test "
+            "benchmark test benchmark test benchmark test benchmark test benchmark "
+            "test benchmark test benchmark test";
+        myList.push_back(myString);
+    }
+    myList.clear();
 }
 
 //------------------------------------------------------------------------------
 // Benchmark
 //------------------------------------------------------------------------------
 void Benchmark(const char* name, TestFunc testFunc) {
-  TimeVar t1;
+    TimeVar t1;
 
-  // float ElapsedMicroseconds = {0};
-  // Allocate MAX_BLOCKS blocks MAX_BLOCK_SIZE / 2 sized blocks
+    // float ElapsedMicroseconds = {0};
+    // Allocate MAX_BLOCKS blocks MAX_BLOCK_SIZE / 2 sized blocks
 
-  TIC(t1);
-  // Call test function
-  testFunc();
-  // ElapsedMicroseconds = TOC_US(t1);
+    TIC(t1);
+    // Call test function
+    testFunc();
+    // ElapsedMicroseconds = TOC_US(t1);
 
-  // PROFILELOG( name << " Elapsed time: " << ElapsedMicroseconds);
-  PROFILELOG(name << " Elapsed time: " << TOC_US(t1));
+    // PROFILELOG( name << " Elapsed time: " << ElapsedMicroseconds);
+    PROFILELOG(name << " Elapsed time: " << TOC_US(t1));
 }
 
 TEST(UTBlockAllocate, stl_test) {
-  std::set_new_handler(out_of_memory);
+    std::set_new_handler(out_of_memory);
 
-  xlist<int> myList;
-  myList.push_back(123);
+    xlist<int> myList;
+    myList.push_back(123);
 
-  xmap<char, int> myMap;
-  myMap['a'] = 10;
+    xmap<char, int> myMap;
+    myMap['a'] = 10;
 
-  xqueue<int> myQueue;
-  myQueue.push(123);
+    xqueue<int> myQueue;
+    myQueue.push(123);
 
-  xset<xstring> mySet;
-  mySet.insert("hello");
-  mySet.insert("world");
+    xset<xstring> mySet;
+    mySet.insert("hello");
+    mySet.insert("world");
 
-  xstringstream myStringStream;
-  myStringStream << "hello world " << 2016 << std::ends;
+    xstringstream myStringStream;
+    myStringStream << "hello world " << 2016 << std::ends;
 
-  xwstringstream myWStringStream;
-  myWStringStream << L"hello world " << 2016 << std::ends;
+    xwstringstream myWStringStream;
+    myWStringStream << L"hello world " << 2016 << std::ends;
 
-  xstring myString("hello world");
+    xstring myString("hello world");
 
-  Benchmark("std::list Global Heap (Run 1)", ListGlobalHeapTest);
-  Benchmark("std::list Global Heap (Run 2)", ListGlobalHeapTest);
-  Benchmark("std::list Global Heap (Run 3)", ListGlobalHeapTest);
+    Benchmark("std::list Global Heap (Run 1)", ListGlobalHeapTest);
+    Benchmark("std::list Global Heap (Run 2)", ListGlobalHeapTest);
+    Benchmark("std::list Global Heap (Run 3)", ListGlobalHeapTest);
 
-  Benchmark("xlist Fixed Block (Run 1)", ListFixedBlockTest);
-  Benchmark("xlist Fixed Block (Run 2)", ListFixedBlockTest);
-  Benchmark("xlist Fixed Block (Run 3)", ListFixedBlockTest);
+    Benchmark("xlist Fixed Block (Run 1)", ListFixedBlockTest);
+    Benchmark("xlist Fixed Block (Run 2)", ListFixedBlockTest);
+    Benchmark("xlist Fixed Block (Run 3)", ListFixedBlockTest);
 
-  Benchmark("std::map Global Heap (Run 1)", MapGlobalHeapTest);
-  Benchmark("std::map Global Heap (Run 2)", MapGlobalHeapTest);
-  Benchmark("std::map Global Heap (Run 3)", MapGlobalHeapTest);
+    Benchmark("std::map Global Heap (Run 1)", MapGlobalHeapTest);
+    Benchmark("std::map Global Heap (Run 2)", MapGlobalHeapTest);
+    Benchmark("std::map Global Heap (Run 3)", MapGlobalHeapTest);
 
-  Benchmark("xmap Fixed Block (Run 1)", MapFixedBlockTest);
-  Benchmark("xmap Fixed Block (Run 2)", MapFixedBlockTest);
-  Benchmark("xmap Fixed Block (Run 3)", MapFixedBlockTest);
+    Benchmark("xmap Fixed Block (Run 1)", MapFixedBlockTest);
+    Benchmark("xmap Fixed Block (Run 2)", MapFixedBlockTest);
+    Benchmark("xmap Fixed Block (Run 3)", MapFixedBlockTest);
 
-  Benchmark("std::vector Global Heap (Run 1)", VectorGlobalHeapTest);
-  Benchmark("std::vector Global Heap (Run 2)", VectorGlobalHeapTest);
-  Benchmark("std::vector Global Heap (Run 3)", VectorGlobalHeapTest);
+    Benchmark("std::vector Global Heap (Run 1)", VectorGlobalHeapTest);
+    Benchmark("std::vector Global Heap (Run 2)", VectorGlobalHeapTest);
+    Benchmark("std::vector Global Heap (Run 3)", VectorGlobalHeapTest);
 
-  Benchmark("xvector Fixed Block (Run 1)", VectorFixedBlockTest);
-  Benchmark("xvector Fixed Block (Run 2)", VectorFixedBlockTest);
-  Benchmark("xvector Fixed Block (Run 3)", VectorFixedBlockTest);
+    Benchmark("xvector Fixed Block (Run 1)", VectorFixedBlockTest);
+    Benchmark("xvector Fixed Block (Run 2)", VectorFixedBlockTest);
+    Benchmark("xvector Fixed Block (Run 3)", VectorFixedBlockTest);
 
-  Benchmark("std::string Global Heap (Run 1)", StringGlobalHeapTest);
-  Benchmark("std::string Global Heap (Run 2)", StringGlobalHeapTest);
-  Benchmark("std::string Global Heap (Run 3)", StringGlobalHeapTest);
+    Benchmark("std::string Global Heap (Run 1)", StringGlobalHeapTest);
+    Benchmark("std::string Global Heap (Run 2)", StringGlobalHeapTest);
+    Benchmark("std::string Global Heap (Run 3)", StringGlobalHeapTest);
 
-  Benchmark("xstring Fixed Block (Run 1)", StringFixedBlockTest);
-  Benchmark("xstring Fixed Block (Run 2)", StringFixedBlockTest);
-  Benchmark("xstring Fixed Block (Run 3)", StringFixedBlockTest);
+    Benchmark("xstring Fixed Block (Run 1)", StringFixedBlockTest);
+    Benchmark("xstring Fixed Block (Run 2)", StringFixedBlockTest);
+    Benchmark("xstring Fixed Block (Run 3)", StringFixedBlockTest);
 
 #ifdef PROFILE
-  xalloc_stats();
+    xalloc_stats();
 #endif
-  return;
+    return;
 }

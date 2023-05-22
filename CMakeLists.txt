@@ -1,5 +1,5 @@
 ##
-## CMakeLists.txt for PALISADE
+## CMakeLists.txt for OpenFHE
 ##
 ## This script will build machine-specific header files for compile
 ## as it generates the Makefile
@@ -18,17 +18,17 @@ endif()
 ### To use gcc/g++ on a Macintosh, you must set the Compilers
 ### here, not inside the project
 ##if(APPLE)
-##       set(CMAKE_C_COMPILER "/usr/local/bin/gcc-7")
-##       set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-7")
+##       set(CMAKE_C_COMPILER "/usr/local/bin/gcc-10")
+##       set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-10")
 ##endif()
 ### TODO: for now, we use CLang for Mac
 
-project (PALISADE C CXX)
+project (OpenFHE C CXX)
 
-set(PALISADE_VERSION_MAJOR 1)
-set(PALISADE_VERSION_MINOR 11)
-set(PALISADE_VERSION_PATCH 6)
-set(PALISADE_VERSION ${PALISADE_VERSION_MAJOR}.${PALISADE_VERSION_MINOR}.${PALISADE_VERSION_PATCH})
+set(OPENFHE_VERSION_MAJOR 1)
+set(OPENFHE_VERSION_MINOR 0)
+set(OPENFHE_VERSION_PATCH 3)
+set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED ON)
@@ -78,7 +78,6 @@ else()
 endif()
 
 option( BUILD_EXTRAS "Set to ON to build extras for the library"                OFF )
-option( BUILD_DOCS "Set to ON to build documentation for the library"           OFF )
 option( GIT_SUBMOD_AUTO "Submodules auto-update"                                ON  )
 option( WITH_BE2 "Include Backend 2 in build by setting WITH_BE2 to ON"         ON  )
 option( WITH_BE4 "Include Backend 4 in build by setting WITH_BE4 to ON"         ON  )
@@ -87,6 +86,7 @@ option( WITH_TCM "Activate tcmalloc by setting WITH_TCM to ON"                  
 option( WITH_INTEL_HEXL "Use Intel HEXL library"                                OFF )
 option( WITH_NATIVEOPT "Use machine-specific optimizations"                     OFF )
 option( WITH_COVTEST "Turn on to enable coverage testing"                       OFF )
+option( USE_MACPORTS "Use MacPorts installed packages"                          OFF )
 
 # Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
 if( NOT NATIVE_SIZE )
@@ -103,7 +103,6 @@ message( STATUS "BUILD_UNITTESTS:  ${BUILD_UNITTESTS}")
 message( STATUS "BUILD_EXAMPLES:   ${BUILD_EXAMPLES}")
 message( STATUS "BUILD_BENCHMARKS: ${BUILD_BENCHMARKS}")
 message( STATUS "BUILD_EXTRAS:     ${BUILD_EXTRAS}")
-message( STATUS "BUILD_DOCS:       ${BUILD_DOCS}")
 message( STATUS "BUILD_STATIC:     ${BUILD_STATIC}")
 message( STATUS "BUILD_SHARED:     ${BUILD_SHARED}")
 message( STATUS "GIT_SUBMOD_AUTO:  ${GIT_SUBMOD_AUTO}")
@@ -117,19 +116,20 @@ message( STATUS "NATIVE_SIZE:      ${NATIVE_SIZE}")
 message( STATUS "CKKS_M_FACTOR:    ${CKKS_M_FACTOR}")
 message( STATUS "WITH_NATIVEOPT:   ${WITH_NATIVEOPT}")
 message( STATUS "WITH_COVTEST:     ${WITH_COVTEST}")
+message( STATUS "USE_MACPORTS:     ${USE_MACPORTS}")
 
 #--------------------------------------------------------------------
 # Compiler logic
 #--------------------------------------------------------------------
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    # require at least gcc 6.1
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.1)
-        message(WARNING "GCC version should be at least 6.1.")
+    # require at least gcc 9.0
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+        message(WARNING "GCC version should be at least 9.0.")
     endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    # require at least clang 6
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)
-        message(WARNING "Clang version should be at least 6.")
+    # require at least clang 10
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10)
+        message(WARNING "Clang version should be at least 10.0.")
     endif()
 else()
 	message(WARNING "You are using ${CMAKE_CXX_COMPILER_ID} version ${CMAKE_CXX_COMPILER_VERSION}, which is unsupported.")
@@ -174,8 +174,8 @@ else()
    set (NATIVE_OPT "")
 endif()
 
-set(C_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DPALISADE_VERSION=${PALISADE_VERSION}")
-set(CXX_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DPALISADE_VERSION=${PALISADE_VERSION} ${IGNORE_WARNINGS}")
+set(C_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DOPENFHE_VERSION=${OPENFHE_VERSION}")
+set(CXX_COMPILE_FLAGS "-Wall -Werror -O3 ${NATIVE_OPT} -DOPENFHE_VERSION=${OPENFHE_VERSION} ${IGNORE_WARNINGS}")
 
 if ( EMSCRIPTEN )
 	set(EMSCRIPTEN_IGNORE_WARNINGS "-Wno-unused-but-set-variable -Wno-unknown-warning-option")
@@ -201,14 +201,14 @@ if(WITH_COVTEST)
 endif()
 
 if(BUILD_STATIC)
-    set(PALISADE_STATIC_LIBS PALISADEcore_static PALISADEpke_static PALISADEbinfhe_static)
+    set(OpenFHE_STATIC_LIBS OPENFHEcore_static OPENFHEpke_static OPENFHEbinfhe_static)
 endif()
 
 if(BUILD_SHARED)
-    set(PALISADE_SHARED_LIBS PALISADEcore PALISADEpke PALISADEbinfhe)
+    set(OpenFHE_SHARED_LIBS OPENFHEcore OPENFHEpke OPENFHEbinfhe)
 endif()
 
-set(PALISADE_PACKAGE_LIBS ${PALISADE_STATIC_LIBS} ${PALISADE_SHARED_LIBS})
+set(OpenFHE_PACKAGE_LIBS ${OpenFHE_STATIC_LIBS} ${OpenFHE_SHARED_LIBS})
 
 #--------------------------------------------------------------------
 # Installation logic
@@ -218,12 +218,12 @@ set(PALISADE_PACKAGE_LIBS ${PALISADE_STATIC_LIBS} ${PALISADE_SHARED_LIBS})
 ### set up for install
 set(INSTALL_LIB_DIR lib CACHE PATH
 	"Installation directory for libraries")
-set(INSTALL_INCLUDE_DIR include/palisade CACHE PATH
+set(INSTALL_INCLUDE_DIR include/openfhe CACHE PATH
 	"Installation directory for headers")
 if(WIN32 AND NOT CYGWIN)
   set(DEF_INSTALL_CMAKE_DIR CMake)
 else()
-  set(DEF_INSTALL_CMAKE_DIR lib/Palisade)
+  set(DEF_INSTALL_CMAKE_DIR lib/OpenFHE)
 endif()
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
   "Installation directory for CMake files")
@@ -249,12 +249,12 @@ add_custom_target(
         COMMAND make clean
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
-add_custom_target("uninstall" COMMENT "Uninstall PALISADE files")
+add_custom_target("uninstall" COMMENT "Uninstall OpenFHE files")
 add_custom_command(
         TARGET "uninstall"
         POST_BUILD
         COMMENT "Uninstall files within install_manifest.txt"
-        COMMAND ../script/uninstall_openfhe.sh
+        COMMAND ../scripts/uninstall_openfhe.sh
         USES_TERMINAL
 )
 
@@ -270,7 +270,11 @@ else()
 endif()
 
 if(ARCHITECTURE)
-  message(STATUS "Architecture is " ${ARCHITECTURE})
+    if (${ARCHITECTURE} MATCHES "i386")
+        message(SEND_ERROR "The " ${ARCHITECTURE} " architecture is not supported")
+    else()
+        message(STATUS "Architecture is " ${ARCHITECTURE})
+    endif()
 endif()
 
 # Size checks
@@ -283,6 +287,9 @@ if (NOT(BUILD_SHARED OR BUILD_STATIC))
 endif()
 
 if( "${NATIVE_SIZE}" EQUAL 128 )
+    if ( EMSCRIPTEN )
+        message(SEND_ERROR "NATIVE_SIZE == 128 is not supported for EMSCRIPTEN")
+    endif()
     if( ${HAVE_INT128} )
         set( NATIVEINT 128 )
         message (STATUS "NATIVEINT is set to " ${NATIVEINT})
@@ -313,10 +320,7 @@ endif()
 #--------------------------------------------------------------------
 # Backend logic
 #--------------------------------------------------------------------
-## default math backend is 2 for 32-bit and 64-bit integers and 4 for 128-bit integers
-if( NOT MATHBACKEND AND NOT ${NATIVE_SIZE} EQUAL 128)
-	set( MATHBACKEND 2 )
-elseif(NOT MATHBACKEND AND ${NATIVE_SIZE} EQUAL 128)
+if( NOT MATHBACKEND)
 	set( MATHBACKEND 4 )
 endif()
 
@@ -343,9 +347,9 @@ if( "${MATHBACKEND}" EQUAL 6 AND "${NATIVEINT}" EQUAL 128)
         message (STATUS "BACKEND 6 is not compatible with 128-bit native backend. Resetting multiprecision backend to 2.")
 endif()
 
-set( PALISADE_BACKEND_FLAGS "-DMATHBACKEND=${MATHBACKEND}")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PALISADE_BACKEND_FLAGS}")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PALISADE_BACKEND_FLAGS}")
+set( OpenFHE_BACKEND_FLAGS "-DMATHBACKEND=${MATHBACKEND}")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenFHE_BACKEND_FLAGS}")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenFHE_BACKEND_FLAGS}")
 
 if(WITH_TCM)
 	message(STATUS "tcmalloc is turned ON")
@@ -356,25 +360,26 @@ endif()
 
 ### build configure_core.h to make options available
 configure_file(./configure/config_core.in src/core/config_core.h)
-install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION include/palisade/core)
+install(FILES ${CMAKE_BINARY_DIR}/src/core/config_core.h DESTINATION include/openfhe/core)
 
 find_program(TAR "gtar")
 find_program(TAR "tar")
 
-### several of the third-party tools use auto-make and autoconf
-### we need to make sure that they are installed
-execute_process(COMMAND autogen --version OUTPUT_VARIABLE AUTOGEN_VER)
-# execute_process in MINGW by default does not run in a shell
-if(MINGW)
-	execute_process(COMMAND sh autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
-else()
-	execute_process(COMMAND autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
-endif()
+if(WITH_TCM OR WITH_NTL)
+    ### tcmalloc, NTL and GMP require autoconf/automake/libtool to be installed.
+    ### we need to make sure that they are:
+    execute_process(COMMAND autogen --version OUTPUT_VARIABLE AUTOGEN_VER)
+    # execute_process in MINGW by default does not run in a shell
+    if(MINGW)
+	    execute_process(COMMAND sh autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
+    else()
+	    execute_process(COMMAND autoconf --version OUTPUT_VARIABLE AUTOCONF_VER)
+    endif()
 
-string(LENGTH "${AUTOCONF_VER}" AUTOCONF_VER_LEN)
-
-if( ${AUTOCONF_VER_LEN} EQUAL 0 )
-	message(SEND_ERROR "Autoconf is not installed.")
+    string(LENGTH "${AUTOCONF_VER}" AUTOCONF_VER_LEN)
+    if( ${AUTOCONF_VER_LEN} EQUAL 0 )
+	    message(SEND_ERROR "Autoconf is not installed.")
+    endif()
 endif()
 
 #--------------------------------------------------------------------
@@ -384,43 +389,60 @@ if (WITH_OPENMP)
 	# Used to optionally compile openmp code
 	add_definitions(-DPARALLEL)
 
-	find_package (OpenMP)
-
 	# Set OpenMP configuration manually for macOS
 	if (APPLE)
+        if (USE_MACPORTS)
+            # Macports-based installation
+            message( STATUS "Using Macports setup")
+            set(OPENMP_LIBRARIES "/opt/local/lib/libomp")
+            set(OPENMP_INCLUDES "/opt/local/include/libomp")
+            if(CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "AppleClang")
+                set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+                set(OpenMP_C_LIB_NAMES "omp")
+                set(OpenMP_omp_LIBRARY ${OpenMP_C_LIB_NAMES})
+            endif()
+            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
+                set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+                set(OpenMP_CXX_LIB_NAMES "omp")
+                set(OpenMP_omp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+            endif()
+        else (USE_MACPORTS)
+            # Homebrew-based installation
+            # Check for Apple M1 Processor
+            if (${ARCHITECTURE} MATCHES "arm64")
+                message( STATUS "Apple M1 detected")
+                set(OPENMP_LIBRARIES "/opt/homebrew/opt/libomp/lib")
+                set(OPENMP_INCLUDES "/opt/homebrew/opt/libomp/include")
+            else() # Apple Intel Processor
+                message( STATUS "Apple Intel detected")
+                set(OPENMP_LIBRARIES "/usr/local/opt/libomp/lib")
+                set(OPENMP_INCLUDES "/usr/local/opt/libomp/include")
+            endif()
 
-        # Check for Apple M1 Processor
-        if (${ARCHITECTURE} MATCHES "arm64")
-            message( STATUS "Apple M1 detected")
-            set(OPENMP_LIBRARIES "/opt/homebrew/opt/libomp/lib")
-            set(OPENMP_INCLUDES "/opt/homebrew/opt/libomp/include")
-        else() # Apple Intel Processor
-            message( STATUS "Apple Intel detected")
-            set(OPENMP_LIBRARIES "/usr/local/opt/libomp/lib")
-            set(OPENMP_INCLUDES "/usr/local/opt/libomp/include")
-        endif()
-
-        if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-            set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
-            set(OpenMP_C_LIB_NAMES "libomp")
-            set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
-        endif()
-        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
-            set(OpenMP_CXX_LIB_NAMES "libomp")
-            set(OpenMP_libomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
-        endif()
+            if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+                set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+                set(OpenMP_C_LIB_NAMES "libomp")
+                set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
+            endif()
+            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+                set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -lomp -Wno-unused-command-line-argument")
+                set(OpenMP_CXX_LIB_NAMES "libomp")
+                set(OpenMP_libomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+            endif()
+        endif (USE_MACPORTS)
 
         include_directories("${OPENMP_INCLUDES}")
         link_directories("${OPENMP_LIBRARIES}")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        
+
         message( STATUS "OPENMP_LIBRARIES: " ${OPENMP_LIBRARIES})
         message( STATUS "OPENMP_INCLUDES: " ${OPENMP_INCLUDES})
         message( STATUS "OpenMP_CXX_FLAGS: " ${OpenMP_CXX_FLAGS})
         message( STATUS "OpenMP_CXX_LIB_NAMES: " ${OpenMP_CXX_LIB_NAMES})
 	endif()
+
+    find_package (OpenMP)
 
 	# OpenMP_CXX_FOUND was added in cmake 3.9.x
 	# so we are also checking the OpenMP_FOUND flag
@@ -452,13 +474,6 @@ set(CMAKE_USE_WIN32_THREADS_INIT 0)
 set(CMAKE_USE_PTHREADS_INIT 1)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
-#--------------------------------------------------------------------
-# Documentation logic
-#--------------------------------------------------------------------
-if(BUILD_DOCS)
-    add_subdirectory("docs")
-    set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/docs" ${CMAKE_MODULE_PATH})  # So we can find FindSphinx.cmake
-endif()
 #--------------------------------------------------------------------
 # Submodule Update logic
 #--------------------------------------------------------------------
@@ -533,7 +548,7 @@ endif()
 
 ### Handle third-party CEREAL
 include_directories( ${THIRDPARTYDIR}/cereal/include )
-install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION include/palisade)
+install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION include/openfhe)
 
 include_directories( ${CMAKE_SOURCE_DIR}/third-party/google-test/googletest )
 include_directories( ${CMAKE_SOURCE_DIR}/third-party/google-test/googletest/include )
@@ -572,7 +587,7 @@ if(WITH_TCM)
 		FILES_MATCHING PATTERN "libtcmalloc_minimal.*")
     list(APPEND THIRDPARTYLIBS "tcmalloc")
 	list(APPEND THIRDPARTYSTATICLIBS "tcmalloc_static")
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/include DESTINATION include/palisade/third-party/)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third-party/include DESTINATION include/openfhe/third-party/)
 endif()
 
 if(WITH_NTL)
@@ -703,7 +718,7 @@ if (BUILD_EXTRAS)
 		DEPENDS allcoreextras allpkeextras  )
 endif()
 
-add_custom_target( allmodules DEPENDS ${PALISADE_PACKAGE_LIBS} )
+add_custom_target( allmodules DEPENDS ${OpenFHE_PACKAGE_LIBS} )
 
 # Add the additional "make clean" files
 GET_DIRECTORY_PROPERTY(clean_files ADDITIONAL_MAKE_CLEAN_FILES)
@@ -713,31 +728,31 @@ LIST(REMOVE_ITEM       clean_files "")
 SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${clean_files}")
 
 
-export(EXPORT PalisadeTargets FILE "${PROJECT_BINARY_DIR}/PalisadeTargets.cmake")
+export(EXPORT OpenFHETargets FILE "${PROJECT_BINARY_DIR}/OpenFHETargets.cmake")
 
-export(PACKAGE Palisade)
+export(PACKAGE OpenFHE)
 
-# Create the PalisadeConfig.cmake and PalisadeConfigVersion files
+# Create the OpenFHEConfig.cmake and OpenFHEConfigVersion files
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
    "${INSTALL_INCLUDE_DIR}")
 # ... for the build tree
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
-configure_file(PalisadeConfig.cmake.in
-  "${PROJECT_BINARY_DIR}/PalisadeConfig.cmake" @ONLY)
+configure_file(OpenFHEConfig.cmake.in
+  "${PROJECT_BINARY_DIR}/OpenFHEConfig.cmake" @ONLY)
 # ... for the install tree
-set(CONF_INCLUDE_DIRS "\${PALISADE_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(PalisadeConfig.cmake.in
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/PalisadeConfig.cmake" @ONLY)
+set(CONF_INCLUDE_DIRS "\${OpenFHE_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(OpenFHEConfig.cmake.in
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake" @ONLY)
 # ... for both
-configure_file(PalisadeConfigVersion.cmake.in
-  "${PROJECT_BINARY_DIR}/PalisadeConfigVersion.cmake" @ONLY)
+configure_file(OpenFHEConfigVersion.cmake.in
+  "${PROJECT_BINARY_DIR}/OpenFHEConfigVersion.cmake" @ONLY)
 
-# Install the PalisadeConfig.cmake and PalisadeConfigVersion.cmake
+# Install the OpenFHEConfig.cmake and OpenFHEConfigVersion.cmake
 install(FILES
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/PalisadeConfig.cmake"
-  "${PROJECT_BINARY_DIR}/PalisadeConfigVersion.cmake"
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/OpenFHEConfig.cmake"
+  "${PROJECT_BINARY_DIR}/OpenFHEConfigVersion.cmake"
   DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 # Install the export set for use with the install-tree
-install(EXPORT PalisadeTargets DESTINATION
+install(EXPORT OpenFHETargets DESTINATION
   "${INSTALL_CMAKE_DIR}" COMPONENT dev)

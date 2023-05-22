@@ -1,6 +1,6 @@
 /*
  * @file
- * @author TPOC: contact@palisade-crypto.org
+ * @author TPOC: contact@openfhe.org
  *
  * @copyright Copyright (c) 2019, New Jersey Institute of Technology (NJIT)
  * All rights reserved.
@@ -49,7 +49,7 @@ static string lead = "****** ";
 class MinimalistPrinter : public EmptyTestEventListener {
  public:
   void OnTestProgramStart(const ::testing::UnitTest& unit_test) {
-    cout << lead << "PALISADE Version " << GetPALISADEVersion() << endl;
+    cout << lead << "OpenFHE Version " << GetOPENFHEVersion() << endl;
     cout << lead << "Date "
          << testing::internal::FormatEpochTimeInMillisAsIso8601(
                 unit_test.start_timestamp())
@@ -131,6 +131,14 @@ bool TestB4 = false;
 bool TestB6 = false;
 bool TestNative = true;
 
+inline const std::string& GetMathBackendParameters() {
+    static std::string id = "Backend " + std::to_string(MATHBACKEND) +
+        (MATHBACKEND == 2 ? " internal int size " + std::to_string(sizeof(integral_dtype) * 8) +
+            " BitLength " + std::to_string(BigIntegerBitLength) :
+         "");
+    return id;
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
 
@@ -178,7 +186,7 @@ int main(int argc, char** argv) {
     delete listeners.Release(listeners.default_result_printer());
     listeners.Append(new MinimalistPrinter);
   } else {
-    cout << "PALISADE Version " << GetPALISADEVersion() << endl;
+    cout << "OpenFHE Version " << GetOPENFHEVersion() << endl;
     cout << "Default Backend " << GetMathBackendParameters() << endl;
   }
 

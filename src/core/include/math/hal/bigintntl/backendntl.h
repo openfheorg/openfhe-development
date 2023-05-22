@@ -41,19 +41,19 @@
 #include "config_core.h"
 #ifdef WITH_NTL
 
-#ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
-#define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
+    #ifndef SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
+        #define SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
 
-#include "math/hal/bigintntl/ubintntl.h"      // experimental gmp unsigned big ints
-#include "math/hal/bigintntl/mubintvecntl.h"  // rings of such
-#include "math/hal/bigintntl/transformntl.h"  // transforms for NTL
+        #include "math/hal/bigintntl/ubintntl.h"      // experimental gmp unsigned big ints
+        #include "math/hal/bigintntl/mubintvecntl.h"  // rings of such
+        #include "math/hal/bigintntl/transformntl.h"  // transforms for NTL
 
 // Global alias for MATHBACKEND 6 Integer
 using M6Integer = NTL::BigInteger;
 
 // Global alias for MATHBACKEND 6 Vector
-using M6Vector  = NTL::BigVector;
+using M6Vector = NTL::BigVector;
 
-#endif // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
+    #endif  // SRC_CORE_INCLUDE_MATH_HAL_BIGINTNTL_BACKENDNTL_H_
 
-#endif // WITH_NTL
+#endif  // WITH_NTL

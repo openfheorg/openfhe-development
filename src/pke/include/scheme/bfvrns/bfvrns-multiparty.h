@@ -34,30 +34,47 @@
 
 #include "schemerns/rns-multiparty.h"
 
+#include <string>
+#include <vector>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
 class MultipartyBFVRNS : public MultipartyRNS {
+    using ParmType = typename DCRTPoly::Params;
+    using IntType  = typename DCRTPoly::Integer;
+    using DugType  = typename DCRTPoly::DugType;
+    using DggType  = typename DCRTPoly::DggType;
+    using TugType  = typename DCRTPoly::TugType;
+
 public:
-  virtual ~MultipartyBFVRNS() {}
+    virtual ~MultipartyBFVRNS() {}
 
-  virtual DecryptResult MultipartyDecryptFusion(
-      const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
-      NativePoly *plaintext) const override;
+    KeyPair<DCRTPoly> MultipartyKeyGen(CryptoContext<DCRTPoly> cc,
+                                       const std::vector<PrivateKey<DCRTPoly>>& privateKeyVec,
+                                       bool makeSparse) override;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    KeyPair<DCRTPoly> MultipartyKeyGen(CryptoContext<DCRTPoly> cc, const PublicKey<DCRTPoly> publicKey, bool makeSparse,
+                                       bool fresh) override;
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {}
+    DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                          NativePoly* plaintext) const override;
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {}
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  std::string SerializedObjectName() const { return "MultipartyBFVRNS"; }
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
+
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
+
+    std::string SerializedObjectName() const {
+        return "MultipartyBFVRNS";
+    }
 };
 }  // namespace lbcrypto
 

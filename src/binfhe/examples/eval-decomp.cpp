@@ -60,12 +60,12 @@ int main() {
 
     // Sample Program: Step 2: Key Generation
     // Generate the secret key
-    auto sk = cc.KeyGen(Q);
+    auto sk = cc.KeyGen();
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 
     // Generate the bootstrapping keys (refresh and switching keys)
-    cc.BTKeyGen(sk, Q);
+    cc.BTKeyGen(sk);
 
     std::cout << "Completed the key generation." << std::endl;
 
@@ -75,7 +75,7 @@ int main() {
 
     // Sample Program: Step 4: Evaluation
     // Decompose the large ciphertext into small ciphertexts that fit in q
-    auto decomp = cc.EvalDecomp(ct1, Q);
+    auto decomp = cc.EvalDecomp(ct1);
 
     // Sample Program: Step 5: Decryption
     p = cc.GetMaxPlaintextSpace().ConvertToInt();
@@ -86,7 +86,7 @@ int main() {
         if (i == decomp.size() - 1) {
             p = 2;
         }
-        cc.Decrypt(sk, ct1, &result, p, q);
+        cc.Decrypt(sk, ct1, &result, p);
         std::cout << "(" << result << " * " << cc.GetMaxPlaintextSpace() << "^" << i << ")";
         if (i != decomp.size() - 1) {
             std::cout << " + ";

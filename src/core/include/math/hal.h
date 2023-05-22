@@ -38,7 +38,7 @@
 
 // use of MS VC is not permitted because of various incompatibilities
 #ifdef _MSC_VER
-#error "MSVC COMPILER IS NOT SUPPORTED"
+    #error "MSVC COMPILER IS NOT SUPPORTED"
 #endif
 
 #include "config_core.h"
@@ -48,7 +48,7 @@
 #include "utils/debug.h"
 #include "utils/exception.h"
 #include "utils/memory.h"
-#include "utils/palisadebase64.h"
+#include "utils/openfhebase64.h"
 #include "utils/parallel.h"
 #include "utils/serializable.h"
 
@@ -56,21 +56,21 @@
 #include "math/hal/nativeintbackend.h"
 
 namespace lbcrypto {
-    // Promote BigInteger and BigVector to lbcrypto namespace
-    using BigInteger = bigintbackend::BigInteger;
-    using BigVector = bigintbackend::BigVector;
-}
+// Promote BigInteger and BigVector to lbcrypto namespace
+using BigInteger = bigintbackend::BigInteger;
+using BigVector  = bigintbackend::BigVector;
+}  // namespace lbcrypto
 
 //==============================================================================================
 #ifdef WITH_INTEL_HEXL
-template<typename VecType>
+template <typename VecType>
 using NatChineseRemainderTransformFTT = intnathexl::ChineseRemainderTransformFTTNat<VecType>;
-template<typename VecType>
+template <typename VecType>
 using NatChineseRemainderTransformArb = intnathexl::ChineseRemainderTransformArbNat<VecType>;
 #else
-template<typename VecType>
+template <typename VecType>
 using NatChineseRemainderTransformFTT = intnat::ChineseRemainderTransformFTTNat<VecType>;
-template<typename VecType>
+template <typename VecType>
 using NatChineseRemainderTransformArb = intnat::ChineseRemainderTransformArbNat<VecType>;
 #endif
 
@@ -80,79 +80,68 @@ using NatChineseRemainderTransformArb = intnat::ChineseRemainderTransformArbNat<
 
 // A the main template, but should never be called
 // Not assuming default back-end
-template<typename VecType>
-struct FTTTypedef
-{
-	typedef	void type;
+template <typename VecType>
+struct FTTTypedef {
+    typedef void type;
 };
 
-template<>
-struct FTTTypedef<NativeVector>
-{
+template <>
+struct FTTTypedef<NativeVector> {
     typedef NatChineseRemainderTransformFTT<NativeVector> type;
 };
 
-template<>
-struct FTTTypedef<M4Vector>
-{
+template <>
+struct FTTTypedef<M4Vector> {
     typedef bigintdyn::ChineseRemainderTransformFTTDyn<M4Vector> type;
 };
 
-template<>
-struct FTTTypedef<M2Vector>
-{
+template <>
+struct FTTTypedef<M2Vector> {
     typedef bigintfxd::ChineseRemainderTransformFTTFxd<M2Vector> type;
 };
 
 #ifdef WITH_NTL
-template<>
-struct FTTTypedef<M6Vector>
-{
+template <>
+struct FTTTypedef<M6Vector> {
     typedef NTL::ChineseRemainderTransformFTTNtl<M6Vector> type;
 };
 #endif
 
-
-template<typename VecType>
+template <typename VecType>
 using ChineseRemainderTransformFTT = typename FTTTypedef<VecType>::type;
 
 //==============================================================================================
 
 // A the main template, but should never be called
 // Not assuming default back-end
-template<typename VecType>
-struct ArbTypedef
-{
-	typedef	void type;
+template <typename VecType>
+struct ArbTypedef {
+    typedef void type;
 };
 
-template<>
-struct ArbTypedef<NativeVector>
-{
+template <>
+struct ArbTypedef<NativeVector> {
     typedef NatChineseRemainderTransformArb<NativeVector> type;
 };
 
-template<>
-struct ArbTypedef<M4Vector>
-{
-	typedef bigintdyn::ChineseRemainderTransformArbDyn<M4Vector> type;
+template <>
+struct ArbTypedef<M4Vector> {
+    typedef bigintdyn::ChineseRemainderTransformArbDyn<M4Vector> type;
 };
 
-template<>
-struct ArbTypedef<M2Vector>
-{
-	typedef bigintfxd::ChineseRemainderTransformArbFxd<M2Vector> type;
+template <>
+struct ArbTypedef<M2Vector> {
+    typedef bigintfxd::ChineseRemainderTransformArbFxd<M2Vector> type;
 };
 
 #ifdef WITH_NTL
-template<>
-struct ArbTypedef<M6Vector>
-{
-	typedef NTL::ChineseRemainderTransformArbNtl<M6Vector> type;
+template <>
+struct ArbTypedef<M6Vector> {
+    typedef NTL::ChineseRemainderTransformArbNtl<M6Vector> type;
 };
 #endif
 
-template<typename VecType>
+template <typename VecType>
 using ChineseRemainderTransformArb = typename ArbTypedef<VecType>::type;
 
 #endif

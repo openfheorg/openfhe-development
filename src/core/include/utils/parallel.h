@@ -37,91 +37,93 @@
 #define SRC_CORE_LIB_UTILS_PARALLEL_H_
 
 #ifdef PARALLEL
-#include <omp.h>
+    #include <omp.h>
 #endif
 // #include <iostream>
 namespace lbcrypto {
 
 class ParallelControls {
-  int machineThreads;
+    int machineThreads;
 
- public:
-  // @Brief CTOR, enables parallel operations as default
-  // Cache the number of machine threads the system reports (can be
-  // overridden by environment variables)
-  // enable on startup by default
-  ParallelControls() {
+public:
+    // @Brief CTOR, enables parallel operations as default
+    // Cache the number of machine threads the system reports (can be
+    // overridden by environment variables)
+    // enable on startup by default
+    ParallelControls() {
 #ifdef PARALLEL
-    machineThreads = omp_get_max_threads();
-    Enable();
+        machineThreads = omp_get_max_threads();
+        Enable();
 #else
-    machineThreads = 1;
+        machineThreads = 1;
 #endif
-  }
-  // @Brief Enable() enables parallel operation
-  void Enable() {
-#ifdef PARALLEL
-    omp_set_num_threads(machineThreads);
-#endif
-  }
-  // @Brief Disable() disables parallel operation
-  void Disable() {
-#ifdef PARALLEL
-    omp_set_num_threads(0);
-#endif
-  }
-
-  int GetMachineThreads() const { return machineThreads; }
-
-  static int GetNumProcs() {
-#ifdef PARALLEL
-    return omp_get_num_procs();
-#else
-    return 1;
-#endif
-  }
-
-  // @Brief returns current number of threads that are usable
-  // @return int # threads
-  int GetNumThreads() {
-#ifdef PARALLEL
-    int nthreads = 1;
-    int tid = 1;
-    // Fork a team of threads giving them their own copies of variables
-    // so we can see how many threads we have to work with
-#pragma omp parallel private(tid)
-    {
-      /* Obtain thread number */
-      tid = omp_get_thread_num();
-
-      /* Only master thread does this */
-      if (tid == 0) {
-        nthreads = omp_get_num_threads();
-      }
     }
-    // std::cout << "\nNumber of threads = " << nthreads << std::endl;
-    return nthreads;
+    // @Brief Enable() enables parallel operation
+    void Enable() {
+#ifdef PARALLEL
+        omp_set_num_threads(machineThreads);
+#endif
+    }
+    // @Brief Disable() disables parallel operation
+    void Disable() {
+#ifdef PARALLEL
+        omp_set_num_threads(0);
+#endif
+    }
+
+    int GetMachineThreads() const {
+        return machineThreads;
+    }
+
+    static int GetNumProcs() {
+#ifdef PARALLEL
+        return omp_get_num_procs();
+#else
+        return 1;
+#endif
+    }
+
+    // @Brief returns current number of threads that are usable
+    // @return int # threads
+    int GetNumThreads() {
+#ifdef PARALLEL
+        int nthreads = 1;
+        int tid      = 1;
+            // Fork a team of threads giving them their own copies of variables
+            // so we can see how many threads we have to work with
+    #pragma omp parallel private(tid)
+        {
+            /* Obtain thread number */
+            tid = omp_get_thread_num();
+
+            /* Only main thread does this */
+            if (tid == 0) {
+                nthreads = omp_get_num_threads();
+            }
+        }
+        // std::cout << "\nNumber of threads = " << nthreads << std::endl;
+        return nthreads;
 
 #else
-    return machineThreads;
+        return machineThreads;
 #endif
-  }
-
-  // @Brief sets number of threads to use (limited by system value)
-
-  void SetNumThreads(int nthreads) {
-#ifdef PARALLEL
-    // set number of thread, but limit it to the system set
-    // number of machine threads...
-    if (nthreads > machineThreads) {
-      nthreads = machineThreads;
     }
-    omp_set_num_threads(nthreads);
+
+    // @Brief sets number of threads to use (limited by system value)
+
+    void SetNumThreads(int nthreads) {
+#ifdef PARALLEL
+        // set number of thread, but limit it to the system set
+        // number of machine threads...
+        if (nthreads > machineThreads) {
+            nthreads = machineThreads;
+        }
+        omp_set_num_threads(nthreads);
 #endif
-  }
+    }
 };
 
-extern ParallelControls PalisadeParallelControls;
+extern ParallelControls OpenFHEParallelControls;
 
 }  // namespace lbcrypto
 

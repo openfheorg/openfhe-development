@@ -29,16 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#define _USE_MATH_DEFINES
-#include "benchmark/benchmark.h"
+/*
+ * This code benchmarks polynomial operations for ring dimension of 1k.
+ */
 
-#include "palisade.h"
+#define _USE_MATH_DEFINES
+#include "vechelper.h"
+#include "lattice/lat-hal.h"
 
 #include <iostream>
 #include <vector>
 
-#include "vechelper.h"
-#include "math/hal.h"
+#include "benchmark/benchmark.h"
 
 using namespace lbcrypto;
 
@@ -59,7 +61,7 @@ static NativePoly makeElement(std::shared_ptr<ILNativeParams> params, Format for
 }
 
 static M2DCRTPoly makeElement(std::shared_ptr<M2DCRTParams> p, Format format) {
-    std::shared_ptr<M2Params> params(new M2Params(p->GetCyclotomicOrder(), p->GetModulus(), 1));
+    auto params  = std::make_shared<M2Params>(p->GetCyclotomicOrder(), p->GetModulus(), 1);
     M2Vector vec = makeVector<M2Vector>(params->GetRingDimension(), params->GetModulus());
 
     M2DCRTPoly::PolyLargeType bigE(params);
@@ -76,7 +78,7 @@ static void GenerateNativeParms(std::shared_ptr<ILNativeParams>& parmArray) {
     NativeInteger root         = RootOfUnity<NativeInteger>(m, modulo);
 
     ChineseRemainderTransformFTT<NativeVector>().PreCompute(root, m, modulo);
-    parmArray = std::shared_ptr<ILNativeParams>(new ILNativeParams(m, modulo, root));
+    parmArray = std::make_shared<ILNativeParams>(m, modulo, root);
 }
 
 static void GenerateDCRTParms(std::map<usint, std::shared_ptr<M2DCRTParams>>& parmArray) {
@@ -97,7 +99,7 @@ static void GenerateDCRTParms(std::map<usint, std::shared_ptr<M2DCRTParams>>& pa
 
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(roots, m, moduli);
 
-        parmArray[t] = std::shared_ptr<M2DCRTParams>(new M2DCRTParams(m, moduli, roots));
+        parmArray[t] = std::make_shared<M2DCRTParams>(m, moduli, roots);
     }
 }
 

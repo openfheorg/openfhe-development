@@ -36,25 +36,20 @@
 #ifndef __UNITTESTSER_H__
 #define __UNITTESTSER_H__
 
-
 #include "cryptocontext-ser.h"
 //#include "cryptocontext.h"  // NOLINT: clang-format nad cpplint disagree on alphabetical sort
 #include "gtest/gtest.h"
 #include <string>
 #include <iostream>
 #include <cxxabi.h>
-/*
-#include "math/nbtheory.h"
-#include "palisade.h"
-#include "utils/parmfactory.h"
-#include "utils/utilities.h"
-*/
-
+#include "utils/demangle.h"
+#include "globals.h"  // for SERIALIZE_PRECOMPUTE
 
 using namespace lbcrypto;
 
 template <typename Element, typename ST>
-void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype, const std::string& failmsg = std::string()) {
+void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype,
+                                const std::string& failmsg = std::string()) {
     try {
         KeyPair<Element> kp = cc->KeyGen();
         cc->EvalMultKeyGen(kp.secretKey);
@@ -65,6 +60,7 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype, co
 
         // std::cerr << " Output " << s.str() << std::endl;
 
+        DisablePrecomputeCRTTablesAfterDeserializaton();
         CryptoContext<Element> newcc;
         Serial::Deserialize(newcc, s, sertype);
 
@@ -72,14 +68,12 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype, co
 
         EXPECT_EQ(*cc, *newcc) << failmsg << " Mismatched context";
 
-        EXPECT_EQ(*cc->GetScheme(), *newcc->GetScheme())
-            << failmsg << " Scheme mismatch after ser/deser";
+        EXPECT_EQ(*cc->GetScheme(), *newcc->GetScheme()) << failmsg << " Scheme mismatch after ser/deser";
         EXPECT_EQ(*cc->GetCryptoParameters(), *newcc->GetCryptoParameters())
             << failmsg << " Crypto parms mismatch after ser/deser";
         EXPECT_EQ(*cc->GetEncodingParams(), *newcc->GetEncodingParams())
             << failmsg << " Encoding parms mismatch after ser/deser";
-        EXPECT_EQ(cc->GetScheme()->GetEnabled(),
-            newcc->GetScheme()->GetEnabled())
+        EXPECT_EQ(cc->GetScheme()->GetEnabled(), newcc->GetScheme()->GetEnabled())
             << failmsg << " Enabled features mismatch after ser/deser";
 
         s.str("");
@@ -94,20 +88,25 @@ void UnitTestContextWithSertype(CryptoContext<Element> cc, const ST& sertype, co
 
         CryptoContext<Element> newccFromkey = newPub->GetCryptoContext();
         EXPECT_EQ(*cc, *newccFromkey) << failmsg << " Key deser has wrong context";
+        EnablePrecomputeCRTTablesAfterDeserializaton();
     }
     catch (std::exception& e) {
+        EnablePrecomputeCRTTablesAfterDeserializaton();
         std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
         // make it fail
         EXPECT_TRUE(0 == 1) << failmsg;
     }
     catch (...) {
-        int status = 0;
-        char* name = __cxxabiv1::__cxa_demangle(__cxxabiv1::__cxa_current_exception_type()->name(), NULL, NULL, &status);
+        EnablePrecomputeCRTTablesAfterDeserializaton();
+#if defined EMSCRIPTEN
+        std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+        std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
         std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
-        std::free(name);
         // make it fail
         EXPECT_TRUE(0 == 1) << failmsg;
     }
 }
 
-#endif // __UNITTESTSER_H__
+#endif  // __UNITTESTSER_H__

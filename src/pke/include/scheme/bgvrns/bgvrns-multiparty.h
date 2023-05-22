@@ -34,6 +34,9 @@
 
 #include "schemerns/rns-multiparty.h"
 
+#include <string>
+#include <vector>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -41,23 +44,27 @@
 namespace lbcrypto {
 class MultipartyBGVRNS : public MultipartyRNS {
 public:
-  virtual ~MultipartyBGVRNS() {}
+    virtual ~MultipartyBGVRNS() {}
 
-  virtual DecryptResult MultipartyDecryptFusion(
-      const std::vector<Ciphertext<DCRTPoly>> &ciphertextVec,
-      NativePoly *plaintext) const override;
+    DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                          NativePoly* plaintext) const override;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    DecryptResult MultipartyDecryptFusion(const std::vector<Ciphertext<DCRTPoly>>& ciphertextVec,
+                                          Poly* plaintext) const override;
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {}
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {}
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
 
-  std::string SerializedObjectName() const { return "MultipartyBGVRNS"; }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
+
+    std::string SerializedObjectName() const {
+        return "MultipartyBGVRNS";
+    }
 };
 }  // namespace lbcrypto
 

@@ -37,8 +37,7 @@
 
 using namespace lbcrypto;
 
-
-template<typename U>
+template <typename U>
 static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParams& params, U& parameters) {
     if (!isDefaultValue(params.ringDimension)) {
         parameters.SetRingDim(static_cast<usint>(std::round(params.ringDimension)));
@@ -46,23 +45,20 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.multiplicativeDepth)) {
         parameters.SetMultiplicativeDepth(static_cast<usint>(std::round(params.multiplicativeDepth)));
     }
-    if (!isDefaultValue(params.scalingFactorBits)) {
-        parameters.SetScalingFactorBits(static_cast<usint>(std::round(params.scalingFactorBits)));
+    if (!isDefaultValue(params.scalingModSize)) {
+        parameters.SetScalingModSize(static_cast<usint>(std::round(params.scalingModSize)));
     }
-    if (!isDefaultValue(params.relinWindow)) {
-        parameters.SetRelinWindow(static_cast<usint>(std::round(params.relinWindow)));
+    if (!isDefaultValue(params.digitSize)) {
+        parameters.SetDigitSize(static_cast<usint>(std::round(params.digitSize)));
     }
     if (!isDefaultValue(params.batchSize)) {
         parameters.SetBatchSize(static_cast<usint>(std::round(params.batchSize)));
     }
-    if (!isDefaultValue(params.mode)) {
-        parameters.SetMode(static_cast<MODE>(std::round(params.mode)));
+    if (!isDefaultValue(params.secretKeyDist)) {
+        parameters.SetSecretKeyDist(static_cast<SecretKeyDist>(std::round(params.secretKeyDist)));
     }
-    if (!isDefaultValue(params.depth)) {
-        parameters.SetDepth(static_cast<int>(std::round(params.depth)));
-    }
-    if (!isDefaultValue(params.maxDepth)) {
-        parameters.SetMaxDepth(static_cast<int>(std::round(params.maxDepth)));
+    if (!isDefaultValue(params.maxRelinSkDeg)) {
+        parameters.SetMaxRelinSkDeg(static_cast<int>(std::round(params.maxRelinSkDeg)));
     }
     if (!isDefaultValue(params.firstModSize)) {
         parameters.SetFirstModSize(static_cast<usint>(std::round(params.firstModSize)));
@@ -73,8 +69,8 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
     if (!isDefaultValue(params.ksTech)) {
         parameters.SetKeySwitchTechnique(static_cast<KeySwitchTechnique>(std::round(params.ksTech)));
     }
-    if (!isDefaultValue(params.rsTech)) {
-        parameters.SetRescalingTechnique(static_cast<RescalingTechnique>(std::round(params.rsTech)));
+    if (!isDefaultValue(params.scalTech)) {
+        parameters.SetScalingTechnique(static_cast<ScalingTechnique>(std::round(params.scalTech)));
     }
     if (!isDefaultValue(params.numLargeDigits)) {
         parameters.SetNumLargeDigits(static_cast<uint32_t>(std::round(params.numLargeDigits)));
@@ -89,6 +85,30 @@ static void setCryptoContextParametersFromUnitTestCCParams(const UnitTestCCParam
         parameters.SetMultiplicationTechnique(
             static_cast<MultiplicationTechnique>(std::round(params.multiplicationTechnique)));
     }
+    if (!isDefaultValue(params.encryptionTechnique)) {
+        parameters.SetEncryptionTechnique(static_cast<EncryptionTechnique>(std::round(params.encryptionTechnique)));
+    }
+    if (!isDefaultValue(params.evalAddCount)) {
+        parameters.SetEvalAddCount(static_cast<usint>(std::round(params.evalAddCount)));
+    }
+    if (!isDefaultValue(params.keySwitchCount)) {
+        parameters.SetKeySwitchCount(static_cast<usint>(std::round(params.keySwitchCount)));
+    }
+    if (!isDefaultValue(params.PREMode)) {
+        parameters.SetPREMode(static_cast<ProxyReEncryptionMode>(std::round(params.PREMode)));
+    }
+    if (!isDefaultValue(params.multipartyMode)) {
+        parameters.SetMultipartyMode(static_cast<MultipartyMode>(std::round(params.multipartyMode)));
+    }
+    if (!isDefaultValue(params.decryptionNoiseMode)) {
+        parameters.SetDecryptionNoiseMode(static_cast<DecryptionNoiseMode>(std::round(params.decryptionNoiseMode)));
+    }
+    if (!isDefaultValue(params.executionMode)) {
+        parameters.SetExecutionMode(static_cast<ExecutionMode>(std::round(params.executionMode)));
+    }
+    if (!isDefaultValue(params.noiseEstimate)) {
+        parameters.SetNoiseEstimate(params.noiseEstimate);
+    }
 }
 //===========================================================================================================
 CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
@@ -102,16 +122,6 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
     else if (BFVRNS_SCHEME == params.schemeId) {
         CCParams<CryptoContextBFVRNS> parameters;
         setCryptoContextParametersFromUnitTestCCParams(params, parameters);
-        // set additional values
-        if (!isDefaultValue(params.evalAddCount)) {
-            parameters.SetEvalAddCount(static_cast<usint>(std::round(params.evalAddCount)));
-        }
-        if (!isDefaultValue(params.evalMultCount)) {
-            parameters.SetEvalMultCount(static_cast<usint>(std::round(params.evalMultCount)));
-        }
-        if (!isDefaultValue(params.keySwitchCount)) {
-            parameters.SetKeySwitchCount(static_cast<usint>(std::round(params.keySwitchCount)));
-        }
 
         cc = GenCryptoContext(parameters);
     }
@@ -123,16 +133,15 @@ CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& params) {
     }
 
     if (!cc)
-        PALISADE_THROW(palisade_error, "Error generating crypto context.");
+        OPENFHE_THROW(openfhe_error, "Error generating crypto context.");
 
     cc->Enable(PKE);
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
     cc->Enable(ADVANCEDSHE);
     cc->Enable(PRE);
+    cc->Enable(FHE);
     cc->Enable(MULTIPARTY);
 
     return cc;
 }
-
-

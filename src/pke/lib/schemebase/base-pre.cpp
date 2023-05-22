@@ -28,66 +28,50 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#include "schemebase/base-pre.h"
 
-/*
-Description:
-
-This code implements RNS variants of the Cheon-Kim-Kim-Song scheme.
-
-The CKKS scheme is introduced in the following paper:
-- Jung Hee Cheon, Andrey Kim, Miran Kim, and Yongsoo Song. Homomorphic
-encryption for arithmetic of approximate numbers. Cryptology ePrint Archive,
-Report 2016/421, 2016. https://eprint.iacr.org/2016/421.
-
- Our implementation builds from the designs here:
- - Marcelo Blatt, Alexander Gusev, Yuriy Polyakov, Kurt Rohloff, and Vinod
-Vaikuntanathan. Optimized homomorphic encryption solution for secure genomewide
-association studies. Cryptology ePrint Archive, Report 2019/223, 2019.
-https://eprint.iacr.org/2019/223.
- - Andrey Kim, Antonis Papadimitriou, and Yuriy Polyakov. Approximate
-homomorphic encryption with reduced approximation error. Cryptology ePrint
-Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
-1118.
- */
-
-#ifndef LBCRYPTO_CRYPTO_BASE_PRE_C
-#define LBCRYPTO_CRYPTO_BASE_PRE_C
-
+#include "key/privatekey.h"
+#include "key/publickey.h"
 #include "cryptocontext.h"
 #include "schemebase/base-pke.h"
-#include "schemebase/base-pre.h"
+#include "schemebase/base-scheme.h"
 
 namespace lbcrypto {
 
 template <class Element>
-EvalKey<Element> PREBase<Element>::ReKeyGen(
-        const PrivateKey<Element> oldPrivateKey,
-        const PublicKey<Element> newPublicKey) const {
-  auto algo = oldPrivateKey->GetCryptoContext()->GetScheme();
-  return algo->KeySwitchGen(oldPrivateKey, newPublicKey);
+EvalKey<Element> PREBase<Element>::ReKeyGen(const PrivateKey<Element> oldPrivateKey,
+                                            const PublicKey<Element> newPublicKey) const {
+    auto algo = oldPrivateKey->GetCryptoContext()->GetScheme();
+    return algo->KeySwitchGen(oldPrivateKey, newPublicKey);
 }
 
 template <class Element>
-Ciphertext<Element> PREBase<Element>::ReEncrypt(
-  ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
-  const PublicKey<Element> publicKey, usint noiseflooding) const {
-  auto algo = ciphertext->GetCryptoContext()->GetScheme();
+Ciphertext<Element> PREBase<Element>::ReEncrypt(ConstCiphertext<Element> ciphertext, const EvalKey<Element> evalKey,
+                                                const PublicKey<Element> publicKey) const {
+    auto algo = ciphertext->GetCryptoContext()->GetScheme();
 
-  Ciphertext<Element> result = ciphertext->Clone();
-  if (publicKey != nullptr) {
-    std::vector<Element> &cv = result->GetElements();
-    std::shared_ptr<std::vector<Element>> ba =
-        algo->EncryptZeroCore(publicKey);
+    Ciphertext<Element> result = ciphertext->Clone();
+    if (publicKey != nullptr) {
+        const auto cryptoParams = std::static_pointer_cast<CryptoParametersRNS>(publicKey->GetCryptoParameters());
 
-    cv[0] += (*ba)[0];
-    cv[1] += (*ba)[1];
-  }
+        const DggType& floodingdist              = cryptoParams->GetFloodingDiscreteGaussianGenerator();
+        std::vector<Element>& cv                 = result->GetElements();
+        std::shared_ptr<std::vector<Element>> ba = algo->EncryptZeroCore(publicKey, floodingdist);
 
-  algo->KeySwitchInPlace(result, evalKey);
+        cv[0] += (*ba)[0];
+        cv[1] += (*ba)[1];
+    }
 
-  return result;
+    algo->KeySwitchInPlace(result, evalKey);
+
+    return result;
 }
 
-}
+}  // namespace lbcrypto
 
-#endif
+// the code below is from base-pre-impl.cpp
+namespace lbcrypto {
+
+template class PREBase<DCRTPoly>;
+
+}  // namespace lbcrypto

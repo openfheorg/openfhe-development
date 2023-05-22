@@ -52,11 +52,13 @@
         func;                        \
         EXPECT_EQ(0, 1);                 \
     }                                    \
-    catch(const exception& e) {          \
+    catch(const std::exception& e) {          \
         EXPECT_EQ(1, 1);                 \
     }
 //===========================================================================================================
 constexpr double EPSILON = 0.00000001;
+
+constexpr double EPSILON_HIGH = 0.0001;
 
 /**
  * Function to check equality of 2 numeric values

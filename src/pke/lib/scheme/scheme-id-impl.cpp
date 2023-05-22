@@ -41,22 +41,22 @@
 namespace lbcrypto {
 
 std::ostream& operator<<(std::ostream& os, SCHEME schemeId) {
-  switch (schemeId) {
-    case CKKSRNS_SCHEME:
-      os << "CKKSRNS";
-      break;
-    case BFVRNS_SCHEME:
-      os << "BFVRNS";
-      break;
-    case BGVRNS_SCHEME:
-      os << "BGVRNS";
-      break;
-    default:
-      std::string errMsg(std::string("Unknown schemeId ") + std::to_string(schemeId));
-      PALISADE_THROW(config_error, errMsg);
-  }
+    switch (schemeId) {
+        case CKKSRNS_SCHEME:
+            os << "CKKSRNS";
+            break;
+        case BFVRNS_SCHEME:
+            os << "BFVRNS";
+            break;
+        case BGVRNS_SCHEME:
+            os << "BGVRNS";
+            break;
+        default:
+            std::string errMsg(std::string("Unknown schemeId ") + std::to_string(schemeId));
+            OPENFHE_THROW(config_error, errMsg);
+    }
 
-  return os;
+    return os;
 }
 
 }  // namespace lbcrypto

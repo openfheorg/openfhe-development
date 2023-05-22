@@ -32,14 +32,10 @@
 #ifndef LBCRYPTO_CRYPTO_METADATASER_H
 #define LBCRYPTO_CRYPTO_METADATASER_H
 
-#include "palisade.h"
+#include "metadata.h"
 #include "utils/serial.h"
 
-CEREAL_CLASS_VERSION(lbcrypto::Metadata,
-                     lbcrypto::Metadata::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::Metadata, lbcrypto::Metadata::SerializedVersion());
 CEREAL_REGISTER_TYPE(lbcrypto::Metadata);
-
-CEREAL_REGISTER_TYPE(lbcrypto::MetadataTest);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::Metadata, lbcrypto::MetadataTest)
 
 #endif

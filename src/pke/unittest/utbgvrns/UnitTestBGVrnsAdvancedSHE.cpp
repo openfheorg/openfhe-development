@@ -1,4 +1,3 @@
-#if 0 // TODO uncomment test after merge to github
 //==================================================================================
 // BSD 2-Clause License
 //
@@ -30,141 +29,212 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#include <cmath>
+#if !defined(_MSC_VER)
 
-#include <iostream>
-#include <vector>
+    #include "UnitTestUtils.h"
+    #include "UnitTestCCParams.h"
+    #include "UnitTestCryptoContext.h"
 
-#include "gtest/gtest.h"
-
-#include "cryptocontext.h"
-
-#include "encoding/encodings.h"
-
-#include "lattice/elemparamfactory.h"
-#include "utils/debug.h"
-#include "utils/parmfactory.h"
-#include "scheme/bgvrns/cryptocontext-bgvrns.h"
-#include "gen-cryptocontext.h"
+    #include <iostream>
+    #include <vector>
+    #include "gtest/gtest.h"
+    #include <cxxabi.h>
+    #include "utils/demangle.h"
 
 using namespace lbcrypto;
 
-using TYPE = DCRTPoly;
-// A new one of these is created for each test
-class UTSHEAdvanced : public testing::Test {
- public:
-  UTSHEAdvanced() {}
-
-  void SetUp() {}
-
-  void TearDown() {
-    CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
-  }
+//===========================================================================================================
+enum TEST_CASE_TYPE {
+    EVAL_MULT_SINGLE = 0,
+    EVAL_ADD_SINGLE,
 };
 
-#if !defined(_MSC_VER)
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
+    std::string typeName;
+    switch (type) {
+        case EVAL_MULT_SINGLE:
+            typeName = "EVAL_MULT_SINGLE";
+            break;
+        case EVAL_ADD_SINGLE:
+            typeName = "EVAL_ADD_SINGLE";
+            break;
+        default:
+            typeName = "UNKNOWN";
+            break;
+    }
+    return os << typeName;
+}
+//===========================================================================================================
+struct TEST_CASE_UTBGVRNS_SHEADVANCED {
+    TEST_CASE_TYPE testCaseType;
+    // test case description - MUST BE UNIQUE
+    std::string description;
 
-TEST_F(UTSHEAdvanced, test_eval_mult_single_crt) {
-  CCParams<CryptoContextBGVRNS> parameters;
-  parameters.SetCyclotomicOrder(16);
-  parameters.SetScalingFactorBits(50);
-  parameters.SetPlaintextModulus(20);
-  parameters.SetRelinWindow(1);
-  parameters.SetStandardDeviation(4);
-  parameters.SetRescalingTechnique(FIXEDMANUAL);
+    UnitTestCCParams params;
 
-  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-  cc->Enable(PKE);
-  cc->Enable(KEYSWITCH);
-  cc->Enable(LEVELEDSHE);
+    // additional test case data
+    // ........
 
-  // Initialize the public key containers.
-  KeyPair<TYPE> kp;
+    std::string buildTestName() const {
+        std::stringstream ss;
+        ss << testCaseType << "_" << description;
+        return ss.str();
+    }
+    std::string toString() const {
+        std::stringstream ss;
+        ss << "testCaseType [" << testCaseType << "], " << params.toString();
+        return ss.str();
+    }
+};
 
-  std::vector<int64_t> vectorOfInts1 = {2};
-  Plaintext intArray1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+// this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
+// the name MUST be constructed from digits, letters and '_' only
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTBGVRNS_SHEADVANCED>& test) {
+    return test.param.buildTestName();
+};
 
-  std::vector<int64_t> vectorOfInts2 = {3};
-  Plaintext intArray2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTBGVRNS_SHEADVANCED& test) {
+    return os << test.toString();
+}
+//===========================================================================================================
+constexpr usint RING_DIM = 8192;
+constexpr usint PTM      = 20;
+constexpr usint DSIZE    = 4;
+constexpr double STD_DEV = 3.19;
 
-  kp = cc->KeyGen();
-  cc->EvalMultKeyGen(kp.secretKey);
+// clang-format off
+static std::vector<TEST_CASE_UTBGVRNS_SHEADVANCED> testCasesUTBGVRNS_SHEADVANCED = {
+    // TestType,       Descr,  Scheme,        RDim,     MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech,        LDigits, PtMod, StdDev,  EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { EVAL_MULT_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MULT_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MULT_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_MULT_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    // ==========================================
+    // TestType,      Descr,  Scheme,        RDim,     MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg,  FModSize, SecLvl, KSTech, ScalTech,        LDigits, PtMod, StdDev,  EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { EVAL_ADD_SINGLE, "01", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FLEXIBLEAUTO,    DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_ADD_SINGLE, "02", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FIXEDMANUAL,     DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_ADD_SINGLE, "03", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FIXEDAUTO,       DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+    { EVAL_ADD_SINGLE, "04", {BGVRNS_SCHEME, RING_DIM, DFLT,      DFLT,     DSIZE, DFLT,    DFLT,       DFLT,           DFLT,     DFLT,   DFLT,   FLEXIBLEAUTOEXT, DFLT,    PTM,   STD_DEV, DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
+};
+// clang-format on
+//===========================================================================================================
+class UTBGVRNS_SHEADVANCED : public ::testing::TestWithParam<TEST_CASE_UTBGVRNS_SHEADVANCED> {
+    using Element    = DCRTPoly;
+    const double eps = EPSILON;
 
-  Ciphertext<TYPE> ciphertext1;
-  Ciphertext<TYPE> ciphertext2;
+protected:
+    void SetUp() {}
 
-  ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
-  ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
+    void TearDown() {
+        CryptoContextFactory<DCRTPoly>::ReleaseAllContexts();
+    }
 
-  Ciphertext<TYPE> cResult = cc->EvalMult(ciphertext1, ciphertext2);
+    void UnitTest_EvalMultSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,
+                                 const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
 
-  KeyPair<TYPE> newKp = cc->KeyGen();
+            // Initialize the public key containers.
+            KeyPair<Element> kp = cc->KeyGen();
+            cc->EvalMultKeyGen(kp.secretKey);
 
-  EvalKey<TYPE> keySwitchHint2 =
-      cc->KeySwitchGen(kp.secretKey, newKp.secretKey);
+            std::vector<int64_t> vectorOfInts1          = {2};
+            Plaintext intArray1                         = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+            std::vector<int64_t> vectorOfInts2          = {3};
+            Plaintext intArray2                         = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+            std::vector<int64_t> vectorOfExpectedValues = {6};  // = vectorOfInts1 * vectorOfInts2
+            Plaintext expectedValues                    = cc->MakeCoefPackedPlaintext(vectorOfExpectedValues);
 
-  cc->KeySwitchInPlace(cResult, keySwitchHint2);
+            Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
+            Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
+            Ciphertext<Element> cResult     = cc->EvalMult(ciphertext1, ciphertext2);
 
-  Plaintext results;
+            KeyPair<Element> newKp          = cc->KeyGen();
+            EvalKey<Element> keySwitchHint2 = cc->KeySwitchGen(kp.secretKey, newKp.secretKey);
+            cc->KeySwitchInPlace(cResult, keySwitchHint2);
 
-  cc->Decrypt(newKp.secretKey, cResult, &results);
+            Plaintext results;
+            cc->Decrypt(newKp.secretKey, cResult, &results);
+            results->SetLength(expectedValues->GetLength());
 
-  EXPECT_EQ(results->GetCoefPackedValue().at(0), 6);
+            EXPECT_TRUE(checkEquality(results->GetCoefPackedValue(), expectedValues->GetCoefPackedValue()));
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+    #if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+    #else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+    #endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_EvalAddSingle(const TEST_CASE_UTBGVRNS_SHEADVANCED& testData,
+                                const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            // Initialize the public key containers.
+            KeyPair<Element> kp = cc->KeyGen();
+
+            std::vector<int64_t> vectorOfInts1          = {2, 3, 1, 4};
+            Plaintext intArray1                         = cc->MakeCoefPackedPlaintext(vectorOfInts1);
+            std::vector<int64_t> vectorOfInts2          = {3, 6, 3, 1};
+            Plaintext intArray2                         = cc->MakeCoefPackedPlaintext(vectorOfInts2);
+            std::vector<int64_t> vectorOfExpectedValues = {5, 9, 4, 5};  // = vectorOfInts1 + vectorOfInts2
+            Plaintext expectedValues                    = cc->MakeCoefPackedPlaintext(vectorOfExpectedValues);
+
+            Ciphertext<Element> ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
+            Ciphertext<Element> ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
+            Ciphertext<Element> cResult     = cc->EvalAdd(ciphertext1, ciphertext2);
+
+            Plaintext results;
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(expectedValues->GetLength());
+
+            EXPECT_TRUE(checkEquality(results->GetCoefPackedValue(), expectedValues->GetCoefPackedValue()));
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+    #if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+    #else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+    #endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+};
+//===========================================================================================================
+TEST_P(UTBGVRNS_SHEADVANCED, SHEADVANCED) {
+    setupSignals();
+    auto test = GetParam();
+
+    switch (test.testCaseType) {
+        case EVAL_MULT_SINGLE:
+            UnitTest_EvalMultSingle(test, test.buildTestName());
+            break;
+        case EVAL_ADD_SINGLE:
+            UnitTest_EvalAddSingle(test, test.buildTestName());
+            break;
+        default:
+            break;
+    }
 }
 
-TEST_F(UTSHEAdvanced, test_eval_add_single_crt) {
-  DEBUG_FLAG(false);
-  CCParams<CryptoContextBGVRNS> parameters;
-  parameters.SetCyclotomicOrder(16);
-  parameters.SetPlaintextModulus(20);
-  parameters.SetRelinWindow(1);
-  parameters.SetStandardDeviation(4);
-  parameters.SetRescalingTechnique(FIXEDMANUAL);
-
-  CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
-  cc->Enable(PKE);
-  cc->Enable(KEYSWITCH);
-  cc->Enable(LEVELEDSHE);
-
-  // Initialize the public key containers.
-  KeyPair<TYPE> kp;
-
-  DEBUG("Filling 1");
-  std::vector<int64_t> vectorOfInts1 = {2, 3, 1, 4};
-  Plaintext intArray1 = cc->MakeCoefPackedPlaintext(vectorOfInts1);
-
-  DEBUG("Filling 2");
-  std::vector<int64_t> vectorOfInts2 = {3, 6, 3, 1};
-  Plaintext intArray2 = cc->MakeCoefPackedPlaintext(vectorOfInts2);
-
-  DEBUG("getting pairs");
-  kp = cc->KeyGen();
-
-  DEBUG("got pairs");
-  Ciphertext<TYPE> ciphertext1;
-  Ciphertext<TYPE> ciphertext2;
-
-  ciphertext1 = cc->Encrypt(kp.publicKey, intArray1);
-  DEBUG("after crypt 1");
-  ciphertext2 = cc->Encrypt(kp.publicKey, intArray2);
-  DEBUG("after crypt 2");
-
-  Ciphertext<TYPE> cResult;
-  DEBUG("before EA");
-  cResult = cc->EvalAdd(ciphertext1, ciphertext2);
-  DEBUG("after");
-
-  Ciphertext<TYPE> ciphertextResults({cResult});
-  Plaintext results;
-
-  cc->Decrypt(kp.secretKey, ciphertextResults, &results);
-
-  EXPECT_EQ(5, results->GetCoefPackedValue().at(0));
-  EXPECT_EQ(9, results->GetCoefPackedValue().at(1));
-  EXPECT_EQ(4, results->GetCoefPackedValue().at(2));
-  EXPECT_EQ(5, results->GetCoefPackedValue().at(3));
-}
-
-#endif
+INSTANTIATE_TEST_SUITE_P(UnitTests, UTBGVRNS_SHEADVANCED, ::testing::ValuesIn(testCasesUTBGVRNS_SHEADVANCED), testName);
 
 #endif

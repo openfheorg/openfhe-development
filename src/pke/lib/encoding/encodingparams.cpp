@@ -35,5 +35,4 @@
 
 #include "encoding/encodingparams.h"
 
-CEREAL_CLASS_VERSION(lbcrypto::EncodingParamsImpl,
-                     lbcrypto::EncodingParamsImpl::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::EncodingParamsImpl, lbcrypto::EncodingParamsImpl::SerializedVersion());

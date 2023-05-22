@@ -30,24 +30,7 @@
 //==================================================================================
 
 /*
-Description:
-
-This code implements RNS variants of the Cheon-Kim-Kim-Song scheme.
-
-The CKKS scheme is introduced in the following paper:
-- Jung Hee Cheon, Andrey Kim, Miran Kim, and Yongsoo Song. Homomorphic
-encryption for arithmetic of approximate numbers. Cryptology ePrint Archive,
-Report 2016/421, 2016. https://eprint.iacr.org/2016/421.
-
- Our implementation builds from the designs here:
- - Marcelo Blatt, Alexander Gusev, Yuriy Polyakov, Kurt Rohloff, and Vinod
-Vaikuntanathan. Optimized homomorphic encryption solution for secure genomewide
-association studies. Cryptology ePrint Archive, Report 2019/223, 2019.
-https://eprint.iacr.org/2019/223.
- - Andrey Kim, Antonis Papadimitriou, and Yuriy Polyakov. Approximate
-homomorphic encryption with reduced approximation error. Cryptology ePrint
-Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
-1118.
+CKKS implementation. If NOISE_FLOODING_DECRYPT is set, we flood the decryption bits with noise.
  */
 
 #define PROFILE
@@ -56,4 +39,61 @@ Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-pke.h"
 
-namespace lbcrypto {}
+namespace lbcrypto {
+
+DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                                  NativePoly* plaintext) const {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+    DCRTPoly b                      = DecryptCore(cv, privateKey);
+    if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+        cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+        auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
+        DCRTPoly noise(dgg, cv[0].GetParams(), Format::EVALUATION);
+        b += noise;
+    }
+
+    b.SetFormat(Format::COEFFICIENT);
+    const size_t sizeQl = b.GetParams()->GetParams().size();
+
+    if (sizeQl != 1) {
+        OPENFHE_THROW(
+            math_error,
+            "sizeQl " + std::to_string(sizeQl) +
+                "!= 1. If sizeQl = 0, consider increasing the depth. If sizeQl > 1, check parameters (this is unsupported for NativePoly).");
+    }
+
+    *plaintext = b.GetElementAtIndex(0);
+
+    return DecryptResult(plaintext->GetLength());
+}
+
+DecryptResult PKECKKSRNS::Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                                  Poly* plaintext) const {
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ciphertext->GetCryptoParameters());
+    const std::vector<DCRTPoly>& cv = ciphertext->GetElements();
+    DCRTPoly b                      = DecryptCore(cv, privateKey);
+    if (cryptoParams->GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+        cryptoParams->GetExecutionMode() == EXEC_EVALUATION) {
+        auto dgg = cryptoParams->GetFloodingDiscreteGaussianGenerator();
+        DCRTPoly noise(dgg, cv[0].GetParams(), Format::EVALUATION);
+        b += noise;
+    }
+
+    b.SetFormat(Format::COEFFICIENT);
+    const size_t sizeQl = b.GetParams()->GetParams().size();
+
+    if (sizeQl == 0)
+        OPENFHE_THROW(math_error, "Decryption failure: No towers left; consider increasing the depth.");
+
+    if (sizeQl == 1) {
+        *plaintext = Poly(b.GetElementAtIndex(0), Format::COEFFICIENT);
+    }
+    else {
+        *plaintext = b.CRTInterpolate();
+    }
+
+    return DecryptResult(plaintext->GetLength());
+}
+
+}  // namespace lbcrypto

@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This file contains google test code that exercises the big int vector library of the PALISADE lattice encryption library.
+  This file contains google test code that exercises the big int vector library of the OpenFHE lattice encryption library.
  */
 
 #include "include/gtest/gtest.h"
@@ -50,123 +50,97 @@ using namespace lbcrypto;
 /************************************************
  *	TESTING Modular operations for 128-bit backend
  ************************************************/
-#if (NATIVEINT == 128)
+#if (NATIVEINT == 128) && !defined(__EMSCRIPTEN__)
 TEST(UT128, modular_operations) {
-  intnat::NativeInteger modulus = ((intnat::NativeInteger(1) << 120) +
-                                      intnat::NativeInteger(123456789));
-  intnat::NativeInteger mu = modulus.ComputeMu();
+    intnat::NativeInteger modulus = ((intnat::NativeInteger(1) << 120) + intnat::NativeInteger(123456789));
+    intnat::NativeInteger mu      = modulus.ComputeMu();
 
-  intnat::NativeInteger a =
-      (intnat::NativeInteger(1) << 110) + intnat::NativeInteger(1234);
-  intnat::NativeInteger b =
-      (intnat::NativeInteger(1) << 115) + intnat::NativeInteger(6789);
+    intnat::NativeInteger a = (intnat::NativeInteger(1) << 110) + intnat::NativeInteger(1234);
+    intnat::NativeInteger b = (intnat::NativeInteger(1) << 115) + intnat::NativeInteger(6789);
 
-  intnat::NativeInteger c =
-      (intnat::NativeInteger(1) << 120) + intnat::NativeInteger(6);
+    intnat::NativeInteger c = (intnat::NativeInteger(1) << 120) + intnat::NativeInteger(6);
 
-  intnat::NativeInteger result = a;
+    intnat::NativeInteger result = a;
 
-  result.ModMulEq(b, modulus, mu);
+    result.ModMulEq(b, modulus, mu);
 
-  EXPECT_EQ(BigInteger("784483038650039308657432244878529921"),
-            BigInteger(result))
-      << "Failure in ModMulEq";
+    EXPECT_EQ(BigInteger("784483038650039308657432244878529921"), BigInteger(result)) << "Failure in ModMulEq";
 
-  result = a.ModMul(b, modulus, mu);
+    result = a.ModMul(b, modulus, mu);
 
-  EXPECT_EQ(BigInteger("784483038650039308657432244878529921"),
-            BigInteger(result))
-      << "Failure in ModMul";
+    EXPECT_EQ(BigInteger("784483038650039308657432244878529921"), BigInteger(result)) << "Failure in ModMul";
 
-  result = a.ModMulFast(b, modulus, mu);
+    result = a.ModMulFast(b, modulus, mu);
 
-  EXPECT_EQ(BigInteger("784483038650039308657432244878529921"),
-            BigInteger(result))
-      << "Failure in ModMulFast";
+    EXPECT_EQ(BigInteger("784483038650039308657432244878529921"), BigInteger(result)) << "Failure in ModMulFast";
 
-  result = a;
+    result = a;
 
-  result.ModMulFastEq(b, modulus, mu);
+    result.ModMulFastEq(b, modulus, mu);
 
-  EXPECT_EQ(BigInteger("784483038650039308657432244878529921"),
-            BigInteger(result))
-      << "Failure in ModMulFastEq";
+    EXPECT_EQ(BigInteger("784483038650039308657432244878529921"), BigInteger(result)) << "Failure in ModMulFastEq";
 
-  intnat::NativeInteger precon = b.PrepModMulConst(modulus);
+    intnat::NativeInteger precon = b.PrepModMulConst(modulus);
 
-  result = a.ModMulFastConst(b, modulus, precon);
+    result = a.ModMulFastConst(b, modulus, precon);
 
-  EXPECT_EQ(BigInteger("784483038650039308657432244878529921"),
-            BigInteger(result))
-      << "Failure in ModMulFastConst";
+    EXPECT_EQ(BigInteger("784483038650039308657432244878529921"), BigInteger(result)) << "Failure in ModMulFastConst";
 
-  result = a;
+    result = a;
 
-  result.ModMulFastConstEq(b, modulus, precon);
+    result.ModMulFastConstEq(b, modulus, precon);
 
-  EXPECT_EQ(BigInteger("784483038650039308657432244878529921"),
-            BigInteger(result))
-      << "Failure in ModMulFastConstEq";
+    EXPECT_EQ(BigInteger("784483038650039308657432244878529921"), BigInteger(result)) << "Failure in ModMulFastConstEq";
 
-  result = a.ModExp(b, modulus);
+    result = a.ModExp(b, modulus);
 
-  EXPECT_EQ(BigInteger("420836984722658338771647831749821018"),
-            BigInteger(result))
-      << "Failure in ModExp";
+    EXPECT_EQ(BigInteger("420836984722658338771647831749821018"), BigInteger(result)) << "Failure in ModExp";
 
-  result = a;
+    result = a;
 
-  result.ModExpEq(b, modulus);
+    result.ModExpEq(b, modulus);
 
-  EXPECT_EQ(BigInteger("420836984722658338771647831749821018"),
-            BigInteger(result))
-      << "Failure in ModExpEq";
+    EXPECT_EQ(BigInteger("420836984722658338771647831749821018"), BigInteger(result)) << "Failure in ModExpEq";
 
-  result = a.ModAddFast(c, modulus);
+    result = a.ModAddFast(c, modulus);
 
-  EXPECT_EQ(BigInteger("1298074214633706907132623958849475"),
-            BigInteger(result))
-      << "Failure in ModAddFast";
+    EXPECT_EQ(BigInteger("1298074214633706907132623958849475"), BigInteger(result)) << "Failure in ModAddFast";
 
-  result = a.ModSubFast(c, modulus);
+    result = a.ModSubFast(c, modulus);
 
-  EXPECT_EQ(BigInteger("1298074214633706907132624205763041"),
-            BigInteger(result))
-      << "Failure in ModSubFast";
+    EXPECT_EQ(BigInteger("1298074214633706907132624205763041"), BigInteger(result)) << "Failure in ModSubFast";
 
-  result = a.ModInverse(modulus);
+    result = a.ModInverse(modulus);
 
-  EXPECT_EQ(BigInteger("859455677183853192994953853474516202"),
-            BigInteger(result))
-      << "Failure in ModInverse";
+    EXPECT_EQ(BigInteger("859455677183853192994953853474516202"), BigInteger(result)) << "Failure in ModInverse";
 }
 
 TEST(UT128, NTT_operations) {
-  usint m1 = 16;
-  NativeInteger modulus = FirstPrime<NativeInteger>(100, m1);
-  NativeInteger rootOfUnity(RootOfUnity(m1, modulus));
+    usint m1              = 16;
+    NativeInteger modulus = FirstPrime<NativeInteger>(100, m1);
+    NativeInteger rootOfUnity(RootOfUnity(m1, modulus));
 
-  ILNativeParams params(m1, modulus, rootOfUnity);
-  ILNativeParams params2(m1 / 2, modulus, rootOfUnity);
-  std::shared_ptr<ILNativeParams> x1p(new ILNativeParams(params));
-  std::shared_ptr<ILNativeParams> x2p(new ILNativeParams(params2));
+    ILNativeParams params(m1, modulus, rootOfUnity);
+    ILNativeParams params2(m1 / 2, modulus, rootOfUnity);
+    auto x1p = std::make_shared<ILNativeParams>(params);
+    auto x2p = std::make_shared<ILNativeParams>(params2);
 
-  NativePoly x1(x1p, Format::COEFFICIENT);
-  x1 = {431, 3414, 1234, 7845, 2145, 7415, 5471, 8452};
+    NativePoly x1(x1p, Format::COEFFICIENT);
+    x1 = {431, 3414, 1234, 7845, 2145, 7415, 5471, 8452};
 
-  NativePoly x2(x2p, Format::COEFFICIENT);
-  x2 = {4127, 9647, 1987, 5410};
+    NativePoly x2(x2p, Format::COEFFICIENT);
+    x2 = {4127, 9647, 1987, 5410};
 
-  NativePoly x1Clone(x1);
-  NativePoly x2Clone(x2);
+    NativePoly x1Clone(x1);
+    NativePoly x2Clone(x2);
 
-  x1.SwitchFormat();
-  x2.SwitchFormat();
-  x1.SwitchFormat();
-  x2.SwitchFormat();
+    x1.SwitchFormat();
+    x2.SwitchFormat();
+    x1.SwitchFormat();
+    x2.SwitchFormat();
 
-  EXPECT_EQ(x1, x1Clone) << "Failure in NTT test #1";
-  EXPECT_EQ(x2, x2Clone) << "Failure in NTT test #2";
+    EXPECT_EQ(x1, x1Clone) << "Failure in NTT test #1";
+    EXPECT_EQ(x2, x2Clone) << "Failure in NTT test #2";
 }
 
 #endif

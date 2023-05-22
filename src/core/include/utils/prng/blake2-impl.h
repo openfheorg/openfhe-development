@@ -1,3 +1,4 @@
+// clang-format off
 /*
    BLAKE2 reference source code package - reference C implementations
 
@@ -139,3 +140,4 @@ static BLAKE2_INLINE void secure_zero_memory(void *v, size_t n) {
 }
 
 #endif
+// clang-format on

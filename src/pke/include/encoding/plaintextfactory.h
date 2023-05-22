@@ -30,17 +30,18 @@
 //==================================================================================
 
 /*
-  Manufactures plaintext objects in Palisade
+  Manufactures plaintext objects in OpenFHE
  */
 
 #ifndef SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_
 #define SRC_CORE_LIB_ENCODING_PLAINTEXTFACTORY_H_
 
+#include "encoding/encodings.h"
+#include "scheme/scheme-id.h"
+
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "encoding/encodings.h"
 
 // TODO: when the parms are polymorphic, reduce the tuple of methods to a
 // single one
@@ -48,145 +49,78 @@
 namespace lbcrypto {
 
 class PlaintextFactory {
-  PlaintextFactory() {}  // never construct one!
+    PlaintextFactory() = delete;  // never construct one!
 
- public:
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<Poly::Params> vp,
-                                 EncodingParams ep) {
-    Plaintext pt;
-
-    switch (encoding) {
-      case Unknown:
-        PALISADE_THROW(type_error,
-                       "Unknown plaintext encoding type in MakePlaintext");
-        break;
-      case CoefPacked:
-        pt = std::make_shared<CoefPackedEncoding>(vp, ep);
-        break;
-      case Packed:
-        pt = std::make_shared<PackedEncoding>(vp, ep);
-        break;
-      case String:
-        pt = std::make_shared<StringEncoding>(vp, ep);
-        break;
-      case CKKSPacked:
-        pt = std::make_shared<CKKSPackedEncoding>(vp, ep);
-        break;
+public:
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    static Plaintext MakePlaintext(PlaintextEncodings encoding, std::shared_ptr<T> vp, EncodingParams ep,
+                                   SCHEME schemeID = SCHEME::INVALID_SCHEME) {
+        switch (encoding) {
+            case COEF_PACKED_ENCODING:
+                return std::make_shared<CoefPackedEncoding>(vp, ep, schemeID);
+            case PACKED_ENCODING:
+                return std::make_shared<PackedEncoding>(vp, ep);
+            case STRING_ENCODING:
+                return std::make_shared<StringEncoding>(vp, ep);
+            case CKKS_PACKED_ENCODING:
+                return std::make_shared<CKKSPackedEncoding>(vp, ep);
+            default:
+                OPENFHE_THROW(type_error, "Unknown plaintext encoding type in MakePlaintext");
+        }
     }
 
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<NativePoly::Params> vp,
-                                 EncodingParams ep) {
-    Plaintext pt;
-
-    switch (encoding) {
-      case Unknown:
-        PALISADE_THROW(type_error,
-                       "Unknown plaintext encoding type in MakePlaintext");
-        break;
-      case CoefPacked:
-        pt = std::make_shared<CoefPackedEncoding>(vp, ep);
-        break;
-      case Packed:
-        pt = std::make_shared<PackedEncoding>(vp, ep);
-        break;
-      case String:
-        pt = std::make_shared<StringEncoding>(vp, ep);
-        break;
-      case CKKSPacked:
-        pt = std::make_shared<CKKSPackedEncoding>(vp, ep);
-        break;
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    static Plaintext MakePlaintext(const std::vector<int64_t>& value, PlaintextEncodings encoding,
+                                   std::shared_ptr<T> vp, EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
+                                   size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
+        // Check if plaintext has got enough slots for data (value)
+        usint ringDim = vp->GetRingDimension();
+        size_t valueSize = value.size();
+        if (SCHEME::CKKSRNS_SCHEME == schemeID && valueSize > ringDim / 2) {
+            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+        }
+        else if (valueSize > ringDim) {
+            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim [" + std::to_string(ringDim) + "] if the scheme is NOT CKKS");
+        }
+        Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
+        pt->SetIntVectorValue(value);
+        pt->SetNoiseScaleDeg(noiseScaleDeg);
+        pt->SetLevel(level);
+        pt->SetScalingFactorInt(scalingFactor);
+        pt->Encode();
+        return pt;
     }
 
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<DCRTPoly::Params> vp,
-                                 EncodingParams ep) {
-    Plaintext pt;
-
-    switch (encoding) {
-      case Unknown:
-        PALISADE_THROW(type_error,
-                       "Unknown plaintext encoding type in MakePlaintext");
-        break;
-      case CoefPacked:
-        pt = std::make_shared<CoefPackedEncoding>(vp, ep);
-        break;
-      case Packed:
-        pt = std::make_shared<PackedEncoding>(vp, ep);
-        break;
-      case String:
-        pt = std::make_shared<StringEncoding>(vp, ep);
-        break;
-      case CKKSPacked:
-        pt = std::make_shared<CKKSPackedEncoding>(vp, ep);
-        break;
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    static Plaintext MakePlaintext(const std::string& value, PlaintextEncodings encoding, std::shared_ptr<T> vp,
+                                   EncodingParams ep, SCHEME schemeID = SCHEME::INVALID_SCHEME,
+                                   size_t noiseScaleDeg = 1, uint32_t level = 0, NativeInteger scalingFactor = 1) {
+        // Check if plaintext has got enough slots for data (value)
+        usint ringDim = vp->GetRingDimension();
+        size_t valueSize = value.size();
+        if (SCHEME::CKKSRNS_SCHEME == schemeID && valueSize > ringDim / 2) {
+            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim/2 [" + std::to_string(ringDim / 2) + "] if the scheme is CKKS");
+        }
+        else if (valueSize > ringDim) {
+            OPENFHE_THROW(config_error, "The size [" + std::to_string(valueSize) + "] of the vector with values should not be greater than ringDim [" + std::to_string(ringDim) + "] if the scheme is NOT CKKS");
+        }
+        Plaintext pt = MakePlaintext(encoding, vp, ep, schemeID);
+        pt->SetStringValue(value);
+        pt->SetNoiseScaleDeg(noiseScaleDeg);
+        pt->SetLevel(level);
+        pt->SetScalingFactorInt(scalingFactor);
+        pt->Encode();
+        return pt;
     }
-
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<Poly::Params> vp, EncodingParams ep,
-                                 const std::vector<int64_t>& value) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetIntVectorValue(value);
-    pt->Encode();
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<NativePoly::Params> vp,
-                                 EncodingParams ep,
-                                 const std::vector<int64_t>& value) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetIntVectorValue(value);
-    pt->Encode();
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<DCRTPoly::Params> vp,
-                                 EncodingParams ep,
-                                 const std::vector<int64_t>& value) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetIntVectorValue(value);
-    pt->Encode();
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<Poly::Params> vp, EncodingParams ep,
-                                 const std::string& value) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetStringValue(value);
-    pt->Encode();
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<NativePoly::Params> vp,
-                                 EncodingParams ep, const std::string& value) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetStringValue(value);
-    pt->Encode();
-    return pt;
-  }
-
-  static Plaintext MakePlaintext(PlaintextEncodings encoding,
-                                 std::shared_ptr<DCRTPoly::Params> vp,
-                                 EncodingParams ep, const std::string& value) {
-    Plaintext pt = MakePlaintext(encoding, vp, ep);
-    pt->SetStringValue(value);
-    pt->Encode();
-    return pt;
-  }
 };
 
 } /* namespace lbcrypto */

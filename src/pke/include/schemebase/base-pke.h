@@ -32,57 +32,22 @@
 #ifndef LBCRYPTO_CRYPTO_BASE_PKE_H
 #define LBCRYPTO_CRYPTO_BASE_PKE_H
 
+#include "ciphertext-fwd.h"
+#include "cryptocontext-fwd.h"
+#include "key/privatekey-fwd.h"
+#include "key/publickey-fwd.h"
+#include "decrypt-result.h"
+
 #include <vector>
 #include <memory>
-
-#include "key/allkey.h"
-#include "ciphertext.h"
 
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
  */
 namespace lbcrypto {
-
-struct EncryptResult {
-  EncryptResult() : isValid(false), numBytesEncrypted(0) {}
-
-  explicit EncryptResult(size_t len) : isValid(true), numBytesEncrypted(len) {}
-
-  bool isValid;  // whether the encryption was successful
-  // count of the number of plaintext bytes that were encrypted
-  usint numBytesEncrypted;
-};
-
-/**
- * @brief Decryption result.  This represents whether the decryption of a
- * cipheretext was performed correctly.
- *
- * This is intended to eventually incorporate information about the amount of
- * padding in a decoded ciphertext, to ensure that the correct amount of
- * padding is stripped away. It is intended to provided a very simple kind of
- * checksum eventually. This notion of a decoding output is inherited from the
- * crypto++ library. It is also intended to be used in a recover and restart
- * robust functionality if not all ciphertext is recieved over a lossy
- * channel, so that if all information is eventually recieved,
- * decoding/decryption can be performed eventually. This is intended to be
- * returned with the output of a decryption operation.
- */
-struct DecryptResult {
-  /**
-   * Constructor that initializes all message lengths to 0.
-   */
-  DecryptResult() : isValid(false), messageLength(0) {}
-
-  /**
-   * Constructor that initializes all message lengths.
-   * @param len the new length.
-   */
-  explicit DecryptResult(size_t len) : isValid(true), messageLength(len) {}
-
-  bool isValid;        /**< whether the decryption was successful */
-  usint messageLength; /**< the length of the decrypted plaintext message */
-};
+template <class Element>
+class KeyPair;
 
 /**
  * @brief Abstract interface for encryption algorithm
@@ -90,31 +55,30 @@ struct DecryptResult {
  */
 template <class Element>
 class PKEBase {
-  using ParmType = typename Element::Params;
-  using IntType = typename Element::Integer;
-  using DugType = typename Element::DugType;
-  using DggType = typename Element::DggType;
-  using TugType = typename Element::TugType;
+    using ParmType = typename Element::Params;
+    using IntType  = typename Element::Integer;
+    using DugType  = typename Element::DugType;
+    using DggType  = typename Element::DggType;
+    using TugType  = typename Element::TugType;
 
- public:
-  virtual ~PKEBase() {}
+public:
+    virtual ~PKEBase() {}
 
-  /**
+    /**
    * Function to generate public and private keys
    *
    * @param &publicKey private key used for decryption.
    * @param &privateKey private key used for decryption.
    * @return function ran correctly.
    */
-  virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc,
-                                  bool makeSparse = false);
+    virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc, bool makeSparse);
 
-  //  virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc,
-  //                                    bool makeSparse = false,
-  //									PublicKey<Element>
-  // publicKey);
+    //  virtual KeyPair<Element> KeyGen(CryptoContext<Element> cc,
+    //                                    bool makeSparse,
+    //                                    PublicKey<Element>
+    // publicKey);
 
-  /**
+    /**
    * Method for encrypting plaintex using LBC
    *
    * @param privateKey private key used for encryption.
@@ -124,10 +88,9 @@ class PKEBase {
    * cryptocontext if false
    * @param *ciphertext ciphertext which results from encryption.
    */
-  virtual Ciphertext<Element> Encrypt(
-      Element plaintext, const PrivateKey<Element> privateKey) const;
+    virtual Ciphertext<Element> Encrypt(Element plaintext, const PrivateKey<Element> privateKey) const;
 
-  /**
+    /**
    * Method for encrypting plaintext using LBC
    *
    * @param&publicKey public key used for encryption.
@@ -137,10 +100,9 @@ class PKEBase {
    * cryptocontext if false
    * @param *ciphertext ciphertext which results from encryption.
    */
-  virtual Ciphertext<Element> Encrypt(Element plaintext,
-                                      const PublicKey<Element> publicKey) const;
+    virtual Ciphertext<Element> Encrypt(Element plaintext, const PublicKey<Element> publicKey) const;
 
-  /**
+    /**
    * Method for decrypting plaintext using LBC
    *
    * @param &privateKey private key used for decryption.
@@ -148,13 +110,12 @@ class PKEBase {
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-  virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext,
-                                const PrivateKey<Element> privateKey,
-                                NativePoly *plaintext) const {
-    PALISADE_THROW(config_error, "Decryption to NativePoly is not supported");
-  }
+    virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey,
+                                  NativePoly* plaintext) const {
+        OPENFHE_THROW(config_error, "Decryption to NativePoly is not supported");
+    }
 
-  /**
+    /**
    * Method for decrypting plaintext using LBC
    *
    * @param &privateKey private key used for decryption.
@@ -162,26 +123,23 @@ class PKEBase {
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-  virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext,
-                                const PrivateKey<Element> privateKey,
-                                Poly *plaintext) const {
-    PALISADE_THROW(config_error, "Decryption to Poly is not supported");
-  }
+    virtual DecryptResult Decrypt(ConstCiphertext<Element> ciphertext, const PrivateKey<Element> privateKey,
+                                  Poly* plaintext) const {
+        OPENFHE_THROW(config_error, "Decryption to Poly is not supported");
+    }
 
-  /////////////////////////////////////////
-  // CORE OPERATIONS
-  /////////////////////////////////////////
+    /////////////////////////////////////////
+    // CORE OPERATIONS
+    /////////////////////////////////////////
 
-  virtual std::shared_ptr< std::vector<Element> > EncryptZeroCore(
-      const PrivateKey<Element> privateKey,
-      const std::shared_ptr<ParmType> params = nullptr) const;
+    virtual std::shared_ptr<std::vector<Element> > EncryptZeroCore(const PrivateKey<Element> privateKey,
+                                                                   const std::shared_ptr<ParmType> params) const;
 
-  virtual std::shared_ptr< std::vector<Element> > EncryptZeroCore(
-      const PublicKey<Element> publicKey,
-      const std::shared_ptr<ParmType> params = nullptr) const;
+    virtual std::shared_ptr<std::vector<Element> > EncryptZeroCore(const PublicKey<Element> publicKey,
+                                                                   const std::shared_ptr<ParmType> params,
+                                                                   const DggType& dgg) const;
 
-  virtual Element DecryptCore(const std::vector<Element> &cv,
-                      const PrivateKey<Element> privateKey) const;
+    virtual Element DecryptCore(const std::vector<Element>& cv, const PrivateKey<Element> privateKey) const;
 };
 
 }  // namespace lbcrypto

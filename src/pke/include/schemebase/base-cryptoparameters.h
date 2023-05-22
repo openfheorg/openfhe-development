@@ -28,12 +28,16 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
 #ifndef LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
 #define LBCRYPTO_CRYPTO_BASE_CRYPTOPARAMETERS_H
 
 #include "utils/serializable.h"
+#include "encoding/plaintext.h"
+
 #include "encoding/encodings.h"
+
+#include <memory>
+#include <string>
 
 /**
  * @namespace lbcrypto
@@ -48,59 +52,61 @@ namespace lbcrypto {
  */
 template <typename Element>
 class CryptoParametersBase : public Serializable {
-  using ParmType = typename Element::Params;
-  using IntType = typename Element::Integer;
-  using DugType = typename Element::DugType;
-  using DggType = typename Element::DggType;
-  using TugType = typename Element::TugType;
+    using ParmType = typename Element::Params;
+    using IntType  = typename Element::Integer;
+    using DugType  = typename Element::DugType;
+    using DggType  = typename Element::DggType;
+    using TugType  = typename Element::TugType;
 
- public:
-  CryptoParametersBase() {}
+public:
+    CryptoParametersBase() {}
 
-  virtual ~CryptoParametersBase() {}
+    virtual ~CryptoParametersBase() {}
 
-  /**
+    /**
    * Returns the value of plaintext modulus p
    *
    * @return the plaintext modulus.
    */
-  virtual const PlaintextModulus &GetPlaintextModulus() const {
-    return m_encodingParams->GetPlaintextModulus();
-  }
+    virtual const PlaintextModulus& GetPlaintextModulus() const {
+        return m_encodingParams->GetPlaintextModulus();
+    }
 
-  /**
+    /**
    * Returns the reference to IL params
    *
    * @return the ring element parameters.
    */
-  virtual const std::shared_ptr<typename Element::Params> GetElementParams() const {
-    return m_params;
-  }
+    virtual const std::shared_ptr<typename Element::Params> GetElementParams() const {
+        return m_params;
+    }
 
-  /**
+    virtual const std::shared_ptr<typename Element::Params> GetParamsPK() const = 0;
+
+    /**
    * Returns the reference to encoding params
    *
    * @return the encoding parameters.
    */
-  virtual const EncodingParams GetEncodingParams() const {
-    return m_encodingParams;
-  }
+    virtual const EncodingParams GetEncodingParams() const {
+        return m_encodingParams;
+    }
 
-  /**
+    /**
    * Sets the value of plaintext modulus p
    */
-  virtual void SetPlaintextModulus(const PlaintextModulus &plaintextModulus) {
-    m_encodingParams->SetPlaintextModulus(plaintextModulus);
-  }
+    virtual void SetPlaintextModulus(const PlaintextModulus& plaintextModulus) {
+        m_encodingParams->SetPlaintextModulus(plaintextModulus);
+    }
 
-  virtual bool operator==(const CryptoParametersBase<Element> &cmp) const {
-    return *m_encodingParams == *cmp.GetEncodingParams();
-  }
-  virtual bool operator!=(const CryptoParametersBase<Element> &cmp) const {
-    return !(*this == cmp);
-  }
+    virtual bool operator==(const CryptoParametersBase<Element>& cmp) const {
+        return *m_encodingParams == *(cmp.GetEncodingParams()) && *m_params == *(cmp.GetElementParams());
+    }
+    virtual bool operator!=(const CryptoParametersBase<Element>& cmp) const {
+        return !(*this == cmp);
+    }
 
-  /**
+    /**
    * Overload to allow printing of parameters to an iostream
    * NOTE that the implementation relies on calling the virtual
    * PrintParameters method
@@ -108,94 +114,97 @@ class CryptoParametersBase : public Serializable {
    * @param item - reference to the item to print
    * @return the stream
    */
-  friend std::ostream &operator<<(std::ostream &out,
-                                  const CryptoParametersBase &item) {
-    item.PrintParameters(out);
-    return out;
-  }
+    friend std::ostream& operator<<(std::ostream& out, const CryptoParametersBase& item) {
+        item.PrintParameters(out);
+        return out;
+    }
 
-  virtual usint GetRelinWindow() const { return 0; }
+    virtual usint GetDigitSize() const {
+        return 0;
+    }
 
-  virtual int GetDepth() const { return 0; }
-  virtual size_t GetMaxDepth() const { return 0; }
+    /**
+   * Returns the value of the maximum power of secret key for which the
+   * relinearization key is generated
+   *
+   * @return maximum power of secret key
+   */
+    virtual uint32_t GetMaxRelinSkDeg() const {
+        return 0;
+    }
 
-  virtual const typename Element::DggType &GetDiscreteGaussianGenerator()
-      const {
-    PALISADE_THROW(config_error, "No DGG Available for this parameter set");
-  }
-
-  /**
+    /**
    * Sets the reference to element params
    */
-  virtual void SetElementParams(std::shared_ptr<typename Element::Params> params) {
-    m_params = params;
-  }
+    virtual void SetElementParams(std::shared_ptr<typename Element::Params> params) {
+        m_params = params;
+    }
 
-  /**
+    /**
    * Sets the reference to encoding params
    */
-  virtual void SetEncodingParams(EncodingParams encodingParams) {
-    m_encodingParams = encodingParams;
-  }
-
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
-
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(::cereal::make_nvp("elp", m_params));
-    ar(::cereal::make_nvp("enp", m_encodingParams));
-  }
-
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
+    virtual void SetEncodingParams(EncodingParams encodingParams) {
+        m_encodingParams = encodingParams;
     }
-    ar(::cereal::make_nvp("elp", m_params));
-    ar(::cereal::make_nvp("enp", m_encodingParams));
-  }
 
-  std::string SerializedObjectName() const { return "CryptoParametersBase"; }
-  static uint32_t SerializedVersion() { return 1; }
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
- protected:
-  explicit CryptoParametersBase(const PlaintextModulus &plaintextModulus) {
-    m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
-  }
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(::cereal::make_nvp("elp", m_params));
+        ar(::cereal::make_nvp("enp", m_encodingParams));
+    }
 
-  CryptoParametersBase(std::shared_ptr<typename Element::Params> params,
-                       const PlaintextModulus &plaintextModulus) {
-    m_params = params;
-    m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
-  }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                                                 " is from a later version of the library");
+        }
+        ar(::cereal::make_nvp("elp", m_params));
+        ar(::cereal::make_nvp("enp", m_encodingParams));
+    }
 
-  CryptoParametersBase(std::shared_ptr<typename Element::Params> params,
-                       EncodingParams encodingParams) {
-    m_params = params;
-    m_encodingParams = encodingParams;
-  }
+    std::string SerializedObjectName() const {
+        return "CryptoParametersBase";
+    }
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 
-  CryptoParametersBase(CryptoParametersBase<Element> *from,
-                       std::shared_ptr<typename Element::Params> newElemParms) {
-    *this = *from;
-    m_params = newElemParms;
-  }
+protected:
+    explicit CryptoParametersBase(const PlaintextModulus& plaintextModulus) {
+        m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
+    }
 
-  virtual void PrintParameters(std::ostream &out) const {
-    out << "Element Parameters: " << *m_params << std::endl;
-    out << "Encoding Parameters: " << *m_encodingParams << std::endl;
-  }
+    CryptoParametersBase(std::shared_ptr<typename Element::Params> params, const PlaintextModulus& plaintextModulus) {
+        m_params         = params;
+        m_encodingParams = std::make_shared<EncodingParamsImpl>(plaintextModulus);
+    }
 
- protected:
-  // element-specific parameters
-  std::shared_ptr<typename Element::Params> m_params;
+    CryptoParametersBase(std::shared_ptr<typename Element::Params> params, EncodingParams encodingParams) {
+        m_params         = params;
+        m_encodingParams = encodingParams;
+    }
 
-  // encoding-specific parameters
-  EncodingParams m_encodingParams;
+    CryptoParametersBase(CryptoParametersBase<Element>* from, std::shared_ptr<typename Element::Params> newElemParms) {
+        *this    = *from;
+        m_params = newElemParms;
+    }
+
+    virtual void PrintParameters(std::ostream& out) const {
+        out << "Element Parameters: " << *m_params << std::endl;
+        out << "Encoding Parameters: " << *m_encodingParams << std::endl;
+    }
+
+protected:
+    // element-specific parameters
+    std::shared_ptr<typename Element::Params> m_params;
+
+    // encoding-specific parameters
+    EncodingParams m_encodingParams;
 };
 
 }  // namespace lbcrypto

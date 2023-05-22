@@ -35,14 +35,9 @@
 
 #include "lattice/ilparams.h"
 
-CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M2Integer>,
-                     lbcrypto::ILParamsImpl<M2Integer>::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M4Integer>,
-                     lbcrypto::ILParamsImpl<M4Integer>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M2Integer>, lbcrypto::ILParamsImpl<M2Integer>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M4Integer>, lbcrypto::ILParamsImpl<M4Integer>::SerializedVersion());
 #ifdef WITH_NTL
-CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M6Integer>,
-                     lbcrypto::ILParamsImpl<M6Integer>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M6Integer>, lbcrypto::ILParamsImpl<M6Integer>::SerializedVersion());
 #endif
-CEREAL_CLASS_VERSION(
-    lbcrypto::ILParamsImpl<NativeInteger>,
-    lbcrypto::ILParamsImpl<NativeInteger>::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<NativeInteger>, lbcrypto::ILParamsImpl<NativeInteger>::SerializedVersion());

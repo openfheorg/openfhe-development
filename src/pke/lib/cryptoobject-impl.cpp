@@ -28,13 +28,22 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
+#include "cryptoobject.h"
 
 #include "cryptocontext.h"
 
 namespace lbcrypto {
 
-//template class CryptoObject<Poly>;
-//template class CryptoObject<NativePoly>;
+template <typename Element>
+const std::shared_ptr<CryptoParametersBase<Element>> CryptoObject<Element>::GetCryptoParameters() const {
+    return context->GetCryptoParameters();
+}
+
+template <typename Element>
+const EncodingParams CryptoObject<Element>::GetEncodingParameters() const {
+    return context->GetCryptoParameters()->GetEncodingParams();
+}
+
 template class CryptoObject<DCRTPoly>;
 
-}
+}  // namespace lbcrypto

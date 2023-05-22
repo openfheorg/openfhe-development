@@ -1,5 +1,5 @@
 all:
-	@echo "PALISADE has converted to CMake"
+	@echo "OpenFHE has converted to CMake"
 	@echo "Try this:"
 	@echo mkdir build
 	@echo cd build

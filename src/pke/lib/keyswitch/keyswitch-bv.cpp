@@ -29,299 +29,314 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-/*
-  CKKS scheme implementation
+/**
+ * Implements BV scheme from [Fully Homomorphic Encryption from
+    Ring-LWE and Security for Key Dependent Messages (BVScheme)](
+    https://www.wisdom.weizmann.ac.il/~zvikab/localpapers/IdealHom.pdf
+    )
+ *  see the Appendix of https://eprint.iacr.org/2021/204 for more details
  */
-
- /*
-Description:
-
-This code implements RNS variants of the Cheon-Kim-Kim-Song scheme.
-
-The CKKS scheme is introduced in the following paper:
-- Jung Hee Cheon, Andrey Kim, Miran Kim, and Yongsoo Song. Homomorphic
-encryption for arithmetic of approximate numbers. Cryptology ePrint Archive,
-Report 2016/421, 2016. https://eprint.iacr.org/2016/421.
-
- Our implementation builds from the designs here:
- - Marcelo Blatt, Alexander Gusev, Yuriy Polyakov, Kurt Rohloff, and Vinod
-Vaikuntanathan. Optimized homomorphic encryption solution for secure genomewide
-association studies. Cryptology ePrint Archive, Report 2019/223, 2019.
-https://eprint.iacr.org/2019/223.
- - Andrey Kim, Antonis Papadimitriou, and Yuriy Polyakov. Approximate
-homomorphic encryption with reduced approximation error. Cryptology ePrint
-Archive, Report 2020/1118, 2020. https://eprint.iacr.org/2020/
-1118.
- */
-
 #define PROFILE
 
-#include "cryptocontext.h"
 #include "keyswitch/keyswitch-bv.h"
+
+#include "key/privatekey.h"
+#include "key/publickey.h"
+#include "key/evalkeyrelin.h"
+#include "schemerns/rns-cryptoparameters.h"
+#include "cryptocontext.h"
 
 namespace lbcrypto {
 
-EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
-    const PrivateKey<DCRTPoly> oldKey,
-    const PrivateKey<DCRTPoly> newKey) const {
-  EvalKeyRelin<DCRTPoly> ek(
-      std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
-
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersRNS>(
-          newKey->GetCryptoParameters());
-
-  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
-  const DCRTPoly &sNew = newKey->GetPrivateElement();
-  const DCRTPoly &sOld = oldKey->GetPrivateElement();
-
-  const auto ns = cryptoParams->GetNoiseScale();
-  const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
-  DugType dug;
-
-  usint relinWindow = cryptoParams->GetRelinWindow();
-
-  std::vector<DCRTPoly> av;
-  std::vector<DCRTPoly> bv;
-
-  if (relinWindow > 0) {
-    for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-      std::vector<DCRTPoly::PolyType> sOldDecomposed =
-          sOld.GetElementAtIndex(i).PowersOfBase(relinWindow);
-
-      for (usint k = 0; k < sOldDecomposed.size(); k++) {
-        DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-        filtered.SetElementAtIndex(i, sOldDecomposed[k]);
-
-        DCRTPoly a(dug, elementParams, Format::EVALUATION);
-        DCRTPoly e(dgg, elementParams, Format::EVALUATION);
-
-        av.push_back(a);
-        bv.push_back(filtered - a * sNew + ns * e);
-      }
-    }
-  } else {
-    for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-      DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-      filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
-
-      DCRTPoly a(dug, elementParams, Format::EVALUATION);
-      DCRTPoly e(dgg, elementParams, Format::EVALUATION);
-
-      av.push_back(a);
-      bv.push_back(filtered - a * sNew + ns * e);
-    }
-  }
-
-  ek->SetAVector(std::move(av));
-  ek->SetBVector(std::move(bv));
-
-  return ek;
-}
-
 EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey,
-                                            const PrivateKey<DCRTPoly> newKey,
+                                            const PrivateKey<DCRTPoly> newKey) const {
+    EvalKeyRelin<DCRTPoly> ek(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newKey->GetCryptoParameters());
+
+    const DCRTPoly& sNew = newKey->GetPrivateElement();
+    auto elementParams   = sNew.GetParams();
+    const DCRTPoly& sOld = oldKey->GetPrivateElement();
+
+    const auto ns      = cryptoParams->GetNoiseScale();
+    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
+    DugType dug;
+
+    usint digitSize = cryptoParams->GetDigitSize();
+
+    usint sizeSOld = sOld.GetNumOfElements();
+    usint nWindows = 0;
+    std::vector<usint> arrWindows;
+    if (digitSize > 0) {
+        // creates an array of digits up to a certain tower
+        for (usint i = 0; i < sizeSOld; i++) {
+            usint sOldMSB    = sOld.GetElementAtIndex(i).GetModulus().GetLengthForBase(2);
+            usint curWindows = sOldMSB / digitSize;
+            if (sOldMSB % digitSize > 0)
+                curWindows++;
+            arrWindows.push_back(nWindows);
+            nWindows += curWindows;
+        }
+    }
+    else {
+        nWindows = sizeSOld;
+    }
+
+    std::vector<DCRTPoly> av(nWindows);
+    std::vector<DCRTPoly> bv(nWindows);
+
+    if (digitSize > 0) {
+        for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
+            std::vector<DCRTPoly::PolyType> sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
+
+            for (usint k = 0; k < sOldDecomposed.size(); k++) {
+                DCRTPoly filtered(elementParams, Format::EVALUATION, true);
+                filtered.SetElementAtIndex(i, sOldDecomposed[k]);
+
+                DCRTPoly a(dug, elementParams, Format::EVALUATION);
+                DCRTPoly e(dgg, elementParams, Format::EVALUATION);
+
+                av[k + arrWindows[i]] = a;
+                bv[k + arrWindows[i]] = filtered - (av[k + arrWindows[i]] * sNew + ns * e);
+            }
+        }
+    }
+    else {
+        for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
+            DCRTPoly filtered(elementParams, Format::EVALUATION, true);
+            filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
+
+            DCRTPoly a(dug, elementParams, Format::EVALUATION);
+            DCRTPoly e(dgg, elementParams, Format::EVALUATION);
+
+            av[i] = a;
+            bv[i] = filtered - (av[i] * sNew + ns * e);
+        }
+    }
+
+    ek->SetAVector(std::move(av));
+    ek->SetBVector(std::move(bv));
+
+    return ek;
+}
+
+EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldKey, const PrivateKey<DCRTPoly> newKey,
                                             const EvalKey<DCRTPoly> ek) const {
-  EvalKey<DCRTPoly> evalKey(
-      std::make_shared<EvalKeyImpl<DCRTPoly>>(newKey->GetCryptoContext()));
+    EvalKeyRelin<DCRTPoly> evalKey(std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newKey->GetCryptoContext()));
 
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersRLWE<DCRTPoly>>(
-          oldKey->GetCryptoParameters());
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(oldKey->GetCryptoParameters());
 
-  const std::shared_ptr<ParmType> elementParams = cryptoParams->GetElementParams();
-  const DCRTPoly &sOld = oldKey->GetPrivateElement();
-  const DCRTPoly &sNew = newKey->GetPrivateElement();
+    const DCRTPoly& sNew = newKey->GetPrivateElement();
+    auto elementParams   = sNew.GetParams();
+    DCRTPoly sOld        = oldKey->GetPrivateElement();
+    sOld.DropLastElements(oldKey->GetCryptoContext()->GetKeyGenLevel());
 
-  const auto ns = cryptoParams->GetNoiseScale();
-  const DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
+    const auto ns      = cryptoParams->GetNoiseScale();
+    const DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
+    DugType dug;
 
-  usint relinWindow = cryptoParams->GetRelinWindow();
+    usint digitSize = cryptoParams->GetDigitSize();
 
-  const std::vector<DCRTPoly> &a = ek->GetAVector();
-
-  std::vector<DCRTPoly> av;
-  std::vector<DCRTPoly> bv;
-
-  if (relinWindow > 0) {
-    for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-      std::vector<DCRTPoly::PolyType> sOldDecomposed =
-          sOld.GetElementAtIndex(i).PowersOfBase(relinWindow);
-
-      for (usint k = 0; k < sOldDecomposed.size(); k++) {
-        DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-        filtered.SetElementAtIndex(i, sOldDecomposed[k]);
-
-        DCRTPoly e(dgg, elementParams, Format::EVALUATION);
-
-        av.push_back(a[i * sOldDecomposed.size() + k]);
-        bv.push_back(filtered - a[i * sOldDecomposed.size() + k] * sNew + ns * e);
-      }
+    usint sizeSOld = sOld.GetNumOfElements();
+    usint nWindows = 0;
+    std::vector<usint> arrWindows;
+    if (digitSize > 0) {
+        // creates an array of digits up to a certain tower
+        for (usint i = 0; i < sizeSOld; i++) {
+            usint sOldMSB    = sOld.GetElementAtIndex(i).GetModulus().GetLengthForBase(2);
+            usint curWindows = sOldMSB / digitSize;
+            if (sOldMSB % digitSize > 0)
+                curWindows++;
+            arrWindows.push_back(nWindows);
+            nWindows += curWindows;
+        }
     }
-  } else {
-    for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-      DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-      filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
-
-      DCRTPoly e(dgg, elementParams, Format::EVALUATION);
-
-      av.push_back(a[i]);
-      bv.push_back(filtered - a[i] * sNew + ns * e);
+    else {
+        nWindows = sizeSOld;
     }
-  }
 
-  evalKey->SetAVector(std::move(av));
-  evalKey->SetBVector(std::move(bv));
+    std::vector<DCRTPoly> av(nWindows);
+    std::vector<DCRTPoly> bv(nWindows);
 
-  return evalKey;
+    if (digitSize > 0) {
+        for (usint i = 0; i < sizeSOld; i++) {
+            std::vector<DCRTPoly::PolyType> sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
+
+            for (usint k = 0; k < sOldDecomposed.size(); k++) {
+                DCRTPoly filtered(elementParams, Format::EVALUATION, true);
+                filtered.SetElementAtIndex(i, sOldDecomposed[k]);
+
+                if (ek == nullptr) {  // single-key HE
+                    // Generate a_i vectors
+                    DCRTPoly a(dug, elementParams, Format::EVALUATION);
+                    av[k + arrWindows[i]] = a;
+                }
+                else {  // threshold HE
+                    av[k + arrWindows[i]] = ek->GetAVector()[k + arrWindows[i]];
+                }
+
+                DCRTPoly e(dgg, elementParams, Format::EVALUATION);
+                bv[k + arrWindows[i]] = filtered - (av[k + arrWindows[i]] * sNew + ns * e);
+            }
+        }
+    }
+    else {
+        for (usint i = 0; i < sizeSOld; i++) {
+            DCRTPoly filtered(elementParams, Format::EVALUATION, true);
+            filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
+
+            if (ek == nullptr) {  // single-key HE
+                // Generate a_i vectors
+                DCRTPoly a(dug, elementParams, Format::EVALUATION);
+                av[i] = a;
+            }
+            else {  // threshold HE
+                av[i] = ek->GetAVector()[i];
+            }
+
+            DCRTPoly e(dgg, elementParams, Format::EVALUATION);
+            bv[i] = filtered - (av[i] * sNew + ns * e);
+        }
+    }
+
+    evalKey->SetAVector(std::move(av));
+    evalKey->SetBVector(std::move(bv));
+
+    return evalKey;
 }
 
-EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(
-    const PrivateKey<DCRTPoly> oldSk,
-    const PublicKey<DCRTPoly> newPk) const {
-  // Get crypto context of new public key.
-  auto cc = newPk->GetCryptoContext();
+EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGen(const PrivateKey<DCRTPoly> oldSk, const PublicKey<DCRTPoly> newPk) const {
+    EvalKeyRelin<DCRTPoly> ek = std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(newPk->GetCryptoContext());
 
-  EvalKeyRelin<DCRTPoly> ek =
-      std::make_shared<EvalKeyRelinImpl<DCRTPoly>>(cc);
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(newPk->GetCryptoParameters());
 
-  const auto cryptoParams =
-      std::static_pointer_cast<CryptoParametersRNS>(
-          newPk->GetCryptoParameters());
+    const auto ns                = cryptoParams->GetNoiseScale();
+    const DCRTPoly::DggType& dgg = cryptoParams->GetDiscreteGaussianGenerator();
+    DCRTPoly::DugType dug;
+    DCRTPoly::TugType tug;
 
-  const std::shared_ptr<DCRTPoly::Params> elementParams =
-      cryptoParams->GetElementParams();
+    const DCRTPoly& sOld = oldSk->GetPrivateElement();
 
-  const auto ns = cryptoParams->GetNoiseScale();
-  const DCRTPoly::DggType &dgg = cryptoParams->GetDiscreteGaussianGenerator();
-  DCRTPoly::DugType dug;
-  DCRTPoly::TugType tug;
+    std::vector<DCRTPoly> av;
+    std::vector<DCRTPoly> bv;
 
-  const DCRTPoly &sOld = oldSk->GetPrivateElement();
+    uint32_t digitSize = cryptoParams->GetDigitSize();
 
-  std::vector<DCRTPoly> av;
-  std::vector<DCRTPoly> bv;
+    const DCRTPoly& newp0 = newPk->GetPublicElements().at(0);
+    const DCRTPoly& newp1 = newPk->GetPublicElements().at(1);
+    auto elementParams    = newp0.GetParams();
 
-  uint32_t relinWindow = cryptoParams->GetRelinWindow();
+    if (digitSize > 0) {
+        for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
+            std::vector<DCRTPoly::PolyType> sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
 
-  const DCRTPoly &newp0 = newPk->GetPublicElements().at(0);
-  const DCRTPoly &newp1 = newPk->GetPublicElements().at(1);
+            for (size_t k = 0; k < sOldDecomposed.size(); k++) {
+                // Creates an element with all zeroes
+                DCRTPoly filtered(elementParams, Format::EVALUATION, true);
+                filtered.SetElementAtIndex(i, sOldDecomposed[k]);
 
-  if (relinWindow > 0) {
-    for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-      std::vector<DCRTPoly::PolyType> sOldDecomposed =
-          sOld.GetElementAtIndex(i).PowersOfBase(relinWindow);
+                DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ?
+                                 DCRTPoly(dgg, elementParams, Format::EVALUATION) :
+                                 DCRTPoly(tug, elementParams, Format::EVALUATION);
 
-      for (size_t k = 0; k < sOldDecomposed.size(); k++) {
-        // Creates an element with all zeroes
-        DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-        filtered.SetElementAtIndex(i, sOldDecomposed[k]);
+                DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
+                DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
 
-        DCRTPoly u = (cryptoParams->GetMode() == RLWE) ?
-            DCRTPoly(dgg, elementParams, Format::EVALUATION) :
-            DCRTPoly(tug, elementParams, Format::EVALUATION);
+                DCRTPoly c0 = newp0 * u + ns * e0 + filtered;
+                DCRTPoly c1 = newp1 * u + ns * e1;
 
-        DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-        DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
-
-        DCRTPoly c0 = newp0 * u + ns * e0 + filtered;
-        DCRTPoly c1 = newp1 * u + ns * e1;
-
-        av.push_back(std::move(c1));
-        bv.push_back(std::move(c0));
-      }
+                av.push_back(std::move(c1));
+                bv.push_back(std::move(c0));
+            }
+        }
     }
-   } else {
-     for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-      // Creates an element with all zeroes
-      DCRTPoly filtered(elementParams, Format::EVALUATION, true);
-      filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
+    else {
+        for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
+            // Creates an element with all zeroes
+            DCRTPoly filtered(elementParams, Format::EVALUATION, true);
+            filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
 
-      DCRTPoly u = (cryptoParams->GetMode() == RLWE) ?
-          DCRTPoly(dgg, elementParams, Format::EVALUATION) :
-          DCRTPoly(tug, elementParams, Format::EVALUATION);
+            DCRTPoly u = (cryptoParams->GetSecretKeyDist() == GAUSSIAN) ?
+                             DCRTPoly(dgg, elementParams, Format::EVALUATION) :
+                             DCRTPoly(tug, elementParams, Format::EVALUATION);
 
-      DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
-      DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
+            DCRTPoly e0(dgg, elementParams, Format::EVALUATION);
+            DCRTPoly e1(dgg, elementParams, Format::EVALUATION);
 
-      DCRTPoly c0 = newp0 * u + ns * e0 + filtered;
-      DCRTPoly c1 = newp1 * u + ns * e1;
+            DCRTPoly c0 = newp0 * u + ns * e0 + filtered;
+            DCRTPoly c1 = newp1 * u + ns * e1;
 
-      av.push_back(std::move(c1));
-      bv.push_back(std::move(c0));
+            av.push_back(std::move(c1));
+            bv.push_back(std::move(c0));
+        }
     }
-  }
 
-  ek->SetAVector(std::move(av));
-  ek->SetBVector(std::move(bv));
+    ek->SetAVector(std::move(av));
+    ek->SetBVector(std::move(bv));
 
-  return ek;
+    return ek;
 }
 
-void KeySwitchBV::KeySwitchInPlace(
-    Ciphertext<DCRTPoly> &ciphertext, const EvalKey<DCRTPoly> ek) const {
-  std::vector<DCRTPoly> &cv = ciphertext->GetElements();
+void KeySwitchBV::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalKey<DCRTPoly> ek) const {
+    std::vector<DCRTPoly>& cv = ciphertext->GetElements();
 
-  std::shared_ptr<std::vector<DCRTPoly>> ba = (cv.size() == 2) ?
-      KeySwitchCore(cv[1], ek) :
-      KeySwitchCore(cv[2], ek);
+    std::shared_ptr<std::vector<DCRTPoly>> ba = (cv.size() == 2) ? KeySwitchCore(cv[1], ek) : KeySwitchCore(cv[2], ek);
 
-  cv[0].SetFormat((*ba)[0].GetFormat());
-  cv[0] += (*ba)[0];
+    cv[0].SetFormat(Format::EVALUATION);
+    cv[0] += (*ba)[0];
 
-  cv[1].SetFormat((*ba)[1].GetFormat());
-  if (cv.size() > 2) {
-    cv[1] += (*ba)[1];
-  } else {
-    cv[1] = (*ba)[1];
-  }
-  cv.resize(2);
+    if (cv.size() > 2) {
+        cv[1].SetFormat(Format::EVALUATION);
+        cv[1] += (*ba)[1];
+    }
+    else {
+        cv[1] = (*ba)[1];
+    }
+
+    cv.resize(2);
 }
 
-std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::KeySwitchCore(
-    DCRTPoly a, const EvalKey<DCRTPoly> evalKey) const {
-  const auto cryptoParamsBase = evalKey->GetCryptoParameters();
-  std::shared_ptr<std::vector<DCRTPoly>> digits = EvalKeySwitchPrecomputeCore(a, cryptoParamsBase);
-  std::shared_ptr<std::vector<DCRTPoly>> result = EvalFastKeySwitchCore(digits, evalKey, a.GetParams());
-  return result;
+std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::KeySwitchCore(DCRTPoly a, const EvalKey<DCRTPoly> evalKey) const {
+    const auto cryptoParamsBase                   = evalKey->GetCryptoParameters();
+    std::shared_ptr<std::vector<DCRTPoly>> digits = EvalKeySwitchPrecomputeCore(a, cryptoParamsBase);
+    std::shared_ptr<std::vector<DCRTPoly>> result = EvalFastKeySwitchCore(digits, evalKey, a.GetParams());
+    return result;
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalKeySwitchPrecomputeCore(
     DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
-  const auto cryptoParams =
-        std::static_pointer_cast<CryptoParametersRNS>(
-            cryptoParamsBase);
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParamsBase);
 
-  uint32_t relinWindow = cryptoParams->GetRelinWindow();
+    uint32_t digitSize = cryptoParams->GetDigitSize();
 
-  auto decomposed = c.CRTDecompose(relinWindow);
-  return std::make_shared<std::vector<DCRTPoly>>(decomposed.begin(), decomposed.end());
+    auto decomposed = c.CRTDecompose(digitSize);
+    return std::make_shared<std::vector<DCRTPoly>>(decomposed.begin(), decomposed.end());
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalFastKeySwitchCore(
     const std::shared_ptr<std::vector<DCRTPoly>> digits, const EvalKey<DCRTPoly> evalKey,
     const std::shared_ptr<ParmType> paramsQl) const {
-  std::vector<DCRTPoly> bv(evalKey->GetBVector());
-  std::vector<DCRTPoly> av(evalKey->GetAVector());
+    std::vector<DCRTPoly> bv(evalKey->GetBVector());
+    std::vector<DCRTPoly> av(evalKey->GetAVector());
 
-  auto sizeQ = bv[0].GetParams()->GetParams().size();
-  auto sizeQl = paramsQl->GetParams().size();
-  size_t diffQl = sizeQ - sizeQl;
+    auto sizeQ    = bv[0].GetParams()->GetParams().size();
+    auto sizeQl   = paramsQl->GetParams().size();
+    size_t diffQl = sizeQ - sizeQl;
 
-  for (size_t k = 0; k < bv.size(); k++) {
-    av[k].DropLastElements(diffQl);
-    bv[k].DropLastElements(diffQl);
-  }
+    for (size_t k = 0; k < bv.size(); k++) {
+        av[k].DropLastElements(diffQl);
+        bv[k].DropLastElements(diffQl);
+    }
 
-  DCRTPoly ct1 = (*digits)[0] * av[0];
-  DCRTPoly ct0 = (*digits)[0] * bv[0];
+    DCRTPoly ct1 = (av[0] *= (*digits)[0]);
+    DCRTPoly ct0 = (bv[0] *= (*digits)[0]);
 
-  for (usint i = 1; i < (*digits).size(); ++i) {
-    ct0 += (*digits)[i] * bv[i];
-    ct1 += (*digits)[i] * av[i];
-  }
+    for (usint i = 1; i < (*digits).size(); ++i) {
+        ct0 += (bv[i] *= (*digits)[i]);
+        ct1 += (av[i] *= (*digits)[i]);
+    }
 
-  return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>{std::move(ct0), std::move(ct1)});
+    return std::make_shared<std::vector<DCRTPoly>>(std::initializer_list<DCRTPoly>{std::move(ct0), std::move(ct1)});
 }
 
 }  // namespace lbcrypto

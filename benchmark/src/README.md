@@ -1,6 +1,6 @@
 # Benchmarking
 
-Palisade uses the [Google microbenchmark support library](https://github.com/google/benchmark#running-benchmarks) to measure performance. Performance testing code can be found in `/benchmark/src`. After building, binaries are written to `/your_build_folder/bin/benchmark`. To build only tests and their dependencies, use the following command in the build folder:
+OpenFHE uses the [Google microbenchmark support library](https://github.com/google/benchmark#running-benchmarks) to measure performance. Performance testing code can be found in `/benchmark/src`. After building, binaries are written to `/your_build_folder/bin/benchmark`. To build only tests and their dependencies, use the following command in the build folder:
 
 ```
 make allbenchmark
@@ -38,7 +38,7 @@ export OMP_NUM_THREADS=1
 
 ## lib-benchmark
 
-[lib-benchmark](lib-benchmark.cpp) is the main PALISADE library benchmark that contains performance tests for standard operations in the following schemes: BFVrns, CKKS, BGVrns. It also contains several performance tests for NTT and INTT transformations.
+[lib-benchmark](lib-benchmark.cpp) is the main OpenFHE library benchmark that contains performance tests for standard operations in the following schemes: BFVrns, CKKS, BGVrns. It also contains several performance tests for NTT and INTT transformations.
 
 An example output after running `lib-benchmark` is as follows:
 
@@ -134,15 +134,13 @@ DCRT_intt/towers:8       84.9 us         84.9 us         8242
 ## other
 
 There are several other benchmarking tests:
-
-* [basic_test](basic_test.cpp) - trivial benchmarking
-* [binfhe-ap](binfhe-ap.cpp) - boolean functions performance tests for **FHEW** scheme with AP bootstrapping technique. Please see "Bootstrapping in FHEW-like Cryptosystems" for details on both bootstrapping techniques
-* [binfhe-ginx](binfhe-ginx.cpp) - boolean functions performance tests for **FHEW** scheme with GINX bootstrapping technique. Please see "Bootstrapping in FHEW-like Cryptosystems" for details on both bootstrapping techniques
-* [compare-bfvrns-vs-bfvrnsB](compare-bfvrns-vs-bfvrnsB.cpp) - performance comparison between **BFVrns** and **BFVrnsB** schemes for similar parameter sets
+* [bfv-mult-method-benchmark](bfv-mult-method-benchmark.cpp) - Compares the performance of **BFV** multiplication methods for EvalMultMany
+* [binfhe-ap](binfhe-ap.cpp) - boolean functions performance tests for **FHEW** scheme with **AP** bootstrapping technique. Please see "Bootstrapping in FHEW-like Cryptosystems" for details on both bootstrapping techniques
+* [binfhe-ginx](binfhe-ginx.cpp) - boolean functions performance tests for **FHEW** scheme with **GINX** bootstrapping technique. Please see "Bootstrapping in FHEW-like Cryptosystems" for details on both bootstrapping techniques
+* [compare-bfv-hps-leveled-vs-behz](compare-bfv-hps-leveled-vs-behz.cpp) - performance comparison between **HPSPOVERQLEVELED** and **BEHZ** **BFV** variants for similar parameter sets
 * [compare-bfvrns-vs-bgvrns](compare-bfvrns-vs-bgvrns.cpp) - performance comparison between **BFVrns** and **BGVrns** schemes for similar parameter sets
-* [Encoding](Encoding.cpp) - performance tests for different encoding techniques
 * [IntegerMath](IntegerMath.cpp) - performance tests for the big integer operations
 * [Lattice](Lattice.cpp) - performance tests for the Lattice operations.
 * [NbTheory](NbTheory.cpp) - performance tests of number theory functions
-* [Serialization](serialize-ckks.cpp) - performance tests of CKKS serialization
+* [Serialization](serialize-ckks.cpp) - performance tests of **CKKS** serialization
 * [VectorMath](VectorMath.cpp) - performance tests for the big vector operations

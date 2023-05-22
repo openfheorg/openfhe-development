@@ -39,6 +39,10 @@
 #include "encoding/encodingparams.h"
 #include "constants.h"
 #include "utils/exception.h"
+#include "scheme/scheme-utils.h"
+#include "scheme/scheme-id.h"
+
+#include <memory>
 
 namespace lbcrypto {
 
@@ -46,45 +50,74 @@ namespace lbcrypto {
 template <typename T>
 class CCParams;
 
-template<typename ContextGeneratorType, typename Element>
-typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const CCParams<ContextGeneratorType>& parameters) {
-#if NATIVEINT == 128
-    if (parameters.GetRescalingTechnique() == FLEXIBLEAUTO) {
-        PALISADE_THROW(config_error, "128-bit CKKS is not supported for the FLEXIBLEAUTO method.");
+template <typename ContextGeneratorType, typename Element>
+typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
+    const CCParams<ContextGeneratorType>& parameters) {
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+    if (parameters.GetScalingTechnique() == FLEXIBLEAUTO || parameters.GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+        OPENFHE_THROW(config_error, "128-bit CKKS is not supported for the FLEXIBLEAUTO or FLEXIBLEAUTOEXT methods.");
     }
 #endif
-    using ParmType = typename Element::Params;
-    using IntType = typename Element::Integer;
+    using ParmType                   = typename Element::Params;
+    using IntType                    = typename Element::Integer;
+    constexpr float assuranceMeasure = 36;
 
     auto ep = std::make_shared<ParmType>(0, IntType(0), IntType(0));
-    // In CKKS, the plaintext modulus is equal to the scaling factor.
-    EncodingParams encodingParams(
-        std::make_shared<EncodingParamsImpl>(parameters.GetScalingFactorBits(), parameters.GetBatchSize()));
 
+    usint scalingModSize    = parameters.GetScalingModSize();
+    usint firstModSize      = parameters.GetFirstModSize();
+    double floodingNoiseStd = 0;
+    if (parameters.GetDecryptionNoiseMode() == NOISE_FLOODING_DECRYPT &&
+        parameters.GetExecutionMode() == EXEC_EVALUATION) {
+        if (parameters.GetNoiseEstimate() == 0) {
+            OPENFHE_THROW(
+                config_error,
+                "Noise estimate must be set in the combination of NOISE_FLOODING_DECRYPT and EXEC_EVALUATION modes.");
+        }
+        double logstd =
+            parameters.GetStatisticalSecurity() / 2 + log2(sqrt(12 * parameters.GetNumAdversarialQueries()));
+        floodingNoiseStd = pow(2, logstd + parameters.GetNoiseEstimate());
+#if NATIVEINT == 128
+        scalingModSize = parameters.GetDesiredPrecision() + parameters.GetNoiseEstimate() + logstd +
+                         0.5 * log2(parameters.GetRingDim());
+        firstModSize = scalingModSize + 11;
+#else
+        scalingModSize = MAX_MODULUS_SIZE - 1;
+        firstModSize   = MAX_MODULUS_SIZE;
+        if (logstd + parameters.GetNoiseEstimate() > scalingModSize - 3) {
+            OPENFHE_THROW(config_error, "Precision of less than 3 bits is not supported. logstd " +
+                                            std::to_string(logstd) + " + noiseEstimate " +
+                                            std::to_string(parameters.GetNoiseEstimate()) + " must be 56 or less.");
+        }
+#endif
+    }
+    EncodingParams encodingParams(std::make_shared<EncodingParamsImpl>(scalingModSize, parameters.GetBatchSize()));
+
+    // clang-format off
     auto params = std::make_shared<typename ContextGeneratorType::CryptoParams>(
         ep,
         encodingParams,
         parameters.GetStandardDeviation(),
-        parameters.GetAssuranceMeasure(),
-        parameters.GetRootHermiteFactor(),
-        parameters.GetRelinWindow(),
-        parameters.GetMode(),
-        parameters.GetDepth(),
-        parameters.GetMaxDepth());
+        assuranceMeasure,
+        parameters.GetSecurityLevel(),
+        parameters.GetDigitSize(),
+        parameters.GetSecretKeyDist(),
+        parameters.GetMaxRelinSkDeg(),
+        parameters.GetKeySwitchTechnique(),
+        parameters.GetScalingTechnique(),
+        parameters.GetEncryptionTechnique(),
+        parameters.GetMultiplicationTechnique(),
+        parameters.GetPREMode(),
+        parameters.GetMultipartyMode(),
+        parameters.GetExecutionMode(),
+        parameters.GetDecryptionNoiseMode());
 
-    params->SetStdLevel(parameters.GetSecurityLevel()); // TODO (dsuponit): do we need this as we already have root hermit factor?
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
+    params->SetFloodingDistributionParameter(floodingNoiseStd);
 
-    uint32_t numLargeDigits = parameters.GetNumLargeDigits();
-    if (!numLargeDigits) {  // Choose one of the default values
-        if (parameters.GetMultiplicativeDepth() > 3)        // If more than 4 towers, use 3 digits
-            numLargeDigits = 3;
-        else if (parameters.GetMultiplicativeDepth() == 0)  // if there is only 1 tower, use one digit
-            numLargeDigits = 1;
-        else                                // If 2, 3 or 4 towers, use 2 digits (1 <= multiplicativeDepth <=3 )
-            numLargeDigits = 2;
-    }
+    uint32_t numLargeDigits =
+        ComputeNumLargeDigits(parameters.GetNumLargeDigits(), parameters.GetMultiplicativeDepth());
 
     auto scheme = std::make_shared<typename ContextGeneratorType::PublicKeyEncryptionScheme>();
     scheme->SetKeySwitchingTechnique(parameters.GetKeySwitchTechnique());
@@ -92,19 +125,15 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(const
         params,
         2 * parameters.GetRingDim(),
         parameters.GetMultiplicativeDepth() + 1,
-        parameters.GetScalingFactorBits(),
-        parameters.GetRelinWindow(),
-        parameters.GetMode(),
-        parameters.GetFirstModSize(),
-        numLargeDigits,
-        parameters.GetKeySwitchTechnique(),
-        parameters.GetRescalingTechnique());
+        scalingModSize,
+        firstModSize,
+        numLargeDigits);
+    // clang-format on
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);
-    cc->setSchemeId("CKKSRNS"); // TODO (dsuponit): do we need this? if we do then it should SCHEME::CKKSRNS_SCHEME from pke/include/scheme/scheme-id.h, not a string
+    cc->setSchemeId(SCHEME::CKKSRNS_SCHEME);
     return cc;
 }
 }  // namespace lbcrypto
 
-#endif // _GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_
-
+#endif  // _GEN_CRYPTOCONTEXT_CKKSRNS_INTERNAL_H_

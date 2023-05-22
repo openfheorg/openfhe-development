@@ -36,18 +36,13 @@
 #ifndef LBCRYPTO_CRYPTO_KEY_KEY_SER_H
 #define LBCRYPTO_CRYPTO_KEY_KEY_SER_H
 
-#include "palisade.h"
+#include "key/evalkeyrelin.h"
 #include "utils/serial.h"
-#include "key/key.h"
-
-extern template class lbcrypto::EvalKeyImpl<lbcrypto::DCRTPoly>;
-extern template class lbcrypto::EvalKeyRelinImpl<lbcrypto::DCRTPoly>;
 
 CEREAL_REGISTER_TYPE(lbcrypto::EvalKeyImpl<lbcrypto::DCRTPoly>);
 CEREAL_REGISTER_TYPE(lbcrypto::EvalKeyRelinImpl<lbcrypto::DCRTPoly>);
 
-CEREAL_REGISTER_POLYMORPHIC_RELATION(
-    lbcrypto::EvalKeyImpl<lbcrypto::DCRTPoly>,
-    lbcrypto::EvalKeyRelinImpl<lbcrypto::DCRTPoly>);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::EvalKeyImpl<lbcrypto::DCRTPoly>,
+                                     lbcrypto::EvalKeyRelinImpl<lbcrypto::DCRTPoly>);
 
 #endif

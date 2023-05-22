@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Represents and defines string-encoded plaintext objects in Palisade
+  Represents and defines string-encoded plaintext objects in OpenFHE
  */
 
 #ifndef SRC_CORE_LIB_ENCODING_STRINGENCODING_H_
@@ -44,89 +44,93 @@
 namespace lbcrypto {
 
 class StringEncoding : public PlaintextImpl {
-  std::string ptx;
-  // enum EncodingType { CHAR7bit } encoding = CHAR7bit;
+    std::string ptx;
+    // enum EncodingType { CHAR7bit } encoding = CHAR7bit;
 
- public:
-  // these three constructors are used inside of Decrypt
-  StringEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep)
-      : PlaintextImpl(vp, ep) {}
+public:
+    // these three constructors are used inside of Decrypt
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    StringEncoding(std::shared_ptr<T> vp, EncodingParams ep) : PlaintextImpl(vp, ep) {}
 
-  StringEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep)
-      : PlaintextImpl(vp, ep) {}
+    template <typename T, typename std::enable_if<std::is_same<T, Poly::Params>::value ||
+                                                      std::is_same<T, NativePoly::Params>::value ||
+                                                      std::is_same<T, DCRTPoly::Params>::value,
+                                                  bool>::type = true>
+    StringEncoding(std::shared_ptr<T> vp, EncodingParams ep, const std::string& str)
+        : PlaintextImpl(vp, ep), ptx(str) {}
 
-  StringEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep)
-      : PlaintextImpl(vp, ep) {}
+    // TODO provide wide-character version (for unicode); right now this class
+    // only supports strings of 7-bit ASCII characters
 
-  StringEncoding(std::shared_ptr<Poly::Params> vp, EncodingParams ep, std::string str)
-      : PlaintextImpl(vp, ep), ptx(str) {}
+    virtual ~StringEncoding() {}
 
-  StringEncoding(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep,
-                 std::string str)
-      : PlaintextImpl(vp, ep), ptx(str) {}
-
-  StringEncoding(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, std::string str)
-      : PlaintextImpl(vp, ep), ptx(str) {}
-
-  // TODO provide wide-character version (for unicode); right now this class
-  // only supports strings of 7-bit ASCII characters
-
-  virtual ~StringEncoding() {}
-
-  /**
+    /**
    * GetStringValue
    * @return the un-encoded string
    */
-  const std::string& GetStringValue() const { return ptx; }
+    const std::string& GetStringValue() const {
+        return ptx;
+    }
 
-  /**
+    /**
    * SetStringValue
    * @param val to initialize the Plaintext
    */
-  void SetStringValue(const std::string& value) { ptx = value; }
+    void SetStringValue(const std::string& value) {
+        ptx = value;
+    }
 
-  /**
+    /**
    * Encode the plaintext into the Poly
    * @return true on success
    */
-  bool Encode();
+    bool Encode();
 
-  /**
+    /**
    * Decode the Poly into the string
    * @return true on success
    */
-  bool Decode();
+    bool Decode();
 
-  /**
+    /**
    * GetEncodingType
-   * @return this is a String encoding
+   * @return STRING_ENCODING
    */
-  PlaintextEncodings GetEncodingType() const { return String; }
+    PlaintextEncodings GetEncodingType() const {
+        return STRING_ENCODING;
+    }
 
-  /**
+    /**
    * Get length of the plaintext
    *
    * @return number of elements in this plaintext
    */
-  size_t GetLength() const { return ptx.size(); }
+    size_t GetLength() const {
+        return ptx.size();
+    }
 
-  /**
+    /**
    * Method to compare two plaintext to test for equivalence
    * Testing that the plaintexts are of the same type done in operator==
    *
    * @param other - the other plaintext to compare to.
    * @return whether the two plaintext are equivalent.
    */
-  bool CompareTo(const PlaintextImpl& other) const {
-    const auto& oth = static_cast<const StringEncoding&>(other);
-    return oth.ptx == this->ptx;
-  }
+    bool CompareTo(const PlaintextImpl& other) const {
+        const auto& oth = static_cast<const StringEncoding&>(other);
+        return oth.ptx == this->ptx;
+    }
 
-  /**
+    /**
    * PrintValue - used by operator<< for this object
    * @param out
    */
-  void PrintValue(std::ostream& out) const { out << ptx; }
+    void PrintValue(std::ostream& out) const {
+        out << ptx;
+    }
 };
 
 } /* namespace lbcrypto */

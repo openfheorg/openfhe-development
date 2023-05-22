@@ -32,24 +32,17 @@
 #ifndef LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
 #define LBCRYPTO_CRYPTO_CRYPTOOBJECT_H
 
+#include "cryptocontext-fwd.h"
+#include "encoding/encodingparams.h"
+#include "schemebase/base-cryptoparameters.h"
+#include "cryptocontextfactory.h"
+
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "encoding/encodingparams.h"
-#include "schemebase/base-cryptoparameters.h"
-
 namespace lbcrypto {
-
-template <typename Element>
-class CryptoContextImpl;
-
-template <typename Element>
-using CryptoContext = std::shared_ptr<CryptoContextImpl<Element>>;
-
-template <typename Element>
-class CryptoContextFactory;
 
 /**
  * @brief CryptoObject
@@ -58,87 +51,85 @@ class CryptoContextFactory;
  */
 template <typename Element>
 class CryptoObject {
- protected:
-  CryptoContext<Element> context;  // crypto context this object belongs to
-                                   // tag used to find the evaluation key needed
-                                   // for SHE/FHE operations
-  std::string keyTag;
+protected:
+    CryptoContext<Element> context;  // crypto context belongs to the tag used to find the evaluation key needed
+                                     // for SHE/FHE operations
+    std::string keyTag;
 
- public:
-  explicit CryptoObject(CryptoContext<Element> cc = nullptr,
-                        const std::string& tag = "")
-      : context(cc), keyTag(tag) {}
+public:
+    explicit CryptoObject(CryptoContext<Element> cc = nullptr, const std::string& tag = "")
+        : context(cc), keyTag(tag) {}
 
-  CryptoObject(const CryptoObject& rhs) {
-    context = rhs.context;
-    keyTag = rhs.keyTag;
-  }
-
-  CryptoObject(const CryptoObject&& rhs) {
-    context = std::move(rhs.context);
-    keyTag = std::move(rhs.keyTag);
-  }
-
-  virtual ~CryptoObject() {}
-
-  const CryptoObject& operator=(const CryptoObject& rhs) {
-    this->context = rhs.context;
-    this->keyTag = rhs.keyTag;
-    return *this;
-  }
-
-  const CryptoObject& operator=(const CryptoObject&& rhs) {
-    this->context = std::move(rhs.context);
-    this->keyTag = std::move(rhs.keyTag);
-    return *this;
-  }
-
-  bool operator==(const CryptoObject& rhs) const {
-    return context.get() == rhs.context.get() && keyTag == rhs.keyTag;
-  }
-
-  CryptoContext<Element> GetCryptoContext() const { return context; }
-
-  const std::shared_ptr<CryptoParametersBase<Element>> GetCryptoParameters() const {
-    return context->GetCryptoParameters();
-  }
-
-  const EncodingParams GetEncodingParameters() const {
-    return context->GetCryptoParameters()->GetEncodingParams();
-  }
-
-  const std::string GetKeyTag() const { return keyTag; }
-
-  void SetKeyTag(const std::string& tag) { keyTag = tag; }
-
-  template <class Archive>
-  void save(Archive& ar, std::uint32_t const version) const {
-    ar(::cereal::make_nvp("cc", context));
-    ar(::cereal::make_nvp("kt", keyTag));
-  }
-
-  template <class Archive>
-  void load(Archive& ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
+    CryptoObject(const CryptoObject& rhs) {
+        context = rhs.context;
+        keyTag  = rhs.keyTag;
     }
-    ar(::cereal::make_nvp("cc", context));
-    ar(::cereal::make_nvp("kt", keyTag));
 
-    context = CryptoContextFactory<Element>::GetContext(
-        context->GetCryptoParameters(),
-        context->GetScheme(),
-        context->getSchemeId()
-        );
-  }
+    CryptoObject(const CryptoObject&& rhs) {
+        context = std::move(rhs.context);
+        keyTag  = std::move(rhs.keyTag);
+    }
 
+    virtual ~CryptoObject() {}
 
-  std::string SerializedObjectName() const { return "CryptoObject"; }
-  static uint32_t SerializedVersion() { return 1; }
+    const CryptoObject& operator=(const CryptoObject& rhs) {
+        this->context = rhs.context;
+        this->keyTag  = rhs.keyTag;
+        return *this;
+    }
+
+    const CryptoObject& operator=(const CryptoObject&& rhs) {
+        this->context = std::move(rhs.context);
+        this->keyTag  = std::move(rhs.keyTag);
+        return *this;
+    }
+
+    bool operator==(const CryptoObject& rhs) const {
+        return context.get() == rhs.context.get() && keyTag == rhs.keyTag;
+    }
+
+    CryptoContext<Element> GetCryptoContext() const {
+        return context;
+    }
+
+    const std::shared_ptr<CryptoParametersBase<Element>> GetCryptoParameters() const;
+
+    const EncodingParams GetEncodingParameters() const;
+
+    const std::string GetKeyTag() const {
+        return keyTag;
+    }
+
+    void SetKeyTag(const std::string& tag) {
+        keyTag = tag;
+    }
+
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(::cereal::make_nvp("cc", context));
+        ar(::cereal::make_nvp("kt", keyTag));
+    }
+
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            OPENFHE_THROW(deserialize_error, "serialized object version " + std::to_string(version) +
+                                                 " is from a later version of the library");
+        }
+        ar(::cereal::make_nvp("cc", context));
+        ar(::cereal::make_nvp("kt", keyTag));
+
+        context = CryptoContextFactory<Element>::GetFullContextByDeserializedContext(context);
+    }
+
+    std::string SerializedObjectName() const {
+        return "CryptoObject";
+    }
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 };
 
-}
+}  // namespace lbcrypto
 
 #endif

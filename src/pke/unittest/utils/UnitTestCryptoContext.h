@@ -32,13 +32,12 @@
 #ifndef __UNITTESTCRYPTOCONTEXT_H__
 #define __UNITTESTCRYPTOCONTEXT_H__
 
-
 #include "UnitTestCCParams.h"
 #include "cryptocontext.h"
+#include "schemebase/base-scheme.h"
 
 using Element = lbcrypto::DCRTPoly;
 
 lbcrypto::CryptoContext<Element> UnitTestGenerateContext(const UnitTestCCParams& testData);
 
-#endif // __UNITTESTCRYPTOCONTEXT_H__
-
+#endif  // __UNITTESTCRYPTOCONTEXT_H__

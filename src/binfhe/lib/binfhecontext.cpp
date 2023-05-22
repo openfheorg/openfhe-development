@@ -41,29 +41,31 @@ namespace lbcrypto {
 
 void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
                                           double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,
-                                          BINFHEMETHOD method) {
-    auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
-    m_params       = std::make_shared<RingGSWCryptoParams>(lweparams, baseG, baseR, method);
+                                          BINFHE_METHOD method) {
+    auto lweparams  = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, true);
+    m_params        = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    m_binfhescheme  = std::make_shared<BinFHEScheme>(method);
 }
 
-void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint32_t logQ, int64_t N,
-                                          BINFHEMETHOD method, bool timeOptimization) {
+void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uint32_t logQ, int64_t N,
+                                          BINFHE_METHOD method, bool timeOptimization) {
     if (GINX != method) {
-        std::string errMsg("ERROR: GINX is the only supported method");
-        PALISADE_THROW(not_implemented_error, errMsg);
+        std::string errMsg("ERROR: CGGI is the only supported method");
+        OPENFHE_THROW(not_implemented_error, errMsg);
     }
     if (set != STD128 && set != TOY) {
-        std::string errMsg("ERROR: STD128 and TOY are the onlysupported sets");
-        PALISADE_THROW(not_implemented_error, errMsg);
+        std::string errMsg("ERROR: STD128 and TOY are the only supported sets");
+        OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
     if (logQ > 29) {
         std::string errMsg("ERROR: logQ > 29 is not supported");
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(not_implemented_error, errMsg);
     }
     if (logQ < 11) {
         std::string errMsg("ERROR: logQ < 11 is not supported");
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(not_implemented_error, errMsg);
     }
     auto logQprime = 54;
     uint32_t baseG = 0;
@@ -96,16 +98,20 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, bool arbFunc, uint
     uint64_t qKS = 1 << 30;
     qKS <<= 5;
 
-    uint32_t n     = (set == TOY) ? 32 : 1305;
-    auto lweparams = std::make_shared<LWECryptoParams>(n, ringDim, q, Q.ConvertToInt(), qKS, 3.19, 32);
-    m_params = std::make_shared<RingGSWCryptoParams>(lweparams, baseG, 23, method, ((logQ != 11) && timeOptimization));
+    uint32_t n      = (set == TOY) ? 32 : 1305;
+    auto lweparams  = std::make_shared<LWECryptoParams>(n, ringDim, q, Q, qKS, 3.19, 32);
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, q, baseG, 23, method, 3.19,
+                                                            ((logQ != 11) && timeOptimization));
+
+    m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 
 #if defined(BINFHE_DEBUG)
     std::cout << ringDim << " " << Q < < < < " " << n << " " << q << " " << baseG << std::endl;
 #endif
 }
 
-void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD method) {
+void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method) {
     struct BinFHEContextParams {
         // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
         usint numberBits;
@@ -126,7 +132,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
     const double STD_DEV = 3.19;
     // clang-format off
-    const std::unordered_map<BINFHEPARAMSET, BinFHEContextParams> paramsMap({
+    const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap({
         //           numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase|baseRK
         { TOY,             { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23 } },
         { MEDIUM,          { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32 } },
@@ -134,16 +140,16 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
         { STD128_APOPT,    { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32 } },
         { STD128,          { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32 } },
         { STD128_OPT,      { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32 } },
-        { STD192,          { 54,     4096,        1024, 1024, 1 << 19, STD_DEV,     28,    1 << 27,  32 } },
-        { STD192_OPT,      { 54,     4096,         805, 1024, 1 << 15, STD_DEV,     32,    1 << 27,  32 } },
-        { STD256,          { 50,     4096,        1024, 2048, 1 << 14, STD_DEV, 1 << 7,    1 << 25,  46 } },
-        { STD256_OPT,      { 50,     4096,         990, 2048, 1 << 14, STD_DEV, 1 << 7,    1 << 25,  46 } },
+        { STD192,          { 37,     4096,        1024, 1024, 1 << 19, STD_DEV,     28,    1 << 13,  32 } },
+        { STD192_OPT,      { 37,     4096,         805, 1024, 1 << 15, STD_DEV,     32,    1 << 13,  32 } },
+        { STD256,          { 29,     4096,        1024, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46 } },
+        { STD256_OPT,      { 29,     4096,         990, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46 } },
         { STD128Q,         { 50,     4096,        1024, 1024, 1 << 25, STD_DEV,     32,    1 << 25,  32 } },
         { STD128Q_OPT,     { 50,     4096,         585, 1024, 1 << 15, STD_DEV,     32,    1 << 25,  32 } },
-        { STD192Q,         { 50,     4096,        1024, 1024, 1 << 17, STD_DEV,     64,    1 << 25,  32 } },
-        { STD192Q_OPT,     { 50,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 25,  32 } },
-        { STD256Q,         { 54,     4096,        2048, 1024, 1 << 16, STD_DEV,     16,    1 << 27,  32 } },
-        { STD256Q_OPT,     { 54,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 << 27,  32 } },
+        { STD192Q,         { 35,     4096,        1024, 1024, 1 << 17, STD_DEV,     64,    1 << 12,  32 } },
+        { STD192Q_OPT,     { 35,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 12,  32 } },
+        { STD256Q,         { 27,     4096,        2048, 2048, 1 << 16, STD_DEV,     16,    1 <<  7,  46 } },
+        { STD256Q_OPT,     { 27,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 <<  7,  32 } },
         { SIGNED_MOD_TEST, { 28,     2048,         512, 1024,   PRIME, STD_DEV,     25,    1 <<  7,  23 } },
     });
     // clang-format on
@@ -151,7 +157,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
     auto search = paramsMap.find(set);
     if (paramsMap.end() == search) {
         std::string errMsg("ERROR: Unknown parameter set [" + std::to_string(set) + "] for FHEW.");
-        PALISADE_THROW(config_error, errMsg);
+        OPENFHE_THROW(config_error, errMsg);
     }
 
     BinFHEContextParams params = search->second;
@@ -165,147 +171,120 @@ void BinFHEContext::GenerateBinFHEContext(BINFHEPARAMSET set, BINFHEMETHOD metho
                                                            params.stdDev, params.baseKS) :
                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
                                                            params.stdDev, params.baseKS);
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK,
+                                                            method, params.stdDev);
 
-    m_params = std::make_shared<RingGSWCryptoParams>(lweparams, params.gadgetBase, params.baseRK, method);
+    m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
 
-LWEPrivateKey BinFHEContext::KeyGen(NativeInteger DiffQ) const {
-    if (DiffQ > m_params->GetLWEParams()->Getq()) {
-        auto q = m_params->GetLWEParams()->Getq();
-        this->SetQ(DiffQ);
-        auto ret = m_LWEscheme->KeyGen(m_params->GetLWEParams());
-        this->SetQ(q);
-        return ret;
-    }
-    return m_LWEscheme->KeyGen(m_params->GetLWEParams());
+LWEPrivateKey BinFHEContext::KeyGen() const {
+    auto& LWEParams = m_params->GetLWEParams();
+    return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
 }
 
 LWEPrivateKey BinFHEContext::KeyGenN() const {
-    return m_LWEscheme->KeyGenN(m_params->GetLWEParams());
+    auto& LWEParams = m_params->GetLWEParams();
+    return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
 }
 
-LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHEOUTPUT output,
-                                     LWEPlaintextModulus p, NativeInteger DiffQ) const {
-    auto q = m_params->GetLWEParams()->Getq();
-    if (DiffQ > q) {
-        this->SetQ(DiffQ);
-    }
-    LWECiphertext ct;
+LWECiphertext BinFHEContext::Encrypt(ConstLWEPrivateKey sk, const LWEPlaintext& m, BINFHE_OUTPUT output,
+                                     LWEPlaintextModulus p, NativeInteger mod) const {
+    auto& LWEParams = m_params->GetLWEParams();
+    auto q          = LWEParams->Getq();
+    if (mod == 0)
+        mod = q;
+    LWECiphertext ct = m_LWEscheme->Encrypt(LWEParams, sk, m, p, mod);
 
-    ct = m_LWEscheme->Encrypt(m_params->GetLWEParams(), sk, m, p);
-    if ((output == FRESH) || (p != 4)) {
-        // No bootstrapping needed
-    }
-    else {
-        ct = m_RingGSWscheme->Bootstrap(m_params, m_BTKey, ct, m_LWEscheme);
+    if ((output != FRESH) && (p == 4)) {
+        ct = m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
     }
 
-    if (DiffQ > q) {
-        this->SetQ(q);
-    }
     return ct;
 }
 
-void BinFHEContext::Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct, LWEPlaintext* result, LWEPlaintextModulus p,
-                            NativeInteger DiffQ) const {
-    auto q = m_params->GetLWEParams()->Getq();
-    if (DiffQ != 0) {
-        this->SetQ(DiffQ);
-        LWEPrivateKeyImpl skp(sk->GetElement());
-        std::shared_ptr<LWEPrivateKeyImpl> skpptr = std::make_shared<LWEPrivateKeyImpl>(skp);
-        skpptr->switchModulus(DiffQ);
-        m_LWEscheme->Decrypt(m_params->GetLWEParams(), skpptr, ct, result, p);
-        this->SetQ(q);
-    }
-    else {
-        m_LWEscheme->Decrypt(m_params->GetLWEParams(), sk, ct, result, p);
-    }
+void BinFHEContext::Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct, LWEPlaintext* result,
+                            LWEPlaintextModulus p) const {
+    auto& LWEParams = m_params->GetLWEParams();
+    m_LWEscheme->Decrypt(LWEParams, sk, ct, result, p);
 }
 
-std::shared_ptr<LWESwitchingKey> BinFHEContext::KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPrivateKey skN) const {
+LWESwitchingKey BinFHEContext::KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPrivateKey skN) const {
     return m_LWEscheme->KeySwitchGen(m_params->GetLWEParams(), sk, skN);
 }
 
-void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk, NativeInteger DiffQ) {
-    auto q = m_params->GetLWEParams()->Getq();
-    if (DiffQ > q) {
-        this->SetQ(DiffQ);
-    }
+void BinFHEContext::BTKeyGen(ConstLWEPrivateKey sk) {
+    auto& RGSWParams = m_params->GetRingGSWParams();
 
-    auto temp = m_params->GetBaseG();
+    auto temp = RGSWParams->GetBaseG();
 
     if (m_timeOptimization) {
-        auto gpowermap = m_params->GetGPowerMap();
+        auto gpowermap = RGSWParams->GetGPowerMap();
         for (std::map<uint32_t, std::vector<NativeInteger>>::iterator it = gpowermap.begin(); it != gpowermap.end();
              ++it) {
-            m_params->Change_BaseG(it->first);
-            m_BTKey_map[it->first] = m_RingGSWscheme->KeyGen(m_params, m_LWEscheme, sk);
+            RGSWParams->Change_BaseG(it->first);
+            m_BTKey_map[it->first] = m_binfhescheme->KeyGen(m_params, sk);
         }
-        m_params->Change_BaseG(temp);
+        RGSWParams->Change_BaseG(temp);
     }
 
     if (m_BTKey_map.size() != 0) {
         m_BTKey = m_BTKey_map[temp];
     }
     else {
-        m_BTKey           = m_RingGSWscheme->KeyGen(m_params, m_LWEscheme, sk);
+        m_BTKey           = m_binfhescheme->KeyGen(m_params, sk);
         m_BTKey_map[temp] = m_BTKey;
-    }
-
-    if (DiffQ > q) {
-        this->SetQ(q);
     }
 }
 
 LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const {
-    return m_RingGSWscheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2, m_LWEscheme);
+    return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2);
 }
 
-LWECiphertext BinFHEContext::Bootstrap(ConstLWECiphertext ct1) const {
-    return m_RingGSWscheme->Bootstrap(m_params, m_BTKey, ct1, m_LWEscheme);
+LWECiphertext BinFHEContext::Bootstrap(ConstLWECiphertext ct) const {
+    return m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
 }
 
 LWECiphertext BinFHEContext::EvalNOT(ConstLWECiphertext ct) const {
-    return m_RingGSWscheme->EvalNOT(m_params, ct);
+    return m_binfhescheme->EvalNOT(m_params, ct);
 }
 
 LWECiphertext BinFHEContext::EvalConstant(bool value) const {
     return m_LWEscheme->NoiselessEmbedding(m_params->GetLWEParams(), value);
 }
 
-LWECiphertext BinFHEContext::EvalFunc(ConstLWECiphertext ct1, const std::vector<NativeInteger>& LUT) const {
+LWECiphertext BinFHEContext::EvalFunc(ConstLWECiphertext ct, const std::vector<NativeInteger>& LUT) const {
     NativeInteger beta = GetBeta();
-    return m_RingGSWscheme->EvalFunc(m_params, m_BTKey, ct1, m_LWEscheme, LUT, beta, 0);
+    return m_binfhescheme->EvalFunc(m_params, m_BTKey, ct, LUT, beta);
 }
 
-LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext ct1, const uint32_t roundbits) const {
-    auto q = m_params->GetLWEParams()->Getq().ConvertToInt();
-    if (roundbits != 0) {
-        NativeInteger newp = this->GetMaxPlaintextSpace();
-        SetQ(q / newp * (1 << roundbits));
-    }
-    NativeInteger beta = GetBeta();
-    auto res           = m_RingGSWscheme->EvalFloor(m_params, m_BTKey, ct1, m_LWEscheme, beta, q);
-    SetQ(q);
-    return res;
+LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext ct, uint32_t roundbits) const {
+    //    auto q = m_params->GetLWEParams()->Getq().ConvertToInt();
+    //    if (roundbits != 0) {
+    //        NativeInteger newp = this->GetMaxPlaintextSpace();
+    //        SetQ(q / newp * (1 << roundbits));
+    //    }
+    //    SetQ(q);
+    //    return res;
+    return m_binfhescheme->EvalFloor(m_params, m_BTKey, ct, GetBeta(), roundbits);
 }
 
-LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext ct1, const NativeInteger bigger_q) {
-    auto params        = std::make_shared<RingGSWCryptoParams>(*m_params);
+LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext ct) {
+    auto params        = std::make_shared<BinFHECryptoParams>(*m_params);
     NativeInteger beta = GetBeta();
-    return m_RingGSWscheme->EvalSign(params, m_BTKey_map, ct1, m_LWEscheme, beta, bigger_q);
+    return m_binfhescheme->EvalSign(params, m_BTKey_map, ct, beta);
 }
 
-std::vector<LWECiphertext> BinFHEContext::EvalDecomp(ConstLWECiphertext ct1, const NativeInteger bigger_q) {
+std::vector<LWECiphertext> BinFHEContext::EvalDecomp(ConstLWECiphertext ct) {
     NativeInteger beta = GetBeta();
-    return m_RingGSWscheme->EvalDecomp(m_params, m_BTKey_map, ct1, m_LWEscheme, beta, bigger_q);
+    return m_binfhescheme->EvalDecomp(m_params, m_BTKey_map, ct, beta);
 }
 
 std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (*f)(NativeInteger m, NativeInteger p),
                                                                  NativeInteger p) {
     if (ceil(log2(p.ConvertToInt())) != floor(log2(p.ConvertToInt()))) {
         std::string errMsg("ERROR: Only support plaintext space to be power-of-two.");
-        PALISADE_THROW(not_implemented_error, errMsg);
+        OPENFHE_THROW(not_implemented_error, errMsg);
     }
 
     NativeInteger q        = GetParams()->GetLWEParams()->Getq();
@@ -313,11 +292,11 @@ std::vector<NativeInteger> BinFHEContext::GenerateLUTviaFunction(NativeInteger (
     NativeInteger outerval = interval;
     usint vecSize          = q.ConvertToInt();
     std::vector<NativeInteger> vec(vecSize);
-    for (usint i = 0; i < vecSize; ++i) {
+    for (size_t i = 0; i < vecSize; ++i) {
         auto temp = f(NativeInteger(i) / interval, p);
         if (temp >= p) {
             std::string errMsg("ERROR: input function should output in Z_{p_output}.");
-            PALISADE_THROW(not_implemented_error, errMsg);
+            OPENFHE_THROW(not_implemented_error, errMsg);
         }
         vec[i] = temp * outerval;
     }

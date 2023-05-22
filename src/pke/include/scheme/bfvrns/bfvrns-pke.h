@@ -34,6 +34,8 @@
 
 #include "schemerns/rns-pke.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -41,16 +43,18 @@
 namespace lbcrypto {
 
 class PKEBFVRNS : public PKERNS {
-  using ParmType = typename DCRTPoly::Params;
-  using IntType = typename DCRTPoly::Integer;
-  using DugType = typename DCRTPoly::DugType;
-  using DggType = typename DCRTPoly::DggType;
-  using TugType = typename DCRTPoly::TugType;
+    using ParmType = typename DCRTPoly::Params;
+    using IntType  = typename DCRTPoly::Integer;
+    using DugType  = typename DCRTPoly::DugType;
+    using DggType  = typename DCRTPoly::DggType;
+    using TugType  = typename DCRTPoly::TugType;
 
 public:
-  virtual ~PKEBFVRNS() {}
+    virtual ~PKEBFVRNS() {}
 
-  /**
+    KeyPair<DCRTPoly> KeyGen(CryptoContext<DCRTPoly> cc, bool makeSparse) override;
+
+    /**
    * Method for encrypting plaintext using LBC
    *
    * @param&publicKey public key used for encryption.
@@ -60,10 +64,9 @@ public:
    * cryptocontext if false
    * @param *ciphertext ciphertext which results from encryption.
    */
-  virtual Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext,
-      const PublicKey<DCRTPoly> publicKey) const override;
+    Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext, const PublicKey<DCRTPoly> publicKey) const override;
 
-  /**
+    /**
    * Method for encrypting plaintex using LBC
    *
    * @param privateKey private key used for encryption.
@@ -73,10 +76,9 @@ public:
    * cryptocontext if false
    * @param *ciphertext ciphertext which results from encryption.
    */
-  virtual Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext,
-      const PrivateKey<DCRTPoly> privateKey) const override;
+    Ciphertext<DCRTPoly> Encrypt(DCRTPoly plaintext, const PrivateKey<DCRTPoly> privateKey) const override;
 
-  /**
+    /**
    * Method for decrypting plaintext using LBC
    *
    * @param &privateKey private key used for decryption.
@@ -84,12 +86,10 @@ public:
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-  virtual DecryptResult Decrypt(
-      ConstCiphertext<DCRTPoly> ciphertext,
-      const PrivateKey<DCRTPoly> privateKey,
-      NativePoly *plaintext) const override;
+    DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                          NativePoly* plaintext) const override;
 
-  /**
+    /**
    * Method for decrypting plaintext using LBC
    *
    * @param &privateKey private key used for decryption.
@@ -97,32 +97,32 @@ public:
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-  virtual DecryptResult Decrypt(
-      ConstCiphertext<DCRTPoly> ciphertext,
-      const PrivateKey<DCRTPoly> privateKey,
-      Poly *plaintext) const override {
-    std::string errMsg =
-        "PKEBFVRNS: Decryption to Poly from DCRTPoly is not supported as it "
-        "may "
-        "lead to incorrect results.";
-    PALISADE_THROW(not_available_error, errMsg);
-  }
+    DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                          Poly* plaintext) const override {
+        std::string errMsg =
+            "PKEBFVRNS: Decryption to Poly from DCRTPoly is not supported as it "
+            "may "
+            "lead to incorrect results.";
+        OPENFHE_THROW(not_available_error, errMsg);
+    }
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<PKERNS>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<PKERNS>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<PKERNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<PKERNS>(this));
+    }
 
-  std::string SerializedObjectName() const { return "PKEBFVRNS"; }
+    std::string SerializedObjectName() const {
+        return "PKEBFVRNS";
+    }
 };
 }  // namespace lbcrypto
 

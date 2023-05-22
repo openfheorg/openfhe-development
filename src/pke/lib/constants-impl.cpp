@@ -30,124 +30,226 @@
 //==================================================================================
 
 #include "constants.h"
+
+#include <string>
 #include <ostream>
 
-std::ostream &operator<<(std::ostream &s, PKESchemeFeature f) {
-  switch (f) {
-    case PKE:
-      s << "PKE";
-      break;
-    case KEYSWITCH:
-      s << "KEYSWITCH";
-      break;
-    case PRE:
-      s << "PRE";
-      break;
-    case LEVELEDSHE:
-      s << "LEVELEDSHE";
-      break;
-    case ADVANCEDSHE:
-      s << "ADVANCEDSHE";
-      break;
-    case MULTIPARTY:
-      s << "MULTIPARTY";
-      break;
-    case FHE:
-      s << "FHE";
-      break;
-    default:
-      s << "UKNOWN";
-      break;
-  }
-  return s;
+std::ostream& operator<<(std::ostream& s, PKESchemeFeature f) {
+    switch (f) {
+        case PKE:
+            s << "PKE";
+            break;
+        case KEYSWITCH:
+            s << "KEYSWITCH";
+            break;
+        case PRE:
+            s << "PRE";
+            break;
+        case LEVELEDSHE:
+            s << "LEVELEDSHE";
+            break;
+        case ADVANCEDSHE:
+            s << "ADVANCEDSHE";
+            break;
+        case MULTIPARTY:
+            s << "MULTIPARTY";
+            break;
+        case FHE:
+            s << "FHE";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
 }
 
-std::ostream &operator<<(std::ostream &s, MODE m) {
-  switch (m) {
-    case RLWE:
-      s << "RLWE";
-      break;
-    case OPTIMIZED:
-      s << "OPTIMIZED";
-      break;
-    case SPARSE:
-      s << "SPARSE";
-      break;
-    default:
-      s << "UKNOWN";
-      break;
-  }
-  return s;
+std::ostream& operator<<(std::ostream& s, SecretKeyDist m) {
+    switch (m) {
+        case GAUSSIAN:
+            s << "GAUSSIAN";
+            break;
+        case UNIFORM_TERNARY:
+            s << "UNIFORM_TERNARY";
+            break;
+        case SPARSE_TERNARY:
+            s << "SPARSE_TERNARY";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
 }
 
-std::ostream &operator<<(std::ostream &s, RescalingTechnique t) {
-  switch (t) {
-    case FIXEDMANUAL:
-      s << "FIXEDMANUAL";
-      break;
-    case FIXEDAUTO:
-      s << "FIXEDAUTO";
-      break;
-    case FLEXIBLEAUTO:
-      s << "FLEXIBLEAUTO";
-      break;
-    case NORESCALE:
-      s << "NORESCALE";
-      break;
-    case INVALID_RS_TECHNIQUE:
-      s << "INVALID_RS_TECHNIQUE";
-      break;
-    default:
-      s << "UKNOWN";
-      break;
-  }
-  return s;
+std::ostream& operator<<(std::ostream& s, ScalingTechnique t) {
+    switch (t) {
+        case FIXEDMANUAL:
+            s << "FIXEDMANUAL";
+            break;
+        case FIXEDAUTO:
+            s << "FIXEDAUTO";
+            break;
+        case FLEXIBLEAUTO:
+            s << "FLEXIBLEAUTO";
+            break;
+        case FLEXIBLEAUTOEXT:
+            s << "FLEXIBLEAUTOEXT";
+            break;
+        case NORESCALE:
+            s << "NORESCALE";
+            break;
+        case INVALID_RS_TECHNIQUE:
+            s << "INVALID_RS_TECHNIQUE";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
 }
 
-std::ostream &operator<<(std::ostream &s, KeySwitchTechnique t) {
-  switch (t) {
-    case BV:
-      s << "BV";
-      break;
-    case HYBRID:
-      s << "HYBRID";
-      break;
-    default:
-      s << "UKNOWN";
-      break;
-  }
-  return s;
+std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
+    switch (p) {
+        case NOT_SET:
+            s << "NOT_SET";
+            break;
+        case INDCPA:
+            s << "INDCPA";
+            break;
+        case FIXED_NOISE_HRA:
+            s << "FIXED_NOISE_HRA";
+            break;
+        case NOISE_FLOODING_HRA:
+            s << "NOISE_FLOODING_HRA";
+            break;
+        case DIVIDE_AND_ROUND_HRA:
+            s << "DIVIDE_AND_ROUND_HRA";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
 }
 
-std::ostream &operator<<(std::ostream &s, EncryptionTechnique t) {
-  switch (t) {
-    case STANDARD:
-      s << "STANDARD";
-      break;
-    case POVERQ:
-      s << "POVERQ";
-      break;
-    default:
-      s << "UKNOWN";
-      break;
-  }
-  return s;
+std::ostream& operator<<(std::ostream& s, MultipartyMode t) {
+    switch (t) {
+        case INVALID_MULTIPARTY_MODE:
+            s << "INVALID_MULTIPARTY_MODE";
+            break;
+        case FIXED_NOISE_MULTIPARTY:
+            s << "FIXED_NOISE_MULTIPARTY";
+            break;
+        case NOISE_FLOODING_MULTIPARTY:
+            s << "NOISE_FLOODING_MULTIPARTY";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
 }
 
-std::ostream &operator<<(std::ostream &s, MultiplicationTechnique t) {
-  switch (t) {
-    case BEHZ:
-      s << "BEHZ";
-      break;
-    case HPSPOVERQ:
-      s << "HPSPOVERQ";
-      break;
-    case HPSPOVERQLEVELED:
-      s << "HPSPOVERQLEVELED";
-      break;
-    default:
-      s << "UKNOWN";
-      break;
-  }
-  return s;
+std::ostream& operator<<(std::ostream& s, ExecutionMode t) {
+    switch (t) {
+        case EXEC_EVALUATION:
+            s << "EXEC_EVALUATION";
+            break;
+        case EXEC_NOISE_ESTIMATION:
+            s << "EXEC_NOISE_ESTIMATION";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t) {
+    switch (t) {
+        case FIXED_NOISE_DECRYPT:
+            s << "FIXED_NOISE_DECRYPT";
+            break;
+        case NOISE_FLOODING_DECRYPT:
+            s << "NOISE_FLOODING_DECRYPT";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t) {
+    switch (t) {
+        case BV:
+            s << "BV";
+            break;
+        case HYBRID:
+            s << "HYBRID";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, EncryptionTechnique t) {
+    switch (t) {
+        case STANDARD:
+            s << "STANDARD";
+            break;
+        case EXTENDED:
+            s << "EXTENDED";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t) {
+    switch (t) {
+        case BEHZ:
+            s << "BEHZ";
+            break;
+        case HPS:
+            s << "HPS";
+            break;
+        case HPSPOVERQ:
+            s << "HPSPOVERQ";
+            break;
+        case HPSPOVERQLEVELED:
+            s << "HPSPOVERQLEVELED";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, PlaintextEncodings p) {
+    switch (p) {
+        case COEF_PACKED_ENCODING:
+            s << "COEF_PACKED_ENCODING";
+            break;
+        case PACKED_ENCODING:
+            s << "PACKED_ENCODING";
+            break;
+        case STRING_ENCODING:
+            s << "STRING_ENCODING";
+            break;
+        case CKKS_PACKED_ENCODING:
+            s << "CKKS_PACKED_ENCODING";
+            break;
+        case INVALID_ENCODING:
+        default:
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
 }

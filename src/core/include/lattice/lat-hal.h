@@ -36,13 +36,11 @@
 #ifndef __LAT_HAL_H__
 #define __LAT_HAL_H__
 
-
 #if defined(WITH_INTEL_HEXL)
-#include "lattice/hal/hexl/lat-backend-hexl.h"
-#else // default
-#include "lattice/hal/default/lat-backend-default.h"
+    #include "lattice/hal/hexl/lat-backend-hexl.h"
+#else  // default
+    #include "lattice/hal/default/lat-backend-default.h"
 #endif
-
 
 namespace lbcrypto {
 
@@ -66,7 +64,7 @@ using ILNativeParams = ILParamsImpl<NativeInteger>;
 
 // the default for the backend...
 using ILParams = ILParamsImpl<BigInteger>;
-using Poly = PolyImpl<BigVector>;
+using Poly     = PolyImpl<BigVector>;
 
 using M2DCRTParams = ILDCRTParams<M2Integer>;
 using M4DCRTParams = ILDCRTParams<M4Integer>;
@@ -76,4 +74,4 @@ using M6DCRTParams = ILDCRTParams<M6Integer>;
 
 }  // namespace lbcrypto
 
-#endif // __LAT_HAL_H__
+#endif  // __LAT_HAL_H__

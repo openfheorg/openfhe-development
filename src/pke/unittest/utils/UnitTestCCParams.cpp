@@ -33,30 +33,32 @@
 #include <sstream>
 #include <ostream>
 
-
 std::string UnitTestCCParams::toString() const {
     std::stringstream ss;
     ss << "schemeId [" << schemeId << "], "
-        << "ringDimension [" << ringDimension << "], "
-        << "multiplicativeDepth [" << multiplicativeDepth << "], "
-        << "scalingFactorBits [" << scalingFactorBits << "], "
-        << "relinWindow [" << relinWindow << "], "
-        << "batchSize [" << batchSize << "], "
-        << "mode [" << mode << "], "
-        << "depth [" << depth << "], "
-        << "maxDepth [" << maxDepth << "], "
-        << "firstModSize [" << firstModSize << "], "
-        << "securityLevel [" << securityLevel << "], "
-        << "ksTech [" << ksTech << "], "
-        << "rsTech [" << rsTech << "], "
-        << "numLargeDigits [" << numLargeDigits << "], "
-        << "plaintextModulus [" << plaintextModulus << "], "
-        << "standardDeviation [" << standardDeviation << "], "
-        << "evalAddCount [" << evalAddCount << "], "
-        << "evalMultCount [" << evalMultCount << "], "
-        << "keySwitchCount [" << keySwitchCount << "], "
-        << "multiplicationTechnique [" << multiplicationTechnique << "], "
-        ;
+       << "ringDimension [" << ringDimension << "], "
+       << "multiplicativeDepth [" << multiplicativeDepth << "], "
+       << "scalingModSize [" << scalingModSize << "], "
+       << "digitSize [" << digitSize << "], "
+       << "batchSize [" << batchSize << "], "
+       << "secretKeyDist [" << secretKeyDist << "], "
+       << "maxRelinSkDeg [" << maxRelinSkDeg << "], "
+       << "firstModSize [" << firstModSize << "], "
+       << "securityLevel [" << securityLevel << "], "
+       << "ksTech [" << ksTech << "], "
+       << "scalTech [" << scalTech << "], "
+       << "numLargeDigits [" << numLargeDigits << "], "
+       << "plaintextModulus [" << plaintextModulus << "], "
+       << "standardDeviation [" << standardDeviation << "], "
+       << "evalAddCount [" << evalAddCount << "], "
+       << "keySwitchCount [" << keySwitchCount << "], "
+       << "multiplicationTechnique [" << multiplicationTechnique << "], "
+       << "encryptionTechnique [" << encryptionTechnique << "], "
+       << "PREMode [" << PREMode << "], "
+       << "multipartyMode [" << multipartyMode << "], "
+       << "decryptionNoiseMode [" << decryptionNoiseMode << "], "
+       << "executionMode [" << executionMode << "], "
+       << "noiseEstimate [" << noiseEstimate << "], ";
     return ss.str();
 }
 //===========================================================================================================

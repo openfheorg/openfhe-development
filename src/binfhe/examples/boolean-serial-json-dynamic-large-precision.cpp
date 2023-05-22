@@ -49,17 +49,17 @@ int main() {
     cc1.GenerateBinFHEContext(TOY, false, logQ, 0, GINX, true);
     uint32_t Q = 1 << logQ;
 
-    int q      = 4096;                                               // q
-    int factor = 1 << int(logQ - log2(q));                           // Q/q
+    int q      = 4096;                                                // q
+    int factor = 1 << int(logQ - log2(q));                            // Q/q
     int p      = cc1.GetMaxPlaintextSpace().ConvertToInt() * factor;  // Obtain the maximum plaintext space
 
     std::cout << "Generating keys." << std::endl;
 
     // Generating the secret key
-    auto sk1 = cc1.KeyGen(Q);
+    auto sk1 = cc1.KeyGen();
 
     // Generate the bootstrapping keys
-    cc1.BTKeyGen(sk1, Q);
+    cc1.BTKeyGen(sk1);
 
     std::cout << "Done generating all keys." << std::endl;
 
@@ -91,16 +91,17 @@ int main() {
     std::cout << "The key switching key has been serialized." << std::endl;
 
     auto BTKeyMap = cc1.GetBTKeyMap();
-    for(auto it = BTKeyMap->begin(); it != BTKeyMap->end(); it++)
-    {
-        auto index = it->first;
+    for (auto it = BTKeyMap->begin(); it != BTKeyMap->end(); it++) {
+        auto index  = it->first;
         auto thekey = it->second;
-        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "refreshKey.txt", thekey.BSkey, SerType::JSON)) {
+        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "refreshKey.txt", thekey.BSkey,
+                                     SerType::JSON)) {
             std::cerr << "Error serializing the refreshing key" << std::endl;
             return 1;
         }
 
-        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "ksKey.txt", thekey.KSkey, SerType::JSON)) {
+        if (!Serial::SerializeToFile(DATAFOLDER + "/" + std::to_string(index) + "ksKey.txt", thekey.KSkey,
+                                     SerType::JSON)) {
             std::cerr << "Error serializing the switching key" << std::endl;
             return 1;
         }
@@ -137,14 +138,14 @@ int main() {
 
     // deserializing the refreshing and switching keys (forbootstrapping)
 
-    std::shared_ptr<RingGSWBTKey> refreshKey;
+    RingGSWACCKey refreshKey;
     if (Serial::DeserializeFromFile(DATAFOLDER + "/refreshKey.txt", refreshKey, SerType::JSON) == false) {
         std::cerr << "Could not deserialize the refresh key" << std::endl;
         return 1;
     }
     std::cout << "The refresh key has been deserialized." << std::endl;
 
-    std::shared_ptr<LWESwitchingKey> ksKey;
+    LWESwitchingKey ksKey;
     if (Serial::DeserializeFromFile(DATAFOLDER + "/ksKey.txt", ksKey, SerType::JSON) == false) {
         std::cerr << "Could not deserialize the switching key" << std::endl;
         return 1;
@@ -153,20 +154,21 @@ int main() {
 
     uint32_t baseGlist[3] = {1 << 14, 1 << 18, 1 << 27};
 
-    for(size_t i = 0; i < 3; i++)
-    {
-        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "refreshKey.txt", refreshKey, SerType::JSON) == false) {
+    for (size_t i = 0; i < 3; i++) {
+        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "refreshKey.txt", refreshKey,
+                                        SerType::JSON) == false) {
             std::cerr << "Could not deserialize the refresh key" << std::endl;
             return 1;
         }
 
-        std::shared_ptr<LWESwitchingKey> ksKey;
-        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "ksKey.txt", ksKey, SerType::JSON) == false) {
+        LWESwitchingKey ksKey;
+        if (Serial::DeserializeFromFile(DATAFOLDER + "/" + std::to_string(baseGlist[i]) + "ksKey.txt", ksKey,
+                                        SerType::JSON) == false) {
             std::cerr << "Could not deserialize the switching key" << std::endl;
             return 1;
         }
         std::cout << "The BT map element for baseG = " << baseGlist[i] << " has been deserialized." << std::endl;
-        
+
         // Loading the keys in the cryptocontext
         cc.BTKeyMapLoadSingleElement(baseGlist[i], {refreshKey, ksKey});
     }
@@ -199,10 +201,10 @@ int main() {
         auto ct1 = cc.Encrypt(sk, p / 2 + i - 3, FRESH, p, Q);
 
         // Get the MSB
-        ct1 = cc.EvalSign(ct1, Q);
+        ct1 = cc.EvalSign(ct1);
 
         LWEPlaintext result;
-        cc.Decrypt(sk, ct1, &result, 2, q);
+        cc.Decrypt(sk, ct1, &result, 2);
         std::cout << "Input: " << i << ". Expected sign: " << (i >= 3)
                   << ". "
                      "Evaluated Sign: "

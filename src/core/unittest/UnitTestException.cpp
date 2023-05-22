@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  This code tests the transform feature of the PALISADE lattice encryption library.
+  This code tests the transform feature of the OpenFHE lattice encryption library.
  */
 
 #include "gtest/gtest.h"
@@ -42,39 +42,44 @@
 
 using namespace lbcrypto;
 
-static void regthrow(const std::string& msg) { PALISADE_THROW(config_error, msg); }
+static void regthrow(const std::string& msg) {
+    OPENFHE_THROW(config_error, msg);
+}
 
 static void parthrow(const std::string& msg) {
-  // now try throw inside omp
-  ThreadException e;
+    // now try throw inside omp
+    ThreadException e;
 #pragma omp parallel for
-  for (int i = 0; i < 10; i++) {
-    try {
-      if (i == 7) regthrow("inside throw");
-    } catch (...) {
-      e.CaptureException();
+    for (int i = 0; i < 10; i++) {
+        try {
+            if (i == 7)
+                regthrow("inside throw");
+        }
+        catch (...) {
+            e.CaptureException();
+        }
     }
-  }
-  e.Rethrow();
+    e.Rethrow();
 }
 
 static void runthrow(const std::string& msg) {
-  // now try throw inside omp
-  ThreadException e;
+    // now try throw inside omp
+    ThreadException e;
 #pragma omp parallel for
-  for (int i = 0; i < 10; i++) {
-    e.Run([=] {
-      if (i == 7) regthrow("inside throw");
-    });
-  }
-  e.Rethrow();
+    for (int i = 0; i < 10; i++) {
+        e.Run([=] {
+            if (i == 7)
+                regthrow("inside throw");
+        });
+    }
+    e.Rethrow();
 }
 
 // instantiate various test for common_set_format()
-TEST(UTException, palisade_exception) {
-  ASSERT_THROW(regthrow("outside throw"), config_error);
+TEST(UTException, openfhe_exception) {
+    ASSERT_THROW(regthrow("outside throw"), config_error);
 
-  ASSERT_THROW(parthrow("inside throw"), config_error);
+    ASSERT_THROW(parthrow("inside throw"), config_error);
 
-  ASSERT_THROW(runthrow("using lambda inside throw"), config_error);
+    ASSERT_THROW(runthrow("using lambda inside throw"), config_error);
 }

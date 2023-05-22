@@ -34,6 +34,9 @@
 
 #include "schemerns/rns-parametergeneration.h"
 
+#include <string>
+#include <memory>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -42,32 +45,25 @@ namespace lbcrypto {
 
 class ParameterGenerationBFVRNS : public ParameterGenerationRNS {
 public:
-  virtual ~ParameterGenerationBFVRNS() {}
+    virtual ~ParameterGenerationBFVRNS() {}
 
-  virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams,
-                 int32_t evalAddCount = 0,
-                 int32_t evalMultCount = 0,
-                 int32_t keySwitchCount = 0,
-                 size_t dcrBits = 60,
-                 uint32_t n = 0,
-                 KeySwitchTechnique ksTech = BV,
-                 RescalingTechnique rsTech = FIXEDMANUAL,
-                 EncryptionTechnique encTech = STANDARD,
-                 MultiplicationTechnique multTech = HPS) const override;
+    bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+                         uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrBits, uint32_t n,
+                         uint32_t numPartQ) const override;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {}
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {}
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {}
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {}
 
-  std::string SerializedObjectName() const {
-    return "ParameterGenerationBFVRNS";
-  }
+    std::string SerializedObjectName() const {
+        return "ParameterGenerationBFVRNS";
+    }
 };
 
 }  // namespace lbcrypto

@@ -31,16 +31,14 @@
 
 /*
   Description:
-  This code benchmarks functions of the src/lib/lattoce directory  of the
-  PALISADE lattice encryption library.
+  This code benchmarks polynomial operations for various math backends.
  */
 
 #define _USE_MATH_DEFINES
-#include "benchmark/benchmark.h"
-
-#include "palisade.h"
 #include "vechelper.h"
 #include "lattice/elemparamfactory.h"
+
+#include "benchmark/benchmark.h"
 
 #include <iostream>
 #include <vector>
@@ -60,8 +58,7 @@ static E makeElement(std::shared_ptr<lbcrypto::ILParamsImpl<typename E::Integer>
 
 template <typename E>
 static E makeElement(std::shared_ptr<lbcrypto::ILDCRTParams<typename E::Integer>> p) {
-    std::shared_ptr<ILParamsImpl<typename E::Integer>> params(
-        new ILParamsImpl<typename E::Integer>(p->GetCyclotomicOrder(), p->GetModulus(), 1));
+    auto params = std::make_shared<ILParamsImpl<typename E::Integer>>(p->GetCyclotomicOrder(), p->GetModulus(), 1);
     typename E::Vector vec = makeVector<typename E::Vector>(params->GetRingDimension(), params->GetModulus());
 
     typename E::PolyLargeType bigE(params);

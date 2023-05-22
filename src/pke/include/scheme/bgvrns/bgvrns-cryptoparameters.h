@@ -34,6 +34,9 @@
 
 #include "schemerns/rns-cryptoparameters.h"
 
+#include <string>
+#include <memory>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -41,80 +44,74 @@
 namespace lbcrypto {
 
 class CryptoParametersBGVRNS : public CryptoParametersRNS {
-  using ParmType = typename DCRTPoly::Params;
+    using ParmType = typename DCRTPoly::Params;
 
 public:
+    CryptoParametersBGVRNS() : CryptoParametersRNS() {}
 
-  CryptoParametersBGVRNS()
-  : CryptoParametersRNS() {}
+    CryptoParametersBGVRNS(const CryptoParametersBGVRNS& rhs) : CryptoParametersRNS(rhs) {}
 
-  CryptoParametersBGVRNS(const CryptoParametersBGVRNS &rhs)
-      : CryptoParametersRNS(rhs) {}
+    CryptoParametersBGVRNS(std::shared_ptr<ParmType> params, const PlaintextModulus& plaintextModulus,
+                           float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
+                           usint digitSize, SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2,
+                           KeySwitchTechnique ksTech = BV, ScalingTechnique scalTech = FIXEDMANUAL,
+                           EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
+                           MultipartyMode multipartyMode = FIXED_NOISE_MULTIPARTY)
+        : CryptoParametersRNS(params, plaintextModulus, distributionParameter, assuranceMeasure, securityLevel,
+                              digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech,
+                              multipartyMode) {}
 
-  CryptoParametersBGVRNS(std::shared_ptr<ParmType> params,
-                       const PlaintextModulus &plaintextModulus,
-                       float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint relinWindow, MODE mode,
-                       int depth = 1, int maxDepth = 2,
-                       KeySwitchTechnique ksTech = BV,
-                       RescalingTechnique rsTech = FIXEDMANUAL,
-                       EncryptionTechnique encTech = STANDARD,
-                       MultiplicationTechnique multTech = HPS)
-      : CryptoParametersRNS(params, plaintextModulus, distributionParameter,
-          assuranceMeasure, securityLevel, relinWindow, mode, depth, maxDepth,
-          ksTech, rsTech, encTech, multTech) {}
+    CryptoParametersBGVRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
+                           float assuranceMeasure, SecurityLevel securityLevel, usint digitSize,
+                           SecretKeyDist secretKeyDist, int maxRelinSkDeg = 2, KeySwitchTechnique ksTech = BV,
+                           ScalingTechnique scalTech = FIXEDMANUAL, EncryptionTechnique encTech = STANDARD,
+                           MultiplicationTechnique multTech = HPS, ProxyReEncryptionMode PREMode = NOT_SET,
+                           MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
+                           ExecutionMode executionMode             = EXEC_EVALUATION,
+                           DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
+                           PlaintextModulus noiseScale = 1, uint32_t statisticalSecurity = 30,
+                           uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
+        : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
+                              secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
+                              multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
+                              numAdversarialQueries, thresholdNumOfParties) {}
 
-  CryptoParametersBGVRNS(std::shared_ptr<ParmType> params,
-                       EncodingParams encodingParams,
-                       float distributionParameter, float assuranceMeasure,
-                       float securityLevel, usint relinWindow, MODE mode,
-                       int depth = 1, int maxDepth = 2,
-                       KeySwitchTechnique ksTech = BV,
-                       RescalingTechnique rsTech = FIXEDMANUAL,
-                       EncryptionTechnique encTech = STANDARD,
-                       MultiplicationTechnique multTech = HPS)
-      : CryptoParametersRNS(
-            params, encodingParams, distributionParameter, assuranceMeasure,
-            securityLevel, relinWindow, mode, depth, maxDepth,
-            ksTech, rsTech, encTech, multTech) {}
+    virtual ~CryptoParametersBGVRNS() {}
 
-  virtual ~CryptoParametersBGVRNS() {}
+    void PrecomputeCRTTables(KeySwitchTechnique ksTech, ScalingTechnique scalTech, EncryptionTechnique encTech,
+                             MultiplicationTechnique multTech, uint32_t numPartQ, uint32_t auxBits,
+                             uint32_t extraBits) override;
 
-  virtual void PrecomputeCRTTables(
-      KeySwitchTechnique ksTech = BV,
-      RescalingTechnique rsTech = FIXEDMANUAL,
-      EncryptionTechnique encTech = STANDARD,
-      MultiplicationTechnique multTech = HPS,
-      uint32_t numPartQ = 0,
-      uint32_t auxBits = 0,
-      uint32_t extraBits = 0) override;
+    uint64_t FindAuxPrimeStep() const override;
 
-  virtual uint64_t FindAuxPrimeStep() const override;
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
-
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(cereal::base_class<CryptoParametersRNS>(this));
-  }
-
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    if (version > SerializedVersion()) {
-      PALISADE_THROW(deserialize_error,
-                     "serialized object version " + std::to_string(version) +
-                         " is from a later version of the library");
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(cereal::base_class<CryptoParametersRNS>(this));
     }
-    ar(cereal::base_class<CryptoParametersRNS>(this));
 
-    PrecomputeCRTTables(m_ksTechnique, m_rsTechnique, m_encTechnique, m_multTechnique,
-                        m_numPartQ, m_auxBits, m_extraBits);
-  }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        if (version > SerializedVersion()) {
+            std::string errMsg("serialized object version " + std::to_string(version) +
+                               " is from a later version of the library");
+            OPENFHE_THROW(deserialize_error, errMsg);
+        }
+        ar(cereal::base_class<CryptoParametersRNS>(this));
 
-  std::string SerializedObjectName() const override { return "SchemeParametersBGVRNS"; }
-  static uint32_t SerializedVersion() { return 1; }
+        PrecomputeCRTTables(m_ksTechnique, m_scalTechnique, m_encTechnique, m_multTechnique, m_numPartQ, m_auxBits,
+                            m_extraBits);
+    }
+
+    std::string SerializedObjectName() const override {
+        return "CryptoParametersBGVRNS";
+    }
+    static uint32_t SerializedVersion() {
+        return 1;
+    }
 };
 
 }  // namespace lbcrypto

@@ -36,13 +36,8 @@
 #ifndef LBCRYPTO_CRYPTO_CKKSRNS_SER_H
 #define LBCRYPTO_CRYPTO_CKKSRNS_SER_H
 
-#include "palisade.h"
+#include "scheme/ckksrns/ckksrns-scheme.h"
 #include "utils/serial.h"
-
-namespace lbcrypto {
-    class CryptoParametersCKKSRNS;
-    class SchemeCKKSRNS;
-}
 
 CEREAL_REGISTER_TYPE(lbcrypto::CryptoParametersCKKSRNS);
 CEREAL_REGISTER_TYPE(lbcrypto::SchemeCKKSRNS);

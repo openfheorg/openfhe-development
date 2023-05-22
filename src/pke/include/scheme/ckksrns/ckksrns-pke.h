@@ -34,6 +34,8 @@
 
 #include "schemerns/rns-pke.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -41,31 +43,54 @@
 namespace lbcrypto {
 
 class PKECKKSRNS : public PKERNS {
-  using ParmType = typename DCRTPoly::Params;
-  using IntType = typename DCRTPoly::Integer;
-  using DugType = typename DCRTPoly::DugType;
-  using DggType = typename DCRTPoly::DggType;
-  using TugType = typename DCRTPoly::TugType;
+    using ParmType = typename DCRTPoly::Params;
+    using IntType  = typename DCRTPoly::Integer;
+    using DugType  = typename DCRTPoly::DugType;
+    using DggType  = typename DCRTPoly::DggType;
+    using TugType  = typename DCRTPoly::TugType;
 
 public:
+    virtual ~PKECKKSRNS() {}
 
-  virtual ~PKECKKSRNS() {}
+    /**
+   * Method for decrypting plaintext with noise flooding
+   *
+   * @param &privateKey private key used for decryption.
+   * @param &ciphertext ciphertext id decrypted.
+   * @param *plaintext the plaintext output.
+   * @return the decoding result.
+   */
+    DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                          NativePoly* plaintext) const override;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /**
+   * Method for decrypting plaintext with noise flooding
+   *
+   * @param &privateKey private key used for decryption.
+   * @param &ciphertext ciphertext id decrypted.
+   * @param *plaintext the plaintext output.
+   * @return the decoding result.
+   */
+    DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                          Poly* plaintext) const override;
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<PKERNS>(this));
-  }
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<PKERNS>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<PKERNS>(this));
+    }
 
-  std::string SerializedObjectName() const { return "PKECKKSRNS"; }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<PKERNS>(this));
+    }
+
+    std::string SerializedObjectName() const {
+        return "PKECKKSRNS";
+    }
 };
 
 }  // namespace lbcrypto

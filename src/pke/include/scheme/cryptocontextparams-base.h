@@ -38,105 +38,105 @@
 
 // Had to include cryptocontext.h as the includes below give a compiler error.
 // Those headers probably depend on some order/sequence.
-//TODO (dsuponit): fix the problem with header described above 
-//#include "lattice/stdlatticeparms.h" // SecurityLevel
-//#include "pubkeylp.h" // KeySwitchTechnique
+// TODO (dsuponit): fix the problem with header described above
 #include "cryptocontext.h"
-#include "scheme/scheme-id.h" // SCHEME
+#include "scheme/scheme-id.h"  // SCHEME
 #include "utils/inttypes.h"
 #include "constants.h"
 
 #include <iosfwd>
 
-
 namespace lbcrypto {
 
 //====================================================================================================================
-/*
-TODO (dsuponit): Do we need to keep these pairs cyclOrder / ringDimention and numPrimes / multDepth in Params?
-    We should remove one variable from each pair.Otherwise we will complicate the code by comparing these parameters and
-    making a decision for the user who sets both of them at the same time.it is going to be very ambiguousand will
-    lead us to confusions and bugs.Either way, we must stay with just ONE set of these parameters.It doesn�t really matter
-    what 2 of them are chosen as cyclOrder = 2 * ringDimention and numPrimes = multDepth + 1.
-    */
 class Params {
     // NOTE: if any data member (below) is added/removed then update
     // cryptocontextparams-case.cpp and cryptocontextparams-defaults.h
+
+    // Scheme ID
     SCHEME scheme;
-    // Used in BGV/BFV type schemes
-    // Has impact on noise growth, thus has impact on parameger generation
+
+    // PlaintextModulus ptModulus is used in BGV/BFV type schemes and impacts noise growth
     PlaintextModulus ptModulus;
 
-    // Used in BV type Key Switching only (KeySwitchTechnique = BV)
-    // Has impact on noise growth, thus has impact on parameger generation
-    usint relinWindow;
+    // digitSize is used in BV Key Switching only (KeySwitchTechnique = BV) and impacts noise growth
+    usint digitSize;
 
-    // Used for Gaussian error generation
-    // Has impact on parameger generation
+    // standardDeviation is used for Gaussian error generation
     float standardDeviation;
 
-    // Related to Security Level
-    // Currently used in BFV parameter generation
-    float rootHermiteFactor;
+    // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
+    SecretKeyDist secretKeyDist;
 
-    // Related to gaussian error parameter
-    // Currently used in BFV parameter generation
-    float assuranceMeasure;
-
-    // RLWE means Gaussian secret key distribution
-    // OPTIMIZED means Ternary secret key distribution
-    // SPARSE means sparse secret key distribution
-    // both enum type and values should be renamed?
-    MODE mode;
-
-    // multiplicative depth of the scheme
-    int depth;
-
-    // Max possible multiplicative depth of the scheme
-    int maxDepth;
+    // Max relinearization degree of secret key polynomial (used for lazy relinearization)
+    usint maxRelinSkDeg;
 
     // key switching technique: BV or HYBRID currently
     // For BV we do not have extra modulus, so the security depends on ciphertext modulus Q.
     // For HYBRID we do have extra modulus P, so the security depends on modulus P*Q
-    // For BV we need relinWindow - digit size in digit decomposition
+    // For BV we need digitSize - digit size in digit decomposition
     // For HYBRID we need numLargeDigits - number of digits in digit decomposition
-    // it is good to have alternative to numLargeDigits - numPrimesInDigit
+    // it is good to have alternative to numLargeDigits (possibly numPrimesInDigit?)
     KeySwitchTechnique ksTech;
 
-    // rescaling technique used in CKKS/BGV
-    RescalingTechnique rsTech;
+    // rescaling/modulus switching technique used in CKKS/BGV: FLEXIBLEAUTOEXT, FIXEDMANUL, FLEXIBLEAUTO, etc.
+    // see https://eprint.iacr.org/2022/915 for details
+    ScalingTechnique scalTech;
 
-    // cyclotomic order. For power of two case
-    // cyclotomic order = 2 * ring dimension
-    usint cyclOrder;
-
-    // number of primes in ciphertext modulus of the scheme
-    // The ciphertext modulus should be seen as:
-    // Q = q_0 * q_1 * ... * q_n * q'
-    // where q_0 is first prime, and it's number of bits is firstModSize
-    // other q_i have sanme number of bits and is equal to scalingFactorBits
-    // the prime q' is currently not exist, but it will be used in CKKS and BGV schemes as extraBits
-    usint numPrimes;
-
-    // number of primes in ciphertext modulus of the scheme
-    usint scaleExp;
-
-    // max batch size of messages to be packed in encoding
+    // max batch size of messages to be packed in encoding (number of slots)
     usint batchSize;
 
-    // see numPrimes
-    usint firstModSize;
+    // PRE security mode
+    ProxyReEncryptionMode PREMode;
 
-    // see KeySwitchTechnique
+    // Multiparty security mode in BFV/BGV
+    // NOISE_FLOODING_MULTIPARTY is more secure than FIXED_NOISE_MULTIPARTY.
+    MultipartyMode multipartyMode;
+
+    // Execution mode in CKKS
+    // In EXEC_NOISE_ESTIMATION mode, we estimate the noise we need to add to the actual computation to guarantee good security.
+    // In EXEC_EVALUATION mode, we input our noise estimate and perform the desired secure encrypted computation.
+    ExecutionMode executionMode;
+
+    // Decryption noise mode in CKKS
+    // NOISE_FLOODING_DECRYPT is more secure than FIXED_NOISE_DECRYPT, but it requires executing all computations twice.
+    DecryptionNoiseMode decryptionNoiseMode;
+
+    // Noise estimate in CKKS for NOISE_FLOODING_DECRYPT mode.
+    // This estimate is obtained from running the computation in EXEC_NOISE_ESTIMATION mode.
+    double noiseEstimate;
+
+    // Desired precision for 128-bit CKKS. We use this value in NOISE_FLOODING_DECRYPT mode to determine the scaling factor.
+    double desiredPrecision;
+
+    // Statistical security of CKKS in NOISE_FLOODING_DECRYPT mode. This is the bound on the probability of success
+    // that any adversary can have. Specifically, they a probability of success of at most 2^(-statisticalSecurity).
+    double statisticalSecurity;
+
+    // This is the number of adversarial queries a user is expecting for their application, which we use to ensure
+    // security of CKKS in NOISE_FLOODING_DECRYPT mode.
+    double numAdversarialQueries;
+
+    // This is the number of parties in a threshold application, which is used for bound on the joint secret key
+    usint thresholdNumOfParties;
+    // firstModSize and scalingModSize are used to calculate ciphertext modulus. The ciphertext modulus should be seen as:
+    // Q = q_0 * q_1 * ... * q_n * q'
+    // where q_0 is first prime, and it's number of bits is firstModSize
+    // other q_i have same number of bits and is equal to scalingModSize
+    // the prime q' is not explicitly given,
+    // but it is used internally in CKKS and BGV schemes (in *EXT scaling methods)
+    usint firstModSize;
+    usint scalingModSize;
+
+    // see KeySwitchTechnique - number of digits in HYBRID key switching
     usint numLargeDigits;
 
-    // TODO (dsuponit): multiplicative depth again? (this comment was added by Andrey)
+    // multiplicative depth
     usint multiplicativeDepth;
 
-    // see numPrimes
-    usint scalingFactorBits;  // or dcrtBits
-
     // security level:
+    // We use the values from the security standard  at
+    // http://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
     // For given ring dimension and security level we have
     // upper bound of possible highest modulus (Q for BV or P*Q for HYBRID)
     SecurityLevel securityLevel;
@@ -144,35 +144,39 @@ class Params {
     // ring dimension N of the scheme : the ring is Z_Q[x] / (X^N+1)
     usint ringDim;
 
-    // not sure, some parameter used in BGV
-    usint multiHopQModulusLowerBound;
+    // number of additions (used for setting noise in BGV and BFV)
+    usint evalAddCount;
 
-    // new parameter used in BFV type scheme: Encryption can be using floor(Q/t) * m  or round(Q*m / t)
+    // number of key switching operations (used for setting noise in BGV and BFV)
+    usint keySwitchCount;
+
+    // size of moduli used for PRE in the provable HRA setting
+    usint multiHopModSize;
+
+    // STANDARD or EXTENDED mode for BFV encryption
+    // EXTENDED slightly reduces the size of Q (by few bits) but makes encryption somewhat slower
+    // see https://eprint.iacr.org/2022/915 for details
     EncryptionTechnique encryptionTechnique;
-    // new parameter used in BFV type scheme: Multiplication can be HPS or BEHZ style,
-    // in future we plan to add other methods for BFV
+
+    // multiplication method in BFV: BEHZ, HPS, etc.
+    // see https://eprint.iacr.org/2022/915 for details
     MultiplicationTechnique multiplicationTechnique;
 
     void SetToDefaults(SCHEME scheme);
 
 public:
-    Params(SCHEME scheme0 = INVALID_SCHEME) {
+    explicit Params(SCHEME scheme0 = INVALID_SCHEME) {
         SetToDefaults(scheme0);
     }
 
     Params(const Params& obj) = default;
-    Params(Params&& obj) = default;
+    Params(Params&& obj)      = default;
 
     Params& operator=(const Params& obj) = default;
     Params& operator=(Params&& obj) = default;
 
     ~Params() = default;
 
-    bool IsValidRootHermiteFactor() const {
-        // rootHermiteFactor is valid or set if it is greater than or equal to 1.0
-        float epsilon = 0.001;
-        return (rootHermiteFactor >= (1.0-epsilon));
-    }
     // getters
     SCHEME GetScheme() const {
         return scheme;
@@ -180,41 +184,52 @@ public:
     PlaintextModulus GetPlaintextModulus() const {
         return ptModulus;
     }
-    usint GetRelinWindow() const {
-        return relinWindow;
+    usint GetDigitSize() const {
+        return digitSize;
     }
     float GetStandardDeviation() const {
         return standardDeviation;
     }
-    float GetRootHermiteFactor() const {
-        return rootHermiteFactor;
+    SecretKeyDist GetSecretKeyDist() const {
+        return secretKeyDist;
     }
-    float GetAssuranceMeasure() const {
-        return assuranceMeasure;
+    usint GetMaxRelinSkDeg() const {
+        return maxRelinSkDeg;
     }
-    MODE GetMode() const {
-        return mode;
+    ProxyReEncryptionMode GetPREMode() const {
+        return PREMode;
     }
-    int GetDepth() const {
-        return depth;
+    MultipartyMode GetMultipartyMode() const {
+        return multipartyMode;
     }
-    int GetMaxDepth() const {
-        return maxDepth;
+    ExecutionMode GetExecutionMode() const {
+        return executionMode;
     }
+    DecryptionNoiseMode GetDecryptionNoiseMode() const {
+        return decryptionNoiseMode;
+    }
+    double GetNoiseEstimate() const {
+        return noiseEstimate;
+    }
+    double GetDesiredPrecision() const {
+        return desiredPrecision;
+    }
+    double GetStatisticalSecurity() const {
+        return statisticalSecurity;
+    }
+    double GetNumAdversarialQueries() const {
+        return numAdversarialQueries;
+    }
+
+    usint GetThresholdNumOfParties() const {
+        return thresholdNumOfParties;
+    }
+    
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
     }
-    RescalingTechnique GetRescalingTechnique() const {
-        return rsTech;
-    }
-    usint GetCyclotomicOrder() const {
-        return cyclOrder;
-    }
-    usint GetNumPrimes() const {
-        return numPrimes;
-    }
-    usint GetScaleExp() const {
-        return scaleExp;
+    ScalingTechnique GetScalingTechnique() const {
+        return scalTech;
     }
     usint GetBatchSize() const {
         return batchSize;
@@ -228,8 +243,8 @@ public:
     usint GetMultiplicativeDepth() const {
         return multiplicativeDepth;
     }
-    usint GetScalingFactorBits() const {
-        return scalingFactorBits;
+    usint GetScalingModSize() const {
+        return scalingModSize;
     }
     SecurityLevel GetSecurityLevel() const {
         return securityLevel;
@@ -237,55 +252,71 @@ public:
     usint GetRingDim() const {
         return ringDim;
     }
+    usint GetEvalAddCount() const {
+        return evalAddCount;
+    }
+    usint GetKeySwitchCount() const {
+        return keySwitchCount;
+    }
     EncryptionTechnique GetEncryptionTechnique() const {
         return encryptionTechnique;
     }
     MultiplicationTechnique GetMultiplicationTechnique() const {
         return multiplicationTechnique;
     }
-    usint GetMultiHopQModulusLowerBound() const {
-        return multiHopQModulusLowerBound;
+    usint GetMultiHopModSize() const {
+        return multiHopModSize;
     }
 
     // setters
     void SetPlaintextModulus(PlaintextModulus ptModulus0) {
         ptModulus = ptModulus0;
     }
-    void SetRelinWindow(usint relinWindow0) {
-        relinWindow = relinWindow0;
+    void SetDigitSize(usint digitSize0) {
+        digitSize = digitSize0;
     }
     void SetStandardDeviation(float standardDeviation0) {
         standardDeviation = standardDeviation0;
     }
-    void SetRootHermiteFactor(float rootHermiteFactor0) {
-        rootHermiteFactor = rootHermiteFactor0;
+    void SetSecretKeyDist(SecretKeyDist secretKeyDist0) {
+        secretKeyDist = secretKeyDist0;
     }
-    void SetAssuranceMeasure(float assuranceMeasure0) {
-        assuranceMeasure = assuranceMeasure0;
+    void SetMaxRelinSkDeg(usint maxRelinSkDeg0) {
+        maxRelinSkDeg = maxRelinSkDeg0;
     }
-    void SetMode(MODE mode0) {
-        mode = mode0;
+    void SetPREMode(ProxyReEncryptionMode PREMode0) {
+        PREMode = PREMode0;
     }
-    void SetDepth(int depth0) {
-        depth = depth0;
+    void SetMultipartyMode(MultipartyMode multipartyMode0) {
+        multipartyMode = multipartyMode0;
     }
-    void SetMaxDepth(int maxDepth0) {
-        maxDepth = maxDepth0;
+    void SetExecutionMode(ExecutionMode executionMode0) {
+        executionMode = executionMode0;
+    }
+    void SetDecryptionNoiseMode(DecryptionNoiseMode decryptionNoiseMode0) {
+        decryptionNoiseMode = decryptionNoiseMode0;
+    }
+    void SetNoiseEstimate(double noiseEstimate0) {
+        noiseEstimate = noiseEstimate0;
+    }
+    void SetDesiredPrecision(double desiredPrecision0) {
+        desiredPrecision = desiredPrecision0;
+    }
+    void SetStatisticalSecurity(double statisticalSecurity0) {
+        statisticalSecurity = statisticalSecurity0;
+    }
+    void SetNumAdversarialQueries(double numAdversarialQueries0) {
+        numAdversarialQueries = numAdversarialQueries0;
+    }
+
+    void SetThresholdNumOfParties(uint32_t thresholdNumOfParties0) {
+        thresholdNumOfParties = thresholdNumOfParties0;
     }
     void SetKeySwitchTechnique(KeySwitchTechnique ksTech0) {
         ksTech = ksTech0;
     }
-    void SetRescalingTechnique(RescalingTechnique rsTech0) {
-        rsTech = rsTech0;
-    }
-    void SetCyclotomicOrder(usint cyclOrder0) {
-        cyclOrder = cyclOrder0;
-    }
-    void SetNumPrimes(usint numPrimes0) {
-        numPrimes = numPrimes0;
-    }
-    void SetScaleExp(usint scaleExp0) {
-        scaleExp = scaleExp0;
+    void SetScalingTechnique(ScalingTechnique scalTech0) {
+        scalTech = scalTech0;
     }
     void SetBatchSize(usint batchSize0) {
         batchSize = batchSize0;
@@ -299,8 +330,8 @@ public:
     void SetMultiplicativeDepth(usint multiplicativeDepth0) {
         multiplicativeDepth = multiplicativeDepth0;
     }
-    void SetScalingFactorBits(usint scalingFactorBits0) {
-        scalingFactorBits = scalingFactorBits0;
+    void SetScalingModSize(usint scalingModSize0) {
+        scalingModSize = scalingModSize0;
     }
     void SetSecurityLevel(SecurityLevel securityLevel0) {
         securityLevel = securityLevel0;
@@ -308,22 +339,26 @@ public:
     void SetRingDim(usint ringDim0) {
         ringDim = ringDim0;
     }
+    void SetEvalAddCount(usint evalAddCount0) {
+        evalAddCount = evalAddCount0;
+    }
+    void SetKeySwitchCount(usint keySwitchCount0) {
+        keySwitchCount = keySwitchCount0;
+    }
     void SetEncryptionTechnique(EncryptionTechnique encryptionTechnique0) {
         encryptionTechnique = encryptionTechnique0;
     }
     void SetMultiplicationTechnique(MultiplicationTechnique multiplicationTechnique0) {
         multiplicationTechnique = multiplicationTechnique0;
     }
-    void SetMultiHopQModulusLowerBound(usint multiHopQModulusLowerBound0) {
-        multiHopQModulusLowerBound = multiHopQModulusLowerBound0;
+    void SetMultiHopModSize(usint multiHopModSize0) {
+        multiHopModSize = multiHopModSize0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);
 };
-//====================================================================================================================
+// ====================================================================================================================
 
 }  // namespace lbcrypto
 
-
-#endif // _CRYPTOCONTEXTPARAMS_BASE_H_
-
+#endif  // _CRYPTOCONTEXTPARAMS_BASE_H_

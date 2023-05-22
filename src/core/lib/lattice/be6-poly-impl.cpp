@@ -39,13 +39,13 @@
 #include "config_core.h"
 #ifdef WITH_NTL
 
-#include "lattice/lat-hal.h"
-#include "math/matrix.cpp"
-#include "matrix-lattice-impl.cpp"
+    #include "lattice/lat-hal.h"
+    #include "math/matrix.cpp"          // NOLINT
+    #include "matrix-lattice-impl.cpp"  // NOLINT
 
-#include "elemparams.cpp"
-#include "ilparams.cpp"
-#include "poly.cpp"
+    #include "elemparams.cpp"  // NOLINT
+    #include "ilparams.cpp"    // NOLINT
+    #include "poly.cpp"        // NOLINT
 
 namespace lbcrypto {
 
@@ -71,22 +71,20 @@ template Matrix<M6Integer> Rotate(Matrix<M6DCRTPoly> const& inMat);
 // biginteger version
 template <>
 PolyImpl<NativeVector> PolyImpl<M6Vector>::ToNativePoly() const {
-  PolyImpl<NativeVector> interp(
-      std::make_shared<ILParamsImpl<NativeInteger>>(
-          this->GetCyclotomicOrder(), std::numeric_limits<uint64_t>::max(), 1),
-      this->GetFormat(), true);
+    PolyImpl<NativeVector> interp(std::make_shared<ILParamsImpl<NativeInteger>>(
+                                      this->GetCyclotomicOrder(), std::numeric_limits<uint64_t>::max(), 1),
+                                  this->GetFormat(), true);
 
-  for (usint i = 0; i < this->GetLength(); i++) {
-    interp[i] = (*this)[i].ConvertToInt();
-  }
+    for (usint i = 0; i < this->GetLength(); i++) {
+        interp[i] = (*this)[i].ConvertToInt();
+    }
 
-  return interp;
+    return interp;
 }
 
 }  // namespace lbcrypto
 
 CEREAL_CLASS_VERSION(lbcrypto::M6Poly, lbcrypto::M6Poly::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::M6DCRTPoly,
-                     lbcrypto::M6DCRTPoly::SerializedVersion());
+CEREAL_CLASS_VERSION(lbcrypto::M6DCRTPoly, lbcrypto::M6DCRTPoly::SerializedVersion());
 
-#endif // WITH_NTL
+#endif  // WITH_NTL

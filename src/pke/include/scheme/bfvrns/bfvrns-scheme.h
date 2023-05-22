@@ -36,11 +36,16 @@
 
 #include "scheme/bfvrns/bfvrns-cryptoparameters.h"
 #include "scheme/bfvrns/bfvrns-parametergeneration.h"
+#include "scheme/bfvrns/bfvrns-fhe.h"
 #include "scheme/bfvrns/bfvrns-pke.h"
 #include "scheme/bfvrns/bfvrns-pre.h"
 #include "scheme/bfvrns/bfvrns-leveledshe.h"
 #include "scheme/bfvrns/bfvrns-advancedshe.h"
 #include "scheme/bfvrns/bfvrns-multiparty.h"
+
+#include <string>
+#include <memory>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -49,35 +54,35 @@ namespace lbcrypto {
 
 class SchemeBFVRNS : public SchemeRNS {
 public:
-  SchemeBFVRNS() {
-    this->m_ParamsGen =
-        std::make_shared<ParameterGenerationBFVRNS>();
-  }
+    SchemeBFVRNS() {
+        this->m_ParamsGen = std::make_shared<ParameterGenerationBFVRNS>();
+    }
 
-  virtual ~SchemeBFVRNS() {}
+    virtual ~SchemeBFVRNS() {}
 
-  virtual bool operator==(const SchemeBase<DCRTPoly> &sch) const override {
-    return dynamic_cast<const SchemeBFVRNS *>(&sch) !=
-           nullptr;
-  }
+    bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
+        return dynamic_cast<const SchemeBFVRNS*>(&sch) != nullptr;
+    }
 
-  virtual void Enable(PKESchemeFeature feature) override;
+    void Enable(PKESchemeFeature feature) override;
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar, std::uint32_t const version) const {
-    ar(cereal::base_class<SchemeRNS>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar, std::uint32_t const version) const {
+        ar(cereal::base_class<SchemeRNS>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar, std::uint32_t const version) {
-    ar(cereal::base_class<SchemeRNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar, std::uint32_t const version) {
+        ar(cereal::base_class<SchemeRNS>(this));
+    }
 
-  virtual std::string SerializedObjectName() const override { return "SchemeBFVRNS"; }
+    std::string SerializedObjectName() const override {
+        return "SchemeBFVRNS";
+    }
 };
 }  // namespace lbcrypto
 

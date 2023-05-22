@@ -28,80 +28,74 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-/*
-  Legacy Serialization utilities
- */
-
 #ifndef LBCRYPTO_SERIALIZABLE_H
 #define LBCRYPTO_SERIALIZABLE_H
 
-// TODO (dsuponit): purge the headers below and combine #pragma for GNU and clang
-#include <iostream>
-#include <string>
-
 #ifndef CEREAL_RAPIDJSON_HAS_STDSTRING
-#define CEREAL_RAPIDJSON_HAS_STDSTRING 1
+    #define CEREAL_RAPIDJSON_HAS_STDSTRING 1
 #endif
 #ifndef CEREAL_RAPIDJSON_HAS_CXX11_RVALUE_REFS
-#define CEREAL_RAPIDJSON_HAS_CXX11_RVALUE_REFS 1
+    #define CEREAL_RAPIDJSON_HAS_CXX11_RVALUE_REFS 1
 #endif
 #define CEREAL_RAPIDJSON_HAS_CXX11_NOEXCEPT 0
 
-#ifdef __GNUC__
-#if __GNUC__ >= 8
-#pragma GCC diagnostic ignored "-Wclass-memaccess"
-#endif
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-private-field"
+// In order to correctly identify GCC and clang we must either:
+// 1. use "#if defined(__GNUC__) && !defined(__clang__)" (preferred option)
+// 2. or check the condition "#if defined __clang__" first
+// The reason is: clang always defines __GNUC__ and __GNUC_MINOR__ and __GNUC_PATCHLEVEL__ according to the version of gcc that it claims full compatibility with.
+#if defined(__GNUC__) && !defined(__clang__)
+    #if __GNUC__ >= 8
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wclass-memaccess"
+    #endif
+#elif defined __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunused-private-field"
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 #include "cereal/cereal.hpp"
 #include "cereal/types/polymorphic.hpp"
 
-#ifdef __GNUC__
-#if __GNUC__ >= 8
-#pragma GCC diagnostic pop
-#endif
+#if defined(__GNUC__) && !defined(__clang__)
+    #if __GNUC__ >= 8
+        #pragma GCC diagnostic pop
+    #endif
+#elif defined __clang__
+    #pragma clang diagnostic pop
 #endif
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+#include <iostream>
+#include <string>
+#include <vector>
 
 namespace lbcrypto {
-
-using Serialized = void*;
 
 /**
  * \class Serializable
  *
- * \brief Base class for PALISADE serialization
+ * \brief Base class for OpenFHE serialization
  *
  * This class is inherited by every class that needs to be serialized.
  * The class contains some deprecated methods from the older mechanisms
  * for serialization
  */
 class Serializable {
- public:
-  virtual ~Serializable() {}
+public:
+    virtual ~Serializable() {}
 
-  virtual std::string SerializedObjectName() const = 0;
-
+    virtual std::string SerializedObjectName() const = 0;
 };
 
 // helper template to stream vector contents provided T has an stream operator<<
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
-  os << "[";
-  for (auto i = v.begin(); i != v.end(); ++i) {
-    os << " " << *i;
-  }
-  os << " ]";
-  return os;
+    os << "[";
+    for (auto i = v.begin(); i != v.end(); ++i) {
+        os << " " << *i;
+    }
+    os << " ]";
+    return os;
 }
 
 }  // namespace lbcrypto

@@ -34,6 +34,8 @@
 
 #include "schemerns/rns-pke.h"
 
+#include <string>
+
 /**
  * @namespace lbcrypto
  * The namespace of lbcrypto
@@ -41,15 +43,16 @@
 namespace lbcrypto {
 
 class PKEBGVRNS : public PKERNS {
-  using ParmType = typename DCRTPoly::Params;
-  using IntType = typename DCRTPoly::Integer;
-  using DugType = typename DCRTPoly::DugType;
-  using DggType = typename DCRTPoly::DggType;
-  using TugType = typename DCRTPoly::TugType;
+    using ParmType = typename DCRTPoly::Params;
+    using IntType  = typename DCRTPoly::Integer;
+    using DugType  = typename DCRTPoly::DugType;
+    using DggType  = typename DCRTPoly::DggType;
+    using TugType  = typename DCRTPoly::TugType;
+
 public:
-  virtual ~PKEBGVRNS() {}
+    virtual ~PKEBGVRNS() {}
 
-  /**
+    /**
    * Method for decrypting plaintext using LBC
    *
    * @param &privateKey private key used for decryption.
@@ -57,11 +60,10 @@ public:
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-  virtual DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
-                                const PrivateKey<DCRTPoly> privateKey,
-                                NativePoly *plaintext) const override;
+    DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                          NativePoly* plaintext) const override;
 
-  /**
+    /**
    * Method for decrypting plaintext using LBC
    *
    * @param &privateKey private key used for decryption.
@@ -69,31 +71,32 @@ public:
    * @param *plaintext the plaintext output.
    * @return the decoding result.
    */
-  virtual DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext,
-                                const PrivateKey<DCRTPoly> privateKey,
-                                Poly *plaintext) const override {
-    std::string errMsg =
-        "PKEBGVRNS: Decryption to Poly from DCRTPoly is not supported as it "
-        "may "
-        "lead to incorrect results.";
-    PALISADE_THROW(not_available_error, errMsg);
-  }
+    DecryptResult Decrypt(ConstCiphertext<DCRTPoly> ciphertext, const PrivateKey<DCRTPoly> privateKey,
+                          Poly* plaintext) const override {
+        std::string errMsg =
+            "PKEBGVRNS: Decryption to Poly from DCRTPoly is not supported as it "
+            "may "
+            "lead to incorrect results.";
+        OPENFHE_THROW(not_available_error, errMsg);
+    }
 
-  /////////////////////////////////////
-  // SERIALIZATION
-  /////////////////////////////////////
+    /////////////////////////////////////
+    // SERIALIZATION
+    /////////////////////////////////////
 
-  template <class Archive>
-  void save(Archive &ar) const {
-    ar(cereal::base_class<PKERNS>(this));
-  }
+    template <class Archive>
+    void save(Archive& ar) const {
+        ar(cereal::base_class<PKERNS>(this));
+    }
 
-  template <class Archive>
-  void load(Archive &ar) {
-    ar(cereal::base_class<PKERNS>(this));
-  }
+    template <class Archive>
+    void load(Archive& ar) {
+        ar(cereal::base_class<PKERNS>(this));
+    }
 
-  std::string SerializedObjectName() const { return "PKEBGVRNS"; }
+    std::string SerializedObjectName() const {
+        return "PKEBGVRNS";
+    }
 };
 }  // namespace lbcrypto
 

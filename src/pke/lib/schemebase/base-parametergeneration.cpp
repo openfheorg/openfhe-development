@@ -28,16 +28,10 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
-
-#ifndef LBCRYPTO_CRYPTO_BASE_PARAMETERGENERATION_C
-#define LBCRYPTO_CRYPTO_BASE_PARAMETERGENERATION_C
-
 #include "cryptocontext.h"
 #include "schemebase/base-parametergeneration.h"
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
-namespace lbcrypto {}
 
-#endif
+// the code below is from base-parametergeneration-impl.cpp
+namespace lbcrypto {
+template class ParameterGenerationBase<DCRTPoly>;
+}  // namespace lbcrypto
