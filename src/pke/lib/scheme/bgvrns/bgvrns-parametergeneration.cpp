@@ -249,13 +249,17 @@ std::pair<std::vector<NativeInteger>, uint32_t> ParameterGenerationBGVRNS::compu
 
         // Compute moduli.
         moduliQ[1] = FirstPrime<NativeInteger>(modSize, cyclOrder);
-        while (moduliQ[1] == moduliQ[0] || moduliQ[1] == moduliQ[numPrimes] || moduliQ[1] == plainModulusInt) {
+        while (moduliQ[1] == moduliQ[0] ||
+               (scalTech == FLEXIBLEAUTOEXT && moduliQ[1] == moduliQ[numPrimes]) ||
+               moduliQ[1] == plainModulusInt) {
             moduliQ[1] = NextPrime<NativeInteger>(moduliQ[1], cyclOrder);
         }
 
         for (size_t i = 2; i < numPrimes; i++) {
             moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i - 1], cyclOrder);
-            while (moduliQ[i] == moduliQ[0] || moduliQ[i] == moduliQ[numPrimes] || moduliQ[i] == plainModulusInt) {
+            while (moduliQ[i] == moduliQ[0] ||
+                   (scalTech == FLEXIBLEAUTOEXT && moduliQ[i] == moduliQ[numPrimes]) ||
+                   moduliQ[i] == plainModulusInt) {
                 moduliQ[i] = NextPrime<NativeInteger>(moduliQ[i], cyclOrder);
             }
         }
