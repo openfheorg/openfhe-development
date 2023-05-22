@@ -2202,12 +2202,16 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     int32_t logc = 0;
     for (size_t i = 0; i < slots; ++i) {
         inverse[i] *= powP;
-        int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
-        if (logc < logci)
-            logc = logci;
-        logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
-        if (logc < logci)
-            logc = logci;
+        if (inverse[i].real() != 0) {
+            int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
+            if (logc < logci)
+                logc = logci;
+        }
+        if (inverse[i].imag() != 0) {
+            int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
+            if (logc < logci)
+                logc = logci;
+        }
     }
     if (logc < 0) {
         OPENFHE_THROW(math_error, "Too small scaling factor");
