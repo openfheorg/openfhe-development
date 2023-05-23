@@ -64,6 +64,7 @@ enum SecretKeyDist {
     SPARSE_TERNARY  = 2,
 };
 SecretKeyDist convertToSecretKeyDist(const std::string& str);
+SecretKeyDist convertToSecretKeyDist(uint32_t num);
 std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
 enum ScalingTechnique {
@@ -75,6 +76,7 @@ enum ScalingTechnique {
     INVALID_RS_TECHNIQUE,  // TODO (dsuponit): make this the first value
 };
 ScalingTechnique convertToScalingTechnique(const std::string& str);
+ScalingTechnique convertToScalingTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t);
 
 enum ProxyReEncryptionMode {
@@ -85,6 +87,7 @@ enum ProxyReEncryptionMode {
     DIVIDE_AND_ROUND_HRA,
 };
 ProxyReEncryptionMode convertToProxyReEncryptionMode(const std::string& str);
+ProxyReEncryptionMode convertToProxyReEncryptionMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p);
 
 enum MultipartyMode {
@@ -93,6 +96,7 @@ enum MultipartyMode {
     NOISE_FLOODING_MULTIPARTY,
 };
 MultipartyMode convertToMultipartyMode(const std::string& str);
+MultipartyMode convertToMultipartyMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, MultipartyMode t);
 
 enum ExecutionMode {
@@ -100,6 +104,7 @@ enum ExecutionMode {
     EXEC_NOISE_ESTIMATION,
 };
 ExecutionMode convertToExecutionMode(const std::string& str);
+ExecutionMode convertToExecutionMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, ExecutionMode t);
 
 enum DecryptionNoiseMode {
@@ -107,6 +112,7 @@ enum DecryptionNoiseMode {
     NOISE_FLOODING_DECRYPT,
 };
 DecryptionNoiseMode convertToDecryptionNoiseMode(const std::string& str);
+DecryptionNoiseMode convertToDecryptionNoiseMode(uint32_t num);
 std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t);
 
 enum KeySwitchTechnique {
@@ -115,6 +121,7 @@ enum KeySwitchTechnique {
     HYBRID,
 };
 KeySwitchTechnique convertToKeySwitchTechnique(const std::string& str);
+KeySwitchTechnique convertToKeySwitchTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t);
 
 enum EncryptionTechnique {
@@ -122,6 +129,7 @@ enum EncryptionTechnique {
     EXTENDED,
 };
 EncryptionTechnique convertToEncryptionTechnique(const std::string& str);
+EncryptionTechnique convertToEncryptionTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, EncryptionTechnique t);
 
 enum MultiplicationTechnique {
@@ -131,6 +139,7 @@ enum MultiplicationTechnique {
     HPSPOVERQLEVELED,
 };
 MultiplicationTechnique convertToMultiplicationTechnique(const std::string& str);
+MultiplicationTechnique convertToMultiplicationTechnique(uint32_t num);
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t);
 
 enum PlaintextEncodings {
