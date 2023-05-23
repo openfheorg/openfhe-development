@@ -145,7 +145,7 @@ public:
    * @param dim1 baby-step for the linear transform
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
-                                                                                    const LWEPrivateKey& lwesk,
+                                                                                    ConstLWEPrivateKey& lwesk,
                                                                                     uint32_t dim1) {
         OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWKeyGen is not supported for this scheme");
     }
@@ -157,8 +157,10 @@ public:
    * @param cc the CKKS cryptocontext from which to switch to
    * @param scale factor with which to scale the matrix in the linear transform
    * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    virtual void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<Element>& cc, double scale, uint32_t dim1) {
+    virtual void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<Element>& cc, double scale, uint32_t dim1,
+                                          uint32_t L) {
         OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWPrecompute is not supported for this scheme");
     }
 
@@ -196,7 +198,7 @@ public:
    * @param numSlots number of slots for the CKKS encryption of the FHEW secret key
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
-                                                                                    const LWEPrivateKey& lwesk,
+                                                                                    ConstLWEPrivateKey& lwesk,
                                                                                     uint32_t numSlots) {
         OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSKeyGen is not supported for this scheme");
     }
@@ -210,9 +212,11 @@ public:
    * @param initLevel the level of the ciphertext that will be switched
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
+   * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
     virtual void EvalCompareSSPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE, uint32_t initLevel,
-                                         double scaleSign) {
+                                         double scaleSign, uint32_t dim1, uint32_t L) {
         OPENFHE_THROW(not_implemented_error, "EvalCompareSSPrecompute is not supported for this scheme");
     }
 
@@ -232,12 +236,6 @@ public:
                                                double prescale, uint32_t numCtxts, uint32_t numSlots, uint32_t p,
                                                double pmin, double pmax) const {
         OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKS is not implemented for this scheme");
-    }
-
-    virtual Ciphertext<Element> EvalFHEWtoCKKSPrototype(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                                        uint32_t dim1_FC, double scale, uint32_t numSlots, double pmin,
-                                                        double pmax) const {
-        OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSPrototype is not implemented for this scheme");
     }
 
     /**
@@ -270,10 +268,11 @@ public:
    * @param dim1FC baby-step for the linear transform in FHEW to CKKS
    * @param numValues parameter of argmin computation, set to zero if not needed
    * @param oneHot flag that indicates if the argmin encoding should be one hot
+   * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<Element>& keyPair, LWEPrivateKey& lwesk, uint32_t dim1CF, uint32_t dim1FC, uint32_t numValues,
-        bool oneHot) {
+        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1CF, uint32_t dim1FC,
+        uint32_t numValues, bool oneHot, bool alt) {
         OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingKeyGen is not supported for this scheme");
     }
 
@@ -321,7 +320,17 @@ public:
     }
 
     /**
-   * Computes the minimum and argument of the first numValues packed in a CKKS ciphertext via repeated
+     * Performs more operations in FHEW than in CKKS. Slightly better precision but slower.
+    */
+    virtual std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
+                                                                       PublicKey<Element> publicKey, uint32_t numValues,
+                                                                       uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                       double scaleSign) {
+        OPENFHE_THROW(not_implemented_error, "EvalMinSchemeSwitchingAlt is not supported for this scheme");
+    }
+
+    /**
+   * Computes the maximum and argument of the first numValues packed in a CKKS ciphertext via repeated
    * scheme switchings to FHEW and back.
    *
    * @param ciphertext CKKS ciphertexts of values that need to be compared
@@ -342,6 +351,16 @@ public:
                                                                     uint32_t numSlots, bool oneHot, uint32_t pLWE,
                                                                     double scaleSign) {
         OPENFHE_THROW(not_implemented_error, "EvalMaxSchemeSwitching is not supported for this scheme");
+    }
+
+    /**
+     * Performs more operations in FHEW than in CKKS. Slightly better precision but slower.
+    */
+    virtual std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
+                                                                       PublicKey<Element> publicKey, uint32_t numValues,
+                                                                       uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                       double scaleSign) {
+        OPENFHE_THROW(not_implemented_error, "EvalMaxSchemeSwitchingAlt is not supported for this scheme");
     }
 };
 

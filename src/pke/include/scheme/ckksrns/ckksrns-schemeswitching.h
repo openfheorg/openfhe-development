@@ -72,10 +72,11 @@ public:
                                                                 uint32_t numSlotsCKKS) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                             const LWEPrivateKey& lwesk,
+                                                                             ConstLWEPrivateKey& lwesk,
                                                                              uint32_t dim1) override;
 
-    void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale, uint32_t dim1) override;
+    void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale, uint32_t dim1,
+                                  uint32_t L) override;
 
     std::vector<ConstPlaintext> EvalLTPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
                                                    const std::vector<std::vector<std::complex<double>>>& A,
@@ -86,8 +87,17 @@ public:
                                                    const std::vector<std::vector<std::complex<double>>>& B,
                                                    uint32_t dim1, double scale, uint32_t L) const;
 
+    Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
+                                                    const std::vector<std::vector<std::complex<double>>>& A,
+                                                    ConstCiphertext<DCRTPoly> ct, uint32_t dim1, uint32_t L) const;
+
     Ciphertext<DCRTPoly> EvalSlotsToCoeffsSS(const CryptoContextImpl<DCRTPoly>& cc,
                                              ConstCiphertext<DCRTPoly> ciphertext) const;
+
+    Ciphertext<DCRTPoly> EvalPartialHomDecryption(const CryptoContextImpl<DCRTPoly>& cc,
+                                                  const std::vector<std::vector<std::complex<double>>>& A,
+                                                  ConstCiphertext<DCRTPoly> ct, uint32_t dim1, double scale,
+                                                  uint32_t L) const;
 
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<DCRTPoly> ciphertext,
                                                                    uint32_t numCtxts) override;
@@ -96,28 +106,25 @@ public:
                              uint32_t numSlotsCKKS, uint32_t logQ) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalFHEWtoCKKSKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                             const LWEPrivateKey& lwesk,
+                                                                             ConstLWEPrivateKey& lwesk,
                                                                              uint32_t numSlots) override;
 
     Ciphertext<DCRTPoly> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                         double prescale, uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
                                         double pmax) const override;
 
-    Ciphertext<DCRTPoly> EvalFHEWtoCKKSPrototype(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                                 uint32_t dim1_FC, double scale, uint32_t numSlots, double pmin,
-                                                 double pmax) const override;
-
     std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc,
                                                                      SecurityLevel sl, bool arbFunc, uint32_t logQ,
                                                                      bool dynamic, uint32_t numSlotsCKKS) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                                  LWEPrivateKey& lwesk, uint32_t dim1CF,
-                                                                                  uint32_t dim1FC, uint32_t numValues,
-                                                                                  bool oneHot) override;
+                                                                                  ConstLWEPrivateKey& lwesk,
+                                                                                  uint32_t dim1CF, uint32_t dim1FC,
+                                                                                  uint32_t numValues, bool oneHot,
+                                                                                  bool alt) override;
 
     void EvalCompareSSPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, uint32_t init_level,
-                                 double scaleSign) override;
+                                 double scaleSign, uint32_t dim1, uint32_t L) override;
 
     Ciphertext<DCRTPoly> EvalCompareSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext1,
                                                     ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts,
@@ -128,10 +135,20 @@ public:
                                                              uint32_t numSlots, bool oneHot, uint32_t pLWE,
                                                              double scaleSign) override;
 
+    std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
+                                                                PublicKey<DCRTPoly> publicKey, uint32_t numValues,
+                                                                uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                double scaleSign) override;
+
     std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                              PublicKey<DCRTPoly> publicKey, uint32_t numValues,
                                                              uint32_t numSlots, bool oneHot, uint32_t pLWE,
                                                              double scaleSign) override;
+
+    std::vector<Ciphertext<DCRTPoly>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<DCRTPoly> ciphertext,
+                                                                PublicKey<DCRTPoly> publicKey, uint32_t numValues,
+                                                                uint32_t numSlots, bool oneHot, uint32_t pLWE,
+                                                                double scaleSign) override;
 
     //------------------------------------------------------------------------------
     // SERIALIZATION
@@ -154,12 +171,12 @@ public:
 private:
     // the LWE cryptocontext to generate when scheme switching from CKKS
     BinFHEContext m_ccLWE;
-    CryptoContext<DCRTPoly>
-        m_ccCKKS;  // Andreea: does it make sense to store? Only if we need to differentiate between inner/outer
     // the associated ciphertext modulus Q for the LWE cryptocontext
     uint64_t m_modulus_LWE;
-    // the target ciphertext modulus Q for the CKKS cryptocontext (from FHEW to CKKS) // Andreea: might need inner and outer
+    // the target ciphertext modulus Q for the CKKS cryptocontext (from FHEW to CKKS)
     uint64_t m_modulus_CKKS_to;
+    // the ciphertext modulus Q' for the CKKS cryptocontext that is secure for the LWE ring dimension
+    uint64_t m_modulus_CKKS_from;
     // switching key from CKKS to FHEW ("outer", i.e., not for an inner functionality)
     EvalKey<DCRTPoly> m_CKKStoFHEWswk;
     // switching key from FHEW to CKKS ("outer", i.e., not for an inner functionality)
@@ -176,31 +193,6 @@ private:
     std::vector<std::complex<double>> m_FHEWtoCKKSswkDouble;
 
 #define Pi 3.14159265358979323846
-
-    const std::vector<double> g_coefficientsFHEW_prototype{
-        0.12374520595985596,    -0.024493557018250355,   0.12864468848664823,      -0.022457247544100528,
-        0.14212115805701445,    -0.017957992051578768,   0.16008197693836673,      -0.010356206464121682,
-        0.17458294827703502,    0.00069764786235339998,  0.17332698445029668,      0.014415562869726376,
-        0.14160775388871905,    0.027864569474609573,    0.069148468982727820,     0.035526399816634920,
-        -0.037447507468382400,  0.030784364050481634,    -0.14213082120974599,     0.010536337716667865,
-        -0.18217520706655785,   -0.018300072435107985,   -0.10530280399220575,     -0.036635225634281232,
-        0.063245761563600247,   -0.024621862783145716,   0.18637445454314894,      0.013729575864447110,
-        0.11222307428645424,    0.038598793311852696,    -0.11168516754739241,     0.012080920618371495,
-        -0.18659866591874685,   -0.035177634491084547,   0.045610268782696452,     -0.022904274431946273,
-        0.20596542789491695,    0.035779596840663418,    -0.058845266934630935,    0.018081887408798798,
-        -0.19990619011732119,   -0.045204187386174363,   0.17082649558144314,      0.011579873620065162,
-        0.071223906127701769,   0.036382655327408961,    -0.25627153589792723,     -0.056917019465110817,
-        0.27883266642409893,    0.049010015444059682,    -0.20154109032448050,     -0.030744546614836471,
-        0.11210264912446273,    0.015391581650897743,    -0.051073798502557596,    -0.0064364133239901561,
-        0.019737893020776255,   0.0023116263569468824,   -0.0066187956931535409,   -0.00072666134496683578,
-        0.0019571579355719178,  0.00020273091214757335,  -0.00051654852604892537,  -0.000050738024382956559,
-        0.00012285121546532282, 0.000011489333007212300, -0.000026533625113716339, -2.3706421200493703e-6,
-        5.2379797865091124e-6,  4.4835516327328205e-7,   -9.5029543387417991e-7,   -7.8120874338737986e-8,
-        1.5919559834171849e-7,  1.2595457343778094e-8,   -2.4727027247235347e-8,   -1.8864428620949427e-9,
-        3.5740686615015240e-9,  2.6335875926982934e-10,  -4.8229587614520840e-10,  -3.4376425551345850e-11,
-        6.0938385423901051e-11, 4.2073635461995284e-12,  -7.2286895570496097e-12,  -4.8383394669004246e-13,
-        8.0675042177267387e-13, 5.2627066250433825e-14,  -8.5374903152073829e-14,  -5.2108754265341964e-15,
-        9.0589209043009958e-15};
 
     // K = 16
     const std::vector<double> g_coefficientsFHEW16{

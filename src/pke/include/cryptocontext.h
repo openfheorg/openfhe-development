@@ -2984,10 +2984,7 @@ public:
    * @param lwesk FHEW secret key
    * @param dim1 baby-step for the linear transform
    */
-    void EvalCKKStoFHEWKeyGen(
-        const KeyPair<Element>& keyPair, const LWEPrivateKey& lwesk,
-        uint32_t dim1 =
-            0);  // Andreea: don't know how to transform ConstLWEPrivateKey to shared_ptr<LWEPrivateKeyImpl>, so I used const LWEPrivateKey
+    void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1 = 0);
 
     /**
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalCKKStoFHEWSetup
@@ -2995,8 +2992,9 @@ public:
    *
    * @param scale factor with which to scale the matrix in the linear transform
    * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    void EvalCKKStoFHEWPrecompute(double scale = 1.0, uint32_t dim1 = 0);
+    void EvalCKKStoFHEWPrecompute(double scale = 1.0, uint32_t dim1 = 0, uint32_t L = 1);
 
     /**
    * Performs the scheme switching on a CKKS ciphertext
@@ -3026,10 +3024,7 @@ public:
    * @param lwesk FHEW secret key
    * @param numSlots number of slots for the CKKS encryption of the FHEW secret key
    */
-    void EvalFHEWtoCKKSKeyGen(
-        const KeyPair<Element>& keyPair, const LWEPrivateKey& lwesk,
-        uint32_t numSlots =
-            0);  // Andreea: don't know how to transform ConstLWEPrivateKey to shared_ptr<LWEPrivateKeyImpl>, so I used const LWEPrivateKey
+    void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0);
 
     /**
    * Performs the scheme switching on a vector of FHEW ciphertexts
@@ -3046,10 +3041,6 @@ public:
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                        double prescale = 1.0, uint32_t numCtxts = 0, uint32_t numSlots = 0,
                                        uint32_t p = 4, double pmin = 0.0, double pmax = 2.0) const;
-
-    Ciphertext<Element> EvalFHEWtoCKKSPrototype(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                                uint32_t dim1_FC = 0, double scale = 1.0, uint32_t numSlots = 0,
-                                                double pmin = 0.0, double pmax = 2.0) const;
 
     /**
    * Sets all parameters for switching from CKKS to FHEW and back
@@ -3078,12 +3069,10 @@ public:
    * @param dim1FC baby-step for the linear transform in FHEW to CKKS
    * @param numValues parameter of argmin computation, set to zero if not needed
    * @param oneHot flag that indicates whether the argmin result should have one hot encoding or not
+   * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
    */
-    void EvalSchemeSwitchingKeyGen(
-        const KeyPair<Element>& keyPair, LWEPrivateKey& lwesk, uint32_t dim1CF = 0, uint32_t dim1FC = 0,
-        uint32_t numValues = 0,
-        bool oneHot =
-            true);  // Andreea: don't know how to transform ConstLWEPrivateKey to shared_ptr<LWEPrivateKeyImpl>
+    void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1CF = 0,
+                                   uint32_t dim1FC = 0, uint32_t numValues = 0, bool oneHot = true, bool alt = false);
 
     /**
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalSchemeSwitchingSetup
@@ -3093,8 +3082,11 @@ public:
    * @param initLevel the level of the ciphertext that will be switched
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
+   * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    void EvalCompareSSPrecompute(uint32_t pLWE = 0, uint32_t initLevel = 0, double scaleSign = 1.0);
+    void EvalCompareSSPrecompute(uint32_t pLWE = 0, uint32_t initLevel = 0, double scaleSign = 1.0, uint32_t dim1 = 0,
+                                 uint32_t L = 1);
 
     /**
    * Performs the scheme switching on the difference of two CKKS ciphertexts to compare, evaluates the sign function
@@ -3136,6 +3128,14 @@ public:
                                                             uint32_t pLWE = 0, double scaleSign = 1.0);
 
     /**
+     * Performs more operations in FHEW than in CKKS. Slightly better precision but slower.
+    */
+    std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
+                                                               PublicKey<Element> publicKey, uint32_t numValues = 0,
+                                                               uint32_t numSlots = 0, bool oneHot = true,
+                                                               uint32_t pLWE = 0, double scaleSign = 1.0);
+
+    /**
    * Computes the maximum and argument of the first numValues packed in a CKKS ciphertext via repeated
    * scheme switchings to FHEW and back.
    *
@@ -3156,6 +3156,14 @@ public:
                                                             PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                             uint32_t numSlots = 0, bool oneHot = true,
                                                             uint32_t pLWE = 0, double scaleSign = 1.0);
+
+    /**
+     * Performs more operations in FHEW than in CKKS. Slightly better precision but slower.
+    */
+    std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
+                                                               PublicKey<Element> publicKey, uint32_t numValues = 0,
+                                                               uint32_t numSlots = 0, bool oneHot = true,
+                                                               uint32_t pLWE = 0, double scaleSign = 1.0);
 
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
