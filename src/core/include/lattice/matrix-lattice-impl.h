@@ -112,9 +112,18 @@ Matrix<typename Element::Vector> RotateVecResult(Matrix<Element> const& inMat) {
 
 template <typename Element>
 void Matrix<Element>::SetFormat(Format format) {
-    for (size_t row = 0; row < rows; ++row) {
+    if (rows == 1) {
+#pragma omp parallel for num_threads(cols)
         for (size_t col = 0; col < cols; ++col) {
-            data[row][col].SetFormat(format);
+            data[0][col].SetFormat(format);
+        }
+    }
+    else {
+#pragma omp parallel for num_threads(rows)
+        for (size_t row = 0; row < rows; ++row) {
+            for (size_t col = 0; col < cols; ++col) {
+                data[row][col].SetFormat(format);
+            }
         }
     }
 }
@@ -122,17 +131,15 @@ void Matrix<Element>::SetFormat(Format format) {
 template <typename Element>
 void Matrix<Element>::SwitchFormat() {
     if (rows == 1) {
-        for (size_t row = 0; row < rows; ++row) {
-#pragma omp parallel for
-            for (size_t col = 0; col < cols; ++col) {
-                data[row][col].SwitchFormat();
-            }
+#pragma omp parallel for num_threads(cols)
+        for (size_t col = 0; col < cols; ++col) {
+            data[0][col].SwitchFormat();
         }
     }
     else {
-        for (size_t col = 0; col < cols; ++col) {
-#pragma omp parallel for
-            for (size_t row = 0; row < rows; ++row) {
+#pragma omp parallel for num_threads(rows)
+        for (size_t row = 0; row < rows; ++row) {
+            for (size_t col = 0; col < cols; ++col) {
                 data[row][col].SwitchFormat();
             }
         }

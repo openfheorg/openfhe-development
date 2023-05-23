@@ -36,8 +36,6 @@
 #ifndef LBCRYPTO_LIB_MATH_MATRIX_CPP
 #define LBCRYPTO_LIB_MATH_MATRIX_CPP
 
-#include "lattice/field2n.h"
-
 #include "math/hal.h"
 #include "math/matrix-impl.h"
 
@@ -189,46 +187,6 @@ Matrix<int32_t> ConvertToInt32(const Matrix<BigVector>& input, const BigInteger&
         }
     }
     return result;
-}
-
-template <>
-void Matrix<Field2n>::SetFormat(Format f) {
-    if (rows == 1) {
-        for (size_t row = 0; row < rows; ++row) {
-#pragma omp parallel for
-            for (size_t col = 0; col < cols; ++col) {
-                data[row][col].SetFormat(f);
-            }
-        }
-    }
-    else {
-        for (size_t col = 0; col < cols; ++col) {
-#pragma omp parallel for
-            for (size_t row = 0; row < rows; ++row) {
-                data[row][col].SetFormat(f);
-            }
-        }
-    }
-}
-
-template <>
-void Matrix<Field2n>::SwitchFormat() {
-    if (rows == 1) {
-        for (size_t row = 0; row < rows; ++row) {
-#pragma omp parallel for
-            for (size_t col = 0; col < cols; ++col) {
-                data[row][col].SwitchFormat();
-            }
-        }
-    }
-    else {
-        for (size_t col = 0; col < cols; ++col) {
-#pragma omp parallel for
-            for (size_t row = 0; row < rows; ++row) {
-                data[row][col].SwitchFormat();
-            }
-        }
-    }
 }
 
 template class Matrix<double>;
