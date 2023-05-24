@@ -150,9 +150,9 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     double scaleEnc          = pre / k;
     double scaleDec          = 1 / pre;
 
-    uint32_t approxModDepth = 8;
+    uint32_t approxModDepth = 9;
     if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
-        approxModDepth += R - 1;
+        approxModDepth += R - 2;
     }
 
     uint32_t depthBT = approxModDepth + 1 + precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] +

@@ -66,7 +66,7 @@ KeyPair<Element> PKEBase<Element>::KeyGen(CryptoContext<Element> cc, bool makeSp
             break;
         case SPARSE_TERNARY:
             // https://github.com/openfheorg/openfhe-development/issues/311
-            s = Element(tug, paramsPK, Format::EVALUATION, 64);
+            s = Element(tug, paramsPK, Format::EVALUATION, 192);
             break;
         default:
             break;

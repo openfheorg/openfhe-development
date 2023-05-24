@@ -76,10 +76,11 @@ double CalculateApproximationError(const std::vector<std::complex<double>>& resu
 void IterativeBootstrapExample() {
     // Step 1: Set CryptoContext
     CCParams<CryptoContextCKKSRNS> parameters;
-    SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
+    SecretKeyDist secretKeyDist = SPARSE_TERNARY;
     parameters.SetSecretKeyDist(secretKeyDist);
     parameters.SetSecurityLevel(HEStd_NotSet);
-    parameters.SetRingDim(1 << 12);
+    parameters.SetRingDim(1 << 16);
+    parameters.SetNumLargeDigits(4);
 
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     // Currently, only FIXEDMANUAL and FIXEDAUTO modes are supported for 128-bit CKKS bootstrapping.
@@ -89,8 +90,8 @@ void IterativeBootstrapExample() {
 #else
     // All modes are supported for 64-bit CKKS bootstrapping.
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    usint dcrtBits               = 59;
-    usint firstMod               = 60;
+    usint dcrtBits               = 44;
+    usint firstMod               = 48;
 #endif
 
     parameters.SetScalingModSize(dcrtBits);
@@ -103,7 +104,7 @@ void IterativeBootstrapExample() {
 
     std::vector<uint32_t> levelBudget = {3, 3};
     // Each extra iteration on top of 1 requires an extra level to be consumed.
-    uint32_t approxBootstrapDepth = 8 + (numIterations - 1);
+    uint32_t approxBootstrapDepth = 9 + (numIterations - 1);
     std::vector<uint32_t> bsgsDim = {0, 0};
 
     uint32_t levelsUsedBeforeBootstrap = 10;
@@ -124,9 +125,14 @@ void IterativeBootstrapExample() {
     usint ringDim = cryptoContext->GetRingDimension();
     std::cout << "CKKS scheme is using ring dimension " << ringDim << std::endl << std::endl;
 
+    std::cout << "log2 q = " << cryptoContext->GetCryptoParameters()->GetElementParams()->GetModulus().GetMSB()
+              << std::endl;
+    std::cout << "log2 qp = " << cryptoContext->GetCryptoParameters()->GetParamsPK()->GetModulus().GetMSB()
+              << std::endl;
+
     // Step 2: Precomputations for bootstrapping
     // We use a sparse packing.
-    uint32_t numSlots = 8;
+    uint32_t numSlots = ringDim / 2;
     cryptoContext->EvalBootstrapSetup(levelBudget, bsgsDim, numSlots);
 
     // Step 3: Key Generation
@@ -154,7 +160,6 @@ void IterativeBootstrapExample() {
     // We start with a depleted ciphertext that has used up all of its levels.
     Plaintext ptxt = cryptoContext->MakeCKKSPackedPlaintext(x, 1, depth - 1, nullptr, numSlots);
     ptxt->SetLength(numSlots);
-    std::cout << "Input: " << ptxt << std::endl;
 
     // Encrypt the encoded vectors
     Ciphertext<DCRTPoly> ciph = cryptoContext->Encrypt(keyPair.publicKey, ptxt);
@@ -162,9 +167,12 @@ void IterativeBootstrapExample() {
     // Step 5: Measure the precision of a single bootstrapping operation.
     auto ciphertextAfter = cryptoContext->EvalBootstrap(ciph);
 
+    ptxt->SetLength(16);
+    std::cout << "Input: " << ptxt << std::endl;
+
     Plaintext result;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextAfter, &result);
-    result->SetLength(numSlots);
+    result->SetLength(16);
     uint32_t precision =
         std::floor(CalculateApproximationError(result->GetCKKSPackedValue(), ptxt->GetCKKSPackedValue()));
     std::cout << "Bootstrapping precision after 1 iteration: " << precision << std::endl;
@@ -178,7 +186,7 @@ void IterativeBootstrapExample() {
 
     Plaintext resultTwoIterations;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextTwoIterations, &resultTwoIterations);
-    result->SetLength(numSlots);
+    resultTwoIterations->SetLength(16);
     auto actualResult = resultTwoIterations->GetCKKSPackedValue();
 
     std::cout << "Output after two iterations of bootstrapping: " << actualResult << std::endl;
