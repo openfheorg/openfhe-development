@@ -41,7 +41,6 @@
 #include "lattice/ildcrtparams.h"
 #include "lattice/ilelement.h"
 #include "lattice/ilparams.h"
-#include "lattice/poly.h"
 #include "testdefs.h"
 #include "utils/debug.h"
 #include "utils/inttypes.h"

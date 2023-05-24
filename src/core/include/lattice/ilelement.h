@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,15 +33,18 @@
   Represents and defines integer lattice element objects in OpenFHE
  */
 
-#ifndef LBCRYPTO_LATTICE_ILELEMENT_H
-#define LBCRYPTO_LATTICE_ILELEMENT_H
+#ifndef LBCRYPTO_INC_LATTICE_ILELEMENT_H
+#define LBCRYPTO_INC_LATTICE_ILELEMENT_H
 
-#include <vector>
-
-#include "math/hal.h"
+// #include "math/hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
+
+#include "utils/exception.h"
 #include "utils/inttypes.h"
+#include "utils/serializable.h"
+
+#include <vector>
 
 namespace lbcrypto {
 
@@ -87,7 +90,7 @@ public:
     /**
    * @brief Standard destructor
    */
-    virtual ~ILElement() {}
+    virtual ~ILElement() = default;
 
     // Assignment operators
     /**
@@ -443,7 +446,7 @@ public:
    * @brief Sets the format/representation of the element.
    * @param format the format/representation to set.
    */
-    void SetFormat(const Format format) {
+    inline void SetFormat(const Format format) {
         if (this->GetFormat() != format) {
             this->SwitchFormat();
         }

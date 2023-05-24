@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,12 +33,14 @@
   matrix class implementations and type specific implementations
  */
 
-#ifndef _SRC_LIB_CORE_MATH_MATRIX_IMPL_CPP
-#define _SRC_LIB_CORE_MATH_MATRIX_IMPL_CPP
+#ifndef LBCRYPTO_INC_LATTICE_MATRIX_IMPL_H
+#define LBCRYPTO_INC_LATTICE_MATRIX_IMPL_H
 
-#include "lattice/field2n.h"
-#include "math/matrix.cpp"  // NOLINT
-#include "math/matrixstrassen.h"
+#include "math/matrix-impl.h"
+
+#include "utils/parallel.h"
+
+#include <memory>
 
 // this is the implementation of matrixes of things that are in core
 // and that need template specializations
@@ -110,9 +112,18 @@ Matrix<typename Element::Vector> RotateVecResult(Matrix<Element> const& inMat) {
 
 template <typename Element>
 void Matrix<Element>::SetFormat(Format format) {
-    for (size_t row = 0; row < rows; ++row) {
+    if (rows == 1) {
+#pragma omp parallel for num_threads(cols)
         for (size_t col = 0; col < cols; ++col) {
-            data[row][col].SetFormat(format);
+            data[0][col].SetFormat(format);
+        }
+    }
+    else {
+#pragma omp parallel for num_threads(rows)
+        for (size_t row = 0; row < rows; ++row) {
+            for (size_t col = 0; col < cols; ++col) {
+                data[row][col].SetFormat(format);
+            }
         }
     }
 }
@@ -120,17 +131,15 @@ void Matrix<Element>::SetFormat(Format format) {
 template <typename Element>
 void Matrix<Element>::SwitchFormat() {
     if (rows == 1) {
-        for (size_t row = 0; row < rows; ++row) {
-#pragma omp parallel for
-            for (size_t col = 0; col < cols; ++col) {
-                data[row][col].SwitchFormat();
-            }
+#pragma omp parallel for num_threads(cols)
+        for (size_t col = 0; col < cols; ++col) {
+            data[0][col].SwitchFormat();
         }
     }
     else {
-        for (size_t col = 0; col < cols; ++col) {
-#pragma omp parallel for
-            for (size_t row = 0; row < rows; ++row) {
+#pragma omp parallel for num_threads(rows)
+        for (size_t row = 0; row < rows; ++row) {
+            for (size_t col = 0; col < cols; ++col) {
                 data[row][col].SwitchFormat();
             }
         }

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -41,7 +41,16 @@
  * WHEN CHOOSING A STANDARD DEVIATION SIGMA_B FOR BASE SAMPLER, MAKE SURE THAT
  * SIGMA_B>=4*SQRT(2)*N WHERE N IS THE SMOOTHING PARAMETER
  * */
+
 #include "math/discretegaussiangeneratorgeneric.h"
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+
+#include <cmath>
+#include <memory>
+#include <random>
+#include <vector>
 
 namespace lbcrypto {
 

@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -34,16 +34,19 @@
   all other distribution generators
  */
 
-#ifndef LBCRYPTO_MATH_DISTRIBUTIONGENERATOR_H_
-#define LBCRYPTO_MATH_DISTRIBUTIONGENERATOR_H_
+#ifndef LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_
+#define LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_
+
+// #include "math/hal.h"
+
+#include "utils/parallel.h"
+#include "utils/prng/blake2engine.h"
 
 #include <chrono>
 #include <memory>
-#include <mutex>
+// #include <mutex>
 #include <random>
 #include <thread>
-#include "math/hal.h"
-#include "utils/prng/blake2engine.h"
 
 // #define FIXED_SEED // if defined, then uses a fixed seed number for
 // reproducible results during debug. Use only one OMP thread to ensure
@@ -127,7 +130,7 @@ public:
                 // heap variable; we are going to use the least 32 bits of its memory
                 // location as the counter for BLAKE2 This will increase the entropy of
                 // the BLAKE2 sample
-                void* mem = malloc(1);
+                void* mem        = malloc(1);
                 uint32_t counter = reinterpret_cast<long long>(mem);  // NOLINT
                 free(mem);
 
@@ -185,21 +188,6 @@ private:
 #endif
 };
 
-/**
- * @brief Abstract class describing generator requirements.
- *
- * The Distribution Generator defines the methods that must be implemented by a
- * real generator. It also holds the single PRNG, which should be called by all
- * child class when generating a random number is required.
- *
- */
-template <typename VecType>
-class DistributionGenerator {
-public:
-    DistributionGenerator() {}
-    virtual ~DistributionGenerator() {}
-};
-
 }  // namespace lbcrypto
 
-#endif  // LBCRYPTO_MATH_DISTRIBUTIONGENERATOR_H_
+#endif  // LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_

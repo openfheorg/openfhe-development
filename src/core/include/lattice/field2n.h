@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,16 +33,22 @@
   Represents and defines power-of-2 fields
  */
 
-#ifndef __FIELD2N_H__
-#define __FIELD2N_H__
+#ifndef LBCRYPTO_INC_LATTICE_FIELD2N_H
+#define LBCRYPTO_INC_LATTICE_FIELD2N_H
 
+#include "lattice/lat-hal.h"
+
+// #include "math/dftransform.h"
+#include "math/matrix.h"
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+#include "utils/serializable.h"
+
+#include <complex>
 #include <limits>
 #include <string>
 #include <vector>
-
-#include "math/dftransform.h"
-#include "lattice/lat-hal.h"
-#include "math/matrix.h"
 
 namespace lbcrypto {
 /**
@@ -339,7 +345,7 @@ public:
         ar(::cereal::make_nvp("f", format));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "Field2n";
     }
     static uint32_t SerializedVersion() {
@@ -369,4 +375,4 @@ inline std::ostream& operator<<(std::ostream& os, const Field2n& m) {
 
 }  // namespace lbcrypto
 
-#endif  // __FIELD2N_H__
+#endif

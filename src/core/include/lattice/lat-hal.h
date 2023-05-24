@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,38 +33,22 @@
   This file contains the functionality to switch between lattice backends
  */
 
-#ifndef __LAT_HAL_H__
-#define __LAT_HAL_H__
+#ifndef LBCRYPTO_INC_LATTICE_LAT_HAL_H
+#define LBCRYPTO_INC_LATTICE_LAT_HAL_H
 
-#if defined(WITH_INTEL_HEXL)
-    #include "lattice/hal/hexl/lat-backend-hexl.h"
-#else  // default
-    #include "lattice/hal/default/lat-backend-default.h"
-#endif
+#include "lattice/ilparams.h"
+#include "lattice/ildcrtparams.h"
 
 namespace lbcrypto {
 
-using M2Poly = PolyImpl<M2Vector>;
-using M4Poly = PolyImpl<M4Vector>;
-#ifdef WITH_NTL
-using M6Poly = PolyImpl<M6Vector>;
-#endif
-
-using NativePoly = PolyImpl<NativeVector>;
-
-using NativePoly64 = NativePoly;
+using ILNativeParams = ILParamsImpl<NativeInteger>;
+using ILParams       = ILParamsImpl<BigInteger>;
 
 using M2Params = ILParamsImpl<M2Integer>;
 using M4Params = ILParamsImpl<M4Integer>;
 #ifdef WITH_NTL
 using M6Params = ILParamsImpl<M6Integer>;
 #endif
-
-using ILNativeParams = ILParamsImpl<NativeInteger>;
-
-// the default for the backend...
-using ILParams = ILParamsImpl<BigInteger>;
-using Poly     = PolyImpl<BigVector>;
 
 using M2DCRTParams = ILDCRTParams<M2Integer>;
 using M4DCRTParams = ILDCRTParams<M4Integer>;
@@ -73,5 +57,7 @@ using M6DCRTParams = ILDCRTParams<M6Integer>;
 #endif
 
 }  // namespace lbcrypto
+
+#include "lattice/hal/lat-backend.h"
 
 #endif  // __LAT_HAL_H__

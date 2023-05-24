@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -33,15 +33,18 @@
   Wraps parameters for integer lattice operations. Inherits from ElemParams
  */
 
-#ifndef LBCRYPTO_LATTICE_ILPARAMS_H
-#define LBCRYPTO_LATTICE_ILPARAMS_H
-
-#include <string>
+#ifndef LBCRYPTO_INC_LATTICE_ILPARAMS_H
+#define LBCRYPTO_INC_LATTICE_ILPARAMS_H
 
 #include "lattice/elemparams.h"
+
 #include "math/hal.h"
 #include "math/nbtheory.h"
+
+#include "utils/exception.h"
 #include "utils/inttypes.h"
+
+#include <string>
 
 namespace lbcrypto {
 
@@ -52,7 +55,7 @@ namespace lbcrypto {
  * and their inheritors.
  */
 template <typename IntType>
-class ILParamsImpl : public ElemParams<IntType> {
+class ILParamsImpl final : public ElemParams<IntType> {
 public:
     typedef IntType Integer;
 
@@ -115,7 +118,7 @@ public:
     /**
    * @brief Standard Destructor method.
    */
-    ~ILParamsImpl() {}
+    ~ILParamsImpl() override = default;
 
     /**
    * @brief Equality operator compares ElemParams (which will be dynamic casted)
@@ -124,22 +127,12 @@ public:
    * @return True if this Poly represents the same values as the specified
    * DCRTPoly, False otherwise
    */
-    bool operator==(const ElemParams<IntType>& rhs) const {
+    bool operator==(const ElemParams<IntType>& rhs) const override {
         if (dynamic_cast<const ILParamsImpl<IntType>*>(&rhs) == nullptr)
             return false;
-
         return ElemParams<IntType>::operator==(rhs);
     }
 
-private:
-    std::ostream& doprint(std::ostream& out) const {
-        out << "ILParams ";
-        ElemParams<IntType>::doprint(out);
-        out << std::endl;
-        return out;
-    }
-
-public:
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::base_class<ElemParams<IntType>>(this));
@@ -154,11 +147,19 @@ public:
         ar(::cereal::base_class<ElemParams<IntType>>(this));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "ILParms";
     }
     static uint32_t SerializedVersion() {
         return 1;
+    }
+
+private:
+    std::ostream& doprint(std::ostream& out) const override {
+        out << "ILParams ";
+        ElemParams<IntType>::doprint(out);
+        out << std::endl;
+        return out;
     }
 };
 

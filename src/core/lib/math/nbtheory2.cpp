@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -35,16 +35,19 @@
 
 #define _USE_MATH_DEFINES
 
-#include <time.h>
-#include <chrono>
-#include <cmath>
-#include <sstream>
-
 #include "config_core.h"
+
+#include "math/hal.h"
 #include "math/distributiongenerator.h"
 #include "math/nbtheory.h"
 
 #include "utils/debug.h"
+
+// #include <time.h>
+// #include <chrono>
+#include <cmath>
+// #include <sstream>
+#include <vector>
 
 namespace lbcrypto {
 

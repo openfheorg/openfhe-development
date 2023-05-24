@@ -31,7 +31,16 @@
 
 #include "encoding/ckkspackedencoding.h"
 
+#include "lattice/lat-hal.h"
+
 #include "math/dftransform.h"
+
+#include "utils/exception.h"
+#include "utils/inttypes.h"
+
+#include <complex>
+#include <cmath>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -260,10 +269,10 @@ bool CKKSPackedEncoding::Encode() {
         int32_t logc = 0;
         for (size_t i = 0; i < slots; ++i) {
             inverse[i] *= powP;
-            int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
+            int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].real()))));
             if (logc < logci)
                 logc = logci;
-            logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
+            logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].imag()))));
             if (logc < logci)
                 logc = logci;
         }

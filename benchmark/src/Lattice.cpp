@@ -36,11 +36,19 @@
 
 #define _USE_MATH_DEFINES
 #include "vechelper.h"
-#include "lattice/elemparamfactory.h"
 
 #include "benchmark/benchmark.h"
 
+#include "lattice/elemparamfactory.h"
+#include "lattice/ildcrtparams.h"
+#include "lattice/ilparams.h"
+#include "lattice/lat-hal.h"
+
+#include "utils/inttypes.h"
+
 #include <iostream>
+#include <map>
+#include <memory>
 #include <vector>
 
 using namespace lbcrypto;

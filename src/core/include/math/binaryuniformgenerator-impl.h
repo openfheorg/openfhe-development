@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -30,37 +30,39 @@
 //==================================================================================
 
 /*
-  native integer implementation
+  This code provides generation of uniform distribution of binary values (modulus 2). Discrete uniform generator relies on
+  the built-in C++ generator for 32-bit unsigned integers defined in <random>
  */
 
-#define BLOCK_VECTOR_IMPLEMENT
-#include "lattice/lat-hal.h"
-#include "math/matrix.cpp"          // NOLINT
-#include "matrix-lattice-impl.cpp"  // NOLINT
+#ifndef LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_IMPL_H_
+#define LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_IMPL_H_
 
-#include "elemparams.cpp"  // NOLINT
-#include "ilparams.cpp"    // NOLINT
-#include "poly.cpp"        // NOLINT
+#include "math/binaryuniformgenerator.h"
+
+#include "utils/inttypes.h"
+
+#include <random>
 
 namespace lbcrypto {
 
-template class ElemParams<NativeInteger>;
-template class ILParamsImpl<NativeInteger>;
-template class PolyImpl<NativeVector>;
+template <typename VecType>
+std::bernoulli_distribution BinaryUniformGeneratorImpl<VecType>::m_distribution = std::bernoulli_distribution(0.5);
 
-template class Matrix<NativePoly>;
-SPLIT64_FOR_TYPE(NativePoly)
-SPLIT64ALT_FOR_TYPE(NativePoly)
-SPLIT32ALT_FOR_TYPE(NativePoly)
-template Matrix<NativeVector> RotateVecResult(Matrix<NativePoly> const& inMat);
-template Matrix<NativeInteger> Rotate(Matrix<NativePoly> const& inMat);
+template <typename VecType>
+typename VecType::Integer BinaryUniformGeneratorImpl<VecType>::GenerateInteger() const {
+    return m_distribution(PseudoRandomNumberGenerator::GetPRNG()) ? 1 : 0;
+}
 
-// native poly version
-template <>
-PolyImpl<NativeVector> PolyImpl<NativeVector>::ToNativePoly() const {
-    return *this;
+template <typename VecType>
+VecType BinaryUniformGeneratorImpl<VecType>::GenerateVector(const usint size,
+                                                            const typename VecType::Integer& modulus) const {
+    VecType v(size);
+    v.SetModulus(modulus);
+    for (usint i = 0; i < size; i++)
+        v[i] = GenerateInteger();
+    return v;
 }
 
 }  // namespace lbcrypto
 
-CEREAL_CLASS_VERSION(lbcrypto::NativePoly, lbcrypto::NativePoly::SerializedVersion());
+#endif

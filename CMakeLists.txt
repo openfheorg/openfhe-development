@@ -83,7 +83,6 @@ option( WITH_BE2 "Include Backend 2 in build by setting WITH_BE2 to ON"         
 option( WITH_BE4 "Include Backend 4 in build by setting WITH_BE4 to ON"         ON  )
 option( WITH_NTL "Include Backend 6 and NTL in build by setting WITH_NTL to ON" OFF )
 option( WITH_TCM "Activate tcmalloc by setting WITH_TCM to ON"                  OFF )
-option( WITH_INTEL_HEXL "Use Intel HEXL library"                                OFF )
 option( WITH_NATIVEOPT "Use machine-specific optimizations"                     OFF )
 option( WITH_COVTEST "Turn on to enable coverage testing"                       OFF )
 option( USE_MACPORTS "Use MacPorts installed packages"                          OFF )
@@ -110,7 +109,6 @@ message( STATUS "WITH_BE2:         ${WITH_BE2}")
 message( STATUS "WITH_BE4:         ${WITH_BE4}")
 message( STATUS "WITH_NTL:         ${WITH_NTL}")
 message( STATUS "WITH_TCM:         ${WITH_TCM}")
-message( STATUS "WITH_INTEL_HEXL:  ${WITH_INTEL_HEXL}")
 message( STATUS "WITH_OPENMP:      ${WITH_OPENMP}")
 message( STATUS "NATIVE_SIZE:      ${NATIVE_SIZE}")
 message( STATUS "CKKS_M_FACTOR:    ${CKKS_M_FACTOR}")
@@ -541,11 +539,6 @@ include (ExternalProject)
 set( THIRDPARTYDIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party )
 include_directories( ${THIRDPARTYDIR}/include )
 
-### Handle third-party HEXL
-if (WITH_INTEL_HEXL)
-	include(third-party/intel-hexl/intel-hexl.cmake)
-endif()
-
 ### Handle third-party CEREAL
 include_directories( ${THIRDPARTYDIR}/cereal/include )
 install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION include/openfhe)
@@ -651,10 +644,6 @@ if(WITH_NTL)
     list(APPEND THIRDPARTYLIBS "gmp")
     list(APPEND THIRDPARTYSTATICLIBS "ntl")
     list(APPEND THIRDPARTYSTATICLIBS "gmp")
-endif()
-
-if (WITH_INTEL_HEXL)
-	list(APPEND THIRDPARTYLIBS HEXL::hexl)
 endif()
 
 set(DEMODATAPATH ${CMAKE_CURRENT_SOURCE_DIR}/demoData)

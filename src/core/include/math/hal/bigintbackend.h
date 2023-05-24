@@ -72,7 +72,6 @@
 #include "math/hal/bigintntl/backendntl.h"
 #include "config_core.h"
 
-
 #if MATHBACKEND != 2 && MATHBACKEND != 4 && MATHBACKEND != 6
     #error "MATHBACKEND value is not valid"
 #endif

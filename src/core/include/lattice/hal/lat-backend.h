@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -30,14 +30,45 @@
 //==================================================================================
 
 /*
-  element parameters for OpenFHE
+  Defines aliases for the lattice default backend
  */
 
-#include "lattice/elemparams.h"
+#ifndef LBCRYPTO_INC_LATTICE_HAL_LAT_BACKEND_H
+#define LBCRYPTO_INC_LATTICE_HAL_LAT_BACKEND_H
 
-CEREAL_CLASS_VERSION(lbcrypto::ElemParams<M2Integer>, lbcrypto::ElemParams<M2Integer>::SerializedVersion());
-CEREAL_CLASS_VERSION(lbcrypto::ElemParams<M4Integer>, lbcrypto::ElemParams<M4Integer>::SerializedVersion());
+#define POLY_IMPLEMENTATION     "lattice/hal/default/poly-impl.h"
+#define DCRTPOLY_IMPLEMENTATION "lattice/hal/default/dcrtpoly-impl.h"
+
+#define MAKE_POLY_TYPE(T)     template class PolyImpl<T>;
+#define MAKE_DCRTPOLY_TYPE(T) template class DCRTPolyImpl<T>;
+
+#include "lattice/hal/default/poly.h"
+#include "lattice/hal/default/dcrtpoly.h"
+
+namespace lbcrypto {
+
+using M2Poly = PolyImpl<M2Vector>;
+using M4Poly = PolyImpl<M4Vector>;
 #ifdef WITH_NTL
-CEREAL_CLASS_VERSION(lbcrypto::ElemParams<M6Integer>, lbcrypto::ElemParams<M6Integer>::SerializedVersion());
+using M6Poly = PolyImpl<M6Vector>;
+#else
+using M6Poly     = void;
 #endif
-CEREAL_CLASS_VERSION(lbcrypto::ElemParams<NativeInteger>, lbcrypto::ElemParams<NativeInteger>::SerializedVersion());
+
+using Poly         = PolyImpl<BigVector>;
+using NativePoly   = PolyImpl<NativeVector>;
+using NativePoly64 = NativePoly;
+
+using M2DCRTPoly = DCRTPolyImpl<M2Vector>;
+using M4DCRTPoly = DCRTPolyImpl<M4Vector>;
+#ifdef WITH_NTL
+using M6DCRTPoly = DCRTPolyImpl<M6Vector>;
+#else
+using M6DCRTPoly = void;
+#endif
+
+using DCRTPoly = DCRTPolyImpl<BigVector>;
+
+}  // namespace lbcrypto
+
+#endif

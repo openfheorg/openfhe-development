@@ -44,7 +44,7 @@
 #include "utils/utilities.h"
 
 #include "math/matrix.h"
-#include "math/matrixstrassen.cpp"  // NOLINT
+#include "math/matrixstrassen-impl.h"
 
 using namespace lbcrypto;
 
