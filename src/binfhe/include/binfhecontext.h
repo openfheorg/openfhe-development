@@ -56,7 +56,7 @@ struct BinFHEContextParams {
     usint latticeParam;
     usint mod;  // modulus for additive LWE
     // modulus for key switching; if it is zero, then it is replaced with intermediate prime for LWE crypto parameters
-    int64_t modKS;
+    uint64_t modKS;
     double stdDev;
     usint baseKS;  // base for key switching
 

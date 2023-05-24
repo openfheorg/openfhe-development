@@ -42,7 +42,7 @@
 using namespace lbcrypto;
 
 usint dim_n     = 0;
-int64_t Qks     = 0;
+uint64_t Qks    = 0;
 usint dim_N     = 0;
 usint ctmodq    = 0;
 usint logQ      = 0;
@@ -101,7 +101,8 @@ int main(int argc, char* argv[]) {
                 ctmodq = atoi(optarg);
                 break;
             case 'k':
-                Qks = atoi(optarg);
+                // Qks = atoi(optarg);
+                std::stringstream(optarg) >> Qks;
                 break;
             case 'g':
                 B_g = atoi(optarg);

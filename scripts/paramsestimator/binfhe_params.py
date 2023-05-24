@@ -89,8 +89,8 @@ def parameter_selector():
                 #################################################
 
                 #this is added since Qks is declared as usint in openfhe -- fixed
-                #if (logmodQks >= 32):
-                #    logmodQks = 30
+                if (logmodQks >= 32):
+                    logmodQks = 30
 
                 B_g = 2**floor(logmodQ/d_g)
                 B_ks = 2**floor(logmodQks/d_ks)
@@ -160,7 +160,7 @@ def get_mod(dim, exp_sec_level):
     a = stdparams.paramlinear[exp_sec_level][1]
     b = stdparams.paramlinear[exp_sec_level][2]
 
-    mod = ceil(a*dim + b) #find analytical estimate for starting point of Qks
+    mod = floor(a*dim + b) #find analytical estimate for starting point of Qks
     return mod
 
 
@@ -170,9 +170,66 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
 
     retlogmodQks = 0
     retBks = 0
+    while(start_n <= end_N):
+        new_n = floor((start_n + end_N)/2)
+        print("new n: ", new_n)
+
+        logmodQks = get_mod(new_n, exp_sec_level)
+        if (logmodQks >= 32):
+            logmodQks = 30
+
+        params.n = new_n
+        params.Qks = 2**logmodQks
+        B_ks = 2**floor(logmodQks/d_ks)
+        while (B_ks >= 128):
+            B_ks = B_ks/2
+
+        params.B_ks = B_ks
+        new_noise = helperfncs.get_noise_from_cpp_code(params, num_of_samples)
+        #if (new_noise < target_noise_level):
+        #    found = True
+        #    n = new_n
+        #    break
+        #if (new_noise >= prev_noise):
+        #    min_noise = new_noise
+        #    end_N = new_n - 1
+        #else:
+        #    start_n = new_n + 1
+
+        if (new_noise > target_noise_level and prev_noise <= target_noise_level):
+            found = True
+            n = prev_n
+            retlogmodQks = prevlogmodQks
+            retBks = prevBks
+            break
+        if (new_noise < target_noise_level):
+            n = new_n
+            retlogmodQks = logmodQks
+            retBks = B_ks
+            end_N = new_n - 1
+        else:
+            start_n = new_n + 1
+
+        prev_noise = new_noise
+        prev_n = new_n
+        prevlogmodQks = logmodQks
+        prevBks = B_ks
+
+    #add code to check if any n value lesser than the obtained n could result in the same or lower noise level
+    #if (new_noise > target_noise_level and prev_noise <= target_noise_level):
+
+    return n, retlogmodQks, retBks
+
+
+def binary_search_n_Qks(start_n, end_N, prev_noise, exp_sec_level, target_noise_level, num_of_samples, d_ks, params):
+    n = 0
+
+    retlogmodQks = 0
+    retBks = 0
 
     intlogmodQks = 0
     intBks = 0
+    int_noise = 0
     initialQks = params.Qks
     while(start_n <= end_N):
         new_n = floor((start_n + end_N)/2)
@@ -183,10 +240,16 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
         while(logmodQks > params.logQ):
             logmodQks = logmodQks - 1
 
-        #if (logmodQks >= 32):
-        #    logmodQks = 30
+        if (logmodQks >= 32):
+            logmodQks = 30
 
         startQks = initialQks
+
+        #to reduce number of iterations
+        diffQks = logmodQks - log2(initialQks)
+        if (diffQks > 10):
+            logmodQks = log2(initialQks) + 10
+
         endQks = 2**logmodQks
 
         newQks = startQks
@@ -217,10 +280,10 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
 
             if (new_noise <= target_noise_level):
                 print("in qks search new noise < target noise")
-                endQks = newQks
+                endQks = newQks - 1
             else:
                 print("in qks search new noise > target noise")
-                startQks = newQks
+                startQks = newQks + 1
 
             prevlogmodQks = newlogmodQks
             prevBks = B_ks
