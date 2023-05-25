@@ -67,6 +67,7 @@ enum SecurityLevel {
     HEStd_NotSet,
 };
 
+SecurityLevel convertToSecurityLevel(uint32_t num);
 inline std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
     switch (sl) {
         case HEStd_128_classic:

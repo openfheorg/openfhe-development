@@ -64,6 +64,20 @@ std::ostream& operator<<(std::ostream& s, PKESchemeFeature f) {
     return s;
 }
 
+SecretKeyDist convertToSecretKeyDist(uint32_t num) {
+    auto keyDist = static_cast<SecretKeyDist>(num);
+    switch (keyDist) {
+        case GAUSSIAN:
+        case UNIFORM_TERNARY:
+        case SPARSE_TERNARY:
+            return keyDist;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for SecretKeyDist ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
 std::ostream& operator<<(std::ostream& s, SecretKeyDist m) {
     switch (m) {
         case GAUSSIAN:
@@ -82,6 +96,23 @@ std::ostream& operator<<(std::ostream& s, SecretKeyDist m) {
     return s;
 }
 
+ScalingTechnique convertToScalingTechnique(uint32_t num) {
+    auto scTech = static_cast<ScalingTechnique>(num);
+    switch (scTech) {
+        case FIXEDMANUAL:
+        case FIXEDAUTO:
+        case FLEXIBLEAUTO:
+        case FLEXIBLEAUTOEXT:
+        case NORESCALE:
+            // case INVALID_RS_TECHNIQUE:
+            return scTech;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for ScalingTechnique ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
 std::ostream& operator<<(std::ostream& s, ScalingTechnique t) {
     switch (t) {
         case FIXEDMANUAL:
@@ -109,6 +140,22 @@ std::ostream& operator<<(std::ostream& s, ScalingTechnique t) {
     return s;
 }
 
+ProxyReEncryptionMode convertToProxyReEncryptionMode(uint32_t num) {
+    auto encrMode = static_cast<ProxyReEncryptionMode>(num);
+    switch (encrMode) {
+        // case NOT_SET:
+        case INDCPA:
+        case FIXED_NOISE_HRA:
+        case NOISE_FLOODING_HRA:
+        case DIVIDE_AND_ROUND_HRA:
+            return encrMode;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for ProxyReEncryptionMode ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
 std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
     switch (p) {
         case NOT_SET:
@@ -118,12 +165,8 @@ std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
             s << "INDCPA";
             break;
         case FIXED_NOISE_HRA:
-            s << "FIXED_NOISE_HRA";
-            break;
-        case NOISE_FLOODING_HRA:
-            s << "NOISE_FLOODING_HRA";
-            break;
-        case DIVIDE_AND_ROUND_HRA:
+            SecretKeyDist convertToSecretKeyDist(uint32_t num);
+
             s << "DIVIDE_AND_ROUND_HRA";
             break;
         default:
@@ -133,6 +176,20 @@ std::ostream& operator<<(std::ostream& s, ProxyReEncryptionMode p) {
     return s;
 }
 
+MultipartyMode convertToMultipartyMode(uint32_t num) {
+    auto mptyMode = static_cast<MultipartyMode>(num);
+    switch (mptyMode) {
+        // case INVALID_MULTIPARTY_MODE:
+        case FIXED_NOISE_MULTIPARTY:
+        case NOISE_FLOODING_MULTIPARTY:
+            return mptyMode;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for MultipartyMode ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
 std::ostream& operator<<(std::ostream& s, MultipartyMode t) {
     switch (t) {
         case INVALID_MULTIPARTY_MODE:
@@ -151,6 +208,19 @@ std::ostream& operator<<(std::ostream& s, MultipartyMode t) {
     return s;
 }
 
+ExecutionMode convertToExecutionMode(uint32_t num) {
+    auto execMode = static_cast<ExecutionMode>(num);
+    switch (execMode) {
+        case EXEC_EVALUATION:
+        case EXEC_NOISE_ESTIMATION:
+            return execMode;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for ExecutionMode ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
 std::ostream& operator<<(std::ostream& s, ExecutionMode t) {
     switch (t) {
         case EXEC_EVALUATION:
@@ -166,6 +236,19 @@ std::ostream& operator<<(std::ostream& s, ExecutionMode t) {
     return s;
 }
 
+DecryptionNoiseMode convertToDecryptionNoiseMode(uint32_t num) {
+    auto noiseMode = static_cast<DecryptionNoiseMode>(num);
+    switch (noiseMode) {
+        case FIXED_NOISE_DECRYPT:
+        case NOISE_FLOODING_DECRYPT:
+            return noiseMode;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for DecryptionNoiseMode ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
 std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t) {
     switch (t) {
         case FIXED_NOISE_DECRYPT:
@@ -181,6 +264,20 @@ std::ostream& operator<<(std::ostream& s, DecryptionNoiseMode t) {
     return s;
 }
 
+KeySwitchTechnique convertToKeySwitchTechnique(uint32_t num) {
+    auto ksTech = static_cast<KeySwitchTechnique>(num);
+    switch (ksTech) {
+        // case INVALID_KS_TECH:
+        case BV:
+        case HYBRID:
+            return ksTech;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for KeySwitchTechnique ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
 std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t) {
     switch (t) {
         case BV:
@@ -196,6 +293,19 @@ std::ostream& operator<<(std::ostream& s, KeySwitchTechnique t) {
     return s;
 }
 
+EncryptionTechnique convertToEncryptionTechnique(uint32_t num) {
+    auto encrTech = static_cast<EncryptionTechnique>(num);
+    switch (encrTech) {
+        case STANDARD:
+        case EXTENDED:
+            return encrTech;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for EncryptionTechnique ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
 std::ostream& operator<<(std::ostream& s, EncryptionTechnique t) {
     switch (t) {
         case STANDARD:
@@ -211,6 +321,21 @@ std::ostream& operator<<(std::ostream& s, EncryptionTechnique t) {
     return s;
 }
 
+MultiplicationTechnique convertToMultiplicationTechnique(uint32_t num) {
+    auto multTech = static_cast<MultiplicationTechnique>(num);
+    switch (multTech) {
+        case BEHZ:
+        case HPS:
+        case HPSPOVERQ:
+        case HPSPOVERQLEVELED:
+            return multTech;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for MultiplicationTechnique ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
 std::ostream& operator<<(std::ostream& s, MultiplicationTechnique t) {
     switch (t) {
         case BEHZ:
