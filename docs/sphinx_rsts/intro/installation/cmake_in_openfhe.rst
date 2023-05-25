@@ -109,7 +109,7 @@ Detecting Local Environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 OpenFHE detects most of the capabilities of the target machine. It uses the machine's capabilities and the values of the user options to create header files that are used to control the build. These files are placed in the src subdirectory of the CMake build tree, and are included in the OpenFHE install.
 
-As of release 1.10.0, ``src/core/config_core.h`` is used to control the build of the core component, and any library code that depends on it. Future developments will expand this to other components.
+``src/core/config_core.h`` is used to control the build of the core component, and any library code that depends on it. Future developments will expand this to other components.
 
 Third-Party Components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
