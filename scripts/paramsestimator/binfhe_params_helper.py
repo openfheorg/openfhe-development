@@ -13,6 +13,7 @@ sys.path.insert(0, '/home/sara/lattice-estimator')
 from estimator import *
 
 num_threads = 8
+syspath = "/home/sara/scriptparamsbinfhe24may23"
 
 def restore_print():
     # restore stdout
@@ -145,7 +146,7 @@ def optimize_params_security(expected_sec_level, dim, mod, optimize_dim=False, o
     return dim1, mod1
 
 
-#optimized dim, mod values with least decryption failure rate
+#optimized dim, mod values with least decryption failure rate - this can be ignored (deleted later)
 def choose_params_with_dim_mod_noise(exp_sec_level, param_set, exp_dec_fail, comp, is_quantum=True):
 
     ptmod = 2*comp
@@ -197,7 +198,7 @@ def choose_params_with_dim_mod_noise(exp_sec_level, param_set, exp_dec_fail, com
 
     return dimopt, modopt
 
-#optimize accumulator digit size or key switching digit size to lower noise
+#optimize accumulator digit size or key switching digit size to lower noise - this can be ignored (deleted later)
 def choose_params_digit_size(exp_sec_level, param_set, exp_dec_fail, comp, optimize_Bg, optimize_Bks, is_quantum=True):
     ptmod = 2*comp
     ctmod = param_set.q
@@ -246,7 +247,7 @@ def get_noise_from_cpp_code(param_set, num_of_samples, perfNumbers = False):
     B_ks = param_set.B_ks #baseKS
     B_rk = param_set.B_rk #baseRK
     sigma = param_set.sigma #sigma stddev
-    bashCommand = "../palisade_versions/openfhenonvector7mar23finalfix/scripts/run_boolean_and3_or3_script.sh " + str(dim_n) + " " + str(mod_q)+ " " + str(dim_N) + " " + str(mod_logQ)+ " " + str(mod_Qks) + " " + str(B_g) + " " + str(B_ks) + " " + str(B_rk) + " " + str(sigma) + " " + str(num_of_samples) + " > out_file_" + str(filenamerandom) + " 2>noise_file_" + str(filenamerandom)
+    bashCommand = syspath + "/scripts/run_boolean_and3_or3_script.sh " + str(dim_n) + " " + str(mod_q)+ " " + str(dim_N) + " " + str(mod_logQ)+ " " + str(mod_Qks) + " " + str(B_g) + " " + str(B_ks) + " " + str(B_rk) + " " + str(sigma) + " " + str(num_of_samples) + " " + syspath + " > out_file_" + str(filenamerandom) + " 2>noise_file_" + str(filenamerandom)
 
     print(bashCommand)
     os.system(bashCommand)
@@ -278,9 +279,9 @@ def get_performance(filename):
             elif(s1[0] == "CiphertextSize"):
                 perf.update({"CiphertextSize": s1[1] + " bytes"})
             elif(s1[0] == "BootstrapKeyGenTime"):
-                perf.update({"BootstrapKeyGenTime": s1[1] + " milliseconds"})
+                perf.update({"BootstrapKeyGenTime": s1[1]})
             elif(s1[0] == "EvalBinGateTime"):
-                perf.update({"EvalBinGateTime": s1[1]+ " milliseconds"})
+                perf.update({"EvalBinGateTime": s1[1]})
 
     return perf
 
@@ -324,6 +325,8 @@ def test_range(val, low, hi):
         msg = f"input not in valid range ({low} - {hi})"
         raise Exception(msg)
 
+###########################################################################################33
+#To be cleaned up before merging PR
 '''
 def fit_data(data):
     var('a,b')

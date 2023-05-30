@@ -100,10 +100,8 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(Q);
-    //std::cout << "digits size d_g " << digitsG << std::endl;
     // tempA is introduced to minimize the number of NTTs
     std::vector<NativePoly> tempA(digitsG2);
-
     for (size_t i = 0; i < digitsG2; ++i) {
         (*result)[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
         tempA[i]        = (*result)[i][0];

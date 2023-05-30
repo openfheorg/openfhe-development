@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
 '''Approach for determining parameters for binfhe
-1)	Pick security level
-2)	Set expected decryption failure rate
-3)	Specify max number of inputs to a boolean gate
-Measure enc/rec/dec time, and throughput ( #bits in (3+/these times) and document.
+1) Pick bootstrapping method
+2) Pick security level
+3) Set expected decryption failure rate
+4) Specify max number of inputs to a boolean gate
+Measure bootstrap keygen/evalbingate time, and throughput (bootstrap keygen size, keyswitching key size, ciphertext size) and document.
 '''
 
 import paramstable as stdparams
@@ -91,9 +92,12 @@ def parameter_selector():
                 #this is added since Qks is declared as usint in openfhe -- fixed
                 if (logmodQks >= 32):
                     logmodQks = 30
+                while(logmodQks > logmodQ):
+                    logmodQks = logmodQks - 1
 
-                B_g = 2**floor(logmodQ/d_g)
-                B_ks = 2**floor(logmodQks/d_ks)
+                modulus_Qks = 2**logmodQks
+                B_g = 2**ceil(logmodQ/d_g)
+                B_ks = 2**ceil(logmodQks/d_ks)
 
                 while (B_ks >= 128):# or ()32gb limit on complexity:
                     B_ks = B_ks/2
@@ -131,11 +135,11 @@ def parameter_selector():
             print("cannot find parameters for d_g: ", d_g)
         else:
             optQks = 2**optlogmodQks
-            B_g = 2**floor(logmodQ/d_g)
+            B_g = 2**ceil(logmodQ/d_g)
 
             param_set_final = stdparams.paramsetvars(opt_n, modulus_q, ringsize_N, logmodQ, optQks, B_g, optB_ks, B_rk, sigma)
             finalnoise, perf = helperfncs.get_noise_from_cpp_code(param_set_final, 1000, True)##########################################################run script CPP###########
-            final_dec_fail_rate, perfNumbers = helperfncs.get_decryption_failure(finalnoise, ptmod, modulus_q, num_of_inputs)
+            final_dec_fail_rate = helperfncs.get_decryption_failure(finalnoise, ptmod, modulus_q, num_of_inputs)
 
             print("final parameters")
             print("Input parameters: ")
@@ -160,7 +164,8 @@ def get_mod(dim, exp_sec_level):
     a = stdparams.paramlinear[exp_sec_level][1]
     b = stdparams.paramlinear[exp_sec_level][2]
 
-    mod = floor(a*dim + b) #find analytical estimate for starting point of Qks
+    modapp = a*dim + b
+    mod = ceil(modapp) #find analytical estimate for starting point of Qks
     return mod
 
 
@@ -170,6 +175,7 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
 
     retlogmodQks = 0
     retBks = 0
+    found = False
     while(start_n <= end_N):
         new_n = floor((start_n + end_N)/2)
         print("new n: ", new_n)
@@ -178,23 +184,17 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
         if (logmodQks >= 32):
             logmodQks = 30
 
+        while(logmodQks > params.logQ):
+            logmodQks = logmodQks - 1
+
         params.n = new_n
         params.Qks = 2**logmodQks
-        B_ks = 2**floor(logmodQks/d_ks)
+        B_ks = 2**ceil(logmodQks/d_ks)
         while (B_ks >= 128):
             B_ks = B_ks/2
 
         params.B_ks = B_ks
         new_noise = helperfncs.get_noise_from_cpp_code(params, num_of_samples)
-        #if (new_noise < target_noise_level):
-        #    found = True
-        #    n = new_n
-        #    break
-        #if (new_noise >= prev_noise):
-        #    min_noise = new_noise
-        #    end_N = new_n - 1
-        #else:
-        #    start_n = new_n + 1
 
         if (new_noise > target_noise_level and prev_noise <= target_noise_level):
             found = True
@@ -216,10 +216,47 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
         prevBks = B_ks
 
     #add code to check if any n value lesser than the obtained n could result in the same or lower noise level
-    #if (new_noise > target_noise_level and prev_noise <= target_noise_level):
+    if ((found) and (new_n < prev_n)):
+        params.Qks = 2**retlogmodQks
+        params.Bks = retBks
+        n, retlogmodQks, retBks = find_opt_n(new_n, prev_n, exp_sec_level, target_noise_level, num_of_samples, d_ks, params)
 
     return n, retlogmodQks, retBks
 
+def find_opt_n(start_n, end_n, exp_sec_level, target_noise_level, num_of_samples, d_ks, params):
+    opt_n = end_n
+    optlogmodQks = log2(params.Qks)
+    optBks = params.Bks
+    while (start_n <= end_n):
+        newopt_n = floor((start_n + end_n)/2)
+        print("newopt n: ", newopt_n)
+
+        logmodQks = get_mod(newopt_n, exp_sec_level)
+        if (logmodQks >= 32):
+            logmodQks = 30
+
+        while(logmodQks > params.logQ):
+            logmodQks = logmodQks - 1
+
+        params.n = newopt_n
+        params.Qks = 2**logmodQks
+        B_ks = 2**ceil(logmodQks/d_ks)
+        while (B_ks >= 128):
+            B_ks = B_ks/2
+
+        params.B_ks = B_ks
+        new_noise = helperfncs.get_noise_from_cpp_code(params, num_of_samples)
+
+        if (new_noise < target_noise_level):
+            opt_n = newopt_n
+            optlogmodQks = logmodQks
+            optBks = B_ks
+            end_n = newopt_n - 1
+        else:
+            start_n = newopt_n + 1
+
+
+    return opt_n, optlogmodQks, optBks
 
 def binary_search_n_Qks(start_n, end_N, prev_noise, exp_sec_level, target_noise_level, num_of_samples, d_ks, params):
     n = 0
@@ -230,7 +267,7 @@ def binary_search_n_Qks(start_n, end_N, prev_noise, exp_sec_level, target_noise_
     intlogmodQks = 0
     intBks = 0
     int_noise = 0
-    initialQks = params.Qks
+    initiallogQks = log2(params.Qks)
     while(start_n <= end_N):
         new_n = floor((start_n + end_N)/2)
         print("new n: ", new_n)
@@ -243,22 +280,17 @@ def binary_search_n_Qks(start_n, end_N, prev_noise, exp_sec_level, target_noise_
         if (logmodQks >= 32):
             logmodQks = 30
 
-        startQks = initialQks
+        startlogQks = initiallogQks
 
-        #to reduce number of iterations
-        diffQks = logmodQks - log2(initialQks)
-        if (diffQks > 10):
-            logmodQks = log2(initialQks) + 10
+        endlogQks = logmodQks
 
-        endQks = 2**logmodQks
-
-        newQks = startQks
-        newlogmodQks = log2(startQks)
+        newlogmodQks = startlogQks
+        #newlogmodQks = log2(startQks)
 
         found = False
-        while(startQks <= endQks):
-            params.Qks = newQks
-            B_ks = 2**floor(newlogmodQks/d_ks)
+        while(startlogQks <= endlogQks):
+            params.Qks = 2**newlogmodQks
+            B_ks = 2**ceil(newlogmodQks/d_ks)
             while (B_ks >= 128):
                 B_ks = B_ks/2     # display in the final parameters if the d_ks value is different from input
 
@@ -280,20 +312,19 @@ def binary_search_n_Qks(start_n, end_N, prev_noise, exp_sec_level, target_noise_
 
             if (new_noise <= target_noise_level):
                 print("in qks search new noise < target noise")
-                endQks = newQks - 1
+                endlogQks = newlogmodQks - 1
             else:
                 print("in qks search new noise > target noise")
-                startQks = newQks + 1
+                startlogQks = newlogmodQks + 1
 
             prevlogmodQks = newlogmodQks
             prevBks = B_ks
             prev_noise = new_noise
 
-            newQks = ceil((startQks + endQks)/2)
-            newlogmodQks = log2(newQks)
-            print("newQks: ", newQks)
-            print("startQks: ", startQks)
-            print("endQks: ", endQks)
+            newlogmodQks = ceil((startlogQks + endlogQks)/2)
+            print("newlogmodQks: ", newlogmodQks)
+            print("startlogQks: ", startlogQks)
+            print("endlogQks: ", endlogQks)
 
         print("int_noise: ", int_noise)
         print("new_noise: ", new_noise)

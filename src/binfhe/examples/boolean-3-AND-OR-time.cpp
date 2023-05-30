@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
                 ctmodq = atoi(optarg);
                 break;
             case 'k':
-                Qks = atoi(optarg);
+                std::stringstream(optarg) >> Qks;
                 break;
             case 'g':
                 B_g = atoi(optarg);
