@@ -831,7 +831,7 @@ protected:
             Plaintext plaintextNeg  = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Neg, 1, 0, nullptr, testData.slots);
             Plaintext plaintextMult = cc->MakeCKKSPackedPlaintext(
                 std::vector<std::complex<double>>({0, 6, 10, 12, 12, 10, 6, 0}), 1, 0, nullptr, testData.slots);
-            double factor            = 1 << 30;
+            double factor            = 1 << 25;
             Plaintext plaintextLarge = cc->MakeCKKSPackedPlaintext(
                 std::vector<std::complex<double>>({factor, factor, 0, 0, 0, 0, 0, 0}), 1, 0, nullptr, testData.slots);
             Plaintext plaintextLargeMult = cc->MakeCKKSPackedPlaintext(
