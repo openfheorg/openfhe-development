@@ -82,14 +82,7 @@ def parameter_selector():
                 logmodQks = log2(modulus_Qks)
                 logmodQ = log2(modulus_Q)
 
-                #this bug has been fixed in latest dev, can remove this after checking
-                #################################################
-                while (logmodQ < 14):
-                    modulus_Q = modulus_Q*2
-                    logmodQ = log2(modulus_Q)
-                #################################################
-
-                #this is added since Qks is declared as usint in openfhe -- fixed
+                #this is added since Qks is declared as usint in openfhe
                 if (logmodQks >= 32):
                     logmodQks = 30
                 while(logmodQks > logmodQ):
@@ -178,7 +171,6 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
     found = False
     while(start_n <= end_N):
         new_n = floor((start_n + end_N)/2)
-        print("new n: ", new_n)
 
         logmodQks = get_mod(new_n, exp_sec_level)
         if (logmodQks >= 32):

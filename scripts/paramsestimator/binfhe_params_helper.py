@@ -256,8 +256,6 @@ def get_noise_from_cpp_code(param_set, num_of_samples, perfNumbers = False):
     with open("noise_file_"+str(filenamerandom)) as file:
         for line in file:
             noise.append(float(line.rstrip()))
-    print("noise", stdev(noise))
-
 
     perfnum = get_performance("out_file_"+ str(filenamerandom))
     if perfNumbers:
