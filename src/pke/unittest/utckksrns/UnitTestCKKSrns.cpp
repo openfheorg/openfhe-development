@@ -831,6 +831,12 @@ protected:
             Plaintext plaintextNeg  = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Neg, 1, 0, nullptr, testData.slots);
             Plaintext plaintextMult = cc->MakeCKKSPackedPlaintext(
                 std::vector<std::complex<double>>({0, 6, 10, 12, 12, 10, 6, 0}), 1, 0, nullptr, testData.slots);
+            double factor            = 1 << 25;
+            Plaintext plaintextLarge = cc->MakeCKKSPackedPlaintext(
+                std::vector<std::complex<double>>({factor, factor, 0, 0, 0, 0, 0, 0}), 1, 0, nullptr, testData.slots);
+            Plaintext plaintextLargeMult = cc->MakeCKKSPackedPlaintext(
+                std::vector<std::complex<double>>({7 * factor, 6 * factor, 0, 0, 0, 0, 0, 0}), 1, 0, nullptr,
+                testData.slots);
 
             // Generate encryption keys
             KeyPair<Element> kp = cc->KeyGen();
@@ -844,8 +850,6 @@ protected:
             // Testing EvalMult
             Ciphertext<Element> cResult;
             Plaintext results;
-            cc->EvalMult(ciphertext1, plaintext1);
-            cc->EvalMult(ciphertext2, plaintext2);
             cResult = cc->EvalMult(ciphertext1, ciphertext2);
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintextMult->GetLength());
@@ -853,6 +857,13 @@ protected:
                           failmsg + " EvalMult fails");
             approximationErrors.emplace_back(
                 CalculateApproximationError<T>(plaintextMult->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
+
+            // Testing EvalMult by a large plaintext
+            cResult = cc->EvalMult(ciphertext2, plaintextLarge);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintextLargeMult->GetLength());
+            checkEquality(plaintextLargeMult->GetCKKSPackedValue(), results->GetCKKSPackedValue(), factor * eps,
+                          failmsg + " EvalMult by a large plaintext fails");
 
             // Testing operator*
             cResult = ciphertext1 * ciphertext2;
