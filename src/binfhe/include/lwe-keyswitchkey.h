@@ -59,7 +59,7 @@ public:
         m_keyB = rhs.m_keyB;
     }
 
-    explicit LWESwitchingKeyImpl(const LWESwitchingKeyImpl&& rhs) {
+    explicit LWESwitchingKeyImpl(LWESwitchingKeyImpl&& rhs) {
         m_keyA = std::move(rhs.m_keyA);
         m_keyB = std::move(rhs.m_keyB);
     }

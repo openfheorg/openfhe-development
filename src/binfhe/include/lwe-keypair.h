@@ -53,7 +53,7 @@ public:
     LWEPublicKey publicKey;
     LWEPrivateKey secretKey;
 
-    LWEKeyPairImpl(LWEPublicKey Av, LWEPrivateKey s) : publicKey(Av), secretKey(s) {}
+    LWEKeyPairImpl(LWEPublicKey Av, LWEPrivateKey s) : publicKey(std::move(Av)), secretKey(std::move(s)) {}
 
     bool good() {
         return publicKey && secretKey;

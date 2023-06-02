@@ -57,7 +57,7 @@ public:
    * key)
    * @return a shared pointer to the resulting ciphertext
    */
-    RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
+    RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                             ConstLWEPrivateKey LWEsk) const override;
 
     /**
@@ -67,14 +67,14 @@ public:
    * @param &input input ciphertext
    * @param acc previous value of the accumulator
    */
-    void EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
+    void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek, RLWECiphertext& acc,
                  const NativeVector& a) const override;
 
 private:
-    RingGSWEvalKey KeyGenDM(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
+    RingGSWEvalKey KeyGenDM(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                             const LWEPlaintext& m) const;
 
-    void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
+    void AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, const RingGSWEvalKey ek,
                     RLWECiphertext& acc) const;
 };
 

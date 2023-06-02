@@ -83,7 +83,7 @@ public:
         this->m_key = rhs.m_key;
     }
 
-    explicit RingGSWACCKeyImpl(const RingGSWACCKeyImpl&& rhs) {
+    explicit RingGSWACCKeyImpl(RingGSWACCKeyImpl&& rhs) {
         this->m_key = std::move(rhs.m_key);
     }
 
@@ -92,7 +92,7 @@ public:
         return *this;
     }
 
-    const RingGSWACCKeyImpl& operator=(const RingGSWACCKeyImpl&& rhs) {
+    const RingGSWACCKeyImpl& operator=(RingGSWACCKeyImpl&& rhs) {
         this->m_key = std::move(rhs.m_key);
         return *this;
     }

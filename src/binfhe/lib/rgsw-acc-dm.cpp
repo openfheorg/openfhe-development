@@ -36,7 +36,7 @@
 namespace lbcrypto {
 
 // Key generation as described in Section 4 of https://eprint.iacr.org/2014/816
-RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params,
+RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const NativePoly& skNTT, ConstLWEPrivateKey LWEsk) const {
     auto sv     = LWEsk->GetElement();
     int32_t mod = sv.GetModulus().ConvertToInt();
@@ -65,7 +65,7 @@ RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCrypt
     return ek;
 }
 
-void RingGSWAccumulatorDM::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek,
+void RingGSWAccumulatorDM::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek,
                                    RLWECiphertext& acc, const NativeVector& a) const {
     uint32_t baseR = params->GetBaseR();
     auto digitsR   = params->GetDigitsR();
@@ -84,7 +84,7 @@ void RingGSWAccumulatorDM::EvalAcc(const std::shared_ptr<RingGSWCryptoParams> pa
 
 // Encryption as described in Section 5 of https://eprint.iacr.org/2014/816
 // skNTT corresponds to the secret key z
-RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCryptoParams> params,
+RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const NativePoly& skNTT, const LWEPlaintext& m) const {
     NativeInteger Q   = params->GetQ();
     uint64_t q        = params->Getq().ConvertToInt();
@@ -143,7 +143,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
 }
 
 // AP Accumulation as described in https://eprint.iacr.org/2020/086
-void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
+void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, const RingGSWEvalKey ek,
                                       RLWECiphertext& acc) const {
     uint32_t digitsG2 = params->GetDigitsG() << 1;
     auto polyParams   = params->GetPolyParams();

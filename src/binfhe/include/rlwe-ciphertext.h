@@ -72,7 +72,7 @@ public:
         this->m_elements = rhs.m_elements;
     }
 
-    explicit RLWECiphertextImpl(const RLWECiphertextImpl&& rhs) {
+    explicit RLWECiphertextImpl(RLWECiphertextImpl&& rhs) {
         this->m_elements = std::move(rhs.m_elements);
     }
 
@@ -81,7 +81,7 @@ public:
         return *this;
     }
 
-    const RLWECiphertextImpl& operator=(const RLWECiphertextImpl&& rhs) {
+    const RLWECiphertextImpl& operator=(RLWECiphertextImpl&& rhs) {
         this->m_elements = rhs.m_elements;
         return *this;
     }

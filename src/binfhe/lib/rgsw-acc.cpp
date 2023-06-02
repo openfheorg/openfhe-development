@@ -54,7 +54,7 @@ namespace lbcrypto {
 // There are two approaches to do it.
 // The current approach appears to give the best performance
 // results. The two variants are labeled A and B.
-void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params,
+void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const std::vector<NativePoly>& input,
                                               std::vector<NativePoly>& output) const {
     uint32_t N                           = params->GetN();

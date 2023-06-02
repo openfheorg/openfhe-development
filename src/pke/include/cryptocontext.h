@@ -280,7 +280,7 @@ protected:
    * @param a
    * @param b
    */
-    void TypeCheck(const ConstCiphertext<Element> a, const ConstPlaintext b, CALLER_INFO_ARGS_HDR) const {
+    void TypeCheck(const ConstCiphertext<Element> a, const ConstPlaintext& b, CALLER_INFO_ARGS_HDR) const {
         if (a == nullptr) {
             std::string errorMsg(std::string("Null Ciphertext") + CALLER_INFO);
             OPENFHE_THROW(type_error, errorMsg);
@@ -1084,7 +1084,7 @@ public:
    * @param plaintext
    * @return ciphertext (or null on failure)
    */
-    Ciphertext<Element> Encrypt(Plaintext plaintext, const PublicKey<Element> publicKey) const {
+    Ciphertext<Element> Encrypt(const Plaintext& plaintext, const PublicKey<Element> publicKey) const {
         if (plaintext == nullptr)
             OPENFHE_THROW(type_error, "Input plaintext is nullptr");
         CheckKey(publicKey);
@@ -1113,7 +1113,7 @@ public:
    * @param plaintext
    * @return ciphertext (or null on failure)
    */
-    Ciphertext<Element> Encrypt(Plaintext plaintext, const PrivateKey<Element> privateKey) const {
+    Ciphertext<Element> Encrypt(const Plaintext& plaintext, const PrivateKey<Element> privateKey) const {
         //    if (plaintext == nullptr)
         //      OPENFHE_THROW(type_error, "Input plaintext is nullptr");
         CheckKey(privateKey);
@@ -1836,7 +1836,7 @@ public:
         return GetScheme()->FindAutomorphismIndex(idx, m);
     }
 
-    std::vector<usint> FindAutomorphismIndices(const std::vector<usint> idxList) const {
+    std::vector<usint> FindAutomorphismIndices(const std::vector<usint>& idxList) const {
         std::vector<usint> newIndices;
         newIndices.reserve(idxList.size());
         for (const auto idx : idxList) {

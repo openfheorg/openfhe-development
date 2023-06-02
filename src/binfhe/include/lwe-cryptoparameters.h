@@ -82,7 +82,7 @@ public:
         this->m_dgg.SetStd(rhs.m_dgg.GetStd());
     }
 
-    explicit LWECryptoParams(const LWECryptoParams&& rhs) {
+    explicit LWECryptoParams(LWECryptoParams&& rhs) {
         this->m_n      = std::move(rhs.m_n);
         this->m_N      = std::move(rhs.m_N);
         this->m_q      = std::move(rhs.m_q);
@@ -101,7 +101,7 @@ public:
         return *this;
     }
 
-    const LWECryptoParams& operator=(const LWECryptoParams&& rhs) {
+    const LWECryptoParams& operator=(LWECryptoParams&& rhs) {
         this->m_n      = std::move(rhs.m_n);
         this->m_N      = std::move(rhs.m_N);
         this->m_q      = std::move(rhs.m_q);

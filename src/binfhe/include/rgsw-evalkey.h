@@ -78,7 +78,7 @@ public:
         this->m_elements = rhs.m_elements;
     }
 
-    explicit RingGSWEvalKeyImpl(const RingGSWEvalKeyImpl&& rhs) {
+    explicit RingGSWEvalKeyImpl(RingGSWEvalKeyImpl&& rhs) {
         this->m_elements = std::move(rhs.m_elements);
     }
 
@@ -87,7 +87,7 @@ public:
         return *this;
     }
 
-    const RingGSWEvalKeyImpl& operator=(const RingGSWEvalKeyImpl&& rhs) {
+    const RingGSWEvalKeyImpl& operator=(RingGSWEvalKeyImpl&& rhs) {
         this->m_elements = rhs.m_elements;
         return *this;
     }

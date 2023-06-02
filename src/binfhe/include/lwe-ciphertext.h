@@ -49,9 +49,7 @@ class LWECiphertextImpl : public Serializable {
 public:
     LWECiphertextImpl() = default;
 
-    explicit LWECiphertextImpl(const NativeVector&& a, const NativeInteger& b) : m_a(std::move(a)), m_b(b) {}
-
-    explicit LWECiphertextImpl(const NativeVector& a, const NativeInteger& b) : m_a(a), m_b(b) {}
+    LWECiphertextImpl(const NativeVector& a, const NativeInteger& b) : m_a(a), m_b(b) {}
 
     LWECiphertextImpl(NativeVector&& a, NativeInteger b) : m_a(std::move(a)), m_b(b) {}
 
@@ -60,7 +58,7 @@ public:
         m_b = rhs.m_b;
     }
 
-    explicit LWECiphertextImpl(const LWECiphertextImpl&& rhs) {
+    explicit LWECiphertextImpl(LWECiphertextImpl&& rhs) {
         m_a = std::move(rhs.m_a);
         m_b = std::move(rhs.m_b);
     }
@@ -71,7 +69,7 @@ public:
         return *this;
     }
 
-    const LWECiphertextImpl& operator=(const LWECiphertextImpl&& rhs) {
+    const LWECiphertextImpl& operator=(LWECiphertextImpl&& rhs) {
         m_a = std::move(rhs.m_a);
         m_b = std::move(rhs.m_b);
         return *this;
