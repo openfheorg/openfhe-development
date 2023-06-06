@@ -60,6 +60,80 @@ protected:
 public:
 };
 
+void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplicationTechnique) {
+    CCParams<CryptoContextBFVRNS> parameters;
+    const uint64_t ptm              = 786433;
+    const usint multiplicativeDepth = 150;
+
+    parameters.SetPlaintextModulus(ptm);
+    parameters.SetMultiplicativeDepth(multiplicativeDepth);
+
+    parameters.SetMultiplicationTechnique(multiplicationTechnique);
+
+    // For speed
+    parameters.SetSecurityLevel(SecurityLevel::HEStd_NotSet);
+    parameters.SetRingDim(1024);
+
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+    // Enable features that you wish to use
+    cryptoContext->Enable(PKE);
+    cryptoContext->Enable(KEYSWITCH);
+    cryptoContext->Enable(LEVELEDSHE);
+
+    // Initialize Public Key Containers
+    KeyPair<DCRTPoly> keyPair;
+
+    // Generate a public/private key pair
+    keyPair = cryptoContext->KeyGen();
+
+    // Generate the relinearization key
+
+    cryptoContext->EvalMultKeyGen(keyPair.secretKey);
+
+    // First plaintext vector is encoded
+    std::vector<int64_t> vectorOfInts1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Plaintext plaintext1               = cryptoContext->MakePackedPlaintext(vectorOfInts1);
+    // Second plaintext vector is encoded
+    std::vector<int64_t> vectorOfInts2 = {3, 2, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Plaintext plaintext2               = cryptoContext->MakePackedPlaintext(vectorOfInts2);
+
+    size_t expectedResultSize =
+        (vectorOfInts1.size() < vectorOfInts2.size()) ? vectorOfInts1.size() : vectorOfInts2.size();
+    std::vector<int64_t> expectedResult(expectedResultSize);
+    for (size_t i = 0; i < expectedResultSize; ++i) {
+        expectedResult[i] = vectorOfInts1[i] * vectorOfInts2[i];
+    }
+    Plaintext expectedPlaintext = cryptoContext->MakePackedPlaintext(expectedResult);
+
+    // The encoded vectors are encrypted
+    auto ciphertext1 = cryptoContext->Encrypt(keyPair.publicKey, plaintext1);
+    auto ciphertext2 = cryptoContext->Encrypt(keyPair.publicKey, plaintext2);
+
+    // Homomorphic multiplications
+    auto ciphertextMul12 = cryptoContext->EvalMult(ciphertext1, ciphertext2);
+
+    // Decrypt the result of multiplications
+    Plaintext plaintextMultResult;
+    cryptoContext->Decrypt(keyPair.secretKey, ciphertextMul12, &plaintextMultResult);
+    plaintextMultResult->SetLength(expectedResultSize);
+    std::vector<int64_t> decvec = plaintextMultResult->GetPackedValue();
+    Plaintext dRes              = cryptoContext->MakePackedPlaintext(decvec);
+
+    EXPECT_EQ(plaintextMultResult, expectedPlaintext);
+}
+TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_BEHZ) {
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ);
+}
+TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPS) {
+    BFVrns_TestMultiplicativeDepthLimitation(HPS);
+}
+TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPSPOVERQ) {
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ);
+}
+TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPSPOVERQLEVELED) {
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED);
+}
+
 TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     UnitTestCCParams parameters;
     parameters.schemeId                = BFVRNS_SCHEME;
