@@ -1379,9 +1379,9 @@ public:
     }
 
     void EvalCompareSSPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE = 0, uint32_t initLevel = 0,
-                                 double scaleSign = 1.0, uint32_t dim1 = 0, uint32_t L = 1) {
+                                 double scaleSign = 1.0, bool unit = false, uint32_t dim1 = 0, uint32_t L = 1) {
         if (m_SchemeSwitch) {
-            m_SchemeSwitch->EvalCompareSSPrecompute(ccCKKS, pLWE, initLevel, scaleSign, dim1, L);
+            m_SchemeSwitch->EvalCompareSSPrecompute(ccCKKS, pLWE, initLevel, scaleSign, unit, dim1, L);
             return;
         }
 
@@ -1421,10 +1421,11 @@ public:
 
     Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
                                                    ConstCiphertext<Element> ciphertext2, uint32_t numCtxts = 0,
-                                                   uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0) {
+                                                   uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0,
+                                                   bool unit = false) {
         if (m_SchemeSwitch) {
             return m_SchemeSwitch->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE,
-                                                              scaleSign);
+                                                              scaleSign, unit);
         }
 
         OPENFHE_THROW(config_error, "EvalCompareSchemeSwitching operation has not been enabled");

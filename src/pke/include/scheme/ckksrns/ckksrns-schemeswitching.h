@@ -124,11 +124,12 @@ public:
                                                                                   bool alt) override;
 
     void EvalCompareSSPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, uint32_t init_level,
-                                 double scaleSign, uint32_t dim1, uint32_t L) override;
+                                 double scaleSign, bool unit, uint32_t dim1, uint32_t L) override;
 
     Ciphertext<DCRTPoly> EvalCompareSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext1,
                                                     ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts,
-                                                    uint32_t numSlots, uint32_t pLWE, double scaleSign) override;
+                                                    uint32_t numSlots, uint32_t pLWE, double scaleSign,
+                                                    bool unit) override;
 
     std::vector<Ciphertext<DCRTPoly>> EvalMinSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
                                                              PublicKey<DCRTPoly> publicKey, uint32_t numValues,
@@ -171,24 +172,34 @@ public:
 private:
     // the LWE cryptocontext to generate when scheme switching from CKKS
     BinFHEContext m_ccLWE;
+    // the CKKS cryptocontext for the intermediate modulus switching in CKKS to FHEW
+    CryptoContext<DCRTPoly> m_ccKS;
     // the associated ciphertext modulus Q for the LWE cryptocontext
     uint64_t m_modulus_LWE;
-    // the target ciphertext modulus Q for the CKKS cryptocontext (from FHEW to CKKS)
-    uint64_t m_modulus_CKKS_to;
+    // the target ciphertext modulus Q for the CKKS cryptocontext. We assume the switching goes to the same initial cryptocontext
+    uint64_t m_modulus_CKKS_initial;
     // the ciphertext modulus Q' for the CKKS cryptocontext that is secure for the LWE ring dimension
     uint64_t m_modulus_CKKS_from;
-    // switching key from CKKS to FHEW ("outer", i.e., not for an inner functionality)
+    // switching key from CKKS to FHEW
     EvalKey<DCRTPoly> m_CKKStoFHEWswk;
-    // switching key from FHEW to CKKS ("outer", i.e., not for an inner functionality)
+    // switching key from FHEW to CKKS
     Ciphertext<DCRTPoly> m_FHEWtoCKKSswk;
+    // a ciphertext under the intermediate cryptocontext
+    Ciphertext<DCRTPoly> m_ctxtKS;
     // number of slots encoded in the CKKS ciphertext
     uint32_t m_numSlotsCKKS;
-    // Baby-step dimensions for linear transform for CKKS->FHEW, FHEW->CKKS
+    // baby-step dimensions for linear transform for CKKS->FHEW, FHEW->CKKS
     uint32_t m_dim1CF;
     uint32_t m_dim1FC;
 
+    // target FHEW plaintext modulus
+    uint64_t m_plaintextFHEW;
+    // scaling factor of CKKS "outer" ciphertext
+    double m_scFactorOuter;
+
     // Andreea: temporary for debugging, remove later
     PrivateKey<DCRTPoly> m_CKKSsk;
+    PrivateKey<DCRTPoly> m_CKKSskKS;
     PrivateKey<DCRTPoly> m_RLWELWEsk;
     std::vector<std::complex<double>> m_FHEWtoCKKSswkDouble;
 
@@ -261,7 +272,7 @@ private:
         1.155913876856817e-15,  -1.628523116735651e-15};
 
     // K = 128
-    const std::vector<double> g_coefficientsFHEW128{
+    const std::vector<double> g_coefficientsFHEW128_9{
         0.08761193238226354,    -0.01738402917379392,   0.08935060894767313,    -0.01667686631436392,
         0.09435445639097996,    -0.01518333497826596,   0.1019473189108075,     -0.01276275748916528,
         0.110882655474149,      -0.009252446966171999,  0.1192111685574758,     -0.004534979909938953,
@@ -302,6 +313,38 @@ private:
         3.698522891563647e-15,  -4.204154533937635e-16, -2.740777660720187e-15, -1.348919106364917e-15,
         -1.620799477984723e-15, 4.003965342611375e-16,  -5.245330582249314e-16, 1.754761547401069e-15,
         -5.0481471966847e-16,   -4.722624632690369e-16, 1.628901569091919e-16,  -1.219903204684612e-15};
+
+    const std::vector<double> g_coefficientsFHEW128_8{
+        0.08761193238226343,   -0.01738402917379268,  0.08935060894767202,    -0.0166768663143651,
+        0.09435445639098095,   -0.01518333497826714,  0.1019473189108076,     -0.01276275748916462,
+        0.1108826554741475,    -0.009252446966171845, 0.1192111685574773,     -0.004534979909938402,
+        0.1242004317120066,    0.001362904847616587,  0.1224283765086535,     0.008145596233693802,
+        0.1102080588183083,    0.0151235046709367,    0.08449405378412395,    0.02114203679334948,
+        0.04431786059830203,   0.02464956129638117,   -0.007454366487155707,  0.02400059020367158,
+        -0.06266441339261287,  0.01804912154136392,   -0.107794320182978,     0.006958365388138488,
+        -0.1265848641500738,   -0.007067567033133184, -0.1060856934163389,    -0.01966175019277399,
+        -0.0451246732435682,   -0.02537595733026211,  0.0386291678537217,     -0.02017855662963969,
+        0.1092652333753532,    -0.004612578019767425, 0.1263344585514991,     0.01438496124843117,
+        0.07022427857484087,   0.02550072245548053,   -0.03434514153678073,   0.01979242584243296,
+        -0.1194659697149702,   -0.00100879476868968,  -0.1149256786653952,    -0.02192904329965062,
+        -0.01184295110147335,  -0.02417858011117619,  0.1066507410103884,     -0.003076473516322021,
+        0.1223432257632692,    0.02209885820126752,   0.005200840409853516,   0.02321022960558683,
+        -0.1224755172356849,   -0.003930982569218244, -0.1000653894904628,    -0.02689795846413568,
+        0.05865754664309823,   -0.01297065380451253,  0.1377909895596233,     0.02083617539534807,
+        0.006502421233004046,  0.02248299870285591,   -0.1396600746594754,    -0.01399307934458444,
+        -0.04589168496663817,  -0.02634216625743798,  0.1358978738303917,     0.0113024290766429,
+        0.05563799538901171,   0.02715486116995986,   -0.1426236952996744,    -0.01461041285557423,
+        -0.03302834981489241,  -0.02454368648125667,  0.155987785092838,      0.02360418859443058,
+        -0.03051465817859778,  0.01394389273915945,   -0.1434779685133346,    -0.03261375201147241,
+        0.1272587840850196,    0.009688061500927738,  0.04489729856072736,    0.02496761251245433,
+        -0.1723551233719191,   -0.03505277577503064,  0.1396636892583768,     0.01468861799712161,
+        0.005976224589562133,  0.01686435635499993,   -0.1508869780064481,    -0.03926260684622985,
+        0.2221665014339838,    0.04513725581879824,   -0.2157338005780147,    -0.03852627732053739,
+        0.1657363840693943,    0.02705951811098469,   -0.1076077705704247,    -0.0163750726899083,
+        0.06108203029457551,   0.008763390064061401,  -0.03094806130001855,   -0.00421829525869962,
+        0.01419485740772663,   0.001848300494047458,  -0.005955037043195616,  -0.000743799726455706,
+        0.002303513291010024,  0.0002767049434914361, -0.0008281705698254814, -9.515056665793518e-05,
+        0.0002835460400168608, 2.833421059257267e-05, -0.0001121393482639905};
 };
 
 }  // namespace lbcrypto

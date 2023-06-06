@@ -611,23 +611,23 @@ void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalCompareSSPrecompute(uint32_t pLWE, uint32_t initLevel, double scaleSign,
+void CryptoContextImpl<Element>::EvalCompareSSPrecompute(uint32_t pLWE, uint32_t initLevel, double scaleSign, bool unit,
                                                          uint32_t dim1, uint32_t L) {
-    GetScheme()->EvalCompareSSPrecompute(*this, pLWE, initLevel, scaleSign, dim1, L);
+    GetScheme()->EvalCompareSSPrecompute(*this, pLWE, initLevel, scaleSign, unit, dim1, L);
 }
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
                                                                            ConstCiphertext<Element> ciphertext2,
                                                                            uint32_t numCtxts, uint32_t numSlots,
-                                                                           uint32_t pLWE, double scaleSign) {
+                                                                           uint32_t pLWE, double scaleSign, bool unit) {
     if (ciphertext1 == nullptr || ciphertext2 == nullptr)
         OPENFHE_THROW(config_error, "ciphertexts passed to EvalCompareSchemeSwitching are empty");
     if (Mismatched(ciphertext1->GetCryptoContext()) || Mismatched(ciphertext2->GetCryptoContext()))
         OPENFHE_THROW(config_error,
                       "A ciphertext passed to EvalCompareSchemeSwitching was not "
                       "generated with this crypto context");
-    return GetScheme()->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE, scaleSign);
+    return GetScheme()->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE, scaleSign, unit);
 }
 
 template <typename Element>

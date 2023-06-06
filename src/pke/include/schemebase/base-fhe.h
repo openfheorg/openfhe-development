@@ -214,9 +214,10 @@ public:
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
    * @param dim1 baby-step for the linear transform
    * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
+   * @param unit whether the input messages are normalized to the unit circle
    */
     virtual void EvalCompareSSPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE, uint32_t initLevel,
-                                         double scaleSign, uint32_t dim1, uint32_t L) {
+                                         double scaleSign, bool unit, uint32_t dim1, uint32_t L) {
         OPENFHE_THROW(not_implemented_error, "EvalCompareSSPrecompute is not supported for this scheme");
     }
 
@@ -287,11 +288,13 @@ public:
    * plaintext modulus Q/2beta
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
+   * @param unit whether the input messages are normalized to the unit circle
    * @return a CKKS ciphertext encrypting in its slots the sign of  messages in the LWE ciphertexts
    */
     virtual Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
                                                            ConstCiphertext<Element> ciphertext2, uint32_t numCtxts,
-                                                           uint32_t numSlots, uint32_t pLWE, double scaleSign) {
+                                                           uint32_t numSlots, uint32_t pLWE, double scaleSign,
+                                                           bool unit) {
         OPENFHE_THROW(not_implemented_error, "EvalCompareSchemeSwitching is not supported for this scheme");
     }
 

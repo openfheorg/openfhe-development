@@ -3082,11 +3082,12 @@ public:
    * @param initLevel the level of the ciphertext that will be switched
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
+   * @param unit whether the input messages are normalized to the unit circle
    * @param dim1 baby-step for the linear transform
    * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    void EvalCompareSSPrecompute(uint32_t pLWE = 0, uint32_t initLevel = 0, double scaleSign = 1.0, uint32_t dim1 = 0,
-                                 uint32_t L = 1);
+    void EvalCompareSSPrecompute(uint32_t pLWE = 0, uint32_t initLevel = 0, double scaleSign = 1.0, bool unit = false,
+                                 uint32_t dim1 = 0, uint32_t L = 1);
 
     /**
    * Performs the scheme switching on the difference of two CKKS ciphertexts to compare, evaluates the sign function
@@ -3099,11 +3100,13 @@ public:
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
    * pLWE and scaleSign are given here only if the homomorphic decoding matrix is not scaled with the desired values
+   * @param unit whether the input messages are normalized to the unit circle
    * @return a CKKS ciphertext encrypting in its slots the sign of  messages in the LWE ciphertexts
    */
     Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
                                                    ConstCiphertext<Element> ciphertext2, uint32_t numCtxts = 0,
-                                                   uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0);
+                                                   uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0,
+                                                   bool unit = false);
 
     /**
    * Computes the minimum and argument of the first numValues packed in a CKKS ciphertext via repeated
