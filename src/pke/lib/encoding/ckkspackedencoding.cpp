@@ -270,12 +270,12 @@ bool CKKSPackedEncoding::Encode() {
         for (size_t i = 0; i < slots; ++i) {
             inverse[i] *= powP;
             if (inverse[i].real() != 0) {
-                int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].real()))));
+                int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].real()))));
                 if (logc < logci)
                     logc = logci;
             }
             if (inverse[i].imag() != 0) {
-                int32_t logci = static_cast<int32_t>(ceil(log2(abs(inverse[i].imag()))));
+                int32_t logci = static_cast<int32_t>(ceil(log2(std::abs(inverse[i].imag()))));
                 if (logc < logci)
                     logc = logci;
             }
