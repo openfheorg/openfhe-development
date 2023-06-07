@@ -1231,7 +1231,7 @@ void GetInternalRepresentation(const std::string& msg) {
     OPENFHE_DEBUG_FLAG(false);
     T x(1);
 
-    x <<= 100;  // x has one bit at 128
+    x <<= 100;  // x has one bit at 101
     x += T(2);  // x has one bit at 2
 
     auto x_limbs = x.GetInternalRepresentation();
@@ -1246,6 +1246,13 @@ void GetInternalRepresentation(const std::string& msg) {
 
     // define what is correct based on math backend selected
     std::string correct("2 0 0 16");
+
+// TODO: clean this up
+#ifdef WITH_BE4
+    #if MATH_UBBITS == 64
+    correct = "2 68719476736";
+    #endif
+#endif
 
 #ifdef WITH_NTL
     if (typeid(T) == typeid(M6Integer))

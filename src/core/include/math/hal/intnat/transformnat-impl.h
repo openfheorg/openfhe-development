@@ -200,7 +200,7 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
     IntType mu      = modulus.ComputeMu();
 
     usint i, m, j1, j2, indexOmega, indexLo, indexHi;
-    IntType omega, omegaFactor, loVal, hiVal, zero(0);
+    IntType omega, omegaFactor, loVal, hiVal;
 
     usint t     = (n >> 1);
     usint logt1 = lbcrypto::GetMSB64(t);

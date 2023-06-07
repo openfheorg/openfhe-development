@@ -207,12 +207,16 @@ void ModAddSmallerModulus(const std::string& msg) {
 
     OPENFHE_DEBUG("m " << m);
     OPENFHE_DEBUG("m's modulus " << m.GetModulus());
-    // at() does not apply mod.
+
     m.at(0) = typename V::Integer("9868");
     m.at(1) = typename V::Integer("5879");
     m.at(2) = typename V::Integer("4554");
     m.at(3) = typename V::Integer("2343");
     m.at(4) = typename V::Integer("9789");
+
+    // at() does not apply mod so m is currently ill-formed for input to ModAdd
+    // n is okay
+    m.ModEq(q);
 
     V calculatedResult = m.ModAdd(n);
 
@@ -253,6 +257,10 @@ void modsub_first_less_than_second(const std::string& msg) {
     m.at(3) = typename V::Integer("2343");
     m.at(4) = typename V::Integer("9789");
 
+    // at() does not apply mod so m is currently ill-formed for input to ModSub
+    // n is okay
+    m.ModEq(q);
+
     V calculatedResult = m.ModSub(n);
 
     uint64_t expectedResult[5] = {241, 3320, 1995, 3318, 162};
@@ -280,6 +288,10 @@ void modsub_first_greater_than_second(const std::string& msg) {
     m.at(2) = typename V::Integer("4554");
     m.at(3) = typename V::Integer("2343");
     m.at(4) = typename V::Integer("9789");
+
+    // at() does not apply mod so m is currently ill-formed for input to ModSub
+    // n is okay
+    m.ModEq(q);
 
     V calculatedResult = m.ModSub(n);
 

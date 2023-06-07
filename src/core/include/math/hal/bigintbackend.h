@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -88,10 +88,6 @@ using BigInteger = M2Integer;
 using BigVector  = M2Vector;
 
 #elif MATHBACKEND == 4
-
-    #ifdef UBINT_64
-        #error MATHBACKEND 4 with UBINT_64 currently does not work do not use.
-    #endif
 
 using BigInteger = M4Integer;
 using BigVector  = M4Vector;

@@ -241,6 +241,7 @@ Matrix<Element> Matrix<Element>::CofactorMatrix() const {
             /* Calculate the determinant */
             Element determinant(allocZero());
             c.Determinant(&determinant);
+            // TODO: This will be set to zero if Element is BigInteger
             Element negDeterminant = -determinant;
 
             /* Fill in the elements of the cofactor */

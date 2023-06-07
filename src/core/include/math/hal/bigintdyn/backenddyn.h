@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -43,7 +43,7 @@
 
         #include "math/hal/bigintdyn/mubintvecdyn.h"  // rings of ubints
         #include "math/hal/bigintdyn/ubintdyn.h"      // dynamically sized unsigned big integers or ubints
-        #include "math/hal/bigintdyn/transformdyn.h"  // transforms fo dynamic
+        #include "math/hal/bigintdyn/transformdyn.h"  // transforms for dynamic
 
 // Global alias for MATHBACKEND 4 Integer
 using M4Integer = bigintdyn::BigInteger;
@@ -52,5 +52,4 @@ using M4Integer = bigintdyn::BigInteger;
 using M4Vector = bigintdyn::BigVector;
 
     #endif /* SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_ */
-
 #endif

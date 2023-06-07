@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -42,365 +42,199 @@
     #ifndef LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
         #define LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
 
-        #define NO_BARRETT  // currently barrett is slower than mod
-
-        #include <fstream>
-        #include <functional>
-        #include <iostream>
-        #include <limits>
-        #include <memory>
-        #include <string>
-        #include <type_traits>
-        #include <typeinfo>
-        #include <vector>
-
-        #include "utils/inttypes.h"
-        #include "utils/memory.h"
-        #include "utils/serializable.h"
-        #include "utils/utilities.h"
-
         #include "math/hal/integer.h"
         #include "math/hal/basicint.h"
         #include "math/nbtheory.h"
 
-        // should this be set to 64?
+        #include "utils/exception.h"
+        #include "utils/inttypes.h"
+        #include "utils/serializable.h"
+        #include "utils/utilities.h"
 
-        ////////// for bigintdyn, decide if you want 32 bit or 64 bit underlying
-        /// integers in the implementation
-        #define UBINT_32
-    // #define UBINT_64
+        // #include <fstream>
+        #include <functional>
+        #include <iostream>
+        #include <limits>
+        // #include <memory>
+        #include <string>
+        #include <type_traits>
+        // #include <typeinfo>
+        #include <utility>
+        #include <vector>
+
+    // Select 32 or 64 bit ints for underlying implementation.
+    // #define UBINT_32
+        #define UBINT_64
+    ////// #define UBINT_128  // Currently, 128 bit does not work
 
         #ifdef UBINT_32
             #define MATH_UBBITS 32
 typedef uint32_t expdtype;
-            #undef UBINT_64  // cant have both accidentally
+            #undef UBINT_64
+            #undef UBINT_128
         #endif
 
         #ifdef UBINT_64
-
             #define MATH_UBBITS 64
 typedef uint64_t expdtype;
-            #undef UBINT_32  // cant have both accidentally
+            #undef UBINT_32
+            #undef UBINT_128
+        #endif
 
-            #undef int128_t
-            #define int128_t our_int128_t
-            #undef uint128_t
-            #define uint128_t our_uint128_t
+        #ifdef UBINT_128
+            #define MATH_UBBITS 128
+typedef __uint128_t expdtype;
+            #undef UBINT_32
+            #undef UBINT_64
+        #endif
 
-typedef __int128 int128_t;
-typedef unsigned __int128 uint128_t;
+        #define _SECURE_SCL 0  // to speed up VS
+        #define NO_BARRETT     // currently barrett is slower than mod
 
-            #define UINT128_MAX ((uint128_t)-1)
-
-        #endif  // UBINT_64
-
-/**
- *@namespace bigintdyn
- * The namespace of this code
- */
 namespace bigintdyn {
-// Forward declaration for aliases
+
 template <typename limb_t>
 class ubint;
+
 /** Define the mapping for ExpBigInteger (experimental) */
 using xubint     = ubint<expdtype>;
 using BigInteger = xubint;
 
-/**The following structs are needed for initialization of ubint at
- *the preprocessing stage.  The structs compute certain values using
- *template metaprogramming approach and mostly follow recursion to
- *calculate value(s).
- */
-
-/**
- * @brief  Struct to find log value of N.
- *Needed in the preprocessing step of ubint to determine bitwidth.
- *
- * @tparam N bitwidth.
- */
-
-template <usint N>
-struct Log2 {
-    static const usint value = 1 + Log2<N / 2>::value;
-};
-
 /**
  * @brief Struct to find log 2 value of N.
- *Base case for recursion.
- *Needed in the preprocessing step of ubint to determine bitwidth.
+ * Used in preprocessing of ubint to determine bitwidth.
  */
+template <usint N>
+struct Log2 {
+    static constexpr usint value = 1 + Log2<N / 2>::value;
+};
 template <>
 struct Log2<2> {
-    static const usint value = 1;
+    static constexpr usint value = 1;
 };
 
-/**
- * @brief Struct for validating if Dtype is amongst {uint8_t, uint16_t,
- * uint32_t, uint64_t, uint128_t}
- *
- * @tparam Dtype primitive datatype.
- */
-template <typename Dtype>
-struct DataTypeChecker {
-    static const bool value = false;
-};
+// @brief A pre-computed constant of Log base 2 of 10.
+// constexpr double LOG2_10 = 3.32192809489;
 
 /**
- * @brief Struct for validating if Dtype is amongst {uint8_t, uint16_t,
- * uint32_t, uint64_t, uint128_t}. sets value true if datatype is unsigned
- * integer 8 bit.
- */
-template <>
-struct DataTypeChecker<uint8_t> {
-    static const bool value = true;
-};
-
-/**
- * @brief Struct for validating if Dtype is amongst {uint8_t, uint16_t,
- * uint32_t, uint64_t, uint128_t}. sets value true if datatype is unsigned
- * integer 16 bit.
- */
-template <>
-struct DataTypeChecker<uint16_t> {
-    static const bool value = true;
-};
-
-/**
- * @brief Struct for validating if Dtype is amongst {uint8_t, uint16_t,
- * uint32_t, uint64_t, uint128_t}. sets value true if datatype is unsigned
- * integer 32 bit.
- */
-template <>
-struct DataTypeChecker<uint32_t> {
-    static const bool value = true;
-};
-
-/**
- * @brief Struct for validating if Dtype is amongst {uint8_t, uint16_t,
- * uint32_t, uint64_t, uint128_t}. sets value true if datatype is unsigned
- * integer 64 bit.
- */
-template <>
-struct DataTypeChecker<uint64_t> {
-    static const bool value = true;
-};
-
-        #ifdef UBINT_64
-/**
- * @brief Struct for validating if Dtype is amongst {uint8_t, uint16_t,
- * uint32_t, uint64_t, uint128_t}. sets value true if datatype is unsigned
- * integer 64 bit.
- */
-template <>
-struct DataTypeChecker<uint128_t> {
-    static const bool value = true;
-};
-        #endif
-
-/**
- * @brief Struct to determine a datatype that is twice as big(bitwise) as utype.
- * sets T as of type void for default case
- *
+ * @brief Struct to determine other datatyps based on utype.
  * @tparam utype primitive integer data type.
  */
 template <typename utype>
-struct DoubleDataType {
-    typedef void T;
+struct DataTypes {
+    using SignedType       = void;
+    using DoubleType       = void;
+    using SignedDoubleType = void;
 };
-
-/**
- * @brief Struct to determine a datatype that is twice as big(bitwise) as utype.
- * Sets T as of type unsigned integer 16 bit if limb datatype is 8bit
- */
 template <>
-struct DoubleDataType<uint8_t> {
-    typedef uint16_t T;
+struct DataTypes<uint32_t> {
+    using SignedType       = int32_t;
+    using DoubleType       = uint64_t;
+    using SignedDoubleType = int64_t;
 };
-
-/**
- * @brief Struct to determine a datatype that is twice as big(bitwise) as utype.
- * sets T as of type unsigned integer 32 bit if limb datatype is 16bit
- */
 template <>
-struct DoubleDataType<uint16_t> {
-    typedef uint32_t T;
+struct DataTypes<uint64_t> {
+    using SignedType = int64_t;
+        #if defined(HAVE_INT128)
+    using DoubleType       = __uint128_t;
+    using SignedDoubleType = __int128;
+        #else
+    using DoubleType       = uint64_t;
+    using SignedDoubleType = int64_t;
+        #endif
 };
-
-/**
- * @brief Struct to determine a datatype that is twice as big(bitwise) as utype.
- * sets T as of type unsigned integer 64 bit if limb datatype is 32bit
- */
+        #if defined(HAVE_INT128)
 template <>
-struct DoubleDataType<uint32_t> {
-    typedef uint64_t T;
-};
-
-        #ifdef UBINT_64
-/**
- * @brief Struct to determine a datatype that is twice as big(bitwise) as utype.
- * sets T as of type unsigned integer 128 bit if limb datatype is 64bit
- */
-template <>
-struct DoubleDataType<uint64_t> {
-    typedef uint128_t T;
+struct DataTypes<__uint128_t> {
+    using SignedType       = __int128_t;
+    using DoubleType       = __uint128_t;
+    using SignedDoubleType = __int128_t;
 };
         #endif
 
-/**
- * @brief Struct to determine a datatype that is the signed version of utype.
- * sets T as of type void for default case
- *
- * @tparam utype primitive integer data type.
- */
-template <typename utype>
-struct SignedDataType {
-    typedef void T;
-};
-
-/**
- * @brief Struct to determine a datatype that is the signed version of utype.
- * Sets T as of type signed integer 8 bit if limb datatype is 8bit
- */
-template <>
-struct SignedDataType<uint8_t> {
-    typedef int8_t T;
-};
-
-/**
- * @brief Struct to determine a datatype that is the signed version of utype.
- * sets T as of type signed integer 16 bit if limb datatype is 16bit
- */
-template <>
-struct SignedDataType<uint16_t> {
-    typedef int16_t T;
-};
-
-/**
- * @brief Struct to determine a datatype that is the signed version of utype.
- * sets T as of type signed integer 32 bit if limb datatype is 32bit
- */
-template <>
-struct SignedDataType<uint32_t> {
-    typedef int32_t T;
-};
-
-/**
- * @brief Struct to determine a datatype that is the signed version of utype.
- * sets T as of type signed integer 64 bit if limb datatype is 64bit
- */
-template <>
-struct SignedDataType<uint64_t> {
-    typedef int64_t T;
-};
-
-/**
- * @brief Struct to determine a signed datatype that is twice as big(bitwise) as
- * utype. sets T as of type void for default case
- *
- * @tparam utype primitive integer data type.
- */
-template <typename utype>
-struct SignedDoubleDataType {
-    typedef void T;
-};
-
-/**
- * @brief Struct to determine a signed datatype that is twice as big(bitwise) as
- * utype. Sets T as of type unsigned integer 16 bit if limb datatype is 8bit
- */
-template <>
-struct SignedDoubleDataType<uint8_t> {
-    typedef int16_t T;
-};
-
-/**
- * @brief Struct to determine a signed datatype that is twice as big(bitwise) as
- * utype. sets T as of type unsigned integer 32 bit if limb datatype is 16bit
- */
-template <>
-struct SignedDoubleDataType<uint16_t> {
-    typedef int32_t T;
-};
-
-/**
- * @brief Struct to determine a signed datatype that is twice as big(bitwise) as
- * utype. sets T as of type unsigned integer 64 bit if limb datatype is 32bit
- */
-template <>
-struct SignedDoubleDataType<uint32_t> {
-    typedef int64_t T;
-};
-
-        #ifdef UBINT_64
-/**
- * @brief Struct to determine a signed datatype that is twice as big(bitwise) as
- * utype. sets T as of type unsigned integer 128 bit if limb datatype is 64bit
- */
-template <>
-struct SignedDoubleDataType<uint64_t> {
-    typedef int128_t T;
-};
-        #endif
-
-const double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of Log base 2 of 10.
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// Definition starts here
-//////////////////////////////////////////////////////////////////////////////////////////////////
 template <typename limb_t>
-class ubint : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
-public:
-    // CONSTRUCTORS
+class ubint final : public lbcrypto::BigIntegerInterface<ubint<limb_t>> {
+private:
+    // variable that stores the MOST SIGNIFICANT BIT position in the
+    usint m_MSB{0};
+    // vector storing the native integers. stored little endian
+    std::vector<limb_t> m_value{0};
 
-    /**
-   * Default constructor.
-   */
-    ubint();
+    // variable to store the maximum value of the limb data type.
+    static constexpr limb_t m_MaxLimb{std::numeric_limits<limb_t>::max()};
+    // variable to store the bitlength of the limb data type.
+    static constexpr usint m_limbBitLength{sizeof(limb_t) * 8};
+    // variable to store the log2 of the number of bits in the limb data type.
+    static constexpr usint m_log2LimbBitLength{Log2<sizeof(limb_t) * 8>::value};
+
+public:
+    using Integer  = limb_t;
+    using Slimb_t  = typename DataTypes<limb_t>::SignedType;
+    using Dlimb_t  = typename DataTypes<limb_t>::DoubleType;
+    using SDlimb_t = typename DataTypes<limb_t>::SignedDoubleType;
+
+    ~ubint() noexcept = default;
+
+    constexpr ubint() noexcept = default;
 
     /**
    * Copy constructor.
-   *
    * @param &val is the ubint to be copied.
    */
-    ubint(const ubint& val);
+    ubint(const ubint& val) noexcept : m_MSB{val.m_MSB}, m_value{val.m_value} {}
+
+    ubint(const std::vector<limb_t>& v) noexcept : m_value{v} {
+        this->ubint::NormalizeLimbs();
+    }
 
     /**
    * Move constructor.
-   *
    * @param &&val is the ubint to be copied.
    */
-    ubint(ubint&& val);
+    ubint(ubint&& val) noexcept : m_MSB(std::move(val.m_MSB)), m_value(std::move(val.m_value)) {}
+
+    ubint(std::vector<limb_t>&& v) noexcept : m_value(std::move(v)) {
+        this->ubint::NormalizeLimbs();
+    }
 
     /**
    * Constructor from a string.
-   *
    * @param &strval is the initial integer represented as a string.
    */
-    explicit ubint(const std::string& strval);
-    explicit ubint(const char* strval) : ubint(std::string(strval)) {}
-    explicit ubint(const char strval) : ubint(std::string(1, strval)) {}
+    explicit ubint(const std::string& strval) {
+        this->ubint::SetValue(strval);
+    }
+    //    explicit ubint(const char* strval) : ubint(std::string(strval)) {}
+    explicit ubint(const char* strval) {
+        this->ubint::SetValue(std::string(strval));
+    }
+    //    explicit ubint(const char strval) : ubint(std::string(1, strval)) {}
+    explicit ubint(const char strval) : ubint(static_cast<uint64_t>(strval - '0')) {}
 
     /**
    * Constructor from an unsigned integer.
-   *
    * @param val is the initial integer represented as a uint64_t.
    */
-    ubint(uint64_t val);  // NOLINT
+    constexpr ubint(uint64_t val) noexcept : m_MSB(lbcrypto::GetMSB64(val)), m_value{static_cast<limb_t>(val)} {
+        #ifdef UBINT_32
+        if ((val >>= m_limbBitLength) > 0)
+            m_value.push_back(static_cast<limb_t>(val));
+        #endif
+    }
+
         #if defined(HAVE_INT128)
-    ubint(unsigned __int128 val);  // NOLINT
+    ubint(__uint128_t val) noexcept;
         #endif
 
     /**
    * Constructors from smaller basic types
-   *
    * @param val is the initial integer represented as a basic integer type.
    */
-    template <typename T,
-              typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, char>::value &&
-                                          !std::is_same<T, const char>::value && !std::is_same<T, uint64_t>::value &&
-                                          !std::is_same<T, unsigned __int128>::value,
-                                      bool>::type = true>
-    ubint(T val) : ubint(static_cast<uint64_t>(val)) {}  // NOLINT
+    template <typename T, typename std::enable_if_t<std::is_integral_v<T> && !std::is_same_v<T, char> &&
+                                                        !std::is_same_v<T, const char> &&
+                                                        !std::is_same_v<T, uint64_t> && !std::is_same_v<T, __uint128_t>,
+                                                    bool> = true>
+    constexpr ubint(const T& val) noexcept : ubint(static_cast<uint64_t>(val)) {}
 
     /**
    * Constructor for all other types that have not already got their own constructors.
@@ -408,25 +242,16 @@ public:
    *
    * @param &val is the initial integer represented as a big integer.
    */
-    template <typename T,
-              typename std::enable_if<!std::is_integral<T>::value && !std::is_same<T, const std::string>::value &&
-                                          !std::is_same<T, const char*>::value && !std::is_same<T, double>::value,
-                                      bool>::type = true>
-    ubint(const T& val) : ubint(val.ConvertToInt()) {}  // NOLINT
+    template <typename T, typename std::enable_if_t<!std::is_integral_v<T> && !std::is_same_v<T, const std::string> &&
+                                                        !std::is_same_v<T, const char*> && !std::is_same_v<T, double>,
+                                                    bool> = true>
+    ubint(const T& val) noexcept : ubint(val.ConvertToInt()) {}
 
     /**
    * Constructor from double is not permitted
-   *
    * @param val
    */
-    ubint(double val) __attribute__((deprecated("Cannot construct from a double")));  // NOLINT
-
-    /**
-   * Destructor.
-   */
-    ~ubint();
-
-    // ASSIGNMENT OPERATORS
+    ubint(const double& val) __attribute__((deprecated("Cannot construct from a double")));  // NOLINT
 
     /**
    * Copy assignment operator
@@ -434,46 +259,58 @@ public:
    * @param &val is the ubint to be assigned from.
    * @return assigned ubint ref.
    */
-    const ubint& operator=(const ubint& val);
+    ubint& operator=(const ubint& val) noexcept {
+        m_MSB   = val.m_MSB;
+        m_value = val.m_value;
+        return *this;
+    }
 
-    // TODO move assignment operator?
+    constexpr ubint& operator=(const limb_t& val) noexcept {
+        m_MSB = lbcrypto::GetMSB64(val);
+        m_value.resize(1);
+        m_value[0] = val;
+        return *this;
+    }
+
+    ubint& operator=(ubint&& val) noexcept {
+        if (this != &val) {
+            m_MSB   = std::move(val.m_MSB);
+            m_value = std::move(val.m_value);
+        }
+        return *this;
+    }
 
     /**
    * Assignment operator for all other types that have not already got their own
    * assignment operators.
    * @param &val is the value to be assign from
    * @return the assigned BigInteger ref.
-
    */
-    template <typename T, typename std::enable_if<!std::is_same<T, const ubint>::value, bool>::type = true>
-    const ubint& operator=(const T& val) {
-        return (*this = ubint(val));
+    template <typename T, typename std::enable_if_t<!std::is_same_v<T, const ubint>, bool> = true>
+    ubint& operator=(const T& val) {
+        return *this = std::move(ubint(val));
     }
-
-    // ACCESSORS
 
     /**
    * Basic set method for setting the value of a ubint
-   *
    * @param strval is the string representation of the ubint to be copied.
    */
     void SetValue(const std::string& strval);
 
     /**
    * Basic set method for setting the value of a ubint
-   *
    * @param val is the ubint representation of the ubint to be assigned.
    */
-    void SetValue(const ubint& val);
-
-    /**
-   *  Set this int to 1.
-   */
-    inline void SetIdentity() {
-        *this = 1;
+    void SetValue(const ubint& val) {
+        m_MSB   = val.m_MSB;
+        m_value = val.m_value;
     }
 
-    // ARITHMETIC OPERATIONS
+    constexpr void SetIdentity() {
+        m_MSB = 1;
+        m_value.resize(1);
+        m_value[0] = 1;
+    }
 
     /**
    * Addition operation.
@@ -482,14 +319,7 @@ public:
    * @return result of the addition operation.
    */
     ubint Add(const ubint& b) const;
-
-    /**
-   * Addition operation. In-place variant.
-   *
-   * @param &b is the value to add.
-   * @return result of the addition operation.
-   */
-    const ubint& AddEq(const ubint& b);
+    ubint& AddEq(const ubint& b);
 
     /**
    * Subtraction operation.
@@ -498,18 +328,14 @@ public:
    * @return is the result of the subtraction operation.
    */
     ubint Sub(const ubint& b) const;
+    ubint& SubEq(const ubint& b);
 
-    /**
-   * Subtraction operation. In-place variant.
-   *
-   * @param &b is the value to subtract.
-   * @return is the result of the subtraction operation.
-   */
-    const ubint& SubEq(const ubint& b);
-
-    // this is a negation operator which really doesn't make sense for an unsinged
+    // this is a negation operator which really doesn't make sense for ubint
+    // returns zero due to saturated subtraction
+    // TODO: ask about this
     ubint operator-() const {
-        return ubint(0).Sub(*this);
+        return ubint();
+        //        return ubint().Sub(*this);
     }
 
     /**
@@ -519,14 +345,9 @@ public:
    * @return is the result of the multiplication operation.
    */
     ubint Mul(const ubint& b) const;
-
-    /**
-   * Multiplication operation. In-place variant.
-   *
-   * @param &b is the value to multiply with.
-   * @return is the result of the multiplication operation.
-   */
-    const ubint& MulEq(const ubint& b);
+    ubint& MulEq(const ubint& b) {
+        return *this = std::move(this->ubint::Mul(b));
+    }
 
     /**
    * Division operation.
@@ -535,14 +356,7 @@ public:
    * @return is the result of the division operation.
    */
     ubint DividedBy(const ubint& b) const;
-
-    /**
-   * Division operation. In-place variant.
-   *
-   * @param &b is the value to divide by.
-   * @return is the result of the division operation.
-   */
-    const ubint& DividedByEq(const ubint& b);
+    ubint& DividedByEq(const ubint& b);
 
     /**
    * Exponentiation operation. Returns x^p.
@@ -551,14 +365,9 @@ public:
    * @return is the result of the exponentiation operation.
    */
     ubint Exp(usint p) const;
-
-    /**
-   * Exponentiation operation. Returns x^p. In-place variant.
-   *
-   * @param p the exponent.
-   * @return is the result of the exponentiation operation.
-   */
-    const ubint& ExpEq(usint p);
+    ubint& ExpEq(usint p) {
+        return *this = std::move(this->ubint::Exp(p));
+    }
 
     /**
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
@@ -569,16 +378,9 @@ public:
    * @return is the result of multiply and round operation.
    */
     ubint MultiplyAndRound(const ubint& p, const ubint& q) const;
-
-    /**
-   * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param &p is the numerator to be multiplied.
-   * @param &q is the denominator to be divided.
-   * @return is the result of multiply and round operation.
-   */
-    const ubint& MultiplyAndRoundEq(const ubint& p, const ubint& q);
+    ubint& MultiplyAndRoundEq(const ubint& p, const ubint& q) {
+        return *this = std::move(this->ubint::MultiplyAndRound(p, q));
+    }
 
     /**
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
@@ -588,17 +390,9 @@ public:
    * @return is the result of divide and round operation.
    */
     ubint DivideAndRound(const ubint& q) const;
-
-    /**
-   * Divide and Rounding operation. Returns [x/q] where [] is the rounding
-   * operation. In-place variant.
-   *
-   * @param &q is the denominator to be divided.
-   * @return is the result of divide and round operation.
-   */
-    const ubint& DivideAndRoundEq(const ubint& q);
-
-    // MODULAR ARITHMETIC OPERATIONS
+    ubint& DivideAndRoundEq(const ubint& q) {
+        return *this = std::move(this->ubint::DivideAndRound(q));
+    }
 
     /**
    * Naive modulus operation.
@@ -607,21 +401,16 @@ public:
    * @return is the result of the modulus operation.
    */
     ubint Mod(const ubint& modulus) const;
-
-    /**
-   * Naive modulus operation. In-place variant.
-   *
-   * @param &modulus is the modulus to perform.
-   * @return is the result of the modulus operation.
-   */
-    const ubint& ModEq(const ubint& modulus);
+    ubint& ModEq(const ubint& modulus);
 
     /**
    * Pre-computes the mu factor that is used in Barrett modulo reduction
    *
    * @return the value of mu
    */
-    ubint ComputeMu() const;
+    ubint ComputeMu() const {
+        return (ubint(1) << (2 * m_MSB + 3)).DividedBy(*this);
+    }
 
     /**
    * Barrett modulus operation.
@@ -632,18 +421,50 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus operation.
    */
-    ubint Mod(const ubint& modulus, const ubint& mu) const;
+    template <typename T = limb_t>
+    ubint Mod(const ubint& modulus, const ubint& mu,
+              typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+        return this->ubint::Mod(modulus);
+    }
 
-    /**
-   * Barrett modulus operation. In-place variant.
-   * Implements generalized Barrett modular reduction algorithm. Uses one
-   * precomputed value of mu.
-   *
-   * @param &modulus is the modulus to perform.
-   * @param &mu is the Barrett value.
-   * @return is the result of the modulus operation.
-   */
-    const ubint& ModEq(const ubint& modulus, const ubint& mu);
+    // TODO:
+    template <typename T = limb_t>
+    ubint Mod(const ubint& modulus, const ubint& mu,
+              typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+        if (*this < modulus)
+            return *this;
+        int n(modulus.m_MSB);
+        int alpha(n + 3);
+        int beta(-2);
+        ubint q(mu * this->ubint::RShift(n + beta));
+        q >>= alpha - beta;
+        ubint z(this->ubint::Sub(q * modulus));
+        if (z >= modulus)
+            return z.Sub(modulus);
+        return z;
+    }
+
+    template <typename T = limb_t>
+    ubint& ModEq(const ubint& modulus, const ubint& mu,
+                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+        return this->ubint::ModEq(modulus);
+    }
+
+    template <typename T = limb_t>
+    ubint& ModEq(const ubint& modulus, const ubint& mu,
+                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+        if (*this < modulus)
+            return *this;
+        int n(modulus.m_MSB);
+        int alpha(n + 3);
+        int beta(-2);
+        ubint q(mu * this->ubint::RShift(n + beta));
+        q >>= alpha - beta;
+        this->ubint::SubEq(q * modulus);
+        if (*this >= modulus)
+            return this->ubint::SubEq(modulus);
+        return *this;
+    }
 
     /**
    * Modulus addition operation.
@@ -653,15 +474,7 @@ public:
    * @return is the result of the modulus addition operation.
    */
     ubint ModAdd(const ubint& b, const ubint& modulus) const;
-
-    /**
-   * Modulus addition operation. In-place variant.
-   *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
-   * @return is the result of the modulus addition operation.
-   */
-    const ubint& ModAddEq(const ubint& b, const ubint& modulus);
+    ubint& ModAddEq(const ubint& b, const ubint& modulus);
 
     /**
    * Modulus addition where operands are < modulus.
@@ -671,15 +484,7 @@ public:
    * @return is the result of the modulus addition operation.
    */
     ubint ModAddFast(const ubint& b, const ubint& modulus) const;
-
-    /**
-   * Modulus addition where operands are < modulus. In-place variant.
-   *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
-   * @return is the result of the modulus addition operation.
-   */
-    const ubint& ModAddFastEq(const ubint& b, const ubint& modulus);
+    ubint& ModAddFastEq(const ubint& b, const ubint& modulus);
 
     /**
    * Barrett modulus addition operation.
@@ -689,17 +494,29 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
-    ubint ModAdd(const ubint& b, const ubint& modulus, const ubint& mu) const;
+    template <typename T = limb_t>
+    ubint ModAdd(const ubint& b, const ubint& modulus, const ubint& mu,
+                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+        return b.ModAdd(*this, modulus);
+    }
 
-    /**
-   * Barrett modulus addition operation. In-place variant.
-   *
-   * @param &b is the scalar to add.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
-   * @return is the result of the modulus addition operation.
-   */
-    const ubint& ModAddEq(const ubint& b, const ubint& modulus, const ubint& mu);
+    template <typename T = limb_t>
+    ubint ModAdd(const ubint& b, const ubint& modulus, const ubint& mu,
+                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+        return b.Add(*this).Mod(modulus, mu);
+    }
+
+    template <typename T = limb_t>
+    ubint& ModAddEq(const ubint& b, const ubint& modulus, const ubint& mu,
+                    typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+        return this->ubint::ModAddEq(b, modulus);
+    }
+
+    template <typename T = limb_t>
+    ubint& ModAddEq(const ubint& b, const ubint& modulus, const ubint& mu,
+                    typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+        return *this = std::move(b.Add(*this).Mod(modulus, mu));
+    }
 
     /**
    * Modulus subtraction operation.
@@ -709,15 +526,7 @@ public:
    * @return is the result of the modulus subtraction operation.
    */
     ubint ModSub(const ubint& b, const ubint& modulus) const;
-
-    /**
-   * Modulus subtraction operation. In-place variant.
-   *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
-   * @return is the result of the modulus subtraction operation.
-   */
-    const ubint& ModSubEq(const ubint& b, const ubint& modulus);
+    ubint& ModSubEq(const ubint& b, const ubint& modulus);
 
     /**
    * Modulus subtraction where operands are < modulus.
@@ -727,15 +536,7 @@ public:
    * @return is the result of the modulus subtraction operation.
    */
     ubint ModSubFast(const ubint& b, const ubint& modulus) const;
-
-    /**
-   * Modulus subtraction where operands are < modulus. In-place variant.
-   *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
-   * @return is the result of the modulus subtraction operation.
-   */
-    const ubint& ModSubFastEq(const ubint& b, const ubint& modulus);
+    ubint& ModSubFastEq(const ubint& b, const ubint& modulus);
 
     /**
    * Barrett modulus subtraction operation.
@@ -745,17 +546,44 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
-    ubint ModSub(const ubint& b, const ubint& modulus, const ubint& mu) const;
+    template <typename T = limb_t>
+    ubint ModSub(const ubint& b, const ubint& modulus, const ubint& mu,
+                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+        return this->ubint::ModSub(b, modulus);
+    }
 
-    /**
-   * Barrett modulus subtraction operation. In-place variant.
-   *
-   * @param &b is the scalar to subtract.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
-   * @return is the result of the modulus subtraction operation.
-   */
-    const ubint& ModSubEq(const ubint& b, const ubint& modulus, const ubint& mu);
+    template <typename T = limb_t>
+    ubint ModSub(const ubint& b, const ubint& modulus, const ubint& mu,
+                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+        auto bv(b);
+        if (bv >= modulus)
+            bv.ModEq(modulus, mu);
+        auto av(*this);
+        if (av >= modulus)
+            av.ModEq(modulus, mu);
+        if (av < bv)
+            av = modulus.Add(av);
+        return av.SubEq(bv);
+    }
+
+    template <typename T = limb_t>
+    ubint& ModSubEq(const ubint& b, const ubint& modulus, const ubint& mu,
+                    typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+        return this->ubint::ModSubEq(b, modulus);
+    }
+
+    template <typename T = limb_t>
+    ubint& ModSubEq(const ubint& b, const ubint& modulus, const ubint& mu,
+                    typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+        auto bv(b);
+        if (bv >= modulus)
+            bv.ModEq(modulus, mu);
+        if (*this >= modulus)
+            this->ubint::ModEq(modulus, mu);
+        if (*this < bv)
+            *this = modulus.Add(*this);
+        return this->ubint::SubEq(bv);
+    }
 
     /**
    * Modulus multiplication operation.
@@ -764,16 +592,40 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
-    ubint ModMul(const ubint& b, const ubint& modulus) const;
+    template <typename T = limb_t>
+    ubint ModMul(const ubint& b, const ubint& modulus,
+                 typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) const {
+        auto bv(b);
+        if (bv >= modulus)
+            bv.ModEq(modulus);
+        auto av(*this);
+        if (av >= modulus)
+            av.ModEq(modulus);
+        return av.ModMulFast(bv, modulus);
+    }
 
-    /**
-   * Modulus multiplication operation. In-place variant.
-   *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @return is the result of the modulus multiplication operation.
-   */
-    const ubint& ModMulEq(const ubint& b, const ubint& modulus);
+    template <typename T = limb_t>
+    ubint ModMul(const ubint& b, const ubint& modulus,
+                 typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) const {
+        return b.ModMul(*this, modulus, modulus.ComputeMu());
+    }
+
+    template <typename T = limb_t>
+    ubint& ModMulEq(const ubint& b, const ubint& modulus,
+                    typename std::enable_if_t<!std::is_same_v<T, Dlimb_t>, bool> = true) {
+        auto bv(b);
+        if (bv >= modulus)
+            bv.ModEq(modulus);
+        if (*this >= modulus)
+            this->ubint::ModEq(modulus);
+        return *this = std::move(bv.ModMulFast(*this, modulus));
+    }
+
+    template <typename T = limb_t>
+    ubint& ModMulEq(const ubint& b, const ubint& modulus,
+                    typename std::enable_if_t<std::is_same_v<T, Dlimb_t>, bool> = true) {
+        return *this = std::move(b.ModMul(*this, modulus, modulus.ComputeMu()));
+    }
 
     /**
    * Barrett modulus multiplication.
@@ -783,17 +635,24 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    ubint ModMul(const ubint& b, const ubint& modulus, const ubint& mu) const;
+    ubint ModMul(const ubint& b, const ubint& modulus, const ubint& mu) const {
+        auto bv(b);
+        if (bv >= modulus)
+            bv.ModEq(modulus, mu);
+        auto av(*this);
+        if (av >= modulus)
+            av.ModEq(modulus, mu);
+        return av.Mul(bv).Mod(modulus, mu);
+    }
 
-    /**
-   * Barrett modulus multiplication. In-place variant.
-   *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
-   * @return is the result of the modulus multiplication operation.
-   */
-    const ubint& ModMulEq(const ubint& b, const ubint& modulus, const ubint& mu);
+    ubint& ModMulEq(const ubint& b, const ubint& modulus, ubint& mu) {
+        auto bv(b);
+        if (bv >= modulus)
+            bv.ModEq(modulus, mu);
+        if (*this >= modulus)
+            this->ubint::ModEq(modulus, mu);
+        return *this = std::move(bv.Mul(*this).Mod(modulus, mu));
+    }
 
     /**
    * Modulus multiplication that assumes the operands are < modulus.
@@ -803,16 +662,9 @@ public:
    * @return is the result of the modulus multiplication operation.
    */
     ubint ModMulFast(const ubint& b, const ubint& modulus) const;
-
-    /**
-   * Modulus multiplication that assumes the operands are < modulus. In-place
-   * variant.
-   *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @return is the result of the modulus multiplication operation.
-   */
-    const ubint& ModMulFastEq(const ubint& b, const ubint& modulus);
+    ubint& ModMulFastEq(const ubint& b, const ubint& modulus) {
+        return *this = std::move(this->ubint::ModMulFast(b, modulus));
+    }
 
     /**
    * Barrett modulus multiplication that assumes the operands are < modulus.
@@ -822,24 +674,18 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    ubint ModMulFast(const ubint& b, const ubint& modulus, const ubint& mu) const;
+    ubint ModMulFast(const ubint& b, const ubint& modulus, const ubint& mu) const {
+        return b.Mul(*this).Mod(modulus, mu);
+    }
 
-    /**
-   * Barrett modulus multiplication that assumes the operands are < modulus.
-   * In-place variant.
-   *
-   * @param &b is the scalar to multiply.
-   * @param &modulus is the modulus to perform operations with.
-   * @param &mu is the Barrett value.
-   * @return is the result of the modulus multiplication operation.
-   */
-    const ubint& ModMulFastEq(const ubint& b, const ubint& modulus, const ubint& mu);
+    ubint& ModMulFastEq(const ubint& b, const ubint& modulus, const ubint& mu) {
+        return *this = std::move(b.Mul(*this).Mod(modulus, mu));
+    }
 
     ubint ModMulFastConst(const ubint& b, const ubint& modulus, const ubint& bInv) const {
         OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConst is not implemented for backend 4");
     }
-
-    const ubint& ModMulFastConstEq(const ubint& b, const ubint& modulus, const ubint& bInv) {
+    ubint& ModMulFastConstEq(const ubint& b, const ubint& modulus, const ubint& bInv) {
         OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 4");
     }
 
@@ -851,16 +697,9 @@ public:
    * @return is the result of the modulus exponentiation operation.
    */
     ubint ModExp(const ubint& b, const ubint& modulus) const;
-
-    /**
-   * Modulus exponentiation operation. Square-and-multiply algorithm is used.
-   * In-place variant.
-   *
-   * @param &b is the scalar to exponentiate at all locations.
-   * @param &modulus is the modulus to perform operations with.
-   * @return is the result of the modulus exponentiation operation.
-   */
-    const ubint& ModExpEq(const ubint& b, const ubint& modulus);
+    ubint& ModExpEq(const ubint& b, const ubint& modulus) {
+        return *this = std::move(this->ubint::ModExp(b, modulus));
+    }
 
     /**
    * Modulus inverse operation.
@@ -869,14 +708,9 @@ public:
    * @return is the result of the modulus inverse operation.
    */
     ubint ModInverse(const ubint& modulus) const;
-
-    /**
-   * Modulus inverse operation. In-place variant.
-   *
-   * @param &modulus is the modulus to perform.
-   * @return is the result of the modulus inverse operation.
-   */
-    const ubint& ModInverseEq(const ubint& modulus);
+    ubint& ModInverseEq(const ubint& modulus) {
+        return *this = std::move(this->ubint::ModInverse(modulus));
+    }
 
     // SHIFT OPERATIONS
 
@@ -887,14 +721,7 @@ public:
    * @return result of the shift operation.
    */
     ubint LShift(usshort shift) const;
-
-    /**
-   * Left shift operation. In-place variant.
-   *
-   * @param shift # of bits.
-   * @return result of the shift operation.
-   */
-    const ubint& LShiftEq(usshort shift);
+    ubint& LShiftEq(usshort shift);
 
     /**
    * Right shift operation.
@@ -903,16 +730,7 @@ public:
    * @return result of the shift operation.
    */
     ubint RShift(usshort shift) const;
-
-    /**
-   * Right shift operation. In-place variant.
-   *
-   * @param shift # of bits.
-   * @return result of the shift operation.
-   */
-    const ubint& RShiftEq(usshort shift);
-
-    // COMPARE
+    ubint& RShiftEq(usshort shift);
 
     /**
    * Compares the current ubint to ubint a.
@@ -921,38 +739,29 @@ public:
    * @return  -1 for strictly less than, 0 for equal to and 1 for strictly
    * greater than conditons.
    */
-    int Compare(const ubint& a) const;
+    int Compare(const ubint& a) const noexcept {
+        if (m_MSB < a.m_MSB)
+            return -1;
+        if (m_MSB > a.m_MSB)
+            return 1;
+        for (int i = m_value.size() - 1; i >= 0; --i) {
+            if (m_value[i] < a.m_value[i])
+                return -1;
+            if (m_value[i] > a.m_value[i])
+                return 1;
+        }
+        return 0;
+    }
 
-    // CONVERTERS
-
-    /**
-   * Converts the value to a native integer.
-   * @return the int representation of the value as usint.
-   */
     template <typename T = BasicInteger>
-    T ConvertToInt() const {
-        T result = 0;
-        if (m_value.size() == 0) {
-            OPENFHE_THROW(lbcrypto::not_available_error, "ConvertToInt() on uninitialized bint");
-        }
-        if (sizeof(limb_t) >= sizeof(T)) {
-            result = m_value[0];
-            result = (T)m_value[0];
-        }
-        else {
-            // Case where limb_t is less bits than uint64_t
-            uint32_t msbTest = sizeof(T) * 8;
-            if (msbTest > m_MSB) {
-                msbTest = m_MSB;
-            }
-            usint ceilInt = ceilIntByUInt(msbTest);
-            // copy the values by shift and add
-            for (usint i = 0; i < ceilInt; i++) {
-                T tmp = this->m_value[i];
-                tmp <<= (m_limbBitLength * i);
-                result += tmp;
-            }
-        }
+    T ConvertToInt() const noexcept {
+        constexpr usint limblen{sizeof(T) * 8};
+        auto result = static_cast<T>(m_value[0]);
+        if (m_limbBitLength >= limblen)
+            return result;
+        auto ceilInt = MSBToLimbs(limblen > m_MSB ? m_MSB : limblen);
+        for (usint i = 1; i < ceilInt; ++i)
+            result |= static_cast<T>(m_value[i]) << (i * m_limbBitLength);
         return result;
     }
 
@@ -961,73 +770,54 @@ public:
    * if the ubint is uninitialized error is thrown
    * if the ubint is larger than the max value representable
    * or if conversion fails, and error is reported to cerr
-   *
-   * @return float representation of the value.
    */
     float ConvertToFloat() const;
-
-    /**
-   * Converts the value to an double.
-   * if the ubint is uninitialized error is thrown
-   * if the ubint is larger than the max value representable
-   * error is thrown
-   * if conversion fails error is thrown
-   *
-   * @return double representation of the value.
-   */
     double ConvertToDouble() const;
-
-    /**
-   * Converts the value to an long double.
-   * if the ubint is uninitialized error is thrown
-   * if the ubint is larger than the max value representable
-   * error is thrown
-   * if conversion fails error is thrown
-   *
-   * @return long double representation of the value.
-   */
     long double ConvertToLongDouble() const;
 
     /**
-   * Convert a value from an unsigned int to a ubint.
-   *
-   * @param m the value to convert from.
-   * @return int represented as a ubint.
-   */
-    static ubint UsintToUbint(usint m);
-
-    /**
    * Convert a string representation of a binary number to a ubint.
-   * Note: needs renaming to a generic form since the variable type name is
-   * embedded in the function name. Suggest FromBinaryString()
    * @param bitString the binary num in string.
    * @return the  number represented as a ubint.
    */
     static ubint FromBinaryString(const std::string& bitString);
 
-    // OTHER FUNCTIONS
-
     /**
    * Returns the MSB location of the value.
-   *
    * @return the index of the most significant bit.
    */
-    usint GetMSB() const;
+    usint GetMSB() const {
+        return m_MSB;
+    }
 
     /**
    * Returns the size of the underlying vector of Limbs
-   *
    * @return the size
    */
-    usint GetNumberOfLimbs() const;
+    usint GetNumberOfLimbs() const {
+        return m_value.size();
+    }
 
     /**
    * Tests whether the ubint is a power of 2.
    *
-   * @param m_numToCheck is the value to check.
+   * @param x is the value to check.
    * @return true if the input is a power of 2, false otherwise.
    */
-    bool isPowerOfTwo(const ubint& m_numToCheck);
+    /*
+    static bool isPowerOfTwo(const ubint& x) {
+        if (x.m_MSB == 0)
+            return false;
+        const size_t limbs{x.m_value.size() - 1};
+        for (size_t i = 0; i < limbs; ++i) {
+            if (0 != x.m_value[i])
+                return false;
+        }
+        auto msb{lbcrypto::GetMSB64(x.m_value[limbs]) - 1};
+        auto mask{(1 << msb) - 1};
+        return (0 == (x.m_value[limbs] & mask));
+    }
+*/
 
     /**
    * Get the number of digits using a specific base - support for arbitrary base
@@ -1036,6 +826,8 @@ public:
    * @param base is the base with which to determine length in.
    * @return the length of the representation in a specific base.
    */
+
+    // TODO ?
     usint GetLengthForBase(usint base) const {
         return GetMSB();
     }
@@ -1057,18 +849,6 @@ public:
     usint GetDigitAtIndexForBase(usint index, usint base) const;
 
     /**
-   * Gets the state of the ubint from the internal value.
-   */
-    const std::string GetState() const;
-
-    /**
-   * function that returns the ubint after multiplication by b.
-   * @param b is the number to be multiplied.
-   * @return the ubint after the multiplication.
-   */
-    inline ubint MulIntegerByLimb(limb_t b) const;  // todo rename to ubint
-
-    /**
    * Gets the bit at the specified index.
    *
    * @param index is the index of the bit to get.
@@ -1080,8 +860,8 @@ public:
    * A zero allocator that is called by the Matrix class. It is used to
    * initialize a Matrix of ubint objects.
    */
-    static ubint Allocator() {
-        return 0;
+    static ubint Allocator() noexcept {
+        return ubint();
     }
 
     // STRINGS & STREAMS
@@ -1094,17 +874,17 @@ public:
    */
     const std::string ToString() const;
 
-public:
-        #ifdef UBINT_32
     static const std::string IntegerTypeName() {
+        #ifdef UBINT_32
         return "UBDYNINT_32";
-    }
         #endif
         #ifdef UBINT_64
-    static const std::string IntegerTypeName() {
         return "UBDYNINT_64";
-    }
         #endif
+        #ifdef UBINT_128
+        return "UBDYNINT_128";
+        #endif
+    }
 
     /**
    * Delivers value of the internal limb storage
@@ -1132,40 +912,28 @@ public:
    * @return is the returned ostream object.
    */
     friend std::ostream& operator<<(std::ostream& os, const ubint& ptr_obj) {
-        // todo: get rid of m_numDigitInPrintval and make dynamic
-
-        // initiate to object to be printed
-        // todo smartpointer
-        uschar* print_VALUE = new uschar[ptr_obj.m_numDigitInPrintval]();
-        // starts the conversion from base r to decimal value
-        for (usint i = ptr_obj.m_MSB; i > 0; i--) {
-            ubint::double_bitVal(print_VALUE);
-            // adds the bit value to the print_VALUE (print_VALUE *= 2)
-            ubint::add_bitVal(print_VALUE, ptr_obj.GetBitAtIndex(i));
-        }
-
-        // find the first occurence of non-zero value in print_VALUE
-        bool print = false;
-        for (usint counter = 0; counter < ptr_obj.m_numDigitInPrintval; counter++) {
-            if (print_VALUE[counter] != 0) {
-                print = true;
-            }
-            if (print) {
-                os << static_cast<int>(print_VALUE[counter]);
-            }
-        }
-        // Print 0 value
-        if (!print) {
-            os << 0;
-        }
-        delete[] print_VALUE;
+        os << ptr_obj.ToString();
         return os;
     }
 
     /**
    * documentation function, prints sizes of constats.
    */
-    void PrintIntegerConstants();
+    static void PrintIntegerConstants() {
+        std::cout << "sizeof UINT8_C  " << sizeof(UINT8_C(1)) << std::endl;
+        std::cout << "sizeof UINT16_C " << sizeof(UINT16_C(1)) << std::endl;
+        std::cout << "sizeof UINT32_C " << sizeof(UINT32_C(1)) << std::endl;
+        std::cout << "sizeof UINT64_C " << sizeof(UINT64_C(1)) << std::endl;
+        std::cout << "sizeof uint8_t  " << sizeof(uint8_t) << std::endl;
+        std::cout << "sizeof uint16_t " << sizeof(uint16_t) << std::endl;
+        std::cout << "sizeof uint32_t " << sizeof(uint32_t) << std::endl;
+        std::cout << "sizeof uint64_t " << sizeof(uint64_t) << std::endl;
+        #ifdef UBINT_64
+        // std::cout << "sizeof UINT128_C "<< sizeof (UINT128_C(1)) << std::endl;
+        // dbc commented out  unsupported on some machines
+        std::cout << "sizeof uint128_t " << sizeof(uint128_t) << std::endl;
+        #endif
+    }
 
     // SERIALIZATION
 
@@ -1173,7 +941,6 @@ public:
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));
-        ar(::cereal::make_nvp("s", m_state));
     }
 
     template <class Archive>
@@ -1184,7 +951,6 @@ public:
         }
         ar(::cereal::make_nvp("v", m_value));
         ar(::cereal::make_nvp("m", m_MSB));
-        ar(::cereal::make_nvp("s", m_state));
     }
 
     std::string SerializedObjectName() const {
@@ -1195,27 +961,15 @@ public:
         return 1;
     }
 
-protected:
-    /**
-   * Converts the string v into base-r integer where r is equal to 2^bitwidth of
-   * limb data type.
-   *
-   * @param v The input string
-   */
-    void AssignVal(const std::string& v);
-
+private:
     /**
    * Sets the MSB to the correct value as computed from the internal value.
    */
-    void SetMSB();
+    void SetMSB() {
+        m_MSB = (m_value.size() - 1) * m_limbBitLength;
+        m_MSB += lbcrypto::GetMSB64(m_value.back());
+    }
 
-    /**
-   * Sets the MSB to the correct value from the ubint.
-   * @param guessIdxChar is the hint of the MSB position.
-   */
-    void SetMSB(usint guessIdxChar);
-
-private:
     /**
    * Normalize limb storage of the ubint by making sure the most
    * significant limb is non-zero (all higher zero limbs are
@@ -1223,51 +977,21 @@ private:
    *
    * @return resulting bit.
    */
-    void NormalizeLimbs(void);
-
-    /**
-   * Sets the limb value at the specified index.
-   *
-   * @param index is the index of the limb to set in the ubint storage.
-   * //todo should be renamed SetLimbAtIndex();
-   */
-    void SetIntAtIndex(usint idx, limb_t value);
+    void NormalizeLimbs() {
+        auto size = m_value.size() - 1;
+        while (size > 0 && m_value[size--] == 0)
+            m_value.pop_back();
+        m_MSB = (m_value.size() - 1) * m_limbBitLength;
+        m_MSB += lbcrypto::GetMSB64(m_value.back());
+    }
 
     /**
    * helper function for Div
    * @param defined in ubint.cpp
    */
-
-    int divqr_vect(ubint& q, ubint& r, const ubint& u, const ubint& v) const;
-
-    int divr_vect(ubint& r, const ubint& u, const ubint& v) const;
-
-    int divq_vect(ubint& q, const ubint& u, const ubint& v) const;
-
-private:
-    // vector storing the native integers. stored little endian
-    std::vector<limb_t> m_value;
-
-private:
-    // variable that stores the MOST SIGNIFICANT BIT position in the
-    uint32_t m_MSB;
-
-    // variable to store the bitlength of the limb data type.
-    static const usint m_limbBitLength;
-
-    // variable to store the maximum value of the limb data type.
-    static const limb_t m_MaxLimb;
-
-    // variable to store the log(base 2) of the number of bits in the limb data
-    // type.
-    static const usint m_log2LimbBitLength;
-
-    // variable to store the size of the data array.
-    static const usint m_nSize;
-
-    // The maximum number of digits in biginteger. It is used by the cout(ostream)
-    // function for printing the bignumber. Todo remove this limitation
-    static const usint m_numDigitInPrintval = 1500;  // todo get rid of m_numDigitInPrintval
+    void divqr_vect(ubint& q, ubint& r, const ubint& u, const ubint& v) const noexcept;
+    void divq_vect(ubint& q, const ubint& u, const ubint& v) const noexcept;
+    void divr_vect(ubint& r, const ubint& u, const ubint& v) const noexcept;
 
     /**
    * function to return the ceiling of the input number divided by
@@ -1276,78 +1000,21 @@ private:
    * @param Number is the number to be divided.
    * @return the ceiling of Number/(bits in the limb data type)
    */
-    static usint ceilIntByUInt(const limb_t Number);  // todo rename to MSB2NLimbs()
-
-    // currently unused array
-    static const ubint* m_modChain;
-
-private:
-    /**
-   * function to return the MSB of number.
-   * @param x is the number.
-   * @return the MSB position in the number x.Note MSB(1) is 1 NOT zero!!!!!
-   */
-
-    inline static usint GetMSBlimb_t(limb_t x) {
-        return lbcrypto::GetMSB64(x);
+    static constexpr usint MSBToLimbs(usint msb) noexcept {
+        constexpr usint mask{m_limbBitLength - 1};
+        if (msb == 0)
+            return 1;
+        return (msb >> m_log2LimbBitLength) + ((msb & mask) != 0);
     }
-
-    // Dlimb_t is the data type that has twice as many bits in the limb data type.
-    typedef typename DoubleDataType<limb_t>::T Dlimb_t;
-
-    // Slimb_t is the data type that as many bits in the limb data type but is
-    // signed.
-    typedef typename SignedDataType<limb_t>::T Slimb_t;
-
-    // Slimb_t is the data type that as many bits in the limb data type but is
-    // signed.
-    typedef typename SignedDoubleDataType<limb_t>::T Sdlimb_t;
-
-    // enum definition to represent the state of the ubint.
-    enum State { INITIALIZED, GARBAGE };
-
-    /**
-   * function to return the MSB of number that is of type Dlimb_t.
-   * @param x is the number.
-   * @return the MSB position in the number x. Note MSB(1) is 1 NOT zero!!!!!
-   */
-    inline static usint GetMSBDlimb_t(Dlimb_t x) {
-        return lbcrypto::GetMSB64(x);
-    }
-
-    // enum to store the state of the
-    State m_state;
-
-    /**
-   * function that returns the decimal value from the binary array a.
-   * @param a is a pointer to the binary array.
-   * @return the decimal value.
-   */
-    static limb_t UintInBinaryToDecimal(uschar* a);
-
-    /**
-   * function that mutiplies by 2 to the binary array.
-   * @param a is a pointer to the binary array.
-   */
-    static void double_bitVal(uschar* a);
-
-    /**
-   * function that adds bit b to the binary array.
-   * @param a is a pointer to the binary array.
-   * @param b is a bit value to be added.
-   */
-    static void add_bitVal(uschar* a, uschar b);
 };
 
         #if 0
 // stream helper function for vector of objects
 template <typename limb_t>
-inline std::ostream &operator<<(std::ostream &os,
-                                const std::vector<limb_t> &v) {
+std::ostream &operator<<(std::ostream& os, const std::vector<limb_t>& v) {
   os << "[";
-  for (const auto &itr : v) {
+  for (const auto& itr : v)
     os << " " << itr;
-  }
   os << " ]";
   return os;
 }
@@ -1356,5 +1023,4 @@ inline std::ostream &operator<<(std::ostream &os,
 }  // namespace bigintdyn
 
     #endif  // LBCRYPTO_MATH_HAL_BIGINTDYN_UBINTDYN_H
-
 #endif

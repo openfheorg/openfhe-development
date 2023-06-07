@@ -596,7 +596,7 @@ private:
 
     // function to check if the index is a valid index.
     bool IndexCheck(usint length) const {
-        return length <= m_length;
+        return length < m_length;
     }
 };
 
