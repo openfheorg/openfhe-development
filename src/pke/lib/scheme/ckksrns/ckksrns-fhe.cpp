@@ -464,13 +464,19 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         ctxtEncI = cc->EvalChebyshevSeries(ctxtEncI, coefficients, coeffLowerBound, coeffUpperBound);
 
         // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
-        if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
+        if ((cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ||
+            (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY)) {
             if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
                 algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
                 algo->ModReduceInternalInPlace(ctxtEncI, BASE_NUM_LEVELS_TO_DROP);
             }
-            ApplyDoubleAngleIterations(ctxtEnc);
-            ApplyDoubleAngleIterations(ctxtEncI);
+            uint32_t numIter;
+            if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY)
+                numIter = R;
+            else
+                numIter = 3;
+            ApplyDoubleAngleIterations(ctxtEnc, numIter);
+            ApplyDoubleAngleIterations(ctxtEncI, numIter);
         }
 
         algo->MultByMonomialInPlace(ctxtEncI, M / 4);
@@ -563,11 +569,17 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         ctxtEnc = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
 
         // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
-        if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
+        if ((cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ||
+            (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY)) {
             if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
                 algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
             }
-            ApplyDoubleAngleIterations(ctxtEnc);
+            uint32_t numIter;
+            if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY)
+                numIter = R;
+            else
+                numIter = 3;
+            ApplyDoubleAngleIterations(ctxtEnc, numIter);
         }
 
         // scale the message back up after Chebyshev interpolation
@@ -2013,10 +2025,10 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
     }
 }
 
-void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext) const {
+void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIter) const {
     auto cc = ciphertext->GetCryptoContext();
 
-    int32_t r = R;
+    int32_t r = numIter;
     for (int32_t j = 1; j < r + 1; j++) {
         cc->EvalSquareInPlace(ciphertext);
         ciphertext    = cc->EvalAdd(ciphertext, ciphertext);

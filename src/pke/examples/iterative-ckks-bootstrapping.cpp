@@ -74,6 +74,8 @@ double CalculateApproximationError(const std::vector<std::complex<double>>& resu
 }
 
 void IterativeBootstrapExample() {
+    TimeVar t;
+
     // Step 1: Set CryptoContext
     CCParams<CryptoContextCKKSRNS> parameters;
     SecretKeyDist secretKeyDist = SPARSE_TERNARY;
@@ -181,8 +183,11 @@ void IterativeBootstrapExample() {
     precision = 17;
     std::cout << "Precision input to algorithm: " << precision << std::endl;
 
+    TIC(t);
     // Step 6: Run bootstrapping with multiple iterations.
     auto ciphertextTwoIterations = cryptoContext->EvalBootstrap(ciph, numIterations, precision);
+    double timeEval              = TOC(t);
+    std::cerr << "Runtime of sparse bootstrapping: " << timeEval << " ms" << std::endl;
 
     Plaintext resultTwoIterations;
     cryptoContext->Decrypt(keyPair.secretKey, ciphertextTwoIterations, &resultTwoIterations);
