@@ -54,6 +54,9 @@
     #if __GNUC__ >= 8
         #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wclass-memaccess"
+        #if __GNUC__ >= 13
+            #pragma GCC diagnostic ignored "-Wdangling-reference"
+        #endif
     #endif
 #elif defined __clang__
     #pragma clang diagnostic push
