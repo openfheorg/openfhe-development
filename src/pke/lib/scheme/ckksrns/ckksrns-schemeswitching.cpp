@@ -1108,10 +1108,16 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalLTRectWithPrecomputeSS(const CryptoContex
 
     ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
     uint32_t towersToDrop                         = 0;
+
+    // for FLEXIBLEAUTOEXT we do not need extra modulus in auxiliary plaintexts
     if (L != 0) {
         towersToDrop = elementParams.GetParams().size() - L - 1;
         for (uint32_t i = 0; i < towersToDrop; i++)
             elementParams.PopLastParam();
+    }
+    if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+        towersToDrop += 1;
+        elementParams.PopLastParam();
     }
     // std::cout << "towersToDrop EvalLTRectWithPrecomputeSS: " << towersToDrop << std::endl;
 
@@ -1145,33 +1151,19 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalLTRectWithPrecomputeSS(const CryptoContex
     Ciphertext<DCRTPoly> result;
     DCRTPoly first;
 
-    // auto p1 = cc.MakeCKKSPackedPlaintext(Fill(A[0], N / 2), 1, towersToDrop, elementParamsPtr2, N/2); // this is a test
-    // auto ct1 = cc.KeySwitchExt(ct, true);
-    // std::cout << "Computed ct1" << std::endl;
-    // Ciphertext<DCRTPoly> ct2 = cc.EvalMult(ct, p1);
-    // std::cout << "Computed ct2" << std::endl;
-    // Ciphertext<DCRTPoly> ct3 = cc.EvalMult(cc.KeySwitchExt(ct, true), p1);
-
     for (uint32_t j = 0; j < gStep; j++) {
         int offset = (j == 0) ? 0 : -static_cast<int>(bStep * j);
-        // std::cout << "j = " << j << std::endl;
-        // auto temp  = MakeAuxPlaintext(cc, elementParamsPtr, Rotate(Fill(A[bStep * j], N / 2), offset), 1, towersToDrop, N / 2);
-        // Ciphertext<DCRTPoly> inner = EvalMultExt(cc.KeySwitchExt(ct, true), temp);
-        // auto temp = cc.MakeCKKSPackedPlaintext(Rotate(Fill(A[bStep * j], N / 2), offset), 1, 0, nullptr, N/2);
-        auto temp = cc.MakeCKKSPackedPlaintext(Rotate(Fill(A[bStep * j], N / 2), offset), 1, towersToDrop,
-                                               elementParamsPtr2, N / 2);
-        Ciphertext<DCRTPoly> inner =
-            cc.EvalMult(cc.KeySwitchExt(ct, true), temp);  // Andreea: segfault with FLEXIBLEAUTOEXT
+        auto temp  = cc.MakeCKKSPackedPlaintext(Rotate(Fill(A[bStep * j], N / 2), offset), 1, towersToDrop,
+                                                elementParamsPtr2, N / 2);
+        Ciphertext<DCRTPoly> inner = EvalMultExt(cc.KeySwitchExt(ct, true), temp);
+
         // std::cout << "inner level and depth: " << inner->GetLevel() << ", " << inner->GetNoiseScaleDeg() << std::endl;
 
         for (uint32_t i = 1; i < bStep; i++) {
             if (bStep * j + i < n) {
-                // auto tempi = MakeAuxPlaintext(cc, elementParamsPtr, Rotate(Fill(A[bStep * j + i], N / 2), offset), 1, towersToDrop, N / 2);
-                // inner = EvalAddExt(inner, EvalMultExt(fastRotation[i - 1], tempi));
                 auto tempi = cc.MakeCKKSPackedPlaintext(Rotate(Fill(A[bStep * j + i], N / 2), offset), 1, towersToDrop,
                                                         elementParamsPtr2, N / 2);
-                inner      = cc.EvalAdd(inner,
-                                        cc.EvalMult(tempi, fastRotation[i - 1]));  // Andreea: segfault with FLEXIBLEAUTOEXT
+                EvalAddExtInPlace(inner, EvalMultExt(fastRotation[i - 1], tempi));
             }
         }
 
@@ -1192,7 +1184,7 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalLTRectWithPrecomputeSS(const CryptoContex
             first += firstCurrent;
 
             auto innerDigits = cc.EvalFastRotationPrecompute(inner);
-            result           = cc.EvalAdd(result, cc.EvalFastRotationExt(inner, bStep * j, innerDigits, false));
+            EvalAddExtInPlace(result, cc.EvalFastRotationExt(inner, bStep * j, innerDigits, false));
         }
     }
     result        = cc.KeySwitchDown(result);
@@ -1413,7 +1405,8 @@ std::pair<BinFHEContext, LWEPrivateKey> FHECKKSRNSSS::EvalCKKStoFHEWSetup(const 
 
     // LWE private key
     LWEPrivateKey lwesk;
-    lwesk = m_ccLWE.KeyGen();
+    lwesk    = m_ccLWE.KeyGen();
+    m_FHEWsk = lwesk;
 
     std::pair<BinFHEContext, LWEPrivateKey> FHEWcc;
     FHEWcc.first  = m_ccLWE;
@@ -1442,7 +1435,8 @@ std::pair<BinFHEContext, LWEPrivateKey> FHECKKSRNSSS::EvalCKKStoFHEWSetup(const 
     parameters.SetMultiplicativeDepth(multDepth);
     parameters.SetFirstModSize(logQswitch);
     parameters.SetScalingModSize(scaleModSize);
-    parameters.SetScalingTechnique(FIXEDMANUAL);
+    parameters.SetScalingTechnique(
+        FIXEDMANUAL);  // Don't need this to be the same scaling technique as the outer cryptocontext, since no multiplication/decryption is done, and the scaling factor is already fatored out
     parameters.SetSecurityLevel(sl);
     parameters.SetRingDim(cc.GetRingDimension());
     parameters.SetBatchSize(cc.GetEncodingParams()->GetBatchSize());
@@ -1662,6 +1656,8 @@ std::vector<std::shared_ptr<LWECiphertextImpl>> FHECKKSRNSSS::EvalCKKStoFHEW(Con
     // auto ctxtDecModCoeff = DecryptWithoutDecode(*ccCKKS, ctxtKS, m_CKKSsk, slots, ccCKKS->GetRingDimension());
     // std::cout << "\nCoefficients of mod. switched ciphertext (imaginary values can be thought as the last slot elements):\n" << ctxtDecModCoeff << std::endl << std::endl;
 
+    // std::cout << "scaling factor in ctxtKS: " << ctxtKS->GetScalingFactor() << std::endl << std::endl;
+
     // Step 3: Key switch from the CKKS key with the new modulus Q' to the RLWE version of the FHEW key with the new modulus Q'
     auto ctSwitched = m_ccKS->KeySwitch(ctxtKS, m_CKKStoFHEWswk);
 
@@ -1763,12 +1759,19 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNSSS::EvalFHEWtoCKKS
     m_FHEWtoCKKSswkDouble = skLWEDouble;
 
     // Check encoding and specify the number of slots, otherwise, if batchsize is set and is smaller, it will throw an error.
-    Plaintext skLWEPlainswk =
-        ccCKKS->MakeCKKSPackedPlaintext(Fill(skLWEDouble, ringDim / 2), 1, 0, nullptr, ringDim / 2);
-    // Plaintext skLWEPlainswk = ccCKKS->MakeCKKSPackedPlaintext(skLWEDouble, 1, 0, nullptr, ringDim / 2);
+    Plaintext skLWEPlainswk;
+    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+        skLWEPlainswk = ccCKKS->MakeCKKSPackedPlaintext(Fill(skLWEDouble, ringDim / 2), 1, BASE_NUM_LEVELS_TO_DROP,
+                                                        nullptr, ringDim / 2);
+    else
+        skLWEPlainswk = ccCKKS->MakeCKKSPackedPlaintext(Fill(skLWEDouble, ringDim / 2), 1, 0, nullptr, ringDim / 2);
     // std::cout << "Encoded key: " << skLWEPlainswk << std::endl;
+
+    // auto FHEWtoCKKSswk = ccCKKS->Encrypt(publicKey, skLWEPlainswk);
+    // if(cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+    //     ccCKKS->GetScheme()->ModReduceInternalInPlace(FHEWtoCKKSswk, BASE_NUM_LEVELS_TO_DROP);
     m_FHEWtoCKKSswk = ccCKKS->Encrypt(publicKey, skLWEPlainswk);
-    // std::cout << "Encrypted key level and depth " << m_FHEWtoCKKSswk->GetLevel() << ", " << m_FHEWtoCKKSswk->GetNoiseScaleDeg() << std::endl;
+    // std::cout << "m_swkkey level and depth: " << m_FHEWtoCKKSswk->GetLevel() << ", " << m_FHEWtoCKKSswk->GetNoiseScaleDeg() << std::endl;
 
     // Compute automorphism keys for CKKS for baby-step giant-step with optimized ration
     uint32_t M       = ccCKKS->GetCyclotomicOrder();
@@ -1797,11 +1800,6 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNSSS::EvalFHEWtoCKKS
     // algo->EvalMultKeyGen(privateKey);
     ccCKKS->EvalMultKeyGen(privateKey);
 
-    // auto cS = ccCKKS->KeySwitchExt(m_FHEWtoCKKSswk, true);
-    // std::cout << "cS level and depth: " << cS->GetLevel() << ", " << cS->GetNoiseScaleDeg() << std::endl;
-    // auto cMult = ccCKKS->EvalMult(cS,skLWEPlainswk);
-    // std::cout << "cMult level and depth: " << cMult->GetLevel() << ", " << cMult->GetNoiseScaleDeg() << std::endl;
-
     return evalKeys;
 }
 
@@ -1820,7 +1818,7 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
 
     uint32_t n = LWECiphertexts[0]->GetA().GetLength();
     // std::cout << "n from LWECiphertexts: " << n << std::endl;
-    uint32_t init_level = m_FHEWtoCKKSswk->GetLevel();
+    // uint32_t init_level = m_FHEWtoCKKSswk->GetLevel();
 
     uint32_t dim1_FC =
         getRatioBSGS(static_cast<double>(n));  // This picks the optimized ratio for the baby-step giant-step
@@ -1837,17 +1835,19 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
     double K = 1.0;
     std::vector<double> coefficientsFHEW;
     if (n == 32) {
-        K                = 16;
+        K                = 16.0;
         coefficientsFHEW = g_coefficientsFHEW16;
     }
     else {
         // EvalFHEWtoCKKS assumes lattice parameter n is at most 2048.
-        K = 128;  // Failure probability of 2^{-49}
-        if (p <= 4)
-            coefficientsFHEW = g_coefficientsFHEW128_8;
-        else
+        K = 128.0;  // Failure probability of 2^{-49}
+        if (p <= 4) {
             coefficientsFHEW =
-                g_coefficientsFHEW128_9;  // If the output messages are bits, we could use a lower degree polynomial
+                g_coefficientsFHEW128_8;  // If the output messages are bits, we could use a lower degree polynomial
+        }
+        else {
+            coefficientsFHEW = g_coefficientsFHEW128_9;
+        }
     }
 
     // Step 1. Form matrix A and vector b from the LWE ciphertexts, but only extract the first necessary number of them
@@ -1863,9 +1863,9 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
     // std::cout << "modulus from ciphertext: " << LWECiphertexts[0]->GetModulus() << std::endl;
     // std::cout << "m_modulus: " << m_modulus_LWE << std::endl;
 
-    // prescale =
-    //     prescale /
-    //     K;  // Combine the scale with the division by K to consume fewer levels, but careful since the value might be too small
+    prescale =
+        prescale /
+        K;  // Combine the scale with the division by K to consume fewer levels, but careful since the value might be too small
 
     // std::cout << "prescale = " << prescale << std::endl;
 #pragma omp parallel for
@@ -1892,46 +1892,49 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
     Ciphertext<DCRTPoly> AdotS = EvalPartialHomDecryption(*ccCKKS, A, m_FHEWtoCKKSswk, dim1_FC, prescale, 0);
     // std::cout << "AdotS level and depth: " << AdotS->GetLevel() << ", " << AdotS->GetNoiseScaleDeg() << std::endl;
 
-    if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
-        AdotS = ccCKKS->Compress(AdotS, init_level - AdotS->GetLevel() - 1);
-        // std::cout << "AdotS after compression level and depth: " << AdotS->GetLevel() << ", " << AdotS->GetNoiseScaleDeg() << std::endl;
-    }
-    // else if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-
-    //     ccCKKS->GetScheme()->ModReduceInternalInPlace(AdotS, BASE_NUM_LEVELS_TO_DROP);
-    // }
-
     // Step 3. Get the ciphertext of B - A*s
     for (uint32_t i = 0; i < numValues; i++) {
         b[i] = b[i] * prescale;
     }
+    // Plaintext BPlain = ccCKKS->MakeCKKSPackedPlaintext(b, 1, 0, nullptr, N / 2);
+    Plaintext BPlain = ccCKKS->MakeCKKSPackedPlaintext(b, AdotS->GetNoiseScaleDeg(), AdotS->GetLevel(), nullptr, N / 2);
 
-    Plaintext BPlain = ccCKKS->MakeCKKSPackedPlaintext(b, 1, 0, nullptr, N / 2);
-    // Plaintext BPlain = ccCKKS->MakeCKKSPackedPlaintext(Fill(b, N / 2), 1, 0, nullptr, N / 2);
+    // std::cout << "BPlain level and depth: " << BPlain->GetLevel() << ", " << BPlain->GetNoiseScaleDeg() << std::endl;
+
     auto BminusAdotS = ccCKKS->EvalAdd(ccCKKS->EvalNegate(AdotS), BPlain);
 
     // std::cout << "BminusAdotS level and depth: " << BminusAdotS->GetLevel() << ", " << BminusAdotS->GetNoiseScaleDeg() << std::endl;
 
-    // Step 4. Do the modulus reduction
-
-    // Third step: homomorphically evaluate modular function. We do it by using sine approximation. First, ensure the input is normalized to [-1,1]
-
-    // Andreea: this is required because there is a bug with multiplying by large values, which corrupts all slots. Hence, we zero out all irrelevant slots here
-    std::vector<std::complex<double>> normFactor(N / 2, 0);
-
-    for (size_t i = 0; i < numValues; i++) {
-        normFactor[i] = std::complex<double>(1.0 / K, 0.0);
-    }
-    auto normFactorPlain = ccCKKS->MakeCKKSPackedPlaintext(normFactor, 1, 0, nullptr, N / 2);
-    auto BminusAdotS2 =
-        ccCKKS->EvalMult(BminusAdotS, normFactorPlain);  // This should zero out everything which is not of interest
-
     if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
-        BminusAdotS2 = ccCKKS->Compress(BminusAdotS2, init_level - BminusAdotS2->GetLevel() - 1);
+        ccCKKS->ModReduceInPlace(BminusAdotS);
+        std::cout << "BminusAdotS after compression level and depth: " << BminusAdotS->GetLevel() << ", "
+                  << BminusAdotS->GetNoiseScaleDeg() << std::endl;
     }
-    // else if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-    //     ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS2, BASE_NUM_LEVELS_TO_DROP);
+    else {
+        if (BminusAdotS->GetNoiseScaleDeg() == 2)
+            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS, BASE_NUM_LEVELS_TO_DROP);
+    }
+
+    // Step 4. Do the modulus reduction: homomorphically evaluate modular function. We do it by using sine approximation.
+
+    // /* Andreea: this was done because there was a bug with multiplying by large values (for FHEW decryption with a large plaintext modulus), which corrupted all slots.
+    //  * Hence, we zero out all irrelevant slots here. The bug was resolved, but note that multiplying by very large values does incur a potentially non-negligible error.
+    // /*
+    // std::vector<std::complex<double>> normFactor(N / 2, 0);
+    // for (size_t i = 0; i < numValues; i++) {
+    //     normFactor[i] = std::complex<double>(1.0 / K, 0.0);
     // }
+    // auto normFactorPlain = ccCKKS->MakeCKKSPackedPlaintext(normFactor, 1, 0, nullptr, N / 2);
+    // auto BminusAdotS2 =
+    //     ccCKKS->EvalMult(BminusAdotS, normFactorPlain);  // This should zero out everything which is not of interest
+    // if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+    //     BminusAdotS2 = ccCKKS->Compress(BminusAdotS2, init_level - BminusAdotS2->GetLevel() - 1);
+    // }
+    // // else if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+    // //     ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS2, BASE_NUM_LEVELS_TO_DROP);
+    // // }
+
+    auto BminusAdotS2 = BminusAdotS;  // Instead of zeroing out slots which are not of interest as done above
 
     double a_cheby = -1;
     double b_cheby = 1;  // The division by K was performed before
@@ -1945,6 +1948,11 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
 
     // std::cout << "BminusAdotS3 after Cheby level and depth: " << BminusAdotS3->GetLevel() << ", " << BminusAdotS3->GetNoiseScaleDeg() << std::endl;
 
+    // if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+    if (cryptoParamsCKKS->GetScalingTechnique() != FIXEDMANUAL) {
+        ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
+    }
+
     int32_t r = 3;
     for (int32_t j = 1; j < r + 1; j++) {
         BminusAdotS3  = ccCKKS->EvalMult(BminusAdotS3, BminusAdotS3);
@@ -1952,11 +1960,12 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
         double scalar = 1.0 / std::pow((2.0 * Pi), std::pow(2.0, j - r));
         BminusAdotS3  = ccCKKS->EvalSub(BminusAdotS3, scalar);
         if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
-            BminusAdotS3 = ccCKKS->Compress(BminusAdotS3, init_level - BminusAdotS3->GetLevel() - 1);
+            // BminusAdotS3 = ccCKKS->Compress(BminusAdotS3, init_level - BminusAdotS3->GetLevel() - 1);
+            ccCKKS->ModReduceInPlace(BminusAdotS3);
         }
-        // else if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        //     ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
-        // }
+        else {
+            ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotS3, BASE_NUM_LEVELS_TO_DROP);
+        }
     }
 
     // std::cout << "BminusAdotS3 after double angle level and depth: " << BminusAdotS3->GetLevel() << ", " << BminusAdotS3->GetNoiseScaleDeg() << std::endl;
@@ -2001,14 +2010,17 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
     ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParamsCKKS->GetElementParams());
 
     uint32_t towersToDrop = 0;
-
-    if (cryptoParamsCKKS->GetScalingTechnique() ==
-        FIXEDMANUAL) {  // Andreea: can't find how to make it work for the other scaling techniques
-        uint32_t L   = BminusAdotS3->GetLevel() + BminusAdotS3->GetNoiseScaleDeg() - 2;
-        towersToDrop = elementParams.GetParams().size() - L - 1;
-        for (uint32_t i = 0; i < towersToDrop; i++)
-            elementParams.PopLastParam();
+    if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+        towersToDrop = BminusAdotS3->GetLevel() + BminusAdotS3->GetNoiseScaleDeg() - 1;
     }
+    else {
+        towersToDrop = BminusAdotS3->GetLevel() + BminusAdotS3->GetNoiseScaleDeg() - 1;
+    }
+    // if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
+    //     towersToDrop += 1; // Andreea: sometimes this segfaults
+    // }
+    for (uint32_t i = 0; i < towersToDrop; i++)
+        elementParams.PopLastParam();
 
     // std::cout << "towers to drop for end of CKKS to FHEW = " << towersToDrop << std::endl;
 
@@ -2034,16 +2046,18 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
 
     // Use full packing here to clear up the junk in the slots after numValues
     auto postScalePlain = ccCKKS->MakeCKKSPackedPlaintext(postScaleVec, 1, towersToDrop, elementParamsPtr2, N / 2);
-    auto postBiasPlain  = ccCKKS->MakeCKKSPackedPlaintext(postBiasVec, 1, towersToDrop, elementParamsPtr2, N / 2);
+    // std::cout << "postScalePlain level and depth: " << postScalePlain->GetLevel() << ", " << postScalePlain->GetNoiseScaleDeg() << std::endl;
 
     auto BminusAdotSres = ccCKKS->EvalMult(BminusAdotS3, postScalePlain);
-    // auto BminusAdotSres = EvalMultExt(BminusAdotS3, postScalePlain);
-    if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
-        BminusAdotSres = ccCKKS->Compress(BminusAdotSres, init_level - BminusAdotSres->GetLevel() - 1);
-    }
-    // else if (cryptoParamsCKKS->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-    //     ccCKKS->GetScheme()->ModReduceInternalInPlace(BminusAdotSres, BASE_NUM_LEVELS_TO_DROP);
-    // }
+
+    // std::cout << "BminusAdotSres level and depth: " << BminusAdotSres->GetLevel() << ", " << BminusAdotSres->GetNoiseScaleDeg() << std::endl;
+
+    // Add the plaintext for bias at the correct level and depth
+    auto postBiasPlain = ccCKKS->MakeCKKSPackedPlaintext(postBiasVec, BminusAdotSres->GetNoiseScaleDeg(),
+                                                         BminusAdotSres->GetLevel(), nullptr, N / 2);
+
+    // std::cout << "postBiasPlain level and depth: " << postBiasPlain->GetLevel() << ", " << postBiasPlain->GetNoiseScaleDeg() << std::endl;
+
     BminusAdotSres = ccCKKS->EvalAdd(postBiasPlain, BminusAdotSres);
 
     // Go back to the sparse encoding if needed
@@ -2053,6 +2067,10 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
             ccCKKS->EvalAddInPlace(BminusAdotSres, temp);
         }
         BminusAdotSres->SetSlots(slots);
+    }
+
+    if (cryptoParamsCKKS->GetScalingTechnique() == FIXEDMANUAL) {
+        ccCKKS->ModReduceInPlace(BminusAdotSres);
     }
 
     // std::cout << "Ciphertext at end of FHEWtoCKKS level and depth: " << BminusAdotSres->GetLevel() << ", " << BminusAdotSres->GetNoiseScaleDeg() << std::endl;
@@ -2177,12 +2195,20 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNSSS::EvalSchemeSwit
     m_FHEWtoCKKSswkDouble = skLWEDouble;
 
     // Check encoding and specify the number of slots, otherwise, if batchsize is set and is smaller, it will throw an error.
-    Plaintext skLWEPlainswk =
-        ccCKKS->MakeCKKSPackedPlaintext(Fill(skLWEDouble, ringDim / 2), 1, 0, nullptr, ringDim / 2);
-    // Plaintext skLWEPlainswk =
-    //     ccCKKS->MakeCKKSPackedPlaintext(Fill(skLWEDouble, ringDim / 2), 1, 0, elementParamsPtr2, ringDim / 2);
+    // Check encoding and specify the number of slots, otherwise, if batchsize is set and is smaller, it will throw an error.
+    Plaintext skLWEPlainswk;
+    if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+        skLWEPlainswk = ccCKKS->MakeCKKSPackedPlaintext(Fill(skLWEDouble, ringDim / 2), 1, BASE_NUM_LEVELS_TO_DROP,
+                                                        nullptr, ringDim / 2);
+    else
+        skLWEPlainswk = ccCKKS->MakeCKKSPackedPlaintext(Fill(skLWEDouble, ringDim / 2), 1, 0, nullptr, ringDim / 2);
     // std::cout << "Encoded key: " << skLWEPlainswk << std::endl;
+
+    // auto FHEWtoCKKSswk = ccCKKS->Encrypt(publicKey, skLWEPlainswk);
+    // if(cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+    //     ccCKKS->GetScheme()->ModReduceInternalInPlace(FHEWtoCKKSswk, BASE_NUM_LEVELS_TO_DROP);
     m_FHEWtoCKKSswk = ccCKKS->Encrypt(publicKey, skLWEPlainswk);
+    // std::cout << "m_swkkey level and depth: " << m_FHEWtoCKKSswk->GetLevel() << ", " << m_FHEWtoCKKSswk->GetNoiseScaleDeg() << std::endl;
 
     // Compute automorphism keys
     /* CKKS to FHEW */
@@ -2237,7 +2263,7 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNSSS::EvalSchemeSwit
     // Remove possible duplicates
     sort(indexRotationS2C.begin(), indexRotationS2C.end());
     indexRotationS2C.erase(unique(indexRotationS2C.begin(), indexRotationS2C.end()), indexRotationS2C.end());
-    std::cout << "Index rotation: " << indexRotationS2C << std::endl;
+    // std::cout << "Index rotation: " << indexRotationS2C << std::endl;
 
     auto algo     = ccCKKS->GetScheme();
     auto evalKeys = algo->EvalAtIndexKeyGen(publicKey, privateKey, indexRotationS2C);
@@ -2282,15 +2308,18 @@ void FHECKKSRNSSS::EvalCompareSSPrecompute(const CryptoContextImpl<DCRTPoly>& cc
         // m_scFactorOuter = cryptoParams->GetScalingFactorReal(0);
         // if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         //     m_scFactorOuter = cryptoParams->GetScalingFactorReal(1);
+        // std::cout << "EvalCompareSSPrecompute: m_scFactorOuter = " << m_scFactorOuter << std::endl;
 
         double scFactor = cryptoParams->GetScalingFactorReal(initLevel);
         if (unit)  // The messages are already scaled between 0 and 1, no need to divide by pLWE
             scaleCF = m_modulus_CKKS_initial / scFactor;
         else
             scaleCF = m_modulus_CKKS_initial / (scFactor * pLWE);
+        // std::cout << "EvalCompareSSPrecompute: scFactor = " << scFactor << std::endl;
     }
     // Else perform no scaling; the implicit FHEW plaintext modulus will be m_modulus_CKKS_initial / scFactor
 
+    m_plaintextFHEW = pLWE;
     scaleCF *= scaleSign;
 
     EvalCKKStoFHEWPrecompute(ccCKKS, scaleCF, dim1, L);
@@ -2308,28 +2337,50 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalCompareSchemeSwitching(ConstCiphertext<DC
     if (unit) {
         if (pLWE == 0)
             OPENFHE_THROW(config_error, "To scale to the unit circle, pLWE must be non-zero.");
-        cDiff = ccCKKS->EvalMult(cDiff, 1.0 / static_cast<double>(pLWE));
-        cDiff = ccCKKS->Rescale(cDiff);
+        else {
+            if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL)
+                OPENFHE_THROW(
+                    not_available_error,
+                    "This scaling was not tested for other scaling modes than FIXEDMANUAL.");  // Andreea: test it later
+            cDiff = ccCKKS->EvalMult(cDiff, 1.0 / static_cast<double>(pLWE));
+            cDiff = ccCKKS->Rescale(cDiff);
+        }
     }
 
     // The precomputation has already been performed, but if it is scaled differently than desired, recompute it
     if (pLWE != 0) {
         // // Get the scaling factor of the ciphertext to switch from CKKS to FHEW
-        // m_scFactorOuter = cryptoParams->GetScalingFactorReal(0);
+        m_scFactorOuter = cryptoParams->GetScalingFactorReal(0);
         // if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         //     m_scFactorOuter = cryptoParams->GetScalingFactorReal(1);
+        // std::cout << "EvalCompareSchemeSwitching: m_scFactorOuter = " << m_scFactorOuter << std::endl;
 
-        double scFactor = cryptoParams->GetScalingFactorReal(cDiff->GetLevel());
-        double scaleCF  = 1.0;
+        // std::cout << cDiff->GetLevel() << std::endl;
+        // std::cout << "m_modulus_CKKS_initial = " << m_modulus_CKKS_initial << std::endl;
+
+        double scFactor = cryptoParams->GetScalingFactorReal(cDiff->GetLevel());  // Andreea: test more
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+            scFactor = cryptoParams->GetScalingFactorReal(cDiff->GetLevel() + 1);
+
+        // std::cout << "EvalCompareSchemeSwitching: scFactor = " << scFactor << std::endl;
+        double scaleCF = 1.0;
         if (unit)  // The messages are already scaled between 0 and 1, no need to divide by pLWE
             scaleCF = m_modulus_CKKS_initial / scFactor;
         else
             scaleCF = m_modulus_CKKS_initial / (scFactor * pLWE);
         scaleCF *= scaleSign;
+        // std::cout << scaleSign << std::endl;
         ccCKKS->EvalCKKStoFHEWPrecompute(scaleCF);
     }
 
     auto LWECiphertexts = EvalCKKStoFHEW(cDiff, numCtxts);
+
+    // LWEPlaintext plainLWE;
+    // std::cout << "\n Inside FHEW decryption with plaintext modulus " << m_plaintextFHEW << ": ";
+    // for (uint32_t i = 0; i < LWECiphertexts.size(); ++i) {
+    //     m_ccLWE.Decrypt(m_FHEWsk, LWECiphertexts[i], &plainLWE, m_plaintextFHEW);
+    //     std::cout << plainLWE << " ";
+    // }
 
     std::vector<LWECiphertext> cSigns(LWECiphertexts.size());
 #pragma omp parallel for
@@ -2357,15 +2408,16 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMinSchemeSwitching(ConstCiph
         // if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         //     m_scFactorOuter = cryptoParams->GetScalingFactorReal(1);
 
-        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
-        double scaleCF  = m_modulus_CKKS_initial / (scFactor * pLWE);
+        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());  // Andreea: test more
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+            scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel() + 1);
+        double scaleCF = m_modulus_CKKS_initial / (scFactor * pLWE);
         scaleCF *= scaleSign;
         cc->EvalCKKStoFHEWPrecompute(scaleCF);
     }
 
-    uint32_t towersToDrop =
-        12;  // Andreea: how many levels are consumed in the EvalFHEWtoCKKS, currently there are 13 because of the multiplication bug
-    uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
+    uint32_t towersToDrop = 12;  // Andreea: how many levels are consumed in the EvalFHEWtoCKKS
+    uint32_t slots        = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
     if (oneHot) {
@@ -2420,16 +2472,16 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMinSchemeSwitching(ConstCiph
 
         // Update the ciphertext of values and the indicator // Andreea: if we lose too much precision, do the multiplication before the rotations?
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            cc->RescaleInPlace(newCiphertext);
-        }
         newCiphertext = cc->EvalAdd(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+            cc->ModReduceInPlace(newCiphertext);
+        }
 
         // std::cout << "Ciphertext level and depth before next iteration: " << newCiphertext->GetLevel() << ", " << newCiphertext->GetNoiseScaleDeg() << std::endl;
 
         cInd = cc->EvalMult(cInd, cExpandSelect);
         if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            cc->RescaleInPlace(cInd);
+            cc->ModReduceInPlace(cInd);
         }
     }
     // After computing the minimum and argument
@@ -2457,14 +2509,16 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMinSchemeSwitchingAlt(ConstC
         // if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         //     m_scFactorOuter = cryptoParams->GetScalingFactorReal(1);
 
-        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
-        double scaleCF  = m_modulus_CKKS_initial / (scFactor * pLWE);
+        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());  // Andreea: test more
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+            scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel() + 1);
+        double scaleCF = m_modulus_CKKS_initial / (scFactor * pLWE);
         scaleCF *= scaleSign;
         cc->EvalCKKStoFHEWPrecompute(scaleCF);
     }
 
     uint32_t towersToDrop =
-        12;  // Andreea: how many levels are consumed in the EvalFHEWtoCKKS, currently there are 13 because of the multiplication bug
+        12;  // Andreea: How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output. Check for FLEXIBLEAUTOEXT
     uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
@@ -2513,16 +2567,16 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMinSchemeSwitchingAlt(ConstC
 
         // Update the ciphertext of values and the indicator // Andreea: if we lose too much precision, do the multiplication before the rotations?
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            cc->RescaleInPlace(newCiphertext);
-        }
         newCiphertext = cc->EvalAdd(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
 
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+            cc->ModReduceInPlace(newCiphertext);
+        }
         // std::cout << "Ciphertext level and depth before next iteration: " << newCiphertext->GetLevel() << ", " << newCiphertext->GetNoiseScaleDeg() << std::endl;
 
         cInd = cc->EvalMult(cInd, cExpandSelect);
         if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            cc->RescaleInPlace(cInd);
+            cc->ModReduceInPlace(cInd);
         }
     }
     // After computing the minimum and argument
@@ -2549,14 +2603,16 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMaxSchemeSwitching(ConstCiph
         // if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         //     m_scFactorOuter = cryptoParams->GetScalingFactorReal(1);
 
-        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
-        double scaleCF  = m_modulus_CKKS_initial / (scFactor * pLWE);
+        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());  // Andreea: test more
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+            scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel() + 1);
+        double scaleCF = m_modulus_CKKS_initial / (scFactor * pLWE);
         scaleCF *= scaleSign;
         cc->EvalCKKStoFHEWPrecompute(scaleCF);
     }
 
     uint32_t towersToDrop =
-        12;  // Andreea: how many levels are consumed in the EvalFHEWtoCKKS, currently there are 13 because of the multiplication bug
+        12;  // Andreea: How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output. Check for FLEXIBLEAUTOEXT
     uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
@@ -2612,16 +2668,16 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMaxSchemeSwitching(ConstCiph
 
         // Update the ciphertext of values and the indicator // Andreea: if we lose too much precision, do the multiplication before the rotations?
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            cc->RescaleInPlace(newCiphertext);
-        }
         newCiphertext = cc->EvalAdd(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
 
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+            cc->ModReduceInPlace(newCiphertext);
+        }
         // std::cout << "Ciphertext level and depth before next iteration: " << newCiphertext->GetLevel() << ", " << newCiphertext->GetNoiseScaleDeg() << std::endl;
 
         cInd = cc->EvalMult(cInd, cExpandSelect);
         if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            cc->RescaleInPlace(cInd);
+            cc->ModReduceInPlace(cInd);
         }
     }
     // After computing the minimum and argument
@@ -2649,14 +2705,16 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMaxSchemeSwitchingAlt(ConstC
         // if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         //     m_scFactorOuter = cryptoParams->GetScalingFactorReal(1);
 
-        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());
-        double scaleCF  = m_modulus_CKKS_initial / (scFactor * pLWE);
+        double scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel());  // Andreea: test more
+        if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+            scFactor = cryptoParams->GetScalingFactorReal(ciphertext->GetLevel() + 1);
+        double scaleCF = m_modulus_CKKS_initial / (scFactor * pLWE);
         scaleCF *= scaleSign;
         cc->EvalCKKStoFHEWPrecompute(scaleCF);
     }
 
     uint32_t towersToDrop =
-        12;  // Andreea: how many levels are consumed in the EvalFHEWtoCKKS, currently there are 13 because of the multiplication bug
+        12;  // Andreea: How many levels are consumed in the EvalFHEWtoCKKS, for binary FHEW output. Check for FLEXIBLEAUTOEXT
     uint32_t slots = (numSlots == 0) ? m_numSlotsCKKS : numSlots;
 
     Plaintext pInd;
@@ -2705,16 +2763,16 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMaxSchemeSwitchingAlt(ConstC
 
         // Update the ciphertext of values and the indicator // Andreea: if we lose too much precision, do the multiplication before the rotations?
         newCiphertext = cc->EvalMult(newCiphertext, cExpandSelect);
-        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            cc->RescaleInPlace(newCiphertext);
-        }
         newCiphertext = cc->EvalAdd(newCiphertext, cc->EvalAtIndex(newCiphertext, numValues / (2 * M)));
 
+        if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
+            cc->ModReduceInPlace(newCiphertext);
+        }
         // std::cout << "Ciphertext level and depth before next iteration: " << newCiphertext->GetLevel() << ", " << newCiphertext->GetNoiseScaleDeg() << std::endl;
 
         cInd = cc->EvalMult(cInd, cExpandSelect);
         if (cryptoParams->GetScalingTechnique() == FIXEDMANUAL) {
-            cc->RescaleInPlace(cInd);
+            cc->ModReduceInPlace(cInd);
         }
     }
     // After computing the minimum and argument

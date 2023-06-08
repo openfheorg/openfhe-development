@@ -201,6 +201,7 @@ private:
     PrivateKey<DCRTPoly> m_CKKSsk;
     PrivateKey<DCRTPoly> m_CKKSskKS;
     PrivateKey<DCRTPoly> m_RLWELWEsk;
+    LWEPrivateKey m_FHEWsk;
     std::vector<std::complex<double>> m_FHEWtoCKKSswkDouble;
 
 #define Pi 3.14159265358979323846
