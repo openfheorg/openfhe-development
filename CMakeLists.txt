@@ -88,11 +88,17 @@ option( WITH_NATIVEOPT "Use machine-specific optimizations"                     
 option( WITH_COVTEST "Turn on to enable coverage testing"                       OFF )
 option( USE_MACPORTS "Use MacPorts installed packages"                          OFF )
 
-# Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
-if( NOT NATIVE_SIZE )
-   set( NATIVE_SIZE 64 )
-   # set( NATIVE_SIZE 128 )
+ # Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
+ if( NOT NATIVE_SIZE )
+     if (CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86|aarch64|arm)")
+         set( NATIVE_SIZE 64 ) # all but IBM/S390
+     elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^s390")
+         #On S390x architecture 128 is Native so set this to TRUE
+         set( NATIVE_SIZE 128 )
+     endif()
+     message (STATUS “SETTING NATIVE_SIZE ${NATIVE_SIZE} FOR ${CMAKE_SYSTEM_PROCESSOR}“)
 endif()
+
 
 if( NOT CKKS_M_FACTOR )
    set( CKKS_M_FACTOR 1 )
