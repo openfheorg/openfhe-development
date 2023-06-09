@@ -98,10 +98,29 @@ class CryptoContextImpl : public Serializable {
     virtual Plaintext MakeCKKSPackedPlaintextInternal(const std::vector<std::complex<double>>& value,
                                                       size_t noiseScaleDeg, uint32_t level,
                                                       const std::shared_ptr<ParmType> params, usint slots) const {
-        Plaintext p;
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
-        double scFact;
+        if (level > 0) {
+            // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
+            // readily available. so, what we get is numModuli and use it for calculations
+            size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
+            uint32_t multiplicativeDepth =
+                (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
+            // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
+            // so the user can understand the error more easily.
+            if (level >= numModuli) {
+                std::string errorMsg;
+                if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+                    errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
+                else
+                    errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
 
+                errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
+                            std::to_string(multiplicativeDepth) + "]";
+                OPENFHE_THROW(config_error, errorMsg);
+            }
+        }
+
+        double scFact = 0;
         if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT && level == 0) {
             scFact = cryptoParams->GetScalingFactorRealBig(level);
             // In FLEXIBLEAUTOEXT mode at level 0, we don't use the noiseScaleDeg
@@ -113,6 +132,7 @@ class CryptoContextImpl : public Serializable {
             scFact = cryptoParams->GetScalingFactorReal(level);
         }
 
+        Plaintext p;
         if (params == nullptr) {
             std::shared_ptr<ILDCRTParams<DCRTPoly::Integer>> elemParamsPtr;
             if (level != 0) {
@@ -170,6 +190,32 @@ class CryptoContextImpl : public Serializable {
     Plaintext MakePlaintext(const PlaintextEncodings encoding, const std::vector<int64_t>& value, size_t depth,
                             uint32_t level) const {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
+        if (level > 0) {
+            if (getSchemeId() == SCHEME::BFVRNS_SCHEME) {
+                std::string errorMsg("The level value should be zero for BFVRNS_SCHEME. Currently: level is [" +
+                                     std::to_string(level) + "]");
+                OPENFHE_THROW(config_error, errorMsg);
+            }
+            // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
+            // readily available. so, what we get is numModuli and use it for calculations
+            size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
+            uint32_t multiplicativeDepth =
+                (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
+            // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
+            // so the user can understand the error more easily.
+            if (level >= numModuli) {
+                std::string errorMsg;
+                if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+                    errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
+                else
+                    errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
+
+                errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
+                            std::to_string(multiplicativeDepth) + "]";
+                OPENFHE_THROW(config_error, errorMsg);
+            }
+        }
+
         Plaintext p;
         if (getSchemeId() == SCHEME::BGVRNS_SCHEME && (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ||
                                                        cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)) {
