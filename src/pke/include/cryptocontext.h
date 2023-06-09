@@ -101,15 +101,21 @@ class CryptoContextImpl : public Serializable {
         const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(GetCryptoParameters());
         if (level > 0) {
             // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
-            // readily available. so we get is numModuli and use it for calculations
+            // readily available. so, what we get is numModuli and use it for calculations
             size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
             uint32_t multiplicativeDepth =
                 (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
-            if (level > multiplicativeDepth) {
-                std::string errorMsg(
-                    "The level value should be less than or equal to multiplicativeDepth. Currently: level is [" +
-                    std::to_string(level) + "] and multiplicativeDepth is [" + std::to_string(multiplicativeDepth) +
-                    "]");
+            // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
+            // so the user can understand the error more easily.
+            if (level >= numModuli) {
+                std::string errorMsg;
+                if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+                    errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
+                else
+                    errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
+
+                errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
+                            std::to_string(multiplicativeDepth) + "]";
                 OPENFHE_THROW(config_error, errorMsg);
             }
         }
@@ -191,15 +197,21 @@ class CryptoContextImpl : public Serializable {
                 OPENFHE_THROW(config_error, errorMsg);
             }
             // validation of level: We need to compare it to multiplicativeDepth, but multiplicativeDepth is not
-            // readily available. so we get is numModuli and use it for calculations
+            // readily available. so, what we get is numModuli and use it for calculations
             size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
             uint32_t multiplicativeDepth =
                 (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) ? (numModuli - 2) : (numModuli - 1);
-            if (level > multiplicativeDepth) {
-                std::string errorMsg(
-                    "The level value should be less than or equal to multiplicativeDepth. Currently: level is [" +
-                    std::to_string(level) + "] and multiplicativeDepth is [" + std::to_string(multiplicativeDepth) +
-                    "]");
+            // we throw an exception if level >= numModuli. however, we use multiplicativeDepth in the error message,
+            // so the user can understand the error more easily.
+            if (level >= numModuli) {
+                std::string errorMsg;
+                if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
+                    errorMsg = "The level value should be less than or equal to (multiplicativeDepth + 1).";
+                else
+                    errorMsg = "The level value should be less than or equal to multiplicativeDepth.";
+
+                errorMsg += " Currently: level is [" + std::to_string(level) + "] and multiplicativeDepth is [" +
+                            std::to_string(multiplicativeDepth) + "]";
                 OPENFHE_THROW(config_error, errorMsg);
             }
         }
