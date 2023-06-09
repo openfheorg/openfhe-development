@@ -69,8 +69,8 @@ public:
    * @param method bootstrapping method (DM or CGGI or LMKCDEY)
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
-                                 BINFHE_METHOD method, double std, bool signEval = false)
-        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_method(method) {
+                                 BINFHE_METHOD method, double std, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, bool signEval = false)
+        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_method(method), m_keyDist(keyDist) {
         if (!IsPowerOfTwo(baseG)) {
             OPENFHE_THROW(config_error, "Gadget base should be a power of two.");
         }
@@ -237,6 +237,10 @@ public:
         return m_method;
     }
 
+    SECRET_KEY_DIST GetKeyDist() const {
+        return m_keyDist;
+    }
+
     bool operator==(const RingGSWCryptoParams& other) const {
         return m_N == other.m_N && m_Q == other.m_Q && m_baseR == other.m_baseR && m_baseG == other.m_baseG;
     }
@@ -345,6 +349,9 @@ private:
 
     // Bootstrapping method (DM or CGGI or LMKCDEY)
     BINFHE_METHOD m_method = BINFHE_METHOD::INVALID_METHOD;
+
+    // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
+    SECRET_KEY_DIST m_keyDist;
 };
 
 }  // namespace lbcrypto

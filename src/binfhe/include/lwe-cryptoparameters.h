@@ -36,6 +36,8 @@
 #include "math/discretegaussiangenerator.h"
 #include "utils/serializable.h"
 
+#include "binfhe-constants.h"
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -60,10 +62,11 @@ public:
    * @param &q_KS modulus for key switching
    * @param std standard deviation
    * @param baseKS the base used for key switching
+   * @param keyDist the key distribution
    */
     explicit LWECryptoParams(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
-                             const NativeInteger& q_KS, double std, uint32_t baseKS)
-        : m_n(n), m_N(N), m_q(q), m_Q(Q), m_qKS(q_KS), m_baseKS(baseKS) {
+                             const NativeInteger& q_KS, double std, uint32_t baseKS, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY)
+        : m_n(n), m_N(N), m_q(q), m_Q(Q), m_qKS(q_KS), m_baseKS(baseKS), m_keyDist(keyDist) {
         if (Q.GetMSB() > MAX_MODULUS_SIZE) {
             std::string errMsg = "ERROR: Maximum size of Q supported for FHEW is 60 bits.";
             OPENFHE_THROW(config_error, errMsg);
@@ -143,6 +146,10 @@ public:
         return m_ks_dgg;
     }
 
+    SECRET_KEY_DIST GetKeyDist() const {
+        return m_keyDist;
+    }
+
     bool operator==(const LWECryptoParams& other) const {
         return m_n == other.m_n && m_N == other.m_N && m_q == other.m_q && m_Q == other.m_Q &&
                m_dgg.GetStd() == other.m_dgg.GetStd() && m_baseKS == other.m_baseKS;
@@ -209,6 +216,8 @@ private:
     DiscreteGaussianGeneratorImpl<NativeVector> m_ks_dgg;
     // Base used in key switching
     uint32_t m_baseKS = 0;
+    // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
+    SECRET_KEY_DIST m_keyDist = UNIFORM_TERNARY;
 };
 
 }  // namespace lbcrypto

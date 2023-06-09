@@ -54,7 +54,7 @@ int main() {
     // Sample Program: Step 2: Key Generation
 
     // Generate the secret key
-    auto sk = cc.KeyGenGaussian();
+    auto sk = cc.KeyGen();
 
     std::cout << "Generating the bootstrapping keys..." << std::endl;
 

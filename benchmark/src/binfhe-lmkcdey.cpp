@@ -58,7 +58,7 @@ void FHEW_BTKEYGEN(benchmark::State& state, ParamSet param_set) {
     BinFHEContext cc = GenerateFHEWContext(param);
 
     for (auto _ : state) {
-        LWEPrivateKey sk = cc.KeyGenGaussian();
+        LWEPrivateKey sk = cc.KeyGen();
         cc.BTKeyGen(sk);
     }
 }
@@ -71,7 +71,7 @@ void FHEW_ENCRYPT(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEPrivateKey sk = cc.KeyGenGaussian();
+    LWEPrivateKey sk = cc.KeyGen();
     for (auto _ : state) {
         LWECiphertext ct1 = cc.Encrypt(sk, 1, FRESH);
     }
@@ -85,7 +85,7 @@ void FHEW_NOT(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEPrivateKey sk = cc.KeyGenGaussian();
+    LWEPrivateKey sk = cc.KeyGen();
 
     LWECiphertext ct1 = cc.Encrypt(sk, 1, FRESH);
 
@@ -105,7 +105,7 @@ void FHEW_BINGATE(benchmark::State& state, ParamSet param_set, BinGate bin_gate)
 
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEPrivateKey sk = cc.KeyGenGaussian();
+    LWEPrivateKey sk = cc.KeyGen();
 
     cc.BTKeyGen(sk);
 
@@ -155,7 +155,7 @@ void FHEW_KEYSWITCH(benchmark::State& state, ParamSet param_set) {
     BINFHE_PARAMSET param(param_set);
     BinFHEContext cc = GenerateFHEWContext(param);
 
-    LWEPrivateKey sk  = cc.KeyGenGaussian();
+    LWEPrivateKey sk  = cc.KeyGen();
     LWEPrivateKey skN = cc.KeyGenN();
 
     auto ctQN1         = cc.Encrypt(skN, 1, FRESH);

@@ -147,13 +147,6 @@ public:
     LWEPrivateKey KeyGen() const;
 
     /**
-   * Generates a Gaussian secret key for the main LWE scheme
-   *
-   * @return a shared pointer to the secret key
-   */
-    LWEPrivateKey KeyGenGaussian() const;
-
-    /**
    * Generates a public key, secret key pair for the main LWE scheme
    *
    * @return a shared pointer to the public key, secret key pair

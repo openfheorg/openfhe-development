@@ -43,7 +43,7 @@ void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeIn
                                           double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,
                                           BINFHE_METHOD method) {
     auto lweparams  = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
-    auto rgswparams = std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, true);
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, UNIFORM_TERNARY, true);
     m_params        = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme  = std::make_shared<BinFHEScheme>(method);
 }
@@ -100,7 +100,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
 
     uint32_t n      = (set == TOY) ? 32 : 1305;
     auto lweparams  = std::make_shared<LWECryptoParams>(n, ringDim, q, Q, qKS, 3.19, 32);
-    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, q, baseG, 23, method, 3.19,
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, q, baseG, 23, method, 3.19, UNIFORM_TERNARY,
                                                             ((logQ != 11) && timeOptimization));
 
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
@@ -128,30 +128,33 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
         // for Ring GSW + LWE parameters
         usint gadgetBase;  // gadget base used in the bootstrapping
         usint baseRK;      // base for the refreshing key
+
+        // for key distribution
+        SECRET_KEY_DIST keyDist;
     };
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
     const double STD_DEV = 3.19;
     // clang-format off
     const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap({
-        //           numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase|baseRK
-        { TOY,             { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23 } },
-        { MEDIUM,          { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32 } },
-        { STD128_LMKCDEY,  { 28,     2048,         458, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32 } },
-        { STD128_AP,       { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32 } },
-        { STD128_APOPT,    { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32 } },
-        { STD128,          { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32 } },
-        { STD128_OPT,      { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32 } },
-        { STD192,          { 37,     4096,        1024, 1024, 1 << 19, STD_DEV,     28,    1 << 13,  32 } },
-        { STD192_OPT,      { 37,     4096,         805, 1024, 1 << 15, STD_DEV,     32,    1 << 13,  32 } },
-        { STD256,          { 29,     4096,        1024, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46 } },
-        { STD256_OPT,      { 29,     4096,         990, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46 } },
-        { STD128Q,         { 50,     4096,        1024, 1024, 1 << 25, STD_DEV,     32,    1 << 25,  32 } },
-        { STD128Q_OPT,     { 50,     4096,         585, 1024, 1 << 15, STD_DEV,     32,    1 << 25,  32 } },
-        { STD192Q,         { 35,     4096,        1024, 1024, 1 << 17, STD_DEV,     64,    1 << 12,  32 } },
-        { STD192Q_OPT,     { 35,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 12,  32 } },
-        { STD256Q,         { 27,     4096,        2048, 2048, 1 << 16, STD_DEV,     16,    1 <<  7,  46 } },
-        { STD256Q_OPT,     { 27,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 <<  7,  32 } },
-        { SIGNED_MOD_TEST, { 28,     2048,         512, 1024,   PRIME, STD_DEV,     25,    1 <<  7,  23 } },
+        //           numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase| baseRK| keyDist
+        { TOY,             { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23,   UNIFORM_TERNARY} },
+        { MEDIUM,          { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32,   UNIFORM_TERNARY} },
+        { STD128_LMKCDEY,  { 28,     2048,         458, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32,   GAUSSIAN       } },
+        { STD128_AP,       { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32,   UNIFORM_TERNARY} },
+        { STD128_APOPT,    { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32,   UNIFORM_TERNARY} },
+        { STD128,          { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32,   UNIFORM_TERNARY} },
+        { STD128_OPT,      { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32,   UNIFORM_TERNARY} },
+        { STD192,          { 37,     4096,        1024, 1024, 1 << 19, STD_DEV,     28,    1 << 13,  32,   UNIFORM_TERNARY} },
+        { STD192_OPT,      { 37,     4096,         805, 1024, 1 << 15, STD_DEV,     32,    1 << 13,  32,   UNIFORM_TERNARY} },
+        { STD256,          { 29,     4096,        1024, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46,   UNIFORM_TERNARY} },
+        { STD256_OPT,      { 29,     4096,         990, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46,   UNIFORM_TERNARY} },
+        { STD128Q,         { 50,     4096,        1024, 1024, 1 << 25, STD_DEV,     32,    1 << 25,  32,   UNIFORM_TERNARY} },
+        { STD128Q_OPT,     { 50,     4096,         585, 1024, 1 << 15, STD_DEV,     32,    1 << 25,  32,   UNIFORM_TERNARY} },
+        { STD192Q,         { 35,     4096,        1024, 1024, 1 << 17, STD_DEV,     64,    1 << 12,  32,   UNIFORM_TERNARY} },
+        { STD192Q_OPT,     { 35,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 12,  32,   UNIFORM_TERNARY} },
+        { STD256Q,         { 27,     4096,        2048, 2048, 1 << 16, STD_DEV,     16,    1 <<  7,  46,   UNIFORM_TERNARY} },
+        { STD256Q_OPT,     { 27,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 <<  7,  32,   UNIFORM_TERNARY} },
+        { SIGNED_MOD_TEST, { 28,     2048,         512, 1024,   PRIME, STD_DEV,     25,    1 <<  7,  23,   UNIFORM_TERNARY} },
     });
     // clang-format on
 
@@ -169,11 +172,11 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     usint ringDim   = params.cyclOrder / 2;
     auto lweparams  = (PRIME == params.modKS) ?
                           std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
-                                                           params.stdDev, params.baseKS) :
+                                                           params.stdDev, params.baseKS, params.keyDist) :
                           std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
-                                                           params.stdDev, params.baseKS);
+                                                           params.stdDev, params.baseKS, params.keyDist);
     auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK,
-                                                            method, params.stdDev);
+                                                            method, params.stdDev, params.keyDist);
 
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
@@ -181,17 +184,23 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
 
 LWEPrivateKey BinFHEContext::KeyGen() const {
     auto& LWEParams = m_params->GetLWEParams();
-    return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
-}
-
-LWEPrivateKey BinFHEContext::KeyGenGaussian() const {
-    auto& LWEParams = m_params->GetLWEParams();
-    return m_LWEscheme->KeyGenGaussian(LWEParams->Getn(), LWEParams->GetqKS());
+    if (LWEParams->GetKeyDist() == GAUSSIAN) {
+        return m_LWEscheme->KeyGenGaussian(LWEParams->Getn(), LWEParams->GetqKS());
+    }
+    else {
+        return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
+    }
 }
 
 LWEPrivateKey BinFHEContext::KeyGenN() const {
     auto& LWEParams = m_params->GetLWEParams();
-    return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
+    if (LWEParams->GetKeyDist() == GAUSSIAN) {
+        return m_LWEscheme->KeyGenGaussian(LWEParams->GetN(), LWEParams->GetQ());
+    }
+    else {
+        return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
+    }
+    
 }
 
 LWEKeyPair BinFHEContext::KeyGenPair() const {
