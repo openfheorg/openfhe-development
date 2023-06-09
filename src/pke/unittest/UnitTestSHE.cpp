@@ -58,7 +58,8 @@ enum TEST_CASE_TYPE {
     EVALSUM_ALL,
     KS_SINGLE_CRT,
     KS_MOD_REDUCE_DCRT,
-    EVALSQUARE
+    EVALSQUARE,
+    RING_DIM_ERROR_HANDLING
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -96,6 +97,9 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
             break;
         case EVALSQUARE:
             typeName = "EVALSQUARE";
+            break;
+        case RING_DIM_ERROR_HANDLING:
+            typeName = "RING_DIM_ERROR_HANDLING";
             break;
         default:
             typeName = "UNKNOWN";
@@ -383,8 +387,8 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { METADATA,   "24", {BFVRNS_SCHEME, DFLT, DFLT,      DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
     // ==========================================
     // TestType,    Descr, Scheme,       RDim,      MultDepth, SModSize, DSize, BatchSz,   SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,  KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech, EncTech,   PREMode
-    { EVALSUM_ALL, "01", {BFVRNS_SCHEME, BATCH_LRG,    0,        DFLT,     20,    BATCH_LRG, DFLT,       DFLT,          DFLT,     DFLT,    DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      12,   DFLT,     STANDARD,  DFLT}, },
-    { EVALSUM_ALL, "02", {BFVRNS_SCHEME, BATCH_LRG,    0,        DFLT,     20,    BATCH_LRG, DFLT,       DFLT,          DFLT,     DFLT,    DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      12,   DFLT,     EXTENDED,  DFLT}, },
+    { EVALSUM_ALL, "01", {BFVRNS_SCHEME, BATCH_LRG, 0,         DFLT,     20,    BATCH_LRG, DFLT,       DFLT,          DFLT,     DFLT,    DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      12,   DFLT,     STANDARD,  DFLT}, },
+    { EVALSUM_ALL, "02", {BFVRNS_SCHEME, BATCH_LRG, 0,         DFLT,     20,    BATCH_LRG, DFLT,       DFLT,          DFLT,     DFLT,    DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      12,   DFLT,     EXTENDED,  DFLT}, },
     // ==========================================
     // TestType,      Descr, Scheme,       RDim,      MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl,  KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech, EncTech,   PREMode
     { KS_SINGLE_CRT, "01", {BGVRNS_SCHEME, 1<<13,     1,         DFLT,     1,     DFLT,    DFLT,       DFLT,          DFLT,     DFLT,    DFLT,   FIXEDMANUAL,     DFLT,    256,     4,      DFLT,      DFLT, DFLT,     STANDARD,  DFLT}, },
@@ -397,7 +401,7 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     // Calling ModReduce in the AUTO modes doesn't do anything because we automatically mod reduce before multiplication,
     // so we don't need unit tests for KS_MOD_REDUCE_DCRT in the AUTO modes.
     // ==========================================
-    // TestType,   Descr, Scheme,       RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
+    // TestType,   Descr, Scheme,        RDim, MultDepth, SModSize, DSize,    BatchSz, SecKeyDist,       MaxRelinSkDeg, FModSize, SecLvl,       KSTech, ScalTech,        LDigits, PtMod,   StdDev, EvalAddCt, KSCt, MultTech,         EncTech,   PREMode
     { EVALSQUARE,  "01", {BGVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPS,              STANDARD,  DFLT}, },
     { EVALSQUARE,  "02", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FIXEDAUTO,       DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
     { EVALSQUARE,  "03", {BGVRNS_SCHEME, 256,  3,         DFLT,     BV_DSIZE, BATCH,   UNIFORM_TERNARY,  1,             60,       HEStd_NotSet, BV,     FLEXIBLEAUTO,    DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, DFLT,             STANDARD,  DFLT}, },
@@ -422,6 +426,9 @@ static std::vector<TEST_CASE_UTGENERAL_SHE> testCases = {
     { EVALSQUARE,  "22", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQ,        EXTENDED,  DFLT}, },
     { EVALSQUARE,  "23", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   UNIFORM_TERNARY,  DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
     { EVALSQUARE,  "24", {BFVRNS_SCHEME, DFLT, 3,         DFLT,     20,       BATCH,   GAUSSIAN,         DFLT,          DFLT,     DFLT,         DFLT,   FIXEDMANUAL,     DFLT,    PTM_LRG, DFLT,   DFLT,      DFLT, HPSPOVERQLEVELED, EXTENDED,  DFLT}, },
+    // ==========================================
+    // TestType,               Descr, Scheme,        RDim,  MultDepth, SModSize, DSize, BatchSz, SecKeyDist, MaxRelinSkDeg, FModSize, SecLvl, KSTech, ScalTech, LDigits, PtMod,      StdDev, EvalAddCt, KSCt, MultTech, EncTech, PREMode
+    { RING_DIM_ERROR_HANDLING, "01", {BFVRNS_SCHEME, 1<<13, 3,         DFLT,     DFLT,  DFLT,    DFLT,       DFLT,          DFLT,     DFLT,   DFLT,   DFLT,     DFLT,    4293918721, DFLT,   DFLT,      DFLT, DFLT,     DFLT,    DFLT}, },
  };
 // clang-format on
 //===========================================================================================================
@@ -1199,6 +1206,31 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
+
+    void UnitTest_BFV_Ringdimension_Security_Check(const TEST_CASE_UTGENERAL_SHE& testData,
+                                                   const std::string& failmsg = std::string()) {
+        try {
+            CryptoContext<Element> cc(UnitTestGenerateContext(testData.params));
+
+            // make it fail if there is no exception thrown
+            EXPECT_EQ(0, 1);
+        }
+        catch (std::exception& e) {
+            // we expect to catch an exception for this test as ring dimension should not meet the security requirement
+            // std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            EXPECT_EQ(1, 1);
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_EQ(0, 1) << failmsg;
+        }
+    }
 };
 //===========================================================================================================
 TEST_P(UTGENERAL_SHE, SHE) {
@@ -1238,6 +1270,10 @@ TEST_P(UTGENERAL_SHE, SHE) {
             break;
         case EVALSQUARE:
             UnitTest_EvalSquare(test, test.buildTestName());
+            break;
+        case RING_DIM_ERROR_HANDLING:
+            UnitTest_BFV_Ringdimension_Security_Check(test, test.buildTestName());
+            break;
         default:
             break;
     }
