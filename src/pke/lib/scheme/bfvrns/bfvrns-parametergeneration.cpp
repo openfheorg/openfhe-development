@@ -185,9 +185,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         logq            = logqBFV(n, logqPrev);
         logqPrev        = logq;
 
-        // this "while" condition is needed in case the iterative solution for q
-        // changes the requirement for n, which is rare but still theoretically
-        // possible
+        // increases n up to the level where desired security level is achieved
         while (nRLWE(logq) > n) {
             n        = 2 * n;
             logq     = logqBFV(n, logqPrev);
@@ -204,7 +202,6 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
         // this code updates n and q to account for the discrete size of CRT
         // moduli = dcrtBits
-
         int32_t k = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
 
         double logqCeil = k * dcrtBits * log(2);
@@ -247,9 +244,7 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         logq            = logqBFV(n, logqPrev);
         logqPrev        = logq;
 
-        // this "while" condition is needed in case the iterative solution for q
-        // changes the requirement for n, which is rare but still theoretically
-        // possible
+        // increases n up to the level where desired security level is achieved
         while (nRLWE(logq) > n) {
             n        = 2 * n;
             logq     = logqBFV(n, logqPrev);
