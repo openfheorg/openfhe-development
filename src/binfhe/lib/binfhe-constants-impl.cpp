@@ -43,6 +43,9 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
         case MEDIUM:
             s << "MEDIUM";
             break;
+        case STD128_LMKCDEY:
+            s << "STD128_LMKCDEY";
+            break;
         case STD128_AP:
             s << "STD128_AP";
             break;
