@@ -45,7 +45,7 @@ int main() {
     uint64_t ptm = 786433;
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMultiplicationTechnique(HPSPOVERQ);  // BEHZ, HPS, HPSPOVERQ, HPSPOVERQLEVELED
-    parameters.SetMultiplicativeDepth(150);            // 50, 100, 150
+    parameters.SetMultiplicativeDepth(67);             // 50, 100, 150
 
     // For speed
     parameters.SetSecurityLevel(SecurityLevel::HEStd_NotSet);

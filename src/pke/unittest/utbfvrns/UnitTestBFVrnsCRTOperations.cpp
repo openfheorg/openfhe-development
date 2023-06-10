@@ -60,10 +60,10 @@ protected:
 public:
 };
 
-void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplicationTechnique) {
+void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplicationTechnique,
+                                              usint multiplicativeDepth) {
     CCParams<CryptoContextBFVRNS> parameters;
-    const uint64_t ptm              = 786433;
-    const usint multiplicativeDepth = 150;
+    const uint64_t ptm = 786433;
 
     parameters.SetPlaintextModulus(ptm);
     parameters.SetMultiplicativeDepth(multiplicativeDepth);
@@ -122,16 +122,72 @@ void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplica
     EXPECT_EQ(plaintextMultResult, expectedPlaintext);
 }
 TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_BEHZ) {
-    BFVrns_TestMultiplicativeDepthLimitation(BEHZ);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 32);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 33);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 34);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 65);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 66);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 67);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 68);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 99);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 100);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 101);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 102);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 132);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 133);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 134);
+    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 135);
 }
 TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPS) {
-    BFVrns_TestMultiplicativeDepthLimitation(HPS);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 33);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 32);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 34);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 65);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 66);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 67);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 68);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 99);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 100);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 101);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 102);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 132);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 133);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 134);
+    BFVrns_TestMultiplicativeDepthLimitation(HPS, 135);
 }
 TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPSPOVERQ) {
-    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 32);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 33);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 34);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 65);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 66);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 67);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 68);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 99);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 100);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 101);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 102);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 132);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 133);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 134);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 135);
 }
 TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPSPOVERQLEVELED) {
-    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 32);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 33);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 34);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 65);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 66);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 67);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 68);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 99);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 100);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 101);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 102);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 132);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 133);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 134);
+    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 135);
 }
 
 TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
