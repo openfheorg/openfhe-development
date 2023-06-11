@@ -30,9 +30,12 @@
 //==================================================================================
 
 #include "constants.h"
+#include "utils/exception.h"
 
 #include <string>
 #include <ostream>
+
+using namespace lbcrypto;
 
 std::ostream& operator<<(std::ostream& s, PKESchemeFeature f) {
     switch (f) {
