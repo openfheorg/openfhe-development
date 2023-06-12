@@ -590,9 +590,13 @@ class UTCKKSRNS : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS> {
 
     const double epsHigh = 0.00001;
 
+    const double factor = 1 << 25;
+
     const std::vector<std::complex<double>> vectorOfInts0_7{0, 1, 2, 3, 4, 5, 6, 7};
     const std::vector<std::complex<double>> vectorOfInts0_7_Neg{0, -1, -2, -3, -4, -5, -6, -7};
     const std::vector<std::complex<double>> vectorOfInts0_7_Add{0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5};
+    const std::vector<std::complex<double>> vectorOfInts0_7_AddLargeScalar{
+        0 + factor, 1 + factor, 2 + factor, 3 + factor, 4 + factor, 5 + factor, 6 + factor, 7 + factor};
     const std::vector<std::complex<double>> vectorOfInts0_7_Sub{-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5};
     const std::vector<std::complex<double>> vectorOfInts0_7neg{0, -1, -2, -3, -4, -5, -6, -7};
     const std::vector<std::complex<double>> vectorOfInts7_0{7, 6, 5, 4, 3, 2, 1, 0};
@@ -627,6 +631,8 @@ protected:
             Plaintext plaintext1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7, 1, 0, nullptr, testData.slots);
             Plaintext plaintext1AddScalar =
                 cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Add, 1, 0, nullptr, testData.slots);
+            Plaintext plaintext1AddLargeScalar =
+                cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_AddLargeScalar, 1, 0, nullptr, testData.slots);
             Plaintext plaintext1SubScalar =
                 cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Sub, 1, 0, nullptr, testData.slots);
             Plaintext negatives1 = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7neg, 1, 0, nullptr, testData.slots);
@@ -734,7 +740,7 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintext1AddScalar->GetLength());
             checkEquality(plaintext1AddScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                          failmsg + " EvalAdd Ct and Double fails");
+                          failmsg + " EvalAdd Ct and double fails");
             approximationErrors.emplace_back(CalculateApproximationError<T>(plaintext1AddScalar->GetCKKSPackedValue(),
                                                                             results->GetCKKSPackedValue()));
 
@@ -743,7 +749,7 @@ protected:
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(plaintext1SubScalar->GetLength());
             checkEquality(plaintext1SubScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
-                          failmsg + " EvalSub Ct and Double fails");
+                          failmsg + " EvalSub Ct and double fails");
             approximationErrors.emplace_back(CalculateApproximationError<T>(plaintext1SubScalar->GetCKKSPackedValue(),
                                                                             results->GetCKKSPackedValue()));
 
@@ -764,6 +770,13 @@ protected:
                           failmsg + " EvalSub Ct and negative double fails");
             approximationErrors.emplace_back(CalculateApproximationError<T>(plaintext1AddScalar->GetCKKSPackedValue(),
                                                                             results->GetCKKSPackedValue()));
+
+            // Testing EvalAdd ciphertext + large double
+            cResult = cc->EvalAdd(ciphertext1, factor);
+            cc->Decrypt(kp.secretKey, cResult, &results);
+            results->SetLength(plaintext1AddLargeScalar->GetLength());
+            checkEquality(plaintext1AddLargeScalar->GetCKKSPackedValue(), results->GetCKKSPackedValue(), factor * eps,
+                          failmsg + " EvalAdd Ct and large double fails");
 
             // Testing EvalNegate
             cResult = cc->EvalNegate(ciphertext1);
@@ -831,7 +844,6 @@ protected:
             Plaintext plaintextNeg  = cc->MakeCKKSPackedPlaintext(vectorOfInts0_7_Neg, 1, 0, nullptr, testData.slots);
             Plaintext plaintextMult = cc->MakeCKKSPackedPlaintext(
                 std::vector<std::complex<double>>({0, 6, 10, 12, 12, 10, 6, 0}), 1, 0, nullptr, testData.slots);
-            double factor            = 1 << 25;
             Plaintext plaintextLarge = cc->MakeCKKSPackedPlaintext(
                 std::vector<std::complex<double>>({factor, factor, 0, 0, 0, 0, 0, 0}), 1, 0, nullptr, testData.slots);
             Plaintext plaintextLargeMult = cc->MakeCKKSPackedPlaintext(
