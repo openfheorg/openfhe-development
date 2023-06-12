@@ -151,11 +151,6 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         // initial value
         logq = logqBFV(n);
 
-        if ((nRLWE(logq) > n) && (nCustom > 0))
-            OPENFHE_THROW(config_error,
-                          "Ring dimension n specified by the user does not meet the "
-                          "security requirement. Please increase it.");
-
         while (nRLWE(logq) > n) {
             n    = 2 * n;
             logq = logqBFV(n);
@@ -163,7 +158,6 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
         // this code updates n and q to account for the discrete size of CRT moduli
         // = dcrtBits
-
         int32_t k = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
 
         double logqCeil = k * dcrtBits * log(2);
@@ -187,47 +181,38 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         };
 
         // initial values
-        double logqPrev = 6 * log(10);
+        double logqPrev = 6. * log(10);
         logq            = logqBFV(n, logqPrev);
         logqPrev        = logq;
 
-        if ((nRLWE(logq) > n) && (nCustom > 0))
-            OPENFHE_THROW(config_error,
-                          "Ring dimension n specified by the user does not meet the "
-                          "security requirement. Please increase it.");
-
-        // this "while" condition is needed in case the iterative solution for q
-        // changes the requirement for n, which is rare but still theoretically
-        // possible
+        // increases n up to the level where desired security level is achieved
         while (nRLWE(logq) > n) {
-            while (nRLWE(logq) > n) {
-                n        = 2 * n;
-                logq     = logqBFV(n, logqPrev);
-                logqPrev = logq;
-            }
+            n        = 2 * n;
+            logq     = logqBFV(n, logqPrev);
+            logqPrev = logq;
+        }
 
-            logq = logqBFV(n, logqPrev);
+        logq = logqBFV(n, logqPrev);
 
-            while (fabs(logq - logqPrev) > log(1.001)) {
-                logqPrev = logq;
-                logq     = logqBFV(n, logqPrev);
-            }
+        // let logq converge with prescribed accuracy
+        while (fabs(logq - logqPrev) > log(1.001)) {
+            logqPrev = logq;
+            logq     = logqBFV(n, logqPrev);
+        }
 
-            // this code updates n and q to account for the discrete size of CRT
-            // moduli = dcrtBits
+        // this code updates n and q to account for the discrete size of CRT
+        // moduli = dcrtBits
+        int32_t k = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
 
-            int32_t k = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
+        double logqCeil = k * dcrtBits * log(2);
+        logqPrev        = logqCeil;
 
-            double logqCeil = k * dcrtBits * log(2);
-            logqPrev        = logqCeil;
-
-            while (nRLWE(logqCeil) > n) {
-                n        = 2 * n;
-                logq     = logqBFV(n, logqPrev);
-                k        = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
-                logqCeil = k * dcrtBits * log(2);
-                logqPrev = logqCeil;
-            }
+        while (nRLWE(logqCeil) > n) {
+            n        = 2 * n;
+            logq     = logqBFV(n, logqPrev);
+            k        = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
+            logqCeil = k * dcrtBits * log(2);
+            logqPrev = logqCeil;
         }
     }
     else if ((evalAddCount == 0) && (multiplicativeDepth > 0) && (keySwitchCount == 0)) {
@@ -259,43 +244,35 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
         logq            = logqBFV(n, logqPrev);
         logqPrev        = logq;
 
-        if ((nRLWE(logq) > n) && (nCustom > 0))
-            OPENFHE_THROW(config_error,
-                          "Ring dimension n specified by the user does not meet the "
-                          "security requirement. Please increase it.");
-
-        // this "while" condition is needed in case the iterative solution for q
-        // changes the requirement for n, which is rare but still theoretically
-        // possible
+        // increases n up to the level where desired security level is achieved
         while (nRLWE(logq) > n) {
-            while (nRLWE(logq) > n) {
-                n        = 2 * n;
-                logq     = logqBFV(n, logqPrev);
-                logqPrev = logq;
-            }
+            n        = 2 * n;
+            logq     = logqBFV(n, logqPrev);
+            logqPrev = logq;
+        }
 
-            logq = logqBFV(n, logqPrev);
+        logq = logqBFV(n, logqPrev);
 
-            while (fabs(logq - logqPrev) > log(1.001)) {
-                logqPrev = logq;
-                logq     = logqBFV(n, logqPrev);
-            }
+        // let logq converge with prescribed accuracy
+        while (fabs(logq - logqPrev) > log(1.001)) {
+            logqPrev = logq;
+            logq     = logqBFV(n, logqPrev);
+        }
 
-            // this code updates n and q to account for the discrete size of CRT
-            // moduli = dcrtBits
+        // this code updates n and q to account for the discrete size of CRT
+        // moduli = dcrtBits
 
-            int32_t k = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
+        int32_t k = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
 
-            double logqCeil = k * dcrtBits * log(2);
-            logqPrev        = logqCeil;
+        double logqCeil = k * dcrtBits * log(2);
+        logqPrev        = logqCeil;
 
-            while (nRLWE(logqCeil) > n) {
-                n        = 2 * n;
-                logq     = logqBFV(n, logqPrev);
-                k        = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
-                logqCeil = k * dcrtBits * log(2);
-                logqPrev = logqCeil;
-            }
+        while (nRLWE(logqCeil) > n) {
+            n        = 2 * n;
+            logq     = logqBFV(n, logqPrev);
+            k        = static_cast<int32_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
+            logqCeil = k * dcrtBits * log(2);
+            logqPrev = logqCeil;
         }
     }
     else if ((multiplicativeDepth && (evalAddCount || keySwitchCount)) || (evalAddCount && keySwitchCount)) {
@@ -307,6 +284,12 @@ bool ParameterGenerationBFVRNS::ParamsGenBFVRNS(std::shared_ptr<CryptoParameters
 
         OPENFHE_THROW(config_error, errMsg);
     }
+
+    if ((n > nCustom) && (nCustom > 0))
+        OPENFHE_THROW(config_error, "Ring dimension " + std::to_string(nCustom) +
+                                        " specified by the user does not meet the "
+                                        "security requirement. Please increase it to " +
+                                        std::to_string(n) + ".");
 
     const size_t numInitialModuli = static_cast<size_t>(ceil((ceil(logq / log(2)) + 1.0) / dcrtBits));
     if (numInitialModuli < 1)
