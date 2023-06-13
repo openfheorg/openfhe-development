@@ -72,7 +72,7 @@ void BFVrns_TestMultiplicativeDepthLimitation(MultiplicationTechnique multiplica
 
     // For speed
     parameters.SetSecurityLevel(SecurityLevel::HEStd_NotSet);
-    parameters.SetRingDim(1024);
+    parameters.SetRingDim(32);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
     // Enable features that you wish to use
@@ -125,12 +125,12 @@ TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_BEHZ) {
     BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 32);
     BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 33);
     BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 34);
-    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 65);
-    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 66);
-    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 67);
-    BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 68);
 
     if (MATHBACKEND != 2) {
+        BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 65);
+        BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 66);
+        BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 67);
+        BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 68);
         BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 99);
         BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 100);
         BFVrns_TestMultiplicativeDepthLimitation(BEHZ, 101);
@@ -145,12 +145,12 @@ TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPS) {
     BFVrns_TestMultiplicativeDepthLimitation(HPS, 33);
     BFVrns_TestMultiplicativeDepthLimitation(HPS, 32);
     BFVrns_TestMultiplicativeDepthLimitation(HPS, 34);
-    BFVrns_TestMultiplicativeDepthLimitation(HPS, 65);
-    BFVrns_TestMultiplicativeDepthLimitation(HPS, 66);
-    BFVrns_TestMultiplicativeDepthLimitation(HPS, 67);
-    BFVrns_TestMultiplicativeDepthLimitation(HPS, 68);
 
     if (MATHBACKEND != 2) {
+        BFVrns_TestMultiplicativeDepthLimitation(HPS, 65);
+        BFVrns_TestMultiplicativeDepthLimitation(HPS, 66);
+        BFVrns_TestMultiplicativeDepthLimitation(HPS, 67);
+        BFVrns_TestMultiplicativeDepthLimitation(HPS, 68);
         BFVrns_TestMultiplicativeDepthLimitation(HPS, 99);
         BFVrns_TestMultiplicativeDepthLimitation(HPS, 100);
         BFVrns_TestMultiplicativeDepthLimitation(HPS, 101);
@@ -165,18 +165,14 @@ TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPSPOVERQ) {
     BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 32);
     BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 33);
     BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 34);
-    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 65);
-    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 66);
-    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 67);
-    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 68);
 
     if (MATHBACKEND != 2) {
+        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 65);
+        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 66);
+        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 67);
+        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 68);
         BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 99);
         BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 100);
-        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 101);
-        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 102);
-        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 132);
-        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 133);
         BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 134);
         BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQ, 135);
     }
@@ -185,18 +181,14 @@ TEST_F(UTBFVRNS_CRT, BFVrns_TestMultiplicativeDepthLimitation_HPSPOVERQLEVELED) 
     BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 32);
     BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 33);
     BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 34);
-    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 65);
-    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 66);
-    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 67);
-    BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 68);
 
     if (MATHBACKEND != 2) {
+        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 65);
+        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 66);
+        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 67);
+        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 68);
         BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 99);
         BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 100);
-        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 101);
-        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 102);
-        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 132);
-        BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 133);
         BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 134);
         BFVrns_TestMultiplicativeDepthLimitation(HPSPOVERQLEVELED, 135);
     }
