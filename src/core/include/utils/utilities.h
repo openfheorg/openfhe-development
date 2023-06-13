@@ -141,6 +141,17 @@ constexpr usint GetIntegerTypeBitLength() {
     return sizeof(T) * CHAR_BIT;
 }
 
+constexpr int64_t Max64BitValue() {
+    // 2^63-2^9-1 - max value that could be rounded to int64_t
+    return 9223372036854775295;
+}
+
+inline bool is64BitOverflow(double d) {
+    const double EPSILON = 0.000001;
+
+    return EPSILON < (std::abs(d) - Max64BitValue());
+}
+
 }  // namespace lbcrypto
 
 #endif
