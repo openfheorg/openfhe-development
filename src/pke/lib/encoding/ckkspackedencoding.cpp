@@ -264,7 +264,7 @@ bool CKKSPackedEncoding::Encode() {
         double powP = scalingFactor;
 
         // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-        int32_t MAX_BITS_IN_WORD = 61;
+        int32_t MAX_BITS_IN_WORD = LargeScalingFactorConstants::MAX_BITS_IN_WORD;
 
         int32_t logc = 0;
         for (size_t i = 0; i < slots; ++i) {
