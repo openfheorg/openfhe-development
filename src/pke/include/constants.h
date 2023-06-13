@@ -139,7 +139,7 @@ enum PlaintextEncodings {
 std::ostream& operator<<(std::ostream& s, PlaintextEncodings p);
 
 enum LargeScalingFactorConstants {
-    MAX_BITS_IN_WORD = 62,
+    MAX_BITS_IN_WORD = 61,
     MAX_LOG_STEP     = 60,
 };
 
