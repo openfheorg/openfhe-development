@@ -141,9 +141,8 @@ public:
     bool Encode();
 
     bool Decode() {
-        OPENFHE_THROW(
-            not_available_error,
-            "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(...) instead.");
+        OPENFHE_THROW(not_available_error,
+                      "CKKSPackedEncoding::Decode() is not implemented. Use CKKSPackedEncoding::Decode(...) instead.");
     }
 
     bool Decode(size_t depth, double scalingFactor, ScalingTechnique scalTech, ExecutionMode executionMode);
@@ -286,17 +285,6 @@ protected:
         const double EPSILON = 0.000001;
 
         return EPSILON < (std::abs(d) - Max128BitValue());
-    }
-#else  // NATIVEINT == 64
-    constexpr int64_t Max64BitValue() const {
-        // 2^63-2^9-1 - max value that could be rounded to int64_t
-        return 9223372036854775295;
-    }
-
-    inline bool is64BitOverflow(double d) const {
-        const double EPSILON = 0.000001;
-
-        return EPSILON < (std::abs(d) - Max64BitValue());
     }
 #endif
 };
