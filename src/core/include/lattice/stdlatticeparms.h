@@ -69,6 +69,9 @@ enum SecurityLevel {
     HEStd_128_classic,
     HEStd_192_classic,
     HEStd_256_classic,
+    HEStd_128_quantum,
+    HEStd_192_quantum,
+    HEStd_256_quantum,
     HEStd_NotSet,
 };
 
@@ -84,6 +87,15 @@ inline std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
             break;
         case HEStd_256_classic:
             s << "HEStd_256_classic";
+            break;
+        case HEStd_128_quantum:
+            s << "HEStd_128_quantum";
+            break;
+        case HEStd_192_quantum:
+            s << "HEStd_192_quantum";
+            break;
+        case HEStd_256_quantum:
+            s << "HEStd_256_quantum";
             break;
         case HEStd_NotSet:
             s << "HEStd_NotSet";
@@ -102,7 +114,7 @@ class StdLatticeParm {
     usint maxLogQ;
 
     // NOTE!!! the declaration below relies upon there being three possible values
-    // for the first index (the distribution type), and three possible values for
+    // for the first index (the distribution type), and six possible values for
     // the second index (the security level)
     // The values in the enums, above, meet this criteria
     // it's also important that the different values are numbered from 0-2
@@ -112,8 +124,8 @@ class StdLatticeParm {
     // will suffer MAKE SURE that the number of entries in the DistributionType
     // enum is == the first index, and MAKE SURE that the number of entries in the
     // SecurityLevel enum is == the second index
-    static std::map<usint, StdLatticeParm*> byRing[3][3];
-    static std::map<usint, StdLatticeParm*> byLogQ[3][3];
+    static std::map<usint, StdLatticeParm*> byRing[3][6];
+    static std::map<usint, StdLatticeParm*> byLogQ[3][6];
 
     static std::vector<StdLatticeParm> StandardLatticeParmSets;
     static bool initialized;
