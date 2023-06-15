@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - dev
 
 env:
   CMAKE_ARGS: "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9 -DCMAKE_C_COMPILER=/usr/bin/gcc-9"
