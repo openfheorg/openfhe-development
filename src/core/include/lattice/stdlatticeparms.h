@@ -161,12 +161,14 @@ public:
 
         int distTypeIdx  = static_cast<int>(distType);
         int minSecLevIdx = static_cast<int>(minSecLev);
+        usint n          = 0;
         for (std::pair<const unsigned int, StdLatticeParm*>& it : byLogQ[distTypeIdx][minSecLevIdx]) {
             if ((curLogQ <= it.second->getMaxLogQ()) && (curLogQ > prev))
                 return it.second->getRingDim();
             prev = it.second->getMaxLogQ();
+            n    = it.second->getRingDim();
         }
-        return 65536;
+        return 2 * n;
     }
 
     DistributionType getDistType() const {
