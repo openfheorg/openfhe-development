@@ -2,9 +2,10 @@
 
 '''Approach for determining parameters for binfhe
 1) Pick bootstrapping method
-2) Pick security level
-3) Set expected decryption failure rate
-4) Specify max number of inputs to a boolean gate
+2) Pick secret distribution
+3) Pick security level
+4) Set expected decryption failure rate
+5) Specify max number of inputs to a boolean gate
 Measure bootstrap keygen/evalbingate time, and throughput (bootstrap keygen size, keyswitching key size, ciphertext size) and document.
 '''
 
@@ -19,6 +20,9 @@ def parameter_selector():
     dist_type = int(input("Enter Bootstrapping technique (0 = GINX, 1 = AP, 2 = LMKDCEY): "))
     helperfncs.test_range(dist_type, 0, 2)
 
+    secret_dist = int(input("Enter Secret distribution (0 = uniform, 1 = error, 2 = ternary): "))
+    helperfncs.test_range(secret_dist, 0, 2)
+
     exp_sec_level = input("Enter Security level (STD128, STD128Q, STD192, STD192Q, STD256, STD256Q): ")
 
     #is_quantum = int(input("Include quantum attack estimates for security? (0 = False, 1 = True): "))
@@ -32,11 +36,20 @@ def parameter_selector():
 
     d_ks = int(input("Enter key switching digit size: "))
 
+    num_threads = int(input("Enter number of threads that can be used to run the lattice-estimator: "))
+
     #processing parameters based on the inputs
     if (exp_sec_level[-1] == "Q"):
         is_quantum = True
     else:
         is_quantum = False
+
+    if (secret_dist == 0):
+        secret_dist_des = "uniform"
+    elif (secret_dist == 1):
+        secret_dist_des = "error"
+    elif (secret_dist == 2):
+        secret_dist_des = "ternary"
 
     #set ptmod based on num of inputs
     ptmod = 2*num_of_inputs
@@ -56,12 +69,12 @@ def parameter_selector():
                 #other variables
                 lattice_n = 500 # for stdnum security, could set to ringsize_N/2 #start with this value and binary search on n to find optimal parameter set
 
-                logmodQksu = get_mod(lattice_n, exp_sec_level) #find analytical estimate for starting point of Qks
-                logmodQu = get_mod(ringsize_N, exp_sec_level)
+                logmodQksu = helperfncs.get_mod(lattice_n, exp_sec_level) #find analytical estimate for starting point of Qks
+                logmodQu = helperfncs.get_mod(ringsize_N, exp_sec_level)
 
                 #check security by running the estimator and adjust modulus if needed
-                dimn, modulus_Qks = helperfncs.optimize_params_security(stdparams.paramlinear[exp_sec_level][0], lattice_n, 2**logmodQksu, False, True, False, is_quantum)
-                dimN, modulus_Q = helperfncs.optimize_params_security(stdparams.paramlinear[exp_sec_level][0], ringsize_N, 2**logmodQu, False, True, False, is_quantum)
+                dimn, modulus_Qks = helperfncs.optimize_params_security(stdparams.paramlinear[exp_sec_level][0], lattice_n, 2**logmodQksu, secret_dist_des, num_threads, False, True, False, is_quantum)
+                dimN, modulus_Q = helperfncs.optimize_params_security(stdparams.paramlinear[exp_sec_level][0], ringsize_N, 2**logmodQu, secret_dist_des, num_threads, False, True, False, is_quantum)
 
                 if (dimn > dimN):
                     print("estimator adjusted to invalid lattice dimension greater than ring dimension N")
@@ -71,8 +84,8 @@ def parameter_selector():
 
                 while ((dimn == 0) and (modulus_Qks == 0)):
                     lattice_n = lattice_n + 100
-                    logmodQksu = get_mod(lattice_n, exp_sec_level)
-                    dimn, modulus_Qks = helperfncs.optimize_params_security(stdparams.paramlinear[exp_sec_level][0], lattice_n, 2**logmodQksu, False, True, False, is_quantum)
+                    logmodQksu = helperfncs.get_mod(lattice_n, exp_sec_level)
+                    dimn, modulus_Qks = helperfncs.optimize_params_security(stdparams.paramlinear[exp_sec_level][0], lattice_n, 2**logmodQksu, secret_dist_des, num_threads, False, True, False, is_quantum)
 
                 #check again
                 if ((dimn > dimN) or (dimn == 0) or (modulus_Qks == 0)):
@@ -152,15 +165,6 @@ def parameter_selector():
             print("key switching digit base B_ks: ", optB_ks)
             print("Performance: ", perf)
 
-def get_mod(dim, exp_sec_level):
-    #get linear relation coefficients for log(modulus) and dimension for the input security level
-    a = stdparams.paramlinear[exp_sec_level][1]
-    b = stdparams.paramlinear[exp_sec_level][2]
-
-    modapp = a*dim + b
-    mod = ceil(modapp) #find analytical estimate for starting point of Qks
-    return mod
-
 
 #add d_ks to the function
 def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_level, num_of_samples, d_ks, params):
@@ -172,7 +176,7 @@ def binary_search_n(start_n, end_N, prev_noise, exp_sec_level, target_noise_leve
     while(start_n <= end_N):
         new_n = floor((start_n + end_N)/2)
 
-        logmodQks = get_mod(new_n, exp_sec_level)
+        logmodQks = helperfncs.get_mod(new_n, exp_sec_level)
         if (logmodQks >= 32):
             logmodQks = 30
 
@@ -223,7 +227,7 @@ def find_opt_n(start_n, end_n, exp_sec_level, target_noise_level, num_of_samples
         newopt_n = floor((start_n + end_n)/2)
         print("newopt n: ", newopt_n)
 
-        logmodQks = get_mod(newopt_n, exp_sec_level)
+        logmodQks = helperfncs.get_mod(newopt_n, exp_sec_level)
         if (logmodQks >= 32):
             logmodQks = 30
 
@@ -264,7 +268,7 @@ def binary_search_n_Qks(start_n, end_N, prev_noise, exp_sec_level, target_noise_
         new_n = floor((start_n + end_N)/2)
         print("new n: ", new_n)
         params.n = new_n
-        logmodQks = get_mod(new_n, exp_sec_level)
+        logmodQks = helperfncs.get_mod(new_n, exp_sec_level)
 
         while(logmodQks > params.logQ):
             logmodQks = logmodQks - 1
