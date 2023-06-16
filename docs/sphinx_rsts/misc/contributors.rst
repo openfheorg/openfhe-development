@@ -51,7 +51,7 @@ We gratefully acknowledge intellectual and software contributions to the library
 
 * Yongwoo Lee (Samsung Advanced Institute of Technology)
 
-* Thomas (Zeyu) Liu (Duality Technologies & Columbia University)
+* Thomas (Zeyu) Liu (Duality Technologies, Columbia University, Yale University)
 
 * Alex Malozemoff (Galois)
 

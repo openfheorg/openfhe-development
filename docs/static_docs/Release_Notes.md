@@ -1,3 +1,13 @@
+06/19/2023: OpenFHE 1.0.4 (stable) is released
+
+* Optimizes hybrid key switching (#377)
+* Several bugfixes for BFV (#422, #432)
+* Several bugfixes for CKKS (#424, #436)
+* Adds security work factors for the ring dimension of 64K (#439)
+* Fixes examples for FHEW/TFHE (#335, #357)
+* Adds support for gcc/g++ 13 (#430)
+* Other bugfixes and small documentation changes
+
 03/17/2023: OpenFHE 1.0.3 (stable) is released
 
 * Corrects the noise estimation for BGV/BFV multiparty scenarios (#273)
