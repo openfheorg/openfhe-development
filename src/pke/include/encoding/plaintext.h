@@ -86,27 +86,27 @@ protected:
     SCHEME schemeID;
 
 public:
-    PlaintextImpl(std::shared_ptr<Poly::Params> vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
+    PlaintextImpl(const std::shared_ptr<Poly::Params>& vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
                   bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsPoly),
-          encodingParams(ep),
+          encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
           schemeID(schemeTag) {}
 
-    PlaintextImpl(std::shared_ptr<NativePoly::Params> vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
+    PlaintextImpl(const std::shared_ptr<NativePoly::Params>& vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
                   bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsNativePoly),
-          encodingParams(ep),
+          encodingParams(std::move(ep)),
           encodedNativeVector(vp, Format::COEFFICIENT),
           schemeID(schemeTag) {}
 
-    PlaintextImpl(std::shared_ptr<DCRTPoly::Params> vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
+    PlaintextImpl(const std::shared_ptr<DCRTPoly::Params>& vp, EncodingParams ep, SCHEME schemeTag = SCHEME::INVALID_SCHEME,
                   bool isEncoded = false)
         : isEncoded(isEncoded),
           typeFlag(IsDCRTPoly),
-          encodingParams(ep),
+          encodingParams(std::move(ep)),
           encodedVector(vp, Format::COEFFICIENT),
           encodedVectorDCRT(vp, Format::COEFFICIENT),
           schemeID(schemeTag) {}
@@ -124,7 +124,7 @@ public:
           slots(rhs.slots),
           schemeID(rhs.schemeID) {}
 
-    PlaintextImpl(const PlaintextImpl&& rhs)
+    PlaintextImpl(PlaintextImpl&& rhs)
         : isEncoded(rhs.isEncoded),
           typeFlag(rhs.typeFlag),
           encodingParams(std::move(rhs.encodingParams)),
@@ -417,16 +417,16 @@ inline std::ostream& operator<<(std::ostream& out, const PlaintextImpl& item) {
     return out;
 }
 
-inline std::ostream& operator<<(std::ostream& out, const Plaintext item) {
+inline std::ostream& operator<<(std::ostream& out, const Plaintext& item) {
     item->PrintValue(out);
     return out;
 }
 
-inline bool operator==(const Plaintext p1, const Plaintext p2) {
+inline bool operator==(const Plaintext& p1, const Plaintext& p2) {
     return *p1 == *p2;
 }
 
-inline bool operator!=(const Plaintext p1, const Plaintext p2) {
+inline bool operator!=(const Plaintext& p1, const Plaintext& p2) {
     return *p1 != *p2;
 }
 
