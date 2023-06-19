@@ -27,7 +27,7 @@ project (OpenFHE C CXX)
 
 set(OPENFHE_VERSION_MAJOR 1)
 set(OPENFHE_VERSION_MINOR 0)
-set(OPENFHE_VERSION_PATCH 3)
+set(OPENFHE_VERSION_PATCH 4)
 set(OPENFHE_VERSION ${OPENFHE_VERSION_MAJOR}.${OPENFHE_VERSION_MINOR}.${OPENFHE_VERSION_PATCH})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -477,9 +477,9 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 #--------------------------------------------------------------------
 # Submodule Update logic
 #--------------------------------------------------------------------
-find_package (Git REQUIRED)
 if(GIT_SUBMOD_AUTO AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     # Update submodules as needed
+    find_package (Git REQUIRED)
     message(STATUS "Submodule update")
     if(NOT GIT_SUBMODULE_SYNCED)
         # "git submodule sync --recursive" should run only once, when CMakeCache.txt doesn't exist'

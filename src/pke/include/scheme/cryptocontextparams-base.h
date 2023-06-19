@@ -164,6 +164,8 @@ class Params {
 
     void SetToDefaults(SCHEME scheme);
 
+    void ValidateRingDim(usint ringDim);
+
 public:
     explicit Params(SCHEME scheme0 = INVALID_SCHEME) {
         SetToDefaults(scheme0);
@@ -173,7 +175,7 @@ public:
     Params(Params&& obj)      = default;
 
     Params& operator=(const Params& obj) = default;
-    Params& operator=(Params&& obj) = default;
+    Params& operator=(Params&& obj)      = default;
 
     ~Params() = default;
 
@@ -224,7 +226,7 @@ public:
     usint GetThresholdNumOfParties() const {
         return thresholdNumOfParties;
     }
-    
+
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
     }
@@ -337,6 +339,9 @@ public:
         securityLevel = securityLevel0;
     }
     void SetRingDim(usint ringDim0) {
+        // TODO (dsuponit): move the check below ValidateRingDim() to a separate validating function. see
+        // https://github.com/openfheorg/openfhe-development/issues/400
+        ValidateRingDim(ringDim0);
         ringDim = ringDim0;
     }
     void SetEvalAddCount(usint evalAddCount0) {

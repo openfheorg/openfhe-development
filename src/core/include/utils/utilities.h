@@ -141,6 +141,25 @@ constexpr usint GetIntegerTypeBitLength() {
     return sizeof(T) * CHAR_BIT;
 }
 
+// TODO (dsuponit): the name of this function Max64BitValue() is misleading as it returns the largest value
+// that can be converted from double to int64_t and not the max value of int64_t. The function must be renamed!!!
+constexpr int64_t Max64BitValue() {
+    // (2^63-1)-(2^10-1) => 2^63-2^10 - max value that could be rounded to int64_t
+    return static_cast<int64_t>((uint64_t(1) << 63) - (uint64_t(1) << 10));
+}
+
+inline bool is64BitOverflow(double d) {
+    // 1. TODO (dsuponit): the name of this function is64BitOverflow() is misleading as it checks if
+    // double can be converted to int64_t. The name should reflect that. something like isConvertableToInt64() The function must be renamed!!!
+    // 2. TODO (dsuponit): the body of this function should probably be just 1 line as this function is asking a simple binary question if
+    // there is an overflow or not:
+    // return (std::abs(d) > Max64BitValue());
+    // TO BE REVIEWED...
+    const double EPSILON = 0.000001;
+
+    return EPSILON < (std::abs(d) - Max64BitValue());
+}
+
 }  // namespace lbcrypto
 
 #endif

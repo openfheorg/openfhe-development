@@ -38,8 +38,27 @@
 
 namespace lbcrypto {
 
-std::map<usint, StdLatticeParm*> StdLatticeParm::byRing[3][3];
-std::map<usint, StdLatticeParm*> StdLatticeParm::byLogQ[3][3];
+SecurityLevel convertToSecurityLevel(uint32_t num) {
+    auto secLevel = static_cast<SecurityLevel>(num);
+    switch (secLevel) {
+        // case HEStd_NotSet:
+        case HEStd_128_classic:
+        case HEStd_192_classic:
+        case HEStd_256_classic:
+        case HEStd_128_quantum:
+        case HEStd_192_quantum:
+        case HEStd_256_quantum:
+            return secLevel;
+        default:
+            break;
+    }
+
+    std::string errMsg(std::string("Unknown value for SecurityLevel ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
+
+std::map<usint, StdLatticeParm*> StdLatticeParm::byRing[3][6];
+std::map<usint, StdLatticeParm*> StdLatticeParm::byLogQ[3][6];
 
 bool StdLatticeParm::initialized = false;
 
@@ -84,6 +103,9 @@ std::vector<StdLatticeParm> StdLatticeParm::StandardLatticeParmSets({
     StdLatticeParm(HEStd_error, 32768, HEStd_128_classic, 883),
     StdLatticeParm(HEStd_error, 32768, HEStd_192_classic, 613),
     StdLatticeParm(HEStd_error, 32768, HEStd_256_classic, 478),
+    StdLatticeParm(HEStd_error, 65536, HEStd_128_classic, 1774),
+    StdLatticeParm(HEStd_error, 65536, HEStd_192_classic, 1230),
+    StdLatticeParm(HEStd_error, 65536, HEStd_256_classic, 958),
 
     StdLatticeParm(HEStd_ternary, 1024, HEStd_128_classic, 27),
     StdLatticeParm(HEStd_ternary, 1024, HEStd_192_classic, 19),
@@ -103,6 +125,66 @@ std::vector<StdLatticeParm> StdLatticeParm::StandardLatticeParmSets({
     StdLatticeParm(HEStd_ternary, 32768, HEStd_128_classic, 881),
     StdLatticeParm(HEStd_ternary, 32768, HEStd_192_classic, 611),
     StdLatticeParm(HEStd_ternary, 32768, HEStd_256_classic, 476),
+    StdLatticeParm(HEStd_ternary, 65536, HEStd_128_classic, 1772),
+    StdLatticeParm(HEStd_ternary, 65536, HEStd_192_classic, 1228),
+    StdLatticeParm(HEStd_ternary, 65536, HEStd_256_classic, 956),
+
+    StdLatticeParm(HEStd_uniform, 1024, HEStd_128_quantum, 27),
+    StdLatticeParm(HEStd_uniform, 1024, HEStd_192_quantum, 19),
+    StdLatticeParm(HEStd_uniform, 1024, HEStd_256_quantum, 15),
+    StdLatticeParm(HEStd_uniform, 2048, HEStd_128_quantum, 53),
+    StdLatticeParm(HEStd_uniform, 2048, HEStd_192_quantum, 37),
+    StdLatticeParm(HEStd_uniform, 2048, HEStd_256_quantum, 29),
+    StdLatticeParm(HEStd_uniform, 4096, HEStd_128_quantum, 103),
+    StdLatticeParm(HEStd_uniform, 4096, HEStd_192_quantum, 72),
+    StdLatticeParm(HEStd_uniform, 4096, HEStd_256_quantum, 56),
+    StdLatticeParm(HEStd_uniform, 8192, HEStd_128_quantum, 206),
+    StdLatticeParm(HEStd_uniform, 8192, HEStd_192_quantum, 143),
+    StdLatticeParm(HEStd_uniform, 8192, HEStd_256_quantum, 111),
+    StdLatticeParm(HEStd_uniform, 16384, HEStd_128_quantum, 413),
+    StdLatticeParm(HEStd_uniform, 16384, HEStd_192_quantum, 286),
+    StdLatticeParm(HEStd_uniform, 16384, HEStd_256_quantum, 222),
+    StdLatticeParm(HEStd_uniform, 32768, HEStd_128_quantum, 829),
+    StdLatticeParm(HEStd_uniform, 32768, HEStd_192_quantum, 573),
+    StdLatticeParm(HEStd_uniform, 32768, HEStd_256_quantum, 445),
+
+    StdLatticeParm(HEStd_error, 1024, HEStd_128_quantum, 27),
+    StdLatticeParm(HEStd_error, 1024, HEStd_192_quantum, 19),
+    StdLatticeParm(HEStd_error, 1024, HEStd_256_quantum, 15),
+    StdLatticeParm(HEStd_error, 2048, HEStd_128_quantum, 53),
+    StdLatticeParm(HEStd_error, 2048, HEStd_192_quantum, 37),
+    StdLatticeParm(HEStd_error, 2048, HEStd_256_quantum, 29),
+    StdLatticeParm(HEStd_error, 4096, HEStd_128_quantum, 103),
+    StdLatticeParm(HEStd_error, 4096, HEStd_192_quantum, 72),
+    StdLatticeParm(HEStd_error, 4096, HEStd_256_quantum, 56),
+    StdLatticeParm(HEStd_error, 8192, HEStd_128_quantum, 206),
+    StdLatticeParm(HEStd_error, 8192, HEStd_192_quantum, 143),
+    StdLatticeParm(HEStd_error, 8192, HEStd_256_quantum, 111),
+    StdLatticeParm(HEStd_error, 16384, HEStd_128_quantum, 413),
+    StdLatticeParm(HEStd_error, 16384, HEStd_192_quantum, 286),
+    StdLatticeParm(HEStd_error, 16384, HEStd_256_quantum, 222),
+    StdLatticeParm(HEStd_error, 32768, HEStd_128_quantum, 829),
+    StdLatticeParm(HEStd_error, 32768, HEStd_192_quantum, 573),
+    StdLatticeParm(HEStd_error, 32768, HEStd_256_quantum, 445),
+
+    StdLatticeParm(HEStd_ternary, 1024, HEStd_128_quantum, 25),
+    StdLatticeParm(HEStd_ternary, 1024, HEStd_192_quantum, 17),
+    StdLatticeParm(HEStd_ternary, 1024, HEStd_256_quantum, 13),
+    StdLatticeParm(HEStd_ternary, 2048, HEStd_128_quantum, 51),
+    StdLatticeParm(HEStd_ternary, 2048, HEStd_192_quantum, 35),
+    StdLatticeParm(HEStd_ternary, 2048, HEStd_256_quantum, 27),
+    StdLatticeParm(HEStd_ternary, 4096, HEStd_128_quantum, 101),
+    StdLatticeParm(HEStd_ternary, 4096, HEStd_192_quantum, 70),
+    StdLatticeParm(HEStd_ternary, 4096, HEStd_256_quantum, 54),
+    StdLatticeParm(HEStd_ternary, 8192, HEStd_128_quantum, 202),
+    StdLatticeParm(HEStd_ternary, 8192, HEStd_192_quantum, 141),
+    StdLatticeParm(HEStd_ternary, 8192, HEStd_256_quantum, 109),
+    StdLatticeParm(HEStd_ternary, 16384, HEStd_128_quantum, 411),
+    StdLatticeParm(HEStd_ternary, 16384, HEStd_192_quantum, 284),
+    StdLatticeParm(HEStd_ternary, 16384, HEStd_256_quantum, 220),
+    StdLatticeParm(HEStd_ternary, 32768, HEStd_128_quantum, 827),
+    StdLatticeParm(HEStd_ternary, 32768, HEStd_192_quantum, 571),
+    StdLatticeParm(HEStd_ternary, 32768, HEStd_256_quantum, 443),
 });
 
 } /* namespace lbcrypto */

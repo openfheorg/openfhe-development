@@ -211,7 +211,7 @@ int main() {
     std::cout << "0 XOR_FAST 1 = " << result << "\n" << std::endl;
 
     // Sample Program: Step 10: Evaluation of XNOR gates
-    // using XOR_FAST (1 bootstrap but the probability of failure is higher)
+    // using XNOR_FAST (1 bootstrap but the probability of failure is higher)
 
     auto ctXNOR1_FAST = cc.EvalBinGate(XNOR_FAST, ct10, ct11);
     auto ctXNOR2_FAST = cc.EvalBinGate(XNOR_FAST, ct10, ct01);

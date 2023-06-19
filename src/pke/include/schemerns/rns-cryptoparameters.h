@@ -120,7 +120,8 @@ protected:
                         MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
                         ExecutionMode executionMode             = EXEC_EVALUATION,
                         DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT, PlaintextModulus noiseScale = 1,
-                        uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1, uint32_t thresholdNumOfParties = 1)
+                        uint32_t statisticalSecurity = 30, uint32_t numAdversarialQueries = 1,
+                        uint32_t thresholdNumOfParties = 1)
         : CryptoParametersRLWE<DCRTPoly>(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel,
                                          digitSize, maxRelinSkDeg, secretKeyDist, PREMode, multipartyMode,
                                          executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity,
@@ -222,7 +223,7 @@ public:
         if ((m_ksTechnique == HYBRID) && (m_PREMode != NOT_SET)) {
             return m_paramsQP;
         }
-        else if (m_encTechnique == EXTENDED) {
+        else if ((m_encTechnique == EXTENDED) && (m_paramsQr != nullptr)) {
             return m_paramsQr;
         }
         return m_params;
@@ -334,16 +335,6 @@ public:
         return m_PModq;
     }
 
-    /**
-   * Get the precomputed table of [Q/Q_j]_{q_i}
-   * Used in HYBRID key switch generation.
-   *
-   * @return the precomputed table
-   */
-    const std::vector<std::vector<NativeInteger>>& GetPartQHatModq() const {
-        return m_PartQHatModq;
-    }
-
     /////////////////////////////////////
     // KeySwitchHybrid : KeySwitch
     /////////////////////////////////////
@@ -389,16 +380,6 @@ public:
    */
     const std::shared_ptr<ILDCRTParams<BigInteger>>& GetParamsPartQ(uint32_t part) const {
         return m_paramsPartQ[part];
-    }
-
-    /**
-   * Method that returns the precomputed values for QHat^-1 mod qj
-   * Used in Hybrid key switching
-   *
-   * @return the pre-computed values.
-   */
-    const std::vector<NativeInteger>& GetPartQHatInvModq(uint32_t part) const {
-        return m_PartQHatInvModq[part];
     }
 
     /*
@@ -1380,9 +1361,6 @@ protected:
     // Stores [P]_{q_i}, used in GHS key switching
     std::vector<NativeInteger> m_PModq;
 
-    // Stores [Q/Q_j]_{q_i} for HYBRID
-    std::vector<std::vector<NativeInteger>> m_PartQHatModq;
-
     /////////////////////////////////////
     // KeySwitchHybrid KeySwitch
     /////////////////////////////////////
@@ -1396,9 +1374,6 @@ protected:
 
     // Stores the parameters for moduli Q_i
     std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>> m_paramsPartQ;
-
-    // Stores [{Q/Q_j}^{-1}]_{q_i} for HYBRID
-    std::vector<std::vector<NativeInteger>> m_PartQHatInvModq;
 
     // Stores the parameters for complementary {\bar{Q_i},P}
     std::vector<std::vector<std::shared_ptr<ILDCRTParams<BigInteger>>>> m_paramsComplPartQ;

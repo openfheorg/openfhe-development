@@ -3,6 +3,7 @@
 #cmakedefine WITH_NTL
 #cmakedefine WITH_TCM
 
+#cmakedefine MATHBACKEND @MATHBACKEND@
 #cmakedefine HAVE_INT128 @HAVE_INT128@
 #cmakedefine HAVE_INT64 @HAVE_INT64@
 #cmakedefine NATIVEINT @NATIVEINT@

@@ -91,9 +91,9 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
         ringDim = N;
     }
     // find prime Q for NTT
-    NativeInteger Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(logQprime, ringDim), ringDim);
-    // q = N*2 by default for maximum plaintext space, if needed for arbitrary function evlauation, q = ringDim/2
-    uint32_t q = arbFunc ? ringDim : ringDim * 2;
+    NativeInteger Q = PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(logQprime, 2 * ringDim), 2 * ringDim);
+    // q = 2*ringDim by default for maximum plaintext space, if needed for arbitrary function evaluation, q = ringDim
+    uint32_t q = arbFunc ? ringDim : 2 * ringDim;
 
     uint64_t qKS = 1 << 30;
     qKS <<= 5;

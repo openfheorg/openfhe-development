@@ -168,8 +168,13 @@ std::shared_ptr<std::map<usint, EvalKey<Element>>> MultipartyBase<Element>::Mult
         Element sPermuted = s.AutomorphismTransform(index, vec);
         privateKeyPermuted->SetPrivateElement(sPermuted);
 
-        (*result)[indexList[i]] =
-            MultiKeySwitchGen(privateKey, privateKeyPermuted, evalKeyMap->find(indexList[i])->second);
+        // verify if the key indexList[i] exists in the evalKeyMap
+        auto evalKeyIterator = evalKeyMap->find(indexList[i]);
+        if (evalKeyIterator == evalKeyMap->end()) {
+            OPENFHE_THROW(openfhe_error, "EvalKey for index [" + std::to_string(indexList[i]) + "] is not found.");
+        }
+
+        (*result)[indexList[i]] = MultiKeySwitchGen(privateKey, privateKeyPermuted, evalKeyIterator->second);
     }
 
     return result;

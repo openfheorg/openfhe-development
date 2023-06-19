@@ -43,6 +43,7 @@
 #include <map>
 #include <thread>
 #include <vector>
+#include <cstdint>
 
 #include "math/hal.h"
 #include "math/nbtheory.h"
