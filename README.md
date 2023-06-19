@@ -99,7 +99,7 @@ We welcome all contributions including but not limited to:
 
 ## How to Cite OpenFHE
 
-To cite OpenFHE in academic papers, please use the following BibTeX entry.
+To cite OpenFHE in academic papers, please use the following BibTeX entry
 
 ```
 @misc{OpenFHE,
@@ -109,6 +109,23 @@ To cite OpenFHE in academic papers, please use the following BibTeX entry.
       year = {2022},
       note = {\url{https://eprint.iacr.org/2022/915}},
       url = {https://eprint.iacr.org/2022/915}
+}
+```
+or, alternatively (WAHC@CCS'22 version),
+```
+@inproceedings{10.1145/3560827.3563379,
+      author = {Al Badawi, Ahmad and Bates, Jack and Bergamaschi, Flavio and Cousins, David Bruce and Erabelli, Saroja and Genise, Nicholas and Halevi, Shai and Hunt, Hamish and Kim, Andrey and Lee, Yongwoo and Liu, Zeyu and Micciancio, Daniele and Quah, Ian and Polyakov, Yuriy and R.V., Saraswathy and Rohloff, Kurt and Saylor, Jonathan and Suponitsky, Dmitriy and Triplett, Matthew and Vaikuntanathan, Vinod and Zucca, Vincent},
+      title = {OpenFHE: Open-Source Fully Homomorphic Encryption Library},
+      year = {2022},
+      publisher = {Association for Computing Machinery},
+      address = {New York, NY, USA},
+      url = {https://doi.org/10.1145/3560827.3563379},
+      doi = {10.1145/3560827.3563379},
+      booktitle = {Proceedings of the 10th Workshop on Encrypted Computing \& Applied Homomorphic Cryptography},
+      pages = {53-63},
+      numpages = {11},
+      location = {Los Angeles, CA, USA},
+      series = {WAHC'22}
 }
 ```
 
