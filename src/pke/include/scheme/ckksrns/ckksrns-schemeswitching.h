@@ -72,20 +72,19 @@ public:
                                                                 uint32_t numSlotsCKKS) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                             ConstLWEPrivateKey& lwesk,
-                                                                             uint32_t dim1) override;
+                                                                             ConstLWEPrivateKey& lwesk, uint32_t dim1,
+                                                                             uint32_t L) override;
 
-    void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale, uint32_t dim1,
-                                  uint32_t L) override;
+    void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale) override;
 
     std::vector<ConstPlaintext> EvalLTPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
                                                    const std::vector<std::vector<std::complex<double>>>& A,
-                                                   uint32_t dim1, double scale, uint32_t L) const;
+                                                   uint32_t dim1, uint32_t L, double scale) const;
 
     std::vector<ConstPlaintext> EvalLTPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
                                                    const std::vector<std::vector<std::complex<double>>>& A,
                                                    const std::vector<std::vector<std::complex<double>>>& B,
-                                                   uint32_t dim1, double scale, uint32_t L) const;
+                                                   uint32_t dim1, uint32_t L, double scale) const;
 
     Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
                                                     const std::vector<std::vector<std::complex<double>>>& A,
@@ -107,7 +106,8 @@ public:
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalFHEWtoCKKSKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                              ConstLWEPrivateKey& lwesk,
-                                                                             uint32_t numSlots) override;
+                                                                             uint32_t numSlots, uint32_t dim1,
+                                                                             uint32_t L) override;
 
     Ciphertext<DCRTPoly> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                         double prescale, uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
@@ -117,14 +117,12 @@ public:
                                                                      SecurityLevel sl, bool arbFunc, uint32_t logQ,
                                                                      bool dynamic, uint32_t numSlotsCKKS) override;
 
-    std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(const KeyPair<DCRTPoly>& keyPair,
-                                                                                  ConstLWEPrivateKey& lwesk,
-                                                                                  uint32_t dim1CF, uint32_t dim1FC,
-                                                                                  uint32_t numValues, bool oneHot,
-                                                                                  bool alt) override;
+    std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(
+        const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool oneHot, bool alt,
+        uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) override;
 
     void EvalCompareSSPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, uint32_t init_level,
-                                 double scaleSign, bool unit, uint32_t dim1, uint32_t L) override;
+                                 double scaleSign, bool unit) override;
 
     Ciphertext<DCRTPoly> EvalCompareSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext1,
                                                     ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts,
@@ -191,18 +189,21 @@ private:
     // baby-step dimensions for linear transform for CKKS->FHEW, FHEW->CKKS
     uint32_t m_dim1CF;
     uint32_t m_dim1FC;
+    // starting levels for linear transforms
+    uint32_t m_LCF;
+    uint32_t m_LFC;
 
     // target FHEW plaintext modulus
     uint64_t m_plaintextFHEW;
     // scaling factor of CKKS "outer" ciphertext
     double m_scFactorOuter;
 
-    // Andreea: temporary for debugging, remove later
-    PrivateKey<DCRTPoly> m_CKKSsk;
-    PrivateKey<DCRTPoly> m_CKKSskKS;
-    PrivateKey<DCRTPoly> m_RLWELWEsk;
-    LWEPrivateKey m_FHEWsk;
-    std::vector<std::complex<double>> m_FHEWtoCKKSswkDouble;
+    // // Andreea: temporary for debugging, remove later
+    // PrivateKey<DCRTPoly> m_CKKSsk;
+    // PrivateKey<DCRTPoly> m_CKKSskKS;
+    // PrivateKey<DCRTPoly> m_RLWELWEsk;
+    // LWEPrivateKey m_FHEWsk;
+    // std::vector<std::complex<double>> m_FHEWtoCKKSswkDouble;
 
 #define Pi 3.14159265358979323846
 

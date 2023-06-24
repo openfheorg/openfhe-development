@@ -1332,18 +1332,17 @@ public:
 
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
                                                                             ConstLWEPrivateKey& lwesk,
-                                                                            uint32_t dim1 = 0) {
+                                                                            uint32_t dim1 = 0, uint32_t L = 1) {
         if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalCKKStoFHEWKeyGen(keyPair, lwesk, dim1);
+            return m_SchemeSwitch->EvalCKKStoFHEWKeyGen(keyPair, lwesk, dim1, L);
         }
 
         OPENFHE_THROW(config_error, "EvalCKKStoFHEWKeyGen operation has not been enabled");
     }
 
-    void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<Element>& cc, double scale = 1.0, uint32_t dim1 = 0,
-                                  uint32_t L = 1) {
+    void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<Element>& cc, double scale = 1.0) {
         if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalCKKStoFHEWPrecompute(cc, scale, dim1, L);
+            return m_SchemeSwitch->EvalCKKStoFHEWPrecompute(cc, scale);
         }
 
         OPENFHE_THROW(config_error, "EvalCKKStoFHEWPrecompute operation has not been enabled");
@@ -1370,18 +1369,19 @@ public:
 
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
                                                                             ConstLWEPrivateKey& lwesk,
-                                                                            uint32_t numSlots = 0) {
+                                                                            uint32_t numSlots = 0, uint32_t dim1 = 0,
+                                                                            uint32_t L = 0) {
         if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots);
+            return m_SchemeSwitch->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, dim1, L);
         }
 
         OPENFHE_THROW(config_error, "EvalFHEWtoCKKSKeyGen operation has not been enabled");
     }
 
     void EvalCompareSSPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE = 0, uint32_t initLevel = 0,
-                                 double scaleSign = 1.0, bool unit = false, uint32_t dim1 = 0, uint32_t L = 1) {
+                                 double scaleSign = 1.0, bool unit = false) {
         if (m_SchemeSwitch) {
-            m_SchemeSwitch->EvalCompareSSPrecompute(ccCKKS, pLWE, initLevel, scaleSign, unit, dim1, L);
+            m_SchemeSwitch->EvalCompareSSPrecompute(ccCKKS, pLWE, initLevel, scaleSign, unit);
             return;
         }
 
@@ -1410,10 +1410,11 @@ public:
     }
 
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1CF = 0, uint32_t dim1FC = 0,
-        uint32_t numValues = 0, bool oneHot = true, bool alt = false) {
+        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues = 0, bool oneHot = true,
+        bool alt = false, uint32_t dim1CF = 0, uint32_t dim1FC = 0, uint32_t LCF = 1, uint32_t LFC = 0) {
         if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalSchemeSwitchingKeyGen(keyPair, lwesk, dim1CF, dim1FC, numValues, oneHot, alt);
+            return m_SchemeSwitch->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, oneHot, alt, dim1CF, dim1FC,
+                                                             LCF, LFC);
         }
 
         OPENFHE_THROW(config_error, "EvalSchemeSwitchingKeyGen operation has not been enabled");

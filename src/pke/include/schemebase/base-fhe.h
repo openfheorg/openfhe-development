@@ -143,10 +143,11 @@ public:
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
    * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
                                                                                     ConstLWEPrivateKey& lwesk,
-                                                                                    uint32_t dim1) {
+                                                                                    uint32_t dim1, uint32_t L) {
         OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWKeyGen is not supported for this scheme");
     }
 
@@ -159,8 +160,7 @@ public:
    * @param dim1 baby-step for the linear transform
    * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    virtual void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<Element>& cc, double scale, uint32_t dim1,
-                                          uint32_t L) {
+    virtual void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<Element>& cc, double scale) {
         OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWPrecompute is not supported for this scheme");
     }
 
@@ -196,10 +196,13 @@ public:
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
    * @param numSlots number of slots for the CKKS encryption of the FHEW secret key
+   * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
                                                                                     ConstLWEPrivateKey& lwesk,
-                                                                                    uint32_t numSlots) {
+                                                                                    uint32_t numSlots,
+                                                                                    uint32_t dim1 = 0, uint32_t L = 0) {
         OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKSKeyGen is not supported for this scheme");
     }
 
@@ -212,12 +215,10 @@ public:
    * @param initLevel the level of the ciphertext that will be switched
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
-   * @param dim1 baby-step for the linear transform
-   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    * @param unit whether the input messages are normalized to the unit circle
    */
     virtual void EvalCompareSSPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE, uint32_t initLevel,
-                                         double scaleSign, bool unit, uint32_t dim1, uint32_t L) {
+                                         double scaleSign, bool unit) {
         OPENFHE_THROW(not_implemented_error, "EvalCompareSSPrecompute is not supported for this scheme");
     }
 
@@ -265,15 +266,17 @@ public:
    *
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
-   * @param dim1CF baby-step for the linear transform in CKKS to FHEW
-   * @param dim1FC baby-step for the linear transform in FHEW to CKKS
    * @param numValues parameter of argmin computation, set to zero if not needed
    * @param oneHot flag that indicates if the argmin encoding should be one hot
    * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
+   * @param dim1CF baby-step for the linear transform in CKKS to FHEW
+   * @param dim1FC baby-step for the linear transform in FHEW to CKKS
+   * @param LCF level on which to do the linear transform in CKKS to FHEW
+   * @param LFC level on which to do the linear transform in FHEW to CKKS
    */
     virtual std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
-        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1CF, uint32_t dim1FC,
-        uint32_t numValues, bool oneHot, bool alt) {
+        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool oneHot, bool alt,
+        uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
         OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingKeyGen is not supported for this scheme");
     }
 

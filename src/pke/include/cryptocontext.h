@@ -2983,18 +2983,18 @@ public:
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
    * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1 = 0);
+    void EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1 = 0,
+                              uint32_t L = 1);
 
     /**
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalCKKStoFHEWSetup
    * to allow the user to specify a scale that depends on the CKKS and FHEW cryptocontexts
    *
    * @param scale factor with which to scale the matrix in the linear transform
-   * @param dim1 baby-step for the linear transform
-   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    void EvalCKKStoFHEWPrecompute(double scale = 1.0, uint32_t dim1 = 0, uint32_t L = 1);
+    void EvalCKKStoFHEWPrecompute(double scale = 1.0);
 
     /**
    * Performs the scheme switching on a CKKS ciphertext
@@ -3023,17 +3023,20 @@ public:
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
    * @param numSlots number of slots for the CKKS encryption of the FHEW secret key
+   * @param dim1 baby-step for the linear transform
+   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0);
+    void EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numSlots = 0,
+                              uint32_t dim1 = 0, uint32_t L = 0);
 
     /**
    * Performs the scheme switching on a vector of FHEW ciphertexts
    *
    * @param LWECiphertexts FHEW/LWE ciphertexts to switch
    * @param prescale factor to multiply the LWE components
-   * @param p plaintext modulus to use to decide postscaling, by default p = 4
    * @param numCtxts number of values to encrypt from the LWE ciphertexts in the new CKKS ciphertext
    * @param numSlots number of slots to use in the encoding in the new CKKS/RLWE ciphertext
+   * @param p plaintext modulus to use to decide postscaling, by default p = 4
    * @param pmin, pmax plaintext space of the resulting messages (by default [0,2] assuming
    * the LWE ciphertext had plaintext modulus p = 4 and only bits were encrypted)
    * @return a CKKS ciphertext encrypting in its slots the messages in the LWE ciphertexts
@@ -3065,14 +3068,17 @@ public:
    *
    * @param keypair CKKS key pair
    * @param lwesk FHEW secret key
-   * @param dim1CF baby-step for the linear transform in CKKS to FHEW
-   * @param dim1FC baby-step for the linear transform in FHEW to CKKS
    * @param numValues parameter of argmin computation, set to zero if not needed
    * @param oneHot flag that indicates whether the argmin result should have one hot encoding or not
    * @param alt flag that indicates whether to use the alternative version of argmin which requires fewer automorphism keys
+   * @param dim1CF baby-step for the linear transform in CKKS to FHEW
+   * @param dim1FC baby-step for the linear transform in FHEW to CKKS
+   * @param LCF level on which to do the linear transform in CKKS to FHEW
+   * @param LFC level on which to do the linear transform in FHEW to CKKS
    */
-    void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t dim1CF = 0,
-                                   uint32_t dim1FC = 0, uint32_t numValues = 0, bool oneHot = true, bool alt = false);
+    void EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues = 0,
+                                   bool oneHot = true, bool alt = false, uint32_t dim1CF = 0, uint32_t dim1FC = 0,
+                                   uint32_t LCF = 1, uint32_t LFC = 0);
 
     /**
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalSchemeSwitchingSetup
@@ -3083,11 +3089,8 @@ public:
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
    * @param unit whether the input messages are normalized to the unit circle
-   * @param dim1 baby-step for the linear transform
-   * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
    */
-    void EvalCompareSSPrecompute(uint32_t pLWE = 0, uint32_t initLevel = 0, double scaleSign = 1.0, bool unit = false,
-                                 uint32_t dim1 = 0, uint32_t L = 1);
+    void EvalCompareSSPrecompute(uint32_t pLWE = 0, uint32_t initLevel = 0, double scaleSign = 1.0, bool unit = false);
 
     /**
    * Performs the scheme switching on the difference of two CKKS ciphertexts to compare, evaluates the sign function

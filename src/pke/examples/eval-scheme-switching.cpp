@@ -53,16 +53,16 @@ void ArgminViaSchemeSwitchingUnit();
 void ArgminViaSchemeSwitchingAltUnit();
 
 int main() {
-    // SwitchCKKSToFHEW();
-    // SwitchFHEWtoCKKS();
+    SwitchCKKSToFHEW();
+    SwitchFHEWtoCKKS();
     // FloorViaSchemeSwitching();
-    // ComparisonViaSchemeSwitching();
+    ComparisonViaSchemeSwitching();
     // ArbitraryFuncViaSchemeSwitching();
     // IteratedSchemeSwitching();
     ArgminViaSchemeSwitching();
-    ArgminViaSchemeSwitchingAlt();
-    ArgminViaSchemeSwitchingUnit();
-    ArgminViaSchemeSwitchingAltUnit();
+    // ArgminViaSchemeSwitchingAlt();
+    // ArgminViaSchemeSwitchingUnit();
+    // ArgminViaSchemeSwitchingAltUnit();
 
     return 0;
 }
@@ -81,7 +81,7 @@ void SwitchCKKSToFHEW() {
     */
     uint32_t firstModSize = 60;
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 8192;  // 65536;  // 2048;  //
+    uint32_t ringDim      = 512;  // 8192;  // 65536;  // 2048;  //
     SecurityLevel sl =
         HEStd_NotSet;  // HEStd_128_classic;  // If this is not HEStd_NotSet, ensure ringDim is compatible
     uint32_t logQ_ccLWE = 25;
@@ -96,8 +96,8 @@ void SwitchCKKSToFHEW() {
 
     /* A3) Number of plaintext slots used in the ciphertext.
   */
-    // uint32_t slots = ringDim/2; // fully-packed
-    uint32_t slots     = 16;  // sparsely-packed
+    uint32_t slots = ringDim / 2;  // fully-packed
+    // uint32_t slots     = 16;  // sparsely-packed
     uint32_t batchSize = slots;
 
     parameters.SetBatchSize(batchSize);
@@ -792,16 +792,16 @@ void ComparisonViaSchemeSwitching() {
     /* A1) Multiplicative depth:
     */
     ScalingTechnique scTech = FIXEDAUTO;
-    uint32_t multDepth      = 1 + 9 + 3 + 1 + 1;  // 1 for CKKS to FHEW, 14 for FHEW to CKKS + 1 to test
+    uint32_t multDepth      = 1 + 9 + 3 + 3;  // 1 for CKKS to FHEW, 14 for FHEW to CKKS + 1 to test
     if (scTech == FLEXIBLEAUTOEXT)
         multDepth += 1;
     /* A2) Bit-length of scaling factor.
     */
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 16384;         // 65536; //
+    uint32_t ringDim      = 512;           // 65536; //
     SecurityLevel sl      = HEStd_NotSet;  // HEStd_128_classic; //
-    uint32_t logQ_ccLWE   = 20;
+    uint32_t logQ_ccLWE   = 25;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -987,8 +987,8 @@ void ComparisonViaSchemeSwitching() {
     std::cout << "\n";
 
     TIC(t);
-    cResult = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots, pLWE2, scaleSignFHEW);
-    // cResult  = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots);
+    // cResult = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots, pLWE2, scaleSignFHEW);
+    cResult  = cc->EvalCompareSchemeSwitching(c1, c2, slots, slots);
     timeEval = TOC(t);
     std::cout << "Time to perform comparison via scheme switching: " << timeEval << " ms" << std::endl;
 
@@ -1076,9 +1076,9 @@ void ArbitraryFuncViaSchemeSwitching() {
     /* A2) Bit-length of scaling factor.
     */
     uint32_t scaleModSize = 50;
-    uint32_t ringDim      = 8192;     // 32768;    // 65536;
+    uint32_t ringDim      = 2048;     // 32768;    // 65536;
     SecurityLevel sl = HEStd_NotSet;  // HEStd_128_classic; // If this is not HEStd_NotSet, ensure ringDim is compatible
-    uint32_t logQ_ccLWE = 23;
+    uint32_t logQ_ccLWE = 25;
     bool arbFunc        = true;
 
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -1090,7 +1090,7 @@ void ArbitraryFuncViaSchemeSwitching() {
 
     /* A3) Number of plaintext slots used in the ciphertext.
   */
-    uint32_t slots     = 16;  // sparsely-packed
+    uint32_t slots     = 8;  // sparsely-packed
     uint32_t batchSize = slots;
 
     parameters.SetBatchSize(batchSize);
@@ -1139,8 +1139,8 @@ void ArbitraryFuncViaSchemeSwitching() {
     ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
     auto paramsQ                                  = elementParams.GetParams();
     auto modulus_CKKS_from                        = paramsQ[0]->GetModulus();
-
-    auto pLWE1 = ccLWE.GetMaxPlaintextSpace().ConvertToInt();  // Small precision
+    auto pLWE1 =
+        ccLWE.GetMaxPlaintextSpace().ConvertToInt();  // Small precision because GenerateLUTviaFunction needs p < q
 
     double scFactor = cryptoParams->GetScalingFactorReal(0);
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
@@ -1155,7 +1155,7 @@ void ArbitraryFuncViaSchemeSwitching() {
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1 = {0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 1.0, 3.0, 5.0, 7.0};
+    std::vector<double> x1 = {0.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0, 0.2};
 
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr);
@@ -1181,12 +1181,12 @@ void ArbitraryFuncViaSchemeSwitching() {
 
     // Step 5: Evaluate the arbitrary function
 
-    // Initialize Function f(x) = x^3 % p
+    // Initialize Function f(x) = x^3 + 1 % p
     auto fp = [](NativeInteger m, NativeInteger p1) -> NativeInteger {
         if (m < p1)
-            return (m * m * m) % p1;
+            return (m * m * m + 2 * m * m + 1) % p1;
         else
-            return ((m - p1 / 2) * (m - p1 / 2) * (m - p1 / 2)) % p1;
+            return ((m - p1 / 2) * (m - p1 / 2) * (m - p1 / 2) + 2 * (m - p1 / 2) * (m - p1 / 2) + 1) % p1;
     };
 
     // Generate LUT from function f(x)
@@ -1203,11 +1203,11 @@ void ArbitraryFuncViaSchemeSwitching() {
     timeEval = TOC(t);
     std::cout << "Time to evaluate the cube: " << timeEval << " ms" << std::endl;
 
-    std::cout << "\n---Decrypting the x^3 mod p inputs---\n" << std::endl;
+    std::cout << "\n---Decrypting the x^3 + 2*x + 1 mod p inputs---\n" << std::endl;
 
     std::cout << "Expected result: ";
     for (uint32_t i = 0; i < slots; ++i) {
-        std::cout << fp(static_cast<int>(x1[i]), pLWE1) << " ";
+        std::cout << fp(static_cast<int>(x1[i]) % pLWE1, pLWE1) << " ";
     }
     LWEPlaintext pCube;
     std::cout << "\nFHEW decryption mod p = " << pLWE1 << ": ";
@@ -1240,10 +1240,12 @@ void ArbitraryFuncViaSchemeSwitching() {
 
     cc->Decrypt(keys.secretKey, cTemp2, &plaintextDec2);
     plaintextDec2->SetLength(slots);
+    std::cout << "Switched cube decryption modulus_LWE mod " << 2 << ": " << plaintextDec2 << std::endl;
 
     std::cout << "Arcsin(switched result) * p/2pi gives the correct result if messages are < p/4 " << std::endl;
     for (uint32_t i = 0; i < slots; i++) {
-        std::cout << std::asin(plaintextDec2->GetRealPackedValue()[i]) * pLWE1 / (2 * Pi) << " ";
+        double x = std::max(std::min(plaintextDec2->GetRealPackedValue()[i], 1.0), -1.0);
+        std::cout << std::asin(x) * pLWE1 / (2 * Pi) << " ";
     }
     std::cout << "\n";
 }
@@ -1320,7 +1322,7 @@ void IteratedSchemeSwitching() {
     auto privateKeyFHEW = FHEWparams.second;
 
     TIC(t);
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, 0, 0, numValues);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues);
     timeKeyGen = TOC(t);
     std::cout << "Time to compute the scheme switching key generation: " << timeKeyGen << " ms" << std::endl;
 
@@ -1480,11 +1482,11 @@ void ArgminViaSchemeSwitching() {
     /* A3) Number of plaintext slots used in the ciphertext.
   */
     // uint32_t slots = ringDim/2; // fully-packed
-    uint32_t slots     = 64;  // sparsely-packed
-    uint32_t batchSize = slots;
+    uint32_t slots = 16;  // sparsely-packed
+    // uint32_t batchSize = slots;
     // Have slots values encrypted but only want the argmin of the first numValues
-    uint32_t numValues      = 64;
-    ScalingTechnique scTech = FLEXIBLEAUTOEXT;
+    uint32_t numValues      = 16;
+    ScalingTechnique scTech = FIXEDAUTO;
     uint32_t multDepth =
         1 + 8 + 3 + 1 +
         static_cast<int>(std::log2(numValues));  // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
@@ -1498,7 +1500,7 @@ void ArgminViaSchemeSwitching() {
     parameters.SetScalingTechnique(scTech);
     parameters.SetSecurityLevel(sl);
     parameters.SetRingDim(ringDim);
-    parameters.SetBatchSize(batchSize);
+    // parameters.SetBatchSize(batchSize);
 
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
@@ -1519,7 +1521,7 @@ void ArgminViaSchemeSwitching() {
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
     timeSetup       = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup << " ms" << std::endl;
 
@@ -1527,7 +1529,7 @@ void ArgminViaSchemeSwitching() {
     auto privateKeyFHEW = FHEWparams.second;
 
     TIC(t);
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, 0, 0, numValues, oneHot);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot);
     timeKeyGen = TOC(t);
     std::cout << "Time to compute the scheme switching key generation: " << timeKeyGen << " ms" << std::endl;
 
@@ -1538,7 +1540,7 @@ void ArgminViaSchemeSwitching() {
 
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     // The minimum value at the end will also be scaled by scaleSign.
-    double scaleSign = 512.0;
+    double scaleSign = 128.0;
 
     // auto pLWE       = ccLWE.GetMaxPlaintextSpace().ConvertToInt();  // Small precision
     auto modulus_LWE = 1 << logQ_ccLWE;
@@ -1561,17 +1563,17 @@ void ArgminViaSchemeSwitching() {
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         init_level = 1;
     // This formulation is for clarity
-    // cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
     // But we can also include the scaleSign in pLWE (here we use the fact both pLWE and scaleSign are powers of two)
-    cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
+    // cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
 
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
-                              9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x1 = {-1.1, -1.05, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
+                              9.0,  10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x1.size() < slots) {
         std::vector<double> zeros(slots - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());
@@ -1582,8 +1584,8 @@ void ArgminViaSchemeSwitching() {
               << std::max_element(x1.begin(), x1.begin() + numValues) - x1.begin() << std::endl;
 
     // Encoding as plaintexts
-    Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1);
-    // Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr, slots);
+    // Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1); // Only if we we set batchsize
+    Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1, 1, 0, nullptr, slots);
     // Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(Fill(x1,ringDim/2), 1, 0, nullptr, ringDim/2);
 
     // Encrypt the encoded vectors
@@ -1823,7 +1825,7 @@ void ArgminViaSchemeSwitchingAlt() {
     */
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t ringDim      = 16384;         // 32768;         // 8192;   // 65536; //
+    uint32_t ringDim      = 512;           // 32768;         // 8192;   // 65536; //
     SecurityLevel sl      = HEStd_NotSet;  // HEStd_128_classic; //
     uint32_t logQ_ccLWE   = 25;
     bool arbFunc          = false;
@@ -1834,11 +1836,11 @@ void ArgminViaSchemeSwitchingAlt() {
     /* A3) Number of plaintext slots used in the ciphertext.
   */
     // uint32_t slots = ringDim/2; // fully-packed
-    uint32_t slots     = 64;  // sparsely-packed
+    uint32_t slots     = 8;  // sparsely-packed
     uint32_t batchSize = slots;
     // Have slots values encrypted but only want the argmin of the first numValues
-    uint32_t numValues      = 64;
-    ScalingTechnique scTech = FLEXIBLEAUTOEXT;
+    uint32_t numValues      = 8;
+    ScalingTechnique scTech = FIXEDAUTO;
     uint32_t multDepth =
         1 + 8 + 3 + 1 +
         static_cast<int>(std::log2(numValues));  // 1 for CKKS to FHEW, 13 for FHEW to CKKS, log2(numValues) for argmin
@@ -1873,7 +1875,7 @@ void ArgminViaSchemeSwitchingAlt() {
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
     timeSetup       = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup << " ms" << std::endl;
 
@@ -1881,7 +1883,7 @@ void ArgminViaSchemeSwitchingAlt() {
     auto privateKeyFHEW = FHEWparams.second;
 
     TIC(t);
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, 0, 0, numValues, oneHot, alt);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot, alt);
     timeKeyGen = TOC(t);
     std::cout << "Time to compute the scheme switching key generation: " << timeKeyGen << " ms" << std::endl;
 
@@ -1892,7 +1894,7 @@ void ArgminViaSchemeSwitchingAlt() {
 
     // Scale the inputs to ensure their difference is correctly represented after switching to FHEW
     // The minimum value at the end will also be scaled by scaleSign.
-    double scaleSign = 512.0;
+    double scaleSign = 128.0;
 
     // auto pLWE       = ccLWE.GetMaxPlaintextSpace().ConvertToInt();  // Small precision
     auto modulus_LWE = 1 << logQ_ccLWE;
@@ -1913,17 +1915,17 @@ void ArgminViaSchemeSwitchingAlt() {
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         init_level = 1;
     // This formulation is for clarity
-    // cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
     // But we can also include the scaleSign in pLWE (here we use the fact both pLWE and scaleSign are powers of two)
-    cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
+    // cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
 
     // Step 3: Encoding and encryption of inputs
 
     // Inputs
-    std::vector<double> x1 = {-1.125, -1.12, 5.0,  6.0,  -1.0, 2.0,  8.0,   -1.0,
-                              9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
+    std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
+    //   9.0,    10.0,  11.0, 12.0, 13.0, 14.0, 15.25, 15.30};
     if (x1.size() < slots) {
         std::vector<double> zeros(slots - x1.size(), 0);
         x1.insert(x1.end(), zeros.begin(), zeros.end());
@@ -2201,7 +2203,7 @@ void ArgminViaSchemeSwitchingUnit() {
     auto privateKeyFHEW = FHEWparams.second;
 
     TIC(t);
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, 0, 0, numValues, oneHot);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot);
     timeKeyGen = TOC(t);
     std::cout << "Time to compute the scheme switching key generation: " << timeKeyGen << " ms" << std::endl;
 
@@ -2371,7 +2373,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto privateKeyFHEW = FHEWparams.second;
 
     TIC(t);
-    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, 0, 0, numValues, oneHot);
+    cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot);
     timeKeyGen = TOC(t);
     std::cout << "Time to compute the scheme switching key generation: " << timeKeyGen << " ms" << std::endl;
 
