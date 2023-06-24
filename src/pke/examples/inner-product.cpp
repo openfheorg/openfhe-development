@@ -124,17 +124,17 @@ bool innerProductCKKS(const std::vector<double>& incomingVector) {
 }
 
 int main(int argc, char* argv[]) {
-//    std::vector<int64_t> vec = {1, 2, 3, 4, 5};
-//    bool bfvRes              = innerProductBFV(vec);
-//    std::cout << "BFV Inner Product Correct? " << (bfvRes ? "True" : "False") << std::endl;
-//
-//    std::cout << "********************************************************************" << std::endl;
-//    std::vector<double> asDouble(vec.begin(), vec.end());
-//    for (uint i = 0; i < asDouble.size(); i++) {
-//        asDouble[i] += (asDouble[i] / 100.0);
-//    }
-//    bool ckksRes = innerProductCKKS(asDouble);
-//    std::cout << "CKKS Inner Product Correct? " << (ckksRes ? "True" : "False") << std::endl;
-//
-//    return 0;
+    std::vector<int64_t> vec = {1, 2, 3, 4, 5};
+    bool bfvRes              = innerProductBFV(vec);
+    std::cout << "BFV Inner Product Correct? " << (bfvRes ? "True" : "False") << std::endl;
+
+    std::cout << "********************************************************************" << std::endl;
+    std::vector<double> asDouble(vec.begin(), vec.end());
+    for (uint i = 0; i < asDouble.size(); i++) {
+        asDouble[i] += (asDouble[i] / 100.0);
+    }
+    bool ckksRes = innerProductCKKS(asDouble);
+    std::cout << "CKKS Inner Product Correct? " << (ckksRes ? "True" : "False") << std::endl;
+
+    return 0;
 }
