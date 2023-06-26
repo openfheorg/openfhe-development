@@ -754,7 +754,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
 
     // vector of indexes of the clients
     std::vector<uint32_t> client_indexes;
-    for (usint i = 1; i <= N; i++) {
+    for (uint32_t i = 1; i <= N; ++i) {
         if (sk_shares.find(i) != sk_shares.end())
             client_indexes.push_back(i);
         // add early exit if client_indexes.size() == threshold?
@@ -789,7 +789,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
                         auto&& denominator = (cj < ci) ? NativeInteger(ci - cj) : modq_k - NativeInteger(cj - ci);
                         auto denom_inv{denominator.ModInverse(modq_k)};
                         for (size_t d = 0; d < ring_dimension; ++d)
-                            multpoly[d].ModMulEq(NativeInteger(ci).ModMul(denom_inv, modq_k), modq_k);
+                            multpoly[d].ModMulFastEq(NativeInteger(ci).ModMul(denom_inv, modq_k), modq_k);
                     }
                 }
                 multpoly.SetFormat(Format::EVALUATION);
@@ -800,15 +800,11 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
 
         DCRTPoly lagrange_sum_of_elems(elementParams, Format::COEFFICIENT, true);
         for (size_t k = 0; k < vecSize; ++k) {
-            auto modq_k = elementParams->GetParams()[k]->GetModulus();
             NativePoly lagrange_sum_of_elems_poly(elementParams->GetParams()[k], Format::COEFFICIENT, true);
             for (usint i = 0; i < client_indexes_size; ++i) {
-                // TODO: should we enable modmul of polys in coefficient format?
                 const auto& coeff = Lagrange_coeffs[i].GetAllElements()[k];
                 const auto& share = sk_shares[client_indexes[i]].GetAllElements()[k];
-                for (size_t d = 0; d < ring_dimension; ++d) {
-                    lagrange_sum_of_elems_poly[d].ModAddFastEq(coeff[d].ModMul(share[d], modq_k), modq_k);
-                }
+                lagrange_sum_of_elems_poly += coeff.TimesNoCheck(share);
             }
             lagrange_sum_of_elems.SetElementAtIndex(k, lagrange_sum_of_elems_poly);
         }

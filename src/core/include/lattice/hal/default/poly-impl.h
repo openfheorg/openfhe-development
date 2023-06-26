@@ -359,6 +359,13 @@ PolyImpl<VecType> PolyImpl<VecType>::Times(const PolyImpl& element) const {
 }
 
 template <typename VecType>
+PolyImpl<VecType> PolyImpl<VecType>::TimesNoCheck(const PolyImpl& element) const {
+    PolyImpl tmp(*this);
+    tmp.m_values->ModMulEq(*element.m_values);
+    return tmp;
+}
+
+template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::MultiplyAndRound(const typename VecType::Integer& p,
                                                       const typename VecType::Integer& q) const {
     PolyImpl<VecType> tmp(m_params, m_format);
