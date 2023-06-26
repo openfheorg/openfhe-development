@@ -101,9 +101,9 @@ int64_t BFVrnsInnerProduct(const std::vector<int64_t> testVec) {
 }
 
 TEST_F(UTBFVRNS_INNERPRODUCT, Test_BFVrns_INNERPRODUCT) {
-//    const std::vector<int64_t> testVec{1, 2, 3, 4, 5};
-//    auto innerProductHE = BFVrnsInnerProduct(testVec);
-//
-//    int64_t expectedResult = plainInnerProduct(testVec);
-//    EXPECT_EQ(innerProductHE, expectedResult);
+   const std::vector<int64_t> testVec{1, 2, 3, 4, 5};
+   auto innerProductHE = BFVrnsInnerProduct(testVec);
+
+   int64_t expectedResult = plainInnerProduct(testVec);
+   EXPECT_EQ(innerProductHE, expectedResult);
 }
