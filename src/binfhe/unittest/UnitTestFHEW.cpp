@@ -39,19 +39,12 @@
 using namespace lbcrypto;
 
 // ---------------  TESTING METHODS OF FHEW ---------------
-class UTGENERAL_FHEW : public ::testing::TestWithParam<int> {
-protected:
-    void SetUp() {}
-};
-
 // Checks the key switching operation
-TEST_P(UTGENERAL_FHEW, KeySwitch) {
-    
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_KeySwitch(BINFHE_METHOD variant) {
 
     auto cc = BinFHEContext();
 
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     NativeInteger Q = cc.GetParams()->GetLWEParams()->GetQ();
 
@@ -83,13 +76,11 @@ TEST_P(UTGENERAL_FHEW, KeySwitch) {
 
 
 // Checks the mod switching operation
-TEST_P(UTGENERAL_FHEW, ModSwitch) {
-
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_ModSwitch(BINFHE_METHOD variant) {
 
     auto cc = BinFHEContext();
 
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     NativeInteger Q = cc.GetParams()->GetLWEParams()->GetQ();
 
@@ -119,10 +110,9 @@ TEST_P(UTGENERAL_FHEW, ModSwitch) {
 }
 
 // Checks the truth table for NOT
-TEST_P(UTGENERAL_FHEW, NOT) {
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_NOT(BINFHE_METHOD variant) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     auto sk = cc.KeyGen();
 
@@ -144,10 +134,9 @@ TEST_P(UTGENERAL_FHEW, NOT) {
 }
 
 // Checks the truth table for AND
-TEST_P(UTGENERAL_FHEW, Bootstrap) {
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_Bootstrap(BINFHE_METHOD variant) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     auto sk = cc.KeyGen();
 
@@ -171,10 +160,9 @@ TEST_P(UTGENERAL_FHEW, Bootstrap) {
 }
 
 // Checks the truth table for AND
-TEST_P(UTGENERAL_FHEW, AND) {
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_AND(BINFHE_METHOD variant) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     auto sk = cc.KeyGen();
 
@@ -208,10 +196,9 @@ TEST_P(UTGENERAL_FHEW, AND) {
 }
 
 // Checks the truth table for OR
-TEST_P(UTGENERAL_FHEW, OR) {
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_OR(BINFHE_METHOD variant) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     auto sk = cc.KeyGen();
 
@@ -245,10 +232,9 @@ TEST_P(UTGENERAL_FHEW, OR) {
 }
 
 // Checks the truth table for AND
-TEST_P(UTGENERAL_FHEW, NAND) {
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_NAND(BINFHE_METHOD variant) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     auto sk = cc.KeyGen();
 
@@ -282,10 +268,9 @@ TEST_P(UTGENERAL_FHEW, NAND) {
 }
 
 // Checks the truth table for AND
-TEST_P(UTGENERAL_FHEW, NOR) {
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_NOR(BINFHE_METHOD variant) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     auto sk = cc.KeyGen();
 
@@ -319,10 +304,9 @@ TEST_P(UTGENERAL_FHEW, NOR) {
 }
 
 // Checks the truth table for XOR
-TEST_P(UTGENERAL_FHEW, XOR) {
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_XOR(BINFHE_METHOD variant) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     auto sk = cc.KeyGen();
 
@@ -356,10 +340,9 @@ TEST_P(UTGENERAL_FHEW, XOR) {
 }
 
 // Checks the truth table for XOR
-TEST_P(UTGENERAL_FHEW, XNOR) {
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_XNOR(BINFHE_METHOD variant) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     auto sk = cc.KeyGen();
 
@@ -392,12 +375,10 @@ TEST_P(UTGENERAL_FHEW, XNOR) {
     EXPECT_EQ(1, result00) << failed;
 }
 
-
 // Checks the truth table for XOR
-TEST_P(UTGENERAL_FHEW, XOR_FAST) {
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_XOR_FAST(BINFHE_METHOD variant) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     auto sk = cc.KeyGen();
 
@@ -431,10 +412,9 @@ TEST_P(UTGENERAL_FHEW, XOR_FAST) {
 }
 
 // Checks the truth table for XOR
-TEST_P(UTGENERAL_FHEW, XNOR_FAST) {
-    auto bootstrapTechnique = GetParam();
+void UTGENERAL_FHEW_XNOR_FAST(BINFHE_METHOD variant) {
     auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, bootstrapTechnique);
+    cc.GenerateBinFHEContext(TOY, variant);
 
     auto sk = cc.KeyGen();
 
@@ -466,6 +446,127 @@ TEST_P(UTGENERAL_FHEW, XNOR_FAST) {
     EXPECT_EQ(0, result10) << failed;
     EXPECT_EQ(1, result00) << failed;
 }
+
+TEST(UTGENERAL_FHEW_KeySwitch, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_KeySwitch, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_KeySwitch, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_ModSwitch, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_ModSwitch, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_ModSwitch, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_NOT, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_NOT, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_NOT, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_Bootstrap, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_Bootstrap, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_Bootstrap, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_AND, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_AND, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_AND, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_OR, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_OR, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_OR, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_NAND, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_NAND, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_NAND, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_NOR, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_NOR, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_NOR, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_XOR, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_XOR, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_XOR, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_XNOR, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_XNOR, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_XNOR, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_XOR_FAST, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_XOR_FAST, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_XOR_FAST, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
+TEST(UTGENERAL_FHEW_XNOR_FAST, GINX) {
+    UTGENERAL_FHEW_XNOR_FAST(GINX);
+}
+TEST(UTGENERAL_FHEW_XNOR_FAST, AP) {
+    UTGENERAL_FHEW_XNOR_FAST(AP);
+}
+TEST(UTGENERAL_FHEW_XNOR_FAST, LMKCDEY) {
+    UTGENERAL_FHEW_XNOR_FAST(LMKCDEY);
+}
+
 
 // Checks GINX for the parameter set
 // that exercises the signed modular reduction
@@ -505,9 +606,3 @@ TEST(UTGENERAL_FHEW, SIGNED_MOD) {
     EXPECT_EQ(0, result00) << failed;
 }
 
-INSTANTIATE_TEST_SUITE_P(
-        UTFHEW,
-        UTGENERAL_FHEW,
-        ::testing::Values(
-                GINX, AP, LMKCDEY
-        ));
