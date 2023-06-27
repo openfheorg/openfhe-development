@@ -67,7 +67,7 @@ public:
    * @param lweparams a shared poiter to an instance of LWECryptoParams
    * @param baseG the gadget base used in the bootstrapping
    * @param baseR the base for the refreshing key
-   * @param method bootstrapping method (DM or CGGI)
+   * @param method bootstrapping method (DM or CGGI or LMKCDEY)
    */
     BinFHECryptoParams(const std::shared_ptr<LWECryptoParams> lweparams,
                        const std::shared_ptr<RingGSWCryptoParams> rgswparams)

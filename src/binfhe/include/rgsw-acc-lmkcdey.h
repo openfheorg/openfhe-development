@@ -29,25 +29,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef _RGSW_FHE_H_
-#define _RGSW_FHE_H_
+#ifndef _RGSW_ACC_LMKCDEY_H_
+#define _RGSW_ACC_LMKCDEY_H_
 
-#include "rlwe-ciphertext.h"
-#include "rgsw-acckey.h"
-#include "rgsw-cryptoparameters.h"
+#include "rgsw-acc.h"
 
-#include <vector>
 #include <memory>
 
 namespace lbcrypto {
 
 /**
  * @brief Ring GSW accumulator schemes described in
- * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/086
+ * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/08
  */
-class RingGSWAccumulator {
+class RingGSWAccumulatorLMKCDEY : public RingGSWAccumulator {
 public:
-    RingGSWAccumulator() = default;
+    RingGSWAccumulatorLMKCDEY() = default;
+
+    virtual ~RingGSWAccumulatorLMKCDEY() {}
 
     /**
    * Internal RingGSW encryption used in generating the refreshing key
@@ -58,10 +57,8 @@ public:
    * key)
    * @return a shared pointer to the resulting ciphertext
    */
-    virtual RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                                    ConstLWEPrivateKey LWEsk) const {
-        OPENFHE_THROW(not_implemented_error, "KeyGenACC operation not supported");
-    }
+    RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
+                            ConstLWEPrivateKey LWEsk) const override;
 
     /**
    * Main accumulator function used in bootstrapping - AP variant
@@ -70,34 +67,25 @@ public:
    * @param &input input ciphertext
    * @param acc previous value of the accumulator
    */
-    virtual void EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
-                         const NativeVector& a) const {
-        OPENFHE_THROW(not_implemented_error, "ACC operation not supported");
-    }
+    void EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
+                 const NativeVector& a) const override;
 
-    /**
-   * Takes an RLWE ciphertext input and outputs a vector of its digits, i.e., an
-   * RLWE' ciphertext
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param &input input RLWE ciphertext
-   * @param output output RLWE' ciphertext
-   */
-    void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params, const std::vector<NativePoly>& input,
-                              std::vector<NativePoly>& output) const;
+private:
+    const uint32_t m_window = 10;
 
-    /**
-   * Takes a ring element input and outputs a vector of its digits, i.e., 
-   * decompose(a) = (a_0, ..., a_{d-1}) = R^d.
-   * Only for automorphism key switching LMKCDEY
-   *
-   * @param params a shared pointer to RingGSW scheme parameters
-   * @param &input input ring element
-   * @param output decomposed value
-   */
-    void SignedDigitDecompose(const std::shared_ptr<RingGSWCryptoParams> params,
-    const NativePoly& input, std::vector<NativePoly>& output) const;
+    RingGSWEvalKey KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
+                            const LWEPlaintext& m) const;
+                            
+    RingGSWEvalKey KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
+                            const LWEPlaintext& k) const;
+
+    void AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
+                    RLWECiphertext& acc) const;
+
+    void Automorphism(const std::shared_ptr<RingGSWCryptoParams> params, const NativeInteger &a,
+                        const RingGSWEvalKey ak, RLWECiphertext& acc) const;
 };
+
 }  // namespace lbcrypto
 
-#endif
+#endif  // _RGSW_ACC_LMKCDEY_H_

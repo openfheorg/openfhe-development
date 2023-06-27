@@ -34,856 +34,397 @@
  */
 
 #include "binfhecontext.h"
+#include "utils/demangle.h"
+
 #include "gtest/gtest.h"
+#include <sstream>
 
 using namespace lbcrypto;
 
-// ---------------  TESTING METHODS OF FHEW ---------------
+//===========================================================================================================
+enum TEST_CASE_TYPE {
+    FHEW_AND = 0,
+    FHEW_OR,
+    FHEW_NAND,
+    FHEW_NOR,
+    FHEW_XOR,
+    FHEW_XNOR,
+    FHEW_XOR_FAST,
+    FHEW_XNOR_FAST,
+    FHEW_SIGNED_MODE,
+    FHEW_KEY_SWITCH,
+    FHEW_MOD_SWITCH,
+    FHEW_NOT,
+};
 
-// Checks the key switching operation
-TEST(UnitTestFHEWAP, KeySwitch) {
-    auto cc = BinFHEContext();
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
+    std::string typeName;
+    switch (type) {
+        case FHEW_AND:
+            typeName = "FHEW_AND";
+            break;
+        case FHEW_OR:
+            typeName = "FHEW_OR";
+            break;
+        case FHEW_NAND:
+            typeName = "FHEW_NAND";
+            break;
+        case FHEW_NOR:
+            typeName = "FHEW_NOR";
+            break;
+        case FHEW_XOR:
+            typeName = "FHEW_XOR";
+            break;
+        case FHEW_XNOR:
+            typeName = "FHEW_XNOR";
+            break;
+        case FHEW_XOR_FAST:
+            typeName = "FHEW_XOR_FAST";
+            break;
+        case FHEW_XNOR_FAST:
+            typeName = "FHEW_XNOR_FAST";
+            break;
+        case FHEW_SIGNED_MODE:
+            typeName = "FHEW_SIGNED_MODE";
+            break;
+        case FHEW_KEY_SWITCH:
+            typeName = "FHEW_KEY_SWITCH";
+            break;
+        case FHEW_MOD_SWITCH:
+            typeName = "FHEW_MOD_SWITCH";
+            break;
+        case FHEW_NOT:
+            typeName = "FHEW_NOT";
+            break;
+        default:
+            typeName = "UNKNOWN_TESTTYPE";
+            break;
+    }
+    return os << typeName;
+}
+//===========================================================================================================
+struct TEST_CASE_UTGENERAL_FHEW {
+    TEST_CASE_TYPE testCaseType;
+    // test case description - MUST BE UNIQUE
+    std::string description;
 
-    cc.GenerateBinFHEContext(TOY, AP);
+    BINFHE_PARAMSET securityLevel;
+    BINFHE_METHOD   method;
 
-    NativeInteger Q = cc.GetParams()->GetLWEParams()->GetQ();
+    BINGATE gate;
 
-    auto sk  = cc.KeyGen();
-    auto skN = cc.KeyGenN();
+    std::vector<LWEPlaintext> results;
 
-    auto ctQN1 = cc.Encrypt(skN, 1, FRESH, 4, Q);
-    auto ctQN0 = cc.Encrypt(skN, 0, FRESH, 4, Q);
 
-    NativeVector newSK = sk->GetElement();
-    newSK.SwitchModulus(Q);
-    auto skQ = std::make_shared<LWEPrivateKeyImpl>(newSK);
+    // additional test case data
+    // ........
 
-    auto keySwitchHint = cc.KeySwitchGen(sk, skN);
+    std::string buildTestName() const {
+        std::stringstream ss;
+        ss << testCaseType << "_" << description;
+        return ss.str();
+    }
+    std::string toString() const {
+        std::stringstream ss;
+        ss << "testCaseType [" << testCaseType
+           << "], BINFHE_PARAMSET: " << securityLevel
+           << "BINFHE_METHOD: " << method
+           << "BINGATE: " << gate;
+        return ss.str();
+    }
+};
 
-    LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
-    LWECiphertext eQ0 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
+// this lambda provides a name to be printed for every test run by INSTANTIATE_TEST_SUITE_P.
+// the name MUST be constructed from digits, letters and '_' only
+static auto testName = [](const testing::TestParamInfo<TEST_CASE_UTGENERAL_FHEW>& test) {
+    return test.param.buildTestName();
+};
 
-    LWEPlaintext resultAfterKeySwitch1;
-    cc.Decrypt(skQ, eQ1, &resultAfterKeySwitch1);
+static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_FHEW& test) {
+    return os << test.toString();
+}
+//===========================================================================================================
+// clang-format off
+static std::vector<TEST_CASE_UTGENERAL_FHEW> testCasesUTGENERAL_FHEW = {
+    // TestType, Descr,  ParamSet, Method,  Gate, Results
+    { FHEW_AND,  "01",   TOY,      GINX,    AND,   {1, 0, 0, 0} },
+    { FHEW_AND,  "02",   TOY,      AP,      AND,   {1, 0, 0, 0} },
+    { FHEW_AND,  "03",   TOY,      LMKCDEY, AND,   {1, 0, 0, 0} },
+    // ==========================================
+    { FHEW_NAND, "01",   TOY,      GINX,    NAND,  {0, 1, 1, 1} },
+    { FHEW_NAND, "02",   TOY,      AP,      NAND,  {0, 1, 1, 1} },
+    { FHEW_NAND, "03",   TOY,      LMKCDEY, NAND,  {0, 1, 1, 1} },
+    // ==========================================
+    { FHEW_OR,   "01",   TOY,      GINX,    OR,    {1, 1, 1, 0} },
+    { FHEW_OR,   "02",   TOY,      AP,      OR,    {1, 1, 1, 0} },
+    { FHEW_OR,   "03",   TOY,      LMKCDEY, OR,    {1, 1, 1, 0} },
+    // ==========================================
+    { FHEW_NOR,  "01",   TOY,      GINX,    NOR,   {0, 0, 0, 1} },
+    { FHEW_NOR,  "02",   TOY,      AP,      NOR,   {0, 0, 0, 1} },
+    { FHEW_NOR,  "03",   TOY,      LMKCDEY, NOR,   {0, 0, 0, 1} },
+    // ==========================================
+    { FHEW_XOR,  "01",   TOY,      GINX,    XOR,   {0, 1, 1, 0} },
+    { FHEW_XOR,  "02",   TOY,      AP,      XOR,   {0, 1, 1, 0} },
+    { FHEW_XOR,  "03",   TOY,      LMKCDEY, XOR,   {0, 1, 1, 0} },
+    // ==========================================
 
-    LWEPlaintext resultAfterKeySwitch0;
-    cc.Decrypt(skQ, eQ0, &resultAfterKeySwitch0);
+    { FHEW_XNOR,  "01",  TOY,      GINX,    XNOR,  {1, 0, 0, 1} },
+    { FHEW_XNOR,  "02",  TOY,      AP,      XNOR,  {1, 0, 0, 1} },
+    { FHEW_XNOR,  "03",  TOY,      LMKCDEY, XNOR,  {1, 0, 0, 1} },
+    // ==========================================
+    // TestType,     Descr, ParamSet, Method,  Gate,      Results
+    { FHEW_XOR_FAST,  "01", TOY,      GINX,    XOR_FAST,  {0, 1, 1, 0} },
+    { FHEW_XOR_FAST,  "02", TOY,      AP,      XOR_FAST,  {0, 1, 1, 0} },
+    { FHEW_XOR_FAST,  "03", TOY,      LMKCDEY, XOR_FAST,  {0, 1, 1, 0} },
+    // ==========================================
+    { FHEW_XNOR_FAST, "01", TOY,      GINX,    XNOR_FAST, {1, 0, 0, 1} },
+    { FHEW_XNOR_FAST, "02", TOY,      AP,      XNOR_FAST, {1, 0, 0, 1} },
+    { FHEW_XNOR_FAST, "03", TOY,      LMKCDEY, XNOR_FAST, {1, 0, 0, 1} },
+    // ==========================================
+    { FHEW_SIGNED_MODE, "01", SIGNED_MOD_TEST, GINX, AND, {1, 0, 0, 0} },
+    // ==========================================
+    { FHEW_KEY_SWITCH, "01", TOY,      GINX,    OR, {1, 0} }, // OR is not needed; added as a random value
+    { FHEW_KEY_SWITCH, "02", TOY,      AP,      OR, {1, 0} }, // OR is not needed; added as a random value
+    { FHEW_KEY_SWITCH, "03", TOY,      LMKCDEY, OR, {1, 0} }, // OR is not needed; added as a random value
+    // ==========================================
+    { FHEW_MOD_SWITCH, "01", TOY,      GINX,    OR, {1, 0} }, // OR is not needed; added as a random value
+    { FHEW_MOD_SWITCH, "02", TOY,      AP,      OR, {1, 0} }, // OR is not needed; added as a random value
+    { FHEW_MOD_SWITCH, "03", TOY,      LMKCDEY, OR, {1, 0} }, // OR is not needed; added as a random value
+    // ==========================================
+    { FHEW_NOT, "01", TOY,      GINX,    OR, {0, 1} }, // OR is not needed; added as a random value
+    { FHEW_NOT, "02", TOY,      AP,      OR, {0, 1} }, // OR is not needed; added as a random value
+    { FHEW_NOT, "03", TOY,      LMKCDEY, OR, {0, 1} }, // OR is not needed; added as a random value
+};
+// clang-format on
+//===========================================================================================================
+class UTGENERAL_FHEW : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_FHEW> {
 
-    EXPECT_EQ(1, resultAfterKeySwitch1) << "Failed key switching test";
+protected:
+    void SetUp() {}
+    void TearDown() {}
 
-    EXPECT_EQ(0, resultAfterKeySwitch0) << "Failed key switching test";
+    // ---------------  TESTING METHODS OF FANDHEW ---------------
+    void UnitTest_FHEW_KeySwitch(const TEST_CASE_UTGENERAL_FHEW& testData, const std::string& failmsg = std::string()) {
+        try {
+            auto cc = BinFHEContext();
+            cc.GenerateBinFHEContext(testData.securityLevel, testData.method);
+
+            NativeInteger Q = cc.GetParams()->GetLWEParams()->GetQ();
+
+            auto sk  = cc.KeyGen();
+            auto skN = cc.KeyGenN();
+
+            auto ctQN1 = cc.Encrypt(skN, 1, FRESH, 4, Q);
+            auto ctQN0 = cc.Encrypt(skN, 0, FRESH, 4, Q);
+
+            NativeVector newSK = sk->GetElement();
+            newSK.SwitchModulus(Q);
+            auto skQ = std::make_shared<LWEPrivateKeyImpl>(newSK);
+
+            auto keySwitchHint = cc.KeySwitchGen(sk, skN);
+
+            LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
+            LWECiphertext eQ0 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
+
+            LWEPlaintext resultAfterKeySwitch1;
+            cc.Decrypt(skQ, eQ1, &resultAfterKeySwitch1);
+
+            LWEPlaintext resultAfterKeySwitch0;
+            cc.Decrypt(skQ, eQ0, &resultAfterKeySwitch0);
+
+            std::string failed = testData.toString() + " failed";
+
+            EXPECT_EQ(testData.results[0], resultAfterKeySwitch1) << failed;
+            EXPECT_EQ(testData.results[1], resultAfterKeySwitch0) << failed;
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_FHEW_ModSwitch(const TEST_CASE_UTGENERAL_FHEW& testData, const std::string& failmsg = std::string()) {
+        try {
+            auto cc = BinFHEContext();
+            cc.GenerateBinFHEContext(testData.securityLevel, testData.method);
+
+            NativeInteger Q = cc.GetParams()->GetLWEParams()->GetQ();
+
+            auto sk = cc.KeyGen();
+
+            // switch secret key to Q
+            NativeVector newSK = sk->GetElement();
+            newSK.SwitchModulus(Q);
+            auto skQ = std::make_shared<LWEPrivateKeyImpl>(newSK);
+
+            auto ctQ1 = cc.Encrypt(skQ, 1, FRESH, 4, Q);
+            auto ctQ0 = cc.Encrypt(skQ, 0, FRESH, 4, Q);
+
+            // switches the modulus from Q to q
+            auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ1);
+            auto ct0 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ0);
+
+            LWEPlaintext resultAfterModSwitch1;
+            cc.Decrypt(sk, ct1, &resultAfterModSwitch1);
+
+            LWEPlaintext resultAfterModSwitch0;
+            cc.Decrypt(sk, ct0, &resultAfterModSwitch0);
+
+            std::string failed = testData.toString() + " failed";
+
+            EXPECT_EQ(1, resultAfterModSwitch1) << failed;
+            EXPECT_EQ(0, resultAfterModSwitch0) << failed;
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_FHEW_NOT(const TEST_CASE_UTGENERAL_FHEW& testData, const std::string& failmsg = std::string()) {
+        try {
+            auto cc = BinFHEContext();
+            cc.GenerateBinFHEContext(testData.securityLevel, testData.method);
+
+            auto sk = cc.KeyGen();
+
+            auto ct1 = cc.Encrypt(sk, 1, FRESH);
+            auto ct0 = cc.Encrypt(sk, 0, FRESH);
+
+            auto ct1Not = cc.EvalNOT(ct1);
+            auto ct0Not = cc.EvalNOT(ct0);
+
+            LWEPlaintext result1;
+            cc.Decrypt(sk, ct1Not, &result1);
+
+            LWEPlaintext result0;
+            cc.Decrypt(sk, ct0Not, &result0);
+
+            std::string failed = testData.toString() + " failed";
+
+            EXPECT_EQ(testData.results[0], result1) << failed;
+            EXPECT_EQ(testData.results[1], result0) << failed;
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_FHEW(const TEST_CASE_UTGENERAL_FHEW& testData, const std::string& failmsg = std::string()) {
+        try {
+            auto cc = BinFHEContext();
+            cc.GenerateBinFHEContext(testData.securityLevel, testData.method);
+
+            auto sk = cc.KeyGen();
+
+            cc.BTKeyGen(sk);
+
+            auto ct1    = cc.Encrypt(sk, 1);
+            auto ct0    = cc.Encrypt(sk, 0);
+            auto ct1Alt = cc.Encrypt(sk, 1);
+            auto ct0Alt = cc.Encrypt(sk, 0);
+
+            auto ct11 = cc.EvalBinGate(testData.gate, ct1, ct1Alt);
+            auto ct01 = cc.EvalBinGate(testData.gate, ct0, ct1);
+            auto ct10 = cc.EvalBinGate(testData.gate, ct1, ct0);
+            auto ct00 = cc.EvalBinGate(testData.gate, ct0, ct0Alt);
+
+            LWEPlaintext result11;
+            cc.Decrypt(sk, ct11, &result11);
+            LWEPlaintext result01;
+            cc.Decrypt(sk, ct01, &result01);
+            LWEPlaintext result10;
+            cc.Decrypt(sk, ct10, &result10);
+            LWEPlaintext result00;
+            cc.Decrypt(sk, ct00, &result00);
+
+            std::string failed = testData.toString() + " failed";
+
+            EXPECT_EQ(testData.results[0], result11) << failed;
+            EXPECT_EQ(testData.results[1], result01) << failed;
+            EXPECT_EQ(testData.results[2], result10) << failed;
+            EXPECT_EQ(testData.results[3], result00) << failed;
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+};
+//===========================================================================================================
+TEST_P(UTGENERAL_FHEW, BINFHE) {
+    // setupSignals();
+    auto test = GetParam();
+
+    switch (test.testCaseType) {
+        case FHEW_AND:
+        case FHEW_NAND:
+        case FHEW_OR:
+        case FHEW_NOR:
+        case FHEW_XOR:
+        case FHEW_XNOR:
+        case FHEW_XOR_FAST:
+        case FHEW_XNOR_FAST:
+        case FHEW_SIGNED_MODE:
+            UnitTest_FHEW(test, test.buildTestName());
+            break;
+        case FHEW_KEY_SWITCH:
+            UnitTest_FHEW_KeySwitch(test, test.buildTestName());
+            break;
+        case FHEW_MOD_SWITCH:
+            UnitTest_FHEW_ModSwitch(test, test.buildTestName());
+            break;
+        case FHEW_NOT:
+            UnitTest_FHEW_NOT(test, test.buildTestName());
+            break;
+        default:
+            break;
+    }
 }
 
-// Checks the key switching operation
-TEST(UnitTestFHEWGINX, KeySwitch) {
-    auto cc = BinFHEContext();
-
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    NativeInteger Q = cc.GetParams()->GetLWEParams()->GetQ();
-
-    auto sk  = cc.KeyGen();
-    auto skN = cc.KeyGenN();
-
-    auto ctQN1 = cc.Encrypt(skN, 1, FRESH, 4, Q);
-    auto ctQN0 = cc.Encrypt(skN, 0, FRESH, 4, Q);
-
-    NativeVector newSK = sk->GetElement();
-    newSK.SwitchModulus(Q);
-    auto skQ = std::make_shared<LWEPrivateKeyImpl>(newSK);
-
-    auto keySwitchHint = cc.KeySwitchGen(sk, skN);
-
-    LWECiphertext eQ1 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN1);
-    LWECiphertext eQ0 = cc.GetLWEScheme()->KeySwitch(cc.GetParams()->GetLWEParams(), keySwitchHint, ctQN0);
-
-    LWEPlaintext resultAfterKeySwitch1;
-    cc.Decrypt(skQ, eQ1, &resultAfterKeySwitch1);
-
-    LWEPlaintext resultAfterKeySwitch0;
-    cc.Decrypt(skQ, eQ0, &resultAfterKeySwitch0);
-
-    EXPECT_EQ(1, resultAfterKeySwitch1) << "Failed key switching test";
-
-    EXPECT_EQ(0, resultAfterKeySwitch0) << "Failed key switching test";
-}
-
-// Checks the mod switching operation
-TEST(UnitTestFHEWAP, ModSwitch) {
-    auto cc = BinFHEContext();
-
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    NativeInteger Q = cc.GetParams()->GetLWEParams()->GetQ();
-
-    auto sk = cc.KeyGen();
-
-    // switch secret key to Q
-    NativeVector newSK = sk->GetElement();
-    newSK.SwitchModulus(Q);
-    auto skQ = std::make_shared<LWEPrivateKeyImpl>(newSK);
-
-    auto ctQ1 = cc.Encrypt(skQ, 1, FRESH, 4, Q);
-    auto ctQ0 = cc.Encrypt(skQ, 0, FRESH, 4, Q);
-
-    // switches the modulus from Q to q
-    auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ1);
-    auto ct0 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ0);
-
-    LWEPlaintext resultAfterModSwitch1;
-    cc.Decrypt(sk, ct1, &resultAfterModSwitch1);
-
-    LWEPlaintext resultAfterModSwitch0;
-    cc.Decrypt(sk, ct0, &resultAfterModSwitch0);
-
-    EXPECT_EQ(1, resultAfterModSwitch1) << "Failed mod switching test";
-
-    EXPECT_EQ(0, resultAfterModSwitch0) << "Failed mod switching test";
-}
-
-// Checks the mod switching operation
-TEST(UnitTestFHEWGINX, ModSwitch) {
-    auto cc = BinFHEContext();
-
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    NativeInteger Q = cc.GetParams()->GetLWEParams()->GetQ();
-
-    auto sk = cc.KeyGen();
-
-    // switch secret key to Q
-    NativeVector newSK = sk->GetElement();
-    newSK.SwitchModulus(Q);
-    auto skQ = std::make_shared<LWEPrivateKeyImpl>(newSK);
-
-    auto ctQ1 = cc.Encrypt(skQ, 1, FRESH, 4, Q);
-    auto ctQ0 = cc.Encrypt(skQ, 0, FRESH, 4, Q);
-
-    // switches the modulus from Q to q
-    auto ct1 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ1);
-    auto ct0 = cc.GetLWEScheme()->ModSwitch(cc.GetParams()->GetLWEParams()->Getq(), ctQ0);
-
-    LWEPlaintext resultAfterModSwitch1;
-    cc.Decrypt(sk, ct1, &resultAfterModSwitch1);
-
-    LWEPlaintext resultAfterModSwitch0;
-    cc.Decrypt(sk, ct0, &resultAfterModSwitch0);
-
-    EXPECT_EQ(1, resultAfterModSwitch1) << "Failed mod switching test";
-
-    EXPECT_EQ(0, resultAfterModSwitch0) << "Failed mod switching test";
-}
-
-// Checks the truth table for NOT
-TEST(UnitTestFHEWAP, NOT) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    auto sk = cc.KeyGen();
-
-    auto ct1 = cc.Encrypt(sk, 1, FRESH);
-    auto ct0 = cc.Encrypt(sk, 0, FRESH);
-
-    auto ct1Not = cc.EvalNOT(ct1);
-    auto ct0Not = cc.EvalNOT(ct0);
-
-    LWEPlaintext result1;
-    cc.Decrypt(sk, ct1Not, &result1);
-
-    LWEPlaintext result0;
-    cc.Decrypt(sk, ct0Not, &result0);
-
-    EXPECT_EQ(0, result1) << "NOT failed";
-
-    EXPECT_EQ(1, result0) << "NOT failed";
-}
-
-// Checks the truth table for NOT
-TEST(UnitTestFHEWGINX, NOT) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    auto sk = cc.KeyGen();
-
-    auto ct1 = cc.Encrypt(sk, 1, FRESH);
-    auto ct0 = cc.Encrypt(sk, 0, FRESH);
-
-    auto ct1Not = cc.EvalNOT(ct1);
-    auto ct0Not = cc.EvalNOT(ct0);
-
-    LWEPlaintext result1;
-    cc.Decrypt(sk, ct1Not, &result1);
-
-    LWEPlaintext result0;
-    cc.Decrypt(sk, ct0Not, &result0);
-
-    EXPECT_EQ(0, result1) << "NOT failed";
-
-    EXPECT_EQ(1, result0) << "NOT failed";
-}
-
-// Checks the truth table for AND
-TEST(UnitTestFHEWAP, Bootstrap) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1 = cc.Encrypt(sk, 1);
-    auto ct0 = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.Bootstrap(ct1);
-    auto ct01 = cc.Bootstrap(ct0);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-
-    std::string failed = "Bootstrapping failed";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-}
-
-// Checks the truth table for AND
-TEST(UnitTestFHEWGINX, Bootstrap) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1 = cc.Encrypt(sk, 1);
-    auto ct0 = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.Bootstrap(ct1);
-    auto ct01 = cc.Bootstrap(ct0);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-
-    std::string failed = "Bootstrapping failed";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-}
-
-// Checks the truth table for AND
-TEST(UnitTestFHEWAP, AND) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(AND, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(AND, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(AND, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(AND, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "AND failed";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-    EXPECT_EQ(0, result10) << failed;
-    EXPECT_EQ(0, result00) << failed;
-}
-
-// Checks the truth table for AND
-TEST(UnitTestFHEWGINX, AND) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(AND, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(AND, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(AND, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(AND, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "AND failed";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-    EXPECT_EQ(0, result10) << failed;
-    EXPECT_EQ(0, result00) << failed;
-}
-
-// Checks GINX for the parameter set
-// that exercises the signed modular reduction
-// implementation in SignedDigitDecompose
-TEST(UnitTestFHEWGINX, SIGNED_MOD) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(SIGNED_MOD_TEST, GINX);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(AND, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(AND, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(AND, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(AND, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "AND failed for SIGNED_MOD_TEST";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-    EXPECT_EQ(0, result10) << failed;
-    EXPECT_EQ(0, result00) << failed;
-}
-
-// Checks the truth table for OR
-TEST(UnitTestFHEWAP, OR) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(OR, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(OR, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(OR, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(OR, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "OR failed";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(1, result01) << failed;
-    EXPECT_EQ(1, result10) << failed;
-    EXPECT_EQ(0, result00) << failed;
-}
-
-// Checks the truth table for OR
-TEST(UnitTestFHEWGINX, OR) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(OR, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(OR, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(OR, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(OR, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "OR failed";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(1, result01) << failed;
-    EXPECT_EQ(1, result10) << failed;
-    EXPECT_EQ(0, result00) << failed;
-}
-
-// Checks the truth table for AND
-TEST(UnitTestFHEWAP, NAND) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(NAND, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(NAND, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(NAND, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(NAND, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "NAND failed";
-
-    EXPECT_EQ(0, result11) << failed;
-    EXPECT_EQ(1, result01) << failed;
-    EXPECT_EQ(1, result10) << failed;
-    EXPECT_EQ(1, result00) << failed;
-}
-
-// Checks the truth table for AND
-TEST(UnitTestFHEWGINX, NAND) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(NAND, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(NAND, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(NAND, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(NAND, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "NAND failed";
-
-    EXPECT_EQ(0, result11) << failed;
-    EXPECT_EQ(1, result01) << failed;
-    EXPECT_EQ(1, result10) << failed;
-    EXPECT_EQ(1, result00) << failed;
-}
-
-// Checks the truth table for AND
-TEST(UnitTestFHEWAP, NOR) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(NOR, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(NOR, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(NOR, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(NOR, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "NOR failed";
-
-    EXPECT_EQ(0, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-    EXPECT_EQ(0, result10) << failed;
-    EXPECT_EQ(1, result00) << failed;
-}
-
-// Checks the truth table for AND
-TEST(UnitTestFHEWGINX, NOR) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(NOR, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(NOR, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(NOR, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(NOR, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "NOR failed";
-
-    EXPECT_EQ(0, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-    EXPECT_EQ(0, result10) << failed;
-    EXPECT_EQ(1, result00) << failed;
-}
-
-// Checks the truth table for XOR
-TEST(UnitTestFHEWAP, XOR) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(XOR, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(XOR, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(XOR, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(XOR, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "XOR failed";
-
-    EXPECT_EQ(0, result11) << failed;
-    EXPECT_EQ(1, result01) << failed;
-    EXPECT_EQ(1, result10) << failed;
-    EXPECT_EQ(0, result00) << failed;
-}
-
-// Checks the truth table for XOR
-TEST(UnitTestFHEWGINX, XOR) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(XOR, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(XOR, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(XOR, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(XOR, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "XOR failed";
-
-    EXPECT_EQ(0, result11) << failed;
-    EXPECT_EQ(1, result01) << failed;
-    EXPECT_EQ(1, result10) << failed;
-    EXPECT_EQ(0, result00) << failed;
-}
-
-// Checks the truth table for XOR
-TEST(UnitTestFHEWAP, XNOR) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(XNOR, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(XNOR, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(XNOR, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(XNOR, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "XNOR failed";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-    EXPECT_EQ(0, result10) << failed;
-    EXPECT_EQ(1, result00) << failed;
-}
-
-// Checks the truth table for XOR
-TEST(UnitTestFHEWGINX, XNOR) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(XNOR, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(XNOR, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(XNOR, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(XNOR, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "XNOR failed";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-    EXPECT_EQ(0, result10) << failed;
-    EXPECT_EQ(1, result00) << failed;
-}
-
-// Checks the truth table for XOR
-TEST(UnitTestFHEWAP, XOR_FAST) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(XOR_FAST, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(XOR_FAST, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(XOR_FAST, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(XOR_FAST, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "XOR_FAST failed";
-
-    EXPECT_EQ(0, result11) << failed;
-    EXPECT_EQ(1, result01) << failed;
-    EXPECT_EQ(1, result10) << failed;
-    EXPECT_EQ(0, result00) << failed;
-}
-
-// Checks the truth table for XOR
-TEST(UnitTestFHEWGINX, XOR_FAST) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(XOR_FAST, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(XOR_FAST, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(XOR_FAST, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(XOR_FAST, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "XOR_FAST failed";
-
-    EXPECT_EQ(0, result11) << failed;
-    EXPECT_EQ(1, result01) << failed;
-    EXPECT_EQ(1, result10) << failed;
-    EXPECT_EQ(0, result00) << failed;
-}
-
-// Checks the truth table for XOR
-TEST(UnitTestFHEWAP, XNOR_FAST) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, AP);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(XNOR_FAST, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(XNOR_FAST, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(XNOR_FAST, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(XNOR_FAST, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "XNOR_FAST failed";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-    EXPECT_EQ(0, result10) << failed;
-    EXPECT_EQ(1, result00) << failed;
-}
-
-// Checks the truth table for XOR
-TEST(UnitTestFHEWGINX, XNOR_FAST) {
-    auto cc = BinFHEContext();
-    cc.GenerateBinFHEContext(TOY, GINX);
-
-    auto sk = cc.KeyGen();
-
-    cc.BTKeyGen(sk);
-
-    auto ct1    = cc.Encrypt(sk, 1);
-    auto ct0    = cc.Encrypt(sk, 0);
-    auto ct1Alt = cc.Encrypt(sk, 1);
-    auto ct0Alt = cc.Encrypt(sk, 0);
-
-    auto ct11 = cc.EvalBinGate(XNOR_FAST, ct1, ct1Alt);
-    auto ct01 = cc.EvalBinGate(XNOR_FAST, ct0, ct1);
-    auto ct10 = cc.EvalBinGate(XNOR_FAST, ct1, ct0);
-    auto ct00 = cc.EvalBinGate(XNOR_FAST, ct0, ct0Alt);
-
-    LWEPlaintext result11;
-    cc.Decrypt(sk, ct11, &result11);
-    LWEPlaintext result01;
-    cc.Decrypt(sk, ct01, &result01);
-    LWEPlaintext result10;
-    cc.Decrypt(sk, ct10, &result10);
-    LWEPlaintext result00;
-    cc.Decrypt(sk, ct00, &result00);
-
-    std::string failed = "XNOR_FAST failed";
-
-    EXPECT_EQ(1, result11) << failed;
-    EXPECT_EQ(0, result01) << failed;
-    EXPECT_EQ(0, result10) << failed;
-    EXPECT_EQ(1, result00) << failed;
-}
+INSTANTIATE_TEST_SUITE_P(UnitTests, UTGENERAL_FHEW, ::testing::ValuesIn(testCasesUTGENERAL_FHEW), testName);

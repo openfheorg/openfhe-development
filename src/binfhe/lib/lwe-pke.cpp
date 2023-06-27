@@ -50,13 +50,24 @@ LWEPrivateKey LWEEncryptionScheme::KeyGen(usint size, const NativeInteger& modul
     return std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(tug.GenerateVector(size, modulus)));
 }
 
+LWEPrivateKey LWEEncryptionScheme::KeyGenGaussian(usint size, const NativeInteger& modulus) const {
+    DiscreteGaussianGeneratorImpl<NativeVector> dgg;
+    return std::make_shared<LWEPrivateKeyImpl>(LWEPrivateKeyImpl(dgg.GenerateVector(size, modulus)));
+}
+
 // size is the ring dimension N, modulus is the large Q used in RGSW encryption of bootstrapping.
 LWEKeyPair LWEEncryptionScheme::KeyGenPair(const std::shared_ptr<LWECryptoParams> params) const {
     int size              = params->GetN();
     NativeInteger modulus = params->GetQ();
 
     // generate secret vector skN of ring dimension N
-    auto skN = KeyGen(size, modulus);
+    LWEPrivateKey skN = KeyGen(size, modulus);
+    if (params->GetKeyDist() == GAUSSIAN) {
+        skN = KeyGenGaussian(size, modulus);
+    }
+    else {
+        skN = KeyGen(size, modulus);
+    }
     // generate public key pkN corresponding to secret key skN
     auto pkN = PubKeyGen(params, skN);
 

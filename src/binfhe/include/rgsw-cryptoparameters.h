@@ -66,11 +66,12 @@ public:
    * @param lweparams a shared poiter to an instance of LWECryptoParams
    * @param baseG the gadget base used in the bootstrapping
    * @param baseR the base for the refreshing key
-   * @param method bootstrapping method (DM or CGGI)
+   * @param method bootstrapping method (DM or CGGI or LMKCDEY)
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
-                                 BINFHE_METHOD method, double std, bool signEval = false)
-        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_method(method) {
+                                 BINFHE_METHOD method, double std, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY,
+                                 bool signEval = false)
+        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_method(method), m_keyDist(keyDist) {
         if (!IsPowerOfTwo(baseG)) {
             OPENFHE_THROW(config_error, "Gadget base should be a power of two.");
         }
@@ -82,76 +83,10 @@ public:
         // Precomputes the table with twiddle factors to support fast NTT
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(rootOfUnity, 2 * N, Q);
 
-        // Precomputes a polynomial for MSB extraction
         m_polyParams = std::make_shared<ILNativeParams>(2 * N, Q, rootOfUnity);
         m_digitsG    = (uint32_t)std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(m_baseG)));
-        if (m_method == AP) {
-            uint32_t digitCountR =
-                (uint32_t)std::ceil(log(static_cast<double>(q.ConvertToInt())) / log(static_cast<double>(m_baseR)));
-            // Populate digits
-            NativeInteger value = 1;
-            for (size_t i = 0; i < digitCountR; ++i) {
-                m_digitsR.push_back(value);
-                value *= m_baseR;
-            }
-        }
 
-        // Computes baseG^i
-        if (signEval) {
-            uint32_t baseGlist[3] = {1 << 14, 1 << 18, 1 << 27};
-            for (size_t j = 0; j < 3; ++j) {
-                NativeInteger vTemp = NativeInteger(1);
-                auto tempdigits =
-                    (uint32_t)std::ceil(log(Q.ConvertToDouble()) / log(static_cast<double>(baseGlist[j])));
-                std::vector<NativeInteger> tempvec(tempdigits);
-                for (size_t i = 0; i < tempdigits; ++i) {
-                    tempvec[i] = vTemp;
-                    vTemp      = vTemp.ModMul(NativeInteger(baseGlist[j]), Q);
-                }
-                m_Gpower_map[baseGlist[j]] = tempvec;
-                if (m_baseG == baseGlist[j])
-                    m_Gpower = tempvec;
-            }
-        }
-        else {
-            NativeInteger vTemp = NativeInteger(1);
-            for (size_t i = 0; i < m_digitsG; ++i) {
-                m_Gpower.push_back(vTemp);
-                vTemp = vTemp.ModMul(NativeInteger(m_baseG), Q);
-            }
-        }
-
-        // Sets the gate constants for supported binary operations
-        m_gateConst = {
-            NativeInteger(5) * (q >> 3),  // OR
-            NativeInteger(7) * (q >> 3),  // AND
-            NativeInteger(1) * (q >> 3),  // NOR
-            NativeInteger(3) * (q >> 3),  // NAND
-            NativeInteger(5) * (q >> 3),  // XOR_FAST
-            NativeInteger(1) * (q >> 3)   // XNOR_FAST
-        };
-
-        // Computes polynomials X^m - 1 that are needed in the accumulator for the
-        // CGGI bootstrapping
-        if (m_method == GINX) {
-            // loop for positive values of m
-            for (size_t i = 0; i < N; ++i) {
-                NativePoly aPoly = NativePoly(m_polyParams, Format::COEFFICIENT, true);
-                aPoly[i].ModAddEq(NativeInteger(1), Q);  // X^m
-                aPoly[0].ModSubEq(NativeInteger(1), Q);  // -1
-                aPoly.SetFormat(Format::EVALUATION);
-                m_monomials.push_back(aPoly);
-            }
-
-            // loop for negative values of m
-            for (size_t i = 0; i < N; ++i) {
-                NativePoly aPoly = NativePoly(m_polyParams, Format::COEFFICIENT, true);
-                aPoly[i].ModSubEq(NativeInteger(1), Q);  // -X^m
-                aPoly[0].ModSubEq(NativeInteger(1), Q);  // -1
-                aPoly.SetFormat(Format::EVALUATION);
-                m_monomials.push_back(aPoly);
-            }
-        }
+        PreCompute(signEval);
     }
 
     /**
@@ -195,6 +130,10 @@ public:
         return m_Gpower;
     }
 
+    const std::vector<int32_t>& GetLogGen() const {
+        return m_logGen;
+    }
+
     const std::map<uint32_t, std::vector<NativeInteger>>& GetGPowerMap() const {
         return m_Gpower_map;
     }
@@ -213,6 +152,10 @@ public:
 
     BINFHE_METHOD GetMethod() const {
         return m_method;
+    }
+
+    SECRET_KEY_DIST GetKeyDist() const {
+        return m_keyDist;
     }
 
     bool operator==(const RingGSWCryptoParams& other) const {
@@ -297,6 +240,14 @@ private:
     // A vector of powers of baseG
     std::vector<NativeInteger> m_Gpower;
 
+    // A vector of log by generator g (=5) (only for LMKCDEY)
+    // Not exactly log, but a mapping similar to logarithm for efficiency
+    // m_logGen[5^i (mod M)] = i (i > 0)
+    // m_logGen[-5^i (mod M)] = -i ()
+    // m_logGen[1] = 0
+    // m_logGen[-1 (mod M)] = M (special case for efficiency)
+    std::vector<int32_t> m_logGen;
+
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
 
@@ -313,8 +264,11 @@ private:
     // (used only for CGGI bootstrapping)
     std::vector<NativePoly> m_monomials;
 
-    // Bootstrapping method (DM or CGGI)
+    // Bootstrapping method (DM or CGGI or LMKCDEY)
     BINFHE_METHOD m_method = BINFHE_METHOD::INVALID_METHOD;
+
+    // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
+    SECRET_KEY_DIST m_keyDist = UNIFORM_TERNARY;
 };
 
 }  // namespace lbcrypto

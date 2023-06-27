@@ -101,7 +101,7 @@ inline std::ostream& operator<<(std::ostream& s, SecurityLevel sl) {
             s << "HEStd_NotSet";
             break;
         default:
-            s << "UKNOWN";
+            s << "UNKNOWN";
             break;
     }
     return s;

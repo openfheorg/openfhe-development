@@ -43,6 +43,9 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
         case MEDIUM:
             s << "MEDIUM";
             break;
+        case STD128_LMKCDEY:
+            s << "STD128_LMKCDEY";
+            break;
         case STD128_AP:
             s << "STD128_AP";
             break;
@@ -89,7 +92,7 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
             s << "SIGNED_MOD_TEST";
             break;
         default:
-            s << "UKNOWN";
+            s << "UNKNOWN";
             break;
     }
     return s;
@@ -104,7 +107,7 @@ std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f) {
             s << "BOOTSTRAPPED";
             break;
         default:
-            s << "UKNOWN";
+            s << "UNKNOWN";
             break;
     }
     return s;
@@ -118,8 +121,44 @@ std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f) {
         case GINX:
             s << "CGGI";
             break;
+        case LMKCDEY:
+            s << "LMKCDEY";
+            break;
         default:
-            s << "UKNOWN";
+            s << "UNKNOWN";
+            break;
+    }
+    return s;
+}
+
+std::ostream& operator<<(std::ostream& s, BINGATE f) {
+    switch (f) {
+        case OR:
+            s << "OR";
+            break;
+        case AND:
+            s << "AND";
+            break;
+        case NOR:
+            s << "NOR";
+            break;
+        case NAND:
+            s << "NAND";
+            break;
+        case XOR_FAST:
+            s << "XOR_FAST";
+            break;
+        case XNOR_FAST:
+            s << "XNOR_FAST";
+            break;
+        case XOR:
+            s << "XOR";
+            break;
+        case XNOR:
+            s << "XNOR";
+            break;
+        default:
+            s << "UNKNOWN";
             break;
     }
     return s;
