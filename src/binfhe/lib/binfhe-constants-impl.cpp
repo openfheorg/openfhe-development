@@ -92,7 +92,7 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
             s << "SIGNED_MOD_TEST";
             break;
         default:
-            s << "UKNOWN";
+            s << "UNKNOWN";
             break;
     }
     return s;
@@ -107,7 +107,7 @@ std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f) {
             s << "BOOTSTRAPPED";
             break;
         default:
-            s << "UKNOWN";
+            s << "UNKNOWN";
             break;
     }
     return s;
@@ -125,7 +125,7 @@ std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f) {
             s << "LMKCDEY";
             break;
         default:
-            s << "UKNOWN";
+            s << "UNKNOWN";
             break;
     }
     return s;
@@ -158,11 +158,10 @@ std::ostream& operator<<(std::ostream& s, BINGATE f) {
             s << "XNOR";
             break;
         default:
-            s << "UKNOWN";
+            s << "UNKNOWN";
             break;
     }
     return s;
-    
 }
 
 };  // namespace lbcrypto

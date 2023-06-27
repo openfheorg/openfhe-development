@@ -45,7 +45,7 @@ std::ostream& operator<<(std::ostream& s, Format f) {
             s << "COEFFICIENT";
             break;
         default:
-            s << "UKNOWN";
+            s << "UNKNOWN";
             break;
     }
     return s;
