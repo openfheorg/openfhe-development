@@ -362,8 +362,7 @@ protected:
             cc->EvalFHEWtoCKKSSetup(ccLWE, testData.slots, testData.logQ);
             cc->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, testData.numValues, testData.dim1[1]);
 
-            double scale = 1.0 / ctxtsLWE1[0]->GetModulus().ConvertToDouble();
-            auto cTemp   = cc->EvalFHEWtoCKKS(ctxtsLWE1, scale, testData.numValues, testData.slots);
+            auto cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE1, testData.numValues, testData.slots);
 
             Plaintext plaintextDec;
             cc->Decrypt(keyPair.secretKey, cTemp, &plaintextDec);
@@ -372,8 +371,7 @@ protected:
             checkEquality(plaintextDec->GetCKKSPackedValue(), toComplexDoubleVec(x1), eps1,
                           failmsg + "FHEW to CKKS fails for binary messages.");
 
-            scale = 1.0 / ctxtsLWE2[0]->GetModulus().ConvertToDouble();
-            cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE2, scale, testData.numValues, testData.slots, pLWE, 0, pLWE);
+            cTemp = cc->EvalFHEWtoCKKS(ctxtsLWE2, testData.numValues, testData.slots, pLWE, 0, pLWE);
 
             cc->Decrypt(keyPair.secretKey, cTemp, &plaintextDec);
             plaintextDec->SetLength(testData.numValues);

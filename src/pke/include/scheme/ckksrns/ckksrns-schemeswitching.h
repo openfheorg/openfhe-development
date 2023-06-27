@@ -110,7 +110,7 @@ public:
                                                                              uint32_t L) override;
 
     Ciphertext<DCRTPoly> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                        double prescale, uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
+                                        uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
                                         double pmax) const override;
 
     std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc,

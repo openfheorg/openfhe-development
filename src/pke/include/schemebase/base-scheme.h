@@ -1389,10 +1389,10 @@ public:
     }
 
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                       double prescale = 1.0, uint32_t numCtxts = 0, uint32_t numSlots = 0,
-                                       uint32_t p = 4, double pmin = 0.0, double pmax = 2.0) const {
+                                       uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
+                                       double pmax = 2.0) const {
         if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, prescale, numCtxts, numSlots, p, pmin, pmax);
+            return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax);
         }
 
         OPENFHE_THROW(config_error, "EvalFHEWtoCKKSW operation has not been enabled");

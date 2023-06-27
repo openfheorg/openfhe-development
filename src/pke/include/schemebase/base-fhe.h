@@ -226,7 +226,6 @@ public:
    * Performs the scheme switching on a vector of FHEW ciphertexts
    *
    * @param LWECiphertexts FHEW/LWE ciphertexts to switch
-   * @param prescale factor to multiply the LWE components
    * @param numCtxts number of values to encrypt from the LWE ciphertexts in the new CKKS ciphertext
    * @param numSlots number of slots to encode in the new CKKS/RLWE ciphertext
    * @param p plaintext modulus to use to decide postscaling, by default p = 4
@@ -235,8 +234,8 @@ public:
    * @return a CKKS ciphertext encrypting in its slots the messages in the LWE ciphertexts
    */
     virtual Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                               double prescale, uint32_t numCtxts, uint32_t numSlots, uint32_t p,
-                                               double pmin, double pmax) const {
+                                               uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
+                                               double pmax) const {
         OPENFHE_THROW(not_implemented_error, "EvalFHEWtoCKKS is not implemented for this scheme");
     }
 

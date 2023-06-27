@@ -1794,8 +1794,8 @@ std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> FHECKKSRNSSS::EvalFHEWtoCKKS
 }
 
 Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
-                                                  double prescale, uint32_t numCtxts, uint32_t numSlots, uint32_t p,
-                                                  double pmin, double pmax) const {
+                                                  uint32_t numCtxts, uint32_t numSlots, uint32_t p, double pmin,
+                                                  double pmax) const {
     if (!LWECiphertexts.size())
         OPENFHE_THROW(type_error, "Empty input FHEW ciphertext vector");
     uint32_t numLWECtxts = LWECiphertexts.size();
@@ -1850,8 +1850,8 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
     // std::cout << "modulus from ciphertext: " << LWECiphertexts[0]->GetModulus() << std::endl;
     // std::cout << "m_modulus: " << m_modulus_LWE << std::endl;
 
-    prescale =
-        prescale /
+    double prescale =
+        (1.0 / LWECiphertexts[0]->GetModulus().ConvertToDouble()) /
         K;  // Combine the scale with the division by K to consume fewer levels, but careful since the value might be too small
 
     // std::cout << "prescale = " << prescale << std::endl;
@@ -2377,10 +2377,10 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalCompareSchemeSwitching(ConstCiphertext<DC
         cSigns[i] = m_ccLWE.EvalSign(LWECiphertexts[i], true);
     }
 
-    double scaleFC = 1.0 / cSigns[0]->GetModulus().ConvertToInt();
+    // double scaleFC = 1.0 / cSigns[0]->GetModulus().ConvertToInt();
 
-    return EvalFHEWtoCKKS(cSigns, scaleFC, numCtxts, numSlots, 4, -1.0, 1.0);
-    // return ccCKKS->EvalFHEWtoCKKS(cSigns, scaleFC, numCtxts, numSlots, 4, -1.0, 1.0);
+    return EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0);
+    // return ccCKKS->EvalFHEWtoCKKS(cSigns, numCtxts, numSlots, 4, -1.0, 1.0);
 }
 
 std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMinSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext,
@@ -2415,7 +2415,7 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMinSchemeSwitching(ConstCiph
     }
     else {
         std::vector<std::complex<double>> ind(numValues);
-        std::iota(ind.begin(), ind.end(), 1);
+        std::iota(ind.begin(), ind.end(), 0);
         pInd = cc->MakeCKKSPackedPlaintext(ind, 1, towersToDrop, nullptr, slots);
     }
     Ciphertext<DCRTPoly> cInd          = cc->Encrypt(publicKey, pInd);
@@ -2439,8 +2439,8 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMinSchemeSwitching(ConstCiph
         }
 
         // Scheme switching from FHEW to CKKS
-        double scale = 1.0 / LWESign[0]->GetModulus().ConvertToInt();
-        auto cSelect = cc->EvalFHEWtoCKKS(LWESign, scale, numValues / (2 * M), numSlots, 4, -1.0, 1.0);
+        // double scale = 1.0 / LWESign[0]->GetModulus().ConvertToInt();
+        auto cSelect = cc->EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0);
 
         // std::cout << "Ciphertext level and depth at the end of scheme switching: " << cSelect->GetLevel() << ", " << cSelect->GetNoiseScaleDeg() << std::endl;
 
@@ -2516,7 +2516,7 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMinSchemeSwitchingAlt(ConstC
     }
     else {
         std::vector<std::complex<double>> ind(numValues);
-        std::iota(ind.begin(), ind.end(), 1);
+        std::iota(ind.begin(), ind.end(), 0);
         pInd = cc->MakeCKKSPackedPlaintext(ind, 1, towersToDrop, nullptr,
                                            slots);  // the encoding specified when creating the cryptocontext
     }
@@ -2547,8 +2547,8 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMinSchemeSwitchingAlt(ConstC
         }
 
         // Scheme switching from FHEW to CKKS
-        double scale       = 1.0 / LWESign[0]->GetModulus().ConvertToInt();
-        auto cExpandSelect = cc->EvalFHEWtoCKKS(LWESign, scale, numValues, numSlots, 4, -1.0, 1.0);
+        // double scale       = 1.0 / LWESign[0]->GetModulus().ConvertToInt();
+        auto cExpandSelect = cc->EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0);
 
         // std::cout << "Ciphertext level and depth at the end of scheme switching: " << cExpandSelect->GetLevel() << ", " << cExpandSelect->GetNoiseScaleDeg() << std::endl;
 
@@ -2610,7 +2610,7 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMaxSchemeSwitching(ConstCiph
     }
     else {
         std::vector<std::complex<double>> ind(numValues);
-        std::iota(ind.begin(), ind.end(), 1);
+        std::iota(ind.begin(), ind.end(), 0);
         pInd = cc->MakeCKKSPackedPlaintext(ind, 1, towersToDrop, nullptr,
                                            slots);  // the encoding specified when creating the cryptocontext
     }
@@ -2635,8 +2635,8 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMaxSchemeSwitching(ConstCiph
         }
 
         // Scheme switching from FHEW to CKKS
-        double scale = 1.0 / LWESign[0]->GetModulus().ConvertToInt();
-        auto cSelect = cc->EvalFHEWtoCKKS(LWESign, scale, numValues / (2 * M), numSlots, 4, -1.0, 1.0);
+        // double scale = 1.0 / LWESign[0]->GetModulus().ConvertToInt();
+        auto cSelect = cc->EvalFHEWtoCKKS(LWESign, numValues / (2 * M), numSlots, 4, -1.0, 1.0);
 
         // std::cout << "Ciphertext level and depth at the end of scheme switching: " << cSelect->GetLevel() << ", " << cSelect->GetNoiseScaleDeg() << std::endl;
 
@@ -2712,7 +2712,7 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMaxSchemeSwitchingAlt(ConstC
     }
     else {
         std::vector<std::complex<double>> ind(numValues);
-        std::iota(ind.begin(), ind.end(), 1);
+        std::iota(ind.begin(), ind.end(), 0);
         pInd = cc->MakeCKKSPackedPlaintext(ind, 1, towersToDrop, nullptr,
                                            slots);  // the encoding specified when creating the cryptocontext
     }
@@ -2743,8 +2743,8 @@ std::vector<Ciphertext<DCRTPoly>> FHECKKSRNSSS::EvalMaxSchemeSwitchingAlt(ConstC
         }
 
         // Scheme switching from FHEW to CKKS
-        double scale       = 1.0 / LWESign[0]->GetModulus().ConvertToInt();
-        auto cExpandSelect = cc->EvalFHEWtoCKKS(LWESign, scale, numValues, numSlots, 4, -1.0, 1.0);
+        // double scale       = 1.0 / LWESign[0]->GetModulus().ConvertToInt();
+        auto cExpandSelect = cc->EvalFHEWtoCKKS(LWESign, numValues, numSlots, 4, -1.0, 1.0);
 
         // std::cout << "Ciphertext level and depth at the end of scheme switching: " << cExpandSelect->GetLevel() << ", " << cExpandSelect->GetNoiseScaleDeg() << std::endl;
 

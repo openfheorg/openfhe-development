@@ -570,9 +570,9 @@ void CryptoContextImpl<Element>::EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& ke
 
 template <typename Element>
 Ciphertext<Element> CryptoContextImpl<Element>::EvalFHEWtoCKKS(
-    std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts, double prescale, uint32_t numCtxts,
-    uint32_t numSlots, uint32_t p, double pmin, double pmax) const {
-    return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, prescale, numCtxts, numSlots, p, pmin, pmax);
+    std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts, uint32_t numCtxts, uint32_t numSlots, uint32_t p,
+    double pmin, double pmax) const {
+    return GetScheme()->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax);
 }
 
 template <typename Element>
