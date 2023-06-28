@@ -301,13 +301,6 @@ void NumberTheoreticTransformNat<VecType>::ForwardTransformToBitReverseInPlace(c
                                                                                VecType* element) {
     auto modulus = element->GetModulus();
     usint n      = (element->GetLength() >> 1);
-
-    // reduce 1st length/2 elements
-    for (usint i = 0; i < n; ++i) {
-        if ((*element)[i] >= modulus)
-            (*element)[i] -= modulus;
-    }
-
     usint t      = n;
     usint logt1  = lbcrypto::GetMSB64(t);
     for (usint m = 1; m < n; m <<= 1, t >>= 1, --logt1) {

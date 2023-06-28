@@ -168,6 +168,7 @@ public:
     }
 
     PolyImpl Times(const PolyImpl& element) const override;
+    PolyImpl TimesNoCheck(const PolyImpl& element) const override;
     const PolyImpl& operator*=(const PolyImpl& element) override;
 
     PolyImpl Times(const Integer& element) const override;

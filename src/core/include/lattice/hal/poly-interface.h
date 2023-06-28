@@ -245,12 +245,23 @@ public:
     DerivedType Minus(const DerivedType& element) const override = 0;
 
     /**
-   * @brief Performs a multiplication operation and returns the result.
+   * @brief Performs a modular multiplication operation for Poly's in
+   * EVALUATION format and returns the result. Performs runtime checks
+   * for operand compatibility.
    *
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
    */
     DerivedType Times(const DerivedType& element) const override = 0;
+
+    /**
+   * @brief Performs a modular multiplication operation for Poly's in
+   * any format and returns the result. Performs no runtime checks.
+   *
+   * @param &element is the element to multiply with.
+   * @return is the result of the multiplication.
+   */
+    virtual DerivedType TimesNoCheck(const DerivedType& element) const = 0;
 
     /**
    * @brief Scalar addition - add an element to the first index of each tower.

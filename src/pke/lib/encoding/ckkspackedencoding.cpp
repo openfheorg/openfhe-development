@@ -37,6 +37,7 @@
 
 #include "utils/exception.h"
 #include "utils/inttypes.h"
+#include "utils/utilities.h"
 
 #include <complex>
 #include <cmath>
