@@ -727,9 +727,6 @@ template <>
 void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
                                                    std::unordered_map<uint32_t, DCRTPoly>& sk_shares, usint N,
                                                    usint threshold, const std::string& shareType) const {
-    if (!sk)
-        OPENFHE_THROW(config_error, "sk is null");
-
     if (sk_shares.size() < threshold)
         OPENFHE_THROW(config_error, "Number of shares available less than threshold of the sharing scheme");
 
@@ -757,16 +754,15 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
     for (uint32_t i = 1; i <= N; ++i) {
         if (sk_shares.find(i) != sk_shares.end())
             client_indexes.push_back(i);
-        // add early exit if client_indexes.size() == threshold?
     }
-    const usint client_indexes_size = client_indexes.size();
+    const uint32_t client_indexes_size = client_indexes.size();
 
     if (client_indexes_size < threshold)
         OPENFHE_THROW(config_error, "Not enough shares to recover the secret");
 
     if (shareType == "additive") {
         DCRTPoly sum_of_elems(elementParams, Format::EVALUATION, true);
-        for (usint i = 0; i < threshold; ++i) {
+        for (uint32_t i = 0; i < threshold; ++i) {
             sum_of_elems += sk_shares[client_indexes[i]];
         }
         sk->SetPrivateElement(sum_of_elems);
@@ -777,13 +773,13 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
         std::vector<DCRTPoly> Lagrange_coeffs(client_indexes_size, DCRTPoly(elementParams, Format::EVALUATION));
 
         // recovery of the secret with lagrange coefficients and the secret shares
-        for (usint j = 0; j < client_indexes_size; j++) {
+        for (uint32_t j = 0; j < client_indexes_size; j++) {
             auto cj = client_indexes[j];
             for (size_t k = 0; k < vecSize; k++) {
                 auto modq_k = elementParams->GetParams()[k]->GetModulus();
                 NativePoly multpoly(elementParams->GetParams()[k], Format::COEFFICIENT, true);
                 multpoly.AddILElementOne();
-                for (usint i = 0; i < client_indexes_size; i++) {
+                for (uint32_t i = 0; i < client_indexes_size; i++) {
                     auto ci = client_indexes[i];
                     if (ci != cj) {
                         auto&& denominator = (cj < ci) ? NativeInteger(ci - cj) : modq_k - NativeInteger(cj - ci);
@@ -801,7 +797,7 @@ void CryptoContextImpl<DCRTPoly>::RecoverSharedKey(PrivateKey<DCRTPoly>& sk,
         DCRTPoly lagrange_sum_of_elems(elementParams, Format::COEFFICIENT, true);
         for (size_t k = 0; k < vecSize; ++k) {
             NativePoly lagrange_sum_of_elems_poly(elementParams->GetParams()[k], Format::COEFFICIENT, true);
-            for (usint i = 0; i < client_indexes_size; ++i) {
+            for (uint32_t i = 0; i < client_indexes_size; ++i) {
                 const auto& coeff = Lagrange_coeffs[i].GetAllElements()[k];
                 const auto& share = sk_shares[client_indexes[i]].GetAllElements()[k];
                 lagrange_sum_of_elems_poly += coeff.TimesNoCheck(share);

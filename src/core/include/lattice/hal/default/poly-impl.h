@@ -348,11 +348,9 @@ PolyImpl<VecType> PolyImpl<VecType>::Minus(const PolyImpl& element) const {
 template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::Times(const PolyImpl& element) const {
     if (m_format != Format::EVALUATION || element.m_format != Format::EVALUATION)
-        OPENFHE_THROW(not_implemented_error,
-                      "operator* for PolyImpl is supported only in "
-                      "Format::EVALUATION format.\n");
+        OPENFHE_THROW(not_implemented_error, "operator* for PolyImpl supported only in Format::EVALUATION");
     if (!(*m_params == *element.m_params))
-        OPENFHE_THROW(type_error, "operator* called on PolyImpl's with different params.");
+        OPENFHE_THROW(type_error, "operator* called on PolyImpl's with different params");
     PolyImpl tmp(*this);
     tmp.m_values->ModMulEq(*element.m_values);
     return tmp;
