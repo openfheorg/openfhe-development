@@ -43,6 +43,7 @@
 #include "utils/exception.h"
 #include "utils/parallel.h"
 #include "utils/utilities.h"
+#include "scheme/ckksrns/ckksrns-utils.h"
 
 #include <cmath>
 #include <memory>
@@ -158,11 +159,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     double scaleEnc          = pre / k;
     double scaleDec          = 1 / pre;
 
-    uint32_t approxModDepth = 8;
-    if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
-        approxModDepth += R - 1;
-    }
-
+    uint32_t approxModDepth = GetModDepthInternal(cryptoParams->GetSecretKeyDist()) ;
     uint32_t depthBT = approxModDepth + 1 + precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] +
                        precom->m_paramsDec[CKKS_BOOT_PARAMS::LEVEL_BUDGET];
 
@@ -1973,6 +1970,11 @@ uint32_t FHECKKSRNS::GetBootstrapDepth(uint32_t approxModDepth, const std::vecto
     return approxModDepth + levelBudget[0] + levelBudget[1];
 }
 
+uint32_t FHECKKSRNS::GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist) {
+    uint32_t approxModDepth = GetModDepthInternal(secretKeyDist);
+    
+    return approxModDepth + levelBudget[0] + levelBudget[1];
+}
 //------------------------------------------------------------------------------
 // Auxiliary Bootstrap Functions
 //------------------------------------------------------------------------------
@@ -1980,6 +1982,15 @@ uint32_t FHECKKSRNS::GetBootstrapDepthInternal(uint32_t approxModDepth, const st
                                        const CryptoContextImpl<DCRTPoly>& cc) {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
     return GetBootstrapDepth(approxModDepth, levelBudget, cryptoParams->GetSecretKeyDist());
+}
+
+uint32_t FHECKKSRNS::GetModDepthInternal(SecretKeyDist secretKeyDist) {
+    if (secretKeyDist == UNIFORM_TERNARY) {
+        return GetMultiplicativeDepthByCoeffVector(g_coefficientsUniform, true) + R;
+    }
+    else {
+        return GetMultiplicativeDepthByCoeffVector(g_coefficientsSparse, true);
+    }
 }
 
 void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const {

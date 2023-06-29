@@ -200,6 +200,7 @@ public:
 
     static uint32_t GetBootstrapDepth(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
                                       SecretKeyDist secretKeyDist);
+    static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist);
 
     std::string SerializedObjectName() const {
         return "FHECKKSRNS";
@@ -211,6 +212,7 @@ private:
     //------------------------------------------------------------------------------
     uint32_t GetBootstrapDepthInternal(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
                                const CryptoContextImpl<DCRTPoly>& cc);
+    static uint32_t GetModDepthInternal(SecretKeyDist secretKeyDist);
 
     void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
 

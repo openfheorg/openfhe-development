@@ -113,9 +113,6 @@ void BootstrapExample(uint32_t numSlots) {
     */
     std::vector<uint32_t> levelBudget = {3, 3};
 
-    // We approximate the number of levels bootstrapping will consume to help set our initial multiplicative depth.
-    uint32_t approxBootstrapDepth = 8;
-
     /* We give the user the option of configuring values for an optimization algorithm in bootstrapping.
     * Here, we specify the giant step for the baby-step-giant-step algorithm in linear transforms
     * for encoding and decoding, respectively. Either choose this to be a power of 2
@@ -132,8 +129,7 @@ void BootstrapExample(uint32_t numSlots) {
     * depth.
     */
     uint32_t levelsUsedBeforeBootstrap = 10;
-    usint depth =
-        levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
+    usint depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
 
     // Generate crypto context.

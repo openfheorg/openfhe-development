@@ -98,11 +98,9 @@ void SimpleBootstrapExample() {
     * depth. We recommend using the input parameters below to get started.
     */
     std::vector<uint32_t> levelBudget = {4, 4};
-    uint32_t approxBootstrapDepth     = 8;
 
     uint32_t levelsUsedBeforeBootstrap = 10;
-    usint depth =
-        levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
+    usint depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
