@@ -138,13 +138,13 @@ public:
         };
     }
 
-    const DerivedType& operator=(const DerivedType& rhs) override                = 0;
-    virtual const DerivedType& operator=(const std::vector<int32_t>& rhs)        = 0;
-    virtual const DerivedType& operator=(const std::vector<int64_t>& rhs)        = 0;
-    const DerivedType& operator=(std::initializer_list<uint64_t> rhs) override   = 0;
-    virtual const DerivedType& operator=(std::initializer_list<std::string> rhs) = 0;
-    virtual const DerivedType& operator=(uint64_t val)                           = 0;
-    const DerivedType& operator=(DerivedType&& rhs) override                     = 0;
+    DerivedType& operator=(const DerivedType& rhs) override                = 0;
+    virtual DerivedType& operator=(const std::vector<int32_t>& rhs)        = 0;
+    virtual DerivedType& operator=(const std::vector<int64_t>& rhs)        = 0;
+    DerivedType& operator=(std::initializer_list<uint64_t> rhs) override   = 0;
+    virtual DerivedType& operator=(std::initializer_list<std::string> rhs) = 0;
+    virtual DerivedType& operator=(uint64_t val)                           = 0;
+    DerivedType& operator=(DerivedType&& rhs) override                     = 0;
 
     /**
    * @brief Get method of the format.
@@ -163,7 +163,7 @@ public:
    * @brief returns the element's ring dimension
    * @return returns the ring dimension of the element.
    */
-    inline usint GetRingDimension() const {
+    usint GetRingDimension() const {
         return this->GetDerived().GetParams()->GetRingDimension();
     }
 
@@ -171,7 +171,7 @@ public:
    * @brief returns the element's root of unity.
    * @return the element's root of unity.
    */
-    inline const Integer& GetRootOfUnity() const {
+    const Integer& GetRootOfUnity() const {
         return this->GetDerived().GetParams()->GetRootOfUnity();
     }
 
@@ -179,7 +179,7 @@ public:
    * @brief returns the element's modulus
    * @return returns the modulus of the element.
    */
-    inline const Integer& GetModulus() const final {
+    const Integer& GetModulus() const final {
         return this->GetDerived().GetParams()->GetModulus();
     }
 
@@ -187,7 +187,7 @@ public:
    * @brief returns the element's cyclotomic order
    * @return returns the cyclotomic order of the element.
    */
-    inline usint GetCyclotomicOrder() const final {
+    usint GetCyclotomicOrder() const final {
         return this->GetDerived().GetParams()->GetCyclotomicOrder();
     }
 
@@ -197,7 +197,7 @@ public:
    *
    * @return length of the component element
    */
-    inline usint GetLength() const final {
+    usint GetLength() const final {
         //        if (this->GetDerived().IsEmpty())
         //            OPENFHE_THROW(not_available_error, "No values in PolyImpl");
         return this->GetDerived().GetValues().GetLength();
@@ -344,7 +344,7 @@ public:
    */
     DerivedType operator-() const override = 0;
 
-    const DerivedType& operator+=(const Integer& element) override = 0;
+    DerivedType& operator+=(const Integer& element) override = 0;
 
     /**
    * @brief Performs a subtraction operation and returns the result.
@@ -352,7 +352,7 @@ public:
    * @param &element is the element to subtract from.
    * @return is the result of the subtraction.
    */
-    const DerivedType& operator-=(const Integer& element) override = 0;
+    DerivedType& operator-=(const Integer& element) override = 0;
 
     /**
    * @brief Performs a multiplication operation and returns the result.
@@ -360,7 +360,7 @@ public:
    * @param &element is the element to multiply by.
    * @return is the result of the multiplication.
    */
-    const DerivedType& operator*=(const Integer& element) override = 0;
+    DerivedType& operator*=(const Integer& element) override = 0;
 
     /**
    * @brief Performs an entry-wise addition over all elements of each tower with
@@ -369,7 +369,7 @@ public:
    * @param &rhs is the element to add with.
    * @return is the result of the addition.
    */
-    const DerivedType& operator+=(const DerivedType& rhs) override = 0;
+    DerivedType& operator+=(const DerivedType& rhs) override = 0;
 
     /**
    * @brief Performs an entry-wise subtraction over all elements of each tower
@@ -378,7 +378,7 @@ public:
    * @param &rhs is the element to subtract from.
    * @return is the result of the addition.
    */
-    const DerivedType& operator-=(const DerivedType& rhs) override = 0;
+    DerivedType& operator-=(const DerivedType& rhs) override = 0;
 
     /**
    * @brief Performs an multiplication operation and returns the result.
@@ -386,7 +386,7 @@ public:
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
    */
-    const DerivedType& operator*=(const DerivedType& element) override = 0;
+    DerivedType& operator*=(const DerivedType& element) override = 0;
 
     /**
    * @brief Equality operator.

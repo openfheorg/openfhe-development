@@ -42,20 +42,9 @@
 namespace intnat {
 
 template <class IntegerType>
-NativeVectorT<IntegerType>::NativeVectorT(usint length, const IntegerType& modulus)
-    : m_data(length), m_modulus{modulus} {
-    if (modulus.GetMSB() > MAX_MODULUS_SIZE) {
-        OPENFHE_THROW(lbcrypto::not_available_error,
-                      "Modulus size " + std::to_string(modulus.GetMSB()) +
-                          " is too large. NativeVectorT supports only modulus size <=  " +
-                          std::to_string(MAX_MODULUS_SIZE) + " bits");
-    }
-}
-
-template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(usint length, const IntegerType& modulus,
                                           std::initializer_list<std::string> rhs) noexcept
-    : m_data(length), m_modulus{modulus} {
+    : m_modulus{modulus}, m_data(length) {
     const size_t len = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (size_t i = 0; i < len; ++i)
         m_data[i] = *(rhs.begin() + i) % m_modulus;
@@ -64,32 +53,10 @@ NativeVectorT<IntegerType>::NativeVectorT(usint length, const IntegerType& modul
 template <class IntegerType>
 NativeVectorT<IntegerType>::NativeVectorT(usint length, const IntegerType& modulus,
                                           std::initializer_list<uint64_t> rhs) noexcept
-    : m_data(length), m_modulus(modulus) {
+    : m_modulus{modulus}, m_data(length) {
     const size_t len = (rhs.size() < m_data.size()) ? rhs.size() : m_data.size();
     for (size_t i = 0; i < len; ++i)
         m_data[i].m_value = BasicInt(*(rhs.begin() + i)) % m_modulus.m_value;
-}
-
-template <class IntegerType>
-NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::operator=(const NativeVectorT& rhs) noexcept {
-    m_modulus = rhs.m_modulus;
-    if (rhs.m_data.size() > m_data.size()) {
-        m_data = rhs.m_data;
-        return *this;
-    }
-    std::copy(rhs.m_data.begin(), rhs.m_data.end(), m_data.begin());
-    if (m_data.size() > rhs.m_data.size())
-        m_data.resize(rhs.m_data.size());
-    return *this;
-}
-
-template <class IntegerType>
-NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::operator=(NativeVectorT&& rhs) noexcept {
-    if (this != &rhs) {
-        m_data    = std::move(rhs.m_data);
-        m_modulus = std::move(rhs.m_modulus);
-    }
-    return *this;
 }
 
 template <class IntegerType>
@@ -101,7 +68,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::operator=(std::initializ
         if (i < len) {
             m_data[i] = *(rhs.begin() + i);
             if (m_modulus.m_value != 0)
-                m_data[i].m_value %= m_modulus.m_value;
+                m_data[i].m_value = m_data[i].m_value % m_modulus.m_value;
         }
         else {
             m_data[i].m_value = 0;
@@ -119,22 +86,13 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::operator=(std::initializ
         if (i < len) {
             m_data[i].m_value = BasicInt(*(rhs.begin() + i));
             if (m_modulus.m_value != 0)
-                m_data[i].m_value %= m_modulus.m_value;
+                m_data[i].m_value = m_data[i].m_value % m_modulus.m_value;
         }
         else {
             m_data[i].m_value = 0;
         }
     }
     return *this;
-}
-
-template <class IntegerType>
-void NativeVectorT<IntegerType>::SetModulus(const IntegerType& value) {
-    if (value.GetMSB() > MAX_MODULUS_SIZE) {
-        OPENFHE_THROW(lbcrypto::not_available_error,
-                      "NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE) + " bits");
-    }
-    m_modulus.m_value = value.m_value;
 }
 
 /**Switches the integers in the vector to values corresponding to the new
@@ -149,144 +107,86 @@ void NativeVectorT<IntegerType>::SetModulus(const IntegerType& value) {
  */
 template <class IntegerType>
 void NativeVectorT<IntegerType>::SwitchModulus(const IntegerType& modulus) {
-#if 0    // (0.37, 1.5, 9.83) (1.5, 3.6, 20.8)
-    auto size(m_data.size());
-    auto halfQ(m_modulus >> 1);
-    if (modulus > m_modulus) {
-        auto diff(modulus - m_modulus);
-        for (size_t i = 0; i < size; ++i) {
-            if (m_data[i] > halfQ)
-                m_data[i] += diff;
-        }
-    }
-    else {
-        auto diff(m_modulus - modulus);
-        for (size_t i = 0; i < size; ++i) {
-            m_data[i].ModSubEq(((m_data[i] > halfQ) ? diff : 0), modulus);
-        }
-    }
-#elif 1  // (0.37, 1.96, 6.56) (1.5, 4.56, 14.2)
+    // TODO: #ifdef NATIVEINT_BARRET_MOD
     auto size{m_data.size()};
     auto halfQ{m_modulus.m_value >> 1};
-    if (modulus.m_value > m_modulus.m_value) {
-        auto diff{modulus.m_value - m_modulus.m_value};
+    auto om{m_modulus.m_value};
+    this->NativeVectorT::SetModulus(modulus);
+    auto nm{modulus.m_value};
+    if (nm > om) {
+        auto diff{nm - om};
         for (size_t i = 0; i < size; ++i) {
-            if (m_data[i].m_value > halfQ)
-                m_data[i].m_value += diff;
+            auto& v = m_data[i].m_value;
+            if (v > halfQ)
+                v = v + diff;
         }
     }
     else {
-        auto diff{modulus.m_value - (m_modulus.m_value % modulus.m_value)};
+        auto diff{nm - (om % nm)};
         for (size_t i = 0; i < size; ++i) {
-            if (m_data[i].m_value > halfQ)
-                m_data[i].m_value += diff;
-            if (m_data[i].m_value >= modulus.m_value)
-                m_data[i].m_value %= modulus.m_value;
+            auto& v = m_data[i].m_value;
+            if (v > halfQ)
+                v = v + diff;
+            if (v >= nm)
+                v = v % nm;
         }
     }
-#elif 0  // (1.2, 2.4, 6.54) (2.9, 5.2, 14.2)
-    auto size(m_data.size());
-    auto halfQ(m_modulus >> 1);
-    auto diff(modulus - (m_modulus % modulus));
-    for (size_t i = 0; i < size; ++i) {
-        if (m_data[i] > halfQ)
-            m_data[i] += diff;
-        if (m_data[i] >= modulus)
-            m_data[i] %= modulus;
-    }
-#elif 0  // 1.62
-    auto halfQ(m_modulus >> 1);
-    if (modulus > m_modulus) {
-        auto diff(modulus - m_modulus);
-        for (auto& x : m_data)
-            if (x > halfQ)
-                x += diff;
-    }
-    else {
-        auto diff(m_modulus - modulus);
-        for (auto& x : m_data)
-            x.ModSubEq((x > halfQ ? diff : 0), modulus);
-    }
-#elif 0  // 2.0
-    const auto halfQ(m_modulus >> 1);
-    const auto diff(modulus - (m_modulus % modulus));
-    if (modulus > m_modulus) {
-        for (auto& x : m_data) {
-            if (x > halfQ)
-                x += diff;
-        }
-    }
-    else {
-        for (auto& x : m_data) {
-            if (x > halfQ)
-                x += diff;
-            if (x >= modulus)
-                x %= modulus;
-        }
-    }
-#else    // 2.3  5.5
-    const auto halfQ(m_modulus >> 1);
-    const auto diff(modulus - (m_modulus % modulus));
-    for (auto& x : m_data) {
-        if (x > halfQ)
-            x += diff;
-        if (x >= modulus)
-            x %= modulus;
-    }
-#endif
-    this->SetModulus(modulus);
 }
-
-// MODULAR ARITHMETIC OPERATIONS
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::Mod(const IntegerType& modulus) const {
     auto ans(*this);
     if (modulus.m_value == 2)
         return ans.ModByTwoEq();
-    auto size{ans.m_data.size()};
+    auto nm{modulus.m_value};
     auto halfQ{m_modulus.m_value >> 1};
-    if (modulus.m_value > m_modulus.m_value) {
-        auto diff{modulus.m_value - m_modulus.m_value};
+    auto om{m_modulus.m_value};
+    auto size{m_data.size()};
+    if (nm > om) {
+        auto diff{nm - om};
         for (size_t i = 0; i < size; ++i) {
-            if (ans.m_data[i].m_value > halfQ)
-                ans.m_data[i].m_value += diff;
+            auto& v = ans.m_data[i].m_value;
+            if (v > halfQ)
+                v = v + diff;
         }
     }
     else {
-        auto diff{modulus.m_value - (m_modulus.m_value % modulus.m_value)};
+        auto diff{nm - (om % nm)};
         for (size_t i = 0; i < size; ++i) {
-            if (ans.m_data[i].m_value > halfQ)
-                ans.m_data[i].m_value += diff;
-            if (ans.m_data[i].m_value >= modulus.m_value)
-                ans.m_data[i].m_value %= modulus.m_value;
+            auto& v = ans.m_data[i].m_value;
+            if (v > halfQ)
+                v = v + diff;
+            if (v >= nm)
+                v = v % nm;
         }
     }
-    return std::move(ans);
+    return ans;
 }
 
 template <class IntegerType>
 NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModEq(const IntegerType& modulus) {
-    // TODO: #ifdef NATIVEINT_BARRET_MOD
-
     if (modulus.m_value == 2)
         return this->NativeVectorT::ModByTwoEq();
-    auto size{m_data.size()};
+    auto nm{modulus.m_value};
     auto halfQ{m_modulus.m_value >> 1};
-    if (modulus.m_value > m_modulus.m_value) {
-        auto diff{modulus.m_value - m_modulus.m_value};
+    auto om{m_modulus.m_value};
+    auto size{m_data.size()};
+    if (nm > om) {
+        auto diff{nm - om};
         for (size_t i = 0; i < size; ++i) {
-            if (m_data[i].m_value > halfQ)
-                m_data[i].m_value += diff;
+            auto& v = m_data[i].m_value;
+            if (v > halfQ)
+                v = v + diff;
         }
     }
     else {
-        auto diff{modulus.m_value - (m_modulus.m_value % modulus.m_value)};
+        auto diff{nm - (om % nm)};
         for (size_t i = 0; i < size; ++i) {
-            if (m_data[i].m_value > halfQ)
-                m_data[i].m_value += diff;
-            if (m_data[i].m_value >= modulus.m_value)
-                m_data[i].m_value %= modulus.m_value;
+            auto& v = m_data[i].m_value;
+            if (v > halfQ)
+                v = v + diff;
+            if (v >= nm)
+                v = v % nm;
         }
     }
     return *this;
@@ -294,14 +194,14 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModEq(const IntegerType&
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const IntegerType& b) const {
+    auto ans(*this);
     auto mv{m_modulus};
     auto bv{b};
-    auto ans(*this);
     if (bv.m_value >= mv.m_value)
         bv.ModEq(mv);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans.m_data[i].ModAddFastEq(bv, mv);
-    return std::move(ans);
+        ans.m_data[i] = ans.m_data[i].ModAddFast(bv, mv);
+    return ans;
 }
 
 template <class IntegerType>
@@ -311,7 +211,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddEq(const IntegerTy
     if (bv.m_value >= mv.m_value)
         bv.ModEq(mv);
     for (size_t i = 0; i < m_data.size(); ++i)
-        m_data[i].ModAddFastEq(bv, mv);
+        m_data[i] = m_data[i].ModAddFast(bv, mv);
     return *this;
 }
 
@@ -319,7 +219,7 @@ template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAddAtIndex(size_t i, const IntegerType& b) const {
     auto ans(*this);
     ans.at(i).ModAddEq(b, m_modulus);
-    return std::move(ans);
+    return ans;
 }
 
 template <class IntegerType>
@@ -330,13 +230,13 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModAddAtIndexEq(size_t i
 
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModAdd(const NativeVectorT& b) const {
-    if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
+    if (m_modulus != b.m_modulus || m_data.size() != b.m_data.size())
         OPENFHE_THROW(lbcrypto::math_error, "ModAdd called on NativeVectorT's with different parameters.");
     auto mv{m_modulus};
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
         ans.m_data[i].ModAddFastEq(b[i], mv);
-    return std::move(ans);
+    return ans;
 }
 
 template <class IntegerType>
@@ -357,8 +257,8 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const IntegerType&
     if (bv.m_value >= mv.m_value)
         bv.ModEq(mv);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans.m_data[i].ModSubFastEq(bv, mv);
-    return std::move(ans);
+        ans[i].ModSubFastEq(bv, mv);
+    return ans;
 }
 
 template <class IntegerType>
@@ -379,8 +279,8 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModSub(const NativeVector
     auto mv{m_modulus};
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans.m_data[i].ModSubFastEq(b[i], mv);
-    return std::move(ans);
+        ans[i].ModSubFastEq(b[i], mv);
+    return ans;
 }
 
 template <class IntegerType>
@@ -401,8 +301,8 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const IntegerType&
         bv.ModEq(mv);
     auto bconst{bv.PrepModMulConst(mv)};
     for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans.m_data[i].ModMulFastConstEq(bv, mv, bconst);
-    return std::move(ans);
+        ans[i].ModMulFastConstEq(bv, mv, bconst);
+    return ans;
 }
 
 template <class IntegerType>
@@ -426,14 +326,14 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModMul(const NativeVector
     auto mv{m_modulus};
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans.m_data[i].ModMulFastEq(b[i], mv, mu);
-    return std::move(ans);
+        ans[i].ModMulFastEq(b[i], mv, mu);
+    return ans;
 #else
     auto mv{m_modulus};
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans.m_data[i].ModMulFastEq(b[i], mv);
-    return std::move(ans);
+        ans[i].ModMulFastEq(b[i], mv);
+    return ans;
 #endif
 }
 
@@ -462,8 +362,8 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModByTwo() const {
     auto halfQ{m_modulus.m_value >> 1};
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans.m_data[i].m_value = 0x1 & (ans.m_data[i].m_value ^ (ans.m_data[i].m_value > halfQ));
-    return std::move(ans);
+        ans[i].m_value = 0x1 & (ans[i].m_value ^ (ans[i].m_value > halfQ));
+    return ans;
 }
 
 template <class IntegerType>
@@ -483,7 +383,7 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModExp(const IntegerType&
         bv.ModEq(mv);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
         ans[i] = ans[i].ModExp(bv, mv);
-    return std::move(ans);
+    return ans;
 }
 
 template <class IntegerType>
@@ -498,30 +398,13 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModExpEq(const IntegerTy
 }
 
 template <class IntegerType>
-NativeVectorT<IntegerType> NativeVectorT<IntegerType>::ModInverse() const {
-    auto mv{m_modulus};
-    auto ans(*this);
-    for (size_t i = 0; i < ans.m_data.size(); ++i)
-        ans[i] = ans[i].ModInverse(mv);
-    return std::move(ans);
-}
-
-template <class IntegerType>
-NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::ModInverseEq() {
-    auto mv{m_modulus};
-    for (size_t i = 0; i < m_data.size(); ++i)
-        m_data[i] = m_data[i].ModInverse(mv);
-    return *this;
-}
-
-template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultWithOutMod(const NativeVectorT& b) const {
     if (m_data.size() != b.m_data.size() || m_modulus != b.m_modulus)
         OPENFHE_THROW(lbcrypto::math_error, "ModMul called on NativeVectorT's with different parameters.");
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
         ans[i].m_value = ans[i].m_value * b[i].m_value;
-    return std::move(ans);
+    return ans;
 }
 
 template <class IntegerType>
@@ -532,14 +415,14 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::MultiplyAndRound(const In
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i) {
         if (ans[i].m_value > halfQ) {
-            auto tmp = mv - ans[i];
-            ans[i]   = mv - tmp.MultiplyAndRound(p, q);
+            auto&& tmp{mv - ans[i]};
+            ans[i] = mv - tmp.MultiplyAndRound(p, q);
         }
         else {
             ans[i] = ans[i].MultiplyAndRound(p, q).Mod(mv);
         }
     }
-    return std::move(ans);
+    return ans;
 }
 
 template <class IntegerType>
@@ -548,7 +431,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::MultiplyAndRoundEq(const
     auto mv{m_modulus};
     for (size_t i = 0; i < m_data.size(); ++i) {
         if (m_data[i].m_value > halfQ) {
-            auto tmp  = mv - m_data[i];
+            auto&& tmp{mv - m_data[i]};
             m_data[i] = mv - tmp.MultiplyAndRound(p, q);
         }
         else {
@@ -565,14 +448,14 @@ NativeVectorT<IntegerType> NativeVectorT<IntegerType>::DivideAndRound(const Inte
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i) {
         if (ans[i].m_value > halfQ) {
-            auto tmp = mv - ans[i];
-            ans[i]   = mv - tmp.DivideAndRound(q);
+            auto&& tmp{mv - ans[i]};
+            ans[i] = mv - tmp.DivideAndRound(q);
         }
         else {
             ans[i] = ans[i].DivideAndRound(q);
         }
     }
-    return std::move(ans);
+    return ans;
 }
 
 template <class IntegerType>
@@ -581,7 +464,7 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::DivideAndRoundEq(const I
     auto mv{m_modulus};
     for (size_t i = 0; i < m_data.size(); ++i) {
         if (m_data[i].m_value > halfQ) {
-            auto tmp  = mv - m_data[i];
+            auto&& tmp{mv - m_data[i]};
             m_data[i] = mv - tmp.DivideAndRound(q);
         }
         else {
@@ -591,15 +474,12 @@ NativeVectorT<IntegerType>& NativeVectorT<IntegerType>::DivideAndRoundEq(const I
     return *this;
 }
 
-// OTHER FUNCTIONS
-
-// Gets the ind
 template <class IntegerType>
 NativeVectorT<IntegerType> NativeVectorT<IntegerType>::GetDigitAtIndexForBase(usint index, usint base) const {
     auto ans(*this);
     for (size_t i = 0; i < ans.m_data.size(); ++i)
         ans[i].m_value = static_cast<BasicInt>(ans[i].GetDigitAtIndexForBase(index, base));
-    return std::move(ans);
+    return ans;
 }
 
 template class NativeVectorT<NativeInteger>;

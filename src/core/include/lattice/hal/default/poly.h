@@ -81,7 +81,7 @@ public:
 
     ~PolyImpl() override = default;
 
-    PolyImpl();
+    constexpr PolyImpl() noexcept = default;
     PolyImpl(const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
              bool initializeElementToZero = false);
     PolyImpl(const std::shared_ptr<ILDCRTParams<Integer>>& params, Format format = Format::EVALUATION,
@@ -92,25 +92,41 @@ public:
     PolyImpl(const BugType& bug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     PolyImpl(const TugType& tug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
              uint32_t h = 0);
-    PolyImpl(const PolyType& element);
     PolyImpl(const PolyNative& element, Format format);
-    PolyImpl(PolyType&& element);
 
-    const PolyType& operator=(const PolyType& rhs) override;
-    const PolyType& operator=(const std::vector<int32_t>& rhs) override;
-    const PolyType& operator=(const std::vector<int64_t>& rhs) override;
-    const PolyType& operator=(std::initializer_list<uint64_t> rhs) override;
-    const PolyType& operator=(std::initializer_list<std::string> rhs) override;
-    const PolyType& operator=(uint64_t val) override;
-    const PolyType& operator=(PolyType&& rhs) override;
+    PolyImpl(const PolyType& p) noexcept
+        : m_format{p.m_format},
+          m_params{p.m_params},
+          m_values{p.m_values ? std::make_unique<VecType>(*p.m_values) : nullptr} {}
+
+    PolyImpl(PolyType&& p) noexcept
+        : m_format{p.m_format}, m_params{std::move(p.m_params)}, m_values{std::move(p.m_values)} {}
+
+    PolyType& operator=(const PolyType& rhs) noexcept override;
+    PolyType& operator=(PolyType&& rhs) noexcept override;
+    PolyType& operator=(const std::vector<int32_t>& rhs) override;
+    PolyType& operator=(const std::vector<int64_t>& rhs) override;
+    PolyType& operator=(std::initializer_list<uint64_t> rhs) override;
+    PolyType& operator=(std::initializer_list<std::string> rhs) override;
+    PolyType& operator=(uint64_t val) override;
 
     PolyNative DecryptionCRTInterpolate(PlaintextModulus ptm) const override;
     PolyNative ToNativePoly() const final;
 
     void SetValues(const VecType& values, Format format) override;
     void SetValues(VecType&& values, Format format) override;
-    void SetValuesToZero() override;
-    void SetValuesToMax() override;
+
+    void SetValuesToZero() override {
+        usint r{m_params->GetRingDimension()};
+        auto& m{m_params->GetModulus()};
+        m_values = std::make_unique<VecType>(r, m);
+    }
+
+    void SetValuesToMax() override {
+        usint size{m_params->GetRingDimension()};
+        auto max{m_params->GetModulus() - Integer(1)};
+        m_values = std::make_unique<VecType>(size, m_params->GetModulus(), max);
+    }
 
     inline Format GetFormat() const final {
         return m_format;
@@ -151,7 +167,7 @@ public:
     }
 
     PolyImpl Plus(const PolyImpl& element) const override;
-    const PolyImpl& operator+=(const PolyImpl& element) override;
+    PolyImpl& operator+=(const PolyImpl& element) override;
 
     PolyImpl Times(const PolyImpl& element) const override;
     PolyImpl TimesNoCheck(const PolyImpl& element) const override;
@@ -163,20 +179,25 @@ public:
         return *this;
     }
 
+    PolyImpl Plus(const Integer& element) const override;
+    PolyImpl& operator+=(const Integer& element) override {
+        return *this = this->Plus(element);  // don't change this
+    }
+
     PolyImpl Minus(const PolyImpl& element) const override;
-    const PolyImpl& operator-=(const PolyImpl& element) override;
+    PolyImpl& operator-=(const PolyImpl& element) override;
 
     PolyImpl Minus(const Integer& element) const override;
-    inline const PolyImpl& operator-=(const Integer& element) override {
+    PolyImpl& operator-=(const Integer& element) override {
         m_values->ModSubEq(element);
         return *this;
     }
 
     PolyImpl Times(const PolyImpl& element) const override;
-    const PolyImpl& operator*=(const PolyImpl& element) override;
+    PolyImpl& operator*=(const PolyImpl& element) override;
 
     PolyImpl Times(const Integer& element) const override;
-    inline const PolyImpl& operator*=(const Integer& element) override {
+    PolyImpl& operator*=(const Integer& element) override {
         m_values->ModMulEq(element);
         return *this;
     }
@@ -243,9 +264,9 @@ public:
     }
 
 protected:
-    Format m_format;
-    std::shared_ptr<Params> m_params;
-    std::unique_ptr<VecType> m_values;
+    Format m_format{Format::EVALUATION};
+    std::shared_ptr<Params> m_params{nullptr};
+    std::unique_ptr<VecType> m_values{nullptr};
     void ArbitrarySwitchFormat();
 };
 

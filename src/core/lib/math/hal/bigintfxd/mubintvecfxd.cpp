@@ -44,8 +44,6 @@
 
 namespace bigintfxd {
 
-// CONSTRUCTORS
-
 template <class IntegerType>
 BigVectorFixedT<IntegerType>::BigVectorFixedT() {
     this->m_length  = 0;
@@ -72,12 +70,14 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(const BigVectorFixedT& bigVector) 
 
 template <class IntegerType>
 BigVectorFixedT<IntegerType>::BigVectorFixedT(BigVectorFixedT&& bigVector) {
-    m_data              = bigVector.m_data;
-    m_length            = bigVector.m_length;
-    m_modulus           = bigVector.m_modulus;
-    bigVector.m_data    = nullptr;
-    bigVector.m_length  = 0;
-    bigVector.m_modulus = 0;
+    if (this != &bigVector) {
+        m_data              = bigVector.m_data;
+        m_length            = bigVector.m_length;
+        m_modulus           = bigVector.m_modulus;
+        bigVector.m_data    = nullptr;
+        bigVector.m_length  = 0;
+        bigVector.m_modulus = 0;
+    }
 }
 
 template <class IntegerType>
@@ -115,14 +115,7 @@ BigVectorFixedT<IntegerType>::BigVectorFixedT(usint length, const IntegerType& m
 }
 
 template <class IntegerType>
-BigVectorFixedT<IntegerType>::~BigVectorFixedT() {
-    delete[] m_data;
-}
-
-// ASSIGNMENT OPERATORS
-
-template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(const BigVectorFixedT& rhs) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(const BigVectorFixedT& rhs) {
     if (this != &rhs) {
         if (this->m_length == rhs.m_length) {
             for (size_t i = 0; i < m_length; i++) {
@@ -144,7 +137,7 @@ const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(cons
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(BigVectorFixedT&& rhs) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(BigVectorFixedT&& rhs) {
     if (this != &rhs) {
         delete[] m_data;
         m_data     = rhs.m_data;
@@ -156,7 +149,7 @@ const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(BigV
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(std::initializer_list<std::string> rhs) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(std::initializer_list<std::string> rhs) {
     size_t len = rhs.size();
     for (size_t i = 0; i < m_length; i++) {
         if (i < len) {
@@ -175,7 +168,7 @@ const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(std:
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(std::initializer_list<uint64_t> rhs) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::operator=(std::initializer_list<uint64_t> rhs) {
     size_t len = rhs.size();
     for (size_t i = 0; i < m_length; i++) {
         if (i < len) {
@@ -243,7 +236,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::Mod(const IntegerType
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModEq(const IntegerType& modulus) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModEq(const IntegerType& modulus) {
     if (modulus == 2) {
         return this->ModByTwoEq();
     }
@@ -269,7 +262,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModAdd(const IntegerT
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddEq(const IntegerType& b) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddEq(const IntegerType& b) {
     IntegerType bb = b.Mod(this->m_modulus);
     for (usint i = 0; i < this->m_length; i++) {
         this->m_data[i].ModAddFastEq(bb, this->m_modulus);
@@ -285,7 +278,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModAddAtIndex(usint i
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddAtIndexEq(usint i, const IntegerType& b) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddAtIndexEq(usint i, const IntegerType& b) {
     if (i > this->GetLength() - 1) {
         OPENFHE_THROW(lbcrypto::math_error,
                       "mubintvecfxd::ModAddAtIndex. Index is out of range. i = " + std::to_string(i));
@@ -302,7 +295,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModAdd(const BigVecto
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddEq(const BigVectorFixedT& b) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddEq(const BigVectorFixedT& b) {
     if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
         OPENFHE_THROW(lbcrypto::math_error, "ModAddEq called on BigVectorFixedT's with different parameters.");
     }
@@ -320,7 +313,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModSub(const IntegerT
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModSubEq(const IntegerType& b) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModSubEq(const IntegerType& b) {
     IntegerType bb = b.Mod(this->m_modulus);
     for (usint i = 0; i < this->m_length; i++) {
         this->m_data[i].ModSubFastEq(bb, this->m_modulus);
@@ -336,7 +329,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModSub(const BigVecto
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModSubEq(const BigVectorFixedT& b) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModSubEq(const BigVectorFixedT& b) {
     if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
         OPENFHE_THROW(lbcrypto::math_error, "ModSubEq called on BigVectorFixedT's with different parameters.");
     }
@@ -377,7 +370,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModMul(const IntegerT
  like give the biggest improvement but it sets constraints on moduli.
  */
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModMulEq(const IntegerType& b) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModMulEq(const IntegerType& b) {
     IntegerType bb = b.Mod(this->m_modulus);
     IntegerType mu = this->m_modulus.ComputeMu();  // Precompute the Barrett mu parameter
     for (usint i = 0; i < this->m_length; i++) {
@@ -417,7 +410,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModMul(const BigVecto
  like give the biggest improvement but it sets constraints on moduli.
  */
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModMulEq(const BigVectorFixedT& b) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModMulEq(const BigVectorFixedT& b) {
     if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
         OPENFHE_THROW(lbcrypto::math_error, "ModMulEq called on BigVectorFixedT's with different parameters.");
     }
@@ -437,7 +430,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModExp(const IntegerT
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModExpEq(const IntegerType& b) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModExpEq(const IntegerType& b) {
     for (usint i = 0; i < this->m_length; i++) {
         this->m_data[i].ModExpEq(b, this->m_modulus);
     }
@@ -452,7 +445,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModInverse() const {
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModInverseEq() {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModInverseEq() {
     for (usint i = 0; i < this->m_length; i++) {
         this->m_data[i].ModInverseEq(this->m_modulus);
     }
@@ -467,7 +460,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModByTwo() const {
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModByTwoEq() {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModByTwoEq() {
     IntegerType halfQ(this->GetModulus() >> 1);
     for (usint i = 0; i < this->GetLength(); i++) {
         if (this->m_data[i] > halfQ) {
@@ -498,7 +491,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::MultWithOutMod(const 
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultWithOutModEq(const BigVectorFixedT& b) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultWithOutModEq(const BigVectorFixedT& b) {
     if ((this->m_length != b.m_length) || this->m_modulus != b.m_modulus) {
         OPENFHE_THROW(lbcrypto::type_error, "MultWithOutMod called on BigVectorFixedT's with different parameters.");
     }
@@ -517,8 +510,8 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::MultiplyAndRound(cons
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultiplyAndRoundEq(const IntegerType& p,
-                                                                                     const IntegerType& q) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::MultiplyAndRoundEq(const IntegerType& p,
+                                                                               const IntegerType& q) {
     IntegerType halfQ(this->m_modulus >> 1);
     IntegerType temp;
     for (usint i = 0; i < this->m_length; i++) {
@@ -542,7 +535,7 @@ BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::DivideAndRound(const 
 }
 
 template <class IntegerType>
-const BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::DivideAndRoundEq(const IntegerType& q) {
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::DivideAndRoundEq(const IntegerType& q) {
     IntegerType halfQ(this->m_modulus >> 1);
     IntegerType temp;
     for (usint i = 0; i < this->m_length; i++) {

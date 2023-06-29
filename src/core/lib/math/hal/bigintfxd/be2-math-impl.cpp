@@ -44,13 +44,6 @@
     #include "math/nbtheory-impl.h"
     #include "math/ternaryuniformgenerator-impl.h"
 
-namespace bigintfxd {
-
-template class ChineseRemainderTransformFTTFxd<BigVector>;
-template class ChineseRemainderTransformArbFxd<BigVector>;
-
-}  // namespace bigintfxd
-
 namespace lbcrypto {
 
 template class DiscreteGaussianGeneratorImpl<M2Vector>;

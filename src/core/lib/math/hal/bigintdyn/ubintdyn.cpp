@@ -40,24 +40,15 @@
 
     #include "math/hal.h"
 
-    #include "utils/debug.h"
+    #include "utils/exception.h"
+    #include "utils/inttypes.h"
     #include "utils/serializable.h"
 
     #include <iostream>
+    #include <string>
     #include <vector>
 
 namespace bigintdyn {
-
-    #if defined(HAVE_INT128)
-template <typename limb_t>
-ubint<limb_t>::ubint(__uint128_t val) noexcept : m_MSB(lbcrypto::GetMSB(val)), m_value{static_cast<limb_t>(val)} {
-    if ((val >>= m_limbBitLength) > 0) {
-        m_value.resize(ubint::MSBToLimbs(m_MSB));
-        for (size_t i = 1; i < m_value.size(); ++i, val >>= m_limbBitLength)
-            m_value[i] = static_cast<limb_t>(val);
-    }
-}
-    #endif
 
 // Sum and Carry algorithm with radix 2^m_bitLength.
 template <typename limb_t>
@@ -135,7 +126,7 @@ ubint<limb_t> ubint<limb_t>::Sub(const ubint& b) const {
         }
     }
     result.NormalizeLimbs();
-    return std::move(result);
+    return result;
 }
 
 // TODO: convert to vector constructor method
@@ -193,7 +184,7 @@ ubint<limb_t> ubint<limb_t>::Mul(const ubint& b) const {
 
         ans = std::move(ans.Add(ubint(std::move(c))));
     }
-    return std::move(ans);
+    return ans;
 }
 
 template <typename limb_t>
@@ -206,7 +197,7 @@ ubint<limb_t> ubint<limb_t>::DividedBy(const ubint& b) const {
         return ubint(1);
     ubint ans;
     divq_vect(ans, *this, b);
-    return std::move(ans);
+    return ans;
 }
 
 template <typename limb_t>
@@ -257,7 +248,7 @@ ubint<limb_t> ubint<limb_t>::MultiplyAndRound(const ubint& p, const ubint& q) co
     divqr_vect(ans, rv, t, q);
     if (rv > halfQ)
         return ans.Add(ubint(1));
-    return std::move(ans);
+    return ans;
 }
 
 template <typename limb_t>
@@ -273,7 +264,7 @@ ubint<limb_t> ubint<limb_t>::DivideAndRound(const ubint& q) const {
     divqr_vect(ans, rv, *this, q);
     if (rv > halfQ)
         return ans.Add(ubint(1));
-    return std::move(ans);
+    return ans;
 }
 
 template <typename limb_t>
@@ -286,7 +277,7 @@ ubint<limb_t> ubint<limb_t>::Mod(const ubint& modulus) const {
         return ubint(m_value[0] & 0x1);
     ubint ans;
     divr_vect(ans, *this, modulus);
-    return std::move(ans);
+    return ans;
 }
 
 template <typename limb_t>
@@ -317,7 +308,7 @@ ubint<limb_t> ubint<limb_t>::ModAdd(const ubint& b, const ubint& modulus) const 
     av = av.Add(bv);
     if (av >= modulus)
         return av.Sub(modulus);
-    return std::move(av);
+    return av;
 }
 
 template <typename limb_t>
@@ -338,7 +329,7 @@ ubint<limb_t> ubint<limb_t>::ModAddFast(const ubint& b, const ubint& modulus) co
     ubint ans(b.Add(*this));
     if (ans >= modulus)
         return ans.Sub(modulus);
-    return std::move(ans);
+    return ans;
 }
 
 template <typename limb_t>
@@ -419,7 +410,7 @@ ubint<limb_t> ubint<limb_t>::ModMulFast(const ubint& b, const ubint& modulus) co
     }
     if (ans >= modulus)
         return ans.Mod(modulus);
-    return std::move(ans);
+    return ans;
 }
 
 // Extended Euclid algorithm used to find the multiplicative inverse
@@ -470,7 +461,7 @@ ubint<limb_t> ubint<limb_t>::ModInverse(const ubint& modulus) const {
     }
     if (quotient.size() & 0x1)
         return modulus - mod_back;
-    return std::move(mod_back);
+    return mod_back;
 }
 
 // Modular Exponentiation using Square and Multiply Algorithm
@@ -487,7 +478,7 @@ ubint<limb_t> ubint<limb_t>::ModExp(const ubint& b, const ubint& modulus) const 
         if (p.m_value[0] & 0x1)
             r = r.ModMulFast(t, modulus);
     }
-    return std::move(r);
+    return r;
 }
 
 template <typename limb_t>
@@ -516,7 +507,7 @@ ubint<limb_t> ubint<limb_t>::LShift(usshort shift) const {
         while (i > 0)
             ans.m_value[--i] = (j > 0) ? ans.m_value[--j] : 0;
     }
-    return std::move(ans);
+    return ans;
 }
 
 template <typename limb_t>
@@ -573,7 +564,7 @@ ubint<limb_t> ubint<limb_t>::RShift(usshort shift) const {
     ans.m_value.resize(size);
     if (tmp)
         ans.m_value.push_back(static_cast<limb_t>(tmp));
-    return std::move(ans);
+    return ans;
 }
 
 template <typename limb_t>
@@ -614,7 +605,6 @@ float ubint<limb_t>::ConvertToFloat() const {
     return ans;
 }
 
-// Converts the ubint to double using the std library functions.
 template <typename limb_t>
 double ubint<limb_t>::ConvertToDouble() const {
     double ans{-1.0};
@@ -652,7 +642,7 @@ long double ubint<limb_t>::ConvertToLongDouble() const {
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::FromBinaryString(const std::string& vin) {
     std::string v = vin;
-    v.erase(0, v.find_first_not_of(' '));
+    // v.erase(0, v.find_first_not_of(' '));
     v.erase(0, v.find_first_not_of('0'));
     if (v.size() == 0)
         return ubint();
@@ -698,7 +688,7 @@ const std::string ubint<limb_t>::ToString() const {
     std::vector<uschar> val{0};
     val.reserve(m_MSB >> 1);
     for (usint i = m_MSB; i > 0; --i) {
-        auto ofl = GetBitAtIndex(i);  // TODO: needlessly expensive
+        auto ofl = GetBitAtIndex(i);  // TODO: needlessly expensive here
         for (auto& a : val) {
             a = (a << 1) + ofl;
             if ((ofl = (a > 9)))
@@ -755,7 +745,7 @@ void ubint<limb_t>::divqr_vect(ubint& qin, ubint& rin, const ubint& uin, const u
 
         r.resize(1);
         r[0]      = static_cast<limb_t>(ofl);
-        rin.m_MSB = lbcrypto::GetMSB64(r[0]);
+        rin.m_MSB = lbcrypto::GetMSB(r[0]);
         return;
     }
 
@@ -763,7 +753,7 @@ void ubint<limb_t>::divqr_vect(ubint& qin, ubint& rin, const ubint& uin, const u
     // bit is set, and shift u left the same amount. We may have to append a
     // high-order digit on the dividend; we do that unconditionally.
 
-    auto sl{m_limbBitLength - lbcrypto::GetMSB64(v.back())};
+    auto sl{m_limbBitLength - lbcrypto::GetMSB(v.back())};
     std::vector<limb_t> vn(n);
     ofl = 0;
     for (int i = 0; i < n; ++i, ofl >>= m_limbBitLength) {
@@ -842,7 +832,7 @@ void ubint<limb_t>::divq_vect(ubint& qin, const ubint& uin, const ubint& vin) co
         return;
     }
 
-    auto sl{m_limbBitLength - lbcrypto::GetMSB64(v.back())};
+    auto sl{m_limbBitLength - lbcrypto::GetMSB(v.back())};
     std::vector<limb_t> vn(n);
     ofl = 0;
     for (int i = 0; i < n; ++i, ofl >>= m_limbBitLength) {
@@ -908,11 +898,11 @@ void ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) co
             ofl %= v[0];
         }
         r[0]      = static_cast<limb_t>(ofl);
-        rin.m_MSB = lbcrypto::GetMSB64(r[0]);
+        rin.m_MSB = lbcrypto::GetMSB(r[0]);
         return;
     }
 
-    auto sl{m_limbBitLength - lbcrypto::GetMSB64(v.back())};
+    auto sl{m_limbBitLength - lbcrypto::GetMSB(v.back())};
     std::vector<limb_t> vn(n);
     ofl = 0;
     for (int i = 0; i < n; ++i, ofl >>= m_limbBitLength) {
@@ -973,8 +963,8 @@ void ubint<limb_t>::divr_vect(ubint& rin, const ubint& uin, const ubint& vin) co
 // Reference:http://pctechtips.org/convert-from-decimal-to-binary-with-recursion-in-java/
 template <typename limb_t>
 void ubint<limb_t>::SetValue(const std::string& vin) {
-    std::string v = vin;
-    v.erase(0, v.find_first_not_of(' '));
+    std::string v{vin};
+    // v.erase(0, v.find_first_not_of(' '));
     v.erase(0, v.find_first_not_of('0'));
     if (v.size() == 0)
         v = "0";
@@ -1008,7 +998,7 @@ void ubint<limb_t>::SetValue(const std::string& vin) {
 
 template <typename limb_t>
 uschar ubint<limb_t>::GetBitAtIndex(usint index) const {
-    static constexpr usint mask{m_limbBitLength - 1};
+    constexpr usint mask{m_limbBitLength - 1};
     if (index > m_MSB)
         return 0;
     size_t idx{MSBToLimbs(index) - 1};

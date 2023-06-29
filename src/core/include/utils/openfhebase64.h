@@ -37,6 +37,7 @@
 #define SRC_CORE_LIB_UTILS_OPENFHEBASE64_H_
 
 #include <utils/exception.h>
+
 #include <cctype>
 #include <cstdint>
 
@@ -51,26 +52,21 @@ inline unsigned char value_to_base64(int c) {
 inline unsigned char base64_to_value(unsigned char b64) {
     if (isupper(b64))
         return b64 - 'A';
-    else if (islower(b64))
+    if (islower(b64))
         return b64 - 'a' + 26;
-    else if (isdigit(b64))
+    if (isdigit(b64))
         return b64 - '0' + 52;
-    else if (b64 == '+')
+    if (b64 == '+')
         return 62;
-    else
-        return 63;
+    return 63;
 }
 
 inline unsigned char get_6bits_atoffset(uint64_t m_value, uint32_t index) {
     static unsigned char smallmask[] = {0, 0x1, 0x3, 0x7, 0xf, 0x1f, 0x3f};
-
-    if (index == 0) {
+    if (index == 0)
         OPENFHE_THROW(math_error, "Zero index in GetBitAtIndex");
-    }
-    if (index <= 6) {
+    if (index <= 6)
         return m_value & smallmask[index];
-    }
-
     return (m_value >> (index - 6)) & 0x3f;
 }
 

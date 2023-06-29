@@ -32,11 +32,10 @@
 #ifndef __NATIVEINTBACKEND_H__
 #define __NATIVEINTBACKEND_H__
 
+#include "math/hal/basicint.h"
 #include "math/hal/intnat/ubintnat.h"
 #include "math/hal/intnat/mubintvecnat.h"
 #include "math/hal/intnat/transformnat.h"
-
-#include "math/hal/basicint.h"
 
 namespace lbcrypto {
 
@@ -45,7 +44,6 @@ using NativeVector  = intnat::NativeVector;
 
 }  // namespace lbcrypto
 
-// Promote to global namespace
 using NativeInteger = lbcrypto::NativeInteger;
 using NativeVector  = lbcrypto::NativeVector;
 

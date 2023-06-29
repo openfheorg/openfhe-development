@@ -74,11 +74,16 @@ public:
         return "DCRTPolyImpl";
     }
 
-    ~DCRTPolyImpl() override = default;
+    //    ~DCRTPolyImpl() override = default;
 
-    DCRTPolyImpl();
+    constexpr DCRTPolyImpl() noexcept = default;
+
+    constexpr DCRTPolyImpl(const DCRTPolyType& element) noexcept
+        : m_format{element.m_format}, m_params{element.m_params}, m_vectors{element.m_vectors} {}
+    DCRTPolyImpl(DCRTPolyType&& element) noexcept;
+
     DCRTPolyImpl(const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
-                 bool initializeElementToZero = false);
+                 bool initializeElementToZero = false) noexcept;
     DCRTPolyImpl(const DggType& dgg, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     DCRTPolyImpl(const BugType& bug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     DCRTPolyImpl(const TugType& tug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
@@ -86,14 +91,13 @@ public:
     DCRTPolyImpl(DugType& dug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     DCRTPolyImpl(const PolyLargeType& element, const std::shared_ptr<Params>& params);
     DCRTPolyImpl(const PolyType& element, const std::shared_ptr<Params>& params);
-    DCRTPolyImpl(const DCRTPolyType& element);  // NOLINT
     explicit DCRTPolyImpl(const std::vector<PolyType>& elements);
-    explicit DCRTPolyImpl(const DCRTPolyType&& element);
 
-    const DCRTPolyType& operator=(const PolyLargeType& rhs);
-    const DCRTPolyType& operator=(const DCRTPolyType& rhs) override;
-    const DCRTPolyType& operator=(const PolyType& rhs) override;
-    const DCRTPolyType& operator=(DCRTPolyType&& rhs) override;
+    DCRTPolyType& operator=(const PolyLargeType& rhs) noexcept;
+    DCRTPolyType& operator=(const DCRTPolyType& rhs) noexcept override;
+    DCRTPolyType& operator=(const PolyType& rhs) noexcept override;
+    DCRTPolyType& operator=(DCRTPolyType&& rhs) noexcept override;
+
     DCRTPolyType& operator=(std::initializer_list<uint64_t> rhs) override;
     DCRTPolyType& operator=(uint64_t val) override;
     DCRTPolyType& operator=(const std::vector<int64_t>& rhs) override;
@@ -109,15 +113,15 @@ public:
     const Integer& operator[](usint i) const override;
 
     bool operator==(const DCRTPolyType& rhs) const override;
-    const DCRTPolyType& operator+=(const DCRTPolyType& rhs) override;
-    const DCRTPolyType& operator+=(const Integer& rhs) override;
-    const DCRTPolyType& operator+=(const NativeInteger& rhs) override;
-    const DCRTPolyType& operator-=(const DCRTPolyType& rhs) override;
-    const DCRTPolyType& operator-=(const Integer& rhs) override;
-    const DCRTPolyType& operator-=(const NativeInteger& rhs) override;
-    const DCRTPolyType& operator*=(const DCRTPolyType& rhs) override;
-    const DCRTPolyType& operator*=(const Integer& rhs) override;
-    const DCRTPolyType& operator*=(const NativeInteger& rhs) override;
+    DCRTPolyType& operator+=(const DCRTPolyType& rhs) override;
+    DCRTPolyType& operator+=(const Integer& rhs) override;
+    DCRTPolyType& operator+=(const NativeInteger& rhs) override;
+    DCRTPolyType& operator-=(const DCRTPolyType& rhs) override;
+    DCRTPolyType& operator-=(const Integer& rhs) override;
+    DCRTPolyType& operator-=(const NativeInteger& rhs) override;
+    DCRTPolyType& operator*=(const DCRTPolyType& rhs) override;
+    DCRTPolyType& operator*=(const Integer& rhs) override;
+    DCRTPolyType& operator*=(const NativeInteger& rhs) override;
 
     DCRTPolyType Negate() const override;
     DCRTPolyType operator-() const override;
@@ -327,12 +331,12 @@ public:
     }
 
     inline void SetElementAtIndex(usint index, PolyType&& element) final {
-        m_vectors[index] = element;
+        m_vectors[index] = std::move(element);
     }
 
 protected:
-    Format m_format;
-    std::shared_ptr<Params> m_params;
+    Format m_format{Format::EVALUATION};
+    std::shared_ptr<Params> m_params{std::make_shared<DCRTPolyImpl::Params>(0, 1)};
     std::vector<PolyType> m_vectors;
 };
 

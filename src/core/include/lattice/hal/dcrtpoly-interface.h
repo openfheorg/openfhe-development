@@ -82,25 +82,15 @@ template <typename DerivedType, typename BigVecType, typename LilVecType,
           template <typename LVT> typename RNSContainerType>
 class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
 public:
-    // The integer type that composes the BigVecType (Original vector size)
-    using BigIntType = typename BigVecType::Integer;
-
-    // Param's to hold settings for the DCRT characteristics
-    using Params = ILDCRTParams<BigIntType>;
-
-    // The integer type that the RNS residues are composed of
-    using LilIntType = typename LilVecType::Integer;
-
-    // The collection of the the residues
-    using TowerType = RNSContainerType<LilVecType>;
-
-    // the composed polynomial type (for return iterpolation of CRT residues)
+    using BigIntType    = typename BigVecType::Integer;
+    using Params        = ILDCRTParams<BigIntType>;
+    using LilIntType    = typename LilVecType::Integer;
+    using TowerType     = RNSContainerType<LilVecType>;
     using PolyLargeType = RNSContainerType<BigVecType>;
-
-    using DggType = DiscreteGaussianGeneratorImpl<LilVecType>;
-    using DugType = DiscreteUniformGeneratorImpl<LilVecType>;
-    using TugType = TernaryUniformGeneratorImpl<LilVecType>;
-    using BugType = BinaryUniformGeneratorImpl<LilVecType>;
+    using DggType       = DiscreteGaussianGeneratorImpl<LilVecType>;
+    using DugType       = DiscreteUniformGeneratorImpl<LilVecType>;
+    using TugType       = TernaryUniformGeneratorImpl<LilVecType>;
+    using BugType       = BinaryUniformGeneratorImpl<LilVecType>;
 
     // Each derived class needs to have this but static virtual not allowed in c++
     // static const std::string GetElementName();
@@ -389,7 +379,7 @@ public:
    */
     virtual std::vector<DerivedType> CRTDecompose(uint32_t baseBits) const = 0;
 
-    virtual const DerivedType& operator=(const TowerType& rhs) = 0;
+    virtual DerivedType& operator=(const TowerType& rhs) = 0;
 
     /**
    * @brief Assignment Operator.
@@ -397,7 +387,7 @@ public:
    * @param &rhs the copied element.
    * @return the resulting element.
    */
-    const DerivedType& operator=(const DerivedType& rhs) override = 0;
+    DerivedType& operator=(const DerivedType& rhs) override = 0;
 
     /**
    * @brief Move Assignment Operator.
@@ -405,7 +395,7 @@ public:
    * @param &rhs the copied element.
    * @return the resulting element.
    */
-    const DerivedType& operator=(DerivedType&& rhs) override = 0;
+    DerivedType& operator=(DerivedType&& rhs) override = 0;
 
     /**
    * @brief Initalizer list
@@ -507,12 +497,11 @@ public:
    *
    * @return is the result of the transposition.
    */
-    inline DerivedType Transpose() const final {
-        if (this->GetDerived().GetFormat() == Format::COEFFICIENT) {
+    DerivedType Transpose() const final {
+        if (this->GetDerived().GetFormat() == Format::COEFFICIENT)
             OPENFHE_THROW(not_implemented_error,
                           "DCRTPolyInterface element transposition is currently "
                           "implemented only in the Evaluation representation.");
-        }
         return this->GetDerived().AutomorphismTransform(this->GetDerived().GetCyclotomicOrder() - 1);
     }
 
@@ -673,8 +662,8 @@ public:
    */
     virtual DerivedType Negate() const = 0;
 
-    const DerivedType& operator+=(const BigIntType& rhs) override = 0;
-    virtual const DerivedType& operator+=(const LilIntType& rhs)  = 0;
+    DerivedType& operator+=(const BigIntType& rhs) override = 0;
+    virtual DerivedType& operator+=(const LilIntType& rhs)  = 0;
 
     /**
    * @brief Performs a subtraction operation and returns the result.
@@ -682,8 +671,8 @@ public:
    * @param &element is the element to subtract from.
    * @return is the result of the subtraction.
    */
-    const DerivedType& operator-=(const BigIntType& rhs) override = 0;
-    virtual const DerivedType& operator-=(const LilIntType& rhs)  = 0;
+    DerivedType& operator-=(const BigIntType& rhs) override = 0;
+    virtual DerivedType& operator-=(const LilIntType& rhs)  = 0;
 
     /**
    * @brief Performs a multiplication operation and returns the result.
@@ -691,8 +680,8 @@ public:
    * @param &element is the element to multiply by.
    * @return is the result of the multiplication.
    */
-    const DerivedType& operator*=(const BigIntType& rhs) override = 0;
-    virtual const DerivedType& operator*=(const LilIntType& rhs)  = 0;
+    DerivedType& operator*=(const BigIntType& rhs) override = 0;
+    virtual DerivedType& operator*=(const LilIntType& rhs)  = 0;
 
     /**
    * @brief Performs an multiplication operation and returns the result.
@@ -700,7 +689,7 @@ public:
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
    */
-    const DerivedType& operator*=(const DerivedType& rhs) override = 0;
+    DerivedType& operator*=(const DerivedType& rhs) override = 0;
 
     // multiplicative inverse operation
     /**

@@ -44,15 +44,6 @@
     #include "math/nbtheory-impl.h"
     #include "math/ternaryuniformgenerator-impl.h"
 
-// should be bigintdyn?
-// namespace bigintfxd {
-namespace bigintdyn {
-
-template class ChineseRemainderTransformFTTDyn<BigVector>;
-template class ChineseRemainderTransformArbDyn<BigVector>;
-
-}  // namespace bigintdyn
-
 namespace lbcrypto {
 
 template class DiscreteGaussianGeneratorImpl<M4Vector>;

@@ -36,6 +36,7 @@
 #ifndef LBCRYPTO_INC_MATH_HAL_INTNAT_MUBINTVECNAT_H
 #define LBCRYPTO_INC_MATH_HAL_INTNAT_MUBINTVECNAT_H
 
+#include "math/hal/basicint.h"
 #include "math/hal/intnat/ubintnat.h"
 #include "math/hal/vector.h"
 
@@ -43,6 +44,7 @@
 #include "utils/inttypes.h"
 #include "utils/serializable.h"
 
+#include <algorithm>
 #include <initializer_list>
 #include <iostream>
 #include <string>
@@ -117,13 +119,14 @@ template <class IntegerType>
 class NativeVectorT final : public lbcrypto::BigVectorInterface<NativeVectorT<IntegerType>, IntegerType>,
                             public lbcrypto::Serializable {
 private:
+    // m_modulus stores the internal modulus of the vector.
+    IntegerType m_modulus{0};
+
 #if BLOCK_VECTOR_ALLOCATION != 1
-    std::vector<IntegerType> m_data;
+    std::vector<IntegerType> m_data{};
 #else
     xvector<IntegerType> m_data;
 #endif
-    // m_modulus stores the internal modulus of the vector.
-    IntegerType m_modulus{0};
 
     // function to check if the index is a valid index.
     bool IndexCheck(size_t length) const {
@@ -133,7 +136,7 @@ private:
 public:
     using BasicInt = typename IntegerType::Integer;
 
-    ~NativeVectorT() noexcept override = default;
+    //    ~NativeVectorT() noexcept override = default;
     constexpr NativeVectorT() noexcept = default;
 
     static constexpr NativeVectorT Single(const IntegerType& val, const IntegerType& modulus) noexcept {
@@ -157,21 +160,34 @@ public:
    * entries.
    * @param modulus is the modulus of the ring.
    */
-    NativeVectorT(usint length, const IntegerType& modulus);
+    constexpr NativeVectorT(usint length, const IntegerType& modulus) noexcept : m_modulus{modulus}, m_data(length) {
+        // TODO: better performance if this check is done at poly level
+        //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
+        //            OPENFHE_THROW(lbcrypto::not_available_error, std::to_string(modulus.GetMSB()) +
+        //                              " bits larger than max modulus bits " + std::to_string(MAX_MODULUS_SIZE));
+    }
+
+    constexpr NativeVectorT(usint length, const IntegerType& modulus, const IntegerType& val) noexcept
+        : m_modulus{modulus}, m_data(length, val.Mod(modulus)) {
+        //        : m_modulus{modulus}, m_data(length, val) {
+        //        if (modulus.GetMSB() > MAX_MODULUS_SIZE)
+        //            OPENFHE_THROW(lbcrypto::not_available_error, std::to_string(modulus.GetMSB()) +
+        //                              " bits larger than max modulus bits " + std::to_string(MAX_MODULUS_SIZE));
+    }
 
     /**
    * Basic constructor for copying a vector
    *
    * @param bigVector is the native vector to be copied.
    */
-    NativeVectorT(const NativeVectorT& v) noexcept : m_data(v.m_data), m_modulus(v.m_modulus) {}
+    constexpr NativeVectorT(const NativeVectorT& v) noexcept : m_modulus{v.m_modulus}, m_data{v.m_data} {}
 
     /**
    * Basic move constructor for moving a vector
    *
    * @param &&bigVector is the native vector to be moved.
    */
-    NativeVectorT(NativeVectorT&& v) noexcept : m_data(std::move(v.m_data)), m_modulus(v.m_modulus) {}
+    constexpr NativeVectorT(NativeVectorT&& v) noexcept : m_modulus{v.m_modulus}, m_data{std::move(v.m_data)} {}
 
     /**
    * Basic constructor for specifying the length of the vector
@@ -196,15 +212,23 @@ public:
    */
     NativeVectorT(usint length, const IntegerType& modulus, std::initializer_list<uint64_t> rhs) noexcept;
 
-    // ASSIGNMENT OPERATORS
-
     /**
    * Assignment operator to assign value from rhs
    *
    * @param &rhs is the native vector to be assigned from.
    * @return Assigned NativeVectorT.
    */
-    NativeVectorT& operator=(const NativeVectorT& rhs) noexcept;
+    NativeVectorT& operator=(const NativeVectorT& rhs) noexcept {
+        m_modulus = rhs.m_modulus;
+        if (rhs.m_data.size() > m_data.size()) {
+            m_data = rhs.m_data;
+            return *this;
+        }
+        std::copy(rhs.m_data.begin(), rhs.m_data.end(), m_data.begin());
+        if (m_data.size() > rhs.m_data.size())
+            m_data.resize(rhs.m_data.size());
+        return *this;
+    }
 
     /**
    * Move assignment operator
@@ -212,7 +236,11 @@ public:
    * @param &&rhs is the native vector to be moved.
    * @return moved NativeVectorT object
    */
-    NativeVectorT& operator=(NativeVectorT&& rhs) noexcept;
+    NativeVectorT& operator=(NativeVectorT&& rhs) noexcept {
+        m_modulus = rhs.m_modulus;
+        m_data    = std::move(rhs.m_data);
+        return *this;
+    }
 
     /**
    * Initializer list for NativeVectorT.
@@ -238,13 +266,11 @@ public:
    * @param val is the value to be assigned at the first entry.
    * @return Assigned NativeVectorT.
    */
-    NativeVectorT& operator=(uint64_t val) {
+    constexpr NativeVectorT& operator=(uint64_t val) {
         m_data.at(0) = val;
         std::fill(m_data.begin() + 1, m_data.end(), 0);
         return *this;
     }
-
-    // ACCESSORS
 
     /**
    * Sets/gets a value at an index.
@@ -253,13 +279,13 @@ public:
    * @param index is the index to set a value at.
    */
     IntegerType& at(size_t i) {
-        if (!this->IndexCheck(i))
+        if (!NativeVectorT::IndexCheck(i))
             OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
         return m_data[i];
     }
 
     const IntegerType& at(size_t i) const {
-        if (!this->IndexCheck(i))
+        if (!NativeVectorT::IndexCheck(i))
             OPENFHE_THROW(lbcrypto::math_error, "NativeVectorT index out of range");
         return m_data[i];
     }
@@ -283,7 +309,12 @@ public:
    * @param value is the value to set.
    * @param value is the modulus value to set.
    */
-    void SetModulus(const IntegerType& value);
+    void SetModulus(const IntegerType& value) {
+        if (value.GetMSB() > MAX_MODULUS_SIZE)
+            OPENFHE_THROW(lbcrypto::not_available_error,
+                          "NativeVectorT supports only modulus size <=  " + std::to_string(MAX_MODULUS_SIZE) + " bits");
+        m_modulus.m_value = value.m_value;
+    }
 
     /**
    * Sets the vector modulus and changes the values to match the new modulus.
@@ -479,14 +510,25 @@ public:
    *
    * @return a new vector which is the result of the modulus inverse operation.
    */
-    NativeVectorT ModInverse() const;
+    NativeVectorT ModInverse() const {
+        auto ans(*this);
+        auto mv{m_modulus};
+        for (size_t i = 0; i < ans.m_data.size(); ++i)
+            ans[i] = ans[i].ModInverse(mv);
+        return ans;
+    }
 
     /**
    * Modulus inverse. In-place variant.
    *
    * @return a new vector which is the result of the modulus inverse operation.
    */
-    NativeVectorT& ModInverseEq();
+    NativeVectorT& ModInverseEq() {
+        auto mv{m_modulus};
+        for (size_t i = 0; i < m_data.size(); ++i)
+            m_data[i] = m_data[i].ModInverse(mv);
+        return *this;
+    }
 
     /**
    * Perform a modulus by 2 operation.  Returns the least significant bit.
@@ -585,8 +627,6 @@ public:
         return os;
     }
 
-    // SERIALIZATION
-
     template <class Archive>
     typename std::enable_if<!cereal::traits::is_text_archive<Archive>::value, void>::type save(
         Archive& ar, std::uint32_t const version) const {
@@ -662,15 +702,14 @@ inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeInt
 
 #if defined(HAVE_INT128)
 template <class Archive, class A>
-inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar,
-                                      std::vector<intnat::NativeIntegerT<unsigned __int128>, A> const& vec) {
+inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeIntegerT<uint128_t>, A> const& vec) {
     ar(make_size_tag(static_cast<cereal::size_type>(vec.size())));  // number of elements
-    constexpr unsigned __int128 mask = (static_cast<unsigned __int128>(1) << 64) - 1;
+    constexpr uint128_t mask = (static_cast<uint128_t>(1) << 64) - 1;
     for (const auto& v : vec) {
         uint64_t vec[2];
-        unsigned __int128 int128 = v.ConvertToInt();
-        vec[0]                   = int128 & mask;  // least significant word
-        vec[1]                   = int128 >> 64;   // most significant word
+        uint128_t v128 = v.ConvertToInt();
+        vec[0]         = v128 & mask;  // least significant word
+        vec[1]         = v128 >> 64;   // most significant word
         ar(vec);
     }
 }
@@ -692,7 +731,7 @@ inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeInt
 
 #if defined(HAVE_INT128)
 template <class Archive, class A>
-inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeIntegerT<unsigned __int128>, A>& vec) {
+inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::vector<intnat::NativeIntegerT<uint128_t>, A>& vec) {
     cereal::size_type size;
     ar(make_size_tag(size));
     vec.resize(static_cast<size_t>(size));

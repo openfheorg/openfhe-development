@@ -36,6 +36,8 @@
 #ifndef LBCRYPTO_UTILS_INTTYPES_H
 #define LBCRYPTO_UTILS_INTTYPES_H
 
+#include "math/hal/basicint.h"
+
 #include <cstdint>
 #include <iosfwd>
 

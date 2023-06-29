@@ -34,6 +34,9 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
  */
 
 #include "cryptocontext.h"
+
+#include "math/hal/basicint.h"
+
 #include "scheme/ckksrns/ckksrns-cryptoparameters.h"
 #include "scheme/ckksrns/ckksrns-leveledshe.h"
 
@@ -177,20 +180,20 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalAddOrSub(Cons
 
     DCRTPoly::Integer scaledConstant;
     if (pRemaining < 0) {
-        scaledConstant = NativeInteger(((unsigned __int128)scaled64) >> (-pRemaining));
+        scaledConstant = NativeInteger(((uint128_t)scaled64) >> (-pRemaining));
     }
     else {
-        __int128 ppRemaining = ((__int128)1) << pRemaining;
-        scaledConstant       = NativeInteger((unsigned __int128)scaled64 * ppRemaining);
+        int128_t ppRemaining = ((int128_t)1) << pRemaining;
+        scaledConstant       = NativeInteger((int128_t)scaled64 * ppRemaining);
     }
 
     DCRTPoly::Integer intPowP;
     int64_t powp64 = ((int64_t)1) << precision;
     if (pCurrent < 0) {
-        intPowP = NativeInteger((unsigned __int128)powp64 >> (-pCurrent));
+        intPowP = NativeInteger((uint128_t)powp64 >> (-pCurrent));
     }
     else {
-        intPowP = NativeInteger((unsigned __int128)powp64 << pCurrent);
+        intPowP = NativeInteger((uint128_t)powp64 << pCurrent);
     }
 
     std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
@@ -289,13 +292,13 @@ std::vector<DCRTPoly::Integer> LeveledSHECKKSRNS::GetElementForEvalMult(ConstCip
     int64_t scaled64   = std::llround(static_cast<double>(std::frexp(operand, &n1)) * powP);
     int32_t pCurrent   = cryptoParams->GetPlaintextModulus() - precision;
     int32_t pRemaining = pCurrent + n1;
-    __int128 scaled128 = 0;
+    int128_t scaled128 = 0;
 
     if (pRemaining < 0) {
         scaled128 = scaled64 >> (-pRemaining);
     }
     else {
-        __int128 ppRemaining = ((__int128)1) << pRemaining;
+        int128_t ppRemaining = ((int128_t)1) << pRemaining;
         scaled128            = ppRemaining * scaled64;
     }
 

@@ -36,13 +36,14 @@
 //            declared in math/intnat/transformnat.h and
 //            MUST be included in the end of math/intnat/transformnat.h ONLY
 //            and nowhere else
-#include "math/nbtheory.h"
 #include "math/hal/basicint.h"
 #include "math/hal/intnat/ubintnat.h"
 #include "math/hal/intnat/mubintvecnat.h"
 #include "math/hal/intnat/transformnat.h"
+#include "math/nbtheory.h"
 
 #include "utils/exception.h"
+#include "utils/inttypes.h"
 #include "utils/utilities.h"
 
 #include <map>
@@ -507,9 +508,9 @@ void NumberTheoreticTransformNat<VecType>::InverseTransformFromBitReverseInPlace
             auto omega       = rootOfUnityInverseTable[indexOmega];
             auto preconOmega = preconRootOfUnityInverseTable[indexOmega];
             for (usint indexLo = j1; indexLo < j2; ++indexLo) {
-                usint indexHi = indexLo + t;
-                auto hiVal    = (*element)[indexHi];
-                auto loVal    = (*element)[indexLo];
+                usint indexHi    = indexLo + t;
+                auto hiVal       = (*element)[indexHi];
+                auto loVal       = (*element)[indexLo];
                 auto omegaFactor = loVal + (hiVal > loVal ? modulus : 0) - hiVal;
                 loVal += hiVal;
                 omegaFactor.ModMulFastConstEq(omega, modulus, preconOmega);

@@ -37,11 +37,12 @@
 #include "schemerns/rns-fhe.h"
 #include "scheme/ckksrns/ckksrns-utils.h"
 #include "utils/caller_info.h"
+#include "math/hal/basicint.h"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
-#include <map>
 #include <vector>
 
 /**
@@ -251,7 +252,7 @@ private:
    * @param &bigValue big bound of the vector values.
    * @param &modulus modulus to be set for vector.
    */
-    void FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
+    void FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
                            NativeVector* nativeVec) const;
 #endif
 

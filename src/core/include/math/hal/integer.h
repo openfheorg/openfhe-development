@@ -36,8 +36,9 @@
 #ifndef LBCRYPTO_MATH_INTEGER_INTERFACE_H
 #define LBCRYPTO_MATH_INTEGER_INTERFACE_H
 
-#include <string>
 #include "utils/inttypes.h"
+
+#include <string>
 
 namespace lbcrypto {
 

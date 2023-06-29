@@ -36,12 +36,15 @@
 #ifndef LBCRYPTO_MATH_HAL_INTNAT_TRANSFORMNAT_H
 #define LBCRYPTO_MATH_HAL_INTNAT_TRANSFORMNAT_H
 
-#include <map>
-#include <unordered_map>
-#include <mutex>
-#include <vector>
-#include <utility>
 #include "math/hal/transform.h"
+
+#include "utils/inttypes.h"
+
+#include <map>
+#include <mutex>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 /**
  * @namespace intnat

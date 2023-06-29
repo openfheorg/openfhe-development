@@ -36,8 +36,9 @@
 #ifndef LBCRYPTO_MATH_VECTOR_H
 #define LBCRYPTO_MATH_VECTOR_H
 
-#include <string>
 #include "utils/inttypes.h"
+
+#include <string>
 
 namespace lbcrypto {
 

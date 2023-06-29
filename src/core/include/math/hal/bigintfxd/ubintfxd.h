@@ -56,15 +56,15 @@
         #include <typeinfo>
         #include <vector>
 
+        #include "math/hal/basicint.h"
+        #include "math/hal/integer.h"
+
         #include "utils/exception.h"
         #include "utils/inttypes.h"
         #include "utils/memory.h"
         #include "utils/openfhebase64.h"
         #include "utils/serializable.h"
         #include "utils/utilities.h"
-
-        #include "math/hal/integer.h"
-        #include "math/hal/basicint.h"
 
 ////////// bigintfxd code
 typedef uint32_t integral_dtype;
@@ -94,7 +94,7 @@ namespace bigintfxd {
 
 using U64BITS = uint64_t;
         #if defined(HAVE_INT128)
-using U128BITS = unsigned __int128;
+using U128BITS = uint128_t;
         #endif
 
 // forward declaration for aliases
@@ -244,13 +244,13 @@ struct DoubleDataType<uint32_t> {
 template <>
 struct DoubleDataType<uint64_t> {
         #if defined(HAVE_INT128)
-    typedef __uint128_t T;
+    typedef uint128_t T;
         #else
     typedef uint64_t T;
         #endif
 };
 
-const double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of Log base 2 of 10.
+constexpr double LOG2_10 = 3.32192809;  //!< @brief A pre-computed constant of Log base 2 of 10.
 
 /**
  * @brief Main class for big integers represented as an array of native
@@ -348,7 +348,7 @@ public:
    * @param &val is the big binary integer to be assigned from.
    * @return assigned BigIntegerFixedT ref.
    */
-    const BigIntegerFixedT& operator=(const BigIntegerFixedT& val);
+    BigIntegerFixedT& operator=(const BigIntegerFixedT& val);
 
     /**
    * Move assignment operator
@@ -356,7 +356,7 @@ public:
    * @param &val is the big binary integer to be assigned from.
    * @return assigned BigIntegerFixedT ref.
    */
-    const BigIntegerFixedT& operator=(BigIntegerFixedT&& val);
+    BigIntegerFixedT& operator=(BigIntegerFixedT&& val);
 
     /**
    * Assignment operator for all other types that have not already got their own
@@ -364,7 +364,7 @@ public:
    * @param &val is the value to be assign from
    * @return the assigned BigIntegerFixedT ref.
    */
-    const BigIntegerFixedT& operator=(const std::string strval) {
+    BigIntegerFixedT& operator=(const std::string strval) {
         *this = BigIntegerFixedT(strval);
         return *this;
     }
@@ -372,7 +372,7 @@ public:
     template <typename T, typename std::enable_if<!std::is_same<T, BigIntegerFixedT>::value &&
                                                       !std::is_same<T, const BigIntegerFixedT>::value,
                                                   bool>::type = true>
-    const BigIntegerFixedT& operator=(const T& val) {
+    BigIntegerFixedT& operator=(const T& val) {
         return (*this = BigIntegerFixedT(val));
     }
 
@@ -424,7 +424,7 @@ public:
    * @param &b is the value to add.
    * @return result of the addition operation.
    */
-    const BigIntegerFixedT& AddEq(const BigIntegerFixedT& b);
+    BigIntegerFixedT& AddEq(const BigIntegerFixedT& b);
 
     /**
    * Subtraction operation.
@@ -440,7 +440,7 @@ public:
    * @param &b is the value to subtract.
    * @return is the result of the subtraction operation.
    */
-    const BigIntegerFixedT& SubEq(const BigIntegerFixedT& b);
+    BigIntegerFixedT& SubEq(const BigIntegerFixedT& b);
 
     /**
    * Operator for unary minus
@@ -464,7 +464,7 @@ public:
    * @param &b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
-    const BigIntegerFixedT& MulEq(const BigIntegerFixedT& b);
+    BigIntegerFixedT& MulEq(const BigIntegerFixedT& b);
 
     /**
    * Division operation.
@@ -480,7 +480,7 @@ public:
    * @param &b is the value to divide by.
    * @return is the result of the division operation.
    */
-    const BigIntegerFixedT& DividedByEq(const BigIntegerFixedT& b);
+    BigIntegerFixedT& DividedByEq(const BigIntegerFixedT& b);
 
     /**
    * Exponentiation operation. Returns x^p.
@@ -496,7 +496,7 @@ public:
    * @param p the exponent.
    * @return is the result of the exponentiation operation.
    */
-    const BigIntegerFixedT& ExpEq(usint p);
+    BigIntegerFixedT& ExpEq(usint p);
 
     /**
    * Multiply and Rounding operation. Returns [x*p/q] where [] is the rounding
@@ -516,7 +516,7 @@ public:
    * @param &q is the denominator to be divided.
    * @return is the result of multiply and round operation.
    */
-    const BigIntegerFixedT& MultiplyAndRoundEq(const BigIntegerFixedT& p, const BigIntegerFixedT& q);
+    BigIntegerFixedT& MultiplyAndRoundEq(const BigIntegerFixedT& p, const BigIntegerFixedT& q);
 
     /**
    * Divide and Rounding operation. Returns [x/q] where [] is the rounding
@@ -534,7 +534,7 @@ public:
    * @param &q is the denominator to be divided.
    * @return is the result of divide and round operation.
    */
-    const BigIntegerFixedT& DivideAndRoundEq(const BigIntegerFixedT& q);
+    BigIntegerFixedT& DivideAndRoundEq(const BigIntegerFixedT& q);
 
     // MODULAR ARITHMETIC OPERATIONS
 
@@ -552,7 +552,7 @@ public:
    * @param &modulus is the modulus to perform.
    * @return is the result of the modulus operation.
    */
-    const BigIntegerFixedT& ModEq(const BigIntegerFixedT& modulus);
+    BigIntegerFixedT& ModEq(const BigIntegerFixedT& modulus);
 
     /**
    * Pre-computes the mu factor that is used in Barrett modulo reduction
@@ -581,7 +581,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus operation.
    */
-    const BigIntegerFixedT& ModEq(const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
+    BigIntegerFixedT& ModEq(const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
 
     /**
    * Modulus addition operation.
@@ -599,7 +599,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
-    const BigIntegerFixedT& ModAddEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
+    BigIntegerFixedT& ModAddEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
 
     /**
    * Modulus addition where operands are < modulus.
@@ -617,7 +617,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus addition operation.
    */
-    const BigIntegerFixedT& ModAddFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
+    BigIntegerFixedT& ModAddFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
 
     /**
    * Barrett modulus addition operation.
@@ -638,8 +638,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus addition operation.
    */
-    const BigIntegerFixedT& ModAddEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                                     const BigIntegerFixedT& mu);
+    BigIntegerFixedT& ModAddEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
 
     /**
    * Modulus subtraction operation.
@@ -657,7 +656,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
-    const BigIntegerFixedT& ModSubEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
+    BigIntegerFixedT& ModSubEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
 
     /**
    * Modulus subtraction where operands are < modulus.
@@ -675,7 +674,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus subtraction operation.
    */
-    const BigIntegerFixedT& ModSubFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
+    BigIntegerFixedT& ModSubFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
 
     /**
    * Barrett modulus subtraction operation.
@@ -696,8 +695,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus subtraction operation.
    */
-    const BigIntegerFixedT& ModSubEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                                     const BigIntegerFixedT& mu);
+    BigIntegerFixedT& ModSubEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
 
     /**
    * Modulus multiplication operation.
@@ -715,7 +713,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
-    const BigIntegerFixedT& ModMulEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
+    BigIntegerFixedT& ModMulEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
 
     /**
    * Barrett modulus multiplication.
@@ -736,8 +734,7 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    const BigIntegerFixedT& ModMulEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                                     const BigIntegerFixedT& mu);
+    BigIntegerFixedT& ModMulEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus, const BigIntegerFixedT& mu);
 
     /**
    * Modulus multiplication that assumes the operands are < modulus.
@@ -756,7 +753,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus multiplication operation.
    */
-    const BigIntegerFixedT& ModMulFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
+    BigIntegerFixedT& ModMulFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
 
     /**
    * Barrett modulus multiplication that assumes the operands are < modulus.
@@ -778,16 +775,16 @@ public:
    * @param &mu is the Barrett value.
    * @return is the result of the modulus multiplication operation.
    */
-    const BigIntegerFixedT& ModMulFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                                         const BigIntegerFixedT& mu);
+    BigIntegerFixedT& ModMulFastEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
+                                   const BigIntegerFixedT& mu);
 
     BigIntegerFixedT ModMulFastConst(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
                                      const BigIntegerFixedT& bInv) const {
         OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConst is not implemented for backend 2");
     }
 
-    const BigIntegerFixedT& ModMulFastConstEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
-                                              const BigIntegerFixedT& bInv) {
+    BigIntegerFixedT& ModMulFastConstEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus,
+                                        const BigIntegerFixedT& bInv) {
         OPENFHE_THROW(lbcrypto::not_implemented_error, "ModMulFastConstEq is not implemented for backend 2");
     }
 
@@ -808,7 +805,7 @@ public:
    * @param &modulus is the modulus to perform operations with.
    * @return is the result of the modulus exponentiation operation.
    */
-    const BigIntegerFixedT& ModExpEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
+    BigIntegerFixedT& ModExpEq(const BigIntegerFixedT& b, const BigIntegerFixedT& modulus);
 
     /**
    * Modulus inverse operation.
@@ -824,7 +821,7 @@ public:
    * @param &modulus is the modulus to perform.
    * @return is the result of the modulus inverse operation.
    */
-    const BigIntegerFixedT& ModInverseEq(const BigIntegerFixedT& modulus);
+    BigIntegerFixedT& ModInverseEq(const BigIntegerFixedT& modulus);
 
     // SHIFT OPERATIONS
 
@@ -842,7 +839,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    const BigIntegerFixedT& LShiftEq(usshort shift);
+    BigIntegerFixedT& LShiftEq(usshort shift);
 
     /**
    * Right shift operation.
@@ -858,7 +855,7 @@ public:
    * @param shift # of bits.
    * @return result of the shift operation.
    */
-    const BigIntegerFixedT& RShiftEq(usshort shift);
+    BigIntegerFixedT& RShiftEq(usshort shift);
 
     // COMPARE
 
@@ -976,7 +973,7 @@ public:
    * initialize a Matrix of BigIntegerFixedT objects.
    */
     static BigIntegerFixedT Allocator() {
-        return 0;
+        return BigIntegerFixedT(0);
     }
 
     // STRINGS & STREAMS

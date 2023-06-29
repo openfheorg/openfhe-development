@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 BigVector BBVfromStrvec(std::vector<std::string>& s) {
     BigVector a(s.size());
     for (usint i = 0; i < s.size(); i++) {
-        a.at(i) = s[i];
+        a[i] = s[i];
     }
     return a;
 }
@@ -135,9 +135,7 @@ void test_NTT() {
     double time2br, time2bf;
     double time3br, time3bf;
 
-    std::cout << "testing NTT backend " << MATHBACKEND;
-    if (BigIntegerBitLength > 0)
-        std::cout << " BITLENGTH " << BigIntegerBitLength << std::endl;
+    std::cout << "testing NTT backend " << MATHBACKEND << std::endl;
 
     TIC(t_total);
     // there are three test cases, 1) small modulus 2) approx 48 bits.

@@ -33,10 +33,8 @@
   This code tests the binary integers in the math libraries of the OpenFHE lattice encryption library.
  */
 
-#define PROFILE
-#include <iostream>
+#include "config_core.h"
 #include "gtest/gtest.h"
-
 #include "lattice/lat-hal.h"
 #include "lattice/elemparams.h"
 #include "lattice/ildcrtparams.h"
@@ -48,6 +46,10 @@
 #include "testdefs.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"
+
+#include <iostream>
+
+#define PROFILE
 
 using namespace lbcrypto;
 
@@ -1249,7 +1251,7 @@ void GetInternalRepresentation(const std::string& msg) {
 
 // TODO: clean this up
 #ifdef WITH_BE4
-    #if MATH_UBBITS == 64
+    #if NATIVEINT >= 64
     correct = "2 68719476736";
     #endif
 #endif

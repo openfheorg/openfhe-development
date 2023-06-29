@@ -52,4 +52,6 @@ using M4Integer = bigintdyn::BigInteger;
 using M4Vector = bigintdyn::BigVector;
 
     #endif /* SRC_CORE_INCLUDE_MATH_HAL_BIGINTDYN_BACKENDDYN_H_ */
+#else
+using M4Integer = void;
 #endif

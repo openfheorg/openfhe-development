@@ -64,7 +64,7 @@ public:
     /**
    * @brief Default Constructor
    */
-    constexpr Field2n() noexcept = default;
+    Field2n() noexcept = default;
 
     explicit Field2n(Format f) : format(f) {}
 
@@ -77,7 +77,8 @@ public:
    * set to false by default.
    */
     Field2n(usint size, Format f = Format::EVALUATION, bool initializeElementToZero = false)  // NOLINT
-        : std::vector<std::complex<double>>(size, initializeElementToZero ? 0 : -std::numeric_limits<double>::max()), format(f) {}
+        : std::vector<std::complex<double>>(size, initializeElementToZero ? 0 : -std::numeric_limits<double>::max()),
+          format(f) {}
 
     /**
    * @brief Constructor from ring element
@@ -224,9 +225,8 @@ public:
    * representation
    */
     inline void SetFormat(Format f) {
-        if (format != f) {
+        if (format != f)
             SwitchFormat();
-        }
     }
 
     /**
@@ -235,7 +235,7 @@ public:
    * @return the size of the element
    */
     size_t Size() const {
-        return this->size();
+        return this->std::vector<std::complex<double>>::size();
     }
 
     /**
@@ -244,8 +244,8 @@ public:
    * @param idx index of the element
    * @return element at the index
    */
-    inline std::complex<double>& operator[](std::size_t idx) {
-        return (this->operator[](idx));
+    inline std::complex<double>& operator[](size_t idx) {
+        return this->std::vector<std::complex<double>>::operator[](idx);
     }
 
     /**
@@ -254,8 +254,8 @@ public:
    * @param idx index of the element
    * @return element at the index
    */
-    inline const std::complex<double>& operator[](std::size_t idx) const {
-        return (this->operator[](idx));
+    inline const std::complex<double>& operator[](size_t idx) const {
+        return this->std::vector<std::complex<double>>::operator[](idx);
     }
 
     /**
@@ -264,7 +264,7 @@ public:
    * @param &element  right hand side element for operation
    * @return result of the operation
    */
-    const Field2n& operator+=(const Field2n& element) {
+    Field2n& operator+=(const Field2n& element) {
         return *this = this->Plus(element);
     }
 
@@ -274,7 +274,7 @@ public:
    * @param &element  right hand side element for operation
    * @return result of the operation
    */
-    const Field2n& operator-=(const Field2n& element) {
+    Field2n& operator-=(const Field2n& element) {
         return *this = this->Minus(element);
     }
 
@@ -283,8 +283,7 @@ public:
    * @return negation of the field element.
    */
     Field2n operator-() const {
-        Field2n all0(size(), this->GetFormat(), true);
-        return all0 - *this;
+        return Field2n(size(), this->GetFormat(), true) - *this;
     }
 
     /**
@@ -364,9 +363,8 @@ public:
  */
 inline std::ostream& operator<<(std::ostream& os, const Field2n& m) {
     os << "[ ";
-    for (size_t row = 0; row < m.size(); ++row) {
+    for (size_t row = 0; row < m.size(); ++row)
         os << m.at(row) << " ";
-    }
     os << " ]\n";
     return os;
 }

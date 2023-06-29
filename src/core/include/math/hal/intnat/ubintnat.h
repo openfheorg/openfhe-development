@@ -36,8 +36,9 @@
 #ifndef LBCRYPTO_MATH_HAL_INTNAT_UBINTNAT_H
 #define LBCRYPTO_MATH_HAL_INTNAT_UBINTNAT_H
 
-#include "math/hal/integer.h"
 #include "math/hal/basicint.h"
+#include "math/hal/bigintbackend.h"
+#include "math/hal/integer.h"
 #include "math/nbtheory.h"
 
 #include "utils/debug.h"
@@ -46,6 +47,7 @@
 #include "utils/openfhebase64.h"
 #include "utils/serializable.h"
 
+#include <cstdint>
 // #include <cstdlib>
 // #include <fstream>
 #include <functional>
@@ -59,11 +61,6 @@
 #include <vector>
 #include <utility>
 
-#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-    // need the BigInteger to handle double 128-bit word
-    #include "math/hal/bigintbackend.h"
-#endif
-
 // the default behavior of the native integer layer is
 // to assume that the user does not need bounds/range checks
 // in the native integer code
@@ -76,10 +73,11 @@
 #define NATIVEINT_DO_CHECKS false
 #define NATIVEINT_BARRET_MOD
 
+// TODO: remove these?
 using U32BITS = uint32_t;
 using U64BITS = uint64_t;
 #if defined(HAVE_INT128)
-using U128BITS = __uint128_t;
+using U128BITS = uint128_t;
 #endif
 
 namespace intnat {
@@ -116,8 +114,8 @@ template <>
 struct DataTypes<uint64_t> {
     using SignedType = int64_t;
 #if defined(HAVE_INT128)
-    using DoubleType       = __uint128_t;
-    using SignedDoubleType = __int128_t;
+    using DoubleType       = uint128_t;
+    using SignedDoubleType = int128_t;
 #else
     using DoubleType       = uint64_t;
     using SignedDoubleType = int64_t;
@@ -125,10 +123,10 @@ struct DataTypes<uint64_t> {
 };
 #if defined(HAVE_INT128)
 template <>
-struct DataTypes<__uint128_t> {
-    using SignedType       = __int128_t;
-    using DoubleType       = __uint128_t;
-    using SignedDoubleType = __int128_t;
+struct DataTypes<uint128_t> {
+    using SignedType       = int128_t;
+    using DoubleType       = uint128_t;
+    using SignedDoubleType = int128_t;
 };
 #endif
 
@@ -145,7 +143,8 @@ private:
     // variable to store the maximum value of the integral data type.
     static constexpr NativeInt m_uintMax{std::numeric_limits<NativeInt>::max()};
     // variable to store the bit width of the integral data type.
-    static constexpr usint m_uintBitLength{sizeof(NativeInt) * 8};
+    //    static constexpr usint m_uintBitLength{sizeof(NativeInt) * 8};
+    static constexpr usint m_uintBitLength{std::numeric_limits<NativeInt>::digits};
 
     friend class NativeVectorT<NativeIntegerT<NativeInt>>;
 
@@ -159,132 +158,81 @@ public:
     struct typeD {
         NativeInt hi{0};
         NativeInt lo{0};
-        inline std::string ConvertToString() {
+        inline std::string ConvertToString() const {
             return std::string("hi [" + toString(hi) + "], lo [" + toString(lo) + "]");
         }
     };
 
-    ~NativeIntegerT() noexcept = default;
+    explicit operator NativeInt() const {
+        return m_value;
+    }
+    explicit operator bool() const {
+        return m_value != 0;
+    }
+    // operator float()  = delete;
+    // operator double() = delete;
+    // operator long double() = delete;
 
     constexpr NativeIntegerT() noexcept = default;
+    constexpr NativeIntegerT(const NativeIntegerT& val) noexcept : m_value{val.m_value} {}
+    constexpr NativeIntegerT(NativeIntegerT&& val) noexcept : m_value{std::move(val.m_value)} {}
 
-    /**
-   * Copy constructor.
-   * @param &val is the native integer to be copied.
-   */
-    NativeIntegerT(const NativeIntegerT& val) noexcept : m_value{val.m_value} {}
-
-    /**
-   * Move constructor.
-   * @param &&val is the native integer to be copied.
-   */
-    NativeIntegerT(NativeIntegerT&& val) noexcept : m_value(std::move(val.m_value)) {}
-
-    /**
-   * Constructor from a string.
-   * @param &strval is the initial integer represented as a string.
-   */
-    NativeIntegerT(const std::string& strval) {
-        this->NativeIntegerT::SetValue(strval);
+    NativeIntegerT(const std::string& val) {
+        this->NativeIntegerT::SetValue(val);
     }
-    NativeIntegerT(const char* strval) {
+
+    explicit NativeIntegerT(const char* strval) {
         this->NativeIntegerT::SetValue(std::string(strval));
     }
-    //    explicit NativeIntegerT(const char strval) : m_value(static_cast<NativeInt>(strval - '0')) {}
+    // explicit NativeIntegerT(const char strval) : m_value{NativeInt(strval - '0')} {}
 
-    /**
-   * Constructor from different integer types, including NativeInt
-   *
-   * @param &val is the initial integer value.
-   */
-    template <typename T, typename std::enable_if_t<
-                              std::is_same_v<T, int16_t> || std::is_same_v<T, uint16_t> || std::is_same_v<T, int32_t> ||
-                                  std::is_same_v<T, uint32_t> || std::is_same_v<T, int64_t> ||
-                                  std::is_same_v<T, uint64_t> || std::is_same_v<T, unsigned int> ||
-                                  std::is_same_v<T, long> || std::is_same_v<T, unsigned long> ||            // NOLINT
-                                  std::is_same_v<T, long long> || std::is_same_v<T, unsigned long long> ||  // NOLINT
-#if defined(HAVE_INT128)
-                                  std::is_same_v<T, __int128_t> || std::is_same_v<T, __uint128_t> ||
-#endif
-                                  std::is_same_v<T, NativeInt>,
-                              bool> = true>
-    constexpr NativeIntegerT(T val) noexcept : m_value{static_cast<NativeInt>(val)} {
-    }
+    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+    constexpr NativeIntegerT(T val) noexcept : m_value(val) {}
 
-    /**
-   * Constructor for all other types that have not already got their own constructors.
-   * These other data types must have a member function ConvertToInt() defined.
-   *
-   * @param &val is the initial integer represented as a big integer.
-   */
-    template <typename T,
-              typename std::enable_if_t<
-                  !std::is_same_v<T, int16_t> && !std::is_same_v<T, uint16_t> && !std::is_same_v<T, int32_t> &&
-                      !std::is_same_v<T, uint32_t> && !std::is_same_v<T, int64_t> && !std::is_same_v<T, uint64_t> &&
-                      !std::is_same_v<T, unsigned int> && !std::is_same_v<T, long> &&             // NOLINT
-                      !std::is_same_v<T, unsigned long> &&                                        // NOLINT
-                      !std::is_same_v<T, long long> && !std::is_same_v<T, unsigned long long> &&  // NOLINT
-#if defined(HAVE_INT128)
-                      !std::is_same_v<T, __int128_t> && !std::is_same_v<T, __uint128_t> &&
-#endif
-                      !std::is_same_v<T, double> && !std::is_same_v<T, const std::string> &&
-                      !std::is_same_v<T, const char*> &&  // !std::is_same_v<T, const char> &&
-                      !std::is_same_v<T, NativeIntegerT> && !std::is_same_v<T, NativeInt>,
-                  bool> = true>
-    NativeIntegerT(T val) noexcept : m_value(val.ConvertToInt()) {
-    }
+    template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
+                                               std::is_same_v<T, M6Integer>,
+                                           bool> = true>
+    constexpr NativeIntegerT(T val) noexcept : m_value{val.template ConvertToInt<NativeInt>()} {}
 
-    /**
-   * Constructor from double is not permitted
-   *
-   * @param val
-   */
-    NativeIntegerT(double val) __attribute__((deprecated("Cannot construct from a double")));  // NOLINT
+    template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
+    NativeIntegerT(T val) = delete;
 
-    /**
-   * Copy assignment operator
-   *
-   * @param &val is the native integer to be assigned from.
-   * @return assigned NativeIntegerT ref.
-   */
     constexpr NativeIntegerT& operator=(const NativeIntegerT& val) noexcept {
         m_value = val.m_value;
         return *this;
     }
 
-    /**
-   * Move assignment operator
-   *
-   * @param &&val is the native integer to be assigned from.
-   * @return assigned NativeIntegerT ref.
-   */
     constexpr NativeIntegerT& operator=(NativeIntegerT&& val) noexcept {
         m_value = std::move(val.m_value);
         return *this;
     }
 
-    /**
-   * Assignment operator from string
-   *
-   * @param strval is the string to be assigned from
-   * @return the assigned NativeIntegerT ref.
-   */
-    NativeIntegerT& operator=(const std::string& strval) {
-        return *this = std::move(NativeIntegerT(strval));
+    NativeIntegerT& operator=(const std::string& val) {
+        this->NativeIntegerT::SetValue(val);
+        return *this;
     }
 
-    /**
-   * Assignment operator from unsigned integer
-   *
-   * @param &val is the unsigned integer value that is assigned.
-   * @return the assigned BigInteger ref.
-   */
-    constexpr NativeIntegerT& operator=(const NativeInt& val) noexcept {
+    NativeIntegerT& operator=(const char* strval) {
+        this->NativeIntegerT::SetValue(std::string(strval));
+        return *this;
+    }
+
+    template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+    constexpr NativeIntegerT& operator=(T val) noexcept {
         m_value = val;
         return *this;
     }
 
-    // ACCESSORS
+    template <typename T, std::enable_if_t<std::is_same_v<T, M2Integer> || std::is_same_v<T, M4Integer> ||
+                                               std::is_same_v<T, M6Integer>,
+                                           bool> = true>
+    constexpr NativeIntegerT& operator=(T val) noexcept {
+        m_value = val.template ConvertToInt<NativeInt>();
+        return *this;
+    }
+
+    template <typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
+    NativeIntegerT& operator=(T val) = delete;
 
     /**
    * Basic set method for setting the value of a native integer
@@ -327,7 +275,7 @@ public:
    * @param &b is the value to add.
    * @return result of the addition operation.
    */
-    constexpr NativeIntegerT Add(const NativeIntegerT& b) const {
+    NativeIntegerT Add(const NativeIntegerT& b) const {
         return NATIVEINT_DO_CHECKS ? AddCheck(b) : AddFast(b);
     }
 
@@ -341,7 +289,7 @@ public:
         auto r{m_value + b.m_value};
         if (r < m_value || r < b.m_value)
             OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT AddCheck: Overflow");
-        return static_cast<NativeIntegerT>(r);
+        return {r};
     }
 
     /**
@@ -351,7 +299,7 @@ public:
    * @return result of the addition operation.
    */
     NativeIntegerT AddFast(const NativeIntegerT& b) const {
-        return static_cast<NativeIntegerT>(b.m_value + m_value);
+        return {b.m_value + m_value};
     }
 
     /**
@@ -360,7 +308,7 @@ public:
    * @param &b is the value to add.
    * @return result of the addition operation.
    */
-    constexpr NativeIntegerT& AddEq(const NativeIntegerT& b) {
+    NativeIntegerT& AddEq(const NativeIntegerT& b) {
         return NATIVEINT_DO_CHECKS ? AddEqCheck(b) : AddEqFast(b);
     }
 
@@ -395,7 +343,7 @@ public:
    * @param &b is the value to subtract.
    * @return is the result of the subtraction operation.
    */
-    constexpr NativeIntegerT Sub(const NativeIntegerT& b) const {
+    NativeIntegerT Sub(const NativeIntegerT& b) const {
         return NATIVEINT_DO_CHECKS ? SubCheck(b) : SubFast(b);
     }
 
@@ -405,9 +353,8 @@ public:
    * @param b is the value to add to this.
    * @return result of the addition operation.
    */
-    // saturated subtraction?
     NativeIntegerT SubCheck(const NativeIntegerT& b) const {
-        return NativeIntegerT{m_value <= b.m_value ? 0 : m_value - b.m_value};
+        return {m_value <= b.m_value ? 0 : m_value - b.m_value};
     }
 
     /**
@@ -416,8 +363,9 @@ public:
    * @param b is the value to add to this.
    * @return result of the addition operation.
    */
+    // no saturated subtraction? functionality differs from BigInteger Backends
     NativeIntegerT SubFast(const NativeIntegerT& b) const {
-        return static_cast<NativeIntegerT>(m_value - b.m_value);
+        return {m_value - b.m_value};
     }
 
     /**
@@ -426,7 +374,7 @@ public:
    * @param &b is the value to subtract.
    * @return is the result of the subtraction operation.
    */
-    constexpr NativeIntegerT& SubEq(const NativeIntegerT& b) {
+    NativeIntegerT& SubEq(const NativeIntegerT& b) {
         return NATIVEINT_DO_CHECKS ? SubEqCheck(b) : SubEqFast(b);
     }
 
@@ -466,7 +414,7 @@ public:
    * @param &b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
-    constexpr NativeIntegerT Mul(const NativeIntegerT& b) const {
+    NativeIntegerT Mul(const NativeIntegerT& b) const {
         return NATIVEINT_DO_CHECKS ? MulCheck(b) : MulFast(b);
     }
 
@@ -480,7 +428,7 @@ public:
         auto p{b.m_value * m_value};
         if (p < m_value || p < b.m_value)
             OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT MulCheck: Overflow");
-        return static_cast<NativeIntegerT>(p);
+        return {p};
     }
 
     /**
@@ -490,7 +438,7 @@ public:
    * @return result of the multiplication operation.
    */
     NativeIntegerT MulFast(const NativeIntegerT& b) const {
-        return static_cast<NativeIntegerT>(b.m_value * m_value);
+        return {b.m_value * m_value};
     }
 
     /**
@@ -499,7 +447,7 @@ public:
    * @param &b is the value to multiply with.
    * @return is the result of the multiplication operation.
    */
-    constexpr NativeIntegerT& MulEq(const NativeIntegerT& b) {
+    NativeIntegerT& MulEq(const NativeIntegerT& b) {
         return NATIVEINT_DO_CHECKS ? MulEqCheck(b) : MulEqFast(b);
     }
 
@@ -537,7 +485,7 @@ public:
     NativeIntegerT DividedBy(const NativeIntegerT& b) const {
         if (b.m_value == 0)
             OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT DividedBy: zero");
-        return static_cast<NativeIntegerT>(m_value / b.m_value);
+        return {m_value / b.m_value};
     }
 
     /**
@@ -560,9 +508,9 @@ public:
    */
     NativeIntegerT Exp(usint p) const {
         NativeInt r{1};
-        for (auto x = m_value; p > 0; r *= ((p & 0x1) ? x : 1), p >>= 1, x *= x)
-            ;  // NOLINT
-        return static_cast<NativeIntegerT>(r);
+        for (auto x = m_value; p > 0; p >>= 1, x *= x)
+            r *= (p & 0x1) ? x : 1;
+        return {r};
     }
 
     /**
@@ -574,8 +522,8 @@ public:
     NativeIntegerT& ExpEq(usint p) {
         auto x{m_value};
         m_value = 1;
-        for (; p > 0; m_value *= ((p & 0x1) ? x : 1), p >>= 1, x *= x)
-            ;  // NOLINT
+        for (; p > 0; p >>= 1, x *= x)
+            m_value *= (p & 0x1) ? x : 1;
         return *this;
     }
 
@@ -659,8 +607,8 @@ public:
         auto rem{m_value % q.m_value};
         auto halfQ{q.m_value >> 1};
         if (rem > halfQ)
-            return static_cast<NativeIntegerT>(ans + 1);
-        return static_cast<NativeIntegerT>(ans);
+            return {ans + 1};
+        return {ans};
     }
 
     /**
@@ -688,7 +636,7 @@ public:
    * @return is the result of the modulus operation.
    */
     NativeIntegerT Mod(const NativeIntegerT& modulus) const {
-        return static_cast<NativeIntegerT>(m_value % modulus.m_value);
+        return {m_value % modulus.m_value};
     }
 
     /**
@@ -710,17 +658,16 @@ public:
     NativeIntegerT ComputeMu(typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
         if (m_value == 0)
             OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT ComputeMu: Divide by zero");
-        auto tmp{DNativeInt{1} << (2 * lbcrypto::GetMSB(m_value) + 3)};
-        return static_cast<NativeIntegerT>(tmp / DNativeInt(m_value));
+        auto&& tmp{DNativeInt{1} << (2 * lbcrypto::GetMSB(m_value) + 3)};
+        return {tmp / DNativeInt(m_value)};
     }
 
     template <typename T = NativeInt>
-    NativeIntegerT ComputeMu(typename std::enable_if<std::is_same<T, DNativeInt>::value, bool>::type = true) const {
+    NativeIntegerT ComputeMu(typename std::enable_if_t<std::is_same_v<T, DNativeInt>, bool> = true) const {
         if (m_value == 0)
             OPENFHE_THROW(lbcrypto::math_error, "NativeIntegerT ComputeMu: Divide by zero");
-        bigintbackend::BigInteger tmp(1);
-        tmp <<= 2 * lbcrypto::GetMSB(m_value) + 3;
-        return static_cast<NativeIntegerT>(tmp / bigintbackend::BigInteger(m_value));
+        auto&& tmp{bigintbackend::BigInteger{1} << (2 * lbcrypto::GetMSB(m_value) + 3)};
+        return {(tmp / bigintbackend::BigInteger(m_value)).ConvertToInt()};
     }
 
     /**
@@ -737,7 +684,7 @@ public:
         typeD tmp;
         NativeIntegerT ans{*this};
         ModMu(tmp, ans, modulus.m_value, mu.m_value, modulus.GetMSB() - 2);
-        return std::move(ans);
+        return ans;
     }
 
     /**
@@ -772,8 +719,8 @@ public:
             av = av % mv;
         av = av + bv;
         if (av >= mv)
-            return static_cast<NativeIntegerT>(av - mv);
-        return static_cast<NativeIntegerT>(av);
+            return {av - mv};
+        return {av};
     }
 
     /**
@@ -806,8 +753,8 @@ public:
     NativeIntegerT ModAddFast(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
         auto r{m_value + b.m_value};
         if (r >= modulus.m_value)
-            return static_cast<NativeIntegerT>(r - modulus.m_value);
-        return static_cast<NativeIntegerT>(r);
+            return {r - modulus.m_value};
+        return {r};
     }
     /**
    * Modulus addition where operands are < modulus. In-place variant.
@@ -844,8 +791,8 @@ public:
             av.ModEq(modulus, mu);
         av.m_value = av.m_value + bv.m_value;
         if (av.m_value >= mv)
-            return static_cast<NativeIntegerT>(av.m_value - mv);
-        return std::move(av);
+            return {av.m_value - mv};
+        return av;
 #else
         auto bv{b.m_value};
         auto av{m_value};
@@ -855,8 +802,8 @@ public:
             av = av % mv;
         av = av + bv;
         if (av >= mv)
-            return static_cast<NativeIntegerT>(av - mv);
-        return static_cast<NativeIntegerT>(av);
+            return {av - mv};
+        return {av};
 #endif
     }
 
@@ -872,8 +819,8 @@ public:
             av.ModEq(modulus, mu);
         av.m_value = av.m_value + bv.m_value;
         if (av.m_value >= mv)
-            return static_cast<NativeIntegerT>(av.m_value - mv);
-        return std::move(av);
+            return {av.m_value - mv};
+        return av;
     }
 
     /**
@@ -944,8 +891,8 @@ public:
         if (av >= mv)
             av = av % mv;
         if (av < bv)
-            return static_cast<NativeIntegerT>(av + mv - bv);
-        return static_cast<NativeIntegerT>(av - bv);
+            return {av + mv - bv};
+        return {av - bv};
     }
 
     /**
@@ -977,8 +924,8 @@ public:
    */
     NativeIntegerT ModSubFast(const NativeIntegerT& b, const NativeIntegerT& modulus) const {
         if (m_value < b.m_value)
-            return static_cast<NativeIntegerT>(m_value + modulus.m_value - b.m_value);
-        return static_cast<NativeIntegerT>(m_value - b.m_value);
+            return {m_value + modulus.m_value - b.m_value};
+        return {m_value - b.m_value};
     }
 
     /**
@@ -1014,8 +961,8 @@ public:
         if (av.m_value >= mv)
             av.ModEq(modulus, mu);
         if (av.m_value < bv.m_value)
-            return static_cast<NativeIntegerT>(av.m_value + mv - bv.m_value);
-        return static_cast<NativeIntegerT>(av.m_value - bv.m_value);
+            return {av.m_value + mv - bv.m_value};
+        return {av.m_value - bv.m_value};
 #else
         auto bv{b.m_value};
         auto av{m_value};
@@ -1024,8 +971,8 @@ public:
         if (av >= mv)
             av = av % mv;
         if (av < bv)
-            return static_cast<NativeIntegerT>(av + mv - bv);
-        return static_cast<NativeIntegerT>(av - bv);
+            return {av + mv - bv};
+        return {av - bv};
 #endif
     }
 
@@ -1040,8 +987,8 @@ public:
         if (av.m_value >= mv)
             av.ModEq(modulus, mu);
         if (av.m_value < bv.m_value)
-            return static_cast<NativeIntegerT>(av.m_value + mv - bv.m_value);
-        return static_cast<NativeIntegerT>(av.m_value - bv.m_value);
+            return {av.m_value + mv - bv.m_value};
+        return {av.m_value - bv.m_value};
     }
 
     template <typename T = NativeInt>
@@ -1106,8 +1053,8 @@ public:
         DNativeInt rv{static_cast<DNativeInt>(av) * bv};
         DNativeInt dmv{mv};
         if (rv >= dmv)
-            return static_cast<NativeIntegerT>(rv % dmv);
-        return static_cast<NativeIntegerT>(rv);
+            return {rv % dmv};
+        return {rv};
     }
 
     template <typename T = NativeInt>
@@ -1129,8 +1076,8 @@ public:
         MultD(RShiftD(tmp, n + 7), mv, tmp);
         SubtractD(r, tmp);
         if (r.lo >= mv)
-            return static_cast<NativeIntegerT>(r.lo - mv);
-        return static_cast<NativeIntegerT>(r.lo);
+            return {r.lo - mv};
+        return {r.lo};
     }
 
     /**
@@ -1221,8 +1168,8 @@ public:
         DNativeInt rv{static_cast<DNativeInt>(av) * bv};
         DNativeInt dmv{mv};
         if (rv >= dmv)
-            return static_cast<NativeIntegerT>(rv % dmv);
-        return static_cast<NativeIntegerT>(rv);
+            return {rv % dmv};
+        return {rv};
 #endif
     }
 
@@ -1244,8 +1191,8 @@ public:
         MultD(RShiftD(tmp, n + 7), mv, tmp);
         SubtractD(r, tmp);
         if (r.lo >= mv)
-            return static_cast<NativeIntegerT>(r.lo - mv);
-        return static_cast<NativeIntegerT>(r.lo);
+            return {r.lo - mv};
+        return {r.lo};
     }
 
     /**
@@ -1329,8 +1276,8 @@ public:
         DNativeInt rv{static_cast<DNativeInt>(m_value) * b.m_value};
         DNativeInt dmv{modulus.m_value};
         if (rv >= dmv)
-            return static_cast<NativeIntegerT>(rv % dmv);
-        return static_cast<NativeIntegerT>(rv);
+            return {rv % dmv};
+        return {rv};
     }
 
     template <typename T = NativeInt>
@@ -1345,8 +1292,8 @@ public:
         MultD(RShiftD(prod, n + 7), mv, prod);
         SubtractD(r, prod);
         if (r.lo >= mv)
-            return static_cast<NativeIntegerT>(r.lo - mv);
-        return static_cast<NativeIntegerT>(r.lo);
+            return {r.lo - mv};
+        return {r.lo};
     }
 
     /**
@@ -1438,8 +1385,8 @@ public:
         MultD(RShiftD(prod, n + 7), mv, prod);
         SubtractD(r, prod);
         if (r.lo >= mv)
-            return static_cast<NativeIntegerT>(r.lo - mv);
-        return static_cast<NativeIntegerT>(r.lo);
+            return {r.lo - mv};
+        return {r.lo};
     }
 
     /**
@@ -1505,8 +1452,8 @@ public:
         typename std::enable_if<!std::is_same<T, DNativeInt>::value, bool>::type = true) const {
         if (modulus.m_value == 0)
             OPENFHE_THROW(lbcrypto::math_error, "Divide by zero");
-        auto w = DNativeInt(m_value) << NativeIntegerT::MaxBits();
-        return static_cast<NativeIntegerT>(w / DNativeInt(modulus.m_value));
+        auto&& w{DNativeInt(m_value) << NativeIntegerT::MaxBits()};
+        return {w / DNativeInt(modulus.m_value)};
     }
 
     template <typename T = NativeInt>
@@ -1515,8 +1462,8 @@ public:
         typename std::enable_if<std::is_same<T, DNativeInt>::value, bool>::type = true) const {
         if (modulus.m_value == 0)
             OPENFHE_THROW(lbcrypto::math_error, "Divide by zero");
-        auto w = bigintbackend::BigInteger(m_value) << NativeIntegerT::MaxBits();
-        return static_cast<NativeIntegerT>(w / bigintbackend::BigInteger(modulus.m_value));
+        auto&& w{bigintbackend::BigInteger(m_value) << NativeIntegerT::MaxBits()};
+        return {(w / bigintbackend::BigInteger(modulus.m_value)).ConvertToInt()};
     }
 
     /**
@@ -1531,7 +1478,7 @@ public:
                                    const NativeIntegerT& bInv) const {
         NativeInt q = MultDHi(m_value, bInv.m_value) + 1;
         auto yprime = static_cast<SignedNativeInt>(m_value * b.m_value - q * modulus.m_value);
-        return static_cast<NativeIntegerT>(yprime >= 0 ? yprime : yprime + modulus.m_value);
+        return {yprime >= 0 ? yprime : yprime + modulus.m_value};
     }
 
     /**
@@ -1580,7 +1527,7 @@ public:
                     r = r % m;
             }
         }
-        return static_cast<NativeIntegerT>(r);
+        return {r};
     }
 
     template <typename T = NativeInt>
@@ -1597,7 +1544,7 @@ public:
             if (p.m_value & 0x1)
                 r.ModMulFastEq(t, mod, mu);
         }
-        return NativeIntegerT(r);
+        return {r};
     }
 
     /**
@@ -1608,7 +1555,7 @@ public:
    * @return is the result of the modulus exponentiation operation.
    */
     NativeIntegerT& ModExpEq(const NativeIntegerT& b, const NativeIntegerT& mod) {
-        return *this = std::move(this->NativeIntegerT::ModExp(b, mod));
+        return *this = this->NativeIntegerT::ModExp(b, mod);
     }
 
     /**
@@ -1640,8 +1587,8 @@ public:
             x       = t;
         }
         if (x < 0)
-            return static_cast<NativeIntegerT>(x + mod.m_value);
-        return static_cast<NativeIntegerT>(x);
+            return {x + mod.m_value};
+        return {x};
     }
 
     /**
@@ -1651,10 +1598,8 @@ public:
    * @return is the result of the modulus inverse operation.
    */
     NativeIntegerT& ModInverseEq(const NativeIntegerT& mod) {
-        return *this = std::move(this->NativeIntegerT::ModInverse(mod));
+        return *this = this->NativeIntegerT::ModInverse(mod);
     }
-
-    // SHIFT OPERATIONS
 
     /**
    * Left shift operation.
@@ -1663,7 +1608,7 @@ public:
    * @return result of the shift operation.
    */
     NativeIntegerT LShift(usshort shift) const {
-        return static_cast<NativeIntegerT>(m_value << shift);
+        return {m_value << shift};
     }
 
     /**
@@ -1683,7 +1628,7 @@ public:
    * @return result of the shift operation.
    */
     NativeIntegerT RShift(usshort shift) const {
-        return static_cast<NativeIntegerT>(m_value >> shift);
+        return {m_value >> shift};
     }
 
     /**
@@ -1696,8 +1641,6 @@ public:
         return *this = m_value >> shift;
     }
 
-    // COMPARE
-
     /**
    * Compares the current NativeIntegerT to NativeIntegerT a.
    *
@@ -1706,26 +1649,25 @@ public:
    * greater than conditons.
    */
     int Compare(const NativeIntegerT& a) const {
-        if (m_value < a.m_value)
-            return -1;
-        if (m_value > a.m_value)
-            return 1;
-        return 0;
+        //        if (m_value < a.m_value)
+        //            return -1;
+        //        if (m_value > a.m_value)
+        //            return 1;
+        //        return 0;
+        return (m_value < a.m_value) ? -1 : (m_value > a.m_value) ? 1 : 0;
     }
-
-    // CONVERTERS
 
     /**
    * Converts the value to an int.
    *
    * @return the int representation of the value as usint.
    */
-
-    template <typename OutputType = NativeInt>
-    constexpr OutputType ConvertToInt() const {
-        if (sizeof(OutputType) < sizeof(m_value))
-            OPENFHE_THROW(lbcrypto::type_error, "ConvertToInt(): Narrowing Conversion");
-        return static_cast<OutputType>(m_value);
+    template <typename T = NativeInt, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+    constexpr T ConvertToInt() const noexcept {
+        //        if constexpr (sizeof(T) < sizeof(m_value))
+        //            OPENFHE_THROW(lbcrypto::type_error, "ConvertToInt(): Narrowing Conversion");
+        static_assert(sizeof(T) >= sizeof(m_value), "ConvertToInt(): Narrowing Conversion");
+        return static_cast<T>(m_value);
     }
 
     /**
@@ -1753,10 +1695,8 @@ public:
                 OPENFHE_THROW(lbcrypto::math_error, "Bit string must contain only 0 or 1");
             v = (v << 1) | static_cast<NativeInt>(n);
         }
-        return NativeIntegerT(v);
+        return {v};
     }
-
-    // OTHER FUNCTIONS
 
     /**
    * Returns the MSB location of the value.
@@ -1854,11 +1794,9 @@ public:
         return os;
     }
 
-    // SERIALIZATION
-
     template <class Archive, typename T = void>
-    typename std::enable_if<std::is_same<NativeInt, U64BITS>::value || std::is_same<NativeInt, U32BITS>::value, T>::type
-    load(Archive& ar, std::uint32_t const version) {
+    typename std::enable_if_t<std::is_same_v<NativeInt, U64BITS> || std::is_same_v<NativeInt, U32BITS>, T> load(
+        Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
                                                            " is from a later version of the library");
@@ -1868,8 +1806,8 @@ public:
 
 #if defined(HAVE_INT128)
     template <class Archive>
-    typename std::enable_if<
-        std::is_same<NativeInt, U128BITS>::value && !cereal::traits::is_text_archive<Archive>::value, void>::type
+    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && !cereal::traits::is_text_archive<Archive>::value,
+                              void>
     load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
@@ -1884,8 +1822,8 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if<std::is_same<NativeInt, U128BITS>::value && cereal::traits::is_text_archive<Archive>::value,
-                            void>::type
+    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && cereal::traits::is_text_archive<Archive>::value,
+                              void>
     load(Archive& ar, std::uint32_t const version) {
         if (version > SerializedVersion()) {
             OPENFHE_THROW(lbcrypto::deserialize_error, "serialized object version " + std::to_string(version) +
@@ -1901,17 +1839,17 @@ public:
 #endif
 
     template <class Archive, typename T = void>
-    typename std::enable_if<std::is_same<NativeInt, U64BITS>::value || std::is_same<NativeInt, U32BITS>::value, T>::type
-    save(Archive& ar, std::uint32_t const version) const {
+    typename std::enable_if_t<std::is_same_v<NativeInt, U64BITS> || std::is_same<NativeInt, U32BITS>::value, T> save(
+        Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("v", m_value));
     }
 
 #if defined(HAVE_INT128)
     template <class Archive>
-    typename std::enable_if<
-        std::is_same<NativeInt, U128BITS>::value && !cereal::traits::is_text_archive<Archive>::value, void>::type
+    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && !cereal::traits::is_text_archive<Archive>::value,
+                              void>
     save(Archive& ar, std::uint32_t const version) const {
-        // save 2 unint64_t values instead of unsigned __int128
+        // save 2 unint64_t values instead of uint128_t
         constexpr U128BITS mask = (static_cast<U128BITS>(1) << 64) - 1;
         uint64_t vec[2];
         vec[0] = m_value & mask;  // least significant word
@@ -1920,10 +1858,10 @@ public:
     }
 
     template <class Archive>
-    typename std::enable_if<std::is_same<NativeInt, U128BITS>::value && cereal::traits::is_text_archive<Archive>::value,
-                            void>::type
+    typename std::enable_if_t<std::is_same_v<NativeInt, U128BITS> && cereal::traits::is_text_archive<Archive>::value,
+                              void>
     save(Archive& ar, std::uint32_t const version) const {
-        // save 2 unint64_t values instead of unsigned __int128
+        // save 2 unint64_t values instead of uint128_t
         constexpr U128BITS mask = (static_cast<U128BITS>(1) << 64) - 1;
         uint64_t vec[2];
         vec[0] = m_value & mask;  // least significant word
@@ -2108,9 +2046,9 @@ private:
 
 #if defined(HAVE_INT128)
     // TODO
-    static std::string toString(__uint128_t value) noexcept {
+    static std::string toString(uint128_t value) noexcept {
         constexpr size_t maxChars = 15;
-        constexpr __uint128_t divisor{0x38d7ea4c68000};  // 10**15
+        constexpr uint128_t divisor{0x38d7ea4c68000};  // 10**15
         std::string tmp(46, '0');
         auto msd_it = tmp.end() - 1;
         auto it     = tmp.end();
@@ -2148,6 +2086,19 @@ private:
             a.m_value -= mv;
     }
 };
+
+// helper template to stream vector contents provided T has an stream operator<<
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
+    os << "[";
+    //    for (const auto& i : v)
+    for (auto&& i : v)
+        os << " " << i;
+    os << " ]";
+    return os;
+}
+// to stream internal representation
+template std::ostream& operator<< <uint64_t>(std::ostream& os, const std::vector<uint64_t>& v);
 
 }  // namespace intnat
 
