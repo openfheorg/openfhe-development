@@ -102,13 +102,11 @@ void IterativeBootstrapExample() {
     uint32_t numIterations = 2;
 
     std::vector<uint32_t> levelBudget = {3, 3};
-    // Each extra iteration on top of 1 requires an extra level to be consumed.
-    uint32_t approxBootstrapDepth = 8 + (numIterations - 1);
-    std::vector<uint32_t> bsgsDim = {0, 0};
+    std::vector<uint32_t> bsgsDim     = {0, 0};
 
-    uint32_t levelsUsedBeforeBootstrap = 10;
+    uint32_t levelsAvailableAfterBootstrap = 10;
     usint depth =
-        levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
+        levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist) + (numIterations - 1);
     parameters.SetMultiplicativeDepth(depth);
 
     // Generate crypto context.

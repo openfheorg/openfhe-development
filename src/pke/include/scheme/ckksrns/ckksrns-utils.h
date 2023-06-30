@@ -88,6 +88,16 @@ std::shared_ptr<longDiv> LongDivisionChebyshev(const std::vector<double>& f, con
 std::vector<uint32_t> ComputeDegreesPS(const uint32_t n);
 
 /**
+ * Get the depth for a given vector of coefficients for the Paterson-Stockmeyer algorithm.
+ * The functions is based on the table described in src/pke/examples/FUNCTION_EVALUATION.md
+ *
+ * @param vec vector of coefficients
+ * @param isNormalized true if the vector normalized. false is the default value
+ * @return multiplicative depth
+ */
+uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<double>& vec, bool isNormalized = false);
+
+/**
  * Extracts shifted diagonal of matrix A.
  *
  * @param &A square linear map.

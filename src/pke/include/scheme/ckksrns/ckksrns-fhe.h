@@ -200,6 +200,7 @@ public:
 
     static uint32_t GetBootstrapDepth(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
                                       SecretKeyDist secretKeyDist);
+    static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist);
 
     std::string SerializedObjectName() const {
         return "FHECKKSRNS";
@@ -209,8 +210,9 @@ private:
     //------------------------------------------------------------------------------
     // Auxiliary Bootstrap Functions
     //------------------------------------------------------------------------------
-    uint32_t GetBootstrapDepth(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
+    uint32_t GetBootstrapDepthInternal(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
                                const CryptoContextImpl<DCRTPoly>& cc);
+    static uint32_t GetModDepthInternal(SecretKeyDist secretKeyDist);
 
     void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
 
@@ -260,7 +262,7 @@ private:
     uint32_t m_correctionFactor = 0;  // correction factor, which we scale the message by to improve precision
 
     // Chebyshev series coefficients for the SPARSE case
-    const std::vector<double> g_coefficientsSparse{
+    static const inline std::vector<double> g_coefficientsSparse{
         0, -0.0190665676962401,   0, -0.0181773905007824,   0, -0.0162862756167401,   0, -0.0131970301188482,
         0, -0.00869599648960049,  0, -0.00266512292674043,  0, 0.00475378458365385,   0, 0.0129619218183744,
         0, 0.0207345065018299,    0, 0.0261987740118010,    0, 0.0271237206149663,    0, 0.0216632442529301,
@@ -280,7 +282,7 @@ private:
         0, 7.73718537798400e-14,  0, -1.14402314781930e-14, 0, 1.69000615970718e-15,  0};
 
     // Chebyshev series coefficients for the OPTIMIZED/uniform case
-    const std::vector<double> g_coefficientsUniform{
+    static const inline std::vector<double> g_coefficientsUniform{
         0.15421426400235561,    -0.0037671538417132409,  0.16032011744533031,      -0.0034539657223742453,
         0.17711481926851286,    -0.0027619720033372291,  0.19949802549604084,      -0.0015928034845171929,
         0.21756948616367638,    0.00010729951647566607,  0.21600427371240055,      0.0022171399198851363,

@@ -94,15 +94,13 @@ void SimpleBootstrapExample() {
     * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
     * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
     * needs to consume a few levels to run. We compute the number of bootstrapping levels required
-    * using GetBootstrapDepth, and add it to levelsUsedBeforeBootstrap to set our initial multiplicative
+    * using GetBootstrapDepth, and add it to levelsAvailableAfterBootstrap to set our initial multiplicative
     * depth. We recommend using the input parameters below to get started.
     */
     std::vector<uint32_t> levelBudget = {4, 4};
-    uint32_t approxBootstrapDepth     = 8;
 
-    uint32_t levelsUsedBeforeBootstrap = 10;
-    usint depth =
-        levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, levelBudget, secretKeyDist);
+    uint32_t levelsAvailableAfterBootstrap = 10;
+    usint depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, secretKeyDist);
     parameters.SetMultiplicativeDepth(depth);
 
     CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
