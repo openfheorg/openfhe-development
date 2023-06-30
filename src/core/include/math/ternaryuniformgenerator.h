@@ -85,8 +85,6 @@ private:
     static std::uniform_int_distribution<int> m_distribution;
 };
 
-typedef TernaryUniformGeneratorImpl<BigVector> TernaryUniformGenerator;
-
 }  // namespace lbcrypto
 
 #endif  // LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_

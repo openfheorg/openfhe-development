@@ -75,8 +75,6 @@ private:
     static std::bernoulli_distribution m_distribution;
 };
 
-typedef BinaryUniformGeneratorImpl<BigVector> BinaryUniformGenerator;
-
 }  // namespace lbcrypto
 
 #endif  // LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_
