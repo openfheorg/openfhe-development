@@ -54,9 +54,7 @@
 namespace lbcrypto {
 
 class RingGSWACCKeyImpl;
-
-using RingGSWACCKey = std::shared_ptr<RingGSWACCKeyImpl>;
-
+using RingGSWACCKey      = std::shared_ptr<RingGSWACCKeyImpl>;
 using ConstRingGSWACCKey = const std::shared_ptr<const RingGSWACCKeyImpl>;
 
 /**
@@ -67,32 +65,20 @@ class RingGSWACCKeyImpl : public Serializable {
 public:
     RingGSWACCKeyImpl() = default;
 
-    explicit RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) {
-        m_key.resize(dim1);
-        for (size_t i = 0; i < dim1; ++i) {
-            m_key[i].resize(dim2);
-            for (size_t j = 0; j < dim2; ++j) {
-                m_key[i][j].resize(dim3);
-            }
-        }
-    }
+    explicit RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) : m_key(dim1, dim2_t(dim2, dim3_t(dim3))) {}
 
     explicit RingGSWACCKeyImpl(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) : m_key(key) {}
 
-    explicit RingGSWACCKeyImpl(const RingGSWACCKeyImpl& rhs) {
-        this->m_key = rhs.m_key;
-    }
+    explicit RingGSWACCKeyImpl(const RingGSWACCKeyImpl& rhs) : m_key(rhs.m_key) {}
 
-    explicit RingGSWACCKeyImpl(const RingGSWACCKeyImpl&& rhs) {
-        this->m_key = std::move(rhs.m_key);
-    }
+    explicit RingGSWACCKeyImpl(RingGSWACCKeyImpl&& rhs) : m_key(std::move(rhs.m_key)) {}
 
-    const RingGSWACCKeyImpl& operator=(const RingGSWACCKeyImpl& rhs) {
+    RingGSWACCKeyImpl& operator=(const RingGSWACCKeyImpl& rhs) {
         this->m_key = rhs.m_key;
         return *this;
     }
 
-    const RingGSWACCKeyImpl& operator=(const RingGSWACCKeyImpl&& rhs) {
+    RingGSWACCKeyImpl& operator=(RingGSWACCKeyImpl&& rhs) {
         this->m_key = std::move(rhs.m_key);
         return *this;
     }
@@ -109,44 +95,39 @@ public:
         return m_key[i];
     }
 
-    const std::vector<std::vector<RingGSWEvalKey>>& operator[](usint i) const {
+    const std::vector<std::vector<RingGSWEvalKey>>& operator[](uint32_t i) const {
         return m_key[i];
     }
 
     bool operator==(const RingGSWACCKeyImpl& other) const {
         // as RingGSWEvalKey is shared_ptr<RingGSWEvalKeyImpl>, we have to loop through all elements to compare them
-        if(m_key.size() == other.m_key.size()) {
-            for (size_t i = 0; i < m_key.size(); ++i) {
-                const auto& l1 = m_key[i];
-                const auto& o1 = other.m_key[i];
-
-                if(l1.size() == o1.size()) {
-                    for (size_t j = 0; j < l1.size(); ++j) {
-                        const auto& l2 = l1[j];
-                        const auto& o2 = o1[j];
-
-                        if(l2.size() == o2.size()) {
-                            for (size_t k = 0; k < l2.size(); ++k) {
-                                const auto& l3 = l2[k];
-                                const auto& o3 = o2[k];
-
-                                if(l3.get() == nullptr || o3.get() == nullptr) {
-                                    if(l3.get() != o3.get())
-                                        return false;
-                                }
-                                else {
-                                    if(*l3 != *o3)
-                                        return false;
-                                }
-                            }
-                        }
+        if (m_key.size() != other.m_key.size())
+            return false;
+        for (size_t i = 0; i < m_key.size(); ++i) {
+            const auto& l1 = m_key[i];
+            const auto& o1 = other.m_key[i];
+            if (l1.size() != o1.size())
+                return false;
+            for (size_t j = 0; j < l1.size(); ++j) {
+                const auto& l2 = l1[j];
+                const auto& o2 = o1[j];
+                if (l2.size() != o2.size())
+                    return false;
+                for (size_t k = 0; k < l2.size(); ++k) {
+                    const auto& l3 = l2[k];
+                    const auto& o3 = o2[k];
+                    if (l3.get() == nullptr || o3.get() == nullptr) {
+                        if (l3.get() != o3.get())
+                            return false;
+                    }
+                    else {
+                        if (*l3 != *o3)
+                            return false;
                     }
                 }
             }
-            return true;
         }
-
-        return false;
+        return true;
     }
 
     bool operator!=(const RingGSWACCKeyImpl& other) const {
@@ -167,7 +148,7 @@ public:
         ar(::cereal::make_nvp("k", m_key));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "RingGSWACCKey";
     }
     static uint32_t SerializedVersion() {
@@ -175,6 +156,10 @@ public:
     }
 
 private:
+    using dim3_t = std::vector<RingGSWEvalKey>;
+    using dim2_t = std::vector<dim3_t>;
+    using dim1_t = std::vector<dim2_t>;
+
     std::vector<std::vector<std::vector<RingGSWEvalKey>>> m_key;
 };
 

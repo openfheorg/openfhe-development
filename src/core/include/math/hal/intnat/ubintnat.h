@@ -1649,11 +1649,6 @@ public:
    * greater than conditons.
    */
     int Compare(const NativeIntegerT& a) const {
-        //        if (m_value < a.m_value)
-        //            return -1;
-        //        if (m_value > a.m_value)
-        //            return 1;
-        //        return 0;
         return (m_value < a.m_value) ? -1 : (m_value > a.m_value) ? 1 : 0;
     }
 
@@ -1664,9 +1659,7 @@ public:
    */
     template <typename T = NativeInt, std::enable_if_t<std::is_integral_v<T>, bool> = true>
     constexpr T ConvertToInt() const noexcept {
-        //        if constexpr (sizeof(T) < sizeof(m_value))
-        //            OPENFHE_THROW(lbcrypto::type_error, "ConvertToInt(): Narrowing Conversion");
-        static_assert(sizeof(T) >= sizeof(m_value), "ConvertToInt(): Narrowing Conversion");
+        // static_assert(sizeof(T) >= sizeof(m_value), "ConvertToInt(): Narrowing Conversion");
         return static_cast<T>(m_value);
     }
 

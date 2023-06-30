@@ -108,7 +108,7 @@ public:
    *
    * @return a shared pointer to the refreshing key
    */
-    const RingGSWACCKey GetRefreshKey() const {
+    const RingGSWACCKey& GetRefreshKey() const {
         return m_BTKey.BSkey;
     }
 
@@ -117,7 +117,7 @@ public:
    *
    * @return a shared pointer to the switching key
    */
-    const LWESwitchingKey GetSwitchKey() const {
+    const LWESwitchingKey& GetSwitchKey() const {
         return m_BTKey.KSkey;
     }
 
@@ -126,7 +126,7 @@ public:
    *
    * @return a shared pointer to the switching key
    */
-    const LWEPublicKey GetPublicKey() const {
+    const LWEPublicKey& GetPublicKey() const {
         return m_BTKey.Pkey;
     }
 
@@ -161,7 +161,7 @@ public:
    * @return a shared pointer to the public key
    */
 
-    LWEPublicKey PubKeyGen(ConstLWEPrivateKey sk) const;
+    LWEPublicKey PubKeyGen(ConstLWEPrivateKey& sk) const;
 
     /**
    * Generates a secret key used in bootstrapping
@@ -180,7 +180,7 @@ public:
    * @param mod Encrypt according to mod instead of m_q if mod != 0
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(ConstLWEPrivateKey sk, LWEPlaintext m, BINFHE_OUTPUT output = BOOTSTRAPPED,
+    LWECiphertext Encrypt(ConstLWEPrivateKey& sk, LWEPlaintext m, BINFHE_OUTPUT output = BOOTSTRAPPED,
                           LWEPlaintextModulus p = 4, const NativeInteger& mod = 0) const;
 
     /**
@@ -193,7 +193,7 @@ public:
    * @param output - SMALL_DIM to generate ciphertext with dimension n (default). LARGE_DIM to generate ciphertext with dimension N
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext Encrypt(ConstLWEPublicKey pk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
+    LWECiphertext Encrypt(ConstLWEPublicKey& pk, LWEPlaintext m, BINFHE_OUTPUT output = SMALL_DIM,
                           LWEPlaintextModulus p = 4, const NativeInteger& mod = 0) const;
 
     /**
@@ -202,7 +202,7 @@ public:
    * @param ksk - the key switching key from secret key of dimension N to secret key of dimension n
    * @return a shared pointer to the ciphertext
    */
-    LWECiphertext SwitchCTtoqn(ConstLWESwitchingKey ksk, ConstLWECiphertext ct) const;
+    LWECiphertext SwitchCTtoqn(ConstLWESwitchingKey& ksk, ConstLWECiphertext& ct) const;
 
     /**
    * Decrypts a ciphertext using a secret key
@@ -213,7 +213,7 @@ public:
    * @param p - plaintext modulus
    * @param DiffQ Decrypt according to DiffQ instead of m_q if DiffQ != 0
    */
-    void Decrypt(ConstLWEPrivateKey sk, ConstLWECiphertext ct, LWEPlaintext* result, LWEPlaintextModulus p = 4) const;
+    void Decrypt(ConstLWEPrivateKey& sk, ConstLWECiphertext& ct, LWEPlaintext* result, LWEPlaintextModulus p = 4) const;
 
     /**
    * Generates a switching key to go from a secret key with (Q,N) to a secret
@@ -223,7 +223,7 @@ public:
    * @param skN old secret key
    * @return a shared pointer to the switching key
    */
-    LWESwitchingKey KeySwitchGen(ConstLWEPrivateKey sk, ConstLWEPrivateKey skN) const;
+    LWESwitchingKey KeySwitchGen(ConstLWEPrivateKey& sk, ConstLWEPrivateKey& skN) const;
 
     /**
    * Generates boostrapping keys
@@ -231,7 +231,7 @@ public:
    * @param sk secret key
    * @param DiffQ BTKeyGen according to DiffQ instead of m_q if DiffQ != 0
    */
-    void BTKeyGen(ConstLWEPrivateKey sk, KEYGEN_MODE keygenMode = SYM_ENCRYPT);
+    void BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode = SYM_ENCRYPT);
 
     /**
    * Loads bootstrapping keys in the context (typically after deserializing)
@@ -270,7 +270,7 @@ public:
    * @param ct2 second ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2) const;
+    LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2) const;
 
     /**
    * Bootstraps a ciphertext (without peforming any operation)
@@ -278,7 +278,7 @@ public:
    * @param ct1 ciphertext to be bootstrapped
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext Bootstrap(ConstLWECiphertext ct) const;
+    LWECiphertext Bootstrap(ConstLWECiphertext& ct) const;
 
     /**
    * Evaluate an arbitrary function
@@ -287,7 +287,7 @@ public:
    * @param LUT the look-up table of the to-be-evaluated function
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalFunc(ConstLWECiphertext ct, const std::vector<NativeInteger>& LUT) const;
+    LWECiphertext EvalFunc(ConstLWECiphertext& ct, const std::vector<NativeInteger>& LUT) const;
 
     /**
    * Generate the LUT for the to-be-evaluated function
@@ -306,7 +306,7 @@ public:
    * @param roundbits number of bits to be rounded
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalFloor(ConstLWECiphertext ct, uint32_t roundbits = 0) const;
+    LWECiphertext EvalFloor(ConstLWECiphertext& ct, uint32_t roundbits = 0) const;
 
     /**
    * Evaluate a sign function over large precisions
@@ -314,7 +314,7 @@ public:
    * @param ct1 ciphertext to be bootstrapped
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalSign(ConstLWECiphertext ct);
+    LWECiphertext EvalSign(ConstLWECiphertext& ct);
 
     /**
    * Evaluate ciphertext decomposition
@@ -322,7 +322,7 @@ public:
    * @param ct1 ciphertext to be bootstrapped
    * @return a vector of shared pointers to the resulting ciphertexts
    */
-    std::vector<LWECiphertext> EvalDecomp(ConstLWECiphertext ct);
+    std::vector<LWECiphertext> EvalDecomp(ConstLWECiphertext& ct);
 
     /**
    * Evaluates NOT gate
@@ -330,7 +330,7 @@ public:
    * @param ct1 the input ciphertext
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalNOT(ConstLWECiphertext ct) const;
+    LWECiphertext EvalNOT(ConstLWECiphertext& ct) const;
 
     /**
    * Evaluates constant gate
@@ -340,15 +340,15 @@ public:
    */
     LWECiphertext EvalConstant(bool value) const;
 
-    const std::shared_ptr<BinFHECryptoParams> GetParams() {
+    const std::shared_ptr<BinFHECryptoParams>& GetParams() {
         return m_params;
     }
 
-    const std::shared_ptr<LWEEncryptionScheme> GetLWEScheme() {
+    const std::shared_ptr<LWEEncryptionScheme>& GetLWEScheme() {
         return m_LWEscheme;
     }
 
-    const std::shared_ptr<BinFHEScheme> GetBinFHEScheme() {
+    const std::shared_ptr<BinFHEScheme>& GetBinFHEScheme() {
         return m_binfhescheme;
     }
 
@@ -367,7 +367,7 @@ public:
         m_binfhescheme = std::make_shared<BinFHEScheme>(m_params->GetRingGSWParams()->GetMethod());
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "BinFHEContext";
     }
     static uint32_t SerializedVersion() {
@@ -376,31 +376,30 @@ public:
 
     NativeInteger GetMaxPlaintextSpace() const {
         // Under our parameter choices, beta = 128 is enough, and therefore plaintext = q/2beta
-        return m_params->GetLWEParams()->Getq() / this->GetBeta() / 2;
+        return m_params->GetLWEParams()->Getq() / (this->GetBeta() << 1);
     }
 
-    NativeInteger GetBeta() const {
-        return 128;
+    constexpr NativeInteger GetBeta() const {
+        return NativeInteger(128);
     }
 
 private:
     // Shared pointer to Ring GSW + LWE parameters
-    std::shared_ptr<BinFHECryptoParams> m_params = nullptr;
+    std::shared_ptr<BinFHECryptoParams> m_params{nullptr};
 
     // Shared pointer to the underlying additive LWE scheme
-    std::shared_ptr<LWEEncryptionScheme> m_LWEscheme = nullptr;
+    std::shared_ptr<LWEEncryptionScheme> m_LWEscheme{nullptr};
 
     // Shared pointer to the underlying RingGSW/RLWE scheme
-    std::shared_ptr<BinFHEScheme> m_binfhescheme = nullptr;
+    std::shared_ptr<BinFHEScheme> m_binfhescheme{nullptr};
 
     // Struct containing the bootstrapping keys
     RingGSWBTKey m_BTKey = {0};
 
-    // Struct containing the bootstrapping keys
     std::map<uint32_t, RingGSWBTKey> m_BTKey_map;
 
     // Whether to optimize time for sign eval
-    bool m_timeOptimization = false;
+    bool m_timeOptimization{false};
 };
 
 }  // namespace lbcrypto

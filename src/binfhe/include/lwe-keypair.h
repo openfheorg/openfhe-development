@@ -50,10 +50,10 @@ namespace lbcrypto {
  */
 class LWEKeyPairImpl {
 public:
-    LWEPublicKey publicKey;
-    LWEPrivateKey secretKey;
+    LWEPublicKey publicKey{nullptr};
+    LWEPrivateKey secretKey{nullptr};
 
-    LWEKeyPairImpl(LWEPublicKey Av, LWEPrivateKey s) : publicKey(Av), secretKey(s) {}
+    LWEKeyPairImpl(LWEPublicKey Av, LWEPrivateKey s) : publicKey(std::move(Av)), secretKey(std::move(s)) {}
 
     bool good() {
         return publicKey && secretKey;
