@@ -142,7 +142,7 @@ bool CKKSPackedEncoding::Encode() {
     inverse.resize(slots);
 
     if (this->typeFlag == IsDCRTPoly) {
-        DiscreteFourierTransform::FFTSpecialInv(inverse);
+        DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
         uint64_t pBits     = encodingParams->GetPlaintextModulus();
         uint32_t precision = 52;
 
@@ -261,7 +261,7 @@ bool CKKSPackedEncoding::Encode() {
     inverse.resize(slots);
 
     if (this->typeFlag == IsDCRTPoly) {
-        DiscreteFourierTransform::FFTSpecialInv(inverse);
+        DiscreteFourierTransform::FFTSpecialInv(inverse, ringDim * 2);
         double powP = scalingFactor;
 
         // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
@@ -308,7 +308,7 @@ bool CKKSPackedEncoding::Encode() {
                 // this to report it to the user, so they can identify
                 // large inputs.
 
-                DiscreteFourierTransform::FFTSpecial(inverse);
+                DiscreteFourierTransform::FFTSpecial(inverse, ringDim * 2);
 
                 double invLen = static_cast<double>(inverse.size());
                 double factor = 2 * M_PI * i;
@@ -568,7 +568,7 @@ bool CKKSPackedEncoding::Decode(size_t noiseScaleDeg, double scalingFactor, Scal
         // Z[X + 1/X]/(X^n + 1). This would change the complexity from n*logn to
         // roughly (n/2)*log(n/2). This change should be done together with the one
         // above.
-        DiscreteFourierTransform::FFTSpecial(realValues);
+        DiscreteFourierTransform::FFTSpecial(realValues, GetElementRingDimension() * 2);
 
         // clears all imaginary values for security reasons
         for (size_t i = 0; i < realValues.size(); ++i)
