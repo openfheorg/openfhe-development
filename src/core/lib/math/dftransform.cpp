@@ -206,27 +206,6 @@ std::vector<std::complex<double>> DiscreteFourierTransform::InverseTransform(std
     return invDftRemainder;
 }
 
-void DiscreteFourierTransform::FFTSpecialInvLazy(std::vector<std::complex<double>>& vals,
-                                                 const PrecomputedValues& prepValues) {
-    uint32_t size = vals.size();
-    for (size_t len = size; len >= 1; len >>= 1) {
-        for (size_t i = 0; i < size; i += len) {
-            size_t lenh = len >> 1;
-            size_t lenq = len << 2;
-            size_t gap  = prepValues.m_M / lenq;
-            for (size_t j = 0; j < lenh; ++j) {
-                size_t idx             = (lenq - (prepValues.m_rotGroup[j] % lenq)) * gap;
-                std::complex<double> u = vals[i + j] + vals[i + j + lenh];
-                std::complex<double> v = vals[i + j] - vals[i + j + lenh];
-                v *= prepValues.m_ksiPows[idx];
-                vals[i + j]        = u;
-                vals[i + j + lenh] = v;
-            }
-        }
-    }
-    BitReverse(vals);
-}
-
 void DiscreteFourierTransform::FFTSpecialInv(std::vector<std::complex<double>>& vals, uint32_t cyclOrder) {
     // check if the precomputed table exists for the given cyclotomic order
     const auto it = precomputedValues.find(cyclOrder);
@@ -236,10 +215,26 @@ void DiscreteFourierTransform::FFTSpecialInv(std::vector<std::complex<double>>& 
         OPENFHE_THROW(config_error, errMsg);
     }
 
-    FFTSpecialInvLazy(vals, it->second);
-    uint32_t size = vals.size();
-    for (size_t i = 0; i < size; ++i) {
-        vals[i] /= size;
+    const uint32_t valsSize = vals.size();
+    for (size_t len = valsSize; len >= 1; len >>= 1) {
+        for (size_t i = 0; i < valsSize; i += len) {
+            size_t lenh = len >> 1;
+            size_t lenq = len << 2;
+            size_t gap  = it->second.m_M / lenq;
+            for (size_t j = 0; j < lenh; ++j) {
+                size_t idx             = (lenq - (it->second.m_rotGroup[j] % lenq)) * gap;
+                std::complex<double> u = vals[i + j] + vals[i + j + lenh];
+                std::complex<double> v = vals[i + j] - vals[i + j + lenh];
+                v *= it->second.m_ksiPows[idx];
+                vals[i + j]        = u;
+                vals[i + j + lenh] = v;
+            }
+        }
+    }
+    BitReverse(vals);
+
+    for (size_t i = 0; i < valsSize; ++i) {
+        vals[i] /= valsSize;
     }
 }
 

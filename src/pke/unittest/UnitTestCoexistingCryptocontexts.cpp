@@ -85,11 +85,14 @@ TEST_F(UTGENERAL_CRYPTOCONTEXTS, coexisting_ckks_cryptocontexts) {
 
     // Setup crypto context 3 for testing (not used)
     CCParams<CryptoContextCKKSRNS> parameters3;
-    parameters3.SetMultiplicativeDepth(1);
-    parameters3.SetScalingModSize(30);
-    parameters3.SetRingDim(4096 * 2);
+    parameters3.SetMultiplicativeDepth(2);
+    parameters3.SetScalingModSize(50);
+    parameters3.SetRingDim(2048);
+    parameters3.SetDigitSize(3);
     parameters3.SetBatchSize(16);
-    parameters2.SetSecurityLevel(HEStd_NotSet);
+    parameters3.SetSecurityLevel(HEStd_NotSet);
+    parameters3.SetKeySwitchTechnique(BV);
+    parameters3.SetScalingTechnique(FIXEDMANUAL);
 
     CryptoContext<lbcrypto::DCRTPoly> cc3 = GenCryptoContext(parameters3);
     cc3->Enable(PKE);

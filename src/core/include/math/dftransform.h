@@ -127,7 +127,6 @@ private:
     // precomputedValues: key - cyclotomic order, data - values precomputed for the given cyclotomic order
     static std::unordered_map<uint32_t, PrecomputedValues> precomputedValues;
 
-    static void FFTSpecialInvLazy(std::vector<std::complex<double>>& vals, const PrecomputedValues& prepValues);
     static void BitReverse(std::vector<std::complex<double>>& vals);
 };
 
