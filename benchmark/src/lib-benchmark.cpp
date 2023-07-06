@@ -40,6 +40,7 @@
 #include "scheme/bfvrns/cryptocontext-bfvrns.h"
 #include "scheme/bgvrns/cryptocontext-bgvrns.h"
 #include "gen-cryptocontext.h"
+#include "math/dftransform.h"
 
 #include "benchmark/benchmark.h"
 
@@ -96,6 +97,48 @@ CryptoContext<DCRTPoly> GenerateBGVrnsContext() {
 
     return cc;
 }
+
+/**
+ * GenerateRandNumberVector generates a vector of real values in the range (-1,1)
+ * @param vecSize is number of elements in the returned vector
+ * @return generated vector
+*/
+std::vector<std::complex<double>> GenerateRandNumberVector(size_t vecSize) {
+    std::vector<std::complex<double>> result(vecSize);
+
+    std::uniform_real_distribution<double> uniform_real(-1.0, 1.0);
+    for (size_t i = 0; i < vecSize; ++i) {
+        result[i] = std::complex<double>(uniform_real(PseudoRandomNumberGenerator::GetPRNG()), 0);
+    }
+
+    return result;
+}
+
+void DFT_FFTSpecial(benchmark::State& state) {
+    const uint32_t ringDim1                 = 4096;
+    std::vector<std::complex<double>> vals1 = GenerateRandNumberVector(ringDim1 / 4);
+    DiscreteFourierTransform::Initialize(ringDim1 * 2, ringDim1 / 2);
+
+    const uint32_t ringDim2                 = 4096 * 4;
+    std::vector<std::complex<double>> vals2 = GenerateRandNumberVector(ringDim2 / 4);
+    DiscreteFourierTransform::Initialize(ringDim2 * 2, ringDim2 / 2);
+
+    const uint32_t ringDim3                 = 4096 * 16;
+    std::vector<std::complex<double>> vals3 = GenerateRandNumberVector(ringDim3 / 4);
+    DiscreteFourierTransform::Initialize(ringDim3 * 2, ringDim3 / 2);
+
+    while (state.KeepRunning()) {
+        DiscreteFourierTransform::FFTSpecial(vals1, ringDim1 * 2);
+        DiscreteFourierTransform::FFTSpecialInv(vals1, ringDim1 * 2);
+
+        DiscreteFourierTransform::FFTSpecial(vals2, ringDim2 * 2);
+        DiscreteFourierTransform::FFTSpecialInv(vals2, ringDim2 * 2);
+
+        DiscreteFourierTransform::FFTSpecial(vals3, ringDim3 * 2);
+        DiscreteFourierTransform::FFTSpecialInv(vals3, ringDim3 * 2);
+    }
+}
+BENCHMARK(DFT_FFTSpecial)->Unit(benchmark::kMicrosecond);
 
 void NTTTransform1024(benchmark::State& state) {
     usint m    = 2048;
