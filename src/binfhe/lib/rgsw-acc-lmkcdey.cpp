@@ -43,6 +43,7 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
     int32_t modHalf = mod >> 1;
     uint32_t N = params->GetN();
     uint32_t n = sv.GetLength();
+    uint32_t numAutoKeys = params->GetNumAutoKeys();
 
     // dim2, 0: for RGSW(X^si), 1: for automorphism keys
     // only w automorphism keys required
@@ -62,10 +63,9 @@ RingGSWACCKey RingGSWAccumulatorLMKCDEY::KeyGenAcc(const std::shared_ptr<RingGSW
     NativeInteger gen = NativeInteger(5);
     
     (*ek)[0][1][0] = KeyGenAuto(params, skNTT, 2*N - gen.ConvertToInt());
-
-    // m_window: window size, consider parameterization in the future
+    
 #pragma omp parallel for
-    for (size_t i = 1; i < m_window+1; i++)
+    for (size_t i = 1; i < numAutoKeys+1; i++)
     {
         (*ek)[0][1][i] = KeyGenAuto(params, skNTT, 
             gen.ModExp(i, 2*N).ConvertToInt());
@@ -80,6 +80,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
     uint32_t n      = a.GetLength();
     uint32_t Nh     = params->GetN() / 2;
     uint32_t M      = 2 * params->GetN();
+    uint32_t numAutoKeys = params->GetNumAutoKeys();
 
     NativeInteger MNative(M);
 
@@ -123,7 +124,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
         }
         nSkips++;
 
-        if(nSkips == m_window || i == 1){
+        if(nSkips == numAutoKeys || i == 1){
             Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
             nSkips = 0;
         }
@@ -154,7 +155,7 @@ void RingGSWAccumulatorLMKCDEY::EvalAcc(const std::shared_ptr<RingGSWCryptoParam
         }
         nSkips++;
 
-        if(nSkips == m_window || i == 1){
+        if(nSkips == numAutoKeys || i == 1){
             Automorphism(params, gen.ModExp(nSkips, M), (*ek)[0][1][nSkips], acc);
             nSkips = 0;
         }

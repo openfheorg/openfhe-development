@@ -40,10 +40,10 @@
 namespace lbcrypto {
 
 void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
-                                          double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,
-                                          BINFHE_METHOD method) {
+                                          double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR, 
+                                          uint32_t numAutoKeys, SECRET_KEY_DIST keyDist, BINFHE_METHOD method) {
     auto lweparams  = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
-    auto rgswparams = std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, UNIFORM_TERNARY, true);
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, numAutoKeys, method, std, keyDist, true);
     m_params        = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme  = std::make_shared<BinFHEScheme>(method);
 }
@@ -100,7 +100,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
 
     uint32_t n      = (set == TOY) ? 32 : 1305;
     auto lweparams  = std::make_shared<LWECryptoParams>(n, ringDim, q, Q, qKS, 3.19, 32);
-    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, q, baseG, 23, method, 3.19, UNIFORM_TERNARY,
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, q, baseG, 23, 0, method, 3.19, UNIFORM_TERNARY,
                                                             ((logQ != 11) && timeOptimization));
 
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
@@ -129,6 +129,9 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
         usint gadgetBase;  // gadget base used in the bootstrapping
         usint baseRK;      // base for the refreshing key
 
+        // number of Automorphism keys for LMKCDEY (> 0)
+        usint numAutoKeys;
+
         // for key distribution
         SECRET_KEY_DIST keyDist;
     };
@@ -136,25 +139,25 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     const double STD_DEV = 3.19;
     // clang-format off
     const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap({
-        //           numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase| baseRK| keyDist
-        { TOY,             { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23,   UNIFORM_TERNARY} },
-        { MEDIUM,          { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32,   UNIFORM_TERNARY} },
-        { STD128_LMKCDEY,  { 28,     2048,         458, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32,   GAUSSIAN       } },
-        { STD128_AP,       { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32,   UNIFORM_TERNARY} },
-        { STD128_APOPT,    { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32,   UNIFORM_TERNARY} },
-        { STD128,          { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32,   UNIFORM_TERNARY} },
-        { STD128_OPT,      { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32,   UNIFORM_TERNARY} },
-        { STD192,          { 37,     4096,        1024, 1024, 1 << 19, STD_DEV,     28,    1 << 13,  32,   UNIFORM_TERNARY} },
-        { STD192_OPT,      { 37,     4096,         805, 1024, 1 << 15, STD_DEV,     32,    1 << 13,  32,   UNIFORM_TERNARY} },
-        { STD256,          { 29,     4096,        1024, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46,   UNIFORM_TERNARY} },
-        { STD256_OPT,      { 29,     4096,         990, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46,   UNIFORM_TERNARY} },
-        { STD128Q,         { 50,     4096,        1024, 1024, 1 << 25, STD_DEV,     32,    1 << 25,  32,   UNIFORM_TERNARY} },
-        { STD128Q_OPT,     { 50,     4096,         585, 1024, 1 << 15, STD_DEV,     32,    1 << 25,  32,   UNIFORM_TERNARY} },
-        { STD192Q,         { 35,     4096,        1024, 1024, 1 << 17, STD_DEV,     64,    1 << 12,  32,   UNIFORM_TERNARY} },
-        { STD192Q_OPT,     { 35,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 12,  32,   UNIFORM_TERNARY} },
-        { STD256Q,         { 27,     4096,        2048, 2048, 1 << 16, STD_DEV,     16,    1 <<  7,  46,   UNIFORM_TERNARY} },
-        { STD256Q_OPT,     { 27,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 <<  7,  32,   UNIFORM_TERNARY} },
-        { SIGNED_MOD_TEST, { 28,     2048,         512, 1024,   PRIME, STD_DEV,     25,    1 <<  7,  23,   UNIFORM_TERNARY} },
+        //           numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase| baseRK| numAutoKeys| keyDist      
+        { TOY,             { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23,     9,  UNIFORM_TERNARY} },
+        { MEDIUM,          { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32,    10,  UNIFORM_TERNARY} },
+        { STD128_LMKCDEY,  { 28,     2048,         458, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32,    10,  GAUSSIAN       } },
+        { STD128_AP,       { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32,     0,  UNIFORM_TERNARY} },
+        { STD128_APOPT,    { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  9,  32,     0,  UNIFORM_TERNARY} },
+        { STD128,          { 27,     2048,         512, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32,     0,  UNIFORM_TERNARY} },
+        { STD128_OPT,      { 27,     2048,         502, 1024, 1 << 14, STD_DEV, 1 << 7,    1 <<  7,  32,     0,  UNIFORM_TERNARY} },
+        { STD192,          { 37,     4096,        1024, 1024, 1 << 19, STD_DEV,     28,    1 << 13,  32,     0,  UNIFORM_TERNARY} },
+        { STD192_OPT,      { 37,     4096,         805, 1024, 1 << 15, STD_DEV,     32,    1 << 13,  32,     0,  UNIFORM_TERNARY} },
+        { STD256,          { 29,     4096,        1024, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46,     0,  UNIFORM_TERNARY} },
+        { STD256_OPT,      { 29,     4096,         990, 2048, 1 << 14, STD_DEV, 1 << 7,    1 <<  8,  46,     0,  UNIFORM_TERNARY} },
+        { STD128Q,         { 50,     4096,        1024, 1024, 1 << 25, STD_DEV,     32,    1 << 25,  32,     0,  UNIFORM_TERNARY} },
+        { STD128Q_OPT,     { 50,     4096,         585, 1024, 1 << 15, STD_DEV,     32,    1 << 25,  32,     0,  UNIFORM_TERNARY} },
+        { STD192Q,         { 35,     4096,        1024, 1024, 1 << 17, STD_DEV,     64,    1 << 12,  32,     0,  UNIFORM_TERNARY} },
+        { STD192Q_OPT,     { 35,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 12,  32,     0,  UNIFORM_TERNARY} },
+        { STD256Q,         { 27,     4096,        2048, 2048, 1 << 16, STD_DEV,     16,    1 <<  7,  46,     0,  UNIFORM_TERNARY} },
+        { STD256Q_OPT,     { 27,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 <<  7,  32,     0,  UNIFORM_TERNARY} },
+        { SIGNED_MOD_TEST, { 28,     2048,         512, 1024,   PRIME, STD_DEV,     25,    1 <<  7,  23,     0,  UNIFORM_TERNARY} },
     });
     // clang-format on
 
@@ -176,7 +179,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
                           std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
                                                            params.stdDev, params.baseKS, params.keyDist);
     auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK,
-                                                            method, params.stdDev, params.keyDist);
+                                                            params.numAutoKeys, method, params.stdDev, params.keyDist);
 
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);

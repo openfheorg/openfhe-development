@@ -71,8 +71,6 @@ public:
                  const NativeVector& a) const override;
 
 private:
-    const uint32_t m_window = 10;
-
     RingGSWEvalKey KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
                             const LWEPlaintext& m) const;
                             

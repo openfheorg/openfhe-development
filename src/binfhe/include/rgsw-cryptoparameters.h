@@ -69,9 +69,10 @@ public:
    * @param method bootstrapping method (DM or CGGI or LMKCDEY)
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
-                                 BINFHE_METHOD method, double std, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY,
-                                 bool signEval = false)
-        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_method(method), m_keyDist(keyDist) {
+                                 uint32_t numAutoKeys, BINFHE_METHOD method, double std, 
+                                 SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, bool signEval = false)
+        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_numAutoKeys(numAutoKeys), m_method(method), 
+        m_keyDist(keyDist) {
         if (!IsPowerOfTwo(baseG)) {
             OPENFHE_THROW(config_error, "Gadget base should be a power of two.");
         }
@@ -116,6 +117,10 @@ public:
 
     uint32_t GetBaseR() const {
         return m_baseR;
+    }
+
+    uint32_t GetNumAutoKeys() const{
+        return m_numAutoKeys;
     }
 
     const std::vector<NativeInteger>& GetDigitsR() const {
@@ -233,6 +238,9 @@ private:
 
     // base used for the refreshing key (used only for DM bootstrapping)
     uint32_t m_baseR = 0;
+
+    // number of automorphism keys (used only for LMKCDEY bootstrapping)
+    uint32_t m_numAutoKeys = 0;
 
     // powers of m_baseR (used only for DM bootstrapping)
     std::vector<NativeInteger> m_digitsR;
