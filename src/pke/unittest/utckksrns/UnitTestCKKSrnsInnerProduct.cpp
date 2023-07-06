@@ -105,7 +105,7 @@ double CKKSrnsInnerProduct(const std::vector<double> testVec) {
 TEST_F(UTCKKSRNS_INNERPRODUCT, Test_CKKSrns_INNERPRODUCT) {
     std::vector<double> testVec{1, 2, 3, 4, 5};
 
-    for (uint i = 0; i < testVec.size(); i++) {
+    for (size_t i = 0; i < testVec.size(); i++) {
         testVec[i] += (testVec[i] / 100.0);
     }
     auto innerProductHE = CKKSrnsInnerProduct(testVec);

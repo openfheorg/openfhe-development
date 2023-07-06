@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "********************************************************************" << std::endl;
     std::vector<double> asDouble(vec.begin(), vec.end());
-    for (uint i = 0; i < asDouble.size(); i++) {
+    for (size_t i = 0; i < asDouble.size(); i++) {
         asDouble[i] += (asDouble[i] / 100.0);
     }
     bool ckksRes = innerProductCKKS(asDouble);
