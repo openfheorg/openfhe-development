@@ -69,14 +69,20 @@ public:
    * @param method bootstrapping method (DM or CGGI or LMKCDEY)
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
-                                 BINFHE_METHOD method, double std, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, 
+                                 BINFHE_METHOD method, double std, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY,
                                  bool signEval = false, uint32_t numAutoKeys = 10)
-        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_method(method), m_keyDist(keyDist), 
+        : m_N(N),
+          m_Q(Q),
+          m_q(q),
+          m_baseG(baseG),
+          m_baseR(baseR),
+          m_method(method),
+          m_keyDist(keyDist),
           m_numAutoKeys(numAutoKeys) {
         if (!IsPowerOfTwo(baseG)) {
             OPENFHE_THROW(config_error, "Gadget base should be a power of two.");
         }
-        if ((method == LMKCDEY) & (numAutoKeys == 0)){
+        if ((method == LMKCDEY) & (numAutoKeys == 0)) {
             OPENFHE_THROW(config_error, "numAutoKeys should be greater than 0.");
         }
 
@@ -122,7 +128,7 @@ public:
         return m_baseR;
     }
 
-    uint32_t GetNumAutoKeys() const{
+    uint32_t GetNumAutoKeys() const {
         return m_numAutoKeys;
     }
 
@@ -185,6 +191,7 @@ public:
         ar(::cereal::make_nvp("bs", m_dgg.GetStd()));
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
+        ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
     }
 
     template <class Archive>
@@ -204,6 +211,7 @@ public:
         m_dgg.SetStd(sigma);
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
+        ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
 
         PreCompute();
     }
