@@ -69,12 +69,15 @@ public:
    * @param method bootstrapping method (DM or CGGI or LMKCDEY)
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
-                                 uint32_t numAutoKeys, BINFHE_METHOD method, double std, 
-                                 SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, bool signEval = false)
-        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_numAutoKeys(numAutoKeys), m_method(method), 
-        m_keyDist(keyDist) {
+                                 BINFHE_METHOD method, double std, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, 
+                                 bool signEval = false, uint32_t numAutoKeys = 10)
+        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_method(method), m_keyDist(keyDist), 
+          m_numAutoKeys(numAutoKeys) {
         if (!IsPowerOfTwo(baseG)) {
             OPENFHE_THROW(config_error, "Gadget base should be a power of two.");
+        }
+        if ((method == LMKCDEY) & (numAutoKeys == 0)){
+            OPENFHE_THROW(config_error, "numAutoKeys should be greater than 0.");
         }
 
         m_dgg.SetStd(std);
@@ -239,9 +242,6 @@ private:
     // base used for the refreshing key (used only for DM bootstrapping)
     uint32_t m_baseR = 0;
 
-    // number of automorphism keys (used only for LMKCDEY bootstrapping)
-    uint32_t m_numAutoKeys = 0;
-
     // powers of m_baseR (used only for DM bootstrapping)
     std::vector<NativeInteger> m_digitsR;
 
@@ -277,6 +277,9 @@ private:
 
     // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
     SECRET_KEY_DIST m_keyDist = UNIFORM_TERNARY;
+
+    // number of automorphism keys (used only for LMKCDEY bootstrapping)
+    uint32_t m_numAutoKeys = 0;
 };
 
 }  // namespace lbcrypto

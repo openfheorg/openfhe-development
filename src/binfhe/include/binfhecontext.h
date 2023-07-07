@@ -74,8 +74,8 @@ public:
    * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q, double std,
-                               uint32_t baseKS, uint32_t baseG, uint32_t baseR, uint32_t numAutoKeys = 1,
-                               SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, BINFHE_METHOD method = GINX);
+                               uint32_t baseKS, uint32_t baseG, uint32_t baseR, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, 
+                               BINFHE_METHOD method = GINX, uint32_t numAutoKeys = 10);
 
     /**
    * Creates a crypto context using custom parameters.
