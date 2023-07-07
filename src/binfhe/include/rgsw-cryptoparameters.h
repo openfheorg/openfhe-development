@@ -70,10 +70,20 @@ public:
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
                                  BINFHE_METHOD method, double std, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY,
-                                 bool signEval = false)
-        : m_N(N), m_Q(Q), m_q(q), m_baseG(baseG), m_baseR(baseR), m_method(method), m_keyDist(keyDist) {
+                                 bool signEval = false, uint32_t numAutoKeys = 10)
+        : m_N(N),
+          m_Q(Q),
+          m_q(q),
+          m_baseG(baseG),
+          m_baseR(baseR),
+          m_method(method),
+          m_keyDist(keyDist),
+          m_numAutoKeys(numAutoKeys) {
         if (!IsPowerOfTwo(baseG)) {
             OPENFHE_THROW(config_error, "Gadget base should be a power of two.");
+        }
+        if ((method == LMKCDEY) & (numAutoKeys == 0)) {
+            OPENFHE_THROW(config_error, "numAutoKeys should be greater than 0.");
         }
 
         m_dgg.SetStd(std);
@@ -116,6 +126,10 @@ public:
 
     uint32_t GetBaseR() const {
         return m_baseR;
+    }
+
+    uint32_t GetNumAutoKeys() const {
+        return m_numAutoKeys;
     }
 
     const std::vector<NativeInteger>& GetDigitsR() const {
@@ -177,6 +191,7 @@ public:
         ar(::cereal::make_nvp("bs", m_dgg.GetStd()));
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
+        ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
     }
 
     template <class Archive>
@@ -196,6 +211,7 @@ public:
         m_dgg.SetStd(sigma);
         ar(::cereal::make_nvp("bdigitsG", m_digitsG));
         ar(::cereal::make_nvp("bparams", m_polyParams));
+        ar(::cereal::make_nvp("numAutoKeys", m_numAutoKeys));
 
         PreCompute();
     }
@@ -269,6 +285,9 @@ private:
 
     // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
     SECRET_KEY_DIST m_keyDist = UNIFORM_TERNARY;
+
+    // number of automorphism keys (used only for LMKCDEY bootstrapping)
+    uint32_t m_numAutoKeys = 0;
 };
 
 }  // namespace lbcrypto
