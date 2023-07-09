@@ -96,32 +96,32 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
     uint32_t digitsG2 = digitsG << 1;
     auto Gpow         = params->GetGPower();
     auto polyParams   = params->GetPolyParams();
-    auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG2, 2);
+    auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG2 - 2, 2);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(Q);
 
     // tempA is introduced to minimize the number of NTTs
-    std::vector<NativePoly> tempA(digitsG2);
+    std::vector<NativePoly> tempA(digitsG2 - 2);
 
-    for (size_t i = 0; i < digitsG2; ++i) {
+    for (size_t i = 0; i < digitsG2 - 2; ++i) {
         (*result)[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
         tempA[i]        = (*result)[i][0];
         (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
     }
 
     if (m > 0) {
-        for (size_t i = 0; i < digitsG; ++i) {
+        for (size_t i = 0; i < digitsG - 1; ++i) {
             // Add G Multiple
-            (*result)[2 * i][0][0].ModAddEq(Gpow[i], Q);
+            (*result)[2 * i][0][0].ModAddEq(Gpow[i + 1], Q);
             // [a,as+e] + G
-            (*result)[2 * i + 1][1][0].ModAddEq(Gpow[i], Q);
+            (*result)[2 * i + 1][1][0].ModAddEq(Gpow[i + 1], Q);
         }
     }
 
     // 3*digitsG2 NTTs are called
     result->SetFormat(Format::EVALUATION);
-    for (size_t i = 0; i < digitsG2; ++i) {
+    for (size_t i = 0; i < digitsG2 - 2; ++i) {
         tempA[i].SetFormat(Format::EVALUATION);
         (*result)[i][1] += tempA[i] * skNTT;
     }
@@ -142,10 +142,10 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     auto polyParams   = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements();
-    std::vector<NativePoly> dct(digitsG2);
+    std::vector<NativePoly> dct(digitsG2 - 2);
 
     // initialize dct to zeros
-    for (size_t i = 0; i < digitsG2; ++i)
+    for (size_t i = 0; i < digitsG2 - 2; ++i)
         dct[i] = NativePoly(polyParams, Format::COEFFICIENT, true);
 
     // calls 2 NTTs
@@ -154,7 +154,7 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
 
     SignedDigitDecompose(params, ct, dct);
 
-    for (size_t i = 0; i < digitsG2; ++i)
+    for (size_t i = 0; i < digitsG2 - 2; ++i)
         dct[i].SetFormat(Format::EVALUATION);
 
     // First obtain both monomial(index) for sk = 1 and monomial(-index) for sk = -1
@@ -177,7 +177,7 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     const std::vector<std::vector<NativePoly>>& ev1 = ek1->GetElements();
     for (size_t j = 0; j < 2; ++j) {
         NativePoly temp1(dct[0] * ev1[0][j]);
-        for (size_t l = 1; l < digitsG2; ++l)
+        for (size_t l = 1; l < digitsG2 - 2; ++l)
             temp1 += (dct[l] * ev1[l][j]);
         acc->GetElements()[j] += (temp1 *= monomial);
     }
@@ -185,12 +185,12 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     const std::vector<std::vector<NativePoly>>& ev2 = ek2->GetElements();
     // for elements[0]:
     NativePoly temp1(dct[0] * ev2[0][0]);
-    for (size_t l = 1; l < digitsG2; ++l)
+    for (size_t l = 1; l < digitsG2 - 2; ++l)
         temp1 += (dct[l] * ev2[l][0]);
     acc->GetElements()[0] += (temp1 *= monomialNeg);
     // for elements[1]:
     NativePoly temp2(dct[0] * ev2[0][1]);
-    for (size_t l = 1; l < digitsG2; ++l)
+    for (size_t l = 1; l < digitsG2 - 2; ++l)
         temp2 += (dct[l] *= ev2[l][1]);
     acc->GetElements()[1] += (temp2 *= monomialNeg);
 }

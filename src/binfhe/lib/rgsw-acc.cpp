@@ -81,7 +81,13 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
             const NativeInteger& t           = input[j][k];
             NativeInteger::SignedNativeInt d = (t < QHalf) ? t.ConvertToInt() : (t.ConvertToInt() - Q_int);
 
-            for (size_t l = 0; l < digitsG; ++l) {
+            NativeInteger::SignedNativeInt r = d << gBitsMaxBits;
+            r >>= gBitsMaxBits;
+
+            d -= r;
+            d >>= gBits;
+
+            for (size_t l = 0; l < digitsG - 1; ++l) {
                 // remainder is signed
                 // VARIANT A: This approach gives a slightly better performance
                 NativeInteger::SignedNativeInt r = d << gBitsMaxBits;
@@ -124,8 +130,14 @@ void RingGSWAccumulator::SignedDigitDecompose(const std::shared_ptr<RingGSWCrypt
     for (size_t k = 0; k < N; ++k) {
         const NativeInteger& t           = input[k];
         NativeInteger::SignedNativeInt d = (t < QHalf) ? t.ConvertToInt() : (t.ConvertToInt() - Q_int);
+        
+        NativeInteger::SignedNativeInt r = d << gBitsMaxBits;
+        r >>= gBitsMaxBits;
 
-        for (size_t l = 0; l < digitsG; ++l) {
+        d -= r;
+        d >>= gBits;
+
+        for (size_t l = 0; l < digitsG - 1; ++l) {
             // remainder is signed
             NativeInteger::SignedNativeInt r = d << gBitsMaxBits;
             r >>= gBitsMaxBits;
