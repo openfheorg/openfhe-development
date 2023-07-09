@@ -93,7 +93,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
     uint32_t digitsG2 = digitsG << 1;
     auto polyParams   = params->GetPolyParams();
     auto Gpow         = params->GetGPower();
-    auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG2, 2);
+    auto result       = std::make_shared<RingGSWEvalKeyImpl>(digitsG2 - 2, 2);
 
     DiscreteUniformGeneratorImpl<NativeVector> dug;
     dug.SetModulus(Q);
@@ -107,9 +107,9 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
     }
 
     // tempA is introduced to minimize the number of NTTs
-    std::vector<NativePoly> tempA(digitsG2);
+    std::vector<NativePoly> tempA(digitsG2 - 2);
 
-    for (size_t i = 0; i < digitsG2; ++i) {
+    for (size_t i = 0; i < digitsG2 - 2; ++i) {
         // populate result[i][0] with uniform random a
         (*result)[i][0] = NativePoly(dug, polyParams, Format::COEFFICIENT);
         tempA[i]        = (*result)[i][0];
@@ -117,24 +117,24 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
         (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
     }
 
-    for (size_t i = 0; i < digitsG; ++i) {
+    for (size_t i = 0; i < digitsG - 1; ++i) {
         if (!isReducedMM) {
             // Add G Multiple
-            (*result)[2 * i][0][mm].ModAddEq(Gpow[i], Q);
+            (*result)[2 * i][0][mm].ModAddEq(Gpow[i + 1], Q);
             // [a,as+e] + X^m*G
-            (*result)[2 * i + 1][1][mm].ModAddEq(Gpow[i], Q);
+            (*result)[2 * i + 1][1][mm].ModAddEq(Gpow[i + 1], Q);
         }
         else {
             // Subtract G Multiple
-            (*result)[2 * i][0][mm].ModSubEq(Gpow[i], Q);
+            (*result)[2 * i][0][mm].ModSubEq(Gpow[i + 1], Q);
             // [a,as+e] - X^m*G
-            (*result)[2 * i + 1][1][mm].ModSubEq(Gpow[i], Q);
+            (*result)[2 * i + 1][1][mm].ModSubEq(Gpow[i + 1], Q);
         }
     }
 
     // 3*digitsG2 NTTs are called
     result->SetFormat(Format::EVALUATION);
-    for (size_t i = 0; i < digitsG2; ++i) {
+    for (size_t i = 0; i < digitsG2 - 2; ++i) {
         tempA[i].SetFormat(Format::EVALUATION);
         (*result)[i][1] += tempA[i] * skNTT;
     }
@@ -149,10 +149,10 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
     auto polyParams   = params->GetPolyParams();
 
     std::vector<NativePoly> ct = acc->GetElements();
-    std::vector<NativePoly> dct(digitsG2);
+    std::vector<NativePoly> dct(digitsG2 - 2);
 
     // initialize dct to zeros
-    for (size_t i = 0; i < digitsG2; i++)
+    for (size_t i = 0; i < digitsG2 - 2; i++)
         dct[i] = NativePoly(polyParams, Format::COEFFICIENT, true);
 
     // calls 2 NTTs
@@ -162,7 +162,7 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
     SignedDigitDecompose(params, ct, dct);
 
     // calls digitsG2 NTTs
-    for (size_t j = 0; j < digitsG2; ++j)
+    for (size_t j = 0; j < digitsG2 - 2; ++j)
         dct[j].SetFormat(Format::EVALUATION);
 
     // acc = dct * ek (matrix product);
@@ -170,12 +170,12 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
     // improvement
     const std::vector<std::vector<NativePoly>>& ev = ek->GetElements();
     // for elements[0]:
-    acc->GetElements()[0].SetValuesToZero();
-    for (size_t l = 1; l < digitsG2; ++l)
+    acc->GetElements()[0] = (dct[0] * ev[0][0]);
+    for (size_t l = 1; l < digitsG2 - 2; ++l)
         acc->GetElements()[0] += (dct[l] * ev[l][0]);
     // for elements[1]:
-    acc->GetElements()[1].SetValuesToZero();
-    for (size_t l = 1; l < digitsG2; ++l)
+    acc->GetElements()[1] = (dct[0] *= ev[0][1]);
+    for (size_t l = 1; l < digitsG2 - 2; ++l)
         acc->GetElements()[1] += (dct[l] *= ev[l][1]);
 }
 
