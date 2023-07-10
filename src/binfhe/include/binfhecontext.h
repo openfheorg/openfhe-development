@@ -245,7 +245,7 @@ public:
    * @param ct the ciphertext
    * @param *result plaintext result
    * @param p - plaintext modulus
-   * @param DiffQ Decrypt according to DiffQ instead of m_q if DiffQ != 0 // Andreea: this is not given as a parameter
+   * @param DiffQ Decrypt according to DiffQ instead of m_q if DiffQ != 0
    */
     void Decrypt(ConstLWEPrivateKey& sk, ConstLWECiphertext& ct, LWEPlaintext* result, LWEPlaintextModulus p = 4) const;
 
@@ -263,7 +263,7 @@ public:
    * Generates boostrapping keys
    *
    * @param sk secret key
-   * @param DiffQ BTKeyGen according to DiffQ instead of m_q if DiffQ != 0 // Andreea: this is not given as a parameter
+   * @param DiffQ BTKeyGen according to DiffQ instead of m_q if DiffQ != 0
    */
     void BTKeyGen(ConstLWEPrivateKey& sk, KEYGEN_MODE keygenMode = SYM_ENCRYPT);
 

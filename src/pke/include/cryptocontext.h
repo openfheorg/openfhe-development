@@ -2970,7 +2970,7 @@ public:
    * @param numSlotsCKKS number of slots in CKKS encryption
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
-   * Andreea: add an overload for when BinFHEContext is already generated and fed as a parameter
+   * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
     std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(SecurityLevel sl = HEStd_128_classic,
                                                                 bool arbFunc = false, uint32_t logQ = 29,
@@ -3054,7 +3054,7 @@ public:
    * @param numSlotsCKKS number of slots in CKKS encryption
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
-   * Andreea: add an overload for when BinFHEContext is already generated and fed as a parameter
+   * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
     std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(SecurityLevel sl = HEStd_128_classic,
                                                                      bool arbFunc = false, uint32_t logQ = 29,

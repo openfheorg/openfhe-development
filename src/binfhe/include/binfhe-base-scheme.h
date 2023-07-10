@@ -173,10 +173,10 @@ public:
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param &EK a shared pointer to the bootstrapping keys
-   * @param ct1 input ciphertext // Andreea: this parameter is not given
+   * @param ct1 input ciphertext
    * @param lwescheme a shared pointer to additive LWE scheme
    * @param beta the error bound
-   * @param bigger_q the ciphertext modulus // Andreea: this parameter is not given
+   * @param bigger_q the ciphertext modulus
    * @param schemeSwitch flag that indicates if it should be compatible to scheme switching
    * @return a shared pointer to the resulting ciphertext
    */
@@ -230,7 +230,7 @@ private:
                                      ConstLWECiphertext& ct, const Func f, const NativeInteger& fmod) const;
 
     /**
-   * Bootstraps a fresh ciphertext // Andreea: the parameters are not accurate with the BootstrapFunc header
+   * Bootstraps a fresh ciphertext
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param &EK a shared pointer to the bootstrapping keys

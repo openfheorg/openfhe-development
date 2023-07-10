@@ -33,7 +33,6 @@
   Examples for scheme switching between CKKS and FHEW and back, with intermediate computations
  */
 
-#define PROFILE
 #include "openfhe.h"
 #include "../../binfhe/include/binfhecontext.h"
 
@@ -54,9 +53,9 @@ std::vector<int32_t> RotateInt(const std::vector<int32_t>&, int32_t);
 int main() {
     SwitchCKKSToFHEW();
     SwitchFHEWtoCKKS();
-    FloorViaSchemeSwitching();
+    // FloorViaSchemeSwitching();
     // FuncViaSchemeSwitching();
-    PolyViaSchemeSwitching();
+    // PolyViaSchemeSwitching();
     ComparisonViaSchemeSwitching();
     ArgminViaSchemeSwitching();
     ArgminViaSchemeSwitchingAlt();
@@ -385,7 +384,7 @@ void SwitchFHEWtoCKKS() {
     // Step 6'''. Decrypt
     Plaintext plaintextDec2;
     cc->Decrypt(keys.secretKey, cTemp2, &plaintextDec2);
-    plaintextDec2->SetLength(ringDim / 2);
+    plaintextDec2->SetLength(slots);
     std::cout << "Switched CKKS decryption 4: " << plaintextDec2 << std::endl;
 }
 
@@ -868,9 +867,6 @@ void ArgminViaSchemeSwitching() {
     std::cout << "\n-----ArgminViaSchemeSwitching-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back\n" << std::endl;
 
-    TimeVar t;
-    double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEvalMin(0.0), timeEvalMax(0.0);
-
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
@@ -883,7 +879,7 @@ void ArgminViaSchemeSwitching() {
     uint32_t slots          = 16;  // sparsely-packed
     uint32_t batchSize      = slots;
     uint32_t numValues      = 16;
-    ScalingTechnique scTech = FIXEDAUTO;
+    ScalingTechnique scTech = FLEXIBLEAUTO;
     uint32_t multDepth =
         9 + 3 + 1 + static_cast<int>(std::log2(numValues));  // 13 for FHEW to CKKS, log2(numValues) for argmin
     if (scTech == FLEXIBLEAUTOEXT)
@@ -915,16 +911,11 @@ void ArgminViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
-    timeSetup       = TOC(t);
-
+    auto FHEWparams     = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
-    TIC(t);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot);
-    timeKeyGen = TOC(t);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
@@ -936,7 +927,6 @@ void ArgminViaSchemeSwitching() {
     auto beta        = ccLWE.GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
 
-    TIC(t);
     uint32_t init_level     = 0;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
@@ -945,7 +935,6 @@ void ArgminViaSchemeSwitching() {
     cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
     // But we can also include the scaleSign in pLWE (here we use the fact both pLWE and scaleSign are powers of two)
     // cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
-    timePrecomp = TOC(t);
 
     // Step 3: Encoding and encryption of inputs
     // Inputs
@@ -966,9 +955,7 @@ void ArgminViaSchemeSwitching() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    TIC(t);
     auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
-    timeEvalMin = TOC(t);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -984,9 +971,7 @@ void ArgminViaSchemeSwitching() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    TIC(t);
-    result      = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
-    timeEvalMax = TOC(t);
+    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1001,20 +986,11 @@ void ArgminViaSchemeSwitching() {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
-
-    std::cout << "Time to compute the scheme switching setup: " << timeSetup << " ms" << std::endl;
-    std::cout << "Time to compute the scheme switching key generation: " << timeKeyGen << " ms" << std::endl;
-    std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
-    std::cout << "Time to compute min and argmin via scheme switching: " << timeEvalMin << " ms" << std::endl;
-    std::cout << "Time to compute max and argmax via scheme switching: " << timeEvalMax << " ms" << std::endl;
 }
 
 void ArgminViaSchemeSwitchingAlt() {
     std::cout << "\n-----ArgminViaSchemeSwitchingAlt-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back\n" << std::endl;
-
-    TimeVar t;
-    double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEvalMin(0.0), timeEvalMax(0.0);
 
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
@@ -1030,7 +1006,7 @@ void ArgminViaSchemeSwitchingAlt() {
     uint32_t slots          = 16;  // sparsely-packed
     uint32_t batchSize      = slots;
     uint32_t numValues      = 16;
-    ScalingTechnique scTech = FIXEDAUTO;
+    ScalingTechnique scTech = FLEXIBLEAUTOEXT;
     uint32_t multDepth =
         9 + 3 + 1 + static_cast<int>(std::log2(numValues));  // 13 for FHEW to CKKS, log2(numValues) for argmin
     if (scTech == FLEXIBLEAUTOEXT)
@@ -1062,16 +1038,11 @@ void ArgminViaSchemeSwitchingAlt() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
-    timeSetup       = TOC(t);
-
+    auto FHEWparams     = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
-    TIC(t);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot, alt);
-    timeKeyGen = TOC(t);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
@@ -1083,7 +1054,6 @@ void ArgminViaSchemeSwitchingAlt() {
     auto beta        = ccLWE.GetBeta().ConvertToInt();
     auto pLWE        = modulus_LWE / (2 * beta);  // Large precision
 
-    TIC(t);
     uint32_t init_level     = 0;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
@@ -1092,7 +1062,6 @@ void ArgminViaSchemeSwitchingAlt() {
     cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
     // But we can also include the scaleSign in pLWE (here we use the fact both pLWE and scaleSign are powers of two)
     // cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
-    timePrecomp = TOC(t);
 
     // Step 3: Encoding and encryption of inputs
 
@@ -1114,9 +1083,7 @@ void ArgminViaSchemeSwitchingAlt() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    TIC(t);
     auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
-    timeEvalMin = TOC(t);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1132,9 +1099,7 @@ void ArgminViaSchemeSwitchingAlt() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    TIC(t);
-    result      = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
-    timeEvalMax = TOC(t);
+    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1149,23 +1114,11 @@ void ArgminViaSchemeSwitchingAlt() {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
-
-    std::cout << "Time to compute the scheme switching setup: " << timeSetup << " ms" << std::endl;
-    std::cout << "Time to compute the scheme switching key generation: " << timeKeyGen << " ms" << std::endl;
-    std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
-    std::cout << "Time to compute min and argmin via scheme switching: " << timeEvalMin << " ms" << std::endl;
-    std::cout << "Time to compute max and argmax via scheme switching: " << timeEvalMax << " ms" << std::endl;
 }
 
 void ArgminViaSchemeSwitchingUnit() {
     std::cout << "\n-----ArgminViaSchemeSwitchingUnit-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back\n" << std::endl;
-
-    TimeVar t, tTotal;
-
-    TIC(tTotal);
-
-    double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEvalMin(0.0), timeEvalMax(0.0);
 
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
@@ -1213,22 +1166,17 @@ void ArgminViaSchemeSwitchingUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    TIC(t);
     auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
-    timeSetup       = TOC(t);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
-    TIC(t);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot);
-    timeKeyGen = TOC(t);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
     std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
-    TIC(t);
     uint32_t init_level     = 0;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
@@ -1236,7 +1184,6 @@ void ArgminViaSchemeSwitchingUnit() {
         init_level = 1;
     // Here we assume the message does not need scaling, as they are in the unit circle.
     cc->EvalCompareSSPrecompute(1, init_level, 1);
-    timePrecomp = TOC(t);
 
     // Step 3: Encoding and encryption of inputs
 
@@ -1271,9 +1218,7 @@ void ArgminViaSchemeSwitchingUnit() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    TIC(t);
     auto result = cc->EvalMinSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
-    timeEvalMin = TOC(t);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1289,9 +1234,7 @@ void ArgminViaSchemeSwitchingUnit() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    TIC(t);
-    result      = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
-    timeEvalMax = TOC(t);
+    result = cc->EvalMaxSchemeSwitching(c1, keys.publicKey, numValues, slots, oneHot);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1306,23 +1249,11 @@ void ArgminViaSchemeSwitchingUnit() {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
-
-    std::cout << "Time to compute the scheme switching setup: " << timeSetup << " ms" << std::endl;
-    std::cout << "Time to compute the scheme switching key generation: " << timeKeyGen << " ms" << std::endl;
-    std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
-    std::cout << "Time to compute min and argmin via scheme switching: " << timeEvalMin << " ms" << std::endl;
-    std::cout << "Time to compute max and argmax via scheme switching: " << timeEvalMax << " ms" << std::endl;
 }
 
 void ArgminViaSchemeSwitchingAltUnit() {
     std::cout << "\n-----ArgminViaSchemeSwitchingAltUnit-----\n" << std::endl;
     std::cout << "Output precision is only wrt the operations in CKKS after switching back\n" << std::endl;
-
-    TimeVar t, tTotal;
-
-    TIC(tTotal);
-
-    double timeKeyGen(0.0), timeSetup(0.0), timePrecomp(0.0), timeEvalMin(0.0), timeEvalMax(0.0);
 
     // Step 1: Setup CryptoContext for CKKS
     uint32_t scaleModSize = 50;
@@ -1372,22 +1303,17 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    TIC(t);
     auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
-    timeSetup       = TOC(t);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
-    TIC(t);
     cc->EvalSchemeSwitchingKeyGen(keys, privateKeyFHEW, numValues, oneHot, alt);
-    timeKeyGen = TOC(t);
 
     std::cout << "FHEW scheme is using lattice parameter " << ccLWE.GetParams()->GetLWEParams()->Getn();
     std::cout << ", logQ " << logQ_ccLWE;
     std::cout << ", and modulus q " << ccLWE.GetParams()->GetLWEParams()->Getq() << std::endl << std::endl;
 
-    TIC(t);
     uint32_t init_level     = 0;
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
@@ -1395,7 +1321,6 @@ void ArgminViaSchemeSwitchingAltUnit() {
         init_level = 1;
     // Here we assume the message does not need scaling, as they are in the unit circle.
     cc->EvalCompareSSPrecompute(1, init_level, 1);
-    timePrecomp = TOC(t);
 
     // Step 3: Encoding and encryption of inputs
 
@@ -1430,9 +1355,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
     // Step 4: Argmin evaluation
-    TIC(t);
     auto result = cc->EvalMinSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
-    timeEvalMin = TOC(t);
 
     Plaintext ptxtMin;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMin);
@@ -1448,9 +1371,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
         std::cout << "Argmin: " << ptxtMin << std::endl;
     }
 
-    TIC(t);
-    result      = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
-    timeEvalMax = TOC(t);
+    result = cc->EvalMaxSchemeSwitchingAlt(c1, keys.publicKey, numValues, slots, oneHot);
 
     Plaintext ptxtMax;
     cc->Decrypt(keys.secretKey, result[0], &ptxtMax);
@@ -1465,12 +1386,6 @@ void ArgminViaSchemeSwitchingAltUnit() {
         ptxtMax->SetLength(1);
         std::cout << "Argmax: " << ptxtMax << std::endl;
     }
-
-    std::cout << "Time to compute the scheme switching setup: " << timeSetup << " ms" << std::endl;
-    std::cout << "Time to compute the scheme switching key generation: " << timeKeyGen << " ms" << std::endl;
-    std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
-    std::cout << "Time to compute min and argmin via scheme switching: " << timeEvalMin << " ms" << std::endl;
-    std::cout << "Time to compute max and argmax via scheme switching: " << timeEvalMax << " ms" << std::endl;
 }
 
 void PolyViaSchemeSwitching() {

@@ -41,8 +41,8 @@ separately the messages by p, and input plaintexts in the unit circle, then scal
 in FHEW.
 
 After the setup and precomputation, the user should call `EvalCKKStoFHEW`. The number of slots to be converted is specified by the user,
-otherwise it defaults to the number of slots specified in the CKKS scheme. Note that FHEW plaintexts are integers, so the messages from CKKS
-will be rounded.
+otherwise it defaults to the number of slots specified in the CKKS scheme. Note that FHEW plaintexts are integers, so the messages from
+CKKS will be rounded.
 
 **FHEW->CKKS**
 We can transform a number of FHEW ciphertexts (symmetric key encryption) into a CKKS ciphertext (public key encryption) encrypting in
@@ -67,8 +67,8 @@ by the FHEW plaintext modulus used, which can be large depending on the target a
 message space is large.
 
 **CKKS->FHEW->operation->CKKS**
-With the previous two modules in place, we can also work with CKKS ciphertexts, convert them to FHEW, perform operations on them, and then
-convert the result back to CKKS.
+With the previous two modules in place, we can also work with CKKS ciphertexts, convert them to FHEW, perform operations on them, and
+then convert the result back to CKKS.
 
 The user has to generate a CKKS cryptocontext and keys with the desired parameters, then call `EvalSchemeSwitchingSetup` and
 `EvalSchemeSwitchingKeyGen`, which combine the setups for both conversions, then the precomputation for the CKKS to FHEW conversion
@@ -89,10 +89,10 @@ correctly compare numbers that are very close to each other, the user has to sca
 Currently, the code does not support an arbitrary function to be applied to the intermediate FHEW ciphertexts if they have to be converted
 back to CKKS. The reason is that (1) the current implementation of `GenerateLUTviaFunction` works only for the small decryption ciphertext
 modulus q = 2048, which allows a plaintext modulus of at most p = 8 (`GetMaxPlaintextSpace()`) and (2) the current implementation of light
-bootstrapping to convert a FHEW ciphertext to a CKKS ciphertext approximates correctly the modular function only arround zero, which requires
+bootstrapping to convert FHEW ciphertexts to a CKKS ciphertext approximates correctly the modular function only arround zero, which requires
 the messagee m << p. Instead of specifying directly the larger plaintext modulus in `EvalFHEWtoCKKS`, which is required to postprocess
 the ciphertext obtained after the Chebyshev evaluation, one can supply the plaintext modulus as 4, which returns a ciphertext
-encrypting $y=sin(2*pi*x/p)$. Then, one can apply $arcsin(y)*p/(2*pi)$. However, this also does not cover the whole initial message space,
+encrypting $y=sin(2pi*x/p)$. Then, one can apply $arcsin(y)*p/(2pi)$. However, this also does not cover the whole initial message space,
 since arcsin has codomain $[-pi/2, pi/2]$. This issue is exemplified in the example `FloorViaSchemeSwitching()`.
 
 **FHEW->CKKS->operation->FHEW**
@@ -128,3 +128,9 @@ exemplified in `ArgminViaSchemeSwitchingUnit()` and `ArgminViaSchemeSwitchingUni
 
 Finally, the user should call `EvalMinSchemeSwitching` or `EvalMinSchemeSwitchingAlt` to obtain the minimum value and the argmin, and
 respectively, `EvalMaxSchemeSwitching` or `EvalMaxSchemeSwitchingAlt` to obtain the maximum value and the argmax.
+
+**Current limitations**
+- Scheme switching is currently supported only for CKKS and FHEW/TFHE.
+- Switching from CKKS to FHEW is only supported for the first consecutive slots in the CKKS ciphertext.
+- Switching to CKKS the result of an arbitrary function evaluation in FHEW is not yet supported. Only functions with binary outputs or small outputs with respect to the FHEW plaintext space are supported.
+- Computing the min/max via scheme switching is only implemented for vectors of size a power of two.

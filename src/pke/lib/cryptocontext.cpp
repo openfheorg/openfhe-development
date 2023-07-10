@@ -585,8 +585,7 @@ template <typename Element>
 void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
                                                            uint32_t numValues, bool oneHot, bool alt, uint32_t dim1CF,
                                                            uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
-    if (keyPair.secretKey == NULL ||
-        this->Mismatched(keyPair.secretKey->GetCryptoContext())) {  // Andreea: Add test for lwesk?
+    if (keyPair.secretKey == NULL || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
                       "Private key passed to EvalSchemeSwitchingKeyGen was not generated with this crypto context");
     }
@@ -729,8 +728,7 @@ DecryptResult CryptoContextImpl<DCRTPoly>::Decrypt(ConstCiphertext<DCRTPoly> cip
     DecryptResult result;
 
     if ((ciphertext->GetEncodingType() == CKKS_PACKED_ENCODING) &&
-        (ciphertext->GetElements()[0].GetParams()->GetParams().size() >
-         1))  // only one tower in DCRTPoly // Andreea: this comment should be the other way around
+        (ciphertext->GetElements()[0].GetParams()->GetParams().size() > 1))  // more than one tower in DCRTPoly
         result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<Poly>());
     else
         result = GetScheme()->Decrypt(ciphertext, privateKey, &decrypted->GetElement<NativePoly>());
