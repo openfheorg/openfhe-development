@@ -646,14 +646,36 @@ protected:
             Plaintext results;
 
             cResult = cc->EvalMult(ciphertext1, ciphertext2);
+
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(intArrayExpected->GetLength());
             EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue()) << failmsg << " EvalMult fails";
 
+            if (!((cc->getSchemeId() == SCHEME::BFVRNS_SCHEME) &&
+                  (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                       ->GetMultiplicationTechnique() == BEHZ))) {
+                cResult = cc->Compress(cResult, 1);
+                cc->Decrypt(kp.secretKey, cResult, &results);
+                results->SetLength(intArrayExpected->GetLength());
+                EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue())
+                    << failmsg << " EvalMult fails after Compress";
+            }
+
             cResult = ciphertext1 * ciphertext2;
+
             cc->Decrypt(kp.secretKey, cResult, &results);
             results->SetLength(intArrayExpected->GetLength());
             EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue()) << failmsg << " operator* fails";
+
+            if (!((cc->getSchemeId() == SCHEME::BFVRNS_SCHEME) &&
+                  (std::dynamic_pointer_cast<CryptoParametersBFVRNS>(cc->GetCryptoParameters())
+                       ->GetMultiplicationTechnique() == BEHZ))) {
+                cResult = cc->Compress(cResult, 1);
+                cc->Decrypt(kp.secretKey, cResult, &results);
+                results->SetLength(intArrayExpected->GetLength());
+                EXPECT_EQ(intArrayExpected->GetPackedValue(), results->GetPackedValue())
+                    << failmsg << " operator* fails after Compress";
+            }
 
             Ciphertext<Element> cmulInplace = ciphertext1->Clone();
             cmulInplace *= ciphertext2;
