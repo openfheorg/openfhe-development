@@ -903,4 +903,39 @@ void LeveledSHEBFVRNS::RelinearizeCore(Ciphertext<DCRTPoly>& ciphertext, const E
     cv.resize(2);
 }
 
+Ciphertext<DCRTPoly> LeveledSHEBFVRNS::Compress(ConstCiphertext<DCRTPoly> ciphertext, size_t towersLeft) const {
+    if (towersLeft != 1) {
+        OPENFHE_THROW(
+            openfhe_error,
+            "BFV Compress is currently supported only for the case when one RNS tower is left after compression.");
+    }
+
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersBFVRNS>(ciphertext->GetCryptoParameters());
+
+    if (cryptoParams->GetMultiplicationTechnique() == BEHZ) {
+        OPENFHE_THROW(openfhe_error,
+                      "BFV Compress is not currently supported for BEHZ. Use one of the HPS* methods instead.");
+    }
+
+    Ciphertext<DCRTPoly> result = std::make_shared<CiphertextImpl<DCRTPoly>>(*ciphertext);
+
+    std::vector<DCRTPoly>& cv = result->GetElements();
+
+    size_t sizeQ  = cryptoParams->GetElementParams()->GetParams().size();
+    size_t sizeQl = cv[0].GetNumOfElements();
+    size_t diffQl = sizeQ - sizeQl;
+    size_t levels = sizeQl - towersLeft;
+
+    for (size_t l = 0; l < levels; ++l) {
+        for (size_t i = 0; i < cv.size(); ++i) {
+            cv[i].DropLastElementAndScale(cryptoParams->GetQlQlInvModqlDivqlModq(diffQl + l),
+                                          cryptoParams->GetQlQlInvModqlDivqlModqPrecon(diffQl + l),
+                                          cryptoParams->GetqlInvModq(diffQl + l),
+                                          cryptoParams->GetqlInvModqPrecon(diffQl + l));
+        }
+    }
+
+    return result;
+}
+
 }  // namespace lbcrypto

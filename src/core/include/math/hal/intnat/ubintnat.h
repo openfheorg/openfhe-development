@@ -598,8 +598,10 @@ public:
    * @return is the result of multiply and round operation.
    */
     NativeIntegerT MultiplyAndRound(const NativeIntegerT& p, const NativeIntegerT& q) const {
-        NativeIntegerT ans = m_value * p.m_value;
-        return ans.DivideAndRound(q);
+        double value = static_cast<double>(m_value);
+        double qd    = static_cast<double>(q.m_value);
+        double pd    = static_cast<double>(p.m_value);
+        return static_cast<NativeInt>(pd * (value / qd) + 0.5);
     }
 
     /**
@@ -611,8 +613,10 @@ public:
    * @return is the result of multiply and round operation.
    */
     const NativeIntegerT& MultiplyAndRoundEq(const NativeIntegerT& p, const NativeIntegerT& q) {
-        this->MulEq(p);
-        this->DivideAndRoundEq(q);
+        double value = static_cast<double>(m_value);
+        double qd    = static_cast<double>(q.m_value);
+        double pd    = static_cast<double>(p.m_value);
+        m_value      = static_cast<NativeInt>(pd * (value / qd) + 0.5);
         return *this;
     }
 
