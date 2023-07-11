@@ -299,21 +299,16 @@ void KeySwitchBV::KeySwitchInPlace(Ciphertext<DCRTPoly>& ciphertext, const EvalK
     cv.resize(2);
 }
 
-std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::KeySwitchCore(DCRTPoly a, const EvalKey<DCRTPoly> evalKey) const {
-    const auto cryptoParamsBase                   = evalKey->GetCryptoParameters();
-    std::shared_ptr<std::vector<DCRTPoly>> digits = EvalKeySwitchPrecomputeCore(a, cryptoParamsBase);
-    std::shared_ptr<std::vector<DCRTPoly>> result = EvalFastKeySwitchCore(digits, evalKey, a.GetParams());
-    return result;
+std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::KeySwitchCore(const DCRTPoly& a,
+                                                                  const EvalKey<DCRTPoly> evalKey) const {
+    return EvalFastKeySwitchCore(EvalKeySwitchPrecomputeCore(a, evalKey->GetCryptoParameters()), evalKey,
+                                 a.GetParams());
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalKeySwitchPrecomputeCore(
-    DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
+    const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParamsBase);
-
-    uint32_t digitSize = cryptoParams->GetDigitSize();
-
-    auto decomposed = c.CRTDecompose(digitSize);
-    return std::make_shared<std::vector<DCRTPoly>>(decomposed.begin(), decomposed.end());
+    return std::make_shared<std::vector<DCRTPoly>>(c.CRTDecompose(cryptoParams->GetDigitSize()));
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchBV::EvalFastKeySwitchCore(

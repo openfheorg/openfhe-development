@@ -101,7 +101,7 @@ EvalKey<DCRTPoly> KeySwitchHYBRID::KeySwitchGenInternal(const PrivateKey<DCRTPol
 
     for (size_t part = 0; part < numPartQ; ++part) {
         DCRTPoly a = (ekPrev == nullptr) ? DCRTPoly(dug, paramsQP, Format::EVALUATION) :  // single-key HE
-                                         ekPrev->GetAVector()[part];                      // threshold HE
+                                           ekPrev->GetAVector()[part];                                      // threshold HE
         DCRTPoly e(dgg, paramsQP, Format::EVALUATION);
         DCRTPoly b(paramsQP, Format::EVALUATION, true);
 
@@ -321,16 +321,14 @@ DCRTPoly KeySwitchHYBRID::KeySwitchDownFirstElement(ConstCiphertext<DCRTPoly> ci
     return cv0;
 }
 
-std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(DCRTPoly a,
+std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::KeySwitchCore(const DCRTPoly& a,
                                                                       const EvalKey<DCRTPoly> evalKey) const {
-    const auto cryptoParamsBase                   = evalKey->GetCryptoParameters();
-    std::shared_ptr<std::vector<DCRTPoly>> digits = EvalKeySwitchPrecomputeCore(a, cryptoParamsBase);
-    std::shared_ptr<std::vector<DCRTPoly>> result = EvalFastKeySwitchCore(digits, evalKey, a.GetParams());
-    return result;
+    return EvalFastKeySwitchCore(EvalKeySwitchPrecomputeCore(a, evalKey->GetCryptoParameters()), evalKey,
+                                 a.GetParams());
 }
 
 std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeCore(
-    DCRTPoly c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
+    const DCRTPoly& c, std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParamsBase) const {
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(cryptoParamsBase);
 
     const std::shared_ptr<ParmType> paramsQl  = c.GetParams();
@@ -389,11 +387,11 @@ std::shared_ptr<std::vector<DCRTPoly>> KeySwitchHYBRID::EvalKeySwitchPrecomputeC
 
         uint32_t sizePartQl = partsCt[part].GetNumOfElements();
         partsCtCompl[part]  = partCtClone.ApproxSwitchCRTBasis(
-             cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
-             cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
-             cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
-             cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
-             cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
+            cryptoParams->GetParamsPartQ(part), cryptoParams->GetParamsComplPartQ(sizeQl - 1, part),
+            cryptoParams->GetPartQlHatInvModq(part, sizePartQl - 1),
+            cryptoParams->GetPartQlHatInvModqPrecon(part, sizePartQl - 1),
+            cryptoParams->GetPartQlHatModp(sizeQl - 1, part),
+            cryptoParams->GetmodComplPartqBarrettMu(sizeQl - 1, part));
 
         partsCtCompl[part].SetFormat(Format::EVALUATION);
 
