@@ -32,17 +32,16 @@
 #ifndef _RGSW_CIPHERTEXT_H_
 #define _RGSW_CIPHERTEXT_H_
 
-#include "lattice/lat-hal.h"
-
-#include "math/discretegaussiangenerator.h"
-#include "math/nbtheory.h"
-#include "utils/serializable.h"
-#include "utils/utilities.h"
-
 #include "lwe-ciphertext.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
 #include "lwe-cryptoparameters.h"
+
+#include "lattice/lat-hal.h"
+#include "math/discretegaussiangenerator.h"
+#include "math/nbtheory.h"
+#include "utils/serializable.h"
+#include "utils/utilities.h"
 
 #include <memory>
 #include <string>

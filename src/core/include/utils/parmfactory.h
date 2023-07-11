@@ -41,7 +41,7 @@
 // #include "lattice/lat-hal.h"
 #include "lattice/ildcrtparams.h"
 
-// #include "math/hal.h"
+// #include "math/math-hal.h"
 #include "math/distrgen.h"
 
 #include "utils/debug.h"

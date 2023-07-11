@@ -318,7 +318,7 @@ usint ModInverse(usint a, usint b);
  * @return Next power of 2 that is greater or equal to n.
  */
 template <typename IntType>
-IntType NextPowerOfTwo(const IntType& n);
+IntType NextPowerOfTwo(IntType n);
 
 /**
  * Returns the totient value phi of a number n.

@@ -33,7 +33,7 @@
 #define _LWE_CIPHERTEXT_H_
 
 #include "lwe-ciphertext-fwd.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "utils/serializable.h"
 
 #include <string>
@@ -51,7 +51,7 @@ public:
 
     explicit LWECiphertextImpl(const NativeVector& a, const NativeInteger& b) : m_a(a), m_b(b) {}
 
-    LWECiphertextImpl(NativeVector&& a, NativeInteger b) : m_a(std::move(a)), m_b(b) {}
+    LWECiphertextImpl(NativeVector&& a, NativeInteger b) noexcept : m_a(std::move(a)), m_b(b) {}
 
     LWECiphertextImpl(const LWECiphertextImpl& rhs) : m_a(rhs.m_a), m_b(rhs.m_b) {}
 

@@ -82,86 +82,12 @@ public:
           m_numAutoKeys(numAutoKeys) {
         if (!IsPowerOfTwo(baseG))
             OPENFHE_THROW(config_error, "Gadget base should be a power of two.");
-
         if ((method == LMKCDEY) & (numAutoKeys == 0))
             OPENFHE_THROW(config_error, "numAutoKeys should be greater than 0.");
-
         auto logQ{log(m_Q.ConvertToDouble())};
-
         m_digitsG = static_cast<uint32_t>(std::ceil(logQ / log(static_cast<double>(m_baseG))));
-
         m_dgg.SetStd(std);
-
         PreCompute(signEval);
-
-/*
-        if (m_method == BINFHE_METHOD::AP) {
-            auto&& logq = log(m_q.ConvertToDouble());
-            auto digitCountR{static_cast<size_t>(std::ceil(logq / log(static_cast<double>(m_baseR))))};
-            m_digitsR.reserve(digitCountR);
-            BasicInteger value{1};
-            for (size_t i = 0; i < digitCountR; ++i, value *= m_baseR)
-                m_digitsR.emplace_back(value);
-        }
-
-        // Computes baseG^i
-        if (signEval) {
-            constexpr uint32_t baseGlist[]  = {1 << 14, 1 << 18, 1 << 27};
-            constexpr double logbaseGlist[] = {noexcept(log(1 << 14)), noexcept(log(1 << 18)), noexcept(log(1 << 27))};
-            constexpr NativeInteger nativebaseGlist[] = {1 << 14, 1 << 18, 1 << 27};
-            for (size_t j = 0; j < 3; ++j) {
-                NativeInteger vTemp{1};
-                auto tempdigits{static_cast<size_t>(std::ceil(logQ / logbaseGlist[j]))};
-                std::vector<NativeInteger> tempvec(tempdigits);
-                for (size_t i = 0; i < tempdigits; ++i) {
-                    tempvec[i] = vTemp;
-                    vTemp      = vTemp.ModMulFast(nativebaseGlist[j], m_Q);
-                }
-                if (m_baseG == baseGlist[j])
-                    m_Gpower = tempvec;
-                m_Gpower_map[baseGlist[j]] = std::move(tempvec);
-            }
-        }
-        else {
-            m_Gpower.reserve(m_digitsG);
-            NativeInteger vTemp{1};
-            for (uint32_t i = 0; i < m_digitsG; ++i) {
-                m_Gpower.push_back(vTemp);
-                vTemp = vTemp.ModMulFast(NativeInteger(m_baseG), Q);
-            }
-        }
-
-        // Sets the gate constants for supported binary operations
-        m_gateConst = {
-            NativeInteger(5) * (q >> 3),  // OR
-            NativeInteger(7) * (q >> 3),  // AND
-            NativeInteger(1) * (q >> 3),  // NOR
-            NativeInteger(3) * (q >> 3),  // NAND
-            NativeInteger(5) * (q >> 3),  // XOR_FAST
-            NativeInteger(1) * (q >> 3)   // XNOR_FAST
-        };
-
-        // Computes polynomials X^m - 1 that are needed in the accumulator for the
-        // CGGI bootstrapping
-        if (m_method == BINFHE_METHOD::GINX) {
-            constexpr NativeInteger one{1};
-            m_monomials.reserve(2 * N);
-            for (uint32_t i = 0; i < N; ++i) {
-                NativePoly aPoly(m_polyParams, Format::COEFFICIENT, true);
-                aPoly[0].ModSubFastEq(one, Q);  // -1
-                aPoly[i].ModAddFastEq(one, Q);  // X^m
-                aPoly.SetFormat(Format::EVALUATION);
-                m_monomials.push_back(std::move(aPoly));
-            }
-            for (uint32_t i = 0; i < N; ++i) {
-                NativePoly aPoly(m_polyParams, Format::COEFFICIENT, true);
-                aPoly[0].ModSubFastEq(one, Q);  // -1
-                aPoly[i].ModSubFastEq(one, Q);  // -X^m
-                aPoly.SetFormat(Format::EVALUATION);
-                m_monomials.push_back(std::move(aPoly));
-            }
-        }
-*/
     }
 
     /**
@@ -350,7 +276,7 @@ private:
     BINFHE_METHOD m_method{BINFHE_METHOD::INVALID_METHOD};
 
     // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
-    SECRET_KEY_DIST m_keyDist{BINFHE_METHOD::UNIFORM_TERNARY};
+    SECRET_KEY_DIST m_keyDist{SECRET_KEY_DIST::UNIFORM_TERNARY};
 
     // number of automorphism keys (used only for LMKCDEY bootstrapping)
     uint32_t m_numAutoKeys{};

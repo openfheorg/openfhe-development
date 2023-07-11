@@ -37,9 +37,9 @@
 #define LBCRYPTO_INC_MATH_DFTRANSFORM_H
 
 #include <complex>
-#include <vector>
 #include <cstdint>
 #include <unordered_map>
+#include <vector>
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846

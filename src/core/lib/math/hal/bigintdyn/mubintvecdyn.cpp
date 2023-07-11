@@ -36,7 +36,7 @@
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #include "math/hal.h"
+    #include "math/math-hal.h"
     #include "math/hal/bigintdyn/mubintvecdyn.h"
 
     #include "utils/exception.h"

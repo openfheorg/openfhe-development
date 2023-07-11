@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -42,11 +42,9 @@ namespace lbcrypto {
  * @brief Ring GSW accumulator schemes described in
  * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/08
  */
-class RingGSWAccumulatorLMKCDEY : public RingGSWAccumulator {
+class RingGSWAccumulatorLMKCDEY final : public RingGSWAccumulator {
 public:
     RingGSWAccumulatorLMKCDEY() = default;
-
-    virtual ~RingGSWAccumulatorLMKCDEY() {}
 
     /**
    * Internal RingGSW encryption used in generating the refreshing key
@@ -57,8 +55,8 @@ public:
    * key)
    * @return a shared pointer to the resulting ciphertext
    */
-    RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                            ConstLWEPrivateKey LWEsk) const override;
+    RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                            ConstLWEPrivateKey& LWEsk) const override;
 
     /**
    * Main accumulator function used in bootstrapping - AP variant
@@ -67,21 +65,21 @@ public:
    * @param &input input ciphertext
    * @param acc previous value of the accumulator
    */
-    void EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
+    void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek, RLWECiphertext& acc,
                  const NativeVector& a) const override;
 
 private:
-    RingGSWEvalKey KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                            const LWEPlaintext& m) const;
-                            
-    RingGSWEvalKey KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                            const LWEPlaintext& k) const;
+    RingGSWEvalKey KeyGenLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                                 LWEPlaintext m) const;
 
-    void AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek,
-                    RLWECiphertext& acc) const;
+    RingGSWEvalKey KeyGenAuto(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                              LWEPlaintext k) const;
 
-    void Automorphism(const std::shared_ptr<RingGSWCryptoParams> params, const NativeInteger &a,
-                        const RingGSWEvalKey ak, RLWECiphertext& acc) const;
+    void AddToAccLMKCDEY(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
+                         RLWECiphertext& acc) const;
+
+    void Automorphism(const std::shared_ptr<RingGSWCryptoParams>& params, const NativeInteger& a,
+                      ConstRingGSWEvalKey& ak, RLWECiphertext& acc) const;
 };
 
 }  // namespace lbcrypto

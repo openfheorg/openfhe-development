@@ -32,11 +32,11 @@
 #ifndef _LWE_CRYPTOPARAMETERS_H_
 #define _LWE_CRYPTOPARAMETERS_H_
 
-#include "math/hal.h"
-#include "math/discretegaussiangenerator.h"
-#include "utils/serializable.h"
-
 #include "binfhe-constants.h"
+
+#include "math/discretegaussiangenerator.h"
+#include "math/math-hal.h"
+#include "utils/serializable.h"
 
 #include <string>
 #include <utility>
@@ -65,7 +65,8 @@ public:
    * @param keyDist the key distribution
    */
     explicit LWECryptoParams(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
-                             const NativeInteger& q_KS, double std, uint32_t baseKS, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY)
+                             const NativeInteger& q_KS, double std, uint32_t baseKS,
+                             SECRET_KEY_DIST keyDist = UNIFORM_TERNARY)
         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
         if (m_Q.GetMSB() > MAX_MODULUS_SIZE)
             OPENFHE_THROW(config_error, "ERROR: Q.GetMSB() > MAX_MODULUS_SIZE");

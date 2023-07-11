@@ -33,7 +33,7 @@
   This code provides basic arithmetic functionality for vectors of native integers
  */
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/hal/intnat/mubintvecnat.h"
 #include "math/nbtheory-impl.h"
 

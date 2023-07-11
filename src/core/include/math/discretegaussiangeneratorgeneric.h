@@ -101,7 +101,7 @@
 
 #define MAX_LEVELS 4
 
-// #include "math/hal.h"
+// #include "math/math-hal.h"
 #include "math/distributiongenerator.h"
 // #include "math/nbtheory.h"
 

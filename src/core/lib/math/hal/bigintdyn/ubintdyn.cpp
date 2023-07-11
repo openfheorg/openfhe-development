@@ -38,7 +38,7 @@
 #include "config_core.h"
 #ifdef WITH_BE4
 
-    #include "math/hal.h"
+    #include "math/math-hal.h"
 
     #include "utils/exception.h"
     #include "utils/inttypes.h"
@@ -99,7 +99,7 @@ ubint<limb_t>& ubint<limb_t>::AddEq(const ubint& b) {
     }
     r[sizeA] = static_cast<limb_t>(c);
     m_value  = std::move(r);
-    this->ubint::NormalizeLimbs();
+    ubint<limb_t>::NormalizeLimbs();
     return *this;
 }
 
@@ -150,7 +150,7 @@ ubint<limb_t>& ubint<limb_t>::SubEq(const ubint& b) {
             m_value[i] -= b.m_value[i];
         }
     }
-    this->ubint::NormalizeLimbs();
+    ubint<limb_t>::NormalizeLimbs();
     return *this;
 }
 
@@ -227,7 +227,7 @@ ubint<limb_t> ubint<limb_t>::Exp(usint p) const {
         return ubint(1);
     if (p == 1)
         return *this;
-    ubint tmp{this->ubint::Exp(p >> 1)};
+    ubint tmp{ubint<limb_t>::Exp(p >> 1)};
     tmp = tmp.Mul(tmp);
     if (p & 0x1)
         return tmp.Mul(*this);
@@ -238,7 +238,7 @@ template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::MultiplyAndRound(const ubint& p, const ubint& q) const {
     if (q.m_MSB == 0)
         OPENFHE_THROW(lbcrypto::math_error, "MultiplyAndRound() Divisor is zero");
-    auto t{this->ubint::Mul(p)};
+    auto t{ubint<limb_t>::Mul(p)};
     ubint halfQ(q >> 1);
     if (t <= halfQ)
         return ubint();
@@ -317,10 +317,10 @@ ubint<limb_t>& ubint<limb_t>::ModAddEq(const ubint& b, const ubint& modulus) {
     if (bv >= modulus)
         bv.ModEq(modulus);
     if (*this >= modulus)
-        this->ubint::ModEq(modulus);
+        ubint<limb_t>::ModEq(modulus);
     *this = bv.Add(*this);
     if (*this >= modulus)
-        return this->ubint::SubEq(modulus);
+        return ubint<limb_t>::SubEq(modulus);
     return *this;
 }
 
@@ -336,16 +336,16 @@ template <typename limb_t>
 ubint<limb_t>& ubint<limb_t>::ModAddFastEq(const ubint& b, const ubint& modulus) {
     *this = b.Add(*this);
     if (*this >= modulus)
-        return this->ubint::SubEq(modulus);
+        return ubint<limb_t>::SubEq(modulus);
     return *this;
 }
 
 template <typename limb_t>
 ubint<limb_t> ubint<limb_t>::ModSub(const ubint& b, const ubint& modulus) const {
+    auto av(*this);
     auto bv(b);
     if (bv >= modulus)
         bv.ModEq(modulus);
-    auto av(*this);
     if (av >= modulus)
         av.ModEq(modulus);
     if (av < bv)
@@ -359,24 +359,24 @@ ubint<limb_t>& ubint<limb_t>::ModSubEq(const ubint& b, const ubint& modulus) {
     if (bv >= modulus)
         bv.ModEq(modulus);
     if (*this >= modulus)
-        this->ubint::ModEq(modulus);
+        ubint<limb_t>::ModEq(modulus);
     if (*this < bv)
         *this = modulus.Add(*this);
-    return this->ubint::SubEq(bv);
+    return ubint<limb_t>::SubEq(bv);
 }
 
 template <typename limb_t>
 inline ubint<limb_t> ubint<limb_t>::ModSubFast(const ubint& b, const ubint& modulus) const {
     if (*this < b)
         return modulus.Add(*this).Sub(b);
-    return this->ubint::Sub(b);
+    return ubint<limb_t>::Sub(b);
 }
 
 template <typename limb_t>
 inline ubint<limb_t>& ubint<limb_t>::ModSubFastEq(const ubint& b, const ubint& modulus) {
     if (*this < b)
         return *this = std::move(modulus.Add(*this).Sub(b));
-    return this->ubint::SubEq(b);
+    return ubint<limb_t>::SubEq(b);
 }
 
 template <typename limb_t>
@@ -435,7 +435,7 @@ ubint<limb_t> ubint<limb_t>::ModInverse(const ubint& modulus) const {
     quotient.emplace_back(std::move(q));
 
     if (mod_back.m_MSB == 0) {
-        std::string msg = this->ubint::ToString() + " does not have a ModInverse using " + modulus.ToString();
+        std::string msg = ubint<limb_t>::ToString() + " does not have a ModInverse using " + modulus.ToString();
         OPENFHE_THROW(lbcrypto::math_error, msg);
     }
 
@@ -597,7 +597,7 @@ template <typename limb_t>
 float ubint<limb_t>::ConvertToFloat() const {
     float ans{-1.0f};
     try {
-        ans = std::stof(this->ubint::ToString());
+        ans = std::stof(ubint<limb_t>::ToString());
     }
     catch (const std::exception& e) {
         OPENFHE_THROW(lbcrypto::type_error, "ConvertToFloat() parse error converting to float");
@@ -629,7 +629,7 @@ template <typename limb_t>
 long double ubint<limb_t>::ConvertToLongDouble() const {
     long double ans{-1.0};
     try {
-        ans = std::stold(this->ubint::ToString());
+        ans = std::stold(ubint<limb_t>::ToString());
     }
     catch (const std::exception& e) {
         OPENFHE_THROW(lbcrypto::type_error, "ConvertToLongDouble() parse error converting to long double");
@@ -993,7 +993,7 @@ void ubint<limb_t>::SetValue(const std::string& vin) {
             cnt = val = 0;
         }
     }
-    this->ubint::NormalizeLimbs();
+    ubint<limb_t>::NormalizeLimbs();
 }
 
 template <typename limb_t>

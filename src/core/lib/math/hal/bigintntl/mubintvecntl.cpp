@@ -44,7 +44,7 @@
     #define FORCE_NORMALIZATION
 
     #include <chrono>
-    #include "math/hal.h"
+    #include "math/math-hal.h"
     #include "math/hal/bigintntl/mubintvecntl.h"
     #include "time.h"
     #include "utils/debug.h"

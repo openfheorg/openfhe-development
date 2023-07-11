@@ -34,7 +34,7 @@
 
 #include "lwe-keyswitchkey-fwd.h"
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "utils/serializable.h"
 
 #include <memory>

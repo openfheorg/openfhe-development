@@ -36,7 +36,7 @@
 #include "config_core.h"
 #ifdef WITH_BE2
 
-    #include "math/hal.h"
+    #include "math/math-hal.h"
 
     #include "utils/exception.h"
     #include "utils/serializable.h"

@@ -423,7 +423,7 @@ std::vector<LWECiphertext> BinFHEScheme::EvalDecomp(const std::shared_ptr<BinFHE
 // private:
 
 RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
-                                               const RingGSWACCKey& ek, ConstLWECiphertext& ct) const {
+                                               ConstRingGSWACCKey& ek, ConstLWECiphertext& ct) const {
     if (ek == nullptr) {
         std::string errMsg =
             "Bootstrapping keys have not been generated. Please call BTKeyGen "
@@ -481,7 +481,7 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
 // funciton evaluation, from https://eprint.iacr.org/2021/1337
 template <typename Func>
 RLWECiphertext BinFHEScheme::BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams>& params,
-                                               const RingGSWACCKey& ek, ConstLWECiphertext& ct, const Func f,
+                                               ConstRingGSWACCKey& ek, ConstLWECiphertext& ct, const Func f,
                                                const NativeInteger& fmod) const {
     if (ek == nullptr) {
         std::string errMsg =

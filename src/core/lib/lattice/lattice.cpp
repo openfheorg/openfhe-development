@@ -40,7 +40,7 @@
 #include "lattice/elemparams.h"
 #include "lattice/field2n-impl.h"
 #include "lattice/ilparams.h"
-#include "lattice/ildcrtparams-impl.h"
+#include "lattice/ildcrtparams.h"
 #include "lattice/lat-hal.h"
 #include "lattice/matrix-lattice-impl.h"
 

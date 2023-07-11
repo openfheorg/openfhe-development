@@ -179,12 +179,12 @@ public:
      * @param vals - vector with override values. sequence of vals' elements must be the same as we get it from getAllParamsDataMembers()
      */
     explicit Params(const std::vector<std::string>& vals);
-    
+
     Params(const Params& obj) = default;
     Params(Params&& obj)      = default;
 
     Params& operator=(const Params& obj) = default;
-    Params& operator=(Params&& obj) = default;
+    Params& operator=(Params&& obj)      = default;
 
     ~Params() = default;
 
@@ -272,7 +272,7 @@ public:
     usint GetThresholdNumOfParties() const {
         return thresholdNumOfParties;
     }
-    
+
     KeySwitchTechnique GetKeySwitchTechnique() const {
         return ksTech;
     }

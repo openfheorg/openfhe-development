@@ -41,7 +41,7 @@
     #include "gtest/gtest.h"
 
     #include "lattice/lat-hal.h"
-    #include "math/hal.h"
+    #include "math/math-hal.h"
     #include "math/nbtheory.h"
     #include "utils/inttypes.h"
 
@@ -49,32 +49,6 @@
     #include "utils/utilities.h"
 
 using namespace lbcrypto;
-
-/* list of tests left to run
-   //todo update this.
-
-  explicit bigintdyn::xmubintvec(const usint length, const bint_el_t & modulus);
-  explicit bigintdyn::xmubintvec(const usint length, const std::string&
-  modulus); explicit bigintdyn::xmubintvec(const std::vector<std::string> &s,
-  const bint_el_t &modulus explicit bigintdyn::xmubintvec(const
-  std::vector<std::string> &s, const std::string &modulus);
-
-  void SetModulus(const uint& value);
-  void SetModulus(const bint_el_t& value);
-  void SetModulus(const std::string& value);
-  const bint_el_t& GetModulus() const;
-
-   //METHODS
-   //todo write Div and /= vector scalar and vector vector
-
-   Exp(const bint_el_t &b)
-
-   GetDigitAtIndexForBase(usint index, usint base) const;
-
-   //JSON FACILITY
-   Serialize()
-   Deserialize()
-*/
 
 /************************************************
  *  TESTING BASIC METHODS OF mubintvec CLASS

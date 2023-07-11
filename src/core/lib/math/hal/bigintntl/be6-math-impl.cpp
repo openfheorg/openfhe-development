@@ -40,7 +40,7 @@
 #include "config_core.h"
 #ifdef WITH_NTL
 
-    #include "math/hal.h"
+    #include "math/math-hal.h"
     #include "math/binaryuniformgenerator-impl.h"
     #include "math/discretegaussiangenerator-impl.h"
     #include "math/discreteuniformgenerator-impl.h"

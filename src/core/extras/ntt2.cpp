@@ -43,7 +43,7 @@
 #include <vector>
 #include "openfhecore.h"
 #include "time.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 
 using namespace lbcrypto;
 

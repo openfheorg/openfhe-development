@@ -791,7 +791,7 @@ public:
    * @return the length of the representation in a specific base.
    */
 
-    // TODO ?
+    // TODO hardcoded for base 2?
     usint GetLengthForBase(usint base) const {
         return GetMSB();
     }

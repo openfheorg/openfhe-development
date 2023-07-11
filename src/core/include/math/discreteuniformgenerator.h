@@ -37,7 +37,7 @@
 #ifndef LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
 #define LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/distributiongenerator.h"
 
 #include "utils/inttypes.h"

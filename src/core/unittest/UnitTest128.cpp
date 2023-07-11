@@ -37,7 +37,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "utils/inttypes.h"
 #include "math/nbtheory.h"
 

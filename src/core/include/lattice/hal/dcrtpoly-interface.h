@@ -39,7 +39,7 @@
 #include "lattice/ildcrtparams.h"
 #include "lattice/ilelement.h"
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/distrgen.h"
 
 #include "utils/inttypes.h"
@@ -78,6 +78,8 @@ namespace lbcrypto {
  *    RNSContainer<LVT> - PolyImpl
  */
 
+// TODO: CRTP with ILElement to remove virtual overhead
+
 template <typename DerivedType, typename BigVecType, typename LilVecType,
           template <typename LVT> typename RNSContainerType>
 class DCRTPolyInterface : public ILElement<DerivedType, BigVecType> {
@@ -91,9 +93,6 @@ public:
     using DugType       = DiscreteUniformGeneratorImpl<LilVecType>;
     using TugType       = TernaryUniformGeneratorImpl<LilVecType>;
     using BugType       = BinaryUniformGeneratorImpl<LilVecType>;
-
-    // Each derived class needs to have this but static virtual not allowed in c++
-    // static const std::string GetElementName();
 
     /**
    * @brief Get the Derived object, this is apart of the CRTP software design pattern
@@ -109,11 +108,6 @@ public:
         return static_cast<DerivedType&>(*this);
     }
 
-    /**
-   * @brief @see GetDerived
-   *
-   * @return DerivedType const&
-   */
     const DerivedType& GetDerived() const {
         return static_cast<DerivedType const&>(*this);
     }
@@ -125,7 +119,7 @@ public:
    * @param params the params to use.
    * @param format - EVALUATION or COEFFICIENT
    */
-    inline static std::function<DerivedType()> Allocator(const std::shared_ptr<Params>& params, Format format) {
+    static std::function<DerivedType()> Allocator(const std::shared_ptr<Params>& params, Format format) {
         return [=]() {
             return DerivedType(params, format, true);
         };
@@ -139,8 +133,8 @@ public:
    * @param stddev standard deviation for the discrete gaussian generator.
    * @return the resulting vector.
    */
-    inline static std::function<DerivedType()> MakeDiscreteGaussianCoefficientAllocator(
-        const std::shared_ptr<Params>& params, Format resultFormat, double stddev) {
+    static std::function<DerivedType()> MakeDiscreteGaussianCoefficientAllocator(const std::shared_ptr<Params>& params,
+                                                                                 Format resultFormat, double stddev) {
         return [=]() {
             DggType dgg(stddev);
             DerivedType ilvec(dgg, params, Format::COEFFICIENT);
@@ -156,8 +150,8 @@ public:
    * @param format format for the polynomials generated.
    * @return the resulting vector.
    */
-    inline static std::function<DerivedType()> MakeDiscreteUniformAllocator(const std::shared_ptr<Params>& params,
-                                                                            Format format) {
+    static std::function<DerivedType()> MakeDiscreteUniformAllocator(const std::shared_ptr<Params>& params,
+                                                                     Format format) {
         return [=]() {
             DugType dug;
             return DerivedType(dug, params, format);
@@ -172,7 +166,9 @@ public:
    * @param endTower The index number of the last tower to clone
    * @return new Element
    */
-    virtual DerivedType CloneTowers(uint32_t startTower, uint32_t endTower) const = 0;
+    DerivedType CloneTowers(uint32_t startTower, uint32_t endTower) {
+        return this->GetDerived().CloneTowers(startTower, endTower);
+    }
 
     DerivedType Clone() const final {
         return DerivedType(this->GetDerived());
@@ -205,18 +201,21 @@ public:
    * @return the format, either COEFFICIENT or EVALUATION
    */
     Format GetFormat() const override = 0;
+    //    return this->GetDerived().GetFormat();
 
     /**
    * @brief returns the parameters of the element.
    * @return the element parameter set.
    */
-    virtual const std::shared_ptr<Params>& GetParams() const = 0;
+    const std::shared_ptr<Params>& GetParams() const {
+        return this->GetDerived().GetParams();
+    }
 
     /**
    * @brief returns the element's cyclotomic order
    * @return returns the cyclotomic order of the element.
    */
-    inline usint GetCyclotomicOrder() const final {
+    usint GetCyclotomicOrder() const final {
         return this->GetDerived().GetParams()->GetCyclotomicOrder();
     }
 
@@ -224,7 +223,7 @@ public:
    * @brief returns the element's ring dimension
    * @return returns the ring dimension of the element.
    */
-    inline usint GetRingDimension() const {
+    usint GetRingDimension() const {
         return this->GetDerived().GetParams()->GetRingDimension();
     }
 
@@ -232,7 +231,7 @@ public:
    * @brief returns the element's modulus
    * @return returns the modulus of the element.
    */
-    inline const BigIntType& GetModulus() const final {
+    const BigIntType& GetModulus() const final {
         return this->GetDerived().GetParams()->GetModulus();
     }
 
@@ -240,7 +239,7 @@ public:
    * @brief returns the element's original modulus, derived from Poly
    * @return returns the modulus of the element.
    */
-    inline const BigIntType& GetOriginalModulus() const {
+    const BigIntType& GetOriginalModulus() const {
         return this->GetDerived().GetParams()->GetOriginalModulus();
     }
 
@@ -248,7 +247,8 @@ public:
    * @brief returns the element's root of unity.
    * @return the element's root of unity.
    */
-    inline const BigIntType GetRootOfUnity() const {
+    // TODO: this doesn't look right
+    const BigIntType GetRootOfUnity() const {
         return BigIntType(0);
     }
 
@@ -258,7 +258,7 @@ public:
    *
    * @return length of the component element
    */
-    inline usint GetLength() const final {
+    usint GetLength() const final {
         return this->GetDerived().GetParams()->GetRingDimension();
     }
 
@@ -275,15 +275,22 @@ public:
    * Note this operation is computationally intense. No bound checking
    * @return interpolated value at index i.
    */
-    BigIntType& operator[](usint i) override             = 0;
+    BigIntType& operator[](usint i) override = 0;
+    //    return this->GetDerived()[i];
     const BigIntType& operator[](usint i) const override = 0;
+    //    return this->GetDerived()[i];
 
     /**
    * @brief Get method that returns a vector of all component elements.
    *
    * @returns a vector of the component elements.
    */
-    virtual const std::vector<TowerType>& GetAllElements() const = 0;
+    const std::vector<TowerType>& GetAllElements() const {
+        return this->GetDerived().GetAllElements();
+    }
+    std::vector<TowerType>& GetAllElements() {
+        return this->GetDerived().GetAllElements();
+    }
 
     /**
    * @brief Get method of the number of component elements, also known as the
@@ -291,7 +298,7 @@ public:
    *
    * @return the number of component elements.
    */
-    inline usint GetNumOfElements() const {
+    usint GetNumOfElements() const {
         return this->GetDerived().GetAllElements().size();
     }
 
@@ -301,7 +308,7 @@ public:
    * @param i index of tower to be returned.
    * @returns a reference to the returned tower
    */
-    inline const TowerType& GetElementAtIndex(usint i) const {
+    const TowerType& GetElementAtIndex(usint i) const {
         return this->GetDerived().GetAllElements()[i];
     }
 
@@ -314,7 +321,7 @@ public:
    * in the lattice layer should be done in the lattice layer. This means new functions
    * will be need in the lattice layer.
    */
-    inline TowerType& ElementAtIndex(usint i) {
+    TowerType& ElementAtIndex(usint i) {
         return this->GetDerived().GetAllElements()[i];
     }
 
@@ -324,7 +331,9 @@ public:
    * @param index where the element should be set
    * @param element The element to store
    */
-    virtual void SetElementAtIndex(usint index, const TowerType& element) = 0;
+    void SetElementAtIndex(usint index, const TowerType& element) {
+        return this->GetDerived().SetElementAtIndex(index, element);
+    }
 
     /**
    * @brief Sets element at index
@@ -332,7 +341,9 @@ public:
    * @param index where the element should be set
    * @param element The element to store
    */
-    virtual void SetElementAtIndex(usint index, TowerType&& element) = 0;
+    void SetElementAtIndex(usint index, TowerType&& element) {
+        return this->GetDerived().SetElementAtIndex(index, element);
+    }
 
     /***********************************************************************
    * Yuriy and I stopped here!
@@ -377,9 +388,13 @@ public:
    * base > 0
    * @return is the pointer where the resulting vector is stored
    */
-    virtual std::vector<DerivedType> CRTDecompose(uint32_t baseBits) const = 0;
+    std::vector<DerivedType> CRTDecompose(uint32_t baseBits) const {
+        return this->GetDerived().CRTDecompose(baseBits);
+    }
 
-    virtual DerivedType& operator=(const TowerType& rhs) = 0;
+    DerivedType& operator=(const TowerType& rhs) {
+        return this->GetDerived().operator=(rhs);
+    }
 
     /**
    * @brief Assignment Operator.
@@ -412,7 +427,9 @@ public:
    * @param val is the usint to assign to index zero.
    * @return the resulting vector.
    */
-    virtual DerivedType& operator=(uint64_t val) = 0;
+    DerivedType& operator=(uint64_t val) {
+        return this->GetDerived().operator=(val);
+    }
 
     /**
    * @brief Creates a Poly from a vector of signed integers (used for trapdoor
@@ -421,7 +438,9 @@ public:
    * @param &rhs the vector to set the PolyImpl to.
    * @return the resulting PolyImpl.
     */
-    virtual DerivedType& operator=(const std::vector<int64_t>& rhs) = 0;
+    DerivedType& operator=(const std::vector<int64_t>& rhs) {
+        return this->GetDerived().operator=(rhs);
+    }
 
     /**
    * @brief Creates a Poly from a vector of signed integers (used for trapdoor
@@ -430,7 +449,9 @@ public:
    * @param &rhs the vector to set the PolyImpl to.
    * @return the resulting PolyImpl.
    */
-    virtual DerivedType& operator=(const std::vector<int32_t>& rhs) = 0;
+    DerivedType& operator=(const std::vector<int32_t>& rhs) {
+        return this->GetDerived().operator=(rhs);
+    }
 
     /**
    * @brief Initalizer list
@@ -438,7 +459,9 @@ public:
    * @param &rhs the list to set the PolyImpl to.
    * @return the resulting PolyImpl.
    */
-    virtual DerivedType& operator=(std::initializer_list<std::string> rhs) = 0;
+    DerivedType& operator=(std::initializer_list<std::string> rhs) {
+        return this->GetDerived().operator=(rhs);
+    }
 
     /**
    * @brief Unary minus on a element.
@@ -462,7 +485,7 @@ public:
    * @param &rhs is the element to add with.
    * @return is the result of the addition.
    */
-    const DerivedType& operator+=(const DerivedType& rhs) override = 0;
+    DerivedType& operator+=(const DerivedType& rhs) override = 0;
 
     /**
    * @brief Performs an entry-wise subtraction over all elements of each tower
@@ -471,7 +494,7 @@ public:
    * @param &rhs is the element to subtract from.
    * @return is the result of the addition.
    */
-    const DerivedType& operator-=(const DerivedType& rhs) override = 0;
+    DerivedType& operator-=(const DerivedType& rhs) override = 0;
 
     /**
    * @brief Permutes coefficients in a polynomial. Moves the ith index to the
@@ -480,7 +503,7 @@ public:
    * @param &i is the element to perform the automorphism transform with.
    * @return is the result of the automorphism transform.
    */
-    DerivedType AutomorphismTransform(const usint& i) const override = 0;
+    DerivedType AutomorphismTransform(uint32_t i) const override = 0;
 
     /**
    * @brief Performs an automorphism transform operation using precomputed bit
@@ -490,7 +513,7 @@ public:
    * @param &vec a vector with precomputed indices
    * @return is the result of the automorphism transform.
    */
-    DerivedType AutomorphismTransform(usint i, const std::vector<usint>& vec) const override = 0;
+    DerivedType AutomorphismTransform(uint32_t i, const std::vector<uint32_t>& vec) const override = 0;
 
     /**
    * @brief Transpose the ring element using the automorphism operation
@@ -512,6 +535,7 @@ public:
    * @return is the result of the addition.
    */
     DerivedType Plus(const DerivedType& rhs) const override = 0;
+    //    return this->GetDerived().Plus(rhs);
 
     /**
    * @brief Performs a multiplication operation and returns the result.
@@ -520,6 +544,7 @@ public:
    * @return is the result of the multiplication.
    */
     DerivedType Times(const DerivedType& rhs) const override = 0;
+    //    return this->GetDerived().Times(rhs);
 
     /**
    * @brief Performs a subtraction operation and returns the result.
@@ -546,7 +571,9 @@ public:
    * @param &element is the element to add entry-wise.
    * @return is the result of the addition operation.
    */
-    virtual DerivedType Plus(const std::vector<BigIntType>& rhs) const = 0;
+    DerivedType Plus(const std::vector<BigIntType>& rhs) const {
+        return this->GetDerived().Plus(rhs);
+    }
 
     /**
    * @brief Scalar subtraction - subtract an element to all entries.
@@ -565,7 +592,9 @@ public:
    * @param &element is the element to subtract entry-wise.
    * @return is the result of the subtraction operation.
    */
-    virtual DerivedType Minus(const std::vector<BigIntType>& rhs) const = 0;
+    DerivedType Minus(const std::vector<BigIntType>& rhs) const {
+        return this->GetDerived().Minus(rhs);
+    }
 
     /**
    * @brief Scalar multiplication - multiply all entries.
@@ -592,7 +621,9 @@ public:
    *
    * @note this is need for 128-bit so that the 64-bit inputs can be used.
    */
-    virtual DerivedType Times(int64_t rhs) const = 0;
+    DerivedType Times(int64_t rhs) const {
+        return this->GetDerived().Times(rhs);
+    }
 #endif
 
     /**
@@ -601,7 +632,9 @@ public:
    * @param &element is the element to multiply entry-wise.
    * @return is the return value of the times operation.
    */
-    virtual DerivedType Times(const std::vector<NativeInteger>& rhs) const = 0;
+    DerivedType Times(const std::vector<NativeInteger>& rhs) const {
+        return this->GetDerived().Times(rhs);
+    }
 
     /**
    * @brief Performs a multiplication operation even when the multiplicands
@@ -610,7 +643,9 @@ public:
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
    */
-    virtual DerivedType TimesNoCheck(const std::vector<NativeInteger>& rhs) const = 0;
+    DerivedType TimesNoCheck(const std::vector<NativeInteger>& rhs) const {
+        return this->GetDerived().TimesNoCheck(rhs);
+    }
 
     /**
    * @brief Scalar modular multiplication by an integer represented in CRT
@@ -621,7 +656,9 @@ public:
    *
    * @warning Should remove this, data is truncated to native-word size.
    */
-    virtual DerivedType Times(const std::vector<BigIntType>& rhs) const = 0;
+    DerivedType Times(const std::vector<BigIntType>& rhs) const {
+        return this->GetDerived().Times(rhs);
+    }
 
     /**
    * @brief Scalar multiplication followed by division and rounding operation -
@@ -690,6 +727,7 @@ public:
    * @return is the result of the multiplication.
    */
     DerivedType& operator*=(const DerivedType& rhs) override = 0;
+    //    return this->GetDerived().operator*=(rhs);
 
     // multiplicative inverse operation
     /**
@@ -775,7 +813,7 @@ public:
    *
    * @warning Only used by RingSwitching, which is no longer supported. Will be removed in future.
    */
-    void MakeSparse(const uint32_t& wFactor) final {
+    void MakeSparse(uint32_t wFactor) final {
         OPENFHE_THROW(not_implemented_error, "MakeSparse is not currently implemented for DCRTPoly");
     }
 
@@ -1255,7 +1293,7 @@ public:
    * Schemes. Cryptology ePrint Archive: Report 2016/510.
    * (https://eprint.iacr.org/2016/510)
    *
-   * @param paramsBsk: container of Bsk moduli and roots on unity
+   * @param paramsQBsk: container of QBsk moduli and roots on unity
    * @param &moduliQ: basis {Q} = {q_1,q_2,...,q_l}
    * @param &moduliBsk: basis {Bsk U mtilde} ...
    * @param &modbskBarrettMu: 128-bit Barrett reduction precomputed values for
@@ -1271,7 +1309,7 @@ public:
    * @param &mtildeInvModbskPrecon NTL-specific precomputations
    */
     virtual void FastBaseConvqToBskMontgomery(
-        const std::shared_ptr<Params>& paramsBsk, const std::vector<NativeInteger>& moduliQ,
+        const std::shared_ptr<Params>& paramsQBsk, const std::vector<NativeInteger>& moduliQ,
         const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
         const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
         const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
@@ -1395,8 +1433,12 @@ public:
    * @return is the largest value in the ring element.
    */
     //    virtual double Norm() const override = 0;
-    inline double Norm() const final {
+    double Norm() const final {
         return PolyLargeType(this->GetDerived().CRTInterpolate()).Norm();
+    }
+
+    const std::string GetElementName() const {
+        return this->GetDerived().GetElementName();
     }
 
 protected:

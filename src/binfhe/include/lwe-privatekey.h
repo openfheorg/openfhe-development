@@ -33,7 +33,7 @@
 #define _LWE_PRIVATEKEY_H_
 
 #include "lwe-privatekey-fwd.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "utils/serializable.h"
 
 #include <memory>

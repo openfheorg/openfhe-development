@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_INC_LATTICE_STDLATTICEPARMS_H
 #define LBCRYPTO_INC_LATTICE_STDLATTICEPARMS_H
 
-//  #include "math/hal.h"
+//  #include "math/math-hal.h"
 
 #include "utils/inttypes.h"
 

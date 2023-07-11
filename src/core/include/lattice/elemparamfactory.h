@@ -37,7 +37,7 @@
 #define LBCRYPTO_INC_LATTICE_ELEMPARAMFACTORY_H_
 
 #include "lattice/ildcrtparams.h"
-// #include "lattice/ilparams.h"
+#include "lattice/ilparams.h"
 
 #include "utils/debug.h"
 #include "utils/inttypes.h"

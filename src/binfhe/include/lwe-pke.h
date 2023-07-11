@@ -41,6 +41,7 @@
 #include "lwe-cryptoparameters.h"
 
 #include <memory>
+
 namespace lbcrypto {
 
 /**

@@ -58,10 +58,10 @@ RingGSWACCKey RingGSWAccumulatorCGGI::KeyGenAcc(const std::shared_ptr<RingGSWCry
 
 void RingGSWAccumulatorCGGI::EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek,
                                      RLWECiphertext& acc, const NativeVector& a) const {
-    auto mod        = a.GetModulus();
-    uint32_t n      = a.GetLength();
-    uint32_t MbyMod = 2 * params->GetN() / mod.ConvertToInt();
-    for (uint32_t i = 0; i < n; ++i) {
+    size_t n{a.GetLength()};
+    auto mod{a.GetModulus()};
+    auto MbyMod{NativeInteger(2 * params->GetN()) / mod};
+    for (size_t i = 0; i < n; ++i) {
         // handles -a*E(1) and handles -a*E(-1) = a*E(1)
         AddToAccCGGI(params, (*ek)[0][0][i], (*ek)[0][1][i], NativeInteger(0).ModSubFast(a[i], mod) * MbyMod, acc);
     }
@@ -79,71 +79,72 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
 
     uint32_t digitsG2{params->GetDigitsG() << 1};
     std::vector<NativePoly> tempA(digitsG2, NativePoly(dug, polyParams, Format::COEFFICIENT));
-    auto result = std::make_shared<RingGSWEvalKeyImpl>(digitsG2, 2);
+    RingGSWEvalKeyImpl result(digitsG2, 2);
 
     for (uint32_t i = 0; i < digitsG2; ++i) {
-        (*result)[i][0] = tempA[i];
+        result[i][0] = tempA[i];
         tempA[i].SetFormat(Format::EVALUATION);
-        (*result)[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
+        result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
         if (m)
-            (*result)[i][i & 0x1][0].ModAddFastEq(Gpow[i >> 1], Q);
-        (*result)[i][0].SetFormat(Format::EVALUATION);
-        (*result)[i][1].SetFormat(Format::EVALUATION);
-        (*result)[i][1] += tempA[i] * skNTT;
+            result[i][i & 0x1][0].ModAddFastEq(Gpow[i >> 1], Q);
+        result[i][0].SetFormat(Format::EVALUATION);
+        result[i][1].SetFormat(Format::EVALUATION);
+        result[i][1] += (tempA[i] *= skNTT);
     }
-    return result;
+    return std::make_shared<RingGSWEvalKeyImpl>(result);
 }
 
 // CGGI Accumulation as described in https://eprint.iacr.org/2020/086
 // Added ternary MUX introduced in paper https://eprint.iacr.org/2022/074.pdf section 5
 // We optimize the algorithm by multiplying the monomial after the external product
 // This reduces the number of polynomial multiplications which further reduces the runtime
-void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, const RingGSWEvalKey& ek1,
-                                          const RingGSWEvalKey& ek2, const NativeInteger& a,
-                                          RLWECiphertext& acc) const {
-    size_t digitsG2{params->GetDigitsG() << 1};
-    std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
-
+void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
+                                          ConstRingGSWEvalKey& ek2, const NativeInteger& a, RLWECiphertext& acc) const {
     std::vector<NativePoly> ct(acc->GetElements());
     ct[0].SetFormat(Format::COEFFICIENT);
     ct[1].SetFormat(Format::COEFFICIENT);
 
+    uint32_t digitsG2{params->GetDigitsG() << 1};
+    std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
+
     SignedDigitDecompose(params, ct, dct);
 
-    for (size_t i = 0; i < digitsG2; ++i)
+    for (uint32_t i = 0; i < digitsG2; ++i)
         dct[i].SetFormat(Format::EVALUATION);
 
     // obtain both monomial(index) for sk = 1 and monomial(-index) for sk = -1
     // index is in range [0,m] - so we need to adjust the edge case when index == m to index = 0
-    uint64_t MInt{2 * params->GetN()};
+    uint32_t MInt{2 * params->GetN()};
     NativeInteger M{MInt};
-    uint64_t indexPos{a.ConvertToInt()};
+    uint32_t indexPos{a.ConvertToInt<uint32_t>()};
     const NativePoly& monomial = params->GetMonomial(indexPos == MInt ? 0 : indexPos);
-    uint64_t indexNeg{NativeInteger(0).ModSubFast(a, M).ConvertToInt()};
+    uint32_t indexNeg{NativeInteger(0).ModSubFast(a, M).ConvertToInt<uint32_t>()};
     const NativePoly& monomialNeg = params->GetMonomial(indexNeg == MInt ? 0 : indexNeg);
 
     // acc = acc + dct * ek1 * monomial + dct * ek2 * negative_monomial;
     // uses in-place * operators for the last call to dct[i] to gain performance
     // improvement. Needs to be done using two loops for ternary secrets.
     // TODO (dsuponit): benchmark cases with operator*() and operator*=(). Make a copy of dct?
-    const std::vector<std::vector<NativePoly>>& ev1 = ek1->GetElements();
 
-    for (size_t j = 0; j < 2; ++j) {
-        NativePoly temp1(dct[0] * ev1[0][j]);
-        for (size_t l = 1; l < digitsG2; ++l)
-            temp1 += (dct[l] * ev1[l][j]);
-        acc->GetElements()[j] += (temp1 *= monomial);
-    }
+    const std::vector<std::vector<NativePoly>>& ev1(ek1->GetElements());
+    NativePoly tmp(dct[0] * ev1[0][0]);
+    for (uint32_t i = 1; i < digitsG2; ++i)
+        tmp += (dct[i] * ev1[i][0]);
+    acc->GetElements()[0] += (tmp *= monomial);
+    tmp = (dct[0] * ev1[0][1]);
+    for (uint32_t i = 1; i < digitsG2; ++i)
+        tmp += (dct[i] * ev1[i][1]);
+    acc->GetElements()[1] += (tmp *= monomial);
 
-    const std::vector<std::vector<NativePoly>>& ev2 = ek2->GetElements();
-    NativePoly temp1(dct[0] * ev2[0][0]);
-    for (size_t l = 1; l < digitsG2; ++l)
-        temp1 += (dct[l] * ev2[l][0]);
-    acc->GetElements()[0] += (temp1 *= monomialNeg);
-    NativePoly temp2(dct[0] * ev2[0][1]);
-    for (size_t l = 1; l < digitsG2; ++l)
-        temp2 += (dct[l] *= ev2[l][1]);
-    acc->GetElements()[1] += (temp2 *= monomialNeg);
+    const std::vector<std::vector<NativePoly>>& ev2(ek2->GetElements());
+    tmp = (dct[0] * ev2[0][0]);
+    for (uint32_t i = 1; i < digitsG2; ++i)
+        tmp += (dct[i] * ev2[i][0]);
+    acc->GetElements()[0] += (tmp *= monomialNeg);
+    tmp = (dct[0] * ev2[0][1]);
+    for (uint32_t i = 1; i < digitsG2; ++i)
+        tmp += (dct[i] *= ev2[i][1]);
+    acc->GetElements()[1] += (tmp *= monomialNeg);
 }
 
 };  // namespace lbcrypto

@@ -68,7 +68,7 @@
 
 #define _USE_MATH_DEFINES  // added for Visual Studio support
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/distributiongenerator.h"
 
 #include <memory>

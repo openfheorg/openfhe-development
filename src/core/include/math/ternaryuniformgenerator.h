@@ -37,7 +37,7 @@
 #define LBCRYPTO_INC_MATH_TERNARYUNIFORMGENERATOR_H_
 
 #include "math/distributiongenerator.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 
 #include <memory>
 #include <random>

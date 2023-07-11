@@ -72,8 +72,8 @@ private:
     RingGSWEvalKey KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
                               LWEPlaintext m) const;
 
-    void AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, const RingGSWEvalKey& ek1,
-                      const RingGSWEvalKey& ek2, const NativeInteger& a, RLWECiphertext& acc) const;
+    void AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
+                      ConstRingGSWEvalKey& ek2, const NativeInteger& a, RLWECiphertext& acc) const;
 };
 
 }  // namespace lbcrypto

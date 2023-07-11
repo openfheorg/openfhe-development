@@ -104,14 +104,11 @@ LWEPublicKey LWEEncryptionScheme::PubKeyGen(const std::shared_ptr<LWECryptoParam
 
     for (size_t j = 0; j < dim; ++j) {
         for (size_t i = 0; i < dim; ++i) {
-            v[j].ModAddEq(A[j][i].ModMulFast(ske[i], modulus, mu), modulus);
+            v[j].ModAddFastEq(A[j][i].ModMulFast(ske[i], modulus, mu), modulus);
         }
     }
-
     // public key A, v
-    LWEPublicKeyImpl Av(A, v);
-
-    return std::make_shared<LWEPublicKeyImpl>(Av);
+    return std::make_shared<LWEPublicKeyImpl>(LWEPublicKeyImpl(std::move(A), std::move(v)));
 }
 
 // classical LWE encryption
@@ -144,9 +141,7 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     for (size_t i = 0; i < n; ++i) {
         b += a[i].ModMulFast(s[i], mod, mu);
     }
-    b.ModEq(mod);
-
-    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(std::move(a), b.Mod(mod)));
 }
 
 // classical public key LWE encryption
@@ -248,8 +243,6 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams>& params
     std::cerr << mod << " " << p << " " << r << " error:\t" << error << std::endl;
     std::cerr << error * mod.ConvertToDouble() / static_cast<double>(p) << std::endl;
 #endif
-
-    return;
 }
 
 void LWEEncryptionScheme::EvalAddEq(LWECiphertext& ct1, ConstLWECiphertext& ct2) const {
@@ -285,13 +278,9 @@ LWECiphertext LWEEncryptionScheme::ModSwitch(NativeInteger q, ConstLWECiphertext
     auto n = ctQ->GetLength();
     auto Q = ctQ->GetModulus();
     NativeVector a(n, q);
-
     for (size_t i = 0; i < n; ++i)
         a[i] = RoundqQ(ctQ->GetA()[i], q, Q);
-
-    NativeInteger b = RoundqQ(ctQ->GetB(), q, Q);
-
-    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(std::move(a), RoundqQ(ctQ->GetB(), q, Q)));
 }
 
 // Switching key as described in Section 3 of https://eprint.iacr.org/2014/816
@@ -371,7 +360,7 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
         resultVecA[i] = std::move(vector1A);
         resultVecB[i] = std::move(vector1B);
     }
-    return std::make_shared<LWESwitchingKeyImpl>(LWESwitchingKeyImpl(resultVecA, resultVecB));
+    return std::make_shared<LWESwitchingKeyImpl>(LWESwitchingKeyImpl(std::move(resultVecA), std::move(resultVecB)));
 }
 
 // the key switching operation as described in Section 3 of
@@ -410,7 +399,7 @@ LWECiphertext LWEEncryptionScheme::NoiselessEmbedding(const std::shared_ptr<LWEC
     NativeInteger q(params->Getq());
     NativeInteger b(m * (q >> 2));
     NativeVector a(params->Getn(), q);
-    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(std::move(a), b));
 }
 
 };  // namespace lbcrypto

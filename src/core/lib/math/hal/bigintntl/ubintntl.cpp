@@ -42,7 +42,7 @@
     #define _SECURE_SCL 0  // to speed up VS
 
     #include "math/hal/basicint.h"
-    #include "math/hal.h"
+    #include "math/math-hal.h"
     #include "math/hal/bigintntl/ubintntl.h"
 
     #include <fstream>

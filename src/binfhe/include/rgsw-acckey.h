@@ -32,18 +32,17 @@
 #ifndef _RGSW_BTKEY_H_
 #define _RGSW_BTKEY_H_
 
+#include "lwe-ciphertext.h"
+#include "lwe-keyswitchkey.h"
+#include "lwe-privatekey.h"
+#include "lwe-cryptoparameters.h"
+#include "rgsw-evalkey.h"
+
 #include "lattice/lat-hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 #include "utils/serializable.h"
 #include "utils/utilities.h"
-
-#include "lwe-ciphertext.h"
-#include "lwe-keyswitchkey.h"
-#include "lwe-privatekey.h"
-#include "lwe-cryptoparameters.h"
-
-#include "rgsw-evalkey.h"
 
 #include <memory>
 #include <string>
@@ -65,20 +64,20 @@ class RingGSWACCKeyImpl : public Serializable {
 public:
     RingGSWACCKeyImpl() = default;
 
-    explicit RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) : m_key(dim1, dim2_t(dim2, dim3_t(dim3))) {}
+    RingGSWACCKeyImpl(uint32_t dim1, uint32_t dim2, uint32_t dim3) : m_key(dim1, dim2_t(dim2, dim3_t(dim3))) {}
 
     explicit RingGSWACCKeyImpl(const std::vector<std::vector<std::vector<RingGSWEvalKey>>>& key) : m_key(key) {}
 
-    explicit RingGSWACCKeyImpl(const RingGSWACCKeyImpl& rhs) : m_key(rhs.m_key) {}
+    RingGSWACCKeyImpl(const RingGSWACCKeyImpl& rhs) : m_key(rhs.m_key) {}
 
-    explicit RingGSWACCKeyImpl(RingGSWACCKeyImpl&& rhs) : m_key(std::move(rhs.m_key)) {}
+    RingGSWACCKeyImpl(RingGSWACCKeyImpl&& rhs) noexcept : m_key(std::move(rhs.m_key)) {}
 
     RingGSWACCKeyImpl& operator=(const RingGSWACCKeyImpl& rhs) {
         this->m_key = rhs.m_key;
         return *this;
     }
 
-    RingGSWACCKeyImpl& operator=(RingGSWACCKeyImpl&& rhs) {
+    RingGSWACCKeyImpl& operator=(RingGSWACCKeyImpl&& rhs) noexcept {
         this->m_key = std::move(rhs.m_key);
         return *this;
     }

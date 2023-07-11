@@ -34,10 +34,12 @@
 #include <memory>
 
 namespace lbcrypto {
+
 class LWECiphertextImpl;
 
 using LWECiphertext      = std::shared_ptr<LWECiphertextImpl>;
 using ConstLWECiphertext = const std::shared_ptr<const LWECiphertextImpl>;
+
 }  // namespace lbcrypto
 
 #endif  // __LWE_CIPHERTEXT_FWD_H__

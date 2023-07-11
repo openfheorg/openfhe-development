@@ -2964,7 +2964,7 @@ public:
         // does NOT exist, add this to the cache of all contexts
     }
 
-    virtual std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "CryptoContext";
     }
     static uint32_t SerializedVersion() {

@@ -40,7 +40,7 @@
 namespace lbcrypto {
 
 void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
-                                          double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR, 
+                                          double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,
                                           SECRET_KEY_DIST keyDist, BINFHE_METHOD method, uint32_t numAutoKeys) {
     auto lweparams  = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
     auto rgswparams = std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);
@@ -188,32 +188,25 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
 
 LWEPrivateKey BinFHEContext::KeyGen() const {
     auto& LWEParams = m_params->GetLWEParams();
-    if (LWEParams->GetKeyDist() == GAUSSIAN) {
+    if (LWEParams->GetKeyDist() == GAUSSIAN)
         return m_LWEscheme->KeyGenGaussian(LWEParams->Getn(), LWEParams->GetqKS());
-    }
-    else {
-        return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
-    }
+    return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
 }
 
 LWEPrivateKey BinFHEContext::KeyGenN() const {
     auto& LWEParams = m_params->GetLWEParams();
-    if (LWEParams->GetKeyDist() == GAUSSIAN) {
+    if (LWEParams->GetKeyDist() == GAUSSIAN)
         return m_LWEscheme->KeyGenGaussian(LWEParams->GetN(), LWEParams->GetQ());
-    }
-    else {
-        return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
-    }
-    
+    return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
 }
 
 LWEKeyPair BinFHEContext::KeyGenPair() const {
-    auto& LWEParams = m_params->GetLWEParams();
+    auto&& LWEParams = m_params->GetLWEParams();
     return m_LWEscheme->KeyGenPair(LWEParams);
 }
 
 LWEPublicKey BinFHEContext::PubKeyGen(ConstLWEPrivateKey& sk) const {
-    auto& LWEParams = m_params->GetLWEParams();
+    auto&& LWEParams = m_params->GetLWEParams();
     return m_LWEscheme->PubKeyGen(LWEParams, sk);
 }
 
@@ -267,7 +260,7 @@ LWECiphertext BinFHEContext::SwitchCTtoqn(ConstLWESwitchingKey& ksk, ConstLWECip
 
 void BinFHEContext::Decrypt(ConstLWEPrivateKey& sk, ConstLWECiphertext& ct, LWEPlaintext* result,
                             LWEPlaintextModulus p) const {
-    auto& LWEParams = m_params->GetLWEParams();
+    auto&& LWEParams = m_params->GetLWEParams();
     m_LWEscheme->Decrypt(LWEParams, sk, ct, result, p);
 }
 

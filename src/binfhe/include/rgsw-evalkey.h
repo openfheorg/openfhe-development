@@ -32,17 +32,16 @@
 #ifndef _RGSW_EVAL_KEY_H_
 #define _RGSW_EVAL_KEY_H_
 
-#include "lattice/lat-hal.h"
-
-#include "math/discretegaussiangenerator.h"
-#include "math/nbtheory.h"
-#include "utils/serializable.h"
-#include "utils/utilities.h"
-
 #include "lwe-ciphertext.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
 #include "lwe-cryptoparameters.h"
+
+#include "lattice/lat-hal.h"
+#include "math/discretegaussiangenerator.h"
+#include "math/nbtheory.h"
+#include "utils/serializable.h"
+#include "utils/utilities.h"
 
 #include <memory>
 #include <string>
@@ -74,12 +73,12 @@ public:
     RingGSWEvalKeyImpl(RingGSWEvalKeyImpl&& rhs) noexcept : m_elements(std::move(rhs.m_elements)) {}
 
     RingGSWEvalKeyImpl& operator=(const RingGSWEvalKeyImpl& rhs) {
-        this->m_elements = rhs.m_elements;
+        RingGSWEvalKeyImpl::m_elements = rhs.m_elements;
         return *this;
     }
 
     RingGSWEvalKeyImpl& operator=(RingGSWEvalKeyImpl&& rhs) noexcept {
-        this->m_elements = std::move(rhs.m_elements);
+        RingGSWEvalKeyImpl::m_elements = std::move(rhs.m_elements);
         return *this;
     }
 

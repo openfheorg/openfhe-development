@@ -235,7 +235,6 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
             std::vector<DCRTPoly::PolyType> sOldDecomposed = sOld.GetElementAtIndex(i).PowersOfBase(digitSize);
 
             for (size_t k = 0; k < sOldDecomposed.size(); k++) {
-                // Creates an element with all zeroes
                 DCRTPoly filtered(elementParams, Format::EVALUATION, true);
                 filtered.SetElementAtIndex(i, sOldDecomposed[k]);
 
@@ -256,7 +255,6 @@ EvalKey<DCRTPoly> KeySwitchBV::KeySwitchGenInternal(const PrivateKey<DCRTPoly> o
     }
     else {
         for (usint i = 0; i < sOld.GetNumOfElements(); i++) {
-            // Creates an element with all zeroes
             DCRTPoly filtered(elementParams, Format::EVALUATION, true);
             filtered.SetElementAtIndex(i, sOld.GetElementAtIndex(i));
 

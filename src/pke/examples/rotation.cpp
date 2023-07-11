@@ -30,7 +30,7 @@
 //==================================================================================
 
 /*
-  Example of vector rotation. 
+  Example of vector rotation.
   This code shows how the EvalRotate and EvalMerge operations work
  */
 
@@ -40,7 +40,7 @@
 #include <random>
 
 #include "openfhe.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 
 using namespace lbcrypto;
 

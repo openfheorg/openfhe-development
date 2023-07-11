@@ -45,13 +45,11 @@
 #include "utils/exception.h"
 #include "utils/inttypes.h"
 
-// #include <time.h>
 #include <cmath>
-// #include <chrono>
 #include <limits>
 #include <set>
-// #include <sstream>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace lbcrypto {
@@ -334,96 +332,54 @@ void PrimeFactorize(IntType n, std::set<IntType>& primeFactors) {
 // issue-881: make sure we don't overflow an IntType
 template <typename IntType>
 IntType FirstPrime(uint64_t nBits, uint64_t m) {
-#if (NATIVEINT == 64 && !defined(HAVE_INT128)) || (NATIVEINT == 128 && !defined(__EMSCRIPTEN__))
-    if ((typeid(IntType) == typeid(NativeInteger)) && (nBits >= MAX_MODULUS_SIZE)) {
-        OPENFHE_THROW(math_error, "Requested modulus size " + std::to_string(nBits + 1) +
-                                      " exceeds maximum allowed size " + std::to_string(MAX_MODULUS_SIZE));
+    if constexpr (std::is_same_v<IntType, NativeInteger>) {
+        if (nBits > MAX_MODULUS_SIZE)
+            OPENFHE_THROW(math_error, "Requested bit length " + std::to_string(nBits) +
+                                          " exceeds maximum allowed length " + std::to_string(MAX_MODULUS_SIZE));
     }
-#endif
     try {
-        OPENFHE_DEBUG_FLAG(false);
-        IntType r = IntType(2).ModExp(nBits, m);
-        OPENFHE_DEBUG("r " << r);
-        IntType qNew = (IntType(1) << nBits);
-        double d1    = qNew.ConvertToDouble();
-        double d2    = std::pow(2, static_cast<double>(nBits));
-        if ((qNew == IntType(0)) || (std::llround(std::log2(d1)) < std::llround(std::log2(d2)))) {
-            // too big for IntType
-            OPENFHE_THROW(math_error, "FirstPrime parameters are too large for this integer implementation");
-        }
-        IntType qNew2 = (r > IntType(0)) ? (qNew + (IntType(m) - r) + IntType(1)) : (qNew + IntType(1));  // if r == 0
-        if (qNew2 < qNew) {
+        IntType mi(m);
+        IntType qNew(IntType(1) << nBits);
+        IntType r(qNew.Mod(mi));
+        IntType qNew2(qNew + IntType(1));
+        if (r > IntType(0))
+            qNew2 += (mi - r);
+        if (qNew2 < qNew)
             OPENFHE_THROW(math_error, "FirstPrime parameters overflow this integer implementation");
-        }
-        qNew = qNew2;
-
-        while (!MillerRabinPrimalityTest(qNew)) {
-            qNew2 = qNew + IntType(m);
-            if (qNew2 < qNew) {
+        while (!MillerRabinPrimalityTest((qNew = qNew2))) {
+            qNew2 = qNew + mi;
+            if (qNew2 < qNew)
                 OPENFHE_THROW(math_error, "FirstPrime overflow growing candidate");
-            }
-            qNew = qNew2;
         }
-
         return qNew;
     }
     catch (...) {
         OPENFHE_THROW(math_error, "FirstPrime math exception");
     }
-    //  try {
-    //    OPENFHE_DEBUG_FLAG(false);
-    //    IntType r = IntType(2).ModExp(nBits, m);
-    //    OPENFHE_DEBUG("r "<<r);
-    //    IntType qNew = (IntType(1) << nBits);
-    //    double d1 = qNew.ConvertToDouble();
-    //    double d2 = std::pow(2, double(nBits));
-    //    if ((qNew == IntType(0)) || (std::llround(std::log2(d1)) <
-    // std::llround(std::log2(d2)))) {
-    //      // too big for IntType
-    //      OPENFHE_THROW(math_error, "FirstPrime parameters are
-    // too large for this integer implementation");
-    //    }
-    //    IntType mint = IntType(m);
-    //    qNew -= mint + r - IntType(1);
-    //
-    //    while (!MillerRabinPrimalityTest(qNew)) {
-    //      qNew -= mint;
-    //    }
-    //    return qNew;
-    //  } catch (...) {
-    //    OPENFHE_THROW(math_error, "FirstPrime math exception");
-    //  }
 }
 
 template <typename IntType>
 IntType NextPrime(const IntType& q, uint64_t m) {
-    IntType M(m);
-    IntType qOld(q), qNew(q);
-    do {
-        qNew += M;
-        if (qNew < qOld)
-            OPENFHE_THROW(math_error, "NextPrime overflow growing candidate");
-    } while (!MillerRabinPrimalityTest(qNew));
-    return qNew;
-}
-
-template <typename IntType>
-IntType PreviousPrime(const IntType& q, uint64_t m) {
-    IntType M(m);
-    IntType qNew(q - M);
+    IntType M(m), qNew(q + M);
     while (!MillerRabinPrimalityTest(qNew)) {
-        qNew -= M;
-        // we need to check if qNew becomes < 0 by checking for an overflow
-        // this might happen if q is too small
-        if (qNew > q) {
-            OPENFHE_THROW(config_error, "Moduli size is not sufficient! Must be increased.");
-        }
+        if ((qNew += M) < q)
+            OPENFHE_THROW(math_error, "NextPrime overflow growing candidate");
     }
     return qNew;
 }
 
 template <typename IntType>
-IntType NextPowerOfTwo(const IntType& n) {
+IntType PreviousPrime(const IntType& q, uint64_t m) {
+    IntType M(m), qNew(q - M);
+    while (!MillerRabinPrimalityTest(qNew)) {
+        if ((qNew -= M) > q)
+            OPENFHE_THROW(config_error, "Moduli size is not sufficient! Must be increased.");
+    }
+    return qNew;
+}
+
+template <typename IntType>
+IntType NextPowerOfTwo(IntType n) {
     usint result = ceil(log2(n));
     return result;
 }

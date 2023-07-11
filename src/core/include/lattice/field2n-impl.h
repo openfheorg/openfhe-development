@@ -40,7 +40,7 @@
 #include "lattice/lat-hal.h"
 
 #include "math/dftransform.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 
 #include "utils/exception.h"
 #include "utils/inttypes.h"

@@ -42,9 +42,8 @@
 #include "rgsw-acc-lmkcdey.h"
 
 #include <map>
-#include <vector>
-
 #include <memory>
+#include <vector>
 
 namespace lbcrypto {
 
@@ -67,15 +66,12 @@ public:
     BinFHEScheme() = default;
 
     explicit BinFHEScheme(BINFHE_METHOD method) {
-        if (method == AP) {
+        if (method == AP)
             ACCscheme = std::make_shared<RingGSWAccumulatorDM>();
-        }
-        else if (method == GINX) {
+        else if (method == GINX)
             ACCscheme = std::make_shared<RingGSWAccumulatorCGGI>();
-        }
-        else if (method == LMKCDEY) {
+        else if (method == LMKCDEY)
             ACCscheme = std::make_shared<RingGSWAccumulatorLMKCDEY>();
-        }
         else
             OPENFHE_THROW(config_error, "method is invalid");
     }
@@ -201,7 +197,7 @@ private:
    * @return the output RingLWE accumulator
    */
     RLWECiphertext BootstrapGateCore(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
-                                     const RingGSWACCKey& ek, ConstLWECiphertext& ct) const;
+                                     ConstRingGSWACCKey& ek, ConstLWECiphertext& ct) const;
 
     // Below is for arbitrary function evaluation purpose
 
@@ -215,7 +211,7 @@ private:
    * @return a shared pointer to the resulting ciphertext
    */
     template <typename Func>
-    RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams>& params, const RingGSWACCKey& ek,
+    RLWECiphertext BootstrapFuncCore(const std::shared_ptr<BinFHECryptoParams>& params, ConstRingGSWACCKey& ek,
                                      ConstLWECiphertext& ct, const Func f, const NativeInteger& fmod) const;
 
     /**

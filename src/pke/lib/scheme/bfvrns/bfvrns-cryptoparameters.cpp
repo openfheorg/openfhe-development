@@ -664,48 +664,41 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 
     if (multTech == BEHZ) {
         m_moduliQ = moduliQ;
+        m_numq    = sizeQ;
 
-        // Compute Bajard's et al. RNS variant lookup tables
+        std::vector<std::shared_ptr<ILNativeParams>> params;
+        params.reserve(2 * sizeQ + 1);
+        for (usint i = 0; i < m_numq; ++i)
+            params.emplace_back(std::make_shared<ILNativeParams>(2 * n, moduliQ[i]));
 
-        // Populate EvalMulrns tables
-        // find the a suitable size of B
-        m_numq = sizeQ;
+        m_moduliB.push_back(PreviousPrime<NativeInteger>(moduliQ.back(), 2 * n));
+        m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_moduliB.back()));
+        params.emplace_back(std::make_shared<ILNativeParams>(2 * n, m_moduliB.back(), m_rootsBsk.back()));
+        BigInteger B(m_moduliB.back());
 
-        BigInteger tBig = BigInteger(GetPlaintextModulus());
-        BigInteger Q(GetElementParams()->GetModulus());
-
-        BigInteger B                   = 1;
-        BigInteger maxConvolutionValue = BigInteger(2) * BigInteger(n) * Q * Q * tBig;
-
-        m_moduliB.push_back(PreviousPrime<NativeInteger>(moduliQ[m_numq - 1], 2 * n));
-        m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_moduliB[0]));
-        B = B * BigInteger(m_moduliB[0]);
-
-        for (usint i = 1; i < m_numq; i++) {  // we already added one prime
-            m_moduliB.push_back(PreviousPrime<NativeInteger>(m_moduliB[i - 1], 2 * n));
-            m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_moduliB[i]));
-
-            B = B * BigInteger(m_moduliB[i]);
+        for (usint i = 1; i < m_numq; ++i) {  // we already added one prime
+            m_moduliB.push_back(PreviousPrime<NativeInteger>(m_moduliB.back(), 2 * n));
+            m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_moduliB.back()));
+            params.emplace_back(std::make_shared<ILNativeParams>(2 * n, m_moduliB.back(), m_rootsBsk.back()));
+            B = B * BigInteger(m_moduliB.back());
         }
 
-        m_numb = m_numq;
-
-        m_msk = PreviousPrime<NativeInteger>(m_moduliB[m_numq - 1], 2 * n);
-
-        usint s           = 0;
-        NativeInteger tmp = m_msk;
+        m_numb   = m_numq;
+        m_msk    = PreviousPrime<NativeInteger>(m_moduliB[m_numq - 1], 2 * n);
+        usint s  = 0;
+        auto tmp = m_msk;
         while (tmp > 0) {
             tmp >>= 1;
             s++;
         }
 
+        BigInteger Q(GetElementParams()->GetModulus());
+        BigInteger maxConvolutionValue(BigInteger(2 * n) * Q * Q * GetPlaintextModulus());
         // check msk is large enough
         while (Q * B * BigInteger(m_msk) < maxConvolutionValue) {
-            NativeInteger firstInteger = FirstPrime<NativeInteger>(s + 1, 2 * n);
-
+            auto firstInteger{FirstPrime<NativeInteger>(s + 1, 2 * n)};
             m_msk = NextPrime<NativeInteger>(firstInteger, 2 * n);
-            s++;
-            if (s >= 60)
+            if (++s >= 60)
                 OPENFHE_THROW(math_error, "msk is larger than 60 bits");
         }
         m_rootsBsk.push_back(RootOfUnity<NativeInteger>(2 * n, m_msk));
@@ -713,7 +706,8 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         m_moduliBsk = m_moduliB;
         m_moduliBsk.push_back(m_msk);
 
-        m_paramsBsk = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, m_moduliBsk, m_rootsBsk);
+        params.emplace_back(std::make_shared<ILNativeParams>(2 * n, m_moduliBsk.back(), m_rootsBsk.back()));
+        m_paramsQBsk = std::make_shared<ILDCRTParams<BigInteger>>(2 * n, params);
 
         ChineseRemainderTransformFTT<NativeVector>().PreCompute(m_rootsBsk, 2 * n, m_moduliBsk);
 
@@ -724,7 +718,6 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
             uint64_t val[2];
             val[0] = (mu % TwoPower64).ConvertToInt();
             val[1] = mu.RShift(64).ConvertToInt();
-
             memcpy(&m_modbskBarrettMu[i], val, sizeof(DoubleNativeInt));
         }
 
@@ -893,8 +886,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
 }
 
 uint64_t CryptoParametersBFVRNS::FindAuxPrimeStep() const {
-    size_t n = GetElementParams()->GetRingDimension();
-    return static_cast<uint64_t>(2 * n);
+    return 2 * GetElementParams()->GetRingDimension();
 }
 
 }  // namespace lbcrypto
