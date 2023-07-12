@@ -693,7 +693,7 @@ void CryptoParametersBFVRNS::PrecomputeCRTTables(KeySwitchTechnique ksTech, Scal
         }
 
         BigInteger Q(GetElementParams()->GetModulus());
-        BigInteger maxConvolutionValue(BigInteger(2 * n) * Q * Q * GetPlaintextModulus());
+        BigInteger maxConvolutionValue(BigInteger(2 * n) * BigInteger(GetPlaintextModulus()) * Q * Q);
         // check msk is large enough
         while (Q * B * BigInteger(m_msk) < maxConvolutionValue) {
             auto firstInteger{FirstPrime<NativeInteger>(s + 1, 2 * n)};
