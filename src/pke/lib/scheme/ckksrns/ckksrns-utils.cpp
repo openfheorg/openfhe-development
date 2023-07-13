@@ -860,13 +860,12 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
             int32_t(numRotationsRem), bRem,           gRem};
 }
 
-uint32_t getRatioBSGS(double slots) {
+uint32_t getRatioBSGSLT(double slots) {
     if (slots < 128)
         return ceil(sqrt(slots));
 
     // auto temp = ceil(sqrt(slots / 12.));
-    auto temp = ceil(sqrt(slots));
-    return ceil(slots / temp);
+    return ceil(sqrt(slots));
 }
 
 std::vector<int32_t> FindLTRotationIndicesSS(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
@@ -878,7 +877,7 @@ std::vector<int32_t> FindLTRotationIndicesSS(uint32_t dim1, uint32_t m, uint32_t
         slots = blockDimension;
 
     // Computing the baby-step g and the giant-step h
-    uint32_t bStep = (dim1 == 0) ? getRatioBSGS(static_cast<double>(slots)) : dim1;
+    uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(static_cast<double>(slots)) : dim1;
     uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
 
     // Computing all indices for baby-step giant-step procedure

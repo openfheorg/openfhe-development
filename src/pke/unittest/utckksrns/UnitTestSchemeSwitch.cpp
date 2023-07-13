@@ -125,8 +125,8 @@ constexpr uint32_t RDIM         = 512;
 constexpr uint32_t NUM_LRG_DIGS = 3;
 
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-constexpr uint32_t SMODSIZE = 78;
-constexpr uint32_t FMODSIZE = 89;
+constexpr uint32_t SMODSIZE = 70;
+constexpr uint32_t FMODSIZE = 80;
 #else
 constexpr uint32_t SMODSIZE = 50;
 constexpr uint32_t FMODSIZE = 60;
@@ -497,8 +497,8 @@ protected:
             uint32_t init_level = 0;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
                 init_level = 1;
-            // cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
-            cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
+            cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
+            // cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
             auto xmin              = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
@@ -519,6 +519,7 @@ protected:
             cc->Decrypt(keyPair.secretKey, result[1], &ptxtMin);
             if (testData.oneHot) {
                 ptxtMin->SetLength(testData.numValues);
+
                 std::vector<std::complex<double>> xargminOH(testData.numValues);
                 xargminOH[xargmin] = 1;
                 checkEquality(ptxtMin->GetCKKSPackedValue(), xargminOH, eps1,

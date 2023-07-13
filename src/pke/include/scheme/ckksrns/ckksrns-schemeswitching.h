@@ -86,6 +86,9 @@ public:
                                                    const std::vector<std::vector<std::complex<double>>>& B,
                                                    uint32_t dim1, uint32_t L, double scale) const;
 
+    Ciphertext<DCRTPoly> EvalLTWithPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt,
+                                                const std::vector<ConstPlaintext>& A, uint32_t dim1) const;
+
     Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
                                                     const std::vector<std::vector<std::complex<double>>>& A,
                                                     ConstCiphertext<DCRTPoly> ct, uint32_t dim1, uint32_t L) const;
@@ -168,16 +171,83 @@ public:
     }
 
 private:
+    //------------------------------------------------------------------------------
+    // Complex Plaintext Functions, copied from ckksrns-fhe. TODO: fix this
+    //------------------------------------------------------------------------------
+
+    Plaintext MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
+                               const std::vector<std::complex<double>>& value, size_t noiseScaleDeg, uint32_t level,
+                               usint slots) const;
+
+    Ciphertext<DCRTPoly> EvalMultExt(ConstCiphertext<DCRTPoly> ciphertext, ConstPlaintext plaintext) const;
+
+    void EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const;
+
+    Ciphertext<DCRTPoly> EvalAddExt(ConstCiphertext<DCRTPoly> ciphertext1, ConstCiphertext<DCRTPoly> ciphertext2) const;
+
+    EvalKey<DCRTPoly> ConjugateKeyGen(const PrivateKey<DCRTPoly> privateKey) const;
+
+    Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
+                                   const std::map<usint, EvalKey<DCRTPoly>>& evalKeys) const;
+
+    /**
+   * Set modulus and recalculates the vector values to fit the modulus
+   *
+   * @param &vec input vector
+   * @param &bigValue big bound of the vector values.
+   * @param &modulus modulus to be set for vector.
+   */
+    void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
+                           NativeVector* nativeVec) const;
+
+#if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
+    /**
+   * Set modulus and recalculates the vector values to fit the modulus
+   *
+   * @param &vec input vector
+   * @param &bigValue big bound of the vector values.
+   * @param &modulus modulus to be set for vector.
+   */
+    void FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
+                           NativeVector* nativeVec) const;
+
+    constexpr __int128 Max128BitValue() const {
+        // 2^127-2^73-1 - max value that could be rounded to int128_t
+        return ((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) - (unsigned __int128)1;
+    }
+
+    inline bool is128BitOverflow(double d) const {
+        const double EPSILON = 0.000001;
+
+        return EPSILON < (std::abs(d) - Max128BitValue());
+    }
+#else  // NATIVEINT == 64
+    constexpr int64_t Max64BitValue() const {
+        // 2^63-2^9-1 - max value that could be rounded to int64_t
+        return 9223372036854775295;
+    }
+
+    inline bool is64BitOverflow(double d) const {
+        const double EPSILON = 0.000001;
+
+        return EPSILON < (std::abs(d) - Max64BitValue());
+    }
+#endif
+
+    //------------------------------------------------------------------------------
+    // Private members
+    //------------------------------------------------------------------------------
+
     // the LWE cryptocontext to generate when scheme switching from CKKS
     BinFHEContext m_ccLWE;
     // the CKKS cryptocontext for the intermediate modulus switching in CKKS to FHEW
     CryptoContext<DCRTPoly> m_ccKS;
     // the associated ciphertext modulus Q for the LWE cryptocontext
-    uint64_t m_modulus_LWE;
+    NativeInteger m_modulus_LWE;
     // the target ciphertext modulus Q for the CKKS cryptocontext. We assume the switching goes to the same initial cryptocontext
-    uint64_t m_modulus_CKKS_initial;
+    NativeInteger m_modulus_CKKS_initial;
     // the ciphertext modulus Q' for the CKKS cryptocontext that is secure for the LWE ring dimension
-    uint64_t m_modulus_CKKS_from;
+    NativeInteger m_modulus_CKKS_from;
     // switching key from CKKS to FHEW
     EvalKey<DCRTPoly> m_CKKStoFHEWswk;
     // switching key from FHEW to CKKS

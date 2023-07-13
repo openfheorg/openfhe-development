@@ -210,12 +210,12 @@ std::vector<uint32_t> SelectLayers(uint32_t logSlots, uint32_t budget = 4);
 std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget = 4, uint32_t dim1 = 0);
 
 /**
- *  Gets inner loop dimension for baby step giant step algorithm,
+ *  Gets inner loop dimension for baby step giant step algorithm for linear transform,
  * taking into account the cost efficiency of hoisted automorphisms.
  * @param slots number of slots.
  * @return the value for the inner dimension in the baby-step giant-step strategy
 */
-uint32_t getRatioBSGS(double slots);
+uint32_t getRatioBSGSLT(double slots);
 
 /**
  * Assembles a list of rotation indices necessary to perform the
