@@ -47,6 +47,7 @@
 #include <map>
 
 namespace lbcrypto {
+
 struct BinFHEContextParams {
     // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
     usint numberBits;
@@ -63,6 +64,12 @@ struct BinFHEContextParams {
     // for Ring GSW + LWE parameters
     usint gadgetBase;  // gadget base used in the bootstrapping
     usint baseRK;      // base for the refreshing key
+
+    // number of Automorphism keys for LMKCDEY (> 0)
+    usint numAutoKeys;
+
+    // for key distribution
+    SECRET_KEY_DIST keyDist;
 };
 /**
  * @brief BinFHEContext
@@ -90,8 +97,9 @@ public:
    * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q, double std,
-                               uint32_t baseKS, uint32_t baseG, uint32_t baseR, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, 
-                               BINFHE_METHOD method = GINX, uint32_t numAutoKeys = 10);
+                               uint32_t baseKS, uint32_t baseG, uint32_t baseR,
+                               SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, BINFHE_METHOD method = GINX,
+                               uint32_t numAutoKeys = 10);
 
     /**
    * Creates a crypto context using custom parameters.

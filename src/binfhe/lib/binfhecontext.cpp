@@ -40,12 +40,13 @@
 namespace lbcrypto {
 
 void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
-                                          double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR, 
+                                          double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,
                                           SECRET_KEY_DIST keyDist, BINFHE_METHOD method, uint32_t numAutoKeys) {
-    auto lweparams  = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
-    auto rgswparams = std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);
-    m_params        = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
-    m_binfhescheme  = std::make_shared<BinFHEScheme>(method);
+    auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
+    auto rgswparams =
+        std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);
+    m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
+    m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
 
 void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uint32_t logQ, int64_t N,
@@ -112,36 +113,11 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
 }
 
 void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method) {
-#if 0
-    struct BinFHEContextParams {
-        // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
-        usint numberBits;
-        usint cyclOrder;
-
-        // for LWE crypto parameters
-        usint latticeParam;
-        usint mod;  // modulus for additive LWE
-        // modulus for key switching; if it is zero, then it is replaced with intermediate prime for LWE crypto parameters
-        usint modKS;
-        double stdDev;
-        usint baseKS;  // base for key switching
-
-        // for Ring GSW + LWE parameters
-        usint gadgetBase;  // gadget base used in the bootstrapping
-        usint baseRK;      // base for the refreshing key
-
-        // number of Automorphism keys for LMKCDEY (> 0)
-        usint numAutoKeys;
-
-        // for key distribution
-        SECRET_KEY_DIST keyDist;
-    };
-#endif
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
     const double STD_DEV = 3.19;
     // clang-format off
     const std::unordered_map<BINFHE_PARAMSET, BinFHEContextParams> paramsMap({
-        //           numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase| baseRK| numAutoKeys| keyDist      
+        //           numberBits|cyclOrder|latticeParam|  mod|   modKS|  stdDev| baseKS| gadgetBase| baseRK| numAutoKeys| keyDist
         { TOY,             { 27,     1024,          64,  512,   PRIME, STD_DEV,     25,    1 <<  9,  23,     9,  UNIFORM_TERNARY} },
         { MEDIUM,          { 28,     2048,         422, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32,    10,  UNIFORM_TERNARY} },
         { STD128_LMKCDEY,  { 28,     2048,         458, 1024, 1 << 14, STD_DEV, 1 << 7,    1 << 10,  32,    10,  GAUSSIAN       } },
@@ -159,6 +135,12 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
         { STD192Q_OPT,     { 35,     4096,         875, 1024, 1 << 15, STD_DEV,     32,    1 << 12,  32,    10,  UNIFORM_TERNARY} },
         { STD256Q,         { 27,     4096,        2048, 2048, 1 << 16, STD_DEV,     16,    1 <<  7,  46,    10,  UNIFORM_TERNARY} },
         { STD256Q_OPT,     { 27,     4096,        1225, 1024, 1 << 16, STD_DEV,     16,    1 <<  7,  32,    10,  UNIFORM_TERNARY} },
+        { STD128Q_OPT_3,   { 50,     4096,         616, 2048, 1 << 16, STD_DEV,     16,    1 << 25,  32,    10,  UNIFORM_TERNARY} },
+        { STD192Q_OPT_3,   { 34,     4096,         922, 2048, 1 << 16, STD_DEV,     16,    1 << 12,  32,    10,  UNIFORM_TERNARY} },
+        { STD256Q_OPT_3,   { 27,     4096,        1400, 4096, 1 << 16, STD_DEV,     21,    1 <<  6,  32,    10,  UNIFORM_TERNARY} },
+        { STD128Q_OPT_4,   { 50,     4096,         647, 2048, 1 << 16, STD_DEV,     16,    1 << 25,  32,    10,  UNIFORM_TERNARY} },
+        { STD192Q_OPT_4,   { 34,     4096,         980, 2048, 1 << 17, STD_DEV,     16,    1 << 12,  32,    10,  UNIFORM_TERNARY} },
+        { STD256Q_OPT_4,   { 27,     4096,        1625, 4096, 1 << 21, STD_DEV,     16,    1 <<  6,  32,    10,  UNIFORM_TERNARY} },
         { SIGNED_MOD_TEST, { 28,     2048,         512, 1024,   PRIME, STD_DEV,     25,    1 <<  7,  23,    10,  UNIFORM_TERNARY} },
     });
     // clang-format on
@@ -174,14 +156,15 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     NativeInteger Q(
         PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder));
 
-    usint ringDim   = params.cyclOrder / 2;
-    auto lweparams  = (PRIME == params.modKS) ?
-                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
+    usint ringDim  = params.cyclOrder / 2;
+    auto lweparams = (PRIME == params.modKS) ?
+                         std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
                                                            params.stdDev, params.baseKS, params.keyDist) :
-                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
+                         std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
                                                            params.stdDev, params.baseKS, params.keyDist);
-    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK,
-                                                            method, params.stdDev, params.keyDist, false, params.numAutoKeys);
+    auto rgswparams =
+        std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK, method,
+                                              params.stdDev, params.keyDist, false, params.numAutoKeys);
 
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
@@ -226,7 +209,6 @@ LWEPrivateKey BinFHEContext::KeyGenN() const {
     else {
         return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
     }
-    
 }
 
 LWEKeyPair BinFHEContext::KeyGenPair() const {

@@ -246,15 +246,14 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams> params,
     r.ModAddFastEq((mod / (p * 2)), mod);
 
     *result = ((NativeInteger(p) * r) / mod).ConvertToInt();
-    // #if defined(BINFHE_DEBUG)
+#if defined(BINFHE_DEBUG)
     double error =
         (static_cast<double>(p) * (r.ConvertToDouble() - mod.ConvertToInt() / (p * 2))) / mod.ConvertToDouble() -
         static_cast<double>(*result);
 
-    // std::cerr << mod << " " << p << " " << r << " error:\t" << error << std::endl;
-    double errorest = error * static_cast<double>(mod.ConvertToDouble() / static_cast<double>(p));
-    std::cerr << errorest << std::endl;
-    // #endif
+    std::cerr << mod << " " << p << " " << r << " error:\t" << error << std::endl;
+    std::cerr << error * static_cast<double>(mod.ConvertToDouble() / static_cast<double>(p)) << std::endl;
+#endif
 
     return;
 }

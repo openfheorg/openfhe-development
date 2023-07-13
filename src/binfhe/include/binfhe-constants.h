@@ -57,24 +57,18 @@ enum BINFHE_PARAMSET {
                      // optimize runtime by finding a non-power-of-two n
     STD128,          // more than 128 bits of security for classical
                      // computer attacks - uses the same setup as HE standard
-    STD128_3,
-    STD128_en,
-    STD128_en_3_1,
-    STD128_en_3_2,
-    STD128_AP_3,
-    STD128Q_3,
-    STD128Q_OPT_3,
-    STD128Q_OPT_3_nQks1,
-    STD128Q_OPT_3_en,
-    STD192Q_3,
-    STD192Q_OPT_3,
-    STD192Q_OPT_3_en,
-    STD192Q_OPT_3_en_3,
-    STD256Q_3,
-    STD256Q_4,
-    STD256Q_OPT_3,
-    STD256Q_OPT_3_en_1,
-    STD256Q_OPT_3_en_2,
+    STD128Q_OPT_3,   // more than 128 bits of security for quantum computer attacks -
+                     // optimize runtime by finding a non-power-of-two n for 3 binary inputs
+    STD192Q_OPT_3,   // more than 192 bits of security for quantum computer attacks -
+                     // optimize runtime by finding a non-power-of-two n for 3 binary inputs
+    STD256Q_OPT_3,   // more than 256 bits of security for quantum computer attacks -
+                     // optimize runtime by finding a non-power-of-two n for 3 binary inputs
+    STD128Q_OPT_4,   // more than 128 bits of security for quantum computer attacks -
+                     // optimize runtime by finding a non-power-of-two n for 4 binary inputs
+    STD192Q_OPT_4,   // more than 192 bits of security for quantum computer attacks -
+                     // optimize runtime by finding a non-power-of-two n for 4 binary inputs
+    STD256Q_OPT_4,   // more than 256 bits of security for quantum computer attacks -
+                     // optimize runtime by finding a non-power-of-two n for 4 binary inputs
     STD128_OPT,      // more than 128 bits of security for classical computer attacks -
                      // optimize runtime by finding a non-power-of-two n
     STD192,          // more than 192 bits of security for classical computer attacks -
@@ -100,7 +94,7 @@ enum BINFHE_PARAMSET {
     SIGNED_MOD_TEST  // special parameter set for confirming the signed modular
                      // reduction in the accumulator updates works correctly
 };
-BINFHE_PARAMSET findparamset(std::string s);
+
 std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f);
 
 /**
@@ -118,9 +112,9 @@ std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f);
 
 enum BINFHE_METHOD {
     INVALID_METHOD = 0,
-    AP,    // Ducas-Micciancio variant
-    GINX,  // Chillotti-Gama-Georgieva-Izabachene variant
-    LMKCDEY, // Lee-Micciancio-Kim-Choi-Deryabin-Eom-Yoo variant, ia.cr/2022/198
+    AP,       // Ducas-Micciancio variant
+    GINX,     // Chillotti-Gama-Georgieva-Izabachene variant
+    LMKCDEY,  // Lee-Micciancio-Kim-Choi-Deryabin-Eom-Yoo variant, ia.cr/2022/198
 };
 std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f);
 
