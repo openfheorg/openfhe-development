@@ -139,9 +139,7 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ctvector[0]);
     ctprep->SetptModulus(p);
     if ((gate == MAJORITY) || (gate == AND3) || (gate == OR3) || (gate == AND4) || (gate == OR4)) {
-        // we simply compute (ct1 + ct2 + ct3 + ct4) mod 6
-        // supporting upto 3 additions
-        // map 0,1 -> 0 and 2,3 -> 1
+        // we simply compute sum(ctvector[i]) mod p
         for (size_t i = 1; i < ctvector.size(); i++) {
             LWEscheme->EvalAddEq(ctprep, ctvector[i]);
         }
@@ -183,61 +181,11 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
     }
 }
 
-#if 0
-LWECiphertext BinFHEScheme::EvalBinGateFourInput(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
-                                                 const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
-                                                 ConstLWECiphertext ct3, ConstLWECiphertext ct4) const {
-    if ((ct1 == ct2) || (ct2 == ct3) || (ct1 == ct3) || (ct3 == ct4) || (ct2 == ct4) || (ct1 == ct4)) {
-        OPENFHE_THROW(config_error, "Input ciphertexts should be independent");
-    }
-    LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
-    if ((gate == MAJORITY) || (gate == AND4) || (gate == OR4)) {
-        // we simply compute (ct1 + ct2 + ct3 + ct4) mod 8
-        // supporting upto 3 additions
-        // map 0,1 -> 0 and 2,3 -> 1
-        LWEscheme->EvalAddEq(ctprep, ct2);
-        LWEscheme->EvalAddEq(ctprep, ct3);
-        LWEscheme->EvalAddEq(ctprep, ct4);
-        auto acc = BootstrapGateCore(params, gate, EK.BSkey, ctprep);
-
-        std::vector<NativePoly>& accVec = acc->GetElements();
-        // the accumulator result is encrypted w.r.t. the transposed secret key
-        // we can transpose "a" to get an encryption under the original secret key
-        accVec[0] = accVec[0].Transpose();
-        accVec[0].SetFormat(Format::COEFFICIENT);
-        accVec[1].SetFormat(Format::COEFFICIENT);
-
-        // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
-        auto& LWEParams = params->GetLWEParams();
-        NativeInteger Q = LWEParams->GetQ();
-        NativeInteger b = Q / NativeInteger(8) + 1;
-        b.ModAddFastEq(accVec[1][0], Q);
-
-        auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), std::move(b));
-        // Modulus switching to a middle step Q'
-        auto ctMS = LWEscheme->ModSwitch(LWEParams->GetqKS(), ctExt);
-        // Key switching
-        auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
-        // Modulus switching
-        return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
-    }
-    else if (gate == CMUX) {
-        auto ccNOT   = EvalNOT(params, ct3);
-        auto ctNAND1 = EvalBinGate(params, NAND, EK, ct1, ccNOT);
-        auto ctNAND2 = EvalBinGate(params, NAND, EK, ct2, ct3);
-        auto ctCMUX  = EvalBinGate(params, NAND, EK, ctNAND1, ctNAND2);
-        return ctCMUX;
-    }
-    else {
-        OPENFHE_THROW(not_implemented_error, "Only Majority gate implemented for vector of ciphertexts at this time");
-    }
-}
-#endif
-
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
                                       ConstLWECiphertext ct) const {
     LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct);
+    NativeInteger p      = ct->GetptModulus();
     // ctprep = ct + q/4
     LWEscheme->EvalAddConstEq(ctprep, (ct->GetModulus() >> 2));
 
@@ -253,7 +201,7 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> 
     // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
     auto& LWEParams = params->GetLWEParams();
     NativeInteger Q = LWEParams->GetQ();
-    NativeInteger b = Q / NativeInteger(8) + 1;
+    NativeInteger b = Q / NativeInteger(2 * p) + 1;
     b.ModAddFastEq(accVec[1][0], Q);
 
     auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), std::move(b));
@@ -576,20 +524,11 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
     NativeInteger q1 = RGSWParams->GetGateConst()[static_cast<size_t>(gate)];
     NativeInteger q2 = q1.ModAddFast(NativeInteger(qHalf), q);
 
-#if 0
-    std::cout << "gate " << static_cast<size_t>(gate) << std::endl;
-    std::cout << "modulus q " << q << std::endl;
-    std::cout << "gate constant q1 " << q1 << std::endl;
-    std::cout << "gate constant q2 " << q2 << std::endl;
-#endif
     // depending on whether the value is the range, it will be set
-    // to either Q/8 or -Q/8 to match binary arithmetic
-    NativeInteger Q = LWEParams->GetQ();
-    // NativeInteger Q8    = Q / NativeInteger(8) + 1;
-    // NativeInteger Q8Neg = Q - Q8;
-    // std::cout << "pt modulus in bootstrapgatecore: " << p << std::endl;
-    NativeInteger Q8    = Q / NativeInteger(2 * p) + 1;
-    NativeInteger Q8Neg = Q - Q8;
+    // to either Q/2p or -Q/2p to match binary arithmetic
+    NativeInteger Q      = LWEParams->GetQ();
+    NativeInteger Q2p    = Q / NativeInteger(2 * p) + 1;
+    NativeInteger Q2pNeg = Q - Q2p;
 
     uint32_t N = LWEParams->GetN();
     NativeVector m(N, Q);
@@ -601,9 +540,9 @@ RLWECiphertext BinFHEScheme::BootstrapGateCore(const std::shared_ptr<BinFHECrypt
     for (size_t j = 0; j < qHalf; ++j) {
         NativeInteger temp = b.ModSub(j, q);
         if (q1 < q2)
-            m[j * factor] = ((temp >= q1) && (temp < q2)) ? Q8Neg : Q8;
+            m[j * factor] = ((temp >= q1) && (temp < q2)) ? Q2pNeg : Q2p;
         else
-            m[j * factor] = ((temp >= q2) && (temp < q1)) ? Q8 : Q8Neg;
+            m[j * factor] = ((temp >= q2) && (temp < q1)) ? Q2p : Q2pNeg;
     }
     std::vector<NativePoly> res(2);
     // no need to do NTT as all coefficients of this poly are zero

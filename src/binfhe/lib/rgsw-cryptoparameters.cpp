@@ -72,18 +72,17 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
 
     // Sets the gate constants for supported binary operations
     m_gateConst = {
-        NativeInteger(5) * (m_q >> 3),  // OR
-        NativeInteger(7) * (m_q >> 3),  // AND
-        NativeInteger(1) * (m_q >> 3),  // NOR
-        NativeInteger(3) * (m_q >> 3),  // NAND
-        NativeInteger(5) * (m_q >> 3),  // XOR_FAST
+        NativeInteger(5) * (m_q >> 3),   // OR
+        NativeInteger(7) * (m_q >> 3),   // AND
+        NativeInteger(1) * (m_q >> 3),   // NOR
+        NativeInteger(3) * (m_q >> 3),   // NAND
+        NativeInteger(5) * (m_q >> 3),   // XOR_FAST
         NativeInteger(1) * (m_q >> 3),   // XNOR_FAST
-        NativeInteger(7) * (m_q >> 3),  // MAJORITY
-        NativeInteger(11) * (m_q/12),// >> 4),  13// AND3 TODO:if p =6, then cannot divide region as q power denom
-        NativeInteger(7) * (m_q/12),// >> 4),  9// OR3
+        NativeInteger(7) * (m_q >> 3),   // MAJORITY
+        NativeInteger(11) * (m_q / 12),  // AND3
+        NativeInteger(7) * (m_q / 12),   // OR3
         NativeInteger(15) * (m_q >> 4),  // AND4
-        NativeInteger(9) * (m_q >> 4)  // OR4
-
+        NativeInteger(9) * (m_q >> 4)    // OR4
     };
 
     // Computes polynomials X^m - 1 that are needed in the accumulator for the
@@ -108,20 +107,19 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
         }
     }
 
-    if (m_method == LMKCDEY){
-        uint32_t M = 2*m_N;
+    if (m_method == LMKCDEY) {
+        uint32_t M = 2 * m_N;
 
         m_logGen.resize(M);
-        uint32_t gen = 5;
+        uint32_t gen  = 5;
         uint32_t gPow = 1;
 
-        m_logGen[gPow] = 0; // for 1
-        m_logGen[M - gPow] = M; // for -1
+        m_logGen[gPow]     = 0;  // for 1
+        m_logGen[M - gPow] = M;  // for -1
 
-        for (size_t i = 1; i < m_N/2; i++)
-        {
-            gPow = (gPow*gen) % M;
-            m_logGen[gPow] = i;
+        for (size_t i = 1; i < m_N / 2; i++) {
+            gPow               = (gPow * gen) % M;
+            m_logGen[gPow]     = i;
             m_logGen[M - gPow] = -i;
         }
     }

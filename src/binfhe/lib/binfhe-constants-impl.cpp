@@ -175,6 +175,25 @@ std::ostream& operator<<(std::ostream& s, BINGATE f) {
         case XNOR:
             s << "XNOR";
             break;
+        case AND3:
+            s << "AND3";
+            break;
+        case OR3:
+            s << "OR3";
+            break;
+        case AND4:
+            s << "AND4";
+            break;
+        case OR4:
+            s << "OR4";
+            break;
+        case MAJORITY:
+            s << "MAJORITY";
+            break;
+        case CMUX:
+            s << "CMUX";
+            break;
+
         default:
             s << "UNKNOWN";
             break;

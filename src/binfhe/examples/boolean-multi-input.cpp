@@ -64,7 +64,6 @@ int main() {
     auto ct1_3input = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct2_3input = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct3_3input = cc.Encrypt(sk, 0, SMALL_DIM, p);
-    auto ct4_3input = cc.Encrypt(sk, 0, SMALL_DIM, p);
 
     // 1, 1, 0
     std::vector<LWECiphertext> ct123;
@@ -72,33 +71,12 @@ int main() {
     ct123.push_back(ct2_3input);
     ct123.push_back(ct3_3input);
 
-    // 1, 0, 0
-    std::vector<LWECiphertext> ct134;
-    ct134.push_back(ct1_3input);
-    ct134.push_back(ct3_3input);
-    ct134.push_back(ct4_3input);
-
-    // 1, 0, 1
-    std::vector<LWECiphertext> ct132;
-    ct132.push_back(ct1_3input);
-    ct132.push_back(ct3_3input);
-    ct132.push_back(ct2_3input);
-
     // 1, 1, 0
     auto ctAND3 = cc.EvalBinGate(AND3, ct123);
 
     // 1, 1, 0
     auto ctOR3 = cc.EvalBinGate(OR3, ct123);
     // Sample Program: Step 5: Decryption
-
-    // 1, 0, 0
-    auto ctMajority03 = cc.EvalBinGate(MAJORITY, ct123);
-
-    // 1, 0, 1
-    auto ctCMUX0 = cc.EvalBinGate(CMUX, ct132);
-
-    // 1, 0, 0
-    auto ctCMUX1 = cc.EvalBinGate(CMUX, ct134);
 
     LWEPlaintext result;
     cc.Decrypt(sk, ctAND3, &result, p);
@@ -113,11 +91,45 @@ int main() {
 
     std::cout << "Result of encrypted computation of OR(1, 1, 0) = " << result << std::endl;
 
-    cc.Decrypt(sk, ctMajority03, &result);
-    if (result != 0)
+    // majority gate and cmux for 3 input does not need higher plaintext modulus
+    p                  = 4;
+    auto ct1_3input_p4 = cc.Encrypt(sk, 1, SMALL_DIM, p);
+    auto ct2_3input_p4 = cc.Encrypt(sk, 1, SMALL_DIM, p);
+    auto ct3_3input_p4 = cc.Encrypt(sk, 0, SMALL_DIM, p);
+    auto ct4_3input_p4 = cc.Encrypt(sk, 0, SMALL_DIM, p);
+
+    // 1, 1, 0
+    std::vector<LWECiphertext> ct123_p4;
+    ct123_p4.push_back(ct1_3input_p4);
+    ct123_p4.push_back(ct2_3input_p4);
+    ct123_p4.push_back(ct3_3input_p4);
+
+    // 1, 0, 0
+    std::vector<LWECiphertext> ct134_p4;
+    ct134_p4.push_back(ct1_3input_p4);
+    ct134_p4.push_back(ct3_3input_p4);
+    ct134_p4.push_back(ct4_3input_p4);
+
+    // 1, 0, 1
+    std::vector<LWECiphertext> ct132_p4;
+    ct132_p4.push_back(ct1_3input_p4);
+    ct132_p4.push_back(ct3_3input_p4);
+    ct132_p4.push_back(ct2_3input_p4);
+
+    // 1, 1, 0
+    auto ctMajority = cc.EvalBinGate(MAJORITY, ct123_p4);
+
+    // 1, 0, 1
+    auto ctCMUX0 = cc.EvalBinGate(CMUX, ct132_p4);
+
+    // 1, 0, 0
+    auto ctCMUX1 = cc.EvalBinGate(CMUX, ct134_p4);
+
+    cc.Decrypt(sk, ctMajority, &result);
+    if (result != 1)
         OPENFHE_THROW(math_error, "Decryption failure");
 
-    std::cout << "Result of encrypted computation of Majority(1, 0, 0) = " << result << std::endl;
+    std::cout << "Result of encrypted computation of Majority(1, 1, 0) = " << result << std::endl;
 
     cc.Decrypt(sk, ctCMUX1, &result);
     if (result != 1)
@@ -130,6 +142,7 @@ int main() {
 
     std::cout << "Result of encrypted computation of CMUX(1, 0, 1) = " << result << std::endl;
 
+    // for 4 input gates
     p               = 8;
     auto ct1_4input = cc.Encrypt(sk, 1, SMALL_DIM, p);
     auto ct2_4input = cc.Encrypt(sk, 0, SMALL_DIM, p);
@@ -151,9 +164,6 @@ int main() {
     // 1, 0, 0, 0
     auto ctOR4 = cc.EvalBinGate(OR4, ct1234);
 
-    // 1, 0, 0, 0
-    auto ctMajority04 = cc.EvalBinGate(MAJORITY, ct1234);
-
     // Sample Program: Step 5: Decryption
     cc.Decrypt(sk, ctAND4, &result, p);
     if (result != 0)
@@ -166,12 +176,6 @@ int main() {
         OPENFHE_THROW(math_error, "Decryption failure");
 
     std::cout << "Result of encrypted computation of OR(1, 0, 0, 0) = " << result << std::endl;
-
-    cc.Decrypt(sk, ctMajority04, &result);
-    if (result != 0)
-        OPENFHE_THROW(math_error, "Decryption failure");
-
-    std::cout << "Result of encrypted computation of Majority(1, 0, 0, 0) = " << result << std::endl;
 
     return 0;
 }
