@@ -296,11 +296,11 @@ public:
    * @param cts vector of ciphertexts
    * @return a shared pointer to the resulting ciphertext
    */
-    // LWECiphertext EvalBinGateVector(BINGATE gate, std::vector<LWECiphertext> cts) const;
-    LWECiphertext EvalBinGateThreeInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
-                                        ConstLWECiphertext ct3) const;
-    LWECiphertext EvalBinGateFourInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
-                                       ConstLWECiphertext ct3, ConstLWECiphertext ct4) const;
+    LWECiphertext EvalBinGate(BINGATE gate, std::vector<LWECiphertext> ctvector) const;
+    // LWECiphertext EvalBinGateThreeInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
+    //                                    ConstLWECiphertext ct3) const;
+    // LWECiphertext EvalBinGateFourInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
+    //                                   ConstLWECiphertext ct3, ConstLWECiphertext ct4) const;
 
     /**
    * Bootstraps a ciphertext (without peforming any operation)

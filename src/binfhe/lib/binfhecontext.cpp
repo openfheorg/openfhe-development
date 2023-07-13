@@ -170,10 +170,6 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     }
 
     BinFHEContextParams params = search->second;
-    std::cout << "params.latticeParam: " << params.latticeParam << std::endl;
-    std::cout << "params.modKS: " << params.modKS << std::endl;
-    std::cout << "params.gadgetBase: " << params.gadgetBase << std::endl;
-    std::cout << "params.baseKS: " << params.baseKS << std::endl;
     // intermediate prime
     NativeInteger Q(
         PreviousPrime<NativeInteger>(FirstPrime<NativeInteger>(params.numberBits, params.cyclOrder), params.cyclOrder));
@@ -328,10 +324,11 @@ LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext 
     return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2);
 }
 
-// LWECiphertext BinFHEContext::EvalBinGateVector(const BINGATE gate, std::vector<LWECiphertext> cts) const {
-//    return m_binfhescheme->EvalBinGateVector(m_params, gate, m_BTKey, cts);
-//}
+LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, std::vector<LWECiphertext> ctvector) const {
+    return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ctvector);
+}
 
+#if 0
 LWECiphertext BinFHEContext::EvalBinGateThreeInput(const BINGATE gate, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
                                                    ConstLWECiphertext ct3) const {
     return m_binfhescheme->EvalBinGateThreeInput(m_params, gate, m_BTKey, ct1, ct2, ct3);
@@ -341,7 +338,7 @@ LWECiphertext BinFHEContext::EvalBinGateFourInput(const BINGATE gate, ConstLWECi
                                                   ConstLWECiphertext ct3, ConstLWECiphertext ct4) const {
     return m_binfhescheme->EvalBinGateFourInput(m_params, gate, m_BTKey, ct1, ct2, ct3, ct4);
 }
-
+#endif
 LWECiphertext BinFHEContext::Bootstrap(ConstLWECiphertext ct) const {
     return m_binfhescheme->Bootstrap(m_params, m_BTKey, ct);
 }

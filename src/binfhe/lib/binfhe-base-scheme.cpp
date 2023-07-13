@@ -126,22 +126,25 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 }
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
-LWECiphertext BinFHEScheme::EvalBinGateThreeInput(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
-                                                  const RingGSWBTKey& EK, ConstLWECiphertext ct1,
-                                                  ConstLWECiphertext ct2, ConstLWECiphertext ct3) const {
-    if ((ct1 == ct2) || (ct2 == ct3) || (ct1 == ct3)) {
-        OPENFHE_THROW(config_error, "Input ciphertexts should be independent");
+LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
+                                        const RingGSWBTKey& EK, std::vector<LWECiphertext> ctvector) const {
+    for (size_t i = 0; i < ctvector.size() - 1; i++) {
+        if (ctvector[i] == ctvector[i + 1]) {
+            OPENFHE_THROW(config_error, "Input ciphertexts should be independent");
+        }
     }
-    NativeInteger p = ct1->GetptModulus();
-    // std::cout << "pt modulus in evalbingatethreeinput: " << p << std::endl;
-    LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ct1);
+
+    NativeInteger p = ctvector[0]->GetptModulus();
+
+    LWECiphertext ctprep = std::make_shared<LWECiphertextImpl>(*ctvector[0]);
     ctprep->SetptModulus(p);
-    if ((gate == MAJORITY) || (gate == AND3) || (gate == OR3)) {
+    if ((gate == MAJORITY) || (gate == AND3) || (gate == OR3) || (gate == AND4) || (gate == OR4)) {
         // we simply compute (ct1 + ct2 + ct3 + ct4) mod 6
         // supporting upto 3 additions
         // map 0,1 -> 0 and 2,3 -> 1
-        LWEscheme->EvalAddEq(ctprep, ct2);
-        LWEscheme->EvalAddEq(ctprep, ct3);
+        for (size_t i = 1; i < ctvector.size(); i++) {
+            LWEscheme->EvalAddEq(ctprep, ctvector[i]);
+        }
         auto acc = BootstrapGateCore(params, gate, EK.BSkey, ctprep);
 
         std::vector<NativePoly>& accVec = acc->GetElements();
@@ -154,7 +157,6 @@ LWECiphertext BinFHEScheme::EvalBinGateThreeInput(const std::shared_ptr<BinFHECr
         // we add Q/8 to "b" to to map back to Q/4 (i.e., mod 2) arithmetic.
         auto& LWEParams = params->GetLWEParams();
         NativeInteger Q = LWEParams->GetQ();
-        // NativeInteger b = Q / NativeInteger(8) + 1;
         NativeInteger b = Q / NativeInteger(2 * p) + 1;
         b.ModAddFastEq(accVec[1][0], Q);
 
@@ -164,20 +166,24 @@ LWECiphertext BinFHEScheme::EvalBinGateThreeInput(const std::shared_ptr<BinFHECr
         // Key switching
         auto ctKS = LWEscheme->KeySwitch(LWEParams, EK.KSkey, ctMS);
         // Modulus switching
-        return LWEscheme->ModSwitch(ct1->GetModulus(), ctKS);
+        return LWEscheme->ModSwitch(ctvector[0]->GetModulus(), ctKS);
     }
     else if (gate == CMUX) {
-        auto ccNOT   = EvalNOT(params, ct3);
-        auto ctNAND1 = EvalBinGate(params, NAND, EK, ct1, ccNOT);
-        auto ctNAND2 = EvalBinGate(params, NAND, EK, ct2, ct3);
+        if (ctvector.size() != 3)
+            OPENFHE_THROW(not_implemented_error, "CMUX gate implemented for ciphertext vectors of size 3");
+
+        auto ccNOT   = EvalNOT(params, ctvector[2]);
+        auto ctNAND1 = EvalBinGate(params, NAND, EK, ctvector[0], ccNOT);
+        auto ctNAND2 = EvalBinGate(params, NAND, EK, ctvector[1], ctvector[2]);
         auto ctCMUX  = EvalBinGate(params, NAND, EK, ctNAND1, ctNAND2);
         return ctCMUX;
     }
     else {
-        OPENFHE_THROW(not_implemented_error, "Only Majority gate implemented for vector of ciphertexts at this time");
+        OPENFHE_THROW(not_implemented_error, "This gate is not implemented for vector of ciphertexts at this time");
     }
 }
 
+#if 0
 LWECiphertext BinFHEScheme::EvalBinGateFourInput(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
                                                  const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2,
                                                  ConstLWECiphertext ct3, ConstLWECiphertext ct4) const {
@@ -226,6 +232,7 @@ LWECiphertext BinFHEScheme::EvalBinGateFourInput(const std::shared_ptr<BinFHECry
         OPENFHE_THROW(not_implemented_error, "Only Majority gate implemented for vector of ciphertexts at this time");
     }
 }
+#endif
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
 LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams> params, const RingGSWBTKey& EK,
