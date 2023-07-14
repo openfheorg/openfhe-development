@@ -173,7 +173,7 @@ public:
     // operator double() = delete;
     // operator long double() = delete;
 
-    constexpr NativeIntegerT() noexcept = default;
+    constexpr NativeIntegerT() = default;
     constexpr NativeIntegerT(const NativeIntegerT& val) noexcept : m_value{val.m_value} {}
     constexpr NativeIntegerT(NativeIntegerT&& val) noexcept : m_value{std::move(val.m_value)} {}
 
