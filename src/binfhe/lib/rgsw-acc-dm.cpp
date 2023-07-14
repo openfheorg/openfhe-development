@@ -99,7 +99,8 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
     if ((isReducedMM = (mm >= N)))
         mm -= N;
 
-    uint32_t digitsG2{params->GetDigitsG() << 1};
+    // approximate gadget decomposition is used; the first digit is ignored
+    uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
     std::vector<NativePoly> tempA(digitsG2, NativePoly(dug, polyParams, Format::COEFFICIENT));
     RingGSWEvalKeyImpl result(digitsG2, 2);
 
@@ -108,9 +109,9 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
         tempA[i].SetFormat(Format::EVALUATION);
         result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
         if (!isReducedMM)
-            result[i][i & 0x1][mm].ModAddFastEq(Gpow[i >> 1], Q);
+            result[i][i & 0x1][mm].ModAddFastEq(Gpow[(i >> 1) + 1], Q);
         else
-            result[i][i & 0x1][mm].ModSubFastEq(Gpow[i >> 1], Q);
+            result[i][i & 0x1][mm].ModSubFastEq(Gpow[(i >> 1) + 1], Q);
         result[i][0].SetFormat(Format::EVALUATION);
         result[i][1].SetFormat(Format::EVALUATION);
         result[i][1] += (tempA[i] *= skNTT);
@@ -125,7 +126,8 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
     ct[0].SetFormat(Format::COEFFICIENT);
     ct[1].SetFormat(Format::COEFFICIENT);
 
-    uint32_t digitsG2{params->GetDigitsG() << 1};
+    // approximate gadget decomposition is used; the first digit is ignored
+    uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
     std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
 
     SignedDigitDecompose(params, ct, dct);
@@ -136,10 +138,10 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
     // acc = dct * ek (matrix product);
     // uses in-place * operators for the last call to dct[i] to gain performance improvement
     const std::vector<std::vector<NativePoly>>& ev = ek->GetElements();
-    acc->GetElements()[0].SetValuesToZero();
+    acc->GetElements()[0]                          = (dct[0] * ev[0][0]);
     for (uint32_t l = 1; l < digitsG2; ++l)
         acc->GetElements()[0] += (dct[l] * ev[l][0]);
-    acc->GetElements()[1].SetValuesToZero();
+    acc->GetElements()[1] = (dct[0] *= ev[0][1]);
     for (uint32_t l = 1; l < digitsG2; ++l)
         acc->GetElements()[1] += (dct[l] *= ev[l][1]);
 }
