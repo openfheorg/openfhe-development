@@ -62,7 +62,7 @@ LWEKeyPair LWEEncryptionScheme::KeyGenPair(const std::shared_ptr<LWECryptoParams
 
     // generate secret vector skN of ring dimension N
     LWEPrivateKey skN = KeyGen(size, modulus);
-    if (params->GetKeyDist() == GAUSSIAN) {
+    if (params->GetKeyDist() == GAUSSIAN_BINFHE) {
         skN = KeyGenGaussian(size, modulus);
     }
     else {

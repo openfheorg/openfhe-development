@@ -75,7 +75,7 @@ Plaintext FHECKKSRNSSS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, 
 
     inverse.resize(slots);
 
-    DiscreteFourierTransform::FFTSpecialInv(inverse);
+    DiscreteFourierTransform::FFTSpecialInv(inverse, N * 2);
     uint64_t pBits     = cc.GetEncodingParams()->GetPlaintextModulus();
     uint32_t precision = 52;
 
@@ -93,7 +93,7 @@ Plaintext FHECKKSRNSSS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, 
 
         // Check for possible overflow
         if (is128BitOverflow(dre) || is128BitOverflow(dim)) {
-            DiscreteFourierTransform::FFTSpecial(inverse);
+            DiscreteFourierTransform::FFTSpecial(inverse, N * 2);
 
             double invLen = static_cast<double>(inverse.size());
             double factor = 2 * M_PI * i;
@@ -223,7 +223,7 @@ Plaintext FHECKKSRNSSS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, 
 
     inverse.resize(slots);
 
-    DiscreteFourierTransform::FFTSpecialInv(inverse);
+    DiscreteFourierTransform::FFTSpecialInv(inverse, N * 2);
     double powP = scFact;
 
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
@@ -254,7 +254,7 @@ Plaintext FHECKKSRNSSS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, 
 
         // Check for possible overflow
         if (is64BitOverflow(dre) || is64BitOverflow(dim)) {
-            DiscreteFourierTransform::FFTSpecial(inverse);
+            DiscreteFourierTransform::FFTSpecial(inverse, N * 2);
 
             double invLen = static_cast<double>(inverse.size());
             double factor = 2 * M_PI * i;

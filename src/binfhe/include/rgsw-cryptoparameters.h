@@ -69,7 +69,7 @@ public:
    * @param method bootstrapping method (DM or CGGI or LMKCDEY)
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
-                                 BINFHE_METHOD method, double std, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY,
+                                 BINFHE_METHOD method, double std, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY_BINFHE,
                                  bool signEval = false, uint32_t numAutoKeys = 10)
         : m_Q(Q),
           m_q(q),
@@ -276,7 +276,7 @@ private:
     BINFHE_METHOD m_method{BINFHE_METHOD::INVALID_METHOD};
 
     // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
-    SECRET_KEY_DIST m_keyDist{SECRET_KEY_DIST::UNIFORM_TERNARY};
+    SECRET_KEY_DIST m_keyDist{SECRET_KEY_DIST::UNIFORM_TERNARY_BINFHE};
 
     // number of automorphism keys (used only for LMKCDEY bootstrapping)
     uint32_t m_numAutoKeys{};

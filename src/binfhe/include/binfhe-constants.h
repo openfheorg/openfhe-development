@@ -123,8 +123,8 @@ std::ostream& operator<<(std::ostream& s, BINGATE f);
  * @brief Lists all modes for secret keys supported
  */
 enum SECRET_KEY_DIST {
-    GAUSSIAN        = 0,
-    UNIFORM_TERNARY = 1,
+    GAUSSIAN_BINFHE        = 0,
+    UNIFORM_TERNARY_BINFHE = 1,
 };
 
 /**
