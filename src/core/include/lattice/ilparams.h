@@ -64,7 +64,7 @@ public:
    * Constructor that initializes nothing.
    * All of the private members will be initialized to zero.
    */
-    constexpr ILParamsImpl() noexcept : ElemParams<IntType>() {}
+    constexpr ILParamsImpl() : ElemParams<IntType>() {}
 
     /**
    * @brief Constructor for the case of partially pre-computed parameters.

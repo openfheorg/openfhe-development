@@ -71,7 +71,7 @@ public:
     using TugType               = typename DCRTPolyInterfaceType::TugType;
     using BugType               = typename DCRTPolyInterfaceType::BugType;
 
-    DCRTPolyImpl() noexcept = default;
+    DCRTPolyImpl() = default;
 
     DCRTPolyImpl(const DCRTPolyType& e) noexcept : m_params{e.m_params}, m_format{e.m_format}, m_vectors{e.m_vectors} {}
     DCRTPolyImpl(DCRTPolyType&& e) noexcept

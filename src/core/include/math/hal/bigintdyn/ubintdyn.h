@@ -159,7 +159,7 @@ public:
     using Dlimb_t  = typename DataTypes<limb_t>::DoubleType;
     using SDlimb_t = typename DataTypes<limb_t>::SignedDoubleType;
 
-    ubint() noexcept = default;
+    ubint() = default;
 
     explicit operator bool() noexcept {
         return m_MSB != 0;

@@ -74,7 +74,7 @@ template <class ubint_el_t>
 class mubintvec final : public lbcrypto::BigVectorInterface<mubintvec<ubint_el_t>, ubint_el_t>,
                         public lbcrypto::Serializable {
 public:
-    mubintvec() noexcept = default;
+    mubintvec() = default;
 
     static mubintvec Single(const ubint_el_t& val, const ubint_el_t& modulus) {
         mubintvec vec(1, modulus);

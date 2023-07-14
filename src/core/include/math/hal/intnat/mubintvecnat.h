@@ -136,8 +136,7 @@ private:
 public:
     using BasicInt = typename IntegerType::Integer;
 
-    //    ~NativeVectorT() noexcept override = default;
-    constexpr NativeVectorT() noexcept = default;
+    constexpr NativeVectorT() = default;
 
     static constexpr NativeVectorT Single(const IntegerType& val, const IntegerType& modulus) noexcept {
         NativeVectorT vec(1, modulus);

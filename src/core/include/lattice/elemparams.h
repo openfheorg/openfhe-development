@@ -70,7 +70,7 @@ public:
    * @param bigRUnity the big root of unity used for bit packing operations.
    */
 
-    constexpr ElemParams() noexcept = default;
+    constexpr ElemParams() = default;
 
     // uint64_t GetTotient(const uint64_t n) but order/ringdimension are usint?
     ElemParams(usint order, const IntegerType& ctModulus, const IntegerType& rUnity = IntegerType(0),

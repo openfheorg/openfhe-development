@@ -75,7 +75,7 @@ public:
     using TugType           = typename PolyInterfaceType::TugType;
     using BugType           = typename PolyInterfaceType::BugType;
 
-    constexpr PolyImpl() noexcept = default;
+    constexpr PolyImpl() = default;
     PolyImpl(const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
              bool initializeElementToZero = false);
     PolyImpl(const std::shared_ptr<ILDCRTParams<Integer>>& params, Format format = Format::EVALUATION,
