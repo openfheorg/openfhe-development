@@ -32,17 +32,16 @@
 #ifndef _RGSW_CIPHERTEXT_H_
 #define _RGSW_CIPHERTEXT_H_
 
-#include "lattice/lat-hal.h"
-
-#include "math/discretegaussiangenerator.h"
-#include "math/nbtheory.h"
-#include "utils/serializable.h"
-#include "utils/utilities.h"
-
 #include "lwe-ciphertext.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
 #include "lwe-cryptoparameters.h"
+
+#include "lattice/lat-hal.h"
+#include "math/discretegaussiangenerator.h"
+#include "math/nbtheory.h"
+#include "utils/serializable.h"
+#include "utils/utilities.h"
 
 #include <memory>
 #include <string>
@@ -53,9 +52,7 @@
 namespace lbcrypto {
 
 class RLWECiphertextImpl;
-
-using RLWECiphertext = std::shared_ptr<RLWECiphertextImpl>;
-
+using RLWECiphertext      = std::shared_ptr<RLWECiphertextImpl>;
 using ConstRLWECiphertext = const std::shared_ptr<const RLWECiphertextImpl>;
 
 /**
@@ -68,21 +65,17 @@ public:
 
     explicit RLWECiphertextImpl(const std::vector<NativePoly>& elements) : m_elements(elements) {}
 
-    explicit RLWECiphertextImpl(const RLWECiphertextImpl& rhs) {
-        this->m_elements = rhs.m_elements;
-    }
+    RLWECiphertextImpl(const RLWECiphertextImpl& rhs) : m_elements(rhs.m_elements) {}
 
-    explicit RLWECiphertextImpl(const RLWECiphertextImpl&& rhs) {
-        this->m_elements = std::move(rhs.m_elements);
-    }
+    RLWECiphertextImpl(RLWECiphertextImpl&& rhs) noexcept : m_elements(std::move(rhs.m_elements)) {}
 
-    const RLWECiphertextImpl& operator=(const RLWECiphertextImpl& rhs) {
+    RLWECiphertextImpl& operator=(const RLWECiphertextImpl& rhs) {
         this->m_elements = rhs.m_elements;
         return *this;
     }
 
-    const RLWECiphertextImpl& operator=(const RLWECiphertextImpl&& rhs) {
-        this->m_elements = rhs.m_elements;
+    RLWECiphertextImpl& operator=(RLWECiphertextImpl&& rhs) noexcept {
+        this->m_elements = std::move(rhs.m_elements);
         return *this;
     }
 
@@ -121,7 +114,7 @@ public:
         ar(::cereal::make_nvp("elements", m_elements));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "RLWECiphertext";
     }
     static uint32_t SerializedVersion() {

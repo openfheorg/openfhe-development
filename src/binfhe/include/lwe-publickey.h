@@ -33,7 +33,7 @@
 #define _LWE_PUBLICKEY_H_
 
 #include "lwe-publickey-fwd.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "utils/serializable.h"
 
 #include <memory>
@@ -51,23 +51,17 @@ public:
 
     explicit LWEPublicKeyImpl(const std::vector<NativeVector>& A, const NativeVector& v) : m_A(A), m_v(v) {}
 
-    explicit LWEPublicKeyImpl(LWEPublicKeyImpl&& rhs) {
-        this->m_A = std::move(rhs.m_A);
-        this->m_v = std::move(rhs.m_v);
-    }
+    LWEPublicKeyImpl(LWEPublicKeyImpl&& rhs) noexcept : m_A(std::move(rhs.m_A)), m_v(std::move(rhs.m_v)) {}
 
-    explicit LWEPublicKeyImpl(const LWEPublicKeyImpl& rhs) {
-        this->m_A = rhs.m_A;
-        this->m_v = rhs.m_v;
-    }
+    LWEPublicKeyImpl(const LWEPublicKeyImpl& rhs) : m_A(rhs.m_A), m_v(rhs.m_v) {}
 
-    const LWEPublicKeyImpl& operator=(const LWEPublicKeyImpl& rhs) {
+    LWEPublicKeyImpl& operator=(const LWEPublicKeyImpl& rhs) {
         this->m_A = rhs.m_A;
         this->m_v = rhs.m_v;
         return *this;
     }
 
-    const LWEPublicKeyImpl& operator=(const LWEPublicKeyImpl&& rhs) {
+    LWEPublicKeyImpl& operator=(LWEPublicKeyImpl&& rhs) noexcept {
         this->m_A = std::move(rhs.m_A);
         this->m_v = std::move(rhs.m_v);
         return *this;
@@ -122,7 +116,7 @@ public:
         ar(::cereal::make_nvp("v", m_v));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "LWEPublicKey";
     }
     static uint32_t SerializedVersion() {

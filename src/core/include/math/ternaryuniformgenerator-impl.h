@@ -105,7 +105,6 @@ VecType TernaryUniformGeneratorImpl<VecType>::GenerateVector(usint size, const t
             }
         }
     }
-
     return v;
 }
 

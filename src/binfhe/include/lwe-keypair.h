@@ -36,7 +36,8 @@
 #include "lwe-publickey.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-keypair-fwd.h"
-#include "math/hal.h"
+
+#include "math/math-hal.h"
 #include "utils/serializable.h"
 
 #include <memory>
@@ -50,10 +51,10 @@ namespace lbcrypto {
  */
 class LWEKeyPairImpl {
 public:
-    LWEPublicKey publicKey;
-    LWEPrivateKey secretKey;
+    LWEPublicKey publicKey{nullptr};
+    LWEPrivateKey secretKey{nullptr};
 
-    LWEKeyPairImpl(LWEPublicKey Av, LWEPrivateKey s) : publicKey(Av), secretKey(s) {}
+    LWEKeyPairImpl(LWEPublicKey Av, LWEPrivateKey s) noexcept : publicKey(std::move(Av)), secretKey(std::move(s)) {}
 
     bool good() {
         return publicKey && secretKey;

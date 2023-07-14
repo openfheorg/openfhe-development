@@ -43,7 +43,7 @@
 namespace lbcrypto {
 
 class ParallelControls {
-    int machineThreads;
+    int machineThreads{1};
 
 public:
     // @Brief CTOR, enables parallel operations as default
@@ -54,8 +54,6 @@ public:
 #ifdef PARALLEL
         machineThreads = omp_get_max_threads();
         Enable();
-#else
-        machineThreads = 1;
 #endif
     }
     // @Brief Enable() enables parallel operation

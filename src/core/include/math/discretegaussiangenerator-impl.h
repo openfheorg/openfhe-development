@@ -37,7 +37,7 @@
 #ifndef LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
 #define LBCRYPTO_INC_MATH_DISCRETEGAUSSIANGENERATOR_IMPL_H_
 
-// #include "math/hal.h"
+// #include "math/math-hal.h"
 #include "math/discretegaussiangenerator.h"
 // #include "math/nbtheory.h"
 
@@ -51,10 +51,6 @@
 
 namespace lbcrypto {
 
-// cast float then used to compare with double?
-#define KARNEY_THRESHOLD ((float)300.0)
-// #define KARNEY_THRESHOLD 300.0f
-
 template <typename VecType>
 DiscreteGaussianGeneratorImpl<VecType>::DiscreteGaussianGeneratorImpl(double std) {
     SetStd(std);
@@ -62,23 +58,19 @@ DiscreteGaussianGeneratorImpl<VecType>::DiscreteGaussianGeneratorImpl(double std
 
 template <typename VecType>
 bool DiscreteGaussianGeneratorImpl<VecType>::IsInitialized() const {
-    return ((m_std - 1) > 1e-9);
+    return m_std > 1.000000001;
 }
+
 template <typename VecType>
 void DiscreteGaussianGeneratorImpl<VecType>::SetStd(double std) {
-    m_std = std;
     if (log2(m_std) > 59) {
+        //    if (lbcrypto::GetMSB(static_cast<uint64_t>(std)) > 59) {
         std::string errorMsg(std::string("Standard deviation cannot exceed 59 bits"));
         OPENFHE_THROW(config_error, errorMsg);
     }
 
-    if (m_std < KARNEY_THRESHOLD)
-        peikert = true;
-    else
-        peikert = false;
-    if (peikert) {
-        Initialize();
-    }
+    if ((peikert = ((m_std = std) < KARNEY_THRESHOLD)))
+        this->Initialize();
 }
 
 template <typename VecType>
@@ -88,92 +80,57 @@ double DiscreteGaussianGeneratorImpl<VecType>::GetStd() const {
 
 template <typename VecType>
 void DiscreteGaussianGeneratorImpl<VecType>::Initialize() {
-    m_vals.clear();
-
-    double acc      = 5e-32;
-    double variance = m_std * m_std;
-
-    int fin = static_cast<int>(ceil(m_std * sqrt(-2 * log(acc))));
     // usually the bound of m_std * M is used, where M = 12 .. 40
     // we use M = 12 here, which corresponds to the probability of roughly 2^(-100)
+    constexpr double acc{5e-32};
+    constexpr double M{noexcept(sqrt(-2 * log(acc)))};
+    int fin{static_cast<int>(ceil(m_std * M))};
 
-    double cusum = 1.0;
-
-    for (int x = 1; x <= fin; x++) {
-        cusum = cusum + 2 * exp(-x * x / (variance * 2));
+    m_vals.clear();
+    m_vals.reserve(fin);
+    double variance{2 * m_std * m_std};
+    double cusum{0.0};
+    for (int x = 1; x <= fin; ++x) {
+        cusum += exp(-(static_cast<double>(x * x) / variance));
+        m_vals.push_back(cusum);
     }
+    m_a = 1.0 / (2 * cusum + 1.0);
 
-    m_a = 1 / cusum;
-
-    double temp;
-
-    for (int i = 1; i <= fin; i++) {
-        temp = m_a * exp(-(static_cast<double>(i * i) / (2 * variance)));
-        m_vals.push_back(temp);
-    }
-
-    // take cumulative summation
-    for (usint i = 1; i < m_vals.size(); i++) {
-        m_vals[i] += m_vals[i - 1];
-    }
+    for (int x = 0; x < fin; ++x)
+        m_vals[x] *= m_a;
 }
 
 template <typename VecType>
 int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInt() const {
-    std::uniform_real_distribution<double> distribution(0.0, 1.0);
-
-    usint val = 0;
-    double seed;
-    int32_t ans;
-
     // we need to use the binary uniform generator rather than regular continuous
     // distribution; see DG14 for details
-    seed = distribution(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
-    if (std::abs(seed) <= m_a / 2) {
-        val = 0;
-    }
-    else if (seed > 0) {
-        val = FindInVector(m_vals, (std::abs(seed) - m_a / 2));
-    }
-    else {
-        val = -static_cast<int>(FindInVector(m_vals, (std::abs(seed) - m_a / 2)));
-    }
-    ans = val;
-
-    return ans;
+    double seed = std::uniform_real_distribution<double>(0.0, 1.0)(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
+    double tmp  = std::abs(seed) - m_a / 2;
+    if (tmp <= 0)
+        return 0;
+    return static_cast<int32_t>(FindInVector(m_vals, tmp)) * (seed > 0 ? 1 : -1);
 }
 
 template <typename VecType>
 std::shared_ptr<int64_t> DiscreteGaussianGeneratorImpl<VecType>::GenerateIntVector(usint size) const {
     std::shared_ptr<int64_t> ans(new int64_t[size], std::default_delete<int64_t[]>());
 
-    int64_t val = 0;
-
-    double seed;
-    if (peikert) {
-        std::uniform_real_distribution<double> distribution(0.0, 1.0);
-        for (usint i = 0; i < size; i++) {
-            // we need to use the binary uniform generator rather than regular
-            // continuous distribution; see DG14 for details
-            seed = distribution(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
-            if (std::abs(seed) <= m_a / 2) {
-                val = 0;
-            }
-            else {
-                if (seed > 0) {
-                    val = FindInVector(m_vals, (std::abs(seed) - m_a / 2));
-                }
-                else {
-                    val = -static_cast<int64_t>(FindInVector(m_vals, (std::abs(seed) - m_a / 2)));
-                }
-            }
-            (ans.get())[i] = val;
-        }
-    }
-    else {
-        for (usint i = 0; i < size; i++) {
+    if (!peikert) {
+        for (usint i = 0; i < size; ++i)
             (ans.get())[i] = GenerateIntegerKarney(0, m_std);
-        }
+        return ans;
+    }
+
+    std::uniform_real_distribution<double> distribution(0.0, 1.0);
+    for (usint i = 0; i < size; ++i) {
+        // we need to use the binary uniform generator rather than regular
+        // continuous distribution; see DG14 for details
+        double seed = distribution(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
+        double tmp  = std::abs(seed) - m_a / 2;
+        int64_t val = 0;
+        if (tmp > 0)
+            val = static_cast<int64_t>(FindInVector(m_vals, tmp)) * (seed > 0 ? 1 : -1);
+        (ans.get())[i] = val;
     }
     return ans;
 }
@@ -192,53 +149,28 @@ usint DiscreteGaussianGeneratorImpl<VecType>::FindInVector(const std::vector<dou
 template <typename VecType>
 typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(
     const typename VecType::Integer& modulus) const {
-    int32_t val = 0;
-    double seed;
-    typename VecType::Integer ans;
-    std::uniform_real_distribution<double> distribution(0.0, 1.0);
-
-    seed = distribution(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
-
-    if (std::abs(seed) <= m_a / 2) {
-        val = 0;
-    }
-    else if (seed > 0) {
-        val = FindInVector(m_vals, (std::abs(seed) - m_a / 2));
-    }
-    else {
-        val = -static_cast<int>(FindInVector(m_vals, (std::abs(seed) - m_a / 2)));
-    }
-
-    if (val < 0) {
-        val *= -1;
-        ans = modulus - typename VecType::Integer(val);
-    }
-    else {
-        ans = typename VecType::Integer(val);
-    }
-
-    return ans;
+    double seed = std::uniform_real_distribution<double>(0.0, 1.0)(PseudoRandomNumberGenerator::GetPRNG()) - 0.5;
+    double tmp  = std::abs(seed) - m_a / 2;
+    if (tmp <= 0)
+        return typename VecType::Integer(0);
+    auto val = static_cast<int32_t>(FindInVector(m_vals, tmp)) * (seed > 0 ? 1 : -1);
+    if (val < 0)
+        return modulus - typename VecType::Integer(-val);
+    return typename VecType::Integer(val);
 }
 
 template <typename VecType>
 VecType DiscreteGaussianGeneratorImpl<VecType>::GenerateVector(const usint size,
                                                                const typename VecType::Integer& modulus) const {
-    std::shared_ptr<int64_t> result = GenerateIntVector(size);
-
-    VecType ans(size);
-    ans.SetModulus(modulus);
-
+    auto result = GenerateIntVector(size);
+    VecType ans(size, modulus);
     for (usint i = 0; i < size; i++) {
         int32_t v = (result.get())[i];
-        if (v < 0) {
-            v *= -1;
-            ans[i] = modulus - typename VecType::Integer(v);
-        }
-        else {
+        if (v < 0)
+            ans[i] = modulus - typename VecType::Integer(-v);
+        else
             ans[i] = typename VecType::Integer(v);
-        }
     }
-
     return ans;
 }
 
@@ -247,90 +179,52 @@ typename VecType::Integer DiscreteGaussianGeneratorImpl<VecType>::GenerateIntege
     double mean, double stddev, size_t n, const typename VecType::Integer& modulus) const {
     double t = log2(n) * stddev;
 
-    typename VecType::Integer result;
-
     std::uniform_int_distribution<int32_t> uniform_int(floor(mean - t), ceil(mean + t));
     std::uniform_real_distribution<double> uniform_real(0.0, 1.0);
 
-    bool flagSuccess = false;
     int32_t x;
-
-    while (!flagSuccess) {
-        //  pick random int
+    do {
         x = uniform_int(PseudoRandomNumberGenerator::GetPRNG());
-        //  roll the uniform dice
-        double dice = uniform_real(PseudoRandomNumberGenerator::GetPRNG());
-        //  check if dice land below pdf
-        if (dice <= UnnormalizedGaussianPDF(mean, stddev, x)) {
-            flagSuccess = true;
-        }
-    }
+    } while (uniform_real(PseudoRandomNumberGenerator::GetPRNG()) > UnnormalizedGaussianPDF(mean, stddev, x));
 
-    if (x < 0) {
-        x *= -1;
-        result = modulus - typename VecType::Integer(x);
-    }
-    else {
-        result = typename VecType::Integer(x);
-    }
-
-    return result;
+    if (x < 0)
+        return modulus - typename VecType::Integer(-x);
+    return typename VecType::Integer(x);
 }
+
+///////////
 
 template <typename VecType>
 int32_t DiscreteGaussianGeneratorImpl<VecType>::GenerateInteger(double mean, double stddev, size_t n) const {
-    OPENFHE_DEBUG_FLAG(false);
-    int32_t x;
+    if (std::isinf(mean))
+        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with mean == +-inf");
+    if (std::isinf(stddev))
+        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with stddev == +-inf");
 
     // this representation of log_2 is used for Visual Studio
     double t = log2(n) * stddev;
-    OPENFHE_DEBUG("DiscreteGaussianGeneratorImpl =========");
-    OPENFHE_DEBUG("mean " << mean);
-    OPENFHE_DEBUG("stddev " << stddev);
-    OPENFHE_DEBUG("n " << n);
-    OPENFHE_DEBUG("t " << t);
-
-    if (std::isinf(mean)) {
-        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with mean == +-inf");
-    }
-    if (std::isinf(stddev)) {
-        OPENFHE_THROW(not_available_error, "DiscreteGaussianGeneratorImpl called with stddev == +-inf");
-    }
-    typename VecType::Integer result;
-
     std::uniform_int_distribution<int32_t> uniform_int(floor(mean - t), ceil(mean + t));
-    OPENFHE_DEBUG("uniform( " << floor(mean - t) << ", " << ceil(mean + t) << ")");
     std::uniform_real_distribution<double> uniform_real(0.0, 1.0);
 
-    double sigmaFactor = -1 / (2. * stddev * stddev);
-    OPENFHE_DEBUG("sigmaFactor " << sigmaFactor);
+    double sigmaFactor = 1 / (-2. * stddev * stddev);
+    usint count        = 0;
+    const usint limit  = 10000;
 
+    int32_t x;
     bool flagSuccess = false;
-
-    usint count       = 0;
-    const usint limit = 10000;
-    // OPENFHE_THROWopenfhe_throw, "dbg throw");
-
     while (!flagSuccess) {
         //  pick random int
         x = uniform_int(PseudoRandomNumberGenerator::GetPRNG());
-
         //  roll the uniform dice
-        double dice = uniform_real(PseudoRandomNumberGenerator::GetPRNG());
+        auto dice = uniform_real(PseudoRandomNumberGenerator::GetPRNG());
         //  check if dice land below pdf
-        if (dice <= UnnormalizedGaussianPDFOptimized(mean, sigmaFactor, x)) {
-            flagSuccess = true;
-        }
-        // OPENFHE_DEBUG("x "<<x<<" dice "<<dice);
-        count++;
-        if (count > limit) {
-            OPENFHE_DEBUG("x " << x << " dice " << dice);
+        flagSuccess = (dice <= UnnormalizedGaussianPDFOptimized(mean, sigmaFactor, x));
+        if (++count > limit)
             OPENFHE_THROW(not_available_error, "GenerateInteger could not find success after repeated attempts");
-        }
     }
-
     return x;
 }
+
 template <typename VecType>
 int64_t DiscreteGaussianGeneratorImpl<VecType>::GenerateIntegerKarney(double mean, double stddev) {
     int64_t result;

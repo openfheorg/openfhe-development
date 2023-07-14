@@ -39,7 +39,7 @@
 #include "lattice/ilelement.h"
 #include "lattice/ilparams.h"
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/distrgen.h"
 #include "math/nbtheory.h"
 
@@ -66,9 +66,6 @@ public:
     using TugType    = TernaryUniformGeneratorImpl<VecType>;
     using BugType    = BinaryUniformGeneratorImpl<VecType>;
 
-    // Each derived class needs to have this but static virtual not allowed in c++
-    // static const std::string GetElementName();
-
     /**
    * @brief Get the Derived object, this is apart of the CRTP software design pattern
    * it allows the base class (this one) to implement methods that call the derived
@@ -83,11 +80,6 @@ public:
         return static_cast<DerivedType&>(*this);
     }
 
-    /**
-   * @brief @see GetDerived
-   *
-   * @return DerivedType const&
-   */
     const DerivedType& GetDerived() const {
         return static_cast<DerivedType const&>(*this);
     }
@@ -138,32 +130,44 @@ public:
         };
     }
 
-    const DerivedType& operator=(const DerivedType& rhs) override                = 0;
-    virtual const DerivedType& operator=(const std::vector<int32_t>& rhs)        = 0;
-    virtual const DerivedType& operator=(const std::vector<int64_t>& rhs)        = 0;
-    const DerivedType& operator=(std::initializer_list<uint64_t> rhs) override   = 0;
-    virtual const DerivedType& operator=(std::initializer_list<std::string> rhs) = 0;
-    virtual const DerivedType& operator=(uint64_t val)                           = 0;
-    const DerivedType& operator=(DerivedType&& rhs) override                     = 0;
+    DerivedType& operator=(const DerivedType& rhs) override = 0;
+    DerivedType& operator=(DerivedType&& rhs) override      = 0;
+    DerivedType& operator=(const std::vector<int32_t>& rhs) {
+        return this->GetDerived().operator=(rhs);
+    }
+    DerivedType& operator=(const std::vector<int64_t>& rhs) {
+        return this->GetDerived().operator=(rhs);
+    }
+    DerivedType& operator=(std::initializer_list<uint64_t> rhs) override = 0;
+    DerivedType& operator=(std::initializer_list<std::string> rhs) {
+        return this->GetDerived().operator=(rhs);
+    }
+    DerivedType& operator=(uint64_t rhs) {
+        return this->GetDerived().operator=(rhs);
+    }
 
     /**
    * @brief Get method of the format.
    *
    * @return the format, either COEFFICIENT or EVALUATION
    */
-    Format GetFormat() const override = 0;
+    Format GetFormat() const override {
+        return this->GetDerived().GetFormat();
+    }
 
     /**
    * @brief returns the parameters of the element.
    * @return the element parameter set.
    */
-    virtual const std::shared_ptr<Params>& GetParams() const = 0;
+    const std::shared_ptr<Params>& GetParams() const {
+        return this->GetDerived().GetParams();
+    }
 
     /**
    * @brief returns the element's ring dimension
    * @return returns the ring dimension of the element.
    */
-    inline usint GetRingDimension() const {
+    usint GetRingDimension() const {
         return this->GetDerived().GetParams()->GetRingDimension();
     }
 
@@ -171,7 +175,7 @@ public:
    * @brief returns the element's root of unity.
    * @return the element's root of unity.
    */
-    inline const Integer& GetRootOfUnity() const {
+    const Integer& GetRootOfUnity() const {
         return this->GetDerived().GetParams()->GetRootOfUnity();
     }
 
@@ -179,7 +183,7 @@ public:
    * @brief returns the element's modulus
    * @return returns the modulus of the element.
    */
-    inline const Integer& GetModulus() const final {
+    const Integer& GetModulus() const final {
         return this->GetDerived().GetParams()->GetModulus();
     }
 
@@ -187,7 +191,7 @@ public:
    * @brief returns the element's cyclotomic order
    * @return returns the cyclotomic order of the element.
    */
-    inline usint GetCyclotomicOrder() const final {
+    usint GetCyclotomicOrder() const final {
         return this->GetDerived().GetParams()->GetCyclotomicOrder();
     }
 
@@ -197,7 +201,7 @@ public:
    *
    * @return length of the component element
    */
-    inline usint GetLength() const final {
+    usint GetLength() const final {
         //        if (this->GetDerived().IsEmpty())
         //            OPENFHE_THROW(not_available_error, "No values in PolyImpl");
         return this->GetDerived().GetValues().GetLength();
@@ -225,8 +229,13 @@ public:
    * Note this operation is computationally intense. No bound checking
    * @return interpolated value at index i.
    */
-    Integer& operator[](usint i) override             = 0;
-    const Integer& operator[](usint i) const override = 0;
+    Integer& operator[](usint i) override {
+        return this->GetDerived()[i];
+    }
+
+    const Integer& operator[](usint i) const override {
+        return this->GetDerived()[i];
+    }
 
     /**
    * @brief Performs an addition operation and returns the result.
@@ -234,7 +243,9 @@ public:
    * @param &element is the element to add with.
    * @return is the result of the addition.
    */
-    DerivedType Plus(const DerivedType& element) const override = 0;
+    DerivedType Plus(const DerivedType& rhs) const override {
+        return this->GetDerived().Plus(rhs);
+    }
 
     /**
    * @brief Performs a subtraction operation and returns the result.
@@ -261,8 +272,9 @@ public:
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
    */
-    virtual DerivedType TimesNoCheck(const DerivedType& element) const = 0;
-
+    DerivedType TimesNoCheck(const DerivedType& rhs) const {
+        return this->GetDerived().Times(rhs);
+    }
     /**
    * @brief Scalar addition - add an element to the first index of each tower.
    *
@@ -304,7 +316,9 @@ public:
    *
    * @note this is need for 128-bit so that the 64-bit inputs can be used.
    */
-    virtual DerivedType Times(int64_t element) const = 0;
+    DerivedType Times(int64_t rhs) const {
+        return this->GetDerived().Times(rhs);
+    }
 #endif
 
     /**
@@ -344,7 +358,7 @@ public:
    */
     DerivedType operator-() const override = 0;
 
-    const DerivedType& operator+=(const Integer& element) override = 0;
+    DerivedType& operator+=(const Integer& element) override = 0;
 
     /**
    * @brief Performs a subtraction operation and returns the result.
@@ -352,7 +366,7 @@ public:
    * @param &element is the element to subtract from.
    * @return is the result of the subtraction.
    */
-    const DerivedType& operator-=(const Integer& element) override = 0;
+    DerivedType& operator-=(const Integer& element) override = 0;
 
     /**
    * @brief Performs a multiplication operation and returns the result.
@@ -360,7 +374,7 @@ public:
    * @param &element is the element to multiply by.
    * @return is the result of the multiplication.
    */
-    const DerivedType& operator*=(const Integer& element) override = 0;
+    DerivedType& operator*=(const Integer& element) override = 0;
 
     /**
    * @brief Performs an entry-wise addition over all elements of each tower with
@@ -369,7 +383,7 @@ public:
    * @param &rhs is the element to add with.
    * @return is the result of the addition.
    */
-    const DerivedType& operator+=(const DerivedType& rhs) override = 0;
+    DerivedType& operator+=(const DerivedType& rhs) override = 0;
 
     /**
    * @brief Performs an entry-wise subtraction over all elements of each tower
@@ -378,7 +392,7 @@ public:
    * @param &rhs is the element to subtract from.
    * @return is the result of the addition.
    */
-    const DerivedType& operator-=(const DerivedType& rhs) override = 0;
+    DerivedType& operator-=(const DerivedType& rhs) override = 0;
 
     /**
    * @brief Performs an multiplication operation and returns the result.
@@ -386,7 +400,7 @@ public:
    * @param &element is the element to multiply with.
    * @return is the result of the multiplication.
    */
-    const DerivedType& operator*=(const DerivedType& element) override = 0;
+    DerivedType& operator*=(const DerivedType& element) override = 0;
 
     /**
    * @brief Equality operator.
@@ -409,7 +423,7 @@ public:
    * @param &i is the element to perform the automorphism transform with.
    * @return is the result of the automorphism transform.
    */
-    DerivedType AutomorphismTransform(const usint& i) const override = 0;
+    DerivedType AutomorphismTransform(uint32_t i) const override = 0;
 
     /**
    * @brief Performs an automorphism transform operation using precomputed bit
@@ -419,7 +433,7 @@ public:
    * @param &vec a vector with precomputed indices
    * @return is the result of the automorphism transform.
    */
-    DerivedType AutomorphismTransform(usint i, const std::vector<usint>& vec) const override = 0;
+    DerivedType AutomorphismTransform(uint32_t i, const std::vector<uint32_t>& vec) const override = 0;
 
     /**
    * @brief Transpose the ring element using the automorphism operation
@@ -473,12 +487,17 @@ public:
                        const Integer& rootOfUnityArb) override = 0;
 
     /**
-   * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse
-   * FFT.
+   * @brief Convert from Coefficient to CRT or vice versa; calls FFT and inverse FFT
    *
    * @warning use @see SetFormat(format) instead
    */
     void SwitchFormat() override = 0;
+
+    /**
+   * @brief Sets format to value without calling FFT. Only use if you know what you're doing.
+   *
+   */
+    virtual void OverrideFormat(const Format f) = 0;
 
     /**
    * @brief Make DCRTPoly Sparse. Sets every index of each tower not equal to
@@ -488,7 +507,7 @@ public:
    *
    * @warning Only used by RingSwitching, which is no longer supported. Will be removed in future.
    */
-    void MakeSparse(const uint32_t& wFactor) override = 0;
+    void MakeSparse(uint32_t wFactor) override = 0;
 
     /**
    * @brief Returns true if ALL the tower(s) are empty.
@@ -595,6 +614,10 @@ public:
 
     DerivedType CloneWithNoise(const DggType& dgg, Format format) const final {
         return DerivedType(dgg, this->GetDerived().GetParams(), this->GetDerived().GetFormat());
+    }
+
+    const std::string GetElementName() const {
+        return this->GetDerived().GetElementName();
     }
 
 protected:
@@ -707,8 +730,6 @@ protected:
     friend inline DerivedType operator*(int64_t a, const DerivedType& b) {
         return b.Times((NativeInteger::SignedNativeInt)a);
     }
-
-    ~PolyInterface() override = default;
 };
 
 }  // namespace lbcrypto

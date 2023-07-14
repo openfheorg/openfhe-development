@@ -33,7 +33,7 @@
   This file contains template instantiations for all math classes & functions using math native
  */
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/hal/transform.h"
 
 #include "math/binaryuniformgenerator-impl.h"

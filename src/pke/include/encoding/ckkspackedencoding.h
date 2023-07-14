@@ -32,6 +32,13 @@
 #ifndef LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
 #define LBCRYPTO_UTILS_CKKSPACKEDEXTENCODING_H
 
+#include "constants.h"
+
+#include "encoding/encodingparams.h"
+#include "encoding/plaintext.h"
+
+#include "math/hal/basicint.h"
+
 #include <algorithm>
 #include <functional>
 #include <initializer_list>
@@ -39,10 +46,6 @@
 #include <numeric>
 #include <utility>
 #include <vector>
-
-#include "encoding/encodingparams.h"
-#include "encoding/plaintext.h"
-#include "constants.h"
 
 namespace lbcrypto {
 
@@ -274,7 +277,7 @@ protected:
    * @param &bigValue big bound of the vector values.
    * @param &modulus modulus to be set for vector.
    */
-    void FitToNativeVector(const std::vector<__int128>& vec, __int128 bigBound, NativeVector* nativeVec) const;
+    void FitToNativeVector(const std::vector<int128_t>& vec, int128_t bigBound, NativeVector* nativeVec) const;
 #endif
 };
 

@@ -36,12 +36,12 @@
 #ifndef LBCRYPTO_MATH_TRANSFORM_H
 #define LBCRYPTO_MATH_TRANSFORM_H
 
+#include "utils/inttypes.h"
+
 #include <complex>
 #include <map>
 #include <utility>
 #include <vector>
-
-#include "utils/inttypes.h"
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846

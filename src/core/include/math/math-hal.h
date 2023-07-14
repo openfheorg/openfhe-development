@@ -45,13 +45,6 @@
 #include "version.h"
 
 #include "math/hal/vector.h"
-// #include "utils/debug.h"
-// #include "utils/exception.h"
-// #include "utils/memory.h"
-// #include "utils/openfhebase64.h"
-// #include "utils/parallel.h"
-// #include "utils/serializable.h"
-
 #include "math/hal/bigintbackend.h"
 #include "math/hal/nativeintbackend.h"
 
@@ -72,8 +65,6 @@ using NatChineseRemainderTransformArb = intnat::ChineseRemainderTransformArbNat<
 
 // TODO it might be possible to remove the template argument in the concrete class for each backend - needs further investigation
 
-// A the main template, but should never be called
-// Not assuming default back-end
 template <typename VecType>
 struct FTTTypedef {
     typedef void type;
@@ -84,15 +75,19 @@ struct FTTTypedef<NativeVector> {
     typedef NatChineseRemainderTransformFTT<NativeVector> type;
 };
 
-template <>
-struct FTTTypedef<M4Vector> {
-    typedef bigintdyn::ChineseRemainderTransformFTTDyn<M4Vector> type;
-};
-
+#ifdef WITH_BE2
 template <>
 struct FTTTypedef<M2Vector> {
     typedef bigintfxd::ChineseRemainderTransformFTTFxd<M2Vector> type;
 };
+#endif
+
+#ifdef WITH_BE4
+template <>
+struct FTTTypedef<M4Vector> {
+    typedef bigintdyn::ChineseRemainderTransformFTTDyn<M4Vector> type;
+};
+#endif
 
 #ifdef WITH_NTL
 template <>
@@ -106,8 +101,6 @@ using ChineseRemainderTransformFTT = typename FTTTypedef<VecType>::type;
 
 //==============================================================================================
 
-// A the main template, but should never be called
-// Not assuming default back-end
 template <typename VecType>
 struct ArbTypedef {
     typedef void type;
@@ -118,15 +111,19 @@ struct ArbTypedef<NativeVector> {
     typedef NatChineseRemainderTransformArb<NativeVector> type;
 };
 
-template <>
-struct ArbTypedef<M4Vector> {
-    typedef bigintdyn::ChineseRemainderTransformArbDyn<M4Vector> type;
-};
-
+#ifdef WITH_BE2
 template <>
 struct ArbTypedef<M2Vector> {
     typedef bigintfxd::ChineseRemainderTransformArbFxd<M2Vector> type;
 };
+#endif
+
+#ifdef WITH_BE4
+template <>
+struct ArbTypedef<M4Vector> {
+    typedef bigintdyn::ChineseRemainderTransformArbDyn<M4Vector> type;
+};
+#endif
 
 #ifdef WITH_NTL
 template <>

@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_INC_LATTICE_ILELEMENT_H
 #define LBCRYPTO_INC_LATTICE_ILELEMENT_H
 
-// #include "math/hal.h"
+// #include "math/math-hal.h"
 #include "math/discretegaussiangenerator.h"
 #include "math/nbtheory.h"
 
@@ -307,7 +307,7 @@ public:
    * @param &i is the element to perform the automorphism transform with.
    * @return is the result of the automorphism transform.
    */
-    virtual Element AutomorphismTransform(const usint& i) const = 0;
+    virtual Element AutomorphismTransform(uint32_t i) const = 0;
 
     /**
    * @brief Performs an automorphism transform operation using precomputed bit
@@ -317,7 +317,7 @@ public:
    * @param &vec a vector with precomputed indices
    * @return is the result of the automorphism transform.
    */
-    virtual Element AutomorphismTransform(usint i, const std::vector<uint32_t>& vec) const = 0;
+    virtual Element AutomorphismTransform(uint32_t i, const std::vector<uint32_t>& vec) const = 0;
 
     /**
    * @brief Transpose the ring element using the automorphism operation
@@ -379,7 +379,7 @@ public:
    * @param &wFactor ratio between the original element's ring dimension and the
    * new ring dimension.
    */
-    virtual void MakeSparse(const uint32_t& wFactor) = 0;
+    virtual void MakeSparse(uint32_t wFactor) = 0;
 
     /**
    * @brief Calculate Element mod 2
@@ -437,8 +437,7 @@ public:
                                const IntType& rootOfUnityArb) = 0;
 
     /**
-   * @brief onvert from Coefficient to CRT or vice versa; calls FFT and inverse
-   * FFT.
+   * @brief onvert from Coefficient to CRT or vice versa; calls FFT and inverse FFT.
    */
     virtual void SwitchFormat() = 0;
 

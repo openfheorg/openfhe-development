@@ -37,7 +37,7 @@
 #ifndef LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_
 #define LBCRYPTO_INC_MATH_DISTRIBUTIONGENERATOR_H_
 
-// #include "math/hal.h"
+// #include "math/math-hal.h"
 
 #include "utils/parallel.h"
 #include "utils/prng/blake2engine.h"

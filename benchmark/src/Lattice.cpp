@@ -97,7 +97,7 @@ template <typename P>
 static void GenerateDCRTParms(std::map<usint, std::shared_ptr<P>>& parmArray) {
     for (usint v : o) {
         size_t idx = ElemParamFactory::GetNearestIndex(v);
-        M2Integer primeq(ElemParamFactory::DefaultSet[idx].q);
+        BigInteger primeq(ElemParamFactory::DefaultSet[idx].q);
 
         usint bits    = primeq.GetMSB();
         usint ntowers = bits / DCRTBITS + 1;
@@ -117,20 +117,25 @@ static void GeneratePolys(std::map<usint, std::shared_ptr<P>>& parmArray, std::m
 }  // namespace lbcrypto
 
 std::map<usint, std::shared_ptr<ILNativeParams>> Nativeparms;
+std::map<usint, std::vector<NativePoly>> Nativepolys;
+
+#ifdef WITH_BE2
 std::map<usint, std::shared_ptr<M2Params>> BE2parms;
 std::map<usint, std::shared_ptr<M2DCRTParams>> BE2dcrtparms;
+std::map<usint, std::vector<M2Poly>> BE2polys;
+std::map<usint, std::vector<M2DCRTPoly>> BE2DCRTpolys;
+#endif
+
+#ifdef WITH_BE4
 std::map<usint, std::shared_ptr<M4Params>> BE4parms;
 std::map<usint, std::shared_ptr<M4DCRTParams>> BE4dcrtparms;
+std::map<usint, std::vector<M4Poly>> BE4polys;
+std::map<usint, std::vector<M4DCRTPoly>> BE4DCRTpolys;
+#endif
+
 #ifdef WITH_NTL
 std::map<usint, std::shared_ptr<M6Params>> BE6parms;
 std::map<usint, std::shared_ptr<M6DCRTParams>> BE6dcrtparms;
-#endif
-std::map<usint, std::vector<NativePoly>> Nativepolys;
-std::map<usint, std::vector<M2Poly>> BE2polys;
-std::map<usint, std::vector<M2DCRTPoly>> BE2DCRTpolys;
-std::map<usint, std::vector<M4Poly>> BE4polys;
-std::map<usint, std::vector<M4DCRTPoly>> BE4DCRTpolys;
-#ifdef WITH_NTL
 std::map<usint, std::vector<M6Poly>> BE6polys;
 std::map<usint, std::vector<M6DCRTPoly>> BE6DCRTpolys;
 #endif
@@ -139,23 +144,26 @@ class Setup {
 public:
     Setup() {
         GenerateParms<ILNativeParams>(Nativeparms);
+        GeneratePolys<ILNativeParams, NativePoly>(Nativeparms, Nativepolys);
+
+#ifdef WITH_BE2
         GenerateParms<M2Params>(BE2parms);
         GenerateDCRTParms<M2DCRTParams>(BE2dcrtparms);
+        GeneratePolys<M2Params, M2Poly>(BE2parms, BE2polys);
+        GeneratePolys<M2DCRTParams, M2DCRTPoly>(BE2dcrtparms, BE2DCRTpolys);
+#endif
+
+#ifdef WITH_BE4
         GenerateParms<M4Params>(BE4parms);
         GenerateDCRTParms<M4DCRTParams>(BE4dcrtparms);
+        GeneratePolys<M4Params, M4Poly>(BE4parms, BE4polys);
+        GeneratePolys<M4DCRTParams, M4DCRTPoly>(BE4dcrtparms, BE4DCRTpolys);
+#endif
+
 #ifdef WITH_NTL
         GenerateParms<M6Params>(BE6parms);
         GenerateDCRTParms<M6DCRTParams>(BE6dcrtparms);
-#endif
-        GeneratePolys<ILNativeParams, NativePoly>(Nativeparms, Nativepolys);
-        GeneratePolys<M2Params, M2Poly>(BE2parms, BE2polys);
-        GeneratePolys<M4Params, M4Poly>(BE4parms, BE4polys);
-#ifdef WITH_NTL
         GeneratePolys<M6Params, M6Poly>(BE6parms, BE6polys);
-#endif
-        GeneratePolys<M2DCRTParams, M2DCRTPoly>(BE2dcrtparms, BE2DCRTpolys);
-        GeneratePolys<M4DCRTParams, M4DCRTPoly>(BE4dcrtparms, BE4DCRTpolys);
-#ifdef WITH_NTL
         GeneratePolys<M6DCRTParams, M6DCRTPoly>(BE6dcrtparms, BE6DCRTpolys);
 #endif
     }
@@ -171,85 +179,67 @@ template <>
 std::shared_ptr<ILNativeParams> Setup::GetParm(usint o) {
     return Nativeparms[o];
 }
-
-template <>
-std::shared_ptr<M2Params> Setup::GetParm(usint o) {
-    return BE2parms[o];
-}
-
-template <>
-std::shared_ptr<M2DCRTParams> Setup::GetParm(usint o) {
-    return BE2dcrtparms[o];
-}
-
-template <>
-std::shared_ptr<M4Params> Setup::GetParm(usint o) {
-    return BE4parms[o];
-}
-
-template <>
-std::shared_ptr<M4DCRTParams> Setup::GetParm(usint o) {
-    return BE4dcrtparms[o];
-}
-
-#ifdef WITH_NTL
-template <>
-std::shared_ptr<M6Params> Setup::GetParm(usint o) {
-    return BE6parms[o];
-}
-
-template <>
-std::shared_ptr<M6DCRTParams> Setup::GetParm(usint o) {
-    return BE6dcrtparms[o];
-}
-#endif
-
 template <>
 const NativePoly& Setup::GetPoly(usint o, int p) {
     return Nativepolys[o][p];
+}
+
+#ifdef WITH_BE2
+template <>
+std::shared_ptr<M2Params> Setup::GetParm(usint o) {
+    return BE2parms[o];
 }
 template <>
 const M2Poly& Setup::GetPoly(usint o, int p) {
     return BE2polys[o][p];
 }
 template <>
-const M4Poly& Setup::GetPoly(usint o, int p) {
-    return BE4polys[o][p];
+std::shared_ptr<M2DCRTParams> Setup::GetParm(usint o) {
+    return BE2dcrtparms[o];
 }
-#ifdef WITH_NTL
-template <>
-const M6Poly& Setup::GetPoly(usint o, int p) {
-    return BE6polys[o][p];
-}
-#endif
 template <>
 const M2DCRTPoly& Setup::GetPoly(usint o, int p) {
     return BE2DCRTpolys[o][p];
+}
+#endif
+
+#ifdef WITH_BE4
+template <>
+std::shared_ptr<M4Params> Setup::GetParm(usint o) {
+    return BE4parms[o];
+}
+template <>
+const M4Poly& Setup::GetPoly(usint o, int p) {
+    return BE4polys[o][p];
+}
+template <>
+std::shared_ptr<M4DCRTParams> Setup::GetParm(usint o) {
+    return BE4dcrtparms[o];
 }
 template <>
 const M4DCRTPoly& Setup::GetPoly(usint o, int p) {
     return BE4DCRTpolys[o][p];
 }
+#endif
+
 #ifdef WITH_NTL
+template <>
+std::shared_ptr<M6Params> Setup::GetParm(usint o) {
+    return BE6parms[o];
+}
+template <>
+const M6Poly& Setup::GetPoly(usint o, int p) {
+    return BE6polys[o][p];
+}
+template <>
+std::shared_ptr<M6DCRTParams> Setup::GetParm(usint o) {
+    return BE6dcrtparms[o];
+}
 template <>
 const M6DCRTPoly& Setup::GetPoly(usint o, int p) {
     return BE6DCRTpolys[o][p];
 }
 #endif
-
-#define DO_NATIVEPOLY_BENCHMARK(X)                                                                     \
-    BENCHMARK_TEMPLATE(X, NativePoly)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);     \
-    BENCHMARK_TEMPLATE(X, NativePoly)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024); \
-    BENCHMARK_TEMPLATE(X, NativePoly)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);
-
-#define DO_POLY_BENCHMARK_TEMPLATE(X, Y)                                                           \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);          \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024);      \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);      \
-    /*BENCHMARK_TEMPLATE(X,Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_4096")->Arg(4096);*/   \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_8192")->Arg(8192);      \
-    /*BENCHMARK_TEMPLATE(X,Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16384")->Arg(16384);*/ \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_32768")->Arg(32768);
 
 // benchmark just a declaration of an empty
 template <typename E>
@@ -259,26 +249,10 @@ static void make_LATTICE_empty(std::shared_ptr<typename E::Params> params) {
 
 template <typename E>
 void BM_LATTICE_empty(benchmark::State& state) {  // benchmark
-    // if (state.thread_index == 0) {
-    //    ; // TODO (dsuponit): what is this for???
-    // }
-    //
     while (state.KeepRunning()) {
         make_LATTICE_empty<E>(TestParameters.GetParm<typename E::Params>(state.range(0)));
     }
 }
-
-DO_NATIVEPOLY_BENCHMARK(BM_LATTICE_empty)
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M2Poly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M4Poly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M6Poly)
-#endif
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M2DCRTPoly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M4DCRTPoly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M6DCRTPoly)
-#endif
 
 template <typename E>
 static void make_LATTICE_vector(benchmark::State& state,
@@ -288,26 +262,10 @@ static void make_LATTICE_vector(benchmark::State& state,
 
 template <typename E>
 void BM_LATTICE_makevector(benchmark::State& state) {  // benchmark
-    // if (state.thread_index == 0) {
-    //    ;
-    // }
-    //
     while (state.KeepRunning()) {
         make_LATTICE_vector<E>(state, TestParameters.GetParm<typename E::Params>(state.range(0)));
     }
 }
-
-DO_NATIVEPOLY_BENCHMARK(BM_LATTICE_makevector)
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M2Poly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M4Poly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M6Poly)
-#endif
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M2DCRTPoly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M4DCRTPoly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M6DCRTPoly)
-#endif
 
 // plus
 template <typename E>
@@ -331,18 +289,6 @@ static void BM_add_LATTICE(benchmark::State& state) {  // benchmark
     }
 }
 
-DO_NATIVEPOLY_BENCHMARK(BM_add_LATTICE)
-DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M2Poly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M4Poly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M6Poly)
-#endif
-DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M2DCRTPoly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M4DCRTPoly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M6DCRTPoly)
-#endif
-
 // plus=
 template <typename E>
 static void addeq_LATTICE(E& a, const E& b) {
@@ -365,18 +311,6 @@ static void BM_addeq_LATTICE(benchmark::State& state) {  // benchmark
     }
 }
 
-DO_NATIVEPOLY_BENCHMARK(BM_addeq_LATTICE)
-DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M2Poly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M4Poly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M6Poly)
-#endif
-DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M2DCRTPoly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M4DCRTPoly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M6DCRTPoly)
-#endif
-
 template <class E>
 static void mult_LATTICE(const E& a, const E& b) {
     E c1;
@@ -396,18 +330,6 @@ static void BM_mult_LATTICE(benchmark::State& state) {
         mult_LATTICE<E>(a, b);
     }
 }
-
-DO_NATIVEPOLY_BENCHMARK(BM_mult_LATTICE)
-DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M2Poly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M4Poly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M6Poly)
-#endif
-DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M2DCRTPoly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M4DCRTPoly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M6DCRTPoly)
-#endif
 
 template <class E>
 static void multeq_LATTICE(E& a, const E& b) {
@@ -429,18 +351,6 @@ static void BM_multeq_LATTICE(benchmark::State& state) {  // benchmark
     }
 }
 
-DO_NATIVEPOLY_BENCHMARK(BM_multeq_LATTICE)
-DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M2Poly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M4Poly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M6Poly)
-#endif
-DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M2DCRTPoly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M4DCRTPoly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M6DCRTPoly)
-#endif
-
 template <class E>
 static void switchformat_LATTICE(benchmark::State& state, std::shared_ptr<typename E::Params> params) {
     E a = TestParameters.GetPoly<E>(state.range(0), 0);
@@ -449,26 +359,10 @@ static void switchformat_LATTICE(benchmark::State& state, std::shared_ptr<typena
 
 template <class E>
 static void BM_switchformat_LATTICE(benchmark::State& state) {  // benchmark
-    // if (state.thread_index == 0) {
-    //    ;
-    // }
-    //
     while (state.KeepRunning()) {
         switchformat_LATTICE<E>(state, TestParameters.GetParm<typename E::Params>(state.range(0)));
     }
 }
-
-DO_NATIVEPOLY_BENCHMARK(BM_switchformat_LATTICE)
-DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M2Poly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M4Poly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M6Poly)
-#endif
-DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M2DCRTPoly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M4DCRTPoly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M6DCRTPoly)
-#endif
 
 template <class E>
 static void doubleswitchformat_LATTICE(benchmark::State& state, std::shared_ptr<typename E::Params> params) {
@@ -480,24 +374,91 @@ static void doubleswitchformat_LATTICE(benchmark::State& state, std::shared_ptr<
 
 template <class E>
 static void BM_doubleswitchformat_LATTICE(benchmark::State& state) {  // benchmark
-    // if (state.thread_index == 0) {
-    //    ;
-    // }
-    //
     while (state.KeepRunning()) {
         doubleswitchformat_LATTICE<E>(state, TestParameters.GetParm<typename E::Params>(state.range(0)));
     }
 }
 
+#define DO_NATIVEPOLY_BENCHMARK(X)                                                                     \
+    BENCHMARK_TEMPLATE(X, NativePoly)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);     \
+    BENCHMARK_TEMPLATE(X, NativePoly)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024); \
+    BENCHMARK_TEMPLATE(X, NativePoly)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);
+
+#define DO_POLY_BENCHMARK_TEMPLATE(X, Y)                                                           \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);          \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024);      \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);      \
+    /*BENCHMARK_TEMPLATE(X,Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_4096")->Arg(4096);*/   \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_8192")->Arg(8192);      \
+    /*BENCHMARK_TEMPLATE(X,Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16384")->Arg(16384);*/ \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_32768")->Arg(32768);
+
+DO_NATIVEPOLY_BENCHMARK(BM_LATTICE_empty)
+DO_NATIVEPOLY_BENCHMARK(BM_LATTICE_makevector)
+DO_NATIVEPOLY_BENCHMARK(BM_add_LATTICE)
+DO_NATIVEPOLY_BENCHMARK(BM_addeq_LATTICE)
+DO_NATIVEPOLY_BENCHMARK(BM_mult_LATTICE)
+DO_NATIVEPOLY_BENCHMARK(BM_multeq_LATTICE)
+DO_NATIVEPOLY_BENCHMARK(BM_switchformat_LATTICE)
 DO_NATIVEPOLY_BENCHMARK(BM_doubleswitchformat_LATTICE)
+
+#ifdef WITH_BE2
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M2Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M2Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M2Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M2Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M2Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M2Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M2Poly)
 DO_POLY_BENCHMARK_TEMPLATE(BM_doubleswitchformat_LATTICE, M2Poly)
-DO_POLY_BENCHMARK_TEMPLATE(BM_doubleswitchformat_LATTICE, M4Poly)
-#ifdef WITH_NTL
-DO_POLY_BENCHMARK_TEMPLATE(BM_doubleswitchformat_LATTICE, M6Poly)
-#endif
+
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M2DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M2DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M2DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M2DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M2DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M2DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M2DCRTPoly)
 DO_POLY_BENCHMARK_TEMPLATE(BM_doubleswitchformat_LATTICE, M2DCRTPoly)
+#endif
+
+#ifdef WITH_BE4
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M4Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M4Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M4Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M4Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M4Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M4Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M4Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_doubleswitchformat_LATTICE, M4Poly)
+
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M4DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M4DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M4DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M4DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M4DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M4DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M4DCRTPoly)
 DO_POLY_BENCHMARK_TEMPLATE(BM_doubleswitchformat_LATTICE, M4DCRTPoly)
+#endif
+
 #ifdef WITH_NTL
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M6Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M6Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M6Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M6Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M6Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M6Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M6Poly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_doubleswitchformat_LATTICE, M6Poly)
+
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_empty, M6DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_LATTICE_makevector, M6DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_add_LATTICE, M6DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_addeq_LATTICE, M6DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_mult_LATTICE, M6DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_multeq_LATTICE, M6DCRTPoly)
+DO_POLY_BENCHMARK_TEMPLATE(BM_switchformat_LATTICE, M6DCRTPoly)
 DO_POLY_BENCHMARK_TEMPLATE(BM_doubleswitchformat_LATTICE, M6DCRTPoly)
 #endif
 

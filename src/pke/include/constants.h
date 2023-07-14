@@ -32,11 +32,10 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
+// #include "math/hal/basicint.h"
+#include "math/math-hal.h"
+
 #include <iosfwd>
-
-// TODO: Review whether we need to include hal.h.
-#include "math/hal.h"
-
 #include <string>
 
 namespace lbcrypto {

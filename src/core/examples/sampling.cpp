@@ -47,9 +47,9 @@ int main() {
 
     // Random bit generator required by the base samplers
     BitGenerator bg;
-    DiscreteGaussianGenerator dgg(4);
-    DiscreteGaussianGenerator dggRejection(4);
-    DiscreteGaussianGenerator dgg4(stdBase);  // for Peikert's method
+    DiscreteGaussianGeneratorImpl<NativeVector> dgg(4);
+    DiscreteGaussianGeneratorImpl<NativeVector> dggRejection(4);
+    DiscreteGaussianGeneratorImpl<NativeVector> dgg4(stdBase);  // for Peikert's method
     double start, finish;
     size_t count               = 1000;
     double SMOOTHING_PARAMETER = 6;

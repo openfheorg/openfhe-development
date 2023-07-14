@@ -244,7 +244,7 @@ TEST_F(UTBFVRNS_CRT, BFVrns_FastBaseConvqToBskMontgomery) {
     a.SetElementAtIndex(1, poly1);
 
     a.FastBaseConvqToBskMontgomery(
-        cryptoParams->GetParamsBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
+        cryptoParams->GetParamsQBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
         cryptoParams->GetModbskBarrettMu(), cryptoParams->GetmtildeQHatInvModq(),
         cryptoParams->GetmtildeQHatInvModqPrecon(), cryptoParams->GetQHatModbsk(), cryptoParams->GetQHatModmtilde(),
         cryptoParams->GetQModbsk(), cryptoParams->GetQModbskPrecon(), cryptoParams->GetNegQInvModmtilde(),

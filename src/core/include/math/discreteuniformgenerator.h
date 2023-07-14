@@ -37,7 +37,7 @@
 #ifndef LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
 #define LBCRYPTO_INC_MATH_DISCRETEUNIFORMGENERATOR_H_
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/distributiongenerator.h"
 
 #include "utils/inttypes.h"
@@ -53,10 +53,7 @@ namespace lbcrypto {
 template <typename VecType>
 class DiscreteUniformGeneratorImpl {
 public:
-    /**
-   * @brief Constructs a new DiscreteUniformGenerator with the given modulus.
-   */
-    DiscreteUniformGeneratorImpl();
+    DiscreteUniformGeneratorImpl() = default;
 
     ~DiscreteUniformGeneratorImpl() = default;
 
@@ -79,27 +76,15 @@ public:
     VecType GenerateVector(const usint size, const typename VecType::Integer& modulus);
 
 private:
-    // discrete uniform generator relies on the built-in C++ generator for 32-bit
-    // unsigned integers the constants below set the parameters specific to 32-bit
-    // chunk configuration
-    static const usint CHUNK_MIN   = 0;
-    static const usint CHUNK_WIDTH = std::numeric_limits<uint32_t>::digits;
-    static const usint CHUNK_MAX   = std::numeric_limits<uint32_t>::max();
+    static constexpr uint32_t CHUNK_MIN{0};
+    static constexpr uint32_t CHUNK_WIDTH{std::numeric_limits<uint32_t>::digits};
+    static constexpr uint32_t CHUNK_MAX{std::numeric_limits<uint32_t>::max()};
 
-    // number of 32-bit chunks in the modulus set for the discrete uniform
-    // generator object
-    usint m_chunksPerValue;
-
-    // built-in generator for 32-bit unsigned integers
-    static std::uniform_int_distribution<uint32_t> m_distribution;
-
-    /**
-   * The modulus value that should be used to generate discrete values.
-   */
-    typename VecType::Integer m_modulus;
+    typename VecType::Integer m_modulus{};
+    uint32_t m_chunksPerValue{};
+    uint32_t m_shiftChunk{};
+    std::uniform_int_distribution<uint32_t>::param_type m_bound{CHUNK_MIN, CHUNK_MAX};
 };
-
-typedef DiscreteUniformGeneratorImpl<BigVector> DiscreteUniformGenerator;
 
 }  // namespace lbcrypto
 

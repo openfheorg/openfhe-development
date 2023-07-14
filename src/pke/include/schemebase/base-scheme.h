@@ -62,6 +62,8 @@ namespace lbcrypto {
 template <typename Element>
 class KeyPair;
 
+// TODO: fix DCRTPoly passed by value
+
 /**
  * @brief Abstract interface for public key encryption schemes
  * @tparam Element a ring element.
@@ -120,7 +122,6 @@ public:
 
     virtual usint GetEnabled() const {
         usint flag = 0;
-
         if (m_PKE != nullptr)
             flag |= PKE;
         if (m_KeySwitch != nullptr)
@@ -135,7 +136,6 @@ public:
             flag |= MULTIPARTY;
         if (m_FHE != nullptr)
             flag |= FHE;
-
         return flag;
     }
 
@@ -151,34 +151,27 @@ public:
     virtual bool ParamsGenBFVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t multiplicativeDepth, uint32_t keySwitchCount, size_t dcrtBits, uint32_t n,
                                  uint32_t numPartQ) const {
-        if (m_ParamsGen) {
-            return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, multiplicativeDepth, keySwitchCount,
-                                                dcrtBits, n, numPartQ);
-        }
-        OPENFHE_THROW(not_implemented_error, "Parameter generation operation has not been implemented");
+        if (!m_ParamsGen)
+            OPENFHE_THROW(config_error, "m_ParamsGen is nullptr");
+        return m_ParamsGen->ParamsGenBFVRNS(cryptoParams, evalAddCount, multiplicativeDepth, keySwitchCount, dcrtBits,
+                                            n, numPartQ);
     }
 
     virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
                                   usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ) const {
-        if (m_ParamsGen) {
-            return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes, scalingModSize, firstModSize,
-                                                 numPartQ);
-        }
-        OPENFHE_THROW(not_implemented_error,
-                      "Parameter generation operation has not been implemented "
-                      "for this scheme.");
+        if (!m_ParamsGen)
+            OPENFHE_THROW(config_error, "m_ParamsGen is nullptr");
+        return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes, scalingModSize, firstModSize,
+                                             numPartQ);
     }
 
     virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
                                  usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
-        if (m_ParamsGen) {
-            return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount, keySwitchCount, cyclOrder, numPrimes,
-                                                firstModSize, dcrtBits, numPartQ, multihopQBound);
-        }
-        OPENFHE_THROW(not_implemented_error,
-                      "Parameter generation operation has not been implemented for this "
-                      "scheme.");
+        if (!m_ParamsGen)
+            OPENFHE_THROW(config_error, "m_ParamsGen is nullptr");
+        return m_ParamsGen->ParamsGenBGVRNS(cryptoParams, evalAddCount, keySwitchCount, cyclOrder, numPrimes,
+                                            firstModSize, dcrtBits, numPartQ, multihopQBound);
     }
 
     /////////////////////////////////////////
@@ -217,7 +210,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!privateKey)
             OPENFHE_THROW(config_error, "Input private key is nullptr");
-
         return m_PKE->Decrypt(ciphertext, privateKey, plaintext);
     }
 
@@ -228,7 +220,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!privateKey)
             OPENFHE_THROW(config_error, "Input private key is nullptr");
-
         return m_PKE->Decrypt(ciphertext, privateKey, plaintext);
     }
 
@@ -236,7 +227,6 @@ public:
         VerifyPKEEnabled(__func__);
         if (!privateKey)
             OPENFHE_THROW(config_error, "Input private key is nullptr");
-
         return m_PKE->EncryptZeroCore(privateKey, nullptr);
     }
 
@@ -244,7 +234,6 @@ public:
         VerifyPKEEnabled(__func__);
         if (!publicKey)
             OPENFHE_THROW(config_error, "Input public key is nullptr");
-
         return m_PKE->EncryptZeroCore(publicKey, nullptr);
     }
 
@@ -254,7 +243,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!privateKey)
             OPENFHE_THROW(config_error, "Input private key is nullptr");
-
         return m_PKE->DecryptCore(ciphertext->GetElements(), privateKey);
     }
 
@@ -269,7 +257,6 @@ public:
             OPENFHE_THROW(config_error, "Input first private key is nullptr");
         if (!newPrivateKey)
             OPENFHE_THROW(config_error, "Input second private key is nullptr");
-
         return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPrivateKey);
     }
 
@@ -283,7 +270,6 @@ public:
             OPENFHE_THROW(config_error, "Input second private key is nullptr");
         if (!evalKey)
             OPENFHE_THROW(config_error, "Input eval key is nullptr");
-
         return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPrivateKey, evalKey);
     }
 
@@ -294,7 +280,6 @@ public:
             OPENFHE_THROW(config_error, "Input first private key is nullptr");
         if (!newPublicKey)
             OPENFHE_THROW(config_error, "Input second public key is nullptr");
-
         return m_KeySwitch->KeySwitchGenInternal(oldPrivateKey, newPublicKey);
     }
 
@@ -304,7 +289,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!evalKey)
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
-
         return m_KeySwitch->KeySwitch(ciphertext, evalKey);
     }
 
@@ -314,7 +298,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!evalKey)
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
-
         m_KeySwitch->KeySwitchInPlace(ciphertext, evalKey);
         return;
     }
@@ -323,12 +306,11 @@ public:
         VerifyKeySwitchEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_KeySwitch->KeySwitchDown(ciphertext);
     }
 
     virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
-        Element c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
+        const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
         VerifyKeySwitchEnabled(__func__);
         return m_KeySwitch->EvalKeySwitchPrecomputeCore(c, cryptoParamsBase);
     }
@@ -345,7 +327,6 @@ public:
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
         if (!params)
             OPENFHE_THROW(config_error, "Input params is nullptr");
-
         return m_KeySwitch->EvalFastKeySwitchCoreExt(digits, evalKey, params);
     }
 
@@ -361,15 +342,14 @@ public:
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
         if (!params)
             OPENFHE_THROW(config_error, "Input params is nullptr");
-
         return m_KeySwitch->EvalFastKeySwitchCore(digits, evalKey, params);
     }
 
-    virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(Element a, const EvalKey<Element> evalKey) const {
+    virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(const Element& a,
+                                                                const EvalKey<Element> evalKey) const {
         VerifyKeySwitchEnabled(__func__);
         if (!evalKey)
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
-
         return m_KeySwitch->KeySwitchCore(a, evalKey);
     }
 
@@ -391,7 +371,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->EvalNegate(ciphertext);
     }
 
@@ -399,7 +378,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         m_LeveledSHE->EvalNegateInPlace(ciphertext);
         return;
     }
@@ -415,7 +393,6 @@ public:
             OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
         return m_LeveledSHE->EvalAdd(ciphertext1, ciphertext2);
     }
 
@@ -425,7 +402,6 @@ public:
             OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
         m_LeveledSHE->EvalAddInPlace(ciphertext1, ciphertext2);
         return;
     }
@@ -437,7 +413,6 @@ public:
             OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
         return m_LeveledSHE->EvalAddMutable(ciphertext1, ciphertext2);
     }
 
@@ -447,7 +422,6 @@ public:
             OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
         m_LeveledSHE->EvalAddMutableInPlace(ciphertext1, ciphertext2);
         return;
     }
@@ -458,7 +432,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!plaintext)
             OPENFHE_THROW(config_error, "Input plaintext is nullptr");
-
         return m_LeveledSHE->EvalAdd(ciphertext, plaintext);
     }
 
@@ -468,7 +441,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!plaintext)
             OPENFHE_THROW(config_error, "Input plaintext is nullptr");
-
         m_LeveledSHE->EvalAddInPlace(ciphertext, plaintext);
         return;
     }
@@ -479,7 +451,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!plaintext)
             OPENFHE_THROW(config_error, "Input plaintext is nullptr");
-
         return m_LeveledSHE->EvalAddMutable(ciphertext, plaintext);
     }
 
@@ -496,7 +467,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         m_LeveledSHE->EvalAddInPlace(ciphertext, constant);
         return;
     }
@@ -505,7 +475,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->EvalAdd(ciphertext, constant);
     }
 
@@ -513,7 +482,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         m_LeveledSHE->EvalAddInPlace(ciphertext, constant);
         return;
     }
@@ -529,7 +497,6 @@ public:
             OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
         return m_LeveledSHE->EvalSub(ciphertext1, ciphertext2);
     }
 
@@ -539,7 +506,6 @@ public:
             OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
         m_LeveledSHE->EvalSubInPlace(ciphertext1, ciphertext2);
         return;
     }
@@ -551,7 +517,6 @@ public:
             OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
         return m_LeveledSHE->EvalSubMutable(ciphertext1, ciphertext2);
     }
 
@@ -561,7 +526,6 @@ public:
             OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
         m_LeveledSHE->EvalSubMutableInPlace(ciphertext1, ciphertext2);
         return;
     }
@@ -572,7 +536,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!plaintext)
             OPENFHE_THROW(config_error, "Input plaintext is nullptr");
-
         return m_LeveledSHE->EvalSub(ciphertext, plaintext);
     }
 
@@ -582,7 +545,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!plaintext)
             OPENFHE_THROW(config_error, "Input plaintext is nullptr");
-
         m_LeveledSHE->EvalSubInPlace(ciphertext, plaintext);
         return;
     }
@@ -593,7 +555,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!plaintext)
             OPENFHE_THROW(config_error, "Input plaintext is nullptr");
-
         return m_LeveledSHE->EvalSubMutable(ciphertext, plaintext);
     }
 
@@ -601,7 +562,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->EvalSub(ciphertext, constant);
     }
 
@@ -609,7 +569,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         m_LeveledSHE->EvalSubInPlace(ciphertext, constant);
         return;
     }
@@ -618,7 +577,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->EvalSub(ciphertext, constant);
     }
 
@@ -626,7 +584,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         m_LeveledSHE->EvalSubInPlace(ciphertext, constant);
         return;
     }
@@ -646,7 +603,6 @@ public:
             OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
         return m_LeveledSHE->EvalMult(ciphertext1, ciphertext2);
     }
 
@@ -657,7 +613,6 @@ public:
             OPENFHE_THROW(config_error, "Input first ciphertext is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
-
         return m_LeveledSHE->EvalMultMutable(ciphertext1, ciphertext2);
     }
 
@@ -665,7 +620,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->EvalSquare(ciphertext);
     }
 
@@ -673,7 +627,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->EvalSquareMutable(ciphertext);
     }
 
@@ -690,7 +643,6 @@ public:
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
         if (!evalKey)
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
-
         return m_LeveledSHE->EvalMult(ciphertext1, ciphertext2, evalKey);
     }
 
@@ -716,7 +668,6 @@ public:
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
         if (!evalKey)
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
-
         return m_LeveledSHE->EvalMultMutable(ciphertext1, ciphertext2, evalKey);
     }
 
@@ -729,7 +680,6 @@ public:
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
         if (!evalKey)
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
-
         m_LeveledSHE->EvalMultMutableInPlace(ciphertext1, ciphertext2, evalKey);
         return;
     }
@@ -740,7 +690,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!evalKey)
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
-
         return m_LeveledSHE->EvalSquare(ciphertext, evalKey);
     }
 
@@ -750,7 +699,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!evalKey)
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
-
         m_LeveledSHE->EvalSquareInPlace(ciphertext, evalKey);
         return;
     }
@@ -762,7 +710,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!evalKey)
             OPENFHE_THROW(config_error, "Input evaluation key is nullptr");
-
         return m_LeveledSHE->EvalSquareMutable(ciphertext, evalKey);
     }
 
@@ -776,7 +723,6 @@ public:
             OPENFHE_THROW(config_error, "Input second ciphertext is nullptr");
         if (!evalKeyVec.size())
             OPENFHE_THROW(config_error, "Input evaluation key vector is empty");
-
         return m_LeveledSHE->EvalMultAndRelinearize(ciphertext1, ciphertext2, evalKeyVec);
     }
 
@@ -787,7 +733,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!evalKeyVec.size())
             OPENFHE_THROW(config_error, "Input evaluation key vector is empty");
-
         return m_LeveledSHE->Relinearize(ciphertext, evalKeyVec);
     }
 
@@ -798,7 +743,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!evalKeyVec.size())
             OPENFHE_THROW(config_error, "Input evaluation key vector is empty");
-
         m_LeveledSHE->RelinearizeInPlace(ciphertext, evalKeyVec);
         return;
     }
@@ -809,7 +753,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!plaintext)
             OPENFHE_THROW(config_error, "Input plaintext is nullptr");
-
         return m_LeveledSHE->EvalMult(ciphertext, plaintext);
     }
 
@@ -829,7 +772,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!plaintext)
             OPENFHE_THROW(config_error, "Input plaintext is nullptr");
-
         return m_LeveledSHE->EvalMultMutable(ciphertext, plaintext);
     }
 
@@ -837,7 +779,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->MultByMonomial(ciphertext, power);
     }
 
@@ -853,7 +794,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->EvalMult(ciphertext, constant);
     }
 
@@ -861,7 +801,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         m_LeveledSHE->EvalMultInPlace(ciphertext, constant);
         return;
     }
@@ -870,7 +809,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->MultByInteger(ciphertext, integer);
     }
 
@@ -878,7 +816,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         m_LeveledSHE->MultByIntegerInPlace(ciphertext, integer);
         return;
     }
@@ -914,7 +851,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->EvalFastRotation(ciphertext, index, m, digits);
     }
 
@@ -923,7 +859,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->EvalFastRotationPrecompute(ciphertext);
     }
 
@@ -944,7 +879,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->EvalFastRotationExt(ciphertext, index, digits, addFirst, evalKeys);
     }
 
@@ -959,7 +893,6 @@ public:
         VerifyKeySwitchEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_KeySwitch->KeySwitchDownFirstElement(ciphertext);
     }
 
@@ -967,7 +900,6 @@ public:
         VerifyKeySwitchEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_KeySwitch->KeySwitchExt(ciphertext, addFirst);
     }
 
@@ -982,7 +914,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!evalKeyMap.size())
             OPENFHE_THROW(config_error, "Input evaluation key map is empty");
-
         return m_LeveledSHE->EvalAtIndex(ciphertext, i, evalKeyMap);
     }
 
@@ -1005,7 +936,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         m_LeveledSHE->ModReduceInPlace(ciphertext, levels);
         return;
     }
@@ -1014,7 +944,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->ModReduceInternal(ciphertext, levels);
     }
 
@@ -1024,7 +953,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (levels == 0)
             return;
-
         m_LeveledSHE->ModReduceInternalInPlace(ciphertext, levels);
         return;
     }
@@ -1034,7 +962,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         auto result = m_LeveledSHE->LevelReduce(ciphertext, evalKey, levels);
         result->SetKeyTag(ciphertext->GetKeyTag());
         return result;
@@ -1045,7 +972,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         m_LeveledSHE->LevelReduceInPlace(ciphertext, evalKey, levels);
         return;
     }
@@ -1054,7 +980,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->LevelReduceInternal(ciphertext, levels);
     }
 
@@ -1062,7 +987,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         m_LeveledSHE->LevelReduceInternalInPlace(ciphertext, levels);
         return;
     }
@@ -1071,7 +995,6 @@ public:
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_LeveledSHE->Compress(ciphertext, towersLeft);
     }
 
@@ -1081,7 +1004,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input ciphertext2 is nullptr");
-
         m_LeveledSHE->AdjustLevelsInPlace(ciphertext1, ciphertext2);
         return;
     }
@@ -1093,7 +1015,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input ciphertext2 is nullptr");
-
         m_LeveledSHE->AdjustLevelsAndDepthInPlace(ciphertext1, ciphertext2);
         return;
     }
@@ -1105,7 +1026,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
         if (!ciphertext2)
             OPENFHE_THROW(config_error, "Input ciphertext2 is nullptr");
-
         m_LeveledSHE->AdjustLevelsAndDepthToOneInPlace(ciphertext1, ciphertext2);
         return;
     }
@@ -1118,7 +1038,6 @@ public:
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertextVec.size())
             OPENFHE_THROW(config_error, "Input ciphertext vector is empty");
-
         return m_AdvancedSHE->EvalAddMany(ciphertextVec);
     }
 
@@ -1137,7 +1056,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext vector is empty");
         if (!evalKeyVec.size())
             OPENFHE_THROW(config_error, "Input evaluation key vector is empty");
-
         return m_AdvancedSHE->EvalMultMany(ciphertextVec, evalKeyVec);
     }
 
@@ -1150,16 +1068,14 @@ public:
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertextVec.size())
             OPENFHE_THROW(config_error, "Input ciphertext vector is empty");
-
         return m_AdvancedSHE->EvalLinearWSum(ciphertextVec, constantVec);
     }
 
-    virtual Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>> ciphertextVec,
+    virtual Ciphertext<Element> EvalLinearWSumMutable(std::vector<Ciphertext<Element>>& ciphertextVec,
                                                       const std::vector<double>& constantVec) const {
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertextVec.size())
             OPENFHE_THROW(config_error, "Input ciphertext vector is empty");
-
         return m_AdvancedSHE->EvalLinearWSumMutable(ciphertextVec, constantVec);
     }
 
@@ -1171,7 +1087,6 @@ public:
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_AdvancedSHE->EvalPoly(ciphertext, coefficients);
     }
 
@@ -1180,7 +1095,6 @@ public:
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_AdvancedSHE->EvalPolyLinear(ciphertext, coefficients);
     }
 
@@ -1188,7 +1102,6 @@ public:
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_AdvancedSHE->EvalPolyPS(ciphertext, coefficients);
     }
 
@@ -1201,7 +1114,6 @@ public:
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_AdvancedSHE->EvalChebyshevSeries(ciphertext, coefficients, a, b);
     }
 
@@ -1210,7 +1122,6 @@ public:
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_AdvancedSHE->EvalChebyshevSeriesLinear(ciphertext, coefficients, a, b);
     }
 
@@ -1219,7 +1130,6 @@ public:
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_AdvancedSHE->EvalChebyshevSeriesPS(ciphertext, coefficients, a, b);
     }
 
@@ -1244,7 +1154,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!evalKeyMap.size())
             OPENFHE_THROW(config_error, "Input evaluation key map is empty");
-
         return m_AdvancedSHE->EvalSum(ciphertext, batchSize, evalKeyMap);
     }
 
@@ -1256,7 +1165,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         if (!evalKeyMap.size())
             OPENFHE_THROW(config_error, "Input evaluation key map is empty");
-
         return m_AdvancedSHE->EvalSumRows(ciphertext, rowSize, evalKeyMap, subringDim);
     }
 
@@ -1268,7 +1176,6 @@ public:
             OPENFHE_THROW(config_error, "Input first evaluation key map is empty");
         if (!rightEvalKeyMap.size())
             OPENFHE_THROW(config_error, "Input second evaluation key map is empty");
-
         return m_AdvancedSHE->EvalSumCols(ciphertext, batchSize, evalKeyMap, rightEvalKeyMap);
     }
 
@@ -1291,7 +1198,6 @@ public:
             OPENFHE_THROW(config_error, "Input plaintext is nullptr");
         if (!evalSumKeyMap.size())
             OPENFHE_THROW(config_error, "Input evaluation key map is empty");
-
         return m_AdvancedSHE->EvalInnerProduct(ciphertext, plaintext, batchSize, evalSumKeyMap);
     }
 
@@ -1299,7 +1205,6 @@ public:
         VerifyAdvancedSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
-
         return m_AdvancedSHE->AddRandomNoise(ciphertext);
     }
 
@@ -1310,7 +1215,6 @@ public:
             OPENFHE_THROW(config_error, "Input ciphertext vector is empty");
         if (!evalKeyMap.size())
             OPENFHE_THROW(config_error, "Input evaluation key map is empty");
-
         return m_AdvancedSHE->EvalMerge(ciphertextVec, evalKeyMap);
     }
 
@@ -1344,7 +1248,6 @@ public:
         VerifyMultipartyEnabled(__func__);
         if (!ciphertextVec.size())
             OPENFHE_THROW(config_error, "Input ciphertext vector is empty");
-
         return m_Multiparty->MultipartyDecryptFusion(ciphertextVec, plaintext);
     }
 
@@ -1444,8 +1347,8 @@ public:
     */
     inline void VerifyAdvancedSHEEnabled(const std::string& functionName) const {
         if (m_AdvancedSHE == nullptr) {
-            std::string errMsg =
-                std::string(functionName) +" operation has not been enabled. Enable(ADVANCEDSHE) must be called to enable it.";
+            std::string errMsg = std::string(functionName) +
+                                 " operation has not been enabled. Enable(ADVANCEDSHE) must be called to enable it.";
             OPENFHE_THROW(config_error, errMsg);
         }
     }
@@ -1456,8 +1359,8 @@ public:
     */
     inline void VerifyMultipartyEnabled(const std::string& functionName) const {
         if (m_Multiparty == nullptr) {
-            std::string errMsg =
-                std::string(functionName) +" operation has not been enabled. Enable(MULTIPARTY) must be called to enable it.";
+            std::string errMsg = std::string(functionName) +
+                                 " operation has not been enabled. Enable(MULTIPARTY) must be called to enable it.";
             OPENFHE_THROW(config_error, errMsg);
         }
     }
@@ -1468,8 +1371,8 @@ public:
     */
     inline void VerifyLeveledSHEEnabled(const std::string& functionName) const {
         if (m_LeveledSHE == nullptr) {
-            std::string errMsg =
-                std::string(functionName) +" operation has not been enabled. Enable(LEVELEDSHE) must be called to enable it.";
+            std::string errMsg = std::string(functionName) +
+                                 " operation has not been enabled. Enable(LEVELEDSHE) must be called to enable it.";
             OPENFHE_THROW(config_error, errMsg);
         }
     }
@@ -1481,7 +1384,7 @@ public:
     inline void VerifyPKEEnabled(const std::string& functionName) const {
         if (m_PKE == nullptr) {
             std::string errMsg =
-                std::string(functionName) +" operation has not been enabled. Enable(PKE) must be called to enable it.";
+                std::string(functionName) + " operation has not been enabled. Enable(PKE) must be called to enable it.";
             OPENFHE_THROW(config_error, errMsg);
         }
     }
@@ -1493,7 +1396,7 @@ public:
     inline void VerifyPREEnabled(const std::string& functionName) const {
         if (m_PRE == nullptr) {
             std::string errMsg =
-                std::string(functionName) +" operation has not been enabled. Enable(PRE) must be called to enable it.";
+                std::string(functionName) + " operation has not been enabled. Enable(PRE) must be called to enable it.";
             OPENFHE_THROW(config_error, errMsg);
         }
     }
@@ -1504,8 +1407,8 @@ public:
     */
     inline void VerifyKeySwitchEnabled(const std::string& functionName) const {
         if (m_KeySwitch == nullptr) {
-            std::string errMsg =
-                std::string(functionName) +" operation has not been enabled. Enable(KEYSWITCH) must be called to enable it.";
+            std::string errMsg = std::string(functionName) +
+                                 " operation has not been enabled. Enable(KEYSWITCH) must be called to enable it.";
             OPENFHE_THROW(config_error, errMsg);
         }
     }
@@ -1517,11 +1420,10 @@ public:
     inline void VerifyFHEEnabled(const std::string& functionName) const {
         if (m_FHE == nullptr) {
             std::string errMsg =
-                std::string(functionName) +" operation has not been enabled. Enable(FHE) must be called to enable it.";
+                std::string(functionName) + " operation has not been enabled. Enable(FHE) must be called to enable it.";
             OPENFHE_THROW(config_error, errMsg);
         }
     }
-
 
     friend std::ostream& operator<<(std::ostream& out, const SchemeBase<Element>& s) {
         out << typeid(s).name() << ":";

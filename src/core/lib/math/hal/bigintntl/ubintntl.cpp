@@ -41,11 +41,13 @@
 
     #define _SECURE_SCL 0  // to speed up VS
 
+    #include "math/hal/basicint.h"
+    #include "math/math-hal.h"
+    #include "math/hal/bigintntl/ubintntl.h"
+
     #include <fstream>
     #include <iostream>
     #include <sstream>
-    #include "math/hal.h"
-    #include "math/hal/bigintntl/ubintntl.h"
 
 namespace NTL {
 
@@ -83,12 +85,12 @@ myZZ::myZZ(uint64_t d) : ZZ(0) {
 
     #if defined(HAVE_INT128)
 // 128-bit native arithmetic is not supported yet
-myZZ::myZZ(unsigned __int128 d) : myZZ((uint64_t)d) {}
+myZZ::myZZ(uint128_t d) : myZZ((uint64_t)d) {}
     #endif
 
 // ASSIGNMENT OPERATIONS
 
-const myZZ& myZZ::operator=(const myZZ& val) {
+myZZ& myZZ::operator=(const myZZ& val) {
     if (this != &val) {
         _ntl_gcopy(val.rep, &(this->rep));
         this->m_MSB = val.m_MSB;
@@ -117,7 +119,7 @@ myZZ myZZ::MultiplyAndRound(const myZZ& p, const myZZ& q) const {
     return ans;
 }
 
-const myZZ& myZZ::MultiplyAndRoundEq(const myZZ& p, const myZZ& q) {
+myZZ& myZZ::MultiplyAndRoundEq(const myZZ& p, const myZZ& q) {
     this->MulEq(p);
     this->DivideAndRoundEq(q);
     return *this;
@@ -147,7 +149,7 @@ myZZ myZZ::DivideAndRound(const myZZ& q) const {
     return ans;
 }
 
-const myZZ& myZZ::DivideAndRoundEq(const myZZ& q) {
+myZZ& myZZ::DivideAndRoundEq(const myZZ& q) {
     if (q == myZZ(0)) {
         OPENFHE_THROW(lbcrypto::math_error, "DivideAndRound() Divisor is zero");
     }
@@ -168,22 +170,6 @@ const myZZ& myZZ::DivideAndRoundEq(const myZZ& q) {
         *this += myZZ(1);
     }
     return *this;
-}
-
-// CONVERTERS
-
-uint64_t myZZ::ConvertToInt() const {
-    std::stringstream s;  // slower
-    s << *this;
-    uint64_t result;
-    s >> result;
-
-    if ((this->GetMSB() > (sizeof(uint64_t) * 8)) || (this->GetMSB() > NTL_ZZ_NBITS)) {
-        std::cerr << "Warning myZZ::ConvertToInt() Loss of precision. " << std::endl;
-        std::cerr << "input  " << *this << std::endl;
-        std::cerr << "result  " << result << std::endl;
-    }
-    return result;
 }
 
 double myZZ::ConvertToDouble() const {

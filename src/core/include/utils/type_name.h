@@ -35,6 +35,7 @@
 #include <typeinfo>
 #include <iostream>
 #include <memory>
+#include <string>
 
 // define my own "is_shared_pointer"
 template <typename T>

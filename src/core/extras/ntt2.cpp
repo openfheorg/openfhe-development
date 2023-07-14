@@ -43,7 +43,7 @@
 #include <vector>
 #include "openfhecore.h"
 #include "time.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 
 using namespace lbcrypto;
 
@@ -116,10 +116,7 @@ void test_NTT(const usint level, const usint nloop) {
     double time2br, time2bf;
     double time3br, time3bf;
 
-    std::cout << "testing NTT backend " << MATHBACKEND;
-    if (BigIntegerBitLength > 0)
-        std::cout << " BITLENGTH " << BigIntegerBitLength;
-    std::cout << std::endl;
+    std::cout << "testing NTT backend " << MATHBACKEND << std::endl;
 
     TIC(t_total);
     TIC(t_setup);

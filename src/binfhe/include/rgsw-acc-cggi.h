@@ -42,11 +42,9 @@ namespace lbcrypto {
  * @brief Ring GSW accumulator schemes described in
  * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/086
  */
-class RingGSWAccumulatorCGGI : public RingGSWAccumulator {
+class RingGSWAccumulatorCGGI final : public RingGSWAccumulator {
 public:
     RingGSWAccumulatorCGGI() = default;
-
-    virtual ~RingGSWAccumulatorCGGI() {}
 
     /**
    * Internal RingGSW encryption used in generating the refreshing key
@@ -57,8 +55,8 @@ public:
    * key)
    * @return a shared pointer to the resulting ciphertext
    */
-    RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                            ConstLWEPrivateKey LWEsk) const override;
+    RingGSWACCKey KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                            ConstLWEPrivateKey& LWEsk) const override;
 
     /**
    * Main accumulator function used in bootstrapping - AP variant
@@ -67,15 +65,15 @@ public:
    * @param &input input ciphertext
    * @param acc previous value of the accumulator
    */
-    void EvalAcc(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWACCKey ek, RLWECiphertext& acc,
+    void EvalAcc(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWACCKey& ek, RLWECiphertext& acc,
                  const NativeVector& a) const override;
 
 private:
-    RingGSWEvalKey KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams> params, const NativePoly& skNTT,
-                              const LWEPlaintext& m) const;
+    RingGSWEvalKey KeyGenCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, const NativePoly& skNTT,
+                              LWEPlaintext m) const;
 
-    void AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams> params, const RingGSWEvalKey ek1,
-                      const RingGSWEvalKey ek2, const NativeInteger& a, RLWECiphertext& acc) const;
+    void AddToAccCGGI(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek1,
+                      ConstRingGSWEvalKey& ek2, const NativeInteger& a, RLWECiphertext& acc) const;
 };
 
 }  // namespace lbcrypto

@@ -40,11 +40,12 @@
 #include "lattice/hal/dcrtpoly-interface.h"
 #include "lattice/ildcrtparams.h"
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/distrgen.h"
 
 #include "utils/exception.h"
 #include "utils/inttypes.h"
+#include "utils/parallel.h"
 
 #include <functional>
 #include <memory>
@@ -70,15 +71,20 @@ public:
     using TugType               = typename DCRTPolyInterfaceType::TugType;
     using BugType               = typename DCRTPolyInterfaceType::BugType;
 
-    static const std::string GetElementName() {
-        return "DCRTPolyImpl";
+    DCRTPolyImpl() noexcept = default;
+
+    DCRTPolyImpl(const DCRTPolyType& e) noexcept : m_params{e.m_params}, m_format{e.m_format}, m_vectors{e.m_vectors} {}
+    DCRTPolyImpl(DCRTPolyType&& e) noexcept
+        : m_params{std::move(e.m_params)}, m_format{e.m_format}, m_vectors{std::move(e.m_vectors)} {}
+
+    DCRTPolyImpl(const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
+                 bool initializeElementToZero = false) noexcept
+        : m_params{params}, m_format{format} {
+        m_vectors.reserve(m_params->GetParams().size());
+        for (const auto& p : m_params->GetParams())
+            m_vectors.emplace_back(p, m_format, initializeElementToZero);
     }
 
-    ~DCRTPolyImpl() override = default;
-
-    DCRTPolyImpl();
-    DCRTPolyImpl(const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
-                 bool initializeElementToZero = false);
     DCRTPolyImpl(const DggType& dgg, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     DCRTPolyImpl(const BugType& bug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     DCRTPolyImpl(const TugType& tug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
@@ -86,68 +92,107 @@ public:
     DCRTPolyImpl(DugType& dug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
     DCRTPolyImpl(const PolyLargeType& element, const std::shared_ptr<Params>& params);
     DCRTPolyImpl(const PolyType& element, const std::shared_ptr<Params>& params);
-    DCRTPolyImpl(const DCRTPolyType& element);  // NOLINT
     explicit DCRTPolyImpl(const std::vector<PolyType>& elements);
-    explicit DCRTPolyImpl(const DCRTPolyType&& element);
 
-    const DCRTPolyType& operator=(const PolyLargeType& element);
-    const DCRTPolyType& operator=(const DCRTPolyType& rhs) override;
-    const DCRTPolyType& operator=(const PolyType& element) override;
-    const DCRTPolyType& operator=(DCRTPolyType&& rhs) override;
-    DCRTPolyType& operator=(std::initializer_list<uint64_t> rhs) override;
-    DCRTPolyType& operator=(uint64_t val) override;
-    DCRTPolyType& operator=(const std::vector<int64_t>& rhs) override;
-    DCRTPolyType& operator=(const std::vector<int32_t>& rhs) override;
-    DCRTPolyType& operator=(std::initializer_list<std::string> rhs) override;
+    DCRTPolyType& operator=(const DCRTPolyType& rhs) noexcept override {
+        m_params  = rhs.m_params;
+        m_format  = rhs.m_format;
+        m_vectors = rhs.m_vectors;
+        return *this;
+    }
+    DCRTPolyType& operator=(DCRTPolyType&& rhs) noexcept override {
+        m_params  = std::move(rhs.m_params);
+        m_format  = std::move(rhs.m_format);
+        m_vectors = std::move(rhs.m_vectors);
+        return *this;
+    }
+    DCRTPolyType& operator=(const PolyLargeType& rhs) noexcept;
+    DCRTPolyType& operator=(const PolyType& rhs) noexcept;
+
+    DCRTPolyType& operator=(std::initializer_list<uint64_t> rhs) noexcept override;
+    DCRTPolyType& operator=(uint64_t val) noexcept;
+    DCRTPolyType& operator=(const std::vector<int64_t>& rhs) noexcept;
+    DCRTPolyType& operator=(const std::vector<int32_t>& rhs) noexcept;
+    DCRTPolyType& operator=(std::initializer_list<std::string> rhs) noexcept;
 
     DCRTPolyType CloneWithNoise(const DiscreteGaussianGeneratorImpl<VecType>& dgg, Format format) const override;
-    DCRTPolyType CloneTowers(uint32_t startTower, uint32_t endTower) const override;
+    DCRTPolyType CloneTowers(uint32_t startTower, uint32_t endTower) const;
 
     Integer& at(usint i) override;
     const Integer& at(usint i) const override;
-    Integer& operator[](usint i) override;
-    const Integer& operator[](usint i) const override;
+    Integer& operator[](usint i) override {
+        return DCRTPolyType::CRTInterpolateIndex(i)[i];
+    }
+    const Integer& operator[](usint i) const override {
+        return DCRTPolyType::CRTInterpolateIndex(i)[i];
+    }
 
     bool operator==(const DCRTPolyType& rhs) const override;
-    const DCRTPolyType& operator+=(const DCRTPolyType& rhs) override;
-    const DCRTPolyType& operator+=(const Integer& element) override;
-    const DCRTPolyType& operator-=(const DCRTPolyType& rhs) override;
-    const DCRTPolyType& operator-=(const Integer& element) override;
-    const DCRTPolyType& operator*=(const Integer& element) override;
-    const DCRTPolyType& operator*=(const DCRTPolyType& element) override;
+    DCRTPolyType& operator+=(const DCRTPolyType& rhs) override;
+    DCRTPolyType& operator+=(const Integer& rhs) override;
+    DCRTPolyType& operator+=(const NativeInteger& rhs) override;
+    DCRTPolyType& operator-=(const DCRTPolyType& rhs) override;
+    DCRTPolyType& operator-=(const Integer& rhs) override;
+    DCRTPolyType& operator-=(const NativeInteger& rhs) override;
+    DCRTPolyType& operator*=(const DCRTPolyType& rhs) override {
+        size_t size{m_vectors.size()};
+#pragma omp parallel for num_threads(size)
+        for (size_t i = 0; i < size; ++i)
+            m_vectors[i] *= rhs.m_vectors[i];
+        return *this;
+    }
+    DCRTPolyType& operator*=(const Integer& rhs) override;
+    DCRTPolyType& operator*=(const NativeInteger& rhs) override;
 
     DCRTPolyType Negate() const override;
     DCRTPolyType operator-() const override;
 
     std::vector<DCRTPolyType> BaseDecompose(usint baseBits, bool evalModeAnswer) const override;
     std::vector<DCRTPolyType> PowersOfBase(usint baseBits) const override;
-    std::vector<DCRTPolyType> CRTDecompose(uint32_t baseBits) const override;
+    std::vector<DCRTPolyType> CRTDecompose(uint32_t baseBits) const;
 
-    DCRTPolyType AutomorphismTransform(const usint& i) const override;
-    DCRTPolyType AutomorphismTransform(usint i, const std::vector<usint>& vec) const override;
+    DCRTPolyType AutomorphismTransform(uint32_t i) const override;
+    DCRTPolyType AutomorphismTransform(uint32_t i, const std::vector<uint32_t>& vec) const override;
 
-    DCRTPolyType Plus(const DCRTPolyType& element) const override;
-    DCRTPolyType Plus(const Integer& element) const override;
-    DCRTPolyType Plus(const std::vector<Integer>& element) const override;
+    DCRTPolyType Plus(const Integer& rhs) const override;
+    DCRTPolyType Plus(const std::vector<Integer>& rhs) const;
+    DCRTPolyType Plus(const DCRTPolyType& rhs) const override {
+        size_t size{m_vectors.size()};
+        if (size != rhs.m_vectors.size())
+            OPENFHE_THROW(math_error, "tower size mismatch; cannot add");
+        DCRTPolyType tmp(m_params, m_format);
+#pragma omp parallel for num_threads(size)
+        for (size_t i = 0; i < size; ++i)
+            tmp.m_vectors[i] = m_vectors[i].Plus(rhs.m_vectors[i]);
+        return tmp;
+    }
 
-    DCRTPolyType Minus(const DCRTPolyType& element) const override;
-    DCRTPolyType Minus(const Integer& element) const override;
-    DCRTPolyType Minus(const std::vector<Integer>& element) const override;
+    DCRTPolyType Minus(const DCRTPolyType& rhs) const override;
+    DCRTPolyType Minus(const Integer& rhs) const override;
+    DCRTPolyType Minus(const std::vector<Integer>& rhs) const;
 
-    DCRTPolyType Times(const DCRTPolyType& element) const override;
-    DCRTPolyType Times(const Integer& element) const override;
-    DCRTPolyType Times(const std::vector<Integer>& element) const override;
-    DCRTPolyType Times(NativeInteger::SignedNativeInt element) const override;
+    DCRTPolyType Times(const DCRTPolyType& rhs) const override {
+        size_t size{m_vectors.size()};
+        if (size != rhs.m_vectors.size())
+            OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
+        DCRTPolyType tmp(m_params, m_format);
+#pragma omp parallel for num_threads(size)
+        for (size_t i = 0; i < size; ++i)
+            tmp.m_vectors[i] = m_vectors[i].Times(rhs.m_vectors[i]);
+        return tmp;
+    }
+    DCRTPolyType Times(const Integer& rhs) const override;
+    DCRTPolyType Times(const std::vector<Integer>& rhs) const;
+    DCRTPolyType Times(NativeInteger::SignedNativeInt rhs) const override;
 #if NATIVEINT != 64
-    DCRTPolyType Times(int64_t element) const override {
-        return Times(static_cast<NativeInteger::SignedNativeInt>(element));
+    DCRTPolyType Times(int64_t rhs) const {
+        return Times(static_cast<NativeInteger::SignedNativeInt>(rhs));
     }
 #endif
+    DCRTPolyType Times(const std::vector<NativeInteger>& rhs) const;
+    DCRTPolyType TimesNoCheck(const std::vector<NativeInteger>& rhs) const;
 
-    DCRTPolyType Times(const std::vector<NativeInteger>& element) const override;
-    DCRTPolyType TimesNoCheck(const std::vector<NativeInteger>& element) const override;
     DCRTPolyType MultiplicativeInverse() const override;
-
     bool InverseExists() const override;
     bool IsEmpty() const override;
 
@@ -251,7 +296,7 @@ public:
                              const std::vector<NativeInteger>& pInvModq) override;
 
     void FastBaseConvqToBskMontgomery(
-        const std::shared_ptr<Params>& paramsBsk, const std::vector<NativeInteger>& moduliQ,
+        const std::shared_ptr<Params>& paramsQBsk, const std::vector<NativeInteger>& moduliQ,
         const std::vector<NativeInteger>& moduliBsk, const std::vector<DoubleNativeInt>& modbskBarrettMu,
         const std::vector<NativeInteger>& mtildeQHatInvModq, const std::vector<NativeInteger>& mtildeQHatInvModqPrecon,
         const std::vector<std::vector<NativeInteger>>& QHatModbsk, const std::vector<uint64_t>& QHatModmtilde,
@@ -300,9 +345,14 @@ public:
         ar(::cereal::make_nvp("p", m_params));
     }
 
+    static const std::string GetElementName() {
+        return "DCRTPolyImpl";
+    }
+
     std::string SerializedObjectName() const override {
         return "DCRTPoly";
     }
+
     static uint32_t SerializedVersion() {
         return 1;
     }
@@ -311,25 +361,29 @@ public:
         return m_format;
     }
 
-    inline const std::shared_ptr<Params>& GetParams() const final {
+    inline const std::shared_ptr<Params>& GetParams() const {
         return m_params;
     }
 
-    inline const std::vector<PolyType>& GetAllElements() const final {
+    const std::vector<PolyType>& GetAllElements() const {
         return m_vectors;
     }
 
-    inline void SetElementAtIndex(usint index, const PolyType& element) final {
+    std::vector<PolyType>& GetAllElements() {
+        return m_vectors;
+    }
+
+    void SetElementAtIndex(usint index, const PolyType& element) {
         m_vectors[index] = element;
     }
 
-    inline void SetElementAtIndex(usint index, PolyType&& element) final {
-        m_vectors[index] = element;
+    void SetElementAtIndex(usint index, PolyType&& element) {
+        m_vectors[index] = std::move(element);
     }
 
 protected:
-    Format m_format;
-    std::shared_ptr<Params> m_params;
+    std::shared_ptr<Params> m_params{std::make_shared<DCRTPolyImpl::Params>(0, 1)};
+    Format m_format{Format::EVALUATION};
     std::vector<PolyType> m_vectors;
 };
 

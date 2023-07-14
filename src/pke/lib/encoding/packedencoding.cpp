@@ -34,8 +34,8 @@
  */
 
 #include "encoding/packedencoding.h"
+#include "math/math-hal.h"
 #include "utils/utilities.h"
-#include "math/hal.h"
 
 namespace lbcrypto {
 

@@ -38,8 +38,12 @@
 #include "schemebase/base-scheme.h"
 #include "cryptocontext.h"
 #include "ciphertext.h"
+
 #include "lattice/lat-hal.h"
+
+#include "math/hal/basicint.h"
 #include "math/dftransform.h"
+
 #include "utils/exception.h"
 #include "utils/parallel.h"
 #include "utils/utilities.h"
@@ -153,11 +157,11 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     NativeInteger q = cryptoParams->GetElementParams()->GetParams()[0]->GetModulus().ConvertToInt();
     double qDouble  = q.ConvertToDouble();
 
-    unsigned __int128 factor = ((unsigned __int128)1 << ((uint32_t)std::round(std::log2(qDouble))));
-    double pre               = qDouble / factor;
-    double k                 = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
-    double scaleEnc          = pre / k;
-    double scaleDec          = 1 / pre;
+    uint128_t factor = ((uint128_t)1 << ((uint32_t)std::round(std::log2(qDouble))));
+    double pre       = qDouble / factor;
+    double k         = (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY) ? K_SPARSE : 1.0;
+    double scaleEnc  = pre / k;
+    double scaleDec  = 1 / pre;
 
     uint32_t approxModDepth = GetModDepthInternal(cryptoParams->GetSecretKeyDist());
     uint32_t depthBT        = approxModDepth + 1 + precom->m_paramsEnc[CKKS_BOOT_PARAMS::LEVEL_BUDGET] +
@@ -2127,23 +2131,23 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
 
         int64_t re64       = std::llround(dre);
         int32_t pRemaining = pCurrent + n1;
-        __int128 re        = 0;
+        int128_t re        = 0;
         if (pRemaining < 0) {
             re = re64 >> (-pRemaining);
         }
         else {
-            __int128 pPowRemaining = ((__int128)1) << pRemaining;
+            int128_t pPowRemaining = ((int128_t)1) << pRemaining;
             re                     = pPowRemaining * re64;
         }
 
         int64_t im64 = std::llround(dim);
         pRemaining   = pCurrent + n2;
-        __int128 im  = 0;
+        int128_t im  = 0;
         if (pRemaining < 0) {
             im = im64 >> (-pRemaining);
         }
         else {
-            __int128 pPowRemaining = ((int64_t)1) << pRemaining;
+            int128_t pPowRemaining = ((int64_t)1) << pRemaining;
             im                     = pPowRemaining * im64;
         }
 
@@ -2216,7 +2220,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     double powP = scFact;
 
     // Compute approxFactor, a value to scale down by, in case the value exceeds a 64-bit integer.
-    int32_t MAX_BITS_IN_WORD = 61;
+    constexpr int32_t MAX_BITS_IN_WORD = 61;
 
     int32_t logc = 0;
     for (size_t i = 0; i < slots; ++i) {
@@ -2240,6 +2244,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     double approxFactor = pow(2, logApprox);
 
     std::vector<int64_t> temp(2 * slots);
+
     for (size_t i = 0; i < slots; ++i) {
         // Scale down by approxFactor in case the value exceeds a 64-bit integer.
         double dre = inverse[i].real() / approxFactor;
@@ -2314,7 +2319,7 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
         moduli[i] = nativeParams[i]->GetModulus();
     }
 
-    DCRTPoly::Integer intPowP = std::llround(powP);
+    DCRTPoly::Integer intPowP{static_cast<uint64_t>(std::llround(powP))};
     std::vector<DCRTPoly::Integer> crtPowP(numTowers, intPowP);
 
     auto currPowP = crtPowP;
@@ -2448,15 +2453,15 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>&
 }
 
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
-void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
+void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
                                    NativeVector* nativeVec) const {
-    NativeInteger bigValueHf((unsigned __int128)bigBound >> 1);
+    NativeInteger bigValueHf((uint128_t)bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
-    NativeInteger diff = NativeInteger((unsigned __int128)bigBound) - modulus;
+    NativeInteger diff = NativeInteger((uint128_t)bigBound) - modulus;
     uint32_t dslots    = vec.size();
     uint32_t gap       = ringDim / dslots;
     for (usint i = 0; i < vec.size(); i++) {
-        NativeInteger n((unsigned __int128)vec[i]);
+        NativeInteger n((uint128_t)vec[i]);
         if (n > bigValueHf) {
             (*nativeVec)[gap * i] = n.ModSub(diff, modulus);
         }

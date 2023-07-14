@@ -68,7 +68,7 @@
 
 #define _USE_MATH_DEFINES  // added for Visual Studio support
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/distributiongenerator.h"
 
 #include <memory>
@@ -77,7 +77,7 @@
 
 namespace lbcrypto {
 
-const double KARNEY_THRESHOLD = 300;
+constexpr double KARNEY_THRESHOLD = 300.0;
 
 /**
  * @brief The class for Discrete Gaussion Distribution generator.
@@ -195,6 +195,14 @@ public:
     static int64_t GenerateIntegerKarney(double mean, double stddev);
 
 private:
+    // Gyana to add precomputation methods and data members
+    // all parameters are set as int because it is assumed that they are used for
+    // generating "small" polynomials only
+    double m_std{1.0};
+    double m_a{0.0};
+    std::vector<double> m_vals;
+    bool peikert{false};
+
     usint FindInVector(const std::vector<double>& S, double search) const;
 
     static double UnnormalizedGaussianPDF(const double& mean, const double& sigma, int32_t x) {
@@ -251,22 +259,7 @@ private:
    * @return Whether the number of runs are even or not
    */
     static bool AlgorithmBDouble(PRNG& g, int32_t k, double x);
-
-    // Gyana to add precomputation methods and data members
-    // all parameters are set as int because it is assumed that they are used for
-    // generating "small" polynomials only
-    double m_a;
-
-    std::vector<double> m_vals;
-
-    /**
-   * The standard deviation of the distribution.
-   */
-    double m_std;
-    bool peikert = false;
 };
-
-typedef DiscreteGaussianGeneratorImpl<BigVector> DiscreteGaussianGenerator;
 
 }  // namespace lbcrypto
 

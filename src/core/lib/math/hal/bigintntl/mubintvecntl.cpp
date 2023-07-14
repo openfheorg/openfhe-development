@@ -44,7 +44,7 @@
     #define FORCE_NORMALIZATION
 
     #include <chrono>
-    #include "math/hal.h"
+    #include "math/math-hal.h"
     #include "math/hal/bigintntl/mubintvecntl.h"
     #include "time.h"
     #include "utils/debug.h"
@@ -205,7 +205,7 @@ myVecP<myT>::myVecP(std::vector<std::string>& s, const uint64_t q) {
 // keeps current modulus
 
 template <class myT>
-const myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<uint64_t> rhs) {
+myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<uint64_t> rhs) {
     size_t len = rhs.size();
     if (this->GetLength() < len) {
         this->resize(len);
@@ -230,7 +230,7 @@ const myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<uint64_t> rhs) {
 
 // for some dumb reason they coded this., it is dangerous
 template <class myT>
-const myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<int32_t> rhs) {
+myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<int32_t> rhs) {
     size_t len = rhs.size();
     if (this->GetLength() < len) {
         this->resize(len);
@@ -260,7 +260,7 @@ const myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<int32_t> rhs) {
 // Assignment with initializer list of strings
 // keeps current modulus
 template <class myT>
-const myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<std::string> rhs) {
+myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<std::string> rhs) {
     size_t len = rhs.size();
     if (this->GetLength() < len) {
         this->resize(len);
@@ -286,7 +286,7 @@ const myVecP<myT>& myVecP<myT>::operator=(std::initializer_list<std::string> rhs
 // keeps current modulus
 // note this only assigns to the first element!!
 template <class myT>
-const myVecP<myT>& myVecP<myT>::operator=(uint64_t val) {
+myVecP<myT>& myVecP<myT>::operator=(uint64_t val) {
     (*this)[0] = myT(val);
     #ifdef FORCE_NORMALIZATION
     if (isModulusSet())
@@ -301,7 +301,7 @@ const myVecP<myT>& myVecP<myT>::operator=(uint64_t val) {
 
 // do not keep current modulus but copies from rhs.
 template <class myT>
-const myVecP<myT>& myVecP<myT>::operator=(const myVecP<myT>& rhs) {
+myVecP<myT>& myVecP<myT>::operator=(const myVecP<myT>& rhs) {
     this->resize(rhs.GetLength());
     int rv = this->CopyModulus(rhs);
     if (rv == -1) {
@@ -317,7 +317,7 @@ const myVecP<myT>& myVecP<myT>::operator=(const myVecP<myT>& rhs) {
 
 // move copy do not keep current modulus but copies from rhs.
 template <class myT>
-const myVecP<myT>& myVecP<myT>::operator=(myVecP<myT>&& rhs) {
+myVecP<myT>& myVecP<myT>::operator=(myVecP<myT>&& rhs) {
     if (this != &rhs) {
         this->resize(rhs.GetLength());
         int rv = this->CopyModulus(rhs);
@@ -406,7 +406,7 @@ myVecP<myT> myVecP<myT>::Mod(const myT& modulus) const {
 }
 
 template <class myT>
-const myVecP<myT>& myVecP<myT>::ModEq(const myT& modulus) {
+myVecP<myT>& myVecP<myT>::ModEq(const myT& modulus) {
     if (modulus == myT(2)) {
         return this->ModByTwoEq();
     }
@@ -439,7 +439,7 @@ myVecP<myT> myVecP<myT>::ModAddAtIndex(size_t i, const myT& b) const {
 }
 
 template <class myT>
-const myVecP<myT>& myVecP<myT>::ModAddAtIndexEq(size_t i, const myT& b) {
+myVecP<myT>& myVecP<myT>::ModAddAtIndexEq(size_t i, const myT& b) {
     if (i > this->GetLength() - 1) {
         std::string errMsg = "myVecP::ModAddAtIndex. Index is out of range. i = " + std::to_string(i);
         OPENFHE_THROW(lbcrypto::math_error, errMsg);
@@ -517,7 +517,7 @@ myVecP<myT> myVecP<myT>::ModExp(const myT& b) const {
 }
 
 template <class myT>
-const myVecP<myT>& myVecP<myT>::ModExpEq(const myT& b) {
+myVecP<myT>& myVecP<myT>::ModExpEq(const myT& b) {
     ModulusCheck("myVecP::ModExp");
     for (size_t i = 0; i < this->GetLength(); i++) {
         (*this)[i] = (*this)[i].ModExp(b % m_modulus, this->m_modulus);
@@ -536,7 +536,7 @@ myVecP<myT> myVecP<myT>::ModInverse(void) const {
 }
 
 template <class myT>
-const myVecP<myT>& myVecP<myT>::ModInverseEq(void) {
+myVecP<myT>& myVecP<myT>::ModInverseEq(void) {
     ModulusCheck("myVecP::ModInverse");
     for (size_t i = 0; i < this->GetLength(); i++) {
         (*this)[i] = (*this)[i].ModInverse(this->m_modulus);
@@ -553,7 +553,7 @@ myVecP<myT> myVecP<myT>::ModByTwo() const {
 
 // method to mod by two
 template <class myT>
-const myVecP<myT>& myVecP<myT>::ModByTwoEq() {
+myVecP<myT>& myVecP<myT>::ModByTwoEq() {
     myT halfQ(this->GetModulus() >> 1);
     for (size_t i = 0; i < this->GetLength(); i++) {
         if (this->operator[](i) > halfQ) {
@@ -594,7 +594,7 @@ myVecP<myT> myVecP<myT>::MultiplyAndRound(const myT& p, const myT& q) const {
 }
 
 template <class myT>
-const myVecP<myT>& myVecP<myT>::MultiplyAndRoundEq(const myT& p, const myT& q) {
+myVecP<myT>& myVecP<myT>::MultiplyAndRoundEq(const myT& p, const myT& q) {
     ModulusCheck("myVecP::MultiplyAndRound");
     myT halfQ(this->m_modulus >> 1);
     for (size_t i = 0; i < this->GetLength(); i++) {
@@ -627,7 +627,7 @@ myVecP<myT> myVecP<myT>::DivideAndRound(const myT& q) const {
 }
 
 template <class myT>
-const myVecP<myT>& myVecP<myT>::DivideAndRoundEq(const myT& q) {
+myVecP<myT>& myVecP<myT>::DivideAndRoundEq(const myT& q) {
     ModulusCheck("myVecP::DivideAndRound");
     myT halfQ(this->m_modulus >> 1);
     for (size_t i = 0; i < this->GetLength(); i++) {

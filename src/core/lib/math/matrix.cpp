@@ -36,7 +36,7 @@
 #ifndef LBCRYPTO_LIB_MATH_MATRIX_CPP
 #define LBCRYPTO_LIB_MATH_MATRIX_CPP
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/matrix-impl.h"
 
 #include "utils/exception.h"

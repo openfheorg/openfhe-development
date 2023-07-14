@@ -34,7 +34,7 @@
 
 #include "lwe-keyswitchkey-fwd.h"
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "utils/serializable.h"
 
 #include <memory>
@@ -54,23 +54,18 @@ public:
                                  const std::vector<std::vector<std::vector<NativeInteger>>>& keyB)
         : m_keyA(keyA), m_keyB(keyB) {}
 
-    explicit LWESwitchingKeyImpl(const LWESwitchingKeyImpl& rhs) {
-        m_keyA = rhs.m_keyA;
-        m_keyB = rhs.m_keyB;
-    }
+    LWESwitchingKeyImpl(const LWESwitchingKeyImpl& rhs) : m_keyA(rhs.m_keyA), m_keyB(rhs.m_keyB) {}
 
-    explicit LWESwitchingKeyImpl(const LWESwitchingKeyImpl&& rhs) {
-        m_keyA = std::move(rhs.m_keyA);
-        m_keyB = std::move(rhs.m_keyB);
-    }
+    LWESwitchingKeyImpl(LWESwitchingKeyImpl&& rhs) noexcept
+        : m_keyA(std::move(rhs.m_keyA)), m_keyB(std::move(rhs.m_keyB)) {}
 
-    const LWESwitchingKeyImpl& operator=(const LWESwitchingKeyImpl& rhs) {
+    LWESwitchingKeyImpl& operator=(const LWESwitchingKeyImpl& rhs) {
         m_keyA = rhs.m_keyA;
         m_keyB = rhs.m_keyB;
         return *this;
     }
 
-    const LWESwitchingKeyImpl& operator=(const LWESwitchingKeyImpl&& rhs) {
+    LWESwitchingKeyImpl& operator=(LWESwitchingKeyImpl&& rhs) noexcept {
         m_keyA = std::move(rhs.m_keyA);
         m_keyB = std::move(rhs.m_keyB);
         return *this;
@@ -117,7 +112,7 @@ public:
         ar(::cereal::make_nvp("b", m_keyB));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "LWEPrivateKey";
     }
     static uint32_t SerializedVersion() {

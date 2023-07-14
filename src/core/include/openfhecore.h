@@ -40,7 +40,7 @@
 #include "lattice/stdlatticeparms.h"
 
 #include "math/distrgen.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "math/nbtheory.h"
 
 #include "utils/debug.h"

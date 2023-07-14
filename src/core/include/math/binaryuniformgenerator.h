@@ -38,7 +38,7 @@
 #define LBCRYPTO_INC_MATH_BINARYUNIFORMGENERATOR_H_
 
 #include "math/distributiongenerator.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 
 #include "utils/inttypes.h"
 
@@ -74,8 +74,6 @@ public:
 private:
     static std::bernoulli_distribution m_distribution;
 };
-
-typedef BinaryUniformGeneratorImpl<BigVector> BinaryUniformGenerator;
 
 }  // namespace lbcrypto
 

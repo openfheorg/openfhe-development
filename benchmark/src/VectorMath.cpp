@@ -43,20 +43,6 @@
 
 using namespace lbcrypto;
 
-#define DO_NATIVEVECTOR_BENCHMARK(X)                                                                     \
-    BENCHMARK_TEMPLATE(X, NativeVector)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);     \
-    BENCHMARK_TEMPLATE(X, NativeVector)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024); \
-    BENCHMARK_TEMPLATE(X, NativeVector)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);
-
-#define DO_VECTOR_BENCHMARK_TEMPLATE(X, Y)                                                         \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);          \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024);      \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);      \
-    /*BENCHMARK_TEMPLATE(X,Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_4096")->Arg(4096);*/   \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_8192")->Arg(8192);      \
-    /*BENCHMARK_TEMPLATE(X,Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16384")->Arg(16384);*/ \
-    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_32768")->Arg(32768);
-
 // add
 template <typename V>
 static void add_BigVec(const V& a, const V& b) {
@@ -75,13 +61,6 @@ static void BM_BigVec_Add(benchmark::State& state) {  // benchmark
         add_BigVec<V>(a, b);
     }
 }
-
-DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Add)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Add, M2Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Add, M4Vector)
-#ifdef WITH_NTL
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Add, M6Vector)
-#endif
 
 // +=
 template <typename V>
@@ -103,13 +82,6 @@ static void BM_BigVec_Addeq(benchmark::State& state) {  // benchmark
     }
 }
 
-DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Addeq)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Addeq, M2Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Addeq, M4Vector)
-#ifdef WITH_NTL
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Addeq, M6Vector)
-#endif
-
 // mult
 template <typename V>
 static void mult_BigVec(const V& a, const V& b) {  // function
@@ -128,13 +100,6 @@ static void BM_BigVec_Mult(benchmark::State& state) {  // benchmark
         mult_BigVec<V>(a, b);
     }
 }
-
-DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Mult)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Mult, M2Vector)
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Mult, M4Vector)
-#ifdef WITH_NTL
-DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Mult, M6Vector)
-#endif
 
 // mult
 template <typename V>
@@ -156,10 +121,43 @@ static void BM_BigVec_Multeq(benchmark::State& state) {  // benchmark
     }
 }
 
+#define DO_NATIVEVECTOR_BENCHMARK(X)                                                                     \
+    BENCHMARK_TEMPLATE(X, NativeVector)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);     \
+    BENCHMARK_TEMPLATE(X, NativeVector)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024); \
+    BENCHMARK_TEMPLATE(X, NativeVector)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);
+
+#define DO_VECTOR_BENCHMARK_TEMPLATE(X, Y)                                                         \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16")->Arg(16);          \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_1024")->Arg(1024);      \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_2048")->Arg(2048);      \
+    /*BENCHMARK_TEMPLATE(X,Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_4096")->Arg(4096);*/   \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_8192")->Arg(8192);      \
+    /*BENCHMARK_TEMPLATE(X,Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_16384")->Arg(16384);*/ \
+    BENCHMARK_TEMPLATE(X, Y)->Unit(benchmark::kMicrosecond)->ArgName("parm_32768")->Arg(32768);
+
+DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Add)
+DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Addeq)
+DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Mult)
 DO_NATIVEVECTOR_BENCHMARK(BM_BigVec_Multeq)
+
+#ifdef WITH_BE2
+DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Add, M2Vector)
+DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Addeq, M2Vector)
+DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Mult, M2Vector)
 DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Multeq, M2Vector)
+#endif
+
+#ifdef WITH_BE4
+DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Add, M4Vector)
+DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Addeq, M4Vector)
+DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Mult, M4Vector)
 DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Multeq, M4Vector)
+#endif
+
 #ifdef WITH_NTL
+DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Add, M6Vector)
+DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Addeq, M6Vector)
+DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Mult, M6Vector)
 DO_VECTOR_BENCHMARK_TEMPLATE(BM_BigVec_Multeq, M6Vector)
 #endif
 

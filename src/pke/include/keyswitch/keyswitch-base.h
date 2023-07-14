@@ -44,8 +44,8 @@ Base class for key switching algorithms.
 #include "schemebase/base-cryptoparameters.h"
 
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 /**
  * @namespace lbcrypto
@@ -111,12 +111,13 @@ public:
     // CORE OPERATIONS
     /////////////////////////////////////////
 
-    virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(Element a, const EvalKey<Element> evalKey) const {
+    virtual std::shared_ptr<std::vector<Element>> KeySwitchCore(const Element& a,
+                                                                const EvalKey<Element> evalKey) const {
         OPENFHE_THROW(config_error, "KeySwitchCore is not supported");
     }
 
     virtual std::shared_ptr<std::vector<Element>> EvalKeySwitchPrecomputeCore(
-        Element c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
+        const Element& c, std::shared_ptr<CryptoParametersBase<Element>> cryptoParamsBase) const {
         OPENFHE_THROW(config_error, "EvalKeySwitchPrecomputeCore is not supported");
     }
 

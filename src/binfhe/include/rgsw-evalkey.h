@@ -32,17 +32,16 @@
 #ifndef _RGSW_EVAL_KEY_H_
 #define _RGSW_EVAL_KEY_H_
 
-#include "lattice/lat-hal.h"
-
-#include "math/discretegaussiangenerator.h"
-#include "math/nbtheory.h"
-#include "utils/serializable.h"
-#include "utils/utilities.h"
-
 #include "lwe-ciphertext.h"
 #include "lwe-keyswitchkey.h"
 #include "lwe-privatekey.h"
 #include "lwe-cryptoparameters.h"
+
+#include "lattice/lat-hal.h"
+#include "math/discretegaussiangenerator.h"
+#include "math/nbtheory.h"
+#include "utils/serializable.h"
+#include "utils/utilities.h"
 
 #include <memory>
 #include <string>
@@ -53,9 +52,7 @@
 namespace lbcrypto {
 
 class RingGSWEvalKeyImpl;
-
-using RingGSWEvalKey = std::shared_ptr<RingGSWEvalKeyImpl>;
-
+using RingGSWEvalKey      = std::shared_ptr<RingGSWEvalKeyImpl>;
 using ConstRingGSWEvalKey = const std::shared_ptr<const RingGSWEvalKeyImpl>;
 
 /**
@@ -66,29 +63,22 @@ class RingGSWEvalKeyImpl : public Serializable {
 public:
     RingGSWEvalKeyImpl() = default;
 
-    RingGSWEvalKeyImpl(uint32_t rowSize, uint32_t colSize) {
-        m_elements.resize(rowSize);
-        for (size_t i = 0; i < rowSize; ++i)
-            m_elements[i].resize(colSize);
-    }
+    RingGSWEvalKeyImpl(uint32_t rowSize, uint32_t colSize) noexcept
+        : m_elements(rowSize, std::vector<NativePoly>(colSize)) {}
 
     explicit RingGSWEvalKeyImpl(const std::vector<std::vector<NativePoly>>& elements) : m_elements(elements) {}
 
-    explicit RingGSWEvalKeyImpl(const RingGSWEvalKeyImpl& rhs) {
-        this->m_elements = rhs.m_elements;
-    }
+    RingGSWEvalKeyImpl(const RingGSWEvalKeyImpl& rhs) : m_elements(rhs.m_elements) {}
 
-    explicit RingGSWEvalKeyImpl(const RingGSWEvalKeyImpl&& rhs) {
-        this->m_elements = std::move(rhs.m_elements);
-    }
+    RingGSWEvalKeyImpl(RingGSWEvalKeyImpl&& rhs) noexcept : m_elements(std::move(rhs.m_elements)) {}
 
-    const RingGSWEvalKeyImpl& operator=(const RingGSWEvalKeyImpl& rhs) {
-        this->m_elements = rhs.m_elements;
+    RingGSWEvalKeyImpl& operator=(const RingGSWEvalKeyImpl& rhs) {
+        RingGSWEvalKeyImpl::m_elements = rhs.m_elements;
         return *this;
     }
 
-    const RingGSWEvalKeyImpl& operator=(const RingGSWEvalKeyImpl&& rhs) {
-        this->m_elements = rhs.m_elements;
+    RingGSWEvalKeyImpl& operator=(RingGSWEvalKeyImpl&& rhs) noexcept {
+        RingGSWEvalKeyImpl::m_elements = std::move(rhs.m_elements);
         return *this;
     }
 
@@ -105,40 +95,35 @@ public:
    * representations using NTT
    */
     void SetFormat(const Format format) {
-        for (size_t i = 0; i < m_elements.size(); ++i)
-            // column size is assume to be the same
-            for (size_t j = 0; j < m_elements[0].size(); ++j)
-                m_elements[i][j].SetFormat(format);
+        for (size_t i = 0; i < m_elements.size(); ++i) {
+            auto& l1 = m_elements[i];
+            for (size_t j = 0; j < l1.size(); ++j)
+                l1[j].SetFormat(format);
+        }
     }
 
     std::vector<NativePoly>& operator[](uint32_t i) {
         return m_elements[i];
     }
 
-    const std::vector<NativePoly>& operator[](usint i) const {
+    const std::vector<NativePoly>& operator[](uint32_t i) const {
         return m_elements[i];
     }
 
     bool operator==(const RingGSWEvalKeyImpl& other) const {
-        if(m_elements.size() == other.m_elements.size()) {
-            for (size_t i = 0; i < m_elements.size(); ++i) {
-                const auto& l1 = m_elements[i];
-                const auto& o1 = other.m_elements[i];
-
-                if(l1.size() == o1.size()) {
-                    for (size_t j = 0; j < l1.size(); ++j) {
-                        const auto& l2 = l1[j];
-                        const auto& o2 = o1[j];
-
-                        if(l2 != o2)
-                            return false;
-                    }
-                }
+        if (m_elements.size() != other.m_elements.size())
+            return false;
+        for (size_t i = 0; i < m_elements.size(); ++i) {
+            const auto& l1 = m_elements[i];
+            const auto& o1 = other.m_elements[i];
+            if (l1.size() != o1.size())
+                return false;
+            for (size_t j = 0; j < l1.size(); ++j) {
+                if (l1[j] != o1[j])
+                    return false;
             }
-            return true;
         }
-
-        return false;
+        return true;
     }
 
     bool operator!=(const RingGSWEvalKeyImpl& other) const {
@@ -159,7 +144,7 @@ public:
         ar(::cereal::make_nvp("elements", m_elements));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "RingGSWEvalKey";
     }
     static uint32_t SerializedVersion() {

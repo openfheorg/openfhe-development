@@ -220,12 +220,10 @@ public:
     }
 
     const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsPK() const override {
-        if ((m_ksTechnique == HYBRID) && (m_PREMode != NOT_SET)) {
+        if ((m_ksTechnique == HYBRID) && (m_PREMode != NOT_SET))
             return m_paramsQP;
-        }
-        else if ((m_encTechnique == EXTENDED) && (m_paramsQr != nullptr)) {
+        if ((m_encTechnique == EXTENDED) && (m_paramsQr != nullptr))
             return m_paramsQr;
-        }
         return m_params;
     }
 
@@ -959,8 +957,8 @@ public:
    *
    * @return the precomputed CRT params
    */
-    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsBsk() const {
-        return m_paramsBsk;
+    const std::shared_ptr<ILDCRTParams<BigInteger>> GetParamsQBsk() const {
+        return m_paramsQBsk;
     }
 
     /**
@@ -1586,7 +1584,7 @@ protected:
     /////////////////////////////////////
 
     // Auxiliary CRT basis {Bsk} = {B U msk} = {{b_j} U msk}
-    std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsBsk;
+    std::shared_ptr<ILDCRTParams<BigInteger>> m_paramsQBsk;
 
     // number of moduli in the base {Q}
     uint32_t m_numq = 0;
@@ -1595,7 +1593,7 @@ protected:
     uint32_t m_numb = 0;
 
     // mtilde = 2^16
-    NativeInteger m_mtilde = NativeInteger((uint64_t)1 << 16);
+    NativeInteger m_mtilde = NativeInteger(BasicInteger(1) << 16);
 
     // Auxiliary modulus msk
     NativeInteger m_msk;

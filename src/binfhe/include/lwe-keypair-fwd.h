@@ -34,10 +34,12 @@
 #include <memory>
 
 namespace lbcrypto {
+
 class LWEKeyPairImpl;
 
 using LWEKeyPair      = std::shared_ptr<LWEKeyPairImpl>;
 using ConstLWEKeyPair = const std::shared_ptr<const LWEKeyPairImpl>;
+
 }  // namespace lbcrypto
 
 #endif  // __LWE_KEYPAIR_FWD_H__

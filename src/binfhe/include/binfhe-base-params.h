@@ -69,15 +69,15 @@ public:
    * @param baseR the base for the refreshing key
    * @param method bootstrapping method (DM or CGGI or LMKCDEY)
    */
-    BinFHECryptoParams(const std::shared_ptr<LWECryptoParams> lweparams,
-                       const std::shared_ptr<RingGSWCryptoParams> rgswparams)
+    BinFHECryptoParams(const std::shared_ptr<LWECryptoParams>& lweparams,
+                       const std::shared_ptr<RingGSWCryptoParams>& rgswparams)
         : m_LWEParams(lweparams), m_RGSWParams(rgswparams) {}
 
-    const std::shared_ptr<LWECryptoParams> GetLWEParams() const {
+    const std::shared_ptr<LWECryptoParams>& GetLWEParams() const {
         return m_LWEParams;
     }
 
-    const std::shared_ptr<RingGSWCryptoParams> GetRingGSWParams() const {
+    const std::shared_ptr<RingGSWCryptoParams>& GetRingGSWParams() const {
         return m_RGSWParams;
     }
 
@@ -105,7 +105,7 @@ public:
         ar(::cereal::make_nvp("rgswparams", m_RGSWParams));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "BinFHECryptoParams";
     }
 
@@ -115,10 +115,10 @@ public:
 
 private:
     // shared pointer to an instance of LWECryptoParams
-    std::shared_ptr<LWECryptoParams> m_LWEParams = nullptr;
+    std::shared_ptr<LWECryptoParams> m_LWEParams{nullptr};
 
     // shared pointer to an instance of RGSWCryptoParams
-    std::shared_ptr<RingGSWCryptoParams> m_RGSWParams = nullptr;
+    std::shared_ptr<RingGSWCryptoParams> m_RGSWParams{nullptr};
 };
 
 }  // namespace lbcrypto

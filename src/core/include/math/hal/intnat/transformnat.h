@@ -36,12 +36,15 @@
 #ifndef LBCRYPTO_MATH_HAL_INTNAT_TRANSFORMNAT_H
 #define LBCRYPTO_MATH_HAL_INTNAT_TRANSFORMNAT_H
 
-#include <map>
-#include <unordered_map>
-#include <mutex>
-#include <vector>
-#include <utility>
 #include "math/hal/transform.h"
+
+#include "utils/inttypes.h"
+
+#include <map>
+#include <mutex>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 /**
  * @namespace intnat
@@ -242,7 +245,7 @@ public:
  * @brief Golden Chinese Remainder Transform FFT implementation.
  */
 template <typename VecType>
-class ChineseRemainderTransformFTTNat : public lbcrypto::ChineseRemainderTransformFTTInterface<VecType> {
+class ChineseRemainderTransformFTTNat final : public lbcrypto::ChineseRemainderTransformFTTInterface<VecType> {
     using IntType = typename VecType::Integer;
 
 public:
@@ -476,7 +479,7 @@ private:
  * @brief Chinese Remainder Transform for arbitrary cyclotomics.
  */
 template <typename VecType>
-class ChineseRemainderTransformArbNat : public lbcrypto::ChineseRemainderTransformArbInterface<VecType> {
+class ChineseRemainderTransformArbNat final : public lbcrypto::ChineseRemainderTransformArbInterface<VecType> {
     using IntType = typename VecType::Integer;
 
 public:

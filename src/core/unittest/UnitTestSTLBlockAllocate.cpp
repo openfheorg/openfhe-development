@@ -43,7 +43,7 @@
 
 #include "gtest/gtest.h"
 
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "utils/debug.h"
 #include "utils/inttypes.h"
 #include "utils/utilities.h"

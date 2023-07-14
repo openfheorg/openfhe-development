@@ -33,7 +33,7 @@
 #define _LWE_PRIVATEKEY_H_
 
 #include "lwe-privatekey-fwd.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 #include "utils/serializable.h"
 
 #include <memory>
@@ -51,20 +51,16 @@ public:
 
     explicit LWEPrivateKeyImpl(const NativeVector& s) : m_s(s) {}
 
-    explicit LWEPrivateKeyImpl(const LWEPrivateKeyImpl& rhs) {
-        this->m_s = rhs.m_s;
-    }
+    LWEPrivateKeyImpl(const LWEPrivateKeyImpl& rhs) : m_s(rhs.m_s) {}
 
-    explicit LWEPrivateKeyImpl(const LWEPrivateKeyImpl&& rhs) {
-        this->m_s = std::move(rhs.m_s);
-    }
+    LWEPrivateKeyImpl(LWEPrivateKeyImpl&& rhs) noexcept : m_s(std::move(rhs.m_s)) {}
 
-    const LWEPrivateKeyImpl& operator=(const LWEPrivateKeyImpl& rhs) {
+    LWEPrivateKeyImpl& operator=(const LWEPrivateKeyImpl& rhs) {
         this->m_s = rhs.m_s;
         return *this;
     }
 
-    const LWEPrivateKeyImpl& operator=(const LWEPrivateKeyImpl&& rhs) {
+    LWEPrivateKeyImpl& operator=(LWEPrivateKeyImpl&& rhs) noexcept {
         this->m_s = std::move(rhs.m_s);
         return *this;
     }
@@ -108,7 +104,7 @@ public:
         ar(::cereal::make_nvp("s", m_s));
     }
 
-    std::string SerializedObjectName() const {
+    std::string SerializedObjectName() const override {
         return "LWEPrivateKey";
     }
     static uint32_t SerializedVersion() {
@@ -116,7 +112,7 @@ public:
     }
 
 private:
-    NativeVector m_s;
+    NativeVector m_s{};
 };
 
 }  // namespace lbcrypto

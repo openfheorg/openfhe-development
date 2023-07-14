@@ -33,20 +33,16 @@
   This file contains template instantiations for all math classes & functions using math be4
  */
 
-#include "math/hal.h"
-#include "math/binaryuniformgenerator-impl.h"
-#include "math/discretegaussiangenerator-impl.h"
-#include "math/discreteuniformgenerator-impl.h"
-#include "math/matrix-impl.h"
-#include "math/nbtheory-impl.h"
-#include "math/ternaryuniformgenerator-impl.h"
+#include "config_core.h"
+#ifdef WITH_BE4
 
-namespace bigintfxd {
-
-template class ChineseRemainderTransformFTTFxd<BigVector>;
-template class ChineseRemainderTransformArbFxd<BigVector>;
-
-}  // namespace bigintfxd
+    #include "math/math-hal.h"
+    #include "math/binaryuniformgenerator-impl.h"
+    #include "math/discretegaussiangenerator-impl.h"
+    #include "math/discreteuniformgenerator-impl.h"
+    #include "math/matrix-impl.h"
+    #include "math/nbtheory-impl.h"
+    #include "math/ternaryuniformgenerator-impl.h"
 
 namespace lbcrypto {
 
@@ -83,3 +79,5 @@ template class Matrix<M4Vector>;
 
 CEREAL_CLASS_VERSION(M4Integer, M4Integer::SerializedVersion());
 CEREAL_CLASS_VERSION(M4Vector, M4Vector::SerializedVersion());
+
+#endif

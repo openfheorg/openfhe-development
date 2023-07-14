@@ -39,7 +39,7 @@
 
 #include "encoding/encodings.h"
 #include "lattice/lat-hal.h"
-#include "math/hal.h"
+#include "math/math-hal.h"
 
 #include "lattice/elemparamfactory.h"
 #include "utils/inttypes.h"

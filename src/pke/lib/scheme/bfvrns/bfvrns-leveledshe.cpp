@@ -275,31 +275,28 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
     else {
         for (size_t i = 0; i < cv1Size; i++) {
             cv1[i].FastBaseConvqToBskMontgomery(
-                cryptoParams->GetParamsBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
+                cryptoParams->GetParamsQBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
                 cryptoParams->GetModbskBarrettMu(), cryptoParams->GetmtildeQHatInvModq(),
                 cryptoParams->GetmtildeQHatInvModqPrecon(), cryptoParams->GetQHatModbsk(),
                 cryptoParams->GetQHatModmtilde(), cryptoParams->GetQModbsk(), cryptoParams->GetQModbskPrecon(),
                 cryptoParams->GetNegQInvModmtilde(), cryptoParams->GetmtildeInvModbsk(),
                 cryptoParams->GetmtildeInvModbskPrecon());
-
             cv1[i].SetFormat(Format::EVALUATION);
         }
 
         for (size_t i = 0; i < cv2Size; i++) {
             cv2[i].FastBaseConvqToBskMontgomery(
-                cryptoParams->GetParamsBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
+                cryptoParams->GetParamsQBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
                 cryptoParams->GetModbskBarrettMu(), cryptoParams->GetmtildeQHatInvModq(),
                 cryptoParams->GetmtildeQHatInvModqPrecon(), cryptoParams->GetQHatModbsk(),
                 cryptoParams->GetQHatModmtilde(), cryptoParams->GetQModbsk(), cryptoParams->GetQModbskPrecon(),
                 cryptoParams->GetNegQInvModmtilde(), cryptoParams->GetmtildeInvModbsk(),
                 cryptoParams->GetmtildeInvModbskPrecon());
-
             cv2[i].SetFormat(Format::EVALUATION);
         }
     }
 
 #ifdef USE_KARATSUBA
-
     if (cv1Size == 2 && cv2Size == 2) {
         // size of each ciphertxt = 2, use Karatsuba
         cvMult[0] = cv1[0] * cv2[0];  // a
@@ -327,7 +324,6 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
     }
 #else
     std::vector<bool> isFirstAdd(cvMultSize, true);
-
     for (size_t i = 0; i < cv1Size; i++) {
         for (size_t j = 0; j < cv2Size; j++) {
             if (isFirstAdd[i + j] == true) {
@@ -408,7 +404,6 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalMult(ConstCiphertext<DCRTPoly> cipher
 
     ciphertextMult->SetElements(std::move(cvMult));
     ciphertextMult->SetNoiseScaleDeg(std::max(ciphertext1->GetNoiseScaleDeg(), ciphertext2->GetNoiseScaleDeg()) + 1);
-
     return ciphertextMult;
 }
 
@@ -505,7 +500,7 @@ Ciphertext<DCRTPoly> LeveledSHEBFVRNS::EvalSquare(ConstCiphertext<DCRTPoly> ciph
     else {
         for (size_t i = 0; i < cvSize; i++) {
             cv[i].FastBaseConvqToBskMontgomery(
-                cryptoParams->GetParamsBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
+                cryptoParams->GetParamsQBsk(), cryptoParams->GetModuliQ(), cryptoParams->GetModuliBsk(),
                 cryptoParams->GetModbskBarrettMu(), cryptoParams->GetmtildeQHatInvModq(),
                 cryptoParams->GetmtildeQHatInvModqPrecon(), cryptoParams->GetQHatModbsk(),
                 cryptoParams->GetQHatModmtilde(), cryptoParams->GetQModbsk(), cryptoParams->GetQModbskPrecon(),
