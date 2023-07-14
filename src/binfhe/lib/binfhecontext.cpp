@@ -170,7 +170,7 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD met
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
 }
 
-void BinFHEContext::GenerateBinFHEContext(BinFHEContextParams params, BINFHE_METHOD method) {
+void BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method) {
     enum { PRIME = 0 };  // value for modKS if you want to use the intermediate prime for modulus for key switching
     // intermediate prime
     NativeInteger Q(
@@ -306,7 +306,7 @@ LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, ConstLWECiphertext 
     return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ct1, ct2);
 }
 
-LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, std::vector<LWECiphertext> ctvector) const {
+LWECiphertext BinFHEContext::EvalBinGate(const BINGATE gate, const std::vector<LWECiphertext>& ctvector) const {
     return m_binfhescheme->EvalBinGate(m_params, gate, m_BTKey, ctvector);
 }
 

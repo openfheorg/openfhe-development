@@ -30,7 +30,6 @@
 //==================================================================================
 
 #include <ostream>
-#include <iostream>
 #include "binfhe-constants.h"
 
 namespace lbcrypto {

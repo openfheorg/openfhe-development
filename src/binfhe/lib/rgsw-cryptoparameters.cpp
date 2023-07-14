@@ -30,7 +30,7 @@
 //==================================================================================
 
 #include "rgsw-cryptoparameters.h"
-#include <cmath>
+
 namespace lbcrypto {
 
 void RingGSWCryptoParams::PreCompute(bool signEval) {

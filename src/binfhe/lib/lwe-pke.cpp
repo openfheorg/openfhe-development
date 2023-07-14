@@ -34,8 +34,6 @@
 #include "math/binaryuniformgenerator.h"
 #include "math/discreteuniformgenerator.h"
 #include "math/ternaryuniformgenerator.h"
-#include <iomanip>
-
 namespace lbcrypto {
 // the main rounding operation used in ModSwitch (as described in Section 3 of
 // https://eprint.iacr.org/2014/816) The idea is that Round(x) = 0.5 + Floor(x)

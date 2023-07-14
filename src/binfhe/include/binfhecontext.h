@@ -127,7 +127,7 @@ public:
    */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method = GINX);
 
-    void GenerateBinFHEContext(BinFHEContextParams params, BINFHE_METHOD method = GINX);
+    void GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method = GINX);
     /**
    * Gets the refreshing key (used for serialization).
    *
@@ -304,7 +304,7 @@ public:
    * @param cts vector of ciphertexts
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(BINGATE gate, std::vector<LWECiphertext> ctvector) const;
+    LWECiphertext EvalBinGate(BINGATE gate, const std::vector<LWECiphertext>& ctvector) const;
 
     /**
    * Bootstraps a ciphertext (without peforming any operation)

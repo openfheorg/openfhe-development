@@ -126,12 +126,17 @@ LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams
 }
 
 // Full evaluation as described in https://eprint.iacr.org/2020/086
-LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate,
-                                        const RingGSWBTKey& EK, std::vector<LWECiphertext> ctvector) const {
-    for (size_t i = 0; i < ctvector.size() - 1; i++) {
-        if (ctvector[i] == ctvector[i + 1]) {
-            OPENFHE_THROW(config_error, "Input ciphertexts should be independent");
+LWECiphertext BinFHEScheme::EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate,
+                                        const RingGSWBTKey& EK, const std::vector<LWECiphertext>& ctvector) const {
+    // check if the ciphertexts are all independent
+    std::vector<LWECiphertext> dupctvector;
+    for (size_t i = 0; i < ctvector.size(); i++) {
+        for (size_t j = 0; j < dupctvector.size(); j++) {
+            if (dupctvector[j] == ctvector[i]) {
+                OPENFHE_THROW(config_error, "Input ciphertexts should be independent");
+            }
         }
+        dupctvector.push_back(ctvector[i]);
     }
 
     NativeInteger p = ctvector[0]->GetptModulus();

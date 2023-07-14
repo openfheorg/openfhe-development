@@ -117,11 +117,9 @@ public:
    * @param lwescheme a shared pointer to additive LWE scheme
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate, const RingGSWBTKey& EK,
-                              std::vector<LWECiphertext> ctvector) const;
+    LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
+                              const std::vector<LWECiphertext>& ctvector) const;
 
-    // LWECiphertext EvalBinGateThreeInput(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate, const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3) const;
-    // LWECiphertext EvalBinGateFourInput(const std::shared_ptr<BinFHECryptoParams> params, BINGATE gate, const RingGSWBTKey& EK, ConstLWECiphertext ct1, ConstLWECiphertext ct2, ConstLWECiphertext ct3, ConstLWECiphertext ct4) const;
     /**
    * Evaluates NOT gate
    *
