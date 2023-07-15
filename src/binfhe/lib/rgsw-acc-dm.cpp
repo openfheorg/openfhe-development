@@ -116,7 +116,7 @@ RingGSWEvalKey RingGSWAccumulatorDM::KeyGenDM(const std::shared_ptr<RingGSWCrypt
 }
 
 // AP Accumulation as described in https://eprint.iacr.org/2020/086
-void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, const RingGSWEvalKey& ek,
+void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>& params, ConstRingGSWEvalKey& ek,
                                       RLWECiphertext& acc) const {
     std::vector<NativePoly> ct(acc->GetElements());
     ct[0].SetFormat(Format::COEFFICIENT);

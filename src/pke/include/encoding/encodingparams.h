@@ -313,7 +313,7 @@ inline std::ostream& operator<<(std::ostream& out, const std::shared_ptr<Encodin
         out << *o;
     return out;
 }
-inline bool operator==(std::shared_ptr<EncodingParamsImpl> o1, const std::shared_ptr<EncodingParamsImpl>& o2) {
+inline bool operator==(const std::shared_ptr<EncodingParamsImpl>& o1, const std::shared_ptr<EncodingParamsImpl>& o2) {
     if (o1 && o2)
         return *o1 == *o2;
     if (!o1 && !o2)
