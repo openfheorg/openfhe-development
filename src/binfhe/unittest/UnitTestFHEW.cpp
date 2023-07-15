@@ -55,6 +55,12 @@ enum TEST_CASE_TYPE {
     FHEW_KEY_SWITCH,
     FHEW_MOD_SWITCH,
     FHEW_NOT,
+    FHEW_AND3,
+    FHEW_OR3,
+    FHEW_AND4,
+    FHEW_OR4,
+    FHEW_MAJORITY,
+    FHEW_CMUX,
 };
 
 static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
@@ -96,6 +102,24 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_TYPE& type) {
         case FHEW_NOT:
             typeName = "FHEW_NOT";
             break;
+        case FHEW_AND3:
+            typeName = "FHEW_AND3";
+            break;
+        case FHEW_OR3:
+            typeName = "FHEW_OR3";
+            break;
+        case FHEW_AND4:
+            typeName = "FHEW_AND4";
+            break;
+        case FHEW_OR4:
+            typeName = "FHEW_OR4";
+            break;
+        case FHEW_MAJORITY:
+            typeName = "FHEW_MAJORITY";
+            break;
+        case FHEW_CMUX:
+            typeName = "FHEW_CMUX";
+            break;
         default:
             typeName = "UNKNOWN_TESTTYPE";
             break;
@@ -109,12 +133,13 @@ struct TEST_CASE_UTGENERAL_FHEW {
     std::string description;
 
     BINFHE_PARAMSET securityLevel;
-    BINFHE_METHOD   method;
+    BINFHE_METHOD method;
+    uint32_t num_of_inputs;
+    LWEPlaintextModulus ptmodulus;
 
     BINGATE gate;
 
     std::vector<LWEPlaintext> results;
-
 
     // additional test case data
     // ........
@@ -126,10 +151,8 @@ struct TEST_CASE_UTGENERAL_FHEW {
     }
     std::string toString() const {
         std::stringstream ss;
-        ss << "testCaseType [" << testCaseType
-           << "], BINFHE_PARAMSET: " << securityLevel
-           << "BINFHE_METHOD: " << method
-           << "BINGATE: " << gate;
+        ss << "testCaseType [" << testCaseType << "], BINFHE_PARAMSET: " << securityLevel
+           << ", BINFHE_METHOD: " << method << ", number of inputs: " << num_of_inputs << ", BINGATE: " << gate;
         return ss.str();
     }
 };
@@ -146,59 +169,81 @@ static std::ostream& operator<<(std::ostream& os, const TEST_CASE_UTGENERAL_FHEW
 //===========================================================================================================
 // clang-format off
 static std::vector<TEST_CASE_UTGENERAL_FHEW> testCasesUTGENERAL_FHEW = {
-    // TestType, Descr,  ParamSet, Method,  Gate, Results
-    { FHEW_AND,  "01",   TOY,      GINX,    AND,   {1, 0, 0, 0} },
-    { FHEW_AND,  "02",   TOY,      AP,      AND,   {1, 0, 0, 0} },
-    { FHEW_AND,  "03",   TOY,      LMKCDEY, AND,   {1, 0, 0, 0} },
+    // TestType, Descr,  ParamSet, Method,  num_of_inputs, ptmodulus, Gate, Results
+    { FHEW_AND,  "01",   TOY,      GINX,    2,              4,        AND,   {1, 0, 0, 0} },
+    { FHEW_AND,  "02",   TOY,      AP,      2,              4,        AND,   {1, 0, 0, 0} },
+    { FHEW_AND,  "03",   TOY,      LMKCDEY, 2,              4,        AND,   {1, 0, 0, 0} },
     // ==========================================
-    { FHEW_NAND, "01",   TOY,      GINX,    NAND,  {0, 1, 1, 1} },
-    { FHEW_NAND, "02",   TOY,      AP,      NAND,  {0, 1, 1, 1} },
-    { FHEW_NAND, "03",   TOY,      LMKCDEY, NAND,  {0, 1, 1, 1} },
+    { FHEW_NAND, "01",   TOY,      GINX,    2,              4,        NAND,  {0, 1, 1, 1} },
+    { FHEW_NAND, "02",   TOY,      AP,      2,              4,        NAND,  {0, 1, 1, 1} },
+    { FHEW_NAND, "03",   TOY,      LMKCDEY, 2,              4,        NAND,  {0, 1, 1, 1} },
     // ==========================================
-    { FHEW_OR,   "01",   TOY,      GINX,    OR,    {1, 1, 1, 0} },
-    { FHEW_OR,   "02",   TOY,      AP,      OR,    {1, 1, 1, 0} },
-    { FHEW_OR,   "03",   TOY,      LMKCDEY, OR,    {1, 1, 1, 0} },
+    { FHEW_OR,   "01",   TOY,      GINX,    2,              4,        OR,    {1, 1, 1, 0} },
+    { FHEW_OR,   "02",   TOY,      AP,      2,              4,        OR,    {1, 1, 1, 0} },
+    { FHEW_OR,   "03",   TOY,      LMKCDEY, 2,              4,        OR,    {1, 1, 1, 0} },
     // ==========================================
-    { FHEW_NOR,  "01",   TOY,      GINX,    NOR,   {0, 0, 0, 1} },
-    { FHEW_NOR,  "02",   TOY,      AP,      NOR,   {0, 0, 0, 1} },
-    { FHEW_NOR,  "03",   TOY,      LMKCDEY, NOR,   {0, 0, 0, 1} },
+    { FHEW_NOR,  "01",   TOY,      GINX,    2,              4,        NOR,   {0, 0, 0, 1} },
+    { FHEW_NOR,  "02",   TOY,      AP,      2,              4,        NOR,   {0, 0, 0, 1} },
+    { FHEW_NOR,  "03",   TOY,      LMKCDEY, 2,              4,        NOR,   {0, 0, 0, 1} },
     // ==========================================
-    { FHEW_XOR,  "01",   TOY,      GINX,    XOR,   {0, 1, 1, 0} },
-    { FHEW_XOR,  "02",   TOY,      AP,      XOR,   {0, 1, 1, 0} },
-    { FHEW_XOR,  "03",   TOY,      LMKCDEY, XOR,   {0, 1, 1, 0} },
+    { FHEW_XOR,  "01",   TOY,      GINX,    2,              4,        XOR,   {0, 1, 1, 0} },
+    { FHEW_XOR,  "02",   TOY,      AP,      2,              4,        XOR,   {0, 1, 1, 0} },
+    { FHEW_XOR,  "03",   TOY,      LMKCDEY, 2,              4,        XOR,   {0, 1, 1, 0} },
     // ==========================================
 
-    { FHEW_XNOR,  "01",  TOY,      GINX,    XNOR,  {1, 0, 0, 1} },
-    { FHEW_XNOR,  "02",  TOY,      AP,      XNOR,  {1, 0, 0, 1} },
-    { FHEW_XNOR,  "03",  TOY,      LMKCDEY, XNOR,  {1, 0, 0, 1} },
+    { FHEW_XNOR,  "01",  TOY,      GINX,    2,              4,        XNOR,  {1, 0, 0, 1} },
+    { FHEW_XNOR,  "02",  TOY,      AP,      2,              4,        XNOR,  {1, 0, 0, 1} },
+    { FHEW_XNOR,  "03",  TOY,      LMKCDEY, 2,              4,        XNOR,  {1, 0, 0, 1} },
     // ==========================================
-    // TestType,     Descr, ParamSet, Method,  Gate,      Results
-    { FHEW_XOR_FAST,  "01", TOY,      GINX,    XOR_FAST,  {0, 1, 1, 0} },
-    { FHEW_XOR_FAST,  "02", TOY,      AP,      XOR_FAST,  {0, 1, 1, 0} },
-    { FHEW_XOR_FAST,  "03", TOY,      LMKCDEY, XOR_FAST,  {0, 1, 1, 0} },
+    { FHEW_XOR_FAST,  "01", TOY,      GINX,    2,           4,        XOR_FAST,  {0, 1, 1, 0} },
+    { FHEW_XOR_FAST,  "02", TOY,      AP,      2,           4,        XOR_FAST,  {0, 1, 1, 0} },
+    { FHEW_XOR_FAST,  "03", TOY,      LMKCDEY, 2,           4,        XOR_FAST,  {0, 1, 1, 0} },
     // ==========================================
-    { FHEW_XNOR_FAST, "01", TOY,      GINX,    XNOR_FAST, {1, 0, 0, 1} },
-    { FHEW_XNOR_FAST, "02", TOY,      AP,      XNOR_FAST, {1, 0, 0, 1} },
-    { FHEW_XNOR_FAST, "03", TOY,      LMKCDEY, XNOR_FAST, {1, 0, 0, 1} },
+    { FHEW_XNOR_FAST, "01", TOY,      GINX,    2,           4,        XNOR_FAST, {1, 0, 0, 1} },
+    { FHEW_XNOR_FAST, "02", TOY,      AP,      2,           4,        XNOR_FAST, {1, 0, 0, 1} },
+    { FHEW_XNOR_FAST, "03", TOY,      LMKCDEY, 2,           4,        XNOR_FAST, {1, 0, 0, 1} },
     // ==========================================
-    { FHEW_SIGNED_MODE, "01", SIGNED_MOD_TEST, GINX, AND, {1, 0, 0, 0} },
+    { FHEW_AND3, "01", TOY,      GINX,         3,           6,        AND3,      {0} },
+    { FHEW_AND3, "02", TOY,      AP,           3,           6,        AND3,      {0} },
+    { FHEW_AND3, "03", TOY,      LMKCDEY,      3,           6,        AND3,      {0} },
     // ==========================================
-    { FHEW_KEY_SWITCH, "01", TOY,      GINX,    OR, {1, 0} }, // OR is not needed; added as a random value
-    { FHEW_KEY_SWITCH, "02", TOY,      AP,      OR, {1, 0} }, // OR is not needed; added as a random value
-    { FHEW_KEY_SWITCH, "03", TOY,      LMKCDEY, OR, {1, 0} }, // OR is not needed; added as a random value
+    { FHEW_OR3, "01", TOY,      GINX,         3,            6,        OR3,      {1} },
+    { FHEW_OR3, "02", TOY,      AP,           3,            6,        OR3,      {1} },
+    { FHEW_OR3, "03", TOY,      LMKCDEY,      3,            6,        OR3,      {1} },
     // ==========================================
-    { FHEW_MOD_SWITCH, "01", TOY,      GINX,    OR, {1, 0} }, // OR is not needed; added as a random value
-    { FHEW_MOD_SWITCH, "02", TOY,      AP,      OR, {1, 0} }, // OR is not needed; added as a random value
-    { FHEW_MOD_SWITCH, "03", TOY,      LMKCDEY, OR, {1, 0} }, // OR is not needed; added as a random value
+    { FHEW_AND4, "01", TOY,      GINX,         4,           8,        AND4,      {0} },
+    { FHEW_AND4, "02", TOY,      AP,           4,           8,        AND4,      {0} },
+    { FHEW_AND4, "03", TOY,      LMKCDEY,      4,           8,        AND4,      {0} },
     // ==========================================
-    { FHEW_NOT, "01", TOY,      GINX,    OR, {0, 1} }, // OR is not needed; added as a random value
-    { FHEW_NOT, "02", TOY,      AP,      OR, {0, 1} }, // OR is not needed; added as a random value
-    { FHEW_NOT, "03", TOY,      LMKCDEY, OR, {0, 1} }, // OR is not needed; added as a random value
+    { FHEW_OR4, "01", TOY,      GINX,         4,            8,        OR4,      {1} },
+    { FHEW_OR4, "02", TOY,      AP,           4,            8,        OR4,      {1} },
+    { FHEW_OR4, "03", TOY,      LMKCDEY,      4,            8,        OR4,      {1} },
+    // ==========================================
+    { FHEW_MAJORITY, "01", TOY,      GINX,       3,         4,        MAJORITY,      {1} },
+    { FHEW_MAJORITY, "02", TOY,      AP,         3,         4,        MAJORITY,      {1} },
+    { FHEW_MAJORITY, "03", TOY,      LMKCDEY,    3,         4,        MAJORITY,      {1} },
+    // ==========================================
+    { FHEW_CMUX, "01", TOY,      GINX,         3,           4,        CMUX,      {1, 0} },
+    { FHEW_CMUX, "02", TOY,      AP,           3,           4,        CMUX,      {1, 0} },
+    { FHEW_CMUX, "03", TOY,      LMKCDEY,      3,           4,        CMUX,      {1, 0} },
+    // ==========================================
+    { FHEW_SIGNED_MODE, "01", SIGNED_MOD_TEST, GINX, 2,     4,        AND, {1, 0, 0, 0} },
+    // ==========================================
+    { FHEW_KEY_SWITCH, "01", TOY,      GINX,    2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
+    { FHEW_KEY_SWITCH, "02", TOY,      AP,      2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
+    { FHEW_KEY_SWITCH, "03", TOY,      LMKCDEY, 2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
+    // ==========================================
+    { FHEW_MOD_SWITCH, "01", TOY,      GINX,    2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
+    { FHEW_MOD_SWITCH, "02", TOY,      AP,      2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
+    { FHEW_MOD_SWITCH, "03", TOY,      LMKCDEY, 2,          4,        OR, {1, 0} },  // OR is not needed; added as a random value
+    // ==========================================
+    { FHEW_NOT, "01", TOY,      GINX,    2,                 4,        OR, {0, 1} },  // OR is not needed; added as a random value
+    { FHEW_NOT, "02", TOY,      AP,      2,                 4,        OR, {0, 1} },  // OR is not needed; added as a random value
+    { FHEW_NOT, "03", TOY,      LMKCDEY, 2,                 4,        OR, {0, 1} },  // OR is not needed; added as a random value
 };
 // clang-format on
 //===========================================================================================================
 class UTGENERAL_FHEW : public ::testing::TestWithParam<TEST_CASE_UTGENERAL_FHEW> {
-
 protected:
     void SetUp() {}
     void TearDown() {}
@@ -395,6 +440,120 @@ protected:
             EXPECT_TRUE(0 == 1) << failmsg;
         }
     }
+
+    void UnitTest_FHEW_MULTIINPUT(const TEST_CASE_UTGENERAL_FHEW& testData,
+                                  const std::string& failmsg = std::string()) {
+        try {
+            auto cc = BinFHEContext();
+            cc.GenerateBinFHEContext(testData.securityLevel, testData.method);
+
+            auto sk = cc.KeyGen();
+
+            cc.BTKeyGen(sk);
+
+            std::vector<LWECiphertext> ctvec;
+            if (testData.num_of_inputs == 3) {
+                auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, testData.ptmodulus);
+                auto ct2 = cc.Encrypt(sk, 1, SMALL_DIM, testData.ptmodulus);
+                auto ct3 = cc.Encrypt(sk, 0, SMALL_DIM, testData.ptmodulus);
+                ctvec.push_back(ct1);
+                ctvec.push_back(ct2);
+                ctvec.push_back(ct3);
+            }
+            else if (testData.num_of_inputs == 4) {
+                auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, testData.ptmodulus);
+                auto ct2 = cc.Encrypt(sk, 0, SMALL_DIM, testData.ptmodulus);
+                auto ct3 = cc.Encrypt(sk, 0, SMALL_DIM, testData.ptmodulus);
+                auto ct4 = cc.Encrypt(sk, 0, SMALL_DIM, testData.ptmodulus);
+                ctvec.push_back(ct1);
+                ctvec.push_back(ct2);
+                ctvec.push_back(ct3);
+                ctvec.push_back(ct4);
+            }
+
+            auto ct11 = cc.EvalBinGate(testData.gate, ctvec);
+            LWEPlaintext result11;
+            cc.Decrypt(sk, ct11, &result11, testData.ptmodulus);
+
+            std::string failed = testData.toString() + " failed";
+
+            EXPECT_EQ(testData.results[0], result11) << failed;
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
+
+    void UnitTest_FHEW_CMUX(const TEST_CASE_UTGENERAL_FHEW& testData, const std::string& failmsg = std::string()) {
+        try {
+            auto cc = BinFHEContext();
+            cc.GenerateBinFHEContext(testData.securityLevel, testData.method);
+
+            auto sk = cc.KeyGen();
+            cc.BTKeyGen(sk);
+
+            auto ct1 = cc.Encrypt(sk, 1, SMALL_DIM, testData.ptmodulus);
+            auto ct2 = cc.Encrypt(sk, 1, SMALL_DIM, testData.ptmodulus);
+            auto ct3 = cc.Encrypt(sk, 0, SMALL_DIM, testData.ptmodulus);
+            auto ct4 = cc.Encrypt(sk, 0, SMALL_DIM, testData.ptmodulus);
+
+            // 1, 0, 0
+            std::vector<LWECiphertext> ct134;
+            ct134.push_back(ct1);
+            ct134.push_back(ct3);
+            ct134.push_back(ct4);
+
+            // 1, 0, 1
+            std::vector<LWECiphertext> ct132;
+            ct132.push_back(ct1);
+            ct132.push_back(ct3);
+            ct132.push_back(ct2);
+
+            // 1, 0, 1
+            auto ctCMUX0 = cc.EvalBinGate(testData.gate, ct132);
+
+            // 1, 0, 0
+            auto ctCMUX1 = cc.EvalBinGate(testData.gate, ct134);
+
+            LWEPlaintext result1;
+            cc.Decrypt(sk, ctCMUX1, &result1, testData.ptmodulus);
+
+            LWEPlaintext result0;
+            cc.Decrypt(sk, ctCMUX0, &result0, testData.ptmodulus);
+
+            std::string failed = testData.toString() + " failed";
+
+            EXPECT_EQ(testData.results[0], result1) << failed;
+            EXPECT_EQ(testData.results[1], result0) << failed;
+        }
+        catch (std::exception& e) {
+            std::cerr << "Exception thrown from " << __func__ << "(): " << e.what() << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+        catch (...) {
+#if defined EMSCRIPTEN
+            std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+            std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+            std::cerr << "Unknown exception of type \"" << name << "\" thrown from " << __func__ << "()" << std::endl;
+            // make it fail
+            EXPECT_TRUE(0 == 1) << failmsg;
+        }
+    }
 };
 //===========================================================================================================
 TEST_P(UTGENERAL_FHEW, BINFHE) {
@@ -412,6 +571,16 @@ TEST_P(UTGENERAL_FHEW, BINFHE) {
         case FHEW_XNOR_FAST:
         case FHEW_SIGNED_MODE:
             UnitTest_FHEW(test, test.buildTestName());
+            break;
+        case FHEW_AND3:
+        case FHEW_OR3:
+        case FHEW_AND4:
+        case FHEW_OR4:
+        case FHEW_MAJORITY:
+            UnitTest_FHEW_MULTIINPUT(test, test.buildTestName());
+            break;
+        case FHEW_CMUX:
+            UnitTest_FHEW_CMUX(test, test.buildTestName());
             break;
         case FHEW_KEY_SWITCH:
             UnitTest_FHEW_KeySwitch(test, test.buildTestName());

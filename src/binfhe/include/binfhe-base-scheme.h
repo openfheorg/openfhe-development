@@ -104,6 +104,19 @@ public:
                               ConstLWECiphertext& ct1, ConstLWECiphertext& ct2) const;
 
     /**
+   * Evaluates a binary gate on a vector of ciphertexts (calls bootstrapping as a subroutine)
+   *
+   * @param params a shared pointer to RingGSW scheme parameters
+   * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XOR
+   * @param &EK a shared pointer to the bootstrapping keys
+   * @param ctvector vector of ciphertexts
+   * @param lwescheme a shared pointer to additive LWE scheme
+   * @return a shared pointer to the resulting ciphertext
+   */
+    LWECiphertext EvalBinGate(const std::shared_ptr<BinFHECryptoParams>& params, BINGATE gate, const RingGSWBTKey& EK,
+                              const std::vector<LWECiphertext>& ctvector) const;
+
+    /**
    * Evaluates NOT gate
    *
    * @param params a shared pointer to RingGSW scheme parameters

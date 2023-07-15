@@ -141,7 +141,11 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     for (size_t i = 0; i < n; ++i) {
         b += a[i].ModMulFast(s[i], mod, mu);
     }
-    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(std::move(a), b.Mod(mod)));
+
+    // (Sara: edited this change from Carlo)
+    auto ct = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(std::move(a), b.Mod(mod)));
+    ct->SetptModulus(p);
+    return ct;
 }
 
 // classical public key LWE encryption
@@ -185,7 +189,10 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
         b.ModAddEq(bp[i].ModMulFast(sp[i], mod, mu), mod);
     }
 
-    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    // (Sara: edited this change from Carlo)
+    auto ct = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    ct->SetptModulus(p);
+    return ct;
 }
 
 // convert ciphertext with modulus Q and dimension N to ciphertext with modulus q and dimension n
