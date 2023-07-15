@@ -180,12 +180,13 @@ void BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams& params, BIN
 
     auto lweparams = (PRIME == params.modKS) ?
                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, Q,
-                                                           params.stdDev, params.baseKS) :
+                                                           params.stdDev, params.baseKS, params.keyDist) :
                          std::make_shared<LWECryptoParams>(params.latticeParam, ringDim, params.mod, Q, params.modKS,
-                                                           params.stdDev, params.baseKS);
+                                                           params.stdDev, params.baseKS, params.keyDist);
 
-    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK,
-                                                            method, params.stdDev);
+    auto rgswparams =
+        std::make_shared<RingGSWCryptoParams>(ringDim, Q, params.mod, params.gadgetBase, params.baseRK, method,
+                                              params.stdDev, params.keyDist, false, params.numAutoKeys);
 
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
