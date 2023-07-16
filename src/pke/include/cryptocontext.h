@@ -260,6 +260,14 @@ class CryptoContextImpl : public Serializable {
                                                value2);
     }
 
+private:
+    // cached evalmult keys, by secret key UID
+    static std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap;
+    // cached evalsum keys, by secret key UID
+    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalSumKeyMap;
+    // cached evalautomorphism keys, by secret key UID
+    static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
+
 protected:
     // crypto parameters used for this context
     std::shared_ptr<CryptoParametersBase<Element>> params;
@@ -267,20 +275,14 @@ protected:
     std::shared_ptr<SchemeBase<Element>> scheme;
 
     static std::map<std::string, std::vector<EvalKey<Element>>>& evalMultKeyMap() {
-        // cached evalmult keys, by secret key UID
-        static std::map<std::string, std::vector<EvalKey<Element>>> s_evalMultKeyMap;
         return s_evalMultKeyMap;
     }
 
     static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalSumKeyMap() {
-        // cached evalsum keys, by secret key UID
-        static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalSumKeyMap;
         return s_evalSumKeyMap;
     }
 
     static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>>& evalAutomorphismKeyMap() {
-        // cached evalautomorphism keys, by secret key UID
-        static std::map<std::string, std::shared_ptr<std::map<usint, EvalKey<Element>>>> s_evalAutomorphismKeyMap;
         return s_evalAutomorphismKeyMap;
     }
 
