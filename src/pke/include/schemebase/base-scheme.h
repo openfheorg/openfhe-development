@@ -1320,11 +1320,12 @@ public:
     // SCHEMESWITCHING methods
 
     std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<Element>& cc,
-                                                                SecurityLevel sl = HEStd_128_classic,
-                                                                bool arbFunc = false, uint32_t logQ = 29,
-                                                                bool dynamic = false, uint32_t numSlotsCKKS = 0) {
+                                                                SecurityLevel sl      = HEStd_128_classic,
+                                                                BINFHE_PARAMSET slBin = STD128, bool arbFunc = false,
+                                                                uint32_t logQ = 29, bool dynamic = false,
+                                                                uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27) {
         if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalCKKStoFHEWSetup(cc, sl, arbFunc, logQ, dynamic, numSlotsCKKS);
+            return m_SchemeSwitch->EvalCKKStoFHEWSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
         }
 
         OPENFHE_THROW(config_error, "EvalCKKStoFHEWSetup operation has not been enabled");
@@ -1358,7 +1359,7 @@ public:
     }
 
     void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const BinFHEContext& ccLWE,
-                             uint32_t numSlotsCKKS = 0, uint32_t logQ = 0) {
+                             uint32_t numSlotsCKKS = 0, uint32_t logQ = 25) {
         if (m_SchemeSwitch) {
             m_SchemeSwitch->EvalFHEWtoCKKSSetup(ccCKKS, ccLWE, numSlotsCKKS, logQ);
             return;
@@ -1399,11 +1400,14 @@ public:
     }
 
     std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc,
-                                                                     SecurityLevel sl = HEStd_128_classic,
+                                                                     SecurityLevel sl      = HEStd_128_classic,
+                                                                     BINFHE_PARAMSET slBin = STD128,
                                                                      bool arbFunc = false, uint32_t logQ = 29,
-                                                                     bool dynamic = false, uint32_t numSlotsCKKS = 0) {
+                                                                     bool dynamic = false, uint32_t numSlotsCKKS = 0,
+                                                                     uint32_t logQswitch = 27) {
         if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalSchemeSwitchingSetup(cc, sl, arbFunc, logQ, dynamic, numSlotsCKKS);
+            return m_SchemeSwitch->EvalSchemeSwitchingSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS,
+                                                            logQswitch);
         }
 
         OPENFHE_THROW(config_error, "EvalSchemeSwitchingSetup operation has not been enabled");

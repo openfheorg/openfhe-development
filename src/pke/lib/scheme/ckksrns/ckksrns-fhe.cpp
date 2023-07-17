@@ -145,8 +145,7 @@ void FHECKKSRNS::EvalBootstrapSetup(const CryptoContextImpl<DCRTPoly>& cc, std::
     }
 
     // computes all powers of a primitive root of unity exp(2 * M_PI/m)
-    std::vector<std::complex<double>> ksiPows(
-        m + 1);  // Thomas was computing more, but they would be zero ksiPows(ccCKKS->GetRingDimension()*2 + 1);
+    std::vector<std::complex<double>> ksiPows(m + 1);
     for (uint32_t j = 0; j < m; ++j) {
         double angle = 2.0 * M_PI * j / m;
         ksiPows[j].real(cos(angle));

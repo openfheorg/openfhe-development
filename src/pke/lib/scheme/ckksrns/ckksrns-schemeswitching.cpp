@@ -1078,13 +1078,13 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalPartialHomDecryption(const CryptoContextI
 // Scheme switching Wrapper
 //------------------------------------------------------------------------------
 std::pair<BinFHEContext, LWEPrivateKey> FHECKKSRNSSS::EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& cc,
-                                                                          SecurityLevel sl, bool arbFunc, uint32_t logQ,
-                                                                          bool dynamic, uint32_t numSlotsCKKS) {
+                                                                          SecurityLevel sl, BINFHE_PARAMSET slBin,
+                                                                          bool arbFunc, uint32_t logQ, bool dynamic,
+                                                                          uint32_t numSlotsCKKS, uint32_t logQswitch) {
     m_ccLWE = BinFHEContext();
-    if (sl == HEStd_128_classic)
-        m_ccLWE.BinFHEContext::GenerateBinFHEContext(STD128, arbFunc, logQ, 0, GINX, dynamic);
-    else
-        m_ccLWE.BinFHEContext::GenerateBinFHEContext(TOY, arbFunc, logQ, 0, GINX, dynamic);
+    if (slBin != TOY && slBin != STD128)
+        OPENFHE_THROW(config_error, "Only STD128 or TOY are currently supported.");
+    m_ccLWE.BinFHEContext::GenerateBinFHEContext(slBin, arbFunc, logQ, 0, GINX, dynamic);
 
     // For arbitrary functions, the LWE ciphertext needs to be at most the ring dimension in FHEW bootstrapping
     m_modulus_LWE = (arbFunc == false) ? 1 << logQ : m_ccLWE.GetParams()->GetLWEParams()->Getq().ConvertToInt();
@@ -1103,14 +1103,17 @@ std::pair<BinFHEContext, LWEPrivateKey> FHECKKSRNSSS::EvalCKKStoFHEWSetup(const 
     else  // sparsely-packed
         m_numSlotsCKKS = numSlotsCKKS;
 
-    // Modulus to switch in order to have secure RLWE samples (Q', n)
-    // We can select any Q' less than 27 bits corresponding to 128 bits of security for lattice parameter n=1024 < 1305 according to https://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
-    // Ensure that Q' is larger than Q_FHEW.
-    uint32_t logQswitch;
-    if (logQ < 27)
-        logQswitch = 27;  // logQ + 1;
-    else
-        OPENFHE_THROW(config_error, "The switching from CKKS to FHEW is not secure for n = 1305.");
+    const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc.GetCryptoParameters());
+    ILDCRTParams<DCRTPoly::Integer> elementParams = *(cryptoParams->GetElementParams());
+    auto paramsQ                                  = elementParams.GetParams();
+    m_modulus_CKKS_initial                        = paramsQ[0]->GetModulus().ConvertToInt();
+    // Modulus to switch to in order to have secure RLWE samples with ring dimension n.
+    // We can select any Qswitch less than 27 bits corresponding to 128 bits of security for lattice parameter n=1024 < 1305
+    // according to https://homomorphicencryption.org/wp-content/uploads/2018/11/HomomorphicEncryptionStandardv1.1.pdf
+    // or any Qswitch for TOY security.
+    // Ensure that Qswitch is larger than Q_FHEW and smaller than Q_CKKS.
+    if (logQ >= logQswitch || logQswitch > std::log2(m_modulus_CKKS_initial.ConvertToInt()))
+        OPENFHE_THROW(config_error, "Qswitch should be larger than QFHEW and smaller than QCKKS.");
 
     // Intermediate cryptocontext
     uint32_t multDepth    = 0;
@@ -1136,10 +1139,8 @@ std::pair<BinFHEContext, LWEPrivateKey> FHECKKSRNSSS::EvalCKKStoFHEWSetup(const 
     m_ccKS->Enable(SCHEMESWITCH);
     m_ccKS->Enable(FHE);
 
-    // Set the scaling factor to be able to decrypt
+    // Get the ciphertext modulus
     const auto cryptoParams2 = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(m_ccKS->GetCryptoParameters());
-
-    // Get the last ciphertext modulus; this assumes the LWE mod switch will be performed on the ciphertext at the last level
     ILDCRTParams<DCRTPoly::Integer> elementParams2 = *(cryptoParams2->GetElementParams());
     auto paramsQ2                                  = elementParams2.GetParams();
     m_modulus_CKKS_from                            = paramsQ2[0]->GetModulus().ConvertToInt();
@@ -1600,9 +1601,9 @@ Ciphertext<DCRTPoly> FHECKKSRNSSS::EvalFHEWtoCKKS(std::vector<std::shared_ptr<LW
 }
 
 std::pair<BinFHEContext, LWEPrivateKey> FHECKKSRNSSS::EvalSchemeSwitchingSetup(
-    const CryptoContextImpl<DCRTPoly>& ccCKKS, SecurityLevel sl, bool arbFunc, uint32_t logQ, bool dynamic,
-    uint32_t numSlotsCKKS) {
-    auto FHEWcc = EvalCKKStoFHEWSetup(ccCKKS, sl, arbFunc, logQ, dynamic, numSlotsCKKS);
+    const CryptoContextImpl<DCRTPoly>& ccCKKS, SecurityLevel sl, BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
+    bool dynamic, uint32_t numSlotsCKKS, uint32_t logQswitch) {
+    auto FHEWcc = EvalCKKStoFHEWSetup(ccCKKS, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
 
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(ccCKKS.GetCryptoParameters());
 

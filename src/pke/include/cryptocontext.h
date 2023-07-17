@@ -2963,18 +2963,21 @@ public:
     /**
    * Sets all parameters for switching from CKKS to FHEW
    *
-   * @param sl security level
+   * @param sl security level for CKKS cryptocontext
+   * @param slBin security level for FHEW cryptocontext (only STD128 and TOY are currently supported)
    * @param arbFunc whether the binfhecontext should be created for arbitrary function evaluation or not
    * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
    * @param dynamic whether to use dynamic mode for FHEW
    * @param numSlotsCKKS number of slots in CKKS encryption
+   * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
-    std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(SecurityLevel sl = HEStd_128_classic,
-                                                                bool arbFunc = false, uint32_t logQ = 29,
-                                                                bool dynamic = false, uint32_t numSlotsCKKS = 0);
+    std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(SecurityLevel sl      = HEStd_128_classic,
+                                                                BINFHE_PARAMSET slBin = STD128, bool arbFunc = false,
+                                                                uint32_t logQ = 25, bool dynamic = false,
+                                                                uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27);
 
     /**
    * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
@@ -3014,7 +3017,7 @@ public:
    * @param numSlotsCKKS number of FHEW ciphertexts that becomes the number of slots in CKKS encryption
    * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
    */
-    void EvalFHEWtoCKKSSetup(const BinFHEContext& ccLWE, uint32_t numSlotsCKKS = 0, uint32_t logQ = 0);
+    void EvalFHEWtoCKKSSetup(const BinFHEContext& ccLWE, uint32_t numSlotsCKKS = 0, uint32_t logQ = 25);
 
     /**
    * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy
@@ -3047,18 +3050,22 @@ public:
     /**
    * Sets all parameters for switching from CKKS to FHEW and back
    *
-   * @param sl security level
+   * @param sl security level for CKKS cryptocontext
+   * @param slBin security level for FHEW cryptocontext
    * @param arbFunc whether the binfhecontext should be created for arbitrary function evaluation or not
    * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
    * @param dynamic whether to use dynamic mode for FHEW
    * @param numSlotsCKKS number of slots in CKKS encryption
+   * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
-    std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(SecurityLevel sl = HEStd_128_classic,
-                                                                     bool arbFunc = false, uint32_t logQ = 29,
-                                                                     bool dynamic = false, uint32_t numSlotsCKKS = 0);
+    std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(SecurityLevel sl      = HEStd_128_classic,
+                                                                     BINFHE_PARAMSET slBin = STD128,
+                                                                     bool arbFunc = false, uint32_t logQ = 25,
+                                                                     bool dynamic = false, uint32_t numSlotsCKKS = 0,
+                                                                     uint32_t logQswitch = 27);
 
     /**
    * Generates all keys for scheme switching: the rotation keys for the baby-step/giant-step strategy

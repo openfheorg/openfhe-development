@@ -134,4 +134,5 @@ respectively, `EvalMaxSchemeSwitching` or `EvalMaxSchemeSwitchingAlt` to obtain 
 - Switching from CKKS to FHEW is only supported for the first consecutive slots in the CKKS ciphertext.
 - Switching to CKKS the result of an arbitrary function evaluation in FHEW is not yet supported. Only functions with binary outputs or small outputs with respect to the FHEW plaintext space are supported.
 - Computing the min/max via scheme switching is only implemented for vectors of size a power of two.
-- Large memory consumption for large number of slots (because of the linear transform required in the switching)
+- Large memory consumption for large number of slots (because of the linear transform required in the switching and that the keys are created with the maximum number of levels)
+- Only GINX with uniform ternary secrets is currently supported for scheme switching.

@@ -47,8 +47,8 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
 
 int main(int argc, char* argv[]) {
     // all examples set 128-bit security
-    SwitchCKKSToFHEW(30, 1024, 1024);
-    SwitchFHEWtoCKKS(30, 1024, 1024);
+    SwitchCKKSToFHEW(24, 1024, 1024);
+    SwitchFHEWtoCKKS(23, 1024, 1024);
     ComparisonViaSchemeSwitching(30, 1024, 1024);
 
     // depth >= 13 + log2(numValues);
@@ -102,7 +102,7 @@ void SwitchCKKSToFHEW(uint32_t depth, uint32_t slots, uint32_t numValues) {
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams     = cc->EvalCKKStoFHEWSetup(HEStd_128_classic, false, logQ_ccLWE, false, slots);
+    auto FHEWparams     = cc->EvalCKKStoFHEWSetup(HEStd_128_classic, STD128, false, logQ_ccLWE, false, slots);
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
     timeSetup           = TOC(t);
@@ -348,7 +348,7 @@ void ComparisonViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numVa
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, false, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, STD128, false, logQ_ccLWE, false, slots);
     timeSetup       = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup << " ms" << std::endl;
 
@@ -488,7 +488,7 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, STD128, arbFunc, logQ_ccLWE, false, slots);
     timeSetup       = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup << " ms" << std::endl;
 
@@ -636,7 +636,7 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     TIC(t);
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_128_classic, STD128, arbFunc, logQ_ccLWE, false, slots);
     timeSetup       = TOC(t);
     std::cout << "Time to compute the scheme switching setup: " << timeSetup << " ms" << std::endl;
 

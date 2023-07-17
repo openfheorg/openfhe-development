@@ -271,8 +271,8 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            auto FHEWparams     = cc->EvalCKKStoFHEWSetup(HEStd_NotSet, false, testData.logQ, false, testData.slots);
-            auto ccLWE          = FHEWparams.first;
+            auto FHEWparams = cc->EvalCKKStoFHEWSetup(HEStd_NotSet, TOY, false, testData.logQ, false, testData.slots);
+            auto ccLWE      = FHEWparams.first;
             auto privateKeyFHEW = FHEWparams.second;
             cc->EvalCKKStoFHEWKeyGen(keyPair, privateKeyFHEW, testData.dim1[0]);
 
@@ -405,8 +405,9 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_NotSet, false, testData.logQ, false, testData.slots);
-            auto ccLWE      = FHEWparams.first;
+            auto FHEWparams =
+                cc->EvalSchemeSwitchingSetup(HEStd_NotSet, TOY, false, testData.logQ, false, testData.slots);
+            auto ccLWE          = FHEWparams.first;
             auto privateKeyFHEW = FHEWparams.second;
 
             ccLWE.BTKeyGen(privateKeyFHEW);
@@ -480,8 +481,9 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_NotSet, false, testData.logQ, false, testData.slots);
-            auto ccLWE      = FHEWparams.first;
+            auto FHEWparams =
+                cc->EvalSchemeSwitchingSetup(HEStd_NotSet, TOY, false, testData.logQ, false, testData.slots);
+            auto ccLWE          = FHEWparams.first;
             auto privateKeyFHEW = FHEWparams.second;
 
             cc->EvalSchemeSwitchingKeyGen(keyPair, privateKeyFHEW, testData.numValues, testData.oneHot, false,
@@ -580,8 +582,9 @@ protected:
 
             auto keyPair = cc->KeyGen();
 
-            auto FHEWparams = cc->EvalSchemeSwitchingSetup(HEStd_NotSet, false, testData.logQ, false, testData.slots);
-            auto ccLWE      = FHEWparams.first;
+            auto FHEWparams =
+                cc->EvalSchemeSwitchingSetup(HEStd_NotSet, TOY, false, testData.logQ, false, testData.slots);
+            auto ccLWE          = FHEWparams.first;
             auto privateKeyFHEW = FHEWparams.second;
 
             bool alt = true;
@@ -598,8 +601,7 @@ protected:
             uint32_t init_level = 0;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
                 init_level = 1;
-            // cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
-            cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
+            cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
             auto xmin              = *std::min_element(x1.begin(), x1.begin() + testData.numValues);

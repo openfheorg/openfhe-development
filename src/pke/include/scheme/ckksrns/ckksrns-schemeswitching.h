@@ -68,8 +68,9 @@ public:
     //------------------------------------------------------------------------------
 
     std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<DCRTPoly>& cc, SecurityLevel sl,
-                                                                bool arbFunc, uint32_t logQ, bool dynamic,
-                                                                uint32_t numSlotsCKKS) override;
+                                                                BINFHE_PARAMSET slBin, bool arbFunc, uint32_t logQ,
+                                                                bool dynamic, uint32_t numSlotsCKKS,
+                                                                uint32_t logQswitch) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalCKKStoFHEWKeyGen(const KeyPair<DCRTPoly>& keyPair,
                                                                              ConstLWEPrivateKey& lwesk, uint32_t dim1,
@@ -117,8 +118,10 @@ public:
                                         double pmax) const override;
 
     std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc,
-                                                                     SecurityLevel sl, bool arbFunc, uint32_t logQ,
-                                                                     bool dynamic, uint32_t numSlotsCKKS) override;
+                                                                     SecurityLevel sl, BINFHE_PARAMSET slBin,
+                                                                     bool arbFunc, uint32_t logQ, bool dynamic,
+                                                                     uint32_t numSlotsCKKS,
+                                                                     uint32_t logQswitch) override;
 
     std::shared_ptr<std::map<usint, EvalKey<DCRTPoly>>> EvalSchemeSwitchingKeyGen(
         const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool oneHot, bool alt,

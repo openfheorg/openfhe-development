@@ -216,12 +216,6 @@ public:
     PolyLargeType CRTInterpolateIndex(usint i) const override;
     Integer GetWorkingModulus() const override;
 
-    /**
-   * @brief Sets values with a different modulus // Andreea: make this the same as the others
-   *
-   * @param element The DCRTPoly to convert, currently it throws an error if it has more than one tower
-   * @param modulus New modulus
-   */
     DCRTPolyType SetValuesModSwitch(const DCRTPolyType& element, NativeInteger modulus) override;
 
     std::shared_ptr<Params> GetExtendedCRTBasis(const std::shared_ptr<Params>& paramsP) const override;

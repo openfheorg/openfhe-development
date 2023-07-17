@@ -80,6 +80,7 @@ void SwitchCKKSToFHEW() {
     uint32_t scaleModSize = 50;
     uint32_t ringDim      = 4096;
     SecurityLevel sl      = HEStd_NotSet;
+    BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
     // uint32_t slots        = ringDim / 2;  // Uncomment for fully-packed
     uint32_t slots     = 16;  // sparsely-packed
@@ -111,7 +112,7 @@ void SwitchCKKSToFHEW() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams     = cc->EvalCKKStoFHEWSetup(sl, false, logQ_ccLWE, false, slots);
+    auto FHEWparams     = cc->EvalCKKStoFHEWSetup(sl, slBin, false, logQ_ccLWE, false, slots);
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
     cc->EvalCKKStoFHEWKeyGen(keys, privateKeyFHEW);
@@ -279,10 +280,7 @@ void SwitchFHEWtoCKKS() {
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     auto ccLWE = BinFHEContext();
-    if (sl == HEStd_128_classic)
-        ccLWE.BinFHEContext::GenerateBinFHEContext(STD128, false, logQ_ccLWE, 0, GINX, false);
-    else
-        ccLWE.BinFHEContext::GenerateBinFHEContext(TOY, false, logQ_ccLWE, 0, GINX, false);
+    ccLWE.BinFHEContext::GenerateBinFHEContext(TOY, false, logQ_ccLWE, 0, GINX, false);
 
     // LWE private key
     LWEPrivateKey lwesk;
@@ -405,6 +403,7 @@ void FloorViaSchemeSwitching() {
     uint32_t scaleModSize = 50;
     uint32_t ringDim      = 8192;
     SecurityLevel sl      = HEStd_NotSet;
+    BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 23;
     uint32_t slots        = 16;  // sparsely-packed
     uint32_t batchSize    = slots;
@@ -435,7 +434,7 @@ void FloorViaSchemeSwitching() {
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
     bool arbFunc    = false;
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
@@ -520,6 +519,7 @@ void FuncViaSchemeSwitching() {
     uint32_t scaleModSize = 50;
     uint32_t ringDim      = 2048;
     SecurityLevel sl      = HEStd_NotSet;
+    BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
     bool arbFunc          = true;
     uint32_t slots        = 8;  // sparsely-packed
@@ -549,7 +549,7 @@ void FuncViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
@@ -665,6 +665,7 @@ void ComparisonViaSchemeSwitching() {
     uint32_t firstModSize = 60;
     uint32_t ringDim      = 8192;
     SecurityLevel sl      = HEStd_NotSet;
+    BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
     uint32_t slots        = 16;  // sparsely-packed
     uint32_t batchSize    = slots;
@@ -698,7 +699,7 @@ void ComparisonViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, false, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
@@ -880,6 +881,7 @@ void ArgminViaSchemeSwitching() {
     uint32_t firstModSize = 60;
     uint32_t ringDim      = 8192;
     SecurityLevel sl      = HEStd_NotSet;
+    BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
     bool arbFunc          = false;
     bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
@@ -919,7 +921,7 @@ void ArgminViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams     = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams     = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
@@ -1005,6 +1007,7 @@ void ArgminViaSchemeSwitchingAlt() {
     uint32_t firstModSize = 60;
     uint32_t ringDim      = 8192;
     SecurityLevel sl      = HEStd_NotSet;
+    BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
     bool arbFunc          = false;
     bool oneHot           = true;  // Change to false if the output should not be one-hot encoded
@@ -1046,7 +1049,7 @@ void ArgminViaSchemeSwitchingAlt() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams     = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams     = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
 
@@ -1133,6 +1136,7 @@ void ArgminViaSchemeSwitchingUnit() {
     uint32_t firstModSize = 60;
     uint32_t ringDim      = 8192;
     SecurityLevel sl      = HEStd_NotSet;
+    BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
     bool arbFunc          = false;
     bool oneHot           = true;
@@ -1174,7 +1178,7 @@ void ArgminViaSchemeSwitchingUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
@@ -1268,6 +1272,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     uint32_t firstModSize = 60;
     uint32_t ringDim      = 8192;
     SecurityLevel sl      = HEStd_NotSet;
+    BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
     bool arbFunc          = false;
     bool oneHot           = true;
@@ -1311,7 +1316,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, arbFunc, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, arbFunc, logQ_ccLWE, false, slots);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;
@@ -1410,7 +1415,8 @@ void PolyViaSchemeSwitching() {
         multDepth += 1;
     uint32_t scaleModSize = 50;
     uint32_t ringDim      = 2048;
-    SecurityLevel sl      = HEStd_NotSet;  // If this is not HEStd_NotSet, ensure ringDim is compatible
+    SecurityLevel sl      = HEStd_NotSet;
+    BINFHE_PARAMSET slBin = TOY;
     uint32_t logQ_ccLWE   = 25;
 
     uint32_t slots     = 16;  // sparsely-packed
@@ -1441,7 +1447,7 @@ void PolyViaSchemeSwitching() {
     auto keys = cc->KeyGen();
 
     // Step 2: Prepare the FHEW cryptocontext and keys for FHEW and scheme switching
-    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, false, logQ_ccLWE, false, slots);
+    auto FHEWparams = cc->EvalSchemeSwitchingSetup(sl, slBin, false, logQ_ccLWE, false, slots);
 
     auto ccLWE          = FHEWparams.first;
     auto privateKeyFHEW = FHEWparams.second;

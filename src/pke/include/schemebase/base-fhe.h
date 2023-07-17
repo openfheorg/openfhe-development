@@ -121,18 +121,21 @@ public:
     /**
    * Sets all parameters for switching from CKKS to FHEW
    *
-   * @param cc the CKKS cryptocontext from which to switch to
-   * @param sl security level
+   * @param cc the CKKS cryptocontext from which to switch
+   * @param sl security level for CKKS cryptocontext
+   * @param slBin security level for FHEW cryptocontext
    * @param arbFunc whether the binfhecontext should be created for arbitrary function evaluation or not
    * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
    * @param dynamic whether to use dynamic mode for FHEW
    * @param numSlotsCKKS number of slots in CKKS encryption
+   * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
    */
     virtual std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<Element>& cc,
-                                                                        SecurityLevel sl, bool arbFunc, uint32_t logQ,
-                                                                        bool dynamic, uint32_t numSlotsCKKS) {
+                                                                        SecurityLevel sl, BINFHE_PARAMSET slBin,
+                                                                        bool arbFunc, uint32_t logQ, bool dynamic,
+                                                                        uint32_t numSlotsCKKS, uint32_t logQswitch) {
         OPENFHE_THROW(not_implemented_error, "EvalCKKStoFHEWSetup is not supported for this scheme");
     }
 
@@ -155,7 +158,7 @@ public:
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalCKKStoFHEWSetup
    * to allow the user to specify a scale that depends on the CKKS and FHEW cryptocontexts
    *
-   * @param cc the CKKS cryptocontext from which to switch to
+   * @param cc the CKKS cryptocontext from which to switch
    * @param scale factor with which to scale the matrix in the linear transform
    * @param dim1 baby-step for the linear transform
    * @param L level on which the hom. decoding matrix should be. We want the hom. decoded ciphertext to be on the last level
@@ -210,7 +213,7 @@ public:
    * Performs precomputations for the homomorphic decoding in CKKS. Given as a separate method than EvalSchemeSwitchingSetup
    * to allow the user to specify a scale that depends on the CKKS and FHEW cryptocontexts
    *
-   * @param cc the CKKS cryptocontext from which to switch to
+   * @param cc the CKKS cryptocontext from which to switch
    * @param pLWE the desired plaintext modulus for the new FHEW ciphertexts
    * @param initLevel the level of the ciphertext that will be switched
    * @param scaleSign factor to multiply the CKKS ciphertext when switching to FHEW in case the messages are too small;
@@ -242,19 +245,22 @@ public:
     /**
    * Sets all parameters for switching from CKKS to FHEW and back
    *
-   * @param sl security level
+   * @param sl security level for CKKS cryptocontext
+   * @param slBin security level for FHEW cryptocontext
    * @param arbFunc whether the binfhecontext should be created for arbitrary function evaluation or not
    * @param logQ size of ciphertext modulus in FHEW for large-precision evaluation
    * @param dynamic whether to use dynamic mode for FHEW
    * @param numSlotsCKKS number of slots in CKKS encryption
+   * @param logQswitch size of ciphertext modulus in intermediate switch for security with the FHEW ring dimension
    * @return the FHEW cryptocontext and its secret key (if a method from extracting the binfhecontext
    * from the secret key is created, then we can only return the secret key)
    * TODO: add an overload for when BinFHEContext is already generated and fed as a parameter
    */
     virtual std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS,
-                                                                             SecurityLevel sl, bool arbFunc,
-                                                                             uint32_t logQ, bool dynamic,
-                                                                             uint32_t numSlotsCKKS) {
+                                                                             SecurityLevel sl, BINFHE_PARAMSET slBin,
+                                                                             bool arbFunc, uint32_t logQ, bool dynamic,
+                                                                             uint32_t numSlotsCKKS,
+                                                                             uint32_t logQswitch) {
         OPENFHE_THROW(not_implemented_error, "EvalSchemeSwitchingSetup is not supported for this scheme");
     }
 
