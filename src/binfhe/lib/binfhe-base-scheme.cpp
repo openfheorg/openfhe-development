@@ -201,7 +201,6 @@ LWECiphertext BinFHEScheme::Bootstrap(const std::shared_ptr<BinFHECryptoParams>&
     const auto& LWEParams = params->GetLWEParams();
     NativeInteger Q{LWEParams->GetQ()};
     NativeInteger b = Q / NativeInteger(2 * p) + 1;
-    // NativeInteger b{(Q >> 3) + 1}; (Sara: commented out Carlo's change account for p > 4)
     b.ModAddFastEq(accVec[1][0], Q);
 
     auto ctExt = std::make_shared<LWECiphertextImpl>(std::move(accVec[0].GetValues()), std::move(b));

@@ -142,7 +142,6 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
         b += a[i].ModMulFast(s[i], mod, mu);
     }
 
-    // (Sara: edited this change from Carlo)
     auto ct = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(std::move(a), b.Mod(mod)));
     ct->SetptModulus(p);
     return ct;
@@ -189,7 +188,6 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
         b.ModAddEq(bp[i].ModMulFast(sp[i], mod, mu), mod);
     }
 
-    // (Sara: edited this change from Carlo)
     auto ct = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
     ct->SetptModulus(p);
     return ct;
@@ -247,7 +245,6 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams>& params
     double error =
         (static_cast<double>(p) * (r.ConvertToDouble() - mod.ConvertToInt() / (p * 2))) / mod.ConvertToDouble() -
         static_cast<double>(*result);
-    std::cerr << mod << " " << p << " " << r << " error:\t" << error << std::endl;
     std::cerr << error * mod.ConvertToDouble() / static_cast<double>(p) << std::endl;
 #endif
 }
