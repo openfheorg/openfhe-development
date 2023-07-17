@@ -108,7 +108,7 @@ KeyPair<Element> MultipartyBase<Element>::MultipartyKeyGen(CryptoContext<Element
             s = Element(tug, paramsPK, Format::EVALUATION);
             break;
         case SPARSE_TERNARY:
-            s = Element(tug, paramsPK, Format::EVALUATION, 64);
+            s = Element(tug, paramsPK, Format::EVALUATION, 192);
             break;
         default:
             break;

@@ -71,7 +71,7 @@ KeyPair<DCRTPoly> PKEBFVRNS::KeyGenInternal(CryptoContext<DCRTPoly> cc, bool mak
             s = DCRTPoly(tug, paramsPK, Format::EVALUATION);
             break;
         case SPARSE_TERNARY:
-            s = DCRTPoly(tug, paramsPK, Format::EVALUATION, 64);
+            s = DCRTPoly(tug, paramsPK, Format::EVALUATION, 192);
             break;
         default:
             break;

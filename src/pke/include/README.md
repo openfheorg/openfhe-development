@@ -27,7 +27,7 @@
   - SecretKeyDistribution
     - Ring Learning with Error (GAUSSIAN)
     - Optimized (UNIFORM_TERNARY)
-    - Sparse (SPARSE_TERNARY; Hamming weight is 64)
+    - Sparse (SPARSE_TERNARY; Hamming weight is 192)
 
   - Scaling Technique
     - Fixed Manual (FIXEDMANUAL)

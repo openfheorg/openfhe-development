@@ -472,14 +472,20 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         ctxtEnc  = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
         ctxtEncI = cc->EvalChebyshevSeries(ctxtEncI, coefficients, coeffLowerBound, coeffUpperBound);
 
-        // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
-        if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
+        // Double-angle iterations
+        if ((cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ||
+            (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY)) {
             if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
                 algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
                 algo->ModReduceInternalInPlace(ctxtEncI, BASE_NUM_LEVELS_TO_DROP);
             }
-            ApplyDoubleAngleIterations(ctxtEnc);
-            ApplyDoubleAngleIterations(ctxtEncI);
+            uint32_t numIter;
+            if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY)
+                numIter = R_UNIFORM;
+            else
+                numIter = R_SPARSE;
+            ApplyDoubleAngleIterations(ctxtEnc, numIter);
+            ApplyDoubleAngleIterations(ctxtEncI, numIter);
         }
 
         algo->MultByMonomialInPlace(ctxtEncI, M / 4);
@@ -571,12 +577,18 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalBootstrap(ConstCiphertext<DCRTPoly> ciphert
         // Evaluate Chebyshev series for the sine wave
         ctxtEnc = cc->EvalChebyshevSeries(ctxtEnc, coefficients, coeffLowerBound, coeffUpperBound);
 
-        // Double-angle iterations are applied in the case of OPTIMIZED/uniform secrets
-        if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) {
+        // Double-angle iterations
+        if ((cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY) ||
+            (cryptoParams->GetSecretKeyDist() == SPARSE_TERNARY)) {
             if (cryptoParams->GetScalingTechnique() != FIXEDMANUAL) {
                 algo->ModReduceInternalInPlace(ctxtEnc, BASE_NUM_LEVELS_TO_DROP);
             }
-            ApplyDoubleAngleIterations(ctxtEnc);
+            uint32_t numIter;
+            if (cryptoParams->GetSecretKeyDist() == UNIFORM_TERNARY)
+                numIter = R_UNIFORM;
+            else
+                numIter = R_SPARSE;
+            ApplyDoubleAngleIterations(ctxtEnc, numIter);
         }
 
         // scale the message back up after Chebyshev interpolation
@@ -1968,7 +1980,7 @@ Ciphertext<DCRTPoly> FHECKKSRNS::EvalSlotsToCoeffs(const std::vector<std::vector
 uint32_t FHECKKSRNS::GetBootstrapDepth(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
                                        SecretKeyDist secretKeyDist) {
     if (secretKeyDist == UNIFORM_TERNARY) {
-        approxModDepth += R - 1;
+        approxModDepth += R_UNIFORM - 1;
     }
 
     return approxModDepth + levelBudget[0] + levelBudget[1];
@@ -1990,10 +2002,10 @@ uint32_t FHECKKSRNS::GetBootstrapDepthInternal(uint32_t approxModDepth, const st
 
 uint32_t FHECKKSRNS::GetModDepthInternal(SecretKeyDist secretKeyDist) {
     if (secretKeyDist == UNIFORM_TERNARY) {
-        return GetMultiplicativeDepthByCoeffVector(g_coefficientsUniform, true) + R;
+        return GetMultiplicativeDepthByCoeffVector(g_coefficientsUniform, true) + R_UNIFORM;
     }
     else {
-        return GetMultiplicativeDepthByCoeffVector(g_coefficientsSparse, true);
+        return GetMultiplicativeDepthByCoeffVector(g_coefficientsSparse, true) + R_SPARSE;
     }
 }
 
@@ -2036,10 +2048,10 @@ void FHECKKSRNS::AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double corre
     }
 }
 
-void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext) const {
+void FHECKKSRNS::ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIter) const {
     auto cc = ciphertext->GetCryptoContext();
 
-    int32_t r = R;
+    int32_t r = numIter;
     for (int32_t j = 1; j < r + 1; j++) {
         cc->EvalSquareInPlace(ciphertext);
         ciphertext    = cc->EvalAdd(ciphertext, ciphertext);
