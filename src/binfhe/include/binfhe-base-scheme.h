@@ -104,10 +104,11 @@ public:
                               ConstLWECiphertext& ct1, ConstLWECiphertext& ct2) const;
 
     /**
-   * Evaluates a binary gate on a vector of ciphertexts (calls bootstrapping as a subroutine)
+   * Evaluates a binary gate on a vector of ciphertexts (calls bootstrapping as a subroutine).
+   * The evaluation of the gates in this function is specific to 3 input and 4 input
    *
    * @param params a shared pointer to RingGSW scheme parameters
-   * @param gate the gate; can be AND, OR, NAND, NOR, XOR, or XOR
+   * @param gate the gate; can be for 3-input: AND3, OR3, MAJORITY, CMUX, for 4-input: AND4, OR4
    * @param &EK a shared pointer to the bootstrapping keys
    * @param ctvector vector of ciphertexts
    * @param lwescheme a shared pointer to additive LWE scheme
