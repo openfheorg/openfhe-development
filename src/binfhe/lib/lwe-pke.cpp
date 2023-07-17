@@ -141,7 +141,10 @@ LWECiphertext LWEEncryptionScheme::Encrypt(const std::shared_ptr<LWECryptoParams
     for (size_t i = 0; i < n; ++i) {
         b += a[i].ModMulFast(s[i], mod, mu);
     }
-    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(std::move(a), b.Mod(mod)));
+
+    auto ct = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(std::move(a), b.Mod(mod)));
+    ct->SetptModulus(p);
+    return ct;
 }
 
 // classical public key LWE encryption
@@ -185,7 +188,9 @@ LWECiphertext LWEEncryptionScheme::EncryptN(const std::shared_ptr<LWECryptoParam
         b.ModAddEq(bp[i].ModMulFast(sp[i], mod, mu), mod);
     }
 
-    return std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    auto ct = std::make_shared<LWECiphertextImpl>(LWECiphertextImpl(a, b));
+    ct->SetptModulus(p);
+    return ct;
 }
 
 // convert ciphertext with modulus Q and dimension N to ciphertext with modulus q and dimension n
@@ -240,7 +245,6 @@ void LWEEncryptionScheme::Decrypt(const std::shared_ptr<LWECryptoParams>& params
     double error =
         (static_cast<double>(p) * (r.ConvertToDouble() - mod.ConvertToInt() / (p * 2))) / mod.ConvertToDouble() -
         static_cast<double>(*result);
-    std::cerr << mod << " " << p << " " << r << " error:\t" << error << std::endl;
     std::cerr << error * mod.ConvertToDouble() / static_cast<double>(p) << std::endl;
 #endif
 }

@@ -48,6 +48,30 @@
 
 namespace lbcrypto {
 
+// TODO: reorder to optimize struct size/alignment
+struct BinFHEContextParams {
+    // for intermediate prime, modulus for RingGSW / RLWE used in bootstrapping
+    usint numberBits;
+    usint cyclOrder;
+
+    // for LWE crypto parameters
+    usint latticeParam;
+    usint mod;  // modulus for additive LWE
+    // modulus for key switching; if it is zero, then it is replaced with intermediate prime for LWE crypto parameters
+    usint modKS;
+    double stdDev;
+    usint baseKS;  // base for key switching
+
+    // for Ring GSW + LWE parameters
+    usint gadgetBase;  // gadget base used in the bootstrapping
+    usint baseRK;      // base for the refreshing key
+
+    // number of Automorphism keys for LMKCDEY (> 0)
+    usint numAutoKeys;
+
+    // for key distribution
+    SECRET_KEY_DIST keyDist;
+};
 /**
  * @brief BinFHEContext
  *
@@ -74,8 +98,9 @@ public:
    * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q, double std,
-                               uint32_t baseKS, uint32_t baseG, uint32_t baseR, SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, 
-                               BINFHE_METHOD method = GINX, uint32_t numAutoKeys = 10);
+                               uint32_t baseKS, uint32_t baseG, uint32_t baseR,
+                               SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, BINFHE_METHOD method = GINX,
+                               uint32_t numAutoKeys = 10);
 
     /**
    * Creates a crypto context using custom parameters.
@@ -102,6 +127,15 @@ public:
    * @return create the cryptocontext
    */
     void GenerateBinFHEContext(BINFHE_PARAMSET set, BINFHE_METHOD method = GINX);
+
+    /**
+   * Creates a crypto context using custom parameters.
+   *
+   * @param set the parameter context
+   * @param method the bootstrapping method (DM or CGGI or LMKCDEY)
+   * @return create the cryptocontext
+   */
+    void GenerateBinFHEContext(const BinFHEContextParams& params, BINFHE_METHOD method = GINX);
 
     /**
    * Gets the refreshing key (used for serialization).
@@ -271,6 +305,15 @@ public:
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalBinGate(BINGATE gate, ConstLWECiphertext& ct1, ConstLWECiphertext& ct2) const;
+
+    /**
+   * Evaluates a binary gate on vector of ciphertexts (calls bootstrapping as a subroutine)
+   *
+   * @param gate the gate; can be MAJORITY as of now
+   * @param cts vector of ciphertexts
+   * @return a shared pointer to the resulting ciphertext
+   */
+    LWECiphertext EvalBinGate(BINGATE gate, const std::vector<LWECiphertext>& ctvector) const;
 
     /**
    * Bootstraps a ciphertext (without peforming any operation)

@@ -101,6 +101,10 @@ public:
         return m_a.GetLength();
     }
 
+    const NativeInteger& GetptModulus() const {
+        return m_p;
+    }
+
     void SetA(const NativeVector& a) {
         m_a = a;
     }
@@ -113,6 +117,10 @@ public:
         m_a.ModEq(mod);
         m_a.SetModulus(mod);
         m_b.ModEq(mod);
+    }
+
+    void SetptModulus(const NativeInteger& pmod) {
+        m_p = pmod;
     }
 
     bool operator==(const LWECiphertextImpl& other) const {
@@ -150,6 +158,7 @@ public:
 private:
     NativeVector m_a{};
     NativeInteger m_b{};
+    NativeInteger m_p = 4;  // pt modulus
 };
 
 }  // namespace lbcrypto

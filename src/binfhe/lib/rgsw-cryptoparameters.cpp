@@ -75,12 +75,17 @@ void RingGSWCryptoParams::PreCompute(bool signEval) {
 
     // Sets the gate constants for supported binary operations
     m_gateConst = {
-        NativeInteger(5) * (m_q >> 3),  // OR
-        NativeInteger(7) * (m_q >> 3),  // AND
-        NativeInteger(1) * (m_q >> 3),  // NOR
-        NativeInteger(3) * (m_q >> 3),  // NAND
-        NativeInteger(5) * (m_q >> 3),  // XOR_FAST
-        NativeInteger(1) * (m_q >> 3)   // XNOR_FAST
+        NativeInteger(5) * (m_q >> 3),   // OR
+        NativeInteger(7) * (m_q >> 3),   // AND
+        NativeInteger(1) * (m_q >> 3),   // NOR
+        NativeInteger(3) * (m_q >> 3),   // NAND
+        NativeInteger(5) * (m_q >> 3),   // XOR_FAST
+        NativeInteger(1) * (m_q >> 3),   // XNOR_FAST
+        NativeInteger(7) * (m_q >> 3),   // MAJORITY
+        NativeInteger(11) * (m_q / 12),  // AND3
+        NativeInteger(7) * (m_q / 12),   // OR3
+        NativeInteger(15) * (m_q >> 4),  // AND4
+        NativeInteger(9) * (m_q >> 4)    // OR4
     };
 
     // Computes polynomials X^m - 1 that are needed in the accumulator for the

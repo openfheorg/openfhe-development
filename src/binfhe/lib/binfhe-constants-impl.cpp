@@ -88,6 +88,24 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
         case STD256Q_OPT:
             s << "STD256Q_OPT";
             break;
+        case STD128Q_OPT_3:
+            s << "STD128Q_OPT_3";
+            break;
+        case STD192Q_OPT_3:
+            s << "STD192Q_OPT_3";
+            break;
+        case STD256Q_OPT_3:
+            s << "STD256Q_OPT_3";
+            break;
+        case STD128Q_OPT_4:
+            s << "STD128Q_OPT_4";
+            break;
+        case STD192Q_OPT_4:
+            s << "STD192Q_OPT_4";
+            break;
+        case STD256Q_OPT_4:
+            s << "STD256Q_OPT_4";
+            break;
         case SIGNED_MOD_TEST:
             s << "SIGNED_MOD_TEST";
             break;
@@ -156,6 +174,24 @@ std::ostream& operator<<(std::ostream& s, BINGATE f) {
             break;
         case XNOR:
             s << "XNOR";
+            break;
+        case AND3:
+            s << "AND3";
+            break;
+        case OR3:
+            s << "OR3";
+            break;
+        case AND4:
+            s << "AND4";
+            break;
+        case OR4:
+            s << "OR4";
+            break;
+        case MAJORITY:
+            s << "MAJORITY";
+            break;
+        case CMUX:
+            s << "CMUX";
             break;
         default:
             s << "UNKNOWN";
