@@ -199,8 +199,10 @@ public:
         ar(cereal::base_class<FHERNS>(this));
     }
 
+    // To be deprecated; left for backwards compatibility
     static uint32_t GetBootstrapDepth(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
                                       SecretKeyDist secretKeyDist);
+
     static uint32_t GetBootstrapDepth(const std::vector<uint32_t>& levelBudget, SecretKeyDist secretKeyDist);
 
     std::string SerializedObjectName() const {
@@ -212,12 +214,12 @@ private:
     // Auxiliary Bootstrap Functions
     //------------------------------------------------------------------------------
     uint32_t GetBootstrapDepthInternal(uint32_t approxModDepth, const std::vector<uint32_t>& levelBudget,
-                               const CryptoContextImpl<DCRTPoly>& cc);
+                                       const CryptoContextImpl<DCRTPoly>& cc);
     static uint32_t GetModDepthInternal(SecretKeyDist secretKeyDist);
 
     void AdjustCiphertext(Ciphertext<DCRTPoly>& ciphertext, double correction) const;
 
-    void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext) const;
+    void ApplyDoubleAngleIterations(Ciphertext<DCRTPoly>& ciphertext, uint32_t numIt) const;
 
     Plaintext MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, const std::shared_ptr<ParmType> params,
                                const std::vector<std::complex<double>>& value, size_t noiseScaleDeg, uint32_t level,
@@ -256,31 +258,28 @@ private:
                            NativeVector* nativeVec) const;
 #endif
 
-    const uint32_t K_SPARSE  = 14;   // upper bound for the number of overflows in the sparse secret case
+    const uint32_t K_SPARSE  = 28;   // upper bound for the number of overflows in the sparse secret case
     const uint32_t K_UNIFORM = 512;  // upper bound for the number of overflows in the uniform secret case
-    static const uint32_t R =
+    static const uint32_t R_UNIFORM =
         6;  // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
+    static const uint32_t R_SPARSE =
+        3;  // number of double-angle iterations in CKKS bootstrapping. Must be static because it is used in a static function.
     uint32_t m_correctionFactor = 0;  // correction factor, which we scale the message by to improve precision
 
     // Chebyshev series coefficients for the SPARSE case
     static const inline std::vector<double> g_coefficientsSparse{
-        0, -0.0190665676962401,   0, -0.0181773905007824,   0, -0.0162862756167401,   0, -0.0131970301188482,
-        0, -0.00869599648960049,  0, -0.00266512292674043,  0, 0.00475378458365385,   0, 0.0129619218183744,
-        0, 0.0207345065018299,    0, 0.0261987740118010,    0, 0.0271237206149663,    0, 0.0216632442529301,
-        0, 0.00952467756531695,   0, -0.00682586258643841,  0, -0.0217665193289893,   0, -0.0279850481505861,
-        0, -0.0202671538394630,   0, -0.000311697041869291, 0, 0.0210206341691402,    0, 0.0282597848811002,
-        0, 0.0130902946902468,    0, -0.0144903750619968,   0, -0.0292119597624053,   0, -0.0133436971840822,
-        0, 0.0187762764821447,    0, 0.0284541504148807,    0, -0.000489726742355156, 0, -0.0298222811587479,
-        0, -0.0127584877864399,   0, 0.0267192319192248,    0, 0.0186624682104780,    0, -0.0261495713329483,
-        0, -0.0179030470013594,   0, 0.0303046477803535,    0, 0.00859965792435869,   0, -0.0352157135816712,
-        0, 0.0127788627989003,    0, 0.0264211888837408,    0, -0.0374200640582086,   0, 0.0132393631154040,
-        0, 0.0219435428661135,    0, -0.0444788687151216,   0, 0.0477866972698431,    0, -0.0383304915060382,
-        0, 0.0252513113739573,    0, -0.0142806559093283,   0, 0.00711359650506429,   0, -0.00317433716746386,
-        0, 0.00128436605459822,   0, -0.000475515283653384, 0, 0.000162257517416398,  0, -0.0000513272589524132,
-        0, 0.0000151253840421986, 0, -4.16938339926456e-6,  0, 1.07891901728700e-6,   0, -2.62909460240295e-7,
-        0, 6.04943494968095e-8,   0, -1.31757718513370e-8,  0, 2.72234854083432e-9,   0, -5.34663845707394e-10,
-        0, 9.99938555825121e-11,  0, -1.78377633651571e-11, 0, 3.03978611829284e-12,  0, -4.95680040223255e-13,
-        0, 7.73718537798400e-14,  0, -1.14402314781930e-14, 0, 1.69000615970718e-15,  0};
+        -0.18646470117093214,   0.036680543700430925,    -0.20323558926782626,     0.029327390306199311,
+        -0.24346234149506416,   0.011710240188138248,    -0.27023281815251715,     -0.017621188001030602,
+        -0.21383614034992021,   -0.048567932060728937,   -0.013982336571484519,    -0.051097367628344978,
+        0.24300487324019346,    0.0016547743046161035,   0.23316923792642233,      0.060707936480887646,
+        -0.18317928363421143,   0.0076878773048247966,   -0.24293447776635235,     -0.071417413140564698,
+        0.37747441314067182,    0.065154496937795681,    -0.24810721693607704,     -0.033588418808958603,
+        0.10510660697380972,    0.012045222815124426,    -0.032574751830745423,    -0.0032761730196023873,
+        0.0078689491066424744,  0.00070965574480802061,  -0.0015405394287521192,   -0.00012640521062948649,
+        0.00025108496615830787, 0.000018944629154033562, -0.000034753284216308228, -2.4309868106111825e-6,
+        4.1486274737866247e-6,  2.7079833113674568e-7,   -4.3245388569898879e-7,   -2.6482744214856919e-8,
+        3.9770028771436554e-8,  2.2951153557906580e-9,   -3.2556026220554990e-9,   -1.7691071323926939e-10,
+        2.5459052150406730e-10};
 
     // Chebyshev series coefficients for the OPTIMIZED/uniform case
     static const inline std::vector<double> g_coefficientsUniform{
