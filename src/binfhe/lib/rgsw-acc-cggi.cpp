@@ -77,7 +77,9 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
     NativeInteger Q{params->GetQ()};
     dug.SetModulus(Q);
 
-    uint32_t digitsG2{params->GetDigitsG() << 1};
+    // approximate gadget decomposition is used; the first digit is ignored
+    uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
+
     std::vector<NativePoly> tempA(digitsG2, NativePoly(dug, polyParams, Format::COEFFICIENT));
     RingGSWEvalKeyImpl result(digitsG2, 2);
 
@@ -86,7 +88,7 @@ RingGSWEvalKey RingGSWAccumulatorCGGI::KeyGenCGGI(const std::shared_ptr<RingGSWC
         tempA[i].SetFormat(Format::EVALUATION);
         result[i][1] = NativePoly(params->GetDgg(), polyParams, Format::COEFFICIENT);
         if (m)
-            result[i][i & 0x1][0].ModAddFastEq(Gpow[i >> 1], Q);
+            result[i][i & 0x1][0].ModAddFastEq(Gpow[(i >> 1) + 1], Q);
         result[i][0].SetFormat(Format::EVALUATION);
         result[i][1].SetFormat(Format::EVALUATION);
         result[i][1] += (tempA[i] *= skNTT);
@@ -104,7 +106,8 @@ void RingGSWAccumulatorCGGI::AddToAccCGGI(const std::shared_ptr<RingGSWCryptoPar
     ct[0].SetFormat(Format::COEFFICIENT);
     ct[1].SetFormat(Format::COEFFICIENT);
 
-    uint32_t digitsG2{params->GetDigitsG() << 1};
+    // approximate gadget decomposition is used; the first digit is ignored
+    uint32_t digitsG2{(params->GetDigitsG() - 1) << 1};
     std::vector<NativePoly> dct(digitsG2, NativePoly(params->GetPolyParams(), Format::COEFFICIENT, true));
 
     SignedDigitDecompose(params, ct, dct);
