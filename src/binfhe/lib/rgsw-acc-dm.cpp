@@ -38,25 +38,21 @@ namespace lbcrypto {
 // Key generation as described in Section 4 of https://eprint.iacr.org/2014/816
 RingGSWACCKey RingGSWAccumulatorDM::KeyGenAcc(const std::shared_ptr<RingGSWCryptoParams>& params,
                                               const NativePoly& skNTT, ConstLWEPrivateKey& LWEsk) const {
-    auto sv     = LWEsk->GetElement();
-    int32_t mod = sv.GetModulus().ConvertToInt();
+    auto sv{LWEsk->GetElement()};
+    auto mod{sv.GetModulus().ConvertToInt<int32_t>()};
+    auto modHalf{mod >> 1};
+    uint32_t n(sv.GetLength());
+    int32_t baseR(params->GetBaseR());
+    const auto& digitsR = params->GetDigitsR();
+    RingGSWACCKey ek    = std::make_shared<RingGSWACCKeyImpl>(n, baseR, digitsR.size());
 
-    int32_t modHalf = mod >> 1;
-
-    uint32_t baseR                            = params->GetBaseR();
-    const std::vector<NativeInteger>& digitsR = params->GetDigitsR();
-    uint32_t n                                = sv.GetLength();
-    RingGSWACCKey ek                          = std::make_shared<RingGSWACCKeyImpl>(n, baseR, digitsR.size());
-
-#pragma omp parallel for
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t j = 1; j < baseR; ++j) {
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(n))
+    for (uint32_t i = 0; i < n; ++i) {
+        for (int32_t j = 1; j < baseR; ++j) {
             for (size_t k = 0; k < digitsR.size(); ++k) {
-                int32_t s = (int32_t)sv[i].ConvertToInt();
-                if (s > modHalf) {
-                    s -= mod;
-                }
-                (*ek)[i][j][k] = KeyGenDM(params, skNTT, s * j * (int32_t)digitsR[k].ConvertToInt());
+                auto s{sv[i].ConvertToInt<int32_t>()};
+                (*ek)[i][j][k] =
+                    KeyGenDM(params, skNTT, (s > modHalf ? s - mod : s) * j * digitsR[k].ConvertToInt<int32_t>());
             }
         }
     }
@@ -132,6 +128,7 @@ void RingGSWAccumulatorDM::AddToAccDM(const std::shared_ptr<RingGSWCryptoParams>
 
     SignedDigitDecompose(params, ct, dct);
 
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(digitsG2))
     for (uint32_t j = 0; j < digitsG2; ++j)
         dct[j].SetFormat(Format::EVALUATION);
 

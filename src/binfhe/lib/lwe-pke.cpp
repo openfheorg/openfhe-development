@@ -332,6 +332,7 @@ LWESwitchingKey LWEEncryptionScheme::KeySwitchGen(const std::shared_ptr<LWECrypt
 // TODO (cpascoe/dsuponit): this pragma needs to be revised as it may have to be removed completely
 // #if !defined(__MINGW32__) && !defined(__MINGW64__)
 // #pragma omp parallel for num_threads(N)
+// #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(N))
 // #endif
     for (size_t i = 0; i < N; ++i) {
         std::vector<std::vector<NativeVector>> vector1A;

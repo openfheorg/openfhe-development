@@ -136,7 +136,7 @@ public:
     DCRTPolyType& operator-=(const NativeInteger& rhs) override;
     DCRTPolyType& operator*=(const DCRTPolyType& rhs) override {
         size_t size{m_vectors.size()};
-#pragma omp parallel for num_threads(size)
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
         for (size_t i = 0; i < size; ++i)
             m_vectors[i] *= rhs.m_vectors[i];
         return *this;
@@ -161,7 +161,7 @@ public:
         if (size != rhs.m_vectors.size())
             OPENFHE_THROW(math_error, "tower size mismatch; cannot add");
         DCRTPolyType tmp(m_params, m_format);
-#pragma omp parallel for num_threads(size)
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
         for (size_t i = 0; i < size; ++i)
             tmp.m_vectors[i] = m_vectors[i].Plus(rhs.m_vectors[i]);
         return tmp;
@@ -176,7 +176,7 @@ public:
         if (size != rhs.m_vectors.size())
             OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
         DCRTPolyType tmp(m_params, m_format);
-#pragma omp parallel for num_threads(size)
+#pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
         for (size_t i = 0; i < size; ++i)
             tmp.m_vectors[i] = m_vectors[i].Times(rhs.m_vectors[i]);
         return tmp;
@@ -361,6 +361,10 @@ public:
 
     inline Format GetFormat() const final {
         return m_format;
+    }
+
+    void OverrideFormat(const Format f) final {
+        m_format = f;
     }
 
     inline const std::shared_ptr<Params>& GetParams() const {

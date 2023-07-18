@@ -73,6 +73,7 @@ public:
    * @brief  Returns a reference to the PRNG engine
    */
 
+    // TODO: there may be an issue here
     static void InitPRNG() {
         int threads = OpenFHEParallelControls.GetNumThreads();
         if (threads == 0) {
@@ -98,7 +99,6 @@ public:
                 std::array<uint32_t, 16> seed{};
                 seed[0] = 1;
                 m_prng  = std::make_shared<PRNG>(seed);
-
 #else
                 // A 512-bit seed is generated for each thread (this roughly corresponds
                 // to 256 bits of security). The seed is the sum of a random sample
