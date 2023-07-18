@@ -1,3 +1,4 @@
+#cmakedefine WITH_NOISE_DEBUG
 #cmakedefine WITH_BE2
 #cmakedefine WITH_BE4
 #cmakedefine WITH_NTL
