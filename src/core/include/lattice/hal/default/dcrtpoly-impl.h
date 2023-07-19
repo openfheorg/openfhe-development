@@ -675,27 +675,28 @@ void DCRTPolyImpl<VecType>::SetValuesModSwitch(const DCRTPolyImpl& element, cons
     }
 
     auto Q             = element.GetModulus();
-    double Qmod_double = Q.ConvertToDouble() / modulus.ConvertToDouble();
+    double Qmod_double = modulus.ConvertToDouble() / Q.ConvertToDouble();
     this->m_params->SetOriginalModulus(modulus);
 
     auto input{element.GetElementAtIndex(0)};
     input.SetFormat(Format::COEFFICIENT);
 
     size_t size{m_vectors.size()};
-    size_t N(m_params->GetRingDimension());
+    size_t N_elem(element.m_params->GetRingDimension());
+    size_t N(this->GetRingDimension());
 
-    if (N > this->GetRingDimension())
+    if (N_elem > N)
         OPENFHE_THROW(
             not_available_error,
             "The ring dimension of the element to copy is larger than the ring dimension of the element to copy to.");
 
     for (size_t i = 0; i < size; ++i) {
-        NativeVector tmp(this->GetRingDimension());
+        NativeVector tmp(N);
         tmp.SetModulus(modulus);
 
-        for (size_t j = 0; j < N; ++j) {
+        for (size_t j = 0; j < N_elem; ++j) {
             tmp[j] =
-                Integer(static_cast<uint64_t>(std::floor(0.5 + input[j].ConvertToDouble() / Qmod_double))).Mod(modulus);
+                Integer(static_cast<uint64_t>(std::floor(0.5 + input[j].ConvertToDouble() * Qmod_double))).Mod(modulus);
         }
         m_vectors[i].SetValues(std::move(tmp), Format::COEFFICIENT);
     }

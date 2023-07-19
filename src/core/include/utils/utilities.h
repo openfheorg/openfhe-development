@@ -35,8 +35,8 @@
 #include "config_core.h"
 #include "utils/inttypes.h"
 
-#include <climits>      // CHAR_BIT
-#include <limits>       // std::numeric_limits
+#include <climits>  // CHAR_BIT
+#include <limits>   // std::numeric_limits
 #include <string>
 #include <type_traits>  // std::is_integral
 
@@ -126,6 +126,8 @@ inline constexpr __int128 Max128BitValue() {
 inline constexpr bool is128BitOverflow(double d) {
     return std::abs(d) > static_cast<double>(Max128BitValue());
 }
+
+enum { MAX_DOUBLE_PRECISION = 52 };
 #endif
 
 inline constexpr bool isConvertableToNativeInt(double d) {

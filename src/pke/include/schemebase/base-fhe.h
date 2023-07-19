@@ -38,7 +38,7 @@
 #include "cryptocontext-fwd.h"
 #include "utils/exception.h"
 
-#include "../../binfhe/include/binfhecontext.h"
+#include "binfhecontext.h"
 #include "key/keypair.h"
 
 #include <memory>
@@ -220,9 +220,9 @@ public:
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
    * @param unit whether the input messages are normalized to the unit circle
    */
-    virtual void EvalCompareSSPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE, uint32_t initLevel,
-                                         double scaleSign, bool unit) {
-        OPENFHE_THROW(not_implemented_error, "EvalCompareSSPrecompute is not supported for this scheme");
+    virtual void EvalCompareSwitchPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE,
+                                             uint32_t initLevel, double scaleSign, bool unit) {
+        OPENFHE_THROW(not_implemented_error, "EvalCompareSwitchPrecompute is not supported for this scheme");
     }
 
     /**

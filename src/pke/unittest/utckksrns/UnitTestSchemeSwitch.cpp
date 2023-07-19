@@ -436,7 +436,7 @@ protected:
                 init_level = 1;
             double scaleSignFHEW = 8.0;
 
-            cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSignFHEW);
+            cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSignFHEW);
 
             Plaintext pDiff;
             cc->Decrypt(keyPair.secretKey, cDiff, &pDiff);
@@ -499,8 +499,7 @@ protected:
             uint32_t init_level = 0;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
                 init_level = 1;
-            cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
-            // cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
+            cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
             auto xmin              = *std::min_element(x1.begin(), x1.begin() + testData.numValues);
@@ -601,7 +600,7 @@ protected:
             uint32_t init_level = 0;
             if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
                 init_level = 1;
-            cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
+            cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
 
             std::vector<double> x1 = {-1.1, -1.05, 5.0, 6.0, -1.0, 2.0, 8.0, -1.0};
             auto xmin              = *std::min_element(x1.begin(), x1.begin() + testData.numValues);

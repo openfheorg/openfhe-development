@@ -72,7 +72,7 @@ then convert the result back to CKKS.
 
 The user has to generate a CKKS cryptocontext and keys with the desired parameters, then call `EvalSchemeSwitchingSetup` and
 `EvalSchemeSwitchingKeyGen`, which combine the setups for both conversions, then the precomputation for the CKKS to FHEW conversion
-`EvalCKKStoFHEWPrecompute` as above or `EvalCompareSSPrecompute`, and the `BTKeyGen` for the desired intermediate FHEW computations.
+`EvalCKKStoFHEWPrecompute` as above or `EvalCompareSwitchPrecompute`, and the `BTKeyGen` for the desired intermediate FHEW computations.
 
 After calling `EvalCKKStoFHEW`, the user then applies the desired functions on the FHEW ciphertexts. In the example
 `FloorViaSchemeSwitching()` the function is generalized floor/shifted truncation, in the example `ComparisonViaSchemeSwitching()`
@@ -84,7 +84,7 @@ be specified (e.g., 4 for the output of comparison).
 
 Recall that FHEW supports integers, while CKKS encodes real values. Therefore, a rounding is done during the conversion. For instance, to
 correctly compare numbers that are very close to each other, the user has to scale the inputs with the desired precision. The example
-`ComparisonViaSchemeSwitching()` shows how to do this via `EvalCompareSSPrecompute`.
+`ComparisonViaSchemeSwitching()` shows how to do this via `EvalCompareSwitchPrecompute`.
 
 Currently, the code does not support an arbitrary function to be applied to the intermediate FHEW ciphertexts if they have to be converted
 back to CKKS. The reason is that (1) the current implementation of `GenerateLUTviaFunction` works only for the small decryption ciphertext
@@ -121,7 +121,7 @@ modulus and plaintext modulus in FHEW. Note that because CKKS is an approximate 
 to a decrease in precision.
 
 The user should call `EvalSchemeSwitchingSetup`, then `EvalSchemeSwitchingKeyGen`, specifying whether the argmin/argmax should have a
-one-hot encoding or not, as well as if the alternative computation method mentioned above should be used, then `EvalCompareSSPrecompute`
+one-hot encoding or not, as well as if the alternative computation method mentioned above should be used, then `EvalCompareSwitchPrecompute`
 specifying if an additional scaling if desired. As mentioned above, the user can manually scale the inputs to [-0.5, 0.5], (such that
 the difference of values is between [-1, 1]) in which case the precomputation does not need to have any scaling, and this is
 exemplified in `ArgminViaSchemeSwitchingUnit()` and `ArgminViaSchemeSwitchingUnitAlt()`.

@@ -35,7 +35,7 @@
 
 #define PROFILE
 #include "openfhe.h"
-#include "../../binfhe/include/binfhecontext.h"
+#include "binfhecontext.h"
 
 using namespace lbcrypto;
 
@@ -378,7 +378,7 @@ void ComparisonViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numVa
     uint32_t init_level     = 0;
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         init_level = 1;
-    cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSignFHEW);
+    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSignFHEW);
     timePrecomp = TOC(t);
     std::cout << "Time to perform precomputations: " << timePrecomp << " ms" << std::endl;
 
@@ -517,7 +517,7 @@ void ArgminViaSchemeSwitching(uint32_t depth, uint32_t slots, uint32_t numValues
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         init_level = 1;
-    cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
 
@@ -665,7 +665,7 @@ void ArgminViaSchemeSwitchingAlt(uint32_t depth, uint32_t slots, uint32_t numVal
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         init_level = 1;
-    cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
     timePrecomp = TOC(t);
     std::cout << "Time to do the precomputations: " << timePrecomp << " ms" << std::endl;
 

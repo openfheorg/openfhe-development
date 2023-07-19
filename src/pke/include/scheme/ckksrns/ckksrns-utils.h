@@ -225,7 +225,7 @@ uint32_t getRatioBSGSLT(uint32_t slots);
  * @param blockdimension dimension related to the linear transform computation matrix
  * @return vector of rotation indices necessary
 */
-std::vector<int32_t> FindLTRotationIndicesSS(uint32_t dim1, uint32_t m, uint32_t blockDimension);
+std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension);
 
 namespace CKKS_BOOT_PARAMS {
 /**

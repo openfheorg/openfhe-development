@@ -1361,10 +1361,10 @@ public:
         return m_SchemeSwitch->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, dim1, L);
     }
 
-    void EvalCompareSSPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE = 0, uint32_t initLevel = 0,
-                                 double scaleSign = 1.0, bool unit = false) {
+    void EvalCompareSwitchPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE = 0,
+                                     uint32_t initLevel = 0, double scaleSign = 1.0, bool unit = false) {
         VerifySchemeSwitchEnabled(__func__);
-        m_SchemeSwitch->EvalCompareSSPrecompute(ccCKKS, pLWE, initLevel, scaleSign, unit);
+        m_SchemeSwitch->EvalCompareSwitchPrecompute(ccCKKS, pLWE, initLevel, scaleSign, unit);
         return;
     }
 

@@ -864,7 +864,7 @@ uint32_t getRatioBSGSLT(uint32_t slots) {
     return ceil(sqrt(slots));
 }
 
-std::vector<int32_t> FindLTRotationIndicesSS(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
+std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
     uint32_t slots;
     // Set slots depending on packing mode (fully-packed or sparsely-packed)
     if ((blockDimension == 0) || (blockDimension == m / 4))

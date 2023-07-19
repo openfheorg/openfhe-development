@@ -34,7 +34,7 @@
  */
 
 #include "openfhe.h"
-#include "../../binfhe/include/binfhecontext.h"
+#include "binfhecontext.h"
 
 using namespace lbcrypto;
 
@@ -722,7 +722,7 @@ void ComparisonViaSchemeSwitching() {
     uint32_t init_level     = 0;
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         init_level = 1;
-    cc->EvalCompareSSPrecompute(pLWE2, init_level, scaleSignFHEW);
+    cc->EvalCompareSwitchPrecompute(pLWE2, init_level, scaleSignFHEW);
 
     // Step 3: Encoding and encryption of inputs
     // Inputs
@@ -795,7 +795,7 @@ void ComparisonViaSchemeSwitching() {
 
     // Step 2': Recompute the scaled matrix using a larger scaling
     scaleSignFHEW = 8.0;
-    cc->EvalCompareSSPrecompute(pLWE2, init_level, scaleSignFHEW);
+    cc->EvalCompareSwitchPrecompute(pLWE2, init_level, scaleSignFHEW);
 
     // Step 4': CKKS to FHEW switching and sign evaluation to test correctness
     LWECiphertexts = cc->EvalCKKStoFHEW(cDiff, slots);
@@ -836,7 +836,7 @@ void ComparisonViaSchemeSwitching() {
         << "\nFor very small LWE plaintext modulus and initial fractional inputs, the sign does not always behave properly close to the boundaries at 0 and p/2."
         << std::endl;
     scaleSignFHEW = 1.0;
-    cc->EvalCompareSSPrecompute(pLWE1, init_level, scaleSignFHEW);
+    cc->EvalCompareSwitchPrecompute(pLWE1, init_level, scaleSignFHEW);
 
     // Step 4'': CKKS to FHEW switching and sign evaluation to test correctness
     LWECiphertexts = cc->EvalCKKStoFHEW(cDiff, slots);
@@ -942,9 +942,9 @@ void ArgminViaSchemeSwitching() {
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         init_level = 1;
     // This formulation is for clarity
-    cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
     // But we can also include the scaleSign in pLWE (here we use the fact both pLWE and scaleSign are powers of two)
-    // cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
+    // cc->EvalCompareSwitchPrecompute(pLWE / scaleSign, init_level, 1);
 
     // Step 3: Encoding and encryption of inputs
     // Inputs
@@ -1070,9 +1070,9 @@ void ArgminViaSchemeSwitchingAlt() {
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         init_level = 1;
     // This formulation is for clarity
-    cc->EvalCompareSSPrecompute(pLWE, init_level, scaleSign);
+    cc->EvalCompareSwitchPrecompute(pLWE, init_level, scaleSign);
     // But we can also include the scaleSign in pLWE (here we use the fact both pLWE and scaleSign are powers of two)
-    // cc->EvalCompareSSPrecompute(pLWE / scaleSign, init_level, 1);
+    // cc->EvalCompareSwitchPrecompute(pLWE / scaleSign, init_level, 1);
 
     // Step 3: Encoding and encryption of inputs
 
@@ -1195,7 +1195,7 @@ void ArgminViaSchemeSwitchingUnit() {
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         init_level = 1;
     // Here we assume the message does not need scaling, as they are in the unit circle.
-    cc->EvalCompareSSPrecompute(1, init_level, 1);
+    cc->EvalCompareSwitchPrecompute(1, init_level, 1);
 
     // Step 3: Encoding and encryption of inputs
 
@@ -1333,7 +1333,7 @@ void ArgminViaSchemeSwitchingAltUnit() {
     if (cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT)
         init_level = 1;
     // Here we assume the message does not need scaling, as they are in the unit circle.
-    cc->EvalCompareSSPrecompute(1, init_level, 1);
+    cc->EvalCompareSwitchPrecompute(1, init_level, 1);
 
     // Step 3: Encoding and encryption of inputs
 

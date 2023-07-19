@@ -35,9 +35,9 @@
 #include "constants.h"
 #include "schemerns/rns-fhe.h"
 
-#include "../../binfhe/include/binfhecontext.h"
-#include "../../binfhe/include/lwe-pke.h"
-#include "../../binfhe/include/lwe-ciphertext.h"
+#include "binfhecontext.h"
+#include "lwe-pke.h"
+#include "lwe-ciphertext.h"
 
 #include <memory>
 #include <string>
@@ -51,11 +51,11 @@
  */
 namespace lbcrypto {
 
-class FHECKKSRNSSS : public FHERNS {
+class SWITCHCKKSRNS : public FHERNS {
     using ParmType = typename DCRTPoly::Params;
 
 public:
-    virtual ~FHECKKSRNSSS() {}
+    virtual ~SWITCHCKKSRNS() {}
 
     std::vector<ConstPlaintext> GetU0Pre() const {
         return m_U0Pre;
@@ -80,24 +80,25 @@ public:
 
     void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& cc, double scale) override;
 
-    std::vector<ConstPlaintext> EvalLTPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
-                                                   const std::vector<std::vector<std::complex<double>>>& A,
-                                                   uint32_t dim1, uint32_t L, double scale) const;
+    std::vector<ConstPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+                                                       const std::vector<std::vector<std::complex<double>>>& A,
+                                                       uint32_t dim1, uint32_t L, double scale) const;
 
-    std::vector<ConstPlaintext> EvalLTPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
-                                                   const std::vector<std::vector<std::complex<double>>>& A,
-                                                   const std::vector<std::vector<std::complex<double>>>& B,
-                                                   uint32_t dim1, uint32_t L, double scale) const;
+    std::vector<ConstPlaintext> EvalLTPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+                                                       const std::vector<std::vector<std::complex<double>>>& A,
+                                                       const std::vector<std::vector<std::complex<double>>>& B,
+                                                       uint32_t dim1, uint32_t L, double scale) const;
 
-    Ciphertext<DCRTPoly> EvalLTWithPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc, ConstCiphertext<DCRTPoly> ctxt,
-                                                const std::vector<ConstPlaintext>& A, uint32_t dim1) const;
+    Ciphertext<DCRTPoly> EvalLTWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+                                                    ConstCiphertext<DCRTPoly> ctxt,
+                                                    const std::vector<ConstPlaintext>& A, uint32_t dim1) const;
 
-    Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSS(const CryptoContextImpl<DCRTPoly>& cc,
-                                                    const std::vector<std::vector<std::complex<double>>>& A,
-                                                    ConstCiphertext<DCRTPoly> ct, uint32_t dim1, uint32_t L) const;
+    Ciphertext<DCRTPoly> EvalLTRectWithPrecomputeSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+                                                        const std::vector<std::vector<std::complex<double>>>& A,
+                                                        ConstCiphertext<DCRTPoly> ct, uint32_t dim1, uint32_t L) const;
 
-    Ciphertext<DCRTPoly> EvalSlotsToCoeffsSS(const CryptoContextImpl<DCRTPoly>& cc,
-                                             ConstCiphertext<DCRTPoly> ciphertext) const;
+    Ciphertext<DCRTPoly> EvalSlotsToCoeffsSwitch(const CryptoContextImpl<DCRTPoly>& cc,
+                                                 ConstCiphertext<DCRTPoly> ciphertext) const;
 
     Ciphertext<DCRTPoly> EvalPartialHomDecryption(const CryptoContextImpl<DCRTPoly>& cc,
                                                   const std::vector<std::vector<std::complex<double>>>& A,
@@ -129,8 +130,8 @@ public:
         const KeyPair<DCRTPoly>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues, bool oneHot, bool alt,
         uint32_t dim1CF, uint32_t dim1FC, uint32_t LCF, uint32_t LFC) override;
 
-    void EvalCompareSSPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, uint32_t init_level,
-                                 double scaleSign, bool unit) override;
+    void EvalCompareSwitchPrecompute(const CryptoContextImpl<DCRTPoly>& ccCKKS, uint32_t pLWE, uint32_t init_level,
+                                     double scaleSign, bool unit) override;
 
     Ciphertext<DCRTPoly> EvalCompareSchemeSwitching(ConstCiphertext<DCRTPoly> ciphertext1,
                                                     ConstCiphertext<DCRTPoly> ciphertext2, uint32_t numCtxts,
@@ -172,7 +173,7 @@ public:
     }
 
     std::string SerializedObjectName() const {
-        return "FHECKKSRNSSS";
+        return "SWITCHCKKSRNS";
     }
 
 private:
@@ -195,16 +196,6 @@ private:
     Ciphertext<DCRTPoly> Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
                                    const std::map<usint, EvalKey<DCRTPoly>>& evalKeys) const;
 
-    /**
-   * Set modulus and recalculates the vector values to fit the modulus
-   *
-   * @param &vec input vector
-   * @param &bigValue big bound of the vector values.
-   * @param &modulus modulus to be set for vector.
-   */
-    void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
-                           NativeVector* nativeVec) const;
-
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
     /**
    * Set modulus and recalculates the vector values to fit the modulus
@@ -216,27 +207,16 @@ private:
     void FitToNativeVector(uint32_t ringDim, const std::vector<__int128>& vec, __int128 bigBound,
                            NativeVector* nativeVec) const;
 
-    constexpr __int128 Max128BitValue() const {
-        // 2^127-2^73-1 - max value that could be rounded to int128_t
-        return ((unsigned __int128)1 << 127) - ((unsigned __int128)1 << 73) - (unsigned __int128)1;
-    }
-
-    inline bool is128BitOverflow(double d) const {
-        const double EPSILON = 0.000001;
-
-        return EPSILON < (std::abs(d) - Max128BitValue());
-    }
 #else  // NATIVEINT == 64
-    constexpr int64_t Max64BitValue() const {
-        // 2^63-2^9-1 - max value that could be rounded to int64_t
-        return 9223372036854775295;
-    }
-
-    inline bool is64BitOverflow(double d) const {
-        const double EPSILON = 0.000001;
-
-        return EPSILON < (std::abs(d) - Max64BitValue());
-    }
+    /**
+   * Set modulus and recalculates the vector values to fit the modulus
+   *
+   * @param &vec input vector
+   * @param &bigValue big bound of the vector values.
+   * @param &modulus modulus to be set for vector.
+   */
+    void FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
+                           NativeVector* nativeVec) const;
 #endif
 
     //------------------------------------------------------------------------------

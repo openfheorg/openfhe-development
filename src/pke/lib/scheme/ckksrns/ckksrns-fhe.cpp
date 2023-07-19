@@ -2081,11 +2081,10 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     inverse.resize(slots);
 
     DiscreteFourierTransform::FFTSpecialInv(inverse, N * 2);
-    uint64_t pBits     = cc.GetEncodingParams()->GetPlaintextModulus();
-    uint32_t precision = 52;
+    uint64_t pBits = cc.GetEncodingParams()->GetPlaintextModulus();
 
-    double powP      = std::pow(2, precision);
-    int32_t pCurrent = pBits - precision;
+    double powP      = std::pow(2.0, MAX_DOUBLE_PRECISION);
+    int32_t pCurrent = pBits - MAX_DOUBLE_PRECISION;
 
     std::vector<int128_t> temp(2 * slots);
     for (size_t i = 0; i < slots; ++i) {
@@ -2348,16 +2347,15 @@ Plaintext FHECKKSRNS::MakeAuxPlaintext(const CryptoContextImpl<DCRTPoly>& cc, co
     }
 
     // Scale back up by the approxFactor to get the correct encoding.
-    int32_t MAX_LOG_STEP = 60;
     if (logApprox > 0) {
-        int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-        DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+        int32_t logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+        auto intStep    = DCRTPoly::Integer(uint64_t(1) << logStep);
         std::vector<DCRTPoly::Integer> crtApprox(numTowers, intStep);
         logApprox -= logStep;
 
         while (logApprox > 0) {
-            int32_t logStep           = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
-            DCRTPoly::Integer intStep = uint64_t(1) << logStep;
+            logStep = (logApprox <= MAX_LOG_STEP) ? logApprox : MAX_LOG_STEP;
+            intStep = DCRTPoly::Integer(uint64_t(1) << logStep);
             std::vector<DCRTPoly::Integer> crtSF(numTowers, intStep);
             crtApprox = CKKSPackedEncoding::CRTMult(crtApprox, crtSF, moduli);
             logApprox -= logStep;
@@ -2391,7 +2389,7 @@ void FHECKKSRNS::EvalAddExtInPlace(Ciphertext<DCRTPoly>& ciphertext1, ConstCiphe
     std::vector<DCRTPoly>& cv1       = ciphertext1->GetElements();
     const std::vector<DCRTPoly>& cv2 = ciphertext2->GetElements();
 
-    for (usint i = 0; i < cv1.size(); ++i) {
+    for (size_t i = 0; i < cv1.size(); ++i) {
         cv1[i] += cv2[i];
     }
 }
@@ -2448,6 +2446,8 @@ Ciphertext<DCRTPoly> FHECKKSRNS::Conjugate(ConstCiphertext<DCRTPoly> ciphertext,
 
 void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>& vec, int64_t bigBound,
                                    NativeVector* nativeVec) const {
+    if (nativeVec == nullptr)
+        OPENFHE_THROW(config_error, "The passed native vector is empty.");
     NativeInteger bigValueHf(bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
     NativeInteger diff = bigBound - modulus;
@@ -2467,6 +2467,8 @@ void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int64_t>&
 #if NATIVEINT == 128 && !defined(__EMSCRIPTEN__)
 void FHECKKSRNS::FitToNativeVector(uint32_t ringDim, const std::vector<int128_t>& vec, int128_t bigBound,
                                    NativeVector* nativeVec) const {
+    if (nativeVec == nullptr)
+        OPENFHE_THROW(config_error, "The passed native vector is empty.");
     NativeInteger bigValueHf((uint128_t)bigBound >> 1);
     NativeInteger modulus(nativeVec->GetModulus());
     NativeInteger diff = NativeInteger((uint128_t)bigBound) - modulus;

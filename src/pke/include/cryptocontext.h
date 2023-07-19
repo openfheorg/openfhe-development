@@ -52,7 +52,7 @@
 #include "utils/serial.h"
 #include "utils/type_name.h"
 
-#include "../../binfhe/include/binfhecontext.h"
+#include "binfhecontext.h"
 
 #include <functional>
 #include <map>
@@ -2951,7 +2951,7 @@ public:
    * the coefficients for encoding and decoding and stores the necessary parameters
    * 2. EvalCKKStoFHEWKeyGen: computes and stores the keys for rotations and conjugation
    * 3. EvalCKKStoFHEW: returns the FHEW/CGGI ciphertext
-   * 1'. EvalFHEWtoCKKSSetup: takes in the CKKS cryptocontext and sets the parameters
+   * 1'. EvalFHEWtoCKKSwitchetup: takes in the CKKS cryptocontext and sets the parameters
    * 2'. EvalFHEWtoCKKSKeyGen: computes and stores the switching key and the keys for rotations and conjugation
    * 3'. EvalFHEWtoCKKS: returns the CKKS ciphertext
    * 1''. EvalSchemeSwitchingSetup: generates a FHEW cryptocontext and returns the key, computes and encodes
@@ -3096,7 +3096,8 @@ public:
    * the resulting FHEW ciphertexts will encrypt values modulo pLWE, so scaleSign should account for this
    * @param unit whether the input messages are normalized to the unit circle
    */
-    void EvalCompareSSPrecompute(uint32_t pLWE = 0, uint32_t initLevel = 0, double scaleSign = 1.0, bool unit = false);
+    void EvalCompareSwitchPrecompute(uint32_t pLWE = 0, uint32_t initLevel = 0, double scaleSign = 1.0,
+                                     bool unit = false);
 
     /**
    * Performs the scheme switching on the difference of two CKKS ciphertexts to compare, evaluates the sign function

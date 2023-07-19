@@ -613,9 +613,9 @@ void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element
 }
 
 template <typename Element>
-void CryptoContextImpl<Element>::EvalCompareSSPrecompute(uint32_t pLWE, uint32_t initLevel, double scaleSign,
-                                                         bool unit) {
-    GetScheme()->EvalCompareSSPrecompute(*this, pLWE, initLevel, scaleSign, unit);
+void CryptoContextImpl<Element>::EvalCompareSwitchPrecompute(uint32_t pLWE, uint32_t initLevel, double scaleSign,
+                                                             bool unit) {
+    GetScheme()->EvalCompareSwitchPrecompute(*this, pLWE, initLevel, scaleSign, unit);
 }
 
 template <typename Element>
