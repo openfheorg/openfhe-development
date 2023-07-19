@@ -70,49 +70,6 @@ std::ostream& operator<<(std::ostream& s, PKESchemeFeature f) {
     return s;
 }
 
-SecretKeyDist convertToSecretKeyDist(const std::string& str) {
-    if (str == "GAUSSIAN")
-        return GAUSSIAN;
-    else if (str == "UNIFORM_TERNARY")
-        return UNIFORM_TERNARY;
-    else if (str == "SPARSE_TERNARY")
-        return SPARSE_TERNARY;
-
-    std::string errMsg(std::string("Unknown SecretKeyDist ") + str);
-    OPENFHE_THROW(config_error, errMsg);
-}
-SecretKeyDist convertToSecretKeyDist(uint32_t num) {
-    auto keyDist = static_cast<SecretKeyDist>(num);
-    switch (keyDist) {
-        case GAUSSIAN:
-        case UNIFORM_TERNARY:
-        case SPARSE_TERNARY:
-            return keyDist;
-        default:
-            break;
-    }
-
-    std::string errMsg(std::string("Unknown value for SecretKeyDist ") + std::to_string(num));
-    OPENFHE_THROW(config_error, errMsg);
-}
-std::ostream& operator<<(std::ostream& s, SecretKeyDist m) {
-    switch (m) {
-        case GAUSSIAN:
-            s << "GAUSSIAN";
-            break;
-        case UNIFORM_TERNARY:
-            s << "UNIFORM_TERNARY";
-            break;
-        case SPARSE_TERNARY:
-            s << "SPARSE_TERNARY";
-            break;
-        default:
-            s << "UNKNOWN";
-            break;
-    }
-    return s;
-}
-
 ScalingTechnique convertToScalingTechnique(const std::string& str) {
     if (str == "FIXEDMANUAL")
         return FIXEDMANUAL;

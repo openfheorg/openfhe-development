@@ -1037,9 +1037,7 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextI
 
     Ciphertext<DCRTPoly> ctxtDecoded;
 
-    auto U0Pre = GetU0Pre();
-
-    if (slots != m_numSlotsCKKS || U0Pre.size() == 0) {
+    if (slots != m_numSlotsCKKS || m_U0Pre.size() == 0) {
         std::string errorMsg(std::string("Precomputations for ") + std::to_string(slots) +
                              std::string(" slots were not generated") +
                              std::string(" Need to call EvalCKKSToFHEWPrecompute to proceed"));
@@ -1048,10 +1046,10 @@ Ciphertext<DCRTPoly> SWITCHCKKSRNS::EvalSlotsToCoeffsSwitch(const CryptoContextI
 
     if (!isSparse) {  // fully packed
         // ctxtToDecode = cc.EvalAdd(ctxtToDecode, cc.GetScheme()->MultByMonomial(ctxtToDecode, M / 4));
-        ctxtDecoded = EvalLTWithPrecomputeSwitch(cc, ctxtToDecode, U0Pre, m_dim1CF);
+        ctxtDecoded = EvalLTWithPrecomputeSwitch(cc, ctxtToDecode, m_U0Pre, m_dim1CF);
     }
     else {  // sparsely packed
-        ctxtDecoded = EvalLTWithPrecomputeSwitch(cc, ctxtToDecode, U0Pre, m_dim1CF);
+        ctxtDecoded = EvalLTWithPrecomputeSwitch(cc, ctxtToDecode, m_U0Pre, m_dim1CF);
         ctxtDecoded = cc.EvalAdd(ctxtDecoded, cc.EvalAtIndex(ctxtDecoded, slots));
     }
 
@@ -1254,10 +1252,10 @@ void SWITCHCKKSRNS::EvalCKKStoFHEWPrecompute(const CryptoContextImpl<DCRTPoly>& 
     }
 
     if (!isSparse) {  // fully packed
-        SetU0Pre(EvalLTPrecomputeSwitch(cc, U0, m_dim1CF, m_LCF, scale));
+        m_U0Pre = EvalLTPrecomputeSwitch(cc, U0, m_dim1CF, m_LCF, scale);
     }
     else {  // sparsely packed
-        SetU0Pre(EvalLTPrecomputeSwitch(cc, U0, U1, m_dim1CF, m_LCF, scale));
+        m_U0Pre = EvalLTPrecomputeSwitch(cc, U0, U1, m_dim1CF, m_LCF, scale);
     }
 }
 

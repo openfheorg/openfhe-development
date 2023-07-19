@@ -34,6 +34,7 @@
 
 // #include "math/hal/basicint.h"
 #include "math/math-hal.h"
+#include "lattice/constants-lattice.h"
 
 #include <iosfwd>
 #include <string>
@@ -54,18 +55,6 @@ enum PKESchemeFeature {
     SCHEMESWITCH = 0x80,
 };
 std::ostream& operator<<(std::ostream& s, PKESchemeFeature f);
-
-/**
- * @brief Lists all modes for RLWE schemes, such as BGV and BFV
- */
-enum SecretKeyDist {
-    GAUSSIAN        = 0,
-    UNIFORM_TERNARY = 1,
-    SPARSE_TERNARY  = 2,
-};
-SecretKeyDist convertToSecretKeyDist(const std::string& str);
-SecretKeyDist convertToSecretKeyDist(uint32_t num);
-std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
 enum ScalingTechnique {
     FIXEDMANUAL = 0,

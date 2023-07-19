@@ -66,7 +66,7 @@ public:
    */
     explicit LWECryptoParams(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
                              const NativeInteger& q_KS, double std, uint32_t baseKS,
-                             SECRET_KEY_DIST keyDist = UNIFORM_TERNARY_BINFHE)
+                             SecretKeyDist keyDist = UNIFORM_TERNARY)
         : m_q(q), m_Q(Q), m_qKS(q_KS), m_n(n), m_N(N), m_baseKS(baseKS), m_keyDist(keyDist) {
         if (m_Q.GetMSB() > MAX_MODULUS_SIZE)
             OPENFHE_THROW(config_error, "ERROR: Q.GetMSB() > MAX_MODULUS_SIZE");
@@ -154,7 +154,7 @@ public:
         return m_ks_dgg;
     }
 
-    SECRET_KEY_DIST GetKeyDist() const {
+    SecretKeyDist GetKeyDist() const {
         return m_keyDist;
     }
 
@@ -221,7 +221,7 @@ private:
     // Base used in key switching
     uint32_t m_baseKS{};
     // Secret key distribution: GAUSSIAN, UNIFORM_TERNARY, etc.
-    SECRET_KEY_DIST m_keyDist{SECRET_KEY_DIST::UNIFORM_TERNARY_BINFHE};
+    SecretKeyDist m_keyDist{SecretKeyDist::UNIFORM_TERNARY};
     // Error distribution generator
     DiscreteGaussianGeneratorImpl<NativeVector> m_dgg;
     // Error distribution generator for key switching

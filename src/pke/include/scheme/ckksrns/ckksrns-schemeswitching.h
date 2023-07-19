@@ -57,14 +57,6 @@ class SWITCHCKKSRNS : public FHERNS {
 public:
     virtual ~SWITCHCKKSRNS() {}
 
-    std::vector<ConstPlaintext> GetU0Pre() const {
-        return m_U0Pre;
-    }
-
-    void SetU0Pre(std::vector<ConstPlaintext> U0Pre) {
-        m_U0Pre = U0Pre;
-    }
-
     //------------------------------------------------------------------------------
     // Scheme Switching Wrappers
     //------------------------------------------------------------------------------

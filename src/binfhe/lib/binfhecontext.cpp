@@ -41,7 +41,7 @@ namespace lbcrypto {
 
 void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
                                           double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,
-                                          SECRET_KEY_DIST keyDist, BINFHE_METHOD method, uint32_t numAutoKeys) {
+                                          SecretKeyDist keyDist, BINFHE_METHOD method, uint32_t numAutoKeys) {
     auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
     auto rgswparams =
         std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);
@@ -101,8 +101,8 @@ void BinFHEContext::GenerateBinFHEContext(BINFHE_PARAMSET set, bool arbFunc, uin
 
     uint32_t n      = (set == TOY) ? 32 : 1305;
     auto lweparams  = std::make_shared<LWECryptoParams>(n, ringDim, q, Q, qKS, 3.19, 32);
-    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, q, baseG, 23, method, 3.19,
-                                                            UNIFORM_TERNARY_BINFHE, ((logQ != 11) && timeOptimization));
+    auto rgswparams = std::make_shared<RingGSWCryptoParams>(ringDim, Q, q, baseG, 23, method, 3.19, UNIFORM_TERNARY,
+                                                            ((logQ != 11) && timeOptimization));
 
     m_params       = std::make_shared<BinFHECryptoParams>(lweparams, rgswparams);
     m_binfhescheme = std::make_shared<BinFHEScheme>(method);
@@ -194,14 +194,14 @@ void BinFHEContext::GenerateBinFHEContext(const BinFHEContextParams& params, BIN
 
 LWEPrivateKey BinFHEContext::KeyGen() const {
     auto& LWEParams = m_params->GetLWEParams();
-    if (LWEParams->GetKeyDist() == GAUSSIAN_BINFHE)
+    if (LWEParams->GetKeyDist() == GAUSSIAN)
         return m_LWEscheme->KeyGenGaussian(LWEParams->Getn(), LWEParams->GetqKS());
     return m_LWEscheme->KeyGen(LWEParams->Getn(), LWEParams->GetqKS());
 }
 
 LWEPrivateKey BinFHEContext::KeyGenN() const {
     auto& LWEParams = m_params->GetLWEParams();
-    if (LWEParams->GetKeyDist() == GAUSSIAN_BINFHE)
+    if (LWEParams->GetKeyDist() == GAUSSIAN)
         return m_LWEscheme->KeyGenGaussian(LWEParams->GetN(), LWEParams->GetQ());
     return m_LWEscheme->KeyGen(LWEParams->GetN(), LWEParams->GetQ());
 }
