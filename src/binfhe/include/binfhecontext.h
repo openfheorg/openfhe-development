@@ -70,7 +70,7 @@ struct BinFHEContextParams {
     usint numAutoKeys;
 
     // for key distribution
-    SECRET_KEY_DIST keyDist;
+    SecretKeyDist keyDist;
 };
 /**
  * @brief BinFHEContext
@@ -100,7 +100,7 @@ public:
     void GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q, double std,
                                uint32_t baseKS, uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist = UNIFORM_TERNARY,
                                BINFHE_METHOD method = GINX, uint32_t numAutoKeys = 10);
-                               
+
     /**
    * Creates a crypto context using custom parameters.
    * Should be used with care (only for advanced users familiar with LWE
