@@ -385,7 +385,7 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
         // if dynamic
         if (EKs.size() == 3) {
             // TODO: use GetMSB()?
-            uint32_t binLog = static_cast<uint32_t>(ceil(log2(mod.ConvertToInt())));
+            uint32_t binLog = static_cast<uint32_t>(ceil(GetMSB(mod.ConvertToInt()) - 1));
             uint32_t base{0};
             if (binLog <= static_cast<uint32_t>(17))
                 base = static_cast<uint32_t>(1) << 27;
@@ -412,7 +412,6 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
             return (x < q / 2) ? (Q / 4) : (Q - Q / 4);
         };
         cttmp = BootstrapFunc(params, curEK, cttmp, f3, q);  // this is 1/4q_small or -1/4q_small mod q
-        RGSWParams->Change_BaseG(curBase);
         LWEscheme->EvalSubConstEq(cttmp, q >> 2);
     }
     else {  // return the negated f3 and do not subtract q/4 for a more natural encoding in scheme switching
@@ -421,8 +420,8 @@ LWECiphertext BinFHEScheme::EvalSign(const std::shared_ptr<BinFHECryptoParams>& 
             return (x < q / 2) ? (Q - Q / 4) : (Q / 4);
         };
         cttmp = BootstrapFunc(params, curEK, cttmp, f3, q);  // this is 1/4q_small or -1/4q_small mod q
-        RGSWParams->Change_BaseG(curBase);
     }
+    RGSWParams->Change_BaseG(curBase);
     return cttmp;
 }
 

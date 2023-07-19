@@ -215,7 +215,7 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget 
  * @param slots number of slots.
  * @return the value for the inner dimension in the baby-step giant-step strategy
 */
-uint32_t getRatioBSGSLT(double slots);
+uint32_t getRatioBSGSLT(uint32_t slots);
 
 /**
  * Assembles a list of rotation indices necessary to perform the

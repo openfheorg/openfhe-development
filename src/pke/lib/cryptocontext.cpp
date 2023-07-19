@@ -494,11 +494,11 @@ std::pair<BinFHEContext, LWEPrivateKey> CryptoContextImpl<Element>::EvalCKKStoFH
 template <typename Element>
 void CryptoContextImpl<Element>::EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
                                                       uint32_t dim1, uint32_t L) {
-    if (keyPair.secretKey == NULL || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
+    if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
                       "CKKS private key passed to EvalCKKStoFHEWKeyGen was not generated with this crypto context");
     }
-    if (lwesk == NULL) {
+    if (!lwesk) {
         OPENFHE_THROW(config_error, "FHEW private key passed to EvalCKKStoFHEWKeyGen is null");
     }
     auto evalKeys = GetScheme()->EvalCKKStoFHEWKeyGen(keyPair, lwesk, dim1, L);
@@ -543,7 +543,7 @@ void CryptoContextImpl<Element>::EvalFHEWtoCKKSSetup(const BinFHEContext& ccLWE,
 template <typename Element>
 void CryptoContextImpl<Element>::EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
                                                       uint32_t numSlots, uint32_t dim1, uint32_t L) {
-    if (keyPair.secretKey == NULL || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
+    if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
                       "Private key passed to EvalFHEWtoCKKSKeyGen was not generated with this crypto context");
     }
@@ -586,7 +586,7 @@ template <typename Element>
 void CryptoContextImpl<Element>::EvalSchemeSwitchingKeyGen(const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk,
                                                            uint32_t numValues, bool oneHot, bool alt, uint32_t dim1CF,
                                                            uint32_t dim1FC, uint32_t LCF, uint32_t LFC) {
-    if (keyPair.secretKey == NULL || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
+    if (keyPair.secretKey == nullptr || this->Mismatched(keyPair.secretKey->GetCryptoContext())) {
         OPENFHE_THROW(config_error,
                       "Private key passed to EvalSchemeSwitchingKeyGen was not generated with this crypto context");
     }
@@ -638,7 +638,7 @@ std::vector<Ciphertext<Element>> CryptoContextImpl<Element>::EvalMinSchemeSwitch
                                                                                     uint32_t numValues,
                                                                                     uint32_t numSlots, bool oneHot,
                                                                                     uint32_t pLWE, double scaleSign) {
-    if (ciphertext == nullptr)
+    if (!ciphertext)
         OPENFHE_THROW(config_error, "ciphertexts passed to EvalMinSchemeSwitching are empty");
     if (Mismatched(ciphertext->GetCryptoContext()))
         OPENFHE_THROW(config_error,

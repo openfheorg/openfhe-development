@@ -1324,79 +1324,55 @@ public:
                                                                 BINFHE_PARAMSET slBin = STD128, bool arbFunc = false,
                                                                 uint32_t logQ = 29, bool dynamic = false,
                                                                 uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalCKKStoFHEWSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
-        }
-
-        OPENFHE_THROW(config_error, "EvalCKKStoFHEWSetup operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalCKKStoFHEWSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
     }
 
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
                                                                             ConstLWEPrivateKey& lwesk,
                                                                             uint32_t dim1 = 0, uint32_t L = 1) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalCKKStoFHEWKeyGen(keyPair, lwesk, dim1, L);
-        }
-
-        OPENFHE_THROW(config_error, "EvalCKKStoFHEWKeyGen operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalCKKStoFHEWKeyGen(keyPair, lwesk, dim1, L);
     }
 
     void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<Element>& cc, double scale = 1.0) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalCKKStoFHEWPrecompute(cc, scale);
-        }
-
-        OPENFHE_THROW(config_error, "EvalCKKStoFHEWPrecompute operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalCKKStoFHEWPrecompute(cc, scale);
     }
 
     std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element> ciphertext,
                                                                    uint32_t numCtxts = 0) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalCKKStoFHEW(ciphertext, numCtxts);
-        }
-
-        OPENFHE_THROW(config_error, "EvalCKKStoFHEW operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalCKKStoFHEW(ciphertext, numCtxts);
     }
 
     void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const BinFHEContext& ccLWE,
                              uint32_t numSlotsCKKS = 0, uint32_t logQ = 25) {
-        if (m_SchemeSwitch) {
-            m_SchemeSwitch->EvalFHEWtoCKKSSetup(ccCKKS, ccLWE, numSlotsCKKS, logQ);
-            return;
-        }
-
-        OPENFHE_THROW(config_error, "EvalFHEWtoCKKSSetup operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        m_SchemeSwitch->EvalFHEWtoCKKSSetup(ccCKKS, ccLWE, numSlotsCKKS, logQ);
+        return;
     }
 
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
                                                                             ConstLWEPrivateKey& lwesk,
                                                                             uint32_t numSlots = 0, uint32_t dim1 = 0,
                                                                             uint32_t L = 0) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, dim1, L);
-        }
-
-        OPENFHE_THROW(config_error, "EvalFHEWtoCKKSKeyGen operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, dim1, L);
     }
 
     void EvalCompareSSPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE = 0, uint32_t initLevel = 0,
                                  double scaleSign = 1.0, bool unit = false) {
-        if (m_SchemeSwitch) {
-            m_SchemeSwitch->EvalCompareSSPrecompute(ccCKKS, pLWE, initLevel, scaleSign, unit);
-            return;
-        }
-
-        OPENFHE_THROW(config_error, "EvalCompareSSPrecompute operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        m_SchemeSwitch->EvalCompareSSPrecompute(ccCKKS, pLWE, initLevel, scaleSign, unit);
+        return;
     }
 
     Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
                                        uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
                                        double pmax = 2.0) const {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax);
-        }
-
-        OPENFHE_THROW(config_error, "EvalFHEWtoCKKSW operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax);
     }
 
     std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc,
@@ -1405,83 +1381,62 @@ public:
                                                                      bool arbFunc = false, uint32_t logQ = 29,
                                                                      bool dynamic = false, uint32_t numSlotsCKKS = 0,
                                                                      uint32_t logQswitch = 27) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalSchemeSwitchingSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS,
-                                                            logQswitch);
-        }
-
-        OPENFHE_THROW(config_error, "EvalSchemeSwitchingSetup operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalSchemeSwitchingSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS,
+                                                        logQswitch);
     }
 
     std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
         const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues = 0, bool oneHot = true,
         bool alt = false, uint32_t dim1CF = 0, uint32_t dim1FC = 0, uint32_t LCF = 1, uint32_t LFC = 0) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, oneHot, alt, dim1CF, dim1FC,
-                                                             LCF, LFC);
-        }
-
-        OPENFHE_THROW(config_error, "EvalSchemeSwitchingKeyGen operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, oneHot, alt, dim1CF, dim1FC, LCF,
+                                                         LFC);
     }
 
     Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
                                                    ConstCiphertext<Element> ciphertext2, uint32_t numCtxts = 0,
                                                    uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0,
                                                    bool unit = false) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE,
-                                                              scaleSign, unit);
-        }
-
-        OPENFHE_THROW(config_error, "EvalCompareSchemeSwitching operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE, scaleSign,
+                                                          unit);
     }
 
     std::vector<Ciphertext<Element>> EvalMinSchemeSwitching(ConstCiphertext<Element> ciphertext,
                                                             PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                             uint32_t numSlots = 0, bool oneHot = true,
                                                             uint32_t pLWE = 0, double scaleSign = 1.0) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalMinSchemeSwitching(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
-                                                          scaleSign);
-        }
-
-        OPENFHE_THROW(config_error, "EvalMinSchemeSwitching operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalMinSchemeSwitching(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
+                                                      scaleSign);
     }
 
     std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
                                                                PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                                uint32_t numSlots = 0, bool oneHot = true,
                                                                uint32_t pLWE = 0, double scaleSign = 1.0) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalMinSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
-                                                             scaleSign);
-        }
-
-        OPENFHE_THROW(config_error, "EvalMinSchemeSwitchingAlt operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalMinSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
+                                                         scaleSign);
     }
 
     std::vector<Ciphertext<Element>> EvalMaxSchemeSwitching(ConstCiphertext<Element> ciphertext,
                                                             PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                             uint32_t numSlots = 0, bool oneHot = true,
                                                             uint32_t pLWE = 0, double scaleSign = 1.0) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalMaxSchemeSwitching(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
-                                                          scaleSign);
-        }
-
-        OPENFHE_THROW(config_error, "EvalMaxSchemeSwitching operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalMaxSchemeSwitching(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
+                                                      scaleSign);
     }
 
     std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
                                                                PublicKey<Element> publicKey, uint32_t numValues = 0,
                                                                uint32_t numSlots = 0, bool oneHot = true,
                                                                uint32_t pLWE = 0, double scaleSign = 1.0) {
-        if (m_SchemeSwitch) {
-            return m_SchemeSwitch->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
-                                                             scaleSign);
-        }
-
-        OPENFHE_THROW(config_error, "EvalMaxSchemeSwitchingAlt operation has not been enabled");
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
+                                                         scaleSign);
     }
 
     template <class Archive>
@@ -1593,6 +1548,19 @@ public:
         if (m_FHE == nullptr) {
             std::string errMsg =
                 std::string(functionName) + " operation has not been enabled. Enable(FHE) must be called to enable it.";
+            OPENFHE_THROW(config_error, errMsg);
+        }
+    }
+
+    /**
+    * @brief VerifySchemeSwitchEnabled is to check if Enable(SCHEMESWITCH) has been called and if it has not
+    *        it will thow an exception
+    * @param functionName is the calling function name. __func__ can be used instead
+    */
+    inline void VerifySchemeSwitchEnabled(const std::string& functionName) const {
+        if (m_SchemeSwitch == nullptr) {
+            std::string errMsg = std::string(functionName) +
+                                 " operation has not been enabled. Enable(SCHEMESWITCH) must be called to enable it.";
             OPENFHE_THROW(config_error, errMsg);
         }
     }

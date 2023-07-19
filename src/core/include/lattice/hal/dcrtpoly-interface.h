@@ -793,7 +793,7 @@ public:
     /**
    * @brief Sets values with a different modulus
    */
-    virtual DerivedType SetValuesModSwitch(const DerivedType& element, NativeInteger modulus) = 0;
+    virtual void SetValuesModSwitch(const DerivedType& element, const NativeInteger& modulus) = 0;
 
     /**
    * @brief Adds "1" to every entry in every tower.

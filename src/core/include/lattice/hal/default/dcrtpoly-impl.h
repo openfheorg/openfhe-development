@@ -669,30 +669,36 @@ void DCRTPolyImpl<VecType>::SetValuesToZero() {
 }
 
 template <typename VecType>
-DCRTPolyImpl<VecType> DCRTPolyImpl<VecType>::SetValuesModSwitch(const DCRTPolyImpl& element, NativeInteger modulus) {
+void DCRTPolyImpl<VecType>::SetValuesModSwitch(const DCRTPolyImpl& element, const NativeInteger& modulus) {
     if (element.GetNumOfElements() != 1) {
         OPENFHE_THROW(not_implemented_error, "SetValuesModSwitch is implemented only for a DCRTPoly with one tower.");
     }
 
-    auto Q = element.GetModulus();
+    auto Q             = element.GetModulus();
+    double Qmod_double = Q.ConvertToDouble() / modulus.ConvertToDouble();
     this->m_params->SetOriginalModulus(modulus);
 
-    for (size_t i = 0; i < m_vectors.size(); i++) {
-        NativeVector temp(this->GetRingDimension());
-        temp.SetModulus(modulus);
-        auto input = element.Clone();
-        input.SetFormat(Format::COEFFICIENT);
+    auto input{element.GetElementAtIndex(0)};
+    input.SetFormat(Format::COEFFICIENT);
 
-        double Qmod_double = Q.ConvertToDouble() / modulus.ConvertToDouble();
-        for (size_t i = 0; i < temp.GetLength(); i++) {
-            temp[i] = Integer(static_cast<uint64_t>(
-                                  std::floor(0.5 + input.GetElementAtIndex(0)[i].ConvertToDouble() / Qmod_double)))
-                          .Mod(modulus);
+    size_t size{m_vectors.size()};
+    size_t N(m_params->GetRingDimension());
+
+    if (N > this->GetRingDimension())
+        OPENFHE_THROW(
+            not_available_error,
+            "The ring dimension of the element to copy is larger than the ring dimension of the element to copy to.");
+
+    for (size_t i = 0; i < size; ++i) {
+        NativeVector tmp(this->GetRingDimension());
+        tmp.SetModulus(modulus);
+
+        for (size_t j = 0; j < N; ++j) {
+            tmp[j] =
+                Integer(static_cast<uint64_t>(std::floor(0.5 + input[j].ConvertToDouble() / Qmod_double))).Mod(modulus);
         }
-        m_vectors[i].SetValues(std::move(temp), Format::COEFFICIENT);
+        m_vectors[i].SetValues(std::move(tmp), Format::COEFFICIENT);
     }
-
-    return *this;
 }
 
 template <typename VecType>
