@@ -169,6 +169,17 @@ enum NOISE_FLOODING {
 #endif
 };  // namespace NOISE_FLOODING
 
+// Defining the level to which the input ciphertext is brought to before
+// interactive multi-party bootstrapping
+enum COMPRESSION_LEVEL
+{
+	// we don't support 0 or 1 compression levels
+	// do not change values here
+
+	COMPACT = 2, 			// more efficient with stronger security assumption
+	SLACK = 3				// less efficient with weaker security assumption
+};
+
 }  // namespace lbcrypto
 
 #endif  // _CONSTANTS_H_

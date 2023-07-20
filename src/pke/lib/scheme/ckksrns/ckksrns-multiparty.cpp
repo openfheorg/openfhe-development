@@ -45,9 +45,6 @@ CKKS implementation. See https://eprint.iacr.org/2020/1118 for details.
 
 namespace lbcrypto {
 
-//TODO:: check this
-static const uint32_t COMPRESSION_LEVEL = 3;
-
 // {Q} = {q_1,...,q_l}, original RNS basis
 // {P} = {p_1,...,p_k}, extended RNS basis
 struct RNSExtensionTables{
@@ -120,21 +117,17 @@ DecryptResult MultipartyCKKSRNS::MultipartyDecryptFusion(const std::vector<Ciphe
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale( ConstCiphertext<DCRTPoly> ciphertext) const {
 
-  if (ciphertext->GetElements().size() == 0) {
-     std::string msg =
- 	  "IntMPBootAdjustScale: no polynomials in the input ciphertext.";
-     OPENFHE_THROW(openfhe_error, msg);
-  }
-
-  const auto cryptoParams = std::dynamic_pointer_cast<MultipartyCKKSRNS>(ciphertext->GetCryptoParameters());
+	if (ciphertext->GetElements().size() == 0) {
+		std::string msg =
+		"IntMPBootAdjustScale: no polynomials in the input ciphertext.";
+		OPENFHE_THROW(openfhe_error, msg);
+	}
 
 	auto cc = ciphertext->GetCryptoContext();
+	const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
-	// TODO:: fix this
-//	auto compressionLevel = std::dynamic_pointer_cast<DltCryptoContextImpl
-//			<DCRTPoly>>(cc)->GetMMpIntBootCiphertextCompressionLevel();
-
-	size_t compressionLevel = COMPRESSION_LEVEL;
+	auto compressionLevel = std::dynamic_pointer_cast<CryptoContextImpl
+			<DCRTPoly>>(cc)->GetMMpIntBootCiphertextCompressionLevel();
 
 	// Compress ctxt and reduce it to numPrimesToKeep towers
 	// 1 is for the message itself (assuming 1 tower (60-bit) for msg)
@@ -143,49 +136,40 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale( ConstCiphertext<DC
 				GetAllElements()[0].GetParams()->GetModulus().ConvertToInt()));
 	size_t numTowersToKeep = ( scalingFactorBits / firstModulusSize + 1) + compressionLevel;
 
-#if 0
-  if (cryptoParams->GetRescalingTechnique() == EXACTRESCALE) {
+	// if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO) {
+	if (false) {
+		// // TODO:: this logic is not needed anymore once moved from Palisade to OpenFHE
 
-      if (ciphertext->GetElements()[0].GetNumOfElements()<3) {
-	string msg =
-	  "IntMPBootAdjustScale: not enough towers in the input polynomial.";
-	PALISADE_THROW(config_error, msg);
-      }
+		// if (ciphertext->GetElements()[0].GetNumOfElements()<3) {
+		// 	std::string msg =
+		// 		"IntMPBootAdjustScale: not enough towers in the input polynomial.";
+		// 	OPENFHE_THROW(config_error, msg);
+		// }
 
-      auto ciphertextAdjusted = Compress(ciphertext, numTowersToKeep+1);
+		// auto ciphertextAdjusted = cc->Compress(ciphertext, numTowersToKeep+1);
 
-      double targetSF = cryptoParams->GetScalingFactorOfLevel(0);
-      double sourceSF = ciphertextAdjusted->GetScalingFactor();
-      uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
-      double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers-1]->GetModulus().ConvertToDouble();
-      double adjustmentFactor = (targetSF/sourceSF)*(modToDrop/sourceSF);
+		// double targetSF = cryptoParams->GetScalingFactorReal();
+		// double sourceSF = ciphertextAdjusted->GetScalingFactor();
+		// uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
+		// double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers-1]->GetModulus().ConvertToDouble();
+		// double adjustmentFactor = (targetSF/sourceSF)*(modToDrop/sourceSF);
 
-      // in the case of EXACTRESCALE, we need to bring the ciphertext to the right scale using a
-      // a scaling multiplication. Note the at currently EXACTRESCALE is only supported for NATIVEINT = 64.
+		// // in the case of EXACTRESCALE, we need to bring the ciphertext to the right scale using a
+		// // a scaling multiplication. Note the at currently EXACTRESCALE is only supported for NATIVEINT = 64.
 
-      ciphertextAdjusted = EvalMult(ciphertextAdjusted, adjustmentFactor);
+		// ciphertextAdjusted = cc->EvalMult(ciphertextAdjusted, adjustmentFactor);
+		// ciphertextAdjusted = cc->ModReduce(ciphertextAdjusted);
+		// ciphertextAdjusted->SetScalingFactor(targetSF);
+		// return ciphertextAdjusted;
 
-      ciphertextAdjusted = ModReduceInternal(ciphertextAdjusted);
-      ciphertextAdjusted->SetScalingFactor(targetSF);
-      return ciphertextAdjusted;
-
-  } else {
-
-      if (ciphertext->GetElements()[0].GetNumOfElements()<numTowersToKeep) {
-	string msg =
-	  "IntMPBootAdjustScale: not enough towers in the input polynomial.";
-	PALISADE_THROW(palisade_error, msg);
-      }
-
-      return Compress(ciphertext,numTowersToKeep);
-#endif
-
-  if (ciphertext->GetElements()[0].GetNumOfElements()<numTowersToKeep) {
-		std::string msg = "IntMPBootAdjustScale: not enough towers in the input polynomial.";
-		OPENFHE_THROW(openfhe_error, msg);
+	} else {
+		if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep) {
+		std::string msg =
+			"IntMPBootAdjustScale: not enough towers in the input polynomial.";
+			OPENFHE_THROW(config_error, msg);
+		}
+		return cc->Compress(ciphertext,numTowersToKeep);
 	}
-
-  return cc->Compress(ciphertext, numTowersToKeep);
 }
 
 Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootRandomElementGen( std::shared_ptr<CryptoParametersCKKSRNS> params,
@@ -412,10 +396,9 @@ std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootDecrypt(
 		// Calculate h_{0,i} = publicShare - secretShare
 
 	auto cc = ciphertext->GetCryptoContext();
-	//TODO:: check this
-//	auto compressionLevel = std::dynamic_pointer_cast<DltCryptoContextImpl
-//			<DCRTPoly>>(cc)->GetMMpIntBootCiphertextCompressionLevel();
-	auto compressionLevel = COMPRESSION_LEVEL;
+	auto compressionLevel = std::dynamic_pointer_cast<CryptoContextImpl
+			<DCRTPoly>>(cc)->GetMMpIntBootCiphertextCompressionLevel();
+
 	auto& c1 = ciphertext->GetElements()[0]; // input ctxt must only include one element which is c1
 	DCRTPoly Mi = GenerateMi(c1, compressionLevel); // Mi is in NTT domain
 

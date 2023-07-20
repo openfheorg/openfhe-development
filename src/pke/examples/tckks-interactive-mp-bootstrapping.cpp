@@ -43,7 +43,6 @@
 
 #include "openfhe.h"
 
-using namespace std;
 using namespace lbcrypto;
 
 /*
@@ -54,7 +53,7 @@ struct Party
 public:
 	usint id; 																// unique party identifier starting from 0
 
-	vector<Ciphertext<DCRTPoly>> sharesPair; 	// (h_{0,i}, h_{1,i}) = (masked decryption
+	std::vector<Ciphertext<DCRTPoly>> sharesPair; 	// (h_{0,i}, h_{1,i}) = (masked decryption
 																						// share, re-encryption share)
 																						// we use a vector inseat of std::pair for Python API compatibility
 
@@ -67,12 +66,10 @@ int main(int argc, char* argv[]) {
 
 	std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) started ...\n";
 
-	// TODO:: - check this
-//	TCKKSCollectiveBoot(APPROXRESCALE);
-//	TCKKSCollectiveBoot(APPROXAUTO);
-//	TCKKSCollectiveBoot(EXACTRESCALE);
-
-	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
+	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
+	TCKKSCollectiveBoot(ScalingTechnique::FIXEDMANUAL); 
+	TCKKSCollectiveBoot(ScalingTechnique::FIXEDAUTO);
+	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
 
  	std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) terminated gracefully!\n";
 
@@ -85,104 +82,84 @@ int main(int argc, char* argv[]) {
 
 void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
-	// TODO:: how many scaling techniques to support
-//	std::string scaleTechStr;
-//	if (rescaleTech == ScalingTechnique::APPROXRESCALE)
-//		scaleTechStr = "APPROXRESCALE";
-//	else if (rescaleTech == ScalingTechnique::EXACTRESCALE)
-//		scaleTechStr = "EXACTRESCALE";
-//	else if (rescaleTech == ScalingTechnique::APPROXAUTO)
-//		scaleTechStr = "APPROXAUTO";
-//	else
-//	{
-//		std::string errMsg =
-//		          "ERROR: Scaling technique is not supported!";
-//		      PALISADE_THROW(config_error, errMsg);
-//	}
-	std::string scaleTechStr;
-	if (scaleTech == ScalingTechnique::FLEXIBLEAUTO)
-		scaleTechStr = "FLEXIBLEAUTO";
-//	else if (rescaleTech == ScalingTechnique::EXACTRESCALE)
-//		scaleTechStr = "EXACTRESCALE";
-//	else if (rescaleTech == ScalingTechnique::APPROXAUTO)
-//		scaleTechStr = "APPROXAUTO";
-	else
+	if (scaleTech != ScalingTechnique::FIXEDMANUAL && scaleTech != ScalingTechnique::FIXEDAUTO &&
+		scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT)
 	{
 		std::string errMsg =
 		          "ERROR: Scaling technique is not supported!";
 		      OPENFHE_THROW(config_error, errMsg);
 	}
 
-  CCParams<CryptoContextCKKSRNS> parameters;
-  // A. Specify main parameters
-  /*  A1) Secret key distribution
-  * The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY.
-  * The SPARSE_TERNARY distribution was used in the original CKKS paper,
-  * but in this example, we use UNIFORM_TERNARY because this is included in the homomorphic
-  * encryption standard.
-  */
-  SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
-  parameters.SetSecretKeyDist(secretKeyDist);
+	CCParams<CryptoContextCKKSRNS> parameters;
+	// A. Specify main parameters
+	/*  A1) Secret key distribution
+	* The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY.
+	* The SPARSE_TERNARY distribution was used in the original CKKS paper,
+	* but in this example, we use UNIFORM_TERNARY because this is included in the homomorphic
+	* encryption standard.
+	*/
+	SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
+	parameters.SetSecretKeyDist(secretKeyDist);
 
-  /*  A2) Desired security level based on FHE standards.
-  * In this example, we use the "NotSet" option, so the example can run more quickly with
-  * a smaller ring dimension. Note that this should be used only in
-  * non-production environments, or by experts who understand the security
-  * implications of their choices. In production-like environments, we recommend using
-  * HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
-  * or 256-bit security, respectively. If you choose one of these as your security level,
-  * you do not need to set the ring dimension.
-  */
-  parameters.SetSecurityLevel(HEStd_128_classic);
+	/*  A2) Desired security level based on FHE standards.
+	* In this example, we use the "NotSet" option, so the example can run more quickly with
+	* a smaller ring dimension. Note that this should be used only in
+	* non-production environments, or by experts who understand the security
+	* implications of their choices. In production-like environments, we recommend using
+	* HEStd_128_classic, HEStd_192_classic, or HEStd_256_classic for 128-bit, 192-bit,
+	* or 256-bit security, respectively. If you choose one of these as your security level,
+	* you do not need to set the ring dimension.
+	*/
+	parameters.SetSecurityLevel(HEStd_128_classic);
 
-  /*  A3) Scaling parameters.
-  * By default, we set the modulus sizes and rescaling technique to the following values
-  * to obtain a good precision and performance tradeoff. We recommend keeping the parameters
-  * below unless you are an FHE expert.
-  */
-  usint dcrtBits               = 59;
-  usint firstMod               = 60;
+	/*  A3) Scaling parameters.
+	* By default, we set the modulus sizes and rescaling technique to the following values
+	* to obtain a good precision and performance tradeoff. We recommend keeping the parameters
+	* below unless you are an FHE expert.
+	*/
+	usint dcrtBits               = 59;
+	usint firstMod               = 60;
 
-  parameters.SetScalingModSize(dcrtBits);
-  parameters.SetScalingTechnique(scaleTech);
-  parameters.SetFirstModSize(firstMod);
+	parameters.SetScalingModSize(dcrtBits);
+	parameters.SetScalingTechnique(scaleTech);
+	parameters.SetFirstModSize(firstMod);
 
-  /*  A4) Multiplicative depth.
-  * The goal of bootstrapping is to increase the number of available levels we have, or in other words,
-  * to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
-  * needs to consume a few levels to run. We compute the number of bootstrapping levels required
-  * using GetBootstrapDepth, and add it to levelsUsedBeforeBootstrap to set our initial multiplicative
-  * depth. We recommend using the input parameters below to get started.
-  */
-  parameters.SetMultiplicativeDepth(8-1);
-  parameters.SetKeySwitchTechnique(KeySwitchTechnique::HYBRID);
+	/*  A4) Multiplicative depth.
+	* The goal of bootstrapping is to increase the number of available levels we have, or in other words,
+	* to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
+	* needs to consume a few levels to run. We compute the number of bootstrapping levels required
+	* using GetBootstrapDepth, and add it to levelsUsedBeforeBootstrap to set our initial multiplicative
+	* depth. We recommend using the input parameters below to get started.
+	*/
+	uint32_t multiplicativeDepth = 7;
+	parameters.SetMultiplicativeDepth(multiplicativeDepth);
+	parameters.SetKeySwitchTechnique(KeySwitchTechnique::HYBRID);
 
-  uint32_t batchSize = 4;
-  parameters.SetBatchSize(batchSize);
+	uint32_t batchSize = 4;
+	parameters.SetBatchSize(batchSize);
 
-  CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+	CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
-  cryptoContext->Enable(PKE);
-  cryptoContext->Enable(KEYSWITCH);
-  cryptoContext->Enable(LEVELEDSHE);
-  cryptoContext->Enable(ADVANCEDSHE);
-  cryptoContext->Enable(MULTIPARTY);
+	cryptoContext->Enable(PKE);
+	cryptoContext->Enable(KEYSWITCH);
+	cryptoContext->Enable(LEVELEDSHE);
+	cryptoContext->Enable(ADVANCEDSHE);
+	cryptoContext->Enable(MULTIPARTY);
 
-  usint ringDim = cryptoContext->GetRingDimension();
-  // This is the maximum number of slots that can be used for full packing.
-  usint maxNumSlots = ringDim / 2;
-  std::cout << "TCKKS scheme is using ring dimension " << ringDim << std::endl;
-  std::cout << "TCKKS scheme number of slots         " << batchSize << std::endl;
-  std::cout << "TCKKS scheme max number of slots     " << maxNumSlots << std::endl;
-  std::cout << "TCKKS example with Scaling Technique " << scaleTechStr << std::endl;
+	usint ringDim = cryptoContext->GetRingDimension();
+	// This is the maximum number of slots that can be used for full packing.
+	usint maxNumSlots = ringDim / 2;
+	std::cout << "TCKKS scheme is using ring dimension " << ringDim << std::endl;
+	std::cout << "TCKKS scheme number of slots         " << batchSize << std::endl;
+  	std::cout << "TCKKS scheme max number of slots     " << maxNumSlots << std::endl;
+	std::cout << "TCKKS example with Scaling Technique " << scaleTech << std::endl;
 
-  const usint numParties = 3; // n: number of parties involved in the interactive protocol
-  // TODO:: fix this
-#if 0
-	// Protocol-specific parameters
-	auto compressionLevel = COMPRESSION_LEVEL::COMPACT;
-	cc->SetMMpIntBootCiphertextCompressionLevel(compressionLevel);
-#endif
+	const usint numParties = 3; // n: number of parties involved in the interactive protocol
+	// TODO:: fix this
+
+	// Protocol-specific parameters (SLACK or COMPACT)
+	auto compressionLevel = COMPRESSION_LEVEL::SLACK;
+	cryptoContext->SetMMpIntBootCiphertextCompressionLevel(compressionLevel);
 
 	std::cout << "\n===========================IntMPBoot protocol parameters===========================\n";
 	std::cout << "number of parties: " << numParties << "\n";
@@ -223,7 +200,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 	}
 
 	// Generate the collective public key
-	vector<PrivateKey<DCRTPoly>> secretKeys;
+	std::vector<PrivateKey<DCRTPoly>> secretKeys;
 	for (usint i = 0 ; i < numParties ; i++)
 	{
 		secretKeys.push_back(parties[i].kpShard.secretKey);
@@ -252,7 +229,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
 
 	// Each party generates its own shares: maskedDecryptionShare and reEncryptionShare
-	vector<vector<Ciphertext<DCRTPoly>>> sharesPairVec;
+	std::vector<std::vector<Ciphertext<DCRTPoly>>> sharesPairVec;
 
 	// Make a copy of input ciphertext and remove the first element (c0), we only
 	// c1 for IntMPBootDecrypt
@@ -278,7 +255,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
 	std::cout << "\n============================ INTERACTIVE DECRYPTION STARTED ============================ \n";
 
-	vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
+	std::vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
 
 	std::cout << "Party 0 started its part in the collective decryption protocol\n";
 	partialCiphertextVec.push_back(

@@ -291,6 +291,16 @@ protected:
 
     uint32_t m_keyGenLevel;
 
+    /*
+    * Parameters for Interactive Multi-Party Bootstrapping in TCKKS
+    */
+
+    // Default is COMPACT
+    // The compression mode for the input ciphertext we want to bootstrap.
+    // COMPACT is fast but less secure - practical security is guaranteed
+    // SLACK is slower but more secure - practical and theoretical security are guaranteed
+    COMPRESSION_LEVEL m_MPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK;
+
     /**
    * TypeCheck makes sure that an operation between two ciphertexts is permitted
    * @param a
@@ -462,6 +472,24 @@ public:
     }
 
     /**
+     * Setter for Interactive Multi-Party Bootstrapping ciphertext compression level parameter
+     */
+    void SetMMpIntBootCiphertextCompressionLevel(
+        COMPRESSION_LEVEL mMpIntBootCiphertextCompressionLevel =
+        COMPRESSION_LEVEL::SLACK) {
+        m_MPIntBootCiphertextCompressionLevel =
+        mMpIntBootCiphertextCompressionLevel;
+    }
+
+    /**
+     * Gets the Multi-Party Interactive Bootstrapping Ciphertext Compression Level
+     * @return m_MPIntBootCiphertextCompressionLevel
+     */
+    COMPRESSION_LEVEL GetMMpIntBootCiphertextCompressionLevel() const {
+        return m_MPIntBootCiphertextCompressionLevel;
+    }
+
+    /**
    * CryptoContextImpl constructor from pointers to parameters and scheme
    * @param params - pointer to CryptoParameters
    * @param scheme - pointer to Crypto Scheme
@@ -469,11 +497,12 @@ public:
     // TODO (dsuponit): investigate if we really need 2 constructors for CryptoContextImpl as one of them take regular pointer
     // and the other one takes shared_ptr
     CryptoContextImpl(CryptoParametersBase<Element>* params = nullptr, SchemeBase<Element>* scheme = nullptr,
-                      SCHEME schemeId = SCHEME::INVALID_SCHEME) {
+                      SCHEME schemeId = SCHEME::INVALID_SCHEME, COMPRESSION_LEVEL compressionLevel = COMPRESSION_LEVEL::SLACK) {
         this->params.reset(params);
         this->scheme.reset(scheme);
         this->m_keyGenLevel = 0;
         this->m_schemeId    = schemeId;
+        this->m_MPIntBootCiphertextCompressionLevel = compressionLevel;
     }
 
     /**
@@ -482,11 +511,13 @@ public:
    * @param scheme - sharedpointer to Crypto Scheme
    */
     CryptoContextImpl(std::shared_ptr<CryptoParametersBase<Element>> params,
-                      std::shared_ptr<SchemeBase<Element>> scheme, SCHEME schemeId = SCHEME::INVALID_SCHEME) {
+                      std::shared_ptr<SchemeBase<Element>> scheme, SCHEME schemeId = SCHEME::INVALID_SCHEME, 
+                      COMPRESSION_LEVEL compressionLevel = COMPRESSION_LEVEL::SLACK) {
         this->params        = params;
         this->scheme        = scheme;
         this->m_keyGenLevel = 0;
         this->m_schemeId    = schemeId;
+        this->m_MPIntBootCiphertextCompressionLevel    = compressionLevel;
     }
 
     /**
@@ -498,6 +529,7 @@ public:
         scheme              = c.scheme;
         this->m_keyGenLevel = 0;
         this->m_schemeId    = c.m_schemeId;
+        this->m_MPIntBootCiphertextCompressionLevel = c.m_MPIntBootCiphertextCompressionLevel;
     }
 
     /**
@@ -510,6 +542,7 @@ public:
         scheme        = rhs.scheme;
         m_keyGenLevel = rhs.m_keyGenLevel;
         m_schemeId    = rhs.m_schemeId;
+        m_MPIntBootCiphertextCompressionLevel = rhs.m_MPIntBootCiphertextCompressionLevel;
         return *this;
     }
 
@@ -3239,6 +3272,7 @@ public:
         ar(cereal::make_nvp("cc", params));
         ar(cereal::make_nvp("kt", scheme));
         ar(cereal::make_nvp("si", m_schemeId));
+        ar(cereal::make_nvp("cl", m_MPIntBootCiphertextCompressionLevel));
     }
 
     template <class Archive>
@@ -3250,6 +3284,7 @@ public:
         ar(cereal::make_nvp("cc", params));
         ar(cereal::make_nvp("kt", scheme));
         ar(cereal::make_nvp("si", m_schemeId));
+        ar(cereal::make_nvp("cl", m_MPIntBootCiphertextCompressionLevel));
         SetKSTechniqueInScheme();
 
         // NOTE: a pointer to this object will be wrapped in a shared_ptr, and is a
