@@ -63,10 +63,16 @@ public:
     /**
    * Main constructor for RingGSWCryptoParams
    *
-   * @param lweparams a shared poiter to an instance of LWECryptoParams
+   * @param N ring dimension for RingGSW/RLWE used in bootstrapping
+   * @param Q modulus for RingGSW/RLWE used in bootstrapping
+   * @param q ciphertext modulus for additive LWE
    * @param baseG the gadget base used in the bootstrapping
    * @param baseR the base for the refreshing key
    * @param method bootstrapping method (DM or CGGI or LMKCDEY)
+   * @param std standar deviation
+   * @param keyDist secret key distribution
+   * @param signEval flag if sign evaluation is needed
+   * @param numAutoKeys number of automorphism keys in LMKCDEY bootstrapping
    */
     explicit RingGSWCryptoParams(uint32_t N, NativeInteger Q, NativeInteger q, uint32_t baseG, uint32_t baseR,
                                  BINFHE_METHOD method, double std, SecretKeyDist keyDist = UNIFORM_TERNARY,

@@ -57,6 +57,7 @@ public:
    * Generates a secret key of dimension n using modulus q
    *
    * @param params a shared pointer to LWE scheme parameters
+   * @param modulus the modulus for the secret key
    * @return a shared pointer to the secret key
    */
     LWEPrivateKey KeyGen(usint size, const NativeInteger& modulus) const;
@@ -65,6 +66,7 @@ public:
    * Generates a secret key of dimension n using modulus q
    *
    * @param params a shared pointer to LWE scheme parameters
+   * @param modulus the modulus for the secret key
    * @return a shared pointer to the secret key
    */
     LWEPrivateKey KeyGenGaussian(usint size, const NativeInteger& modulus) const;
@@ -89,9 +91,10 @@ public:
    * Encrypts a bit using a secret key (symmetric key encryption)
    *
    * @param params a shared pointer to LWE scheme parameters
-   * @param sk - the secret key
-   * @param &m - the plaintext
-   * @param &p - the plaintext space
+   * @param sk the secret key
+   * @param m the plaintext
+   * @param p the plaintext space
+   * @param mod the ciphertext modulus to encrypt with; by default m_q in params
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext Encrypt(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPrivateKey& sk, LWEPlaintext m,
@@ -101,19 +104,20 @@ public:
    * Encrypts a bit using a public key (asymmetric key encryption)
    *
    * @param params a shared pointer to LWE scheme parameters
-   * @param pk - the secret key
-   * @param &m - the plaintext
-   * @param &p - the plaintext space
+   * @param pk the public key
+   * @param m the plaintext
+   * @param p the plaintext space
+   * @param mod the ciphertext modulus to encrypt with; by default m_q in params
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext EncryptN(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPublicKey& pk, LWEPlaintext m,
                            LWEPlaintextModulus p = 4, NativeInteger mod = 0) const;
 
     /**
-   * Encrypts a bit using a public key (asymmetric key encryption)
+   * Converts a ciphertext (public key encryption) with modulus Q and dimension N to ciphertext with q and n
    *
-   * @param params a shared pointer to LWE scheme parameters
-   * @param ksk - key switching key from secret key of dimension N to secret key of dimension n
+   * @param ksk the key switching key from secret key of dimension N to secret key of dimension n
+   * @param ct the ciphertext to convert
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext SwitchCTtoqn(const std::shared_ptr<LWECryptoParams>& params, ConstLWESwitchingKey& ksk,
@@ -125,22 +129,58 @@ public:
    * @param params a shared pointer to LWE scheme parameters
    * @param sk the secret key
    * @param ct the ciphertext
-   * @param &p the plaintext space
-   * @param *result plaintext result
+   * @param result plaintext result
+   * @param p the plaintext space
    */
     void Decrypt(const std::shared_ptr<LWECryptoParams>& params, ConstLWEPrivateKey& sk, ConstLWECiphertext& ct,
                  LWEPlaintext* result, LWEPlaintextModulus p = 4) const;
 
+    /**
+   * Adds the second ciphertext to the first ciphertext
+   *
+   * @param ct1 the ciphertext which will hold the sum
+   * @param ct2 the ciphertext to add
+   */
     void EvalAddEq(LWECiphertext& ct1, ConstLWECiphertext& ct2) const;
 
+    /**
+   * Adds the a constant to the ciphertext
+   *
+   * @param ct the ciphertext which will hold the sum
+   * @param cnst the constant to add
+   */
     void EvalAddConstEq(LWECiphertext& ct, NativeInteger cnst) const;
 
+    /**
+   * Subtracts the second ciphertext from the first ciphertext, the result is held in the first ciphertext
+   *
+   * @param ct1 the ciphertext which will hold the difference
+   * @param ct2 the ciphertext to subtract
+   */
     void EvalSubEq(LWECiphertext& ct1, ConstLWECiphertext& ct2) const;
 
+    /**
+   * Subtracts the second ciphertext from the first ciphertext, the result is held in the first ciphertext
+   *
+   * @param ct1 the ciphertext from which to subtract
+   * @param ct2 the ciphertext to subtract, will hold the difference
+   */
     void EvalSubEq2(ConstLWECiphertext& ct1, LWECiphertext& ct2) const;
 
+    /**
+   * Subtracts the constant from the ciphertext
+   *
+   * @param ct1 the ciphertext which will hold the difference
+   * @param ct2 the constant to subtract
+   */
     void EvalSubConstEq(LWECiphertext& ct, NativeInteger cnst) const;
 
+    /**
+   * Multiplies a ciphertext by a constant
+   *
+   * @param ct1 the ciphertext which will hold the product
+   * @param ct2 the constant to multiply by
+   */
     void EvalMultConstEq(LWECiphertext& ct, NativeInteger cnst) const;
 
     /**
@@ -179,7 +219,7 @@ public:
    * Embeds a plaintext bit without noise or encryption
    *
    * @param params a shared pointer to LWE scheme parameters
-   * @param &m - the plaintext
+   * @param m - the plaintext
    * @return a shared pointer to the ciphertext
    */
     LWECiphertext NoiselessEmbedding(const std::shared_ptr<LWECryptoParams>& params, LWEPlaintext m) const;
