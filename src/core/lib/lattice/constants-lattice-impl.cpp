@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -29,63 +29,61 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_SCHEME_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_SCHEME_H
-
-#include "schemerns/rns-scheme.h"
-
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "scheme/ckksrns/ckksrns-parametergeneration.h"
-#include "scheme/ckksrns/ckksrns-fhe.h"
-#include "scheme/ckksrns/ckksrns-pke.h"
-#include "scheme/ckksrns/ckksrns-pre.h"
-#include "scheme/ckksrns/ckksrns-leveledshe.h"
-#include "scheme/ckksrns/ckksrns-advancedshe.h"
-#include "scheme/ckksrns/ckksrns-multiparty.h"
-#include "scheme/ckksrns/ckksrns-schemeswitching.h"
+#include "lattice/constants-lattice.h"
+#include "utils/exception.h"
 
 #include <string>
-#include <memory>
+#include <ostream>
 
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
 namespace lbcrypto {
 
-class SchemeCKKSRNS : public SchemeRNS {
-public:
-    SchemeCKKSRNS() {
-        this->m_ParamsGen = std::make_shared<ParameterGenerationCKKSRNS>();
+SecretKeyDist convertToSecretKeyDist(const std::string& str) {
+    if (str == "GAUSSIAN")
+        return GAUSSIAN;
+    else if (str == "UNIFORM_TERNARY")
+        return UNIFORM_TERNARY;
+    else if (str == "SPARSE_TERNARY")
+        return SPARSE_TERNARY;
+    // else if (str == "BINARY")
+    //     return BINARY;
+
+    std::string errMsg(std::string("Unknown SecretKeyDist ") + str);
+    OPENFHE_THROW(config_error, errMsg);
+}
+SecretKeyDist convertToSecretKeyDist(uint32_t num) {
+    auto keyDist = static_cast<SecretKeyDist>(num);
+    switch (keyDist) {
+        case GAUSSIAN:
+        case UNIFORM_TERNARY:
+        case SPARSE_TERNARY:
+            // case BINARY:
+            return keyDist;
+        default:
+            break;
     }
 
-    virtual ~SchemeCKKSRNS() {}
-
-    bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
-        return dynamic_cast<const SchemeCKKSRNS*>(&sch) != nullptr;
+    std::string errMsg(std::string("Unknown value for SecretKeyDist ") + std::to_string(num));
+    OPENFHE_THROW(config_error, errMsg);
+}
+std::ostream& operator<<(std::ostream& s, SecretKeyDist m) {
+    switch (m) {
+        case GAUSSIAN:
+            s << "GAUSSIAN";
+            break;
+        case UNIFORM_TERNARY:
+            s << "UNIFORM_TERNARY";
+            break;
+        case SPARSE_TERNARY:
+            s << "SPARSE_TERNARY";
+            break;
+            // case BINARY:
+            //     s << "BINARY";
+            break;
+        default:
+            s << "UNKNOWN";
+            break;
     }
-
-    void Enable(PKESchemeFeature feature) override;
-
-    /////////////////////////////////////
-    // SERIALIZATION
-    /////////////////////////////////////
-
-    template <class Archive>
-    void save(Archive& ar, std::uint32_t const version) const {
-        ar(cereal::base_class<SchemeRNS>(this));
-    }
-
-    template <class Archive>
-    void load(Archive& ar, std::uint32_t const version) {
-        ar(cereal::base_class<SchemeRNS>(this));
-    }
-
-    std::string SerializedObjectName() const override {
-        return "SchemeCKKSRNS";
-    }
-};
+    return s;
+}
 
 }  // namespace lbcrypto
-
-#endif

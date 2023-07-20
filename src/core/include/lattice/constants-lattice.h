@@ -1,7 +1,7 @@
 //==================================================================================
 // BSD 2-Clause License
 //
-// Copyright (c) 2014-2022, NJIT, Duality Technologies Inc. and other contributors
+// Copyright (c) 2014-2023, NJIT, Duality Technologies Inc. and other contributors
 //
 // All rights reserved.
 //
@@ -29,63 +29,27 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==================================================================================
 
-#ifndef LBCRYPTO_CRYPTO_CKKSRNS_SCHEME_H
-#define LBCRYPTO_CRYPTO_CKKSRNS_SCHEME_H
+#ifndef _CONSTANTS_LATTICE_H_
+#define _CONSTANTS_LATTICE_H_
 
-#include "schemerns/rns-scheme.h"
-
-#include "scheme/ckksrns/ckksrns-cryptoparameters.h"
-#include "scheme/ckksrns/ckksrns-parametergeneration.h"
-#include "scheme/ckksrns/ckksrns-fhe.h"
-#include "scheme/ckksrns/ckksrns-pke.h"
-#include "scheme/ckksrns/ckksrns-pre.h"
-#include "scheme/ckksrns/ckksrns-leveledshe.h"
-#include "scheme/ckksrns/ckksrns-advancedshe.h"
-#include "scheme/ckksrns/ckksrns-multiparty.h"
-#include "scheme/ckksrns/ckksrns-schemeswitching.h"
-
+#include <iosfwd>
 #include <string>
-#include <memory>
 
-/**
- * @namespace lbcrypto
- * The namespace of lbcrypto
- */
 namespace lbcrypto {
 
-class SchemeCKKSRNS : public SchemeRNS {
-public:
-    SchemeCKKSRNS() {
-        this->m_ParamsGen = std::make_shared<ParameterGenerationCKKSRNS>();
-    }
-
-    virtual ~SchemeCKKSRNS() {}
-
-    bool operator==(const SchemeBase<DCRTPoly>& sch) const override {
-        return dynamic_cast<const SchemeCKKSRNS*>(&sch) != nullptr;
-    }
-
-    void Enable(PKESchemeFeature feature) override;
-
-    /////////////////////////////////////
-    // SERIALIZATION
-    /////////////////////////////////////
-
-    template <class Archive>
-    void save(Archive& ar, std::uint32_t const version) const {
-        ar(cereal::base_class<SchemeRNS>(this));
-    }
-
-    template <class Archive>
-    void load(Archive& ar, std::uint32_t const version) {
-        ar(cereal::base_class<SchemeRNS>(this));
-    }
-
-    std::string SerializedObjectName() const override {
-        return "SchemeCKKSRNS";
-    }
+/**
+ * @brief Lists all modes for RLWE schemes, such as BGV and BFV, and for LWE schemes, such as DM and TFHE
+ */
+enum SecretKeyDist {
+    GAUSSIAN        = 0,
+    UNIFORM_TERNARY = 1,  // Default value, all schemes support this key distribution
+    SPARSE_TERNARY  = 2,
+    // BINARY = 3, // Future implementation
 };
+SecretKeyDist convertToSecretKeyDist(const std::string& str);
+SecretKeyDist convertToSecretKeyDist(uint32_t num);
+std::ostream& operator<<(std::ostream& s, SecretKeyDist m);
 
 }  // namespace lbcrypto
 
-#endif
+#endif  // _CONSTANTS_LATTICE_H_

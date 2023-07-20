@@ -41,7 +41,7 @@ namespace lbcrypto {
 
 void BinFHEContext::GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q,
                                           double std, uint32_t baseKS, uint32_t baseG, uint32_t baseR,
-                                          SECRET_KEY_DIST keyDist, BINFHE_METHOD method, uint32_t numAutoKeys) {
+                                          SecretKeyDist keyDist, BINFHE_METHOD method, uint32_t numAutoKeys) {
     auto lweparams = std::make_shared<LWECryptoParams>(n, N, q, Q, Q, std, baseKS);
     auto rgswparams =
         std::make_shared<RingGSWCryptoParams>(N, Q, q, baseG, baseR, method, std, keyDist, true, numAutoKeys);
@@ -333,9 +333,9 @@ LWECiphertext BinFHEContext::EvalFloor(ConstLWECiphertext& ct, uint32_t roundbit
     return m_binfhescheme->EvalFloor(m_params, m_BTKey, ct, GetBeta(), roundbits);
 }
 
-LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext& ct) {
+LWECiphertext BinFHEContext::EvalSign(ConstLWECiphertext& ct, bool schemeSwitch) {
     const auto& params = std::make_shared<BinFHECryptoParams>(*m_params);
-    return m_binfhescheme->EvalSign(params, m_BTKey_map, ct, GetBeta());
+    return m_binfhescheme->EvalSign(params, m_BTKey_map, ct, GetBeta(), schemeSwitch);
 }
 
 std::vector<LWECiphertext> BinFHEContext::EvalDecomp(ConstLWECiphertext& ct) {

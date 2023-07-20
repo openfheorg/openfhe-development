@@ -177,11 +177,12 @@ public:
    * @param lwescheme a shared pointer to additive LWE scheme
    * @param beta the error bound
    * @param bigger_q the ciphertext modulus
+   * @param schemeSwitch flag that indicates if it should be compatible to scheme switching
    * @return a shared pointer to the resulting ciphertext
    */
     LWECiphertext EvalSign(const std::shared_ptr<BinFHECryptoParams>& params,
                            const std::map<uint32_t, RingGSWBTKey>& EKs, ConstLWECiphertext& ct,
-                           const NativeInteger& beta) const;
+                           const NativeInteger& beta, bool schemeSwitch = false) const;
 
     /**
    * Evaluate a degit decomposition process over a large precision LWE ciphertext

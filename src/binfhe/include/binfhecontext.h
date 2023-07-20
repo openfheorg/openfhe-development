@@ -70,7 +70,7 @@ struct BinFHEContextParams {
     usint numAutoKeys;
 
     // for key distribution
-    SECRET_KEY_DIST keyDist;
+    SecretKeyDist keyDist;
 };
 /**
  * @brief BinFHEContext
@@ -98,9 +98,8 @@ public:
    * @return creates the cryptocontext
    */
     void GenerateBinFHEContext(uint32_t n, uint32_t N, const NativeInteger& q, const NativeInteger& Q, double std,
-                               uint32_t baseKS, uint32_t baseG, uint32_t baseR,
-                               SECRET_KEY_DIST keyDist = UNIFORM_TERNARY, BINFHE_METHOD method = GINX,
-                               uint32_t numAutoKeys = 10);
+                               uint32_t baseKS, uint32_t baseG, uint32_t baseR, SecretKeyDist keyDist = UNIFORM_TERNARY,
+                               BINFHE_METHOD method = GINX, uint32_t numAutoKeys = 10);
 
     /**
    * Creates a crypto context using custom parameters.
@@ -355,9 +354,10 @@ public:
    * Evaluate a sign function over large precisions
    *
    * @param ct1 ciphertext to be bootstrapped
+   * @param schemeSwitch flag that indicates if it should be compatible to scheme switching
    * @return a shared pointer to the resulting ciphertext
    */
-    LWECiphertext EvalSign(ConstLWECiphertext& ct);
+    LWECiphertext EvalSign(ConstLWECiphertext& ct, bool schemeSwitch = false);
 
     /**
    * Evaluate ciphertext decomposition

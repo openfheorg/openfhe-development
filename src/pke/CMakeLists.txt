@@ -44,14 +44,14 @@ install(DIRECTORY unittest/utils/ DESTINATION include/openfhe/pke/unittest/utils
 add_custom_target( allpke )
 
 if( BUILD_SHARED )
-	set (PKELIBS PUBLIC OPENFHEpke PUBLIC OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (OPENFHEpke PUBLIC OPENFHEcore ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	set (PKELIBS PUBLIC OPENFHEpke PUBLIC OPENFHEcore PUBLIC OPENFHEbinfhe ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OPENFHEpke PUBLIC OPENFHEcore PUBLIC OPENFHEbinfhe ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
 	add_dependencies( allpke OPENFHEpke)
 endif()
 
 if( BUILD_STATIC )
-	set (PKELIBS ${PKELIBS} PUBLIC OPENFHEpke_static PUBLIC OPENFHEcore_static ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
-	target_link_libraries (OPENFHEpke_static PUBLIC OPENFHEcore_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
+	set (PKELIBS ${PKELIBS} PUBLIC OPENFHEpke_static PUBLIC OPENFHEcore_static PUBLIC OPENFHEbinfhe_static ${THIRDPARTYLIBS} ${OpenMP_CXX_FLAGS})
+	target_link_libraries (OPENFHEpke_static PUBLIC OPENFHEcore_static PUBLIC OPENFHEbinfhe_static ${THIRDPARTYSTATICLIBS} ${OpenMP_CXX_FLAGS})
 	add_dependencies( allpke OPENFHEpke_static)
 endif()
 

@@ -52,6 +52,7 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <utility>
 
 /**
  * @namespace lbcrypto
@@ -118,6 +119,8 @@ public:
             Enable(MULTIPARTY);
         if (mask & FHE)
             Enable(FHE);
+        if (mask & SCHEMESWITCH)
+            Enable(SCHEMESWITCH);
     }
 
     virtual usint GetEnabled() const {
@@ -136,6 +139,8 @@ public:
             flag |= MULTIPARTY;
         if (m_FHE != nullptr)
             flag |= FHE;
+        if (m_SchemeSwitch != nullptr)
+            flag |= SCHEMESWITCH;
         return flag;
     }
 
@@ -1312,6 +1317,128 @@ public:
         return m_FHE->EvalBootstrap(ciphertext, numIterations, precision);
     }
 
+    // SCHEMESWITCHING methods
+
+    std::pair<BinFHEContext, LWEPrivateKey> EvalCKKStoFHEWSetup(const CryptoContextImpl<Element>& cc,
+                                                                SecurityLevel sl      = HEStd_128_classic,
+                                                                BINFHE_PARAMSET slBin = STD128, bool arbFunc = false,
+                                                                uint32_t logQ = 29, bool dynamic = false,
+                                                                uint32_t numSlotsCKKS = 0, uint32_t logQswitch = 27) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalCKKStoFHEWSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS, logQswitch);
+    }
+
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalCKKStoFHEWKeyGen(const KeyPair<Element>& keyPair,
+                                                                            ConstLWEPrivateKey& lwesk,
+                                                                            uint32_t dim1 = 0, uint32_t L = 1) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalCKKStoFHEWKeyGen(keyPair, lwesk, dim1, L);
+    }
+
+    void EvalCKKStoFHEWPrecompute(const CryptoContextImpl<Element>& cc, double scale = 1.0) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalCKKStoFHEWPrecompute(cc, scale);
+    }
+
+    std::vector<std::shared_ptr<LWECiphertextImpl>> EvalCKKStoFHEW(ConstCiphertext<Element> ciphertext,
+                                                                   uint32_t numCtxts = 0) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalCKKStoFHEW(ciphertext, numCtxts);
+    }
+
+    void EvalFHEWtoCKKSSetup(const CryptoContextImpl<DCRTPoly>& ccCKKS, const BinFHEContext& ccLWE,
+                             uint32_t numSlotsCKKS = 0, uint32_t logQ = 25) {
+        VerifySchemeSwitchEnabled(__func__);
+        m_SchemeSwitch->EvalFHEWtoCKKSSetup(ccCKKS, ccLWE, numSlotsCKKS, logQ);
+        return;
+    }
+
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalFHEWtoCKKSKeyGen(const KeyPair<Element>& keyPair,
+                                                                            ConstLWEPrivateKey& lwesk,
+                                                                            uint32_t numSlots = 0, uint32_t dim1 = 0,
+                                                                            uint32_t L = 0) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalFHEWtoCKKSKeyGen(keyPair, lwesk, numSlots, dim1, L);
+    }
+
+    void EvalCompareSwitchPrecompute(const CryptoContextImpl<Element>& ccCKKS, uint32_t pLWE = 0,
+                                     uint32_t initLevel = 0, double scaleSign = 1.0, bool unit = false) {
+        VerifySchemeSwitchEnabled(__func__);
+        m_SchemeSwitch->EvalCompareSwitchPrecompute(ccCKKS, pLWE, initLevel, scaleSign, unit);
+        return;
+    }
+
+    Ciphertext<Element> EvalFHEWtoCKKS(std::vector<std::shared_ptr<LWECiphertextImpl>>& LWECiphertexts,
+                                       uint32_t numCtxts = 0, uint32_t numSlots = 0, uint32_t p = 4, double pmin = 0.0,
+                                       double pmax = 2.0) const {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalFHEWtoCKKS(LWECiphertexts, numCtxts, numSlots, p, pmin, pmax);
+    }
+
+    std::pair<BinFHEContext, LWEPrivateKey> EvalSchemeSwitchingSetup(const CryptoContextImpl<DCRTPoly>& cc,
+                                                                     SecurityLevel sl      = HEStd_128_classic,
+                                                                     BINFHE_PARAMSET slBin = STD128,
+                                                                     bool arbFunc = false, uint32_t logQ = 29,
+                                                                     bool dynamic = false, uint32_t numSlotsCKKS = 0,
+                                                                     uint32_t logQswitch = 27) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalSchemeSwitchingSetup(cc, sl, slBin, arbFunc, logQ, dynamic, numSlotsCKKS,
+                                                        logQswitch);
+    }
+
+    std::shared_ptr<std::map<usint, EvalKey<Element>>> EvalSchemeSwitchingKeyGen(
+        const KeyPair<Element>& keyPair, ConstLWEPrivateKey& lwesk, uint32_t numValues = 0, bool oneHot = true,
+        bool alt = false, uint32_t dim1CF = 0, uint32_t dim1FC = 0, uint32_t LCF = 1, uint32_t LFC = 0) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalSchemeSwitchingKeyGen(keyPair, lwesk, numValues, oneHot, alt, dim1CF, dim1FC, LCF,
+                                                         LFC);
+    }
+
+    Ciphertext<Element> EvalCompareSchemeSwitching(ConstCiphertext<Element> ciphertext1,
+                                                   ConstCiphertext<Element> ciphertext2, uint32_t numCtxts = 0,
+                                                   uint32_t numSlots = 0, uint32_t pLWE = 0, double scaleSign = 1.0,
+                                                   bool unit = false) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalCompareSchemeSwitching(ciphertext1, ciphertext2, numCtxts, numSlots, pLWE, scaleSign,
+                                                          unit);
+    }
+
+    std::vector<Ciphertext<Element>> EvalMinSchemeSwitching(ConstCiphertext<Element> ciphertext,
+                                                            PublicKey<Element> publicKey, uint32_t numValues = 0,
+                                                            uint32_t numSlots = 0, bool oneHot = true,
+                                                            uint32_t pLWE = 0, double scaleSign = 1.0) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalMinSchemeSwitching(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
+                                                      scaleSign);
+    }
+
+    std::vector<Ciphertext<Element>> EvalMinSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
+                                                               PublicKey<Element> publicKey, uint32_t numValues = 0,
+                                                               uint32_t numSlots = 0, bool oneHot = true,
+                                                               uint32_t pLWE = 0, double scaleSign = 1.0) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalMinSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
+                                                         scaleSign);
+    }
+
+    std::vector<Ciphertext<Element>> EvalMaxSchemeSwitching(ConstCiphertext<Element> ciphertext,
+                                                            PublicKey<Element> publicKey, uint32_t numValues = 0,
+                                                            uint32_t numSlots = 0, bool oneHot = true,
+                                                            uint32_t pLWE = 0, double scaleSign = 1.0) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalMaxSchemeSwitching(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
+                                                      scaleSign);
+    }
+
+    std::vector<Ciphertext<Element>> EvalMaxSchemeSwitchingAlt(ConstCiphertext<Element> ciphertext,
+                                                               PublicKey<Element> publicKey, uint32_t numValues = 0,
+                                                               uint32_t numSlots = 0, bool oneHot = true,
+                                                               uint32_t pLWE = 0, double scaleSign = 1.0) {
+        VerifySchemeSwitchEnabled(__func__);
+        return m_SchemeSwitch->EvalMaxSchemeSwitchingAlt(ciphertext, publicKey, numValues, numSlots, oneHot, pLWE,
+                                                         scaleSign);
+    }
+
     template <class Archive>
     void save(Archive& ar, std::uint32_t const version) const {
         ar(::cereal::make_nvp("enabled", GetEnabled()));
@@ -1425,6 +1552,19 @@ public:
         }
     }
 
+    /**
+    * @brief VerifySchemeSwitchEnabled is to check if Enable(SCHEMESWITCH) has been called and if it has not
+    *        it will thow an exception
+    * @param functionName is the calling function name. __func__ can be used instead
+    */
+    inline void VerifySchemeSwitchEnabled(const std::string& functionName) const {
+        if (m_SchemeSwitch == nullptr) {
+            std::string errMsg = std::string(functionName) +
+                                 " operation has not been enabled. Enable(SCHEMESWITCH) must be called to enable it.";
+            OPENFHE_THROW(config_error, errMsg);
+        }
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const SchemeBase<Element>& s) {
         out << typeid(s).name() << ":";
         out << " ParamsGen " << (s.m_ParamsGen == 0 ? "none" : typeid(*s.m_ParamsGen).name());
@@ -1435,6 +1575,8 @@ public:
         out << ", AdvancedSHE " << (s.m_AdvancedSHE == 0 ? "none" : typeid(*s.m_AdvancedSHE).name());
         out << ", Multiparty " << (s.m_Multiparty == 0 ? "none" : typeid(*s.m_Multiparty).name());
         out << ", FHE " << (s.m_FHE == 0 ? "none" : typeid(*s.m_FHE).name());
+        out << ", SchemeSwitch " << (s.m_SchemeSwitch == 0 ? "none" : typeid(*s.m_SchemeSwitch).name());
+
         return out;
     }
 
@@ -1447,6 +1589,7 @@ protected:
     std::shared_ptr<AdvancedSHEBase<Element>> m_AdvancedSHE;
     std::shared_ptr<MultipartyBase<Element>> m_Multiparty;
     std::shared_ptr<FHEBase<Element>> m_FHE;
+    std::shared_ptr<FHEBase<Element>> m_SchemeSwitch;
 };
 
 }  // namespace lbcrypto

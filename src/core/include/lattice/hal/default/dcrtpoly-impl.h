@@ -669,6 +669,40 @@ void DCRTPolyImpl<VecType>::SetValuesToZero() {
 }
 
 template <typename VecType>
+void DCRTPolyImpl<VecType>::SetValuesModSwitch(const DCRTPolyImpl& element, const NativeInteger& modulus) {
+    if (element.GetNumOfElements() != 1) {
+        OPENFHE_THROW(not_implemented_error, "SetValuesModSwitch is implemented only for a DCRTPoly with one tower.");
+    }
+
+    auto Q             = element.GetModulus();
+    double Qmod_double = modulus.ConvertToDouble() / Q.ConvertToDouble();
+    this->m_params->SetOriginalModulus(modulus);
+
+    auto input{element.GetElementAtIndex(0)};
+    input.SetFormat(Format::COEFFICIENT);
+
+    size_t size{m_vectors.size()};
+    size_t N_elem(element.m_params->GetRingDimension());
+    size_t N(this->GetRingDimension());
+
+    if (N_elem > N)
+        OPENFHE_THROW(
+            not_available_error,
+            "The ring dimension of the element to copy is larger than the ring dimension of the element to copy to.");
+
+    for (size_t i = 0; i < size; ++i) {
+        NativeVector tmp(N);
+        tmp.SetModulus(modulus);
+
+        for (size_t j = 0; j < N_elem; ++j) {
+            tmp[j] =
+                Integer(static_cast<uint64_t>(std::floor(0.5 + input[j].ConvertToDouble() * Qmod_double))).Mod(modulus);
+        }
+        m_vectors[i].SetValues(std::move(tmp), Format::COEFFICIENT);
+    }
+}
+
+template <typename VecType>
 void DCRTPolyImpl<VecType>::AddILElementOne() {
     if (m_format != Format::EVALUATION)
         OPENFHE_THROW(not_available_error, "Cannot call AddILElementOne() on DCRTPoly in COEFFICIENT format.");

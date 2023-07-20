@@ -68,6 +68,10 @@ void SchemeCKKSRNS::Enable(PKESchemeFeature feature) {
             if (m_FHE == nullptr)
                 m_FHE = std::make_shared<FHECKKSRNS>();
             break;
+        case SCHEMESWITCH:
+            if (m_SchemeSwitch == nullptr)
+                m_SchemeSwitch = std::make_shared<SWITCHCKKSRNS>();
+            break;
         default:
             std::stringstream ss;
             ss << feature;

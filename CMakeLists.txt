@@ -537,6 +537,8 @@ install(DIRECTORY ${THIRDPARTYDIR}/cereal/include/ DESTINATION include/openfhe)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/third-party/google-test/googletest )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/third-party/google-test/googletest/include )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src/core/include )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src/binfhe/include )
+
 include_directories( ${CMAKE_CURRENT_BINARY_DIR}/src/core )
 
 ### Handle third-party gperftools for optional tcmalloc

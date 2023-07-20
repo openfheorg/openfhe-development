@@ -216,6 +216,8 @@ public:
     PolyLargeType CRTInterpolateIndex(usint i) const override;
     Integer GetWorkingModulus() const override;
 
+    void SetValuesModSwitch(const DCRTPolyType& element, const NativeInteger& modulus) override;
+
     std::shared_ptr<Params> GetExtendedCRTBasis(const std::shared_ptr<Params>& paramsP) const override;
 
     void TimesQovert(const std::shared_ptr<Params>& paramsQ, const std::vector<NativeInteger>& tInvModq,

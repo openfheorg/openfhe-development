@@ -93,7 +93,7 @@ std::vector<uint32_t> GenerateDepthByDegreeTable() {
 
 uint32_t GetDepthByDegree(size_t degree) {
     static const std::vector<uint32_t> depthTable = GenerateDepthByDegreeTable();
-    if(degree >= LOWER_BOUND_DEGREE && degree <= UPPER_BOUND_DEGREE)
+    if (degree >= LOWER_BOUND_DEGREE && degree <= UPPER_BOUND_DEGREE)
         return depthTable[degree];
 
     std::string errMsg("Polynomial degree is supported from 5 to 2031 inclusive. Its current value is ");
@@ -101,7 +101,7 @@ uint32_t GetDepthByDegree(size_t degree) {
     OPENFHE_THROW(math_error, errMsg);
 }
 
-}  // "unnamed" namespace
+}  // namespace
 
 const std::complex<double> I(0.0, 1.0);
 double PREC = std::pow(2, -20);
@@ -349,7 +349,7 @@ uint32_t GetMultiplicativeDepthByCoeffVector(const std::vector<double>& vec, boo
     size_t degree      = vecSize - 1;
     uint32_t multDepth = GetDepthByDegree(degree);
 
-    return (isNormalized) ? (multDepth-1) : multDepth;
+    return (isNormalized) ? (multDepth - 1) : multDepth;
 }
 
 std::vector<std::complex<double>> ExtractShiftedDiagonal(const std::vector<std::vector<std::complex<double>>>& A,
@@ -858,6 +858,40 @@ std::vector<int32_t> GetCollapsedFFTParams(uint32_t slots, uint32_t levelBudget,
     // If this return statement changes then CKKS_BOOT_PARAMS should be altered as well
     return {int32_t(levelBudget),     layersCollapse, remCollapse, int32_t(numRotations), b, g,
             int32_t(numRotationsRem), bRem,           gRem};
+}
+
+uint32_t getRatioBSGSLT(uint32_t slots) {
+    return ceil(sqrt(slots));
+}
+
+std::vector<int32_t> FindLTRotationIndicesSwitch(uint32_t dim1, uint32_t m, uint32_t blockDimension) {
+    uint32_t slots;
+    // Set slots depending on packing mode (fully-packed or sparsely-packed)
+    if ((blockDimension == 0) || (blockDimension == m / 4))
+        slots = m / 4;
+    else
+        slots = blockDimension;
+
+    // Computing the baby-step g and the giant-step h
+    uint32_t bStep = (dim1 == 0) ? getRatioBSGSLT(slots) : dim1;
+    uint32_t gStep = ceil(static_cast<double>(slots) / bStep);
+
+    // Computing all indices for baby-step giant-step procedure
+    std::vector<int32_t> indexList;
+    indexList.reserve(bStep + gStep - 2);
+    for (uint32_t i = 0; i < bStep; i++)
+        indexList.emplace_back(i + 1);
+    for (uint32_t i = 2; i < gStep; i++)
+        indexList.emplace_back(bStep * i);
+
+    // Remove possible duplicates
+    sort(indexList.begin(), indexList.end());
+    indexList.erase(unique(indexList.begin(), indexList.end()), indexList.end());
+
+    // Remove automorphisms corresponding to 0
+    indexList.erase(std::remove(indexList.begin(), indexList.end(), 0), indexList.end());
+
+    return indexList;
 }
 
 }  // namespace lbcrypto
