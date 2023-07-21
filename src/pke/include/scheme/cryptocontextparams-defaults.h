@@ -80,6 +80,7 @@ constexpr double desiredPrecision                         = 25;
 constexpr uint32_t statisticalSecurity                    = 30;
 constexpr uint32_t numAdversarialQueries                  = 1;
 constexpr uint32_t thresholdNumOfParties                  = 1;
+constexpr COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = SLACK;
 };  // namespace CKKSRNS_SCHEME_DEFAULTS
 
 namespace BFVRNS_SCHEME_DEFAULTS {

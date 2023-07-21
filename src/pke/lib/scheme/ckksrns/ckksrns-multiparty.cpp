@@ -126,8 +126,9 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale( ConstCiphertext<DC
 	auto cc = ciphertext->GetCryptoContext();
 	const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
 
-	auto compressionLevel = std::dynamic_pointer_cast<CryptoContextImpl
-			<DCRTPoly>>(cc)->GetMMpIntBootCiphertextCompressionLevel();
+	auto compressionLevel = cryptoParams->GetMPIntBootCiphertextCompressionLevel();
+
+	std::cout << "compressionLevel used in actual compute: " << compressionLevel << "\n";
 
 	// Compress ctxt and reduce it to numPrimesToKeep towers
 	// 1 is for the message itself (assuming 1 tower (60-bit) for msg)
@@ -393,8 +394,9 @@ std::vector<Ciphertext<DCRTPoly>> MultipartyCKKSRNS::IntMPBootDecrypt(
 		// Calculate h_{0,i} = publicShare - secretShare
 
 	auto cc = ciphertext->GetCryptoContext();
-	auto compressionLevel = std::dynamic_pointer_cast<CryptoContextImpl
-			<DCRTPoly>>(cc)->GetMMpIntBootCiphertextCompressionLevel();
+	const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersCKKSRNS>(cc->GetCryptoParameters());
+
+	auto compressionLevel = cryptoParams->GetMPIntBootCiphertextCompressionLevel();
 
 	auto& c1 = ciphertext->GetElements()[0]; // input ctxt must only include one element which is c1
 	DCRTPoly Mi = GenerateMi(c1, compressionLevel); // Mi is in NTT domain

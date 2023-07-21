@@ -141,6 +141,11 @@ int main(int argc, char* argv[]) {
 	uint32_t batchSize = 16;
 	parameters.SetBatchSize(batchSize);
 
+	// Protocol-specific parameters (SLACK or COMPACT)
+	auto compressionLevel = COMPRESSION_LEVEL::COMPACT;
+	parameters.SetMPIntBootCiphertextCompressionLevel(compressionLevel);
+
+
 	CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
 	cryptoContext->Enable(PKE);
@@ -158,10 +163,6 @@ int main(int argc, char* argv[]) {
 	std::cout << "TCKKS example with Scaling Technique " << scaleTech << std::endl;
 
 	const usint numParties = 3;
-
-	// Protocol-specific parameters
-	auto compressionLevel = COMPRESSION_LEVEL::SLACK;
-	cryptoContext->SetMMpIntBootCiphertextCompressionLevel(compressionLevel);
 
 	std::cout << "\n===========================IntMPBoot protocol parameters===========================\n";
 	std::cout << "num of parties: " << numParties << "\n";

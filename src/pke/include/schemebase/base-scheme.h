@@ -163,11 +163,12 @@ public:
     }
 
     virtual bool ParamsGenCKKSRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, usint cyclOrder,
-                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ) const {
+                                  usint numPrimes, usint scalingModSize, usint firstModSize, uint32_t numPartQ, 
+                                  COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK) const {
         if (!m_ParamsGen)
             OPENFHE_THROW(config_error, "m_ParamsGen is nullptr");
         return m_ParamsGen->ParamsGenCKKSRNS(cryptoParams, cyclOrder, numPrimes, scalingModSize, firstModSize,
-                                             numPartQ);
+                                             numPartQ, mPIntBootCiphertextCompressionLevel);
     }
 
     virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,

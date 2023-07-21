@@ -58,10 +58,11 @@ public:
                             EncryptionTechnique encTech = STANDARD, MultiplicationTechnique multTech = HPS,
                             MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
                             ExecutionMode executionMode             = EXEC_EVALUATION,
-                            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT)
+                            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
+                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
         : CryptoParametersRNS(params, plaintextModulus, distributionParameter, assuranceMeasure, securityLevel,
                               digitSize, secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech,
-                              multipartyMode, executionMode, decryptionNoiseMode) {}
+                              multipartyMode, executionMode, decryptionNoiseMode, mPIntBootCiphertextCompressionLevel) {}
 
     CryptoParametersCKKSRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams,
                             float distributionParameter, float assuranceMeasure, SecurityLevel securityLevel,
@@ -71,10 +72,11 @@ public:
                             ProxyReEncryptionMode PREMode           = NOT_SET,
                             MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
                             ExecutionMode executionMode             = EXEC_EVALUATION,
-                            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT)
+                            DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
+                            COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
                               secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
-                              multipartyMode, executionMode, decryptionNoiseMode) {}
+                              multipartyMode, executionMode, decryptionNoiseMode, mPIntBootCiphertextCompressionLevel) {}
 
     virtual ~CryptoParametersCKKSRNS() {}
 
