@@ -73,10 +73,14 @@ public:
                             MultipartyMode multipartyMode           = FIXED_NOISE_MULTIPARTY,
                             ExecutionMode executionMode             = EXEC_EVALUATION,
                             DecryptionNoiseMode decryptionNoiseMode = FIXED_NOISE_DECRYPT,
+                            PlaintextModulus noiseScale = 1,
+                            uint32_t statisticalSecurity = 30, 
+                            uint32_t numAdversarialQueries = 1,
+                            uint32_t thresholdNumOfParties = 1,
                             COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel = COMPRESSION_LEVEL::SLACK)
         : CryptoParametersRNS(params, encodingParams, distributionParameter, assuranceMeasure, securityLevel, digitSize,
                               secretKeyDist, maxRelinSkDeg, ksTech, scalTech, encTech, multTech, PREMode,
-                              multipartyMode, executionMode, decryptionNoiseMode, mPIntBootCiphertextCompressionLevel) {}
+                              multipartyMode, executionMode, decryptionNoiseMode, noiseScale, statisticalSecurity, numAdversarialQueries, thresholdNumOfParties, mPIntBootCiphertextCompressionLevel) {}
 
     virtual ~CryptoParametersCKKSRNS() {}
 

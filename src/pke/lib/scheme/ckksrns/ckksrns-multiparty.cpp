@@ -128,8 +128,6 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale( ConstCiphertext<DC
 
 	auto compressionLevel = cryptoParams->GetMPIntBootCiphertextCompressionLevel();
 
-	std::cout << "compressionLevel used in actual compute: " << compressionLevel << "\n";
-
 	// Compress ctxt and reduce it to numPrimesToKeep towers
 	// 1 is for the message itself (assuming 1 tower (60-bit) for msg)
 	size_t scalingFactorBits = cc->GetEncodingParams()->GetPlaintextModulus();
