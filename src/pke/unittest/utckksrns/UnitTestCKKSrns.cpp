@@ -916,8 +916,6 @@ protected:
             results->SetLength(plaintext1->GetLength());
             checkEquality(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                           failmsg + " EvalMult Ct and positive double fails");
-            approximationErrors.emplace_back(
-                CalculateApproximationError<T>(plaintext1->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMult ciphertext * negative double
             cResult = cc->EvalMult(ciphertext1, -1.0);
@@ -928,8 +926,6 @@ protected:
                     << " - we get: " << results->GetCKKSPackedValue();
             checkEquality(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue(), eps,
                           failmsg + " EvalMult Ct and negative double fails; " + buffer1.str());
-            approximationErrors.emplace_back(
-                CalculateApproximationError<T>(plaintextNeg->GetCKKSPackedValue(), results->GetCKKSPackedValue()));
 
             // Testing EvalMultNoRelin ciphertext * ciphertext
             cResult = cc->EvalMultNoRelin(ciphertext1, ciphertext2);
