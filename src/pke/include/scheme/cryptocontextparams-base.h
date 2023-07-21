@@ -164,6 +164,12 @@ class Params {
     // see https://eprint.iacr.org/2022/915 for details
     MultiplicationTechnique multiplicationTechnique;
 
+    // Interactive multi-party bootstrapping parameter
+    // Set the compression level in ciphertext (SLACK or COMPACT)
+	// SLACK has weaker security assumption, thus less efficient
+	// COMPACT has stronger security assumption, thus more efficient
+    COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel;
+
     void SetToDefaults(SCHEME scheme);
 
     void ValidateRingDim(usint ringDim);
@@ -315,6 +321,9 @@ public:
     usint GetMultiHopModSize() const {
         return multiHopModSize;
     }
+    COMPRESSION_LEVEL GetMPIntBootCiphertextCompressionLevel() const {
+        return mPIntBootCiphertextCompressionLevel;
+    }
 
     // setters
     void SetPlaintextModulus(PlaintextModulus ptModulus0) {
@@ -404,6 +413,12 @@ public:
     }
     void SetMultiHopModSize(usint multiHopModSize0) {
         multiHopModSize = multiHopModSize0;
+    }
+    void SetMPIntBootCiphertextCompressionLevel(
+        COMPRESSION_LEVEL inMPIntBootCiphertextCompressionLevel =
+        COMPRESSION_LEVEL::SLACK) {
+        mPIntBootCiphertextCompressionLevel =
+        inMPIntBootCiphertextCompressionLevel;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);

@@ -110,7 +110,10 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetPREMode(),
         parameters.GetMultipartyMode(),
         parameters.GetExecutionMode(),
-        parameters.GetDecryptionNoiseMode());
+        parameters.GetDecryptionNoiseMode(),
+        parameters.GetMPIntBootCiphertextCompressionLevel());
+
+        std::cout << "cl taken from Get: " << parameters.GetMPIntBootCiphertextCompressionLevel() << "\n";
 
     // for CKKS scheme noise scale is always set to 1
     params->SetNoiseScale(1);
@@ -127,7 +130,9 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetMultiplicativeDepth() + 1,
         scalingModSize,
         firstModSize,
-        numLargeDigits);
+        numLargeDigits,
+        parameters.GetMPIntBootCiphertextCompressionLevel()
+        );
     // clang-format on
 
     auto cc = ContextGeneratorType::Factory::GetContext(params, scheme);

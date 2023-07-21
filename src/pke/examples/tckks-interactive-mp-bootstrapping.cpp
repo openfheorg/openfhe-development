@@ -67,9 +67,9 @@ int main(int argc, char* argv[]) {
 	std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) started ...\n";
 
 	TCKKSCollectiveBoot(ScalingTechnique::FIXEDMANUAL); 
-	TCKKSCollectiveBoot(ScalingTechnique::FIXEDAUTO);
-	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
-	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
+	// TCKKSCollectiveBoot(ScalingTechnique::FIXEDAUTO);
+	// TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
+	// TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
 
  	std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) terminated gracefully!\n";
 
@@ -137,6 +137,9 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 
 	uint32_t batchSize = 4;
 	parameters.SetBatchSize(batchSize);
+	// Protocol-specific parameters (SLACK or COMPACT)
+	auto compressionLevel = COMPRESSION_LEVEL::COMPACT;
+	parameters.SetMPIntBootCiphertextCompressionLevel(compressionLevel);
 
 	CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
@@ -155,12 +158,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 	std::cout << "TCKKS example with Scaling Technique " << scaleTech << std::endl;
 
 	const usint numParties = 3; // n: number of parties involved in the interactive protocol
-	// TODO:: fix this
-
-	// Protocol-specific parameters (SLACK or COMPACT)
-	auto compressionLevel = COMPRESSION_LEVEL::SLACK;
-	cryptoContext->SetMMpIntBootCiphertextCompressionLevel(compressionLevel);
-
+	
 	std::cout << "\n===========================IntMPBoot protocol parameters===========================\n";
 	std::cout << "number of parties: " << numParties << "\n";
 	std::cout << "===============================================================\n";

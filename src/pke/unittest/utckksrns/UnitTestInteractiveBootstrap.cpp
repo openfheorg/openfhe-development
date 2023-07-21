@@ -166,8 +166,6 @@ protected:
                                  const std::string& failmsg = std::string()) {
         try {
             CryptoContext<Element> cc(UnitTestGenerateContext(testData));
-            // Protocol-specific parameters
-            cc->SetMMpIntBootCiphertextCompressionLevel(testData.compressionLevel);
 
             // Initialization - Assuming numParties (n) of parties P0 is the leading party
             // generate the joint public key for (s_0 + s_1 + ... + s_n)
@@ -262,8 +260,6 @@ protected:
                                           const std::string& failmsg = std::string()) {
         try {
             CryptoContext<DCRTPoly> cc(UnitTestGenerateContext(testData));
-            // Protocol-specific parameters
-            cc->SetMMpIntBootCiphertextCompressionLevel(testData.compressionLevel);
 
             // Initialize Public Key Containers
             KeyPair<DCRTPoly> kp1;  // Party 1
