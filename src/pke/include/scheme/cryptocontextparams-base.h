@@ -194,7 +194,7 @@ public:
      *
      * @return a vector with names of all data members of Params
      */
-    static std::vector<std::string> getAllParamsDataMembers() {
+    static const std::vector<std::string> getAllParamsDataMembers() {
         return {"scheme",
                 "ptModulus",
                 "digitSize",

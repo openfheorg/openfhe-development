@@ -171,14 +171,16 @@ enum NOISE_FLOODING {
 
 // Defining the level to which the input ciphertext is brought to before
 // interactive multi-party bootstrapping
-enum COMPRESSION_LEVEL
-{
-	// we don't support 0 or 1 compression levels
-	// do not change values here
+enum COMPRESSION_LEVEL {
+    // we don't support 0 or 1 compression levels
+    // do not change values here
 
-	COMPACT = 2, 			// more efficient with stronger security assumption
-	SLACK = 3				// less efficient with weaker security assumption
+    COMPACT = 2,  // more efficient with stronger security assumption
+    SLACK   = 3   // less efficient with weaker security assumption
 };
+COMPRESSION_LEVEL convertToCompressionLevel(const std::string& str);
+COMPRESSION_LEVEL convertToCompressionLevel(uint32_t num);
+std::ostream& operator<<(std::ostream& s, COMPRESSION_LEVEL t);
 
 }  // namespace lbcrypto
 
