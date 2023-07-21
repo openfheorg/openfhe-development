@@ -2,11 +2,12 @@
 
 ## Examples:
 
-We provide the following classes of examples:
+We provide the following classes of examples for symmetric encryption and public-key encryption:
 
 ### Simple Boolean
 
-- bootstrapping for `AP` (DM) and `GINX` (CGGI)
+- evaluation of binary gates and multi-input gates
+- bootstrapping for `AP` (DM) and `GINX` (CGGI) and `LMKCDEY`
 - serialization to binary and json formats
 
 ### Evaluation of functions
@@ -26,4 +27,3 @@ in [Large-Precision Homomorphic Sign Evaluation using FHEW/TFHE Bootstrapping](h
 ## lib
 
 - implementation of the header files
-

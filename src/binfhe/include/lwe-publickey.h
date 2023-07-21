@@ -43,7 +43,7 @@
 
 namespace lbcrypto {
 /**
- * @brief Class that stores the LWE scheme secret key; contains a vector
+ * @brief Class that stores the LWE scheme public key; contains a vector
  */
 class LWEPublicKeyImpl : public Serializable {
 public:

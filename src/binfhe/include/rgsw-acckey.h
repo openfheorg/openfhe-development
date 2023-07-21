@@ -57,7 +57,7 @@ using RingGSWACCKey      = std::shared_ptr<RingGSWACCKeyImpl>;
 using ConstRingGSWACCKey = const std::shared_ptr<const RingGSWACCKeyImpl>;
 
 /**
- * @brief Class that stores the refreshing key (used in bootstrapping)
+ * @brief Class that stores the refresh key (used in bootstrapping)
  * A three-dimensional vector of RingGSW ciphertexts
  */
 class RingGSWACCKeyImpl : public Serializable {
