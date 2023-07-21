@@ -111,7 +111,7 @@ typename ContextGeneratorType::ContextType genCryptoContextCKKSRNSInternal(
         parameters.GetMultipartyMode(),
         parameters.GetExecutionMode(),
         parameters.GetDecryptionNoiseMode(),
-        1,
+        1, // noise scale
         parameters.GetStatisticalSecurity(),
         parameters.GetNumAdversarialQueries(),
         parameters.GetThresholdNumOfParties(),
