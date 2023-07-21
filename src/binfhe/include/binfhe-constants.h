@@ -110,6 +110,9 @@ enum BINFHE_OUTPUT {
 };
 std::ostream& operator<<(std::ostream& s, BINFHE_OUTPUT f);
 
+/**
+ * @brief Bootstrapping method
+ */
 enum BINFHE_METHOD {
     INVALID_METHOD = 0,
     AP,       // Ducas-Micciancio variant
@@ -118,6 +121,9 @@ enum BINFHE_METHOD {
 };
 std::ostream& operator<<(std::ostream& s, BINFHE_METHOD f);
 
+/**
+ * @brief Type of gates supported, with two, three or four inputs
+ */
 enum BINGATE { OR, AND, NOR, NAND, XOR_FAST, XNOR_FAST, MAJORITY, AND3, OR3, AND4, OR4, CMUX, XOR, XNOR };
 std::ostream& operator<<(std::ostream& s, BINGATE f);
 
