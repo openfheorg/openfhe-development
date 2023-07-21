@@ -66,9 +66,9 @@ int main(int argc, char* argv[]) {
 
 	std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) started ...\n";
 
-	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
 	TCKKSCollectiveBoot(ScalingTechnique::FIXEDMANUAL); 
 	TCKKSCollectiveBoot(ScalingTechnique::FIXEDAUTO);
+	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
 	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
 
  	std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) terminated gracefully!\n";

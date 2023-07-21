@@ -70,9 +70,9 @@ int main(int argc, char* argv[]) {
 
 	std::cout << "Interactive (3P) Bootstrapping Ciphertext [Chebyshev] (TCKKS) started ...\n";
 
-	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
 	TCKKSCollectiveBoot(ScalingTechnique::FIXEDMANUAL);
 	TCKKSCollectiveBoot(ScalingTechnique::FIXEDAUTO);
+	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
 	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
 
 	std::cout << "Interactive (3P) Bootstrapping Ciphertext [Chebyshev] (TCKKS) terminated gracefully!\n";
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
 	const usint numParties = 3;
 
 	// Protocol-specific parameters
-	auto compressionLevel = COMPRESSION_LEVEL::COMPACT;
+	auto compressionLevel = COMPRESSION_LEVEL::SLACK;
 	cryptoContext->SetMMpIntBootCiphertextCompressionLevel(compressionLevel);
 
 	std::cout << "\n===========================IntMPBoot protocol parameters===========================\n";

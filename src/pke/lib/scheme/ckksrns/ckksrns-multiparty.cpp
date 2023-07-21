@@ -136,31 +136,28 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale( ConstCiphertext<DC
 				GetAllElements()[0].GetParams()->GetModulus().ConvertToInt()));
 	size_t numTowersToKeep = ( scalingFactorBits / firstModulusSize + 1) + compressionLevel;
 
-	// if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO) {
-	if (false) {
-		// // TODO:: this logic is not needed anymore once moved from Palisade to OpenFHE
+	if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO || 
+		cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
 
-		// if (ciphertext->GetElements()[0].GetNumOfElements()<3) {
-		// 	std::string msg =
-		// 		"IntMPBootAdjustScale: not enough towers in the input polynomial.";
-		// 	OPENFHE_THROW(config_error, msg);
-		// }
+		if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep) {
+			std::string msg =
+				"IntMPBootAdjustScale: not enough towers in the input polynomial.";
+			OPENFHE_THROW(config_error, msg);
+		}
 
-		// auto ciphertextAdjusted = cc->Compress(ciphertext, numTowersToKeep+1);
+		auto ciphertextAdjusted = cc->Compress(ciphertext, numTowersToKeep + 1);
 
-		// double targetSF = cryptoParams->GetScalingFactorReal();
-		// double sourceSF = ciphertextAdjusted->GetScalingFactor();
-		// uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
-		// double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers-1]->GetModulus().ConvertToDouble();
-		// double adjustmentFactor = (targetSF/sourceSF)*(modToDrop/sourceSF);
+		uint32_t lvl       = cryptoParams->GetScalingTechnique() == FLEXIBLEAUTO ? 0 : 1;
+		double targetSF    = cryptoParams->GetScalingFactorReal(lvl);
+		double sourceSF = ciphertextAdjusted->GetScalingFactor();
+		uint32_t numTowers = ciphertextAdjusted->GetElements()[0].GetNumOfElements();
+		double modToDrop = cryptoParams->GetElementParams()->GetParams()[numTowers-1]->GetModulus().ConvertToDouble();
+		double adjustmentFactor = (targetSF/sourceSF)*(modToDrop/sourceSF);
 
-		// // in the case of EXACTRESCALE, we need to bring the ciphertext to the right scale using a
-		// // a scaling multiplication. Note the at currently EXACTRESCALE is only supported for NATIVEINT = 64.
-
-		// ciphertextAdjusted = cc->EvalMult(ciphertextAdjusted, adjustmentFactor);
-		// ciphertextAdjusted = cc->ModReduce(ciphertextAdjusted);
-		// ciphertextAdjusted->SetScalingFactor(targetSF);
-		// return ciphertextAdjusted;
+		ciphertextAdjusted = cc->EvalMult(ciphertextAdjusted, adjustmentFactor);
+		cc->GetScheme()->ModReduceInternalInPlace(ciphertextAdjusted, 1);
+		ciphertextAdjusted->SetScalingFactor(targetSF);
+		return ciphertextAdjusted;
 
 	} else {
 		if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep) {
