@@ -6,7 +6,7 @@ Refer to our [OpenFHE-Readthedocs](https://openfhe-development.readthedocs.io/en
 
 [Binary FHE CryptoContext](binfhecontext.h)
 
-- CryptoContext for the boolean circuit FHE scheme.
+- CryptoContext for the boolean circuit FHE scheme
 - A CryptoContext is the primary object through which we interact with the various `OpenFHE` capabilities
 
 [Binary FHE CryptoContext Serialization](binfhecontext-ser.h)
@@ -36,6 +36,10 @@ Refer to our [OpenFHE-Readthedocs](https://openfhe-development.readthedocs.io/en
 
 - Class for all RGSW parameters used for boolean FHE bootstrapping
 
+[LWE public-key scheme](lwe-pke.h)
+
+- Additive LWE scheme with public-key encryption
+
 [LWE Ciphertext](lwe-ciphertext.h)
 
 - Class for LWE ciphertext for boolean FHE
@@ -44,9 +48,17 @@ Refer to our [OpenFHE-Readthedocs](https://openfhe-development.readthedocs.io/en
 
 - Class for RLWE ciphertext for boolean FHE
 
-[LWE secret key, LWE public key, LWE Keypair](lwe-privatekey.h, lwe-publickey.h, lwe-keypair.h)
+[LWE secret key](lwe-privatekey.h)
 
-- Classes for the secret key of the LWE scheme, public key of the LWE scheme, and keypair of private and public key
+- Class for the secret key of the LWE scheme
+
+[LWE public key](lwe-publickey.h)
+
+- Class for the public key of the LWE scheme, in the case where asymmetric encryption is desired
+
+[LWE Keypair](lwe-keypair.h)
+
+- Classes for the key pair of private and public key, in the case where asymmetric encryption is desired
 
 [LWE switching key](lwe-keyswitchkey.h)
 

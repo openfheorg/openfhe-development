@@ -40,14 +40,14 @@ namespace lbcrypto {
 
 /**
  * @brief Ring GSW accumulator schemes described in
- * https://eprint.iacr.org/2014/816 and https://eprint.iacr.org/2020/086
+ * https://eprint.iacr.org/2018/421.pdf and https://eprint.iacr.org/2020/086
  */
 class RingGSWAccumulatorCGGI final : public RingGSWAccumulator {
 public:
     RingGSWAccumulatorCGGI() = default;
 
     /**
-   * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2014/816
+   * Key generation for internal Ring GSW as described in https://eprint.iacr.org/2018/421.pdf
    *
    * @param params a shared pointer to RingGSW scheme parameters
    * @param skNTT secret key polynomial in the EVALUATION representation

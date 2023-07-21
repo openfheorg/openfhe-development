@@ -45,7 +45,7 @@
 namespace lbcrypto {
 
 /**
- * @brief Additive LWE scheme
+ * @brief Additive public-key LWE scheme
  */
 class LWEEncryptionScheme {
     NativeInteger RoundqQ(const NativeInteger& v, const NativeInteger& q, const NativeInteger& Q) const;
