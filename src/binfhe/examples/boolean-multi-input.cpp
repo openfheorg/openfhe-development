@@ -42,7 +42,7 @@ int main() {
 
     auto cc = BinFHEContext();
 
-    cc.GenerateBinFHEContext(STD128Q_OPT_4);
+    cc.GenerateBinFHEContext(STD128Q_4);
 
     // Sample Program: Step 2: Key Generation
 

@@ -52,46 +52,31 @@ enum BINFHE_PARAMSET {
                      // more than 128 bits of security for classical computer attacks -
                      // optimize runtime by finding a non-power-of-two n
     STD128_AP,       // Optimized for AP (has higher failure probability for GINX) -
-                     // more than 128 bits of security for classical
-                     // computer attacks - uses the same setup as HE standard
-    STD128_APOPT,    // Optimized for AP (has higher failure probability for GINX) -
                      // more than 128 bits of security for classical computer attacks -
                      // optimize runtime by finding a non-power-of-two n
-    STD128,          // more than 128 bits of security for classical
-                     // computer attacks - uses the same setup as HE standard
-    STD128_OPT,      // more than 128 bits of security for classical computer attacks -
+    STD128,          // more than 128 bits of security for classical computer attacks -
                      // optimize runtime by finding a non-power-of-two n
     STD192,          // more than 192 bits of security for classical computer attacks -
-                     // uses the same setup as HE standard
-    STD192_OPT,      // more than 192 bits of security for classical computer attacks -
                      // optimize runtime by finding a non-power-of-two n
     STD256,          // more than 256 bits of security for classical computer attacks -
-                     // uses the same setup as HE standard
-    STD256_OPT,      // more than 256 bits of security for classical computer attacks -
                      // optimize runtime by finding a non-power-of-two n
-    STD128Q,         // more than 128 bits of security for quantum attacks - uses the
-                     // same setup as HE standard
-    STD128Q_OPT,     // more than 128 bits of security for quantum attacks -
+    STD128Q,         // more than 128 bits of security for quantum attacks -
                      // optimize runtime by finding a non-power-of-two n
-    STD192Q,         // more than 192 bits of security for quantum attacks - uses the
-                     // same setup as HE standard
-    STD192Q_OPT,     // more than 192 bits of security for quantum attacks -
+    STD192Q,         // more than 192 bits of security for quantum attacks -
                      // optimize runtime by finding a non-power-of-two n
-    STD256Q,         // more than 256 bits of security for quantum attacks - uses the
-                     // same setup as HE standard
-    STD256Q_OPT,     // more than 256 bits of security for quantum attacks -
+    STD256Q,         // more than 256 bits of security for quantum attacks -
                      // optimize runtime by finding a non-power-of-two n
-    STD128Q_OPT_3,   // more than 128 bits of security for quantum computer attacks -
+    STD128Q_3,       // more than 128 bits of security for quantum computer attacks -
                      // optimize runtime by finding a non-power-of-two n for 3 binary inputs
-    STD192Q_OPT_3,   // more than 192 bits of security for quantum computer attacks -
+    STD192Q_3,       // more than 192 bits of security for quantum computer attacks -
                      // optimize runtime by finding a non-power-of-two n for 3 binary inputs
-    STD256Q_OPT_3,   // more than 256 bits of security for quantum computer attacks -
+    STD256Q_3,       // more than 256 bits of security for quantum computer attacks -
                      // optimize runtime by finding a non-power-of-two n for 3 binary inputs
-    STD128Q_OPT_4,   // more than 128 bits of security for quantum computer attacks -
+    STD128Q_4,       // more than 128 bits of security for quantum computer attacks -
                      // optimize runtime by finding a non-power-of-two n for 4 binary inputs
-    STD192Q_OPT_4,   // more than 192 bits of security for quantum computer attacks -
+    STD192Q_4,       // more than 192 bits of security for quantum computer attacks -
                      // optimize runtime by finding a non-power-of-two n for 4 binary inputs
-    STD256Q_OPT_4,   // more than 256 bits of security for quantum computer attacks -
+    STD256Q_4,       // more than 256 bits of security for quantum computer attacks -
                      // optimize runtime by finding a non-power-of-two n for 4 binary inputs
     SIGNED_MOD_TEST  // special parameter set for confirming the signed modular
                      // reduction in the accumulator updates works correctly
