@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
 	* using GetBootstrapDepth, and add it to levelsUsedBeforeBootstrap to set our initial multiplicative
 	* depth. We recommend using the input parameters below to get started.
 	*/
-	parameters.SetMultiplicativeDepth(11-1);
+	parameters.SetMultiplicativeDepth(10);
 	parameters.SetKeySwitchTechnique(KeySwitchTechnique::HYBRID);
 
 	uint32_t batchSize = 16;

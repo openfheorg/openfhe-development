@@ -115,8 +115,6 @@ protected:
         m_encTechnique  = encTech;
         m_multTechnique = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
-        std::cout << "ERRRRRRRRRRRRR called here\n";
-        std::cout << "cl---: " << mPIntBootCiphertextCompressionLevel << "\n";
     }
 
     CryptoParametersRNS(std::shared_ptr<ParmType> params, EncodingParams encodingParams, float distributionParameter,
@@ -139,8 +137,6 @@ protected:
         m_encTechnique  = encTech;
         m_multTechnique = multTech;
         m_MPIntBootCiphertextCompressionLevel = mPIntBootCiphertextCompressionLevel;
-        std::cout << "ERRRRRRRRRRRRR called here --- \n";
-        std::cout << "cl: " << mPIntBootCiphertextCompressionLevel << "\n";
     }
 
     virtual ~CryptoParametersRNS() {}

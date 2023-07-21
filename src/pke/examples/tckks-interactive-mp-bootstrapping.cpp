@@ -67,9 +67,9 @@ int main(int argc, char* argv[]) {
 	std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) started ...\n";
 
 	TCKKSCollectiveBoot(ScalingTechnique::FIXEDMANUAL); 
-	// TCKKSCollectiveBoot(ScalingTechnique::FIXEDAUTO);
-	// TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
-	// TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
+	TCKKSCollectiveBoot(ScalingTechnique::FIXEDAUTO);
+	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
+	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
 
  	std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) terminated gracefully!\n";
 
@@ -138,7 +138,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 	uint32_t batchSize = 4;
 	parameters.SetBatchSize(batchSize);
 	// Protocol-specific parameters (SLACK or COMPACT)
-	auto compressionLevel = COMPRESSION_LEVEL::COMPACT;
+	auto compressionLevel = COMPRESSION_LEVEL::SLACK;
 	parameters.SetMPIntBootCiphertextCompressionLevel(compressionLevel);
 
 	CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
