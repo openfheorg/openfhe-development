@@ -166,9 +166,9 @@ class Params {
 
     // Interactive multi-party bootstrapping parameter
     // Set the compression level in ciphertext (SLACK or COMPACT)
-	// SLACK has weaker security assumption, thus less efficient
-	// COMPACT has stronger security assumption, thus more efficient
-    COMPRESSION_LEVEL mPIntBootCiphertextCompressionLevel;
+    // SLACK has weaker security assumption, thus less efficient
+    // COMPACT has stronger security assumption, thus more efficient
+    COMPRESSION_LEVEL interactiveBootCompressionLevel;
 
     void SetToDefaults(SCHEME scheme);
 
@@ -228,7 +228,9 @@ public:
                 "noiseEstimate",
                 "desiredPrecision",
                 "statisticalSecurity",
-                "numAdversarialQueries"};
+                "numAdversarialQueries",
+                "thresholdNumOfParties",
+                "interactiveBootCompressionLevel"};
     }
 
     // getters
@@ -321,8 +323,8 @@ public:
     usint GetMultiHopModSize() const {
         return multiHopModSize;
     }
-    COMPRESSION_LEVEL GetMPIntBootCiphertextCompressionLevel() const {
-        return mPIntBootCiphertextCompressionLevel;
+    COMPRESSION_LEVEL GetInteractiveBootCompressionLevel() const {
+        return interactiveBootCompressionLevel;
     }
 
     // setters
@@ -414,11 +416,8 @@ public:
     void SetMultiHopModSize(usint multiHopModSize0) {
         multiHopModSize = multiHopModSize0;
     }
-    void SetMPIntBootCiphertextCompressionLevel(
-        COMPRESSION_LEVEL inMPIntBootCiphertextCompressionLevel =
-        COMPRESSION_LEVEL::SLACK) {
-        mPIntBootCiphertextCompressionLevel =
-        inMPIntBootCiphertextCompressionLevel;
+    void SetInteractiveBootCompressionLevel(COMPRESSION_LEVEL interactiveBootCompressionLevel0) {
+        interactiveBootCompressionLevel = interactiveBootCompressionLevel0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Params& obj);

@@ -48,32 +48,30 @@ using namespace lbcrypto;
 /*
  * A utility class defining a party that is involved in the collective bootstrapping protocol
  */
-struct Party
-{
+struct Party {
 public:
-	usint id; 																// unique party identifier starting from 0
+    usint id;  // unique party identifier starting from 0
 
-	std::vector<Ciphertext<DCRTPoly>> sharesPair; 	// (h_{0,i}, h_{1,i}) = (masked decryption
-																						// share, re-encryption share)
-																						// we use a vector inseat of std::pair for Python API compatibility
+    std::vector<Ciphertext<DCRTPoly>> sharesPair;  // (h_{0,i}, h_{1,i}) = (masked decryption
+                                                   // share, re-encryption share)
+                                                   // we use a vector inseat of std::pair for Python API compatibility
 
-	KeyPair<DCRTPoly> kpShard;							// key-pair shard (pk, sk_i)
+    KeyPair<DCRTPoly> kpShard;  // key-pair shard (pk, sk_i)
 };
 
 void TCKKSCollectiveBoot(enum ScalingTechnique rescaleTech);
 
 int main(int argc, char* argv[]) {
+    std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) started ...\n";
 
-	std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) started ...\n";
+    TCKKSCollectiveBoot(ScalingTechnique::FIXEDMANUAL);
+    TCKKSCollectiveBoot(ScalingTechnique::FIXEDAUTO);
+    TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
+    TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
 
-	TCKKSCollectiveBoot(ScalingTechnique::FIXEDMANUAL); 
-	TCKKSCollectiveBoot(ScalingTechnique::FIXEDAUTO);
-	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
-	TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTOEXT);
+    std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) terminated gracefully!\n";
 
- 	std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) terminated gracefully!\n";
-
-	return 0;
+    return 0;
 }
 
 // Demonstrate interactive multi-party bootstrapping for 3 parties
@@ -81,27 +79,24 @@ int main(int argc, char* argv[]) {
 // Homomorphic Encryption from Ring-Learning-With-Errors"
 
 void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
+    if (scaleTech != ScalingTechnique::FIXEDMANUAL && scaleTech != ScalingTechnique::FIXEDAUTO &&
+        scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT) {
+        std::string errMsg = "ERROR: Scaling technique is not supported!";
+        OPENFHE_THROW(config_error, errMsg);
+    }
 
-	if (scaleTech != ScalingTechnique::FIXEDMANUAL && scaleTech != ScalingTechnique::FIXEDAUTO &&
-		scaleTech != ScalingTechnique::FLEXIBLEAUTO && scaleTech != ScalingTechnique::FLEXIBLEAUTOEXT)
-	{
-		std::string errMsg =
-		          "ERROR: Scaling technique is not supported!";
-		      OPENFHE_THROW(config_error, errMsg);
-	}
-
-	CCParams<CryptoContextCKKSRNS> parameters;
-	// A. Specify main parameters
-	/*  A1) Secret key distribution
+    CCParams<CryptoContextCKKSRNS> parameters;
+    // A. Specify main parameters
+    /*  A1) Secret key distribution
 	* The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY.
 	* The SPARSE_TERNARY distribution was used in the original CKKS paper,
 	* but in this example, we use UNIFORM_TERNARY because this is included in the homomorphic
 	* encryption standard.
 	*/
-	SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
-	parameters.SetSecretKeyDist(secretKeyDist);
+    SecretKeyDist secretKeyDist = UNIFORM_TERNARY;
+    parameters.SetSecretKeyDist(secretKeyDist);
 
-	/*  A2) Desired security level based on FHE standards.
+    /*  A2) Desired security level based on FHE standards.
 	* In this example, we use the "NotSet" option, so the example can run more quickly with
 	* a smaller ring dimension. Note that this should be used only in
 	* non-production environments, or by experts who understand the security
@@ -110,172 +105,162 @@ void TCKKSCollectiveBoot(enum ScalingTechnique scaleTech) {
 	* or 256-bit security, respectively. If you choose one of these as your security level,
 	* you do not need to set the ring dimension.
 	*/
-	parameters.SetSecurityLevel(HEStd_128_classic);
+    parameters.SetSecurityLevel(HEStd_128_classic);
 
-	/*  A3) Scaling parameters.
+    /*  A3) Scaling parameters.
 	* By default, we set the modulus sizes and rescaling technique to the following values
 	* to obtain a good precision and performance tradeoff. We recommend keeping the parameters
 	* below unless you are an FHE expert.
 	*/
-	usint dcrtBits               = 59;
-	usint firstMod               = 60;
+    usint dcrtBits = 59;
+    usint firstMod = 60;
 
-	parameters.SetScalingModSize(dcrtBits);
-	parameters.SetScalingTechnique(scaleTech);
-	parameters.SetFirstModSize(firstMod);
+    parameters.SetScalingModSize(dcrtBits);
+    parameters.SetScalingTechnique(scaleTech);
+    parameters.SetFirstModSize(firstMod);
 
-	/*  A4) Multiplicative depth.
+    /*  A4) Multiplicative depth.
 	* The goal of bootstrapping is to increase the number of available levels we have, or in other words,
 	* to dynamically increase the multiplicative depth. However, the bootstrapping procedure itself
 	* needs to consume a few levels to run. We compute the number of bootstrapping levels required
 	* using GetBootstrapDepth, and add it to levelsUsedBeforeBootstrap to set our initial multiplicative
 	* depth. We recommend using the input parameters below to get started.
 	*/
-	uint32_t multiplicativeDepth = 7;
-	parameters.SetMultiplicativeDepth(multiplicativeDepth);
-	parameters.SetKeySwitchTechnique(KeySwitchTechnique::HYBRID);
+    uint32_t multiplicativeDepth = 7;
+    parameters.SetMultiplicativeDepth(multiplicativeDepth);
+    parameters.SetKeySwitchTechnique(KeySwitchTechnique::HYBRID);
 
-	uint32_t batchSize = 4;
-	parameters.SetBatchSize(batchSize);
-	// Protocol-specific parameters (SLACK or COMPACT)
-	auto compressionLevel = COMPRESSION_LEVEL::SLACK;
-	parameters.SetMPIntBootCiphertextCompressionLevel(compressionLevel);
+    uint32_t batchSize = 4;
+    parameters.SetBatchSize(batchSize);
+    // Protocol-specific parameters (SLACK or COMPACT)
+    auto compressionLevel = COMPRESSION_LEVEL::SLACK;
+    parameters.SetInteractiveBootCompressionLevel(compressionLevel);
 
-	CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
+    CryptoContext<DCRTPoly> cryptoContext = GenCryptoContext(parameters);
 
-	cryptoContext->Enable(PKE);
-	cryptoContext->Enable(KEYSWITCH);
-	cryptoContext->Enable(LEVELEDSHE);
-	cryptoContext->Enable(ADVANCEDSHE);
-	cryptoContext->Enable(MULTIPARTY);
+    cryptoContext->Enable(PKE);
+    cryptoContext->Enable(KEYSWITCH);
+    cryptoContext->Enable(LEVELEDSHE);
+    cryptoContext->Enable(ADVANCEDSHE);
+    cryptoContext->Enable(MULTIPARTY);
 
-	usint ringDim = cryptoContext->GetRingDimension();
-	// This is the maximum number of slots that can be used for full packing.
-	usint maxNumSlots = ringDim / 2;
-	std::cout << "TCKKS scheme is using ring dimension " << ringDim << std::endl;
-	std::cout << "TCKKS scheme number of slots         " << batchSize << std::endl;
-  	std::cout << "TCKKS scheme max number of slots     " << maxNumSlots << std::endl;
-	std::cout << "TCKKS example with Scaling Technique " << scaleTech << std::endl;
+    usint ringDim = cryptoContext->GetRingDimension();
+    // This is the maximum number of slots that can be used for full packing.
+    usint maxNumSlots = ringDim / 2;
+    std::cout << "TCKKS scheme is using ring dimension " << ringDim << std::endl;
+    std::cout << "TCKKS scheme number of slots         " << batchSize << std::endl;
+    std::cout << "TCKKS scheme max number of slots     " << maxNumSlots << std::endl;
+    std::cout << "TCKKS example with Scaling Technique " << scaleTech << std::endl;
 
-	const usint numParties = 3; // n: number of parties involved in the interactive protocol
-	
-	std::cout << "\n===========================IntMPBoot protocol parameters===========================\n";
-	std::cout << "number of parties: " << numParties << "\n";
-	std::cout << "===============================================================\n";
+    const usint numParties = 3;  // n: number of parties involved in the interactive protocol
 
-	std::vector<Party> parties(numParties);
+    std::cout << "\n===========================IntMPBoot protocol parameters===========================\n";
+    std::cout << "number of parties: " << numParties << "\n";
+    std::cout << "===============================================================\n";
 
-	// Joint public key
-	KeyPair<DCRTPoly> kpMultiparty;
+    std::vector<Party> parties(numParties);
 
-	////////////////////////////////////////////////////////////
-	// Perform Key Generation Operation
-	////////////////////////////////////////////////////////////
+    // Joint public key
+    KeyPair<DCRTPoly> kpMultiparty;
 
-	std::cout << "Running key generation (used for source data)..." << std::endl;
+    ////////////////////////////////////////////////////////////
+    // Perform Key Generation Operation
+    ////////////////////////////////////////////////////////////
 
-	// Initialization - Assuming numParties (n) of parties
-	// P0 is the leading party
-	for (usint i = 0 ; i < numParties ; i++)
-	{
-		parties[i].id = i;
-		std::cout << "Party " << parties[i].id << " started.\n";
-		if (0 == i)
-			parties[i].kpShard = cryptoContext->KeyGen();
-		else
-			parties[i].kpShard = cryptoContext->MultipartyKeyGen(parties[0].kpShard.publicKey);
-		std::cout << "Party " << i << " key generation completed.\n";
-	}
-	std::cout << "Joint public key for (s_0 + s_1 + ... + s_n) is generated..." << std::endl;
+    std::cout << "Running key generation (used for source data)..." << std::endl;
 
-	// Assert everything is good
-	for (usint i = 0 ; i < numParties ; i++)
-	{
-		if( !parties[i].kpShard.good() ) {
-				std::cout << "Key generation failed for party " << i << "!" << std::endl;
-				exit(1);
-			}
-	}
+    // Initialization - Assuming numParties (n) of parties
+    // P0 is the leading party
+    for (usint i = 0; i < numParties; i++) {
+        parties[i].id = i;
+        std::cout << "Party " << parties[i].id << " started.\n";
+        if (0 == i)
+            parties[i].kpShard = cryptoContext->KeyGen();
+        else
+            parties[i].kpShard = cryptoContext->MultipartyKeyGen(parties[0].kpShard.publicKey);
+        std::cout << "Party " << i << " key generation completed.\n";
+    }
+    std::cout << "Joint public key for (s_0 + s_1 + ... + s_n) is generated..." << std::endl;
 
-	// Generate the collective public key
-	std::vector<PrivateKey<DCRTPoly>> secretKeys;
-	for (usint i = 0 ; i < numParties ; i++)
-	{
-		secretKeys.push_back(parties[i].kpShard.secretKey);
-	}
-	kpMultiparty = cryptoContext->MultipartyKeyGen(secretKeys);	// This is the same core key generation operation.
+    // Assert everything is good
+    for (usint i = 0; i < numParties; i++) {
+        if (!parties[i].kpShard.good()) {
+            std::cout << "Key generation failed for party " << i << "!" << std::endl;
+            exit(1);
+        }
+    }
 
-	// Prepare input vector
-	std::vector<std::complex<double>> msg1({-0.9, -0.8, 0.2, 0.4});
-	Plaintext ptxt1 = cryptoContext->MakeCKKSPackedPlaintext(msg1);
+    // Generate the collective public key
+    std::vector<PrivateKey<DCRTPoly>> secretKeys;
+    for (usint i = 0; i < numParties; i++) {
+        secretKeys.push_back(parties[i].kpShard.secretKey);
+    }
+    kpMultiparty = cryptoContext->MultipartyKeyGen(secretKeys);  // This is the same core key generation operation.
 
-	// Encryption
-	Ciphertext<DCRTPoly> inCtxt = cryptoContext->Encrypt(kpMultiparty.publicKey, ptxt1);
-	DCRTPoly ptxtpoly = ptxt1->GetElement<DCRTPoly>();
+    // Prepare input vector
+    std::vector<std::complex<double>> msg1({-0.9, -0.8, 0.2, 0.4});
+    Plaintext ptxt1 = cryptoContext->MakeCKKSPackedPlaintext(msg1);
 
-	std::cout << "Compressing ctxt to the smallest possible number of towers!\n";
-	inCtxt = cryptoContext->IntMPBootAdjustScale(inCtxt);
+    // Encryption
+    Ciphertext<DCRTPoly> inCtxt = cryptoContext->Encrypt(kpMultiparty.publicKey, ptxt1);
+    DCRTPoly ptxtpoly           = ptxt1->GetElement<DCRTPoly>();
 
-	// INTERACTIVE BOOTSTRAPPING STARTS
+    std::cout << "Compressing ctxt to the smallest possible number of towers!\n";
+    inCtxt = cryptoContext->IntMPBootAdjustScale(inCtxt);
 
-	std::cout << "\n============================ INTERACTIVE BOOTSTRAPPING STARTS ============================\n";
+    // INTERACTIVE BOOTSTRAPPING STARTS
 
-	// Leading party (P0) generates a Common Random Poly (a) at max coefficient modulus (QNumPrime).
-	// a is sampled at random uniformly from R_{Q}
-	Ciphertext<DCRTPoly> a = cryptoContext->IntMPBootRandomElementGen(parties[0].kpShard.publicKey);
-	std::cout << "Common Random Poly (a) has been generated with coefficient modulus Q\n";
+    std::cout << "\n============================ INTERACTIVE BOOTSTRAPPING STARTS ============================\n";
 
+    // Leading party (P0) generates a Common Random Poly (a) at max coefficient modulus (QNumPrime).
+    // a is sampled at random uniformly from R_{Q}
+    Ciphertext<DCRTPoly> a = cryptoContext->IntMPBootRandomElementGen(parties[0].kpShard.publicKey);
+    std::cout << "Common Random Poly (a) has been generated with coefficient modulus Q\n";
 
-	// Each party generates its own shares: maskedDecryptionShare and reEncryptionShare
-	std::vector<std::vector<Ciphertext<DCRTPoly>>> sharesPairVec;
+    // Each party generates its own shares: maskedDecryptionShare and reEncryptionShare
+    std::vector<std::vector<Ciphertext<DCRTPoly>>> sharesPairVec;
 
-	// Make a copy of input ciphertext and remove the first element (c0), we only
-	// c1 for IntMPBootDecrypt
-	auto c1 = inCtxt->Clone();
-	c1->GetElements().erase(c1->GetElements().begin());
-	for (usint i = 0 ; i < numParties ; i++)
-	{
-		std::cout << "Party " << i << " started its part in the Collective Bootstrapping Protocol\n";
-		parties[i].sharesPair = cryptoContext->IntMPBootDecrypt(parties[i].kpShard.secretKey, c1, a);
-		sharesPairVec.push_back(parties[i].sharesPair);
-	}
+    // Make a copy of input ciphertext and remove the first element (c0), we only
+    // c1 for IntMPBootDecrypt
+    auto c1 = inCtxt->Clone();
+    c1->GetElements().erase(c1->GetElements().begin());
+    for (usint i = 0; i < numParties; i++) {
+        std::cout << "Party " << i << " started its part in the Collective Bootstrapping Protocol\n";
+        parties[i].sharesPair = cryptoContext->IntMPBootDecrypt(parties[i].kpShard.secretKey, c1, a);
+        sharesPairVec.push_back(parties[i].sharesPair);
+    }
 
+    // P0 finalizes the protocol by aggregating the shares and reEncrypting the results
+    auto aggregatedSharesPair = cryptoContext->IntMPBootAdd(sharesPairVec);
+    // Make sure you provide the non-striped ciphertext (inCtxt) in IntMPBootEncrypt
+    auto outCtxt = cryptoContext->IntMPBootEncrypt(parties[0].kpShard.publicKey, aggregatedSharesPair, a, inCtxt);
 
-	// P0 finalizes the protocol by aggregating the shares and reEncrypting the results
-	auto aggregatedSharesPair = cryptoContext->IntMPBootAdd(sharesPairVec);
-	// Make sure you provide the non-striped ciphertext (inCtxt) in IntMPBootEncrypt
-	auto outCtxt = cryptoContext->IntMPBootEncrypt(parties[0].kpShard.publicKey, aggregatedSharesPair, a, inCtxt);
+    // INTERACTIVE BOOTSTRAPPING ENDS
+    std::cout << "\n============================ INTERACTIVE BOOTSTRAPPING ENDED ============================\n";
 
-	// INTERACTIVE BOOTSTRAPPING ENDS
-	std::cout << "\n============================ INTERACTIVE BOOTSTRAPPING ENDED ============================\n";
+    // Distributed decryption
 
-	// Distributed decryption
+    std::cout << "\n============================ INTERACTIVE DECRYPTION STARTED ============================ \n";
 
-	std::cout << "\n============================ INTERACTIVE DECRYPTION STARTED ============================ \n";
+    std::vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
 
-	std::vector<Ciphertext<DCRTPoly>> partialCiphertextVec;
+    std::cout << "Party 0 started its part in the collective decryption protocol\n";
+    partialCiphertextVec.push_back(cryptoContext->MultipartyDecryptLead({outCtxt}, parties[0].kpShard.secretKey)[0]);
 
-	std::cout << "Party 0 started its part in the collective decryption protocol\n";
-	partialCiphertextVec.push_back(
-			cryptoContext->MultipartyDecryptLead({outCtxt}, parties[0].kpShard.secretKey)[0]
-			);
+    for (usint i = 1; i < numParties; i++) {
+        std::cout << "Party " << i << " started its part in the collective decryption protocol\n";
+        partialCiphertextVec.push_back(
+            cryptoContext->MultipartyDecryptMain({outCtxt}, parties[i].kpShard.secretKey)[0]);
+    }
 
-	for (usint i = 1 ; i < numParties ; i++)
-	{
-		std::cout << "Party " << i << " started its part in the collective decryption protocol\n";
-		partialCiphertextVec.push_back(
-			cryptoContext->MultipartyDecryptMain({outCtxt}, parties[i].kpShard.secretKey)[0]
-			);
-	}
+    // Checking the results
+    std::cout << "MultipartyDecryptFusion ...\n";
+    Plaintext plaintextMultiparty;
+    cryptoContext->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultiparty);
+    plaintextMultiparty->SetLength(msg1.size());
 
-	// Checking the results
-	std::cout << "MultipartyDecryptFusion ...\n";
-	Plaintext plaintextMultiparty;
-	cryptoContext->MultipartyDecryptFusion(partialCiphertextVec, &plaintextMultiparty);
-	plaintextMultiparty->SetLength(msg1.size());
+    std::cout << "Original plaintext \n\t" << ptxt1->GetCKKSPackedValue() << std::endl;
+    std::cout << "Result after bootstrapping \n\t" << plaintextMultiparty->GetCKKSPackedValue() << std::endl;
 
-	std::cout << "Original plaintext \n\t" << ptxt1->GetCKKSPackedValue() << std::endl;
-	std::cout << "Result after bootstrapping \n\t" << plaintextMultiparty->GetCKKSPackedValue() << std::endl;
-
-	std::cout << "\n============================ INTERACTIVE DECRYPTION ENDED ============================\n";
+    std::cout << "\n============================ INTERACTIVE DECRYPTION ENDED ============================\n";
 }

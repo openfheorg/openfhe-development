@@ -74,7 +74,6 @@ struct TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT : public BaseTestCase {
     std::string description;
 
     // additional test case data
-    COMPRESSION_LEVEL compressionLevel;
     uint32_t numParties;
 
     std::string buildTestName() const {
@@ -85,8 +84,7 @@ struct TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT : public BaseTestCase {
     std::string toString() const {
         std::stringstream ss;
         ss << "[testCase: " << testCaseType << "], [description: " << description
-           << "], [params: " << getCryptoContextParamOverrides() << "], [numParties: " << numParties
-           << "], [compressionLevel: " << compressionLevel << "] ";
+           << "], [params: " << getCryptoContextParamOverrides() << "], [numParties: " << numParties << "] ";
         return ss.str();
     }
 };
@@ -123,10 +121,7 @@ static std::vector<TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT> getTestData(std::string
         it += numOverrides;
         if (it != vec.end()) {
             // process additional test date
-            testCase.compressionLevel = convertToCompressionLevel(*it);
-            if (++it != vec.end()) {
-                testCase.numParties = static_cast<uint32_t>(std::stoul(*it));
-            }
+            testCase.numParties = static_cast<uint32_t>(std::stoul(*it));
         }
 
         allData.push_back(std::move(testCase));
@@ -379,7 +374,7 @@ protected:
 };
 
 //===========================================================================================================
-TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, Automorphism) {
+TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
     setupSignals();
     auto test = GetParam();
 
