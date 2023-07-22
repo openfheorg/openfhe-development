@@ -44,37 +44,38 @@ namespace lbcrypto {
 
 //====================================================================================================================
 #define SET_TO_SCHEME_DEFAULT(SCHEME, var) this->var = SCHEME##_DEFAULTS::var  // see cryptocontextparams-defaults.h
-#define SET_TO_SCHEME_DEFAULTS(SCHEME)                          \
-    {                                                           \
-        SET_TO_SCHEME_DEFAULT(SCHEME, scheme);                  \
-        SET_TO_SCHEME_DEFAULT(SCHEME, ptModulus);               \
-        SET_TO_SCHEME_DEFAULT(SCHEME, digitSize);               \
-        SET_TO_SCHEME_DEFAULT(SCHEME, standardDeviation);       \
-        SET_TO_SCHEME_DEFAULT(SCHEME, secretKeyDist);           \
-        SET_TO_SCHEME_DEFAULT(SCHEME, maxRelinSkDeg);           \
-        SET_TO_SCHEME_DEFAULT(SCHEME, ksTech);                  \
-        SET_TO_SCHEME_DEFAULT(SCHEME, scalTech);                \
-        SET_TO_SCHEME_DEFAULT(SCHEME, batchSize);               \
-        SET_TO_SCHEME_DEFAULT(SCHEME, firstModSize);            \
-        SET_TO_SCHEME_DEFAULT(SCHEME, numLargeDigits);          \
-        SET_TO_SCHEME_DEFAULT(SCHEME, multiplicativeDepth);     \
-        SET_TO_SCHEME_DEFAULT(SCHEME, scalingModSize);          \
-        SET_TO_SCHEME_DEFAULT(SCHEME, securityLevel);           \
-        SET_TO_SCHEME_DEFAULT(SCHEME, ringDim);                 \
-        SET_TO_SCHEME_DEFAULT(SCHEME, evalAddCount);            \
-        SET_TO_SCHEME_DEFAULT(SCHEME, keySwitchCount);          \
-        SET_TO_SCHEME_DEFAULT(SCHEME, encryptionTechnique);     \
-        SET_TO_SCHEME_DEFAULT(SCHEME, multiplicationTechnique); \
-        SET_TO_SCHEME_DEFAULT(SCHEME, multiHopModSize);         \
-        SET_TO_SCHEME_DEFAULT(SCHEME, PREMode);                 \
-        SET_TO_SCHEME_DEFAULT(SCHEME, multipartyMode);          \
-        SET_TO_SCHEME_DEFAULT(SCHEME, executionMode);           \
-        SET_TO_SCHEME_DEFAULT(SCHEME, decryptionNoiseMode);     \
-        SET_TO_SCHEME_DEFAULT(SCHEME, noiseEstimate);           \
-        SET_TO_SCHEME_DEFAULT(SCHEME, desiredPrecision);        \
-        SET_TO_SCHEME_DEFAULT(SCHEME, statisticalSecurity);     \
-        SET_TO_SCHEME_DEFAULT(SCHEME, numAdversarialQueries);   \
-        SET_TO_SCHEME_DEFAULT(SCHEME, thresholdNumOfParties);   \
+#define SET_TO_SCHEME_DEFAULTS(SCHEME)                                  \
+    {                                                                   \
+        SET_TO_SCHEME_DEFAULT(SCHEME, scheme);                          \
+        SET_TO_SCHEME_DEFAULT(SCHEME, ptModulus);                       \
+        SET_TO_SCHEME_DEFAULT(SCHEME, digitSize);                       \
+        SET_TO_SCHEME_DEFAULT(SCHEME, standardDeviation);               \
+        SET_TO_SCHEME_DEFAULT(SCHEME, secretKeyDist);                   \
+        SET_TO_SCHEME_DEFAULT(SCHEME, maxRelinSkDeg);                   \
+        SET_TO_SCHEME_DEFAULT(SCHEME, ksTech);                          \
+        SET_TO_SCHEME_DEFAULT(SCHEME, scalTech);                        \
+        SET_TO_SCHEME_DEFAULT(SCHEME, batchSize);                       \
+        SET_TO_SCHEME_DEFAULT(SCHEME, firstModSize);                    \
+        SET_TO_SCHEME_DEFAULT(SCHEME, numLargeDigits);                  \
+        SET_TO_SCHEME_DEFAULT(SCHEME, multiplicativeDepth);             \
+        SET_TO_SCHEME_DEFAULT(SCHEME, scalingModSize);                  \
+        SET_TO_SCHEME_DEFAULT(SCHEME, securityLevel);                   \
+        SET_TO_SCHEME_DEFAULT(SCHEME, ringDim);                         \
+        SET_TO_SCHEME_DEFAULT(SCHEME, evalAddCount);                    \
+        SET_TO_SCHEME_DEFAULT(SCHEME, keySwitchCount);                  \
+        SET_TO_SCHEME_DEFAULT(SCHEME, encryptionTechnique);             \
+        SET_TO_SCHEME_DEFAULT(SCHEME, multiplicationTechnique);         \
+        SET_TO_SCHEME_DEFAULT(SCHEME, multiHopModSize);                 \
+        SET_TO_SCHEME_DEFAULT(SCHEME, PREMode);                         \
+        SET_TO_SCHEME_DEFAULT(SCHEME, multipartyMode);                  \
+        SET_TO_SCHEME_DEFAULT(SCHEME, executionMode);                   \
+        SET_TO_SCHEME_DEFAULT(SCHEME, decryptionNoiseMode);             \
+        SET_TO_SCHEME_DEFAULT(SCHEME, noiseEstimate);                   \
+        SET_TO_SCHEME_DEFAULT(SCHEME, desiredPrecision);                \
+        SET_TO_SCHEME_DEFAULT(SCHEME, statisticalSecurity);             \
+        SET_TO_SCHEME_DEFAULT(SCHEME, numAdversarialQueries);           \
+        SET_TO_SCHEME_DEFAULT(SCHEME, thresholdNumOfParties);           \
+        SET_TO_SCHEME_DEFAULT(SCHEME, interactiveBootCompressionLevel); \
     }
 void Params::SetToDefaults(SCHEME scheme) {
     switch (scheme) {
@@ -96,8 +97,8 @@ void Params::SetToDefaults(SCHEME scheme) {
 //====================================================================================================================
 void Params::ValidateRingDim(usint ringDim) {
     if (!IsPowerOfTwo(ringDim)) {
-        std::string errorMsg(
-            std::string("Invalid ringDim [") + std::to_string(ringDim) + "]. Ring dimension must be a power of 2.");
+        std::string errorMsg(std::string("Invalid ringDim [") + std::to_string(ringDim) +
+                             "]. Ring dimension must be a power of 2.");
         OPENFHE_THROW(config_error, errorMsg);
     }
 }
@@ -105,7 +106,7 @@ void Params::ValidateRingDim(usint ringDim) {
 Params::Params(const std::vector<std::string>& vals) {
     if (getAllParamsDataMembers().size() != vals.size()) {
         std::string errMsg(std::string("The number of data members and the number of values do not match: ") +
-            std::to_string(getAllParamsDataMembers().size()) + " != " + std::to_string(vals.size()));
+                           std::to_string(getAllParamsDataMembers().size()) + " != " + std::to_string(vals.size()));
         OPENFHE_THROW(config_error, errMsg);
     }
 
@@ -166,6 +167,10 @@ Params::Params(const std::vector<std::string>& vals) {
         statisticalSecurity = static_cast<usint>(std::stoul(*it));
     if (!(++it)->empty())
         numAdversarialQueries = static_cast<usint>(std::stoul(*it));
+    if (!(++it)->empty())
+        thresholdNumOfParties = static_cast<usint>(std::stoul(*it));
+    if (!(++it)->empty())
+        interactiveBootCompressionLevel = convertToCompressionLevel(*it);
 }
 //====================================================================================================================
 // clang-format off
@@ -198,7 +203,8 @@ std::ostream& operator<<(std::ostream& os, const Params& obj) {
         << "; desiredPrecision: " << obj.desiredPrecision
         << "; statisticalSecurity: " << obj.statisticalSecurity
         << "; numAdversarialQueries: " << obj.numAdversarialQueries
-        << "; ThresholdNumOfParties: " << obj.thresholdNumOfParties;
+        << "; thresholdNumOfParties: " << obj.thresholdNumOfParties
+        << "; interactiveBootCompressionLevel: " << obj.interactiveBootCompressionLevel;
 
     return os;
 }

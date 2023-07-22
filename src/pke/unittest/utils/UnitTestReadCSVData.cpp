@@ -92,17 +92,32 @@ std::vector<std::vector<std::string>> readDataFile(const std::string& dataFileNa
         OPENFHE_THROW(lbcrypto::config_error, "Cannot read file " + dataFileName);
     }
 
-    checkColumnNamesForCryptocontextParameters(testData);
+    try {
+        checkColumnNamesForCryptocontextParameters(testData);
 
-    std::vector<std::vector<std::string>> fileRows;
-    for (std::string line; std::getline(testData, line);) {
-        // skip all commented lines; they start with #
-        if (line[0] != '#') {
-            auto row = tokenize(line, DELIMITER);
-            fileRows.push_back(std::move(row));
+        std::vector<std::vector<std::string>> fileRows;
+        for (std::string line; std::getline(testData, line);) {
+            // skip all commented lines; they start with #
+            if (line[0] != '#') {
+                auto row = tokenize(line, DELIMITER);
+                fileRows.push_back(std::move(row));
+            }
         }
-    }
 
-    return fileRows;
+        return fileRows;
+    }
+    catch (std::exception& e) {
+        std::string errMsg(std::string("Exception for data file ") + dataFileName + ": " + e.what());
+        OPENFHE_THROW(lbcrypto::config_error, errMsg);
+    }
+    catch (...) {
+#if defined EMSCRIPTEN
+        std::string name("EMSCRIPTEN_UNKNOWN");
+#else
+        std::string name(demangle(__cxxabiv1::__cxa_current_exception_type()->name()));
+#endif
+        std::string errMsg(std::string("Unknown exception for data file ") + dataFileName + ": type " + name);
+        OPENFHE_THROW(lbcrypto::config_error, errMsg);
+    }
 }
 //===========================================================================================================
