@@ -83,6 +83,15 @@ bool CoefPackedEncoding::Encode() {
         encodedNativeVector = encodedNativeVector.Times(scalingFactorInt);
     }
     else {
+        // the alignment is different for MinGW:
+        // error: 'void* __builtin_memmove(void*, const void*, long long unsigned int)' forming offset 8 is out of the bounds [0, 8] [-Werror=array-bounds=]
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+        auto lb = LowBound();
+        auto hb = HighBound();
+#pragma GCC diagnostic pop
+#endif
         encodeVec(this->encodedVector, mod, LowBound(), HighBound(), this->value, this->GetSchemeID());
     }
 

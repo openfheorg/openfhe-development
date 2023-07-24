@@ -165,7 +165,7 @@ public:
                                              numPartQ);
     }
 
-    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
                                  usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
         if (!m_ParamsGen)
@@ -805,14 +805,14 @@ public:
         return;
     }
 
-    virtual Ciphertext<DCRTPoly> MultByInteger(ConstCiphertext<DCRTPoly> ciphertext, uint64_t integer) const {
+    virtual Ciphertext<Element> MultByInteger(ConstCiphertext<Element> ciphertext, uint64_t integer) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
         return m_LeveledSHE->MultByInteger(ciphertext, integer);
     }
 
-    virtual void MultByIntegerInPlace(Ciphertext<DCRTPoly>& ciphertext, uint64_t integer) const {
+    virtual void MultByIntegerInPlace(Ciphertext<Element>& ciphertext, uint64_t integer) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext)
             OPENFHE_THROW(config_error, "Input ciphertext is nullptr");
@@ -998,7 +998,7 @@ public:
         return m_LeveledSHE->Compress(ciphertext, towersLeft);
     }
 
-    virtual void AdjustLevelsInPlace(Ciphertext<DCRTPoly>& ciphertext1, Ciphertext<DCRTPoly>& ciphertext2) const {
+    virtual void AdjustLevelsInPlace(Ciphertext<Element>& ciphertext1, Ciphertext<Element>& ciphertext2) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext1)
             OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
@@ -1008,8 +1008,8 @@ public:
         return;
     }
 
-    virtual void AdjustLevelsAndDepthInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                             Ciphertext<DCRTPoly>& ciphertext2) const {
+    virtual void AdjustLevelsAndDepthInPlace(Ciphertext<Element>& ciphertext1,
+                                             Ciphertext<Element>& ciphertext2) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext1)
             OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");
@@ -1019,8 +1019,8 @@ public:
         return;
     }
 
-    virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<DCRTPoly>& ciphertext1,
-                                                  Ciphertext<DCRTPoly>& ciphertext2) const {
+    virtual void AdjustLevelsAndDepthToOneInPlace(Ciphertext<Element>& ciphertext1,
+                                                  Ciphertext<Element>& ciphertext2) const {
         VerifyLeveledSHEEnabled(__func__);
         if (!ciphertext1)
             OPENFHE_THROW(config_error, "Input ciphertext1 is nullptr");

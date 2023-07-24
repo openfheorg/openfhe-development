@@ -114,7 +114,7 @@ public:
    * @param numPartQ number of partitions of Q for HYBRID key switching
    * @param multihopQBound bound for the HRA-secure mode of PRE
    */
-    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<DCRTPoly>> cryptoParams, uint32_t evalAddCount,
+    virtual bool ParamsGenBGVRNS(std::shared_ptr<CryptoParametersBase<Element>> cryptoParams, uint32_t evalAddCount,
                                  uint32_t keySwitchCount, usint cyclOrder, usint numPrimes, usint firstModSize,
                                  usint dcrtBits, uint32_t numPartQ, usint multihopQBound) const {
         OPENFHE_THROW(not_implemented_error, "This signature for ParamsGen is not supported for this scheme.");

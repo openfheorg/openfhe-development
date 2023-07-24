@@ -77,6 +77,8 @@ template class Matrix<Field2n>;
 
 CEREAL_CLASS_VERSION(lbcrypto::ElemParams<NativeInteger>, lbcrypto::ElemParams<NativeInteger>::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<NativeInteger>, lbcrypto::ILParamsImpl<NativeInteger>::SerializedVersion());
+CEREAL_REGISTER_TYPE(lbcrypto::ILParamsImpl<NativeInteger>);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::ElemParams<NativeInteger>, lbcrypto::ILParamsImpl<NativeInteger>);
 // CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<NativeInteger>,lbcrypto::ILDCRTParams<NativeInteger>::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::NativePoly, lbcrypto::NativePoly::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::Field2n, lbcrypto::Field2n::SerializedVersion());
@@ -110,6 +112,8 @@ template Matrix<M2Integer> Rotate(Matrix<M2DCRTPoly> const& inMat);
 
 CEREAL_CLASS_VERSION(lbcrypto::ElemParams<M2Integer>, lbcrypto::ElemParams<M2Integer>::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M2Integer>, lbcrypto::ILParamsImpl<M2Integer>::SerializedVersion());
+CEREAL_REGISTER_TYPE(lbcrypto::ILParamsImpl<M2Integer>);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::ElemParams<M2Integer>, lbcrypto::ILParamsImpl<M2Integer>);
 CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M2Integer>, lbcrypto::ILDCRTParams<M2Integer>::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M2Poly, lbcrypto::M2Poly::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M2DCRTPoly, lbcrypto::M2DCRTPoly::SerializedVersion());
@@ -144,6 +148,8 @@ template Matrix<M4Integer> Rotate(Matrix<M4DCRTPoly> const& inMat);
 
 CEREAL_CLASS_VERSION(lbcrypto::ElemParams<M4Integer>, lbcrypto::ElemParams<M4Integer>::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M4Integer>, lbcrypto::ILParamsImpl<M4Integer>::SerializedVersion());
+CEREAL_REGISTER_TYPE(lbcrypto::ILParamsImpl<M4Integer>);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::ElemParams<M4Integer>, lbcrypto::ILParamsImpl<M4Integer>);
 CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M4Integer>, lbcrypto::ILDCRTParams<M4Integer>::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M4Poly, lbcrypto::M4Poly::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M4DCRTPoly, lbcrypto::M4DCRTPoly::SerializedVersion());
@@ -178,6 +184,8 @@ template Matrix<M6Integer> Rotate(Matrix<M6DCRTPoly> const& inMat);
 
 CEREAL_CLASS_VERSION(lbcrypto::ElemParams<M6Integer>, lbcrypto::ElemParams<M6Integer>::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::ILParamsImpl<M6Integer>, lbcrypto::ILParamsImpl<M6Integer>::SerializedVersion());
+CEREAL_REGISTER_TYPE(lbcrypto::ILParamsImpl<M6Integer>);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(lbcrypto::ElemParams<M6Integer>, lbcrypto::ILParamsImpl<M6Integer>);
 CEREAL_CLASS_VERSION(lbcrypto::ILDCRTParams<M6Integer>, lbcrypto::ILDCRTParams<M6Integer>::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M6Poly, lbcrypto::M6Poly::SerializedVersion());
 CEREAL_CLASS_VERSION(lbcrypto::M6DCRTPoly, lbcrypto::M6DCRTPoly::SerializedVersion());

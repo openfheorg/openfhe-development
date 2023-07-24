@@ -50,4 +50,8 @@ CEREAL_CLASS_VERSION(lbcrypto::CiphertextImpl<lbcrypto::NativePoly>,
 CEREAL_CLASS_VERSION(lbcrypto::CiphertextImpl<lbcrypto::DCRTPoly>,
                      lbcrypto::CiphertextImpl<lbcrypto::DCRTPoly>::SerializedVersion());
 
+CEREAL_REGISTER_TYPE(lbcrypto::CiphertextImpl<lbcrypto::Poly>);
+CEREAL_REGISTER_TYPE(lbcrypto::CiphertextImpl<lbcrypto::NativePoly>);
+CEREAL_REGISTER_TYPE(lbcrypto::CiphertextImpl<lbcrypto::DCRTPoly>);
+
 #endif

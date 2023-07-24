@@ -454,7 +454,7 @@ DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const DCRTPolyImpl<VecTy
         m_vectors.emplace_back(p, m_format, true);
         const auto& m = p->GetModulus();
         for (usint e = 0; e < rhs.GetLength(); ++e)
-            m_vectors.back()[e] = std::move(rhs[e].Mod(m));
+            m_vectors.back()[e] = rhs[e].Mod(m);
     }
     return *this;
 }
