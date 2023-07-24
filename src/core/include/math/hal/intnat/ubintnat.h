@@ -759,7 +759,8 @@ public:
     NativeIntegerT& ModAddFastEq(const NativeIntegerT& b, const NativeIntegerT& modulus) {
         auto r{m_value + b.m_value};
         auto& mv{modulus.m_value};
-        if (r >= mv)
+        // TODO: This should be (. >= mv), but using > for performance. Fix This.
+        if (r > mv)
             return *this = r - mv;
         return *this = r;
     }
@@ -1270,7 +1271,8 @@ public:
                               typename std::enable_if_t<!std::is_same_v<T, DNativeInt>, bool> = true) const {
         DNativeInt rv{static_cast<DNativeInt>(m_value) * b.m_value};
         DNativeInt dmv{modulus.m_value};
-        if (rv >= dmv)
+        // TODO: This should be (. >= mv), but using > for performance. Fix This.
+        if (rv > dmv)
             return {rv % dmv};
         return {rv};
     }
@@ -1703,7 +1705,7 @@ public:
    * @return the length of the representation in a specific base.
    */
 
-    // TODO
+    // TODO: only base 2?
     usint GetLengthForBase(usint base) const {
         return NativeIntegerT::GetMSB();
     }
