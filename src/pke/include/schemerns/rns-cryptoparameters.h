@@ -1751,6 +1751,7 @@ public:
         ar(cereal::make_nvp("dnum", m_numPartQ));
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
+        ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
     }
 
     template <class Archive>
@@ -1768,6 +1769,7 @@ public:
         ar(cereal::make_nvp("dnum", m_numPartQ));
         ar(cereal::make_nvp("ab", m_auxBits));
         ar(cereal::make_nvp("eb", m_extraBits));
+        ar(cereal::make_nvp("ccl", m_MPIntBootCiphertextCompressionLevel));
     }
 
     std::string SerializedObjectName() const override {
