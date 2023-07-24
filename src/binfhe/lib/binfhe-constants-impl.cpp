@@ -70,8 +70,14 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
         case STD256Q:
             s << "STD256Q";
             break;
+        case STD128_3:
+            s << "STD128_3";
+            break;
         case STD128Q_3:
             s << "STD128Q_3";
+            break;
+        case STD128Q_3_LMKCDEY:
+            s << "STD128Q_3_LMKCDEY";
             break;
         case STD192Q_3:
             s << "STD192Q_3";
@@ -79,8 +85,14 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
         case STD256Q_3:
             s << "STD256Q_3";
             break;
+        case STD128_4:
+            s << "STD128_4";
+            break;
         case STD128Q_4:
             s << "STD128Q_4";
+            break;
+        case STD128Q_4_LMKCDEY:
+            s << "STD128Q_4_LMKCDEY";
             break;
         case STD192Q_4:
             s << "STD192Q_4";
