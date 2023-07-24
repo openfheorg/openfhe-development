@@ -44,8 +44,6 @@
 
 using namespace lbcrypto;
 
-namespace lbcrypto {
-
 static std::vector<usint> tow_args({1, 2, 4, 8});
 
 static const usint DCRTBITS     = MAX_MODULUS_SIZE;
@@ -135,8 +133,6 @@ static void GenerateDCRTPolys(std::map<usint, std::shared_ptr<ILDCRTParams<BigIn
         polyArrayCoef[pair.first] = std::make_shared<std::vector<DCRTPoly>>(std::move(vecCoef));
     }
 }
-
-}  // namespace lbcrypto
 
 std::shared_ptr<ILNativeParams> Nativeparms;
 std::map<usint, std::shared_ptr<ILDCRTParams<BigInteger>>> DCRTparms;

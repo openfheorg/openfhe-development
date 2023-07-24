@@ -306,6 +306,13 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddEq(const BigVe
 }
 
 template <class IntegerType>
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModAddNoCheckEq(const BigVectorFixedT& b) {
+    for (usint i = 0; i < m_length; ++i)
+        m_data[i].ModAddFastEq(b.m_data[i], m_modulus);
+    return *this;
+}
+
+template <class IntegerType>
 BigVectorFixedT<IntegerType> BigVectorFixedT<IntegerType>::ModSub(const IntegerType& b) const {
     BigVectorFixedT ans(*this);
     ans.ModSubEq(b);
@@ -419,6 +426,14 @@ BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModMulEq(const BigVe
     for (usint i = 0; i < this->m_length; i++) {
         this->m_data[i].ModMulEq(b.m_data[i], this->m_modulus, mu);
     }
+    return *this;
+}
+
+template <class IntegerType>
+BigVectorFixedT<IntegerType>& BigVectorFixedT<IntegerType>::ModMulNoCheckEq(const BigVectorFixedT& b) {
+    auto mu{m_modulus.ComputeMu()};
+    for (usint i = 0; i < m_length; ++i)
+        m_data[i].ModMulEq(b[i], m_modulus, mu);
     return *this;
 }
 

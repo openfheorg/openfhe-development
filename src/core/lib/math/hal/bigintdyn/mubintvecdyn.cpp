@@ -275,6 +275,13 @@ mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModAddEq(const mubintvec& b) {
 }
 
 template <class ubint_el_t>
+mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModAddNoCheckEq(const mubintvec& b) {
+    for (size_t i = 0; i < m_data.size(); ++i)
+        m_data[i].ModAddEq(b.m_data[i], m_modulus);
+    return *this;
+}
+
+template <class ubint_el_t>
 mubintvec<ubint_el_t> mubintvec<ubint_el_t>::ModSub(const ubint_el_t& b) const {
     auto ans(*this);
     auto modulus{m_modulus};
@@ -377,6 +384,19 @@ mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModMulEq(const mubintvec& b) {
         OPENFHE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different moduli");
     if (m_data.size() != b.m_data.size())
         OPENFHE_THROW(lbcrypto::math_error, "mubintvec multiplying vectors of different lengths");
+    #ifdef NO_BARRETT
+    for (size_t i = 0; i < m_data.size(); ++i)
+        m_data[i].ModMulFastEq(b[i], m_modulus);
+    #else
+    auto mu(m_modulus.ComputeMu());
+    for (size_t i = 0; i < m_data.size(); ++i)
+        m_data[i].ModMulFastEq(b[i], m_modulus, mu);
+    #endif
+    return *this;
+}
+
+template <class ubint_el_t>
+mubintvec<ubint_el_t>& mubintvec<ubint_el_t>::ModMulNoCheckEq(const mubintvec& b) {
     #ifdef NO_BARRETT
     for (size_t i = 0; i < m_data.size(); ++i)
         m_data[i].ModMulFastEq(b[i], m_modulus);

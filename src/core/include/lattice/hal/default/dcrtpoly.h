@@ -74,8 +74,29 @@ public:
     DCRTPolyImpl() = default;
 
     DCRTPolyImpl(const DCRTPolyType& e) noexcept : m_params{e.m_params}, m_format{e.m_format}, m_vectors{e.m_vectors} {}
+    DCRTPolyType& operator=(const DCRTPolyType& rhs) noexcept override {
+        m_params  = rhs.m_params;
+        m_format  = rhs.m_format;
+        m_vectors = rhs.m_vectors;
+        return *this;
+    }
+
+    DCRTPolyImpl(const PolyLargeType& e, const std::shared_ptr<Params>& params) noexcept;
+    DCRTPolyType& operator=(const PolyLargeType& rhs) noexcept;
+
+    DCRTPolyImpl(const PolyType& e, const std::shared_ptr<Params>& params) noexcept;
+    DCRTPolyType& operator=(const PolyType& rhs) noexcept;
+
     DCRTPolyImpl(DCRTPolyType&& e) noexcept
         : m_params{std::move(e.m_params)}, m_format{e.m_format}, m_vectors{std::move(e.m_vectors)} {}
+    DCRTPolyType& operator=(DCRTPolyType&& rhs) noexcept override {
+        m_params  = std::move(rhs.m_params);
+        m_format  = std::move(rhs.m_format);
+        m_vectors = std::move(rhs.m_vectors);
+        return *this;
+    }
+
+    explicit DCRTPolyImpl(const std::vector<PolyType>& elements);
 
     DCRTPolyImpl(const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
                  bool initializeElementToZero = false) noexcept
@@ -85,29 +106,10 @@ public:
             m_vectors.emplace_back(p, m_format, initializeElementToZero);
     }
 
-    DCRTPolyImpl(const DggType& dgg, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
-    DCRTPolyImpl(const BugType& bug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
-    DCRTPolyImpl(const TugType& tug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION,
-                 uint32_t h = 0);
-    DCRTPolyImpl(DugType& dug, const std::shared_ptr<Params>& params, Format format = Format::EVALUATION);
-    DCRTPolyImpl(const PolyLargeType& element, const std::shared_ptr<Params>& params);
-    DCRTPolyImpl(const PolyType& element, const std::shared_ptr<Params>& params);
-    explicit DCRTPolyImpl(const std::vector<PolyType>& elements);
-
-    DCRTPolyType& operator=(const DCRTPolyType& rhs) noexcept override {
-        m_params  = rhs.m_params;
-        m_format  = rhs.m_format;
-        m_vectors = rhs.m_vectors;
-        return *this;
-    }
-    DCRTPolyType& operator=(DCRTPolyType&& rhs) noexcept override {
-        m_params  = std::move(rhs.m_params);
-        m_format  = std::move(rhs.m_format);
-        m_vectors = std::move(rhs.m_vectors);
-        return *this;
-    }
-    DCRTPolyType& operator=(const PolyLargeType& rhs) noexcept;
-    DCRTPolyType& operator=(const PolyType& rhs) noexcept;
+    DCRTPolyImpl(const DggType& dgg, const std::shared_ptr<Params>& p, Format f = Format::EVALUATION);
+    DCRTPolyImpl(const BugType& bug, const std::shared_ptr<Params>& p, Format f = Format::EVALUATION);
+    DCRTPolyImpl(const TugType& tug, const std::shared_ptr<Params>& p, Format f = Format::EVALUATION, uint32_t h = 0);
+    DCRTPolyImpl(DugType& dug, const std::shared_ptr<Params>& p, Format f = Format::EVALUATION);
 
     DCRTPolyType& operator=(std::initializer_list<uint64_t> rhs) noexcept override;
     DCRTPolyType& operator=(uint64_t val) noexcept;
@@ -128,6 +130,7 @@ public:
     }
 
     bool operator==(const DCRTPolyType& rhs) const override;
+
     DCRTPolyType& operator+=(const DCRTPolyType& rhs) override;
     DCRTPolyType& operator+=(const Integer& rhs) override;
     DCRTPolyType& operator+=(const NativeInteger& rhs) override;
@@ -157,13 +160,19 @@ public:
     DCRTPolyType Plus(const Integer& rhs) const override;
     DCRTPolyType Plus(const std::vector<Integer>& rhs) const;
     DCRTPolyType Plus(const DCRTPolyType& rhs) const override {
+        if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
+            OPENFHE_THROW(math_error, "RingDimension missmatch");
+        if (m_format != rhs.m_format)
+            OPENFHE_THROW(not_implemented_error, "Format missmatch");
         size_t size{m_vectors.size()};
         if (size != rhs.m_vectors.size())
             OPENFHE_THROW(math_error, "tower size mismatch; cannot add");
+        if (m_vectors[0].GetModulus() != rhs.m_vectors[0].GetModulus())
+            OPENFHE_THROW(math_error, "Modulus missmatch");
         DCRTPolyType tmp(m_params, m_format);
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
         for (size_t i = 0; i < size; ++i)
-            tmp.m_vectors[i] = m_vectors[i].Plus(rhs.m_vectors[i]);
+            tmp.m_vectors[i] = m_vectors[i].PlusNoCheck(rhs.m_vectors[i]);
         return tmp;
     }
 
@@ -172,13 +181,19 @@ public:
     DCRTPolyType Minus(const std::vector<Integer>& rhs) const;
 
     DCRTPolyType Times(const DCRTPolyType& rhs) const override {
+        if (m_params->GetRingDimension() != rhs.m_params->GetRingDimension())
+            OPENFHE_THROW(math_error, "RingDimension missmatch");
+        if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
+            OPENFHE_THROW(not_implemented_error, "operator* for DCRTPolyImpl supported only in Format::EVALUATION");
         size_t size{m_vectors.size()};
         if (size != rhs.m_vectors.size())
             OPENFHE_THROW(math_error, "tower size mismatch; cannot multiply");
+        if (m_vectors[0].GetModulus() != rhs.m_vectors[0].GetModulus())
+            OPENFHE_THROW(math_error, "Modulus missmatch");
         DCRTPolyType tmp(m_params, m_format);
 #pragma omp parallel for num_threads(OpenFHEParallelControls.GetThreadLimit(size))
         for (size_t i = 0; i < size; ++i)
-            tmp.m_vectors[i] = m_vectors[i].Times(rhs.m_vectors[i]);
+            tmp.m_vectors[i] = m_vectors[i].TimesNoCheck(rhs.m_vectors[i]);
         return tmp;
     }
     DCRTPolyType Times(const Integer& rhs) const override;

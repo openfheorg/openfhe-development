@@ -56,21 +56,56 @@
 namespace lbcrypto {
 
 template <typename VecType>
-DCRTPolyImpl<VecType>::DCRTPolyImpl(const DCRTPolyImpl<VecType>::PolyLargeType& element,
-                                    const std::shared_ptr<DCRTPolyImpl::Params>& params)
-    : m_params{params}, m_format{element.GetFormat()} {
-    if (element.GetCyclotomicOrder() != m_params->GetCyclotomicOrder())
-        OPENFHE_THROW(math_error, "Cyclotomic order mismatch on input vector and parameters");
-    *this = element;
+DCRTPolyImpl<VecType>::DCRTPolyImpl(const PolyLargeType& rhs,
+                                    const std::shared_ptr<DCRTPolyImpl::Params>& params) noexcept
+    : DCRTPolyImpl<VecType>::DCRTPolyImpl(params, rhs.GetFormat(), true) {
+    m_params->SetOriginalModulus(rhs.GetModulus());
+    size_t size{m_vectors.size()};
+    uint32_t rdim{rhs.GetLength()};
+    for (size_t i{0}; i < size; ++i) {
+        auto& v{m_vectors[i]};
+        const auto& m{v.GetParams()->GetModulus()};
+        for (uint32_t j{0}; j < rdim; ++j)
+            v[j] = rhs[j].Mod(m);
+    }
 }
 
 template <typename VecType>
-DCRTPolyImpl<VecType>::DCRTPolyImpl(const DCRTPolyImpl::PolyType& element,
-                                    const std::shared_ptr<DCRTPolyImpl::Params>& params)
-    : m_params{params}, m_format{element.GetFormat()} {
-    if (element.GetCyclotomicOrder() != m_params->GetCyclotomicOrder())
-        OPENFHE_THROW(math_error, "Cyclotomic order mismatch on input vector and parameters");
-    *this = element;
+DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const PolyLargeType& rhs) noexcept {
+    m_params->SetOriginalModulus(rhs.GetModulus());
+    m_vectors.clear();
+    m_vectors.reserve(m_params->GetParams().size());
+    uint32_t rdim{rhs.GetLength()};
+    for (const auto& p : m_params->GetParams()) {
+        m_vectors.emplace_back(p, m_format, true);
+        const auto& m = p->GetModulus();
+        for (uint32_t e = 0; e < rdim; ++e)
+            m_vectors.back()[e] = rhs[e].Mod(m);
+    }
+    return *this;
+}
+
+template <typename VecType>
+DCRTPolyImpl<VecType>::DCRTPolyImpl(const PolyType& rhs, const std::shared_ptr<DCRTPolyImpl::Params>& params) noexcept
+    : m_params{params}, m_format{rhs.GetFormat()}, m_vectors(params->GetParams().size(), rhs) {
+    size_t size{m_vectors.size()};
+    const auto& p{params->GetParams()};
+    for (size_t i{1}; i < size; ++i)
+        m_vectors[i].SwitchModulus(p[i]->GetModulus(), p[i]->GetRootOfUnity(), 0, 0);
+}
+
+template <typename VecType>
+DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const PolyType& rhs) noexcept {
+    m_vectors.clear();
+    m_vectors.reserve(m_params->GetParams().size());
+    bool first{true};
+    for (const auto& p : m_params->GetParams()) {
+        m_vectors.emplace_back(rhs);
+        if (!first)
+            m_vectors.back().SwitchModulus(p->GetModulus(), p->GetRootOfUnity(), 0, 0);
+        first = false;
+    }
+    return *this;
 }
 
 /* Construct using a tower of vectors.
@@ -431,38 +466,6 @@ bool DCRTPolyImpl<VecType>::operator==(const DCRTPolyImpl& rhs) const {
     return ((m_format == rhs.m_format) && (m_params->GetCyclotomicOrder() == rhs.m_params->GetCyclotomicOrder()) &&
             (m_params->GetModulus() == rhs.m_params->GetModulus()) && (m_vectors.size() == rhs.m_vectors.size()) &&
             (m_vectors == rhs.m_vectors));
-}
-
-template <typename VecType>
-DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const DCRTPolyImpl<VecType>::PolyLargeType& rhs) noexcept {
-    //    if (rhs.GetModulus() > m_params->GetModulus())
-    //        OPENFHE_THROW(math_error, "Modulus passed to constructor larger than DCRT big modulus");
-    m_params->SetOriginalModulus(rhs.GetModulus());
-    m_vectors.clear();
-    m_vectors.reserve(m_params->GetParams().size());
-    for (const auto& p : m_params->GetParams()) {
-        m_vectors.emplace_back(p, m_format, true);
-        const auto& m = p->GetModulus();
-        for (usint e = 0; e < rhs.GetLength(); ++e)
-            m_vectors.back()[e] = std::move(rhs[e].Mod(m));
-    }
-    return *this;
-}
-
-template <typename VecType>
-DCRTPolyImpl<VecType>& DCRTPolyImpl<VecType>::operator=(const DCRTPolyImpl<VecType>::PolyType& rhs) noexcept {
-    //    if (Integer(rhs.GetModulus()) > m_params->GetModulus())
-    //        OPENFHE_THROW(math_error, "Modulus passed to constructor larger than DCRT big modulus");
-    m_vectors.clear();
-    m_vectors.reserve(m_params->GetParams().size());
-    bool first{true};
-    for (const auto& p : m_params->GetParams()) {
-        m_vectors.emplace_back(rhs);
-        if (!first)
-            m_vectors.back().SwitchModulus(p->GetModulus(), p->GetRootOfUnity(), 0, 0);
-        first = false;
-    }
-    return *this;
 }
 
 template <typename VecType>

@@ -53,21 +53,6 @@
 namespace lbcrypto {
 
 template <typename VecType>
-PolyImpl<VecType>::PolyImpl(const std::shared_ptr<PolyImpl::Params>& params, Format format,
-                            bool initializeElementToZero)
-    : m_format{format}, m_params{params} {
-    if (initializeElementToZero)
-        PolyImpl<VecType>::SetValuesToZero();
-}
-
-template <typename VecType>
-PolyImpl<VecType>::PolyImpl(bool initializeElementToMax, const std::shared_ptr<PolyImpl::Params>& params, Format format)
-    : m_format{format}, m_params{params} {
-    if (initializeElementToMax)
-        PolyImpl<VecType>::SetValuesToMax();
-}
-
-template <typename VecType>
 PolyImpl<VecType>::PolyImpl(const DggType& dgg, const std::shared_ptr<PolyImpl::Params>& params, Format format)
     : m_format{Format::COEFFICIENT},
       m_params{params},
@@ -97,25 +82,6 @@ PolyImpl<VecType>::PolyImpl(const TugType& tug, const std::shared_ptr<PolyImpl::
     : m_format{Format::COEFFICIENT},
       m_params{params},
       m_values{std::make_unique<VecType>(tug.GenerateVector(params->GetRingDimension(), params->GetModulus(), h))} {
-    PolyImpl<VecType>::SetFormat(format);
-}
-
-template <typename VecType>
-PolyImpl<VecType>::PolyImpl(const PolyNative& rhs, Format format) : m_format{rhs.GetFormat()} {
-    auto c   = rhs.GetParams()->GetCyclotomicOrder();
-    auto m   = rhs.GetParams()->GetModulus().ConvertToInt();
-    auto r   = rhs.GetParams()->GetRootOfUnity().ConvertToInt();
-    m_params = std::make_shared<PolyImpl::Params>(c, m, r);
-
-    auto& v    = rhs.GetValues();
-    usint vlen = m_params->GetRingDimension();
-    VecType tmp(vlen);
-    tmp.SetModulus(m_params->GetModulus());
-
-    for (usint i = 0; i < vlen; ++i)
-        tmp[i] = Integer(v[i]);
-
-    m_values = std::make_unique<VecType>(tmp);
     PolyImpl<VecType>::SetFormat(format);
 }
 
@@ -294,22 +260,6 @@ PolyImpl<VecType> PolyImpl<VecType>::Minus(const PolyImpl& rhs) const {
 }
 
 template <typename VecType>
-PolyImpl<VecType> PolyImpl<VecType>::Times(const PolyImpl& rhs) const {
-    if (m_format != Format::EVALUATION || rhs.m_format != Format::EVALUATION)
-        OPENFHE_THROW(not_implemented_error, "operator* for PolyImpl supported only in Format::EVALUATION");
-    PolyImpl<VecType> tmp(m_params, m_format);
-    tmp.SetValues((*m_values).ModMul(*rhs.m_values), m_format);
-    return tmp;
-}
-
-template <typename VecType>
-PolyImpl<VecType> PolyImpl<VecType>::TimesNoCheck(const PolyImpl& rhs) const {
-    PolyImpl<VecType> tmp(m_params, m_format);
-    tmp.SetValues((*m_values).ModMul(*rhs.m_values), m_format);
-    return tmp;
-}
-
-template <typename VecType>
 PolyImpl<VecType> PolyImpl<VecType>::MultiplyAndRound(const typename VecType::Integer& p,
                                                       const typename VecType::Integer& q) const {
     PolyImpl<VecType> tmp(m_params, m_format);
@@ -346,18 +296,6 @@ PolyImpl<VecType>& PolyImpl<VecType>::operator-=(const PolyImpl& element) {
     if (!m_values)
         m_values = std::make_unique<VecType>(m_params->GetRingDimension(), m_params->GetModulus());
     m_values->ModSubEq(*element.m_values);
-    return *this;
-}
-
-template <typename VecType>
-PolyImpl<VecType>& PolyImpl<VecType>::operator*=(const PolyImpl& element) {
-    if (m_format != Format::EVALUATION || element.m_format != Format::EVALUATION)
-        OPENFHE_THROW(not_implemented_error, "operator*= for PolyImpl only supported in Format::EVALUATION");
-    if (m_values) {
-        m_values->ModMulEq(*element.m_values);
-        return *this;
-    }
-    m_values = std::make_unique<VecType>(m_params->GetRingDimension(), m_params->GetModulus());
     return *this;
 }
 
@@ -472,24 +410,25 @@ void PolyImpl<VecType>::SwitchModulus(const Integer& modulus, const Integer& roo
 
 template <typename VecType>
 void PolyImpl<VecType>::SwitchFormat() {
-    if (m_params->GetRingDimension() != (m_params->GetCyclotomicOrder() >> 1)) {
+    const auto& co{m_params->GetCyclotomicOrder()};
+    const auto& rd{m_params->GetRingDimension()};
+    const auto& ru{m_params->GetRootOfUnity()};
+
+    if (rd != (co >> 1)) {
         PolyImpl<VecType>::ArbitrarySwitchFormat();
         return;
     }
 
-    if (m_values == nullptr)
+    if (!m_values)
         OPENFHE_THROW(not_available_error, "Poly switch format to empty values");
 
-    const auto& r = m_params->GetRootOfUnity();
-    const auto& c = m_params->GetCyclotomicOrder();
-    if (m_format == Format::COEFFICIENT) {
-        m_format = Format::EVALUATION;
-        ChineseRemainderTransformFTT<VecType>().ForwardTransformToBitReverseInPlace(r, c, &(*m_values));
-    }
-    else {
+    if (m_format != Format::COEFFICIENT) {
         m_format = Format::COEFFICIENT;
-        ChineseRemainderTransformFTT<VecType>().InverseTransformFromBitReverseInPlace(r, c, &(*m_values));
+        ChineseRemainderTransformFTT<VecType>().InverseTransformFromBitReverseInPlace(ru, co, &(*m_values));
+        return;
     }
+    m_format = Format::EVALUATION;
+    ChineseRemainderTransformFTT<VecType>().ForwardTransformToBitReverseInPlace(ru, co, &(*m_values));
 }
 
 template <typename VecType>
@@ -502,12 +441,12 @@ void PolyImpl<VecType>::ArbitrarySwitchFormat() {
     const auto& co = m_params->GetCyclotomicOrder();
     if (m_format == Format::COEFFICIENT) {
         m_format = Format::EVALUATION;
-        auto v   = ChineseRemainderTransformArb<VecType>().ForwardTransform(*m_values, lr, bm, br, co);
+        auto&& v = ChineseRemainderTransformArb<VecType>().ForwardTransform(*m_values, lr, bm, br, co);
         m_values = std::make_unique<VecType>(v);
     }
     else {
         m_format = Format::COEFFICIENT;
-        auto v   = ChineseRemainderTransformArb<VecType>().InverseTransform(*m_values, lr, bm, br, co);
+        auto&& v = ChineseRemainderTransformArb<VecType>().InverseTransform(*m_values, lr, bm, br, co);
         m_values = std::make_unique<VecType>(v);
     }
 }

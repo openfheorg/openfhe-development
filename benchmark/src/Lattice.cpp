@@ -53,8 +53,6 @@
 
 using namespace lbcrypto;
 
-namespace lbcrypto {
-
 template <typename E>
 static E makeElement(std::shared_ptr<lbcrypto::ILParamsImpl<typename E::Integer>> params) {
     typename E::Vector vec = makeVector<typename E::Vector>(params->GetRingDimension(), params->GetModulus());
@@ -113,8 +111,6 @@ static void GeneratePolys(std::map<usint, std::shared_ptr<P>>& parmArray, std::m
             polyArray[pair.first].push_back(makeElement<E>(parmArray[pair.first]));
     }
 }
-
-}  // namespace lbcrypto
 
 std::map<usint, std::shared_ptr<ILNativeParams>> Nativeparms;
 std::map<usint, std::vector<NativePoly>> Nativepolys;
