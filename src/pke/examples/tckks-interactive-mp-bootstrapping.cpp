@@ -64,6 +64,7 @@ void TCKKSCollectiveBoot(enum ScalingTechnique rescaleTech);
 int main(int argc, char* argv[]) {
     std::cout << "Interactive Multi-Party Bootstrapping Ciphertext (TCKKS) started ...\n";
 
+    // Same test with different rescaling techniques in CKKS
     TCKKSCollectiveBoot(ScalingTechnique::FIXEDMANUAL);
     TCKKSCollectiveBoot(ScalingTechnique::FIXEDAUTO);
     TCKKSCollectiveBoot(ScalingTechnique::FLEXIBLEAUTO);
