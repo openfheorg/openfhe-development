@@ -135,8 +135,7 @@ static std::vector<TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT> testCasesUTCKKSRNS_INTE
 class UTCKKSRNS_INTERACTIVE_BOOT : public ::testing::TestWithParam<TEST_CASE_UTCKKSRNS_INTERACTIVE_BOOT> {
     using Element = DCRTPoly;
     // The precision after which we consider two values equal as CKKS works for approximate numbers.
-    const double epsSmall = EPSILON;
-    const double epsLarge = 0.0001;
+    const double eps = 0.0001;
 
     /**
      * Party is a utility class defining a party involved in the collective bootstrapping protocol
@@ -229,7 +228,7 @@ protected:
             Plaintext resultPtxt;
             cc->MultipartyDecryptFusion(partialCiphertextVec, &resultPtxt);
             resultPtxt->SetLength(inVec.size());
-            checkEquality(ptxt->GetCKKSPackedValue(), resultPtxt->GetCKKSPackedValue(), epsLarge,
+            checkEquality(ptxt->GetCKKSPackedValue(), resultPtxt->GetCKKSPackedValue(), eps,
                           failmsg + " Interactive multiparty bootstrapping fails");
         }
         catch (std::exception& e) {
@@ -352,7 +351,7 @@ protected:
             const std::vector<std::complex<double>> result1{0.0179885, 0.0474289, 0.119205, 0.268936, 0.5,
                                                             0.731064,  0.880795,  0.952571, 0.982011};
             Plaintext plaintextResult1 = cc->MakeCKKSPackedPlaintext(result1);
-            checkEquality(plaintextResult1->GetCKKSPackedValue(), plaintextMultiparty->GetCKKSPackedValue(), epsLarge,
+            checkEquality(plaintextResult1->GetCKKSPackedValue(), plaintextMultiparty->GetCKKSPackedValue(), eps,
                           failmsg + " Interactive multiparty bootstrapping Chebyshev fails");
         }
         catch (std::exception& e) {
