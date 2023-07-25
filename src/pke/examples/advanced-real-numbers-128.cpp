@@ -101,13 +101,13 @@ int main(int argc, char* argv[]) {
     ManualRescaleDemo(FIXEDMANUAL);
 
     /*
-   * Our implementation of CKKS supports three different algorithms
-   * for key switching, namely BV, GHS, and HYBRID. BV corresponds to
+   * Our implementation of CKKS supports two different algorithms
+   * for key switching, namely BV and HYBRID. BV corresponds to
    * a technique also known as digit decomposition (both RNS and based
-   * on a digit size). GHS corresponds to ciphertext
-   * modulus doubling, and HYBRID combines the characteristics of both
+   * on a digit size). GHS (not implemented separately anymore) corresponds to ciphertext
+   * modulus doubling. HYBRID combines the characteristics of both
    * BV and GHS. Please refer to the documentation of KeySwitchBVGen,
-   * KeySwitchGHSGen, and KeySwitchHybridGen in scheme/ckks/ckks.h for more
+   * KeySwitchGHSGen, and KeySwitchHybridGen in keyswitch-bv.h/cpp and keyswitch-hybrid.h/cpp for more
    * details about the different key switch techniques.
    *
    * For most cases, HYBRID will be the most appropriate and efficient
@@ -123,9 +123,8 @@ int main(int argc, char* argv[]) {
    * we want to perform multiple different rotations to the same
    * ciphertext, we can compute one part of the rotation algorithm once,
    * and reuse it multiple times. Please refer to the documentation of
-   * EvalFastRotationPrecomputeBV, EvalFastRotationPrecomputeGHS, and
-   * EvalFastRotationPrecomputeHybrid in scheme/ckks/ckks.h for more details on
-   * hoisting in BV, GHS, and HYBRID key switching.
+   * EvalFastRotationPrecompute in keyswitch-bv.h/cpp and keyswitch-hybrid.h/cpp
+   * for more details on hoisting in BV and HYBRID key switching.
    */
     FastRotationsDemo1();
     FastRotationsDemo2();

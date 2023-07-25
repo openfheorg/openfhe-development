@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
    * on a digit size). GHS (not implemented separately anymore) corresponds to ciphertext
    * modulus doubling, and HYBRID combines the characteristics of both
    * BV and GHS. Please refer to the documentation of KeySwitchGen in
-   * keyswitch-bv.h/cpp and keyswitch.h/cpp for more
+   * keyswitch-bv.h/cpp and keyswitch-hybrid.h/cpp for more
    * details about the different key switch techniques.
    *
    * For most cases, HYBRID will be the most appropriate and efficient
