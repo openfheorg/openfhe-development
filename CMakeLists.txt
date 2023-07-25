@@ -76,6 +76,7 @@ option( WITH_NTL "Include MATHBACKEND 6 and NTL in build by setting WITH_NTL to 
 option( WITH_TCM "Activate tcmalloc by setting WITH_TCM to ON"                       OFF )
 option( WITH_NATIVEOPT "Use machine-specific optimizations"                          OFF )
 option( WITH_COVTEST "Turn on to enable coverage testing"                            OFF )
+option( WITH_NOISE_DEBUG "Use only when running lattice estimator; not for production" OFF )
 option( USE_MACPORTS "Use MacPorts installed packages"                               OFF )
 
 # Set required number of bits for native integer in build by setting NATIVE_SIZE to 64 or 128
@@ -104,6 +105,7 @@ message( STATUS "NATIVE_SIZE:      ${NATIVE_SIZE}")
 message( STATUS "CKKS_M_FACTOR:    ${CKKS_M_FACTOR}")
 message( STATUS "WITH_NATIVEOPT:   ${WITH_NATIVEOPT}")
 message( STATUS "WITH_COVTEST:     ${WITH_COVTEST}")
+message( STATUS "WITH_NOISE_DEBUG: ${WITH_NOISE_DEBUG}")
 message( STATUS "USE_MACPORTS:     ${USE_MACPORTS}")
 
 #--------------------------------------------------------------------

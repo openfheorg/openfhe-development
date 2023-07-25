@@ -49,62 +49,56 @@ std::ostream& operator<<(std::ostream& s, BINFHE_PARAMSET f) {
         case STD128_AP:
             s << "STD128_AP";
             break;
-        case STD128_APOPT:
-            s << "STD128_APOPT";
-            break;
         case STD128:
             s << "STD128";
-            break;
-        case STD128_OPT:
-            s << "STD128_OPT";
             break;
         case STD192:
             s << "STD192";
             break;
-        case STD192_OPT:
-            s << "STD192_OPT";
-            break;
         case STD256:
             s << "STD256";
-            break;
-        case STD256_OPT:
-            s << "STD256_OPT";
             break;
         case STD128Q:
             s << "STD128Q";
             break;
-        case STD128Q_OPT:
-            s << "STD128Q_OPT";
+        case STD128Q_LMKCDEY:
+            s << "STD128Q_LMKCDEY";
             break;
         case STD192Q:
             s << "STD192Q";
             break;
-        case STD192Q_OPT:
-            s << "STD192Q_OPT";
-            break;
         case STD256Q:
             s << "STD256Q";
             break;
-        case STD256Q_OPT:
-            s << "STD256Q_OPT";
+        case STD128_3:
+            s << "STD128_3";
             break;
-        case STD128Q_OPT_3:
-            s << "STD128Q_OPT_3";
+        case STD128Q_3:
+            s << "STD128Q_3";
             break;
-        case STD192Q_OPT_3:
-            s << "STD192Q_OPT_3";
+        case STD128Q_3_LMKCDEY:
+            s << "STD128Q_3_LMKCDEY";
             break;
-        case STD256Q_OPT_3:
-            s << "STD256Q_OPT_3";
+        case STD192Q_3:
+            s << "STD192Q_3";
             break;
-        case STD128Q_OPT_4:
-            s << "STD128Q_OPT_4";
+        case STD256Q_3:
+            s << "STD256Q_3";
             break;
-        case STD192Q_OPT_4:
-            s << "STD192Q_OPT_4";
+        case STD128_4:
+            s << "STD128_4";
             break;
-        case STD256Q_OPT_4:
-            s << "STD256Q_OPT_4";
+        case STD128Q_4:
+            s << "STD128Q_4";
+            break;
+        case STD128Q_4_LMKCDEY:
+            s << "STD128Q_4_LMKCDEY";
+            break;
+        case STD192Q_4:
+            s << "STD192Q_4";
+            break;
+        case STD256Q_4:
+            s << "STD256Q_4";
             break;
         case SIGNED_MOD_TEST:
             s << "SIGNED_MOD_TEST";
