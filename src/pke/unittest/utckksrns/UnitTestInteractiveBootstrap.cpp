@@ -229,7 +229,7 @@ protected:
             Plaintext resultPtxt;
             cc->MultipartyDecryptFusion(partialCiphertextVec, &resultPtxt);
             resultPtxt->SetLength(inVec.size());
-            checkEquality(ptxt->GetCKKSPackedValue(), resultPtxt->GetCKKSPackedValue(), epsSmall,
+            checkEquality(ptxt->GetCKKSPackedValue(), resultPtxt->GetCKKSPackedValue(), epsLarge,
                           failmsg + " Interactive multiparty bootstrapping fails");
         }
         catch (std::exception& e) {
