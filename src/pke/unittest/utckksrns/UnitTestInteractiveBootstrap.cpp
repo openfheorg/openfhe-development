@@ -377,19 +377,19 @@ TEST_P(UTCKKSRNS_INTERACTIVE_BOOT, InteractiveBoot) {
     setupSignals();
     auto test = GetParam();
 
-    switch (test.testCaseType) {
-        case INTERACTIVE_MP_BOOT:
-            UnitTest_MultiPartyBoot(test, test.buildTestName());
-            break;
-        case INTERACTIVE_MP_BOOT_CHEBYSHEV:
-            UnitTest_MultiPartyBootChebyshev(test, test.buildTestName());
-            break;
-        default:
-            break;
+    if (!test.skipTest()) {
+        switch (test.testCaseType) {
+            case INTERACTIVE_MP_BOOT:
+                UnitTest_MultiPartyBoot(test, test.buildTestName());
+                break;
+            case INTERACTIVE_MP_BOOT_CHEBYSHEV:
+                UnitTest_MultiPartyBootChebyshev(test, test.buildTestName());
+                break;
+            default:
+                break;
+        }
     }
 }
 
-#if NATIVEINT == 64
 INSTANTIATE_TEST_SUITE_P(UnitTests, UTCKKSRNS_INTERACTIVE_BOOT,
                          ::testing::ValuesIn(testCasesUTCKKSRNS_INTERACTIVE_BOOT), testName);
-#endif
