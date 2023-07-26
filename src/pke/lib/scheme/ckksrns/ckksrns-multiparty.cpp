@@ -133,12 +133,12 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
         std::ceil(std::log2(ciphertext->GetElements()[0].GetAllElements()[0].GetParams()->GetModulus().ConvertToInt()));
     size_t numTowersToKeep = (scalingFactorBits / firstModulusSize + 1) + compressionLevel;
 
+    if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep) {
+        std::string msg = std::string(__func__) +": not enough towers in the input polynomial.";
+        OPENFHE_THROW(config_error, msg);
+    }
     if (cryptoParams->GetScalingTechnique() == ScalingTechnique::FLEXIBLEAUTO ||
         cryptoParams->GetScalingTechnique() == FLEXIBLEAUTOEXT) {
-        if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep) {
-            std::string msg = "IntMPBootAdjustScale: not enough towers in the input polynomial.";
-            OPENFHE_THROW(config_error, msg);
-        }
 
         auto ciphertextAdjusted = cc->Compress(ciphertext, numTowersToKeep + 1);
 
@@ -155,10 +155,6 @@ Ciphertext<DCRTPoly> MultipartyCKKSRNS::IntMPBootAdjustScale(ConstCiphertext<DCR
         return ciphertextAdjusted;
     }
     else {
-        if (ciphertext->GetElements()[0].GetNumOfElements() < numTowersToKeep) {
-            std::string msg = "IntMPBootAdjustScale: not enough towers in the input polynomial.";
-            OPENFHE_THROW(config_error, msg);
-        }
         return cc->Compress(ciphertext, numTowersToKeep);
     }
 }
@@ -296,8 +292,7 @@ DCRTPoly GenerateMi(const DCRTPoly& c1, uint32_t maskBoundNumTowers) {
     auto c1Copy = c1;
 
     // drop twoers until we reach maskBoundNumTowers
-    while (c1Copy.GetAllElements().size() > maskBoundNumTowers)
-        c1Copy.DropLastElement();
+    c1Copy.DropLastElements(c1Copy.GetAllElements().size() - maskBoundNumTowers);   
 
     auto& ildcrtparams = c1Copy.GetParams();
     typename DCRTPoly::DugType dug;
@@ -311,8 +306,7 @@ DCRTPoly GenerateMaskedDecryptionShare(CryptoContext<DCRTPoly>& cc, const Privat
                                        const DCRTPoly& c1, DCRTPoly& Mi, uint32_t compressionLevel) {
     DCRTPoly sk = privateKey->GetPrivateElement();
     // reduce sk's numeTowers to c1's numTowers
-    while (sk.GetAllElements().size() > c1.GetAllElements().size())
-        sk.DropLastElement();
+    sk.DropLastElements(sk.GetAllElements().size() - c1.GetAllElements().size());
 
     DCRTPoly maskedDecryptionShare = ComputeNoisyMult(cc, sk, c1, true);
 
