@@ -429,7 +429,7 @@ void HybridKeySwitchingDemo1() {
     // in genCryptoContextCKKS.
     std::cout << "q" << i << ": " << paramsQ[i]->GetModulus() << std::endl;
   }
-  auto paramsQP = cryptoParamsCKKS->GetExtendedElementParams();
+  auto paramsQP = cryptoParamsCKKS->GetParamsQP();
   std::cout << "Moduli in P: " << std::endl;
   BigInteger P = BigInteger(1);
   for (uint32_t i = 0; i < paramsQP->GetParams().size(); i++) {
@@ -543,7 +543,7 @@ void HybridKeySwitchingDemo2() {
     // in genCryptoContextCKKS.
     std::cout << "q" << i << ": " << paramsQ[i]->GetModulus() << std::endl;
   }
-  auto paramsQP = cryptoParamsCKKS->GetExtendedElementParams();
+  auto paramsQP = cryptoParamsCKKS->GetParamsQP();
   std::cout << "Moduli in P: " << std::endl;
   BigInteger P = BigInteger(1);
   for (uint32_t i = 0; i < paramsQP->GetParams().size(); i++) {
